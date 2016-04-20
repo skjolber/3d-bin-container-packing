@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/skjolber/3d-bin-container-packing.svg)](https://travis-ci.org/skjolber/3d-bin-container-packing)
+
 3d-bin-container-packing
 ==================================
 
