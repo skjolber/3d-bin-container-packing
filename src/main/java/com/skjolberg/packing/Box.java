@@ -43,25 +43,53 @@ public class Box extends Dimension {
 		return rotateLargestFootprint(space.getWidth(), space.getDepth(), space.getHeight());
 	}
 
+	private boolean heightUp(int w, int d, int h) {
+
+		if(h < height) {
+			return false;
+		}
+		
+		return (d >= width && w >= depth) || (w >= width && d >= depth);
+	}
+	
+	private boolean widthUp(int w, int d, int h) {
+
+		if(h < width) {
+			return false;
+		}
+		
+		return (d >= height && w >= depth) || (w >= height && d >= depth);
+	}
+
+	private boolean depthUp(int w, int d, int h) {
+
+		if(h < depth) {
+			return false;
+		}
+		
+		return (d >= height && w >= width) || (w >= height && d >= width);
+	}
+	
 	public boolean rotateLargestFootprint(int w, int d, int h) {
-		int a = -1;
-		if(w >= width && h >= height && d >= depth) {
+		int a = Integer.MIN_VALUE;
+		if(heightUp(w, d, h)) {
 			a = width * depth;
 		}
 
-		int b = -1;
-		if(h >= width && d >= height && w >= depth) {
+		int b = Integer.MIN_VALUE;
+		if(widthUp(w, d, h)) {
 			b = height * depth;
 		}
 
-		int c = -1;
-		if(d >= width && w >= height && h >= depth) {
+		int c = Integer.MIN_VALUE;
+		if(depthUp(w, d, h)) {
 			c = width * height;
 		}
 		
-		if(a == -1 && b == -1 && c == -1) {
+		if(a == Integer.MIN_VALUE && b == Integer.MIN_VALUE && c == Integer.MIN_VALUE) {
 			return false;
 		}
+		
 		
 		if(a > b && a > c) {
 			// no rotate
@@ -71,6 +99,19 @@ public class Box extends Dimension {
 		} else {
 			rotate3D();
 			rotate3D();
+		}
+
+		if(h < height) {
+			throw new IllegalArgumentException("Expected height " + height + " to fit within height constraint " + h);
+		}
+
+		if(width > w || depth > d) {
+			// use the other orientation
+			rotate2D();
+		}
+		
+		if(width > w || depth > d) {
+			throw new IllegalArgumentException("Expected width " + width + " and depth " + depth + " to fit within constraint width " + w + " and depth " + d);
 		}
 
 		return true;
@@ -139,20 +180,20 @@ public class Box extends Dimension {
 	
 	public boolean rotateSmallestFootprint(int w, int d, int h) {
 		int a = Integer.MAX_VALUE;
-		if(w >= width && h >= height && d >= depth) {
+		if(heightUp(w, d, h)) {
 			a = width * depth;
 		}
 
 		int b = Integer.MAX_VALUE;
-		if(h >= width && d >= height && w >= depth) {
+		if(widthUp(w, d, h)) {
 			b = height * depth;
 		}
 
 		int c = Integer.MAX_VALUE;
-		if(d >= width && w >= height && h >= depth) {
+		if(depthUp(w, d, h)) {
 			c = width * height;
 		}
-		
+
 		if(a == Integer.MAX_VALUE && b == Integer.MAX_VALUE && c == Integer.MAX_VALUE) {
 			return false;
 		}
@@ -165,6 +206,19 @@ public class Box extends Dimension {
 		} else {
 			rotate3D();
 			rotate3D();
+		}
+		
+		if(h < height) {
+			throw new IllegalArgumentException("Expected height " + height + " to fit within height constraint " + h);
+		}
+
+		if(width > w || depth > d) {
+			// use the other orientation
+			rotate2D();
+		}
+		
+		if(width > w || depth > d) {
+			throw new IllegalArgumentException("Expected width " + width + " and depth " + depth + " to fit within constraint width " + w + " and depth " + d);
 		}
 		
 		return true;
@@ -195,4 +249,7 @@ public class Box extends Dimension {
 		return fitInFootprintRotate(box.getWidth(), box.getDepth());
 	}
 	
+	public int currentSurfaceArea() {
+		return width * depth;
+	}
 }

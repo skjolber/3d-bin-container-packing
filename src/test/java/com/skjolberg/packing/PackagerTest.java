@@ -144,4 +144,30 @@ public class PackagerTest {
 		Container fits = packager.pack(products);
 		assertNull(fits);
 	}	
+	
+	
+	@Test
+	public void testStacking3xLP() {
+		List<Box> containers = new ArrayList<Box>();
+		containers.add(new Box(350, 150, 400));
+		Packager packager = new Packager(containers);
+		
+		List<Box> products1 = new ArrayList<Box>();
+
+		products1.add(new Box("A", 400, 50, 350));
+		products1.add(new Box("B", 400, 50, 350));
+		products1.add(new Box("C", 400, 50, 350));
+
+		Container fits1 = packager.pack(products1);
+		assertNotNull(fits1);
+		
+		List<Box> products2 = new ArrayList<Box>();
+		products2.add(new Box("A", 350, 50, 400));
+		products2.add(new Box("B", 350, 50, 400));
+		products2.add(new Box("C", 350, 50, 400));
+
+		Container fits2 = packager.pack(products2);
+		assertNotNull(fits2);
+
+	}
 }

@@ -17,6 +17,10 @@ public class Dimension {
 	public static String encode(int width, int depth, int height) {
 		return width + "x" + depth + "x" + height;
 	}
+	
+	public static String encode(int width, int depth, int height, int grams) {
+		return width + "x" + depth + "x" + height + "x" + grams;
+	}
 
 	public static Dimension newInstance(int width, int depth, int height) {
 		return new Dimension(width, depth, height);
@@ -89,6 +93,18 @@ public class Dimension {
 			return true;
 		}
 		
+		if(h <= width && w <= height && d <= depth) {
+			return true;
+		}
+
+		if(d <= width && h <= height && w <= depth) {
+			return true;
+		}
+
+		if(w <= width && d <= height && h <= depth) {
+			return true;
+		}		
+		
 		return false;
 	}
 	
@@ -121,24 +137,7 @@ public class Dimension {
 	 */
 
 	public boolean canFitInside(Dimension space) {
-		return canFitInside(space.getWidth(), space.getDepth(), space.getHeight());
-	}
-
-	public boolean canFitInside(int w, int d, int h) {
-		
-		if(w >= width && h >= height && d >= depth) {
-			return true;
-		}
-
-		if(h >= width && d >= height && w >= depth) {
-			return true;
-		}
-
-		if(d >= width && w >= height && h >= depth) {
-			return true;
-		}
-		
-		return false;
+		return space.canHold(this);
 	}
 	
 	public int getVolume() {
@@ -164,7 +163,7 @@ public class Dimension {
 		int result = 1;
 		result = prime * result + depth;
 		result = prime * result + height;
-		result = prime * result + volume;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + width;
 		return result;
 	}
@@ -182,7 +181,10 @@ public class Dimension {
 			return false;
 		if (height != other.height)
 			return false;
-		if (volume != other.volume)
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
 			return false;
 		if (width != other.width)
 			return false;
@@ -196,7 +198,10 @@ public class Dimension {
 	public String getName() {
 		return name;
 	}
-
-
 	
+	public String encode(int grams) {
+		return encode(width, depth, height, grams);
+	}
+
+
 }

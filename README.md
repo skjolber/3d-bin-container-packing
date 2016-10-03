@@ -18,7 +18,7 @@ Bugs, feature suggestions and help requests can be filed with the [issue-tracker
 
 
 ## Obtain
-The project is implemented in Java and built using [Maven]. The project is not yet available on the central Maven repository.
+The project is implemented in Java and built using [Maven]. The project is however __not__ yet available on the central Maven repository.
 
 Example dependency config:
 
