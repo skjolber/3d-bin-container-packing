@@ -24,7 +24,7 @@ Example dependency config:
 
 ```xml
 <dependency>
-    <groupId>com.skjolberg</groupId>
+    <groupId>com.github.skjolber</groupId>
     <artifactId>3d-bin-container-packing</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
@@ -75,10 +75,10 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 # History
  - [1.0.0]: Initial release.
 
-[1]: https://en.wikipedia.org/wiki/Bin_packing_problem
-[2]: http://www.zahidgurbuz.com/yayinlar/An%20Efficient%20Algorithm%20for%203D%20Rectangular%20Box%20Packing.pdf
-[Apache 2.0]: http://www.apache.org/licenses/LICENSE-2.0.html
-[issue-tracker]:       https://github.com/skjolber/3d-bin-container-packing/issues
-[Maven]:               	http://maven.apache.org/
-[LinkedIn]: http://lnkd.in/r7PWDz
-[Github page]: https://skjolber.github.io
+[1]: 					https://en.wikipedia.org/wiki/Bin_packing_problem
+[2]: 					http://www.zahidgurbuz.com/yayinlar/An%20Efficient%20Algorithm%20for%203D%20Rectangular%20Box%20Packing.pdf
+[Apache 2.0]: 			http://www.apache.org/licenses/LICENSE-2.0.html
+[issue-tracker]:		https://github.com/skjolber/3d-bin-container-packing/issues
+[Maven]:				http://maven.apache.org/
+[LinkedIn]:				http://lnkd.in/r7PWDz
+[Github page]:			https://skjolber.github.io

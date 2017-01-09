@@ -1,4 +1,4 @@
-package com.skjolberg.packing;
+package com.github.skjolberg.packing;
 
 import static org.junit.Assert.*;
 
@@ -7,9 +7,10 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.skjolberg.packing.Box;
-import com.skjolberg.packing.Container;
-import com.skjolberg.packing.Packager;
+import com.github.skjolberg.packing.Box;
+import com.github.skjolberg.packing.Container;
+import com.github.skjolberg.packing.Dimension;
+import com.github.skjolberg.packing.Packager;
 
 public class PackagerTest {
 
@@ -172,35 +173,24 @@ public class PackagerTest {
 	}
 	
 	@Test
-	public void testIssue2() {
+	public void testIsse2() {
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(320, 490, 290));
+		containers.add(new Box(36, 55, 13));
 		Packager packager = new Packager(containers);
 
 		List<Box> products1 = new ArrayList<Box>();
 
-		products1.add(new Box("01", 330, 88, 88));
-		products1.add(new Box("02", 330, 88, 88));
-		products1.add(new Box("03", 330, 88, 88));
-		products1.add(new Box("04", 330, 88, 88));
-		products1.add(new Box("05", 330, 88, 88));
-		products1.add(new Box("06", 330, 88, 88));
-		products1.add(new Box("07", 330, 88, 88));
-		products1.add(new Box("08", 330, 88, 88));
-		products1.add(new Box("09", 330, 88, 88));
-		products1.add(new Box("10", 330, 88, 88));
-		products1.add(new Box("11", 330, 88, 88));
-		products1.add(new Box("12", 330, 88, 88));
-		products1.add(new Box("13", 330, 88, 88));
-		products1.add(new Box("14", 330, 88, 88));
-		products1.add(new Box("15", 330, 88, 88));
-		products1.add(new Box("16", 330, 88, 88));
-		products1.add(new Box("17", 330, 88, 88));
+		products1.add(new Box("01", 38, 10, 10));
+		products1.add(new Box("02", 38, 10, 10));
+		products1.add(new Box("03", 38, 10, 10));
 
 		Container fits1 = packager.pack(products1);
-		assertNull(fits1);
+		assertNotNull(fits1);
+		
+		products1.add(new Box("04", 38, 10, 10));
+		Container fits2 = packager.pack(products1);
+		assertNull(fits2);
 	}
-	
 	
 	
 }

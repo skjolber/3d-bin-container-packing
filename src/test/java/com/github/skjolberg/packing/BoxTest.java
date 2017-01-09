@@ -1,10 +1,12 @@
-package com.skjolberg.packing;
+package com.github.skjolberg.packing;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.github.skjolberg.packing.Box;
 
 public class BoxTest {
 

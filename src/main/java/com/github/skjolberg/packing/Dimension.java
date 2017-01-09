@@ -1,4 +1,4 @@
-package com.skjolberg.packing;
+package com.github.skjolberg.packing;
 
 public class Dimension {
 
@@ -33,7 +33,7 @@ public class Dimension {
 	
 	protected final String name;
 	
-	protected final Dimension parent;
+	protected Dimension parent;
 
 	public Dimension(Dimension parent, String name, int w, int d, int h) {
 		this.parent = parent;
@@ -156,6 +156,10 @@ public class Dimension {
 	public Dimension getParent() {
 		return parent;
 	}
+	
+	public void setParent(Dimension parent) {
+		this.parent = parent;
+	}
 
 	@Override
 	public int hashCode() {
@@ -203,5 +207,5 @@ public class Dimension {
 		return encode(width, depth, height, grams);
 	}
 
-
+	
 }

@@ -1,4 +1,4 @@
-package com.skjolberg.packing;
+package com.github.skjolberg.packing;
 
 public class Box extends Dimension {
 
