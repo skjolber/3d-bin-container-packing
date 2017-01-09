@@ -302,40 +302,4 @@ public class Packager {
 		return best;
 	}
 
-	private Dimension getBest(Dimension freespace, Box box) {
-		
-		Dimension alignment1 = null;
-		if(box.fitsInside(freespace.getWidth(), freespace.getDepth(), freespace.getHeight())) {
-			if( (freespace.getDepth() - box.getDepth()) * freespace.getWidth() >  (freespace.getWidth() - box.getWidth()) * freespace.getDepth()) {
-				alignment1 = new Dimension(freespace, freespace.getWidth(), freespace.getDepth() - box.getDepth(), freespace.getHeight());
-			} else {
-				alignment1 = new Dimension(freespace, freespace.getWidth() - box.getWidth(), freespace.getDepth(), freespace.getHeight());
-			}
-		}
-		
-		Dimension alignment2 = null;
-		if(box.fitsInside(freespace.getDepth(), freespace.getWidth(), freespace.getHeight())) {
-			if( (freespace.getDepth() - box.getWidth()) * freespace.getWidth() >  (freespace.getWidth() - box.getDepth()) * freespace.getDepth()) {
-				alignment2 = new Dimension(freespace, freespace.getWidth(), freespace.getDepth() - box.getWidth(), freespace.getHeight());
-			} else {
-				alignment2 = new Dimension(freespace, freespace.getWidth() - box.getDepth(), freespace.getDepth(), freespace.getHeight());
-			}
-			
-		}
-		
-		if(alignment1 != null && alignment2 != null) {
-			if(alignment1.getFootprint() > alignment2.getFootprint()) {
-				return alignment1;
-			} else {
-				return alignment2;
-			}
-		} else if(alignment1 != null) {
-			return alignment1;
-		} else if(alignment2 != null) {
-			return alignment2;
-		}
-		
-		return null;
-	}
-
 }
