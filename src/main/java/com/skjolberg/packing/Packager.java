@@ -57,7 +57,6 @@ public class Packager {
 				// choose the box with the largest surface area, that fits
 				// if the same then the one with minimum height
 				Box space = holder.getRemainigFreeSpace(containerBox);
-				
 				Box currentBox = null; // i
 				for(Box box : containerProducts) {
 					
@@ -73,6 +72,8 @@ public class Packager {
 				}
 				
 				if(currentBox == null) {
+					// no fit in the current container within the remaining space
+					// try the next container
 					continue boxes;
 				}
 				
@@ -82,6 +83,7 @@ public class Packager {
 				
 				// currentbox should have the optimal orientation already
 				if(containerProducts.isEmpty()) {
+					// all boxes fitted with the current container
 					break;
 				}
 				

@@ -170,4 +170,37 @@ public class PackagerTest {
 		assertNotNull(fits2);
 
 	}
+	
+	@Test
+	public void testIssue2() {
+		List<Box> containers = new ArrayList<Box>();
+		containers.add(new Box(320, 490, 290));
+		Packager packager = new Packager(containers);
+
+		List<Box> products1 = new ArrayList<Box>();
+
+		products1.add(new Box("01", 330, 88, 88));
+		products1.add(new Box("02", 330, 88, 88));
+		products1.add(new Box("03", 330, 88, 88));
+		products1.add(new Box("04", 330, 88, 88));
+		products1.add(new Box("05", 330, 88, 88));
+		products1.add(new Box("06", 330, 88, 88));
+		products1.add(new Box("07", 330, 88, 88));
+		products1.add(new Box("08", 330, 88, 88));
+		products1.add(new Box("09", 330, 88, 88));
+		products1.add(new Box("10", 330, 88, 88));
+		products1.add(new Box("11", 330, 88, 88));
+		products1.add(new Box("12", 330, 88, 88));
+		products1.add(new Box("13", 330, 88, 88));
+		products1.add(new Box("14", 330, 88, 88));
+		products1.add(new Box("15", 330, 88, 88));
+		products1.add(new Box("16", 330, 88, 88));
+		products1.add(new Box("17", 330, 88, 88));
+
+		Container fits1 = packager.pack(products1);
+		assertNull(fits1);
+	}
+	
+	
+	
 }
