@@ -58,7 +58,6 @@ The resulting `match` variable returning the resulting packaging details or null
 The above example would return a match (Foot and Arm would be packaged at the height 0, Leg at height 2).
 
 ## Details - Largest Area Fit First (LAFF)
-----------
 The implementation is based on [this paper][2], and is not a traditional [Bin packing problem][1] solver.
 
 The box which covers the largest ground area of the container is placed first. Subsequent boxes are stacked in the remaining space in at the same level, the boxes with the greatest volume first. Then level is increased and the process repeated. Boxes are rotated, containers not.
