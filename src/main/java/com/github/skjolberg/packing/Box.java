@@ -2,6 +2,10 @@ package com.github.skjolberg.packing;
 
 public class Box extends Dimension {
 
+	public Box(Dimension dimension) {
+		super(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
+	}
+
 	public Box(int w, int d, int h) {
 		super(w, d, h);
 	}
