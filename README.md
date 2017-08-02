@@ -18,7 +18,7 @@ Bugs, feature suggestions and help requests can be filed with the [issue-tracker
 
 
 ## Obtain
-The project is implemented in Java and built using [Maven]. The project is however __not__ yet available on the central Maven repository.
+The project is implemented in Java and built using [Maven]. The project is available on the central Maven repository.
 
 Example dependency config:
 
@@ -26,10 +26,9 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber</groupId>
     <artifactId>3d-bin-container-packing</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 </dependency>
 ```
-
 
 # Usage
 
@@ -82,3 +81,4 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Maven]:				http://maven.apache.org/
 [LinkedIn]:				http://lnkd.in/r7PWDz
 [Github page]:			https://skjolber.github.io
+[1.0.0]:				https://github.com/skjolber/3d-bin-container-packing/releases
