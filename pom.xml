@@ -5,7 +5,9 @@
 	<artifactId>3d-bin-container-packing</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<name>3D Bin Container Packing</name>
-
+	<description>Library for 3D rectangular bin packing</description>
+	<url>https://github.com/skjolber/3d-bin-container-packing</url>
+	
 	<properties>
 		<hamcrest.version>1.3</hamcrest.version>
 		<junit.version>4.12</junit.version>
@@ -71,7 +73,6 @@
 	
 	<build>
 		<defaultGoal>clean test</defaultGoal>
-
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -214,7 +215,6 @@
 			</build>
 		</profile>
 	</profiles>
-
 
 	<distributionManagement>
 		<snapshotRepository>
