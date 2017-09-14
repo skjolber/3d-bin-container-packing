@@ -16,9 +16,9 @@ public class Box extends Dimension {
 	
 	/**
 	 * 
-	 * Rotate box, i.e. in 3 dimensions
+	 * Rotate box, i.e. in 3D
 	 * 
-	 * @return
+	 * @return this instance
 	 */
 
 	public Box rotate3D() {
@@ -41,10 +41,12 @@ public class Box extends Dimension {
 	 * 
 	 * Rotate box to largest footprint (downwards area) within a free space
 	 * 
+	 * @param dimension space to fit within
+	 * @return if this object fits within the input dimensions
 	 */
 
-	public boolean rotateLargestFootprint(Dimension space) {
-		return rotateLargestFootprint(space.getWidth(), space.getDepth(), space.getHeight());
+	public boolean rotateLargestFootprint3D(Dimension dimension) {
+		return rotateLargestFootprint3D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}
 
 	private boolean heightUp(int w, int d, int h) {
@@ -74,7 +76,7 @@ public class Box extends Dimension {
 		return (d >= height && w >= width) || (w >= height && d >= width);
 	}
 	
-	public boolean rotateLargestFootprint(int w, int d, int h) {
+	public boolean rotateLargestFootprint3D(int w, int d, int h) {
 		int a = Integer.MIN_VALUE;
 		if(heightUp(w, d, h)) {
 			a = width * depth;
@@ -122,7 +124,7 @@ public class Box extends Dimension {
 		
 	}
 
-	public boolean fitInFootprintRotateMinimumWidth(int w, int d) {
+	public boolean fitRotate2DMinimumWidth(int w, int d) {
 
 		if(w >= width && d >= depth && d >= width && w >= depth) {
 			
@@ -133,11 +135,11 @@ public class Box extends Dimension {
 			
 			return true;
 		} else {
-			return fitInFootprintRotate(w, d);
+			return fitRotate2D(w, d);
 		}
 	}
 
-	public boolean fitInFootprintRotateMinimumDepth(int w, int d) {
+	public boolean fitRotate2DMinimumDepth(int w, int d) {
 
 		if(w >= width && d >= depth && d >= width && w >= depth) {
 			
@@ -148,11 +150,11 @@ public class Box extends Dimension {
 			
 			return true;
 		} else {
-			return fitInFootprintRotate(w, d);
+			return fitRotate2D(w, d);
 		}
 	}
 
-	public boolean fitInFootprintRotate(int w, int d) {
+	public boolean fitRotate2D(int w, int d) {
 		
 		if(w >= width && d >= depth) {
 			return true;
@@ -165,24 +167,22 @@ public class Box extends Dimension {
 		}
 
 		return false;
-		
-		
 	}
 	
 	/**
 	 * 
-	 * Rotate box to smallest footprint (downwards area) within a free space.
+	 * Rotate box to smallest footprint (downwards area - width*depth) within a free space.
 	 * 
 	 * @param space free space
 	 * @return false if box does not fit
 	 * 
 	 */
 	
-	public boolean rotateSmallestFootprint(Dimension space) {
-		return rotateSmallestFootprint(space.getWidth(), space.getDepth(), space.getHeight());
+	public boolean fitRotate3DSmallestFootprint(Dimension space) {
+		return fitRotate3DSmallestFootprint(space.getWidth(), space.getDepth(), space.getHeight());
 	}
 	
-	public boolean rotateSmallestFootprint(int w, int d, int h) {
+	public boolean fitRotate3DSmallestFootprint(int w, int d, int h) {
 		int a = Integer.MAX_VALUE;
 		if(heightUp(w, d, h)) {
 			a = width * depth;
@@ -228,29 +228,16 @@ public class Box extends Dimension {
 		return true;
 	}
 	
-	/**
-	 * 
-	 * Rotate box, i.e. in 2 dimensions, keeping the height constant.
-	 * 
-	 */
-	
-	public void rotate2D() {
-		int depth = this.depth;
-		
-		this.depth = width;
-		this.width = depth;
-	}
-	
-	public boolean fitInFootprintRotateMinimumDepth(Dimension box) {
-		return fitInFootprintRotateMinimumDepth(box.getWidth(), box.getDepth());
+	public boolean fitRotate2DMinimumDepth(Dimension box) {
+		return fitRotate2DMinimumDepth(box.getWidth(), box.getDepth());
 	}
 
-	public boolean fitInFootprintRotateMinimumWidth(Dimension box) {
-		return fitInFootprintRotateMinimumWidth(box.getWidth(), box.getDepth());
+	public boolean fitRotate2DMinimumWidth(Dimension box) {
+		return fitRotate2DMinimumWidth(box.getWidth(), box.getDepth());
 	}
 
-	public boolean fitInFootprintRotate(Dimension box) {
-		return fitInFootprintRotate(box.getWidth(), box.getDepth());
+	public boolean fitRotate2D(Dimension box) {
+		return fitRotate2D(box.getWidth(), box.getDepth());
 	}
 	
 	public int currentSurfaceArea() {

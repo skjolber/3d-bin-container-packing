@@ -7,12 +7,13 @@ import java.util.ArrayList;
  * 
  */
 
-public class Level extends ArrayList<Box>{
+public class Level extends ArrayList<Placement>{
 	
 	public int getHeight() {
 		int height = 0;
 		
-		for(Box box : this) {
+		for(Placement placement : this) {
+			Box box = placement.getBox();
 			if(box.getHeight() > height) {
 				height = box.getHeight();
 			}

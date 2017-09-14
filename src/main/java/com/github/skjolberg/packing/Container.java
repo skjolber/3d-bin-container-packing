@@ -38,20 +38,20 @@ public class Container extends Box {
 		return levels.get(levels.size() - 1).getHeight();
 	}
 	
-	public void add(Box box) {
-		levels.get(levels.size() - 1).add(box);
+	public void add(Placement placement) {
+		levels.get(levels.size() - 1).add(placement);
 	}
 	
 	public void addLevel() {
 		add(new Level());
 	}
 	
-	public Box getRemainigFreeSpace(Dimension box) {
+	public Dimension getRemainigFreeSpace(Dimension box) {
 		int spaceHeight = box.getHeight() - getStackHeight();
 		if(spaceHeight < 0) {
 			throw new IllegalArgumentException();
 		}
-		return new Box(box.getWidth(), box.getDepth(), spaceHeight);
+		return new Dimension(box.getWidth(), box.getDepth(), spaceHeight);
 	}
 	
 	public String printLevels() {
@@ -69,5 +69,9 @@ public class Container extends Box {
 	
 	public ArrayList<Level> getLevels() {
 		return levels;
+	}
+	
+	public Placement get(int level, int placement) {
+		return levels.get(level).get(placement);
 	}
 }

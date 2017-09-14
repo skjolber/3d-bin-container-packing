@@ -69,6 +69,12 @@
 			<version>${hamcrest.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.indvd00m.ascii.render</groupId>
+			<artifactId>ascii-render</artifactId>
+			<version>1.2.1</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	
 	<build>
@@ -225,5 +231,12 @@
 			<id>ossrh</id>
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
-	</distributionManagement>	
+	</distributionManagement>
+	
+	<repositories>
+		<repository>
+			<id>indvd00m-github-repo</id>
+			<url>https://github.com/indvd00m/maven-repo/raw/master/repository</url>
+		</repository>	
+	</repositories>
 </project>

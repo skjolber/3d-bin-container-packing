@@ -1,6 +1,7 @@
 package com.github.skjolberg.packing;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -13,20 +14,27 @@ public class Packager {
 
 	private final Dimension[] containers;
 	
+	private final boolean rotate3D; // if false, then 2d
+	
 	/**
 	 * Constructor
 	 * 
 	 * @param containers Dimensions of supported containers
 	 */
-
 	public Packager(List<? extends Dimension> containers) {
+		this(containers, true);
+	}
+
+	public Packager(List<? extends Dimension> containers, boolean rotate3D) {
 		this.containers = containers.toArray(new Dimension[containers.size()]);
+		this.rotate3D = rotate3D;
 	}
 	
 	/**
 	 * 
 	 * Return a container which holds all the boxes in the argument
 	 * 
+	 * @param boxes list of boxes to fit in a container
 	 * @return null if no match
 	 */
 	
@@ -44,8 +52,14 @@ public class Packager {
 			}
 
 			for(Box box : boxes) {
-				if(!containerBox.canHold(box)) {
-					continue boxes;
+				if(rotate3D) {
+					if(!containerBox.canHold3D(box)) {
+						continue boxes;
+					}
+				} else {
+					if(!containerBox.canHold2D(box)) {
+						continue boxes;
+					}
 				}
 			}
 			
@@ -56,11 +70,17 @@ public class Packager {
 			while(!containerProducts.isEmpty()) {
 				// choose the box with the largest surface area, that fits
 				// if the same then the one with minimum height
-				Box space = holder.getRemainigFreeSpace(containerBox);
-				Box currentBox = null; // i
+				Dimension space = holder.getRemainigFreeSpace(containerBox);
+				Box currentBox = null;
 				for(Box box : containerProducts) {
 					
-					if(box.rotateLargestFootprint(space)) {
+					boolean fits;
+					if(rotate3D) {
+						fits = box.rotateLargestFootprint3D(space);
+					} else {
+						fits = box.fitRotate2D(space);
+					}
+					if(fits) {
 						if(currentBox == null) {
 							currentBox = box;
 						} else if(currentBox.getFootprint() < box.getFootprint()) {
@@ -77,19 +97,27 @@ public class Packager {
 					continue boxes;
 				}
 				
+				// current box should have the optimal orientation already
+				// create a space which holds the full level
+				Space levelSpace = new Space(
+							containerBox.getWidth(), 
+							containerBox.getDepth(), 
+							currentBox.getHeight(), 
+							0, 
+							0, 
+							holder.getStackHeight()
+							);
+				
 				holder.addLevel();
-				holder.add(currentBox);
+				holder.add(new Placement(levelSpace, currentBox));
 				containerProducts.remove(currentBox);
 				
 				if(containerProducts.isEmpty()) {
 					// all boxes fitted with the current container
 					break;
 				}
-				
-				// current box should have the optimal orientation already
-				Dimension freeSpace = new Dimension(containerBox.getWidth(), containerBox.getDepth(), currentBox.getHeight()); // ak, bk, ck
-				
-				fit(containerProducts, holder, currentBox, freeSpace);
+								
+				fit2D(containerProducts, holder, currentBox, levelSpace);
 			}
 
 			return holder;
@@ -98,28 +126,31 @@ public class Packager {
 		return null;
 	}
 	
-	private void fit(List<Box> containerProducts, Container holder, Box usedSpace, Dimension freespace) {
+	private void fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace) {
 
-		List<Dimension> spaces = getFreespaces(freespace, usedSpace);
+		List<Space> spaces = getFreespaces(freeSpace, usedSpace);
 		if(spaces.isEmpty()) {
 			// no boxes
 			return;
-		} 
-		Box nextBox = bestVolume(containerProducts, spaces); // sets space as parent
-
-		if(nextBox == null) {
+		}
+		
+		Placement nextPlacement = bestVolume(containerProducts, spaces);
+		if(nextPlacement == null) {
 			// no fit
 			return;
 		}
-		Dimension space = nextBox.getParent();
 		
-		nextBox.rotateSmallestFootprint(space);
+		if(rotate3D) { // maximize use of height
+			nextPlacement.getBox().fitRotate3DSmallestFootprint(nextPlacement.getSpace());
+		} else {
+			nextPlacement.getBox().fitRotate2D(nextPlacement.getSpace());
+		}
 		
-		holder.add(nextBox);
-		containerProducts.remove(nextBox);
+		holder.add(nextPlacement);
+		containerProducts.remove(nextPlacement.getBox());
 
-		// stack in leftover from original free space
-		Dimension remainder = space.getParent();
+		// stack in the 'sibling' space - other part of free space
+		Space remainder = (Space) nextPlacement.getSpace().getRemainder();
 		if(!remainder.isEmpty()) {
 			fitNext(containerProducts, holder, remainder);
 			if(containerProducts.isEmpty()) {
@@ -128,22 +159,20 @@ public class Packager {
 			} 
 		}
 		
-		// determine stacking within free space to maximize leftover area
-		List<Dimension> freeSpaces = getFreespaces(space, nextBox);
+		// determine if the stacking left some space over in the selected space
+		List<Space> freeSpaces = getFreespaces(nextPlacement.getSpace(), nextPlacement.getBox());
 
 		if(freeSpaces.isEmpty()) {
 			// no more space left
 			return;
-		} 
-
-		Dimension nextFreeSpace = null;
-		for(Dimension free : freeSpaces) {
+		}
+		
+		Space nextFreeSpace = null;
+		for(Space free : freeSpaces) {
 			if(nextFreeSpace == null || free.getFootprint() > nextFreeSpace.getFootprint()) {
 				nextFreeSpace = free;
 			}
 		}
-		
-		Dimension nextFreeSpaceRemainder = nextFreeSpace.getParent();
 		
 		fitNext(containerProducts, holder, nextFreeSpace);
 		if(containerProducts.isEmpty()) {
@@ -151,12 +180,13 @@ public class Packager {
 			return;
 		} 
 		
+		Space nextFreeSpaceRemainder = nextFreeSpace.getRemainder();
 		if(!nextFreeSpaceRemainder.isEmpty()) {
 			fitNext(containerProducts, holder, nextFreeSpaceRemainder);
 		}
 	}
 
-	private List<Dimension> getFreespaces(Dimension freespace, Box used) {
+	private List<Space> getFreespaces(Space freespace, Box used) {
 
 		// Two free spaces, on each rotation of the used space. 
 		// Height is always the same, used box is assumed within free space height.
@@ -185,121 +215,148 @@ public class Packager {
 		// .     .                .                             .                .
 		// ........................                             ..................
 		//
-		// So there is always a big and a small leftover area (the small is not shown).
+		// So there is always a 'big' and a 'small' leftover area (the small is not shown).
 
-		List<Dimension> freeSpaces = new ArrayList<Dimension>();
+		List<Space> freeSpaces = new ArrayList<Space>();
 		if(freespace.getWidth() >= used.getWidth() && freespace.getDepth() >= used.getDepth()) {
+			
+			// if B is empty, then it is sufficient to work with A and the other way around
+			
 			// B
-			Dimension right = new Dimension(freespace.getWidth() - used.getWidth(), freespace.getDepth(), freespace.getHeight());
-			if(!right.isEmpty()) {
-				Dimension rightRemainder = new Dimension(used.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight());
-				right.setParent(rightRemainder);
+			if(freespace.getWidth() > used.getWidth()) {
+				Space right = new Space(
+						freespace.getWidth() - used.getWidth(), freespace.getDepth(), freespace.getHeight(),
+						freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
+						);
+				
+				Space rightRemainder = new Space(
+						used.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
+						freespace.getX(), freespace.getY()+ used.getDepth(), freespace.getZ()
+						);
+				right.setRemainder(rightRemainder);
+				rightRemainder.setRemainder(right);
 				freeSpaces.add(right);
 			}
 			
 			// A
-			Dimension top = new Dimension(freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight());
-			if(!top.isEmpty()) {
-				Dimension topRemainder = new Dimension(freespace.getWidth() - used.getWidth(), used.getDepth(), freespace.getHeight());
-				top.setParent(topRemainder);
+			if(freespace.getDepth() > used.getDepth()) {
+				Space top = new Space(
+							freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
+							freespace.getX(), freespace.getY() + used.depth, freespace.getHeight()
+						);
+				Space topRemainder = new Space(
+							freespace.getWidth() - used.getWidth(), used.getDepth(), freespace.getHeight(),
+							freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
+						);
+				top.setRemainder(topRemainder);
+				topRemainder.setRemainder(top);
 				freeSpaces.add(top);
 			}
 		}
 		
 		if(freespace.getWidth() >= used.getDepth() && freespace.getDepth() >= used.getWidth()) {	
+			// if D is empty, then it is sufficient to work with C and the other way around
+			
 			// D
-			Dimension right = new Dimension(freespace.getWidth() - used.getDepth(), freespace.getDepth(), freespace.getHeight());
-			if(!right.isEmpty()) {
-				Dimension rightRemainder = new Dimension(used.getDepth(), freespace.getDepth() - used.getWidth(), freespace.getHeight());
-				right.setParent(rightRemainder);
+			if(freespace.getWidth() > used.getDepth()) {
+				Space right = new Space(
+						freespace.getWidth() - used.getDepth(), freespace.getDepth(), freespace.getHeight(),
+						freespace.getX() + used.getDepth(), freespace.getY(), freespace.getHeight()
+						);
+				Space rightRemainder = new Space(
+						used.getDepth(), freespace.getDepth() - used.getWidth(), freespace.getHeight(),
+						freespace.getX(), freespace.getY() + used.getWidth(), freespace.getZ()
+						);
+				right.setRemainder(rightRemainder);
+				rightRemainder.setRemainder(right);
 				freeSpaces.add(right);
 			}
 			
 			// C
-			Dimension top = new Dimension(freespace.getWidth(), freespace.getDepth() - used.getWidth(), freespace.getHeight());
-			if(!top.isEmpty()) {
-				Dimension topRemainder = new Dimension(freespace.getWidth() - used.getDepth(), used.getWidth(), freespace.getHeight());
-				top.setParent(topRemainder);
+			if(freespace.getDepth() > used.getWidth()) {
+				Space top = new Space(
+						freespace.getWidth(), freespace.getDepth() - used.getWidth(), freespace.getHeight(),
+						freespace.getX(), freespace.getY() + used.getWidth(), freespace.getHeight()
+						);
+				Space topRemainder = new Space(
+						freespace.getWidth() - used.getDepth(), used.getWidth(), freespace.getHeight(),
+						freespace.getX() + used.getDepth(), freespace.getY(), freespace.getZ()
+						);
+				top.setRemainder(topRemainder);
+				topRemainder.setRemainder(top);
 				freeSpaces.add(top);
 			}
 		}
 		return freeSpaces;
 	}
 
-	private void fitNext(List<Box> containerProducts, Container holder, Dimension nextFreeSpace) {
-		if(!nextFreeSpace.isEmpty()) {
-			Box nextUsedSpace = bestVolume(containerProducts, nextFreeSpace);
+	private void fitNext(List<Box> containerProducts, Container holder, Space freeSpace) {
+		if(!freeSpace.isEmpty()) {
+			Placement placement = bestVolume(containerProducts, freeSpace);
 			
-			if(nextUsedSpace != null) {
-				holder.add(nextUsedSpace);
-				containerProducts.remove(nextUsedSpace);
+			if(placement != null) {
+				holder.add(placement);
+				containerProducts.remove(placement.getBox());
 				
-				nextUsedSpace.rotateSmallestFootprint(nextFreeSpace);
-				
-				fit(containerProducts, holder, nextUsedSpace, nextFreeSpace);
+				if(rotate3D) {
+					placement.getBox().fitRotate3DSmallestFootprint(freeSpace);
+				}
+				fit2D(containerProducts, holder, placement.getBox(), freeSpace);
 			}
 		}
 	}
 
 
-	private Box bestVolume(List<Box> containerProducts, Dimension space) {
-		
-		Box best = null;
-		for(Box box : containerProducts) {
-			
-			if(box.canFitInside(space)) {
-				if(best == null) {
-					best = box;
-				} else if(best.getVolume() < box.getVolume()) {
-					best = box;
-				} else if(best.getVolume() == box.getVolume()) {
-					// determine lowest fit
-					best.rotateSmallestFootprint(space);
-
-					box.rotateSmallestFootprint(space);
-					
-					if(box.getFootprint() < best.getFootprint()) {
-						best = box;
-					}
-				}
-			}
-		}
-		
-		return best;
+	private Placement bestVolume(List<Box> containerProducts, Space space) {
+		return bestVolume(containerProducts, Arrays.asList(space));
 	}
 	
-	private Box bestVolume(List<Box> containerProducts, List<Dimension> spaces) {
+	private Placement bestVolume(List<Box> containerProducts, List<Space> spaces) {
 		
-		Box best = null;
-		for(Dimension space : spaces) {
+		Box bestBox = null;
+		Space bestSpace = null;
+		for(Space space : spaces) {
 			for(Box box : containerProducts) {
 				
-				if(box.canFitInside(space)) {
-					if(best == null) {
-						best = box;
-						
-						box.setParent(space);
-					} else if(best.getVolume() < box.getVolume()) {
-						best = box;
-						
-						box.setParent(space);
-					} else if(best.getVolume() == box.getVolume()) {
-						// determine lowest fit
-						best.rotateSmallestFootprint(space);
-	
-						box.rotateSmallestFootprint(space);
-						
-						if(box.getFootprint() < best.getFootprint()) {
-							best = box;
+				if(rotate3D) {
+					if(box.canFitInside3D(space)) {
+						if(bestBox == null) {
+							bestBox = box;
+							bestSpace = space;
+						} else if(bestBox.getVolume() < box.getVolume()) {
+							bestBox = box;
+							bestSpace = space;
+						} else if(bestBox.getVolume() == box.getVolume()) {
+							// determine lowest fit
+							bestBox.fitRotate3DSmallestFootprint(space);
+		
+							box.fitRotate3DSmallestFootprint(space);
 							
-							box.setParent(space);
+							if(box.getFootprint() < bestBox.getFootprint()) {
+								bestBox = box;
+								bestSpace = space;
+							}
+						}
+					}
+				} else {
+					if(box.canFitInside2D(space)) {
+						if(bestBox == null) {
+							bestBox = box;
+							bestSpace = space;
+						} else if(bestBox.getVolume() < box.getVolume()) {
+							bestBox = box;
+							bestSpace = space;
+						} else if(bestBox.getVolume() < box.getVolume()) {
+							// TODO use the aspect ratio in some meaningful way
 						}
 					}
 				}
 			}
 		}
-		
-		return best;
+		if(bestBox != null) {
+			return new Placement(bestSpace, bestBox);
+		}
+		return null;
 	}
 
 }
