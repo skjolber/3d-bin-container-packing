@@ -236,8 +236,16 @@ public class Box extends Dimension {
 		return fitRotate2DMinimumWidth(box.getWidth(), box.getDepth());
 	}
 
+	/**
+	 * 
+	 * Rotate box within a free space in 2D
+	 * 
+	 * @param dimension space to fit within
+	 * @return if this object fits within the input dimensions
+	 */
+	
 	public boolean fitRotate2D(Dimension box) {
-		if(box.getHeight() > height) {
+		if(box.getHeight() < height) {
 			return false;
 		}
 		return fitRotate2D(box.getWidth(), box.getDepth());

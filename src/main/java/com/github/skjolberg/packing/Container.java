@@ -40,8 +40,6 @@ public class Container extends Box {
 	
 	public void add(Placement placement) {
 		levels.get(levels.size() - 1).add(placement);
-		
-		getRemainigFreeSpace();
 	}
 	
 	public void addLevel() {
