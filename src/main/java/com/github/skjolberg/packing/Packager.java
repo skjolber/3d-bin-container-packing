@@ -85,17 +85,33 @@ public class Packager {
 							currentBox = box;
 						} else if(currentBox.getFootprint() < box.getFootprint()) {
 							currentBox = box;
-						} else if(currentBox.getFootprint() == box.getFootprint() && currentBox.getHeight() > box.getHeight() ) {
+						} else if(currentBox.getFootprint() == box.getFootprint() && currentBox.getHeight() < box.getHeight()) {
 							currentBox = box;
 						}
+					} else {
+						// no fit in the current container within the remaining space
+						// try the next container
+
+						continue boxes;
 					}
 				}
-				
-				if(currentBox == null) {
-					// no fit in the current container within the remaining space
-					// try the next container
-					continue boxes;
-				}
+
+				if(currentBox.getHeight() < space.getHeight()) {
+					// see whether we can get a fit for full height
+					Box idealBox = null;
+					for(Box box : containerProducts) {
+						if(box.getHeight() == space.getHeight()) {
+							if(idealBox == null) {
+								idealBox = box;
+							} else if(idealBox.getFootprint() < box.getFootprint()) {
+								idealBox = box;
+							}
+						}
+					}
+					if(idealBox != null) {
+						currentBox = idealBox;
+					}
+				}				
 				
 				// current box should have the optimal orientation already
 				// create a space which holds the full level
@@ -146,7 +162,7 @@ public class Packager {
 			nextPlacement.getBox().fitRotate2D(nextPlacement.getSpace());
 		}
 		
-		holder.add(nextPlacement);
+		holder.add(nextPlacement); // TODO there might be free space on top of this box
 		containerProducts.remove(nextPlacement.getBox());
 
 		// stack in the 'sibling' space - other part of free space

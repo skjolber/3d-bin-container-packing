@@ -209,5 +209,4 @@ public class Packager3DTest {
 		assertNull(fits2);
 	}
 	
-	
 }

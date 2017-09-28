@@ -244,11 +244,11 @@ public class Box extends Dimension {
 	 * @return if this object fits within the input dimensions
 	 */
 	
-	public boolean fitRotate2D(Dimension box) {
-		if(box.getHeight() < height) {
+	public boolean fitRotate2D(Dimension dimension) {
+		if(dimension.getHeight() < height) {
 			return false;
 		}
-		return fitRotate2D(box.getWidth(), box.getDepth());
+		return fitRotate2D(dimension.getWidth(), dimension.getDepth());
 	}
 	
 	public int currentSurfaceArea() {

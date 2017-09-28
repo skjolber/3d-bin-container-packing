@@ -346,8 +346,25 @@ public class Packager2DTest {
 		products.add(new Box("74816",100,120,48));
 
 		final Container pack = packager.pack(products);
-
+		assertNotNull(pack);
 
 	}
 	
+	
+	@Test
+	public void noFitFullHeightRotation2D () {
+	   List<Box> containers = new ArrayList<Box>();
+	   containers.add(new Box(100, 10, 20));
+	   Packager packager = new Packager(containers, false);
+
+	   List<Box> products = new ArrayList<Box>();
+
+	   products.add(new Box("J", 10, 10, 10));
+
+	   products.add(new Box("J", 10, 10, 20));
+
+	   Container fits = packager.pack(products);
+	   assertNotNull(fits);
+	}
+
 }
