@@ -237,6 +237,9 @@ public class Box extends Dimension {
 	}
 
 	public boolean fitRotate2D(Dimension box) {
+		if(box.getHeight() > height) {
+			return false;
+		}
 		return fitRotate2D(box.getWidth(), box.getDepth());
 	}
 	

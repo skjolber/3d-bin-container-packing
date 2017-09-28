@@ -70,7 +70,7 @@ public class Packager {
 			while(!containerProducts.isEmpty()) {
 				// choose the box with the largest surface area, that fits
 				// if the same then the one with minimum height
-				Dimension space = holder.getRemainigFreeSpace(containerBox);
+				Dimension space = holder.getRemainigFreeSpace();
 				Box currentBox = null;
 				for(Box box : containerProducts) {
 					
