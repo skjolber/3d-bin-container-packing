@@ -26,7 +26,7 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber</groupId>
     <artifactId>3d-bin-container-packing</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 
@@ -78,7 +78,8 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]
 
 # History
- - [1.0.1]: Add option to toggle 2D and 3D rotation and box placement coordinates, compliments of [NothinRandom]. 
+ - [1.0.2]: Fix for issue #4, minor improvements. 
+ - 1.0.1: Add option to toggle 2D and 3D rotation and box placement coordinates, compliments of [NothinRandom]. 
  - 1.0.0: Initial release.
 
 [1]: 					https://en.wikipedia.org/wiki/Bin_packing_problem
@@ -88,5 +89,5 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Maven]:				http://maven.apache.org/
 [LinkedIn]:				http://lnkd.in/r7PWDz
 [Github page]:			https://skjolber.github.io
-[1.0.1]:				https://github.com/skjolber/3d-bin-container-packing/releases
+[1.0.2]:				https://github.com/skjolber/3d-bin-container-packing/releases
 [NothinRandom]:			https://github.com/NothinRandom
