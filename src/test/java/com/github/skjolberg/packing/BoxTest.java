@@ -6,8 +6,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.github.skjolberg.packing.Box;
-
 public class BoxTest {
 
 	@Test

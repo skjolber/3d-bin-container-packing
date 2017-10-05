@@ -18,7 +18,7 @@ public class Visualizer {
 		StringBuilder b = new StringBuilder();
 		
 		for(Level level : container.getLevels()) {
-			double factor = size / container.getWidth();
+			double factor = (double)size / container.getWidth();
 					
 			IRender render = new Render();
 			IContextBuilder builder = render.newBuilder();
@@ -37,7 +37,9 @@ public class Visualizer {
 					builder.element(new Dot((int)Math.round(placement.getCenterX() * factor * horizontalScaling), (int)Math.round(placement.getCenterY() * factor)));
 				}
 			}
-						
+
+			builder.element(new Rectangle(0, 0, (int)(container.getWidth()  * factor * horizontalScaling), (int)(container.getDepth()  * factor)));
+
 			ICanvas canvas = render.render(builder.build());
 			
 			b.append(canvas.getText());
