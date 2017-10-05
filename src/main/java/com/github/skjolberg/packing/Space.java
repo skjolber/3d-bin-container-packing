@@ -49,24 +49,6 @@ public class Space extends Dimension {
 		this.z = z;
 	}
 	
-	public Space deltaDepth(Dimension dimension) {
-		int d = dimension.getDepth();
-		if(d >= depth) {
-			return null;
-		}
-
-		return new Space(this, width, depth-d, height, x, y+d, z);
-	}
-	
-	public Space deltaWidth(Dimension dimension) {
-		int w = dimension.getWidth();
-		if(w >= width) {
-			return null;
-		}
-
-		return new Space(this, width - w, depth, height, x + w, y, z);
-	}
-	
 	public Space getParent() {
 		return parent;
 	}

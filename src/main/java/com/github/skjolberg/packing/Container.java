@@ -54,24 +54,15 @@ public class Container extends Box {
 		return new Dimension(width, depth, spaceHeight);
 	}
 	
-	public String printLevels() {
-		StringBuffer buffer = new StringBuffer();
-		
-		for(int i = 0; i < levels.size(); i++) {
-			Level level = levels.get(i);
-			buffer.append(i + " " + level.size() + " element / " + level.getHeight() + " height");
-			buffer.append(level);
-			buffer.append("\n");
-		}
-		
-		return buffer.toString();
-	}
-	
 	public ArrayList<Level> getLevels() {
 		return levels;
 	}
 	
 	public Placement get(int level, int placement) {
 		return levels.get(level).get(placement);
+	}
+
+	public void validateCurrentLevel() {
+		levels.get(levels.size() - 1).validate();
 	}
 }
