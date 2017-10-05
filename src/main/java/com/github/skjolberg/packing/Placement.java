@@ -42,4 +42,39 @@ public class Placement {
 		return space.getY() + (box.getDepth() / 2);
 	}
 	
+	public boolean intercets(Placement placement) {
+		return intercetsX(placement) && intercetsY(placement);
+	}
+	
+	public boolean intercetsY(Placement placement) {
+		
+		int startY = space.getY();
+		int endY = startY + box.getDepth() - 1;
+
+		if(startY <= placement.getSpace().getY() && placement.getSpace().getY() <= endY) {
+			return true;
+		}
+		
+		if(startY <= placement.getSpace().getY() + placement.getBox().getDepth() - 1 && placement.getSpace().getY() + placement.getBox().getDepth() - 1 <= endY) {
+			return true;
+		}
+
+		return false;
+	}
+	
+	public boolean intercetsX(Placement placement) {
+		
+		int startX = space.getX();
+		int endX = startX + box.getWidth() - 1;
+
+		if(startX <= placement.getSpace().getX() && placement.getSpace().getX() <= endX) {
+			return true;
+		}
+		
+		if(startX <= placement.getSpace().getX() + placement.getBox().getWidth() - 1 && placement.getSpace().getX() + placement.getBox().getWidth() - 1  <= endX) {
+			return true;
+		}
+		
+		return false;
+	}
 }

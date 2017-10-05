@@ -1,18 +1,15 @@
 package com.github.skjolberg.packing;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
 
-import com.github.skjolberg.packing.Box;
-import com.github.skjolberg.packing.Container;
-import com.github.skjolberg.packing.Dimension;
-import com.github.skjolberg.packing.Packager;
-
-public class Packager3DTest {
+public class Packager3DTest extends AbstractPackagerTest {
 
 	@Test
 	public void testStackingSquaresOnSquare() {

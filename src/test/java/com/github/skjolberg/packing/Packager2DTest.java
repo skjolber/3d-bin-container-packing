@@ -1,28 +1,25 @@
 package com.github.skjolberg.packing;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
 
-import com.github.skjolberg.packing.Box;
-import com.github.skjolberg.packing.Container;
-import com.github.skjolberg.packing.Dimension;
-import com.github.skjolberg.packing.Packager;
-
-public class Packager2DTest {
+public class Packager2DTest extends AbstractPackagerTest {
 
 	@Test
 	public void testStackingSquaresOnSquare() {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(10, 10, 1));
-		Packager packager = new Packager(containers, false);
+		Packager packager = new Packager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -35,6 +32,7 @@ public class Packager2DTest {
 		assertNotNull(fits);
 		assertEquals(fits.getLevels().size(), 1);
 		
+		validate(fits);
 		print(fits);
 	}
 	
@@ -44,7 +42,7 @@ public class Packager2DTest {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(10, 10, 1));
-		Packager packager = new Packager(containers, false);
+		Packager packager = new Packager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -63,7 +61,7 @@ public class Packager2DTest {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(10, 10, 1));
-		Packager packager = new Packager(containers, false);
+		Packager packager = new Packager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -75,6 +73,7 @@ public class Packager2DTest {
 		assertEquals(fits.getLevels().size(), 1);
 		
 		print(fits);
+		validate(fits);
 	}
 	
 	@Test
@@ -82,7 +81,7 @@ public class Packager2DTest {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(10, 10, 1));
-		Packager packager = new Packager(containers, false);
+		Packager packager = new Packager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -94,6 +93,7 @@ public class Packager2DTest {
 		assertEquals(fits.getLevels().size(), 1);
 		
 		print(fits);
+		validate(fits);
 	}
 	
 	@Test
@@ -101,7 +101,7 @@ public class Packager2DTest {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(10, 10, 1));
-		Packager packager = new Packager(containers, false);
+		Packager packager = new Packager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -114,6 +114,7 @@ public class Packager2DTest {
 		assertEquals(fits.getLevels().size(), 1);
 		
 		print(fits);
+		validate(fits);
 	}
 	
 	@Test
@@ -121,7 +122,7 @@ public class Packager2DTest {
 		
 		List<Dimension> containers = new ArrayList<Dimension>();
 		containers.add(new Dimension(10, 10, 3));
-		Packager packager = new Packager(containers, false);
+		Packager packager = new Packager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -136,7 +137,7 @@ public class Packager2DTest {
 		assertEquals(1, fits.getLevels().get(fits.getLevels().size() - 1).getHeight());
 		
 		print(fits);
-
+		validate(fits);
 	}
 	
 	@Test
@@ -158,16 +159,17 @@ public class Packager2DTest {
 		assertThat(fits.get(0, 0).getSpace().getX(), is(0));
 		assertThat(fits.get(0, 0).getSpace().getY(), is(0));
 
-		assertThat(fits.get(0, 1).getSpace().getX(), is(1));
-		assertThat(fits.get(0, 1).getSpace().getY(), is(0));
-
-		assertThat(fits.get(0, 2).getSpace().getX(), is(0));
-		assertThat(fits.get(0, 2).getSpace().getY(), is(1));
+		assertThat(fits.get(0, 1).getSpace().getX(), is(0));
+		assertThat(fits.get(0, 1).getSpace().getY(), is(1));
 
 		assertThat(fits.get(0, 3).getSpace().getX(), is(1));
 		assertThat(fits.get(0, 3).getSpace().getY(), is(1));
+
+		assertThat(fits.get(0, 2).getSpace().getX(), is(1));
+		assertThat(fits.get(0, 2).getSpace().getY(), is(0));
 		
 		print(fits);
+		validate(fits);
 	}
 
 	@Test
@@ -175,7 +177,7 @@ public class Packager2DTest {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(8, 8, 1));
-		Packager packager = new Packager(containers, false);
+		Packager packager = new Packager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -193,14 +195,8 @@ public class Packager2DTest {
 		assertEquals(fits.getLevels().size(), 1);
 		
 		print(fits);
+		validate(fits);
 
-	}
-
-
-	private void print(Container fits) {
-		System.out.println();
-		System.out.println(Visualizer.visualize(fits, fits.getWidth() * 2, 2));
-		System.out.println();
 	}
 
 
@@ -209,7 +205,7 @@ public class Packager2DTest {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(10, 10, 5));
-		Packager packager = new Packager(containers, false);
+		Packager packager = new Packager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -224,7 +220,7 @@ public class Packager2DTest {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(10, 10, 5));
-		Packager packager = new Packager(containers, false);
+		Packager packager = new Packager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -240,7 +236,7 @@ public class Packager2DTest {
 	
 	@Test
 	public void testIssue4() {
-		Packager packager = new Packager(Arrays.asList(new Dimension("Plane", 1335, 285, 247)), false);
+		Packager packager = new Packager(Arrays.asList(new Dimension("Plane", 1335, 285, 247)), false, true);
 		List<Box> products = new ArrayList<Box>();
 		products.add(new Box("72407",20,30,15));
 		products.add(new Box("74809",100,120,52));
@@ -345,17 +341,58 @@ public class Packager2DTest {
 		products.add(new Box("74830_2",40,30,15));
 		products.add(new Box("74816",100,120,48));
 
-		final Container pack = packager.pack(products);
+		Container pack = packager.pack(products);
 		assertNotNull(pack);
 
+		validate(pack);
+		print(pack);
+
 	}
-	
+
+	@Test
+	public void testIssue5() {
+        java.util.List<Box> containers = new ArrayList<Box>();
+        containers.add(new Box("Plane", 1355, 285, 247));
+        Packager packager = new Packager(containers, false, false);
+        List<Box> products = new ArrayList<Box>();
+
+        products.add(new Box("72407",97,193,48));
+        products.add(new Box("74809",97,193,48));
+        products.add(new Box("71535",97,193,48));
+        products.add(new Box("74780",97,110,46));
+        products.add(new Box("74760",97,110,46));
+        products.add(new Box("74757",97,110,46));
+        products.add(new Box("74808",59,56,174));
+        products.add(new Box("73770",59,56,174));
+        products.add(new Box("74844",59,56,174));
+        products.add(new Box("74846",59,56,174));
+        products.add(new Box("73767",59,56,174));
+        products.add(new Box("74848",59,56,174));
+        products.add(new Box("74850",59,56,174));
+        products.add(new Box("74852",59,56,174));
+        products.add(new Box("74787",59,56,174));
+        products.add(new Box("74806",59,56,174));
+        products.add(new Box("74781",61,90,220));
+        products.add(new Box("74775",74,93,216));
+        products.add(new Box("74756",61,90,220));
+        products.add(new Box("74797",61,90,220));
+        products.add(new Box("74835",61,90,220));
+        products.add(new Box("74834",74,93,216));
+        
+		Container pack = packager.pack(products);
+		assertNotNull(pack);
+
+		validate(pack);
+		
+		print(pack);
+		validate(pack);
+	}
 	
 	@Test
 	public void noFitFullHeightRotation2D () {
 	   List<Box> containers = new ArrayList<Box>();
 	   containers.add(new Box(100, 10, 20));
-	   Packager packager = new Packager(containers, false);
+	   Packager packager = new Packager(containers, false, true);
 
 	   List<Box> products = new ArrayList<Box>();
 
@@ -365,6 +402,10 @@ public class Packager2DTest {
 
 	   Container fits = packager.pack(products);
 	   assertNotNull(fits);
+	   
+	   validate(fits);
 	}
+	
+	
 
 }

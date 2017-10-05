@@ -124,36 +124,6 @@ public class Box extends Dimension {
 		
 	}
 
-	public boolean fitRotate2DMinimumWidth(int w, int d) {
-
-		if(w >= width && d >= depth && d >= width && w >= depth) {
-			
-			// fits in any rotation
-			if(width > depth) { // use depth as width
-				rotate2D();
-			}
-			
-			return true;
-		} else {
-			return fitRotate2D(w, d);
-		}
-	}
-
-	public boolean fitRotate2DMinimumDepth(int w, int d) {
-
-		if(w >= width && d >= depth && d >= width && w >= depth) {
-			
-			// fits in any rotation
-			if(width < depth) { // use depth as width
-				rotate2D();
-			}
-			
-			return true;
-		} else {
-			return fitRotate2D(w, d);
-		}
-	}
-
 	public boolean fitRotate2D(int w, int d) {
 		
 		if(w >= width && d >= depth) {
@@ -168,6 +138,7 @@ public class Box extends Dimension {
 
 		return false;
 	}
+	
 	
 	/**
 	 * 
@@ -227,14 +198,6 @@ public class Box extends Dimension {
 		
 		return true;
 	}
-	
-	public boolean fitRotate2DMinimumDepth(Dimension box) {
-		return fitRotate2DMinimumDepth(box.getWidth(), box.getDepth());
-	}
-
-	public boolean fitRotate2DMinimumWidth(Dimension box) {
-		return fitRotate2DMinimumWidth(box.getWidth(), box.getDepth());
-	}
 
 	/**
 	 * 
@@ -254,4 +217,5 @@ public class Box extends Dimension {
 	public int currentSurfaceArea() {
 		return width * depth;
 	}
+	
 }

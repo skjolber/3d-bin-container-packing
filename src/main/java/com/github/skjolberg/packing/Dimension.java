@@ -17,10 +17,6 @@ public class Dimension {
 	public static String encode(int width, int depth, int height) {
 		return width + "x" + depth + "x" + height;
 	}
-	
-	public static String encode(int width, int depth, int height, int grams) {
-		return width + "x" + depth + "x" + height + "x" + grams;
-	}
 
 	public static Dimension newInstance(int width, int depth, int height) {
 		return new Dimension(width, depth, height);
@@ -203,10 +199,5 @@ public class Dimension {
 	public String getName() {
 		return name;
 	}
-	
-	public String encode(int grams) {
-		return encode(width, depth, height, grams);
-	}
-
 	
 }
