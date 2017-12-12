@@ -9,6 +9,8 @@ import java.util.ArrayList;
 
 public class Level extends ArrayList<Placement>{
 	
+	private static final long serialVersionUID = 1L;
+
 	public int getHeight() {
 		int height = 0;
 		

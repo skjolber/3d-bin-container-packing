@@ -65,4 +65,34 @@ public class Container extends Box {
 	public void validateCurrentLevel() {
 		levels.get(levels.size() - 1).validate();
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((levels == null) ? 0 : levels.hashCode());
+		result = prime * result + stackHeight;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Container other = (Container) obj;
+		if (levels == null) {
+			if (other.levels != null)
+				return false;
+		} else if (!levels.equals(other.levels))
+			return false;
+		if (stackHeight != other.stackHeight)
+			return false;
+		return true;
+	}
+	
+	
 }

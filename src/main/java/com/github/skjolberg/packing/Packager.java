@@ -41,27 +41,16 @@ public class Packager {
 	
 	public Container pack(List<Box> boxes) {
 		
-		int volume = 0;
+		long volume = 0;
 		for(Box box : boxes) {
 			volume += box.getVolume();
 		}
 		
 		boxes:
 		for(Dimension containerBox : containers) {
-			if(containerBox.getVolume() < volume) {
+			if(containerBox.getVolume() < volume || !canHold(containerBox, boxes)) {
+				// discard this container
 				continue;
-			}
-
-			for(Box box : boxes) {
-				if(rotate3D) {
-					if(!containerBox.canHold3D(box)) {
-						continue boxes;
-					}
-				} else {
-					if(!containerBox.canHold2D(box)) {
-						continue boxes;
-					}
-				}
 			}
 			
 			List<Box> containerProducts = new ArrayList<Box>(boxes);
@@ -136,7 +125,7 @@ public class Packager {
 							);
 				
 				holder.addLevel();
-				containerProducts.remove(currentBox);
+				removeIdentical(containerProducts, currentBox);
 
 				fit2D(containerProducts, holder, currentBox, levelSpace);
 			}
@@ -145,6 +134,36 @@ public class Packager {
 		}
 		
 		return null;
+	}
+
+	private boolean canHold(Dimension containerBox, List<Box> boxes) {
+		for(Box box : boxes) {
+			if(rotate3D) {
+				if(!containerBox.canHold3D(box)) {
+					return false;
+				}
+			} else {
+				if(!containerBox.canHold2D(box)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Remove from list, more explicit implementation than {@linkplain List#remove} with no equals.
+	 */
+	
+	private void removeIdentical(List<Box> containerProducts, Box currentBox) {
+		for(int i = 0; i < containerProducts.size(); i++) {
+			if(containerProducts.get(i) == currentBox) {
+				containerProducts.remove(i);
+				
+				return;
+			}
+		}
+		throw new IllegalArgumentException();
 	}
 	
 	protected void fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace) {
@@ -185,7 +204,7 @@ public class Packager {
 		
 		// holder.validateCurrentLevel(); // uncomment for debugging
 		
-		containerProducts.remove(nextPlacement.getBox());
+		removeIdentical(containerProducts, nextPlacement.getBox());
 
 		// attempt to fit in the remaining (usually smaller) space first
 		
@@ -194,7 +213,7 @@ public class Packager {
 		if(!remainder.isEmpty()) {
 			Box box = bestVolume(containerProducts, remainder);
 			if(box != null) {
-				containerProducts.remove(box);
+				removeIdentical(containerProducts, box);
 				
 				fit2D(containerProducts, holder, box, remainder);
 			}
@@ -202,6 +221,8 @@ public class Packager {
 
 		// fit the next box in the selected free space
 		fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace());
+		
+		// TODO use free spaces between box and level, if any
 	}
 
 	protected Space[] getFreespaces(Space freespace, Box used) {
@@ -317,12 +338,14 @@ public class Packager {
 				if(box.canFitInside3D(space)) {
 					if(bestBox == null) {
 						bestBox = box;
+						
+						bestBox.fitRotate3DSmallestFootprint(space);
 					} else if(bestBox.getVolume() < box.getVolume()) {
 						bestBox = box;
-					} else if(bestBox.getVolume() == box.getVolume()) {
-						// determine lowest fit
+						
 						bestBox.fitRotate3DSmallestFootprint(space);
-	
+					} else if(bestBox.getVolume() == box.getVolume()) {
+						// determine lowest fit	
 						box.fitRotate3DSmallestFootprint(space);
 						
 						if(box.getFootprint() < bestBox.getFootprint()) {
@@ -360,13 +383,15 @@ public class Packager {
 						if(bestBox == null) {
 							bestBox = box;
 							bestSpace = space;
+							
+							bestBox.fitRotate3DSmallestFootprint(bestSpace);
 						} else if(bestBox.getVolume() < box.getVolume()) {
 							bestBox = box;
 							bestSpace = space;
+							
+							bestBox.fitRotate3DSmallestFootprint(bestSpace);
 						} else if(bestBox.getVolume() == box.getVolume()) {
 							// determine lowest fit
-							bestBox.fitRotate3DSmallestFootprint(bestSpace);
-		
 							box.fitRotate3DSmallestFootprint(space);
 							
 							if(box.getFootprint() < bestBox.getFootprint()) {
