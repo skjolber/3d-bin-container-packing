@@ -36,7 +36,7 @@ public class Dimension {
 		this.width = w;
 		this.height = h;
 
-		this.volume = depth * width * height;
+		this.volume = ((long)depth) * ((long)width) * ((long)height);
 	}	
 	
 	public Dimension(int w, int d, int h) {
