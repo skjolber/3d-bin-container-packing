@@ -205,5 +205,5 @@ public class Packager3DTest extends AbstractPackagerTest {
 		Container fits2 = packager.pack(products1);
 		assertNull(fits2);
 	}
-	
+
 }

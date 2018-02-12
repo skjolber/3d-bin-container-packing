@@ -94,5 +94,8 @@ public class Container extends Box {
 		return true;
 	}
 	
-	
+	public void clear() {
+		levels.clear();
+		stackHeight = 0;
+	}
 }

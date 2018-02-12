@@ -22,15 +22,15 @@ public class Box extends Dimension {
 	 */
 
 	public Box rotate3D() {
-		int depth = this.depth;
+		int height = this.height;
 		
-		this.depth = height;
 		this.height = width;
 		this.width = depth;
+		this.depth = height;
 
 		return this;
 	}
-
+	
 	@Override
 	public String toString() {
 		return "Box [name=" + name + ", width=" + width + ", depth=" + depth + ", height=" + height + ", volume="
@@ -217,7 +217,5 @@ public class Box extends Dimension {
 	public int currentSurfaceArea() {
 		return width * depth;
 	}
-	
-	
-	
+
 }

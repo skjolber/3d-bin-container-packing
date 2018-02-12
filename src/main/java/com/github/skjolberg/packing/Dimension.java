@@ -131,22 +131,51 @@ public class Dimension {
 		this.width = depth;
 	}
 	
+	public void rotate2D3D() {
+		//rotate2D();
+		// width -> depth
+		// depth -> width
+		
+		//rotate3D();
+		// height = width;
+		// width = depth;
+		// depth = height;
+
+		// so
+		// height -> width -> depth;
+		// width -> depth -> width;
+		// depth -> height;
+		
+		int depth = this.depth;
+		
+		this.depth = height;
+		height = depth;
+	}	
+	
 	public int getFootprint() {
 		return width * depth;
 	}
 	
+	public boolean isSquare2D() {
+		return width == depth;
+	}
+	
+	public boolean isSquare3D() {
+		return width == depth && width == height;
+	}
+	
 	/**
-	 * Check whether this object can fit within a dimension (without rotation).
+	 * Check whether this object fits within a dimension (without rotation).
 	 * 
 	 * @param dimension the dimensions to fit within
 	 * @return true if this can fit within the argument space 
 	 */
 	
-	public boolean fitsInside(Dimension dimension) {
-		return fitsInside(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
+	public boolean fitsInside3D(Dimension dimension) {
+		return fitsInside3D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}
 
-	public boolean fitsInside(int w, int d, int h) {
+	public boolean fitsInside3D(int w, int d, int h) {
 		
 		if(w >= width && h >= height && d >= depth) {
 			return true;
@@ -154,6 +183,8 @@ public class Dimension {
 		
 		return false;
 	}
+	
+
 
 	/**
 	 * Check whether this object can fit within a dimension, with 3D rotation.
