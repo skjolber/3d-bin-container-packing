@@ -26,7 +26,7 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber</groupId>
     <artifactId>3d-bin-container-packing</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -35,22 +35,26 @@ Example dependency config:
 ### Initialization
 Obtain a `Packager` instance:
 
-    // initialization
-    List<Dimension> containers = new ArrayList<Dimension>();
-    containers.add(Dimension.newInstance(10, 10, 3)); // your container dimensions here
-    Packager packager = new Packager(containers);
+```java
+// initialization
+List<Dimension> containers = new ArrayList<Dimension>();
+containers.add(Dimension.newInstance(10, 10, 3)); // your container dimensions here
+Packager packager = new LargestAreaFitFirstPackager(containers);
+```
 
 The `packager` instance is thread-safe.
 ### Packing
 Then compose your item list and perform packing:
 
-	List<Box> products = new ArrayList<Box>();
-	products.add(new Box("Foot", 6, 10, 2));
-	products.add(new Box("Leg", 4, 10, 1));
-	products.add(new Box("Arm", 4, 10, 2));
+```java
+List<Box> products = new ArrayList<Box>();
+products.add(new Box("Foot", 6, 10, 2));
+products.add(new Box("Leg", 4, 10, 1));
+products.add(new Box("Arm", 4, 10, 2));
 	
-    // match to container
-	Container match = packager.pack(products);
+// match to container
+Container match = packager.pack(products);
+```
 
 The resulting `match` variable returning the resulting packaging details or null if no match. 
 
@@ -66,8 +70,29 @@ The units of measure is out-of-scope, be they cm, mm or inches.
 ### Rotation
 By adding an additional argument to the constructor, 2D or 3D rotation of boxes can be toggled:
 
-	boolean rotate3d = ...;
-    Packager packager = new Packager(containers, rotate3d);
+```java
+boolean rotate3d = ...;
+Packager packager = new LargestAreaFitFirstPackager(containers, rotate3d);
+```
+
+### Deadline
+For real-time applications, do packing with deadline
+
+```
+// limit search
+long deadline = System.currentTimeMillis() + 5000;
+
+Container match = packager.pack(products, deadline);
+```
+
+### Brute-force packager
+For a low number of packages (like <= 5) the brute force packager might be a good fit. 
+
+```java
+Packager packager = new BruteForcePackager(containers);
+```
+
+Using a deadline is recommended whenever brute-forcing in a real-time application.
 
 # Contact
 If you have any questions or comments, please email me at thomas.skjolberg@gmail.com.
@@ -78,7 +103,8 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]
 
 # History
- - [1.0.3]: Fix for issue #5, minor cleanup. 
+ - [1.0.4]: Add deadline and brute force packager. 
+ - 1.0.3: Fix for issue #5, minor cleanup. 
  - 1.0.2: Fix for issue #4, minor improvements. 
  - 1.0.1: Add option to toggle 2D and 3D rotation and box placement coordinates, compliments of [NothinRandom]. 
  - 1.0.0: Initial release.
@@ -90,5 +116,5 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Maven]:				http://maven.apache.org/
 [LinkedIn]:				http://lnkd.in/r7PWDz
 [Github page]:			https://skjolber.github.io
-[1.0.3]:				https://github.com/skjolber/3d-bin-container-packing/releases
+[1.0.4]:				https://github.com/skjolber/3d-bin-container-packing/releases
 [NothinRandom]:			https://github.com/NothinRandom

@@ -98,4 +98,12 @@ public class Container extends Box {
 		levels.clear();
 		stackHeight = 0;
 	}
+	
+	public int getBoxCount() {
+		int count = 0;
+		for(Level level : levels) {
+			count += level.size();
+		}
+		return count;
+	}
 }

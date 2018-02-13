@@ -1,6 +1,5 @@
 package com.github.skjolberg.packing;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -9,12 +8,11 @@ import java.util.List;
  * Thread-safe implementation.
  */
 
-public class Packager {
+public abstract class Packager {
 
 	protected final Dimension[] containers;
 	
 	protected final boolean rotate3D; // if false, then 2d
-	protected final boolean footprintFirst;
 	
 	/**
 	 * Constructor
@@ -22,13 +20,12 @@ public class Packager {
 	 * @param containers Dimensions of supported containers
 	 */
 	public Packager(List<? extends Dimension> containers) {
-		this(containers, true, true);
+		this(containers, true);
 	}
 
-	public Packager(List<? extends Dimension> containers, boolean rotate3D, boolean footprintFirst) {
+	public Packager(List<? extends Dimension> containers, boolean rotate3D) {
 		this.containers = containers.toArray(new Dimension[containers.size()]);
 		this.rotate3D = rotate3D;
-		this.footprintFirst = footprintFirst;
 	}
 	
 	/**
@@ -48,10 +45,11 @@ public class Packager {
 	 * Return a container which holds all the boxes in the argument
 	 * 
 	 * @param boxes list of boxes to fit in a container
-	 * @return null if no match
+	 * @param deadline the system time in millis at which the search should be aborted
+	 * @return null if no match, or deadline reached
 	 */
 	
-	public Container pack(List<Box> boxes, long timeout) {
+	public Container pack(List<Box> boxes, long deadline) {
 		
 		long volume = 0;
 		for(Box box : boxes) {
@@ -59,7 +57,7 @@ public class Packager {
 		}
 		
 		for(Dimension containerBox : containers) {
-			if(System.currentTimeMillis() > timeout) {
+			if(System.currentTimeMillis() > deadline) {
 				break;
 			}
 			
@@ -68,7 +66,7 @@ public class Packager {
 				continue;
 			}
 
-			Container result = pack(boxes, containerBox, timeout);
+			Container result = pack(boxes, containerBox, deadline);
 			if(result != null) {
 				return result;
 			}
@@ -76,91 +74,6 @@ public class Packager {
 		
 		return null;
 	}	
-	
-	protected Container pack(List<Box> boxes, Dimension containerBox, long timeout) {
-		List<Box> containerProducts = new ArrayList<Box>(boxes);
-		
-		Container holder = new Container(containerBox);
-		
-		while(!containerProducts.isEmpty()) {
-			if(System.currentTimeMillis() > timeout) {
-				break;
-			}
-
-			// choose the box with the largest surface area, that fits
-			// if the same then the one with minimum height
-			Dimension space = holder.getRemainigFreeSpace();
-			Box currentBox = null;
-			for(Box box : containerProducts) {
-				
-				boolean fits;
-				if(rotate3D) {
-					fits = box.rotateLargestFootprint3D(space);
-				} else {
-					fits = box.fitRotate2D(space);
-				}
-				if(fits) {
-					if(currentBox == null) {
-						currentBox = box;
-					} else {
-						if(footprintFirst) {
-							if(currentBox.getFootprint() < box.getFootprint()) {
-								currentBox = box;
-							} else if(currentBox.getFootprint() == box.getFootprint() && currentBox.getHeight() < box.getHeight()) {
-								currentBox = box;
-							}
-						} else {
-							if(currentBox.getHeight() < box.getHeight()) {
-								currentBox = box;
-							} else if(currentBox.getHeight() == box.getHeight() && currentBox.getFootprint() < box.getFootprint()) {
-								currentBox = box;
-							}
-						}							
-					}
-				} else {
-					// no fit in the current container within the remaining space
-					// try the next container
-
-					return null;
-				}
-			}
-
-			if(currentBox.getHeight() < space.getHeight()) {
-				// see whether we can get a fit for full height
-				Box idealBox = null;
-				for(Box box : containerProducts) {
-					if(box.getHeight() == space.getHeight()) {
-						if(idealBox == null) {
-							idealBox = box;
-						} else if(idealBox.getFootprint() < box.getFootprint()) {
-							idealBox = box;
-						}
-					}
-				}
-				if(idealBox != null) {
-					currentBox = idealBox;
-				}
-			}				
-			
-			// current box should have the optimal orientation already
-			// create a space which holds the full level
-			Space levelSpace = new Space(
-						containerBox.getWidth(), 
-						containerBox.getDepth(), 
-						currentBox.getHeight(), 
-						0, 
-						0, 
-						holder.getStackHeight()
-						);
-			
-			holder.addLevel();
-			removeIdentical(containerProducts, currentBox);
-
-			fit2D(containerProducts, holder, currentBox, levelSpace, timeout);
-		}
-		
-		return holder;
-	}
 
 	protected boolean canHold(Dimension containerBox, List<Box> boxes) {
 		for(Box box : boxes) {
@@ -176,84 +89,8 @@ public class Packager {
 		}
 		return true;
 	}
-
-	/**
-	 * Remove from list, more explicit implementation than {@linkplain List#remove} with no equals.
-	 */
 	
-	protected void removeIdentical(List<Box> containerProducts, Box currentBox) {
-		for(int i = 0; i < containerProducts.size(); i++) {
-			if(containerProducts.get(i) == currentBox) {
-				containerProducts.remove(i);
-				
-				return;
-			}
-		}
-		throw new IllegalArgumentException();
-	}
-	
-	protected void fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace, long timeout) {
-
-		if(rotate3D) {
-			// minimize footprint
-			usedSpace.fitRotate3DSmallestFootprint(freeSpace);
-		}
-
-		// add used space box now, but possibly rotate later - this depends on the actual remaining free space selected further down
-		// there is up to possible 4 free spaces, 2 in which the used space box is rotated
-		holder.add(new Placement(freeSpace, usedSpace));
-
-		if(containerProducts.isEmpty()) {
-			// no additional boxes
-			// just make sure the used space fits in the free space
-			usedSpace.fitRotate2D(freeSpace);
-			
-			return;
-		}
-		
-		if(System.currentTimeMillis() > timeout) {
-			return;
-		}
-		
-		Space[] spaces = getFreespaces(freeSpace, usedSpace, true);
-
-		Placement nextPlacement = bestVolumePlacement(containerProducts, spaces);
-		if(nextPlacement == null) {
-			// no additional boxes
-			// just make sure the used space fits in the free space
-			usedSpace.fitRotate2D(freeSpace);
-			
-			return;
-		}
-		
-		// check whether the selected free space requires the used space box to be rotated
-		if(nextPlacement.getSpace() == spaces[2] || nextPlacement.getSpace() == spaces[3]) {
-			// the desired space implies that we rotate the used space box
-			usedSpace.rotate2D();
-		}
-		
-		// holder.validateCurrentLevel(); // uncomment for debugging
-		
-		removeIdentical(containerProducts, nextPlacement.getBox());
-
-		// attempt to fit in the remaining (usually smaller) space first
-		
-		// stack in the 'sibling' space - the space left over between the used box and the selected free space
-		Space remainder = nextPlacement.getSpace().getRemainder();
-		if(!remainder.isEmpty()) {
-			Box box = bestVolume(containerProducts, remainder);
-			if(box != null) {
-				removeIdentical(containerProducts, box);
-				
-				fit2D(containerProducts, holder, box, remainder, timeout);
-			}
-		}
-
-		// fit the next box in the selected free space
-		fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), timeout);
-		
-		// TODO use free spaces between box and level, if any
-	}
+	protected abstract Container pack(List<Box> boxes, Dimension containerBox, long deadline);
 
 	protected Space[] getFreespaces(Space freespace, Box used, boolean rotate2D) {
 
@@ -360,102 +197,5 @@ public class Packager {
 		}
 		return freeSpaces;
 	}
-
-	protected Box bestVolume(List<Box> containerProducts, Space space) {
-		
-		Box bestBox = null;
-		for(Box box : containerProducts) {
-			
-			if(rotate3D) {
-				if(box.canFitInside3D(space)) {
-					if(bestBox == null) {
-						bestBox = box;
-						
-						bestBox.fitRotate3DSmallestFootprint(space);
-					} else if(bestBox.getVolume() < box.getVolume()) {
-						bestBox = box;
-						
-						bestBox.fitRotate3DSmallestFootprint(space);
-					} else if(bestBox.getVolume() == box.getVolume()) {
-						// determine lowest fit	
-						box.fitRotate3DSmallestFootprint(space);
-						
-						if(box.getFootprint() < bestBox.getFootprint()) {
-							bestBox = box;
-						}
-					}
-				}
-			} else {
-				if(box.canFitInside2D(space)) {
-					if(bestBox == null) {
-						bestBox = box;
-					} else if(bestBox.getVolume() < box.getVolume()) {
-						bestBox = box;
-					} else if(bestBox.getVolume() < box.getVolume()) {
-						// TODO use the aspect ratio in some meaningful way
-					}
-				}
-			}
-		}
-		return bestBox;
-	}
-	
-	protected Placement bestVolumePlacement(List<Box> containerProducts, Space[] spaces) {
-		
-		Box bestBox = null;
-		Space bestSpace = null;
-		for(Space space : spaces) {
-			if(space == null) {
-				continue;
-			}
-			for(Box box : containerProducts) {
-				
-				if(rotate3D) {
-					if(box.canFitInside3D(space)) {
-						if(bestBox == null) {
-							bestBox = box;
-							bestSpace = space;
-							
-							bestBox.fitRotate3DSmallestFootprint(bestSpace);
-						} else if(bestBox.getVolume() < box.getVolume()) {
-							bestBox = box;
-							bestSpace = space;
-							
-							bestBox.fitRotate3DSmallestFootprint(bestSpace);
-						} else if(bestBox.getVolume() == box.getVolume()) {
-							// determine lowest fit
-							box.fitRotate3DSmallestFootprint(space);
-							
-							if(box.getFootprint() < bestBox.getFootprint()) {
-								bestBox = box;
-								bestSpace = space;
-							}
-							
-							// TODO if all else is equal, which free space is preferred?
-						}
-					}
-				} else {
-					if(box.canFitInside2D(space)) {
-						if(bestBox == null) {
-							bestBox = box;
-							bestSpace = space;
-						} else if(bestBox.getVolume() < box.getVolume()) {
-							bestBox = box;
-							bestSpace = space;
-						} else if(bestBox.getVolume() < box.getVolume()) {
-							// TODO use the aspect ratio in some meaningful way
-						}
-						
-						// TODO if all else is equal, which free space is preferred?
-					}
-				}
-			}
-		}
-		if(bestBox != null) {
-			return new Placement(bestSpace, bestBox);
-		}
-		return null;
-	}
-
 
 }

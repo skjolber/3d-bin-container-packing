@@ -12,14 +12,14 @@ import java.util.List;
 
 import org.junit.Test;
 
-public class Packager2DTest extends AbstractPackagerTest {
+public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
 	@Test
 	public void testStackingSquaresOnSquare() {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(10, 10, 1));
-		Packager packager = new Packager(containers, false, true);
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -42,7 +42,7 @@ public class Packager2DTest extends AbstractPackagerTest {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(10, 10, 1));
-		Packager packager = new Packager(containers, false, true);
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -61,7 +61,7 @@ public class Packager2DTest extends AbstractPackagerTest {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(10, 10, 1));
-		Packager packager = new Packager(containers, false, true);
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -81,7 +81,7 @@ public class Packager2DTest extends AbstractPackagerTest {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(10, 10, 1));
-		Packager packager = new Packager(containers, false, true);
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -101,7 +101,7 @@ public class Packager2DTest extends AbstractPackagerTest {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(10, 10, 1));
-		Packager packager = new Packager(containers, false, true);
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -122,7 +122,7 @@ public class Packager2DTest extends AbstractPackagerTest {
 		
 		List<Dimension> containers = new ArrayList<Dimension>();
 		containers.add(new Dimension(10, 10, 3));
-		Packager packager = new Packager(containers, false, true);
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -144,7 +144,7 @@ public class Packager2DTest extends AbstractPackagerTest {
 	public void testStackingBinary1() {
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(2, 2, 1));
-		Packager packager = new Packager(containers);
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -177,7 +177,7 @@ public class Packager2DTest extends AbstractPackagerTest {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(8, 8, 1));
-		Packager packager = new Packager(containers, false, true);
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -205,7 +205,7 @@ public class Packager2DTest extends AbstractPackagerTest {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(10, 10, 5));
-		Packager packager = new Packager(containers, false, true);
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -220,7 +220,7 @@ public class Packager2DTest extends AbstractPackagerTest {
 		
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(10, 10, 5));
-		Packager packager = new Packager(containers, false, true);
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true);
 		
 		List<Box> products = new ArrayList<Box>();
 
@@ -236,7 +236,7 @@ public class Packager2DTest extends AbstractPackagerTest {
 	
 	@Test
 	public void testIssue4() {
-		Packager packager = new Packager(Arrays.asList(new Dimension("Plane", 1335, 285, 247)), false, true);
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(Arrays.asList(new Dimension("Plane", 1335, 285, 247)), false, true);
 		List<Box> products = new ArrayList<Box>();
 		products.add(new Box("72407",20,30,15));
 		products.add(new Box("74809",100,120,52));
@@ -353,7 +353,7 @@ public class Packager2DTest extends AbstractPackagerTest {
 	public void testIssue5() {
         java.util.List<Box> containers = new ArrayList<Box>();
         containers.add(new Box("Plane", 1355, 285, 247));
-        Packager packager = new Packager(containers, false, false);
+        LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, false);
         List<Box> products = new ArrayList<Box>();
 
         products.add(new Box("72407",97,193,48));
@@ -392,7 +392,7 @@ public class Packager2DTest extends AbstractPackagerTest {
 	public void noFitFullHeightRotation2D () {
 	   List<Box> containers = new ArrayList<Box>();
 	   containers.add(new Box(100, 10, 20));
-	   Packager packager = new Packager(containers, false, true);
+	   LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true);
 
 	   List<Box> products = new ArrayList<Box>();
 

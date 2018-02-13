@@ -16,8 +16,8 @@ import org.apache.commons.collections4.iterators.PermutationIterator;
 
 public class BruteForcePackager extends Packager {
 
-	public BruteForcePackager(List<? extends Dimension> containers, boolean rotate3d, boolean footprintFirst) {
-		super(containers, rotate3d, footprintFirst);
+	public BruteForcePackager(List<? extends Dimension> containers, boolean rotate3d) {
+		super(containers, rotate3d);
 	}
 
 	public BruteForcePackager(List<? extends Dimension> containers) {
@@ -25,7 +25,7 @@ public class BruteForcePackager extends Packager {
 	}
 
 	@Override
-	protected Container pack(List<Box> boxes, Dimension containerBox, long timeout) {
+	protected Container pack(List<Box> boxes, Dimension containerBox, long deadline) {
 		for(Box box : boxes) {
 			if(rotate3D) {
 				if(!box.canFitInside3D(containerBox)) {
@@ -42,7 +42,7 @@ public class BruteForcePackager extends Packager {
 
 		PermutationIterator<Box> iterator = new PermutationIterator<Box>(boxes);
 		while(iterator.hasNext()) {
-			if(System.currentTimeMillis() > timeout) {
+			if(System.currentTimeMillis() > deadline) {
 				break;
 			}
 
@@ -77,9 +77,6 @@ public class BruteForcePackager extends Packager {
 
 				System.out.println(" " + buffer);
 				 */
-				if(System.currentTimeMillis() > timeout) {
-					break;
-				}
 				fit: {
 					// check sanity of current rotation
 					for(Box box : permutation) {
@@ -93,6 +90,11 @@ public class BruteForcePackager extends Packager {
 					List<Box> containerProducts = new ArrayList<Box>(permutation);
 
 					while(!containerProducts.isEmpty()) {
+						if(System.currentTimeMillis() > deadline) {
+							// fit2d below might have returned due to deadline
+							return null;
+						}
+						
 						Box box = containerProducts.remove(0);
 						
 						Dimension space = holder.getRemainigFreeSpace();
@@ -112,11 +114,10 @@ public class BruteForcePackager extends Packager {
 						
 						holder.addLevel();
 			
-						fit2D(containerProducts, holder, box, levelSpace);
+						fit2D(containerProducts, holder, box, levelSpace, deadline);
 					}
 					
-					//break fit;
-					return holder;			
+					return holder; // uncomment this line to run all combinations
 				}
 			
 				do {
@@ -174,8 +175,7 @@ public class BruteForcePackager extends Packager {
 		return -1;
 	}
 	
-	protected void fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace) {
-
+	protected void fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace, long deadline) {
 		// add used space box now
 		// there is up to possible 2 free spaces
 		holder.add(new Placement(freeSpace, usedSpace));
@@ -183,7 +183,11 @@ public class BruteForcePackager extends Packager {
 		if(containerProducts.isEmpty()) {
 			return;
 		}
-		
+
+		if(System.currentTimeMillis() > deadline) {
+			return;
+		}
+
 		Space[] spaces = getFreespaces(freeSpace, usedSpace, false);
 
 		Placement nextPlacement = firstSpacePlacement(containerProducts.get(0), spaces);
@@ -200,20 +204,21 @@ public class BruteForcePackager extends Packager {
 		// attempt to fit in the remaining (usually smaller) space first
 		
 		// stack in the 'sibling' space - the space left over between the used box and the selected free space
-		Space remainder = nextPlacement.getSpace().getRemainder();
-		if(!remainder.isEmpty()) {
-			
-			Box box = containerProducts.get(0);
-			
-			if(box.fitsInside3D(remainder)) {
-				containerProducts.remove(0);
+		if(!containerProducts.isEmpty()) {
+			Space remainder = nextPlacement.getSpace().getRemainder();
+			if(!remainder.isEmpty()) {
+				Box box = containerProducts.get(0);
 				
-				fit2D(containerProducts, holder, box, remainder);
+				if(box.fitsInside3D(remainder)) {
+					containerProducts.remove(0);
+					
+					fit2D(containerProducts, holder, box, remainder, deadline);
+				}
 			}
 		}
-
+	
 		// fit the next box in the selected free space
-		fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace());
+		fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), deadline);
 	}	
 
 	protected Placement firstSpacePlacement(Box box, Space[] spaces) {
