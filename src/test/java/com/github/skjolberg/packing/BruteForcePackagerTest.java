@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Ignore;
@@ -13,6 +14,31 @@ import org.junit.Test;
 
 public class BruteForcePackagerTest extends AbstractPackagerTest {
 
+	@Test
+	public void testRotator() {
+		BruteForcePackager bruteForcePackager = new BruteForcePackager(Collections.EMPTY_LIST, true);
+
+		int[] rotations = new int[10];
+		
+		int expected = 6;
+		for(int i = 1; i < rotations.length; i++) {
+			expected *= 6;
+		}
+		
+		int counter = 1;
+		do {
+			
+			int rotate = bruteForcePackager.rotate(rotations);
+			if(rotate == -1) {
+				break;
+			}
+			counter++;
+		} while(true);
+		
+		assertEquals(expected, counter);
+		
+	}
+	
 	@Test
 	public void testLargestAreaFitFirstDoesNotWork() {
 		List<Box> containers = new ArrayList<Box>();
@@ -60,7 +86,14 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	@Test
 	@Ignore("Run manually")
 	public void testRunsPerformanceGraphLinearStacking() {
-		long duration = 120;
+		long duration = 60 * 5;
+		
+		// n! permutations
+		// 6 rotations per box
+		// so something like n! * 6^n combinations, each needing to be stacked
+		//
+		// anyways my portable cannot do more than 11 within 5 seconds on a single thread, 
+		// and this is quite a simple scenario
 		
 		System.out.println("Run for " + duration + " seconds");
 		

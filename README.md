@@ -86,7 +86,7 @@ Container match = packager.pack(products, deadline);
 ```
 
 ### Brute-force packager
-For a low number of packages (like <= 5) the brute force packager might be a good fit. 
+For a low number of packages (like < 10) the brute force packager might be a good fit. 
 
 ```java
 Packager packager = new BruteForcePackager(containers);

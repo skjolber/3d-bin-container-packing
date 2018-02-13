@@ -154,7 +154,7 @@ public class BruteForcePackager extends Packager {
 	protected int rotate(int[] rotations) {
 		// next rotation
 		for(int i = 0; i < rotations.length; i++) {
-			if(rotations[i] < (rotate3D ? 6 : 2)) {
+			if(rotations[i] < (rotate3D ? 5 : 1)) { // 6 - 1 and 2 - 1 
 				rotations[i]++;
 				
 				// reset all previous counter to zero
