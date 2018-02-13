@@ -26,19 +26,9 @@ public class BruteForcePackager extends Packager {
 
 	@Override
 	protected Container pack(List<Box> boxes, Dimension containerBox, long deadline) {
-		for(Box box : boxes) {
-			if(rotate3D) {
-				if(!box.canFitInside3D(containerBox)) {
-					return null;
-				}
-			} else {
-				if(!box.canFitInside2D(containerBox)) {
-					return null;
-				}
-			}
-		}
-		
 		Container holder = new Container(containerBox);
+
+		List<Box> containerProducts = new ArrayList<Box>(boxes.size());
 
 		PermutationIterator<Box> iterator = new PermutationIterator<Box>(boxes);
 		while(iterator.hasNext()) {
@@ -84,11 +74,9 @@ public class BruteForcePackager extends Packager {
 							break fit;
 						}
 					}
-		
-					holder.clear();
-					
-					List<Box> containerProducts = new ArrayList<Box>(permutation);
 
+					containerProducts.addAll(permutation);
+					
 					while(!containerProducts.isEmpty()) {
 						if(System.currentTimeMillis() > deadline) {
 							// fit2d below might have returned due to deadline
@@ -100,6 +88,11 @@ public class BruteForcePackager extends Packager {
 						Dimension space = holder.getRemainigFreeSpace();
 	
 						if(!box.fitsInside3D(space)) {
+							
+							// clean up
+							holder.clear();
+							containerProducts.clear();
+
 							break fit;
 						}
 						
@@ -119,7 +112,8 @@ public class BruteForcePackager extends Packager {
 					
 					return holder; // uncomment this line to run all combinations
 				}
-			
+
+				// find the next rotation
 				do {
 					// next rotation
 					int rotateBoxIndex = rotate(rotations);
