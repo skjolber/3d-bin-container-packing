@@ -23,134 +23,167 @@ public class BruteForcePackager extends Packager {
 	public BruteForcePackager(List<? extends Dimension> containers) {
 		super(containers);
 	}
+	
+	
+	public Container pack(List<Box> boxes, long deadline) {
 
-	@Override
-	protected Container pack(List<Box> boxes, Dimension containerBox, long deadline) {
-		Container holder = new Container(containerBox);
+		// instead of placing boxes, work with placements
+		// this very much reduces the number of objects created
+		// performance gain is something like 25% over the box-centric approach
+		
+		// each box will at most have a single placement with a space (and its remainder). 
+		List<Placement> placements = new ArrayList<Placement>(boxes.size());
 
-		List<Box> containerProducts = new ArrayList<Box>(boxes.size());
+		long volume = 0;
+		for(Box box : boxes) {
+			volume += box.getVolume();
+			
+			Space a = new Space();
+			Space b = new Space();
+			a.setRemainder(b);
+			b.setRemainder(a);
+			
+			placements.add(new Placement(a, box));
+		}
+		
+		for(Dimension container : containers) {
+			if(System.currentTimeMillis() > deadline) {
+				break;
+			}
+			
+			if(container.getVolume() < volume || !canHold(container, boxes)) {
+				// discard this container
+				continue;
+			}
 
-		PermutationIterator<Box> iterator = new PermutationIterator<Box>(boxes);
+			Container result = pack(placements, container, deadline);
+			if(result != null) {
+				return result;
+			}
+		}
+		
+		return null;
+	}		
+
+	protected Container pack(List<Placement> placements, Dimension container, long deadline) {
+		
+		// setup reusable objects
+		int[] reset = new int[placements.size()];
+
+		Container holder = new Container(container);
+
+		List<Placement> containerPlacements = new ArrayList<Placement>(placements.size());
+
+		int[] rotations = new int[placements.size()];
+
+		Dimension remainingSpace = container;
+		
+		// iterator over all permutations
+		PermutationIterator<Placement> iterator = new PermutationIterator<Placement>(placements);
 		while(iterator.hasNext()) {
 			if(System.currentTimeMillis() > deadline) {
 				break;
 			}
 
-			List<Box> permutation = iterator.next();
-			
-			/*
-			System.out.println("Permutations");
-			
-			StringBuffer permutationNames = new StringBuffer();
-			for(int k = 0; k < permutation.size(); k++) {
-				permutationNames.append(permutation.get(k).getName());
-				permutationNames.append(" ");
-			}
-			System.out.println(permutationNames);
-*/
-			int[] rotations = new int[permutation.size()];
-			
+			List<Placement> permutation = iterator.next();
+
+			// for each permutation, try all combinations of rotation
 			permutation:
-			while(true) {
-				/*
-				StringBuffer buffer = new StringBuffer();
-				for(int k = 0; k < rotations.length; k++) {
-					buffer.append(rotations[k]);
-					buffer.append(" ");
-				}
-
-				buffer.append(" ");
-				for(Box box : permutation) {
-					buffer.append(box.getWidth() + "x" + box.getDepth() + "x" + box.getHeight());
-					buffer.append(" ");
-				}
-
-				System.out.println(" " + buffer);
-				 */
-				fit: {
-					// check sanity of current rotation
-					for(Box box : permutation) {
-						if(!box.fitsInside3D(containerBox)) {
-							break fit;
+				while(true) {
+					fit: {
+						// check sanity of current rotation
+						for(Placement placement : permutation) {
+							if(!placement.getBox().fitsInside3D(remainingSpace)) {
+								break fit;
+							}
 						}
-					}
-
-					containerProducts.addAll(permutation);
-					
-					while(!containerProducts.isEmpty()) {
-						if(System.currentTimeMillis() > deadline) {
-							// fit2d below might have returned due to deadline
-							return null;
-						}
-						
-						Box box = containerProducts.remove(0);
-						
-						Dimension space = holder.getRemainigFreeSpace();
 	
-						if(!box.fitsInside3D(space)) {
+						containerPlacements.addAll(permutation);
+						
+						while(!containerPlacements.isEmpty()) {
+							if(System.currentTimeMillis() > deadline) {
+								// fit2d below might have returned due to deadline
+								return null;
+							}
 							
-							// clean up
-							holder.clear();
-							containerProducts.clear();
+							Placement placement = containerPlacements.remove(0);
+							
+							if(!placement.getBox().fitsInside3D(remainingSpace)) {
+								
+								// clean up
+								holder.clear();
+								containerPlacements.clear();
+	
+								break fit;
+							}
+							
+							Space levelSpace = placement.getSpace();
+							levelSpace.width = container.getWidth();
+							levelSpace.depth = container.getDepth();
+							levelSpace.height = placement.getBox().getHeight();
+							levelSpace.x = 0;
+							levelSpace.y = 0;
+							levelSpace.z = holder.getStackHeight();
+							
+							levelSpace.setParent(null);
+							levelSpace.getRemainder().setParent(null);
+							
+							holder.addLevel();
 
-							break fit;
+							// update remaining space
+							remainingSpace = holder.getRemainigFreeSpace();
+
+							fit2D(containerPlacements, holder, placement, deadline);
 						}
 						
-						Space levelSpace = new Space(
-									containerBox.getWidth(), 
-									containerBox.getDepth(), 
-									box.getHeight(), 
-									0, 
-									0, 
-									holder.getStackHeight()
-									);
+						return holder; // uncomment this line to run all combinations
+					}
+	
+					// find the next rotation
+					do {
+						// next rotation
+						int index = rotate(rotations);
+						if(index == -1) {
+							// done
+							break permutation;
+						}
 						
-						holder.addLevel();
-			
-						fit2D(containerProducts, holder, box, levelSpace, deadline);
-					}
-					
-					return holder; // uncomment this line to run all combinations
-				}
-
-				// find the next rotation
-				do {
-					// next rotation
-					int rotateBoxIndex = rotate(rotations);
-					if(rotateBoxIndex == -1) {
-						// done
-						break permutation;
-					}
-					
-					Box box = permutation.get(rotateBoxIndex);
-					if(rotations[rotateBoxIndex] % 2 == 0) {
-						if(box.isSquare2D()) {
-							// skip 2d rotation
-							rotations[rotateBoxIndex]++;
-							
-							continue;
-						}
-						box.rotate2D();
-					} else {
-						if(box.isSquare3D()) {
-							// skip 2d and 3d rotations
-							rotations[rotateBoxIndex] = 6; 
-							
-							continue;
-						}
-						if(box.isSquare2D()) {
-							box.rotate3D();
+						Box box = permutation.get(index).getBox();
+						if(rotations[index] % 2 == 0) {
+							if(box.isSquare2D()) {
+								// skip 2d rotation
+								rotations[index]++;
+								
+								continue;
+							}
+							box.rotate2D();
 						} else {
-							box.rotate2D3D();
+							if(box.isSquare3D()) {
+								// skip 2d and 3d rotations
+								rotations[index] = 6; 
+								
+								continue;
+							}
+							if(box.isSquare2D()) {
+								box.rotate3D();
+							} else {
+								box.rotate2D3D();
+							}
 						}
-					}
-					break;
-				} while(true);
-			}
+
+						
+						
+						break;
+					} while(true);
+				}
+			
+			// clean up
+			// reset rotation array
+			System.arraycopy(reset, 0, rotations, 0, rotations.length);
 		}
 		return null;
 	}	
-	
+
 	protected int rotate(int[] rotations) {
 		// next rotation
 		for(int i = 0; i < rotations.length; i++) {
@@ -169,10 +202,10 @@ public class BruteForcePackager extends Packager {
 		return -1;
 	}
 	
-	protected void fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace, long deadline) {
+	protected void fit2D(List<Placement> containerProducts, Container holder, Placement usedSpace, long deadline) {
 		// add used space box now
 		// there is up to possible 2 free spaces
-		holder.add(new Placement(freeSpace, usedSpace));
+		holder.add(usedSpace);
 
 		if(containerProducts.isEmpty()) {
 			return;
@@ -182,14 +215,14 @@ public class BruteForcePackager extends Packager {
 			return;
 		}
 
-		Space[] spaces = getFreespaces(freeSpace, usedSpace, false);
+		Placement nextPlacement = containerProducts.get(0);
 
-		Placement nextPlacement = firstSpacePlacement(containerProducts.get(0), spaces);
-		if(nextPlacement == null) {
+		if(!isFreespace(usedSpace.getSpace(), usedSpace.getBox(), nextPlacement)) {
 			// no additional boxes
 			// just make sure the used space fits in the free space
 			return;
-		}
+		} 
+		// the correct space dimensions is copied into the next placement
 		
 		// holder.validateCurrentLevel(); // uncomment for debugging
 		
@@ -201,29 +234,88 @@ public class BruteForcePackager extends Packager {
 		if(!containerProducts.isEmpty()) {
 			Space remainder = nextPlacement.getSpace().getRemainder();
 			if(!remainder.isEmpty()) {
-				Box box = containerProducts.get(0);
+				Placement placement = containerProducts.get(0);
 				
-				if(box.fitsInside3D(remainder)) {
+				if(placement.getBox().fitsInside3D(remainder)) {
 					containerProducts.remove(0);
 					
-					fit2D(containerProducts, holder, box, remainder, deadline);
+					placement.getSpace().copyFrom(remainder);
+					placement.getSpace().setParent(remainder);
+					placement.getSpace().getRemainder().setParent(remainder);
+					
+					fit2D(containerProducts, holder, placement, deadline);
 				}
 			}
 		}
 	
 		// fit the next box in the selected free space
-		fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), deadline);
+		fit2D(containerProducts, holder, nextPlacement, deadline);
 	}	
 
-	protected Placement firstSpacePlacement(Box box, Space[] spaces) {
-		for(Space space : spaces) {
-			if(space != null) {
-				if(box.fitsInside3D(space)) {
-					return new Placement(space, box);
+	protected boolean isFreespace(Space freespace, Box used, Placement target) {
+
+		// Two free spaces, on each rotation of the used space. 
+		// Height is always the same, used box is assumed within free space height.
+		// First:
+		// ........................  ........................  .............
+		// .                      .  .                      .  .           .
+		// .                      .  .                      .  .           .
+		// .          A           .  .          A           .  .           .
+		// .                      .  .                      .  .           .
+		// .                B     .  .                      .  .    B      .
+		// ............           .  ........................  .           .
+		// .          .           .                            .           .
+		// .          .           .                            .           .
+		// ........................                            .............
+        //
+		// So there is always a 'big' and a 'small' leftover area (the small is not shown).
+		if(freespace.getWidth() >= used.getWidth() && freespace.getDepth() >= used.getDepth()) {
+			
+			// if B is empty, then it is sufficient to work with A and the other way around
+			
+			// B
+			if(freespace.getWidth() > used.getWidth()) {
+				
+				if(target.getBox().fitsInside3D(freespace.getWidth() - used.getWidth(), freespace.getDepth(), freespace.getHeight())) {
+					// we have a winner
+					target.getSpace().copyFrom(
+							freespace.getWidth() - used.getWidth(), freespace.getDepth(), freespace.getHeight(),
+							freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
+							);
+					
+					target.getSpace().getRemainder().copyFrom(
+							used.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
+							freespace.getX(), freespace.getY()+ used.getDepth(), freespace.getZ()
+							);
+					
+					target.getSpace().setParent(freespace);
+					target.getSpace().getRemainder().setParent(freespace);
+					return true;
 				}
+				
+			}
+			
+			// A
+			if(freespace.getDepth() > used.getDepth()) {
+				
+				if(target.getBox().fitsInside3D(freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight())) {
+					target.getSpace().copyFrom(
+							freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
+							freespace.getX(), freespace.getY() + used.depth, freespace.getHeight()
+						);
+					target.getSpace().getRemainder().copyFrom(
+							freespace.getWidth() - used.getWidth(), used.getDepth(), freespace.getHeight(),
+							freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
+						);
+					target.getSpace().setParent(freespace);
+					target.getSpace().getRemainder().setParent(freespace);
+					
+					return true;
+				}
+				
 			}
 		}
-		return null;
-	}	
-	
+		return false;
+	}
+
 }

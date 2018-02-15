@@ -49,31 +49,7 @@ public abstract class Packager {
 	 * @return null if no match, or deadline reached
 	 */
 	
-	public Container pack(List<Box> boxes, long deadline) {
-		
-		long volume = 0;
-		for(Box box : boxes) {
-			volume += box.getVolume();
-		}
-		
-		for(Dimension containerBox : containers) {
-			if(System.currentTimeMillis() > deadline) {
-				break;
-			}
-			
-			if(containerBox.getVolume() < volume || !canHold(containerBox, boxes)) {
-				// discard this container
-				continue;
-			}
-
-			Container result = pack(boxes, containerBox, deadline);
-			if(result != null) {
-				return result;
-			}
-		}
-		
-		return null;
-	}	
+	public abstract Container pack(List<Box> boxes, long deadline);
 
 	protected boolean canHold(Dimension containerBox, List<Box> boxes) {
 		for(Box box : boxes) {
@@ -90,7 +66,6 @@ public abstract class Packager {
 		return true;
 	}
 	
-	protected abstract Container pack(List<Box> boxes, Dimension containerBox, long deadline);
 
 	protected Space[] getFreespaces(Space freespace, Box used, boolean rotate2D) {
 

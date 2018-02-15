@@ -9,6 +9,10 @@ public class Space extends Dimension {
 	protected int y; // depth
 	protected int z; // height
 	
+	public Space() {
+		super();
+	}
+	
 	public Space(Space parent, int w, int d, int h, int x, int y, int z) {
 		this(parent, null, w, d, h, x, y, z);
 	}
@@ -109,6 +113,28 @@ public class Space extends Dimension {
 		if (z != other.z)
 			return false;
 		return true;
+	}
+
+	public void copyFrom(Space space) {
+
+		this.parent = space.parent;
+		this.x = space.x;
+		this.y = space.y;
+		this.z = space.z;
+		
+		this.width = space.width;
+		this.depth = space.depth;
+		this.height = space.height;
+	}
+	
+	public void copyFrom(int w, int d, int h, int x, int y, int z) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		
+		this.width = w;
+		this.depth = d;
+		this.height = h;
 	}
 	
 	

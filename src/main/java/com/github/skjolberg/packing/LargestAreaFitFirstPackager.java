@@ -28,6 +28,33 @@ public class LargestAreaFitFirstPackager extends Packager {
 		this.footprintFirst = footprintFirst;
 	}
 	
+	public Container pack(List<Box> boxes, long deadline) {
+		
+		long volume = 0;
+		for(Box box : boxes) {
+			volume += box.getVolume();
+		}
+		
+		for(Dimension containerBox : containers) {
+			if(System.currentTimeMillis() > deadline) {
+				break;
+			}
+			
+			if(containerBox.getVolume() < volume || !canHold(containerBox, boxes)) {
+				// discard this container
+				continue;
+			}
+
+			Container result = pack(boxes, containerBox, deadline);
+			if(result != null) {
+				return result;
+			}
+		}
+		
+		return null;
+	}	
+
+	
 	/**
 	 * 
 	 * Return a container which holds all the boxes in the argument

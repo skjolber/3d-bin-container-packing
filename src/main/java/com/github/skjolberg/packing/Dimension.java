@@ -25,10 +25,18 @@ public class Dimension {
 	protected int width; // x
 	protected int depth; // y
 	protected int height; // z
-	protected final long volume;
+	protected long volume;
 	
 	protected final String name;
 	
+	public Dimension(String name) {
+		this.name = name;
+	}
+
+	public Dimension() {
+		this(null);
+	}
+
 	public Dimension(String name, int w, int d, int h) {
 		this.name = name;
 		
