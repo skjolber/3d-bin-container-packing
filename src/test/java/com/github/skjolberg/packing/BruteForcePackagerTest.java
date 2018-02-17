@@ -24,7 +24,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		for(int i = 1; i < rotations.length; i++) {
 			expected *= 6;
 		}
-		
+			
 		int counter = 1;
 		do {
 			
@@ -84,7 +84,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	@Ignore("Run manually")
+	//@Ignore("Run manually")
 	public void testRunsPerformanceGraphLinearStacking() {
 		long duration = 60 * 5;
 		

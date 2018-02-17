@@ -126,40 +126,6 @@ public class Dimension {
 		return (w <= width && d <= depth) || (d <= width && w <= depth);
 	}	
 	
-	/**
-	 * 
-	 * Rotate box, i.e. in 2 dimensions, keeping the height constant.
-	 * 
-	 */
-	
-	public void rotate2D() {
-		int depth = this.depth;
-		
-		this.depth = width;
-		this.width = depth;
-	}
-	
-	public void rotate2D3D() {
-		//rotate2D();
-		// width -> depth
-		// depth -> width
-		
-		//rotate3D();
-		// height = width;
-		// width = depth;
-		// depth = height;
-
-		// so
-		// height -> width -> depth;
-		// width -> depth -> width;
-		// depth -> height;
-		
-		int depth = this.depth;
-		
-		this.depth = height;
-		height = depth;
-	}	
-	
 	public int getFootprint() {
 		return width * depth;
 	}

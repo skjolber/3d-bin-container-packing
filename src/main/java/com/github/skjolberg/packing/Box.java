@@ -217,5 +217,47 @@ public class Box extends Dimension {
 	public int currentSurfaceArea() {
 		return width * depth;
 	}
+	
+	protected Box clone() {
+		return new Box(name, width, depth, height);
+	}
+
+	/**
+	 * 
+	 * Rotate box, i.e. in 2 dimensions, keeping the height constant.
+	 * 
+	 */
+	
+	public Box rotate2D() {
+		int depth = this.depth;
+		
+		this.depth = width;
+		this.width = depth;
+		
+		return this;
+	}
+	
+	public Box rotate2D3D() {
+		//rotate2D();
+		// width -> depth
+		// depth -> width
+		
+		//rotate3D();
+		// height = width;
+		// width = depth;
+		// depth = height;
+
+		// so
+		// height -> width -> depth;
+		// width -> depth -> width;
+		// depth -> height;
+		
+		int depth = this.depth;
+		
+		this.depth = height;
+		height = depth;
+		
+		return this;
+	}	
 
 }
