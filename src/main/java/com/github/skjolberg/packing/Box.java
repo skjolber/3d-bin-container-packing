@@ -226,6 +226,7 @@ public class Box extends Dimension {
 	 * 
 	 * Rotate box, i.e. in 2 dimensions, keeping the height constant.
 	 * 
+	 * @return this
 	 */
 	
 	public Box rotate2D() {

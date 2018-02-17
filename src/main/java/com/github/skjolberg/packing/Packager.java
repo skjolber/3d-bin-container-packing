@@ -1,5 +1,6 @@
 package com.github.skjolberg.packing;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,15 +42,55 @@ public abstract class Packager {
 	}
 
 	/**
+	 * Return a list of containers which can potentially hold the boxes.
+	 * 
+	 * @param boxes list of boxes
+	 * @return list of containers
+	 */
+	
+	public List<Dimension> filter(List<Box> boxes) {
+		long volume = 0;
+		for(Box box : boxes) {
+			volume += box.getVolume();
+		}
+		
+		List<Dimension> list = new ArrayList<>();
+		for(Dimension container : containers) {
+			if(container.getVolume() < volume || !canHold(container, boxes)) {
+				// discard this container
+				continue;
+			}
+
+			list.add(container);
+		}
+		
+		return list;
+	}
+	
+	/**
 	 * 
 	 * Return a container which holds all the boxes in the argument
 	 * 
 	 * @param boxes list of boxes to fit in a container
 	 * @param deadline the system time in millis at which the search should be aborted
-	 * @return null if no match, or deadline reached
+	 * @return index of container if match, -1 if not
 	 */
 	
-	public abstract Container pack(List<Box> boxes, long deadline);
+	public Container pack(List<Box> boxes, long deadline) {
+		return pack(boxes, filter(boxes), deadline);
+	}
+
+	/**
+	 * 
+	 * Return a container which holds all the boxes in the argument
+	 * 
+	 * @param boxes list of boxes to fit in a container
+	 * @param containers list of containers
+	 * @param deadline the system time in millis at which the search should be aborted
+	 * @return index of container if match, -1 if not
+	 */
+	
+	public abstract Container pack(List<Box> boxes, List<Dimension> containers, long deadline);
 
 	protected boolean canHold(Dimension containerBox, List<Box> boxes) {
 		for(Box box : boxes) {

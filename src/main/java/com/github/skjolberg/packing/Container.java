@@ -7,8 +7,8 @@ public class Container extends Box {
 	private int stackHeight = 0;
 	private ArrayList<Level> levels = new ArrayList<Level>();
 	
-	public Container(Dimension box) {
-		super(box.getName(), box.getWidth(), box.getDepth(), box.getHeight());
+	public Container(Dimension dimension) {
+		super(dimension.getName(), dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}
 
 	public boolean add(Level element) {

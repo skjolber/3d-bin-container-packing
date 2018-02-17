@@ -3,41 +3,14 @@ package com.github.skjolberg.packing;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
 public class BruteForcePackagerTest extends AbstractPackagerTest {
-
-	@Test
-	public void testRotator() {
-		BruteForcePackager bruteForcePackager = new BruteForcePackager(Collections.<Container>emptyList(), true);
-
-		int[] rotations = new int[10];
-		
-		int expected = 6;
-		for(int i = 1; i < rotations.length; i++) {
-			expected *= 6;
-		}
-			
-		int counter = 1;
-		do {
-			
-			int rotate = bruteForcePackager.rotate(rotations);
-			if(rotate == -1) {
-				break;
-			}
-			counter++;
-		} while(true);
-		
-		assertEquals(expected, counter);
-		
-	}
 	
 	@Test
 	public void testLargestAreaFitFirstDoesNotWork() {
@@ -62,31 +35,16 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	}
 	
 	@Test
-	public void testRunsFor5Seconds() {
+	public void testRunsForLimitedTimeSeconds() {
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(500, 10, 10));
-		Packager bruteForcePackager = new BruteForcePackager(containers, true);
-
-		List<Box> products1 = new ArrayList<Box>();
-		
-		for(int i = 0; i < 100; i++) {
-			Box box = new Box(Integer.toString(i), 5, 10, 10);
-			for(int k = 0; k < i % 2; k++) {
-				box.rotate3D();
-			}
-			products1.add(box);
-		}
-		
-		long time = System.currentTimeMillis();
-		Container fits1 = bruteForcePackager.pack(products1, System.currentTimeMillis() + 5000);
-		assertNull(fits1);
-		assertTrue(System.currentTimeMillis() - time >= 5000);
+		containers.add(new Box(5000, 10, 10));
+		runsLimitedTimeSeconds(new BruteForcePackager(containers, true), 1000);
 	}
 
 	@Test
-	//@Ignore("Run manually")
+	@Ignore("Run manually")
 	public void testRunsPerformanceGraphLinearStacking() {
-		long duration = 60 * 5;
+		long duration = 60 * 10;
 		
 		// n! permutations
 		// 6 rotations per box

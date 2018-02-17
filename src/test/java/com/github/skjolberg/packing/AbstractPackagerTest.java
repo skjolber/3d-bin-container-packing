@@ -1,5 +1,13 @@
 package com.github.skjolberg.packing;
 
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Test;
+
 public abstract class AbstractPackagerTest {
 
 
@@ -14,4 +22,27 @@ public abstract class AbstractPackagerTest {
 		System.out.println(Visualizer.visualize(fits, 100, 2));
 		System.out.println();
 	}
+	
+	public void runsLimitedTimeSeconds(Packager bruteForcePackager, long duration) {
+		List<Box> containers = new ArrayList<Box>();
+		containers.add(new Box(500, 10, 10));
+
+		List<Box> products1 = new ArrayList<Box>();
+		
+		for(int i = 0; i < 1000; i++) {
+			Box box = new Box(Integer.toString(i), 5, 10, 10);
+			for(int k = 0; k < i % 2; k++) {
+				box.rotate3D();
+			}
+			products1.add(box);
+		}
+		
+		long time = System.currentTimeMillis();
+		Container fits1 = bruteForcePackager.pack(products1, System.currentTimeMillis() + duration);
+		assertTrue(System.currentTimeMillis() - time >= duration);
+		assertTrue(System.currentTimeMillis() - time <= duration + 100);
+	}
+	
+	
+
 }

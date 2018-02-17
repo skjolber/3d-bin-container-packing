@@ -15,6 +15,11 @@ public class Placement {
 		this.space = space;
 		this.box = box;
 	}
+	
+	public Placement(Space space) {
+		this.space = space;
+	}
+	
 	public Space getSpace() {
 		return space;
 	}

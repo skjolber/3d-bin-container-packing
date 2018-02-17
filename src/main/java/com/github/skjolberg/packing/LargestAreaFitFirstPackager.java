@@ -28,23 +28,16 @@ public class LargestAreaFitFirstPackager extends Packager {
 		this.footprintFirst = footprintFirst;
 	}
 	
-	public Container pack(List<Box> boxes, long deadline) {
+	@Override
+	public Container pack(List<Box> boxes, List<Dimension> containers, long deadline) {
 		
-		long volume = 0;
-		for(Box box : boxes) {
-			volume += box.getVolume();
-		}
-		
-		for(Dimension containerBox : containers) {
+		for (int i = 0; i < containers.size(); i++) {
 			if(System.currentTimeMillis() > deadline) {
 				break;
 			}
 			
-			if(containerBox.getVolume() < volume || !canHold(containerBox, boxes)) {
-				// discard this container
-				continue;
-			}
-
+			Dimension containerBox = containers.get(i);
+			
 			Container result = pack(boxes, containerBox, deadline);
 			if(result != null) {
 				return result;
@@ -60,14 +53,15 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * Return a container which holds all the boxes in the argument
 	 * 
 	 * @param boxes list of boxes to fit in a container
+	 * @param dimension the container to fit within
 	 * @param deadline the system time in millis at which the search should be aborted
 	 * @return null if no match, or deadline reached
 	 */
 	
-	protected Container pack(List<Box> boxes, Dimension containerBox, long deadline) {
+	protected Container pack(List<Box> boxes, Dimension dimension, long deadline) {
 		List<Box> containerProducts = new ArrayList<Box>(boxes);
 		
-		Container holder = new Container(containerBox);
+		Container holder = new Container(dimension);
 		
 		while(!containerProducts.isEmpty()) {
 			if(System.currentTimeMillis() > deadline) {
@@ -134,8 +128,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 			// current box should have the optimal orientation already
 			// create a space which holds the full level
 			Space levelSpace = new Space(
-						containerBox.getWidth(), 
-						containerBox.getDepth(), 
+						dimension.getWidth(), 
+						dimension.getDepth(), 
 						currentBox.getHeight(), 
 						0, 
 						0, 

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
@@ -406,6 +407,13 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 	   validate(fits);
 	}
 	
+	@Test
+	@Ignore
+	public void testRunsForLimitedTimeSeconds() {
+		List<Box> containers = new ArrayList<Box>();
+		containers.add(new Box(500, 10, 10));
+		runsLimitedTimeSeconds(new LargestAreaFitFirstPackager(containers, true, true), 5000);
+	}
 	
 
 }

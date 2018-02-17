@@ -8,6 +8,12 @@
 	<url>https://github.com/skjolber/3d-bin-container-packing</url>
 	
 	<properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.7</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        
 		<hamcrest.version>1.3</hamcrest.version>
 		<junit.version>4.12</junit.version>
 	</properties>
@@ -44,12 +50,6 @@
 	</developers>
 
 	<dependencies>
-		<dependency>
-		    <groupId>org.apache.commons</groupId>
-		    <artifactId>commons-collections4</artifactId>
-		    <version>4.1</version>
-		</dependency>
-	
 		<!-- test -->
 		<dependency>
 			<groupId>junit</groupId>

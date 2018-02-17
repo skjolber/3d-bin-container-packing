@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
@@ -204,6 +205,58 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		products1.add(new Box("04", 38, 10, 10));
 		Container fits2 = packager.pack(products1);
 		assertNull(fits2);
+	}
+	
+	@Test
+	@Ignore
+	public void testRunsForLimitedTimeSeconds() {
+		List<Box> containers = new ArrayList<Box>();
+		containers.add(new Box(500, 10, 10));
+		runsLimitedTimeSeconds(new LargestAreaFitFirstPackager(containers), 5000);
+	}
+
+	@Test
+	@Ignore("Run manually")
+	public void testRunsPerformanceGraphLinearStacking() {
+		long duration = 60 * 10;
+		
+		// n! permutations
+		// 6 rotations per box
+		// so something like n! * 6^n combinations, each needing to be stacked
+		//
+		// anyways my laptop cannot do more than 11 within 5 seconds on a single thread, 
+		// and this is quite a simple scenario
+		
+		System.out.println("Run for " + duration + " seconds");
+		
+		long deadline = System.currentTimeMillis() + duration * 1000;
+		int n = 1;
+		while(deadline > System.currentTimeMillis()) {
+			List<Box> containers = new ArrayList<Box>();
+			containers.add(new Box(5 * n, 10, 10));
+			Packager bruteForcePackager = new LargestAreaFitFirstPackager(containers);
+			
+			List<Box> products1 = new ArrayList<Box>();
+
+			for(int i = 0; i < n; i++) {
+				Box box = new Box(Integer.toString(i), 5, 10, 10);
+				for(int k = 0; k < i % 2; k++) {
+					box.rotate3D();
+				}
+				products1.add(box);
+			}
+
+			long time = System.currentTimeMillis();
+			Container container = bruteForcePackager.pack(products1, deadline);
+			if(container != null) {
+				System.out.println(n + " in " + (System.currentTimeMillis() - time));
+			} else {
+				System.out.println(n + " discarded");
+			}
+			
+			n++;
+		}
+		
 	}
 
 }
