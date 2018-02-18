@@ -5,17 +5,33 @@ import java.util.List;
 
 /**
  * 
- * Rotation and permutations built into the same class. Minimizes the number of rotations.
- * <br><br>
- * The maximum number of combinations is n! * 6^n, however after accounting for bounds and 
- * sides with equal lengths the number can be a lot lower (and this number can 
- * be obtained before starting the calculation).
+ * Rotation and permutations built into the same class. Minimizes the number of
+ * rotations. <br>
+ * <br>
+ * The maximum number of combinations is n! * 6^n, however after accounting for
+ * bounds and sides with equal lengths the number can be a lot lower (and this
+ * number can be obtained before starting the calculation). <br>
+ * <br>
+ * Assumes a do-while approach:
  * 
- * @see <a href="https://www.nayuki.io/page/next-lexicographical-permutation-algorithm" target="_top">next-lexicographical-permutation-algorithm</a>
+ * <pre>{@code 
+ * do {
+ * 	do {
+ * 		for (int i = 0; i < n; i++) {
+ * 			Box box = instance.get(i);
+ * 			// .. your code here
+ * 		}
+ * 	} while (instance.nextRotation());
+ * } while (instance.nextPermutation());
+ * 
+ * }</pre>
+ * 
+ * @see <a href=
+ *      "https://www.nayuki.io/page/next-lexicographical-permutation-algorithm"
+ *      target="_top">next-lexicographical-permutation-algorithm</a>
  */
 
 public class PermutationRotationIterator {
-
 
 	public static Box[][] toRotationMatrix(List<Box> list, boolean rotate3D) {
 		Box[][] boxes = new Box[list.size()][];

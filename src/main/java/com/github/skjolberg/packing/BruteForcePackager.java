@@ -5,10 +5,12 @@ import java.util.List;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. 
- * 
- * This attempts a brute force approach, which is very demanding in terms of resources. Only use for scenarios with
- * few boxes.
- * 
+ * <br><br>
+ * This attempts a brute force approach, which is very demanding in terms of resources. 
+ * For use in scenarios with 'few' boxes, where the complexity of a 'few' can be measured 
+ * for a specific set of boxes and containers using 
+ * {@linkplain PermutationRotationIterator#countPermutations()} * {@linkplain PermutationRotationIterator#countRotations()}.
+ * <br><br>
  * Thread-safe implementation.
  */
 

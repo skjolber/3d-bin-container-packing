@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
- * 
+ * <br><br>
  * Thread-safe implementation.
  */
 

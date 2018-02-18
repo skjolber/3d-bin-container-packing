@@ -34,7 +34,7 @@ public class PermutationRotationIteratorTest {
 	}
 	
 	@Test
-	public void testNumberOfRotations() {
+	public void testNumberOfUnconstrainedRotations() {
 		Box container = new Box(3, 3, 3);
 		
 		List<Box> products = new ArrayList<Box>();
@@ -60,7 +60,7 @@ public class PermutationRotationIteratorTest {
 	}
 	
 	@Test
-	public void testNumberOfRotationsSquare2D() {
+	public void testNumberOfRotationsForSquare2D() {
 		Box container = new Box(3, 3, 3);
 		
 		List<Box> products = new ArrayList<Box>();
@@ -73,7 +73,7 @@ public class PermutationRotationIteratorTest {
 	}
 	
 	@Test
-	public void testNumberOfConstrainedRotationsSquare2D() {
+	public void testNumberOfConstrainedRotationsForSquare2D() {
 		Box container = new Box(3, 1, 1);
 		
 		List<Box> products = new ArrayList<Box>();
@@ -86,7 +86,7 @@ public class PermutationRotationIteratorTest {
 	}
 	
 	@Test
-	public void testNumberOfRotationsSquare3D() {
+	public void testNumberOfRotationsForSquare3D() {
 		Box container = new Box(3, 3, 3);
 		
 		List<Box> products = new ArrayList<Box>();
@@ -99,7 +99,7 @@ public class PermutationRotationIteratorTest {
 	}
 	
 	@Test
-	public void testRotations() {
+	public void testRotation() {
 		Box container = new Box(9, 1, 1);
 		
 		List<Box> products = new ArrayList<Box>();
@@ -145,6 +145,6 @@ public class PermutationRotationIteratorTest {
 			count++;
 		} while(rotator.nextPermutation());
 		
-		assertEquals( 5 * 4 * 3 * 2, count);
+		assertEquals( 5 * 4 * 3 * 2 * 1, count);
 	}
 }
