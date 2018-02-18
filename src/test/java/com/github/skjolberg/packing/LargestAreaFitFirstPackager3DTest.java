@@ -32,6 +32,31 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 	
 	@Test
+	public void testStackingSquaresOnSquareMultiLevel() {
+		
+		List<Box> containers = new ArrayList<Box>();
+		containers.add(new Box(10, 10, 2));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
+		
+		List<Box> products = new ArrayList<Box>();
+
+		products.add(new Box("A", 5, 5, 1));
+		products.add(new Box("B", 5, 5, 1));
+		products.add(new Box("C", 5, 5, 1));
+		products.add(new Box("D", 5, 5, 1));
+
+		products.add(new Box("E", 5, 5, 1));
+		products.add(new Box("F", 5, 5, 1));
+		products.add(new Box("G", 5, 5, 1));
+		products.add(new Box("H", 5, 5, 1));
+
+		Container fits = packager.pack(products);
+		assertNotNull(fits);
+		assertEquals(fits.getLevels().size(), 2);
+	}
+
+	
+	@Test
 	public void testStackingRectanglesOnSquare() {
 		
 		List<Box> containers = new ArrayList<Box>();
@@ -208,24 +233,16 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 	
 	@Test
-	@Ignore
 	public void testRunsForLimitedTimeSeconds() {
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(500, 10, 10));
-		runsLimitedTimeSeconds(new LargestAreaFitFirstPackager(containers), 5000);
+		containers.add(new Box(50000, 50000, 50000));
+		runsLimitedTimeSeconds(new LargestAreaFitFirstPackager(containers), 1);
 	}
 
 	@Test
 	@Ignore("Run manually")
 	public void testRunsPerformanceGraphLinearStacking() {
 		long duration = 60 * 10;
-		
-		// n! permutations
-		// 6 rotations per box
-		// so something like n! * 6^n combinations, each needing to be stacked
-		//
-		// anyways my laptop cannot do more than 11 within 5 seconds on a single thread, 
-		// and this is quite a simple scenario
 		
 		System.out.println("Run for " + duration + " seconds");
 		
@@ -249,14 +266,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 			long time = System.currentTimeMillis();
 			Container container = bruteForcePackager.pack(products1, deadline);
 			if(container != null) {
-				System.out.println(n + " in " + (System.currentTimeMillis() - time));
+				System.out.println(n + " discarded in " + (System.currentTimeMillis() - time));
 			} else {
 				System.out.println(n + " discarded");
 			}
 			
 			n++;
 		}
-		
 	}
 
 }

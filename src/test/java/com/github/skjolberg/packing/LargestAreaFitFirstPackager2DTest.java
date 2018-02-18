@@ -411,8 +411,8 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 	@Ignore
 	public void testRunsForLimitedTimeSeconds() {
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(500, 10, 10));
-		runsLimitedTimeSeconds(new LargestAreaFitFirstPackager(containers, true, true), 5000);
+		containers.add(new Box(500, 500, 500));
+		runsLimitedTimeSeconds(new LargestAreaFitFirstPackager(containers, true, true), 20);
 	}
 	
 

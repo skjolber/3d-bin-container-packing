@@ -12,7 +12,7 @@ public class PermutationRotationIteratorTest {
 
 	@Test
 	public void testCount() {
-		for(int i = 1; i <= 10; i++) {
+		for(int i = 1; i <= 8; i++) {
 			Box container = new Box(3 * (i + 1), 1, 1);
 			List<Box> products1 = new ArrayList<Box>();
 			

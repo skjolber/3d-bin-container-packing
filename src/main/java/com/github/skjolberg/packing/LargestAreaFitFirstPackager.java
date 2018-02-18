@@ -63,6 +63,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 		
 		Container holder = new Container(dimension);
 		
+		Dimension freeSpace = dimension;
+		
 		while(!containerProducts.isEmpty()) {
 			if(System.currentTimeMillis() > deadline) {
 				// fit2d below might have returned due to deadline
@@ -72,33 +74,59 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 			// choose the box with the largest surface area, that fits
 			// if the same then the one with minimum height
-			Dimension space = holder.getRemainigFreeSpace();
+			
+			// use a special case for boxes with full height
 			Box currentBox = null;
-			for(Box box : containerProducts) {
+			int currentIndex = -1;
+			
+			boolean fullHeight = false;
+			for (int i = 0; i < containerProducts.size(); i++) {
+				Box box = containerProducts.get(i);
 				
 				boolean fits;
 				if(rotate3D) {
-					fits = box.rotateLargestFootprint3D(space);
+					fits = box.rotateLargestFootprint3D(freeSpace);
 				} else {
-					fits = box.fitRotate2D(space);
+					fits = box.fitRotate2D(freeSpace);
 				}
 				if(fits) {
 					if(currentBox == null) {
 						currentBox = box;
+						currentIndex = i;
+						
+						fullHeight = box.getHeight() == freeSpace.getHeight();
 					} else {
-						if(footprintFirst) {
-							if(currentBox.getFootprint() < box.getFootprint()) {
-								currentBox = box;
-							} else if(currentBox.getFootprint() == box.getFootprint() && currentBox.getHeight() < box.getHeight()) {
-								currentBox = box;
+						if(fullHeight) {
+							if(box.getHeight() == freeSpace.getHeight()) {
+								if(currentBox.getFootprint() < box.getFootprint()) {
+									currentBox = box;
+									currentIndex = i;
+								}
 							}
 						} else {
-							if(currentBox.getHeight() < box.getHeight()) {
+							if(box.getHeight() == freeSpace.getHeight()) {
+								fullHeight = true;
+								
 								currentBox = box;
-							} else if(currentBox.getHeight() == box.getHeight() && currentBox.getFootprint() < box.getFootprint()) {
-								currentBox = box;
-							}
-						}							
+								currentIndex = i;
+							} else if(footprintFirst) {
+								if(currentBox.getFootprint() < box.getFootprint()) {
+									currentBox = box;
+									currentIndex = i;
+								} else if(currentBox.getFootprint() == box.getFootprint() && currentBox.getHeight() < box.getHeight()) {
+									currentBox = box;
+									currentIndex = i;
+								}
+							} else {
+								if(currentBox.getHeight() < box.getHeight()) {
+									currentBox = box;
+									currentIndex = i;
+								} else if(currentBox.getHeight() == box.getHeight() && currentBox.getFootprint() < box.getFootprint()) {
+									currentBox = box;
+									currentIndex = i;
+								}
+							}							
+						}
 					}
 				} else {
 					// no fit in the current container within the remaining space
@@ -107,23 +135,6 @@ public class LargestAreaFitFirstPackager extends Packager {
 					return null;
 				}
 			}
-
-			if(currentBox.getHeight() < space.getHeight()) {
-				// see whether we can get a fit for full height
-				Box idealBox = null;
-				for(Box box : containerProducts) {
-					if(box.getHeight() == space.getHeight()) {
-						if(idealBox == null) {
-							idealBox = box;
-						} else if(idealBox.getFootprint() < box.getFootprint()) {
-							idealBox = box;
-						}
-					}
-				}
-				if(idealBox != null) {
-					currentBox = idealBox;
-				}
-			}				
 			
 			// current box should have the optimal orientation already
 			// create a space which holds the full level
@@ -137,9 +148,11 @@ public class LargestAreaFitFirstPackager extends Packager {
 						);
 			
 			holder.addLevel();
-			removeIdentical(containerProducts, currentBox);
+			containerProducts.remove(currentIndex);
 
 			fit2D(containerProducts, holder, currentBox, levelSpace, deadline);
+			
+			freeSpace = holder.getFreeSpace();
 		}
 		
 		return holder;

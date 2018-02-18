@@ -46,7 +46,7 @@ public class Container extends Box {
 		add(new Level());
 	}
 	
-	public Dimension getRemainigFreeSpace() {
+	public Dimension getFreeSpace() {
 		int spaceHeight = height - getStackHeight();
 		if(spaceHeight < 0) {
 			throw new IllegalArgumentException("Remaining free spacei is " + spaceHeight);

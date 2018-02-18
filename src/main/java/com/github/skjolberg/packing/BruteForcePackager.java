@@ -127,10 +127,10 @@ public class BruteForcePackager extends Packager {
 					index = fit2D(rotator, index, placements, holder, placement, deadline);
 					
 					// update remaining space
-					remainingSpace = holder.getRemainigFreeSpace();
+					remainingSpace = holder.getFreeSpace();
 				}
 
-				return holder;
+				return holder; // holder.clear()
 			} while(rotator.nextRotation());
 		} while(rotator.nextPermutation());
 		

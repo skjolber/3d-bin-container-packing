@@ -31,8 +31,9 @@ Example dependency config:
 ```
 
 # Usage
+The units of measure is out-of-scope, be they cm, mm or inches.
 
-### Initialization
+### Largest Area Fit First (LAFF) packager
 Obtain a `Packager` instance:
 
 ```java
@@ -43,6 +44,7 @@ Packager packager = new LargestAreaFitFirstPackager(containers);
 ```
 
 The `packager` instance is thread-safe.
+
 ### Packing
 Then compose your item list and perform packing:
 
@@ -60,29 +62,12 @@ The resulting `match` variable returning the resulting packaging details or null
 
 The above example would return a match (Foot and Arm would be packaged at the height 0, Leg at height 2).
 
-## Details - Largest Area Fit First (LAFF)
-The implementation is based on [this paper][2], and is not a traditional [Bin packing problem][1] solver.
-
-The box which covers the largest ground area of the container is placed first. Subsequent boxes are stacked in the remaining space in at the same level, the boxes with the greatest volume first. Then level is increased and the process repeated. Boxes are rotated, containers not.
-
-The units of measure is out-of-scope, be they cm, mm or inches.
-
 ### Rotation
 By adding an additional argument to the constructor, 2D or 3D rotation of boxes can be toggled:
 
 ```java
 boolean rotate3d = ...;
 Packager packager = new LargestAreaFitFirstPackager(containers, rotate3d);
-```
-
-### Deadline
-For real-time applications, do packing with deadline
-
-```
-// limit search
-long deadline = System.currentTimeMillis() + 5000;
-
-Container match = packager.pack(products, deadline);
 ```
 
 ### Brute-force packager
@@ -94,8 +79,27 @@ Packager packager = new BruteForcePackager(containers);
 
 Using a deadline is recommended whenever brute-forcing in a real-time application.
 
-The maximum complexity this approach is __n! * 6^n__, however accounting for
-container and box sizes might reduce this bound considerably, and the resulting complexity can be calculated before packaging is attempted.  
+```
+// limit search using deadline
+long deadline = System.currentTimeMillis() + 5000;
+
+Container match = packager.pack(products, deadline);
+```
+
+## Details
+
+### Largest Area Fit First algorithm
+The implementation is based on [this paper][2], and is not a traditional [Bin packing problem][1] solver.
+
+The box which covers the largest ground area of the container is placed first. Boxes which fill the full remaining height take priority. Subsequent boxes are stacked in the remaining space in at the same level, the boxes with the greatest volume first. Then level is increased and the process repeated. Boxes are rotated, containers not.
+
+The algorithm runs reasonably fast, usually in milliseconds.
+###  Brute-force algorithm
+This algorithm places the boxes in the same way as the LAFF algorithm, but has no logic for selecting the best box or rotation; running through all permutations, for each permutation all rotations. 
+
+The maximum complexity this approach is [exponential] at __n! * 6^n__. The algorithm runs for under a second for small number of products (<= 6), to seconds or minutes (<= 8) or hours for larger numbers.
+
+However accounting for container and box sizes might reduce this bound considerably, and the resulting complexity can be calculated using [PermutationRotationIterator](src/main/java/com/github/skjolberg/packing/PermutationRotationIterator.java) before packaging is attempted.
 
 # Contact
 If you have any questions or comments, please email me at thomas.skjolberg@gmail.com.
@@ -120,4 +124,6 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [LinkedIn]:				http://lnkd.in/r7PWDz
 [Github page]:			https://skjolber.github.io
 [1.0.4]:				https://github.com/skjolber/3d-bin-container-packing/releases
-[NothinRandom]:			https://github.com/NothinRandom
+[NothinRandom]:		https://github.com/NothinRandom
+[exponential]:			https://en.wikipedia.org/wiki/Exponential_function
+
