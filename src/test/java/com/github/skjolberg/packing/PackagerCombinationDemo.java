@@ -5,17 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-
 /**
  * Illustrates how the LAFF packager and brute force packager can be used together.
  *
  */
 
-public class PackagerCombinationTest {
+public class PackagerCombinationDemo {
 
-	@Test
-	public void testBindeStrategy() {
+	public static final void main(String[] args) {
 		List<Dimension> containers = new ArrayList<Dimension>();
 		for(int i = 0; i < 10; i++) {
 			containers.add(new Dimension(Integer.toString(i), 5*(i+1), 10, 10));

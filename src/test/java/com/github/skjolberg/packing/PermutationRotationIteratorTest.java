@@ -34,6 +34,71 @@ public class PermutationRotationIteratorTest {
 	}
 	
 	@Test
+	public void testNumberOfRotations() {
+		Box container = new Box(3, 3, 3);
+		
+		List<Box> products = new ArrayList<Box>();
+		
+		products.add(new Box("0", 1, 2, 3));
+
+		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
+
+		assertEquals(6, rotator.countRotations());
+	}
+	
+	@Test
+	public void testNumberOfConstrainedRotations() {
+		Box container = new Box(1, 2, 3);
+		
+		List<Box> products = new ArrayList<Box>();
+		
+		products.add(new Box("0", 1, 2, 3));
+
+		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
+
+		assertEquals(1, rotator.countRotations());
+	}
+	
+	@Test
+	public void testNumberOfRotationsSquare2D() {
+		Box container = new Box(3, 3, 3);
+		
+		List<Box> products = new ArrayList<Box>();
+		
+		products.add(new Box("0", 3, 1, 1));
+
+		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
+
+		assertEquals(3, rotator.countRotations());
+	}
+	
+	@Test
+	public void testNumberOfConstrainedRotationsSquare2D() {
+		Box container = new Box(3, 1, 1);
+		
+		List<Box> products = new ArrayList<Box>();
+		
+		products.add(new Box("0", 3, 1, 1));
+
+		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
+
+		assertEquals(1, rotator.countRotations());
+	}
+	
+	@Test
+	public void testNumberOfRotationsSquare3D() {
+		Box container = new Box(3, 3, 3);
+		
+		List<Box> products = new ArrayList<Box>();
+		
+		products.add(new Box("0", 1, 1, 1));
+
+		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
+
+		assertEquals(1, rotator.countRotations());
+	}
+	
+	@Test
 	public void testRotations() {
 		Box container = new Box(9, 1, 1);
 		
@@ -45,6 +110,8 @@ public class PermutationRotationIteratorTest {
 
 		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
 
+		assertEquals(1, rotator.countRotations());
+		
 		do {
 			// check order unchanged
 			for(int i = 0; i < products.size(); i++) {

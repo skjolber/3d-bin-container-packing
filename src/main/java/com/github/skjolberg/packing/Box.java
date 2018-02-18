@@ -256,7 +256,7 @@ public class Box extends Dimension {
 		int depth = this.depth;
 		
 		this.depth = height;
-		height = depth;
+		this.height = depth;
 		
 		return this;
 	}	

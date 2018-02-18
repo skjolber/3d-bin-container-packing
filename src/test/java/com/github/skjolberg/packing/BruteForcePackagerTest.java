@@ -50,8 +50,8 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		// 6 rotations per box
 		// so something like n! * 6^n combinations, each needing to be stacked
 		//
-		// anyways my laptop cannot do more than 11 within 5 seconds on a single thread, 
-		// and this is quite a simple scenario
+		// anyways my laptop cannot do more than perhaps 10 within 5 seconds 
+		// on a single thread and this is quite a simple scenario
 		
 		System.out.println("Run for " + duration + " seconds");
 		
