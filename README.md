@@ -94,6 +94,9 @@ Packager packager = new BruteForcePackager(containers);
 
 Using a deadline is recommended whenever brute-forcing in a real-time application.
 
+The maximum complexity this approach is __n! * 6^n__, however accounting for
+container and box sizes might reduce this bound considerably, and the resulting complexity can be calculated before packaging is attempted.  
+
 # Contact
 If you have any questions or comments, please email me at thomas.skjolberg@gmail.com.
 
