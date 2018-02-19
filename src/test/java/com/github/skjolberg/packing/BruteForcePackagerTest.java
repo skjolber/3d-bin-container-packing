@@ -197,7 +197,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	public void testRunsForLimitedTimeSeconds() {
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(5000, 10, 10));
-		runsLimitedTimeSeconds(new BruteForcePackager(containers, true), 1);
+		runsLimitedTimeSeconds(new BruteForcePackager(containers, true), 200);
 	}
 
 	@Test

@@ -29,7 +29,7 @@ public abstract class AbstractPackagerTest {
 
 		List<Box> products1 = new ArrayList<Box>();
 		
-		for(int i = 0; i < 100000; i++) {
+		for(int i = 0; i < 10000; i++) {
 			Box box = new Box(Integer.toString(i), 5, 10, 10);
 			for(int k = 0; k < i % 2; k++) {
 				box.rotate3D();
@@ -42,7 +42,7 @@ public abstract class AbstractPackagerTest {
 		assertNull(fits1);
 		
 		assertTrue("Used " + (System.currentTimeMillis() - time), System.currentTimeMillis() - time >= duration);
-		assertTrue("Used " + (System.currentTimeMillis() - time), System.currentTimeMillis() - time <= duration + 100);
+		assertTrue("Used " + (System.currentTimeMillis() - time), System.currentTimeMillis() - time <= duration + 1000);
 	}
 	
 	
