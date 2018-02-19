@@ -71,7 +71,7 @@ Packager packager = new LargestAreaFitFirstPackager(containers, rotate3d);
 ```
 
 ### Brute-force packager
-For a low number of packages (like < 10) the brute force packager might be a good fit. 
+For a low number of packages (like <= 6) the brute force packager might be a good fit. 
 
 ```java
 Packager packager = new BruteForcePackager(containers);
