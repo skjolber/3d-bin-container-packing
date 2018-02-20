@@ -11,9 +11,19 @@ import java.util.List;
 
 public abstract class Packager {
 
+	/**
+	 * Logical packager for wrapping preprocessing / optimizations.
+	 *
+	 */
+	
+	protected interface PackagerImpl {
+		Container fit(List<Box> boxes, Dimension dimension, long deadline);
+	}
+	
 	protected final Dimension[] containers;
 	
 	protected final boolean rotate3D; // if false, then 2d
+	protected final boolean binarySearch;
 	
 	/**
 	 * Constructor
@@ -21,12 +31,13 @@ public abstract class Packager {
 	 * @param containers Dimensions of supported containers
 	 */
 	public Packager(List<? extends Dimension> containers) {
-		this(containers, true);
+		this(containers, true, true);
 	}
 
-	public Packager(List<? extends Dimension> containers, boolean rotate3D) {
+	public Packager(List<? extends Dimension> containers, boolean rotate3D, boolean binarySearch) {
 		this.containers = containers.toArray(new Dimension[containers.size()]);
 		this.rotate3D = rotate3D;
+		this.binarySearch = binarySearch;
 	}
 	
 	/**
@@ -85,12 +96,93 @@ public abstract class Packager {
 	 * Return a container which holds all the boxes in the argument
 	 * 
 	 * @param boxes list of boxes to fit in a container
-	 * @param containers list of containers
+	 * @param dimensions list of containers
 	 * @param deadline the system time in millis at which the search should be aborted
 	 * @return index of container if match, -1 if not
 	 */
 	
-	public abstract Container pack(List<Box> boxes, List<Dimension> containers, long deadline);
+	public Container pack(List<Box> boxes, List<Dimension> dimensions, long deadline) {
+		if(dimensions.isEmpty()) {
+			return null;
+		}
+		
+		PackagerImpl pack = impl(boxes);
+
+		if(!binarySearch || dimensions.size() <= 2) {
+			for (int i = 0; i < dimensions.size(); i++) {
+					
+				if(System.currentTimeMillis() > deadline) {
+					break;
+				}
+				
+				Container result = pack.fit(boxes, dimensions.get(i), deadline);
+				if(result != null) {
+					return result;
+				}
+			}
+		} else {
+			Container[] results = new Container[dimensions.size()];
+			boolean[] checked = new boolean[results.length]; 
+
+			ArrayList<Integer> current = new ArrayList<>();
+			for(int i = 0; i < dimensions.size(); i++) {
+				current.add(i);
+			}
+
+			BinarySearchIterator iterator = new BinarySearchIterator();
+
+			search:
+			do {
+				iterator.reset(current.size() - 1, 0);
+				
+				do {
+					
+					int mid = current.get(iterator.next());
+
+					Container result = pack.fit(boxes, dimensions.get(mid), deadline);
+					
+					checked[mid] = true;
+					if(result != null) {
+						results[mid] = result;
+						
+						iterator.lower();
+					} else {
+						iterator.higher();
+					}
+					if(System.currentTimeMillis() > deadline) {
+						break search;
+					}
+				} while(iterator.hasNext()); 
+				
+		        // halt when has a result, and checked all containers at the lower indexes
+		        for (int i = 0; i < current.size(); i++) {
+		        	Integer integer = current.get(i);
+					if(results[integer] != null) {
+						// remove end items
+						while(current.size() > i) {
+							current.remove(current.size() - 1);
+						}
+						break;
+					}
+					
+					// remove item
+					if(checked[integer]) {
+						current.remove(i);
+						i--;
+					}
+		        }
+	        } while(!current.isEmpty());
+		        
+			for(int i = 0; i < results.length; i++) {
+				if(results[i] != null) {
+					return results[i];
+				}
+			}
+		}
+		return null;
+	}	
+	
+	protected abstract PackagerImpl impl(List<Box> boxes);
 
 	protected boolean canHold(Dimension containerBox, List<Box> boxes) {
 		for(Box box : boxes) {
@@ -213,5 +305,21 @@ public abstract class Packager {
 		}
 		return freeSpaces;
 	}
+
+	public static List<Placement> getPlacements(int size) {
+		// each box will at most have a single placement with a space (and its remainder). 
+		List<Placement> placements = new ArrayList<Placement>(size);
+
+		for(int i = 0; i < size; i++) {
+			Space a = new Space();
+			Space b = new Space();
+			a.setRemainder(b);
+			b.setRemainder(a);
+			
+			placements.add(new Placement(a));
+		}
+		return placements;
+	}		
+
 
 }

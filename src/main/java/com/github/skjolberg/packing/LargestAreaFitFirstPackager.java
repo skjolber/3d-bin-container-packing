@@ -3,13 +3,15 @@ package com.github.skjolberg.packing;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.skjolberg.packing.Packager.PackagerImpl;
+
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
  * <br><br>
  * Thread-safe implementation.
  */
 
-public class LargestAreaFitFirstPackager extends Packager {
+public class LargestAreaFitFirstPackager extends Packager implements PackagerImpl {
 
 	protected final boolean footprintFirst;
 	
@@ -19,34 +21,14 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * @param containers Dimensions of supported containers
 	 */
 	public LargestAreaFitFirstPackager(List<? extends Dimension> containers) {
-		this(containers, true, true);
+		this(containers, true, true, true);
 	}
 
-	public LargestAreaFitFirstPackager(List<? extends Dimension> containers, boolean rotate3D, boolean footprintFirst) {
-		super(containers, rotate3D);
+	public LargestAreaFitFirstPackager(List<? extends Dimension> containers, boolean rotate3D, boolean footprintFirst, boolean binarySearch) {
+		super(containers, rotate3D, binarySearch);
 		
 		this.footprintFirst = footprintFirst;
 	}
-	
-	@Override
-	public Container pack(List<Box> boxes, List<Dimension> containers, long deadline) {
-		
-		for (int i = 0; i < containers.size(); i++) {
-			if(System.currentTimeMillis() > deadline) {
-				break;
-			}
-			
-			Dimension containerBox = containers.get(i);
-			
-			Container result = pack(boxes, containerBox, deadline);
-			if(result != null) {
-				return result;
-			}
-		}
-		
-		return null;
-	}	
-
 	
 	/**
 	 * 
@@ -58,7 +40,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * @return null if no match, or deadline reached
 	 */
 	
-	protected Container pack(List<Box> boxes, Dimension dimension, long deadline) {
+	public Container fit(List<Box> boxes, Dimension dimension, long deadline) {
 		List<Box> containerProducts = new ArrayList<Box>(boxes);
 		
 		Container holder = new Container(dimension);
@@ -440,5 +422,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 		return null;
 	}
 
-
+	@Override
+	protected PackagerImpl impl(List<Box> boxes) {
+		return this;
+	}
 }

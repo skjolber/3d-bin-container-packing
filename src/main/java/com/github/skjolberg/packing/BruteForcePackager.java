@@ -16,53 +16,14 @@ import java.util.List;
 
 public class BruteForcePackager extends Packager {
 
-	public BruteForcePackager(List<? extends Dimension> dimensions, boolean rotate3d) {
-		super(dimensions, rotate3d);
+	public BruteForcePackager(List<? extends Dimension> dimensions, boolean rotate3d, boolean binarySearch) {
+		super(dimensions, rotate3d, binarySearch);
 	}
 
 	public BruteForcePackager(List<? extends Dimension> dimensions) {
-		super(dimensions);
+		this(dimensions, true, true);
 	}
 	
-	public Container pack(List<Box> boxes, List<Dimension> dimensions, long deadline) {
-
-		// instead of placing boxes, work with placements
-		// this very much reduces the number of objects created
-		// performance gain is something like 25% over the box-centric approach
-
-		Box[][] rotations = PermutationRotationIterator.toRotationMatrix(boxes, rotate3D);
-
-		List<Placement> placements = getPlacements(boxes.size());
-		
-		for (int i = 0; i < dimensions.size(); i++) {
-			if(System.currentTimeMillis() > deadline) {
-				break;
-			}
-			
-			Container result = pack(placements, dimensions.get(i), rotations, deadline);
-			if(result != null) {
-				return result;
-			}
-		}
-		
-		return null;
-	}
-
-	public static List<Placement> getPlacements(int size) {
-		// each box will at most have a single placement with a space (and its remainder). 
-		List<Placement> placements = new ArrayList<Placement>(size);
-
-		for(int i = 0; i < size; i++) {
-			Space a = new Space();
-			Space b = new Space();
-			a.setRemainder(b);
-			b.setRemainder(a);
-			
-			placements.add(new Placement(a));
-		}
-		return placements;
-	}		
-
 	protected Container pack(List<Placement> placements, Dimension dimension, Box[][] rotations, long deadline) {
 		
 		PermutationRotationIterator rotator = new PermutationRotationIterator(dimension, rotations);
@@ -268,6 +229,23 @@ public class BruteForcePackager extends Packager {
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	protected PackagerImpl impl(List<Box> boxes) {
+		// instead of placing boxes, work with placements
+		// this very much reduces the number of objects created
+		// performance gain is something like 25% over the box-centric approach
+		
+		final Box[][] rotations = PermutationRotationIterator.toRotationMatrix(boxes, rotate3D);
+		final List<Placement> placements = getPlacements(boxes.size());
+
+		return new PackagerImpl() {
+			@Override
+			public Container fit(List<Box> boxes, Dimension dimension, long deadline) {
+				return BruteForcePackager.this.pack(placements, dimension, rotations, deadline);
+			}
+		};
 	}
 
 }

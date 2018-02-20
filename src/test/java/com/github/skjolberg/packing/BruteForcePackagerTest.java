@@ -175,8 +175,8 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	public void testLargestAreaFitFirstDoesNotWork() {
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(15, 10, 10));
-		Packager bruteForcePackager = new BruteForcePackager(containers, true);
-		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, true, true);
+		Packager bruteForcePackager = new BruteForcePackager(containers, true, true);
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, true, true, true);
 
 		List<Box> products1 = new ArrayList<Box>();
 		
@@ -198,7 +198,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	public void testRunsForLimitedTimeSeconds() {
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(5000, 10, 10));
-		runsLimitedTimeSeconds(new BruteForcePackager(containers, true), 200);
+		runsLimitedTimeSeconds(new BruteForcePackager(containers, true, true), 200);
 	}
 
 	@Test
@@ -220,7 +220,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		while(deadline > System.currentTimeMillis()) {
 			List<Box> containers = new ArrayList<Box>();
 			containers.add(new Box(5 * n, 10, 10));
-			Packager bruteForcePackager = new BruteForcePackager(containers, true);
+			Packager bruteForcePackager = new BruteForcePackager(containers, true, true);
 			
 			List<Box> products1 = new ArrayList<Box>();
 

@@ -25,8 +25,8 @@ public class PackagerCombinationDemo {
 
 		for(int k = 0; k < 10; k++) {
 
+			System.out.println("************* " + k + " *************");
 			LargestAreaFitFirstPackager light = new LargestAreaFitFirstPackager(containers);
-			BruteForcePackager heavy = new BruteForcePackager(containers, true);
 
 			List<Box> products = new ArrayList<Box>();
 
@@ -45,7 +45,7 @@ public class PackagerCombinationDemo {
 				index = map.get(pack.getName());
 
 				if(pack.getVolume() == volume) {
-					System.out.println("Perfect match at index " + index);
+					System.out.println("Full volume match at index " + index);
 
 					continue;
 				} else {
@@ -59,26 +59,19 @@ public class PackagerCombinationDemo {
 				index = containers.size();
 			}
 
-			Box[][] rotationMatrix = PermutationRotationIterator.toRotationMatrix(products, true);
-			List<Placement> placements = BruteForcePackager.getPlacements(products.size());
+			if(index > 0) {
+				long deadline = System.currentTimeMillis() + 5000;
+	
+				BruteForcePackager heavy = new BruteForcePackager(containers.subList(0, index), true, true);
 
-			long deadline = System.currentTimeMillis() + 5000;
-
-			for(int i = 0; i < index; i++) { // TODO: even better with more of a binary search approach
-				Dimension dimension = containers.get(i);
-				if(dimension.getVolume() < volume) {
-					continue;
-				}
-				PermutationRotationIterator iterator = new PermutationRotationIterator(dimension, rotationMatrix);
-
+				Container heavyResult = heavy.pack(products, deadline);
 				// if not to complex, then
-				Container heavyResult = heavy.pack(placements, dimension, iterator, deadline);
 				if(heavyResult != null) {
 					pack = heavyResult;
 
-					System.out.println("Better match at index " + i);
-
-					break;
+					Integer betterIndex = map.get(pack.getName());
+					
+					System.out.println("Better match at index " + betterIndex);
 				}
 			}
 		}
