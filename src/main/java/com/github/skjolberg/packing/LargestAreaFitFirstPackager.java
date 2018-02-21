@@ -3,7 +3,7 @@ package com.github.skjolberg.packing;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolberg.packing.Packager.PackagerImpl;
+import com.github.skjolberg.packing.Packager.Adapter;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -11,7 +11,7 @@ import com.github.skjolberg.packing.Packager.PackagerImpl;
  * Thread-safe implementation.
  */
 
-public class LargestAreaFitFirstPackager extends Packager implements PackagerImpl {
+public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 
 	protected final boolean footprintFirst;
 	
@@ -423,7 +423,7 @@ public class LargestAreaFitFirstPackager extends Packager implements PackagerImp
 	}
 
 	@Override
-	protected PackagerImpl impl(List<Box> boxes) {
+	protected Adapter impl(List<Box> boxes) {
 		return this;
 	}
 }

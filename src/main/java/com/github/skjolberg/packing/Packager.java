@@ -16,7 +16,7 @@ public abstract class Packager {
 	 *
 	 */
 	
-	protected interface PackagerImpl {
+	protected interface Adapter {
 		Container fit(List<Box> boxes, Dimension dimension, long deadline);
 	}
 	
@@ -106,7 +106,7 @@ public abstract class Packager {
 			return null;
 		}
 		
-		PackagerImpl pack = impl(boxes);
+		Adapter pack = impl(boxes);
 
 		if(!binarySearch || dimensions.size() <= 2) {
 			for (int i = 0; i < dimensions.size(); i++) {
@@ -182,7 +182,7 @@ public abstract class Packager {
 		return null;
 	}	
 	
-	protected abstract PackagerImpl impl(List<Box> boxes);
+	protected abstract Adapter impl(List<Box> boxes);
 
 	protected boolean canHold(Dimension containerBox, List<Box> boxes) {
 		for(Box box : boxes) {

@@ -1,6 +1,5 @@
 package com.github.skjolberg.packing;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -232,7 +231,7 @@ public class BruteForcePackager extends Packager {
 	}
 
 	@Override
-	protected PackagerImpl impl(List<Box> boxes) {
+	protected Adapter impl(List<Box> boxes) {
 		// instead of placing boxes, work with placements
 		// this very much reduces the number of objects created
 		// performance gain is something like 25% over the box-centric approach
@@ -240,9 +239,12 @@ public class BruteForcePackager extends Packager {
 		final Box[][] rotations = PermutationRotationIterator.toRotationMatrix(boxes, rotate3D);
 		final List<Placement> placements = getPlacements(boxes.size());
 
-		return new PackagerImpl() {
+		return new Adapter() {
 			@Override
 			public Container fit(List<Box> boxes, Dimension dimension, long deadline) {
+				if(dimension.getName() == null) {
+					throw new RuntimeException();
+				}
 				return BruteForcePackager.this.pack(placements, dimension, rotations, deadline);
 			}
 		};

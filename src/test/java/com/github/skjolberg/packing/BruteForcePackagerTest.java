@@ -18,7 +18,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	public void testStackingRectanglesOnSquare() {
 		
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(10, 10, 1));
+		containers.add(new Box("container1", 10, 10, 1));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<Box> products = new ArrayList<Box>();
@@ -35,7 +35,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	public void testStackingRectanglesOnSquareRectangle() {
 		
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(10, 10, 1));
+		containers.add(new Box("container1", 10, 10, 1));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<Box> products = new ArrayList<Box>();
@@ -53,7 +53,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	public void testStackingRectanglesOnSquareRectangleVolumeFirst() {
 		
 		List<Dimension> containers = new ArrayList<Dimension>();
-		containers.add(new Dimension(10, 10, 3));
+		containers.add(new Dimension("container1", 10, 10, 3));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<Box> products = new ArrayList<Box>();
@@ -73,7 +73,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	public void testStackingBinary1() {
 		
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(2, 2, 1));
+		containers.add(new Box("container1", 2, 2, 1));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<Box> products = new ArrayList<Box>();
@@ -91,7 +91,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	public void testStackingBinary2() {
 		
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(8, 8, 1));
+		containers.add(new Box("container1", 8, 8, 1));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<Box> products = new ArrayList<Box>();
@@ -114,7 +114,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	public void testStackingTooHigh() {
 		
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(10, 10, 5));
+		containers.add(new Box("container1", 10, 10, 5));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<Box> products = new ArrayList<Box>();
@@ -129,7 +129,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	public void testStackingTooHighLevel() {
 		
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(10, 10, 5));
+		containers.add(new Box("container1", 10, 10, 5));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<Box> products = new ArrayList<Box>();
@@ -148,7 +148,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	@Test
 	public void testStacking3xLP() {
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(350, 150, 400));
+		containers.add(new Box("container1", 350, 150, 400));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<Box> products1 = new ArrayList<Box>();
@@ -174,7 +174,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	@Test
 	public void testLargestAreaFitFirstDoesNotWork() {
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(15, 10, 10));
+		containers.add(new Box("container1", 15, 10, 10));
 		Packager bruteForcePackager = new BruteForcePackager(containers, true, true);
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, true, true, true);
 
@@ -197,7 +197,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	@Ignore
 	public void testRunsForLimitedTimeSeconds() {
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(5000, 10, 10));
+		containers.add(new Box("container1", 5000, 10, 10));
 		runsLimitedTimeSeconds(new BruteForcePackager(containers, true, true), 200);
 	}
 
