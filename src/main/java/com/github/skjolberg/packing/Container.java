@@ -11,6 +11,14 @@ public class Container extends Box {
 		super(dimension.getName(), dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}
 
+	public Container(int w, int d, int h) {
+		super(w, d, h);
+	}
+
+	public Container(String name, int w, int d, int h) {
+		super(name, w, d, h);
+	}
+
 	public boolean add(Level element) {
 		if(!levels.isEmpty()) {
 			stackHeight += currentLevelStackHeight();

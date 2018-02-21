@@ -16,8 +16,8 @@ public abstract class Packager {
 	 *
 	 */
 	
-	protected interface Adapter {
-		Container fit(List<Box> boxes, Dimension dimension, long deadline);
+	public interface Adapter {
+		Container pack(List<Box> boxes, Dimension dimension, long deadline);
 	}
 	
 	protected final Dimension[] containers;
@@ -115,7 +115,7 @@ public abstract class Packager {
 					break;
 				}
 				
-				Container result = pack.fit(boxes, dimensions.get(i), deadline);
+				Container result = pack.pack(boxes, dimensions.get(i), deadline);
 				if(result != null) {
 					return result;
 				}
@@ -136,10 +136,10 @@ public abstract class Packager {
 				iterator.reset(current.size() - 1, 0);
 				
 				do {
-					
-					int mid = current.get(iterator.next());
+					int next = iterator.next();
+					int mid = current.get(next);
 
-					Container result = pack.fit(boxes, dimensions.get(mid), deadline);
+					Container result = pack.pack(boxes, dimensions.get(mid), deadline);
 					
 					checked[mid] = true;
 					if(result != null) {
@@ -153,6 +153,7 @@ public abstract class Packager {
 						break search;
 					}
 				} while(iterator.hasNext()); 
+				
 				
 		        // halt when has a result, and checked all containers at the lower indexes
 		        for (int i = 0; i < current.size(); i++) {

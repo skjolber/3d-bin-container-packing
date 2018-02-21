@@ -28,7 +28,7 @@ public class BinarySearchIterator {
 	}
 
 	public boolean hasNext() {
-		return low < high;
+		return low <= high;
 	}
 	
 	public void reset(int high, int low) {
@@ -36,4 +36,15 @@ public class BinarySearchIterator {
 		this.low = low;
 	}
 	
+	public int getHigh() {
+		return high;
+	}
+	
+	public int getLow() {
+		return low;
+	}
+	
+	public int getMid() {
+		return mid;
+	}
 }

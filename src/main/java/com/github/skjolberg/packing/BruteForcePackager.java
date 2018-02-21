@@ -241,7 +241,7 @@ public class BruteForcePackager extends Packager {
 
 		return new Adapter() {
 			@Override
-			public Container fit(List<Box> boxes, Dimension dimension, long deadline) {
+			public Container pack(List<Box> boxes, Dimension dimension, long deadline) {
 				if(dimension.getName() == null) {
 					throw new RuntimeException();
 				}

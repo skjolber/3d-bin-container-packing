@@ -40,7 +40,7 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 	 * @return null if no match, or deadline reached
 	 */
 	
-	public Container fit(List<Box> boxes, Dimension dimension, long deadline) {
+	public Container pack(List<Box> boxes, Dimension dimension, long deadline) {
 		List<Box> containerProducts = new ArrayList<Box>(boxes);
 		
 		Container holder = new Container(dimension);
