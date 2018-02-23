@@ -15,12 +15,26 @@ import java.util.List;
 
 public class BruteForcePackager extends Packager {
 
-	public BruteForcePackager(List<? extends Dimension> dimensions, boolean rotate3d, boolean binarySearch) {
-		super(dimensions, rotate3d, binarySearch);
+	/**
+	 * Constructor
+	 * 
+	 * @param containers list of containers
+	 * @param rotate3D whether boxes can be rotated in all three directions (two directions otherwise)
+	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a container that can hold the boxes, given time, it also tries to find a better match.
+	 */
+	
+	public BruteForcePackager(List<? extends Dimension> containers, boolean rotate3D, boolean binarySearch) {
+		super(containers, rotate3D, binarySearch);
 	}
-
-	public BruteForcePackager(List<? extends Dimension> dimensions) {
-		this(dimensions, true, true);
+	
+	/**
+	 * Constructor
+	 * 
+	 * @param containers list of containers
+	 */
+	
+	public BruteForcePackager(List<? extends Dimension> containers) {
+		this(containers, true, true);
 	}
 	
 	protected Container pack(List<Placement> placements, Dimension dimension, Box[][] rotations, long deadline) {
@@ -231,7 +245,7 @@ public class BruteForcePackager extends Packager {
 	}
 
 	@Override
-	protected Adapter impl(List<Box> boxes) {
+	protected Adapter adapter(List<Box> boxes) {
 		// instead of placing boxes, work with placements
 		// this very much reduces the number of objects created
 		// performance gain is something like 25% over the box-centric approach

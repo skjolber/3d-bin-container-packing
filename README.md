@@ -26,7 +26,7 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber</groupId>
     <artifactId>3d-bin-container-packing</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
 </dependency>
 ```
 
@@ -67,7 +67,7 @@ By adding an additional argument to the constructor, 2D or 3D rotation of boxes 
 
 ```java
 boolean rotate3d = ...;
-Packager packager = new LargestAreaFitFirstPackager(containers, rotate3d);
+Packager packager = new LargestAreaFitFirstPackager(containers, rotate3d, true, true);
 ```
 
 ### Brute-force packager
@@ -80,7 +80,7 @@ Packager packager = new BruteForcePackager(containers);
 Using a deadline is recommended whenever brute-forcing in a real-time application.
 
 ```
-// limit search using deadline
+// limit search using 5 seconds deadline
 long deadline = System.currentTimeMillis() + 5000;
 
 Container match = packager.pack(products, deadline);
@@ -94,6 +94,7 @@ The implementation is based on [this paper][2], and is not a traditional [Bin pa
 The box which covers the largest ground area of the container is placed first. Boxes which fill the full remaining height take priority. Subsequent boxes are stacked in the remaining space in at the same level, the boxes with the greatest volume first. Then level is increased and the process repeated. Boxes are rotated, containers not.
 
 The algorithm runs reasonably fast, usually in milliseconds.
+
 ###  Brute-force algorithm
 This algorithm places the boxes in the same way as the LAFF algorithm, but has no logic for selecting the best box or rotation; running through all permutations, for each permutation all rotations. 
 
@@ -110,7 +111,8 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]
 
 # History
- - [1.0.4]: Add deadline and brute force packager. 
+ - [1.0.5]: Binary search approach for packaging with deadline
+ - 1.0.4: Add deadline and brute force packager. 
  - 1.0.3: Fix for issue #5, minor cleanup. 
  - 1.0.2: Fix for issue #4, minor improvements. 
  - 1.0.1: Add option to toggle 2D and 3D rotation and box placement coordinates, compliments of [NothinRandom]. 
@@ -123,7 +125,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Maven]:				http://maven.apache.org/
 [LinkedIn]:				http://lnkd.in/r7PWDz
 [Github page]:			https://skjolber.github.io
-[1.0.4]:				https://github.com/skjolber/3d-bin-container-packing/releases
+[1.0.5]:				https://github.com/skjolber/3d-bin-container-packing/releases
 [NothinRandom]:		https://github.com/NothinRandom
 [exponential]:			https://en.wikipedia.org/wiki/Exponential_function
 

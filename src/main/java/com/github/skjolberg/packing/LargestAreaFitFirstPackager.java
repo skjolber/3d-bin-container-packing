@@ -18,12 +18,22 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 	/**
 	 * Constructor
 	 * 
-	 * @param containers Dimensions of supported containers
+	 * @param containers list of containers
 	 */
 	public LargestAreaFitFirstPackager(List<? extends Dimension> containers) {
 		this(containers, true, true, true);
 	}
 
+	
+	/**
+	 * Constructor
+	 * 
+	 * @param containers list of containers
+	 * @param footprintFirst start with box which has the largest footprint. If not, the highest box is first.
+	 * @param rotate3D whether boxes can be rotated in all three directions (two directions otherwise)
+	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a container that can hold the boxes, given time, it also tries to find a better match.
+	 */
+	
 	public LargestAreaFitFirstPackager(List<? extends Dimension> containers, boolean rotate3D, boolean footprintFirst, boolean binarySearch) {
 		super(containers, rotate3D, binarySearch);
 		
@@ -423,7 +433,7 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 	}
 
 	@Override
-	protected Adapter impl(List<Box> boxes) {
+	protected Adapter adapter(List<Box> boxes) {
 		return this;
 	}
 }

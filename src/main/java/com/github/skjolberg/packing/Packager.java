@@ -28,11 +28,19 @@ public abstract class Packager {
 	/**
 	 * Constructor
 	 * 
-	 * @param containers Dimensions of supported containers
+	 * @param containers list of containers
 	 */
 	public Packager(List<? extends Dimension> containers) {
 		this(containers, true, true);
 	}
+	
+	/**
+	 * Constructor
+	 * 
+	 * @param containers list of containers
+	 * @param rotate3D whether boxes can be rotated in all three directions (two directions otherwise)
+	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a match, it searches the preceding boxes as well, until the deadline is passed. 
+	 */
 
 	public Packager(List<? extends Dimension> containers, boolean rotate3D, boolean binarySearch) {
 		this.containers = containers.toArray(new Dimension[containers.size()]);
@@ -42,7 +50,7 @@ public abstract class Packager {
 	
 	/**
 	 * 
-	 * Return a container which holds all the boxes in the argument
+	 * Return a container which holds all the boxes in the argument.
 	 * 
 	 * @param boxes list of boxes to fit in a container
 	 * @return null if no match
@@ -97,7 +105,7 @@ public abstract class Packager {
 	 * 
 	 * @param boxes list of boxes to fit in a container
 	 * @param dimensions list of containers
-	 * @param deadline the system time in millis at which the search should be aborted
+	 * @param deadline the system time in milliseconds at which the search should be aborted
 	 * @return index of container if match, -1 if not
 	 */
 	
@@ -106,9 +114,9 @@ public abstract class Packager {
 			return null;
 		}
 		
-		Adapter pack = impl(boxes);
+		Adapter pack = adapter(boxes);
 
-		if(!binarySearch || dimensions.size() <= 2) {
+		if(!binarySearch || dimensions.size() <= 2 || deadline == Long.MAX_VALUE) {
 			for (int i = 0; i < dimensions.size(); i++) {
 					
 				if(System.currentTimeMillis() > deadline) {
@@ -155,11 +163,11 @@ public abstract class Packager {
 				} while(iterator.hasNext()); 
 				
 				
-		        // halt when has a result, and checked all containers at the lower indexes
+		        // halt when have a result, and checked all containers at the lower indexes
 		        for (int i = 0; i < current.size(); i++) {
 		        	Integer integer = current.get(i);
 					if(results[integer] != null) {
-						// remove end items
+						// remove end items; we already have a better match
 						while(current.size() > i) {
 							current.remove(current.size() - 1);
 						}
@@ -183,7 +191,7 @@ public abstract class Packager {
 		return null;
 	}	
 	
-	protected abstract Adapter impl(List<Box> boxes);
+	protected abstract Adapter adapter(List<Box> boxes);
 
 	protected boolean canHold(Dimension containerBox, List<Box> boxes) {
 		for(Box box : boxes) {
