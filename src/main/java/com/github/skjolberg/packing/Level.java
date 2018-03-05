@@ -26,7 +26,7 @@ public class Level extends ArrayList<Placement>{
 	
 	/**
 	 * 
-	 * Check wheter placement is valid, i.e. no overlaps.
+	 * Check whether placement is valid, i.e. no overlaps.
 	 * 
 	 */
 	
