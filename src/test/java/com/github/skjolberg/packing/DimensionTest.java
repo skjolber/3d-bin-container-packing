@@ -20,4 +20,8 @@ public class DimensionTest {
 		assertEquals(d.getHeight(), decoded.getHeight());
 	}
 
+	@Test
+	public void testEquals() {
+		assertEquals(new Dimension(1, 1, 1), new Dimension(1,  1,  1));
+	}
 }

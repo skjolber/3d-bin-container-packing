@@ -49,10 +49,10 @@ The `packager` instance is thread-safe.
 Then compose your item list and perform packing:
 
 ```java
-List<Box> products = new ArrayList<Box>();
-products.add(new Box("Foot", 6, 10, 2));
-products.add(new Box("Leg", 4, 10, 1));
-products.add(new Box("Arm", 4, 10, 2));
+List<BoxItem> products = new ArrayList<BoxItem>();
+products.add(new BoxItem(new Box("Foot", 6, 10, 2), 1));
+products.add(new BoxItem(new Box("Leg", 4, 10, 1), 1));
+products.add(new BoxItem(new Box("Arm", 4, 10, 2), 1));
 	
 // match to container
 Container match = packager.pack(products);
@@ -100,7 +100,7 @@ This algorithm places the boxes in the same way as the LAFF algorithm, but has n
 
 The maximum complexity this approach is [exponential] at __n! * 6^n__. The algorithm runs for under a second for small number of products (<= 6), to seconds or minutes (<= 8) or hours for larger numbers.
 
-However accounting for container and box sizes might reduce this bound considerably, and the resulting complexity can be calculated using [PermutationRotationIterator](src/main/java/com/github/skjolberg/packing/PermutationRotationIterator.java) before packaging is attempted.
+However accounting for container and box sizes and boxes with equal size might reduce this bound considerably, and the resulting complexity can be calculated using [PermutationRotationIterator](src/main/java/com/github/skjolberg/packing/PermutationRotationIterator.java) before packaging is attempted.
 
 # Contact
 If you have any questions or comments, please email me at thomas.skjolberg@gmail.com.

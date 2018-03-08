@@ -28,12 +28,12 @@ public class PackagerCombinationDemo {
 			System.out.println("************* " + k + " *************");
 			LargestAreaFitFirstPackager light = new LargestAreaFitFirstPackager(containers);
 
-			List<Box> products = new ArrayList<Box>();
+			List<BoxItem> products = new ArrayList<BoxItem>();
 
 			long volume = 0;
 			for(int i = 0; i < (k + 1); i++) {
 				Box b = new Box(Integer.toString(i), 5, 10, 10);
-				products.add(b);
+				products.add(new BoxItem(b, 1));
 
 				volume += b.getVolume();
 			}

@@ -17,7 +17,7 @@ public abstract class Packager {
 	 */
 	
 	public interface Adapter {
-		Container pack(List<Box> boxes, Dimension dimension, long deadline);
+		Container pack(List<BoxItem> boxes, Dimension dimension, long deadline);
 	}
 	
 	protected final Dimension[] containers;
@@ -56,7 +56,7 @@ public abstract class Packager {
 	 * @return null if no match
 	 */
 	
-	public Container pack(List<Box> boxes) {
+	public Container pack(List<BoxItem> boxes) {
 		return pack(boxes, Long.MAX_VALUE);
 	}
 
@@ -67,10 +67,10 @@ public abstract class Packager {
 	 * @return list of containers
 	 */
 	
-	public List<Dimension> filter(List<Box> boxes) {
+	public List<Dimension> filterContainers(List<BoxItem> boxes) {
 		long volume = 0;
-		for(Box box : boxes) {
-			volume += box.getVolume();
+		for(BoxItem box : boxes) {
+			volume += box.getBox().getVolume() * box.getCount();
 		}
 		
 		List<Dimension> list = new ArrayList<>();
@@ -95,8 +95,8 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	
-	public Container pack(List<Box> boxes, long deadline) {
-		return pack(boxes, filter(boxes), deadline);
+	public Container pack(List<BoxItem> boxes, long deadline) {
+		return pack(boxes, filterContainers(boxes), deadline);
 	}
 
 	/**
@@ -109,7 +109,7 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	
-	public Container pack(List<Box> boxes, List<Dimension> dimensions, long deadline) {
+	public Container pack(List<BoxItem> boxes, List<Dimension> dimensions, long deadline) {
 		if(dimensions.isEmpty()) {
 			return null;
 		}
@@ -191,16 +191,16 @@ public abstract class Packager {
 		return null;
 	}	
 	
-	protected abstract Adapter adapter(List<Box> boxes);
+	protected abstract Adapter adapter(List<BoxItem> boxes);
 
-	protected boolean canHold(Dimension containerBox, List<Box> boxes) {
-		for(Box box : boxes) {
+	protected boolean canHold(Dimension containerBox, List<BoxItem> boxes) {
+		for(BoxItem box : boxes) {
 			if(rotate3D) {
-				if(!containerBox.canHold3D(box)) {
+				if(!containerBox.canHold3D(box.getBox())) {
 					return false;
 				}
 			} else {
-				if(!containerBox.canHold2D(box)) {
+				if(!containerBox.canHold2D(box.getBox())) {
 					return false;
 				}
 			}

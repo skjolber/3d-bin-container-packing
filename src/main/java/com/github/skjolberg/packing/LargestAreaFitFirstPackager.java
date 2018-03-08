@@ -44,14 +44,22 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 	 * 
 	 * Return a container which holds all the boxes in the argument
 	 * 
-	 * @param boxes list of boxes to fit in a container
+	 * @param items list of boxes to fit in a container
 	 * @param dimension the container to fit within
 	 * @param deadline the system time in millis at which the search should be aborted
 	 * @return null if no match, or deadline reached
 	 */
 	
-	public Container pack(List<Box> boxes, Dimension dimension, long deadline) {
-		List<Box> containerProducts = new ArrayList<Box>(boxes);
+	public Container pack(List<BoxItem> items, Dimension dimension, long deadline) {
+		List<Box> containerProducts = new ArrayList<Box>(items.size() * 2);
+
+		for(BoxItem item : items) {
+			Box box = item.getBox();
+			containerProducts.add(box);
+			for(int i = 1; i < item.getCount(); i++) {
+				containerProducts.add(box.clone());
+			}
+		}
 		
 		Container holder = new Container(dimension);
 		
@@ -190,7 +198,7 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 			return;
 		}
 		
-		Space[] spaces = getFreespaces(freeSpace, usedSpace, true);
+		Space[] spaces = getFreespaces(freeSpace, usedSpace);
 
 		Placement nextPlacement = bestVolumePlacement(containerProducts, spaces);
 		if(nextPlacement == null) {
@@ -230,7 +238,7 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 		// TODO use free spaces between box and level, if any
 	}
 
-	protected Space[] getFreespaces(Space freespace, Box used, boolean rotate2D) {
+	protected Space[] getFreespaces(Space freespace, Box used) {
 
 		// Two free spaces, on each rotation of the used space. 
 		// Height is always the same, used box is assumed within free space height.
@@ -298,39 +306,37 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 			}
 		}
 		
-		if(rotate2D) {
-			if(freespace.getWidth() >= used.getDepth() && freespace.getDepth() >= used.getWidth()) {	
-				// if D is empty, then it is sufficient to work with C and the other way around
-				
-				// D
-				if(freespace.getWidth() > used.getDepth()) {
-					Space right = new Space(
-							freespace.getWidth() - used.getDepth(), freespace.getDepth(), freespace.getHeight(),
-							freespace.getX() + used.getDepth(), freespace.getY(), freespace.getHeight()
-							);
-					Space rightRemainder = new Space(
-							used.getDepth(), freespace.getDepth() - used.getWidth(), freespace.getHeight(),
-							freespace.getX(), freespace.getY() + used.getWidth(), freespace.getZ()
-							);
-					right.setRemainder(rightRemainder);
-					rightRemainder.setRemainder(right);
-					freeSpaces[2] = right;
-				}
-				
-				// C
-				if(freespace.getDepth() > used.getWidth()) {
-					Space top = new Space(
-							freespace.getWidth(), freespace.getDepth() - used.getWidth(), freespace.getHeight(),
-							freespace.getX(), freespace.getY() + used.getWidth(), freespace.getHeight()
-							);
-					Space topRemainder = new Space(
-							freespace.getWidth() - used.getDepth(), used.getWidth(), freespace.getHeight(),
-							freespace.getX() + used.getDepth(), freespace.getY(), freespace.getZ()
-							);
-					top.setRemainder(topRemainder);
-					topRemainder.setRemainder(top);
-					freeSpaces[3] = top;
-				}
+		if(freespace.getWidth() >= used.getDepth() && freespace.getDepth() >= used.getWidth()) {	
+			// if D is empty, then it is sufficient to work with C and the other way around
+			
+			// D
+			if(freespace.getWidth() > used.getDepth()) {
+				Space right = new Space(
+						freespace.getWidth() - used.getDepth(), freespace.getDepth(), freespace.getHeight(),
+						freespace.getX() + used.getDepth(), freespace.getY(), freespace.getHeight()
+						);
+				Space rightRemainder = new Space(
+						used.getDepth(), freespace.getDepth() - used.getWidth(), freespace.getHeight(),
+						freespace.getX(), freespace.getY() + used.getWidth(), freespace.getZ()
+						);
+				right.setRemainder(rightRemainder);
+				rightRemainder.setRemainder(right);
+				freeSpaces[2] = right;
+			}
+			
+			// C
+			if(freespace.getDepth() > used.getWidth()) {
+				Space top = new Space(
+						freespace.getWidth(), freespace.getDepth() - used.getWidth(), freespace.getHeight(),
+						freespace.getX(), freespace.getY() + used.getWidth(), freespace.getHeight()
+						);
+				Space topRemainder = new Space(
+						freespace.getWidth() - used.getDepth(), used.getWidth(), freespace.getHeight(),
+						freespace.getX() + used.getDepth(), freespace.getY(), freespace.getZ()
+						);
+				top.setRemainder(topRemainder);
+				topRemainder.setRemainder(top);
+				freeSpaces[3] = top;
 			}
 		}
 		return freeSpaces;
@@ -417,9 +423,8 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 						} else if(bestBox.getVolume() < box.getVolume()) {
 							bestBox = box;
 							bestSpace = space;
-						} else if(bestBox.getVolume() < box.getVolume()) {
-							// TODO use the aspect ratio in some meaningful way
 						}
+						// TODO use the aspect ratio in some meaningful way
 						
 						// TODO if all else is equal, which free space is preferred?
 					}
@@ -433,7 +438,7 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 	}
 
 	@Override
-	protected Adapter adapter(List<Box> boxes) {
+	protected Adapter adapter(List<BoxItem> boxes) {
 		return this;
 	}
 }

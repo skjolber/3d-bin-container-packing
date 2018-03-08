@@ -2,6 +2,8 @@ package com.github.skjolberg.packing;
 
 import java.util.List;
 
+import com.github.skjolberg.packing.PermutationRotationIterator.PermutationRotation;
+
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. 
  * <br><br>
@@ -37,7 +39,7 @@ public class BruteForcePackager extends Packager {
 		this(containers, true, true);
 	}
 	
-	protected Container pack(List<Placement> placements, Dimension dimension, Box[][] rotations, long deadline) {
+	protected Container pack(List<Placement> placements, Dimension dimension, PermutationRotation[] rotations, long deadline) {
 		
 		PermutationRotationIterator rotator = new PermutationRotationIterator(dimension, rotations);
 
@@ -69,7 +71,7 @@ public class BruteForcePackager extends Packager {
 						// fit2d below might have returned due to deadline
 						return null;
 					}
-
+					
 					if(!rotator.isWithinHeight(index, remainingSpace.getHeight())) {
 						// clean up
 						holder.clear();
@@ -104,12 +106,19 @@ public class BruteForcePackager extends Packager {
 					remainingSpace = holder.getFreeSpace();
 				}
 
-				return holder; // holder.clear()
+				if(accept(holder)) {
+					return holder;
+				}
+				holder.clear();
 			} while(rotator.nextRotation());
 		} while(rotator.nextPermutation());
 		
 		return null;
 	}	
+
+	protected boolean accept(Container container) {
+		return true;
+	}
 
 	protected int fit2D(PermutationRotationIterator rotator, int index, List<Placement> placements, Container holder, Placement usedSpace, long deadline) {
 		// add used space box now
@@ -245,20 +254,23 @@ public class BruteForcePackager extends Packager {
 	}
 
 	@Override
-	protected Adapter adapter(List<Box> boxes) {
+	protected Adapter adapter(List<BoxItem> boxes) {
 		// instead of placing boxes, work with placements
 		// this very much reduces the number of objects created
 		// performance gain is something like 25% over the box-centric approach
 		
-		final Box[][] rotations = PermutationRotationIterator.toRotationMatrix(boxes, rotate3D);
-		final List<Placement> placements = getPlacements(boxes.size());
+		final PermutationRotation[] rotations = PermutationRotationIterator.toRotationMatrix(boxes, rotate3D);
+		
+		int count = 0;
+		for (PermutationRotation permutationRotation : rotations) {
+			count += permutationRotation.getCount();
+		}
+		
+		final List<Placement> placements = getPlacements(count);
 
 		return new Adapter() {
 			@Override
-			public Container pack(List<Box> boxes, Dimension dimension, long deadline) {
-				if(dimension.getName() == null) {
-					throw new RuntimeException();
-				}
+			public Container pack(List<BoxItem> boxes, Dimension dimension, long deadline) {
 				return BruteForcePackager.this.pack(placements, dimension, rotations, deadline);
 			}
 		};
