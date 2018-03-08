@@ -28,7 +28,7 @@ public class PackagerTest {
 		}
 
 		@Override
-		protected Adapter adapter(List<Box> boxes) {
+		protected Adapter adapter(List<BoxItem> boxes) {
 			return adapter;
 		}
 	}
@@ -49,9 +49,9 @@ public class PackagerTest {
 		containers.add(new Box("6", 5, 5, 1));
 
 		
-		List<Box> products = new ArrayList<Box>();
+		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new Box("1", 5, 5, 1));
+		products.add(new BoxItem(new Box("1", 5, 5, 1), 1));
 
 		Adapter mock = mock(Packager.Adapter.class);
 		
@@ -95,9 +95,9 @@ public class PackagerTest {
 
 		long deadline = System.currentTimeMillis() + 100000;
 				
-		List<Box> products = new ArrayList<Box>();
+		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new Box("1", 5, 5, 1));
+		products.add(new BoxItem(new Box("1", 5, 5, 1), 1));
 
 		Adapter mock = mock(Packager.Adapter.class);
 		
@@ -141,9 +141,9 @@ public class PackagerTest {
 		containers.add(new Box("6", 5, 5, 1));
 
 		
-		List<Box> products = new ArrayList<Box>();
+		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new Box("1", 5, 5, 1));
+		products.add(new BoxItem(new Box("1", 5, 5, 1), 1));
 
 		Adapter mock = mock(Packager.Adapter.class);
 		
@@ -191,9 +191,9 @@ public class PackagerTest {
 		containers.add(new Box("6", 5, 5, 1));
 
 		
-		List<Box> products = new ArrayList<Box>();
+		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new Box("1", 5, 5, 1));
+		products.add(new BoxItem(new Box("1", 5, 5, 1), 1));
 
 		Adapter mock = mock(Packager.Adapter.class);
 		

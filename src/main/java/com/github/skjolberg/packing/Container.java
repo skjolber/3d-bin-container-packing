@@ -57,7 +57,7 @@ public class Container extends Box {
 	public Dimension getFreeSpace() {
 		int spaceHeight = height - getStackHeight();
 		if(spaceHeight < 0) {
-			throw new IllegalArgumentException("Remaining free spacei is " + spaceHeight);
+			throw new IllegalArgumentException("Remaining free space is negative at " + spaceHeight);
 		}
 		return new Dimension(width, depth, spaceHeight);
 	}

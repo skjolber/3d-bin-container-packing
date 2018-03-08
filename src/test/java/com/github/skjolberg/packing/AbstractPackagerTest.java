@@ -25,14 +25,14 @@ public abstract class AbstractPackagerTest {
 		List<Box> containers = new ArrayList<Box>();
 		containers.add(new Box(5000, 1000, 1000));
 
-		List<Box> products1 = new ArrayList<Box>();
+		List<BoxItem> products1 = new ArrayList<BoxItem>();
 		
 		for(int i = 0; i < 10000; i++) {
 			Box box = new Box(Integer.toString(i), 5, 10, 10);
 			for(int k = 0; k < i % 2; k++) {
 				box.rotate3D();
 			}
-			products1.add(box);
+			products1.add(new BoxItem(box, 1));
 		}
 		
 		long time = System.currentTimeMillis();

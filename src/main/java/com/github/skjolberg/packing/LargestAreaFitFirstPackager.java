@@ -50,8 +50,16 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 	 * @return null if no match, or deadline reached
 	 */
 	
-	public Container pack(List<Box> boxes, Dimension dimension, long deadline) {
-		List<Box> containerProducts = new ArrayList<Box>(boxes);
+	public Container pack(List<BoxItem> items, Dimension dimension, long deadline) {
+		List<Box> containerProducts = new ArrayList<Box>(items.size() * 2);
+
+		for(BoxItem item : items) {
+			Box box = item.getBox();
+			containerProducts.add(box);
+			for(int i = 1; i < item.getCount(); i++) {
+				containerProducts.add(box.clone());
+			}
+		}
 		
 		Container holder = new Container(dimension);
 		
@@ -433,7 +441,7 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 	}
 
 	@Override
-	protected Adapter adapter(List<Box> boxes) {
+	protected Adapter adapter(List<BoxItem> boxes) {
 		return this;
 	}
 }
