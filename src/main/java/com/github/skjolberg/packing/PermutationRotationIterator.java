@@ -228,13 +228,20 @@ public class PermutationRotationIterator {
 				
 				n = n * (i + 1);
 				
-				
 				for(int k = 1; k < maxCount; k++) {
-					if(factors[k] > 0 && n % (k + 1) == 0) {
+					while(factors[k] > 0 && n % (k + 1) == 0) {
 						n = n / (k + 1);
 						
 						factors[k]--;
 					}
+				}
+			}
+			
+			for(int k = 1; k < maxCount; k++) {
+				while(factors[k] > 0) {
+					n = n / (k + 1);
+					
+					factors[k]--;
 				}
 			}
 		} else {
