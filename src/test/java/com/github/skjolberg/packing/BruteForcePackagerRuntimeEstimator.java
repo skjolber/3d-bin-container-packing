@@ -2,25 +2,31 @@ package com.github.skjolberg.packing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.github.skjolberg.packing.PermutationRotationIterator.PermutationRotation;
 
 public class BruteForcePackagerRuntimeEstimator {
 	
-	private static class Cost {
+	
+	
+	private static class Measurement {
 		private long rotations;
-		private long permuations;
+		private long permutations;
 		private long duration;
-		public Cost(long rotations, long permuations, long duration) {
+		public Measurement(long rotations, long permutations, long duration) {
 			super();
 			this.rotations = rotations;
-			this.permuations = permuations;
+			this.permutations = permutations;
 			this.duration = duration;
 		}
-		
-		
+		@Override
+		public String toString() {
+			return "Measurement [rotations=" + rotations + ", permutations=" + permutations + ", duration=" + duration
+					+ "]";
+		}
 	}
-	
+
 	private static class BruteForcePackagerEstimator extends BruteForcePackager {
 
 		public BruteForcePackagerEstimator(List<? extends Dimension> containers) {
@@ -55,7 +61,7 @@ public class BruteForcePackagerRuntimeEstimator {
 		// warmup
 		run(deadline, 4, 8);
 		
-		List<Cost> costs = run(deadline, 4, 8);
+		List<Measurement> costs = run(deadline, 4, 8);
 		System.out.println("Found " + costs.size() + " cost measurements");
 
 		long maxTime = 5000;
@@ -108,23 +114,21 @@ public class BruteForcePackagerRuntimeEstimator {
 
 				long eta = estimate(costs, iterator.countPermutations(), iterator.countRotations());
 				
-				if(eta > maxTime) {
+				if(eta == -1L || eta > maxTime) {
 					System.out.println("Skip " + n + "@" + k + " for too long processing time (" + eta + ")");
 					
 					continue;
 				}
-						
-
-				long time = System.currentTimeMillis();
+				long time = System.nanoTime();
 				Container container = bruteForcePackager.pack(products1, deadline);
 				if(container != null) {
 					throw new IllegalArgumentException();
 				}
-				long duration = (System.currentTimeMillis() - time);
+				long duration = (System.nanoTime() - time);
 				if(duration > 1) {
-					System.out.println(n + "@" + k + " in " + (System.currentTimeMillis() - time) + " for complexity " + complexity + " = " + (complexity / duration) + " per millisecond");
+					System.out.println(n + "@" + k + " in " + (duration) / 1000000 + " (vs " + eta + ") for complexity " + complexity + " = " + (duration / complexity) + "ns per complexity");
 				} else {
-					System.out.println(n + "@" + k + " in " + (System.currentTimeMillis() - time) + " for complexity " + complexity);
+					System.out.println(n + "@" + k + " in " + (duration) / 1000000 + " for complexity " + complexity);
 				}
 				
 			}
@@ -136,16 +140,28 @@ public class BruteForcePackagerRuntimeEstimator {
 		
 	}
 
-	private static long estimate(List<Cost> costs, long countPermutations, long countRotations) {
+	private static long estimate(List<Measurement> estimates, long countPermutations, long countRotations) {
+		long totalComplexity = 0;
+		long totalDuration = 0;
+
+		for(int i = 0; i < estimates.size(); i++) {
+			Measurement second = estimates.get(i);
+			
+			totalComplexity += second.permutations * second.rotations;
+			totalDuration += second.duration;
+		}
 		
+		long durationPerComplexity = totalDuration / totalComplexity;
 		
+		if(Long.MAX_VALUE / (countPermutations * countRotations) < durationPerComplexity) {
+			return -1L;
+		}
 		
-		
-		return 0;
+		return (durationPerComplexity * (countPermutations * countRotations)) / (1000 * 1000);
 	}
 
-	private static List<Cost> run(long deadline, int min, int max) {
-		List<Cost> estimates = new ArrayList<>();
+	private static List<Measurement> run(long deadline, int min, int max) {
+		List<Measurement> estimates = new ArrayList<>();
 		
 		long totalDomplexity = 0;
 		long totalDuration = 0;
@@ -196,21 +212,21 @@ public class BruteForcePackagerRuntimeEstimator {
 				
 				long complexity = iterator.countPermutations() * iterator.countRotations();
 				
-				long time = System.currentTimeMillis();
+				long time = System.nanoTime();
 				Container container = bruteForcePackager.pack(products1, deadline);
 				if(container != null) {
 					throw new IllegalArgumentException();
 				}
-				long duration = (System.currentTimeMillis() - time);
+				long duration = (System.nanoTime() - time);
 				if(duration > 1) {
 					totalDomplexity += complexity;
 					totalDuration += duration;
 					
-					estimates.add(new Cost(countRotations, countPermutations, duration));
+					estimates.add(new Measurement(countRotations, countPermutations, duration));
 					
-					System.out.println(n + "@" + k + " in " + (System.currentTimeMillis() - time) + " for complexity " + complexity + " = " + (complexity / duration) + " average " + (totalDomplexity / totalDuration) + " per millisecond");
+					System.out.println(n + "@" + k + " in " + (System.nanoTime() - time) / 1000000 + " for complexity " + complexity + " = " + (duration / complexity) + " average " + (totalDuration / totalDomplexity) + "ns per complexity");
 				} else {
-					System.out.println(n + "@" + k + " in " + (System.currentTimeMillis() - time) + " for complexity " + complexity);
+					System.out.println(n + "@" + k + " in " + (System.nanoTime() - time) / 1000000 + " for complexity " + complexity);
 				}
 				
 			}

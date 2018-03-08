@@ -44,7 +44,7 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 	 * 
 	 * Return a container which holds all the boxes in the argument
 	 * 
-	 * @param boxes list of boxes to fit in a container
+	 * @param items list of boxes to fit in a container
 	 * @param dimension the container to fit within
 	 * @param deadline the system time in millis at which the search should be aborted
 	 * @return null if no match, or deadline reached
