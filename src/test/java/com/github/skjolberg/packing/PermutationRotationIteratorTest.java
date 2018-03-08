@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.github.skjolberg.packing.PermutationRotationIterator.PermutationRotation;
+
 public class PermutationRotationIteratorTest {
 
 	@Test
@@ -188,4 +190,43 @@ public class PermutationRotationIteratorTest {
 		
 	}
 	
+	
+	@Test
+	public void testCountPermutations1() {
+		int n = 25;
+		
+		List<Box> containers = new ArrayList<Box>();
+		containers.add(new Box(5 * n, 10, 10));
+		
+		List<BoxItem> products1 = new ArrayList<BoxItem>();
+		for(int k = 0; k < n; k++) {
+			products1.add(new BoxItem(new Box(5, 10, 10), 1));
+		}
+
+		PermutationRotation[] rotationMatrix = PermutationRotationIterator.toRotationMatrix(products1, true);
+		
+		PermutationRotationIterator iterator = new PermutationRotationIterator(containers.get(0), rotationMatrix);
+
+		assertEquals(-1L, iterator.countPermutations());
+	}
+	
+	@Test
+	public void testCountPermutations2() {
+		int n = 25;
+		
+		List<Box> containers = new ArrayList<Box>();
+		containers.add(new Box(5 * n, 10, 10));
+		
+		List<BoxItem> products1 = new ArrayList<BoxItem>();
+		for(int k = 0; k < n; k++) {
+			products1.add(new BoxItem(new Box(5, 10, 10), 2));
+		}
+
+		PermutationRotation[] rotationMatrix = PermutationRotationIterator.toRotationMatrix(products1, true);
+		
+		PermutationRotationIterator iterator = new PermutationRotationIterator(containers.get(0), rotationMatrix);
+
+		assertEquals(-1L, iterator.countPermutations());
+	}
+
 }
