@@ -1,7 +1,6 @@
 [![Build Status](https://travis-ci.org/skjolber/3d-bin-container-packing.svg)](https://travis-ci.org/skjolber/3d-bin-container-packing)
 
-3d-bin-container-packing
-==================================
+# 3d-bin-container-packing
 
 This library does 3D rectangular bin packing; it attempts to match a set of 3D items to __one__ in a set of 3D containers. The result is the __single__ container which can hold all the items; no attempt is made to subdivide the items into several containers. 
 
@@ -26,7 +25,7 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber</groupId>
     <artifactId>3d-bin-container-packing</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
 </dependency>
 ```
 
@@ -111,7 +110,8 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]
 
 # History
- - [1.0.5]: Binary search approach for packaging with deadline
+ - [1.0.6]: Better support for multiple instances of the same box
+ - 1.0.5: Binary search approach for packaging with deadline
  - 1.0.4: Add deadline and brute force packager. 
  - 1.0.3: Fix for issue #5, minor cleanup. 
  - 1.0.2: Fix for issue #4, minor improvements. 
@@ -125,7 +125,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Maven]:				http://maven.apache.org/
 [LinkedIn]:				http://lnkd.in/r7PWDz
 [Github page]:			https://skjolber.github.io
-[1.0.5]:				https://github.com/skjolber/3d-bin-container-packing/releases
+[1.0.6]:				https://github.com/skjolber/3d-bin-container-packing/releases
 [NothinRandom]:		https://github.com/NothinRandom
 [exponential]:			https://en.wikipedia.org/wiki/Exponential_function
 
