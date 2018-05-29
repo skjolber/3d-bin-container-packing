@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Ignore;
@@ -242,5 +243,21 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		}
 		
 	}
-	
+
+	@Test
+	public void testIssue11ArrayOutOfBounds() {
+		List<Dimension> containers = Arrays.asList(
+			new Dimension("2", 330, 222, 121),
+			new Dimension("4", 330, 235, 225)
+		);
+
+		List<BoxItem> items = Arrays.asList(
+			new BoxItem(new Box(105, 105, 293), 1),
+			new BoxItem(new Box(92, 94, 255), 1),
+			new BoxItem(new Box(105, 70, 60), 2)
+		);
+
+		BruteForcePackager packer = new BruteForcePackager(containers);
+		packer.pack(items);
+	}
 }

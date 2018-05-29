@@ -8,8 +8,6 @@ import com.github.skjolberg.packing.PermutationRotationIterator.PermutationRotat
 
 public class BruteForcePackagerRuntimeEstimator {
 	
-	
-	
 	private static class Measurement {
 		private long rotations;
 		private long permutations;

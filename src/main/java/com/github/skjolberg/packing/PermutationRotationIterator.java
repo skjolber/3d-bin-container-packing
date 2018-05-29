@@ -179,7 +179,7 @@ public class PermutationRotationIterator {
 	
 	public boolean isWithinHeight(int fromIndex, int height) {
 		for(int i = fromIndex; i < permutations.length; i++) {
-			if(matrix[permutations[i]].boxes[rotations[permutations[i]]].getHeight() > height) {
+			if(get(i).getHeight() > height) {
 				return false;
 			}
 		}
@@ -257,7 +257,7 @@ public class PermutationRotationIterator {
 
 	
 	public Box get(int index) {
-		return matrix[permutations[index]].boxes[rotations[permutations[index]]];
+		return matrix[permutations[index]].boxes[rotations[index]];
 	}
 	
 	public boolean nextPermutation() {
