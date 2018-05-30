@@ -25,7 +25,7 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber</groupId>
     <artifactId>3d-bin-container-packing</artifactId>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
 </dependency>
 ```
 
@@ -110,7 +110,8 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]
 
 # History
- - [1.0.6]: Better support for multiple instances of the same box
+ - [1.0.7]: Fix for issue #11
+ - 1.0.6: Better support for multiple instances of the same box
  - 1.0.5: Binary search approach for packaging with deadline
  - 1.0.4: Add deadline and brute force packager. 
  - 1.0.3: Fix for issue #5, minor cleanup. 
@@ -125,7 +126,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Maven]:				http://maven.apache.org/
 [LinkedIn]:				http://lnkd.in/r7PWDz
 [Github page]:			https://skjolber.github.io
-[1.0.6]:				https://github.com/skjolber/3d-bin-container-packing/releases
-[NothinRandom]:		https://github.com/NothinRandom
+[1.0.7]:				https://github.com/skjolber/3d-bin-container-packing/releases
+[NothinRandom]:			https://github.com/NothinRandom
 [exponential]:			https://en.wikipedia.org/wiki/Exponential_function
 [example]:				src/test/java/com/github/skjolberg/packing/BruteForcePackagerRuntimeEstimator.java
