@@ -16,14 +16,14 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingRectanglesOnSquare() {
 		
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box("container1", 10, 10, 1));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container("container1", 10, 10, 1, 0));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("E", 5, 10, 1), 1));
-		products.add(new BoxItem(new Box("F", 5, 10, 1), 1));
+		products.add(new BoxItem(new Box("E", 5, 10, 1, 0), 1));
+		products.add(new BoxItem(new Box("F", 5, 10, 1, 0), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -33,15 +33,15 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingRectanglesOnSquareRectangle() {
 		
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box("container1", 10, 10, 1));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container("container1", 10, 10, 1, 0));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("J", 5, 10, 1), 1));
-		products.add(new BoxItem(new Box("K", 5, 5, 1), 1));
-		products.add(new BoxItem(new Box("L", 5, 5, 1), 1));
+		products.add(new BoxItem(new Box("J", 5, 10, 1, 0), 1));
+		products.add(new BoxItem(new Box("K", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("L", 5, 5, 1, 0), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -51,15 +51,15 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingRectanglesOnSquareRectangleVolumeFirst() {
 		
-		List<Dimension> containers = new ArrayList<Dimension>();
-		containers.add(new Dimension("container1", 10, 10, 3));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container("container1", 10, 10, 3, 0));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("J", 6, 10, 2), 1));
-		products.add(new BoxItem(new Box("L", 4, 10, 1), 1));
-		products.add(new BoxItem(new Box("K", 4, 10, 2), 1));
+		products.add(new BoxItem(new Box("J", 6, 10, 2, 0), 1));
+		products.add(new BoxItem(new Box("L", 4, 10, 1, 0), 1));
+		products.add(new BoxItem(new Box("K", 4, 10, 2, 0), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -71,14 +71,14 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingBinary1() {
 		
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box("container1", 2, 2, 1));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container("container1", 2, 2, 1, 0));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
 		for(int i = 0; i < 4; i++) {
-			products.add(new BoxItem(new Box("K", 1, 1, 1), 1));
+			products.add(new BoxItem(new Box("K", 1, 1, 1, 0), 1));
 		}
 		
 		Container fits = packager.pack(products);
@@ -89,19 +89,19 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingBinary2() {
 		
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box("container1", 8, 8, 1));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container("container1", 8, 8, 1, 0));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("J", 4, 4, 1), 1));
+		products.add(new BoxItem(new Box("J", 4, 4, 1, 0), 1));
 		
 		for(int i = 0; i < 4; i++) {
-			products.add(new BoxItem(new Box("K", 2, 2, 1), 1));
+			products.add(new BoxItem(new Box("K", 2, 2, 1, 0), 1));
 		}
 		for(int i = 0; i < 16; i++) {
-			products.add(new BoxItem(new Box("K", 1, 1, 1), 1));
+			products.add(new BoxItem(new Box("K", 1, 1, 1, 0), 1));
 		}
 		
 		Container fits = packager.pack(products);
@@ -112,13 +112,13 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingTooHigh() {
 		
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box("container1", 10, 10, 5));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container("container1", 10, 10, 5, 0));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("J", 10, 10, 6), 1));
+		products.add(new BoxItem(new Box("J", 10, 10, 6, 0), 1));
 
 		Container fits = packager.pack(products);
 		assertNull(fits);
@@ -127,17 +127,17 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingTooHighLevel() {
 		
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box("container1", 10, 10, 5));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container("container1", 10, 10, 5, 0));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("J", 10, 10, 5), 1));
+		products.add(new BoxItem(new Box("J", 10, 10, 5, 0), 1));
 
-		products.add(new BoxItem(new Box("J", 5, 10, 1), 1));
-		products.add(new BoxItem(new Box("K", 5, 5, 1), 1));
-		products.add(new BoxItem(new Box("L", 5, 5, 1), 1));
+		products.add(new BoxItem(new Box("J", 5, 10, 1, 0), 1));
+		products.add(new BoxItem(new Box("K", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("L", 5, 5, 1, 0), 1));
 
 		Container fits = packager.pack(products);
 		assertNull(fits);
@@ -146,23 +146,23 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	
 	@Test
 	public void testStacking3xLP() {
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box("container1", 350, 150, 400));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container("container1", 350, 150, 400, 0));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 		
 		List<BoxItem> products1 = new ArrayList<BoxItem>();
 
-		products1.add(new BoxItem(new Box("A", 400, 50, 350), 1));
-		products1.add(new BoxItem(new Box("B", 400, 50, 350), 1));
-		products1.add(new BoxItem(new Box("C", 400, 50, 350), 1));
+		products1.add(new BoxItem(new Box("A", 400, 50, 350, 0), 1));
+		products1.add(new BoxItem(new Box("B", 400, 50, 350, 0), 1));
+		products1.add(new BoxItem(new Box("C", 400, 50, 350, 0), 1));
 
 		Container fits1 = packager.pack(products1);
 		assertNotNull(fits1);
 		
 		List<BoxItem> products2 = new ArrayList<BoxItem>();
-		products2.add(new BoxItem(new Box("A", 350, 50, 400), 1));
-		products2.add(new BoxItem(new Box("B", 350, 50, 400), 1));
-		products2.add(new BoxItem(new Box("C", 350, 50, 400), 1));
+		products2.add(new BoxItem(new Box("A", 350, 50, 400, 0), 1));
+		products2.add(new BoxItem(new Box("B", 350, 50, 400, 0), 1));
+		products2.add(new BoxItem(new Box("C", 350, 50, 400, 0), 1));
 
 		Container fits2 = packager.pack(products2);
 		assertNotNull(fits2);
@@ -172,16 +172,16 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	
 	@Test
 	public void testLargestAreaFitFirstDoesNotWork() {
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box("container1", 15, 10, 10));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container("container1", 15, 10, 10, 0));
 		Packager bruteForcePackager = new BruteForcePackager(containers, true, true);
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, true, true, true);
 
 		List<BoxItem> products1 = new ArrayList<BoxItem>();
 		
-		products1.add(new BoxItem(new Box("01", 5, 10, 10), 1));
-		products1.add(new BoxItem(new Box("02", 5, 10, 10).rotate3D(), 1));
-		products1.add(new BoxItem(new Box("03", 5, 10, 10).rotate3D().rotate3D(), 1));
+		products1.add(new BoxItem(new Box("01", 5, 10, 10, 0), 1));
+		products1.add(new BoxItem(new Box("02", 5, 10, 10, 0).rotate3D(), 1));
+		products1.add(new BoxItem(new Box("03", 5, 10, 10, 0).rotate3D().rotate3D(), 1));
 
 		long time = System.currentTimeMillis();
 		Container fits1 = bruteForcePackager.pack(products1);
@@ -195,8 +195,8 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	@Test
 	@Ignore
 	public void testRunsForLimitedTimeSeconds() {
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box("container1", 5000, 10, 10));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container("container1", 5000, 10, 10, 0));
 		runsLimitedTimeSeconds(new BruteForcePackager(containers, true, true), 200);
 	}
 
@@ -217,14 +217,14 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		long deadline = System.currentTimeMillis() + duration * 1000;
 		int n = 1;
 		while(deadline > System.currentTimeMillis()) {
-			List<Box> containers = new ArrayList<Box>();
-			containers.add(new Box(5 * n, 10, 10));
+			List<Container> containers = new ArrayList<Container>();
+			containers.add(new Container(5 * n, 10, 10, 0));
 			Packager bruteForcePackager = new BruteForcePackager(containers, true, true);
 			
 			List<BoxItem> products1 = new ArrayList<BoxItem>();
 
 			for(int i = 0; i < n; i++) {
-				Box box = new Box(Integer.toString(i), 5, 10, 10);
+				Box box = new Box(Integer.toString(i), 5, 10, 10, 0);
 				for(int k = 0; k < i % 2; k++) {
 					box.rotate3D();
 				}
@@ -246,15 +246,15 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 
 	@Test
 	public void testIssue11ArrayOutOfBounds() {
-		List<Dimension> containers = Arrays.asList(
-			new Dimension("2", 330, 222, 121),
-			new Dimension("4", 330, 235, 225)
+		List<Container> containers = Arrays.asList(
+			new Container("2", 330, 222, 121, 0),
+			new Container("4", 330, 235, 225, 0)
 		);
 
 		List<BoxItem> items = Arrays.asList(
-			new BoxItem(new Box(105, 105, 293), 1),
-			new BoxItem(new Box(92, 94, 255), 1),
-			new BoxItem(new Box(105, 70, 60), 2)
+			new BoxItem(new Box(105, 105, 293, 0), 1),
+			new BoxItem(new Box(92, 94, 255, 0), 1),
+			new BoxItem(new Box(105, 70, 60, 0), 2)
 		);
 
 		BruteForcePackager packer = new BruteForcePackager(containers);

@@ -1,6 +1,7 @@
 package com.github.skjolberg.packing;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -17,10 +18,15 @@ public abstract class Packager {
 	 */
 	
 	public interface Adapter {
-		Container pack(List<BoxItem> boxes, Dimension dimension, long deadline);
+		PackResult pack(List<BoxItem> boxes, Container dimension, long deadline);
 	}
 	
-	protected final Dimension[] containers;
+	public interface PackResult {
+		boolean isFull();
+		Container getContainer();
+	}
+	
+	protected final Container[] containers;
 	
 	protected final boolean rotate3D; // if false, then 2d
 	protected final boolean binarySearch;
@@ -30,7 +36,7 @@ public abstract class Packager {
 	 * 
 	 * @param containers list of containers
 	 */
-	public Packager(List<? extends Dimension> containers) {
+	public Packager(List<Container> containers) {
 		this(containers, true, true);
 	}
 	
@@ -42,8 +48,8 @@ public abstract class Packager {
 	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a match, it searches the preceding boxes as well, until the deadline is passed. 
 	 */
 
-	public Packager(List<? extends Dimension> containers, boolean rotate3D, boolean binarySearch) {
-		this.containers = containers.toArray(new Dimension[containers.size()]);
+	public Packager(List<Container> containers, boolean rotate3D, boolean binarySearch) {
+		this.containers = containers.toArray(new Container[containers.size()]);
 		this.rotate3D = rotate3D;
 		this.binarySearch = binarySearch;
 	}
@@ -67,15 +73,72 @@ public abstract class Packager {
 	 * @return list of containers
 	 */
 	
-	public List<Dimension> filterContainers(List<BoxItem> boxes) {
+	public List<Container> filterByVolume(List<BoxItem> boxes, int count) {
+		long maxVolume = Long.MIN_VALUE;
+		long volume = 0;
+		long minVolume = Long.MAX_VALUE;
+		for(BoxItem box : boxes) {
+			long boxVolume = box.getBox().getVolume();
+			volume += boxVolume * box.getCount();
+			
+			if(boxVolume < minVolume) {
+				minVolume = boxVolume;
+			}
+			if(volume > maxVolume) {
+				maxVolume = volume;
+			}
+		}
+		
+		if(maxVolume * count < volume) {
+			// no containers will work at current count
+			return Collections.emptyList();
+		}
+		
+		List<Container> list = new ArrayList<>();
+		for(Container container : containers) {
+			if(container.getVolume() < minVolume) {
+				// this box cannot even fit a single box
+				continue;
+			}
+			
+			if(container.getVolume() + maxVolume * (count - 1) < volume) {
+				// this box cannot be used even together with all biggest boxes
+				continue;
+			}
+
+			if(count == 1) {
+				if(!canHoldAll(container, boxes)) {
+					continue;
+				}
+			} else {
+				if(!canHoldAtLeastOne(container, boxes)) {
+					continue;
+				}
+			}
+			
+
+			list.add(container);
+		}
+		
+		return list;
+	}
+
+	/**
+	 * Return a list of containers which can potentially hold the boxes.
+	 * 
+	 * @param boxes list of boxes
+	 * @return list of containers
+	 */
+	
+	public List<Container> filterByVolume(List<BoxItem> boxes) {
 		long volume = 0;
 		for(BoxItem box : boxes) {
 			volume += box.getBox().getVolume() * box.getCount();
 		}
 		
-		List<Dimension> list = new ArrayList<>();
-		for(Dimension container : containers) {
-			if(container.getVolume() < volume || !canHold(container, boxes)) {
+		List<Container> list = new ArrayList<>();
+		for(Container container : containers) {
+			if(container.getVolume() < volume || !canHoldAll(container, boxes)) {
 				// discard this container
 				continue;
 			}
@@ -85,7 +148,26 @@ public abstract class Packager {
 		
 		return list;
 	}
+
+	/**
+	 * Return a list of containers which can at least hold one of the boxes
+	 * 
+	 * @param boxes list of boxes
+	 * @return list of containers
+	 */
 	
+	public void filterBySize(List<BoxItem> boxes, List<Dimension> containers) {
+		for (int i = 0; i < containers.size(); i++) {
+			Dimension dimension = containers.get(i);
+			if(!canHoldAll(dimension, boxes)) {
+				// discard this container
+				containers.remove(i);
+				i--;
+			}
+		}
+	}
+	
+
 	/**
 	 * 
 	 * Return a container which holds all the boxes in the argument
@@ -96,7 +178,7 @@ public abstract class Packager {
 	 */
 	
 	public Container pack(List<BoxItem> boxes, long deadline) {
-		return pack(boxes, filterContainers(boxes), deadline);
+		return pack(boxes, filterByVolume(boxes, 1), deadline);
 	}
 
 	/**
@@ -104,36 +186,56 @@ public abstract class Packager {
 	 * Return a container which holds all the boxes in the argument
 	 * 
 	 * @param boxes list of boxes to fit in a container
-	 * @param dimensions list of containers
+	 * @param limit maximum number of containers
+	 * @param deadline the system time in millis at which the search should be aborted
+	 * @return index of container if match, -1 if not
+	 */
+	
+	public Container pack(List<BoxItem> boxes, int limit, long deadline) {
+		return pack(boxes, filterByVolume(boxes, limit), deadline);
+	}
+
+	/**
+	 * 
+	 * Return a container which holds all the boxes in the argument
+	 * 
+	 * @param boxes list of boxes to fit in a container
+	 * @param container list of containers
 	 * @param deadline the system time in milliseconds at which the search should be aborted
 	 * @return index of container if match, -1 if not
 	 */
 	
-	public Container pack(List<BoxItem> boxes, List<Dimension> dimensions, long deadline) {
-		if(dimensions.isEmpty()) {
+	public Container pack(List<BoxItem> boxes, List<Container> container, long deadline) {
+		if(container.isEmpty()) {
 			return null;
 		}
 		
 		Adapter pack = adapter(boxes);
 
-		if(!binarySearch || dimensions.size() <= 2 || deadline == Long.MAX_VALUE) {
-			for (int i = 0; i < dimensions.size(); i++) {
+		if(!binarySearch || container.size() <= 2 || deadline == Long.MAX_VALUE) {
+			for (int i = 0; i < container.size(); i++) {
 					
 				if(System.currentTimeMillis() > deadline) {
 					break;
 				}
 				
-				Container result = pack.pack(boxes, dimensions.get(i), deadline);
-				if(result != null) {
-					return result;
+				PackResult result = pack.pack(boxes, container.get(i), deadline);
+				if(result == null) {
+					return null; // timeout
+				}
+
+				if(result.isFull()) {
+					return result.getContainer();
 				}
 			}
 		} else {
-			Container[] results = new Container[dimensions.size()];
+			// perform a binary search among the available containers
+			// the list is ranked from most desirable to least.
+			Container[] results = new Container[container.size()];
 			boolean[] checked = new boolean[results.length]; 
 
-			ArrayList<Integer> current = new ArrayList<>();
-			for(int i = 0; i < dimensions.size(); i++) {
+			ArrayList<Integer> current = new ArrayList<>(container.size());
+			for(int i = 0; i < container.size(); i++) {
 				current.add(i);
 			}
 
@@ -147,11 +249,13 @@ public abstract class Packager {
 					int next = iterator.next();
 					int mid = current.get(next);
 
-					Container result = pack.pack(boxes, dimensions.get(mid), deadline);
-					
+					PackResult result = pack.pack(boxes, container.get(mid), deadline);
+					if(result == null) {
+						return null; // timeout
+					}
 					checked[mid] = true;
-					if(result != null) {
-						results[mid] = result;
+					if(result.isFull()) {
+						results[mid] = result.getContainer();
 						
 						iterator.lower();
 					} else {
@@ -161,7 +265,6 @@ public abstract class Packager {
 						break search;
 					}
 				} while(iterator.hasNext()); 
-				
 				
 		        // halt when have a result, and checked all containers at the lower indexes
 		        for (int i = 0; i < current.size(); i++) {
@@ -193,7 +296,7 @@ public abstract class Packager {
 	
 	protected abstract Adapter adapter(List<BoxItem> boxes);
 
-	protected boolean canHold(Dimension containerBox, List<BoxItem> boxes) {
+	protected boolean canHoldAll(Dimension containerBox, List<BoxItem> boxes) {
 		for(BoxItem box : boxes) {
 			if(rotate3D) {
 				if(!containerBox.canHold3D(box.getBox())) {
@@ -207,6 +310,23 @@ public abstract class Packager {
 		}
 		return true;
 	}
+	
+
+	protected boolean canHoldAtLeastOne(Dimension containerBox, List<BoxItem> boxes) {
+		for(BoxItem box : boxes) {
+			if(rotate3D) {
+				if(containerBox.canHold3D(box.getBox())) {
+					return true;
+				}
+			} else {
+				if(containerBox.canHold2D(box.getBox())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	
 	public static List<Placement> getPlacements(int size) {
 		// each box will at most have a single placement with a space (and its remainder). 

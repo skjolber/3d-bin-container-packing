@@ -13,6 +13,25 @@ import com.github.skjolberg.packing.Packager.Adapter;
 
 public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 
+	private static class LAFFResult implements PackResult {
+		
+		private List<Box> boxes;
+		private Container container;
+
+		public LAFFResult(List<Box> boxes, Container container) {
+			this.boxes = boxes;
+			this.container = container;
+		}
+
+		public boolean isFull() {
+			return boxes.isEmpty();
+		}
+
+		public Container getContainer() {
+			return container;
+		}
+	}
+	
 	protected final boolean footprintFirst;
 	
 	/**
@@ -20,10 +39,9 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 	 * 
 	 * @param containers list of containers
 	 */
-	public LargestAreaFitFirstPackager(List<? extends Dimension> containers) {
+	public LargestAreaFitFirstPackager(List<Container> containers) {
 		this(containers, true, true, true);
 	}
-
 	
 	/**
 	 * Constructor
@@ -34,7 +52,7 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a container that can hold the boxes, given time, it also tries to find a better match.
 	 */
 	
-	public LargestAreaFitFirstPackager(List<? extends Dimension> containers, boolean rotate3D, boolean footprintFirst, boolean binarySearch) {
+	public LargestAreaFitFirstPackager(List<Container> containers, boolean rotate3D, boolean footprintFirst, boolean binarySearch) {
 		super(containers, rotate3D, binarySearch);
 		
 		this.footprintFirst = footprintFirst;
@@ -45,12 +63,12 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 	 * Return a container which holds all the boxes in the argument
 	 * 
 	 * @param items list of boxes to fit in a container
-	 * @param dimension the container to fit within
+	 * @param targetContainer the container to fit within
 	 * @param deadline the system time in millis at which the search should be aborted
 	 * @return null if no match, or deadline reached
 	 */
 	
-	public Container pack(List<BoxItem> items, Dimension dimension, long deadline) {
+	public PackResult pack(List<BoxItem> items, Container targetContainer, long deadline) {
 		List<Box> containerProducts = new ArrayList<Box>(items.size() * 2);
 
 		for(BoxItem item : items) {
@@ -61,15 +79,15 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 			}
 		}
 		
-		Container holder = new Container(dimension);
-		
-		Dimension freeSpace = dimension;
+		Container holder = new Container(targetContainer);
+
+		Dimension freeSpace = targetContainer;
 		
 		while(!containerProducts.isEmpty()) {
 			if(System.currentTimeMillis() > deadline) {
 				// fit2d below might have returned due to deadline
 
-				break;
+				return null;
 			}
 
 			// choose the box with the largest surface area, that fits
@@ -132,15 +150,15 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 					// no fit in the current container within the remaining space
 					// try the next container
 
-					return null;
+					return new LAFFResult(containerProducts, holder);
 				}
 			}
 			
 			// current box should have the optimal orientation already
 			// create a space which holds the full level
 			Space levelSpace = new Space(
-						dimension.getWidth(), 
-						dimension.getDepth(), 
+						targetContainer.getWidth(), 
+						targetContainer.getDepth(), 
 						currentBox.getHeight(), 
 						0, 
 						0, 
@@ -155,7 +173,7 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 			freeSpace = holder.getFreeSpace();
 		}
 		
-		return holder;
+		return new LAFFResult(containerProducts, holder);
 	}
 
 	/**

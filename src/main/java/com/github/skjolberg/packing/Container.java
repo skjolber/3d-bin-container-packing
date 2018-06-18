@@ -4,24 +4,30 @@ import java.util.ArrayList;
 
 public class Container extends Box {
 
+	private int stackWeight = 0;
 	private int stackHeight = 0;
 	private ArrayList<Level> levels = new ArrayList<Level>();
-	
-	public Container(Dimension dimension) {
-		super(dimension.getName(), dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
+
+	public Container(Container container) {
+		super(container.getName(), container.getWidth(), container.getDepth(), container.getHeight(), container.getWeight());
 	}
 
-	public Container(int w, int d, int h) {
-		super(w, d, h);
+	public Container(Dimension dimension, int weight) {
+		super(dimension.getName(), dimension.getWidth(), dimension.getDepth(), dimension.getHeight(), weight);
 	}
 
-	public Container(String name, int w, int d, int h) {
-		super(name, w, d, h);
+	public Container(int w, int d, int h, int weight) {
+		super(w, d, h, weight);
+	}
+
+	public Container(String name, int w, int d, int h, int weight) {
+		super(name, w, d, h, weight);
 	}
 
 	public boolean add(Level element) {
 		if(!levels.isEmpty()) {
 			stackHeight += currentLevelStackHeight();
+			stackWeight += currentLevelStackWeight();
 		}
 		
 		return levels.add(element);
@@ -34,6 +40,7 @@ public class Container extends Box {
 	public void add(int index, Level element) {
 		if(!levels.isEmpty()) {
 			stackHeight += currentLevelStackHeight();
+			stackWeight += currentLevelStackWeight();
 		}
 		
 		levels.add(index, element);
@@ -46,6 +53,13 @@ public class Container extends Box {
 		return levels.get(levels.size() - 1).getHeight();
 	}
 	
+	public int currentLevelStackWeight() {
+		if(levels.isEmpty()) {
+			return 0;
+		}
+		return levels.get(levels.size() - 1).getWeight();
+	}
+	
 	public void add(Placement placement) {
 		levels.get(levels.size() - 1).add(placement);
 	}
@@ -55,11 +69,19 @@ public class Container extends Box {
 	}
 	
 	public Dimension getFreeSpace() {
-		int spaceHeight = height - getStackHeight();
-		if(spaceHeight < 0) {
-			throw new IllegalArgumentException("Remaining free space is negative at " + spaceHeight);
+		int remainder = height - getStackHeight();
+		if(remainder < 0) {
+			throw new IllegalArgumentException("Remaining free space is negative at " + remainder);
 		}
-		return new Dimension(width, depth, spaceHeight);
+		return new Dimension(width, depth, remainder);
+	}
+	
+	public int getFreeWeight() {
+		int remainder = weight - stackWeight;
+		if(remainder < 0) {
+			throw new IllegalArgumentException("Remaining weigth is negative at " + remainder);
+		}
+		return remainder;
 	}
 	
 	public ArrayList<Level> getLevels() {
@@ -74,12 +96,27 @@ public class Container extends Box {
 		levels.get(levels.size() - 1).validate();
 	}
 
+	public void clear() {
+		levels.clear();
+		stackHeight = 0;
+		stackWeight = 0;
+	}
+	
+	public int getBoxCount() {
+		int count = 0;
+		for(Level level : levels) {
+			count += level.size();
+		}
+		return count;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((levels == null) ? 0 : levels.hashCode());
 		result = prime * result + stackHeight;
+		result = prime * result + stackWeight;
 		return result;
 	}
 
@@ -99,19 +136,10 @@ public class Container extends Box {
 			return false;
 		if (stackHeight != other.stackHeight)
 			return false;
+		if (stackWeight != other.stackWeight)
+			return false;
 		return true;
 	}
 	
-	public void clear() {
-		levels.clear();
-		stackHeight = 0;
-	}
 	
-	public int getBoxCount() {
-		int count = 0;
-		for(Level level : levels) {
-			count += level.size();
-		}
-		return count;
-	}
 }

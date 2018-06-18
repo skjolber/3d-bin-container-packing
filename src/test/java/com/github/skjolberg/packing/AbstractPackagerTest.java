@@ -23,12 +23,12 @@ public abstract class AbstractPackagerTest {
 	
 	public void runsLimitedTimeSeconds(Packager bruteForcePackager, long duration) {
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(5000, 1000, 1000));
+		containers.add(new Box(5000, 1000, 1000, 0));
 
 		List<BoxItem> products1 = new ArrayList<BoxItem>();
 		
 		for(int i = 0; i < 10000; i++) {
-			Box box = new Box(Integer.toString(i), 5, 10, 10);
+			Box box = new Box(Integer.toString(i), 5, 10, 10, 0);
 			for(int k = 0; k < i % 2; k++) {
 				box.rotate3D();
 			}

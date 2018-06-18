@@ -55,7 +55,26 @@ public class PermutationRotationIterator {
 			return count;
 		}
 	}
-
+	
+	public static class PermutationRotationState {
+		private int[] rotations; // 2^n or 6^n
+		private int[] permutations; // n!
+		
+		public PermutationRotationState(int[] rotations, int[] permutations) {
+			super();
+			this.rotations = new int[rotations.length];
+			System.arraycopy(rotations, 0, this.rotations, 0, rotations.length);
+			this.permutations = new int[permutations.length];
+			System.arraycopy(permutations, 0, this.permutations, 0, permutations.length);
+		}
+		public int[] getPermutations() {
+			return permutations;
+		}
+		public int[] getRotations() {
+			return rotations;
+		}
+		
+	}
 	
 	public static PermutationRotation[] toRotationMatrix(List<BoxItem> list, boolean rotate3D) {
 		PermutationRotation[] boxes = new PermutationRotation[list.size()];
@@ -175,6 +194,14 @@ public class PermutationRotationIterator {
 		}
 		
 		return false;
+	}
+	
+	public int[] getRotations() {
+		return rotations;
+	}
+	
+	public int[] getPermutations() {
+		return permutations;
 	}
 	
 	public boolean isWithinHeight(int fromIndex, int height) {
@@ -306,4 +333,12 @@ public class PermutationRotationIterator {
 		return rotations.length;
 	}
 
+	public PermutationRotationState getState() {
+		return new PermutationRotationState(rotations, permutations);
+	}
+	
+	public void setState(PermutationRotationState state) {
+		this.rotations = state.getRotations();
+		this.permutations = state.getPermutations();
+	}
 }

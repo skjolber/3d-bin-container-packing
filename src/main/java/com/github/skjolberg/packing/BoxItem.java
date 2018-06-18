@@ -9,7 +9,6 @@ package com.github.skjolberg.packing;
 public class BoxItem {
 
 	private int count;
-	
 	private Box box;
 
 	public BoxItem() {

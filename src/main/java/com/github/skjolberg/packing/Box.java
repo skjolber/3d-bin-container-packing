@@ -2,16 +2,24 @@ package com.github.skjolberg.packing;
 
 public class Box extends Dimension {
 
-	public Box(Dimension dimension) {
+	protected int weight;
+	
+	public Box(Dimension dimension, int weight) {
 		super(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
+		
+		this.weight = weight;
 	}
 
-	public Box(int w, int d, int h) {
+	public Box(int w, int d, int h, int weight) {
 		super(w, d, h);
+		
+		this.weight = weight;
 	}
 
-	public Box(String name, int w, int d, int h) {
+	public Box(String name, int w, int d, int h, int weight) {
 		super(name, w, d, h);
+		
+		this.weight = weight;
 	}
 	
 	/**
@@ -29,12 +37,6 @@ public class Box extends Dimension {
 		this.depth = height;
 
 		return this;
-	}
-	
-	@Override
-	public String toString() {
-		return "Box [name=" + name + ", width=" + width + ", depth=" + depth + ", height=" + height + ", volume="
-				+ volume + "]";
 	}
 
 	/**
@@ -219,7 +221,7 @@ public class Box extends Dimension {
 	}
 	
 	protected Box clone() {
-		return new Box(name, width, depth, height);
+		return new Box(name, width, depth, height, weight);
 	}
 
 	/**
@@ -261,4 +263,14 @@ public class Box extends Dimension {
 		return this;
 	}	
 
+	public int getWeight() {
+		return weight;
+	}
+
+	@Override
+	public String toString() {
+		return "Box [weight=" + weight + ", width=" + width + ", depth=" + depth + ", height=" + height + ", volume="
+				+ volume + ", name=" + name + "]";
+	}
+	
 }

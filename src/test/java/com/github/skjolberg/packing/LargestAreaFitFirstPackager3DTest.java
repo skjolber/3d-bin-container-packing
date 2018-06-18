@@ -15,16 +15,16 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingSquaresOnSquare() {
 		
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(10, 10, 1));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(10, 10, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("A", 5, 5, 1), 1));
-		products.add(new BoxItem(new Box("B", 5, 5, 1), 1));
-		products.add(new BoxItem(new Box("C", 5, 5, 1), 1));
-		products.add(new BoxItem(new Box("D", 5, 5, 1), 1));
+		products.add(new BoxItem(new Box("A", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("B", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("C", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("D", 5, 5, 1, 0), 1));
 		
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -34,21 +34,21 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingSquaresOnSquareMultiLevel() {
 		
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(10, 10, 2));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(10, 10, 2, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("A", 5, 5, 1), 1));
-		products.add(new BoxItem(new Box("B", 5, 5, 1), 1));
-		products.add(new BoxItem(new Box("C", 5, 5, 1), 1));
-		products.add(new BoxItem(new Box("D", 5, 5, 1), 1));
+		products.add(new BoxItem(new Box("A", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("B", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("C", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("D", 5, 5, 1, 0), 1));
 
-		products.add(new BoxItem(new Box("E", 5, 5, 1), 1));
-		products.add(new BoxItem(new Box("F", 5, 5, 1), 1));
-		products.add(new BoxItem(new Box("G", 5, 5, 1), 1));
-		products.add(new BoxItem(new Box("H", 5, 5, 1), 1));
+		products.add(new BoxItem(new Box("E", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("F", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("G", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("H", 5, 5, 1, 0), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -59,14 +59,14 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingRectanglesOnSquare() {
 		
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(10, 10, 1));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(10, 10, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("E", 5, 10, 1), 1));
-		products.add(new BoxItem(new Box("F", 5, 10, 1), 1));
+		products.add(new BoxItem(new Box("E", 5, 10, 1, 0), 1));
+		products.add(new BoxItem(new Box("F", 5, 10, 1, 0), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -76,15 +76,15 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingRectanglesOnSquareRectangle() {
 		
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(10, 10, 1));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(10, 10, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("J", 5, 10, 1), 1));
-		products.add(new BoxItem(new Box("K", 5, 5, 1), 1));
-		products.add(new BoxItem(new Box("L", 5, 5, 1), 1));
+		products.add(new BoxItem(new Box("J", 5, 10, 1, 0), 1));
+		products.add(new BoxItem(new Box("K", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("L", 5, 5, 1, 0), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -94,15 +94,15 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingRectanglesOnSquareRectangleVolumeFirst() {
 		
-		List<Dimension> containers = new ArrayList<Dimension>();
-		containers.add(new Dimension(10, 10, 3));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(10, 10, 3, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("J", 6, 10, 2), 1));
-		products.add(new BoxItem(new Box("L", 4, 10, 1), 1));
-		products.add(new BoxItem(new Box("K", 4, 10, 2), 1));
+		products.add(new BoxItem(new Box("J", 6, 10, 2, 0), 1));
+		products.add(new BoxItem(new Box("L", 4, 10, 1, 0), 1));
+		products.add(new BoxItem(new Box("K", 4, 10, 2, 0), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -114,14 +114,14 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingBinary1() {
 		
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(2, 2, 1));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(2, 2, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
 		for(int i = 0; i < 4; i++) {
-			products.add(new BoxItem(new Box("K", 1, 1, 1), 1));
+			products.add(new BoxItem(new Box("K", 1, 1, 1, 0), 1));
 		}
 		
 		Container fits = packager.pack(products);
@@ -132,19 +132,19 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingBinary2() {
 		
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(8, 8, 1));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(8, 8, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("J", 4, 4, 1), 1));
+		products.add(new BoxItem(new Box("J", 4, 4, 1, 0), 1));
 		
 		for(int i = 0; i < 4; i++) {
-			products.add(new BoxItem(new Box("K", 2, 2, 1), 1));
+			products.add(new BoxItem(new Box("K", 2, 2, 1, 0), 1));
 		}
 		for(int i = 0; i < 16; i++) {
-			products.add(new BoxItem(new Box("K", 1, 1, 1), 1));
+			products.add(new BoxItem(new Box("K", 1, 1, 1, 0), 1));
 		}
 		
 		Container fits = packager.pack(products);
@@ -155,13 +155,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingTooHigh() {
 		
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(10, 10, 5));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(10, 10, 5, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("J", 10, 10, 6), 1));
+		products.add(new BoxItem(new Box("J", 10, 10, 6, 0), 1));
 
 		Container fits = packager.pack(products);
 		assertNull(fits);
@@ -170,17 +170,17 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	@Test
 	public void testStackingTooHighLevel() {
 		
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(10, 10, 5));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(10, 10, 5, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("J", 10, 10, 5), 1));
+		products.add(new BoxItem(new Box("J", 10, 10, 5, 0), 1));
 
-		products.add(new BoxItem(new Box("J", 5, 10, 1), 1));
-		products.add(new BoxItem(new Box("K", 5, 5, 1), 1));
-		products.add(new BoxItem(new Box("L", 5, 5, 1), 1));
+		products.add(new BoxItem(new Box("J", 5, 10, 1, 0), 1));
+		products.add(new BoxItem(new Box("K", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("L", 5, 5, 1, 0), 1));
 
 		Container fits = packager.pack(products);
 		assertNull(fits);
@@ -189,23 +189,23 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	
 	@Test
 	public void testStacking3xLP() {
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(350, 150, 400));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(350, 150, 400, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 		
 		List<BoxItem> products1 = new ArrayList<BoxItem>();
 
-		products1.add(new BoxItem(new Box("A", 400, 50, 350), 1));
-		products1.add(new BoxItem(new Box("B", 400, 50, 350), 1));
-		products1.add(new BoxItem(new Box("C", 400, 50, 350), 1));
+		products1.add(new BoxItem(new Box("A", 400, 50, 350, 0), 1));
+		products1.add(new BoxItem(new Box("B", 400, 50, 350, 0), 1));
+		products1.add(new BoxItem(new Box("C", 400, 50, 350, 0), 1));
 
 		Container fits1 = packager.pack(products1);
 		assertNotNull(fits1);
 		
 		List<BoxItem> products2 = new ArrayList<BoxItem>();
-		products2.add(new BoxItem(new Box("A", 350, 50, 400), 1));
-		products2.add(new BoxItem(new Box("B", 350, 50, 400), 1));
-		products2.add(new BoxItem(new Box("C", 350, 50, 400), 1));
+		products2.add(new BoxItem(new Box("A", 350, 50, 400, 0), 1));
+		products2.add(new BoxItem(new Box("B", 350, 50, 400, 0), 1));
+		products2.add(new BoxItem(new Box("C", 350, 50, 400, 0), 1));
 
 		Container fits2 = packager.pack(products2);
 		assertNotNull(fits2);
@@ -214,20 +214,20 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	
 	@Test
 	public void testIsse2() {
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(36, 55, 13));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(36, 55, 13, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
 		List<BoxItem> products1 = new ArrayList<BoxItem>();
 
-		products1.add(new BoxItem(new Box("01", 38, 10, 10), 1));
-		products1.add(new BoxItem(new Box("02", 38, 10, 10), 1));
-		products1.add(new BoxItem(new Box("03", 38, 10, 10), 1));
+		products1.add(new BoxItem(new Box("01", 38, 10, 10, 0), 1));
+		products1.add(new BoxItem(new Box("02", 38, 10, 10, 0), 1));
+		products1.add(new BoxItem(new Box("03", 38, 10, 10, 0), 1));
 
 		Container fits1 = packager.pack(products1);
 		assertNotNull(fits1);
 		
-		products1.add(new BoxItem(new Box("04", 38, 10, 10), 1));
+		products1.add(new BoxItem(new Box("04", 38, 10, 10, 0), 1));
 		Container fits2 = packager.pack(products1);
 		assertNull(fits2);
 	}
@@ -235,8 +235,8 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	@Test
 	@Ignore
 	public void testRunsForLimitedTimeSeconds() {
-		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(50000, 50000, 50000));
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(50000, 50000, 50000, 0));
 		runsLimitedTimeSeconds(new LargestAreaFitFirstPackager(containers), 0);
 	}
 
@@ -250,14 +250,14 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		long deadline = System.currentTimeMillis() + duration * 1000;
 		int n = 1;
 		while(deadline > System.currentTimeMillis()) {
-			List<Box> containers = new ArrayList<Box>();
-			containers.add(new Box(5 * n, 10, 10));
+			List<Container> containers = new ArrayList<Container>();
+			containers.add(new Container(5 * n, 10, 10, 0));
 			Packager bruteForcePackager = new LargestAreaFitFirstPackager(containers);
 			
 			List<BoxItem> products1 = new ArrayList<BoxItem>();
 
 			for(int i = 0; i < n; i++) {
-				Box box = new Box(Integer.toString(i), 5, 10, 10);
+				Box box = new Box(Integer.toString(i), 5, 10, 10, 0);
 				for(int k = 0; k < i % 2; k++) {
 					box.rotate3D();
 				}
@@ -276,4 +276,20 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		}
 	}
 
+	@Test
+	public void testStackingMultipleLayersFor3Column() {
+
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(30, 10, 6, 0)); // 1800
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
+
+		List<BoxItem> products = new ArrayList<BoxItem>();
+
+		// 1
+		products.add(new BoxItem(new Box("A", 10, 10, 6, 0), 1)); // 600
+		// 2 
+		products.add(new BoxItem(new Box("D", 10, 10, 2, 0), 3)); // 200 200 200
+		Container fits = packager.pack(products);
+		assertNull(fits);
+	}
 }

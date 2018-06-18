@@ -8,6 +8,6 @@ public class ContainerTest {
 
 	@Test
 	public void testEquals() {
-		assertEquals(new Container(1, 1, 1), new Container(new Dimension(1,  1,  1)));
+		assertEquals(new Container(1, 1, 1, 0), new Container(new Dimension(1, 1, 1), 1));
 	}
 }

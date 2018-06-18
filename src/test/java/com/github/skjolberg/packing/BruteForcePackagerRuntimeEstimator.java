@@ -27,11 +27,11 @@ public class BruteForcePackagerRuntimeEstimator {
 
 	private static class BruteForcePackagerEstimator extends BruteForcePackager {
 
-		public BruteForcePackagerEstimator(List<? extends Dimension> containers) {
+		public BruteForcePackagerEstimator(List<Container> containers) {
 			super(containers);
 		}
 
-		public BruteForcePackagerEstimator(List<? extends Dimension> containers, boolean rotate3d, boolean binarySearch) {
+		public BruteForcePackagerEstimator(List<Container> containers, boolean rotate3d, boolean binarySearch) {
 			super(containers, rotate3d, binarySearch);
 		}
 
@@ -66,8 +66,8 @@ public class BruteForcePackagerRuntimeEstimator {
 		
 		int n = 1;
 		while(deadline > System.currentTimeMillis() && n < 20) {
-			List<Box> containers = new ArrayList<Box>();
-			containers.add(new Box(5 * n, 10, 10));
+			List<Container> containers = new ArrayList<Container>();
+			containers.add(new Container(5 * n, 10, 10, 0));
 			Packager bruteForcePackager = new BruteForcePackagerEstimator(containers, true, true);
 			
 			for(int k = 1; k <= n; k++) {
@@ -75,7 +75,7 @@ public class BruteForcePackagerRuntimeEstimator {
 			
 				int spent = 0;
 				while(spent < n) {
-					Box box = new Box(5, 10, 10);
+					Box box = new Box(5, 10, 10, 0);
 					int count = Math.min(k, n - spent);
 					products1.add(new BoxItem(box, count));
 					spent += count;
@@ -166,8 +166,8 @@ public class BruteForcePackagerRuntimeEstimator {
 
 		int n = min;
 		while(deadline > System.currentTimeMillis() && n < max) {
-			List<Box> containers = new ArrayList<Box>();
-			containers.add(new Box(5 * n, 10, 10));
+			List<Container> containers = new ArrayList<Container>();
+			containers.add(new Container(5 * n, 10, 10, 0));
 			Packager bruteForcePackager = new BruteForcePackagerEstimator(containers, true, true);
 			
 			for(int k = 1; k <= n; k++) {
@@ -175,7 +175,7 @@ public class BruteForcePackagerRuntimeEstimator {
 			
 				int spent = 0;
 				while(spent < n) {
-					Box box = new Box(5, 10, 10);
+					Box box = new Box(5, 10, 10, 0);
 					int count = Math.min(k, n - spent);
 					products1.add(new BoxItem(box, count));
 					spent += count;
