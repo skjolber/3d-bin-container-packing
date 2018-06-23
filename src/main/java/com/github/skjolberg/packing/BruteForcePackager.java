@@ -63,6 +63,11 @@ public class BruteForcePackager extends Packager {
 		public int getCount() {
 			return count;
 		}
+
+		@Override
+		public boolean packsMoreBoxesThan(PackResult result) {
+			return ((BruteForceResult)result).count < count;
+		}
 	}
 
 	/**
@@ -153,6 +158,9 @@ public class BruteForcePackager extends Packager {
 			}
 
 			Box box = rotator.get(index);
+			if(box.getWeight() > holder.getFreeWeight()) {
+				return index - 1;
+			}
 			
 			Placement placement = placements.get(index);
 			Space levelSpace = placement.getSpace();
@@ -187,7 +195,7 @@ public class BruteForcePackager extends Packager {
 
 	protected static int fit2D(PermutationRotationIterator rotator, int index, List<Placement> placements, Container holder, Placement usedSpace, long deadline) {
 		// add used space box now
-		// there is up to possible 2 free spaces
+		// there is up to 2 possible free spaces
 		holder.add(usedSpace);
 
 		if(index >= rotator.length()) {
@@ -195,12 +203,15 @@ public class BruteForcePackager extends Packager {
 		}
 
 		if(System.currentTimeMillis() > deadline) {
-			return index;
+			return -1;
 		}
 
 		Box nextBox = rotator.get(index);
+		if(nextBox.getWeight() > holder.getFreeWeight()) {
+			return index;
+		}
+				
 		Placement nextPlacement = placements.get(index);
-
 		nextPlacement.setBox(nextBox);
 		
 		if(!isFreespace(usedSpace.getSpace(), usedSpace.getBox(), nextPlacement)) {
@@ -219,18 +230,20 @@ public class BruteForcePackager extends Packager {
 			Space remainder = nextPlacement.getSpace().getRemainder();
 			if(!remainder.isEmpty()) {
 				Box box = rotator.get(index);
-				
-				if(box.fitsInside3D(remainder)) {
-					Placement placement = placements.get(index);
-					placement.setBox(box);
 
-					index++;
-					
-					placement.getSpace().copyFrom(remainder);
-					placement.getSpace().setParent(remainder);
-					placement.getSpace().getRemainder().setParent(remainder);
-					
-					index = fit2D(rotator, index, placements, holder, placement, deadline);
+				if(box.getWeight() <= holder.getFreeWeight()) {
+					if(box.fitsInside3D(remainder)) {
+						Placement placement = placements.get(index);
+						placement.setBox(box);
+	
+						index++;
+						
+						placement.getSpace().copyFrom(remainder);
+						placement.getSpace().setParent(remainder);
+						placement.getSpace().getRemainder().setParent(remainder);
+						
+						index = fit2D(rotator, index, placements, holder, placement, deadline);
+					}
 				}
 			}
 		}

@@ -24,6 +24,8 @@ public abstract class Packager {
 	public interface PackResult {
 		boolean isFull();
 		Container getContainer();
+		boolean packsMoreBoxesThan(PackResult result);
+		// TODO better in weight and also volume
 	}
 	
 	protected final Container[] containers;
@@ -115,7 +117,6 @@ public abstract class Packager {
 					continue;
 				}
 			}
-			
 
 			list.add(container);
 		}
