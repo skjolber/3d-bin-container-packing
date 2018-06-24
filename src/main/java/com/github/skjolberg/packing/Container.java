@@ -1,6 +1,7 @@
 package com.github.skjolberg.packing;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Container extends Box {
 
@@ -84,7 +85,7 @@ public class Container extends Box {
 		return remainder;
 	}
 	
-	public ArrayList<Level> getLevels() {
+	public List<Level> getLevels() {
 		return levels;
 	}
 	
@@ -139,6 +140,13 @@ public class Container extends Box {
 		if (stackWeight != other.stackWeight)
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "Container [stackWeight=" + stackWeight + ", stackHeight=" + stackHeight + ", levels=" + levels
+				+ ", weight=" + weight + ", width=" + width + ", depth=" + depth + ", height=" + height + ", volume="
+				+ volume + ", name=" + name + "]";
 	}
 	
 	

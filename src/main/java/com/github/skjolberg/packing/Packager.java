@@ -1,6 +1,7 @@
 package com.github.skjolberg.packing;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,12 +19,13 @@ public abstract class Packager {
 	 */
 	
 	public interface Adapter {
-		PackResult pack(List<BoxItem> boxes, Container dimension, long deadline);
+		void initialize(List<BoxItem> boxes);
+		Container accept(PackResult result);
+		PackResult attempt(Container dimension, long deadline);
 	}
 	
 	public interface PackResult {
-		boolean isFull();
-		Container getContainer();
+		boolean isComplete();
 		boolean packsMoreBoxesThan(PackResult result);
 		// TODO better in weight and also volume
 	}
@@ -95,27 +97,29 @@ public abstract class Packager {
 	 * Return a list of containers which can potentially hold the boxes.
 	 * 
 	 * @param boxes list of boxes
+	 * @param containers list of containers
+	 * @param count maximum number of possible containers
 	 * @return list of containers
 	 */
-	
-	public List<Container> filterByVolumeAndWeight(List<BoxItem> boxes, int count) {
+
+	public List<Container> filterByVolumeAndWeight(List<Box> boxes, List<Container> containers, int count) {
 		long volume = 0;
 		long minVolume = Long.MAX_VALUE;
 		
 		long weight = 0;
 		long minWeight = Long.MAX_VALUE;
 
-		for(BoxItem box : boxes) {
+		for(Box box : boxes) {
 			// volume
-			long boxVolume = box.getBox().getVolume();
-			volume += boxVolume * box.getCount();
+			long boxVolume = box.getVolume();
+			volume += boxVolume;
 			
 			if(boxVolume < minVolume) {
 				minVolume = boxVolume;
 			}
 			
 			// weight
-			long boxWeight = box.getBox().getWeight();
+			long boxWeight = box.getWeight();
 			weight += boxWeight;
 					
 			if(boxWeight < minWeight) {
@@ -123,12 +127,29 @@ public abstract class Packager {
 			}
 		}
 
-		if(maxVolume * count < volume || maxWeight * count < weight) { // XXX FEILER
+		long maxVolume = Long.MIN_VALUE;
+		long maxWeight = Long.MIN_VALUE;
+		
+		for(Container container : containers) {
+			// volume
+			long boxVolume = container.getVolume();
+			if(boxVolume > maxVolume) {
+				maxVolume = boxVolume;
+			}
+			
+			// weight
+			long boxWeight = container.getWeight();
+			if(boxWeight > maxWeight) {
+				maxWeight = boxWeight;
+			}
+		}
+
+		if(maxVolume * count < volume || maxWeight * count < weight) {
 			// no containers will work at current count
 			return Collections.emptyList();
 		}
 		
-		List<Container> list = new ArrayList<>(containers.length);
+		List<Container> list = new ArrayList<>(containers.size());
 		for(Container container : containers) {
 			if(container.getVolume() < minVolume || container.getWeight() < minWeight) {
 				// this box cannot even fit a single box
@@ -163,10 +184,10 @@ public abstract class Packager {
 	 * @return list of containers
 	 */
 	
-	public List<Container> filterByVolume(List<BoxItem> boxes) {
+	public List<Container> filterByVolume(List<Box> boxes) {
 		long volume = 0;
-		for(BoxItem box : boxes) {
-			volume += box.getBox().getVolume() * box.getCount();
+		for(Box box : boxes) {
+			volume += box.getVolume();
 		}
 		
 		List<Container> list = new ArrayList<>();
@@ -189,7 +210,7 @@ public abstract class Packager {
 	 * @return list of containers
 	 */
 	
-	public void filterBySize(List<BoxItem> boxes, List<Container> containers) {
+	public void filterBySize(List<Box> boxes, List<Container> containers) {
 		for (int i = 0; i < containers.size(); i++) {
 			Container dimension = containers.get(i);
 			if(!canHoldAll(dimension, boxes)) {
@@ -211,7 +232,21 @@ public abstract class Packager {
 	 */
 	
 	public Container pack(List<BoxItem> boxes, long deadline) {
-		return pack(boxes, filterByVolumeAndWeight(boxes, 1), deadline);
+		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline);
+	}
+
+	protected static List<Box> toBoxes(List<BoxItem> boxItems, boolean clone) {
+		List<Box> boxClones = new ArrayList<Box>(boxItems.size() * 2);
+
+		for(BoxItem item : boxItems) {
+			Box box = item.getBox();
+			boxClones.add(box);
+			for(int i = 1; i < item.getCount(); i++) {
+				boxClones.add(clone ? box : box.clone());
+			}
+		}
+		return boxClones;
+				
 	}
 
 	/**
@@ -225,7 +260,7 @@ public abstract class Packager {
 	 */
 	
 	public Container pack(List<BoxItem> boxes, int limit, long deadline) {
-		return pack(boxes, filterByVolumeAndWeight(boxes, limit), deadline);
+		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), limit), deadline);
 	}
 
 	/**
@@ -243,8 +278,9 @@ public abstract class Packager {
 			return null;
 		}
 		
-		Adapter pack = adapter(boxes);
-
+		Adapter pack = adapter();
+		pack.initialize(boxes);
+		
 		if(!binarySearch || container.size() <= 2 || deadline == Long.MAX_VALUE) {
 			for (int i = 0; i < container.size(); i++) {
 					
@@ -252,13 +288,13 @@ public abstract class Packager {
 					break;
 				}
 				
-				PackResult result = pack.pack(boxes, container.get(i), deadline);
+				PackResult result = pack.attempt(container.get(i), deadline);
 				if(result == null) {
 					return null; // timeout
 				}
 
-				if(result.isFull()) {
-					return result.getContainer();
+				if(result.isComplete()) {
+					return pack.accept(result);
 				}
 			}
 		} else {
@@ -282,13 +318,13 @@ public abstract class Packager {
 					int next = iterator.next();
 					int mid = current.get(next);
 
-					PackResult result = pack.pack(boxes, container.get(mid), deadline);
+					PackResult result = pack.attempt(container.get(mid), deadline);
 					if(result == null) {
 						return null; // timeout
 					}
 					checked[mid] = true;
-					if(result.isFull()) {
-						results[mid] = result.getContainer();
+					if(result.isComplete()) {
+						results[mid] = pack.accept(result);
 						
 						iterator.lower();
 					} else {
@@ -327,19 +363,19 @@ public abstract class Packager {
 		return null;
 	}	
 	
-	protected abstract Adapter adapter(List<BoxItem> boxes);
+	protected abstract Adapter adapter();
 
-	protected boolean canHoldAll(Container containerBox, List<BoxItem> boxes) {
-		for(BoxItem box : boxes) {
-			if(containerBox.getWeight() < box.getBox().getWeight()) {
+	protected boolean canHoldAll(Container containerBox, List<Box> boxes) {
+		for(Box box : boxes) {
+			if(containerBox.getWeight() < box.getWeight()) {
 				continue;
 			}
 			if(rotate3D) {
-				if(!containerBox.canHold3D(box.getBox())) {
+				if(!containerBox.canHold3D(box)) {
 					return false;
 				}
 			} else {
-				if(!containerBox.canHold2D(box.getBox())) {
+				if(!containerBox.canHold2D(box)) {
 					return false;
 				}
 			}
@@ -348,17 +384,17 @@ public abstract class Packager {
 	}
 	
 
-	protected boolean canHoldAtLeastOne(Container containerBox, List<BoxItem> boxes) {
-		for(BoxItem box : boxes) {
-			if(containerBox.getWeight() < box.getBox().getWeight()) {
+	protected boolean canHoldAtLeastOne(Container containerBox, List<Box> boxes) {
+		for(Box box : boxes) {
+			if(containerBox.getWeight() < box.getWeight()) {
 				continue;
 			}
 			if(rotate3D) {
-				if(containerBox.canHold3D(box.getBox())) {
+				if(containerBox.canHold3D(box)) {
 					return true;
 				}
 			} else {
-				if(containerBox.canHold2D(box.getBox())) {
+				if(containerBox.canHold2D(box)) {
 					return true;
 				}
 			}
@@ -381,6 +417,66 @@ public abstract class Packager {
 		}
 		return placements;
 	}		
+
+	/**
+	 * 
+	 * Return a list of containers which holds all the boxes in the argument
+	 * 
+	 * @param boxes list of boxes to fit in a container
+	 * @param deadline the system time in milliseconds at which the search should be aborted
+	 * @return index of container if match, -1 if not
+	 */
+	
+	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline) {
+		
+		Adapter pack = adapter();
+		pack.initialize(boxes);
+		
+		List<Container> container = Arrays.asList(containers);
+		container = filterByVolumeAndWeight(toBoxes(boxes, true), container, limit);
+		if(container.isEmpty()) {
+			return null;
+		}
+		
+		List<Container> containerPackResults = new ArrayList<>();
+		
+		do {
+			PackResult best = null;
+			for (int i = 0; i < container.size(); i++) {
+					
+				if(System.currentTimeMillis() > deadline) {
+					return null;
+				}
+				
+				PackResult result = pack.attempt(container.get(i), deadline);
+				if(result == null) {
+					return null; // timeout
+				}
+				
+				if(best == null || result.packsMoreBoxesThan(best)) {
+					best = result;
+				}
+			}
+
+			if(best == null) {
+				// negative result
+				return null;
+			}
+
+			containerPackResults.add(pack.accept(best));
+			
+			if(best.isComplete()) {
+				// positive result
+				return containerPackResults;
+			}
+			
+			pack.accept(best);
+			// further constrain containers?
+			//container = filterByVolumeAndWeight(toBoxes(boxes, true), container, limit);
+
+		} while(true);
+		
+	}	
 
 
 }

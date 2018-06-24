@@ -3,16 +3,13 @@ package com.github.skjolberg.packing;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolberg.packing.Packager.Adapter;
-import com.github.skjolberg.packing.Packager.PackResult;
-
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
  * <br><br>
  * Thread-safe implementation.
  */
 
-public class LargestAreaFitFirstPackager extends Packager implements Adapter {
+public class LargestAreaFitFirstPackager extends Packager {
 
 	private static class LAFFResult implements PackResult {
 		
@@ -24,7 +21,7 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 			this.container = container;
 		}
 
-		public boolean isFull() {
+		public boolean isComplete() {
 			return boxes.isEmpty();
 		}
 
@@ -35,6 +32,10 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 		@Override
 		public boolean packsMoreBoxesThan(PackResult result) {
 			return ((LAFFResult)result).boxes.size() > boxes.size(); // lower is better
+		}
+
+		public List<Box> getBoxes() {
+			return boxes;
 		}
 
 	}
@@ -75,17 +76,7 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 	 * @return null if no match, or deadline reached
 	 */
 	
-	public PackResult pack(List<BoxItem> items, Container targetContainer, long deadline) {
-		List<Box> containerProducts = new ArrayList<Box>(items.size() * 2);
-
-		for(BoxItem item : items) {
-			Box box = item.getBox();
-			containerProducts.add(box);
-			for(int i = 1; i < item.getCount(); i++) {
-				containerProducts.add(box.clone());
-			}
-		}
-		
+	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline) {		
 		Container holder = new Container(targetContainer);
 
 		Dimension freeSpace = targetContainer;
@@ -175,7 +166,9 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 			holder.addLevel();
 			containerProducts.remove(currentIndex);
 
-			fit2D(containerProducts, holder, currentBox, levelSpace, deadline);
+			if(!fit2D(containerProducts, holder, currentBox, levelSpace, deadline)) {
+				return null;
+			}
 			
 			freeSpace = holder.getFreeSpace();
 		}
@@ -200,7 +193,7 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 		throw new IllegalArgumentException();
 	}
 	
-	protected void fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace, long deadline) {
+	protected boolean fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace, long deadline) {
 
 		if(rotate3D) {
 			// minimize footprint
@@ -216,11 +209,11 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 			// just make sure the used space fits in the free space
 			usedSpace.fitRotate2D(freeSpace);
 			
-			return;
+			return true;
 		}
 		
 		if(System.currentTimeMillis() > deadline) {
-			return;
+			return false;
 		}
 		
 		Space[] spaces = getFreespaces(freeSpace, usedSpace);
@@ -231,7 +224,7 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 			// just make sure the used space fits in the free space
 			usedSpace.fitRotate2D(freeSpace);
 			
-			return;
+			return true;
 		}
 		
 		// check whether the selected free space requires the used space box to be rotated
@@ -253,12 +246,14 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 			if(box != null) {
 				removeIdentical(containerProducts, box);
 				
-				fit2D(containerProducts, holder, box, remainder, deadline);
+				if(!fit2D(containerProducts, holder, box, remainder, deadline)) {
+					return false;
+				}
 			}
 		}
 
 		// fit the next box in the selected free space
-		fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), deadline);
+		return fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), deadline);
 		
 		// TODO use free spaces between box and level, if any
 	}
@@ -467,7 +462,61 @@ public class LargestAreaFitFirstPackager extends Packager implements Adapter {
 	}
 
 	@Override
-	protected Adapter adapter(List<BoxItem> boxes) {
-		return this;
+	protected Adapter adapter() {
+		return new Adapter() {
+
+			private List<Box> boxes;
+			private LAFFResult previous;
+			
+			@Override
+			public PackResult attempt(Container dimension, long deadline) {
+				LAFFResult result = LargestAreaFitFirstPackager.this.pack(new ArrayList<>(boxes), dimension, deadline);
+				
+				return previous = result;
+			}
+
+			@Override
+			public void initialize(List<BoxItem> boxItems) {
+				List<Box> boxClones = new ArrayList<Box>(boxItems.size() * 2);
+
+				for(BoxItem item : boxItems) {
+					Box box = item.getBox();
+					boxClones.add(box);
+					for(int i = 1; i < item.getCount(); i++) {
+						boxClones.add(box.clone());
+					}
+				}
+
+				this.boxes = boxClones;
+			}
+
+			@Override
+			public Container accept(PackResult result) {
+				LAFFResult laffResult = (LAFFResult)result;
+				
+				this.boxes = laffResult.getBoxes();
+				
+				if(previous == result) {
+					return laffResult.getContainer();
+				}
+				
+				// calculate again
+				Container container = laffResult.getContainer();
+				List<Box> boxes = new ArrayList<>();
+				for(Level level : container.getLevels()) {
+					for(Placement placement : level) {
+						boxes.add(placement.getBox());
+					}
+				}
+				
+				container.clear();
+				
+				LAFFResult pack = LargestAreaFitFirstPackager.this.pack(boxes, laffResult.getContainer(), Long.MAX_VALUE);
+				
+				return pack.getContainer();
+			}
+
+		};
+
 	}
 }
