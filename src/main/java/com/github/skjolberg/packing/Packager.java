@@ -29,7 +29,10 @@ public abstract class Packager {
 	}
 	
 	protected final Container[] containers;
-	
+
+	protected final long maxVolume;
+	protected final long maxWeight;
+
 	protected final boolean rotate3D; // if false, then 2d
 	protected final boolean binarySearch;
 	
@@ -54,6 +57,26 @@ public abstract class Packager {
 		this.containers = containers.toArray(new Container[containers.size()]);
 		this.rotate3D = rotate3D;
 		this.binarySearch = binarySearch;
+
+		long maxVolume = Long.MIN_VALUE;
+		long maxWeight = Long.MIN_VALUE;
+
+		for(Container container : containers) {
+			// volume
+			long boxVolume = container.getVolume();
+			if(boxVolume > maxVolume) {
+				maxVolume = boxVolume;
+			}
+			
+			// weight
+			long boxWeight = container.getWeight();
+			if(boxWeight > maxWeight) {
+				maxWeight = boxWeight;
+			}
+		}
+
+		this.maxVolume = maxVolume;
+		this.maxWeight = maxWeight;
 	}
 	
 	/**
@@ -75,35 +98,44 @@ public abstract class Packager {
 	 * @return list of containers
 	 */
 	
-	public List<Container> filterByVolume(List<BoxItem> boxes, int count) {
-		long maxVolume = Long.MIN_VALUE;
+	public List<Container> filterByVolumeAndWeight(List<BoxItem> boxes, int count) {
 		long volume = 0;
 		long minVolume = Long.MAX_VALUE;
+		
+		long weight = 0;
+		long minWeight = Long.MAX_VALUE;
+
 		for(BoxItem box : boxes) {
+			// volume
 			long boxVolume = box.getBox().getVolume();
 			volume += boxVolume * box.getCount();
 			
 			if(boxVolume < minVolume) {
 				minVolume = boxVolume;
 			}
-			if(volume > maxVolume) {
-				maxVolume = volume;
+			
+			// weight
+			long boxWeight = box.getBox().getWeight();
+			weight += boxWeight;
+					
+			if(boxWeight < minWeight) {
+				minWeight = boxWeight;
 			}
 		}
-		
-		if(maxVolume * count < volume) {
+
+		if(maxVolume * count < volume || maxWeight * count < weight) { // XXX FEILER
 			// no containers will work at current count
 			return Collections.emptyList();
 		}
 		
-		List<Container> list = new ArrayList<>();
+		List<Container> list = new ArrayList<>(containers.length);
 		for(Container container : containers) {
-			if(container.getVolume() < minVolume) {
+			if(container.getVolume() < minVolume || container.getWeight() < minWeight) {
 				// this box cannot even fit a single box
 				continue;
 			}
-			
-			if(container.getVolume() + maxVolume * (count - 1) < volume) {
+
+			if(container.getVolume() + maxVolume * (count - 1) < volume || container.getWeight() + maxWeight * (count - 1) < weight) {
 				// this box cannot be used even together with all biggest boxes
 				continue;
 			}
@@ -157,9 +189,9 @@ public abstract class Packager {
 	 * @return list of containers
 	 */
 	
-	public void filterBySize(List<BoxItem> boxes, List<Dimension> containers) {
+	public void filterBySize(List<BoxItem> boxes, List<Container> containers) {
 		for (int i = 0; i < containers.size(); i++) {
-			Dimension dimension = containers.get(i);
+			Container dimension = containers.get(i);
 			if(!canHoldAll(dimension, boxes)) {
 				// discard this container
 				containers.remove(i);
@@ -179,7 +211,7 @@ public abstract class Packager {
 	 */
 	
 	public Container pack(List<BoxItem> boxes, long deadline) {
-		return pack(boxes, filterByVolume(boxes, 1), deadline);
+		return pack(boxes, filterByVolumeAndWeight(boxes, 1), deadline);
 	}
 
 	/**
@@ -193,7 +225,7 @@ public abstract class Packager {
 	 */
 	
 	public Container pack(List<BoxItem> boxes, int limit, long deadline) {
-		return pack(boxes, filterByVolume(boxes, limit), deadline);
+		return pack(boxes, filterByVolumeAndWeight(boxes, limit), deadline);
 	}
 
 	/**
@@ -297,8 +329,11 @@ public abstract class Packager {
 	
 	protected abstract Adapter adapter(List<BoxItem> boxes);
 
-	protected boolean canHoldAll(Dimension containerBox, List<BoxItem> boxes) {
+	protected boolean canHoldAll(Container containerBox, List<BoxItem> boxes) {
 		for(BoxItem box : boxes) {
+			if(containerBox.getWeight() < box.getBox().getWeight()) {
+				continue;
+			}
 			if(rotate3D) {
 				if(!containerBox.canHold3D(box.getBox())) {
 					return false;
@@ -313,8 +348,11 @@ public abstract class Packager {
 	}
 	
 
-	protected boolean canHoldAtLeastOne(Dimension containerBox, List<BoxItem> boxes) {
+	protected boolean canHoldAtLeastOne(Container containerBox, List<BoxItem> boxes) {
 		for(BoxItem box : boxes) {
+			if(containerBox.getWeight() < box.getBox().getWeight()) {
+				continue;
+			}
 			if(rotate3D) {
 				if(containerBox.canHold3D(box.getBox())) {
 					return true;
