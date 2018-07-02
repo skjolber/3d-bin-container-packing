@@ -294,7 +294,7 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 	
 	@Test
-	public void testStackingInTwoContainers() {
+	public void testStackingInTwoContainers1() {
 		List<Container> containers = new ArrayList<Container>();
 		containers.add(new Container(10, 10, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
@@ -312,7 +312,50 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		for(Container container : fits) {
 			assertEquals(container.getLevels().get(0).size(), 2);
 		}
-		System.out.println(fits);
 	}
+
+	@Test
+	public void testStackingInTwoContainers2() {
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(10, 10, 1, 0));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
+		
+		List<BoxItem> products = new ArrayList<BoxItem>();
+
+		products.add(new BoxItem(new Box("A", 10, 5, 1, 0), 2));
+		products.add(new BoxItem(new Box("B", 10, 5, 1, 0), 2));
+		
+		List<Container> fits = packager.packList(products, 2, Long.MAX_VALUE);
+		assertNotNull(fits);
+		assertEquals(fits.size(), 2);
+		for(Container container : fits) {
+			assertEquals(container.getLevels().get(0).size(), 2);
+		}
+	}
+
+	@Test
+	public void testStackingInSingleContainer() {
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(5, 10, 1, 0));
+		containers.add(new Container(10, 10, 1, 0));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
+		
+		List<BoxItem> products = new ArrayList<BoxItem>();
+
+		products.add(new BoxItem(new Box("A", 5, 5, 1, 0), 4));
+		
+		List<Container> fits = packager.packList(products, 2, Long.MAX_VALUE);
+		assertNotNull(fits);
+		assertEquals(fits.size(), 1);
+		for(Container container : fits) {
+			assertEquals(container.getLevels().get(0).size(), 4);
+		}
+		
+		assertEquals(fits.get(0).getWidth(), 10);
+		assertEquals(fits.get(0).getDepth(), 10);
+		
+	}
+	
+	
 	
 }

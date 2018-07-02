@@ -207,7 +207,7 @@ public abstract class Packager {
 	 * Return a list of containers which can at least hold one of the boxes
 	 * 
 	 * @param boxes list of boxes
-	 * @return list of containers
+	 * @param containers list of containers
 	 */
 	
 	public void filterBySize(List<Box> boxes, List<Container> containers) {
