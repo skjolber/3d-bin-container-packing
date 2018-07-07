@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -229,4 +230,51 @@ public class PermutationRotationIteratorTest {
 		assertEquals(-1L, iterator.countPermutations());
 	}
 
+	@Test
+	public void testRemovePermutations1() {
+		Box container = new Box(9, 1, 1, 0);
+		
+		List<BoxItem> products = new ArrayList<BoxItem>();
+		
+		products.add(new BoxItem(new Box("0", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("1", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("2", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("3", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("4", 1, 1, 3, 0), 1));
+
+		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
+
+		rotator.removePermutations(3);
+		
+		int[] permutations = rotator.getPermutations();
+		
+		assertEquals(3, permutations[0]);
+		assertEquals(4, permutations[1]);
+	}
+
+	@Test
+	public void testRemovePermutations2() {
+		Box container = new Box(9, 1, 1, 0);
+		
+		List<BoxItem> products = new ArrayList<BoxItem>();
+		
+		products.add(new BoxItem(new Box("0", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("1", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("2", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("3", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("4", 1, 1, 3, 0), 1));
+
+		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
+
+		List<Integer> remove = new ArrayList<>();
+		remove.add(2);
+		remove.add(4);
+		rotator.removePermutations(remove);
+		
+		int[] permutations = rotator.getPermutations();
+		assertEquals(0, permutations[0]);
+		assertEquals(1, permutations[1]);
+		assertEquals(3, permutations[2]);
+	}
+	
 }

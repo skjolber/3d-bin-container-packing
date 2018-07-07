@@ -131,11 +131,11 @@ public class PermutationRotationIterator {
 		return boxes;
 	}
 	
-	private PermutationRotation[] matrix;
-	private int[] reset;
-	private int[] rotations; // 2^n or 6^n
-	private int[] permutations; // n!
-	private Dimension dimension;
+	protected final PermutationRotation[] matrix;
+	protected final Dimension dimension;
+	protected int[] reset;
+	protected int[] rotations; // 2^n or 6^n
+	protected int[] permutations; // n!
 
 	public PermutationRotationIterator(List<BoxItem> list, Dimension bound, boolean rotate3D) {
 		this(bound, toRotationMatrix(list, rotate3D));
@@ -207,7 +207,7 @@ public class PermutationRotationIterator {
 		permutations:
 		for (int j : this.permutations) {
 			for (int i = 0; i < removed.size(); i++) {
-				if(removed.get(i) == j) {
+				if(removed.get(i).intValue() == j) {
 					// skip this
 					removed.remove(i);
 					
@@ -222,7 +222,7 @@ public class PermutationRotationIterator {
 		
 		this.rotations = new int[permutations.length];
 		this.reset = new int[permutations.length];
-		
+		this.permutations = permutations;
 		Arrays.sort(permutations); // ascending order to make the permutation logic work
 	}
 	
