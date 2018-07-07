@@ -1,6 +1,7 @@
 package com.github.skjolberg.packing;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -134,6 +135,7 @@ public class PermutationRotationIterator {
 	private int[] reset;
 	private int[] rotations; // 2^n or 6^n
 	private int[] permutations; // n!
+	private Dimension dimension;
 
 	public PermutationRotationIterator(List<BoxItem> list, Dimension bound, boolean rotate3D) {
 		this(bound, toRotationMatrix(list, rotate3D));
@@ -142,7 +144,7 @@ public class PermutationRotationIterator {
 	public PermutationRotationIterator(Dimension bound, PermutationRotation[] unconstrained) {
 		List<Integer> types = new ArrayList<>(unconstrained.length * 2);
 
-		PermutationRotation[] matrix = new PermutationRotation[unconstrained.length];
+		List<PermutationRotation> matrix = new ArrayList<>(unconstrained.length);
 		for(int i = 0; i < unconstrained.length; i++) {
 			List<Box> result = new ArrayList<>();
 			
@@ -152,20 +154,23 @@ public class PermutationRotationIterator {
 					result.add(boxes[k]);
 				}
 			}
-			if(result.isEmpty()) {
-				throw new IllegalArgumentException("Box at " + i + " does not fit") ;
-			}
-			matrix[i] = new PermutationRotation();
-			matrix[i].setBoxes(result.toArray(new Box[result.size()]));
-			matrix[i].setCount(unconstrained[i].getCount());
 			
-			for(int k = 0; k < unconstrained[i].count; k++) {
-				types.add(i);
+			if(!result.isEmpty()) {
+				PermutationRotation r = new PermutationRotation();
+				r.setBoxes(result.toArray(new Box[result.size()]));
+				r.setCount(unconstrained[i].getCount());
+				matrix.add(r);
+				
+				for(int k = 0; k < unconstrained[i].getCount(); k++) {
+					types.add(i);
+				}
 			}
 		}
 
-		this.matrix = matrix;
+		this.matrix = matrix.toArray(new PermutationRotation[matrix.size()]);
 
+		this.dimension = bound;
+		
 		// permutations is a 'pointer' list
 		// keep the the number of permutations tight; 
 		// identical boxes need not be interchanged
@@ -178,6 +183,59 @@ public class PermutationRotationIterator {
 		reset = new int[permutations.length];
 		rotations = new int[permutations.length];
 		System.arraycopy(reset, 0, rotations, 0, rotations.length);
+	}
+	
+	public void removePermutations(int count) {
+		// discard a number of items
+		int newLength = permutations.length - count;
+		
+		int[] permutations = new int[this.permutations.length - count];
+		System.arraycopy(this.permutations, count, permutations, 0, newLength);
+
+		this.rotations = new int[permutations.length];
+		this.reset = new int[permutations.length];
+		this.permutations = permutations;
+		
+		Arrays.sort(permutations); // ascending order to make the permutation logic work
+	}
+	
+	public void removePermutations(List<Integer> removed) {
+		
+		int[] permutations = new int[this.permutations.length - removed.size()];
+		
+		int index = 0;
+		permutations:
+		for (int j : this.permutations) {
+			for (int i = 0; i < removed.size(); i++) {
+				if(removed.get(i) == j) {
+					// skip this
+					removed.remove(i);
+					
+					continue permutations;
+				}
+			}
+			
+			permutations[index] = this.permutations[j];
+			
+			index++;
+		}
+		
+		this.rotations = new int[permutations.length];
+		this.reset = new int[permutations.length];
+		
+		Arrays.sort(permutations); // ascending order to make the permutation logic work
+	}
+	
+	/**
+	 * 
+	 * Check whether the box at the current index does fit
+	 * 
+	 * @param index
+	 * @return true if fits
+	 */
+	
+	public int getRotations(int i) {
+		return matrix[permutations[i]].boxes.length;
 	}
 	
 	public boolean nextRotation() {
@@ -330,7 +388,7 @@ public class PermutationRotationIterator {
 	}
 	
 	public int length() {
-		return rotations.length;
+		return permutations.length;
 	}
 
 	public PermutationRotationState getState() {
@@ -340,5 +398,17 @@ public class PermutationRotationIterator {
 	public void setState(PermutationRotationState state) {
 		this.rotations = state.getRotations();
 		this.permutations = state.getPermutations();
+	}
+	
+	/**
+	 * Get number of box items with in the constraints
+	 */
+	
+	public int boxItemLength() {
+		return matrix.length;
+	}
+	
+	public Dimension getDimension() {
+		return dimension;
 	}
 }

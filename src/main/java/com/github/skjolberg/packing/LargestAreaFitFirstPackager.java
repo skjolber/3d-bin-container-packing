@@ -476,7 +476,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 			}
 
 			@Override
-			public void initialize(List<BoxItem> boxItems) {
+			public void initialize(List<BoxItem> boxItems, List<Container> container) {
 				List<Box> boxClones = new ArrayList<Box>(boxItems.size() * 2);
 
 				for(BoxItem item : boxItems) {

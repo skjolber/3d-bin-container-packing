@@ -1,5 +1,6 @@
 package com.github.skjolberg.packing;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolberg.packing.PermutationRotationIterator.PermutationRotation;
@@ -43,7 +44,7 @@ public class BruteForcePackager extends Packager {
 			
 			rotator.setState(state);
 			
-			int result = pack(items, container, rotator, Long.MAX_VALUE, container);
+			int result = pack(items, container, rotator, Long.MAX_VALUE, container, 0);
 			if(result == count) {
 				return container;
 			}
@@ -65,6 +66,10 @@ public class BruteForcePackager extends Packager {
 		@Override
 		public boolean packsMoreBoxesThan(PackResult result) {
 			return ((BruteForceResult)result).count < count;
+		}
+
+		public PermutationRotationIterator getRotator() {
+			return rotator;
 		}
 	}
 
@@ -90,11 +95,13 @@ public class BruteForcePackager extends Packager {
 		this(containers, true, true);
 	}
 	
-	protected BruteForceResult pack(List<Placement> placements, Container dimension, PermutationRotation[] rotations, long deadline) {
+	protected BruteForceResult pack(List<Placement> placements, Container container, PermutationRotation[] rotations, long deadline) {
 		
-		PermutationRotationIterator rotator = new PermutationRotationIterator(dimension, rotations);
-
-		return pack(placements, dimension, rotator, deadline);
+		PermutationRotationIterator rotator = new PermutationRotationIterator(container, rotations);
+		if(rotator.boxItemLength() != rotations.length) {
+			throw new IllegalArgumentException("One or more boxes does not fit");
+		}
+		return pack(placements, container, rotator, deadline);
 	}
 
 	public BruteForceResult pack(Container container, PermutationRotationIterator rotator, long deadline) {
@@ -115,7 +122,7 @@ public class BruteForcePackager extends Packager {
 			// iterator over all rotations
 			
 			do {
-				int count = pack(placements, container, rotator, deadline, holder);
+				int count = pack(placements, container, rotator, deadline, holder, 0);
 				if(count == -1) {
 					return null; // timeout
 				} else {
@@ -141,10 +148,9 @@ public class BruteForcePackager extends Packager {
 		return result;
 	}
 
-	protected static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, Container holder) {
+	protected static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, Container holder, int index) {
 		Dimension remainingSpace = container;
 
-		int index = 0;
 		while(index < rotator.length()) {
 			if(System.currentTimeMillis() > deadline) {
 				// fit2d below might have returned due to deadline
@@ -336,40 +342,58 @@ public class BruteForcePackager extends Packager {
 		return new Adapter() {
 
 			private List<Placement> placements;
-			private PermutationRotation[] rotations;
+			private PermutationRotationIterator[] iterators;
 			
 			@Override
 			public PackResult attempt(Container dimension, long deadline) {
-				return BruteForcePackager.this.pack(placements, dimension, rotations, deadline);
+				for(int i = 0; i < iterators.length; i++) {
+					if(iterators[i].getDimension() == dimension) {
+						return BruteForcePackager.this.pack(placements, dimension, iterators[i], deadline);
+					}
+				}
+				throw new RuntimeException();
 			}
 
 			@Override
-			public void initialize(List<BoxItem> boxes) {
-				rotations = PermutationRotationIterator.toRotationMatrix(boxes, rotate3D);
-				
+			public void initialize(List<BoxItem> boxes, List<Container> containers) {
+				PermutationRotation[] rotations = PermutationRotationIterator.toRotationMatrix(boxes, rotate3D);
 				int count = 0;
 				for (PermutationRotation permutationRotation : rotations) {
 					count += permutationRotation.getCount();
 				}
 				
 				placements = getPlacements(count);
+				
+				iterators = new PermutationRotationIterator[containers.size()];
+				for (int i = 0; i < containers.size(); i++) {
+					iterators[i] = new PermutationRotationIterator(containers.get(i), rotations);
+				}
 			}
 
 			@Override
 			public Container accept(PackResult result) {
 				BruteForceResult bruteForceResult = (BruteForceResult)result;
 
+				Container container = bruteForceResult.getContainer();
+				
 				if(!result.isComplete()) {
-					List<Placement> placements = this.placements.subList(bruteForceResult.getCount(), this.placements.size());
-					PermutationRotation[] rotations = new PermutationRotation[this.placements.size() - bruteForceResult.getCount()];
-	
-					System.arraycopy(this.rotations, bruteForceResult.getCount(), rotations, 0, rotations.length);
-	
-					this.placements = placements;
-					this.rotations = rotations;
+					
+					int[] permutations = bruteForceResult.getRotator().getPermutations();
+					List<Integer> p = new ArrayList<>();
+					for(int i = 0; i < bruteForceResult.getCount(); i++) {
+						p.add(permutations[i]);
+					}
+					for(PermutationRotationIterator it : iterators) {
+						if(it == bruteForceResult.getRotator()) {
+							it.removePermutations(bruteForceResult.getCount());
+						} else {
+							it.removePermutations(p);
+						}
+					}
+					placements = placements.subList(bruteForceResult.getCount(), this.placements.size());
 				}
 				
-				return bruteForceResult.getContainer();
+				return container;
 			}
 
 		};

@@ -353,9 +353,26 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		
 		assertEquals(fits.get(0).getWidth(), 10);
 		assertEquals(fits.get(0).getDepth(), 10);
-		
 	}
 	
+	@Test
+	public void testStackingInTwoContainers3() {
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(10, 10, 1, 0));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
+		
+		List<BoxItem> products = new ArrayList<BoxItem>();
+
+		products.add(new BoxItem(new Box("A", 10, 5, 1, 0), 3));
+		products.add(new BoxItem(new Box("B", 10, 5, 1, 0), 3));
+		
+		List<Container> fits = packager.packList(products, 3, Long.MAX_VALUE);
+		assertNotNull(fits);
+		assertEquals(fits.size(), 3);
+		for(Container container : fits) {
+			assertEquals(container.getLevels().get(0).size(), 2);
+		}
+	}
 	
 	
 }

@@ -19,7 +19,7 @@ public abstract class Packager {
 	 */
 	
 	public interface Adapter {
-		void initialize(List<BoxItem> boxes);
+		void initialize(List<BoxItem> boxes, List<Container> container);
 		Container accept(PackResult result);
 		PackResult attempt(Container dimension, long deadline);
 	}
@@ -279,7 +279,7 @@ public abstract class Packager {
 		}
 		
 		Adapter pack = adapter();
-		pack.initialize(boxes);
+		pack.initialize(boxes, container);
 		
 		if(!binarySearch || container.size() <= 2 || deadline == Long.MAX_VALUE) {
 			for (int i = 0; i < container.size(); i++) {
@@ -423,22 +423,22 @@ public abstract class Packager {
 	 * Return a list of containers which holds all the boxes in the argument
 	 * 
 	 * @param boxes list of boxes to fit in a container
+	 * @param limit maximum number of containers
 	 * @param deadline the system time in milliseconds at which the search should be aborted
 	 * @return index of container if match, -1 if not
 	 */
 	
 	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline) {
 		
-		Adapter pack = adapter();
-		pack.initialize(boxes);
-		
-		List<Container> container = Arrays.asList(containers);
-		container = filterByVolumeAndWeight(toBoxes(boxes, true), container, limit);
+		List<Container> container = filterByVolumeAndWeight(toBoxes(boxes, true), Arrays.asList(containers), limit);
 		if(container.isEmpty()) {
 			return null;
 		}
+
+		Adapter pack = adapter();
+		pack.initialize(boxes, container);
 		
-		List<Container> containerPackResults = new ArrayList<>();
+		List<Container> containerPackResults = new ArrayList<>(container.size());
 		
 		do {
 			PackResult best = null;
@@ -469,13 +469,7 @@ public abstract class Packager {
 				// positive result
 				return containerPackResults;
 			}
-			
-			pack.accept(best);
-			// further constrain containers?
-			//container = filterByVolumeAndWeight(toBoxes(boxes, true), container, limit);
-
 		} while(true);
-		
 	}	
 
 
