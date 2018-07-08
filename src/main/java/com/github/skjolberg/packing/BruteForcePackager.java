@@ -67,8 +67,6 @@ public class BruteForcePackager extends Packager {
 		@Override
 		public boolean packsMoreBoxesThan(PackResult result) {
 			BruteForceResult bruteForceResult = (BruteForceResult)result;
-			
-			
 			if(bruteForceResult.count < count) {
 				return true;
 			};
@@ -89,6 +87,7 @@ public class BruteForcePackager extends Packager {
 		public boolean isEmpty() {
 			return count == 0;
 		}
+		
 	}
 
 	/**

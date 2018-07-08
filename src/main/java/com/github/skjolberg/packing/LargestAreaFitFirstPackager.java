@@ -27,7 +27,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 		
 		@Override
 		public boolean packsMoreBoxesThan(PackResult result) {
-			return ((LAFFResult)result).remaining.size() > remaining.size(); // lower is better
+			LAFFResult laffResult = (LAFFResult)result;
+			return laffResult.remaining.size() > remaining.size(); // lower is better
 		}
 
 		public List<Box> getRemainingBoxes() {
@@ -39,6 +40,12 @@ public class LargestAreaFitFirstPackager extends Packager {
 			return container.getLevels().isEmpty() || container.getLevels().get(0).isEmpty();
 		}
 
+		@Override
+		public String toString() {
+			return "LAFFResult [container=" + container + "]";
+		}
+
+		
 	}
 	
 	protected final boolean footprintFirst;
@@ -99,7 +106,6 @@ public class LargestAreaFitFirstPackager extends Packager {
 			boolean fullHeight = false;
 			for (int i = 0; i < containerProducts.size(); i++) {
 				Box box = containerProducts.get(i);
-				
 				boolean fits;
 				if(rotate3D) {
 					fits = box.rotateLargestFootprint3D(freeSpace);
@@ -145,12 +151,11 @@ public class LargestAreaFitFirstPackager extends Packager {
 							}							
 						}
 					}
-				} else {
-					// no fit in the current container within the remaining space
-					// try the next container
-
-					return new LAFFResult(containerProducts, holder);
 				}
+			}
+
+			if(currentBox == null) {
+				break;
 			}
 			
 			// current box should have the optimal orientation already

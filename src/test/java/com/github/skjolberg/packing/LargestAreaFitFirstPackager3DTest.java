@@ -374,5 +374,68 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		}
 	}
 	
+	@Test
+	public void testStackingInTwoContainersFitCorrectBox() {
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(10, 10, 1, 0));
+		containers.add(new Container(20, 20, 1, 0));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
+		
+		List<BoxItem> products = new ArrayList<BoxItem>();
+
+		products.add(new BoxItem(new Box("A", 10, 10, 1, 0), 1));
+		products.add(new BoxItem(new Box("B", 20, 20, 1, 0), 1));
+		
+		List<Container> fits = packager.packList(products, Integer.MAX_VALUE, Long.MAX_VALUE);
+		assertNotNull(fits);
+		assertEquals(2, fits.size());
+		for(Container container : fits) {
+			assertEquals(container.getLevels().get(0).size(), 1);
+		}
+		
+		Container first = fits.get(0);
+		Container second = fits.get(1);
+
+		assertEquals("A", first.get(0, 0).getBox().getName());
+		assertEquals("B", second.get(0, 0).getBox().getName());
+	}
+	
+	
+	@Test
+	public void testStackingInMultipleContainersDoesNotConfuseInferiorContainer() {
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(10, 10, 1, 0));
+		containers.add(new Container(20, 10, 1, 0));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
+		
+		List<BoxItem> products = new ArrayList<BoxItem>();
+
+		products.add(new BoxItem(new Box("A", 10, 5, 1, 0), 2));
+		products.add(new BoxItem(new Box("B", 10, 5, 1, 0), 2));
+		
+		List<Container> fits = packager.packList(products, Integer.MAX_VALUE, Long.MAX_VALUE);
+		assertNotNull(fits);
+		assertEquals(fits.size(), 1);
+		assertEquals(20, fits.get(0).getWidth());
+	}
+	
+	@Test
+	public void testStackingInMultipleContainersOneBigAndOneSmall() {
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(10, 10, 1, 0));
+		containers.add(new Container(20, 10, 1, 0));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
+		
+		List<BoxItem> products = new ArrayList<BoxItem>();
+
+		products.add(new BoxItem(new Box("A", 10, 5, 1, 0), 3));
+		products.add(new BoxItem(new Box("B", 10, 5, 1, 0), 3));
+		
+		List<Container> fits = packager.packList(products, Integer.MAX_VALUE, Long.MAX_VALUE);
+		assertNotNull(fits);
+		assertEquals(fits.size(), 2);
+		assertEquals(20, fits.get(0).getWidth());
+		assertEquals(10, fits.get(1).getWidth());
+	}
 	
 }
