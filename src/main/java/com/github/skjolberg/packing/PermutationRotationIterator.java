@@ -155,17 +155,16 @@ public class PermutationRotationIterator {
 				}
 			}
 			
+			// create PermutationRotation even if empty, so that permutations are directly 
+			// comparable between parallel instances of this class
+			PermutationRotation r = new PermutationRotation();
+			r.setBoxes(result.toArray(new Box[result.size()]));
+			r.setCount(unconstrained[i].getCount());
+			matrix.add(r);
+
 			if(!result.isEmpty()) {
-				PermutationRotation r = new PermutationRotation();
-				r.setBoxes(result.toArray(new Box[result.size()]));
-				r.setCount(unconstrained[i].getCount());
-				
-				int index = matrix.size();
-				
-				matrix.add(r);
-				
 				for(int k = 0; k < unconstrained[i].getCount(); k++) {
-					types.add(index);
+					types.add(i);
 				}
 			}
 		}
