@@ -21,7 +21,7 @@ public abstract class Packager {
 	public interface Adapter {
 		void initialize(List<BoxItem> boxes, List<Container> container);
 		Container accepted(PackResult result);
-		PackResult attempt(Container dimension, long deadline);
+		PackResult attempt(int containerIndex, long deadline);
 		boolean hasMore(PackResult result);
 	}
 	
@@ -44,6 +44,7 @@ public abstract class Packager {
 	 * 
 	 * @param containers list of containers
 	 */
+	
 	public Packager(List<Container> containers) {
 		this(containers, true, true);
 	}
@@ -289,7 +290,7 @@ public abstract class Packager {
 					break;
 				}
 				
-				PackResult result = pack.attempt(container.get(i), deadline);
+				PackResult result = pack.attempt(i, deadline);
 				if(result == null) {
 					return null; // timeout
 				}
@@ -319,7 +320,7 @@ public abstract class Packager {
 					int next = iterator.next();
 					int mid = current.get(next);
 
-					PackResult result = pack.attempt(container.get(mid), deadline);
+					PackResult result = pack.attempt(mid, deadline);
 					if(result == null) {
 						return null; // timeout
 					}
@@ -449,7 +450,7 @@ public abstract class Packager {
 					return null;
 				}
 				
-				PackResult result = pack.attempt(containers.get(i), deadline);
+				PackResult result = pack.attempt(i, deadline);
 				if(result == null) {
 					return null; // timeout
 				}
@@ -457,6 +458,10 @@ public abstract class Packager {
 				if(!result.isEmpty()) {
 					if(best == null || result.packsMoreBoxesThan(best)) {
 						best = result;
+						
+						if(!pack.hasMore(best)) { // will not match any better than this
+							break;
+						}
 					}
 				}
 			}

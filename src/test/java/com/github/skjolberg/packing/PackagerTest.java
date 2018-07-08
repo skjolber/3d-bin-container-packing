@@ -71,20 +71,20 @@ public class PackagerTest {
 		Adapter mock = mock(Packager.Adapter.class);
 		
 		// in the middle first
-		when(mock.attempt(containers.get(3), deadline))
+		when(mock.attempt(3, deadline))
 			.thenReturn(completeResult);
 
 		// then in the middle of 0..2 
-		when(mock.attempt(containers.get(1), deadline))
+		when(mock.attempt(1, deadline))
 			.thenReturn(incompleteResult);
 
 		// then higher
-		when(mock.attempt(containers.get(2), deadline))
+		when(mock.attempt(2, deadline))
 			.thenReturn(incompleteResult);
 
 		// then iteration is done for 0...2. Filter out 1 and 2 and try again
 		// for 0..0 
-		when(mock.attempt(containers.get(0), deadline))
+		when(mock.attempt(0, deadline))
 			.thenReturn(incompleteResult);
 
 		when(mock.accepted(any(PackResult.class)))
@@ -97,7 +97,7 @@ public class PackagerTest {
 		Container pack = myPackager.pack(products, deadline);
 		assertEquals("result", pack.getName());
 		assertNotNull(pack);
-		verify(mock, times(4)).attempt(any(Container.class), any(Long.class));
+		verify(mock, times(4)).attempt(any(int.class), any(Long.class));
 	}
 	
 	@Test
@@ -125,20 +125,20 @@ public class PackagerTest {
 			.thenReturn(new Container("better", 5, 5, 1, 0));
 		
 		// in the middle first
-		when(mock.attempt(containers.get(3), deadline))
+		when(mock.attempt(3, deadline))
 			.thenReturn(completeResult);
 
 		// then in the middle of 0..2 
-		when(mock.attempt(containers.get(1), deadline))
+		when(mock.attempt(1, deadline))
 			.thenReturn(incompleteResult);
 
 		// then higher
-		when(mock.attempt(containers.get(2), deadline))
+		when(mock.attempt(2, deadline))
 			.thenReturn(incompleteResult);
 
 		// then iteration is done for 0...2. Filter out 1 and 2 and try again
 		// for 0..0 
-		when(mock.attempt(containers.get(0), deadline))
+		when(mock.attempt(0, deadline))
 			.thenReturn(completeResult);
 		
 		when(mock.hasMore(any(PackResult.class))).thenReturn(false, true, true, false);
@@ -149,7 +149,7 @@ public class PackagerTest {
 		assertNotNull(pack);
 		assertEquals("better", pack.getName());
 		
-		verify(mock, times(4)).attempt(any(Container.class), any(Long.class));
+		verify(mock, times(4)).attempt(any(int.class), any(Long.class));
 	}
 	
 	@Test
@@ -176,17 +176,17 @@ public class PackagerTest {
 		PackResult ok = mock(PackResult.class);
 		
 		// in the middle first
-		when(mock.attempt(containers.get(3), deadline)).thenReturn(ok);
+		when(mock.attempt(3, deadline)).thenReturn(ok);
 
 		PackResult better = mock(PackResult.class);
 
 		// then in the middle of 0..2 
-		when(mock.attempt(containers.get(1), deadline)).thenReturn(better);
+		when(mock.attempt(1, deadline)).thenReturn(better);
 
 		PackResult best = mock(PackResult.class);
 
 		// then lower
-		when(mock.attempt(containers.get(0), deadline)).thenReturn(best);
+		when(mock.attempt(0, deadline)).thenReturn(best);
 
 		when(mock.accepted(any(PackResult.class)))
 		.thenReturn(new Container("ok", 5, 5, 1, 0))
@@ -201,11 +201,11 @@ public class PackagerTest {
 		assertNotNull(pack);
 		assertEquals("best", pack.getName());
 		
-		verify(mock, times(3)).attempt(any(Container.class), any(Long.class));
+		verify(mock, times(3)).attempt(any(Integer.class), any(Long.class));
 		
-		verify(mock, times(1)).attempt(containers.get(3), deadline);
-		verify(mock, times(1)).attempt(containers.get(1), deadline);
-		verify(mock, times(1)).attempt(containers.get(0), deadline);
+		verify(mock, times(1)).attempt(3, deadline);
+		verify(mock, times(1)).attempt(1, deadline);
+		verify(mock, times(1)).attempt(0, deadline);
 
 	}
 	
@@ -231,31 +231,31 @@ public class PackagerTest {
 		Adapter mock = mock(Packager.Adapter.class);
 		
 		// in the middle first
-		when(mock.attempt(containers.get(3), deadline))
+		when(mock.attempt(3, deadline))
 			.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then in the middle of 4..6 
-		when(mock.attempt(containers.get(5), deadline))
+		when(mock.attempt(5, deadline))
 		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then higher 
-		when(mock.attempt(containers.get(6), deadline))
+		when(mock.attempt(6, deadline))
 		.thenReturn(completeResult).thenThrow(RuntimeException.class);
 
 		// then no more results
-		when(mock.attempt(containers.get(4), deadline))
+		when(mock.attempt(4, deadline))
 		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then no more results
-		when(mock.attempt(containers.get(2), deadline))
+		when(mock.attempt(2, deadline))
 		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then no more results
-		when(mock.attempt(containers.get(1), deadline))
+		when(mock.attempt(1, deadline))
 		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then no more results
-		when(mock.attempt(containers.get(0), deadline))
+		when(mock.attempt(0, deadline))
 		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		when(mock.accepted(any(PackResult.class)))
@@ -269,8 +269,8 @@ public class PackagerTest {
 		assertNotNull(pack);
 		assertEquals("result", pack.getName());
 
-		for(Container container : containers) {
-			verify(mock, times(1)).attempt(container, deadline);
+		for(int i = 0; i < containers.size(); i++) {
+			verify(mock, times(1)).attempt(i, deadline);
 		}
 	}		
 }

@@ -468,16 +468,19 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 			private List<Box> boxes;
 			private LAFFResult previous;
+			private List<Container> containers;
 			
 			@Override
-			public PackResult attempt(Container dimension, long deadline) {
-				LAFFResult result = LargestAreaFitFirstPackager.this.pack(new ArrayList<>(boxes), dimension, deadline);
+			public PackResult attempt(int index, long deadline) {
+				LAFFResult result = LargestAreaFitFirstPackager.this.pack(new ArrayList<>(boxes), containers.get(index), deadline);
 				
 				return previous = result;
 			}
 
 			@Override
 			public void initialize(List<BoxItem> boxItems, List<Container> container) {
+				this.containers = container;
+				
 				List<Box> boxClones = new ArrayList<Box>(boxItems.size() * 2);
 
 				for(BoxItem item : boxItems) {

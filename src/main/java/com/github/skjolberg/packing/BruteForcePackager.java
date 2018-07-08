@@ -361,19 +361,16 @@ public class BruteForcePackager extends Packager {
 
 			private List<Placement> placements;
 			private PermutationRotationIterator[] iterators;
+			private List<Container> containers;
 			
 			@Override
-			public PackResult attempt(Container dimension, long deadline) {
-				for(int i = 0; i < iterators.length; i++) {
-					if(iterators[i].getDimension() == dimension) {
-						return BruteForcePackager.this.pack(placements, dimension, iterators[i], deadline);
-					}
-				}
-				throw new RuntimeException();
+			public PackResult attempt(int i, long deadline) {
+				return BruteForcePackager.this.pack(placements, containers.get(i), iterators[i], deadline);
 			}
 
 			@Override
 			public void initialize(List<BoxItem> boxes, List<Container> containers) {
+				this.containers = containers;
 				PermutationRotation[] rotations = PermutationRotationIterator.toRotationMatrix(boxes, rotate3D);
 				int count = 0;
 				for (PermutationRotation permutationRotation : rotations) {
