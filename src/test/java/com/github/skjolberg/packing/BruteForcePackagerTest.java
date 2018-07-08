@@ -369,7 +369,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		
 		List<Container> fits = packager.packList(products, Integer.MAX_VALUE, Long.MAX_VALUE);
 		assertNotNull(fits);
-		assertEquals(fits.size(), 2);
+		assertEquals(2, fits.size());
 		for(Container container : fits) {
 			assertEquals(container.getLevels().get(0).size(), 1);
 		}

@@ -13,16 +13,12 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 	private static class LAFFResult implements PackResult {
 		
-		private List<Box> boxes;
+		private List<Box> remaining;
 		private Container container;
 
-		public LAFFResult(List<Box> boxes, Container container) {
-			this.boxes = boxes;
+		public LAFFResult(List<Box> remaining, Container container) {
+			this.remaining = remaining;
 			this.container = container;
-		}
-
-		public boolean isRemainder() {
-			return !boxes.isEmpty();
 		}
 
 		public Container getContainer() {
@@ -31,16 +27,16 @@ public class LargestAreaFitFirstPackager extends Packager {
 		
 		@Override
 		public boolean packsMoreBoxesThan(PackResult result) {
-			return ((LAFFResult)result).boxes.size() > boxes.size(); // lower is better
+			return ((LAFFResult)result).remaining.size() > remaining.size(); // lower is better
 		}
 
-		public List<Box> getBoxes() {
-			return boxes;
+		public List<Box> getRemainingBoxes() {
+			return remaining;
 		}
 
 		@Override
-		public boolean isContent() {
-			return !container.getLevels().isEmpty() && !container.getLevels().get(0).isEmpty();
+		public boolean isEmpty() {
+			return container.getLevels().isEmpty() || container.getLevels().get(0).isEmpty();
 		}
 
 	}
@@ -499,7 +495,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 			public Container accepted(PackResult result) {
 				LAFFResult laffResult = (LAFFResult)result;
 				
-				this.boxes = laffResult.getBoxes();
+				this.boxes = laffResult.getRemainingBoxes();
 				
 				if(previous == result) {
 					return laffResult.getContainer();
@@ -519,6 +515,12 @@ public class LargestAreaFitFirstPackager extends Packager {
 				LAFFResult pack = LargestAreaFitFirstPackager.this.pack(boxes, container, Long.MAX_VALUE);
 				
 				return pack.getContainer();
+			}
+
+			@Override
+			public boolean hasMore(PackResult result) {
+				LAFFResult laffResult = (LAFFResult)result;
+				return !laffResult.getRemainingBoxes().isEmpty();
 			}
 
 		};

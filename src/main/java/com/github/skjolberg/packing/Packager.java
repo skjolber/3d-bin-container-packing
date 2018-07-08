@@ -22,13 +22,13 @@ public abstract class Packager {
 		void initialize(List<BoxItem> boxes, List<Container> container);
 		Container accepted(PackResult result);
 		PackResult attempt(Container dimension, long deadline);
+		boolean hasMore(PackResult result);
 	}
 	
 	public interface PackResult {
-		boolean isRemainder();
 		boolean packsMoreBoxesThan(PackResult result);
 		// TODO better in weight and also volume
-		boolean isContent();
+		boolean isEmpty();
 	}
 	
 	protected final Container[] containers;
@@ -294,7 +294,7 @@ public abstract class Packager {
 					return null; // timeout
 				}
 
-				if(!result.isRemainder()) {
+				if(!pack.hasMore(result)) {
 					return pack.accepted(result);
 				}
 			}
@@ -324,7 +324,7 @@ public abstract class Packager {
 						return null; // timeout
 					}
 					checked[mid] = true;
-					if(result.isRemainder()) {
+					if(!pack.hasMore(result)) {
 						results[mid] = pack.accepted(result);
 						
 						iterator.lower();
@@ -454,7 +454,7 @@ public abstract class Packager {
 					return null; // timeout
 				}
 				
-				if(result.isContent()) {
+				if(!result.isEmpty()) {
 					if(best == null || result.packsMoreBoxesThan(best)) {
 						best = result;
 					}
@@ -466,9 +466,11 @@ public abstract class Packager {
 				return null;
 			}
 
+			boolean end = !pack.hasMore(best);
+
 			containerPackResults.add(pack.accepted(best));
-			
-			if(!best.isRemainder()) {
+
+			if(end) {
 				// positive result
 				return containerPackResults;
 			}

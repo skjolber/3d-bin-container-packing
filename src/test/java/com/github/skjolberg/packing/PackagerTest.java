@@ -9,8 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -44,10 +42,10 @@ public class PackagerTest {
 	@Before
 	public void init() {
 		incompleteResult = mock(PackResult.class);
-		when(incompleteResult.isRemainder()).thenReturn(false);
+		when(incompleteResult.isEmpty()).thenReturn(false);
 		
 		completeResult = mock(PackResult.class);
-		when(completeResult.isRemainder()).thenReturn(true);
+		when(completeResult.isEmpty()).thenReturn(true);
 	}
 	
 	@Test
@@ -91,6 +89,8 @@ public class PackagerTest {
 
 		when(mock.accepted(any(PackResult.class)))
 			.thenReturn(new Container("result", 5, 5, 1, 0));
+		
+		when(mock.hasMore(any(PackResult.class))).thenReturn(false, true, true, true);
 		
 		MyPackager myPackager = new MyPackager(containers, mock);
 		
@@ -140,6 +140,8 @@ public class PackagerTest {
 		// for 0..0 
 		when(mock.attempt(containers.get(0), deadline))
 			.thenReturn(completeResult);
+		
+		when(mock.hasMore(any(PackResult.class))).thenReturn(false, true, true, false);
 
 		MyPackager myPackager = new MyPackager(containers, mock);
 		
@@ -172,27 +174,26 @@ public class PackagerTest {
 		long deadline = System.currentTimeMillis() + 100000;
 
 		PackResult ok = mock(PackResult.class);
-		when(ok.isRemainder()).thenReturn(true);
 		
 		// in the middle first
 		when(mock.attempt(containers.get(3), deadline)).thenReturn(ok);
 
 		PackResult better = mock(PackResult.class);
-		when(better.isRemainder()).thenReturn(true);
 
 		// then in the middle of 0..2 
 		when(mock.attempt(containers.get(1), deadline)).thenReturn(better);
 
 		PackResult best = mock(PackResult.class);
-		when(best.isRemainder()).thenReturn(true);
-
-		when(mock.accepted(any(PackResult.class)))
-			.thenReturn(new Container("ok", 5, 5, 1, 0))
-			.thenReturn(new Container("better", 5, 5, 1, 0))
-			.thenReturn(new Container("best", 5, 5, 1, 0));
 
 		// then lower
 		when(mock.attempt(containers.get(0), deadline)).thenReturn(best);
+
+		when(mock.accepted(any(PackResult.class)))
+		.thenReturn(new Container("ok", 5, 5, 1, 0))
+		.thenReturn(new Container("better", 5, 5, 1, 0))
+		.thenReturn(new Container("best", 5, 5, 1, 0));
+	
+		when(mock.hasMore(any(PackResult.class))).thenReturn(false, false, false);
 
 		MyPackager myPackager = new MyPackager(containers, mock);
 		
@@ -260,7 +261,8 @@ public class PackagerTest {
 		when(mock.accepted(any(PackResult.class)))
 			.thenReturn(new Container("result", 5, 5, 1, 0));
 
-		
+		when(mock.hasMore(any(PackResult.class))).thenReturn(true, true, false, true, true, true, true);
+
 		MyPackager myPackager = new MyPackager(containers, mock);
 		
 		Container pack = myPackager.pack(products, deadline);

@@ -228,14 +228,14 @@ public class PermutationRotationIterator {
 	
 	/**
 	 * 
-	 * Check whether the box at the current index does fit
+	 * Check how many orientations (i.e. rotations) the box fits
 	 * 
-	 * @param index
-	 * @return true if fits
+	 * @param index rotation for permutation at index
+	 * @return number of rotations (or zero if none fits)
 	 */
 	
-	public int getRotations(int i) {
-		return matrix[permutations[i]].boxes.length;
+	public int getOrientations(int index) {
+		return matrix[permutations[index]].boxes.length;
 	}
 	
 	public boolean nextRotation() {
@@ -401,7 +401,9 @@ public class PermutationRotationIterator {
 	}
 	
 	/**
-	 * Get number of box items with in the constraints
+	 * Get number of box items within the constraints.
+	 * 
+	 * @return number between 0 and number of {@linkplain BoxItem}s used in the constructor.
 	 */
 	
 	public int boxItemLength() {

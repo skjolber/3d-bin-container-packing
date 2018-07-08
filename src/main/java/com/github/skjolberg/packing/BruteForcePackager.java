@@ -1,6 +1,7 @@
 package com.github.skjolberg.packing;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolberg.packing.PermutationRotationIterator.PermutationRotation;
@@ -85,8 +86,8 @@ public class BruteForcePackager extends Packager {
 		}
 
 		@Override
-		public boolean isContent() {
-			return count > 0;
+		public boolean isEmpty() {
+			return count == 0;
 		}
 	}
 
@@ -393,7 +394,7 @@ public class BruteForcePackager extends Packager {
 
 				Container container = bruteForceResult.getContainer();
 
-				if(result.isRemainder()) {
+				if(bruteForceResult.isRemainder()) {
 					int[] permutations = bruteForceResult.getRotator().getPermutations();
 					List<Integer> p = new ArrayList<>();
 					for(int i = 0; i < bruteForceResult.getCount(); i++) {
@@ -407,9 +408,17 @@ public class BruteForcePackager extends Packager {
 						}
 					}
 					placements = placements.subList(bruteForceResult.getCount(), this.placements.size());
+				} else {
+					placements = Collections.emptyList();
 				}
 				
 				return container;
+			}
+
+			@Override
+			public boolean hasMore(PackResult result) {
+				BruteForceResult bruteForceResult = (BruteForceResult)result;
+				return placements.size() > bruteForceResult.getCount();
 			}
 
 		};
