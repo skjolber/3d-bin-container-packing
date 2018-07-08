@@ -378,10 +378,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		Container second = fits.get(1);
 
 		assertEquals("A", first.get(0, 0).getBox().getName());
-
 		assertEquals("B", second.get(0, 0).getBox().getName());
-		
-
 	}
 
 

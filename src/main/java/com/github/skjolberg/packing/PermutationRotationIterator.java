@@ -159,10 +159,13 @@ public class PermutationRotationIterator {
 				PermutationRotation r = new PermutationRotation();
 				r.setBoxes(result.toArray(new Box[result.size()]));
 				r.setCount(unconstrained[i].getCount());
+				
+				int index = matrix.size();
+				
 				matrix.add(r);
 				
 				for(int k = 0; k < unconstrained[i].getCount(); k++) {
-					types.add(i);
+					types.add(index);
 				}
 			}
 		}
