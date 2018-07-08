@@ -35,8 +35,8 @@ public class BruteForcePackager extends Packager {
 			this.items = items;
 		}
 
-		public boolean isComplete() {
-			return count == items.size();
+		public boolean isRemainder() {
+			return count != items.size();
 		}
 
 		public Container getContainer() {
@@ -65,11 +65,28 @@ public class BruteForcePackager extends Packager {
 
 		@Override
 		public boolean packsMoreBoxesThan(PackResult result) {
-			return ((BruteForceResult)result).count < count;
+			BruteForceResult bruteForceResult = (BruteForceResult)result;
+			
+			
+			if(bruteForceResult.count < count) {
+				return true;
+			};
+			/*
+			if(bruteForceResult.count == count) {
+				return bruteForceResult.getContainer().getVolume() < container.getVolume();
+			}
+			*/
+			
+			return false;
 		}
 
 		public PermutationRotationIterator getRotator() {
 			return rotator;
+		}
+
+		@Override
+		public boolean isContent() {
+			return count > 0;
 		}
 	}
 
@@ -371,13 +388,12 @@ public class BruteForcePackager extends Packager {
 			}
 
 			@Override
-			public Container accept(PackResult result) {
+			public Container accepted(PackResult result) {
 				BruteForceResult bruteForceResult = (BruteForceResult)result;
 
 				Container container = bruteForceResult.getContainer();
-				
-				if(!result.isComplete()) {
-					
+
+				if(result.isRemainder()) {
 					int[] permutations = bruteForceResult.getRotator().getPermutations();
 					List<Integer> p = new ArrayList<>();
 					for(int i = 0; i < bruteForceResult.getCount(); i++) {

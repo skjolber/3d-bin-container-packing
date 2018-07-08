@@ -17,7 +17,7 @@ public abstract class AbstractPackagerTest {
 	
 	public static void print(Container fits) {
 		System.out.println();
-		System.out.println(Visualizer.visualize(fits, 100, 2));
+		System.out.println(Visualizer.visualize(fits, 90, 2));
 		System.out.println();
 	}
 	

@@ -2,8 +2,6 @@ package com.github.skjolberg.packing;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import com.github.skjolberg.packing.PermutationRotationIterator.PermutationRotation;
 
 public class BruteForcePackagerRuntimeEstimator {

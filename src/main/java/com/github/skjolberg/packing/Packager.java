@@ -20,14 +20,15 @@ public abstract class Packager {
 	
 	public interface Adapter {
 		void initialize(List<BoxItem> boxes, List<Container> container);
-		Container accept(PackResult result);
+		Container accepted(PackResult result);
 		PackResult attempt(Container dimension, long deadline);
 	}
 	
 	public interface PackResult {
-		boolean isComplete();
+		boolean isRemainder();
 		boolean packsMoreBoxesThan(PackResult result);
 		// TODO better in weight and also volume
+		boolean isContent();
 	}
 	
 	protected final Container[] containers;
@@ -293,8 +294,8 @@ public abstract class Packager {
 					return null; // timeout
 				}
 
-				if(result.isComplete()) {
-					return pack.accept(result);
+				if(!result.isRemainder()) {
+					return pack.accepted(result);
 				}
 			}
 		} else {
@@ -323,8 +324,8 @@ public abstract class Packager {
 						return null; // timeout
 					}
 					checked[mid] = true;
-					if(result.isComplete()) {
-						results[mid] = pack.accept(result);
+					if(result.isRemainder()) {
+						results[mid] = pack.accepted(result);
 						
 						iterator.lower();
 					} else {
@@ -430,31 +431,33 @@ public abstract class Packager {
 	
 	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline) {
 		
-		List<Container> container = filterByVolumeAndWeight(toBoxes(boxes, true), Arrays.asList(containers), limit);
-		if(container.isEmpty()) {
+		List<Container> containers = filterByVolumeAndWeight(toBoxes(boxes, true), Arrays.asList(this.containers), limit);
+		if(containers.isEmpty()) {
 			return null;
 		}
 
 		Adapter pack = adapter();
-		pack.initialize(boxes, container);
+		pack.initialize(boxes, containers);
 		
-		List<Container> containerPackResults = new ArrayList<>(container.size());
+		List<Container> containerPackResults = new ArrayList<>(containers.size());
 		
 		do {
 			PackResult best = null;
-			for (int i = 0; i < container.size(); i++) {
+			for (int i = 0; i < containers.size(); i++) {
 					
 				if(System.currentTimeMillis() > deadline) {
 					return null;
 				}
 				
-				PackResult result = pack.attempt(container.get(i), deadline);
+				PackResult result = pack.attempt(containers.get(i), deadline);
 				if(result == null) {
 					return null; // timeout
 				}
 				
-				if(best == null || result.packsMoreBoxesThan(best)) {
-					best = result;
+				if(result.isContent()) {
+					if(best == null || result.packsMoreBoxesThan(best)) {
+						best = result;
+					}
 				}
 			}
 
@@ -463,9 +466,9 @@ public abstract class Packager {
 				return null;
 			}
 
-			containerPackResults.add(pack.accept(best));
+			containerPackResults.add(pack.accepted(best));
 			
-			if(best.isComplete()) {
+			if(!best.isRemainder()) {
 				// positive result
 				return containerPackResults;
 			}

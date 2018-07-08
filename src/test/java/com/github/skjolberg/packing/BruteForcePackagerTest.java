@@ -340,6 +340,49 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		for(Container container : fits) {
 			assertEquals(container.getLevels().get(0).size(), 2);
 		}
+		
+		Container first = fits.get(0);
+		Container second = fits.get(1);
+		Container third = fits.get(2);
+
+		assertEquals(first.get(0, 0).getBox().getName(), "A");
+		assertEquals(first.get(0, 1).getBox().getName(), "A");
+
+		assertEquals(second.get(0, 0).getBox().getName(), "A");
+		assertEquals(second.get(0, 1).getBox().getName(), "B");
+
+		assertEquals(third.get(0, 0).getBox().getName(), "B");
+		assertEquals(third.get(0, 1).getBox().getName(), "B");
 	}
-	
+
+	@Test
+	public void testStackingInTwoContainersFitCorrectBox() {
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(10, 10, 1, 0));
+		containers.add(new Container(20, 20, 1, 0));
+		BruteForcePackager packager = new BruteForcePackager(containers);
+		
+		List<BoxItem> products = new ArrayList<BoxItem>();
+
+		products.add(new BoxItem(new Box("A", 10, 10, 1, 0), 1));
+		products.add(new BoxItem(new Box("B", 20, 20, 1, 0), 1));
+		
+		List<Container> fits = packager.packList(products, Integer.MAX_VALUE, Long.MAX_VALUE);
+		assertNotNull(fits);
+		assertEquals(fits.size(), 2);
+		for(Container container : fits) {
+			assertEquals(container.getLevels().get(0).size(), 1);
+		}
+		
+		Container first = fits.get(0);
+		Container second = fits.get(1);
+
+		assertEquals("A", first.get(0, 0).getBox().getName());
+
+		assertEquals("B", second.get(0, 0).getBox().getName());
+		
+
+	}
+
+
 }

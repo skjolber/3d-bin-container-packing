@@ -44,10 +44,10 @@ public class PackagerTest {
 	@Before
 	public void init() {
 		incompleteResult = mock(PackResult.class);
-		when(incompleteResult.isComplete()).thenReturn(false);
+		when(incompleteResult.isRemainder()).thenReturn(false);
 		
 		completeResult = mock(PackResult.class);
-		when(completeResult.isComplete()).thenReturn(true);
+		when(completeResult.isRemainder()).thenReturn(true);
 	}
 	
 	@Test
@@ -89,7 +89,7 @@ public class PackagerTest {
 		when(mock.attempt(containers.get(0), deadline))
 			.thenReturn(incompleteResult);
 
-		when(mock.accept(any(PackResult.class)))
+		when(mock.accepted(any(PackResult.class)))
 			.thenReturn(new Container("result", 5, 5, 1, 0));
 		
 		MyPackager myPackager = new MyPackager(containers, mock);
@@ -120,7 +120,7 @@ public class PackagerTest {
 		products.add(new BoxItem(new Box("1", 5, 5, 1, 0), 1));
 
 		Adapter mock = mock(Packager.Adapter.class);
-		when(mock.accept(completeResult))
+		when(mock.accepted(completeResult))
 			.thenReturn(new Container("result", 5, 5, 1, 0))
 			.thenReturn(new Container("better", 5, 5, 1, 0));
 		
@@ -172,21 +172,21 @@ public class PackagerTest {
 		long deadline = System.currentTimeMillis() + 100000;
 
 		PackResult ok = mock(PackResult.class);
-		when(ok.isComplete()).thenReturn(true);
+		when(ok.isRemainder()).thenReturn(true);
 		
 		// in the middle first
 		when(mock.attempt(containers.get(3), deadline)).thenReturn(ok);
 
 		PackResult better = mock(PackResult.class);
-		when(better.isComplete()).thenReturn(true);
+		when(better.isRemainder()).thenReturn(true);
 
 		// then in the middle of 0..2 
 		when(mock.attempt(containers.get(1), deadline)).thenReturn(better);
 
 		PackResult best = mock(PackResult.class);
-		when(best.isComplete()).thenReturn(true);
+		when(best.isRemainder()).thenReturn(true);
 
-		when(mock.accept(any(PackResult.class)))
+		when(mock.accepted(any(PackResult.class)))
 			.thenReturn(new Container("ok", 5, 5, 1, 0))
 			.thenReturn(new Container("better", 5, 5, 1, 0))
 			.thenReturn(new Container("best", 5, 5, 1, 0));
@@ -257,7 +257,7 @@ public class PackagerTest {
 		when(mock.attempt(containers.get(0), deadline))
 		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
-		when(mock.accept(any(PackResult.class)))
+		when(mock.accepted(any(PackResult.class)))
 			.thenReturn(new Container("result", 5, 5, 1, 0));
 
 		

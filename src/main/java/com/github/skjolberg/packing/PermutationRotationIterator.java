@@ -215,7 +215,7 @@ public class PermutationRotationIterator {
 				}
 			}
 			
-			permutations[index] = this.permutations[j];
+			permutations[index] = j;
 			
 			index++;
 		}

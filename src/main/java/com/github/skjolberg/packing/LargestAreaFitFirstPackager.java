@@ -21,8 +21,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 			this.container = container;
 		}
 
-		public boolean isComplete() {
-			return boxes.isEmpty();
+		public boolean isRemainder() {
+			return !boxes.isEmpty();
 		}
 
 		public Container getContainer() {
@@ -36,6 +36,11 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 		public List<Box> getBoxes() {
 			return boxes;
+		}
+
+		@Override
+		public boolean isContent() {
+			return !container.getLevels().isEmpty() && !container.getLevels().get(0).isEmpty();
 		}
 
 	}
@@ -72,7 +77,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * 
 	 * @param containerProducts list of boxes to fit in a container
 	 * @param targetContainer the container to fit within
-	 * @param deadline the system time in millis at which the search should be aborted
+	 * @param deadline the system time in milliseconds at which the search should be aborted
 	 * @return null if no match, or deadline reached
 	 */
 	
@@ -491,7 +496,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 			}
 
 			@Override
-			public Container accept(PackResult result) {
+			public Container accepted(PackResult result) {
 				LAFFResult laffResult = (LAFFResult)result;
 				
 				this.boxes = laffResult.getBoxes();
@@ -502,7 +507,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 				
 				// calculate again
 				Container container = laffResult.getContainer();
-				List<Box> boxes = new ArrayList<>();
+				List<Box> boxes = new ArrayList<>(this.boxes.size());
 				for(Level level : container.getLevels()) {
 					for(Placement placement : level) {
 						boxes.add(placement.getBox());
@@ -511,7 +516,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 				
 				container.clear();
 				
-				LAFFResult pack = LargestAreaFitFirstPackager.this.pack(boxes, laffResult.getContainer(), Long.MAX_VALUE);
+				LAFFResult pack = LargestAreaFitFirstPackager.this.pack(boxes, container, Long.MAX_VALUE);
 				
 				return pack.getContainer();
 			}
