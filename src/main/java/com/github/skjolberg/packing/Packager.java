@@ -440,7 +440,7 @@ public abstract class Packager {
 		Adapter pack = adapter();
 		pack.initialize(boxes, containers);
 		
-		List<Container> containerPackResults = new ArrayList<>(containers.size());
+		List<Container> containerPackResults = new ArrayList<>();
 		
 		do {
 			PackResult best = null;
@@ -479,7 +479,10 @@ public abstract class Packager {
 				// positive result
 				return containerPackResults;
 			}
-		} while(true);
+			
+		} while(containerPackResults.size() < limit);
+		
+		return null;
 	}	
 
 

@@ -2,6 +2,7 @@ package com.github.skjolberg.packing;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -45,7 +46,7 @@ public class PackagerTest {
 		when(incompleteResult.isEmpty()).thenReturn(false);
 		
 		completeResult = mock(PackResult.class);
-		when(completeResult.isEmpty()).thenReturn(true);
+		when(completeResult.isEmpty()).thenReturn(false);
 	}
 	
 	@Test
@@ -273,4 +274,35 @@ public class PackagerTest {
 			verify(mock, times(1)).attempt(i, deadline);
 		}
 	}		
+	
+	
+	@Test
+	public void testLimitIsRespected() {
+		
+		long deadline = System.currentTimeMillis() + 100000;
+
+		List<Container> containers = new ArrayList<Container>();
+
+		containers.add(new Container("0", 5, 5, 1, 0));
+		
+		List<BoxItem> products = new ArrayList<BoxItem>();
+
+		products.add(new BoxItem(new Box("1", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("2", 5, 5, 1, 0), 1));
+		products.add(new BoxItem(new Box("3", 5, 5, 1, 0), 1));
+
+		Adapter mock = mock(Packager.Adapter.class);
+		
+		// in the middle first
+		when(mock.attempt(0, deadline))
+			.thenReturn(completeResult);
+
+		when(mock.hasMore(any(PackResult.class))).thenReturn(true, true, false);
+		
+		MyPackager myPackager = new MyPackager(containers, mock);
+		
+		List<Container> pack = myPackager.packList(products, 2, deadline);
+		assertNull(pack);
+	}
+
 }
