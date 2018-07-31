@@ -418,5 +418,21 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		assertEquals(10, fits.get(1).getWidth());
 	}
 	
+	@Test
+	public void testStackingInMultipleContainersWeight() {
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container(10, 10, 1, 2));
+		containers.add(new Container(20, 10, 1, 1));
+		BruteForcePackager packager = new BruteForcePackager(containers);
+		
+		List<BoxItem> products = new ArrayList<BoxItem>();
 
+		products.add(new BoxItem(new Box("A", 10, 5, 1, 1), 2));
+		products.add(new BoxItem(new Box("B", 10, 5, 1, 1), 2));
+		
+		List<Container> fits = packager.packList(products, Integer.MAX_VALUE, Long.MAX_VALUE);
+		assertNotNull(fits);
+		assertEquals(fits.size(), 2);
+		assertEquals(10, fits.get(0).getWidth());
+	}
 }

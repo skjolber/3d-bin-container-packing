@@ -38,6 +38,10 @@ public class Container extends Box {
 		return stackHeight + currentLevelStackHeight();
 	}
 	
+	public int getStackWeight() {
+		return stackWeight + currentLevelStackWeight();
+	}
+	
 	public void add(int index, Level element) {
 		if(!levels.isEmpty()) {
 			stackHeight += currentLevelStackHeight();
@@ -78,7 +82,7 @@ public class Container extends Box {
 	}
 	
 	public int getFreeWeight() {
-		int remainder = weight - stackWeight;
+		int remainder = weight - getStackWeight();
 		if(remainder < 0) {
 			throw new IllegalArgumentException("Remaining weigth is negative at " + remainder);
 		}

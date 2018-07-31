@@ -293,7 +293,6 @@ public class PackagerTest {
 
 		Adapter mock = mock(Packager.Adapter.class);
 		
-		// in the middle first
 		when(mock.attempt(0, deadline))
 			.thenReturn(completeResult);
 
