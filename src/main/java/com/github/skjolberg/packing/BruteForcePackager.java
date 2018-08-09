@@ -85,7 +85,7 @@ public class BruteForcePackager extends Packager {
 					Space levelSpace = placement.getSpace();
 					levelSpace.width = container.getWidth();
 					levelSpace.depth = container.getDepth();
-					levelSpace.height = box.getHeight();
+					levelSpace.height = remainingSpace.getHeight();
 					
 					placement.setBox(box);
 					
