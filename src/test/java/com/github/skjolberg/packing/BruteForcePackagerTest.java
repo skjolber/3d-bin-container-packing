@@ -494,4 +494,3 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	}	
 	
 }
-
