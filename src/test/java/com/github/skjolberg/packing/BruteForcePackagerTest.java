@@ -435,4 +435,62 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		assertEquals(fits.size(), 2);
 		assertEquals(10, fits.get(0).getWidth());
 	}
+	
+	@Test
+	public void test2DBruteForceFor6PacketsIssue28() {
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container("container1", 152, 252, 1, 0));
+		Packager bruteForcePackager = new BruteForcePackager(containers, false, true);
+
+		List<BoxItem> products1 = Arrays.asList(
+				new BoxItem(new Box("1", 73, 82, 1, 0), 1),
+				new BoxItem(new Box("2", 72, 80, 1, 0), 1),
+				new BoxItem(new Box("3", 73, 83, 1, 0), 1),
+				new BoxItem(new Box("4", 71, 83, 1, 0), 1),
+				new BoxItem(new Box("5", 74, 83, 1, 0), 1),
+				new BoxItem(new Box("6", 74, 82, 1, 0), 1)
+		);
+
+		Container fits1 = bruteForcePackager.pack(products1);
+		assertNotNull(fits1);
+	}	
+	
+	@Test
+	public void test3DBruteForceFor6PacketsIssue28() {
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container("container1", 152, 252, 1, 0));
+		Packager bruteForcePackager = new BruteForcePackager(containers, true, true);
+
+		List<BoxItem> products1 = Arrays.asList(
+				new BoxItem(new Box("1", 73, 82, 1, 0), 1),
+				new BoxItem(new Box("2", 72, 80, 1, 0), 1),
+				new BoxItem(new Box("3", 73, 83, 1, 0), 1),
+				new BoxItem(new Box("4", 71, 83, 1, 0), 1),
+				new BoxItem(new Box("5", 74, 83, 1, 0), 1),
+				new BoxItem(new Box("6", 74, 82, 1, 0), 1)
+		);
+
+		Container fits1 = bruteForcePackager.pack(products1);
+		assertNotNull(fits1);
+	}
+	
+	@Test
+	public void testBruteForceFor6PacketsIssue28() {
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new Container("container1", 152, 252, 58, 0));
+		Packager bruteForcePackager = new BruteForcePackager(containers, false, true);
+
+		List<BoxItem> products1 = Arrays.asList(
+				new BoxItem(new Box("1", 73, 82, 54, 0), 1),
+				new BoxItem(new Box("2", 72, 80, 57, 0), 1),
+				new BoxItem(new Box("3", 73, 83, 53, 0), 1),
+				new BoxItem(new Box("4", 71, 83, 53, 0), 1),
+				new BoxItem(new Box("5", 74, 83, 53, 0), 1),
+				new BoxItem(new Box("6", 74, 82, 54, 0), 1)
+		);
+
+		Container fits1 = bruteForcePackager.pack(products1);
+		assertNotNull(fits1);
+	}	
+	
 }

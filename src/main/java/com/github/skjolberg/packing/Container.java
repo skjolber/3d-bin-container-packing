@@ -13,13 +13,39 @@ public class Container extends Box {
 		super(container.getName(), container.getWidth(), container.getDepth(), container.getHeight(), container.getWeight());
 	}
 
+	/**
+	 * Construct new instance. 
+	 * 
+	 * @param dimension maximum size the container can contain
+	 * @param weight maximum weight the container can hold
+	 */
+	
 	public Container(Dimension dimension, int weight) {
 		super(dimension.getName(), dimension.getWidth(), dimension.getDepth(), dimension.getHeight(), weight);
 	}
+	
+	/**
+	 * Construct new instance. 
+	 * 
+	 * @param w width
+	 * @param d depth
+	 * @param h height
+	 * @param weight maximum weight the container can hold
+	 */
 
 	public Container(int w, int d, int h, int weight) {
 		super(w, d, h, weight);
 	}
+
+	/**
+	 * Construct new instance. 
+	 * 
+	 * @param name container name
+	 * @param w width
+	 * @param d depth
+	 * @param h height
+	 * @param weight maximum weight the container can hold
+	 */
 
 	public Container(String name, int w, int d, int h, int weight) {
 		super(name, w, d, h, weight);

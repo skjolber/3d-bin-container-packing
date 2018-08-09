@@ -37,7 +37,7 @@ public class BruteForcePackager extends Packager {
 		}
 
 		public boolean isRemainder() {
-			return count != items.size();
+			return count < items.size();
 		}
 
 		public Container getContainer() {
@@ -173,21 +173,25 @@ public class BruteForcePackager extends Packager {
 				// fit2d below might have returned due to deadline
 				return Integer.MIN_VALUE;
 			}
-			
-			if(!rotator.isWithinHeight(index, remainingSpace.getHeight())) {
-				return index;
-			}
 
 			Box box = rotator.get(index);
 			if(box.getWeight() > holder.getFreeWeight()) {
 				return index;
 			}
 			
+			if(!remainingSpace.canHold2D(box)) {
+				return index;
+			}
+			
 			Placement placement = placements.get(index);
 			Space levelSpace = placement.getSpace();
-			levelSpace.width = container.getWidth();
-			levelSpace.depth = container.getDepth();
-			levelSpace.height = box.getHeight();
+			levelSpace.width = remainingSpace.getWidth();
+			levelSpace.depth = remainingSpace.getDepth();
+			
+			// the LAFF allocates a height per level equal to the given the current box, 
+			// but here allow for use of all of the remaining space; the selection of boxes is fixed 
+			// the result will be constrained to actual use.
+			levelSpace.height = remainingSpace.getHeight(); 
 			
 			placement.setBox(box);
 			
