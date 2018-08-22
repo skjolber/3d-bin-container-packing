@@ -2,6 +2,8 @@ package com.github.skjolberg.packing;
 
 import java.util.ArrayList;
 
+import static java.lang.Math.max;
+
 public class Container extends Box {
 
 	private int stackHeight = 0;
@@ -113,5 +115,39 @@ public class Container extends Box {
 			count += level.size();
 		}
 		return count;
+	}
+
+	public Dimension getUsedSpace() {
+		Dimension maxBox = new Dimension();
+		int height = 0;
+		for (Level level : levels) {
+			maxBox = getUsedSpace(level, maxBox, height);
+			height += level.getHeight();
+		}
+		return maxBox;
+	}
+
+	private Dimension getUsedSpace(Level level, Dimension maxBox, int height) {
+		for (Placement placement : level) {
+			maxBox = boundingBox(maxBox, getUsedSpace(placement, height));
+		}
+		return maxBox;
+	}
+
+	private Dimension getUsedSpace(Placement placement, int height) {
+		final Box box = placement.getBox();
+		final Space space = placement.getSpace();
+		return new Dimension(
+				space.getX() + box.getWidth(),
+				space.getY() + box.getDepth(),
+				height + box.getHeight());
+	}
+
+	private Dimension boundingBox(final Dimension b1, final Dimension b2) {
+		return new Dimension(
+				max(b1.getWidth(), b2.getWidth()),
+				max(b1.getDepth(), b2.getDepth()),
+				max(b1.getHeight(), b2.getHeight()));
+
 	}
 }

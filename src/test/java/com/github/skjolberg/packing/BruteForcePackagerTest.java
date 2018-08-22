@@ -213,6 +213,25 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	}
 
 	@Test
+	public void testPackagingExposesVolumeUsed() {
+		List<Box> containers = new ArrayList<Box>();
+		containers.add(new Box("container1", 60, 25, 20));
+		Packager bruteForcePackager = new BruteForcePackager(containers, true, true);
+
+		List<BoxItem> products1 = Arrays.asList(
+				new BoxItem(new Box("1", 7, 24, 58), 1),
+				new BoxItem(new Box("2", 7, 25, 56), 1),
+				new BoxItem(new Box("3", 5, 25, 58), 1)
+		);
+
+		Container fits1 = bruteForcePackager.pack(products1);
+
+		assertEquals(new Dimension(58, 25, 19), fits1.getUsedSpace());
+	}
+
+
+
+	@Test
 	@Ignore
 	public void testRunsForLimitedTimeSeconds() {
 		List<Box> containers = new ArrayList<Box>();
