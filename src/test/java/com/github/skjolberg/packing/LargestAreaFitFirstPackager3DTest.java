@@ -211,6 +211,45 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		assertNotNull(fits2);
 
 	}
+
+	@Test
+	public void testWith5Packets3D() {
+		List<Box> containers = new ArrayList<>();
+		containers.add(new Box(96,96,118));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
+
+		List<BoxItem> products1 = new ArrayList<>();
+
+		products1.add(new BoxItem(new Box("A", 45, 46, 55), 1));
+		products1.add(new BoxItem(new Box("B", 46, 44, 57), 1));
+		products1.add(new BoxItem(new Box("C", 46, 46, 55), 1));
+		products1.add(new BoxItem(new Box("D", 44, 46, 55), 1));
+		products1.add(new BoxItem(new Box("E", 46, 46, 55), 1));
+
+		Container fits1 = packager.pack(products1);
+		// All boxes are smaller than 46x46x57 so we should fit 8 of them in a volume of 92x92x114
+		// Here we fail to fit only 5
+		assertNotNull(fits1);
+	}
+	@Test
+	public void testWith5Packets2D() {
+		List<Box> containers = new ArrayList<>();
+		containers.add(new Box(38,66,19));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
+
+		List<BoxItem> products1 = new ArrayList<>();
+
+		products1.add(new BoxItem(new Box("A", 17, 19, 15), 1));
+		products1.add(new BoxItem(new Box("B", 18, 17, 15), 1));
+		products1.add(new BoxItem(new Box("C", 14, 20, 18), 1));
+		products1.add(new BoxItem(new Box("D", 17, 18, 15), 1));
+		products1.add(new BoxItem(new Box("E", 16, 17, 14), 1));
+
+		// All boxes are smaller than 18x20x18 so we should fit 6 of them in a volume of 36x60x18
+		// Here we fail to fit only 5
+		Container fits1 = packager.pack(products1);
+		assertNotNull(fits1);
+	}
 	
 	@Test
 	public void testIsse2() {
