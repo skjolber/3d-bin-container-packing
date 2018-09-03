@@ -2,7 +2,7 @@ package com.github.skjolberg.packing;
 
 import java.util.List;
 
-import com.github.skjolberg.packing.PermutationRotationIterator.PermutationRotation;
+import com.github.skjolberg.packing.PermutationRotation;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. 
@@ -40,7 +40,7 @@ public class BruteForcePackager extends Packager {
 	}
 	
 	protected Container pack(List<Placement> placements, Dimension dimension, PermutationRotation[] rotations, long deadline) {
-		
+
 		PermutationRotationIterator rotator = new PermutationRotationIterator(dimension, rotations);
 
 		return pack(placements, dimension, rotator, deadline);

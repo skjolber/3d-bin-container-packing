@@ -33,30 +33,6 @@ import java.util.List;
 
 public class PermutationRotationIterator {
 	
-	public static class PermutationRotation {
-
-		protected int count;
-		
-		protected Box[] boxes;
-
-		public Box[] getBoxes() {
-			return boxes;
-		}
-
-		public void setBoxes(Box[] boxes) {
-			this.boxes = boxes;
-		}
-
-		public void setCount(int count) {
-			this.count = count;
-		}
-		
-		public int getCount() {
-			return count;
-		}
-	}
-
-	
 	public static PermutationRotation[] toRotationMatrix(List<BoxItem> list, boolean rotate3D) {
 		PermutationRotation[] boxes = new PermutationRotation[list.size()];
 		for(int i = 0; i < list.size(); i++) {
@@ -140,7 +116,7 @@ public class PermutationRotationIterator {
 			matrix[i].setBoxes(result.toArray(new Box[result.size()]));
 			matrix[i].setCount(unconstrained[i].getCount());
 			
-			for(int k = 0; k < unconstrained[i].count; k++) {
+			for(int k = 0; k < unconstrained[i].getCount(); k++) {
 				types.add(i);
 			}
 		}
@@ -164,7 +140,7 @@ public class PermutationRotationIterator {
 	public boolean nextRotation() {
 		// next rotation
 		for(int i = 0; i < rotations.length; i++) {
-			while(rotations[i] < matrix[permutations[i]].boxes.length - 1) {
+			while(rotations[i] < matrix[permutations[i]].getBoxes().length - 1) {
 				rotations[i]++;
 				
 				// reset all previous counters 
@@ -193,11 +169,11 @@ public class PermutationRotationIterator {
 	public long countRotations() {
 		long n = 1;
 		for(int i = 0; i < rotations.length; i++) {
-			if(Long.MAX_VALUE / matrix[rotations[i]].boxes.length <= n) {
+			if(Long.MAX_VALUE / matrix[rotations[i]].getBoxes().length <= n) {
 				return -1L;
 			}
 
-			n = n * matrix[rotations[i]].boxes.length;
+			n = n * matrix[rotations[i]].getBoxes().length;
 		}
 		return n;
 	}
@@ -257,7 +233,7 @@ public class PermutationRotationIterator {
 
 	
 	public Box get(int index) {
-		return matrix[permutations[index]].boxes[rotations[index]];
+		return matrix[permutations[index]].getBoxes()[rotations[index]];
 	}
 	
 	public boolean nextPermutation() {
