@@ -150,15 +150,8 @@ public class Dimension {
 	}
 
 	public boolean fitsInside3D(int w, int d, int h) {
-		
-		if(w >= width && h >= height && d >= depth) {
-			return true;
-		}
-		
-		return false;
+		return w >= width && h >= height && d >= depth;
 	}
-	
-
 
 	/**
 	 * Check whether this object can fit within a dimension, with 3D rotation.
