@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.github.skjolberg.packing.PermutationRotationIterator.PermutationRotation;
+import com.github.skjolberg.packing.PermutationRotation;
 
 public class PermutationRotationIteratorTest {
 
@@ -19,10 +19,7 @@ public class PermutationRotationIteratorTest {
 			List<BoxItem> products1 = new ArrayList<BoxItem>();
 			
 			for(int k = 0; k < i; k++) {
-				BoxItem item = new BoxItem();
-				item.setBox(new Box(Integer.toString(k), 3, 1, 1));
-				item.setCount(1);
-				
+				BoxItem item = new BoxItem(new Box(Integer.toString(k), 3, 1, 1), 1);
 				products1.add(item);
 			}
 	

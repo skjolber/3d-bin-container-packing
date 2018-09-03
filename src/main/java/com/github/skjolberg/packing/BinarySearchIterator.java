@@ -5,14 +5,13 @@ public class BinarySearchIterator {
 	protected int low;
 	protected int high;
 	protected int mid;
-	
-	public BinarySearchIterator(int low, int high) {
+
+	public BinarySearchIterator() {}
+
+	public BinarySearchIterator(final int low, final int high) {
 		super();
 		this.low = low;
 		this.high = high;
-	}
-
-	public BinarySearchIterator() {
 	}
 
 	public int next() {
@@ -31,7 +30,7 @@ public class BinarySearchIterator {
 		return low <= high;
 	}
 	
-	public void reset(int high, int low) {
+	public void reset(final int high, final int low) {
 		this.high = high;
 		this.low = low;
 	}

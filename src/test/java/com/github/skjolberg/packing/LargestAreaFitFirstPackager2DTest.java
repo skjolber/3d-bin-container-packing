@@ -34,7 +34,6 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 		assertEquals(fits.getLevels().size(), 1);
 		
 		validate(fits);
-		print(fits);
 	}
 	
 
@@ -73,7 +72,6 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 		assertNotNull(fits);
 		assertEquals(fits.getLevels().size(), 1);
 		
-		print(fits);
 		validate(fits);
 	}
 	
@@ -93,7 +91,6 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 		assertNotNull(fits);
 		assertEquals(fits.getLevels().size(), 1);
 		
-		print(fits);
 		validate(fits);
 	}
 	
@@ -114,7 +111,6 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 		assertNotNull(fits);
 		assertEquals(fits.getLevels().size(), 1);
 		
-		print(fits);
 		validate(fits);
 	}
 	
@@ -137,7 +133,6 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
 		assertEquals(1, fits.getLevels().get(fits.getLevels().size() - 1).getHeight());
 		
-		print(fits);
 		validate(fits);
 	}
 	
@@ -169,7 +164,6 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 		assertThat(fits.get(0, 2).getSpace().getX(), is(1));
 		assertThat(fits.get(0, 2).getSpace().getY(), is(0));
 		
-		print(fits);
 		validate(fits);
 	}
 
@@ -195,7 +189,6 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 		assertNotNull(fits);
 		assertEquals(fits.getLevels().size(), 1);
 		
-		print(fits);
 		validate(fits);
 
 	}
@@ -346,7 +339,6 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 		assertNotNull(pack);
 
 		validate(pack);
-		print(pack);
 
 	}
 
@@ -385,7 +377,6 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
 		validate(pack);
 		
-		print(pack);
 		validate(pack);
 	}
 	
