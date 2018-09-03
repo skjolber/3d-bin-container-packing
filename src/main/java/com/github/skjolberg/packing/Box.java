@@ -2,15 +2,15 @@ package com.github.skjolberg.packing;
 
 public class Box extends Dimension {
 
-	public Box(Dimension dimension) {
+	public Box(final Dimension dimension) {
 		super(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}
 
-	public Box(int w, int d, int h) {
+	public Box(final int w, final int d, final int h) {
 		super(w, d, h);
 	}
 
-	public Box(String name, int w, int d, int h) {
+	public Box(final String name, final int w, final int d, final int h) {
 		super(name, w, d, h);
 	}
 	
@@ -22,7 +22,7 @@ public class Box extends Dimension {
 	 */
 
 	public Box rotate3D() {
-		int height = this.height;
+		final int height = this.height;
 		
 		this.height = width;
 		this.width = depth;
@@ -45,11 +45,11 @@ public class Box extends Dimension {
 	 * @return if this object fits within the input dimensions
 	 */
 
-	public boolean rotateLargestFootprint3D(Dimension dimension) {
+	public boolean rotateLargestFootprint3D(final Dimension dimension) {
 		return rotateLargestFootprint3D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}
 
-	private boolean heightUp(int w, int d, int h) {
+	private boolean heightUp(final int w, final int d, final int h) {
 
 		if(h < height) {
 			return false;
@@ -58,7 +58,7 @@ public class Box extends Dimension {
 		return (d >= width && w >= depth) || (w >= width && d >= depth);
 	}
 	
-	private boolean widthUp(int w, int d, int h) {
+	private boolean widthUp(final int w, final int d, final int h) {
 
 		if(h < width) {
 			return false;
@@ -67,7 +67,7 @@ public class Box extends Dimension {
 		return (d >= height && w >= depth) || (w >= height && d >= depth);
 	}
 
-	private boolean depthUp(int w, int d, int h) {
+	private boolean depthUp(final int w, final int d, final int h) {
 
 		if(h < depth) {
 			return false;
@@ -76,7 +76,7 @@ public class Box extends Dimension {
 		return (d >= height && w >= width) || (w >= height && d >= width);
 	}
 	
-	public boolean rotateLargestFootprint3D(int w, int d, int h) {
+	public boolean rotateLargestFootprint3D(final int w, final int d, final int h) {
 		int a = Integer.MIN_VALUE;
 		if(heightUp(w, d, h)) {
 			a = width * depth;
@@ -124,7 +124,7 @@ public class Box extends Dimension {
 		
 	}
 
-	public boolean fitRotate2D(int w, int d) {
+	public boolean fitRotate2D(final int w, final int d) {
 		
 		if(w >= width && d >= depth) {
 			return true;
@@ -149,11 +149,11 @@ public class Box extends Dimension {
 	 * 
 	 */
 	
-	public boolean fitRotate3DSmallestFootprint(Dimension space) {
+	public boolean fitRotate3DSmallestFootprint(final Dimension space) {
 		return fitRotate3DSmallestFootprint(space.getWidth(), space.getDepth(), space.getHeight());
 	}
 	
-	public boolean fitRotate3DSmallestFootprint(int w, int d, int h) {
+	public boolean fitRotate3DSmallestFootprint(final int w, final int d, final int h) {
 		int a = Integer.MAX_VALUE;
 		if(heightUp(w, d, h)) {
 			a = width * depth;
@@ -207,7 +207,7 @@ public class Box extends Dimension {
 	 * @return if this object fits within the input dimensions
 	 */
 	
-	public boolean fitRotate2D(Dimension dimension) {
+	public boolean fitRotate2D(final Dimension dimension) {
 		if(dimension.getHeight() < height) {
 			return false;
 		}
@@ -230,7 +230,7 @@ public class Box extends Dimension {
 	 */
 	
 	public Box rotate2D() {
-		int depth = this.depth;
+		final int depth = this.depth;
 		
 		this.depth = width;
 		this.width = depth;
@@ -253,7 +253,7 @@ public class Box extends Dimension {
 		// width -> depth -> width;
 		// depth -> height;
 		
-		int depth = this.depth;
+		final int depth = this.depth;
 		
 		this.depth = height;
 		this.height = depth;

@@ -14,8 +14,8 @@ public class Level extends ArrayList<Placement>{
 	public int getHeight() {
 		int height = 0;
 		
-		for(Placement placement : this) {
-			Box box = placement.getBox();
+		for(final Placement placement : this) {
+			final Box box = placement.getBox();
 			if(box.getHeight() > height) {
 				height = box.getHeight();
 			}

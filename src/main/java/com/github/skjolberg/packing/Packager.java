@@ -30,7 +30,7 @@ public abstract class Packager {
 	 * 
 	 * @param containers list of containers
 	 */
-	public Packager(List<? extends Dimension> containers) {
+	public Packager(final List<? extends Dimension> containers) {
 		this(containers, true, true);
 	}
 	
@@ -42,7 +42,7 @@ public abstract class Packager {
 	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a match, it searches the preceding boxes as well, until the deadline is passed. 
 	 */
 
-	public Packager(List<? extends Dimension> containers, boolean rotate3D, boolean binarySearch) {
+	public Packager(final List<? extends Dimension> containers, final boolean rotate3D, final boolean binarySearch) {
 		this.containers = containers.toArray(new Dimension[containers.size()]);
 		this.rotate3D = rotate3D;
 		this.binarySearch = binarySearch;
@@ -56,7 +56,7 @@ public abstract class Packager {
 	 * @return null if no match
 	 */
 	
-	public Container pack(List<BoxItem> boxes) {
+	public Container pack(final List<BoxItem> boxes) {
 		return pack(boxes, Long.MAX_VALUE);
 	}
 
@@ -67,14 +67,14 @@ public abstract class Packager {
 	 * @return list of containers
 	 */
 	
-	public List<Dimension> filterContainers(List<BoxItem> boxes) {
+	public List<Dimension> filterContainers(final List<BoxItem> boxes) {
 		long volume = 0;
-		for(BoxItem box : boxes) {
+		for(final BoxItem box : boxes) {
 			volume += box.getBox().getVolume() * box.getCount();
 		}
 		
-		List<Dimension> list = new ArrayList<>();
-		for(Dimension container : containers) {
+		final List<Dimension> list = new ArrayList<>();
+		for(final Dimension container : containers) {
 			if(container.getVolume() < volume || !canHold(container, boxes)) {
 				// discard this container
 				continue;
@@ -95,7 +95,7 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	
-	public Container pack(List<BoxItem> boxes, long deadline) {
+	public Container pack(final List<BoxItem> boxes, final long deadline) {
 		return pack(boxes, filterContainers(boxes), deadline);
 	}
 
@@ -109,12 +109,12 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	
-	public Container pack(List<BoxItem> boxes, List<Dimension> dimensions, long deadline) {
+	public Container pack(final List<BoxItem> boxes, final List<Dimension> dimensions, final long deadline) {
 		if(dimensions.isEmpty()) {
 			return null;
 		}
 		
-		Adapter pack = adapter(boxes);
+		final Adapter pack = adapter(boxes);
 
 		if(!binarySearch || dimensions.size() <= 2 || deadline == Long.MAX_VALUE) {
 			for (int i = 0; i < dimensions.size(); i++) {
@@ -123,31 +123,31 @@ public abstract class Packager {
 					break;
 				}
 				
-				Container result = pack.pack(boxes, dimensions.get(i), deadline);
+				final Container result = pack.pack(boxes, dimensions.get(i), deadline);
 				if(result != null) {
 					return result;
 				}
 			}
 		} else {
-			Container[] results = new Container[dimensions.size()];
-			boolean[] checked = new boolean[results.length]; 
+			final Container[] results = new Container[dimensions.size()];
+			final boolean[] checked = new boolean[results.length];
 
-			ArrayList<Integer> current = new ArrayList<>();
+			final ArrayList<Integer> current = new ArrayList<>();
 			for(int i = 0; i < dimensions.size(); i++) {
 				current.add(i);
 			}
 
-			BinarySearchIterator iterator = new BinarySearchIterator();
+			final BinarySearchIterator iterator = new BinarySearchIterator();
 
 			search:
 			do {
 				iterator.reset(current.size() - 1, 0);
 				
 				do {
-					int next = iterator.next();
-					int mid = current.get(next);
+					final int next = iterator.next();
+					final int mid = current.get(next);
 
-					Container result = pack.pack(boxes, dimensions.get(mid), deadline);
+					final Container result = pack.pack(boxes, dimensions.get(mid), deadline);
 					
 					checked[mid] = true;
 					if(result != null) {
@@ -165,7 +165,7 @@ public abstract class Packager {
 				
 		        // halt when have a result, and checked all containers at the lower indexes
 		        for (int i = 0; i < current.size(); i++) {
-		        	Integer integer = current.get(i);
+		        	final Integer integer = current.get(i);
 					if(results[integer] != null) {
 						// remove end items; we already have a better match
 						while(current.size() > i) {
@@ -193,8 +193,8 @@ public abstract class Packager {
 	
 	protected abstract Adapter adapter(List<BoxItem> boxes);
 
-	protected boolean canHold(Dimension containerBox, List<BoxItem> boxes) {
-		for(BoxItem box : boxes) {
+	protected boolean canHold(final Dimension containerBox, final List<BoxItem> boxes) {
+		for(final BoxItem box : boxes) {
 			if(rotate3D) {
 				if(!containerBox.canHold3D(box.getBox())) {
 					return false;
@@ -208,13 +208,13 @@ public abstract class Packager {
 		return true;
 	}
 	
-	public static List<Placement> getPlacements(int size) {
+	public static List<Placement> getPlacements(final int size) {
 		// each box will at most have a single placement with a space (and its remainder). 
-		List<Placement> placements = new ArrayList<Placement>(size);
+		final List<Placement> placements = new ArrayList<Placement>(size);
 
 		for(int i = 0; i < size; i++) {
-			Space a = new Space();
-			Space b = new Space();
+			final Space a = new Space();
+			final Space b = new Space();
 			a.setRemainder(b);
 			b.setRemainder(a);
 			

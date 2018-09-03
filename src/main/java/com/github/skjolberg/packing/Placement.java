@@ -11,25 +11,25 @@ public class Placement {
 	private Space space;
 	private Box box;
 	
-	public Placement(Space space, Box box) {
+	public Placement(final Space space, final Box box) {
 		this.space = space;
 		this.box = box;
 	}
 	
-	public Placement(Space space) {
+	public Placement(final Space space) {
 		this.space = space;
 	}
 	
 	public Space getSpace() {
 		return space;
 	}
-	public void setSpace(Space space) {
+	public void setSpace(final Space space) {
 		this.space = space;
 	}
 	public Box getBox() {
 		return box;
 	}
-	public void setBox(Box box) {
+	public void setBox(final Box box) {
 		this.box = box;
 	}
 	
@@ -47,14 +47,14 @@ public class Placement {
 		return space.getY() + (box.getDepth() / 2);
 	}
 	
-	public boolean intercets(Placement placement) {
+	public boolean intercets(final Placement placement) {
 		return intercetsX(placement) && intercetsY(placement);
 	}
 	
-	public boolean intercetsY(Placement placement) {
+	public boolean intercetsY(final Placement placement) {
 		
-		int startY = space.getY();
-		int endY = startY + box.getDepth() - 1;
+		final int startY = space.getY();
+		final int endY = startY + box.getDepth() - 1;
 
 		if(startY <= placement.getSpace().getY() && placement.getSpace().getY() <= endY) {
 			return true;
@@ -67,10 +67,10 @@ public class Placement {
 		return false;
 	}
 	
-	public boolean intercetsX(Placement placement) {
+	public boolean intercetsX(final Placement placement) {
 		
-		int startX = space.getX();
-		int endX = startX + box.getWidth() - 1;
+		final int startX = space.getX();
+		final int endX = startX + box.getWidth() - 1;
 
 		if(startX <= placement.getSpace().getX() && placement.getSpace().getX() <= endX) {
 			return true;

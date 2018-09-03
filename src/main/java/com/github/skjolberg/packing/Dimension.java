@@ -4,21 +4,21 @@ public class Dimension {
 
 	public static final Dimension EMPTY = new Dimension(0, 0, 0);
 	
-	public static Dimension decode(String size) {
-		String[] dimensions = size.split("x");
+	public static Dimension decode(final String size) {
+		final String[] dimensions = size.split("x");
 		
 		return newInstance(Integer.parseInt(dimensions[0]), Integer.parseInt(dimensions[1]), Integer.parseInt(dimensions[2]));
 	}
 
-	public static String encode(Dimension dto) {
+	public static String encode(final Dimension dto) {
 		return encode(dto.getWidth(), dto.getDepth(), dto.getHeight());
 	}
 
-	public static String encode(int width, int depth, int height) {
+	public static String encode(final int width, final int depth, final int height) {
 		return width + "x" + depth + "x" + height;
 	}
 
-	public static Dimension newInstance(int width, int depth, int height) {
+	public static Dimension newInstance(final int width, final int depth, final int height) {
 		return new Dimension(width, depth, height);
 	}
 	
@@ -29,7 +29,7 @@ public class Dimension {
 	
 	protected final String name;
 	
-	public Dimension(String name) {
+	public Dimension(final String name) {
 		this.name = name;
 	}
 
@@ -37,7 +37,7 @@ public class Dimension {
 		this(null);
 	}
 
-	public Dimension(String name, int w, int d, int h) {
+	public Dimension(final String name, final int w, final int d, final int h) {
 		this.name = name;
 		
 		this.depth = d;
@@ -47,7 +47,7 @@ public class Dimension {
 		this.volume = ((long)depth) * ((long)width) * ((long)height);
 	}	
 	
-	public Dimension(int w, int d, int h) {
+	public Dimension(final int w, final int d, final int h) {
 		this(null, w, d, h);
 	}
 
@@ -72,11 +72,11 @@ public class Dimension {
 	 * 
 	 */
 
-	public boolean canHold3D(Dimension dimension) {
+	public boolean canHold3D(final Dimension dimension) {
 		return canHold3D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}
 	
-	public boolean canHold3D(int w, int d, int h) {
+	public boolean canHold3D(final int w, final int d, final int h) {
 		
 		if(w <= width && h <= height && d <= depth) {
 			return true;
@@ -115,11 +115,11 @@ public class Dimension {
 	 * 
 	 */
 
-	public boolean canHold2D(Dimension dimension) {
+	public boolean canHold2D(final Dimension dimension) {
 		return canHold2D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}
 	
-	public boolean canHold2D(int w, int d, int h) {
+	public boolean canHold2D(final int w, final int d, final int h) {
 		if(h > height) {
 			return false;
 		}
@@ -145,11 +145,11 @@ public class Dimension {
 	 * @return true if this can fit within the argument space 
 	 */
 	
-	public boolean fitsInside3D(Dimension dimension) {
+	public boolean fitsInside3D(final Dimension dimension) {
 		return fitsInside3D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}
 
-	public boolean fitsInside3D(int w, int d, int h) {
+	public boolean fitsInside3D(final int w, final int d, final int h) {
 		return w >= width && h >= height && d >= depth;
 	}
 
@@ -161,7 +161,7 @@ public class Dimension {
 	 * 
 	 */
 
-	public boolean canFitInside3D(Dimension dimension) {
+	public boolean canFitInside3D(final Dimension dimension) {
 		return dimension.canHold3D(this);
 	}
 
@@ -173,7 +173,7 @@ public class Dimension {
 	 * 
 	 */
 
-	public boolean canFitInside2D(Dimension dimension) {
+	public boolean canFitInside2D(final Dimension dimension) {
 		return dimension.canHold2D(this);
 	}
 
@@ -211,14 +211,14 @@ public class Dimension {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Dimension other = (Dimension) obj;
+		final Dimension other = (Dimension) obj;
 		if (depth != other.depth)
 			return false;
 		if (height != other.height)

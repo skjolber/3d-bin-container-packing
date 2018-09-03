@@ -2,20 +2,17 @@ package com.github.skjolberg.packing;
 
 public class PermutationRotation {
 
-    private int count;
+    private final int count;
 
-    private Box[] boxes;
+    private final Box[] boxes;
 
-    public Box[] getBoxes() {
-        return boxes;
-    }
-
-    public void setBoxes(Box[] boxes) {
+    public PermutationRotation(final int count, final Box[] boxes) {
+        this.count = count;
         this.boxes = boxes;
     }
 
-    public void setCount(int count) {
-        this.count = count;
+    public Box[] getBoxes() {
+        return boxes;
     }
 
     public int getCount() {

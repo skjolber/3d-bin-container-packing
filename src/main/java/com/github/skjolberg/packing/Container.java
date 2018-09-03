@@ -9,19 +9,19 @@ public class Container extends Box {
 	private int stackHeight = 0;
 	private ArrayList<Level> levels = new ArrayList<Level>();
 	
-	public Container(Dimension dimension) {
+	public Container(final Dimension dimension) {
 		super(dimension.getName(), dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}
 
-	public Container(int w, int d, int h) {
+	public Container(final int w, final int d, final int h) {
 		super(w, d, h);
 	}
 
-	public Container(String name, int w, int d, int h) {
+	public Container(final String name, final int w, final int d, final int h) {
 		super(name, w, d, h);
 	}
 
-	public boolean add(Level element) {
+	public boolean add(final Level element) {
 		if(!levels.isEmpty()) {
 			stackHeight += currentLevelStackHeight();
 		}
@@ -33,7 +33,7 @@ public class Container extends Box {
 		return stackHeight + currentLevelStackHeight();
 	}
 	
-	public void add(int index, Level element) {
+	public void add(final int index, final Level element) {
 		if(!levels.isEmpty()) {
 			stackHeight += currentLevelStackHeight();
 		}
@@ -48,7 +48,7 @@ public class Container extends Box {
 		return levels.get(levels.size() - 1).getHeight();
 	}
 	
-	public void add(Placement placement) {
+	public void add(final Placement placement) {
 		levels.get(levels.size() - 1).add(placement);
 	}
 	
@@ -57,7 +57,7 @@ public class Container extends Box {
 	}
 	
 	public Dimension getFreeSpace() {
-		int spaceHeight = height - getStackHeight();
+		final int spaceHeight = height - getStackHeight();
 		if(spaceHeight < 0) {
 			throw new IllegalArgumentException("Remaining free space is negative at " + spaceHeight);
 		}
@@ -68,7 +68,7 @@ public class Container extends Box {
 		return levels;
 	}
 	
-	public Placement get(int level, int placement) {
+	public Placement get(final int level, final int placement) {
 		return levels.get(level).get(placement);
 	}
 
@@ -86,14 +86,14 @@ public class Container extends Box {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Container other = (Container) obj;
+		final Container other = (Container) obj;
 		if (levels == null) {
 			if (other.levels != null)
 				return false;
@@ -111,7 +111,7 @@ public class Container extends Box {
 	
 	public int getBoxCount() {
 		int count = 0;
-		for(Level level : levels) {
+		for(final Level level : levels) {
 			count += level.size();
 		}
 		return count;
@@ -120,21 +120,21 @@ public class Container extends Box {
 	public Dimension getUsedSpace() {
 		Dimension maxBox = new Dimension();
 		int height = 0;
-		for (Level level : levels) {
+		for (final Level level : levels) {
 			maxBox = getUsedSpace(level, maxBox, height);
 			height += level.getHeight();
 		}
 		return maxBox;
 	}
 
-	private Dimension getUsedSpace(Level level, Dimension maxBox, int height) {
-		for (Placement placement : level) {
+	private Dimension getUsedSpace(final Level level, Dimension maxBox, final int height) {
+		for (final Placement placement : level) {
 			maxBox = boundingBox(maxBox, getUsedSpace(placement, height));
 		}
 		return maxBox;
 	}
 
-	private Dimension getUsedSpace(Placement placement, int height) {
+	private Dimension getUsedSpace(final Placement placement, final int height) {
 		final Box box = placement.getBox();
 		final Space space = placement.getSpace();
 		return new Dimension(

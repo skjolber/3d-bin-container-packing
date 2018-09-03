@@ -13,11 +13,11 @@ public class Space extends Dimension {
 		super();
 	}
 	
-	public Space(Space parent, int w, int d, int h, int x, int y, int z) {
+	public Space(final Space parent, final int w, final int d, final int h, final int x, final int y, final int z) {
 		this(parent, null, w, d, h, x, y, z);
 	}
 	
-	public Space(Space parent, String name, int w, int d, int h, int x, int y, int z) {
+	public Space(final Space parent, final String name, final int w, final int d, final int h, final int x, final int y, final int z) {
 		super(name, w, d, h);
 		
 		this.parent = parent;
@@ -26,30 +26,30 @@ public class Space extends Dimension {
 		this.z = z;
 	}
 	
-	public Space(int w, int d, int h, int x, int y, int z) {
+	public Space(final int w, final int d, final int h, final int x, final int y, final int z) {
 		this(null, null, w, d, h, x, y, z);
 	}
 	
-	public Space(String name, int w, int d, int h, int x, int y, int z) {
+	public Space(final String name, final int w, final int d, final int h, final int x, final int y, final int z) {
 		this(null, name, w, d, h, x, y, z);
 	}
 	
 	public int getX() {
 		return x;
 	}
-	public void setX(int x) {
+	public void setX(final int x) {
 		this.x = x;
 	}
 	public int getY() {
 		return y;
 	}
-	public void setY(int y) {
+	public void setY(final int y) {
 		this.y = y;
 	}
 	public int getZ() {
 		return z;
 	}
-	public void setZ(int z) {
+	public void setZ(final int z) {
 		this.z = z;
 	}
 	
@@ -57,11 +57,11 @@ public class Space extends Dimension {
 		return parent;
 	}
 	
-	public void setParent(Space parent) {
+	public void setParent(final Space parent) {
 		this.parent = parent;
 	}
 	
-	public void setRemainder(Space dual) {
+	public void setRemainder(final Space dual) {
 		this.remainder = dual;
 	}
 	
@@ -88,14 +88,14 @@ public class Space extends Dimension {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Space other = (Space) obj;
+		final Space other = (Space) obj;
 		if (parent == null) {
 			if (other.parent != null)
 				return false;
@@ -115,7 +115,7 @@ public class Space extends Dimension {
 		return true;
 	}
 
-	public void copyFrom(Space space) {
+	public void copyFrom(final Space space) {
 
 		this.parent = space.parent;
 		this.x = space.x;
@@ -127,7 +127,7 @@ public class Space extends Dimension {
 		this.height = space.height;
 	}
 	
-	public void copyFrom(int w, int d, int h, int x, int y, int z) {
+	public void copyFrom(final int w, final int d, final int h, final int x, final int y, final int z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
