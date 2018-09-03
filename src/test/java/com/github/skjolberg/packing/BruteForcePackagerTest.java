@@ -188,7 +188,6 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		System.out.println(products1.size() + " boxes in " + (System.currentTimeMillis() - time));
 		assertNotNull(fits1);
 		assertEquals(products1.size(), fits1.getBoxCount());
-		print(fits1);
 		assertNull(packager.pack(products1));
 	}
 
