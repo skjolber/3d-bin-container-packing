@@ -26,7 +26,7 @@ public class Dimension {
 	protected int depth; // y
 	protected int height; // z
 	protected long volume;
-	
+
 	protected final String name;
 	
 	public Dimension(String name) {
