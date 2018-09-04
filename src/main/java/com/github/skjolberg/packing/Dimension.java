@@ -188,8 +188,8 @@ public class Dimension {
 		return volume;
 	}
 	
-	public boolean isEmpty() {
-		return width <= 0 || depth <= 0 || depth <= 0;
+	public boolean nonEmpty() {
+		return width > 0 && depth > 0 && height > 0;
 	}
 
 	@Override
