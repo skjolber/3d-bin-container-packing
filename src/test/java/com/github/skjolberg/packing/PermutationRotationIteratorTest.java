@@ -8,8 +8,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.github.skjolberg.packing.PermutationRotationIterator.PermutationRotation;
-
 public class PermutationRotationIteratorTest {
 
 	@Test

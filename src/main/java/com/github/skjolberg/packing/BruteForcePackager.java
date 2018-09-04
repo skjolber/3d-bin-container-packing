@@ -2,8 +2,6 @@ package com.github.skjolberg.packing;
 
 import java.util.List;
 
-import com.github.skjolberg.packing.PermutationRotationIterator.PermutationRotation;
-
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. 
  * <br><br>
