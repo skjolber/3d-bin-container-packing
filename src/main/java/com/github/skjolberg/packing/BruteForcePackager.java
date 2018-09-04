@@ -251,7 +251,7 @@ public class BruteForcePackager extends Packager {
 		// stack in the 'sibling' space - the space left over between the used box and the selected free space
 		if(index < rotator.length()) {
 			Space remainder = nextPlacement.getSpace().getRemainder();
-			if(!remainder.isEmpty()) {
+			if(remainder.nonEmpty()) {
 				Box box = rotator.get(index);
 
 				if(box.getWeight() <= holder.getFreeWeight()) {

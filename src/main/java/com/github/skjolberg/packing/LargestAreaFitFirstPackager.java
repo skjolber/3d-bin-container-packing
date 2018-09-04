@@ -167,7 +167,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 						0, 
 						0, 
 						holder.getStackHeight()
-						);
+						);						
 			
 			holder.addLevel();
 			containerProducts.remove(currentIndex);
@@ -247,7 +247,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 		
 		// stack in the 'sibling' space - the space left over between the used box and the selected free space
 		Space remainder = nextPlacement.getSpace().getRemainder();
-		if(!remainder.isEmpty()) {
+		if(remainder.nonEmpty()) {
 			Box box = bestVolume(containerProducts, remainder, holder.getFreeWeight());
 			if(box != null) {
 				removeIdentical(containerProducts, box);

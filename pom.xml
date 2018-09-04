@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.skjolber</groupId>
 	<artifactId>3d-bin-container-packing</artifactId>
-	<version>1.0.9-SNAPSHOT</version>
+	<version>1.0.10-SNAPSHOT</version>
 	<name>3D Bin Container Packing</name>
 	<description>Library for 3D rectangular bin packing</description>
 	<url>https://github.com/skjolber/3d-bin-container-packing</url>
@@ -109,7 +109,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.1</version>
+				<version>0.8.2</version>
 				<executions>
 					<execution>
 						<id>default-prepare-agent</id>
