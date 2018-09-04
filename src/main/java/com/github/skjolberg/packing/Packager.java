@@ -117,17 +117,17 @@ public abstract class Packager {
 		Adapter pack = adapter(boxes);
 
 		if(!binarySearch || dimensions.size() <= 2 || deadline == Long.MAX_VALUE) {
-			for (int i = 0; i < dimensions.size(); i++) {
-					
-				if(System.currentTimeMillis() > deadline) {
-					break;
-				}
-				
-				Container result = pack.pack(boxes, dimensions.get(i), deadline);
-				if(result != null) {
-					return result;
-				}
-			}
+            for (Dimension dimension : dimensions) {
+
+                if (System.currentTimeMillis() > deadline) {
+                    break;
+                }
+
+                Container result = pack.pack(boxes, dimension, deadline);
+                if (result != null) {
+                    return result;
+                }
+            }
 		} else {
 			Container[] results = new Container[dimensions.size()];
 			boolean[] checked = new boolean[results.length]; 
@@ -181,12 +181,12 @@ public abstract class Packager {
 					}
 		        }
 	        } while(!current.isEmpty());
-		        
-			for(int i = 0; i < results.length; i++) {
-				if(results[i] != null) {
-					return results[i];
-				}
-			}
+
+            for (Container result : results) {
+                if (result != null) {
+                    return result;
+                }
+            }
 		}
 		return null;
 	}	
