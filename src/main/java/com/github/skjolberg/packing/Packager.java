@@ -194,18 +194,7 @@ public abstract class Packager {
 	protected abstract Adapter adapter(List<BoxItem> boxes);
 
 	protected boolean canHold(Dimension containerBox, List<BoxItem> boxes) {
-		for(BoxItem box : boxes) {
-			if(rotate3D) {
-				if(!containerBox.canHold3D(box.getBox())) {
-					return false;
-				}
-			} else {
-				if(!containerBox.canHold2D(box.getBox())) {
-					return false;
-				}
-			}
-		}
-		return true;
+        return boxes.stream().allMatch(box -> (rotate3D && containerBox.canHold3D(box.getBox())) || containerBox.canHold2D(box.getBox()));
 	}
 	
 	public static List<Placement> getPlacements(int size) {
