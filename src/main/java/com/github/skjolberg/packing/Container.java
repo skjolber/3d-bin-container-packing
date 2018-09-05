@@ -183,7 +183,7 @@ public class Container extends Box {
 	
 
 	public Dimension getUsedSpace() {
-		Dimension maxBox = new Dimension();
+		Dimension maxBox = Dimension.EMPTY;
 		int height = 0;
 		for (Level level : levels) {
 			maxBox = getUsedSpace(level, maxBox, height);

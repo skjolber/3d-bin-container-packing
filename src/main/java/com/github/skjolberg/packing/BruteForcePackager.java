@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.github.skjolberg.packing.PermutationRotationIterator.PermutationRotation;
-import com.github.skjolberg.packing.PermutationRotationIterator.PermutationRotationState;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. 

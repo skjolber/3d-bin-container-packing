@@ -12,7 +12,7 @@ public class Space extends Dimension {
 	public Space() {
 		super();
 	}
-	
+
 	public Space(Space parent, int w, int d, int h, int x, int y, int z) {
 		this(parent, null, w, d, h, x, y, z);
 	}

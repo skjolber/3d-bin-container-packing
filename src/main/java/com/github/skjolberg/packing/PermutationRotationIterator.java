@@ -34,49 +34,6 @@ import java.util.List;
 
 public class PermutationRotationIterator {
 	
-	public static class PermutationRotation {
-
-		protected int count;
-		
-		protected Box[] boxes;
-
-		public Box[] getBoxes() {
-			return boxes;
-		}
-
-		public void setBoxes(Box[] boxes) {
-			this.boxes = boxes;
-		}
-
-		public void setCount(int count) {
-			this.count = count;
-		}
-		
-		public int getCount() {
-			return count;
-		}
-	}
-	
-	public static class PermutationRotationState {
-		private int[] rotations; // 2^n or 6^n
-		private int[] permutations; // n!
-		
-		public PermutationRotationState(int[] rotations, int[] permutations) {
-			super();
-			this.rotations = new int[rotations.length];
-			System.arraycopy(rotations, 0, this.rotations, 0, rotations.length);
-			this.permutations = new int[permutations.length];
-			System.arraycopy(permutations, 0, this.permutations, 0, permutations.length);
-		}
-		public int[] getPermutations() {
-			return permutations;
-		}
-		public int[] getRotations() {
-			return rotations;
-		}
-		
-	}
-	
 	public static PermutationRotation[] toRotationMatrix(List<BoxItem> list, boolean rotate3D) {
 		PermutationRotation[] boxes = new PermutationRotation[list.size()];
 		for(int i = 0; i < list.size(); i++) {
@@ -123,9 +80,7 @@ public class PermutationRotationIterator {
 				}
 			}
 
-			boxes[i] = new PermutationRotation();
-			boxes[i].setBoxes(result.toArray(new Box[result.size()]));
-			boxes[i].setCount(list.get(i).getCount());
+			boxes[i] = new PermutationRotation(list.get(i).getCount(), result.toArray(new Box[result.size()]));
 		}
 		return boxes;
 	}
@@ -156,10 +111,7 @@ public class PermutationRotationIterator {
 			
 			// create PermutationRotation even if empty, so that permutations are directly 
 			// comparable between parallel instances of this class
-			PermutationRotation r = new PermutationRotation();
-			r.setBoxes(result.toArray(new Box[result.size()]));
-			r.setCount(unconstrained[i].getCount());
-			matrix.add(r);
+			matrix.add(new PermutationRotation(unconstrained[i].getCount(), result.toArray(new Box[result.size()])));
 
 			if(!result.isEmpty()) {
 				for(int k = 0; k < unconstrained[i].getCount(); k++) {
@@ -236,13 +188,13 @@ public class PermutationRotationIterator {
 	 */
 	
 	public int getOrientations(int index) {
-		return matrix[permutations[index]].boxes.length;
+		return matrix[permutations[index]].getBoxes().length;
 	}
 	
 	public boolean nextRotation() {
 		// next rotation
 		for(int i = 0; i < rotations.length; i++) {
-			while(rotations[i] < matrix[permutations[i]].boxes.length - 1) {
+			while(rotations[i] < matrix[permutations[i]].getBoxes().length - 1) {
 				rotations[i]++;
 				
 				// reset all previous counters 
@@ -279,11 +231,11 @@ public class PermutationRotationIterator {
 	public long countRotations() {
 		long n = 1;
 		for(int i = 0; i < rotations.length; i++) {
-			if(Long.MAX_VALUE / matrix[rotations[i]].boxes.length <= n) {
+			if(Long.MAX_VALUE / matrix[rotations[i]].getBoxes().length <= n) {
 				return -1L;
 			}
 
-			n = n * matrix[rotations[i]].boxes.length;
+			n = n * matrix[rotations[i]].getBoxes().length;
 		}
 		return n;
 	}
@@ -343,7 +295,7 @@ public class PermutationRotationIterator {
 
 	
 	public Box get(int index) {
-		return matrix[permutations[index]].boxes[rotations[index]];
+		return matrix[permutations[index]].getBoxes()[rotations[index]];
 	}
 	
 	public boolean nextPermutation() {

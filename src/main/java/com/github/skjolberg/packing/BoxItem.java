@@ -8,11 +8,8 @@ package com.github.skjolberg.packing;
 
 public class BoxItem {
 
-	private int count;
-	private Box box;
-
-	public BoxItem() {
-	}
+	private final int count;
+	private final Box box;
 
 	public BoxItem(Box box) {
 		this(box, 1);
@@ -28,17 +25,8 @@ public class BoxItem {
 		return count;
 	}
 
-	public void setCount(int count) {
-		this.count = count;
-	}
-
 	public Box getBox() {
 		return box;
 	}
 
-	public void setBox(Box box) {
-		this.box = box;
-	}
-	
-	
 }
