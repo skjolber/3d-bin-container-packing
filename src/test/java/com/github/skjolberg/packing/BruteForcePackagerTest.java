@@ -4,9 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -298,5 +299,40 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 
 		BruteForcePackager packer = new BruteForcePackager(containers);
 		packer.pack(items);
+	}
+
+	@Test
+	public void testPackagerInConcurrentScenario() {
+		Dimension[] containers = new Dimension[]{
+				new Dimension("0", 2390, 1500, 1000),
+				new Dimension("1", 2400, 1500, 1000),
+				new Dimension("2", 2390, 1500, 1000)};
+
+		List<BoxItem> items = Collections.singletonList(new BoxItem(new Box(990, 1490, 2390), 1));
+
+		IntStream
+				.range(0, 1000)
+				.boxed()
+				.map(i -> packInThread(containers[i % 3], items))
+				.forEach(t -> {
+					t.start();
+					try {
+						t.join();
+					} catch (InterruptedException e) {
+						throw new RuntimeException(e);
+					}
+				});
+	}
+
+	private Thread packInThread(final Dimension container, final List<BoxItem> items) {
+		return new Thread(() -> {
+			try {
+				Thread.sleep(new Random().nextInt(50));
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+			BruteForcePackager packer = new BruteForcePackager(Collections.singletonList(container));
+			assertNotNull(packer.pack(items));
+		});
 	}
 }
