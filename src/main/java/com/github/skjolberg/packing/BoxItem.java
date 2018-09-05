@@ -6,7 +6,7 @@ package com.github.skjolberg.packing;
  * 
  */
 
-public final class BoxItem {
+public class BoxItem {
 
 	private final int count;
 	private final Box box;
