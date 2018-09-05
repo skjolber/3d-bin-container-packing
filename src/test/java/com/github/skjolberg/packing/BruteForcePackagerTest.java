@@ -6,7 +6,14 @@ import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -205,7 +212,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 				new BoxItem(new Box("4", 71, 83, 53), 1),
 				new BoxItem(new Box("5", 74, 83, 53), 1),
 				new BoxItem(new Box("6", 74, 82, 54), 1)
-		);
+				);
 
 		Container fits1 = bruteForcePackager.pack(products1);
 
@@ -222,7 +229,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 				new BoxItem(new Box("1", 7, 24, 58), 1),
 				new BoxItem(new Box("2", 7, 25, 56), 1),
 				new BoxItem(new Box("3", 5, 25, 58), 1)
-		);
+				);
 
 		Container fits1 = bruteForcePackager.pack(products1);
 
@@ -286,17 +293,42 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	@Test
 	public void testIssue11ArrayOutOfBounds() {
 		List<Dimension> containers = Arrays.asList(
-			new Dimension("2", 330, 222, 121),
-			new Dimension("4", 330, 235, 225)
-		);
+				new Dimension("2", 330, 222, 121),
+				new Dimension("4", 330, 235, 225)
+				);
 
 		List<BoxItem> items = Arrays.asList(
-			new BoxItem(new Box(105, 105, 293), 1),
-			new BoxItem(new Box(92, 94, 255), 1),
-			new BoxItem(new Box(105, 70, 60), 2)
-		);
+				new BoxItem(new Box(105, 105, 293), 1),
+				new BoxItem(new Box(92, 94, 255), 1),
+				new BoxItem(new Box(105, 70, 60), 2)
+				);
 
 		BruteForcePackager packer = new BruteForcePackager(containers);
 		packer.pack(items);
 	}
+
+	@Test
+	public void testPackagerInConcurrentScenario() throws Exception {
+		Dimension container = new Dimension("2", 2390, 1500, 1000);
+
+		final ExecutorService service = Executors.newFixedThreadPool(4);
+		final List<Callable<Container>> threads = IntStream
+				.range(0, 1000)
+				.boxed()
+				.map(i -> packInThread(container))
+				.collect(Collectors.toList());
+		final List<Future<Container>> futures = service.invokeAll(threads);
+		for (final Future<Container> future : futures) {
+			assertNotNull(future.get());
+		}
+	}
+
+
+	private Callable<Container> packInThread(final Dimension container) {
+		return () -> {
+			List<BoxItem> items = Collections.singletonList(new BoxItem(new Box(990, 1490, 2390), 1));
+			BruteForcePackager packer = new BruteForcePackager(Collections.singletonList(container));
+			return packer.pack(items);
+		};
+	}	
 }

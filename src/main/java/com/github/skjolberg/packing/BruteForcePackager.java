@@ -63,7 +63,7 @@ public class BruteForcePackager extends Packager {
 			
 			fit:
 			do {
-				Dimension remainingSpace = container;
+				Dimension remainingSpace = holder;
 
 				int index = 0;
 				while(index < rotator.length()) {
@@ -83,8 +83,8 @@ public class BruteForcePackager extends Packager {
 					
 					Placement placement = placements.get(index);
 					Space levelSpace = placement.getSpace();
-					levelSpace.width = container.getWidth();
-					levelSpace.depth = container.getDepth();
+					levelSpace.width = holder.getWidth();
+					levelSpace.depth = holder.getDepth();
 					levelSpace.height = remainingSpace.getHeight();
 					
 					placement.setBox(box);
