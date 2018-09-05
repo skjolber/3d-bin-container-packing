@@ -26,7 +26,7 @@ public class Dimension {
 	protected int depth; // y
 	protected int height; // z
 	protected long volume;
-	
+
 	protected final String name;
 	
 	public Dimension(String name) {
@@ -77,32 +77,12 @@ public class Dimension {
 	}
 	
 	public boolean canHold3D(int w, int d, int h) {
-		
-		if(w <= width && h <= height && d <= depth) {
-			return true;
-		}
-
-		if(h <= width && d <= height && w <= depth) {
-			return true;
-		}
-
-		if(d <= width && w <= height && h <= depth) {
-			return true;
-		}
-		
-		if(h <= width && w <= height && d <= depth) {
-			return true;
-		}
-
-		if(d <= width && h <= height && w <= depth) {
-			return true;
-		}
-
-		if(w <= width && d <= height && h <= depth) {
-			return true;
-		}		
-		
-		return false;
+        return (w <= width && h <= height && d <= depth) ||
+               (h <= width && d <= height && w <= depth) ||
+               (d <= width && w <= height && h <= depth) ||
+               (h <= width && w <= height && d <= depth) ||
+               (d <= width && h <= height && w <= depth) ||
+               (w <= width && d <= height && h <= depth);
 	}
 	
 	
@@ -150,12 +130,7 @@ public class Dimension {
 	}
 
 	public boolean fitsInside3D(int w, int d, int h) {
-		
-		if(w >= width && h >= height && d >= depth) {
-			return true;
-		}
-		
-		return false;
+		return w >= width && h >= height && d >= depth;
 	}
 	
 
