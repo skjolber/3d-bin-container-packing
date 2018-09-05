@@ -15,7 +15,7 @@ import com.github.skjolberg.packing.PermutationRotationIterator.PermutationRotat
  * for a specific set of boxes and containers using 
  * {@linkplain PermutationRotationIterator#countPermutations()} * {@linkplain PermutationRotationIterator#countRotations()}.
  * <br><br>
- * Thread-safe implementation.
+ * Thread-safe implementation. The input Boxes can be used by multiple threads at a time. 
  */
 
 public class BruteForcePackager extends Packager {
@@ -139,7 +139,7 @@ public class BruteForcePackager extends Packager {
 			// iterator over all rotations
 			
 			do {
-				int count = pack(placements, container, rotator, deadline, holder, 0);
+				int count = pack(placements, holder, rotator, deadline, holder, 0);
 				if(count == -1) {
 					return null; // timeout
 				} else {

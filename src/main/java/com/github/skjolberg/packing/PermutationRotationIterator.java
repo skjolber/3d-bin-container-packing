@@ -82,6 +82,8 @@ public class PermutationRotationIterator {
 		for(int i = 0; i < list.size(); i++) {
 			Box box = list.get(i).getBox();
 			
+			// make sure not to rotate the original box, so that it stays in its original orentation.
+			
 			List<Box> result = new ArrayList<>();
 			if(rotate3D) {
 				Box box0 = box.clone();
@@ -91,28 +93,25 @@ public class PermutationRotationIterator {
 				
 				if(!box.isSquare3D()) {
 					
-					box.rotate3D();
+					box = box.clone().rotate3D();
 					boolean square1 = box.isSquare2D();
 					
-					result.add(box.clone());
+					result.add(box);
 	
-					box.rotate3D();
+					box = box.clone().rotate3D();
 					boolean square2 = box.isSquare2D();
 	
-					result.add(box.clone());
+					result.add(box);
 	
 					if(!square0 && !square1 && !square2) {
-						box.rotate2D3D();
+						box = box.clone().rotate2D3D();
+						result.add(box);
 						
-						result.add(box.clone());
-						
-						box.rotate3D();
+						box = box.clone().rotate3D();
+						result.add(box);
 		
-						result.add(box.clone());
-		
-						box.rotate3D();
-		
-						result.add(box.clone());
+						box = box.clone().rotate3D();
+						result.add(box);
 					}
 				}
 			} else {

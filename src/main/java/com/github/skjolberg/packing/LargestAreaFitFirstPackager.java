@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
  * <br><br>
- * Thread-safe implementation.
+ * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time. 
  */
 
 public class LargestAreaFitFirstPackager extends Packager {
@@ -78,7 +78,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * 
 	 * Return a container which holds all the boxes in the argument
 	 * 
-	 * @param containerProducts list of boxes to fit in a container
+	 * @param containerProducts list of boxes to fit in a container.
 	 * @param targetContainer the container to fit within
 	 * @param deadline the system time in milliseconds at which the search should be aborted
 	 * @return null if no match, or deadline reached
