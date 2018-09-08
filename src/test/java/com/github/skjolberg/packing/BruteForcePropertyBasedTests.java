@@ -4,35 +4,60 @@ import net.jqwik.api.*;
 import net.jqwik.api.arbitraries.IntegerArbitrary;
 import net.jqwik.api.constraints.Size;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static net.jqwik.api.Arbitraries.integers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BruteForcePropertyBasedTests {
-
   // The maximum number of different, random items which can be reliably packed with brute force
   // seems to be between 10 and 15
   @Property
-  void bunchOfDifferentBoxesShouldFitInContainer(@ForAll @Size(min = 1, max = 11) List<BoxItem> items) {
+  void bunchOfDifferentBoxesShouldFitInContainers(@ForAll @Size(min = 1, max = 11) List<BoxItem> items) {
     final Box empty = new Box(0, 0, 0, 0);
-    final Box largeEnough = items.stream().reduce(empty, BruteForcePropertyBasedTests::accumulate, BruteForcePropertyBasedTests::add);
-    final Container container = new Container(largeEnough, largeEnough.getWeight());
+
+    final List<Container> containers =
+      Stream.of(accumulateByDepth, accumulateByWidth, accumulateByHeight)
+        .map(accumulator -> largeEnoughContainer(items, empty, accumulator))
+        .collect(Collectors.toList());
     // only useful to debug when packaging fails
-    // System.out.printf("packing %d items into %s%n", items.size(), container);
-    // System.out.println(items);
-    final Container pack = new BruteForcePackager(Collections.singletonList(container)).pack(items, System.currentTimeMillis() + 100);
+    System.out.printf("packing %d items into %s%n", items.size(), containers);
+    System.out.println(items);
+    final Container pack = new BruteForcePackager(containers).pack(items, System.currentTimeMillis() + 100);
     assertThat(pack).isNotNull();
   }
 
-  private static Box accumulate(Box acc, BoxItem boxItem) {
-    return new Box(
-      acc.getWidth() + boxItem.getBox().getWidth(),
-      acc.getHeight() + boxItem.getBox().getHeight(),
-      acc.getDepth() + boxItem.getBox().getDepth() * boxItem.getCount(),
-      acc.getWeight() + boxItem.getBox().getWeight() * boxItem.getCount());
+  private Container largeEnoughContainer(final List<BoxItem> items,
+                                         final Box empty,
+                                         final BiFunction<Box, BoxItem, Box> accumulator) {
+    final Box largeEnough = items.stream().reduce(
+      empty,
+      accumulator,
+      BruteForcePropertyBasedTests::add);
+    return new Container(largeEnough, largeEnough.getWeight());
   }
+
+  private BiFunction<Box, BoxItem, Box> accumulateByDepth = (acc, boxItem) -> new Box(
+    acc.getWidth() + boxItem.getBox().getWidth(),
+    acc.getHeight() + boxItem.getBox().getHeight(),
+    acc.getDepth() + boxItem.getBox().getDepth() * boxItem.getCount(),
+    acc.getWeight() + boxItem.getBox().getWeight() * boxItem.getCount());
+
+  private BiFunction<Box, BoxItem, Box> accumulateByWidth = (acc, boxItem) -> new Box(
+    acc.getWidth() + boxItem.getBox().getWidth() * boxItem.getCount(),
+    acc.getHeight() + boxItem.getBox().getHeight(),
+    acc.getDepth() + boxItem.getBox().getDepth(),
+    acc.getWeight() + boxItem.getBox().getWeight() * boxItem.getCount());
+
+  private BiFunction<Box, BoxItem, Box> accumulateByHeight = (acc, boxItem) -> new Box(
+    acc.getWidth() + boxItem.getBox().getWidth(),
+    acc.getHeight() + boxItem.getBox().getHeight() * boxItem.getCount(),
+    acc.getDepth() + boxItem.getBox().getDepth(),
+    acc.getWeight() + boxItem.getBox().getWeight() * boxItem.getCount());
+
 
   private static Box add(Box b1, Box b2) {
     return new Box(
