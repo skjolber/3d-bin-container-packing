@@ -271,21 +271,21 @@ public abstract class Packager {
 	 * Return a container which holds all the boxes in the argument
 	 * 
 	 * @param boxes list of boxes to fit in a container
-	 * @param container list of containers
+	 * @param containers list of containers
 	 * @param deadline the system time in milliseconds at which the search should be aborted
 	 * @return index of container if match, -1 if not
 	 */
 	
-	public Container pack(List<BoxItem> boxes, List<Container> container, long deadline) {
-		if(container.isEmpty()) {
+	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline) {
+		if(containers.isEmpty()) {
 			return null;
 		}
 		
 		Adapter pack = adapter();
-		pack.initialize(boxes, container);
+		pack.initialize(boxes, containers);
 		
-		if(!binarySearch || container.size() <= 2 || deadline == Long.MAX_VALUE) {
-			for (int i = 0; i < container.size(); i++) {
+		if(!binarySearch || containers.size() <= 2 || deadline == Long.MAX_VALUE) {
+			for (int i = 0; i < containers.size(); i++) {
 					
 				if(System.currentTimeMillis() > deadline) {
 					break;
@@ -303,11 +303,11 @@ public abstract class Packager {
 		} else {
 			// perform a binary search among the available containers
 			// the list is ranked from most desirable to least.
-			Container[] results = new Container[container.size()];
+			Container[] results = new Container[containers.size()];
 			boolean[] checked = new boolean[results.length]; 
 
-			ArrayList<Integer> current = new ArrayList<>(container.size());
-			for(int i = 0; i < container.size(); i++) {
+			ArrayList<Integer> current = new ArrayList<>(containers.size());
+			for(int i = 0; i < containers.size(); i++) {
 				current.add(i);
 			}
 
