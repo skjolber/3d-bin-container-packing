@@ -19,7 +19,7 @@ import java.util.List;
 public class BruteForcePackager extends Packager {
 
 	private static class BruteForceResult implements PackResult {
-		
+
 		private PermutationRotationIterator rotator;
 		private List<Placement> items;
 		private Container container;
@@ -40,24 +40,24 @@ public class BruteForcePackager extends Packager {
 
 		public Container getContainer() {
 			container.clear();
-			
+
 			rotator.setState(state);
-			
+
 			int result = pack(items, container, rotator, Long.MAX_VALUE, container, 0);
 			if(result == count) {
 				return container;
 			}
 			throw new IllegalArgumentException("Unexpected count " + result + ", expected " + count);
 		}
-		
+
 		public void setState(PermutationRotationState state) {
 			this.state = state;
 		}
-		
+
 		public void setCount(int count) {
 			this.count = count;
 		}
-		
+
 		public int getCount() {
 			return count;
 		}
@@ -73,7 +73,7 @@ public class BruteForcePackager extends Packager {
 				return bruteForceResult.getContainer().getVolume() < container.getVolume();
 			}
 			*/
-			
+
 			return false;
 		}
 
@@ -85,33 +85,33 @@ public class BruteForcePackager extends Packager {
 		public boolean isEmpty() {
 			return count == 0;
 		}
-		
+
 	}
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param containers list of containers
 	 * @param rotate3D whether boxes can be rotated in all three directions (two directions otherwise)
 	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a container that can hold the boxes, given time, it also tries to find a better match.
 	 */
-	
+
 	public BruteForcePackager(List<Container> containers, boolean rotate3D, boolean binarySearch) {
 		super(containers, rotate3D, binarySearch);
 	}
-	
+
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param containers list of containers
 	 */
-	
+
 	public BruteForcePackager(List<Container> containers) {
 		this(containers, true, true);
 	}
-	
+
 	protected BruteForceResult pack(List<Placement> placements, Container container, PermutationRotation[] rotations, long deadline) {
-		
+
 		PermutationRotationIterator rotator = new PermutationRotationIterator(container, rotations);
 		if(rotator.boxItemLength() != rotations.length) {
 			throw new IllegalArgumentException("One or more boxes does not fit");
@@ -135,7 +135,7 @@ public class BruteForcePackager extends Packager {
 				return null;
 			}
 			// iterator over all rotations
-			
+
 			do {
 				int count = pack(placements, holder, rotator, deadline, holder, 0);
 				if(count == -1) {
@@ -159,11 +159,12 @@ public class BruteForcePackager extends Packager {
 				}
 			} while(rotator.nextRotation());
 		} while(rotator.nextPermutation());
-		
+
 		return result;
 	}
 
 	protected static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, Container holder, int index) {
+    if(placements.isEmpty()) return -1;
 		Dimension remainingSpace = container;
 
 		while(index < rotator.length()) {
@@ -176,11 +177,11 @@ public class BruteForcePackager extends Packager {
 			if(box.getWeight() > holder.getFreeWeight()) {
 				return index;
 			}
-			
+
 			if(!remainingSpace.canHold2D(box)) {
 				return index;
 			}
-			
+
 			Placement placement = placements.get(index);
 			Space levelSpace = placement.getSpace();
 			levelSpace.width = remainingSpace.getWidth();
@@ -189,26 +190,26 @@ public class BruteForcePackager extends Packager {
 			// the LAFF allocates a height per level equal to the given the current box, 
 			// but here allow for use of all of the remaining space; the selection of boxes is fixed 
 			// the result will be constrained to actual use.
-			levelSpace.height = remainingSpace.getHeight(); 
-			
+			levelSpace.height = remainingSpace.getHeight();
+
 			placement.setBox(box);
-			
+
 			levelSpace.x = 0;
 			levelSpace.y = 0;
 			levelSpace.z = holder.getStackHeight();
-			
+
 			levelSpace.setParent(null);
 			levelSpace.getRemainder().setParent(null);
-			
+
 			holder.addLevel();
 
 			index = fit2D(rotator, index + 1, placements, holder, placement, deadline);
-			
+
 			// update remaining space
 			remainingSpace = holder.getFreeSpace();
 		}
 		return index;
-	}	
+	}
 
 	protected boolean accept(Container container) {
 		return true;
@@ -231,21 +232,21 @@ public class BruteForcePackager extends Packager {
 		if(nextBox.getWeight() > holder.getFreeWeight()) {
 			return index;
 		}
-				
+
 		Placement nextPlacement = placements.get(index);
 		nextPlacement.setBox(nextBox);
-		
+
 		if(!isFreespace(usedSpace.getSpace(), usedSpace.getBox(), nextPlacement)) {
 			// no additional boxes
 			// just make sure the used space fits in the free space
 			return index;
-		} 
-		
+		}
+
 		index++;
 		// the correct space dimensions is copied into the next placement
 
 		// attempt to fit in the remaining (usually smaller) space first
-		
+
 		// stack in the 'sibling' space - the space left over between the used box and the selected free space
 		if(index < rotator.length()) {
 			Space remainder = nextPlacement.getSpace().getRemainder();
@@ -256,22 +257,22 @@ public class BruteForcePackager extends Packager {
 					if(box.fitsInside3D(remainder)) {
 						Placement placement = placements.get(index);
 						placement.setBox(box);
-	
+
 						index++;
-						
+
 						placement.getSpace().copyFrom(remainder);
 						placement.getSpace().setParent(remainder);
 						placement.getSpace().getRemainder().setParent(remainder);
-						
+
 						index = fit2D(rotator, index, placements, holder, placement, deadline);
 					}
 				}
 			}
 		}
-	
+
 		// fit the next box in the selected free space
 		return fit2D(rotator, index, placements, holder, nextPlacement, deadline);
-	}	
+	}
 
 	protected static boolean isFreespace(Space freespace, Box used, Placement target) {
 
@@ -291,17 +292,17 @@ public class BruteForcePackager extends Packager {
         //
 		// So there is always a 'big' and a 'small' leftover area (the small is not shown).
 		if(freespace.getWidth() >= used.getWidth() && freespace.getDepth() >= used.getDepth()) {
-			
+
 			// if B is empty, then it is sufficient to work with A and the other way around
 			int b = (freespace.getWidth() - used.getWidth()) * freespace.getDepth();
 			int a = freespace.getWidth() * (freespace.getDepth() - used.getDepth());
-			
+
 			// pick the one with largest footprint.
 			if(b >= a) {
 				if(b > 0 && b(freespace, used, target)) {
 					return true;
 				}
-				
+
 				return a > 0 && a(freespace, used, target);
 			} else {
 				if(a > 0 && a(freespace, used, target)) {
@@ -326,7 +327,7 @@ public class BruteForcePackager extends Packager {
 				);
 			target.getSpace().setParent(freespace);
 			target.getSpace().getRemainder().setParent(freespace);
-			
+
 			return true;
 		}
 		return false;
@@ -339,12 +340,12 @@ public class BruteForcePackager extends Packager {
 					freespace.getWidth() - used.getWidth(), freespace.getDepth(), freespace.getHeight(),
 					freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
 					);
-			
+
 			target.getSpace().getRemainder().copyFrom(
 					used.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
 					freespace.getX(), freespace.getY()+ used.getDepth(), freespace.getZ()
 					);
-			
+
 			target.getSpace().setParent(freespace);
 			target.getSpace().getRemainder().setParent(freespace);
 			return true;
@@ -357,13 +358,13 @@ public class BruteForcePackager extends Packager {
 		// instead of placing boxes, work with placements
 		// this very much reduces the number of objects created
 		// performance gain is something like 25% over the box-centric approach
-		
+
 		return new Adapter() {
 
 			private List<Placement> placements;
 			private PermutationRotationIterator[] iterators;
 			private List<Container> containers;
-			
+
 			@Override
 			public PackResult attempt(int i, long deadline) {
 				return BruteForcePackager.this.pack(placements, containers.get(i), iterators[i], deadline);
@@ -377,9 +378,9 @@ public class BruteForcePackager extends Packager {
 				for (PermutationRotation permutationRotation : rotations) {
 					count += permutationRotation.getCount();
 				}
-				
+
 				placements = getPlacements(count);
-				
+
 				iterators = new PermutationRotationIterator[containers.size()];
 				for (int i = 0; i < containers.size(); i++) {
 					iterators[i] = new PermutationRotationIterator(containers.get(i), rotations);
@@ -409,7 +410,7 @@ public class BruteForcePackager extends Packager {
 				} else {
 					placements = Collections.emptyList();
 				}
-				
+
 				return container;
 			}
 

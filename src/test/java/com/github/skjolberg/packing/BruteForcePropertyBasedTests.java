@@ -26,17 +26,14 @@ class BruteForcePropertyBasedTests {
     // only useful to debug when packaging fails
     System.out.printf("packing %d items into %s%n", items.size(), containers);
     System.out.println(items);
-    final Container pack = new BruteForcePackager(containers).pack(items, System.currentTimeMillis() + 100);
+    final Container pack = new BruteForcePackager(containers).pack(items, System.currentTimeMillis() + 300);
     assertThat(pack).isNotNull();
   }
 
   private Container largeEnoughContainer(final List<BoxItem> items,
                                          final Box empty,
                                          final BiFunction<Box, BoxItem, Box> accumulator) {
-    final Box largeEnough = items.stream().reduce(
-      empty,
-      accumulator,
-      BruteForcePropertyBasedTests::add);
+    final Box largeEnough = items.stream().reduce(empty, accumulator, BruteForcePropertyBasedTests::add);
     return new Container(largeEnough, largeEnough.getWeight());
   }
 
