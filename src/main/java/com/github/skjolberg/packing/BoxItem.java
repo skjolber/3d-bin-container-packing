@@ -29,4 +29,8 @@ public class BoxItem {
 		return box;
 	}
 
+  @Override
+  public String toString() {
+    return String.format("%dx%s", count, box);
+  }
 }
