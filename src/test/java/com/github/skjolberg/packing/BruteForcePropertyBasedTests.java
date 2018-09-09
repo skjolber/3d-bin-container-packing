@@ -26,19 +26,18 @@ class BruteForcePropertyBasedTests {
         .map(accumulator -> largeEnoughContainer(items, empty, accumulator))
         .collect(Collectors.toList());
     // only useful to debug when packaging fails
-    System.out.printf("packing %d items into %s%n", items.size(), containers);
-    System.out.println(items);
+    //System.out.printf("packing %d items into %s%n", items.size(), containers);
+    //System.out.println(items);
     final Container pack = new BruteForcePackager(containers).pack(items, System.currentTimeMillis() + 300);
     assertThat(pack).isNotNull();
   }
 
   @Property
-  void identicalBoxesShouldFitInContainers(@ForAll BoxItem item, @ForAll @IntRange(min = 1, max = 10) int countBySide) {
-    final int totalCount = countBySide * countBySide * countBySide;
-    final BoxItem repeatedItems = new BoxItem(item.getBox(), countBySide);
+  void identicalBoxesShouldFitInContainers(@ForAll BoxItem item, @ForAll @IntRange(min = 1, max = 2) int countBySide) {
+    final BoxItem repeatedItems = new BoxItem(item.getBox(), countBySide * countBySide * countBySide);
     //TODO: we could also randomly rotate the items
-    final List<Container> containers = largeEnoughContainers(item, totalCount);
-    final Container pack = new BruteForcePackager(containers).pack(singletonList(repeatedItems), System.currentTimeMillis() + 300);
+    final List<Container> containers = largeEnoughContainers(item, countBySide);
+    final Container pack = new BruteForcePackager(containers).pack(singletonList(repeatedItems), Long.MAX_VALUE);
     assertThat(pack).isNotNull();
   }
 
@@ -137,7 +136,7 @@ class BruteForcePropertyBasedTests {
   }
 
   private IntegerArbitrary sensiblePositiveNumber() {
-    return integers().between(1, 9999);
+    return integers().between(1, 100);
   }
 
 }
