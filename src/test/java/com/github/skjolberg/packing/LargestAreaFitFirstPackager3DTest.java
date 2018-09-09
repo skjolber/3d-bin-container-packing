@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
@@ -233,7 +234,7 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 	
 	@Test
-	@Ignore
+	@Disabled
 	public void testRunsForLimitedTimeSeconds() {
 		List<Container> containers = new ArrayList<Container>();
 		containers.add(new Container(50000, 50000, 50000, 0));
@@ -241,7 +242,7 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	@Ignore("Run manually")
+	@Disabled
 	public void testRunsPerformanceGraphLinearStacking() {
 		long duration = 60 * 10;
 		

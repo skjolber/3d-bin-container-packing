@@ -17,7 +17,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class BruteForcePackagerTest extends AbstractPackagerTest {
 
@@ -220,7 +221,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 
 
 	@Test
-	@Ignore
+	@Disabled
 	public void testRunsForLimitedTimeSeconds() {
 		List<Container> containers = new ArrayList<Container>();
 		containers.add(new Container("container1", 5000, 10, 10, 0));
@@ -228,7 +229,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	@Ignore("Run manually")
+	@Disabled
 	public void testRunsPerformanceGraphLinearStacking() {
 		long duration = 60 * 10;
 
@@ -538,21 +539,21 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		}
 	}
 
-  @Test
-  public void testPackagerWith3ContainersAnd1BoxItem() {
-    final List<Container> containers = Arrays.asList(
-      new Container(1,1,4417,1),
-      new Container(4417,1,1,1),
-      new Container(1,4417,1,1));
-    final List<BoxItem> packets = Collections.singletonList(new BoxItem(new Box(1, 1, 4417,1), 1));
-    final long deadline = System.currentTimeMillis() + 300;
-    final Container pack = new BruteForcePackager(containers).pack(packets, deadline);
-    assertThat(pack).isNotNull();
-  }
+	@Test
+	public void testPackagerWith3ContainersAnd1BoxItemUsingSingleContraint() {
+		final List<Container> containers = Arrays.asList(
+				new Container(1,1,4417,1),
+				new Container(4417,1,1,1),
+				new Container(1,4417,1,1));
+		final List<BoxItem> packets = Collections.singletonList(new BoxItem(new Box(1, 1, 4417,1), 1));
+		final long deadline = System.currentTimeMillis() + 300;
+		final Container pack = new BruteForcePackager(containers).pack(packets, deadline);
+		assertThat(pack).isNotNull();
+	}
 
 
 
-  private Callable<Container> packInThread(final Container container, List<BoxItem> items) {
+	private Callable<Container> packInThread(final Container container, List<BoxItem> items) {
 		return () -> {
 			BruteForcePackager packer = new BruteForcePackager(Collections.singletonList(container));
 			return packer.pack(items);

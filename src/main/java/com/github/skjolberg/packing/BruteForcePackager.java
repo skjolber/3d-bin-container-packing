@@ -40,7 +40,9 @@ public class BruteForcePackager extends Packager {
 
 		public Container getContainer() {
 			container.clear();
-
+			if(state == null ) {
+				throw new RuntimeException();
+			}
 			rotator.setState(state);
 
 			int result = pack(items, container, rotator, Long.MAX_VALUE, container, 0);
@@ -64,15 +66,25 @@ public class BruteForcePackager extends Packager {
 
 		@Override
 		public boolean packsMoreBoxesThan(PackResult result) {
+			// return true if 'this' is better: 
+			// - higher number of boxes
+			// - lower volume
+			// - lower max weight
+			
 			BruteForceResult bruteForceResult = (BruteForceResult)result;
 			if(bruteForceResult.count < count) {
-				return true;
-			};
-			/*
-			if(bruteForceResult.count == count) {
-				return bruteForceResult.getContainer().getVolume() < container.getVolume();
+				return true; 
+			} else if(bruteForceResult.count == count) {
+				// check volume (of container)
+				if(bruteForceResult.container.getVolume() > container.getVolume()) {
+					return true;
+				} else if(bruteForceResult.container.getVolume() == container.getVolume()) {
+					// check weight (max weight of container, suboptimal but quick)
+					if(bruteForceResult.container.getWeight() > container.getWeight()) {
+						return true;
+					}
+				}
 			}
-			*/
 
 			return false;
 		}
@@ -138,7 +150,7 @@ public class BruteForcePackager extends Packager {
 
 			do {
 				int count = pack(placements, holder, rotator, deadline, holder, 0);
-				if(count == -1) {
+				if(count == Integer.MIN_VALUE) {
 					return null; // timeout
 				} else {
 					holder.clear();
@@ -164,7 +176,9 @@ public class BruteForcePackager extends Packager {
 	}
 
 	protected static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, Container holder, int index) {
-    if(placements.isEmpty()) return -1;
+	    if(placements.isEmpty()) {
+	    	return -1;
+	    }
 		Dimension remainingSpace = container;
 
 		while(index < rotator.length()) {

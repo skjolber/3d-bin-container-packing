@@ -11,7 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
@@ -408,7 +409,7 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 	}
 	
 	@Test
-	@Ignore
+	@Disabled
 	public void testRunsForLimitedTimeSeconds() {
 		List<Container> containers = new ArrayList<Container>();
 		containers.add(new Container(500, 500, 500, 0));

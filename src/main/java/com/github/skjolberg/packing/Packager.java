@@ -27,8 +27,13 @@ public abstract class Packager {
 	}
 	
 	public interface PackResult {
+		/**
+		 * Compare two results
+		 * 
+		 * @param result to compare against
+		 * @return true if this box is better than the argument
+		 */
 		boolean packsMoreBoxesThan(PackResult result);
-		// TODO better in weight and also volume
 		boolean isEmpty();
 	}
 	
@@ -303,23 +308,23 @@ public abstract class Packager {
 		} else {
 			// perform a binary search among the available containers
 			// the list is ranked from most desirable to least.
-			Container[] results = new Container[containers.size()];
+			PackResult[] results = new PackResult[containers.size()];
 			boolean[] checked = new boolean[results.length]; 
 
-			ArrayList<Integer> current = new ArrayList<>(containers.size());
+			ArrayList<Integer> containerIndexes = new ArrayList<>(containers.size());
 			for(int i = 0; i < containers.size(); i++) {
-				current.add(i);
+				containerIndexes.add(i);
 			}
 
 			BinarySearchIterator iterator = new BinarySearchIterator();
 
 			search:
 			do {
-				iterator.reset(current.size() - 1, 0);
+				iterator.reset(containerIndexes.size() - 1, 0);
 				
 				do {
 					int next = iterator.next();
-					int mid = current.get(next);
+					int mid = containerIndexes.get(next);
 
 					PackResult result = pack.attempt(mid, deadline);
 					if(result == null) {
@@ -327,7 +332,7 @@ public abstract class Packager {
 					}
 					checked[mid] = true;
 					if(!pack.hasMore(result)) {
-						results[mid] = pack.accepted(result);
+						results[mid] = result;
 						
 						iterator.lower();
 					} else {
@@ -339,27 +344,27 @@ public abstract class Packager {
 				} while(iterator.hasNext()); 
 				
 		        // halt when have a result, and checked all containers at the lower indexes
-		        for (int i = 0; i < current.size(); i++) {
-		        	Integer integer = current.get(i);
+		        for (int i = 0; i < containerIndexes.size(); i++) {
+		        	Integer integer = containerIndexes.get(i);
 					if(results[integer] != null) {
 						// remove end items; we already have a better match
-						while(current.size() > i) {
-							current.remove(current.size() - 1);
+						while(containerIndexes.size() > i) {
+							containerIndexes.remove(containerIndexes.size() - 1);
 						}
 						break;
 					}
 					
 					// remove item
 					if(checked[integer]) {
-						current.remove(i);
+						containerIndexes.remove(i);
 						i--;
 					}
 		        }
-	        } while(!current.isEmpty());
+	        } while(!containerIndexes.isEmpty());
 		        
 			for(int i = 0; i < results.length; i++) {
 				if(results[i] != null) {
-					return results[i];
+					return pack.accepted(results[i]);
 				}
 			}
 		}
@@ -443,6 +448,8 @@ public abstract class Packager {
 		
 		List<Container> containerPackResults = new ArrayList<>();
 		
+		// binary search: not as simple as in the single-container use-case; discarding containers would need some kind
+		// of criteria which could be trivially calculated, perhaps on volume.
 		do {
 			PackResult best = null;
 			for (int i = 0; i < containers.size(); i++) {

@@ -1,13 +1,12 @@
 package com.github.skjolberg.packing;
 
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 public class LevelTest {
-
-	@Rule
-	public final ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void testValidator() {
@@ -19,6 +18,7 @@ public class LevelTest {
 		level.add(b);
 
 		level.validate();
+		
 	}
 	
 	@Test
@@ -30,7 +30,8 @@ public class LevelTest {
 		Placement b = new Placement(new Space(1, 1, 1, 1, 0, 0), new Box(1, 1, 1, 0));
 		level.add(b);
 
-		exception.expect(IllegalArgumentException.class);
-		level.validate();
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+			level.validate();
+        });
 	}
 }

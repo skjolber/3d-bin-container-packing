@@ -28,7 +28,21 @@ public class LargestAreaFitFirstPackager extends Packager {
 		@Override
 		public boolean packsMoreBoxesThan(PackResult result) {
 			LAFFResult laffResult = (LAFFResult)result;
-			return laffResult.remaining.size() > remaining.size(); // lower is better
+			if(laffResult.remaining.size() > remaining.size()) { // lower is better
+				return true;
+			} else if(laffResult.remaining.size() > remaining.size()) {
+				// check volume (of container)
+				if(laffResult.container.getVolume() > container.getVolume()) {
+					return true;
+				} else if(laffResult.container.getVolume() == container.getVolume()) {
+					// check weight (of boxes)
+					if(laffResult.container.getStackWeight() > container.getStackWeight()) {
+						return true;
+					}
+				}
+			}
+			
+			return false;
 		}
 
 		public List<Box> getRemainingBoxes() {

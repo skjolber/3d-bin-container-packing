@@ -12,8 +12,8 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.github.skjolberg.packing.Packager.Adapter;
 import com.github.skjolberg.packing.Packager.PackResult;
@@ -37,10 +37,9 @@ public class PackagerTest {
 		protected Adapter adapter() {
 			return adapter;
 		}
-
 	}
 	
-	@Before
+	@BeforeEach
 	public void init() {
 		incompleteResult = mock(PackResult.class);
 		when(incompleteResult.isEmpty()).thenReturn(false);
@@ -122,8 +121,7 @@ public class PackagerTest {
 
 		Adapter mock = mock(Packager.Adapter.class);
 		when(mock.accepted(completeResult))
-			.thenReturn(new Container("result", 5, 5, 1, 0))
-			.thenReturn(new Container("better", 5, 5, 1, 0));
+			.thenReturn(new Container("final", 5, 5, 1, 0));
 		
 		// in the middle first
 		when(mock.attempt(3, deadline))
@@ -148,9 +146,12 @@ public class PackagerTest {
 		
 		Container pack = myPackager.pack(products, deadline);
 		assertNotNull(pack);
-		assertEquals("better", pack.getName());
+		assertEquals("final", pack.getName());
 		
-		verify(mock, times(4)).attempt(any(int.class), any(Long.class));
+		verify(mock, times(1)).attempt(3, deadline);
+		verify(mock, times(1)).attempt(2, deadline);
+		verify(mock, times(1)).attempt(1, deadline);
+		verify(mock, times(1)).attempt(0, deadline);
 	}
 	
 	@Test
@@ -171,6 +172,7 @@ public class PackagerTest {
 		products.add(new BoxItem(new Box("1", 5, 5, 1, 0), 1));
 
 		Adapter mock = mock(Packager.Adapter.class);
+		when(mock.hasMore(any(PackResult.class))).thenReturn(false);
 		
 		long deadline = System.currentTimeMillis() + 100000;
 
@@ -188,11 +190,9 @@ public class PackagerTest {
 
 		// then lower
 		when(mock.attempt(0, deadline)).thenReturn(best);
-
+		
 		when(mock.accepted(any(PackResult.class)))
-		.thenReturn(new Container("ok", 5, 5, 1, 0))
-		.thenReturn(new Container("better", 5, 5, 1, 0))
-		.thenReturn(new Container("best", 5, 5, 1, 0));
+		.thenReturn(new Container("final", 5, 5, 1, 0));
 	
 		when(mock.hasMore(any(PackResult.class))).thenReturn(false, false, false);
 
@@ -200,7 +200,7 @@ public class PackagerTest {
 		
 		Container pack = myPackager.pack(products, deadline);
 		assertNotNull(pack);
-		assertEquals("best", pack.getName());
+		assertEquals("final", pack.getName());
 		
 		verify(mock, times(3)).attempt(any(Integer.class), any(Long.class));
 		
