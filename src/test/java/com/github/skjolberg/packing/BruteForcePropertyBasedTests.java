@@ -2,6 +2,7 @@ package com.github.skjolberg.packing;
 
 import net.jqwik.api.*;
 import net.jqwik.api.arbitraries.IntegerArbitrary;
+import net.jqwik.api.constraints.IntRange;
 import net.jqwik.api.constraints.Size;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Collections.singletonList;
 import static net.jqwik.api.Arbitraries.integers;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,6 +31,61 @@ class BruteForcePropertyBasedTests {
     final Container pack = new BruteForcePackager(containers).pack(items, System.currentTimeMillis() + 300);
     assertThat(pack).isNotNull();
   }
+
+  @Property
+  void identicalBoxesShouldFitInContainers(@ForAll BoxItem item, @ForAll @IntRange(min = 1, max = 10) int countBySide) {
+    final int totalCount = countBySide * countBySide * countBySide;
+    final BoxItem repeatedItems = new BoxItem(item.getBox(), countBySide);
+    //TODO: we could also randomly rotate the items
+    final List<Container> containers = largeEnoughContainers(item, totalCount);
+    final Container pack = new BruteForcePackager(containers).pack(singletonList(repeatedItems), System.currentTimeMillis() + 300);
+    assertThat(pack).isNotNull();
+  }
+
+  /**
+   * Prepare containers which are just the right size for the items by stacking them on 1, 2 or 3 directions.
+   */
+  private List<Container> largeEnoughContainers(final BoxItem item, final int countBySide) {
+    final int totalCount = countBySide * countBySide * countBySide;
+    final Box box = item.getBox();
+    Container threeDim = new Container(
+      box.getWidth() * countBySide,
+      box.getDepth() * countBySide,
+      box.getHeight() * countBySide,
+      box.getWeight() * totalCount);
+    Container twoDim = new Container(
+      box.getWidth() * countBySide * countBySide,
+      box.getDepth() * countBySide,
+      box.getHeight(),
+      box.getWeight() * totalCount);
+    Container oneDim = new Container(
+      box.getWidth() * countBySide * countBySide * countBySide,
+      box.getDepth(),
+      box.getHeight(),
+      box.getWeight() * totalCount);
+    return Stream
+      .of(threeDim, twoDim, oneDim)
+      .flatMap(this::rotations)
+      .collect(Collectors.toList());
+  }
+
+  /**
+   * The 6 different possible rotations of a container.
+   */
+  private Stream<Container> rotations(final Container container) {
+    final int width = container.getWidth();
+    final int height = container.getHeight();
+    final int depth = container.getDepth();
+    final int weight = container.getWeight();
+    return Stream.of(
+      new Container(width, height, depth, weight),
+      new Container(width, depth, height, weight),
+      new Container(height, width, depth, weight),
+      new Container(height, depth, width, weight),
+      new Container(depth, height, width, weight),
+      new Container(depth, width, height, weight));
+  }
+
 
   private Container largeEnoughContainer(final List<BoxItem> items,
                                          final Box empty,
