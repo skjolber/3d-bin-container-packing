@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
@@ -237,7 +238,8 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 	@Test
 	public void about20Products() {
-		List<Container> containers = Collections.singletonList(new Container(1500, 1000, 3200, 12000));
+		final Container container = new Container(1500, 1000, 3200, 12000);
+		List<Container> containers = BruteForcePropertyBasedTests.rotations(container).collect(Collectors.toList());
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
 		List<BoxItem> products = Arrays.asList(
@@ -246,28 +248,28 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 				new BoxItem(new Box("", 720, 620, 78, 130)),
 				new BoxItem(new Box("", 611, 31, 791, 99)),
 				new BoxItem(new Box("", 611, 31, 791, 99)),
-//				new BoxItem(new Box("", 656, 18, 2033, 143)),
-//				new BoxItem(new Box("", 656, 18, 2033, 143)),
-//				new BoxItem(new Box("", 100, 850, 750, 250)),
-//				new BoxItem(new Box("", 700, 400, 50, 60)),
-//				new BoxItem(new Box("", 80, 770, 850, 150)),
-//				new BoxItem(new Box("", 80, 770, 850, 150)),
-//				new BoxItem(new Box("", 40, 100, 165, 1)),
-//				new BoxItem(new Box("", 40, 100, 165, 1)),
-//				new BoxItem(new Box("", 40, 100, 165, 1)),
-//				new BoxItem(new Box("", 16, 2500, 11, 4)),
-//				new BoxItem(new Box("", 16, 2500, 11, 4)),
-//				new BoxItem(new Box("", 18, 2720, 160, 48)),
-//				new BoxItem(new Box("", 2500, 650, 30, 210)),
-//				new BoxItem(new Box("", 700, 400, 50, 60)),
-//				new BoxItem(new Box("", 75, 650, 1600, 350)),
-//				new BoxItem(new Box("", 100, 650, 750, 220)),
-//				new BoxItem(new Box("", 720, 620, 78, 130)),
-//				new BoxItem(new Box("", 55, 500, 745, 90)),
-//				new BoxItem(new Box("", 750, 17, 30, 26)),
-//				new BoxItem(new Box("", 535, 110, 500, 35)),
-//				new BoxItem(new Box("", 100, 550, 750, 200)),
-//				new BoxItem(new Box("", 700, 500, 50, 75)),
+				new BoxItem(new Box("", 656, 18, 2033, 143)),
+				new BoxItem(new Box("", 656, 18, 2033, 143)),
+				new BoxItem(new Box("", 100, 850, 750, 250)),
+				new BoxItem(new Box("", 700, 400, 50, 60)),
+				new BoxItem(new Box("", 80, 770, 850, 150)),
+				new BoxItem(new Box("", 80, 770, 850, 150)),
+				new BoxItem(new Box("", 40, 100, 165, 1)),
+				new BoxItem(new Box("", 40, 100, 165, 1)),
+				new BoxItem(new Box("", 40, 100, 165, 1)),
+				new BoxItem(new Box("", 16, 2500, 11, 4)),
+				new BoxItem(new Box("", 16, 2500, 11, 4)),
+				new BoxItem(new Box("", 18, 2720, 160, 48)),
+				new BoxItem(new Box("", 2500, 650, 30, 210)),
+				new BoxItem(new Box("", 700, 400, 50, 60)),
+				new BoxItem(new Box("", 75, 650, 1600, 350)),
+				new BoxItem(new Box("", 100, 650, 750, 220)),
+				new BoxItem(new Box("", 720, 620, 78, 130)),
+				new BoxItem(new Box("", 55, 500, 745, 90)),
+				new BoxItem(new Box("", 750, 17, 30, 26)),
+				new BoxItem(new Box("", 535, 110, 500, 35)),
+				new BoxItem(new Box("", 100, 550, 750, 200)),
+				new BoxItem(new Box("", 700, 500, 50, 75)),
 				new BoxItem(new Box("", 1000, 1000, 1000, 100)));
 
 		Container fits1 = packager.pack(products);

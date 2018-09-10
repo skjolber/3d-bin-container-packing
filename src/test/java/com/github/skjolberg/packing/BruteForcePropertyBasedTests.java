@@ -64,14 +64,14 @@ class BruteForcePropertyBasedTests {
       box.getWeight() * totalCount);
     return Stream
       .of(threeDim, twoDim, oneDim)
-      .flatMap(this::rotations)
+      .flatMap(BruteForcePropertyBasedTests::rotations)
       .collect(Collectors.toList());
   }
 
   /**
    * The 6 different possible rotations of a container.
    */
-  private Stream<Container> rotations(final Container container) {
+  public static Stream<Container> rotations(final Container container) {
     final int width = container.getWidth();
     final int height = container.getHeight();
     final int depth = container.getDepth();
