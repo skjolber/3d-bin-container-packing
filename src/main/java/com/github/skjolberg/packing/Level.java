@@ -23,7 +23,17 @@ public class Level extends ArrayList<Placement>{
 		
 		return height;
 	}
-	
+
+	public int getWeight() {
+		int weight = 0;
+		
+		for(Placement placement : this) {
+			weight += placement.getBox().getWeight();
+		}
+		
+		return weight;
+	}
+
 	/**
 	 * 
 	 * Check whether placement is valid, i.e. no overlaps.

@@ -4,14 +4,14 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class BoxTest {
 
 	@Test
 	public void testCanHold() {
 		
-		Box box = new Box(350, 150, 400);
+		Box box = new Box(350, 150, 400, 0);
 		Assert.assertTrue(box.canHold3D(350, 50, 400));
 		Assert.assertTrue(box.canHold3D(50, 400, 350));
 		Assert.assertTrue(box.canHold3D(400, 350, 50));
@@ -24,7 +24,7 @@ public class BoxTest {
 	@Test
 	public void testfitInFootprintRotate() {
 		
-		Box box = new Box(1, 6, 3);
+		Box box = new Box(1, 6, 3, 0);
 		
 		Assert.assertTrue(box.fitRotate2D(1, 6));
 		assertThat(box.getWidth(), is(1));
@@ -41,7 +41,7 @@ public class BoxTest {
 	@Test
 	public void testSmallestFootprintMinimum() {
 		
-		Box box = new Box(1, 1, 10);
+		Box box = new Box(1, 1, 10, 0);
 		
 		Assert.assertTrue(box.fitRotate3DSmallestFootprint(1, 1, 10));
 		assertThat(box.getWidth(), is(1));
@@ -63,7 +63,7 @@ public class BoxTest {
 	@Test
 	public void testSmallestFootprintMinimum2() {
 		
-		Box box = new Box(1, 1, 10);
+		Box box = new Box(1, 1, 10, 0);
 		
 		Assert.assertTrue(box.fitRotate3DSmallestFootprint(1, 5, 10)); // standing
 		assertThat(box.currentSurfaceArea(), is(1));

@@ -217,6 +217,4 @@ public class Dimension {
 		return true;
 	}
 	
-	
-	
 }

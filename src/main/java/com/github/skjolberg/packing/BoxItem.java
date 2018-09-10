@@ -16,6 +16,7 @@ public class BoxItem {
 	}
 
 	public BoxItem(Box box, int count) {
+		super();
 		this.box = box;
 		this.count = count;
 	}
@@ -28,4 +29,8 @@ public class BoxItem {
 		return box;
 	}
 
+  @Override
+  public String toString() {
+    return String.format("%dx%s", count, box);
+  }
 }

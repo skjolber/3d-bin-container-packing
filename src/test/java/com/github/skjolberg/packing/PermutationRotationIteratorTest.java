@@ -6,19 +6,19 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PermutationRotationIteratorTest {
 
 	@Test
 	public void testCount() {
 		for(int i = 1; i <= 8; i++) {
-			Box container = new Box(3 * (i + 1), 1, 1);
+			Box container = new Box(3 * (i + 1), 1, 1, 0);
 			List<BoxItem> products1 = new ArrayList<BoxItem>();
 			
 			for(int k = 0; k < i; k++) {
-				BoxItem item = new BoxItem(new Box(Integer.toString(k), 3, 1, 1));
-
+				BoxItem item = new BoxItem(new Box(Integer.toString(k), 3, 1, 1, 0));
+				
 				products1.add(item);
 			}
 	
@@ -37,11 +37,11 @@ public class PermutationRotationIteratorTest {
 	
 	@Test
 	public void testNumberOfUnconstrainedRotations() {
-		Box container = new Box(3, 3, 3);
+		Box container = new Box(3, 3, 3, 0);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 		
-		products.add(new BoxItem(new Box("0", 1, 2, 3), 1));
+		products.add(new BoxItem(new Box("0", 1, 2, 3, 0), 1));
 
 		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
 
@@ -50,11 +50,11 @@ public class PermutationRotationIteratorTest {
 	
 	@Test
 	public void testNumberOfConstrainedRotations() {
-		Box container = new Box(1, 2, 3);
+		Box container = new Box(1, 2, 3, 0);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 		
-		products.add(new BoxItem(new Box("0", 1, 2, 3), 1));
+		products.add(new BoxItem(new Box("0", 1, 2, 3, 0), 1));
 
 		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
 
@@ -63,11 +63,11 @@ public class PermutationRotationIteratorTest {
 	
 	@Test
 	public void testNumberOfRotationsForSquare2D() {
-		Box container = new Box(3, 3, 3);
+		Box container = new Box(3, 3, 3, 0);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 		
-		products.add(new BoxItem(new Box("0", 3, 1, 1), 1));
+		products.add(new BoxItem(new Box("0", 3, 1, 1, 0), 1));
 
 		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
 
@@ -76,11 +76,11 @@ public class PermutationRotationIteratorTest {
 	
 	@Test
 	public void testNumberOfConstrainedRotationsForSquare2D() {
-		Box container = new Box(3, 1, 1);
+		Box container = new Box(3, 1, 1, 0);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 		
-		products.add(new BoxItem(new Box("0", 3, 1, 1), 1));
+		products.add(new BoxItem(new Box("0", 3, 1, 1, 0), 1));
 
 		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
 
@@ -89,11 +89,11 @@ public class PermutationRotationIteratorTest {
 	
 	@Test
 	public void testNumberOfRotationsForSquare3D() {
-		Box container = new Box(3, 3, 3);
+		Box container = new Box(3, 3, 3, 0);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 		
-		products.add(new BoxItem(new Box("0", 1, 1, 1), 1));
+		products.add(new BoxItem(new Box("0", 1, 1, 1, 0), 1));
 
 		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
 
@@ -102,13 +102,13 @@ public class PermutationRotationIteratorTest {
 	
 	@Test
 	public void testRotation() {
-		Box container = new Box(9, 1, 1);
+		Box container = new Box(9, 1, 1, 0);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 		
-		products.add(new BoxItem(new Box("0", 1, 1, 3), 1));
-		products.add(new BoxItem(new Box("1", 1, 1, 3), 1));
-		products.add(new BoxItem(new Box("2", 1, 1, 3), 1));
+		products.add(new BoxItem(new Box("0", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("1", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("2", 1, 1, 3, 0), 1));
 
 		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
 
@@ -130,15 +130,15 @@ public class PermutationRotationIteratorTest {
 	
 	@Test
 	public void testPermutations() {
-		Box container = new Box(9, 1, 1);
+		Box container = new Box(9, 1, 1, 0);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 		
-		products.add(new BoxItem(new Box("0", 1, 1, 3), 1));
-		products.add(new BoxItem(new Box("1", 1, 1, 3), 1));
-		products.add(new BoxItem(new Box("2", 1, 1, 3), 1));
-		products.add(new BoxItem(new Box("3", 1, 1, 3), 1));
-		products.add(new BoxItem(new Box("4", 1, 1, 3), 1));
+		products.add(new BoxItem(new Box("0", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("1", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("2", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("3", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("4", 1, 1, 3, 0), 1));
 
 		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
 
@@ -152,12 +152,12 @@ public class PermutationRotationIteratorTest {
 	
 	@Test
 	public void testPermutationsWithMultipleBoxes() {
-		Box container = new Box(9, 1, 1);
+		Box container = new Box(9, 1, 1, 0);
 		
 		List<BoxItem> products = new ArrayList<BoxItem>();
 		
-		products.add(new BoxItem(new Box("0", 1, 1, 3), 2));
-		products.add(new BoxItem(new Box("1", 1, 1, 3), 4));
+		products.add(new BoxItem(new Box("0", 1, 1, 3, 0), 2));
+		products.add(new BoxItem(new Box("1", 1, 1, 3, 0), 4));
 
 		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
 
@@ -173,12 +173,12 @@ public class PermutationRotationIteratorTest {
 	public void testCounts() {
 		List<BoxItem> products1 = new ArrayList<BoxItem>();
 
-		products1.add(new BoxItem(new Box(5, 10, 10), 2));
-		products1.add(new BoxItem(new Box(5, 10, 10), 2));
+		products1.add(new BoxItem(new Box(5, 10, 10, 0), 2));
+		products1.add(new BoxItem(new Box(5, 10, 10, 0), 2));
 
 		int n = 4;
 		
-		PermutationRotationIterator rotator = new PermutationRotationIterator(products1, new Box(5 * n, 10, 10), true);
+		PermutationRotationIterator rotator = new PermutationRotationIterator(products1, new Box(5 * n, 10, 10, 0), true);
 
 		int length = rotator.length();
 		
@@ -192,11 +192,11 @@ public class PermutationRotationIteratorTest {
 		int n = 25;
 		
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(5 * n, 10, 10));
+		containers.add(new Box(5 * n, 10, 10, 0));
 		
 		List<BoxItem> products1 = new ArrayList<BoxItem>();
 		for(int k = 0; k < n; k++) {
-			products1.add(new BoxItem(new Box(5, 10, 10), 1));
+			products1.add(new BoxItem(new Box(5, 10, 10, 0), 1));
 		}
 
 		PermutationRotation[] rotationMatrix = PermutationRotationIterator.toRotationMatrix(products1, true);
@@ -211,11 +211,11 @@ public class PermutationRotationIteratorTest {
 		int n = 25;
 		
 		List<Box> containers = new ArrayList<Box>();
-		containers.add(new Box(5 * n, 10, 10));
+		containers.add(new Box(5 * n, 10, 10, 0));
 		
 		List<BoxItem> products1 = new ArrayList<BoxItem>();
 		for(int k = 0; k < n; k++) {
-			products1.add(new BoxItem(new Box(5, 10, 10), 2));
+			products1.add(new BoxItem(new Box(5, 10, 10, 0), 2));
 		}
 
 		PermutationRotation[] rotationMatrix = PermutationRotationIterator.toRotationMatrix(products1, true);
@@ -225,4 +225,51 @@ public class PermutationRotationIteratorTest {
 		assertEquals(-1L, iterator.countPermutations());
 	}
 
+	@Test
+	public void testRemovePermutations1() {
+		Box container = new Box(9, 1, 1, 0);
+		
+		List<BoxItem> products = new ArrayList<BoxItem>();
+		
+		products.add(new BoxItem(new Box("0", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("1", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("2", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("3", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("4", 1, 1, 3, 0), 1));
+
+		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
+
+		rotator.removePermutations(3);
+		
+		int[] permutations = rotator.getPermutations();
+		
+		assertEquals(3, permutations[0]);
+		assertEquals(4, permutations[1]);
+	}
+
+	@Test
+	public void testRemovePermutations2() {
+		Box container = new Box(9, 1, 1, 0);
+		
+		List<BoxItem> products = new ArrayList<BoxItem>();
+		
+		products.add(new BoxItem(new Box("0", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("1", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("2", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("3", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("4", 1, 1, 3, 0), 1));
+
+		PermutationRotationIterator rotator = new PermutationRotationIterator(products, container, true);
+
+		List<Integer> remove = new ArrayList<>();
+		remove.add(2);
+		remove.add(4);
+		rotator.removePermutations(remove);
+		
+		int[] permutations = rotator.getPermutations();
+		assertEquals(0, permutations[0]);
+		assertEquals(1, permutations[1]);
+		assertEquals(3, permutations[2]);
+	}
+	
 }

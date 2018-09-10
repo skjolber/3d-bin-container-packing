@@ -13,9 +13,9 @@ import java.util.Map;
 public class PackagerCombinationDemo {
 
 	public static final void main(String[] args) {
-		List<Dimension> containers = new ArrayList<Dimension>();
+		List<Container> containers = new ArrayList<Container>();
 		for(int i = 0; i < 10; i++) {
-			containers.add(new Dimension(Integer.toString(i), 5*(i+1), 10, 10));
+			containers.add(new Container(Integer.toString(i), 5*(i+1), 10, 10, 0));
 		}
 
 		Map<String, Integer> map = new HashMap<>();
@@ -32,7 +32,7 @@ public class PackagerCombinationDemo {
 
 			long volume = 0;
 			for(int i = 0; i < (k + 1); i++) {
-				Box b = new Box(Integer.toString(i), 5, 10, 10);
+				Box b = new Box(Integer.toString(i), 5, 10, 10, 0);
 				products.add(new BoxItem(b, 1));
 
 				volume += b.getVolume();

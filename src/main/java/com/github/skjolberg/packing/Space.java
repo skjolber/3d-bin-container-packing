@@ -136,6 +136,10 @@ public class Space extends Dimension {
 		this.depth = d;
 		this.height = h;
 	}
+
+	public boolean isEmpty() {
+		return !nonEmpty();
+	}
 	
 	
 }
