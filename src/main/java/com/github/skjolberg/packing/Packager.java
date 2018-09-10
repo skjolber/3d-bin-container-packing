@@ -426,6 +426,10 @@ public abstract class Packager {
 		return placements;
 	}		
 
+	public List<Container> packList(List<BoxItem> boxes, int limit) {
+		return packList(boxes, limit, Long.MAX_VALUE);
+	}
+
 	/**
 	 * 
 	 * Return a list of containers which holds all the boxes in the argument
