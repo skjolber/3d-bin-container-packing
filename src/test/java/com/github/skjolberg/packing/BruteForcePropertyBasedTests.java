@@ -18,7 +18,7 @@ class BruteForcePropertyBasedTests {
 	// The maximum number of different, random items which can be reliably packed with brute force
 	// seems to be between 10 and 15
 	@Property
-	void bunchOfDifferentBoxesShouldFitInContainers(@ForAll @Size(min = 1, max = 11) List<BoxItem> items) {
+	void bunchOfDifferentBoxesShouldFitInContainers(@ForAll @Size(min = 1, max = 6) List<BoxItem> items) {
 		final Box empty = new Box(0, 0, 0, 0);
 
 		final List<Container> containers =
@@ -26,8 +26,7 @@ class BruteForcePropertyBasedTests {
 				.map(accumulator -> largeEnoughContainer(items, empty, accumulator))
 				.collect(Collectors.toList());
 		// print a message here so that the build server does not think the build has failed
-		System.out.printf("packing %d items into %s%n", items.size(), containers.size());
-		//System.out.println(items);
+		System.out.printf("packing %d items into %s containers %n", items.size(), containers.size());
 		final Container pack = new BruteForcePackager(containers).pack(items, System.currentTimeMillis() + 300);
 		assertThat(pack).isNotNull();
 	}
@@ -37,6 +36,7 @@ class BruteForcePropertyBasedTests {
 		final BoxItem repeatedItems = new BoxItem(item.getBox(), countBySide * countBySide * countBySide);
 		//TODO: we could also randomly rotate the items
 		final List<Container> containers = largeEnoughContainers(item, countBySide);
+		System.out.printf("Fit %d repeated items into one of %d large enough containers\n", repeatedItems.getCount(), containers.size());
 		final Container pack = new BruteForcePackager(containers).pack(singletonList(repeatedItems), Long.MAX_VALUE);
 		assertThat(pack).isNotNull();
 	}
