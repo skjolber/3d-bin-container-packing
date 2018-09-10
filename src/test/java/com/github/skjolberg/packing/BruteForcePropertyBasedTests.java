@@ -25,8 +25,8 @@ class BruteForcePropertyBasedTests {
 				Stream.of(accumulateByDepth, accumulateByWidth, accumulateByHeight)
 				.map(accumulator -> largeEnoughContainer(items, empty, accumulator))
 				.collect(Collectors.toList());
-		// only useful to debug when packaging fails
-		//System.out.printf("packing %d items into %s%n", items.size(), containers);
+		// print a message here so that the build server does not think the build has failed
+		System.out.printf("packing %d items into %s%n", items.size(), containers.size());
 		//System.out.println(items);
 		final Container pack = new BruteForcePackager(containers).pack(items, System.currentTimeMillis() + 300);
 		assertThat(pack).isNotNull();
