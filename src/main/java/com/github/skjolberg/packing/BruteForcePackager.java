@@ -6,14 +6,14 @@ import java.util.List;
 
 
 /**
- * Fit boxes into container, i.e. perform bin packing to a single container. 
+ * Fit boxes into container, i.e. perform bin packing to a single container.
  * <br><br>
- * This attempts a brute force approach, which is very demanding in terms of resources. 
- * For use in scenarios with 'few' boxes, where the complexity of a 'few' can be measured 
- * for a specific set of boxes and containers using 
+ * This attempts a brute force approach, which is very demanding in terms of resources.
+ * For use in scenarios with 'few' boxes, where the complexity of a 'few' can be measured
+ * for a specific set of boxes and containers using
  * {@linkplain PermutationRotationIterator#countPermutations()} * {@linkplain PermutationRotationIterator#countRotations()}.
  * <br><br>
- * Thread-safe implementation. The input Boxes can be used by multiple threads at a time. 
+ * Thread-safe implementation. The input Boxes can be used by multiple threads at a time.
  */
 
 public class BruteForcePackager extends Packager {
@@ -66,14 +66,14 @@ public class BruteForcePackager extends Packager {
 
 		@Override
 		public boolean packsMoreBoxesThan(PackResult result) {
-			// return true if 'this' is better: 
+			// return true if 'this' is better:
 			// - higher number of boxes
 			// - lower volume
 			// - lower max weight
-			
+
 			BruteForceResult bruteForceResult = (BruteForceResult)result;
 			if(bruteForceResult.count < count) {
-				return true; 
+				return true;
 			} else if(bruteForceResult.count == count) {
 				// check volume (of container)
 				if(bruteForceResult.container.getVolume() > container.getVolume()) {
@@ -122,19 +122,6 @@ public class BruteForcePackager extends Packager {
 		this(containers, true, true);
 	}
 
-	protected BruteForceResult pack(List<Placement> placements, Container container, PermutationRotation[] rotations, long deadline) {
-
-		PermutationRotationIterator rotator = new PermutationRotationIterator(container, rotations);
-		if(rotator.boxItemLength() != rotations.length) {
-			throw new IllegalArgumentException("One or more boxes does not fit");
-		}
-		return pack(placements, container, rotator, deadline);
-	}
-
-	public BruteForceResult pack(Container container, PermutationRotationIterator rotator, long deadline) {
-		return pack(getPlacements(rotator.length()), container, rotator, deadline);
-	}
-
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline) {
 
 		Container holder = new Container(container);
@@ -156,7 +143,7 @@ public class BruteForcePackager extends Packager {
 					holder.clear();
 
 					if(count == placements.size()) {
-						if(accept(holder)) {
+						if(accept()) {
 							result.setCount(count);
 							result.setState(rotator.getState());
 							return result;
@@ -200,9 +187,9 @@ public class BruteForcePackager extends Packager {
 			Space levelSpace = placement.getSpace();
 			levelSpace.width = remainingSpace.getWidth();
 			levelSpace.depth = remainingSpace.getDepth();
-			
-			// the LAFF allocates a height per level equal to the given the current box, 
-			// but here allow for use of all of the remaining space; the selection of boxes is fixed 
+
+			// the LAFF allocates a height per level equal to the given the current box,
+			// but here allow for use of all of the remaining space; the selection of boxes is fixed
 			// the result will be constrained to actual use.
 			levelSpace.height = remainingSpace.getHeight();
 
@@ -225,7 +212,7 @@ public class BruteForcePackager extends Packager {
 		return index;
 	}
 
-	protected boolean accept(Container container) {
+	protected boolean accept() {
 		return true;
 	}
 
@@ -290,7 +277,7 @@ public class BruteForcePackager extends Packager {
 
 	protected static boolean isFreespace(Space freespace, Box used, Placement target) {
 
-		// Two free spaces, on each rotation of the used space. 
+		// Two free spaces, on each rotation of the used space.
 		// Height is always the same, used box is assumed within free space height.
 		// First:
 		// ........................  ........................  .............

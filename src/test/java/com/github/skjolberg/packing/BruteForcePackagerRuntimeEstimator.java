@@ -24,16 +24,12 @@ public class BruteForcePackagerRuntimeEstimator {
 
 	private static class BruteForcePackagerEstimator extends BruteForcePackager {
 
-		public BruteForcePackagerEstimator(List<Container> containers) {
-			super(containers);
-		}
-
 		public BruteForcePackagerEstimator(List<Container> containers, boolean rotate3d, boolean binarySearch) {
 			super(containers, rotate3d, binarySearch);
 		}
 
 		@Override
-		protected boolean accept(Container container) {
+		protected boolean accept() {
 			return false;
 		}
 	}

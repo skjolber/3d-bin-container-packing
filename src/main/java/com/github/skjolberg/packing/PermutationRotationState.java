@@ -6,11 +6,11 @@ package com.github.skjolberg.packing;
  */
 
 public class PermutationRotationState {
-	
+
 	private int[] rotations; // 2^n or 6^n
 	private int[] permutations; // n!
-	
-	public PermutationRotationState(int[] rotations, int[] permutations) {
+
+	PermutationRotationState(int[] rotations, int[] permutations) {
 		super();
 		this.rotations = new int[rotations.length];
 		System.arraycopy(rotations, 0, this.rotations, 0, rotations.length);
@@ -23,5 +23,5 @@ public class PermutationRotationState {
 	public int[] getRotations() {
 		return rotations;
 	}
-	
+
 }

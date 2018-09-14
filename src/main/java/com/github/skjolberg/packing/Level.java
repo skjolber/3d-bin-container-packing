@@ -26,11 +26,11 @@ public class Level extends ArrayList<Placement>{
 
 	public int getWeight() {
 		int weight = 0;
-		
+
 		for(Placement placement : this) {
 			weight += placement.getBox().getWeight();
 		}
-		
+
 		return weight;
 	}
 
@@ -39,8 +39,7 @@ public class Level extends ArrayList<Placement>{
 	 * Check whether placement is valid, i.e. no overlaps.
 	 *
 	 */
-
-	public void validate() {
+	void validate() {
 		for(int i = 0; i < size(); i++) {
 			for(int j = 0; j < size(); j++) {
 				if(j == i) {

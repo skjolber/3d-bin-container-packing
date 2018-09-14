@@ -69,15 +69,6 @@ public class Container extends Box {
 		return stackWeight + currentLevelStackWeight();
 	}
 
-	public void add(int index, Level element) {
-		if(!levels.isEmpty()) {
-			stackHeight += currentLevelStackHeight();
-			stackWeight += currentLevelStackWeight();
-		}
-
-		levels.add(index, element);
-	}
-
 	public int currentLevelStackHeight() {
 		if(levels.isEmpty()) {
 			return 0;

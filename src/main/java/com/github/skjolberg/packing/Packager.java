@@ -179,50 +179,6 @@ public abstract class Packager {
 		return list;
 	}
 
-	/**
-	 * Return a list of containers which can potentially hold the boxes.
-	 *
-	 * @param boxes list of boxes
-	 * @return list of containers
-	 */
-
-	public List<Container> filterByVolume(List<Box> boxes) {
-		long volume = 0;
-		for(Box box : boxes) {
-			volume += box.getVolume();
-		}
-
-		List<Container> list = new ArrayList<>();
-		for(Container container : containers) {
-			if(container.getVolume() < volume || !canHoldAll(container, boxes)) {
-				// discard this container
-				continue;
-			}
-
-			list.add(container);
-		}
-
-		return list;
-	}
-
-	/**
-	 * Return a list of containers which can at least hold one of the boxes
-	 *
-	 * @param boxes list of boxes
-	 * @param containers list of containers
-	 */
-
-	public void filterBySize(List<Box> boxes, List<Container> containers) {
-		for (int i = 0; i < containers.size(); i++) {
-			Container dimension = containers.get(i);
-			if(!canHoldAll(dimension, boxes)) {
-				// discard this container
-				containers.remove(i);
-				i--;
-			}
-		}
-	}
-
 
 	/**
 	 *
@@ -249,20 +205,6 @@ public abstract class Packager {
 		}
 		return boxClones;
 
-	}
-
-	/**
-	 *
-	 * Return a container which holds all the boxes in the argument
-	 *
-	 * @param boxes list of boxes to fit in a container
-	 * @param limit maximum number of containers
-	 * @param deadline the system time in millis at which the search should be aborted
-	 * @return index of container if match, -1 if not
-	 */
-
-	public Container pack(List<BoxItem> boxes, int limit, long deadline) {
-		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), limit), deadline);
 	}
 
 	/**
@@ -418,10 +360,6 @@ public abstract class Packager {
 			placements.add(new Placement(a));
 		}
 		return placements;
-	}
-
-	public List<Container> packList(List<BoxItem> boxes, int limit) {
-		return packList(boxes, limit, Long.MAX_VALUE);
 	}
 
 	/**

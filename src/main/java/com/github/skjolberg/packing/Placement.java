@@ -23,63 +23,58 @@ public class Placement {
 	public Space getSpace() {
 		return space;
 	}
-	public void setSpace(Space space) {
-		this.space = space;
-	}
+
 	public Box getBox() {
 		return box;
 	}
+
 	public void setBox(Box box) {
 		this.box = box;
 	}
 
 	@Override
 	public String toString() {
-		return "Placement [" + space.getX() + "x" + space.getY() + "x" + space.getZ() + ", width=" + box.getWidth() + ", depth=" + box.getDepth()+ ", height="
-				+ box.getHeight()+ "]";
+		return "Placement [" + space.getX() + "x" + space.getY() + "x" + space.getZ() + ", width=" + box.getWidth() + ", depth=" + box.getDepth() + ", height="
+				+ box.getHeight() + "]";
 	}
 
-	public int getCenterX() {
+	int getCenterX() {
 		return space.getX() + (box.getWidth() / 2);
 	}
 
-	public int getCenterY() {
+	int getCenterY() {
 		return space.getY() + (box.getDepth() / 2);
 	}
 
-	public boolean intersects(Placement placement) {
+	boolean intersects(Placement placement) {
 		return intersectsX(placement) && intersectsY(placement);
 	}
 
-	public boolean intersectsY(Placement placement) {
+	private boolean intersectsY(Placement placement) {
 
 		int startY = space.getY();
 		int endY = startY + box.getDepth() - 1;
 
-		if(startY <= placement.getSpace().getY() && placement.getSpace().getY() <= endY) {
+		if (startY <= placement.getSpace().getY() && placement.getSpace().getY() <= endY) {
 			return true;
 		}
 
-		if(startY <= placement.getSpace().getY() + placement.getBox().getDepth() - 1 && placement.getSpace().getY() + placement.getBox().getDepth() - 1 <= endY) {
-			return true;
-		}
+		return startY <= placement.getSpace().getY() + placement.getBox().getDepth() - 1 &&
+				placement.getSpace().getY() + placement.getBox().getDepth() - 1 <= endY;
 
-		return false;
 	}
 
-	public boolean intersectsX(Placement placement) {
+	private boolean intersectsX(Placement placement) {
 
 		int startX = space.getX();
 		int endX = startX + box.getWidth() - 1;
 
-		if(startX <= placement.getSpace().getX() && placement.getSpace().getX() <= endX) {
+		if (startX <= placement.getSpace().getX() && placement.getSpace().getX() <= endX) {
 			return true;
 		}
 
-		if(startX <= placement.getSpace().getX() + placement.getBox().getWidth() - 1 && placement.getSpace().getX() + placement.getBox().getWidth() - 1  <= endX) {
-			return true;
-		}
+		return startX <= placement.getSpace().getX() + placement.getBox().getWidth() - 1 &&
+				placement.getSpace().getX() + placement.getBox().getWidth() - 1 <= endX;
 
-		return false;
 	}
 }
