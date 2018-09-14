@@ -13,7 +13,7 @@ import java.util.Map;
 public class PackagerCombinationDemo {
 
 	public static final void main(String[] args) {
-		List<Container> containers = new ArrayList<Container>();
+		List<Container> containers = new ArrayList<>();
 		for(int i = 0; i < 10; i++) {
 			containers.add(new Container(Integer.toString(i), 5*(i+1), 10, 10, 0));
 		}
@@ -28,7 +28,7 @@ public class PackagerCombinationDemo {
 			System.out.println("************* " + k + " *************");
 			LargestAreaFitFirstPackager light = new LargestAreaFitFirstPackager(containers);
 
-			List<BoxItem> products = new ArrayList<BoxItem>();
+			List<BoxItem> products = new ArrayList<>();
 
 			long volume = 0;
 			for(int i = 0; i < (k + 1); i++) {
@@ -61,7 +61,7 @@ public class PackagerCombinationDemo {
 
 			if(index > 0) {
 				long deadline = System.currentTimeMillis() + 5000;
-	
+
 				BruteForcePackager heavy = new BruteForcePackager(containers.subList(0, index), true, true);
 
 				Container heavyResult = heavy.pack(products, deadline);
@@ -70,7 +70,7 @@ public class PackagerCombinationDemo {
 					pack = heavyResult;
 
 					Integer betterIndex = map.get(pack.getName());
-					
+
 					System.out.println("Better match at index " + betterIndex);
 				}
 			}

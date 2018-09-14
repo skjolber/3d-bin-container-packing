@@ -8,26 +8,26 @@ public class Container extends Box {
 
 	private int stackWeight = 0;
 	private int stackHeight = 0;
-	private ArrayList<Level> levels = new ArrayList<Level>();
+	private ArrayList<Level> levels = new ArrayList<>();
 
 	public Container(Container container) {
 		super(container.getName(), container.getWidth(), container.getDepth(), container.getHeight(), container.getWeight());
 	}
 
 	/**
-	 * Construct new instance. 
-	 * 
+	 * Construct new instance.
+	 *
 	 * @param dimension maximum size the container can contain
 	 * @param weight maximum weight the container can hold
 	 */
-	
+
 	public Container(Dimension dimension, int weight) {
 		super(dimension.getName(), dimension.getWidth(), dimension.getDepth(), dimension.getHeight(), weight);
 	}
-	
+
 	/**
-	 * Construct new instance. 
-	 * 
+	 * Construct new instance.
+	 *
 	 * @param w width
 	 * @param d depth
 	 * @param h height
@@ -39,8 +39,8 @@ public class Container extends Box {
 	}
 
 	/**
-	 * Construct new instance. 
-	 * 
+	 * Construct new instance.
+	 *
 	 * @param name container name
 	 * @param w width
 	 * @param d depth
@@ -57,49 +57,49 @@ public class Container extends Box {
 			stackHeight += currentLevelStackHeight();
 			stackWeight += currentLevelStackWeight();
 		}
-		
+
 		return levels.add(element);
 	}
-	
+
 	public int getStackHeight() {
 		return stackHeight + currentLevelStackHeight();
 	}
-	
+
 	public int getStackWeight() {
 		return stackWeight + currentLevelStackWeight();
 	}
-	
+
 	public void add(int index, Level element) {
 		if(!levels.isEmpty()) {
 			stackHeight += currentLevelStackHeight();
 			stackWeight += currentLevelStackWeight();
 		}
-		
+
 		levels.add(index, element);
 	}
-	
+
 	public int currentLevelStackHeight() {
 		if(levels.isEmpty()) {
 			return 0;
 		}
 		return levels.get(levels.size() - 1).getHeight();
 	}
-	
+
 	public int currentLevelStackWeight() {
 		if(levels.isEmpty()) {
 			return 0;
 		}
 		return levels.get(levels.size() - 1).getWeight();
 	}
-	
+
 	public void add(Placement placement) {
 		levels.get(levels.size() - 1).add(placement);
 	}
-	
+
 	public void addLevel() {
 		add(new Level());
 	}
-	
+
 	public Dimension getFreeSpace() {
 		int remainder = height - getStackHeight();
 		if(remainder < 0) {
@@ -107,7 +107,7 @@ public class Container extends Box {
 		}
 		return new Dimension(width, depth, remainder);
 	}
-	
+
 	public int getFreeWeight() {
 		int remainder = weight - getStackWeight();
 		if(remainder < 0) {
@@ -115,11 +115,11 @@ public class Container extends Box {
 		}
 		return remainder;
 	}
-	
+
 	public List<Level> getLevels() {
 		return levels;
 	}
-	
+
 	public Placement get(int level, int placement) {
 		return levels.get(level).get(placement);
 	}
@@ -133,7 +133,7 @@ public class Container extends Box {
 		stackHeight = 0;
 		stackWeight = 0;
 	}
-	
+
 	public int getBoxCount() {
 		int count = 0;
 		for(Level level : levels) {
@@ -179,8 +179,8 @@ public class Container extends Box {
 				+ ", weight=" + weight + ", width=" + width + ", depth=" + depth + ", height=" + height + ", volume="
 				+ volume + ", name=" + name + "]";
 	}
-	
-	
+
+
 
 	public Dimension getUsedSpace() {
 		Dimension maxBox = Dimension.EMPTY;
