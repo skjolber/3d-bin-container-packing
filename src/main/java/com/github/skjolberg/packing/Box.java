@@ -42,7 +42,7 @@ public class Box extends Dimension {
 	 * @return if this object fits within the input dimensions
 	 */
 
-	public boolean rotateLargestFootprint3D(Dimension dimension) {
+	boolean rotateLargestFootprint3D(Dimension dimension) {
 		return rotateLargestFootprint3D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}
 
@@ -73,7 +73,7 @@ public class Box extends Dimension {
 		return (d >= height && w >= width) || (w >= height && d >= width);
 	}
 
-	public boolean rotateLargestFootprint3D(int w, int d, int h) {
+	private boolean rotateLargestFootprint3D(int w, int d, int h) {
 		int a = Integer.MIN_VALUE;
 		if (heightUp(w, d, h)) {
 			a = width * depth;
