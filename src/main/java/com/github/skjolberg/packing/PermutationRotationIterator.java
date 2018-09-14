@@ -103,9 +103,9 @@ public class PermutationRotationIterator {
 			List<Box> result = new ArrayList<>();
 
 			Box[] boxes = unconstrained[i].getBoxes();
-			for(int k = 0; k < boxes.length; k++) {
-				if(boxes[k] != null && boxes[k].fitsInside3D(bound)) {
-					result.add(boxes[k]);
+			for (final Box boxe : boxes) {
+				if (boxe != null && boxe.fitsInside3D(bound)) {
+					result.add(boxe);
 				}
 			}
 
@@ -205,12 +205,12 @@ public class PermutationRotationIterator {
 
 	long countRotations() {
 		long n = 1;
-		for(int i = 0; i < rotations.length; i++) {
-			if(Long.MAX_VALUE / matrix[rotations[i]].getBoxes().length <= n) {
+		for (final int rotation : rotations) {
+			if (Long.MAX_VALUE / matrix[rotation].getBoxes().length <= n) {
 				return -1L;
 			}
 
-			n = n * matrix[rotations[i]].getBoxes().length;
+			n = n * matrix[rotation].getBoxes().length;
 		}
 		return n;
 	}
@@ -219,17 +219,17 @@ public class PermutationRotationIterator {
 		// reduce permutations for boxes which are duplicated
 
 		int maxCount = 0;
-		for(int i = 0; i < matrix.length; i++) {
-			if(maxCount < matrix[i].getCount()) {
-				maxCount = matrix[i].getCount();
+		for (final PermutationRotation aMatrix1 : matrix) {
+			if (maxCount < aMatrix1.getCount()) {
+				maxCount = aMatrix1.getCount();
 			}
 		}
 
 		long n = 1;
 		if(maxCount > 1) {
 			int[] factors = new int[maxCount];
-			for(int i = 0; i < matrix.length; i++) {
-				for(int k = 0; k < matrix[i].getCount(); k++) {
+			for (final PermutationRotation aMatrix : matrix) {
+				for (int k = 0; k < aMatrix.getCount(); k++) {
 					factors[k]++;
 				}
 			}

@@ -135,9 +135,7 @@ public class BruteForcePackagerRuntimeEstimator {
 		long totalComplexity = 0;
 		long totalDuration = 0;
 
-		for(int i = 0; i < estimates.size(); i++) {
-			Measurement second = estimates.get(i);
-
+		for (Measurement second : estimates) {
 			totalComplexity += second.permutations * second.rotations;
 			totalDuration += second.duration;
 		}

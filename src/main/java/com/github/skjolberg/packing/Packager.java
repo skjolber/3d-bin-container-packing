@@ -298,9 +298,9 @@ public abstract class Packager {
 		        }
 	        } while(!containerIndexes.isEmpty());
 
-			for(int i = 0; i < results.length; i++) {
-				if(results[i] != null) {
-					return pack.accepted(results[i]);
+			for (final PackResult result : results) {
+				if (result != null) {
+					return pack.accepted(result);
 				}
 			}
 		}
