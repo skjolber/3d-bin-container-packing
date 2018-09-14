@@ -202,7 +202,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 
 	@Test
 	public void testPackagingExposesVolumeUsed() {
-		List<Container> containers = new ArrayList<Container>();
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container("container1", 60, 25, 20, 0));
 		Packager bruteForcePackager = new BruteForcePackager(containers, true, true);
 
