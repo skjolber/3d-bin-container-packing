@@ -1,5 +1,6 @@
 package com.github.skjolberg.packing;
 
+import com.github.skjolberg.packing.impl.Level;
 import com.github.skjolberg.packing.impl.Placement;
 import com.github.skjolberg.packing.impl.Space;
 
@@ -23,7 +24,6 @@ public class Container extends Box {
 	 * @param dimension maximum size the container can contain
 	 * @param weight maximum weight the container can hold
 	 */
-
 	public Container(Dimension dimension, int weight) {
 		super(dimension.getName(), dimension.getWidth(), dimension.getDepth(), dimension.getHeight(), weight);
 	}
@@ -36,7 +36,6 @@ public class Container extends Box {
 	 * @param h height
 	 * @param weight maximum weight the container can hold
 	 */
-
 	public Container(int w, int d, int h, int weight) {
 		super(w, d, h, weight);
 	}
@@ -50,7 +49,6 @@ public class Container extends Box {
 	 * @param h height
 	 * @param weight maximum weight the container can hold
 	 */
-
 	public Container(String name, int w, int d, int h, int weight) {
 		super(name, w, d, h, weight);
 	}

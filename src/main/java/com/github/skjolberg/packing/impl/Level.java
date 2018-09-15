@@ -1,5 +1,6 @@
-package com.github.skjolberg.packing;
+package com.github.skjolberg.packing.impl;
 
+import com.github.skjolberg.packing.Box;
 import com.github.skjolberg.packing.impl.Placement;
 
 import java.util.ArrayList;
@@ -8,7 +9,6 @@ import java.util.ArrayList;
  * A level within a container
  *
  */
-
 public class Level extends ArrayList<Placement>{
 
 	private static final long serialVersionUID = 1L;
@@ -41,7 +41,7 @@ public class Level extends ArrayList<Placement>{
 	 * Check whether placement is valid, i.e. no overlaps.
 	 *
 	 */
-	void validate() {
+	public void validate() {
 		for(int i = 0; i < size(); i++) {
 			for(int j = 0; j < size(); j++) {
 				if(j == i) {

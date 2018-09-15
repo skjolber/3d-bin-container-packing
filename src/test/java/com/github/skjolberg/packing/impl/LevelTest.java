@@ -1,5 +1,7 @@
-package com.github.skjolberg.packing;
+package com.github.skjolberg.packing.impl;
 
+import com.github.skjolberg.packing.Box;
+import com.github.skjolberg.packing.impl.Level;
 import com.github.skjolberg.packing.impl.Placement;
 import com.github.skjolberg.packing.impl.Space;
 import org.junit.jupiter.api.Test;

@@ -24,7 +24,6 @@ public class Box extends Dimension {
 	 *
 	 * @return this instance
 	 */
-
 	public Box rotate3D() {
 		int height = this.height;
 
@@ -41,7 +40,6 @@ public class Box extends Dimension {
 	 * @param dimension space to fit within
 	 * @return if this object fits within the input dimensions
 	 */
-
 	boolean rotateLargestFootprint3D(Dimension dimension) {
 		return rotateLargestFootprint3D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}
@@ -121,7 +119,7 @@ public class Box extends Dimension {
 
 	}
 
-	public boolean fitRotate2D(int w, int d) {
+	boolean fitRotate2D(int w, int d) {
 
 		if (w >= width && d >= depth) {
 			return true;
@@ -144,11 +142,11 @@ public class Box extends Dimension {
 	 * @return false if box does not fit
 	 */
 
-	public boolean fitRotate3DSmallestFootprint(Dimension space) {
+	boolean fitRotate3DSmallestFootprint(Dimension space) {
 		return fitRotate3DSmallestFootprint(space.getWidth(), space.getDepth(), space.getHeight());
 	}
 
-	public boolean fitRotate3DSmallestFootprint(int w, int d, int h) {
+	boolean fitRotate3DSmallestFootprint(int w, int d, int h) {
 		int a = Integer.MAX_VALUE;
 		if (heightUp(w, d, h)) {
 			a = width * depth;
@@ -201,14 +199,14 @@ public class Box extends Dimension {
 	 * @return if this object fits within the input dimensions
 	 */
 
-	public boolean fitRotate2D(Dimension dimension) {
+	boolean fitRotate2D(Dimension dimension) {
 		if (dimension.getHeight() < height) {
 			return false;
 		}
 		return fitRotate2D(dimension.getWidth(), dimension.getDepth());
 	}
 
-	public int currentSurfaceArea() {
+	int currentSurfaceArea() {
 		return width * depth;
 	}
 

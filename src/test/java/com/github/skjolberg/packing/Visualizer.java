@@ -1,5 +1,6 @@
 package com.github.skjolberg.packing;
 
+import com.github.skjolberg.packing.impl.Level;
 import com.github.skjolberg.packing.impl.Placement;
 import com.github.skjolberg.packing.impl.Space;
 import com.indvd00m.ascii.render.Render;

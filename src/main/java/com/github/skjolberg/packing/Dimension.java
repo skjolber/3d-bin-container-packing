@@ -25,7 +25,7 @@ public class Dimension {
 	protected int width; // x
 	protected int depth; // y
 	protected int height; // z
-	protected long volume;
+	long volume;
 
 	protected final String name;
 
@@ -71,7 +71,6 @@ public class Dimension {
 	 * @return true if any rotation of the argument can be placed inside this
 	 *
 	 */
-
 	public boolean canHold3D(Dimension dimension) {
 		return canHold3D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}
@@ -94,7 +93,6 @@ public class Dimension {
 	 * @return true if any rotation of the argument can be placed inside this
 	 *
 	 */
-
 	public boolean canHold2D(Dimension dimension) {
 		return canHold2D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}

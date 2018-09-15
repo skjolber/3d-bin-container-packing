@@ -1,5 +1,7 @@
 package com.github.skjolberg.packing;
 
+import com.github.skjolberg.packing.impl.Level;
+
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
