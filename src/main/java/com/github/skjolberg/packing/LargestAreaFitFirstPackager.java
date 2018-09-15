@@ -13,7 +13,6 @@ import java.util.List;
  * <br><br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
-
 public class LargestAreaFitFirstPackager extends Packager {
 
 	private static class LAFFResult implements PackResult {
