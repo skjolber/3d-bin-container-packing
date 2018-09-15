@@ -152,7 +152,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * @param currentBox item to remove
 	 */
 
-	protected void removeIdentical(List<Box> containerProducts, Box currentBox) {
+	private void removeIdentical(List<Box> containerProducts, Box currentBox) {
 		for(int i = 0; i < containerProducts.size(); i++) {
 			if(containerProducts.get(i) == currentBox) {
 				containerProducts.remove(i);
@@ -163,7 +163,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 		throw new IllegalArgumentException();
 	}
 
-	protected boolean fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace, long deadline) {
+	private boolean fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace, long deadline) {
 
 		if(rotate3D) {
 			// minimize footprint
@@ -228,7 +228,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 		// TODO use free spaces between box and level, if any
 	}
 
-	protected Space[] getFreespaces(Space freespace, Box used) {
+	private Space[] getFreespaces(Space freespace, Box used) {
 
 		// Two free spaces, on each rotation of the used space.
 		// Height is always the same, used box is assumed within free space height.
@@ -332,7 +332,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 		return freeSpaces;
 	}
 
-	protected Box bestVolume(List<Box> containerProducts, Space space, int freeWeight) {
+	private Box bestVolume(List<Box> containerProducts, Space space, int freeWeight) {
 
 		Box bestBox = null;
 		for(Box box : containerProducts) {
@@ -373,7 +373,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 		return bestBox;
 	}
 
-	protected Placement bestVolumePlacement(List<Box> containerProducts, Space[] spaces, int freeWeight) {
+	private Placement bestVolumePlacement(List<Box> containerProducts, Space[] spaces, int freeWeight) {
 
 		Box bestBox = null;
 		Space bestSpace = null;
