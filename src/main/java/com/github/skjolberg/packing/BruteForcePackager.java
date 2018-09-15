@@ -254,21 +254,21 @@ public class BruteForcePackager extends Packager {
 		return false;
 	}
 
-	private static boolean b(Space freespace, Box used, Placement target) {
-		if(target.getBox().fitsInside3D(freespace.getWidth() - used.getWidth(), freespace.getDepth(), freespace.getHeight())) {
+	private static boolean b(Space freeSpace, Box used, Placement target) {
+		if(target.getBox().fitsInside3D(freeSpace.getWidth() - used.getWidth(), freeSpace.getDepth(), freeSpace.getHeight())) {
 			// we have a winner
 			target.getSpace().copyFrom(
-					freespace.getWidth() - used.getWidth(), freespace.getDepth(), freespace.getHeight(),
-					freespace.x + used.getWidth(), freespace.y, freespace.z
+					freeSpace.getWidth() - used.getWidth(), freeSpace.getDepth(), freeSpace.getHeight(),
+					freeSpace.x + used.getWidth(), freeSpace.y, freeSpace.z
 					);
 
 			target.getSpace().getRemainder().copyFrom(
-					used.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
-				freespace.x, freespace.y + used.getDepth(), freespace.z
+					used.getWidth(), freeSpace.getDepth() - used.getDepth(), freeSpace.getHeight(),
+				freeSpace.x, freeSpace.y + used.getDepth(), freeSpace.z
 					);
 
-			target.getSpace().setParent(freespace);
-			target.getSpace().getRemainder().setParent(freespace);
+			target.getSpace().setParent(freeSpace);
+			target.getSpace().getRemainder().setParent(freeSpace);
 			return true;
 		}
 		return false;

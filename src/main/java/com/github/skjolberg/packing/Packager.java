@@ -16,7 +16,7 @@ import java.util.List;
 
 public abstract class Packager {
 
-	protected final Container[] containers;
+	private final Container[] containers;
 
 	final boolean rotate3D; // if false, then 2d
 	private final boolean binarySearch;

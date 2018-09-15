@@ -2,11 +2,11 @@ package com.github.skjolberg.packing.impl;
 
 public class BinarySearchIterator {
 
-	protected int low;
-	protected int high;
-	protected int mid;
+	private int low;
+	private int high;
+	private int mid;
 
-	public BinarySearchIterator(int low, int high) {
+	BinarySearchIterator(int low, int high) {
 		super();
 		this.low = low;
 		this.high = high;

@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class LargestAreaFitFirstPackager extends Packager {
 
-	protected final boolean footprintFirst;
+	private final boolean footprintFirst;
 
 	/**
 	 * Constructor
@@ -151,7 +151,6 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * @param containerProducts list of products
 	 * @param currentBox item to remove
 	 */
-
 	private void removeIdentical(List<Box> containerProducts, Box currentBox) {
 		for(int i = 0; i < containerProducts.size(); i++) {
 			if(containerProducts.get(i) == currentBox) {

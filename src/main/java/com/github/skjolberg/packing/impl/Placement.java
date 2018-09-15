@@ -48,7 +48,7 @@ public class Placement {
 		return space.y + (box.getDepth() / 2);
 	}
 
-	public boolean intersects(Placement placement) {
+	boolean intersects(Placement placement) {
 		return intersectsX(placement) && intersectsY(placement);
 	}
 

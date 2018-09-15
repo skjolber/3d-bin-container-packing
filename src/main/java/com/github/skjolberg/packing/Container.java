@@ -116,6 +116,7 @@ public class Container extends Box {
 		return levels.get(level).get(placement);
 	}
 
+	// keep method for tests
 	public void validateCurrentLevel() {
 		levels.get(levels.size() - 1).validate();
 	}
