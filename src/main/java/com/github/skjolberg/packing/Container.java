@@ -1,5 +1,8 @@
 package com.github.skjolberg.packing;
 
+import com.github.skjolberg.packing.impl.Placement;
+import com.github.skjolberg.packing.impl.Space;
+
 import java.util.ArrayList;
 import java.util.List;
 import static java.lang.Math.max;
@@ -194,8 +197,8 @@ public class Container extends Box {
 		final Box box = placement.getBox();
 		final Space space = placement.getSpace();
 		return new Dimension(
-				space.getX() + box.getWidth(),
-				space.getY() + box.getDepth(),
+				space.x + box.getWidth(),
+				space.y + box.getDepth(),
 				height + box.getHeight());
 	}
 

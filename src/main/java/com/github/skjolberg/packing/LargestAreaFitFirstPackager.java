@@ -1,5 +1,10 @@
 package com.github.skjolberg.packing;
 
+import com.github.skjolberg.packing.impl.Adapter;
+import com.github.skjolberg.packing.impl.PackResult;
+import com.github.skjolberg.packing.impl.Placement;
+import com.github.skjolberg.packing.impl.Space;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -318,12 +323,12 @@ public class LargestAreaFitFirstPackager extends Packager {
 			if(freespace.getWidth() > used.getWidth()) {
 				Space right = new Space(
 						freespace.getWidth() - used.getWidth(), freespace.getDepth(), freespace.getHeight(),
-						freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
+						freespace.x + used.getWidth(), freespace.y, freespace.z
 						);
 
 				Space rightRemainder = new Space(
 						used.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
-						freespace.getX(), freespace.getY()+ used.getDepth(), freespace.getZ()
+					freespace.x, freespace.y + used.getDepth(), freespace.z
 						);
 				right.setRemainder(rightRemainder);
 				rightRemainder.setRemainder(right);
@@ -334,11 +339,11 @@ public class LargestAreaFitFirstPackager extends Packager {
 			if(freespace.getDepth() > used.getDepth()) {
 				Space top = new Space(
 							freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
-							freespace.getX(), freespace.getY() + used.depth, freespace.getHeight()
+					freespace.x, freespace.y + used.depth, freespace.getHeight()
 						);
 				Space topRemainder = new Space(
 							freespace.getWidth() - used.getWidth(), used.getDepth(), freespace.getHeight(),
-							freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
+							freespace.x + used.getWidth(), freespace.y, freespace.z
 						);
 				top.setRemainder(topRemainder);
 				topRemainder.setRemainder(top);
@@ -353,11 +358,11 @@ public class LargestAreaFitFirstPackager extends Packager {
 			if(freespace.getWidth() > used.getDepth()) {
 				Space right = new Space(
 						freespace.getWidth() - used.getDepth(), freespace.getDepth(), freespace.getHeight(),
-						freespace.getX() + used.getDepth(), freespace.getY(), freespace.getHeight()
+						freespace.x + used.getDepth(), freespace.y, freespace.getHeight()
 						);
 				Space rightRemainder = new Space(
 						used.getDepth(), freespace.getDepth() - used.getWidth(), freespace.getHeight(),
-						freespace.getX(), freespace.getY() + used.getWidth(), freespace.getZ()
+					freespace.x, freespace.y + used.getWidth(), freespace.z
 						);
 				right.setRemainder(rightRemainder);
 				rightRemainder.setRemainder(right);
@@ -368,11 +373,11 @@ public class LargestAreaFitFirstPackager extends Packager {
 			if(freespace.getDepth() > used.getWidth()) {
 				Space top = new Space(
 						freespace.getWidth(), freespace.getDepth() - used.getWidth(), freespace.getHeight(),
-						freespace.getX(), freespace.getY() + used.getWidth(), freespace.getHeight()
+					freespace.x, freespace.y + used.getWidth(), freespace.getHeight()
 						);
 				Space topRemainder = new Space(
 						freespace.getWidth() - used.getDepth(), used.getWidth(), freespace.getHeight(),
-						freespace.getX() + used.getDepth(), freespace.getY(), freespace.getZ()
+						freespace.x + used.getDepth(), freespace.y, freespace.z
 						);
 				top.setRemainder(topRemainder);
 				topRemainder.setRemainder(top);

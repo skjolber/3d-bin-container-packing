@@ -212,7 +212,7 @@ public class Box extends Dimension {
 		return width * depth;
 	}
 
-	protected Box clone() {
+	public Box clone() {
 		return new Box(name, width, depth, height, weight);
 	}
 

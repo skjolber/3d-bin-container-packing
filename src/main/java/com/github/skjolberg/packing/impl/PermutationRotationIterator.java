@@ -1,4 +1,6 @@
-package com.github.skjolberg.packing;
+package com.github.skjolberg.packing.impl;
+
+import com.github.skjolberg.packing.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +36,7 @@ import java.util.List;
 
 public class PermutationRotationIterator {
 
-	static PermutationRotation[] toRotationMatrix(List<BoxItem> list, boolean rotate3D) {
+	public static PermutationRotation[] toRotationMatrix(List<BoxItem> list, boolean rotate3D) {
 		PermutationRotation[] boxes = new PermutationRotation[list.size()];
 		for(int i = 0; i < list.size(); i++) {
 			Box box = list.get(i).getBox();
@@ -138,7 +140,7 @@ public class PermutationRotationIterator {
 		System.arraycopy(reset, 0, rotations, 0, rotations.length);
 	}
 
-	void removePermutations(int count) {
+	public void removePermutations(int count) {
 		// discard a number of items
 		int newLength = permutations.length - count;
 
@@ -152,7 +154,7 @@ public class PermutationRotationIterator {
 		Arrays.sort(permutations); // ascending order to make the permutation logic work
 	}
 
-	void removePermutations(List<Integer> removed) {
+	public void removePermutations(List<Integer> removed) {
 
 		int[] permutations = new int[this.permutations.length - removed.size()];
 
@@ -179,7 +181,7 @@ public class PermutationRotationIterator {
 		Arrays.sort(permutations); // ascending order to make the permutation logic work
 	}
 
-	boolean nextRotation() {
+	public boolean nextRotation() {
 		// next rotation
 		for(int i = 0; i < rotations.length; i++) {
 			while(rotations[i] < matrix[permutations[i]].getBoxes().length - 1) {
@@ -273,7 +275,7 @@ public class PermutationRotationIterator {
 		return matrix[permutations[index]].getBoxes()[rotations[index]];
 	}
 
-	boolean nextPermutation() {
+	public boolean nextPermutation() {
 		resetRotations();
 
 	    // Find longest non-increasing suffix
@@ -315,15 +317,15 @@ public class PermutationRotationIterator {
 	    return true;
 	}
 
-	int length() {
+	public int length() {
 		return permutations.length;
 	}
 
-	PermutationRotationState getState() {
+	public PermutationRotationState getState() {
 		return new PermutationRotationState(rotations, permutations);
 	}
 
-	void setState(PermutationRotationState state) {
+	public void setState(PermutationRotationState state) {
 		this.rotations = state.getRotations();
 		this.permutations = state.getPermutations();
 	}

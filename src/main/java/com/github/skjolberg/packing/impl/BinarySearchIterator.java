@@ -1,4 +1,4 @@
-package com.github.skjolberg.packing;
+package com.github.skjolberg.packing.impl;
 
 public class BinarySearchIterator {
 

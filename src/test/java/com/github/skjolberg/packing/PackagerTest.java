@@ -15,8 +15,8 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.github.skjolberg.packing.Packager.Adapter;
-import com.github.skjolberg.packing.Packager.PackResult;
+import com.github.skjolberg.packing.impl.Adapter;
+import com.github.skjolberg.packing.impl.PackResult;
 
 public class PackagerTest {
 
@@ -68,7 +68,7 @@ public class PackagerTest {
 
 		products.add(new BoxItem(new Box("1", 5, 5, 1, 0), 1));
 
-		Adapter mock = mock(Packager.Adapter.class);
+		Adapter mock = mock(Adapter.class);
 
 		// in the middle first
 		when(mock.attempt(3, deadline))
@@ -119,7 +119,7 @@ public class PackagerTest {
 
 		products.add(new BoxItem(new Box("1", 5, 5, 1, 0), 1));
 
-		Adapter mock = mock(Packager.Adapter.class);
+		Adapter mock = mock(Adapter.class);
 		when(mock.accepted(completeResult))
 			.thenReturn(new Container("final", 5, 5, 1, 0));
 
@@ -171,7 +171,7 @@ public class PackagerTest {
 
 		products.add(new BoxItem(new Box("1", 5, 5, 1, 0), 1));
 
-		Adapter mock = mock(Packager.Adapter.class);
+		Adapter mock = mock(Adapter.class);
 		when(mock.hasMore(any(PackResult.class))).thenReturn(false);
 
 		long deadline = System.currentTimeMillis() + 100000;
@@ -229,7 +229,7 @@ public class PackagerTest {
 
 		products.add(new BoxItem(new Box("1", 5, 5, 1, 0), 1));
 
-		Adapter mock = mock(Packager.Adapter.class);
+		Adapter mock = mock(Adapter.class);
 
 		// in the middle first
 		when(mock.attempt(3, deadline))
@@ -291,7 +291,7 @@ public class PackagerTest {
 		products.add(new BoxItem(new Box("2", 5, 5, 1, 0), 1));
 		products.add(new BoxItem(new Box("3", 5, 5, 1, 0), 1));
 
-		Adapter mock = mock(Packager.Adapter.class);
+		Adapter mock = mock(Adapter.class);
 
 		when(mock.attempt(0, deadline))
 			.thenReturn(completeResult);

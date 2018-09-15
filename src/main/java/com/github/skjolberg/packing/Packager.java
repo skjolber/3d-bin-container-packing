@@ -1,5 +1,7 @@
 package com.github.skjolberg.packing;
 
+import com.github.skjolberg.packing.impl.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,32 +16,9 @@ import java.util.List;
 
 public abstract class Packager {
 
-	/**
-	 * Logical packager for wrapping preprocessing / optimizations.
-	 *
-	 */
-
-	public interface Adapter {
-		void initialize(List<BoxItem> boxes, List<Container> container);
-		Container accepted(PackResult result);
-		PackResult attempt(int containerIndex, long deadline);
-		boolean hasMore(PackResult result);
-	}
-
-	public interface PackResult {
-		/**
-		 * Compare two results
-		 *
-		 * @param result to compare against
-		 * @return true if this box is better than the argument
-		 */
-		boolean packsMoreBoxesThan(PackResult result);
-		boolean isEmpty();
-	}
-
 	protected final Container[] containers;
 
-	protected final boolean rotate3D; // if false, then 2d
+	final boolean rotate3D; // if false, then 2d
 	private final boolean binarySearch;
 
 	/**
@@ -90,7 +69,6 @@ public abstract class Packager {
 	 * @param boxes list of boxes to fit in a container
 	 * @return null if no match
 	 */
-
 	public Container pack(List<BoxItem> boxes) {
 		return pack(boxes, Long.MAX_VALUE);
 	}
@@ -103,7 +81,6 @@ public abstract class Packager {
 	 * @param count maximum number of possible containers
 	 * @return list of containers
 	 */
-
 	private List<Container> filterByVolumeAndWeight(List<Box> boxes, List<Container> containers, int count) {
 		long volume = 0;
 		long minVolume = Long.MAX_VALUE;

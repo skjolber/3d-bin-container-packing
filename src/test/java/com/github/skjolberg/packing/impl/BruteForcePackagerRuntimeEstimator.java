@@ -1,4 +1,8 @@
-package com.github.skjolberg.packing;
+package com.github.skjolberg.packing.impl;
+
+import com.github.skjolberg.packing.*;
+import com.github.skjolberg.packing.impl.PermutationRotation;
+import com.github.skjolberg.packing.impl.PermutationRotationIterator;
 
 import java.util.ArrayList;
 import java.util.List;

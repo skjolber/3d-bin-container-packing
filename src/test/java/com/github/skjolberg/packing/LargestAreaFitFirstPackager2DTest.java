@@ -157,17 +157,17 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 		assertNotNull(fits);
 		assertEquals(fits.getLevels().size(), 1);
 
-		assertThat(fits.get(0, 0).getSpace().getX(), is(0));
-		assertThat(fits.get(0, 0).getSpace().getY(), is(0));
+		assertThat(fits.get(0, 0).getSpace().x, is(0));
+		assertThat(fits.get(0, 0).getSpace().y, is(0));
 
-		assertThat(fits.get(0, 1).getSpace().getX(), is(0));
-		assertThat(fits.get(0, 1).getSpace().getY(), is(1));
+		assertThat(fits.get(0, 1).getSpace().x, is(0));
+		assertThat(fits.get(0, 1).getSpace().y, is(1));
 
-		assertThat(fits.get(0, 3).getSpace().getX(), is(1));
-		assertThat(fits.get(0, 3).getSpace().getY(), is(1));
+		assertThat(fits.get(0, 3).getSpace().x, is(1));
+		assertThat(fits.get(0, 3).getSpace().y, is(1));
 
-		assertThat(fits.get(0, 2).getSpace().getX(), is(1));
-		assertThat(fits.get(0, 2).getSpace().getY(), is(0));
+		assertThat(fits.get(0, 2).getSpace().x, is(1));
+		assertThat(fits.get(0, 2).getSpace().y, is(0));
 
 		print(fits);
 		validate(fits);

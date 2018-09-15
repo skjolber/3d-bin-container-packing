@@ -1,5 +1,7 @@
 package com.github.skjolberg.packing;
 
+import com.github.skjolberg.packing.impl.Placement;
+
 import java.util.ArrayList;
 
 /**

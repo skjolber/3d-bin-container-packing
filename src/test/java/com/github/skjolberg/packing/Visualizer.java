@@ -1,5 +1,7 @@
 package com.github.skjolberg.packing;
 
+import com.github.skjolberg.packing.impl.Placement;
+import com.github.skjolberg.packing.impl.Space;
 import com.indvd00m.ascii.render.Render;
 import com.indvd00m.ascii.render.api.ICanvas;
 import com.indvd00m.ascii.render.api.IContextBuilder;
@@ -32,7 +34,7 @@ public class Visualizer {
 				Space space = placement.getSpace();
 				Box box = placement.getBox();
 
-				builder.element(new Rectangle((int)Math.round(space.getX() * factor * horizontalScaling), (int)Math.round(space.getY()  * factor), (int)(box.getWidth()  * factor * horizontalScaling), (int)(box.getDepth()  * factor)));
+				builder.element(new Rectangle((int)Math.round(space.x * factor * horizontalScaling), (int)Math.round(space.y * factor), (int)(box.getWidth()  * factor * horizontalScaling), (int)(box.getDepth()  * factor)));
 				if(box.getWidth() > 1 && box.getDepth() > 1) {
 					builder.element(new Dot((int)Math.round(placement.getCenterX() * factor * horizontalScaling), (int)Math.round(placement.getCenterY() * factor)));
 				}

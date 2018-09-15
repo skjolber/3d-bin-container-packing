@@ -1,7 +1,8 @@
-package com.github.skjolberg.packing;
+package com.github.skjolberg.packing.impl;
 
 import static org.junit.Assert.assertEquals;
 
+import com.github.skjolberg.packing.impl.Space;
 import org.junit.jupiter.api.Test;
 
 public class SpaceTest {

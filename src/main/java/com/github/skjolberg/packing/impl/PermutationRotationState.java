@@ -1,4 +1,4 @@
-package com.github.skjolberg.packing;
+package com.github.skjolberg.packing.impl;
 
 /**
  * Capture of rotation and permutation state.

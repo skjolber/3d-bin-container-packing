@@ -1,5 +1,7 @@
 package com.github.skjolberg.packing;
 
+import com.github.skjolberg.packing.impl.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -320,11 +322,11 @@ public class BruteForcePackager extends Packager {
 		if(target.getBox().fitsInside3D(freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight())) {
 			target.getSpace().copyFrom(
 					freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
-					freespace.getX(), freespace.getY() + used.depth, freespace.getHeight()
+				freespace.x, freespace.y + used.depth, freespace.getHeight()
 				);
 			target.getSpace().getRemainder().copyFrom(
 					freespace.getWidth() - used.getWidth(), used.getDepth(), freespace.getHeight(),
-					freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
+					freespace.x + used.getWidth(), freespace.y, freespace.z
 				);
 			target.getSpace().setParent(freespace);
 			target.getSpace().getRemainder().setParent(freespace);
@@ -339,12 +341,12 @@ public class BruteForcePackager extends Packager {
 			// we have a winner
 			target.getSpace().copyFrom(
 					freespace.getWidth() - used.getWidth(), freespace.getDepth(), freespace.getHeight(),
-					freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
+					freespace.x + used.getWidth(), freespace.y, freespace.z
 					);
 
 			target.getSpace().getRemainder().copyFrom(
 					used.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
-					freespace.getX(), freespace.getY()+ used.getDepth(), freespace.getZ()
+				freespace.x, freespace.y + used.getDepth(), freespace.z
 					);
 
 			target.getSpace().setParent(freespace);

@@ -1,13 +1,15 @@
-package com.github.skjolberg.packing;
+package com.github.skjolberg.packing.impl;
+
+import com.github.skjolberg.packing.Dimension;
 
 public class Space extends Dimension {
 
 	private Space parent;
 	private Space remainder;
 
-	int x; // width
-	int y; // depth
-	int z; // height
+	public int x; // width
+	public int y; // depth
+	public int z; // height
 
 	public Space() {
 		super();
@@ -26,34 +28,22 @@ public class Space extends Dimension {
 		this(null, null, w, d, h, x, y, z);
 	}
 
-	public int getX() {
-		return x;
-	}
-
-	public int getY() {
-		return y;
-	}
-
-	int getZ() {
-		return z;
-	}
-
-	void setParent(Space parent) {
+	public void setParent(Space parent) {
 		this.parent = parent;
 	}
 
-	void setRemainder(Space dual) {
+	public void setRemainder(Space dual) {
 		this.remainder = dual;
 	}
 
-	Space getRemainder() {
+	public Space getRemainder() {
 		return remainder;
 	}
 
 	@Override
 	public String toString() {
 		return "Space [name=" + name + ", " + x + "x" + y + "x" + z + ", width=" + width + ", depth=" + depth + ", height="
-				+ height + "]";
+			+ height + "]";
 	}
 
 	@Override
@@ -96,7 +86,7 @@ public class Space extends Dimension {
 		return true;
 	}
 
-	void copyFrom(Space space) {
+	public void copyFrom(Space space) {
 
 		this.parent = space.parent;
 		this.x = space.x;
@@ -108,7 +98,7 @@ public class Space extends Dimension {
 		this.height = space.height;
 	}
 
-	void copyFrom(int w, int d, int h, int x, int y, int z) {
+	public void copyFrom(int w, int d, int h, int x, int y, int z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;

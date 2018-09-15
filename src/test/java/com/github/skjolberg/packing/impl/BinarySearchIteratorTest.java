@@ -1,8 +1,9 @@
-package com.github.skjolberg.packing;
+package com.github.skjolberg.packing.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.github.skjolberg.packing.impl.BinarySearchIterator;
 import org.junit.jupiter.api.Test;
 
 public class BinarySearchIteratorTest {
