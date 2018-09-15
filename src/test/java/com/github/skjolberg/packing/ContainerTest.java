@@ -6,20 +6,20 @@ import com.github.skjolberg.packing.impl.Placement;
 import com.github.skjolberg.packing.impl.Space;
 import org.junit.jupiter.api.Test;
 
-public class ContainerTest {
+class ContainerTest {
 
 	@Test
-	public void testEquals() {
+	void testEquals() {
 		assertEquals(new Container(1, 1, 1, 0), new Container(new Dimension(1, 1, 1), 1));
 	}
 
     @Test
-    public void testGetUsedSpaceWhenEmpty() {
+		void testGetUsedSpaceWhenEmpty() {
         assertEquals(new Dimension(0, 0, 0), new Container(0, 0, 0, 0).getUsedSpace());
     }
 
     @Test
-    public void testGetUsedSpaceWhenOneBox() {
+		void testGetUsedSpaceWhenOneBox() {
         final Container container = new Container(10, 10, 10, 0);
         container.addLevel();
         container.add(new Placement(new Space(), new Box(2, 3, 4, 0)));
@@ -27,7 +27,7 @@ public class ContainerTest {
     }
 
     @Test
-    public void testGetUsedSpaceWhenTwoBoxesSameLevel() {
+		void testGetUsedSpaceWhenTwoBoxesSameLevel() {
         final Container container = new Container(10, 10, 10, 0);
         container.addLevel();
         container.add(new Placement(new Space(10, 10, 10, 0, 0, 0), new Box(2, 3, 7, 0)));
@@ -36,7 +36,7 @@ public class ContainerTest {
     }
 
     @Test
-    public void testGetUsedSpaceWhenTwoBoxesTwoLevels() {
+		void testGetUsedSpaceWhenTwoBoxesTwoLevels() {
         final Container container = new Container(10, 10, 10, 0);
         container.addLevel();
         container.add(new Placement(new Space(10, 10, 4, 0, 0, 0), new Box(2, 3, 4, 0)));

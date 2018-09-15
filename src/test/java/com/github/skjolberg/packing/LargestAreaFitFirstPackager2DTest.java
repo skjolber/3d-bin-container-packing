@@ -13,10 +13,10 @@ import java.util.List;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
+class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
 	@Test
-	public void testStackingSquaresOnSquare() {
+	void testStackingSquaresOnSquare() {
 
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 0));
@@ -39,7 +39,7 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
 
 	@Test
-	public void testStackingSquaresOnSquareNo3DRotate() {
+	void testStackingSquaresOnSquareNo3DRotate() {
 
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 0));
@@ -58,7 +58,7 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
 
 	@Test
-	public void testStackingRectanglesOnSquare() {
+	void testStackingRectanglesOnSquare() {
 
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 0));
@@ -78,7 +78,7 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingRectanglesOnSquareRotate2D() {
+	void testStackingRectanglesOnSquareRotate2D() {
 
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 0));
@@ -98,7 +98,7 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingRectanglesOnSquareRectangle() {
+	void testStackingRectanglesOnSquareRectangle() {
 
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 0));
@@ -119,7 +119,7 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingRectanglesOnSquareRectangleVolumeFirst() {
+	void testStackingRectanglesOnSquareRectangleVolumeFirst() {
 
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 3, 0));
@@ -142,7 +142,7 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingBinary1() {
+	void testStackingBinary1() {
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(2, 2, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
@@ -174,7 +174,7 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingBinary2() {
+	void testStackingBinary2() {
 
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(8, 8, 1, 0));
@@ -202,7 +202,7 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
 
 	@Test
-	public void testStackingTooHigh() {
+	void testStackingTooHigh() {
 
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 5, 0));
@@ -217,7 +217,7 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingTooHighLevel() {
+	void testStackingTooHighLevel() {
 
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 5, 0));
@@ -236,7 +236,7 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testIssue4() {
+	void testIssue4() {
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(Arrays.asList(new Container("Plane", 1335, 285, 247, 0)), false, true, true);
 		List<BoxItem> products = new ArrayList<>();
 		products.add(new BoxItem(new Box("72407",20,30,15, 0), 1));
@@ -351,7 +351,7 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testIssue5() {
+	void testIssue5() {
         java.util.List<Container> containers = new ArrayList<>();
         containers.add(new Container("Plane", 1355, 285, 247, 0));
         LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, false, true);
@@ -390,7 +390,7 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void noFitFullHeightRotation2D () {
+	void noFitFullHeightRotation2D() {
 	   List<Container> containers = new ArrayList<>();
 	   containers.add(new Container(100, 10, 20, 0));
 	   LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true, true);
@@ -409,7 +409,7 @@ public class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
 	@Test
 	@Disabled
-	public void testRunsForLimitedTimeSeconds() {
+	void testRunsForLimitedTimeSeconds() {
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(500, 500, 500, 0));
 		runsLimitedTimeSeconds(new LargestAreaFitFirstPackager(containers, true, true, true), 20);

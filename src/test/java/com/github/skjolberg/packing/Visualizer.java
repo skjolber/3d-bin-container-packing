@@ -15,7 +15,7 @@ import com.indvd00m.ascii.render.elements.Rectangle;
  * 
  */
 
-public class Visualizer {
+class Visualizer {
 
 	public static String visualize(Container container, int size, double horizontalScaling) {
 		StringBuilder b = new StringBuilder();

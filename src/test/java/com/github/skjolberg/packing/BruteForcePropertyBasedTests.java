@@ -71,7 +71,7 @@ class BruteForcePropertyBasedTests {
 	/**
 	 * The 6 different possible rotations of a container.
 	 */
-	public static Stream<Container> rotations(final Container container) {
+	static Stream<Container> rotations(final Container container) {
 		final int width = container.getWidth();
 		final int height = container.getHeight();
 		final int depth = container.getDepth();

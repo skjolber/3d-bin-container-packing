@@ -8,22 +8,22 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractPackagerTest {
+abstract class AbstractPackagerTest {
 
 
-	public static void validate(Container pack) {
+	static void validate(Container pack) {
 		for(Level level : pack.getLevels()) {
 			level.validate();
 		}
 	}
 
-	public static void print(Container fits) {
+	static void print(Container fits) {
 		System.out.println();
 		System.out.println(Visualizer.visualize(fits, 90, 2));
 		System.out.println();
 	}
 
-	public void runsLimitedTimeSeconds(Packager bruteForcePackager, long duration) {
+	void runsLimitedTimeSeconds(Packager bruteForcePackager, long duration) {
 		List<Box> containers = new ArrayList<>();
 		containers.add(new Box(5000, 1000, 1000, 0));
 

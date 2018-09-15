@@ -6,10 +6,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
-public class BoxTest {
+class BoxTest {
 
 	@Test
-	public void testCanHold() {
+	void testCanHold() {
 		
 		Box box = new Box(350, 150, 400, 0);
 		Assert.assertTrue(box.canHold3D(350, 50, 400));
@@ -22,7 +22,7 @@ public class BoxTest {
 	}
 	
 	@Test
-	public void testfitInFootprintRotate() {
+	void testFitInFootprintRotate() {
 		
 		Box box = new Box(1, 6, 3, 0);
 		
@@ -39,7 +39,7 @@ public class BoxTest {
 	}
 	
 	@Test
-	public void testSmallestFootprintMinimum() {
+	void testSmallestFootprintMinimum() {
 		
 		Box box = new Box(1, 1, 10, 0);
 		
@@ -61,7 +61,7 @@ public class BoxTest {
 	}
 
 	@Test
-	public void testSmallestFootprintMinimum2() {
+	void testSmallestFootprintMinimum2() {
 		
 		Box box = new Box(1, 1, 10, 0);
 		

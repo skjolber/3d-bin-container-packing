@@ -13,7 +13,7 @@ public class BruteForcePackagerRuntimeEstimator {
 		private long rotations;
 		private long permutations;
 		private long duration;
-		public Measurement(long rotations, long permutations, long duration) {
+		Measurement(long rotations, long permutations, long duration) {
 			super();
 			this.rotations = rotations;
 			this.permutations = permutations;
@@ -28,7 +28,7 @@ public class BruteForcePackagerRuntimeEstimator {
 
 	private static class BruteForcePackagerEstimator extends BruteForcePackager {
 
-		public BruteForcePackagerEstimator(List<Container> containers, boolean rotate3d, boolean binarySearch) {
+		BruteForcePackagerEstimator(List<Container> containers, boolean rotate3d, boolean binarySearch) {
 			super(containers, rotate3d, binarySearch);
 		}
 

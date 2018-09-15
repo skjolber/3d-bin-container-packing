@@ -4,10 +4,10 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-public class DimensionTest {
+class DimensionTest {
 
 	@Test
-	public void testEncodeDecode() {
+	void testEncodeDecode() {
 		
 		Dimension d = new Dimension(1, 2, 3);
 		
@@ -21,7 +21,7 @@ public class DimensionTest {
 	}
 
 	@Test
-	public void testEquals() {
+	void testEquals() {
 		assertEquals(new Dimension(1, 1, 1), new Dimension(1,  1,  1));
 	}
 }

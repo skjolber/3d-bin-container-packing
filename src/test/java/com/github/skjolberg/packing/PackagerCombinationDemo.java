@@ -9,10 +9,9 @@ import java.util.Map;
  * Illustrates how the LAFF packager and brute force packager can be used together.
  *
  */
-
 public class PackagerCombinationDemo {
 
-	public static final void main(String[] args) {
+	public static void main(String[] args) {
 		List<Container> containers = new ArrayList<>();
 		for(int i = 0; i < 10; i++) {
 			containers.add(new Container(Integer.toString(i), 5*(i+1), 10, 10, 0));

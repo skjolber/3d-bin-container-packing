@@ -18,16 +18,16 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolberg.packing.impl.Adapter;
 import com.github.skjolberg.packing.impl.PackResult;
 
-public class PackagerTest {
+class PackagerTest {
 
 	private PackResult incompleteResult;
 	private PackResult completeResult;
 
-	public static class MyPackager extends Packager {
+	static class MyPackager extends Packager {
 
 		private final Adapter adapter;
 
-		public MyPackager(List<Container> containers, Adapter adapter) {
+		MyPackager(List<Container> containers, Adapter adapter) {
 			super(containers);
 
 			this.adapter = adapter;
@@ -40,7 +40,7 @@ public class PackagerTest {
 	}
 
 	@BeforeEach
-	public void init() {
+	void init() {
 		incompleteResult = mock(PackResult.class);
 		when(incompleteResult.isEmpty()).thenReturn(false);
 
@@ -49,7 +49,7 @@ public class PackagerTest {
 	}
 
 	@Test
-	public void testBinarySearchChecksBoxesBelowPositive() {
+	void testBinarySearchChecksBoxesBelowPositive() {
 
 		long deadline = System.currentTimeMillis() + 100000;
 
@@ -101,7 +101,7 @@ public class PackagerTest {
 	}
 
 	@Test
-	public void testBinarySearchChecksBoxesBelowPositiveBetterMatch() {
+	void testBinarySearchChecksBoxesBelowPositiveBetterMatch() {
 
 		List<Container> containers = new ArrayList<>();
 
@@ -155,7 +155,7 @@ public class PackagerTest {
 	}
 
 	@Test
-	public void testBinarySearchChecksBoxesTheFirstBox() {
+	void testBinarySearchChecksBoxesTheFirstBox() {
 
 		List<Container> containers = new ArrayList<>();
 
@@ -211,7 +211,7 @@ public class PackagerTest {
 	}
 
 	@Test
-	public void testBinarySearchChecksBoxesTheLastBox() {
+	void testBinarySearchChecksBoxesTheLastBox() {
 
 		long deadline = System.currentTimeMillis() + 100000;
 
@@ -277,7 +277,7 @@ public class PackagerTest {
 
 
 	@Test
-	public void testLimitIsRespected() {
+	void testLimitIsRespected() {
 
 		long deadline = System.currentTimeMillis() + 100000;
 
