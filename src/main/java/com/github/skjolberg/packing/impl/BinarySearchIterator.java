@@ -1,12 +1,12 @@
-package com.github.skjolberg.packing;
+package com.github.skjolberg.packing.impl;
 
 public class BinarySearchIterator {
 
-	protected int low;
-	protected int high;
-	protected int mid;
-	
-	public BinarySearchIterator(int low, int high) {
+	private int low;
+	private int high;
+	private int mid;
+
+	BinarySearchIterator(int low, int high) {
 		super();
 		this.low = low;
 		this.high = high;
@@ -18,7 +18,7 @@ public class BinarySearchIterator {
 	public int next() {
 		return mid = low + (high - low) / 2;
 	}
-	
+
 	public void lower() {
 		high = mid - 1;
 	}
@@ -30,21 +30,10 @@ public class BinarySearchIterator {
 	public boolean hasNext() {
 		return low <= high;
 	}
-	
+
 	public void reset(int high, int low) {
 		this.high = high;
 		this.low = low;
 	}
-	
-	public int getHigh() {
-		return high;
-	}
-	
-	public int getLow() {
-		return low;
-	}
-	
-	public int getMid() {
-		return mid;
-	}
+
 }

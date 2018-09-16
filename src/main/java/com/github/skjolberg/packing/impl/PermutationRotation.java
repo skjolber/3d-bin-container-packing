@@ -1,6 +1,8 @@
-package com.github.skjolberg.packing;
+package com.github.skjolberg.packing.impl;
 
-final class PermutationRotation {
+import com.github.skjolberg.packing.Box;
+
+public final class PermutationRotation {
 
     private final int count;
     private final Box[] boxes;
@@ -14,7 +16,7 @@ final class PermutationRotation {
         return boxes;
     }
 
-    int getCount() {
+    public int getCount() {
         return count;
     }
 }

@@ -5,7 +5,6 @@ package com.github.skjolberg.packing;
  * can also represent multiple products which share the same size. 
  * 
  */
-
 public class BoxItem {
 
 	private final int count;

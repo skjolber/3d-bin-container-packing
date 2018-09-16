@@ -2,69 +2,62 @@ package com.github.skjolberg.packing;
 
 public class Space extends Dimension {
 
-	protected Space parent;
-	protected Space remainder;
+	private Space parent;
+	private Space remainder;
 
-	protected int x; // width
-	protected int y; // depth
-	protected int z; // height
-	
+	private int x; // width
+	private int y; // depth
+	private int z; // height
+
+	public int getX() {
+		return x;
+	}
+
+	public void setX(final int x) {
+		this.x = x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public void setY(final int y) {
+		this.y = y;
+	}
+
+	public int getZ() {
+		return z;
+	}
+
+	public void setZ(final int z) {
+		this.z = z;
+	}
+
 	public Space() {
 		super();
 	}
 
-	public Space(Space parent, int w, int d, int h, int x, int y, int z) {
-		this(parent, null, w, d, h, x, y, z);
-	}
-	
 	public Space(Space parent, String name, int w, int d, int h, int x, int y, int z) {
 		super(name, w, d, h);
-		
+
 		this.parent = parent;
 		this.x = x;
 		this.y = y;
 		this.z = z;
 	}
-	
+
 	public Space(int w, int d, int h, int x, int y, int z) {
 		this(null, null, w, d, h, x, y, z);
 	}
-	
-	public Space(String name, int w, int d, int h, int x, int y, int z) {
-		this(null, name, w, d, h, x, y, z);
-	}
-	
-	public int getX() {
-		return x;
-	}
-	public void setX(int x) {
-		this.x = x;
-	}
-	public int getY() {
-		return y;
-	}
-	public void setY(int y) {
-		this.y = y;
-	}
-	public int getZ() {
-		return z;
-	}
-	public void setZ(int z) {
-		this.z = z;
-	}
-	
-	public Space getParent() {
-		return parent;
-	}
-	
+
 	public void setParent(Space parent) {
 		this.parent = parent;
 	}
-	
+
 	public void setRemainder(Space dual) {
 		this.remainder = dual;
 	}
-	
+
 	public Space getRemainder() {
 		return remainder;
 	}
@@ -72,7 +65,7 @@ public class Space extends Dimension {
 	@Override
 	public String toString() {
 		return "Space [name=" + name + ", " + x + "x" + y + "x" + z + ", width=" + width + ", depth=" + depth + ", height="
-				+ height + "]";
+			+ height + "]";
 	}
 
 	@Override
@@ -121,25 +114,21 @@ public class Space extends Dimension {
 		this.x = space.x;
 		this.y = space.y;
 		this.z = space.z;
-		
+
 		this.width = space.width;
 		this.depth = space.depth;
 		this.height = space.height;
 	}
-	
+
 	public void copyFrom(int w, int d, int h, int x, int y, int z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		
+
 		this.width = w;
 		this.depth = d;
 		this.height = h;
 	}
 
-	public boolean isEmpty() {
-		return !nonEmpty();
-	}
-	
-	
+
 }

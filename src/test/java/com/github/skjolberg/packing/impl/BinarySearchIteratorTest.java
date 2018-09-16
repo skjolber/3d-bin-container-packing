@@ -1,14 +1,15 @@
-package com.github.skjolberg.packing;
+package com.github.skjolberg.packing.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.github.skjolberg.packing.impl.BinarySearchIterator;
 import org.junit.jupiter.api.Test;
 
-public class BinarySearchIteratorTest {
+class BinarySearchIteratorTest {
 
 	@Test
-	public void testHigher() {
+	void testHigher() {
 		
 		BinarySearchIterator iterator = new BinarySearchIterator(0, 15);
 		
@@ -30,7 +31,7 @@ public class BinarySearchIteratorTest {
 	
 
 	@Test
-	public void testLower() {
+	void testLower() {
 		
 		BinarySearchIterator iterator = new BinarySearchIterator(0, 15);
 		

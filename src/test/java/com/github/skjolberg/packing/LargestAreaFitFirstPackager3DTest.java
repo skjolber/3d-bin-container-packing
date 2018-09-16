@@ -12,16 +12,16 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
+class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 	@Test
-	public void testStackingSquaresOnSquare() {
+	void testStackingSquaresOnSquare() {
 
-		List<Container> containers = new ArrayList<Container>();
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("A", 5, 5, 1, 0), 1));
 		products.add(new BoxItem(new Box("B", 5, 5, 1, 0), 1));
@@ -34,13 +34,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingSquaresOnSquareMultiLevel() {
+	void testStackingSquaresOnSquareMultiLevel() {
 
-		List<Container> containers = new ArrayList<Container>();
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 2, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("A", 5, 5, 1, 0), 1));
 		products.add(new BoxItem(new Box("B", 5, 5, 1, 0), 1));
@@ -59,13 +59,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 
 	@Test
-	public void testStackingRectanglesOnSquare() {
+	void testStackingRectanglesOnSquare() {
 
-		List<Container> containers = new ArrayList<Container>();
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("E", 5, 10, 1, 0), 1));
 		products.add(new BoxItem(new Box("F", 5, 10, 1, 0), 1));
@@ -76,13 +76,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingRectanglesOnSquareRectangle() {
+	void testStackingRectanglesOnSquareRectangle() {
 
-		List<Container> containers = new ArrayList<Container>();
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("J", 5, 10, 1, 0), 1));
 		products.add(new BoxItem(new Box("K", 5, 5, 1, 0), 1));
@@ -94,13 +94,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingRectanglesOnSquareRectangleVolumeFirst() {
+	void testStackingRectanglesOnSquareRectangleVolumeFirst() {
 
-		List<Container> containers = new ArrayList<Container>();
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 3, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("J", 6, 10, 2, 0), 1));
 		products.add(new BoxItem(new Box("L", 4, 10, 1, 0), 1));
@@ -114,13 +114,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingBinary1() {
+	void testStackingBinary1() {
 
-		List<Container> containers = new ArrayList<Container>();
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(2, 2, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		for (int i = 0; i < 4; i++) {
 			products.add(new BoxItem(new Box("K", 1, 1, 1, 0), 1));
@@ -132,13 +132,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingBinary2() {
+	void testStackingBinary2() {
 
-		List<Container> containers = new ArrayList<Container>();
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(8, 8, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("J", 4, 4, 1, 0), 1));
 
@@ -155,13 +155,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingTooHigh() {
+	void testStackingTooHigh() {
 
-		List<Container> containers = new ArrayList<Container>();
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 5, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("J", 10, 10, 6, 0), 1));
 
@@ -170,13 +170,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingTooHighLevel() {
+	void testStackingTooHighLevel() {
 
-		List<Container> containers = new ArrayList<Container>();
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 5, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("J", 10, 10, 5, 0), 1));
 
@@ -190,12 +190,12 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 
 	@Test
-	public void testStacking3xLP() {
-		List<Container> containers = new ArrayList<Container>();
+	void testStacking3xLP() {
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(350, 150, 400, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products1 = new ArrayList<BoxItem>();
+		List<BoxItem> products1 = new ArrayList<>();
 
 		products1.add(new BoxItem(new Box("A", 400, 50, 350, 0), 1));
 		products1.add(new BoxItem(new Box("B", 400, 50, 350, 0), 1));
@@ -204,7 +204,7 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		Container fits1 = packager.pack(products1);
 		assertNotNull(fits1);
 
-		List<BoxItem> products2 = new ArrayList<BoxItem>();
+		List<BoxItem> products2 = new ArrayList<>();
 		products2.add(new BoxItem(new Box("A", 350, 50, 400, 0), 1));
 		products2.add(new BoxItem(new Box("B", 350, 50, 400, 0), 1));
 		products2.add(new BoxItem(new Box("C", 350, 50, 400, 0), 1));
@@ -215,12 +215,12 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testIsse2() {
-		List<Container> containers = new ArrayList<Container>();
+	void testIsse2() {
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(36, 55, 13, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products1 = new ArrayList<BoxItem>();
+		List<BoxItem> products1 = new ArrayList<>();
 
 		products1.add(new BoxItem(new Box("01", 38, 10, 10, 0), 1));
 		products1.add(new BoxItem(new Box("02", 38, 10, 10, 0), 1));
@@ -235,7 +235,7 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void about20Products() {
+	void about20Products() {
 		final Container container = new Container(1500, 1000, 3200, 12000);
 		List<Container> containers = BruteForcePropertyBasedTests.rotations(container).collect(Collectors.toList());
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
@@ -276,15 +276,15 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 	@Test
 	@Disabled
-	public void testRunsForLimitedTimeSeconds() {
-		List<Container> containers = new ArrayList<Container>();
+	void testRunsForLimitedTimeSeconds() {
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(50000, 50000, 50000, 0));
 		runsLimitedTimeSeconds(new LargestAreaFitFirstPackager(containers), 0);
 	}
 
 	@Test
 	@Disabled
-	public void testRunsPerformanceGraphLinearStacking() {
+	void testRunsPerformanceGraphLinearStacking() {
 		long duration = 60 * 10;
 
 		System.out.println("Run for " + duration + " seconds");
@@ -292,11 +292,11 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		long deadline = System.currentTimeMillis() + duration * 1000;
 		int n = 1;
 		while (deadline > System.currentTimeMillis()) {
-			List<Container> containers = new ArrayList<Container>();
+			List<Container> containers = new ArrayList<>();
 			containers.add(new Container(5 * n, 10, 10, 0));
 			Packager bruteForcePackager = new LargestAreaFitFirstPackager(containers);
 
-			List<BoxItem> products1 = new ArrayList<BoxItem>();
+			List<BoxItem> products1 = new ArrayList<>();
 
 			for (int i = 0; i < n; i++) {
 				Box box = new Box(Integer.toString(i), 5, 10, 10, 0);
@@ -319,29 +319,29 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingMultipleLayersFor3Column() {
+	void testStackingMultipleLayersFor3Column() {
 
-		List<Container> containers = new ArrayList<Container>();
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(30, 10, 6, 0)); // 1800
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		// 1
 		products.add(new BoxItem(new Box("A", 10, 10, 6, 0), 1)); // 600
-		// 2 
+		// 2
 		products.add(new BoxItem(new Box("D", 10, 10, 2, 0), 3)); // 200 200 200
 		Container fits = packager.pack(products);
 		assertNull(fits);
 	}
 
 	@Test
-	public void testStackingInTwoContainers1() {
-		List<Container> containers = new ArrayList<Container>();
+	void testStackingInTwoContainers1() {
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("A", 10, 5, 1, 0), 1));
 		products.add(new BoxItem(new Box("B", 10, 5, 1, 0), 1));
@@ -357,12 +357,12 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingInTwoContainers2() {
-		List<Container> containers = new ArrayList<Container>();
+	void testStackingInTwoContainers2() {
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("A", 10, 5, 1, 0), 2));
 		products.add(new BoxItem(new Box("B", 10, 5, 1, 0), 2));
@@ -376,13 +376,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingInSingleContainer() {
-		List<Container> containers = new ArrayList<Container>();
+	void testStackingInSingleContainer() {
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(5, 10, 1, 0));
 		containers.add(new Container(10, 10, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("A", 5, 5, 1, 0), 4));
 
@@ -398,12 +398,12 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingInTwoContainers3() {
-		List<Container> containers = new ArrayList<Container>();
+	void testStackingInTwoContainers3() {
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("A", 10, 5, 1, 0), 3));
 		products.add(new BoxItem(new Box("B", 10, 5, 1, 0), 3));
@@ -417,13 +417,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingInTwoContainersFitCorrectBox() {
-		List<Container> containers = new ArrayList<Container>();
+	void testStackingInTwoContainersFitCorrectBox() {
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 0));
 		containers.add(new Container(20, 20, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("A", 10, 10, 1, 0), 1));
 		products.add(new BoxItem(new Box("B", 20, 20, 1, 0), 1));
@@ -444,13 +444,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 
 	@Test
-	public void testStackingInMultipleContainersDoesNotConfuseInferiorContainer() {
-		List<Container> containers = new ArrayList<Container>();
+	void testStackingInMultipleContainersDoesNotConfuseInferiorContainer() {
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 0));
 		containers.add(new Container(20, 10, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("A", 10, 5, 1, 0), 2));
 		products.add(new BoxItem(new Box("B", 10, 5, 1, 0), 2));
@@ -462,13 +462,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingInMultipleContainersOneBigAndOneSmall() {
-		List<Container> containers = new ArrayList<Container>();
+	void testStackingInMultipleContainersOneBigAndOneSmall() {
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 0));
 		containers.add(new Container(20, 10, 1, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("A", 10, 5, 1, 0), 3));
 		products.add(new BoxItem(new Box("B", 10, 5, 1, 0), 3));
@@ -481,13 +481,13 @@ public class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	public void testStackingInMultipleContainersWeight() {
-		List<Container> containers = new ArrayList<Container>();
+	void testStackingInMultipleContainersWeight() {
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(10, 10, 1, 2));
 		containers.add(new Container(20, 10, 1, 1));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
-		List<BoxItem> products = new ArrayList<BoxItem>();
+		List<BoxItem> products = new ArrayList<>();
 
 		products.add(new BoxItem(new Box("A", 10, 5, 1, 1), 2));
 		products.add(new BoxItem(new Box("B", 10, 5, 1, 1), 2));
