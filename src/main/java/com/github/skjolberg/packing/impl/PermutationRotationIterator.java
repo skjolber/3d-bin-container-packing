@@ -105,9 +105,9 @@ public class PermutationRotationIterator {
 			List<Box> result = new ArrayList<>();
 
 			Box[] boxes = unconstrained[i].getBoxes();
-			for (final Box boxe : boxes) {
-				if (boxe != null && boxe.fitsInside3D(bound)) {
-					result.add(boxe);
+			for (final Box box : boxes) {
+				if (box != null && box.fitsInside3D(bound)) {
+					result.add(box);
 				}
 			}
 
