@@ -115,9 +115,9 @@ public class BruteForcePackager extends Packager {
 
 			placement.setBox(box);
 
-			levelSpace.x = 0;
-			levelSpace.y = 0;
-			levelSpace.z = holder.getStackHeight();
+			levelSpace.setX(0);
+			levelSpace.setY(0);
+			levelSpace.setZ(holder.getStackHeight());
 
 			levelSpace.setParent(null);
 			levelSpace.getRemainder().setParent(null);
@@ -240,11 +240,11 @@ public class BruteForcePackager extends Packager {
 		if(target.getBox().fitsInside3D(freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight())) {
 			target.getSpace().copyFrom(
 					freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
-				freespace.x, freespace.y + used.depth, freespace.getHeight()
+				freespace.getX(), freespace.getY() + used.depth, freespace.getHeight()
 				);
 			target.getSpace().getRemainder().copyFrom(
 					freespace.getWidth() - used.getWidth(), used.getDepth(), freespace.getHeight(),
-					freespace.x + used.getWidth(), freespace.y, freespace.z
+					freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
 				);
 			target.getSpace().setParent(freespace);
 			target.getSpace().getRemainder().setParent(freespace);
@@ -259,12 +259,12 @@ public class BruteForcePackager extends Packager {
 			// we have a winner
 			target.getSpace().copyFrom(
 					freeSpace.getWidth() - used.getWidth(), freeSpace.getDepth(), freeSpace.getHeight(),
-					freeSpace.x + used.getWidth(), freeSpace.y, freeSpace.z
+					freeSpace.getX() + used.getWidth(), freeSpace.getY(), freeSpace.getZ()
 					);
 
 			target.getSpace().getRemainder().copyFrom(
 					used.getWidth(), freeSpace.getDepth() - used.getDepth(), freeSpace.getHeight(),
-				freeSpace.x, freeSpace.y + used.getDepth(), freeSpace.z
+				freeSpace.getX(), freeSpace.getY() + used.getDepth(), freeSpace.getZ()
 					);
 
 			target.getSpace().setParent(freeSpace);

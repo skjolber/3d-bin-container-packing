@@ -5,9 +5,33 @@ public class Space extends Dimension {
 	private Space parent;
 	private Space remainder;
 
-	public int x; // width
-	public int y; // depth
-	public int z; // height
+	private int x; // width
+	private int y; // depth
+	private int z; // height
+
+	public int getX() {
+		return x;
+	}
+
+	public void setX(final int x) {
+		this.x = x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public void setY(final int y) {
+		this.y = y;
+	}
+
+	public int getZ() {
+		return z;
+	}
+
+	public void setZ(final int z) {
+		this.z = z;
+	}
 
 	public Space() {
 		super();

@@ -192,8 +192,8 @@ public class Container extends Box {
 		final Box box = placement.getBox();
 		final Space space = placement.getSpace();
 		return new Dimension(
-				space.x + box.getWidth(),
-				space.y + box.getDepth(),
+				space.getX() + box.getWidth(),
+				space.getY() + box.getDepth(),
 				height + box.getHeight());
 	}
 

@@ -34,16 +34,16 @@ public class Placement {
 
 	@Override
 	public String toString() {
-		return "Placement [" + space.x + "x" + space.y + "x" + space.z + ", width=" + box.getWidth() + ", depth=" + box.getDepth() + ", height="
+		return "Placement [" + space.getX() + "x" + space.getY() + "x" + space.getZ() + ", width=" + box.getWidth() + ", depth=" + box.getDepth() + ", height="
 				+ box.getHeight() + "]";
 	}
 
 	public int getCenterX() {
-		return space.x + (box.getWidth() / 2);
+		return space.getX() + (box.getWidth() / 2);
 	}
 
 	public int getCenterY() {
-		return space.y + (box.getDepth() / 2);
+		return space.getY() + (box.getDepth() / 2);
 	}
 
 	boolean intersects(Placement placement) {
@@ -52,29 +52,29 @@ public class Placement {
 
 	private boolean intersectsY(Placement placement) {
 
-		int startY = space.y;
+		int startY = space.getY();
 		int endY = startY + box.getDepth() - 1;
 
-		if (startY <= placement.getSpace().y && placement.getSpace().y <= endY) {
+		if (startY <= placement.getSpace().getY() && placement.getSpace().getY() <= endY) {
 			return true;
 		}
 
-		return startY <= placement.getSpace().y + placement.getBox().getDepth() - 1 &&
-				placement.getSpace().y + placement.getBox().getDepth() - 1 <= endY;
+		return startY <= placement.getSpace().getY() + placement.getBox().getDepth() - 1 &&
+				placement.getSpace().getY() + placement.getBox().getDepth() - 1 <= endY;
 
 	}
 
 	private boolean intersectsX(Placement placement) {
 
-		int startX = space.x;
+		int startX = space.getX();
 		int endX = startX + box.getWidth() - 1;
 
-		if (startX <= placement.getSpace().x && placement.getSpace().x <= endX) {
+		if (startX <= placement.getSpace().getX() && placement.getSpace().getX() <= endX) {
 			return true;
 		}
 
-		return startX <= placement.getSpace().x + placement.getBox().getWidth() - 1 &&
-				placement.getSpace().x + placement.getBox().getWidth() - 1 <= endX;
+		return startX <= placement.getSpace().getX() + placement.getBox().getWidth() - 1 &&
+				placement.getSpace().getX() + placement.getBox().getWidth() - 1 <= endX;
 
 	}
 }
