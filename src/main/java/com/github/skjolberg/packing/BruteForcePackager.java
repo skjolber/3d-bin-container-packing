@@ -157,7 +157,7 @@ public class BruteForcePackager extends Packager {
 		Placement nextPlacement = placements.get(index);
 		nextPlacement.setBox(nextBox);
 
-		if(!isFreespace(usedSpace.getSpace(), usedSpace.getBox(), nextPlacement)) {
+		if(!isFreeSpace(usedSpace.getSpace(), usedSpace.getBox(), nextPlacement)) {
 			// no additional boxes
 			// just make sure the used space fits in the free space
 			return index;
@@ -195,7 +195,7 @@ public class BruteForcePackager extends Packager {
 		return fit2D(rotator, index, placements, holder, nextPlacement, deadline);
 	}
 
-	private static boolean isFreespace(Space freespace, Box used, Placement target) {
+	private static boolean isFreeSpace(Space freeSpace, Box used, Placement target) {
 
 		// Two free spaces, on each rotation of the used space.
 		// Height is always the same, used box is assumed within free space height.
@@ -212,42 +212,42 @@ public class BruteForcePackager extends Packager {
 		// ........................                            .............
         //
 		// So there is always a 'big' and a 'small' leftover area (the small is not shown).
-		if(freespace.getWidth() >= used.getWidth() && freespace.getDepth() >= used.getDepth()) {
+		if(freeSpace.getWidth() >= used.getWidth() && freeSpace.getDepth() >= used.getDepth()) {
 
 			// if B is empty, then it is sufficient to work with A and the other way around
-			int b = (freespace.getWidth() - used.getWidth()) * freespace.getDepth();
-			int a = freespace.getWidth() * (freespace.getDepth() - used.getDepth());
+			int b = (freeSpace.getWidth() - used.getWidth()) * freeSpace.getDepth();
+			int a = freeSpace.getWidth() * (freeSpace.getDepth() - used.getDepth());
 
 			// pick the one with largest footprint.
 			if(b >= a) {
-				if(b > 0 && b(freespace, used, target)) {
+				if(b > 0 && b(freeSpace, used, target)) {
 					return true;
 				}
 
-				return a > 0 && a(freespace, used, target);
+				return a > 0 && a(freeSpace, used, target);
 			} else {
-				if(a > 0 && a(freespace, used, target)) {
+				if(a > 0 && a(freeSpace, used, target)) {
 					return true;
 				}
 
-				return b > 0 && b(freespace, used, target);
+				return b > 0 && b(freeSpace, used, target);
 			}
 		}
 		return false;
 	}
 
-	private static boolean a(Space freespace, Box used, Placement target) {
-		if(target.getBox().fitsInside3D(freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight())) {
+	private static boolean a(Space freeSpace, Box used, Placement target) {
+		if(target.getBox().fitsInside3D(freeSpace.getWidth(), freeSpace.getDepth() - used.getDepth(), freeSpace.getHeight())) {
 			target.getSpace().copyFrom(
-					freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
-				freespace.getX(), freespace.getY() + used.depth, freespace.getHeight()
+					freeSpace.getWidth(), freeSpace.getDepth() - used.getDepth(), freeSpace.getHeight(),
+				freeSpace.getX(), freeSpace.getY() + used.depth, freeSpace.getHeight()
 				);
 			target.getSpace().getRemainder().copyFrom(
-					freespace.getWidth() - used.getWidth(), used.getDepth(), freespace.getHeight(),
-					freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
+					freeSpace.getWidth() - used.getWidth(), used.getDepth(), freeSpace.getHeight(),
+					freeSpace.getX() + used.getWidth(), freeSpace.getY(), freeSpace.getZ()
 				);
-			target.getSpace().setParent(freespace);
-			target.getSpace().getRemainder().setParent(freespace);
+			target.getSpace().setParent(freeSpace);
+			target.getSpace().getRemainder().setParent(freeSpace);
 
 			return true;
 		}

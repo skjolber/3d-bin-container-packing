@@ -38,11 +38,11 @@ public class Placement {
 				+ box.getHeight() + "]";
 	}
 
-	public int getCenterX() {
+	int getCenterX() {
 		return space.getX() + (box.getWidth() / 2);
 	}
 
-	public int getCenterY() {
+	int getCenterY() {
 		return space.getY() + (box.getDepth() / 2);
 	}
 

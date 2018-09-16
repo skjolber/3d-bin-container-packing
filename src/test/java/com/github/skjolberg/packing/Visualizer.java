@@ -24,7 +24,7 @@ class Visualizer {
 			IContextBuilder builder = render.newBuilder();
 			
 			int w = (int)(size * horizontalScaling);
-			int d = (int)((size * container.getDepth()) / container.getWidth());
+			int d = ((size * container.getDepth()) / container.getWidth());
 			
 			builder.width(w).height(d);
 
