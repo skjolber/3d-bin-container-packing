@@ -1,6 +1,4 @@
-package com.github.skjolberg.packing.impl;
-
-import com.github.skjolberg.packing.Box;
+package com.github.skjolberg.packing;
 
 /**
  * Placement as in box in a space.

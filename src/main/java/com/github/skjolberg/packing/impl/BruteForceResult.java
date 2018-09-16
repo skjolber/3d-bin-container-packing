@@ -2,6 +2,7 @@ package com.github.skjolberg.packing.impl;
 
 import com.github.skjolberg.packing.BruteForcePackager;
 import com.github.skjolberg.packing.Container;
+import com.github.skjolberg.packing.Placement;
 
 import java.util.List;
 

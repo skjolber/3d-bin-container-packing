@@ -1,6 +1,4 @@
-package com.github.skjolberg.packing.impl;
-
-import com.github.skjolberg.packing.Dimension;
+package com.github.skjolberg.packing;
 
 public class Space extends Dimension {
 

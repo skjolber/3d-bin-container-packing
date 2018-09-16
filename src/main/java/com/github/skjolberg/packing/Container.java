@@ -1,9 +1,5 @@
 package com.github.skjolberg.packing;
 
-import com.github.skjolberg.packing.impl.Level;
-import com.github.skjolberg.packing.impl.Placement;
-import com.github.skjolberg.packing.impl.Space;
-
 import java.util.ArrayList;
 import java.util.List;
 import static java.lang.Math.max;

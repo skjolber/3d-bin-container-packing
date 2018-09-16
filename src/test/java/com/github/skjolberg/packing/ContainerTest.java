@@ -2,8 +2,6 @@ package com.github.skjolberg.packing;
 
 import static org.junit.Assert.assertEquals;
 
-import com.github.skjolberg.packing.impl.Placement;
-import com.github.skjolberg.packing.impl.Space;
 import org.junit.jupiter.api.Test;
 
 class ContainerTest {

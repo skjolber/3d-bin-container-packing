@@ -1,9 +1,9 @@
-package com.github.skjolberg.packing.impl;
+package com.github.skjolberg.packing;
 
 import com.github.skjolberg.packing.Box;
-import com.github.skjolberg.packing.impl.Level;
-import com.github.skjolberg.packing.impl.Placement;
-import com.github.skjolberg.packing.impl.Space;
+import com.github.skjolberg.packing.Level;
+import com.github.skjolberg.packing.Placement;
+import com.github.skjolberg.packing.Space;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

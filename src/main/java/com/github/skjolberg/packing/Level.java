@@ -1,7 +1,4 @@
-package com.github.skjolberg.packing.impl;
-
-import com.github.skjolberg.packing.Box;
-import com.github.skjolberg.packing.impl.Placement;
+package com.github.skjolberg.packing;
 
 import java.util.ArrayList;
 
