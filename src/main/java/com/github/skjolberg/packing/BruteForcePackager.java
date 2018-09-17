@@ -44,7 +44,7 @@ public class BruteForcePackager extends Packager {
 	}
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline) {
-		return pack(placements, container, rotator, deadline, new AtomicBoolean(false));
+		return pack(placements, container, rotator, deadline, Constants.ALWAYS_FALSE);
 	}
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline, AtomicBoolean interrupt) {
@@ -85,6 +85,10 @@ public class BruteForcePackager extends Packager {
 		} while(rotator.nextPermutation());
 
 		return result;
+	}
+
+	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, Container holder, int index) {
+		return pack(placements, container, rotator, deadline, holder, index, Constants.ALWAYS_FALSE);
 	}
 
 	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, Container holder, int index, AtomicBoolean interrupt) {

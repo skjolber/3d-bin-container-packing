@@ -83,7 +83,7 @@ public abstract class Packager {
 	 */
 
 	public Container pack(List<BoxItem> boxes, long deadline) {
-		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline, new AtomicBoolean(false));
+		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline, Constants.ALWAYS_FALSE);
 	}
 
 	/**
@@ -204,6 +204,27 @@ public abstract class Packager {
 	 * @param limit    maximum number of containers
 	 * @param deadline the system time in milliseconds at which the search should be aborted
 	 * @return index of container if match, -1 if not
+	 */
+	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline) {
+		return packList(boxes, limit, deadline, Constants.ALWAYS_FALSE);
+	}
+
+	/**
+	 * Return a list of containers which holds all the boxes in the argument
+	 *
+	 * @param boxes    list of boxes to fit in a container
+	 * @param limit    maximum number of containers
+	 * @param deadline the system time in milliseconds at which the search should be aborted
+	 * @return index of container if match, -1 if not
+	 */
+	/**
+	 * Return a list of containers which holds all the boxes in the argument
+	 *
+	 * @param boxes		list of boxes to fit in a container
+	 * @param limit		maximum number of containers
+	 * @param deadline	the system time in milliseconds at which the search should be aborted
+	 * @param interrupt	if true, the computation will be interrupted as soon as possible.
+	 * @return
 	 */
 	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline, AtomicBoolean interrupt) {
 
