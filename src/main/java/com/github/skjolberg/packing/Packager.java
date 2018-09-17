@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -82,7 +83,7 @@ public abstract class Packager {
 	 */
 
 	public Container pack(List<BoxItem> boxes, long deadline) {
-		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline);
+		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline, new AtomicBoolean(false));
 	}
 
 	/**
@@ -94,6 +95,19 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline) {
+		return pack(boxes, containers, deadline, new AtomicBoolean(false));
+	}
+
+	/**
+	 * Return a container which holds all the boxes in the argument
+	 *
+	 * @param boxes      list of boxes to fit in a container
+	 * @param containers list of containers
+	 * @param deadline   the system time in milliseconds at which the search should be aborted
+	 * @param interrupt  if true, the computation will be interrupted as soon as possible.
+	 * @return index of container if match, -1 if not
+	 */
+	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline, AtomicBoolean interrupt) {
 		if (containers.isEmpty()) {
 			return null;
 		}
@@ -104,7 +118,7 @@ public abstract class Packager {
 		if (!binarySearch || containers.size() <= 2 || deadline == Long.MAX_VALUE) {
 			for (int i = 0; i < containers.size(); i++) {
 
-				if (System.currentTimeMillis() > deadline) {
+				if (System.currentTimeMillis() > deadline || interrupt.get()) {
 					break;
 				}
 
@@ -150,7 +164,7 @@ public abstract class Packager {
 					} else {
 						iterator.higher();
 					}
-					if (System.currentTimeMillis() > deadline) {
+					if (System.currentTimeMillis() > deadline || interrupt.get()) {
 						break search;
 					}
 				} while (iterator.hasNext());
@@ -191,7 +205,7 @@ public abstract class Packager {
 	 * @param deadline the system time in milliseconds at which the search should be aborted
 	 * @return index of container if match, -1 if not
 	 */
-	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline) {
+	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline, AtomicBoolean interrupt) {
 
 		List<Container> containers = filterByVolumeAndWeight(toBoxes(boxes, true), Arrays.asList(this.containers), limit);
 		if (containers.isEmpty()) {
@@ -209,7 +223,7 @@ public abstract class Packager {
 			PackResult best = null;
 			for (int i = 0; i < containers.size(); i++) {
 
-				if (System.currentTimeMillis() > deadline) {
+				if (System.currentTimeMillis() > deadline || interrupt.get()) {
 					return null;
 				}
 
