@@ -445,8 +445,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 			private List<Container> containers;
 
 			@Override
-			public PackResult attempt(int index, long deadline) {
-				LAFFResult result = LargestAreaFitFirstPackager.this.pack(new ArrayList<>(boxes), containers.get(index), deadline);
+			public PackResult attempt(int index, long deadline, AtomicBoolean interrupt) {
+				LAFFResult result = LargestAreaFitFirstPackager.this.pack(new ArrayList<>(boxes), containers.get(index), deadline, interrupt);
 
 				return previous = result;
 			}

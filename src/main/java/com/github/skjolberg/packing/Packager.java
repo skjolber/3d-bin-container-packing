@@ -134,7 +134,7 @@ public abstract class Packager {
 					break;
 				}
 
-				PackResult result = pack.attempt(i, deadline);
+				PackResult result = pack.attempt(i, deadline, interrupt);
 				if (result == null) {
 					return null; // timeout
 				}
@@ -164,7 +164,7 @@ public abstract class Packager {
 					int next = iterator.next();
 					int mid = containerIndexes.get(next);
 
-					PackResult result = pack.attempt(mid, deadline);
+					PackResult result = pack.attempt(mid, deadline, interrupt);
 					if (result == null) {
 						return null; // timeout
 					}
@@ -252,7 +252,7 @@ public abstract class Packager {
 					return null;
 				}
 
-				PackResult result = pack.attempt(i, deadline);
+				PackResult result = pack.attempt(i, deadline, interrupt);
 				if (result == null) {
 					return null; // timeout
 				}

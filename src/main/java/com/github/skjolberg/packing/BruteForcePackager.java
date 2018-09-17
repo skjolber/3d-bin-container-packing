@@ -296,8 +296,8 @@ public class BruteForcePackager extends Packager {
 			private List<Container> containers;
 
 			@Override
-			public PackResult attempt(int i, long deadline) {
-				return BruteForcePackager.this.pack(placements, containers.get(i), iterators[i], deadline);
+			public PackResult attempt(int i, long deadline, AtomicBoolean interrupt) {
+				return BruteForcePackager.this.pack(placements, containers.get(i), iterators[i], deadline, interrupt);
 			}
 
 			@Override
