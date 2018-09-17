@@ -19,7 +19,7 @@
 		<ascii-renderer.version>1.2.1</ascii-renderer.version>
 		
 		<google-truth.version>0.42</google-truth.version>
-		<junit.version>5.2.0</junit.version>
+		<junit.version>5.3.1</junit.version>
 		
 		<!-- plugins -->
 		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
