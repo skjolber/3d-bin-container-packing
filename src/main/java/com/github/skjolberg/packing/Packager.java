@@ -89,6 +89,18 @@ public abstract class Packager {
 	/**
 	 * Return a container which holds all the boxes in the argument
 	 *
+	 * @param boxes		list of boxes to fit in a container
+	 * @param deadline	the system time in millis at which the search should be aborted
+	 * @param interrupt When true, the computation is interrupted as soon as possible.
+	 * @return index of container if match, -1 if not
+	 */
+	public Container pack(List<BoxItem> boxes, long deadline, AtomicBoolean interrupt) {
+		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline, interrupt);
+	}
+
+	/**
+	 * Return a container which holds all the boxes in the argument
+	 *
 	 * @param boxes      list of boxes to fit in a container
 	 * @param containers list of containers
 	 * @param deadline   the system time in milliseconds at which the search should be aborted
