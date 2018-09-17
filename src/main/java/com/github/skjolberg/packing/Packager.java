@@ -104,7 +104,7 @@ public abstract class Packager {
 	 * @param boxes      list of boxes to fit in a container
 	 * @param containers list of containers
 	 * @param deadline   the system time in milliseconds at which the search should be aborted
-	 * @param interrupt  if true, the computation will be interrupted as soon as possible.
+	 * @param interrupt  When true, the computation is interrupted as soon as possible.
 	 * @return index of container if match, -1 if not
 	 */
 	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline, AtomicBoolean interrupt) {
@@ -212,19 +212,11 @@ public abstract class Packager {
 	/**
 	 * Return a list of containers which holds all the boxes in the argument
 	 *
-	 * @param boxes    list of boxes to fit in a container
-	 * @param limit    maximum number of containers
-	 * @param deadline the system time in milliseconds at which the search should be aborted
-	 * @return index of container if match, -1 if not
-	 */
-	/**
-	 * Return a list of containers which holds all the boxes in the argument
-	 *
 	 * @param boxes		list of boxes to fit in a container
 	 * @param limit		maximum number of containers
 	 * @param deadline	the system time in milliseconds at which the search should be aborted
-	 * @param interrupt	if true, the computation will be interrupted as soon as possible.
-	 * @return
+	 * @param interrupt	When true, the computation is interrupted as soon as possible.
+	 * @return  index of container if match, -1 if not
 	 */
 	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline, AtomicBoolean interrupt) {
 
