@@ -10,6 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -19,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolberg.packing.impl.Adapter;
 import com.github.skjolberg.packing.impl.PackResult;
 
-class PackagerTest {
+class PackagerTest extends AbstractPackagerTest {
 
 	private PackResult incompleteResult;
 	private PackResult completeResult;
@@ -303,6 +305,16 @@ class PackagerTest {
 
 		List<Container> pack = myPackager.packList(products, 2, deadline);
 		assertNull(pack);
+	}
+
+	@Test
+	void packagerCanBeInterrupted(){
+		final List<Container> container = Collections.singletonList(new Container("", 100, 200, 300, 0));
+		final BruteForcePackager bruteForcePackager = new BruteForcePackager(container);
+		final LargestAreaFitFirstPackager largestAreaFitFirstPackager = new LargestAreaFitFirstPackager(container);
+
+		bruteForcePackager.pack(listOf20Products(), System.currentTimeMillis() + 10000, new AtomicBoolean(false));
+		largestAreaFitFirstPackager.pack(listOf20Products(), System.currentTimeMillis() + 10000, new AtomicBoolean(false));
 	}
 
 }
