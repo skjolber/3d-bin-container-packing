@@ -17,6 +17,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class Packager {
 
+	static final AtomicBoolean ALWAYS_FALSE = new AtomicBoolean(false);
+
 	private final Container[] containers;
 
 	final boolean rotate3D; // if false, then 2d
@@ -83,7 +85,7 @@ public abstract class Packager {
 	 */
 
 	public Container pack(List<BoxItem> boxes, long deadline) {
-		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline, Constants.ALWAYS_FALSE);
+		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline, ALWAYS_FALSE);
 	}
 
 	/**
@@ -218,7 +220,7 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline) {
-		return packList(boxes, limit, deadline, Constants.ALWAYS_FALSE);
+		return packList(boxes, limit, deadline, ALWAYS_FALSE);
 	}
 
 	/**

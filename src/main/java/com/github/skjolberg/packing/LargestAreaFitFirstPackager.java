@@ -50,7 +50,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 */
 
 	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline) {
-		return pack(containerProducts, targetContainer, deadline, Constants.ALWAYS_FALSE);
+		return pack(containerProducts, targetContainer, deadline, Packager.ALWAYS_FALSE);
 	}
 
 

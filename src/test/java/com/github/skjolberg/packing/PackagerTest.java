@@ -72,20 +72,20 @@ class PackagerTest {
 		Adapter mock = mock(Adapter.class);
 
 		// in the middle first
-		when(mock.attempt(3, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(3, deadline, Packager.ALWAYS_FALSE))
 			.thenReturn(completeResult);
 
 		// then in the middle of 0..2
-		when(mock.attempt(1, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(1, deadline, Packager.ALWAYS_FALSE))
 			.thenReturn(incompleteResult);
 
 		// then higher
-		when(mock.attempt(2, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(2, deadline, Packager.ALWAYS_FALSE))
 			.thenReturn(incompleteResult);
 
 		// then iteration is done for 0...2. Filter out 1 and 2 and try again
 		// for 0..0
-		when(mock.attempt(0, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE))
 			.thenReturn(incompleteResult);
 
 		when(mock.accepted(any(PackResult.class)))
@@ -125,20 +125,20 @@ class PackagerTest {
 			.thenReturn(new Container("final", 5, 5, 1, 0));
 
 		// in the middle first
-		when(mock.attempt(3, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(3, deadline, Packager.ALWAYS_FALSE))
 			.thenReturn(completeResult);
 
 		// then in the middle of 0..2
-		when(mock.attempt(1, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(1, deadline, Packager.ALWAYS_FALSE))
 			.thenReturn(incompleteResult);
 
 		// then higher
-		when(mock.attempt(2, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(2, deadline, Packager.ALWAYS_FALSE))
 			.thenReturn(incompleteResult);
 
 		// then iteration is done for 0...2. Filter out 1 and 2 and try again
 		// for 0..0
-		when(mock.attempt(0, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE))
 			.thenReturn(completeResult);
 
 		when(mock.hasMore(any(PackResult.class))).thenReturn(false, true, true, false);
@@ -149,10 +149,10 @@ class PackagerTest {
 		assertNotNull(pack);
 		assertEquals("final", pack.getName());
 
-		verify(mock, times(1)).attempt(3, deadline, Constants.ALWAYS_FALSE);
-		verify(mock, times(1)).attempt(2, deadline, Constants.ALWAYS_FALSE);
-		verify(mock, times(1)).attempt(1, deadline, Constants.ALWAYS_FALSE);
-		verify(mock, times(1)).attempt(0, deadline, Constants.ALWAYS_FALSE);
+		verify(mock, times(1)).attempt(3, deadline, Packager.ALWAYS_FALSE);
+		verify(mock, times(1)).attempt(2, deadline, Packager.ALWAYS_FALSE);
+		verify(mock, times(1)).attempt(1, deadline, Packager.ALWAYS_FALSE);
+		verify(mock, times(1)).attempt(0, deadline, Packager.ALWAYS_FALSE);
 	}
 
 	@Test
@@ -180,17 +180,17 @@ class PackagerTest {
 		PackResult ok = mock(PackResult.class);
 
 		// in the middle first
-		when(mock.attempt(3, deadline, Constants.ALWAYS_FALSE)).thenReturn(ok);
+		when(mock.attempt(3, deadline, Packager.ALWAYS_FALSE)).thenReturn(ok);
 
 		PackResult better = mock(PackResult.class);
 
 		// then in the middle of 0..2
-		when(mock.attempt(1, deadline, Constants.ALWAYS_FALSE)).thenReturn(better);
+		when(mock.attempt(1, deadline, Packager.ALWAYS_FALSE)).thenReturn(better);
 
 		PackResult best = mock(PackResult.class);
 
 		// then lower
-		when(mock.attempt(0, deadline, Constants.ALWAYS_FALSE)).thenReturn(best);
+		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE)).thenReturn(best);
 
 		when(mock.accepted(any(PackResult.class)))
 		.thenReturn(new Container("final", 5, 5, 1, 0));
@@ -205,9 +205,9 @@ class PackagerTest {
 
 		verify(mock, times(3)).attempt(any(Integer.class), any(Long.class), any(AtomicBoolean.class));
 
-		verify(mock, times(1)).attempt(3, deadline, Constants.ALWAYS_FALSE);
-		verify(mock, times(1)).attempt(1, deadline, Constants.ALWAYS_FALSE);
-		verify(mock, times(1)).attempt(0, deadline, Constants.ALWAYS_FALSE);
+		verify(mock, times(1)).attempt(3, deadline, Packager.ALWAYS_FALSE);
+		verify(mock, times(1)).attempt(1, deadline, Packager.ALWAYS_FALSE);
+		verify(mock, times(1)).attempt(0, deadline, Packager.ALWAYS_FALSE);
 
 	}
 
@@ -233,31 +233,31 @@ class PackagerTest {
 		Adapter mock = mock(Adapter.class);
 
 		// in the middle first
-		when(mock.attempt(3, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(3, deadline, Packager.ALWAYS_FALSE))
 			.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then in the middle of 4..6
-		when(mock.attempt(5, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(5, deadline, Packager.ALWAYS_FALSE))
 		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then higher
-		when(mock.attempt(6, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(6, deadline, Packager.ALWAYS_FALSE))
 		.thenReturn(completeResult).thenThrow(RuntimeException.class);
 
 		// then no more results
-		when(mock.attempt(4, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(4, deadline, Packager.ALWAYS_FALSE))
 		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then no more results
-		when(mock.attempt(2, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(2, deadline, Packager.ALWAYS_FALSE))
 		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then no more results
-		when(mock.attempt(1, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(1, deadline, Packager.ALWAYS_FALSE))
 		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then no more results
-		when(mock.attempt(0, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE))
 		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		when(mock.accepted(any(PackResult.class)))
@@ -272,7 +272,7 @@ class PackagerTest {
 		assertEquals("result", pack.getName());
 
 		for(int i = 0; i < containers.size(); i++) {
-			verify(mock, times(1)).attempt(i, deadline, Constants.ALWAYS_FALSE);
+			verify(mock, times(1)).attempt(i, deadline, Packager.ALWAYS_FALSE);
 		}
 	}
 
@@ -294,7 +294,7 @@ class PackagerTest {
 
 		Adapter mock = mock(Adapter.class);
 
-		when(mock.attempt(0, deadline, Constants.ALWAYS_FALSE))
+		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE))
 			.thenReturn(completeResult);
 
 		when(mock.hasMore(any(PackResult.class))).thenReturn(true, true, false);
