@@ -236,7 +236,7 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	@Test
 	void about20Products() {
 		final Container container = new Container(1500, 1000, 3200, 12000);
-		List<Container> containers = BruteForcePropertyBasedTests.rotations(container).collect(Collectors.toList());
+		List<Container> containers = container.rotations();
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
 		List<BoxItem> products = listOf20Products();
@@ -248,7 +248,7 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	@Test
 	void containerWith28Products() {
 		final Container container = new Container(1500, 1000, 3200, 0);
-		List<Container> containers = BruteForcePropertyBasedTests.rotations(container).collect(Collectors.toList());
+		List<Container> containers = container.rotations();
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
 		List<BoxItem> products = listOf28Products();

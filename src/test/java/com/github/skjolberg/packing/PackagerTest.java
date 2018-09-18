@@ -306,9 +306,8 @@ class PackagerTest extends AbstractPackagerTest {
 	void packagerCanBeInterrupted() throws InterruptedException {
 		final Container container = new Container("", 1000, 1500, 3200, 0);
 		final List<Container> singleContainer = Collections.singletonList(container);
-		List<Container> allRotations = BruteForcePropertyBasedTests.rotations(container).collect(Collectors.toList());
 		final BruteForcePackager bruteForcePackager = new BruteForcePackager(singleContainer);
-		final LargestAreaFitFirstPackager largestAreaFitFirstPackager = new LargestAreaFitFirstPackager(allRotations);
+		final LargestAreaFitFirstPackager largestAreaFitFirstPackager = new LargestAreaFitFirstPackager(container.rotations());
 
 		final AtomicBoolean laffFinished = new AtomicBoolean(false);
 		final AtomicBoolean bruteForceFinished = new AtomicBoolean(false);
@@ -330,9 +329,8 @@ class PackagerTest extends AbstractPackagerTest {
 	void packagerCanBeInterruptedWithAFunction() throws InterruptedException {
 		final Container container = new Container("", 1000, 1500, 3200, 0);
 		final List<Container> singleContainer = Collections.singletonList(container);
-		List<Container> allRotations = BruteForcePropertyBasedTests.rotations(container).collect(Collectors.toList());
 		final BruteForcePackager bruteForcePackager = new BruteForcePackager(singleContainer);
-		final LargestAreaFitFirstPackager largestAreaFitFirstPackager = new LargestAreaFitFirstPackager(allRotations);
+		final LargestAreaFitFirstPackager largestAreaFitFirstPackager = new LargestAreaFitFirstPackager(container.rotations());
 
 		final AtomicBoolean laffFinishedBool = new AtomicBoolean(false);
 		final AtomicBoolean bruteForceFinishedBool = new AtomicBoolean(false);

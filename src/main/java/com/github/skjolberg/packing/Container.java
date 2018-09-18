@@ -2,6 +2,9 @@ package com.github.skjolberg.packing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static java.lang.Math.max;
 
 public class Container extends Box {
@@ -47,6 +50,23 @@ public class Container extends Box {
 	 */
 	public Container(String name, int w, int d, int h, int weight) {
 		super(name, w, d, h, weight);
+	}
+
+	/**
+	 * The 6 different possible rotations.
+	 */
+	public List<Container> rotations(){
+		return rotationsStream().collect(Collectors.toList());
+	}
+
+	Stream<Container> rotationsStream() {
+		return Stream.of(
+				new Container(width, height, depth, weight),
+				new Container(width, depth, height, weight),
+				new Container(height, width, depth, weight),
+				new Container(height, depth, width, weight),
+				new Container(depth, height, width, weight),
+				new Container(depth, width, height, weight));
 	}
 
 	public boolean add(Level element) {
