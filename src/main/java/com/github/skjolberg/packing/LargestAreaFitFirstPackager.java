@@ -56,8 +56,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 
 	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline, AtomicBoolean interrupt) {
-		BooleanSupplier deadlineReached = () -> System.currentTimeMillis() > deadline;
-		return pack(containerProducts, targetContainer, () -> deadlineReached.getAsBoolean()|| interrupt.get());
+		return pack(containerProducts, targetContainer, () -> System.currentTimeMillis() > deadline || interrupt.get());
 	}
 
 	public LAFFResult pack(List<Box> containerProducts, Container targetContainer,  BooleanSupplier interrupt) {

@@ -127,8 +127,7 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline, AtomicBoolean interrupt) {
-		BooleanSupplier deadlineReached = () -> System.currentTimeMillis() > deadline;
-		return pack(boxes, containers, () -> deadlineReached.getAsBoolean() || interrupt.get());
+		return pack(boxes, containers, () -> System.currentTimeMillis() > deadline || interrupt.get());
 	}
 
 	public Container pack(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
