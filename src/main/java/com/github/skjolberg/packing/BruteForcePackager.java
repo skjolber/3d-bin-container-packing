@@ -49,8 +49,7 @@ public class BruteForcePackager extends Packager {
 	}
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline, AtomicBoolean interrupt) {
-		BooleanSupplier deadlineReached = () -> System.currentTimeMillis() > deadline;
-		return pack(placements, container, rotator, () -> deadlineReached.getAsBoolean() || interrupt.get());
+		return pack(placements, container, rotator, () -> System.currentTimeMillis() > deadline || interrupt.get());
 	}
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, BooleanSupplier interrupt) {
@@ -98,53 +97,7 @@ public class BruteForcePackager extends Packager {
 	}
 
 	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, Container holder, int index, AtomicBoolean interrupt) {
-		if (placements.isEmpty()) {
-			return -1;
-		}
-		Dimension remainingSpace = container;
-
-		while (index < rotator.length()) {
-			if (System.currentTimeMillis() > deadline || interrupt.get()) {
-				// fit2d below might have returned due to deadline
-				return Integer.MIN_VALUE;
-			}
-
-			Box box = rotator.get(index);
-			if (box.getWeight() > holder.getFreeWeight()) {
-				return index;
-			}
-
-			if (!remainingSpace.canHold2D(box)) {
-				return index;
-			}
-
-			Placement placement = placements.get(index);
-			Space levelSpace = placement.getSpace();
-			levelSpace.width = remainingSpace.getWidth();
-			levelSpace.depth = remainingSpace.getDepth();
-
-			// the LAFF allocates a height per level equal to the given the current box,
-			// but here allow for use of all of the remaining space; the selection of boxes is fixed
-			// the result will be constrained to actual use.
-			levelSpace.height = remainingSpace.getHeight();
-
-			placement.setBox(box);
-
-			levelSpace.setX(0);
-			levelSpace.setY(0);
-			levelSpace.setZ(holder.getStackHeight());
-
-			levelSpace.setParent(null);
-			levelSpace.getRemainder().setParent(null);
-
-			holder.addLevel();
-
-			index = fit2D(rotator, index + 1, placements, holder, placement, deadline, interrupt);
-
-			// update remaining space
-			remainingSpace = holder.getFreeSpace();
-		}
-		return index;
+		return pack(placements, container, rotator, holder, index, () -> System.currentTimeMillis() > deadline || interrupt.get());
 	}
 
 	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, Container holder, int index, BooleanSupplier interrupt) {
@@ -199,66 +152,6 @@ public class BruteForcePackager extends Packager {
 
 	protected boolean accept() {
 		return true;
-	}
-
-	private static int fit2D(PermutationRotationIterator rotator, int index, List<Placement> placements, Container holder, Placement usedSpace, long deadline, AtomicBoolean interrupt) {
-
-		// add used space box now
-		// there is up to 2 possible free spaces
-		holder.add(usedSpace);
-
-		if (index >= rotator.length()) {
-			return index;
-		}
-
-		if (System.currentTimeMillis() > deadline || interrupt.get()) {
-			return -1;
-		}
-
-		Box nextBox = rotator.get(index);
-		if (nextBox.getWeight() > holder.getFreeWeight()) {
-			return index;
-		}
-
-		Placement nextPlacement = placements.get(index);
-		nextPlacement.setBox(nextBox);
-
-		if (!isFreeSpace(usedSpace.getSpace(), usedSpace.getBox(), nextPlacement)) {
-			// no additional boxes
-			// just make sure the used space fits in the free space
-			return index;
-		}
-
-		index++;
-		// the correct space dimensions is copied into the next placement
-
-		// attempt to fit in the remaining (usually smaller) space first
-
-		// stack in the 'sibling' space - the space left over between the used box and the selected free space
-		if (index < rotator.length()) {
-			Space remainder = nextPlacement.getSpace().getRemainder();
-			if (remainder.nonEmpty()) {
-				Box box = rotator.get(index);
-
-				if (box.getWeight() <= holder.getFreeWeight()) {
-					if (box.fitsInside3D(remainder)) {
-						Placement placement = placements.get(index);
-						placement.setBox(box);
-
-						index++;
-
-						placement.getSpace().copyFrom(remainder);
-						placement.getSpace().setParent(remainder);
-						placement.getSpace().getRemainder().setParent(remainder);
-
-						index = fit2D(rotator, index, placements, holder, placement, deadline, interrupt);
-					}
-				}
-			}
-		}
-
-		// fit the next box in the selected free space
-		return fit2D(rotator, index, placements, holder, nextPlacement, deadline, interrupt);
 	}
 
 	private static int fit2D(PermutationRotationIterator rotator, int index, List<Placement> placements, Container holder, Placement usedSpace, BooleanSupplier interrupt) {
