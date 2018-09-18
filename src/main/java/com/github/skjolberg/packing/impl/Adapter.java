@@ -4,7 +4,6 @@ import com.github.skjolberg.packing.BoxItem;
 import com.github.skjolberg.packing.Container;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
 /**
