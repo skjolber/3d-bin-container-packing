@@ -292,8 +292,7 @@ class PackagerTest extends AbstractPackagerTest {
 
 		Adapter mock = mock(Adapter.class);
 
-		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE))
-				.thenReturn(completeResult);
+		when(mock.attempt(eq(0), any())).thenReturn(completeResult);
 
 		when(mock.hasMore(any(PackResult.class))).thenReturn(true, true, false);
 

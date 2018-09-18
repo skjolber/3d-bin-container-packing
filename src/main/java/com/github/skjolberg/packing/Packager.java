@@ -243,7 +243,18 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline, AtomicBoolean interrupt) {
+		return packList(boxes, limit, () -> System.currentTimeMillis() > deadline || interrupt.get());
+	}
 
+	/**
+	 * Return a list of containers which holds all the boxes in the argument
+	 *
+	 * @param boxes     list of boxes to fit in a container
+	 * @param limit     maximum number of containers
+	 * @param interrupt When true, the computation is interrupted as soon as possible.
+	 * @return index of container if match, -1 if not
+	 */
+	public List<Container> packList(List<BoxItem> boxes, int limit, BooleanSupplier interrupt) {
 		List<Container> containers = filterByVolumeAndWeight(toBoxes(boxes, true), Arrays.asList(this.containers), limit);
 		if (containers.isEmpty()) {
 			return null;
@@ -260,11 +271,11 @@ public abstract class Packager {
 			PackResult best = null;
 			for (int i = 0; i < containers.size(); i++) {
 
-				if (System.currentTimeMillis() > deadline || interrupt.get()) {
+				if (interrupt.getAsBoolean()) {
 					return null;
 				}
 
-				PackResult result = pack.attempt(i, deadline, interrupt);
+				PackResult result = pack.attempt(i, interrupt);
 				if (result == null) {
 					return null; // timeout
 				}
