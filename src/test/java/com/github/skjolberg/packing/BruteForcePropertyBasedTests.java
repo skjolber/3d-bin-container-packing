@@ -31,7 +31,7 @@ class BruteForcePropertyBasedTests {
 		assertThat(pack).isNotNull();
 	}
 
-	@Property
+	@Property(tries = 10)
 	void identicalBoxesShouldFitInContainers(@ForAll BoxItem item, @ForAll @IntRange(min = 1, max = 2) int countBySide) {
 		final BoxItem repeatedItems = new BoxItem(item.getBox(), countBySide * countBySide * countBySide);
 		//TODO: we could also randomly rotate the items
