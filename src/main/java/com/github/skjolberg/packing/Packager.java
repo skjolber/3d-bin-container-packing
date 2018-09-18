@@ -109,7 +109,7 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline) {
-		return pack(boxes, containers, deadline, new AtomicBoolean(false));
+		return pack(boxes, containers, deadline, ALWAYS_FALSE);
 	}
 
 	/**
