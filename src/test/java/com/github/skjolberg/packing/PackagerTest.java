@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -330,6 +332,35 @@ class PackagerTest extends AbstractPackagerTest {
 		Thread.sleep(100);
 		assertTrue(laffFinished.get());
 		assertFalse(bruteForceFinished.get());
+	}
+
+	@Test
+	void packagerCanBeInterruptedWithAFunction() throws InterruptedException {
+		final Container container = new Container("", 1000, 1500, 3200, 0);
+		final List<Container> singleContainer = Collections.singletonList(container);
+		List<Container> allRotations = BruteForcePropertyBasedTests.rotations(container).collect(Collectors.toList());
+		final BruteForcePackager bruteForcePackager = new BruteForcePackager(singleContainer);
+		final LargestAreaFitFirstPackager largestAreaFitFirstPackager = new LargestAreaFitFirstPackager(allRotations);
+
+		final AtomicBoolean laffFinishedBool = new AtomicBoolean(false);
+		final AtomicBoolean bruteForceFinishedBool = new AtomicBoolean(false);
+		final long start = System.currentTimeMillis();
+		BooleanSupplier deadlineReached = () -> System.currentTimeMillis() > start + 1000;
+
+		BooleanSupplier interruptLaff = () -> deadlineReached.getAsBoolean()|| bruteForceFinishedBool.get();
+		BooleanSupplier interruptBruteForce = () -> deadlineReached.getAsBoolean()|| laffFinishedBool.get();
+
+		new Thread(() -> {
+			final Container pack = bruteForcePackager.pack(listOf28Products(), interruptBruteForce);
+			bruteForceFinishedBool.set(pack != null);
+		}).start();
+		new Thread(() -> {
+			final Container pack = largestAreaFitFirstPackager.pack(listOf28Products(), interruptLaff);
+			laffFinishedBool.set(pack != null);
+		}).start();
+		Thread.sleep(100);
+		assertTrue(laffFinishedBool.get());
+		assertFalse(bruteForceFinishedBool.get());
 	}
 
 }

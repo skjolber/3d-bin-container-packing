@@ -5,6 +5,7 @@ import com.github.skjolberg.packing.impl.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -152,6 +153,104 @@ public class LargestAreaFitFirstPackager extends Packager {
 		return new LAFFResult(containerProducts, holder);
 	}
 
+	public LAFFResult pack(List<Box> containerProducts, Container targetContainer,  BooleanSupplier interrupt) {
+		Container holder = new Container(targetContainer);
+
+		Dimension freeSpace = targetContainer;
+
+		while(!containerProducts.isEmpty()) {
+			if(interrupt.getAsBoolean()) {
+				// fit2d below might have returned due to deadline
+
+				return null;
+			}
+
+			// choose the box with the largest surface area, that fits
+			// if the same then the one with minimum height
+
+			// use a special case for boxes with full height
+			Box currentBox = null;
+			int currentIndex = -1;
+
+			boolean fullHeight = false;
+			for (int i = 0; i < containerProducts.size(); i++) {
+				Box box = containerProducts.get(i);
+				boolean fits;
+				if(rotate3D) {
+					fits = box.rotateLargestFootprint3D(freeSpace);
+				} else {
+					fits = box.fitRotate2D(freeSpace);
+				}
+				if(fits && box.getWeight() <= targetContainer.getFreeWeight()) {
+					if(currentBox == null) {
+						currentBox = box;
+						currentIndex = i;
+
+						fullHeight = box.getHeight() == freeSpace.getHeight();
+					} else {
+						if(fullHeight) {
+							if(box.getHeight() == freeSpace.getHeight()) {
+								if(currentBox.getFootprint() < box.getFootprint()) {
+									currentBox = box;
+									currentIndex = i;
+								}
+							}
+						} else {
+							if(box.getHeight() == freeSpace.getHeight()) {
+								fullHeight = true;
+
+								currentBox = box;
+								currentIndex = i;
+							} else if(footprintFirst) {
+								if(currentBox.getFootprint() < box.getFootprint()) {
+									currentBox = box;
+									currentIndex = i;
+								} else if(currentBox.getFootprint() == box.getFootprint() && currentBox.getHeight() < box.getHeight()) {
+									currentBox = box;
+									currentIndex = i;
+								}
+							} else {
+								if(currentBox.getHeight() < box.getHeight()) {
+									currentBox = box;
+									currentIndex = i;
+								} else if(currentBox.getHeight() == box.getHeight() && currentBox.getFootprint() < box.getFootprint()) {
+									currentBox = box;
+									currentIndex = i;
+								}
+							}
+						}
+					}
+				}
+			}
+
+			if(currentBox == null) {
+				break;
+			}
+
+			// current box should have the optimal orientation already
+			// create a space which holds the full level
+			Space levelSpace = new Space(
+						targetContainer.getWidth(),
+						targetContainer.getDepth(),
+						currentBox.getHeight(),
+						0,
+						0,
+						holder.getStackHeight()
+						);
+
+			holder.addLevel();
+			containerProducts.remove(currentIndex);
+
+			if(!fit2D(containerProducts, holder, currentBox, levelSpace, interrupt)) {
+				return null;
+			}
+
+			freeSpace = holder.getFreeSpace();
+		}
+
+		return new LAFFResult(containerProducts, holder);
+	}
+
 	/**
 	 * Remove from list, more explicit implementation than {@linkplain List#remove} with no equals.
 	 * @param containerProducts list of products
@@ -229,6 +328,71 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 		// fit the next box in the selected free space
 		return fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), deadline, interrupt);
+
+		// TODO use free spaces between box and level, if any
+	}
+
+	private boolean fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace, BooleanSupplier interrupt) {
+
+		if(rotate3D) {
+			// minimize footprint
+			usedSpace.fitRotate3DSmallestFootprint(freeSpace);
+		}
+
+		// add used space box now, but possibly rotate later - this depends on the actual remaining free space selected further down
+		// there is up to possible 4 free spaces, 2 in which the used space box is rotated
+		holder.add(new Placement(freeSpace, usedSpace));
+
+		if(containerProducts.isEmpty()) {
+			// no additional boxes
+			// just make sure the used space fits in the free space
+			usedSpace.fitRotate2D(freeSpace);
+
+			return true;
+		}
+
+		if(interrupt.getAsBoolean()) {
+			return false;
+		}
+
+		Space[] spaces = getFreespaces(freeSpace, usedSpace);
+
+		Placement nextPlacement = bestVolumePlacement(containerProducts, spaces, holder.getFreeWeight());
+		if(nextPlacement == null) {
+			// no additional boxes
+			// just make sure the used space fits in the free space
+			usedSpace.fitRotate2D(freeSpace);
+
+			return true;
+		}
+
+		// check whether the selected free space requires the used space box to be rotated
+		if(nextPlacement.getSpace() == spaces[2] || nextPlacement.getSpace() == spaces[3]) {
+			// the desired space implies that we rotate the used space box
+			usedSpace.rotate2D();
+		}
+
+		// holder.validateCurrentLevel(); // uncomment for debugging
+
+		removeIdentical(containerProducts, nextPlacement.getBox());
+
+		// attempt to fit in the remaining (usually smaller) space first
+
+		// stack in the 'sibling' space - the space left over between the used box and the selected free space
+		Space remainder = nextPlacement.getSpace().getRemainder();
+		if(remainder.nonEmpty()) {
+			Box box = bestVolume(containerProducts, remainder, holder.getFreeWeight());
+			if(box != null) {
+				removeIdentical(containerProducts, box);
+
+				if(!fit2D(containerProducts, holder, box, remainder, interrupt)) {
+					return false;
+				}
+			}
+		}
+
+		// fit the next box in the selected free space
+		return fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), interrupt);
 
 		// TODO use free spaces between box and level, if any
 	}
@@ -447,6 +611,13 @@ public class LargestAreaFitFirstPackager extends Packager {
 			@Override
 			public PackResult attempt(int index, long deadline, AtomicBoolean interrupt) {
 				LAFFResult result = LargestAreaFitFirstPackager.this.pack(new ArrayList<>(boxes), containers.get(index), deadline, interrupt);
+
+				return previous = result;
+			}
+
+			@Override
+			public PackResult attempt(int index, BooleanSupplier interrupt) {
+				LAFFResult result = LargestAreaFitFirstPackager.this.pack(new ArrayList<>(boxes), containers.get(index), interrupt);
 
 				return previous = result;
 			}

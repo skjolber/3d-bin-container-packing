@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
 
 
 /**
@@ -86,6 +87,10 @@ public abstract class Packager {
 
 	public Container pack(List<BoxItem> boxes, long deadline) {
 		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline, ALWAYS_FALSE);
+	}
+
+	public Container pack(List<BoxItem> boxes, BooleanSupplier interrupt) {
+		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), interrupt);
 	}
 
 	/**
@@ -179,6 +184,96 @@ public abstract class Packager {
 						iterator.higher();
 					}
 					if (System.currentTimeMillis() > deadline || interrupt.get()) {
+						break search;
+					}
+				} while (iterator.hasNext());
+
+				// halt when have a result, and checked all containers at the lower indexes
+				for (int i = 0; i < containerIndexes.size(); i++) {
+					Integer integer = containerIndexes.get(i);
+					if (results[integer] != null) {
+						// remove end items; we already have a better match
+						while (containerIndexes.size() > i) {
+							containerIndexes.remove(containerIndexes.size() - 1);
+						}
+						break;
+					}
+
+					// remove item
+					if (checked[integer]) {
+						containerIndexes.remove(i);
+						i--;
+					}
+				}
+			} while (!containerIndexes.isEmpty());
+
+			for (final PackResult result : results) {
+				if (result != null) {
+					return pack.accepted(result);
+				}
+			}
+		}
+		return null;
+	}
+
+	public Container pack(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
+		if (containers.isEmpty()) {
+			return null;
+		}
+
+		Adapter pack = adapter();
+		pack.initialize(boxes, containers);
+
+		if (!binarySearch || containers.size() <= 2) {
+			for (int i = 0; i < containers.size(); i++) {
+
+				if (interrupt.getAsBoolean()) {
+					break;
+				}
+
+				PackResult result = pack.attempt(i, interrupt);
+				if (result == null) {
+					return null; // timeout
+				}
+
+				if (!pack.hasMore(result)) {
+					return pack.accepted(result);
+				}
+			}
+		} else {
+			// perform a binary search among the available containers
+			// the list is ranked from most desirable to least.
+			PackResult[] results = new PackResult[containers.size()];
+			boolean[] checked = new boolean[results.length];
+
+			ArrayList<Integer> containerIndexes = new ArrayList<>(containers.size());
+			for (int i = 0; i < containers.size(); i++) {
+				containerIndexes.add(i);
+			}
+
+			BinarySearchIterator iterator = new BinarySearchIterator();
+
+			search:
+			do {
+				iterator.reset(containerIndexes.size() - 1, 0);
+
+				do {
+					int next = iterator.next();
+					int mid = containerIndexes.get(next);
+
+					PackResult result = pack.attempt(mid, interrupt);
+					if (result == null) {
+						return null; // timeout
+					}
+					checked[mid] = true;
+					if (!pack.hasMore(result)) {
+						results[mid] = result;
+
+						iterator.lower();
+					} else {
+						iterator.higher();
+					}
+					if (interrupt.getAsBoolean()) {
 						break search;
 					}
 				} while (iterator.hasNext());
