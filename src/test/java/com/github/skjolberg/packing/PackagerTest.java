@@ -2,6 +2,7 @@ package com.github.skjolberg.packing;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -75,20 +76,20 @@ class PackagerTest extends AbstractPackagerTest {
 		Adapter mock = mock(Adapter.class);
 
 		// in the middle first
-		when(mock.attempt(3, deadline, Packager.ALWAYS_FALSE))
+		when(mock.attempt(eq(3), any()))
 				.thenReturn(completeResult);
 
 		// then in the middle of 0..2
-		when(mock.attempt(1, deadline, Packager.ALWAYS_FALSE))
+		when(mock.attempt(eq(1), any()))
 				.thenReturn(incompleteResult);
 
 		// then higher
-		when(mock.attempt(2, deadline, Packager.ALWAYS_FALSE))
+		when(mock.attempt(eq(2), any()))
 				.thenReturn(incompleteResult);
 
 		// then iteration is done for 0...2. Filter out 1 and 2 and try again
 		// for 0..0
-		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE))
+		when(mock.attempt(eq(0), any()))
 				.thenReturn(incompleteResult);
 
 		when(mock.accepted(any(PackResult.class)))
@@ -101,7 +102,7 @@ class PackagerTest extends AbstractPackagerTest {
 		Container pack = myPackager.pack(products, deadline);
 		assertEquals("result", pack.getName());
 		assertNotNull(pack);
-		verify(mock, times(4)).attempt(any(int.class), any(Long.class), any(AtomicBoolean.class));
+		verify(mock, times(4)).attempt(any(int.class), any());
 	}
 
 	@Test
@@ -128,21 +129,15 @@ class PackagerTest extends AbstractPackagerTest {
 				.thenReturn(new Container("final", 5, 5, 1, 0));
 
 		// in the middle first
-		when(mock.attempt(3, deadline, Packager.ALWAYS_FALSE))
-				.thenReturn(completeResult);
-
+		when(mock.attempt(eq(3), any())).thenReturn(completeResult);
 		// then in the middle of 0..2
-		when(mock.attempt(1, deadline, Packager.ALWAYS_FALSE))
-				.thenReturn(incompleteResult);
-
+		when(mock.attempt(eq(1), any())).thenReturn(incompleteResult);
 		// then higher
-		when(mock.attempt(2, deadline, Packager.ALWAYS_FALSE))
-				.thenReturn(incompleteResult);
+		when(mock.attempt(eq(2), any())).thenReturn(incompleteResult);
 
 		// then iteration is done for 0...2. Filter out 1 and 2 and try again
 		// for 0..0
-		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE))
-				.thenReturn(completeResult);
+		when(mock.attempt(eq(0), any())).thenReturn(completeResult);
 
 		when(mock.hasMore(any(PackResult.class))).thenReturn(false, true, true, false);
 
@@ -152,10 +147,10 @@ class PackagerTest extends AbstractPackagerTest {
 		assertNotNull(pack);
 		assertEquals("final", pack.getName());
 
-		verify(mock, times(1)).attempt(3, deadline, Packager.ALWAYS_FALSE);
-		verify(mock, times(1)).attempt(2, deadline, Packager.ALWAYS_FALSE);
-		verify(mock, times(1)).attempt(1, deadline, Packager.ALWAYS_FALSE);
-		verify(mock, times(1)).attempt(0, deadline, Packager.ALWAYS_FALSE);
+		verify(mock, times(1)).attempt(eq(3), any());
+		verify(mock, times(1)).attempt(eq(2), any());
+		verify(mock, times(1)).attempt(eq(1), any());
+		verify(mock, times(1)).attempt(eq(0), any());
 	}
 
 	@Test
@@ -183,17 +178,17 @@ class PackagerTest extends AbstractPackagerTest {
 		PackResult ok = mock(PackResult.class);
 
 		// in the middle first
-		when(mock.attempt(3, deadline, Packager.ALWAYS_FALSE)).thenReturn(ok);
+		when(mock.attempt(eq(3), any())).thenReturn(ok);
 
 		PackResult better = mock(PackResult.class);
 
 		// then in the middle of 0..2
-		when(mock.attempt(1, deadline, Packager.ALWAYS_FALSE)).thenReturn(better);
+		when(mock.attempt(eq(1), any())).thenReturn(better);
 
 		PackResult best = mock(PackResult.class);
 
 		// then lower
-		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE)).thenReturn(best);
+		when(mock.attempt(eq(0), any())).thenReturn(best);
 
 		when(mock.accepted(any(PackResult.class)))
 				.thenReturn(new Container("final", 5, 5, 1, 0));
@@ -206,11 +201,11 @@ class PackagerTest extends AbstractPackagerTest {
 		assertNotNull(pack);
 		assertEquals("final", pack.getName());
 
-		verify(mock, times(3)).attempt(any(Integer.class), any(Long.class), any(AtomicBoolean.class));
+		verify(mock, times(3)).attempt(any(Integer.class), any());
 
-		verify(mock, times(1)).attempt(3, deadline, Packager.ALWAYS_FALSE);
-		verify(mock, times(1)).attempt(1, deadline, Packager.ALWAYS_FALSE);
-		verify(mock, times(1)).attempt(0, deadline, Packager.ALWAYS_FALSE);
+		verify(mock, times(1)).attempt(eq(3), any());
+		verify(mock, times(1)).attempt(eq(1), any());
+		verify(mock, times(1)).attempt(eq(0), any());
 
 	}
 
@@ -236,31 +231,31 @@ class PackagerTest extends AbstractPackagerTest {
 		Adapter mock = mock(Adapter.class);
 
 		// in the middle first
-		when(mock.attempt(3, deadline, Packager.ALWAYS_FALSE))
+		when(mock.attempt(eq(3), any()))
 				.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then in the middle of 4..6
-		when(mock.attempt(5, deadline, Packager.ALWAYS_FALSE))
+		when(mock.attempt(eq(5), any()))
 				.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then higher
-		when(mock.attempt(6, deadline, Packager.ALWAYS_FALSE))
+		when(mock.attempt(eq(6), any()))
 				.thenReturn(completeResult).thenThrow(RuntimeException.class);
 
 		// then no more results
-		when(mock.attempt(4, deadline, Packager.ALWAYS_FALSE))
+		when(mock.attempt(eq(4), any()))
 				.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then no more results
-		when(mock.attempt(2, deadline, Packager.ALWAYS_FALSE))
+		when(mock.attempt(eq(2), any()))
 				.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then no more results
-		when(mock.attempt(1, deadline, Packager.ALWAYS_FALSE))
+		when(mock.attempt(eq(1), any()))
 				.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then no more results
-		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE))
+		when(mock.attempt(eq(0), any()))
 				.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		when(mock.accepted(any(PackResult.class)))
@@ -275,7 +270,7 @@ class PackagerTest extends AbstractPackagerTest {
 		assertEquals("result", pack.getName());
 
 		for (int i = 0; i < containers.size(); i++) {
-			verify(mock, times(1)).attempt(i, deadline, Packager.ALWAYS_FALSE);
+			verify(mock, times(1)).attempt(eq(i), any());
 		}
 	}
 
@@ -347,8 +342,8 @@ class PackagerTest extends AbstractPackagerTest {
 		final long start = System.currentTimeMillis();
 		BooleanSupplier deadlineReached = () -> System.currentTimeMillis() > start + 1000;
 
-		BooleanSupplier interruptLaff = () -> deadlineReached.getAsBoolean()|| bruteForceFinishedBool.get();
-		BooleanSupplier interruptBruteForce = () -> deadlineReached.getAsBoolean()|| laffFinishedBool.get();
+		BooleanSupplier interruptLaff = () -> deadlineReached.getAsBoolean() || bruteForceFinishedBool.get();
+		BooleanSupplier interruptBruteForce = () -> deadlineReached.getAsBoolean() || laffFinishedBool.get();
 
 		new Thread(() -> {
 			final Container pack = bruteForcePackager.pack(listOf28Products(), interruptBruteForce);

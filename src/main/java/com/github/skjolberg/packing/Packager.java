@@ -127,92 +127,92 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline, AtomicBoolean interrupt) {
-//		BooleanSupplier deadlineReached = () -> System.currentTimeMillis() > deadline;
-//		return pack(boxes, containers, () -> deadlineReached.getAsBoolean()|| interrupt.get());
+		BooleanSupplier deadlineReached = () -> System.currentTimeMillis() > deadline;
+		return pack(boxes, containers, () -> deadlineReached.getAsBoolean()|| interrupt.get());
 
-		Adapter pack = adapter();
-		pack.initialize(boxes, containers);
-
-		if (!binarySearch || containers.size() <= 2 || deadline == Long.MAX_VALUE) {
-			for (int i = 0; i < containers.size(); i++) {
-
-				if (System.currentTimeMillis() > deadline || interrupt.get()) {
-					break;
-				}
-
-				PackResult result = pack.attempt(i, deadline, interrupt);
-				if (result == null) {
-					return null; // timeout
-				}
-
-				if (!pack.hasMore(result)) {
-					return pack.accepted(result);
-				}
-			}
-		} else {
-			// perform a binary search among the available containers
-			// the list is ranked from most desirable to least.
-			PackResult[] results = new PackResult[containers.size()];
-			boolean[] checked = new boolean[results.length];
-
-			ArrayList<Integer> containerIndexes = new ArrayList<>(containers.size());
-			for (int i = 0; i < containers.size(); i++) {
-				containerIndexes.add(i);
-			}
-
-			BinarySearchIterator iterator = new BinarySearchIterator();
-
-			search:
-			do {
-				iterator.reset(containerIndexes.size() - 1, 0);
-
-				do {
-					int next = iterator.next();
-					int mid = containerIndexes.get(next);
-
-					PackResult result = pack.attempt(mid, deadline, interrupt);
-					if (result == null) {
-						return null; // timeout
-					}
-					checked[mid] = true;
-					if (!pack.hasMore(result)) {
-						results[mid] = result;
-
-						iterator.lower();
-					} else {
-						iterator.higher();
-					}
-					if (System.currentTimeMillis() > deadline || interrupt.get()) {
-						break search;
-					}
-				} while (iterator.hasNext());
-
-				// halt when have a result, and checked all containers at the lower indexes
-				for (int i = 0; i < containerIndexes.size(); i++) {
-					Integer integer = containerIndexes.get(i);
-					if (results[integer] != null) {
-						// remove end items; we already have a better match
-						while (containerIndexes.size() > i) {
-							containerIndexes.remove(containerIndexes.size() - 1);
-						}
-						break;
-					}
-
-					// remove item
-					if (checked[integer]) {
-						containerIndexes.remove(i);
-						i--;
-					}
-				}
-			} while (!containerIndexes.isEmpty());
-
-			for (final PackResult result : results) {
-				if (result != null) {
-					return pack.accepted(result);
-				}
-			}
-		}
-		return null;
+//		Adapter pack = adapter();
+//		pack.initialize(boxes, containers);
+//
+//		if (!binarySearch || containers.size() <= 2 ) {
+//			for (int i = 0; i < containers.size(); i++) {
+//
+//				if (System.currentTimeMillis() > deadline || interrupt.get()) {
+//					break;
+//				}
+//
+//				PackResult result = pack.attempt(i, deadline, interrupt);
+//				if (result == null) {
+//					return null; // timeout
+//				}
+//
+//				if (!pack.hasMore(result)) {
+//					return pack.accepted(result);
+//				}
+//			}
+//		} else {
+//			// perform a binary search among the available containers
+//			// the list is ranked from most desirable to least.
+//			PackResult[] results = new PackResult[containers.size()];
+//			boolean[] checked = new boolean[results.length];
+//
+//			ArrayList<Integer> containerIndexes = new ArrayList<>(containers.size());
+//			for (int i = 0; i < containers.size(); i++) {
+//				containerIndexes.add(i);
+//			}
+//
+//			BinarySearchIterator iterator = new BinarySearchIterator();
+//
+//			search:
+//			do {
+//				iterator.reset(containerIndexes.size() - 1, 0);
+//
+//				do {
+//					int next = iterator.next();
+//					int mid = containerIndexes.get(next);
+//
+//					PackResult result = pack.attempt(mid, deadline, interrupt);
+//					if (result == null) {
+//						return null; // timeout
+//					}
+//					checked[mid] = true;
+//					if (!pack.hasMore(result)) {
+//						results[mid] = result;
+//
+//						iterator.lower();
+//					} else {
+//						iterator.higher();
+//					}
+//					if (System.currentTimeMillis() > deadline || interrupt.get()) {
+//						break search;
+//					}
+//				} while (iterator.hasNext());
+//
+//				// halt when have a result, and checked all containers at the lower indexes
+//				for (int i = 0; i < containerIndexes.size(); i++) {
+//					Integer integer = containerIndexes.get(i);
+//					if (results[integer] != null) {
+//						// remove end items; we already have a better match
+//						while (containerIndexes.size() > i) {
+//							containerIndexes.remove(containerIndexes.size() - 1);
+//						}
+//						break;
+//					}
+//
+//					// remove item
+//					if (checked[integer]) {
+//						containerIndexes.remove(i);
+//						i--;
+//					}
+//				}
+//			} while (!containerIndexes.isEmpty());
+//
+//			for (final PackResult result : results) {
+//				if (result != null) {
+//					return pack.accepted(result);
+//				}
+//			}
+//		}
+//		return null;
 	}
 
 	public Container pack(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
