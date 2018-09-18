@@ -99,7 +99,7 @@ public class Container extends Box {
 	int getFreeWeight() {
 		int remainder = weight - getStackWeight();
 		if(remainder < 0) {
-			throw new IllegalArgumentException("Remaining weigth is negative at " + remainder);
+			throw new IllegalArgumentException("Remaining weight is negative at " + remainder);
 		}
 		return remainder;
 	}
