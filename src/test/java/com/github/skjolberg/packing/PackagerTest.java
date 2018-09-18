@@ -1,8 +1,6 @@
 package com.github.skjolberg.packing;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -14,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,23 +74,23 @@ class PackagerTest extends AbstractPackagerTest {
 
 		// in the middle first
 		when(mock.attempt(3, deadline, Packager.ALWAYS_FALSE))
-			.thenReturn(completeResult);
+				.thenReturn(completeResult);
 
 		// then in the middle of 0..2
 		when(mock.attempt(1, deadline, Packager.ALWAYS_FALSE))
-			.thenReturn(incompleteResult);
+				.thenReturn(incompleteResult);
 
 		// then higher
 		when(mock.attempt(2, deadline, Packager.ALWAYS_FALSE))
-			.thenReturn(incompleteResult);
+				.thenReturn(incompleteResult);
 
 		// then iteration is done for 0...2. Filter out 1 and 2 and try again
 		// for 0..0
 		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE))
-			.thenReturn(incompleteResult);
+				.thenReturn(incompleteResult);
 
 		when(mock.accepted(any(PackResult.class)))
-			.thenReturn(new Container("result", 5, 5, 1, 0));
+				.thenReturn(new Container("result", 5, 5, 1, 0));
 
 		when(mock.hasMore(any(PackResult.class))).thenReturn(false, true, true, true);
 
@@ -124,24 +123,24 @@ class PackagerTest extends AbstractPackagerTest {
 
 		Adapter mock = mock(Adapter.class);
 		when(mock.accepted(completeResult))
-			.thenReturn(new Container("final", 5, 5, 1, 0));
+				.thenReturn(new Container("final", 5, 5, 1, 0));
 
 		// in the middle first
 		when(mock.attempt(3, deadline, Packager.ALWAYS_FALSE))
-			.thenReturn(completeResult);
+				.thenReturn(completeResult);
 
 		// then in the middle of 0..2
 		when(mock.attempt(1, deadline, Packager.ALWAYS_FALSE))
-			.thenReturn(incompleteResult);
+				.thenReturn(incompleteResult);
 
 		// then higher
 		when(mock.attempt(2, deadline, Packager.ALWAYS_FALSE))
-			.thenReturn(incompleteResult);
+				.thenReturn(incompleteResult);
 
 		// then iteration is done for 0...2. Filter out 1 and 2 and try again
 		// for 0..0
 		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE))
-			.thenReturn(completeResult);
+				.thenReturn(completeResult);
 
 		when(mock.hasMore(any(PackResult.class))).thenReturn(false, true, true, false);
 
@@ -195,7 +194,7 @@ class PackagerTest extends AbstractPackagerTest {
 		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE)).thenReturn(best);
 
 		when(mock.accepted(any(PackResult.class)))
-		.thenReturn(new Container("final", 5, 5, 1, 0));
+				.thenReturn(new Container("final", 5, 5, 1, 0));
 
 		when(mock.hasMore(any(PackResult.class))).thenReturn(false, false, false);
 
@@ -236,34 +235,34 @@ class PackagerTest extends AbstractPackagerTest {
 
 		// in the middle first
 		when(mock.attempt(3, deadline, Packager.ALWAYS_FALSE))
-			.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
+				.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then in the middle of 4..6
 		when(mock.attempt(5, deadline, Packager.ALWAYS_FALSE))
-		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
+				.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then higher
 		when(mock.attempt(6, deadline, Packager.ALWAYS_FALSE))
-		.thenReturn(completeResult).thenThrow(RuntimeException.class);
+				.thenReturn(completeResult).thenThrow(RuntimeException.class);
 
 		// then no more results
 		when(mock.attempt(4, deadline, Packager.ALWAYS_FALSE))
-		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
+				.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then no more results
 		when(mock.attempt(2, deadline, Packager.ALWAYS_FALSE))
-		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
+				.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then no more results
 		when(mock.attempt(1, deadline, Packager.ALWAYS_FALSE))
-		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
+				.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		// then no more results
 		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE))
-		.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
+				.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		when(mock.accepted(any(PackResult.class)))
-			.thenReturn(new Container("result", 5, 5, 1, 0));
+				.thenReturn(new Container("result", 5, 5, 1, 0));
 
 		when(mock.hasMore(any(PackResult.class))).thenReturn(true, true, false, true, true, true, true);
 
@@ -273,7 +272,7 @@ class PackagerTest extends AbstractPackagerTest {
 		assertNotNull(pack);
 		assertEquals("result", pack.getName());
 
-		for(int i = 0; i < containers.size(); i++) {
+		for (int i = 0; i < containers.size(); i++) {
 			verify(mock, times(1)).attempt(i, deadline, Packager.ALWAYS_FALSE);
 		}
 	}
@@ -297,7 +296,7 @@ class PackagerTest extends AbstractPackagerTest {
 		Adapter mock = mock(Adapter.class);
 
 		when(mock.attempt(0, deadline, Packager.ALWAYS_FALSE))
-			.thenReturn(completeResult);
+				.thenReturn(completeResult);
 
 		when(mock.hasMore(any(PackResult.class))).thenReturn(true, true, false);
 
@@ -307,14 +306,30 @@ class PackagerTest extends AbstractPackagerTest {
 		assertNull(pack);
 	}
 
+	// Demonstration on how to run the 2 algorithms in parallel,
+	// interrupting the last one to complete
 	@Test
-	void packagerCanBeInterrupted(){
-		final List<Container> container = Collections.singletonList(new Container("", 100, 200, 300, 0));
-		final BruteForcePackager bruteForcePackager = new BruteForcePackager(container);
-		final LargestAreaFitFirstPackager largestAreaFitFirstPackager = new LargestAreaFitFirstPackager(container);
+	void packagerCanBeInterrupted() throws InterruptedException {
+		final Container container = new Container("", 1000, 1500, 3200, 0);
+		final List<Container> singleContainer = Collections.singletonList(container);
+		List<Container> allRotations = BruteForcePropertyBasedTests.rotations(container).collect(Collectors.toList());
+		final BruteForcePackager bruteForcePackager = new BruteForcePackager(singleContainer);
+		final LargestAreaFitFirstPackager largestAreaFitFirstPackager = new LargestAreaFitFirstPackager(allRotations);
 
-		bruteForcePackager.pack(listOf20Products(), System.currentTimeMillis() + 10000, new AtomicBoolean(false));
-		largestAreaFitFirstPackager.pack(listOf20Products(), System.currentTimeMillis() + 10000, new AtomicBoolean(false));
+		final AtomicBoolean laffFinished = new AtomicBoolean(false);
+		final AtomicBoolean bruteForceFinished = new AtomicBoolean(false);
+
+		new Thread(() -> {
+			final Container pack = bruteForcePackager.pack(listOf28Products(), System.currentTimeMillis() + 1000, laffFinished);
+			bruteForceFinished.set(pack != null);
+		}).start();
+		new Thread(() -> {
+			final Container pack = largestAreaFitFirstPackager.pack(listOf28Products(), System.currentTimeMillis() + 1000, bruteForceFinished);
+			laffFinished.set(pack != null);
+		}).start();
+		Thread.sleep(100);
+		assertTrue(laffFinished.get());
+		assertFalse(bruteForceFinished.get());
 	}
 
 }

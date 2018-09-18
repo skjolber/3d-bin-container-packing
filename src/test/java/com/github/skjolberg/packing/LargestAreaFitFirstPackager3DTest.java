@@ -247,6 +247,18 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
+	void containerWith28Products() {
+		final Container container = new Container(1500, 1000, 3200, 0);
+		List<Container> containers = BruteForcePropertyBasedTests.rotations(container).collect(Collectors.toList());
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
+
+		List<BoxItem> products = listOf28Products();
+
+		Container fits1 = packager.pack(products);
+		assertNotNull(fits1);
+	}
+
+	@Test
 	@Disabled
 	void testRunsForLimitedTimeSeconds() {
 		List<Container> containers = new ArrayList<>();

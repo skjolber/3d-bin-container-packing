@@ -45,6 +45,69 @@ abstract class AbstractPackagerTest {
 	}
 
 
+	List<BoxItem> listOf6Products() {
+		return Arrays.asList(
+				new BoxItem(new Box("", 39, 80, 50, 0)),
+				new BoxItem(new Box("", 39, 79, 51, 0)),
+				new BoxItem(new Box("", 37, 78, 49, 0)),
+				new BoxItem(new Box("", 41, 81, 52, 0)),
+				new BoxItem(new Box("", 38, 79, 50, 0)),
+				new BoxItem(new Box("", 39, 80, 52, 0)));
+	}
+
+	List<BoxItem> listOf28Products() {
+		return Arrays.asList(
+				new BoxItem(new Box("", 720, 620, 78, 0)),
+				new BoxItem(new Box("", 611, 31, 791, 0)),
+				new BoxItem(new Box("", 611, 31, 791, 0)),
+				new BoxItem(new Box("", 656, 18, 2033, 0)),
+				new BoxItem(new Box("", 656, 18, 2033, 0)),
+				new BoxItem(new Box("", 100, 850, 750, 0)),
+				new BoxItem(new Box("", 700, 400, 50, 0)),
+				new BoxItem(new Box("", 80, 770, 850, 0)),
+				new BoxItem(new Box("", 80, 770, 850, 0)),
+				new BoxItem(new Box("", 40, 100, 165, 0)),
+				new BoxItem(new Box("", 40, 100, 165, 0)),
+				new BoxItem(new Box("", 40, 100, 165, 0)),
+				new BoxItem(new Box("", 16, 2500, 11, 0)),
+				new BoxItem(new Box("", 16, 2500, 11, 0)),
+				new BoxItem(new Box("", 18, 2720, 160, 0)),
+				new BoxItem(new Box("", 2500, 650, 30, 0)),
+				new BoxItem(new Box("", 700, 400, 50, 0)),
+				new BoxItem(new Box("", 75, 650, 1600, 0)),
+				new BoxItem(new Box("", 100, 650, 750, 0)),
+				new BoxItem(new Box("", 720, 620, 78, 0)),
+				new BoxItem(new Box("", 55, 500, 745, 0)),
+				new BoxItem(new Box("", 750, 17, 30, 0)),
+				new BoxItem(new Box("", 535, 110, 500, 0)),
+				new BoxItem(new Box("", 100, 550, 750, 0)),
+				new BoxItem(new Box("", 700, 500, 50, 0)),
+				new BoxItem(new Box("", 656, 18, 2033, 0)),
+				new BoxItem(new Box("", 656, 18, 2033, 0)),
+				new BoxItem(new Box("", 100, 850, 750, 0)),
+				new BoxItem(new Box("", 700, 400, 50, 0)),
+				new BoxItem(new Box("", 80, 770, 850, 0)),
+				new BoxItem(new Box("", 80, 770, 850, 0)),
+				new BoxItem(new Box("", 40, 100, 165, 0)),
+				new BoxItem(new Box("", 40, 100, 165, 0)),
+				new BoxItem(new Box("", 40, 100, 165, 0)),
+				new BoxItem(new Box("", 16, 2500, 11, 0)),
+				new BoxItem(new Box("", 16, 2500, 11, 0)),
+				new BoxItem(new Box("", 18, 2720, 160, 0)),
+				new BoxItem(new Box("", 2500, 650, 30, 0)),
+				new BoxItem(new Box("", 700, 400, 50, 0)),
+				new BoxItem(new Box("", 75, 650, 1600, 0)),
+				new BoxItem(new Box("", 100, 650, 750, 0)),
+				new BoxItem(new Box("", 720, 620, 78, 0)),
+				new BoxItem(new Box("", 55, 500, 745, 0)),
+				new BoxItem(new Box("", 750, 17, 30, 0)),
+				new BoxItem(new Box("", 535, 110, 500, 0)),
+				new BoxItem(new Box("", 100, 550, 750, 0)),
+				new BoxItem(new Box("", 700, 500, 50, 0)),
+				new BoxItem(new Box("", 1000, 1000, 1000, 0)));
+	}
+
+
 	List<BoxItem> listOf20Products() {
 		return Arrays.asList(
 				new BoxItem(new Box("", 75, 650, 1600, 350)),
