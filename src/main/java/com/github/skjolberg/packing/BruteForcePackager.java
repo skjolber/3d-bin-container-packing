@@ -49,43 +49,8 @@ public class BruteForcePackager extends Packager {
 	}
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline, AtomicBoolean interrupt) {
-
-		Container holder = new Container(container);
-
-		BruteForceResult result = new BruteForceResult(rotator, placements, holder);
-
-		// iterator over all permutations
-		do {
-			if (System.currentTimeMillis() > deadline || interrupt.get()) {
-				return null;
-			}
-			// iterator over all rotations
-
-			do {
-				int count = pack(placements, holder, rotator, deadline, holder, 0, interrupt);
-				if (count == Integer.MIN_VALUE) {
-					return null; // timeout
-				} else {
-					holder.clear();
-
-					if (count == placements.size()) {
-						if (accept()) {
-							result.setCount(count);
-							result.setState(rotator.getState());
-							return result;
-						}
-					} else if (count > 0) {
-						// continue search, but see if this is the best fit so far
-						if (count > result.getCount()) {
-							result.setCount(count);
-							result.setState(rotator.getState());
-						}
-					}
-				}
-			} while (rotator.nextRotation());
-		} while (rotator.nextPermutation());
-
-		return result;
+		BooleanSupplier deadlineReached = () -> System.currentTimeMillis() > deadline;
+		return pack(placements, container, rotator, () -> deadlineReached.getAsBoolean() || interrupt.get());
 	}
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, BooleanSupplier interrupt) {
@@ -237,6 +202,7 @@ public class BruteForcePackager extends Packager {
 	}
 
 	private static int fit2D(PermutationRotationIterator rotator, int index, List<Placement> placements, Container holder, Placement usedSpace, long deadline, AtomicBoolean interrupt) {
+
 		// add used space box now
 		// there is up to 2 possible free spaces
 		holder.add(usedSpace);
@@ -295,7 +261,7 @@ public class BruteForcePackager extends Packager {
 		return fit2D(rotator, index, placements, holder, nextPlacement, deadline, interrupt);
 	}
 
-	private static int fit2D(PermutationRotationIterator rotator, int index, List<Placement> placements, Container holder, Placement usedSpace,  BooleanSupplier interrupt) {
+	private static int fit2D(PermutationRotationIterator rotator, int index, List<Placement> placements, Container holder, Placement usedSpace, BooleanSupplier interrupt) {
 		// add used space box now
 		// there is up to 2 possible free spaces
 		holder.add(usedSpace);
@@ -444,11 +410,6 @@ public class BruteForcePackager extends Packager {
 			private List<Placement> placements;
 			private PermutationRotationIterator[] iterators;
 			private List<Container> containers;
-
-			@Override
-			public PackResult attempt(int i, long deadline, AtomicBoolean interrupt) {
-				return BruteForcePackager.this.pack(placements, containers.get(i), iterators[i], deadline, interrupt);
-			}
 
 			@Override
 			public PackResult attempt(int i, BooleanSupplier interrupt) {

@@ -56,101 +56,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 
 	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline, AtomicBoolean interrupt) {
-		Container holder = new Container(targetContainer);
-
-		Dimension freeSpace = targetContainer;
-
-		while(!containerProducts.isEmpty()) {
-			if(System.currentTimeMillis() > deadline || interrupt.get()) {
-				// fit2d below might have returned due to deadline
-
-				return null;
-			}
-
-			// choose the box with the largest surface area, that fits
-			// if the same then the one with minimum height
-
-			// use a special case for boxes with full height
-			Box currentBox = null;
-			int currentIndex = -1;
-
-			boolean fullHeight = false;
-			for (int i = 0; i < containerProducts.size(); i++) {
-				Box box = containerProducts.get(i);
-				boolean fits;
-				if(rotate3D) {
-					fits = box.rotateLargestFootprint3D(freeSpace);
-				} else {
-					fits = box.fitRotate2D(freeSpace);
-				}
-				if(fits && box.getWeight() <= targetContainer.getFreeWeight()) {
-					if(currentBox == null) {
-						currentBox = box;
-						currentIndex = i;
-
-						fullHeight = box.getHeight() == freeSpace.getHeight();
-					} else {
-						if(fullHeight) {
-							if(box.getHeight() == freeSpace.getHeight()) {
-								if(currentBox.getFootprint() < box.getFootprint()) {
-									currentBox = box;
-									currentIndex = i;
-								}
-							}
-						} else {
-							if(box.getHeight() == freeSpace.getHeight()) {
-								fullHeight = true;
-
-								currentBox = box;
-								currentIndex = i;
-							} else if(footprintFirst) {
-								if(currentBox.getFootprint() < box.getFootprint()) {
-									currentBox = box;
-									currentIndex = i;
-								} else if(currentBox.getFootprint() == box.getFootprint() && currentBox.getHeight() < box.getHeight()) {
-									currentBox = box;
-									currentIndex = i;
-								}
-							} else {
-								if(currentBox.getHeight() < box.getHeight()) {
-									currentBox = box;
-									currentIndex = i;
-								} else if(currentBox.getHeight() == box.getHeight() && currentBox.getFootprint() < box.getFootprint()) {
-									currentBox = box;
-									currentIndex = i;
-								}
-							}
-						}
-					}
-				}
-			}
-
-			if(currentBox == null) {
-				break;
-			}
-
-			// current box should have the optimal orientation already
-			// create a space which holds the full level
-			Space levelSpace = new Space(
-						targetContainer.getWidth(),
-						targetContainer.getDepth(),
-						currentBox.getHeight(),
-						0,
-						0,
-						holder.getStackHeight()
-						);
-
-			holder.addLevel();
-			containerProducts.remove(currentIndex);
-
-			if(!fit2D(containerProducts, holder, currentBox, levelSpace, deadline, interrupt)) {
-				return null;
-			}
-
-			freeSpace = holder.getFreeSpace();
-		}
-
-		return new LAFFResult(containerProducts, holder);
+		BooleanSupplier deadlineReached = () -> System.currentTimeMillis() > deadline;
+		return pack(containerProducts, targetContainer, () -> deadlineReached.getAsBoolean()|| interrupt.get());
 	}
 
 	public LAFFResult pack(List<Box> containerProducts, Container targetContainer,  BooleanSupplier interrupt) {
@@ -607,13 +514,6 @@ public class LargestAreaFitFirstPackager extends Packager {
 			private List<Box> boxes;
 			private LAFFResult previous;
 			private List<Container> containers;
-
-			@Override
-			public PackResult attempt(int index, long deadline, AtomicBoolean interrupt) {
-				LAFFResult result = LargestAreaFitFirstPackager.this.pack(new ArrayList<>(boxes), containers.get(index), deadline, interrupt);
-
-				return previous = result;
-			}
 
 			@Override
 			public PackResult attempt(int index, BooleanSupplier interrupt) {
