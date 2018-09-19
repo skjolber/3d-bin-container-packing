@@ -31,7 +31,7 @@ class BruteForcePropertyBasedTests {
 		assertThat(pack).isNotNull();
 	}
 
-	@Property
+	@Property(tries = 10)
 	void identicalBoxesShouldFitInContainers(@ForAll BoxItem item, @ForAll @IntRange(min = 1, max = 2) int countBySide) {
 		final BoxItem repeatedItems = new BoxItem(item.getBox(), countBySide * countBySide * countBySide);
 		//TODO: we could also randomly rotate the items
@@ -64,25 +64,8 @@ class BruteForcePropertyBasedTests {
 				box.getWeight() * totalCount);
 		return Stream
 				.of(threeDim, twoDim, oneDim)
-				.flatMap(BruteForcePropertyBasedTests::rotations)
+				.flatMap(Container::rotationsStream)
 				.collect(Collectors.toList());
-	}
-
-	/**
-	 * The 6 different possible rotations of a container.
-	 */
-	static Stream<Container> rotations(final Container container) {
-		final int width = container.getWidth();
-		final int height = container.getHeight();
-		final int depth = container.getDepth();
-		final int weight = container.getWeight();
-		return Stream.of(
-				new Container(width, height, depth, weight),
-				new Container(width, depth, height, weight),
-				new Container(height, width, depth, weight),
-				new Container(height, depth, width, weight),
-				new Container(depth, height, width, weight),
-				new Container(depth, width, height, weight));
 	}
 
 

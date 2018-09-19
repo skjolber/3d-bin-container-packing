@@ -5,6 +5,7 @@ import com.github.skjolberg.packing.impl.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -55,12 +56,16 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 
 	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline, AtomicBoolean interrupt) {
+		return pack(containerProducts, targetContainer, () -> System.currentTimeMillis() > deadline || interrupt.get());
+	}
+
+	public LAFFResult pack(List<Box> containerProducts, Container targetContainer,  BooleanSupplier interrupt) {
 		Container holder = new Container(targetContainer);
 
 		Dimension freeSpace = targetContainer;
 
 		while(!containerProducts.isEmpty()) {
-			if(System.currentTimeMillis() > deadline || interrupt.get()) {
+			if(interrupt.getAsBoolean()) {
 				// fit2d below might have returned due to deadline
 
 				return null;
@@ -142,7 +147,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 			holder.addLevel();
 			containerProducts.remove(currentIndex);
 
-			if(!fit2D(containerProducts, holder, currentBox, levelSpace, deadline, interrupt)) {
+			if(!fit2D(containerProducts, holder, currentBox, levelSpace, interrupt)) {
 				return null;
 			}
 
@@ -168,7 +173,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 		throw new IllegalArgumentException();
 	}
 
-	private boolean fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace, long deadline, AtomicBoolean interrupt) {
+	private boolean fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace, BooleanSupplier interrupt) {
 
 		if(rotate3D) {
 			// minimize footprint
@@ -187,7 +192,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 			return true;
 		}
 
-		if(System.currentTimeMillis() > deadline || interrupt.get()) {
+		if(interrupt.getAsBoolean()) {
 			return false;
 		}
 
@@ -221,14 +226,14 @@ public class LargestAreaFitFirstPackager extends Packager {
 			if(box != null) {
 				removeIdentical(containerProducts, box);
 
-				if(!fit2D(containerProducts, holder, box, remainder, deadline, interrupt)) {
+				if(!fit2D(containerProducts, holder, box, remainder, interrupt)) {
 					return false;
 				}
 			}
 		}
 
 		// fit the next box in the selected free space
-		return fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), deadline, interrupt);
+		return fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), interrupt);
 
 		// TODO use free spaces between box and level, if any
 	}
@@ -445,8 +450,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 			private List<Container> containers;
 
 			@Override
-			public PackResult attempt(int index, long deadline, AtomicBoolean interrupt) {
-				LAFFResult result = LargestAreaFitFirstPackager.this.pack(new ArrayList<>(boxes), containers.get(index), deadline, interrupt);
+			public PackResult attempt(int index, BooleanSupplier interrupt) {
+				LAFFResult result = LargestAreaFitFirstPackager.this.pack(new ArrayList<>(boxes), containers.get(index), interrupt);
 
 				return previous = result;
 			}

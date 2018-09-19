@@ -82,7 +82,7 @@ public class PermutationRotationIterator {
 				}
 			}
 
-			boxes[i] = new PermutationRotation(list.get(i).getCount(), result.toArray(new Box[result.size()]));
+			boxes[i] = new PermutationRotation(list.get(i).getCount(), result.toArray(new Box[0]));
 		}
 		return boxes;
 	}
@@ -113,7 +113,7 @@ public class PermutationRotationIterator {
 
 			// create PermutationRotation even if empty, so that permutations are directly
 			// comparable between parallel instances of this class
-			matrix.add(new PermutationRotation(unconstrained[i].getCount(), result.toArray(new Box[result.size()])));
+			matrix.add(new PermutationRotation(unconstrained[i].getCount(), result.toArray(new Box[0])));
 
 			if(!result.isEmpty()) {
 				for(int k = 0; k < unconstrained[i].getCount(); k++) {
@@ -122,7 +122,7 @@ public class PermutationRotationIterator {
 			}
 		}
 
-		this.matrix = matrix.toArray(new PermutationRotation[matrix.size()]);
+		this.matrix = matrix.toArray(new PermutationRotation[0]);
 
 		this.dimension = bound;
 

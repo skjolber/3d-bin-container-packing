@@ -539,7 +539,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	void testPackagerWith3ContainersAnd1BoxItemUsingSingleContraint() {
+	void testPackagerWith3ContainersAnd1BoxItemUsingSingleConstraint() {
 		final List<Container> containers = Arrays.asList(
 				new Container(1,1,4417,1),
 				new Container(4417,1,1,1),

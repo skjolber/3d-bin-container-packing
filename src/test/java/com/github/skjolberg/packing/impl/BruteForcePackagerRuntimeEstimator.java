@@ -88,7 +88,7 @@ public class BruteForcePackagerRuntimeEstimator {
 				long countRotations = iterator.countRotations();
 
 				if(countPermutations == -1L) {
-					System.out.println(n + "@" + k + " for infinite permuation complexity");
+					System.out.println(n + "@" + k + " for infinite permutation complexity");
 
 					continue;
 				}
@@ -156,7 +156,7 @@ public class BruteForcePackagerRuntimeEstimator {
 	private static List<Measurement> run(long deadline, int min, int max) {
 		List<Measurement> estimates = new ArrayList<>();
 
-		long totalDomplexity = 0;
+		long totalComplexity = 0;
 		long totalDuration = 0;
 
 		int n = min;
@@ -186,7 +186,7 @@ public class BruteForcePackagerRuntimeEstimator {
 				long countRotations = iterator.countRotations();
 
 				if(countPermutations == -1L) {
-					System.out.println(n + "@" + k + " for infinite permuation complexity");
+					System.out.println(n + "@" + k + " for infinite permutation complexity");
 
 					continue;
 				}
@@ -212,12 +212,12 @@ public class BruteForcePackagerRuntimeEstimator {
 				}
 				long duration = (System.nanoTime() - time);
 				if(duration > 1) {
-					totalDomplexity += complexity;
+					totalComplexity += complexity;
 					totalDuration += duration;
 
 					estimates.add(new Measurement(countRotations, countPermutations, duration));
 
-					System.out.println(n + "@" + k + " in " + (System.nanoTime() - time) / 1000000 + " for complexity " + complexity + " = " + (duration / complexity) + " average " + (totalDuration / totalDomplexity) + "ns per complexity");
+					System.out.println(n + "@" + k + " in " + (System.nanoTime() - time) / 1000000 + " for complexity " + complexity + " = " + (duration / complexity) + " average " + (totalDuration / totalComplexity) + "ns per complexity");
 				} else {
 					System.out.println(n + "@" + k + " in " + (System.nanoTime() - time) / 1000000 + " for complexity " + complexity);
 				}

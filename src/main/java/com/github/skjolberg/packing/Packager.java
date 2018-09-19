@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
 
 
 /**
@@ -88,11 +89,15 @@ public abstract class Packager {
 		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline, ALWAYS_FALSE);
 	}
 
+	public Container pack(List<BoxItem> boxes, BooleanSupplier interrupt) {
+		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), interrupt);
+	}
+
 	/**
 	 * Return a container which holds all the boxes in the argument
 	 *
-	 * @param boxes		list of boxes to fit in a container
-	 * @param deadline	the system time in millis at which the search should be aborted
+	 * @param boxes     list of boxes to fit in a container
+	 * @param deadline  the system time in millis at which the search should be aborted
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
 	 * @return index of container if match, -1 if not
 	 */
@@ -122,6 +127,10 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline, AtomicBoolean interrupt) {
+		return pack(boxes, containers, () -> System.currentTimeMillis() > deadline || interrupt.get());
+	}
+
+	public Container pack(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
 		if (containers.isEmpty()) {
 			return null;
 		}
@@ -129,14 +138,14 @@ public abstract class Packager {
 		Adapter pack = adapter();
 		pack.initialize(boxes, containers);
 
-		if (!binarySearch || containers.size() <= 2 || deadline == Long.MAX_VALUE) {
+		if (!binarySearch || containers.size() <= 2) {
 			for (int i = 0; i < containers.size(); i++) {
 
-				if (System.currentTimeMillis() > deadline || interrupt.get()) {
+				if (interrupt.getAsBoolean()) {
 					break;
 				}
 
-				PackResult result = pack.attempt(i, deadline, interrupt);
+				PackResult result = pack.attempt(i, interrupt);
 				if (result == null) {
 					return null; // timeout
 				}
@@ -166,7 +175,7 @@ public abstract class Packager {
 					int next = iterator.next();
 					int mid = containerIndexes.get(next);
 
-					PackResult result = pack.attempt(mid, deadline, interrupt);
+					PackResult result = pack.attempt(mid, interrupt);
 					if (result == null) {
 						return null; // timeout
 					}
@@ -178,7 +187,7 @@ public abstract class Packager {
 					} else {
 						iterator.higher();
 					}
-					if (System.currentTimeMillis() > deadline || interrupt.get()) {
+					if (interrupt.getAsBoolean()) {
 						break search;
 					}
 				} while (iterator.hasNext());
@@ -226,14 +235,25 @@ public abstract class Packager {
 	/**
 	 * Return a list of containers which holds all the boxes in the argument
 	 *
-	 * @param boxes		list of boxes to fit in a container
-	 * @param limit		maximum number of containers
-	 * @param deadline	the system time in milliseconds at which the search should be aborted
-	 * @param interrupt	When true, the computation is interrupted as soon as possible.
-	 * @return  index of container if match, -1 if not
+	 * @param boxes     list of boxes to fit in a container
+	 * @param limit     maximum number of containers
+	 * @param deadline  the system time in milliseconds at which the search should be aborted
+	 * @param interrupt When true, the computation is interrupted as soon as possible.
+	 * @return index of container if match, -1 if not
 	 */
 	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline, AtomicBoolean interrupt) {
+		return packList(boxes, limit, () -> System.currentTimeMillis() > deadline || interrupt.get());
+	}
 
+	/**
+	 * Return a list of containers which holds all the boxes in the argument
+	 *
+	 * @param boxes     list of boxes to fit in a container
+	 * @param limit     maximum number of containers
+	 * @param interrupt When true, the computation is interrupted as soon as possible.
+	 * @return index of container if match, -1 if not
+	 */
+	public List<Container> packList(List<BoxItem> boxes, int limit, BooleanSupplier interrupt) {
 		List<Container> containers = filterByVolumeAndWeight(toBoxes(boxes, true), Arrays.asList(this.containers), limit);
 		if (containers.isEmpty()) {
 			return null;
@@ -250,11 +270,11 @@ public abstract class Packager {
 			PackResult best = null;
 			for (int i = 0; i < containers.size(); i++) {
 
-				if (System.currentTimeMillis() > deadline || interrupt.get()) {
+				if (interrupt.getAsBoolean()) {
 					return null;
 				}
 
-				PackResult result = pack.attempt(i, deadline, interrupt);
+				PackResult result = pack.attempt(i, interrupt);
 				if (result == null) {
 					return null; // timeout
 				}
