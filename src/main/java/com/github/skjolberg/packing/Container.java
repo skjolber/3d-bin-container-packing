@@ -54,6 +54,9 @@ public class Container extends Box {
 
 	/**
 	 * The 6 different possible rotations.
+	 *
+	 * It is sometimes useful to pass this list to the {@link LargestAreaFitFirstPackager}
+	 * since it has a better chance to find a packaging than with a single container.
 	 */
 	public List<Container> rotations(){
 		return rotationsStream().collect(Collectors.toList());
