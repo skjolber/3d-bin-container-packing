@@ -2,6 +2,9 @@ package com.github.skjolberg.packing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static java.lang.Math.max;
 
 public class Container extends Box {
@@ -47,6 +50,23 @@ public class Container extends Box {
 	 */
 	public Container(String name, int w, int d, int h, int weight) {
 		super(name, w, d, h, weight);
+	}
+
+	/**
+	 * The 6 different possible rotations.
+	 */
+	public List<Container> rotations(){
+		return rotationsStream().collect(Collectors.toList());
+	}
+
+	Stream<Container> rotationsStream() {
+		return Stream.of(
+				new Container(width, height, depth, weight),
+				new Container(width, depth, height, weight),
+				new Container(height, width, depth, weight),
+				new Container(height, depth, width, weight),
+				new Container(depth, height, width, weight),
+				new Container(depth, width, height, weight));
 	}
 
 	public boolean add(Level element) {
@@ -99,7 +119,7 @@ public class Container extends Box {
 	int getFreeWeight() {
 		int remainder = weight - getStackWeight();
 		if(remainder < 0) {
-			throw new IllegalArgumentException("Remaining weigth is negative at " + remainder);
+			throw new IllegalArgumentException("Remaining weight is negative at " + remainder);
 		}
 		return remainder;
 	}
@@ -171,7 +191,7 @@ public class Container extends Box {
 
 
 
-	Dimension getUsedSpace() {
+	public Dimension getUsedSpace() {
 		Dimension maxBox = Dimension.EMPTY;
 		int height = 0;
 		for (Level level : levels) {

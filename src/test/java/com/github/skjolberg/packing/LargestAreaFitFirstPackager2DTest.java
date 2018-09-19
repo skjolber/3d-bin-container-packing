@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Disabled;
@@ -237,7 +238,7 @@ class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
 	@Test
 	void testIssue4() {
-		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(Arrays.asList(new Container("Plane", 1335, 285, 247, 0)), false, true, true);
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(Collections.singletonList(new Container("Plane", 1335, 285, 247, 0)), false, true, true);
 		List<BoxItem> products = new ArrayList<>();
 		products.add(new BoxItem(new Box("72407",20,30,15, 0), 1));
 		products.add(new BoxItem(new Box("74809",100,120,52, 0), 1));
