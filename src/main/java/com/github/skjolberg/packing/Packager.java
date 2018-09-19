@@ -17,9 +17,6 @@ import java.util.function.BooleanSupplier;
  */
 
 public abstract class Packager {
-
-	static final AtomicBoolean ALWAYS_FALSE = new AtomicBoolean(false);
-
 	private final Container[] containers;
 
 	final boolean rotate3D; // if false, then 2d
@@ -86,7 +83,7 @@ public abstract class Packager {
 	 */
 
 	public Container pack(List<BoxItem> boxes, long deadline) {
-		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline, ALWAYS_FALSE);
+		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadLinePredicate(deadline));
 	}
 
 	public Container pack(List<BoxItem> boxes, BooleanSupplier interrupt) {
@@ -114,7 +111,7 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline) {
-		return pack(boxes, containers, deadline, ALWAYS_FALSE);
+		return pack(boxes, containers, deadLinePredicate(deadline));
 	}
 
 	/**
@@ -127,7 +124,7 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline, AtomicBoolean interrupt) {
-		return pack(boxes, containers, () -> System.currentTimeMillis() > deadline || interrupt.get());
+		return pack(boxes, containers, () -> deadlineReached(deadline) || interrupt.get());
 	}
 
 	public Container pack(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
@@ -229,7 +226,15 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline) {
-		return packList(boxes, limit, deadline, ALWAYS_FALSE);
+		return packList(boxes, limit, deadLinePredicate(deadline));
+	}
+
+	static BooleanSupplier deadLinePredicate(final long deadline) {
+		return () -> deadlineReached(deadline);
+	}
+
+	static boolean deadlineReached(final long deadline) {
+		return System.currentTimeMillis() > deadline;
 	}
 
 	/**
@@ -242,7 +247,7 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline, AtomicBoolean interrupt) {
-		return packList(boxes, limit, () -> System.currentTimeMillis() > deadline || interrupt.get());
+		return packList(boxes, limit, () -> deadlineReached(deadline) || interrupt.get());
 	}
 
 	/**

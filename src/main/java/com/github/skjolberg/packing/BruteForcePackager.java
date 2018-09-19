@@ -45,11 +45,11 @@ public class BruteForcePackager extends Packager {
 	}
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline) {
-		return pack(placements, container, rotator, deadline, Packager.ALWAYS_FALSE);
+		return pack(placements, container, rotator, deadLinePredicate(deadline));
 	}
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline, AtomicBoolean interrupt) {
-		return pack(placements, container, rotator, () -> System.currentTimeMillis() > deadline || interrupt.get());
+		return pack(placements, container, rotator, () -> deadlineReached(deadline) || interrupt.get());
 	}
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, BooleanSupplier interrupt) {
@@ -93,11 +93,11 @@ public class BruteForcePackager extends Packager {
 	}
 
 	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, Container holder, int index) {
-		return pack(placements, container, rotator, deadline, holder, index, Packager.ALWAYS_FALSE);
+		return pack(placements, container, rotator, holder, index, deadLinePredicate(deadline));
 	}
 
 	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, Container holder, int index, AtomicBoolean interrupt) {
-		return pack(placements, container, rotator, holder, index, () -> System.currentTimeMillis() > deadline || interrupt.get());
+		return pack(placements, container, rotator, holder, index, () -> deadlineReached(deadline) || interrupt.get());
 	}
 
 	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, Container holder, int index, BooleanSupplier interrupt) {
@@ -257,12 +257,12 @@ public class BruteForcePackager extends Packager {
 	private static boolean a(Space freeSpace, Box used, Placement target) {
 		if (target.getBox().fitsInside3D(freeSpace.getWidth(), freeSpace.getDepth() - used.getDepth(), freeSpace.getHeight())) {
 			target.getSpace().copyFrom(
-				freeSpace.getWidth(), freeSpace.getDepth() - used.getDepth(), freeSpace.getHeight(),
-				freeSpace.getX(), freeSpace.getY() + used.depth, freeSpace.getHeight()
+					freeSpace.getWidth(), freeSpace.getDepth() - used.getDepth(), freeSpace.getHeight(),
+					freeSpace.getX(), freeSpace.getY() + used.depth, freeSpace.getHeight()
 			);
 			target.getSpace().getRemainder().copyFrom(
-				freeSpace.getWidth() - used.getWidth(), used.getDepth(), freeSpace.getHeight(),
-				freeSpace.getX() + used.getWidth(), freeSpace.getY(), freeSpace.getZ()
+					freeSpace.getWidth() - used.getWidth(), used.getDepth(), freeSpace.getHeight(),
+					freeSpace.getX() + used.getWidth(), freeSpace.getY(), freeSpace.getZ()
 			);
 			target.getSpace().setParent(freeSpace);
 			target.getSpace().getRemainder().setParent(freeSpace);
@@ -276,13 +276,13 @@ public class BruteForcePackager extends Packager {
 		if (target.getBox().fitsInside3D(freeSpace.getWidth() - used.getWidth(), freeSpace.getDepth(), freeSpace.getHeight())) {
 			// we have a winner
 			target.getSpace().copyFrom(
-				freeSpace.getWidth() - used.getWidth(), freeSpace.getDepth(), freeSpace.getHeight(),
-				freeSpace.getX() + used.getWidth(), freeSpace.getY(), freeSpace.getZ()
+					freeSpace.getWidth() - used.getWidth(), freeSpace.getDepth(), freeSpace.getHeight(),
+					freeSpace.getX() + used.getWidth(), freeSpace.getY(), freeSpace.getZ()
 			);
 
 			target.getSpace().getRemainder().copyFrom(
-				used.getWidth(), freeSpace.getDepth() - used.getDepth(), freeSpace.getHeight(),
-				freeSpace.getX(), freeSpace.getY() + used.getDepth(), freeSpace.getZ()
+					used.getWidth(), freeSpace.getDepth() - used.getDepth(), freeSpace.getHeight(),
+					freeSpace.getX(), freeSpace.getY() + used.getDepth(), freeSpace.getZ()
 			);
 
 			target.getSpace().setParent(freeSpace);
