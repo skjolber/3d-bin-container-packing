@@ -131,7 +131,7 @@
 		<dependency>
 			<groupId>net.jqwik</groupId>
 			<artifactId>jqwik</artifactId>
-			<version>0.9.0</version>
+			<version>0.9.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
