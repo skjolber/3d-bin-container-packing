@@ -416,5 +416,25 @@ class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 		runsLimitedTimeSeconds(new LargestAreaFitFirstPackager(containers, true, true, true), 20);
 	}
 
+	@Test
+	void testIssue60() {
+		
+		List<Container> containers = new ArrayList<>();
+		containers.add(new Container(128, 55, 224, 0));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true, true);
+
+		List<BoxItem> products = new ArrayList<>();
+		
+	    products.add(new BoxItem(new Box("A", 90, 40,  112, 0), 1));
+	    products.add(new BoxItem(new Box("B", 32, 17,  50, 0), 1));		
+	    
+	    List<Container> packList = packager.packList(products, 5, Long.MAX_VALUE);
+	    
+	    assertNotNull(packList);
+	    assertEquals(1, packList.size());
+	    assertEquals(1, packList.get(0).getLevels().size());
+	    System.out.println(packList);
+	}
+	
 
 }
