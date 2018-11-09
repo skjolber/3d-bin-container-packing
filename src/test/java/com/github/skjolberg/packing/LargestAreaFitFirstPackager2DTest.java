@@ -353,33 +353,33 @@ class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
 	@Test
 	void testIssue5() {
-        java.util.List<Container> containers = new ArrayList<>();
-        containers.add(new Container("Plane", 1355, 285, 247, 0));
-        LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, false, true);
-        List<BoxItem> products = new ArrayList<>();
+		java.util.List<Container> containers = new ArrayList<>();
+		containers.add(new Container("Plane", 1355, 285, 247, 0));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, false, true);
+		List<BoxItem> products = new ArrayList<>();
 
-        products.add(new BoxItem(new Box("72407",97,193,48, 0), 1));
-        products.add(new BoxItem(new Box("74809",97,193,48, 0), 1));
-        products.add(new BoxItem(new Box("71535",97,193,48, 0), 1));
-        products.add(new BoxItem(new Box("74780",97,110,46, 0), 1));
-        products.add(new BoxItem(new Box("74760",97,110,46, 0), 1));
-        products.add(new BoxItem(new Box("74757",97,110,46, 0), 1));
-        products.add(new BoxItem(new Box("74808",59,56,174, 0), 1));
-        products.add(new BoxItem(new Box("73770",59,56,174, 0), 1));
-        products.add(new BoxItem(new Box("74844",59,56,174, 0), 1));
-        products.add(new BoxItem(new Box("74846",59,56,174, 0), 1));
-        products.add(new BoxItem(new Box("73767",59,56,174, 0), 1));
-        products.add(new BoxItem(new Box("74848",59,56,174, 0), 1));
-        products.add(new BoxItem(new Box("74850",59,56,174, 0), 1));
-        products.add(new BoxItem(new Box("74852",59,56,174, 0), 1));
-        products.add(new BoxItem(new Box("74787",59,56,174, 0), 1));
-        products.add(new BoxItem(new Box("74806",59,56,174, 0), 1));
-        products.add(new BoxItem(new Box("74781",61,90,220, 0), 1));
-        products.add(new BoxItem(new Box("74775",74,93,216, 0), 1));
-        products.add(new BoxItem(new Box("74756",61,90,220, 0), 1));
-        products.add(new BoxItem(new Box("74797",61,90,220, 0), 1));
-        products.add(new BoxItem(new Box("74835",61,90,220, 0), 1));
-        products.add(new BoxItem(new Box("74834",74,93,216, 0), 1));
+		products.add(new BoxItem(new Box("72407",97,193,48, 0), 1));
+		products.add(new BoxItem(new Box("74809",97,193,48, 0), 1));
+		products.add(new BoxItem(new Box("71535",97,193,48, 0), 1));
+		products.add(new BoxItem(new Box("74780",97,110,46, 0), 1));
+		products.add(new BoxItem(new Box("74760",97,110,46, 0), 1));
+		products.add(new BoxItem(new Box("74757",97,110,46, 0), 1));
+		products.add(new BoxItem(new Box("74808",59,56,174, 0), 1));
+		products.add(new BoxItem(new Box("73770",59,56,174, 0), 1));
+		products.add(new BoxItem(new Box("74844",59,56,174, 0), 1));
+		products.add(new BoxItem(new Box("74846",59,56,174, 0), 1));
+		products.add(new BoxItem(new Box("73767",59,56,174, 0), 1));
+		products.add(new BoxItem(new Box("74848",59,56,174, 0), 1));
+		products.add(new BoxItem(new Box("74850",59,56,174, 0), 1));
+		products.add(new BoxItem(new Box("74852",59,56,174, 0), 1));
+		products.add(new BoxItem(new Box("74787",59,56,174, 0), 1));
+		products.add(new BoxItem(new Box("74806",59,56,174, 0), 1));
+		products.add(new BoxItem(new Box("74781",61,90,220, 0), 1));
+		products.add(new BoxItem(new Box("74775",74,93,216, 0), 1));
+		products.add(new BoxItem(new Box("74756",61,90,220, 0), 1));
+		products.add(new BoxItem(new Box("74797",61,90,220, 0), 1));
+		products.add(new BoxItem(new Box("74835",61,90,220, 0), 1));
+		products.add(new BoxItem(new Box("74834",74,93,216, 0), 1));
 
 		Container pack = packager.pack(products);
 		assertNotNull(pack);
@@ -392,20 +392,20 @@ class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
 	@Test
 	void noFitFullHeightRotation2D() {
-	   List<Container> containers = new ArrayList<>();
-	   containers.add(new Container(100, 10, 20, 0));
-	   LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true, true);
+		List<Container> containers = new ArrayList<>();
+		containers.add(new Container(100, 10, 20, 0));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true, true);
 
-	   List<BoxItem> products = new ArrayList<>();
+		List<BoxItem> products = new ArrayList<>();
 
-	   products.add(new BoxItem(new Box("J", 10, 10, 10, 0), 1));
+		products.add(new BoxItem(new Box("J", 10, 10, 10, 0), 1));
 
-	   products.add(new BoxItem(new Box("J", 10, 10, 20, 0), 1));
+		products.add(new BoxItem(new Box("J", 10, 10, 20, 0), 1));
 
-	   Container fits = packager.pack(products);
-	   assertNotNull(fits);
+		Container fits = packager.pack(products);
+		assertNotNull(fits);
 
-	   validate(fits);
+		validate(fits);
 	}
 
 	@Test
@@ -418,23 +418,43 @@ class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
 	@Test
 	void testIssue60() {
-		
+
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(128, 55, 224, 0));
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true, true);
 
 		List<BoxItem> products = new ArrayList<>();
-		
-	    products.add(new BoxItem(new Box("A", 90, 40,  112, 0), 1));
-	    products.add(new BoxItem(new Box("B", 32, 17,  50, 0), 1));		
-	    
-	    List<Container> packList = packager.packList(products, 5, Long.MAX_VALUE);
-	    
-	    assertNotNull(packList);
-	    assertEquals(1, packList.size());
-	    assertEquals(1, packList.get(0).getLevels().size());
-	    System.out.println(packList);
+
+		products.add(new BoxItem(new Box("A", 90, 40,  112, 0), 1));
+		products.add(new BoxItem(new Box("B", 32, 17,  50, 0), 1));		
+
+		List<Container> packList = packager.packList(products, 5, Long.MAX_VALUE);
+
+		assertNotNull(packList);
+		assertEquals(1, packList.size());
+		assertEquals(1, packList.get(0).getLevels().size());
+		System.out.println(packList);
 	}
-	
+
+	@Test
+	void testIssue62() {
+		List<Container> containers = new ArrayList<>();
+		containers.add(new Container(128, 55, 224, 0));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, false, true);
+
+		List<BoxItem> products = new ArrayList<>();
+
+		products.add(new BoxItem(new Box("a", 32, 17, 112, 0), 6));
+		products.add(new BoxItem(new Box("b", 27, 37, 37, 0), 6)); 
+		products.add(new BoxItem(new Box("c", 35 , 54, 33, 0), 2));
+
+		List<Container> packs = packager.packList(products, Integer.MAX_VALUE, Long.MAX_VALUE);
+		
+		for(Container pack : packs) {
+			print(pack);
+			validate(pack);
+		}
+	}
+
 
 }
