@@ -1,4 +1,6 @@
-sudo: false
+dist: trusty
+sudo: required
+
 language: java
 jdk:
   - oraclejdk8
@@ -6,3 +8,13 @@ jdk:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+addons:
+  sonarcloud:
+    organization: "skjolber-github"
+script:
+  - sonar-scanner
+
+cache:
+  directories:
+    - '$HOME/.sonar/cache'
