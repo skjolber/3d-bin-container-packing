@@ -184,7 +184,7 @@ public class PermutationRotationIterator {
 	public boolean nextRotation() {
 		// next rotation
 		for(int i = 0; i < rotations.length; i++) {
-			while(rotations[i] < matrix[permutations[i]].getBoxes().length - 1) {
+			if(rotations[i] < matrix[permutations[i]].getBoxes().length - 1) {
 				rotations[i]++;
 
 				// reset all previous counters

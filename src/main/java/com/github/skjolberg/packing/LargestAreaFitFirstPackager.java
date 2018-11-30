@@ -373,7 +373,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 						bestBox = box;
 					} else if(bestBox.getVolume() < box.getVolume()) {
 						bestBox = box;
-					} else if(bestBox.getVolume() < box.getVolume()) {
+					} else if(bestBox.getVolume() == box.getVolume()) {
 						// TODO use the aspect ratio in some meaningful way
 					}
 				}
