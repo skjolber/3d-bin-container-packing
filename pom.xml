@@ -36,7 +36,7 @@
 		<maven-shade-plugin.version>3.1.1</maven-shade-plugin.version>
 		<maven-war-plugin.version>3.2.2</maven-war-plugin.version>
 		<owasp-dependency-check.version>3.2.1</owasp-dependency-check.version>
-		<pitest.version>1.4.3</pitest.version>
+		<pitest.version>1.4.4</pitest.version>
 		
 	</properties>
 	
