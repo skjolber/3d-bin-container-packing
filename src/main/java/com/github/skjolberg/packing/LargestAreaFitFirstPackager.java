@@ -279,7 +279,6 @@ public class LargestAreaFitFirstPackager extends Packager {
 						freespace.getWidth() - used.getWidth(), freespace.getDepth(), freespace.getHeight(),
 						freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
 						);
-
 				Space rightRemainder = new Space(
 						used.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
 					freespace.getX(), freespace.getY() + used.getDepth(), freespace.getZ()
@@ -292,8 +291,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 			// A
 			if(freespace.getDepth() > used.getDepth()) {
 				Space top = new Space(
-							freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
-					freespace.getX(), freespace.getY() + used.depth, freespace.getHeight()
+						freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
+						freespace.getX(), freespace.getY() + used.depth, freespace.getZ()
 						);
 				Space topRemainder = new Space(
 							freespace.getWidth() - used.getWidth(), used.getDepth(), freespace.getHeight(),
@@ -302,6 +301,41 @@ public class LargestAreaFitFirstPackager extends Packager {
 				top.setRemainder(topRemainder);
 				topRemainder.setRemainder(top);
 				freeSpaces[1] = top;
+				
+			}
+		}
+
+		if(freespace.getWidth() >= used.getDepth() && freespace.getDepth() >= used.getWidth()) {
+			// if D is empty, then it is sufficient to work with C and the other way around
+
+			// D
+			if(freespace.getWidth() > used.getDepth()) {
+				Space right = new Space(
+						freespace.getWidth() - used.getDepth(), freespace.getDepth(), freespace.getHeight(),
+						freespace.getX() + used.getDepth(), freespace.getY(), freespace.getZ()
+						);
+				Space rightRemainder = new Space(
+						used.getDepth(), freespace.getDepth() - used.getWidth(), freespace.getHeight(),
+					freespace.getX(), freespace.getY(), freespace.getZ()
+						);
+				right.setRemainder(rightRemainder);
+				rightRemainder.setRemainder(right);
+				freeSpaces[2] = right;
+			}
+
+			// C
+			if(freespace.getDepth() > used.getWidth()) {
+				Space top = new Space(
+						freespace.getWidth(), freespace.getDepth()- used.getWidth() , freespace.getHeight(),
+						freespace.getX(), freespace.getY(), freespace.getZ()
+						);
+				Space topRemainder = new Space(
+						freespace.getWidth() - used.getDepth(), used.getWidth(), freespace.getHeight(),
+						freespace.getX() + used.getDepth(), freespace.getY(), freespace.getZ()
+						);
+				top.setRemainder(topRemainder);
+				topRemainder.setRemainder(top);
+				freeSpaces[3] = top;
 			}
 		}
 
