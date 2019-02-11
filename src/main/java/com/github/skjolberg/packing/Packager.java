@@ -1,403 +1,471 @@
 package com.github.skjolberg.packing;
 
+import com.github.skjolberg.packing.impl.*;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
+
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
- * 
+ *
  * Thread-safe implementation.
  */
 
-public class Packager {
+public abstract class Packager {
+	private final Container[] containers;
 
-	protected final Dimension[] containers;
-	
-	protected final boolean rotate3D; // if false, then 2d
-	protected final boolean footprintFirst;
-	
+	final boolean rotate3D; // if false, then 2d
+	private final boolean binarySearch;
+
 	/**
 	 * Constructor
-	 * 
-	 * @param containers Dimensions of supported containers
+	 *
+	 * @param containers list of containers
 	 */
-	public Packager(List<? extends Dimension> containers) {
+
+	public Packager(List<Container> containers) {
 		this(containers, true, true);
 	}
 
-	public Packager(List<? extends Dimension> containers, boolean rotate3D, boolean footprintFirst) {
-		this.containers = containers.toArray(new Dimension[containers.size()]);
-		this.rotate3D = rotate3D;
-		this.footprintFirst = footprintFirst;
-	}
-	
 	/**
-	 * 
-	 * Return a container which holds all the boxes in the argument
-	 * 
+	 * Constructor
+	 *
+	 * @param containers   list of containers
+	 * @param rotate3D     whether boxes can be rotated in all three directions (two directions otherwise)
+	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a
+	 *                     match, it searches the preceding boxes as well, until the deadline is passed.
+	 */
+
+	public Packager(List<Container> containers, boolean rotate3D, boolean binarySearch) {
+		this.containers = containers.toArray(new Container[0]);
+		this.rotate3D = rotate3D;
+		this.binarySearch = binarySearch;
+
+		long maxVolume = Long.MIN_VALUE;
+		long maxWeight = Long.MIN_VALUE;
+
+		for (Container container : containers) {
+			// volume
+			long boxVolume = container.getVolume();
+			if (boxVolume > maxVolume) {
+				maxVolume = boxVolume;
+			}
+
+			// weight
+			long boxWeight = container.getWeight();
+			if (boxWeight > maxWeight) {
+				maxWeight = boxWeight;
+			}
+		}
+	}
+
+	/**
+	 * Return a container which holds all the boxes in the argument.
+	 *
 	 * @param boxes list of boxes to fit in a container
 	 * @return null if no match
 	 */
-	
-	public Container pack(List<Box> boxes) {
-		
-		int volume = 0;
-		for(Box box : boxes) {
-			volume += box.getVolume();
+	public Container pack(List<BoxItem> boxes) {
+		return pack(boxes, Long.MAX_VALUE);
+	}
+
+	/**
+	 * Return a container which holds all the boxes in the argument
+	 *
+	 * @param boxes    list of boxes to fit in a container
+	 * @param deadline the system time in millis at which the search should be aborted
+	 * @return index of container if match, -1 if not
+	 */
+
+	public Container pack(List<BoxItem> boxes, long deadline) {
+		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadLinePredicate(deadline));
+	}
+
+	public Container pack(List<BoxItem> boxes, BooleanSupplier interrupt) {
+		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), interrupt);
+	}
+
+	/**
+	 * Return a container which holds all the boxes in the argument
+	 *
+	 * @param boxes     list of boxes to fit in a container
+	 * @param deadline  the system time in millis at which the search should be aborted
+	 * @param interrupt When true, the computation is interrupted as soon as possible.
+	 * @return index of container if match, -1 if not
+	 */
+	public Container pack(List<BoxItem> boxes, long deadline, AtomicBoolean interrupt) {
+		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline, interrupt);
+	}
+
+	/**
+	 * Return a container which holds all the boxes in the argument
+	 *
+	 * @param boxes      list of boxes to fit in a container
+	 * @param containers list of containers
+	 * @param deadline   the system time in milliseconds at which the search should be aborted
+	 * @return index of container if match, -1 if not
+	 */
+	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline) {
+		return pack(boxes, containers, deadLinePredicate(deadline));
+	}
+
+	/**
+	 * Return a container which holds all the boxes in the argument
+	 *
+	 * @param boxes      list of boxes to fit in a container
+	 * @param containers list of containers
+	 * @param deadline   the system time in milliseconds at which the search should be aborted
+	 * @param interrupt  When true, the computation is interrupted as soon as possible.
+	 * @return index of container if match, -1 if not
+	 */
+	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline, AtomicBoolean interrupt) {
+		return pack(boxes, containers, () -> deadlineReached(deadline) || interrupt.get());
+	}
+
+	public Container pack(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
+		if (containers.isEmpty()) {
+			return null;
 		}
-		
-		boxes:
-		for(Dimension containerBox : containers) {
-			if(containerBox.getVolume() < volume) {
+
+		Adapter pack = adapter();
+		pack.initialize(boxes, containers);
+
+		if (!binarySearch || containers.size() <= 2) {
+			for (int i = 0; i < containers.size(); i++) {
+
+				if (interrupt.getAsBoolean()) {
+					break;
+				}
+
+				PackResult result = pack.attempt(i, interrupt);
+				if (result == null) {
+					return null; // timeout
+				}
+
+				if (!pack.hasMore(result)) {
+					return pack.accepted(result);
+				}
+			}
+		} else {
+			// perform a binary search among the available containers
+			// the list is ranked from most desirable to least.
+			PackResult[] results = new PackResult[containers.size()];
+			boolean[] checked = new boolean[results.length];
+
+			ArrayList<Integer> containerIndexes = new ArrayList<>(containers.size());
+			for (int i = 0; i < containers.size(); i++) {
+				containerIndexes.add(i);
+			}
+
+			BinarySearchIterator iterator = new BinarySearchIterator();
+
+			search:
+			do {
+				iterator.reset(containerIndexes.size() - 1, 0);
+
+				do {
+					int next = iterator.next();
+					int mid = containerIndexes.get(next);
+
+					PackResult result = pack.attempt(mid, interrupt);
+					if (result == null) {
+						return null; // timeout
+					}
+					checked[mid] = true;
+					if (!pack.hasMore(result)) {
+						results[mid] = result;
+
+						iterator.lower();
+					} else {
+						iterator.higher();
+					}
+					if (interrupt.getAsBoolean()) {
+						break search;
+					}
+				} while (iterator.hasNext());
+
+				// halt when have a result, and checked all containers at the lower indexes
+				for (int i = 0; i < containerIndexes.size(); i++) {
+					Integer integer = containerIndexes.get(i);
+					if (results[integer] != null) {
+						// remove end items; we already have a better match
+						while (containerIndexes.size() > i) {
+							containerIndexes.remove(containerIndexes.size() - 1);
+						}
+						break;
+					}
+
+					// remove item
+					if (checked[integer]) {
+						containerIndexes.remove(i);
+						i--;
+					}
+				}
+			} while (!containerIndexes.isEmpty());
+
+			for (final PackResult result : results) {
+				if (result != null) {
+					return pack.accepted(result);
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Return a list of containers which holds all the boxes in the argument
+	 *
+	 * @param boxes    list of boxes to fit in a container
+	 * @param limit    maximum number of containers
+	 * @param deadline the system time in milliseconds at which the search should be aborted
+	 * @return index of container if match, -1 if not
+	 */
+	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline) {
+		return packList(boxes, limit, deadLinePredicate(deadline));
+	}
+
+	static BooleanSupplier deadLinePredicate(final long deadline) {
+		return () -> deadlineReached(deadline);
+	}
+
+	static boolean deadlineReached(final long deadline) {
+		return System.currentTimeMillis() > deadline;
+	}
+
+	/**
+	 * Return a list of containers which holds all the boxes in the argument
+	 *
+	 * @param boxes     list of boxes to fit in a container
+	 * @param limit     maximum number of containers
+	 * @param deadline  the system time in milliseconds at which the search should be aborted
+	 * @param interrupt When true, the computation is interrupted as soon as possible.
+	 * @return index of container if match, -1 if not
+	 */
+	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline, AtomicBoolean interrupt) {
+		return packList(boxes, limit, () -> deadlineReached(deadline) || interrupt.get());
+	}
+
+	/**
+	 * Return a list of containers which holds all the boxes in the argument
+	 *
+	 * @param boxes     list of boxes to fit in a container
+	 * @param limit     maximum number of containers
+	 * @param interrupt When true, the computation is interrupted as soon as possible.
+	 * @return index of container if match, -1 if not
+	 */
+	public List<Container> packList(List<BoxItem> boxes, int limit, BooleanSupplier interrupt) {
+		List<Container> containers = filterByVolumeAndWeight(toBoxes(boxes, true), Arrays.asList(this.containers), limit);
+		if (containers.isEmpty()) {
+			return null;
+		}
+
+		Adapter pack = adapter();
+		pack.initialize(boxes, containers);
+
+		List<Container> containerPackResults = new ArrayList<>();
+
+		// binary search: not as simple as in the single-container use-case; discarding containers would need some kind
+		// of criteria which could be trivially calculated, perhaps on volume.
+		do {
+			PackResult best = null;
+			for (int i = 0; i < containers.size(); i++) {
+
+				if (interrupt.getAsBoolean()) {
+					return null;
+				}
+
+				PackResult result = pack.attempt(i, interrupt);
+				if (result == null) {
+					return null; // timeout
+				}
+
+				if (!result.isEmpty()) {
+					if (best == null || result.packsMoreBoxesThan(best)) {
+						best = result;
+
+						if (!pack.hasMore(best)) { // will not match any better than this
+							break;
+						}
+					}
+				}
+			}
+
+			if (best == null) {
+				// negative result
+				return null;
+			}
+
+			boolean end = !pack.hasMore(best);
+
+			containerPackResults.add(pack.accepted(best));
+
+			if (end) {
+				// positive result
+				return containerPackResults;
+			}
+
+		} while (containerPackResults.size() < limit);
+
+		return null;
+	}
+
+	/**
+	 * Return a list of containers which can potentially hold the boxes.
+	 *
+	 * @param boxes      list of boxes
+	 * @param containers list of containers
+	 * @param count      maximum number of possible containers
+	 * @return list of containers
+	 */
+	private List<Container> filterByVolumeAndWeight(List<Box> boxes, List<Container> containers, int count) {
+		long volume = 0;
+		long minVolume = Long.MAX_VALUE;
+
+		long weight = 0;
+		long minWeight = Long.MAX_VALUE;
+
+		for (Box box : boxes) {
+			// volume
+			long boxVolume = box.getVolume();
+			volume += boxVolume;
+
+			if (boxVolume < minVolume) {
+				minVolume = boxVolume;
+			}
+
+			// weight
+			long boxWeight = box.getWeight();
+			weight += boxWeight;
+
+			if (boxWeight < minWeight) {
+				minWeight = boxWeight;
+			}
+		}
+
+		long maxVolume = Long.MIN_VALUE;
+		long maxWeight = Long.MIN_VALUE;
+
+		for (Container container : containers) {
+			// volume
+			long boxVolume = container.getVolume();
+			if (boxVolume > maxVolume) {
+				maxVolume = boxVolume;
+			}
+
+			// weight
+			long boxWeight = container.getWeight();
+			if (boxWeight > maxWeight) {
+				maxWeight = boxWeight;
+			}
+		}
+
+		if (maxVolume * count < volume || maxWeight * count < weight) {
+			// no containers will work at current count
+			return Collections.emptyList();
+		}
+
+		List<Container> list = new ArrayList<>(containers.size());
+		for (Container container : containers) {
+			if (container.getVolume() < minVolume || container.getWeight() < minWeight) {
+				// this box cannot even fit a single box
 				continue;
 			}
 
-			for(Box box : boxes) {
-				if(rotate3D) {
-					if(!containerBox.canHold3D(box)) {
-						continue boxes;
-					}
-				} else {
-					if(!containerBox.canHold2D(box)) {
-						continue boxes;
-					}
-				}
-			}
-			
-			List<Box> containerProducts = new ArrayList<Box>(boxes);
-			
-			Container holder = new Container(containerBox);
-			
-			while(!containerProducts.isEmpty()) {
-				// choose the box with the largest surface area, that fits
-				// if the same then the one with minimum height
-				Dimension space = holder.getRemainigFreeSpace();
-				Box currentBox = null;
-				for(Box box : containerProducts) {
-					
-					boolean fits;
-					if(rotate3D) {
-						fits = box.rotateLargestFootprint3D(space);
-					} else {
-						fits = box.fitRotate2D(space);
-					}
-					if(fits) {
-						if(currentBox == null) {
-							currentBox = box;
-						} else {
-							if(footprintFirst) {
-								if(currentBox.getFootprint() < box.getFootprint()) {
-									currentBox = box;
-								} else if(currentBox.getFootprint() == box.getFootprint() && currentBox.getHeight() < box.getHeight()) {
-									currentBox = box;
-								}
-							} else {
-								if(currentBox.getHeight() < box.getHeight()) {
-									currentBox = box;
-								} else if(currentBox.getHeight() == box.getHeight() && currentBox.getFootprint() < box.getFootprint()) {
-									currentBox = box;
-								}
-							}							
-						}
-					} else {
-						// no fit in the current container within the remaining space
-						// try the next container
-
-						continue boxes;
-					}
-				}
-
-				if(currentBox.getHeight() < space.getHeight()) {
-					// see whether we can get a fit for full height
-					Box idealBox = null;
-					for(Box box : containerProducts) {
-						if(box.getHeight() == space.getHeight()) {
-							if(idealBox == null) {
-								idealBox = box;
-							} else if(idealBox.getFootprint() < box.getFootprint()) {
-								idealBox = box;
-							}
-						}
-					}
-					if(idealBox != null) {
-						currentBox = idealBox;
-					}
-				}				
-				
-				// current box should have the optimal orientation already
-				// create a space which holds the full level
-				Space levelSpace = new Space(
-							containerBox.getWidth(), 
-							containerBox.getDepth(), 
-							currentBox.getHeight(), 
-							0, 
-							0, 
-							holder.getStackHeight()
-							);
-				
-				holder.addLevel();
-				containerProducts.remove(currentBox);
-
-				fit2D(containerProducts, holder, currentBox, levelSpace);
+			if (container.getVolume() + maxVolume * (count - 1) < volume || container.getWeight() + maxWeight * (count - 1) < weight) {
+				// this box cannot be used even together with all biggest boxes
+				continue;
 			}
 
-			return holder;
-		}
-		
-		return null;
-	}
-	
-	protected void fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace) {
-
-		if(rotate3D) {
-			// minimize footprint
-			usedSpace.fitRotate3DSmallestFootprint(freeSpace);
-		}
-
-		// add used space box now, but possibly rotate later - this depends on the actual remaining free space selected further down
-		// there is up to possible 4 free spaces, 2 in which the used space box is rotated
-		holder.add(new Placement(freeSpace, usedSpace));
-
-		if(containerProducts.isEmpty()) {
-			// no additional boxes
-			// just make sure the used space fits in the free space
-			usedSpace.fitRotate2D(freeSpace);
-			
-			return;
-		}
-		
-		Space[] spaces = getFreespaces(freeSpace, usedSpace);
-
-		Placement nextPlacement = bestVolumePlacement(containerProducts, spaces);
-		if(nextPlacement == null) {
-			// no additional boxes
-			// just make sure the used space fits in the free space
-			usedSpace.fitRotate2D(freeSpace);
-			
-			return;
-		}
-		
-		// check whether the selected free space requires the used space box to be rotated
-		if(nextPlacement.getSpace() == spaces[2] || nextPlacement.getSpace() == spaces[3]) {
-			// the desired space implies that we rotate the used space box
-			usedSpace.rotate2D();
-		}
-		
-		// holder.validateCurrentLevel(); // uncomment for debugging
-		
-		containerProducts.remove(nextPlacement.getBox());
-
-		// attempt to fit in the remaining (usually smaller) space first
-		
-		// stack in the 'sibling' space - the space left over between the used box and the selected free space
-		Space remainder = nextPlacement.getSpace().getRemainder();
-		if(!remainder.isEmpty()) {
-			Box box = bestVolume(containerProducts, remainder);
-			if(box != null) {
-				containerProducts.remove(box);
-				
-				fit2D(containerProducts, holder, box, remainder);
-			}
-		}
-
-		// fit the next box in the selected free space
-		fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace());
-	}
-
-	protected Space[] getFreespaces(Space freespace, Box used) {
-
-		// Two free spaces, on each rotation of the used space. 
-		// Height is always the same, used box is assumed within free space height.
-		// First:
-		// ........................  ........................  .............
-		// .                      .  .                      .  .           .
-		// .                      .  .                      .  .           .
-		// .          A           .  .          A           .  .           .
-		// .                      .  .                      .  .           .
-		// .                B     .  .                      .  .    B      .
-		// ............           .  ........................  .           .
-		// .          .           .                            .           .
-		// .          .           .                            .           .
-		// ........................                            .............
-        //
-		// Second:
-		//
-		// ........................   ........................  ..................
-		// .                      .   .                      .  .                .
-		// .          C           .   .         C            .  .                .
-		// .                      .   .                      .  .                .
-		// .......                .   ........................  .                .
-		// .     .       D        .                             .        D       .
-		// .     .                .                             .                .
-		// .     .                .                             .                .
-		// .     .                .                             .                .
-		// ........................                             ..................
-		//
-		// So there is always a 'big' and a 'small' leftover area (the small is not shown).
-
-		Space[] freeSpaces = new Space[4];
-		if(freespace.getWidth() >= used.getWidth() && freespace.getDepth() >= used.getDepth()) {
-			
-			// if B is empty, then it is sufficient to work with A and the other way around
-			
-			// B
-			if(freespace.getWidth() > used.getWidth()) {
-				Space right = new Space(
-						freespace.getWidth() - used.getWidth(), freespace.getDepth(), freespace.getHeight(),
-						freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
-						);
-				
-				Space rightRemainder = new Space(
-						used.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
-						freespace.getX(), freespace.getY()+ used.getDepth(), freespace.getZ()
-						);
-				right.setRemainder(rightRemainder);
-				rightRemainder.setRemainder(right);
-				freeSpaces[0] = right;
-			}
-			
-			// A
-			if(freespace.getDepth() > used.getDepth()) {
-				Space top = new Space(
-							freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
-							freespace.getX(), freespace.getY() + used.depth, freespace.getHeight()
-						);
-				Space topRemainder = new Space(
-							freespace.getWidth() - used.getWidth(), used.getDepth(), freespace.getHeight(),
-							freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
-						);
-				top.setRemainder(topRemainder);
-				topRemainder.setRemainder(top);
-				freeSpaces[1] = top;
-			}
-		}
-		
-		if(freespace.getWidth() >= used.getDepth() && freespace.getDepth() >= used.getWidth()) {	
-			// if D is empty, then it is sufficient to work with C and the other way around
-			
-			// D
-			if(freespace.getWidth() > used.getDepth()) {
-				Space right = new Space(
-						freespace.getWidth() - used.getDepth(), freespace.getDepth(), freespace.getHeight(),
-						freespace.getX() + used.getDepth(), freespace.getY(), freespace.getHeight()
-						);
-				Space rightRemainder = new Space(
-						used.getDepth(), freespace.getDepth() - used.getWidth(), freespace.getHeight(),
-						freespace.getX(), freespace.getY() + used.getWidth(), freespace.getZ()
-						);
-				right.setRemainder(rightRemainder);
-				rightRemainder.setRemainder(right);
-				freeSpaces[2] = right;
-			}
-			
-			// C
-			if(freespace.getDepth() > used.getWidth()) {
-				Space top = new Space(
-						freespace.getWidth(), freespace.getDepth() - used.getWidth(), freespace.getHeight(),
-						freespace.getX(), freespace.getY() + used.getWidth(), freespace.getHeight()
-						);
-				Space topRemainder = new Space(
-						freespace.getWidth() - used.getDepth(), used.getWidth(), freespace.getHeight(),
-						freespace.getX() + used.getDepth(), freespace.getY(), freespace.getZ()
-						);
-				top.setRemainder(topRemainder);
-				topRemainder.setRemainder(top);
-				freeSpaces[3] = top;
-			}
-		}
-		return freeSpaces;
-	}
-
-	protected Box bestVolume(List<Box> containerProducts, Space space) {
-		
-		Box bestBox = null;
-		for(Box box : containerProducts) {
-			
-			if(rotate3D) {
-				if(box.canFitInside3D(space)) {
-					if(bestBox == null) {
-						bestBox = box;
-					} else if(bestBox.getVolume() < box.getVolume()) {
-						bestBox = box;
-					} else if(bestBox.getVolume() == box.getVolume()) {
-						// determine lowest fit
-						bestBox.fitRotate3DSmallestFootprint(space);
-	
-						box.fitRotate3DSmallestFootprint(space);
-						
-						if(box.getFootprint() < bestBox.getFootprint()) {
-							bestBox = box;
-						}
-					}
+			if (count == 1) {
+				if (!canHoldAll(container, boxes)) {
+					continue;
 				}
 			} else {
-				if(box.canFitInside2D(space)) {
-					if(bestBox == null) {
-						bestBox = box;
-					} else if(bestBox.getVolume() < box.getVolume()) {
-						bestBox = box;
-					} else if(bestBox.getVolume() < box.getVolume()) {
-						// TODO use the aspect ratio in some meaningful way
-					}
+				if (!canHoldAtLeastOne(container, boxes)) {
+					continue;
 				}
 			}
+
+			list.add(container);
 		}
-		return bestBox;
+
+		return list;
 	}
-	
-	protected Placement bestVolumePlacement(List<Box> containerProducts, Space[] spaces) {
-		
-		Box bestBox = null;
-		Space bestSpace = null;
-		for(Space space : spaces) {
-			if(space == null) {
+
+
+	private static List<Box> toBoxes(List<BoxItem> boxItems, boolean clone) {
+		List<Box> boxClones = new ArrayList<>(boxItems.size() * 2);
+
+		for (BoxItem item : boxItems) {
+			Box box = item.getBox();
+			boxClones.add(box);
+			for (int i = 1; i < item.getCount(); i++) {
+				boxClones.add(clone ? box : box.clone());
+			}
+		}
+		return boxClones;
+
+	}
+
+
+	protected abstract Adapter adapter();
+
+	private boolean canHoldAll(Container containerBox, List<Box> boxes) {
+		for (Box box : boxes) {
+			if (containerBox.getWeight() < box.getWeight()) {
 				continue;
 			}
-			for(Box box : containerProducts) {
-				
-				if(rotate3D) {
-					if(box.canFitInside3D(space)) {
-						if(bestBox == null) {
-							bestBox = box;
-							bestSpace = space;
-						} else if(bestBox.getVolume() < box.getVolume()) {
-							bestBox = box;
-							bestSpace = space;
-						} else if(bestBox.getVolume() == box.getVolume()) {
-							// determine lowest fit
-							bestBox.fitRotate3DSmallestFootprint(bestSpace);
-		
-							box.fitRotate3DSmallestFootprint(space);
-							
-							if(box.getFootprint() < bestBox.getFootprint()) {
-								bestBox = box;
-								bestSpace = space;
-							}
-							
-							// TODO if all else is equal, which free space is preferred?
-						}
-					}
-				} else {
-					if(box.canFitInside2D(space)) {
-						if(bestBox == null) {
-							bestBox = box;
-							bestSpace = space;
-						} else if(bestBox.getVolume() < box.getVolume()) {
-							bestBox = box;
-							bestSpace = space;
-						} else if(bestBox.getVolume() < box.getVolume()) {
-							// TODO use the aspect ratio in some meaningful way
-						}
-						
-						// TODO if all else is equal, which free space is preferred?
-					}
+			if (rotate3D) {
+				if (!containerBox.canHold3D(box)) {
+					return false;
+				}
+			} else {
+				if (!containerBox.canHold2D(box)) {
+					return false;
 				}
 			}
 		}
-		if(bestBox != null) {
-			return new Placement(bestSpace, bestBox);
+		return true;
+	}
+
+
+	private boolean canHoldAtLeastOne(Container containerBox, List<Box> boxes) {
+		for (Box box : boxes) {
+			if (containerBox.getWeight() < box.getWeight()) {
+				continue;
+			}
+			if (rotate3D) {
+				if (containerBox.canHold3D(box)) {
+					return true;
+				}
+			} else {
+				if (containerBox.canHold2D(box)) {
+					return true;
+				}
+			}
 		}
-		return null;
+		return false;
+	}
+
+
+	static List<Placement> getPlacements(int size) {
+		// each box will at most have a single placement with a space (and its remainder).
+		List<Placement> placements = new ArrayList<>(size);
+
+		for (int i = 0; i < size; i++) {
+			Space a = new Space();
+			Space b = new Space();
+			a.setRemainder(b);
+			b.setRemainder(a);
+
+			placements.add(new Placement(a));
+		}
+		return placements;
 	}
 
 

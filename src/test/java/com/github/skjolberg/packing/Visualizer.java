@@ -12,7 +12,7 @@ import com.indvd00m.ascii.render.elements.Rectangle;
  * 
  */
 
-public class Visualizer {
+class Visualizer {
 
 	public static String visualize(Container container, int size, double horizontalScaling) {
 		StringBuilder b = new StringBuilder();
@@ -24,7 +24,7 @@ public class Visualizer {
 			IContextBuilder builder = render.newBuilder();
 			
 			int w = (int)(size * horizontalScaling);
-			int d = (int)((size * container.getDepth()) / container.getWidth());
+			int d = ((size * container.getDepth()) / container.getWidth());
 			
 			builder.width(w).height(d);
 
@@ -32,7 +32,7 @@ public class Visualizer {
 				Space space = placement.getSpace();
 				Box box = placement.getBox();
 
-				builder.element(new Rectangle((int)Math.round(space.getX() * factor * horizontalScaling), (int)Math.round(space.getY()  * factor), (int)(box.getWidth()  * factor * horizontalScaling), (int)(box.getDepth()  * factor)));
+				builder.element(new Rectangle((int)Math.round(space.getX() * factor * horizontalScaling), (int)Math.round(space.getY() * factor), (int)(box.getWidth()  * factor * horizontalScaling), (int)(box.getDepth()  * factor)));
 				if(box.getWidth() > 1 && box.getDepth() > 1) {
 					builder.element(new Dot((int)Math.round(placement.getCenterX() * factor * horizontalScaling), (int)Math.round(placement.getCenterY() * factor)));
 				}
