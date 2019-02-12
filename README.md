@@ -25,7 +25,7 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber</groupId>
     <artifactId>3d-bin-container-packing</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
 </dependency>
 ```
 
@@ -119,6 +119,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]
 
 # History
+ - 1.2.1: Fix z coordinate propagation in free space (issue #78)
  - 1.2.0: Support for stopping / interrupting packaging, for use in multithreaded scenarios.
  - 1.1.0: Support for multi-container results. Thanks to [Michel Daviot](https://github.com/tyrcho) for QA.
  - 1.0.10: Fix isEmpty method.
