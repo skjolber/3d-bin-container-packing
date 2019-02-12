@@ -115,6 +115,13 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
 		assertEquals(fits.getLevels().size(), 1);
+		
+		assertEquals(1, fits.getLevels().size());
+		for (Level level : fits.getLevels()) {
+			for(Placement p : level) {
+				assertEquals(0, p.getSpace().getZ());
+			}
+		}		
 	}
 
 	@Test
@@ -558,4 +565,6 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 			return packer.pack(items);
 		};
 	}
+	
+	
 }
