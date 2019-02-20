@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -415,6 +414,48 @@ class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 		containers.add(new Container(500, 500, 500, 0));
 		runsLimitedTimeSeconds(new LargestAreaFitFirstPackager(containers, true, true, true), 20);
 	}
+	
+	
+	//Issue #83
+	@Test
+	void testRemainingWeightNegative() {
+		List<Container> containers = new ArrayList<>();
+		containers.add(new Container("Y",22, 22, 22, 35));
+		containers.add(new Container("X",22, 22, 22, 45));
+		List<BoxItem> products = new ArrayList<>();
+		products.add(new BoxItem(new Box("A", 10, 10, 10, 10)));
+		products.add(new BoxItem(new Box("B", 10, 10, 10, 10)));
+		products.add(new BoxItem(new Box("C", 10, 10, 10, 10)));
+		products.add(new BoxItem(new Box("D", 10, 10, 10, 10)));
+		products.add(new BoxItem(new Box("E", 10, 10, 10, 10)));
+		
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true, true);
+		List<Container> fits = packager.packList(products, 2, Long.MAX_VALUE);
+		assertNotNull(fits);
+
+		validate(fits);
+	}
+	
+	//Issue #83
+	@Test
+	void testWrongNumberOfContainers() {
+		List<Container> containers = new ArrayList<>();
+		containers.add(new Container("X",22, 22, 22, 45));
+		List<BoxItem> products = new ArrayList<>();
+		products.add(new BoxItem(new Box("A", 10, 10, 10, 10)));
+		products.add(new BoxItem(new Box("B", 10, 10, 10, 10)));
+		products.add(new BoxItem(new Box("C", 10, 10, 10, 10)));
+		products.add(new BoxItem(new Box("D", 10, 10, 10, 10)));
+		products.add(new BoxItem(new Box("E", 10, 10, 10, 10)));
+		
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true, true);
+		List<Container> fits = packager.packList(products, 2, Long.MAX_VALUE);
+		assertNotNull(fits);
+		assertEquals(fits.size(), 2);
+
+		validate(fits);
+	}
+	
 
 
 }
