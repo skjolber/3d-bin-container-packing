@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.skjolber</groupId>
 	<artifactId>3d-bin-container-packing</artifactId>
-	<version>1.2.1-SNAPSHOT</version>
+	<version>1.2.2-SNAPSHOT</version>
 	<name>3D Bin Container Packing</name>
 	<description>Library for 3D rectangular bin packing</description>
 	<url>https://github.com/skjolber/3d-bin-container-packing</url>
@@ -35,7 +35,7 @@
 		<maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
 		<maven-shade-plugin.version>3.1.1</maven-shade-plugin.version>
 		<maven-war-plugin.version>3.2.2</maven-war-plugin.version>
-		<owasp-dependency-check.version>3.2.1</owasp-dependency-check.version>
+		<owasp-dependency-check.version>4.0.2</owasp-dependency-check.version>
 		<pitest.version>1.4.5</pitest.version>
 		
 	</properties>
@@ -131,13 +131,13 @@
 		<dependency>
 			<groupId>net.jqwik</groupId>
 			<artifactId>jqwik</artifactId>
-			<version>1.0.0</version>
+			<version>1.1.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.11.1</version>
+			<version>3.12.0</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -151,11 +151,11 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${maven-compiler-plugin.version}</version>
 			</plugin>
-		    <plugin>
-		        <groupId>org.apache.maven.plugins</groupId>
-		        <artifactId>maven-surefire-plugin</artifactId>
-		        <version>${maven-surefire-plugin.version}</version>
-		    </plugin>			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven-surefire-plugin.version}</version>
+			</plugin>			
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
@@ -218,7 +218,22 @@
 				<artifactId>pitest-maven</artifactId>
 				<version>${pitest.version}</version>
 			</plugin>
-			
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>${owasp-dependency-check.version}</version>
+				<configuration>
+					<failBuildOnCVSS>7</failBuildOnCVSS>
+					<failOnError>false</failOnError>
+					<!-- suppressionFiles: see https://jeremylong.github.io/DependencyCheck/general/suppression.html -->
+				</configuration>
+				<executions>
+					<execution>
+						<!-- run only using explicit command -->
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 

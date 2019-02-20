@@ -480,4 +480,26 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		assertEquals(fits.toString(), 2, fits.size());
 		assertEquals(10, fits.get(0).getWidth());
 	}
+
+	@Test
+	public void testZPosition() {
+		List<Container> containers = new ArrayList<Container>();
+
+		containers.add(new Container(30, 30, 30, 500));
+
+		Packager packager = new LargestAreaFitFirstPackager(containers,false,true,true);
+
+		List<BoxItem> products = new ArrayList<BoxItem>();
+
+		products.add(new BoxItem(new Box("A", 10, 10, 10, 25), 9));		
+
+		Container pack = packager.pack(products, containers, Long.MAX_VALUE);
+
+		assertEquals(1, pack.getLevels().size());
+		for (Level level : pack.getLevels()) {
+			for(Placement p : level) {
+				assertEquals(0, p.getSpace().getZ());
+			}
+		}
+	}
 }

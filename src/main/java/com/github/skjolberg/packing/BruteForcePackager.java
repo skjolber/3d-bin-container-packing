@@ -258,7 +258,7 @@ public class BruteForcePackager extends Packager {
 		if (target.getBox().fitsInside3D(freeSpace.getWidth(), freeSpace.getDepth() - used.getDepth(), freeSpace.getHeight())) {
 			target.getSpace().copyFrom(
 					freeSpace.getWidth(), freeSpace.getDepth() - used.getDepth(), freeSpace.getHeight(),
-					freeSpace.getX(), freeSpace.getY() + used.depth, freeSpace.getHeight()
+					freeSpace.getX(), freeSpace.getY() + used.depth, freeSpace.getZ()
 			);
 			target.getSpace().getRemainder().copyFrom(
 					freeSpace.getWidth() - used.getWidth(), used.getDepth(), freeSpace.getHeight(),
