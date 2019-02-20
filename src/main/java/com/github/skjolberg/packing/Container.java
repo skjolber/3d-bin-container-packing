@@ -81,11 +81,11 @@ public class Container extends Box {
 		return levels.add(element);
 	}
 
-	int getStackHeight() {
+	public int getStackHeight() {
 		return stackHeight + currentLevelStackHeight();
 	}
 
-	int getStackWeight() {
+	public int getStackWeight() {
 		return stackWeight + currentLevelStackWeight();
 	}
 
@@ -107,11 +107,11 @@ public class Container extends Box {
 		levels.get(levels.size() - 1).add(placement);
 	}
 
-	void addLevel() {
+	public void addLevel() {
 		add(new Level());
 	}
 
-	Dimension getFreeSpace() {
+	public Dimension getFreeSpace() {
 		int remainder = height - getStackHeight();
 		if(remainder < 0) {
 			throw new IllegalArgumentException("Remaining free space is negative at " + remainder);
@@ -119,7 +119,7 @@ public class Container extends Box {
 		return new Dimension(width, depth, remainder);
 	}
 
-	int getFreeWeight() {
+	public int getFreeWeight() {
 		int remainder = weight - getStackWeight();
 		if(remainder < 0) {
 			throw new IllegalArgumentException("Remaining weight is negative at " + remainder);
