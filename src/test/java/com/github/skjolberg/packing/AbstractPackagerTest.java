@@ -15,6 +15,14 @@ abstract class AbstractPackagerTest {
 			level.validate();
 		}
 	}
+	
+	static void validate(List<Container> pack) {
+		for (Container container : pack) {
+			for (Level level : container.getLevels()) {
+				level.validate();
+			}
+		}
+	}
 
 	static void print(Container fits) {
 		System.out.println();
