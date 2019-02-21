@@ -86,7 +86,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 				} else {
 					fits = box.fitRotate2D(freeSpace);
 				}
-				if(fits && box.getWeight() <= targetContainer.getFreeWeight()) {
+				if(fits && box.getWeight() <= holder.getFreeWeight()) {
 					if(currentBox == null) {
 						currentBox = box;
 						currentIndex = i;

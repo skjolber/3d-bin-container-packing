@@ -18,7 +18,7 @@ class BruteForcePropertyBasedTests {
 	// The maximum number of different, random items which can be reliably packed with brute force
 	// seems to be between 10 and 15
 	@Property
-	void bunchOfDifferentBoxesShouldFitInContainers(@ForAll @Size(min = 1, max = 6) List<BoxItem> items) {
+	void bunchOfDifferentBoxesShouldFitInContainers(@ForAll("boxItems") @Size(min = 1, max = 6) List<BoxItem> items) {
 		final Box empty = new Box(0, 0, 0, 0);
 
 		final List<Container> containers =
@@ -32,7 +32,7 @@ class BruteForcePropertyBasedTests {
 	}
 
 	@Property(tries = 10)
-	void identicalBoxesShouldFitInContainers(@ForAll BoxItem item, @ForAll @IntRange(min = 1, max = 2) int countBySide) {
+	void identicalBoxesShouldFitInContainers(@ForAll("boxItem") BoxItem item, @ForAll @IntRange(min = 1, max = 2) int countBySide) {
 		final BoxItem repeatedItems = new BoxItem(item.getBox(), countBySide * countBySide * countBySide);
 		//TODO: we could also randomly rotate the items
 		final List<Container> containers = largeEnoughContainers(item, countBySide);
@@ -107,18 +107,25 @@ class BruteForcePropertyBasedTests {
 	@Provide
 	Arbitrary<Dimension> dimensionGenerated() {
 		return Combinators
-				.combine(sensiblePositiveNumber(), sensiblePositiveNumber(), sensiblePositiveNumber())
+				.combine(countBySize(), countBySize(), countBySize())
 				.as(Dimension::new);
 	}
 
 	@Provide
-	Arbitrary<BoxItem> boxItemGenerated() {
+	Arbitrary<BoxItem> boxItem() {
 		return Combinators
-				.combine(sensiblePositiveNumber(), dimensionGenerated(), integers().between(1, 1))
+				.combine(countBySize(), dimensionGenerated(), integers().between(1, 1))
 				.as((weight, dimension, count) -> new BoxItem(new Box(dimension, weight), count));
 	}
+	
+	@Provide("boxItems")
+	Arbitrary<List<BoxItem>> boxItems() {
+		return Combinators
+				.combine(countBySize(), dimensionGenerated(), integers().between(1, 1))
+				.as((weight, dimension, count) -> new BoxItem(new Box(dimension, weight), count)).list();
+	}
 
-	private IntegerArbitrary sensiblePositiveNumber() {
+	private Arbitrary<Integer> countBySize() {
 		return integers().between(1, 100);
 	}
 
