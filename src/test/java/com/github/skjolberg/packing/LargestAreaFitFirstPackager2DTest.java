@@ -457,5 +457,29 @@ class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 	}
 	
 
+	//Issue #83
+	@Test
+	void testRemainingWeightNegative2() {
+		List<Container> containers = new ArrayList<>();
+		containers.add(new Container("X",30, 30, 30, 20));
+		containers.add(new Container("Y",30, 30, 30, 60));
+		
+		List<BoxItem> products = new ArrayList<>();
+		products.add(new BoxItem(new Box("A", 10, 10, 10, 10)));
+		products.add(new BoxItem(new Box("B", 10, 10, 10, 10)));
+		products.add(new BoxItem(new Box("C", 10, 10, 10, 10)));
+		products.add(new BoxItem(new Box("D", 10, 10, 10, 10)));
+		products.add(new BoxItem(new Box("E", 10, 10, 10, 10)));
+		products.add(new BoxItem(new Box("F", 10, 10, 10, 10)));
+		
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true, true);
+		List<Container> fits = packager.packList(products, 50, Long.MAX_VALUE);
+		assertNotNull(fits);
+
+		validate(fits);
+	}
+		
+		
+		
 
 }
