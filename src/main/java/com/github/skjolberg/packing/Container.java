@@ -53,23 +53,48 @@ public class Container extends Box {
 	}
 
 	/**
-	 * The 6 different possible rotations.
+	 * The 6 different possible rotations. If two of the sides are equal, there are only 3 possible orientations.
+	 * If all sides is equal, there is only 1 possible orientation.
 	 *
 	 * It is sometimes useful to pass this list to the {@link LargestAreaFitFirstPackager}
 	 * since it has a better chance to find a packaging than with a single container.
+	 * @return list of containers in all 6 rotations.
 	 */
 	public List<Container> rotations(){
 		return rotationsStream().collect(Collectors.toList());
 	}
 
 	Stream<Container> rotationsStream() {
-		return Stream.of(
-				new Container(width, height, depth, weight),
-				new Container(width, depth, height, weight),
-				new Container(height, width, depth, weight),
-				new Container(height, depth, width, weight),
-				new Container(depth, height, width, weight),
-				new Container(depth, width, height, weight));
+		List<Container> result = new ArrayList<>(6);
+		Container box = clone();
+		boolean square0 = box.isSquare2D();
+
+		result.add(box);
+
+		if(!box.isSquare3D()) {
+
+			box = box.clone().rotate3D();
+			boolean square1 = box.isSquare2D();
+
+			result.add(box);
+
+			box = box.clone().rotate3D();
+			boolean square2 = box.isSquare2D();
+
+			result.add(box);
+
+			if(!square0 && !square1 && !square2) {
+				box = box.clone().rotate2D3D();
+				result.add(box);
+
+				box = box.clone().rotate3D();
+				result.add(box);
+
+				box = box.clone().rotate3D();
+				result.add(box);
+			}
+		}
+		return result.stream();
 	}
 
 	public boolean add(Level element) {
@@ -226,5 +251,22 @@ public class Container extends Box {
 				max(b1.getDepth(), b2.getDepth()),
 				max(b1.getHeight(), b2.getHeight()));
 
+	}
+	
+	public Container clone() {
+		// shallow clone
+		return new Container(this);
+	}
+
+	public Container rotate3D() {
+		return (Container)super.rotate3D();
+	}
+
+	public Container rotate2D() {
+		return (Container)super.rotate2D();
+	}
+
+	public Container rotate2D3D() {
+		return (Container)super.rotate2D3D();
 	}
 }
