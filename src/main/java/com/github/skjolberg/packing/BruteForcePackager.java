@@ -210,7 +210,11 @@ public class BruteForcePackager extends Packager {
 		}
 
 		// fit the next box in the selected free space
-		return fit2D(rotator, index, placements, holder, nextPlacement, interrupt);
+		// double check that there is still free weight
+		if (holder.getFreeWeight() >= nextBox.getWeight()) {
+			return fit2D(rotator, index, placements, holder, nextPlacement, interrupt);
+		}
+		return index;
 	}
 
 	private static boolean isFreeSpace(Space freeSpace, Box used, Placement target) {

@@ -171,6 +171,17 @@ public class LargestAreaFitFirstPackager extends Packager {
 		}
 		throw new IllegalArgumentException();
 	}
+	
+	/**
+	 * Fit in two dimensions
+	 * 
+	 * @param containerProducts products to fit
+	 * @param holder target container
+	 * @param usedSpace space to subtract
+	 * @param freeSpace available space
+	 * @param interrupt interrupt
+	 * @return false if interrupted
+	 */
 
 	private boolean fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace, BooleanSupplier interrupt) {
 
@@ -230,11 +241,14 @@ public class LargestAreaFitFirstPackager extends Packager {
 				}
 			}
 		}
-
-		// fit the next box in the selected free space
-		return fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), interrupt);
-
-		// TODO use free spaces between box and level, if any
+		// double check that there is still free weight
+		// TODO possibly rewind if the value of the boxes in the remainder is lower than the one in next placement
+		if(holder.getFreeWeight() >= nextPlacement.getBox().getWeight()) {
+			if(!fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), interrupt)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private Space[] getFreespaces(Space freespace, Box used) {
