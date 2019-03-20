@@ -99,7 +99,10 @@ Container match = packager.pack(products, deadline);
 ### Largest Area Fit First algorithm
 The implementation is based on [this paper][2], and is not a traditional [Bin packing problem][1] solver.
 
-The box which covers the largest ground area of the container is placed first. Boxes which fill the full remaining height take priority. Subsequent boxes are stacked in the remaining space in at the same level, the boxes with the greatest volume first. Then level is increased and the process repeated. Boxes are rotated, containers not.
+The box which covers the largest ground area of the container is placed first; its height becomes the level height. Boxes which fill the full remaining height take priority. Subsequent boxes are stacked in the remaining space in at the same level, the boxes with the greatest volume first. If box height is lower than level height, the algorithm attempts to place some there as well. 
+
+When no more boxes fit in a level, the level is incremented and the process repeated. Boxes are rotated, containers not.
+
 
 The algorithm runs reasonably fast, usually in milliseconds. 
 
@@ -119,6 +122,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]
 
 # History
+ - 1.2.4: Attempt to use 'top' free space whenever box is not as high as the level.
  - 1.2.3: Fix weight constraint (issue #83). Thanks to [BALACHANDAR S](https://github.com/balachandarsv) for bug reports and unit tests.
  - 1.2.2: ~~Fix~~ Improve weight constraint in LargestAreaFitFirstPackager (issue #83)
  - 1.2.1: Fix z coordinate propagation in free space (issue #78)
@@ -135,7 +139,6 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Maven]:				http://maven.apache.org/
 [LinkedIn]:				http://lnkd.in/r7PWDz
 [Github page]:			https://skjolber.github.io
-[1.1.0]:				https://github.com/skjolber/3d-bin-container-packing/releases
 [NothinRandom]:			https://github.com/NothinRandom
 [exponential]:			https://en.wikipedia.org/wiki/Exponential_function
 [example]:				src/test/java/com/github/skjolberg/packing/BruteForcePackagerRuntimeEstimator.java
