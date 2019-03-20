@@ -46,8 +46,12 @@ public class Placement {
 		return space.getY() + (box.getDepth() / 2);
 	}
 
+	int getCenterZ() {
+		return space.getZ() + (box.getHeight() / 2);
+	}
+
 	boolean intersects(Placement placement) {
-		return intersectsX(placement) && intersectsY(placement);
+		return intersectsX(placement) && intersectsY(placement) && intersectsZ(placement);
 	}
 
 	private boolean intersectsY(Placement placement) {
@@ -77,4 +81,18 @@ public class Placement {
 				placement.getSpace().getX() + placement.getBox().getWidth() - 1 <= endX;
 
 	}
+	
+	private boolean intersectsZ(Placement placement) {
+
+		int startZ = space.getZ();
+		int endZ = startZ + box.getHeight() - 1;
+
+		if (startZ <= placement.getSpace().getZ() && placement.getSpace().getZ() <= endZ) {
+			return true;
+		}
+
+		return startZ <= placement.getSpace().getZ() + placement.getBox().getHeight() - 1 &&
+				placement.getSpace().getZ() + placement.getBox().getHeight() - 1 <= endZ;
+
+	}	
 }

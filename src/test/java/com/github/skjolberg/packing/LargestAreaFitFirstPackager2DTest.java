@@ -479,7 +479,28 @@ class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 		validate(fits);
 	}
 		
+	@Test
+	void testStackingAbove() {
+		List<Container> containers = new ArrayList<>();
+		containers.add(new Container(40,50,20, 0));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true, true);
+
+		List<BoxItem> products = new ArrayList<>();
+
+		products.add(new BoxItem(new Box("J", 20,50, 20, 0), 1));
+		products.add(new BoxItem(new Box("J", 20,50, 15, 0), 1));
+		products.add(new BoxItem(new Box("J", 20,10, 5, 0), 4));
+
+		Container fits = packager.pack(products);
+		assertNotNull(fits);
 		
+		print(fits);
+
+		assertEquals(fits.getLevels().size(), 1);
+
+		validate(fits);
+	}
+			
 		
 
 }

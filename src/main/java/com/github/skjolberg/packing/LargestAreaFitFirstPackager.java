@@ -72,65 +72,13 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 			// choose the box with the largest surface area, that fits
 			// if the same then the one with minimum height
+			int currentIndex = getBestBox(holder, freeSpace, containerProducts);
 
-			// use a special case for boxes with full height
-			Box currentBox = null;
-			int currentIndex = -1;
-
-			boolean fullHeight = false;
-			for (int i = 0; i < containerProducts.size(); i++) {
-				Box box = containerProducts.get(i);
-				boolean fits;
-				if(rotate3D) {
-					fits = box.rotateLargestFootprint3D(freeSpace);
-				} else {
-					fits = box.fitRotate2D(freeSpace);
-				}
-				if(fits && box.getWeight() <= holder.getFreeWeight()) {
-					if(currentBox == null) {
-						currentBox = box;
-						currentIndex = i;
-
-						fullHeight = box.getHeight() == freeSpace.getHeight();
-					} else {
-						if(fullHeight) {
-							if(box.getHeight() == freeSpace.getHeight()) {
-								if(currentBox.getFootprint() < box.getFootprint()) {
-									currentBox = box;
-									currentIndex = i;
-								}
-							}
-						} else {
-							if(box.getHeight() == freeSpace.getHeight()) {
-								fullHeight = true;
-
-								currentBox = box;
-								currentIndex = i;
-							} else if(footprintFirst) {
-								if(currentBox.getFootprint() < box.getFootprint()) {
-									currentBox = box;
-									currentIndex = i;
-								} else if(currentBox.getFootprint() == box.getFootprint() && currentBox.getHeight() < box.getHeight()) {
-									currentBox = box;
-									currentIndex = i;
-								}
-							} else {
-								if(currentBox.getHeight() < box.getHeight()) {
-									currentBox = box;
-									currentIndex = i;
-								} else if(currentBox.getHeight() == box.getHeight() && currentBox.getFootprint() < box.getFootprint()) {
-									currentBox = box;
-									currentIndex = i;
-								}
-							}
-						}
-					}
-				}
-			}
-
-			if(currentBox == null) {
+			if(currentIndex == -1) {
 				break;
 			}
+			
+			Box currentBox = containerProducts.get(currentIndex);
 
 			// current box should have the optimal orientation already
 			// create a space which holds the full level
@@ -154,6 +102,57 @@ public class LargestAreaFitFirstPackager extends Packager {
 		}
 
 		return new LAFFResult(containerProducts, holder);
+	}
+
+	protected int getBestBox(Container holder, Dimension freeSpace, List<Box> containerProducts) {
+		// use a special case for boxes with full height
+		int currentIndex = -1;
+
+		boolean fullHeight = false;
+		for (int i = 0; i < containerProducts.size(); i++) {
+			Box box = containerProducts.get(i);
+			
+			boolean fits;
+			if(rotate3D) {
+				fits = box.rotateLargestFootprint3D(freeSpace);
+			} else {
+				fits = box.fitRotate2D(freeSpace);
+			}
+			if(fits && box.getWeight() <= holder.getFreeWeight()) {
+				if(currentIndex == -1) {
+					currentIndex = i;
+
+					fullHeight = box.getHeight() == freeSpace.getHeight();
+				} else {
+					if(fullHeight) {
+						if(box.getHeight() == freeSpace.getHeight()) {
+							if(containerProducts.get(currentIndex).getFootprint() < box.getFootprint()) {
+								currentIndex = i;
+							}
+						}
+					} else {
+						if(box.getHeight() == freeSpace.getHeight()) {
+							fullHeight = true;
+
+							currentIndex = i;
+						} else if(footprintFirst) {
+							if(containerProducts.get(currentIndex).getFootprint() < box.getFootprint()) {
+								currentIndex = i;
+							} else if(containerProducts.get(currentIndex).getFootprint() == box.getFootprint() && containerProducts.get(currentIndex).getHeight() < box.getHeight()) {
+								currentIndex = i;
+							}
+						} else {
+							if(containerProducts.get(currentIndex).getHeight() < box.getHeight()) {
+								currentIndex = i;
+							} else if(containerProducts.get(currentIndex).getHeight() == box.getHeight() && containerProducts.get(currentIndex).getFootprint() < box.getFootprint()) {
+								currentIndex = i;
+							}
+						}
+					}
+				}
+			}
+		}
+		return currentIndex;
 	}
 
 	/**
@@ -183,7 +182,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * @return false if interrupted
 	 */
 
-	private boolean fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace, BooleanSupplier interrupt) {
+	protected boolean fit2D(List<Box> containerProducts, Container holder, Box usedSpace, Space freeSpace, BooleanSupplier interrupt) {
 
 		if(rotate3D) {
 			// minimize footprint
@@ -208,50 +207,93 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 		Space[] spaces = getFreespaces(freeSpace, usedSpace);
 
-		Placement nextPlacement = bestVolumePlacement(containerProducts, spaces, holder.getFreeWeight());
+		Placement nextPlacement = getBestBoxAndSpace(containerProducts, spaces, holder.getFreeWeight());
 		if(nextPlacement == null) {
-			// no additional boxes
+			// no additional boxes along the level floor (x,y)
 			// just make sure the used space fits in the free space
 			usedSpace.fitRotate2D(freeSpace);
+		} else {
+			// check whether the selected free space requires the used space box to be rotated
+			if(nextPlacement.getSpace() == spaces[2] || nextPlacement.getSpace() == spaces[3]) {
+				// the desired space implies that we rotate the used space box
+				usedSpace.rotate2D();
+			}
+	
+			// holder.validateCurrentLevel(); // uncomment for debugging
+	
+			removeIdentical(containerProducts, nextPlacement.getBox());
+	
+			// attempt to fit in the remaining (usually smaller) space first
+	
+			// stack in the 'sibling' space - the space left over between the used box and the selected free space
+			Space remainder = nextPlacement.getSpace().getRemainder();
+			if(remainder.nonEmpty()) {
+				Box box = getBestBoxForSpace(containerProducts, remainder, holder.getFreeWeight());
+				if(box != null) {
+					removeIdentical(containerProducts, box);
+	
+					if(!fit2D(containerProducts, holder, box, remainder, interrupt)) {
+						return false;
+					}
+				}
+			}
+			// double check that there is still free weight
+			// TODO possibly rewind if the value of the boxes in the remainder is lower than the one in next placement
+			if(holder.getFreeWeight() >= nextPlacement.getBox().getWeight()) {
+				if(!fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), interrupt)) {
+					return false;
+				}
+			}
+		} 
+		
+		// also use the space above the placed box, if any.
+		if(freeSpace.getHeight() > usedSpace.getHeight()) {
+			// so there is some free room; between the used space and the level height
 
-			return true;
-		}
+			// the level by level approach is somewhat crude, but at least some of the inefficiency
+			// can be avoided this way
+			Space above;
+			if(nextPlacement == null) {
+				// full width / depth
+				above = new Space(
+						freeSpace.getWidth(), 
+						freeSpace.getDepth(), 
+						freeSpace.getHeight() - usedSpace.getHeight(),
+						freeSpace.getX(),
+						freeSpace.getY(),
+						freeSpace.getZ() + usedSpace.getHeight()
+						);
+			} else {
+				// just directly above the used space
+				
+				// TODO possible include the sibling space if no box was fitted there
+				above = new Space(
+						usedSpace.getWidth(), 
+						usedSpace.getDepth(), 
+						freeSpace.getHeight() - usedSpace.getHeight(),
+						freeSpace.getX(),
+						freeSpace.getY(),
+						freeSpace.getZ() + usedSpace.getHeight()
+						);
+			}
+			int currentIndex = getBestBox(holder, above, containerProducts);
 
-		// check whether the selected free space requires the used space box to be rotated
-		if(nextPlacement.getSpace() == spaces[2] || nextPlacement.getSpace() == spaces[3]) {
-			// the desired space implies that we rotate the used space box
-			usedSpace.rotate2D();
-		}
-
-		// holder.validateCurrentLevel(); // uncomment for debugging
-
-		removeIdentical(containerProducts, nextPlacement.getBox());
-
-		// attempt to fit in the remaining (usually smaller) space first
-
-		// stack in the 'sibling' space - the space left over between the used box and the selected free space
-		Space remainder = nextPlacement.getSpace().getRemainder();
-		if(remainder.nonEmpty()) {
-			Box box = bestVolume(containerProducts, remainder, holder.getFreeWeight());
-			if(box != null) {
-				removeIdentical(containerProducts, box);
-
-				if(!fit2D(containerProducts, holder, box, remainder, interrupt)) {
+			if(currentIndex != -1) {
+				// should be within weight already
+				Box currentBox = containerProducts.get(currentIndex); 
+				
+				containerProducts.remove(currentIndex);
+				
+				if(!fit2D(containerProducts, holder, currentBox, above, interrupt)) {
 					return false;
 				}
 			}
 		}
-		// double check that there is still free weight
-		// TODO possibly rewind if the value of the boxes in the remainder is lower than the one in next placement
-		if(holder.getFreeWeight() >= nextPlacement.getBox().getWeight()) {
-			if(!fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), interrupt)) {
-				return false;
-			}
-		}
+		
 		return true;
 	}
 
-	private Space[] getFreespaces(Space freespace, Box used) {
+	protected Space[] getFreespaces(Space freespace, Box used) {
 
 		// Two free spaces, on each rotation of the used space.
 		// Height is always the same, used box is assumed within free space height.
@@ -355,7 +397,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 		return freeSpaces;
 	}
 
-	private Box bestVolume(List<Box> containerProducts, Space space, int freeWeight) {
+	protected Box getBestBoxForSpace(List<Box> containerProducts, Space space, int freeWeight) {
 
 		Box bestBox = null;
 		for(Box box : containerProducts) {
@@ -364,31 +406,14 @@ public class LargestAreaFitFirstPackager extends Packager {
 			}
 			if(rotate3D) {
 				if(box.canFitInside3D(space)) {
-					if(bestBox == null) {
+					if(bestBox == null || isBetter3D(bestBox, box, space) < 0) {
 						bestBox = box;
-
-						bestBox.fitRotate3DSmallestFootprint(space);
-					} else if(bestBox.getVolume() < box.getVolume()) {
-						bestBox = box;
-
-						bestBox.fitRotate3DSmallestFootprint(space);
-					} else if(bestBox.getVolume() == box.getVolume()) {
-						// determine lowest fit
-						box.fitRotate3DSmallestFootprint(space);
-
-						if(box.getFootprint() < bestBox.getFootprint()) {
-							bestBox = box;
-						}
 					}
 				}
 			} else {
 				if(box.canFitInside2D(space)) {
-					if(bestBox == null) {
+					if(bestBox == null || isBetter2D(bestBox, box) < 0) {
 						bestBox = box;
-					} else if(bestBox.getVolume() < box.getVolume()) {
-						bestBox = box;
-					} else if(bestBox.getVolume() == box.getVolume()) {
-						// TODO use the aspect ratio in some meaningful way
 					}
 				}
 			}
@@ -396,59 +421,95 @@ public class LargestAreaFitFirstPackager extends Packager {
 		return bestBox;
 	}
 
-	private Placement bestVolumePlacement(List<Box> containerProducts, Space[] spaces, int freeWeight) {
+	/**
+	 * Is box b better than a?
+	 * 
+	 * @param a box
+	 * @param b box
+	 * @return -1 if b is better, 0 if equal, 1 if b is better
+	 */
 
+	protected int isBetter2D(Box a, Box b) {
+		int compare = Long.compare(a.getVolume(), b.getVolume());
+		if(compare != 0) {
+			return compare;
+		}
+		return Long.compare(b.getFootprint(), a.getFootprint()); // i.e. smaller i better
+	
+	}
+	
+	/**
+	 * Is box b strictly better than a?
+	 * 
+	 * @param a box
+	 * @param b box
+	 * @param space free space
+	 * @return -1 if b is better, 0 if equal, 1 if b is better
+	 */
+	
+	protected int isBetter3D(Box a, Box b, Space space) {
+		int compare = Long.compare(a.getVolume(), b.getVolume());
+		if(compare != 0) {
+			return compare;
+		}
+		// determine lowest fit
+		a.fitRotate3DSmallestFootprint(space);
+		b.fitRotate3DSmallestFootprint(space);
+
+		return Long.compare(b.getFootprint(), a.getFootprint()); // i.e. smaller i better
+	}
+
+	protected Placement getBestBoxAndSpace(List<Box> containerProducts, Space[] spaces, int freeWeight) {
+
+		// this method could have many implementation
+		// it focuses on getting the biggest box possible fitted.
+		// 
+		// an alternative implementation would be one that 
+		// measure the amount of wasted space and/or maximizes largest leftover area
+		
 		Box bestBox = null;
 		Space bestSpace = null;
 		for(Space space : spaces) {
 			if(space == null) {
 				continue;
 			}
-			for(Box box : containerProducts) {
-				if(box.getWeight() > freeWeight) {
-					continue;
-				}
+			
+			Box box = getBestBoxForSpace(containerProducts, space, freeWeight);
+			if(box == null) {
+				continue;
+			}
+			boolean best;
+			if(bestBox == null) {
+				best = true;
+			} else {
+				int compare;
 				if(rotate3D) {
-					if(box.canFitInside3D(space)) {
-						if(bestBox == null) {
-							bestBox = box;
-							bestSpace = space;
-
-							bestBox.fitRotate3DSmallestFootprint(bestSpace);
-						} else if(bestBox.getVolume() < box.getVolume()) {
-							bestBox = box;
-							bestSpace = space;
-
-							bestBox.fitRotate3DSmallestFootprint(bestSpace);
-						} else if(bestBox.getVolume() == box.getVolume()) {
-							// determine lowest fit
-							box.fitRotate3DSmallestFootprint(space);
-
-							if(box.getFootprint() < bestBox.getFootprint()) {
-								bestBox = box;
-								bestSpace = space;
-							}
-
-							// TODO if all else is equal, which free space is preferred?
-						}
-					}
+					compare = isBetter3D(bestBox, box, space);
 				} else {
-					if(box.canFitInside2D(space)) {
-						if(bestBox == null) {
-							bestBox = box;
-							bestSpace = space;
-						} else if(bestBox.getVolume() < box.getVolume()) {
-							bestBox = box;
-							bestSpace = space;
-						}
-						// TODO use the aspect ratio in some meaningful way
-
-						// TODO if all else is equal, which free space is preferred?
-					}
+					compare = isBetter2D(bestBox, box);
 				}
+				if(compare < 0) {
+					best = true;
+				} else if(compare == 0) {
+					// if all is equal, prefer smallest space as a crude indicator on 
+					// how 'difficult' matching the box was. 
+
+					best = space.getVolume() < bestSpace.getVolume();
+				} else {
+					best = false;
+				}
+			}
+			
+			if(best) {
+				bestBox = box;
+				bestSpace = space;
 			}
 		}
 		if(bestBox != null) {
+			if(rotate3D) {
+				bestBox.fitRotate3DSmallestFootprint(bestSpace);
+			}
+			
 			return new Placement(bestSpace, bestBox);
 		}
 		return null;

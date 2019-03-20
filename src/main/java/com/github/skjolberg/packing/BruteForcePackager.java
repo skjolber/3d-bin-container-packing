@@ -175,45 +175,108 @@ public class BruteForcePackager extends Packager {
 		Placement nextPlacement = placements.get(index);
 		nextPlacement.setBox(nextBox);
 
-		if (!isFreeSpace(usedSpace.getSpace(), usedSpace.getBox(), nextPlacement)) {
-			// no additional boxes
-			// just make sure the used space fits in the free space
-			return index;
-		}
+		boolean room = isFreeSpace(usedSpace.getSpace(), usedSpace.getBox(), nextPlacement);
+		if (room) {
+			index++;
+			// the correct space dimensions is copied into the next placement
 
-		index++;
-		// the correct space dimensions is copied into the next placement
+			// attempt to fit in the remaining (usually smaller) space first
 
-		// attempt to fit in the remaining (usually smaller) space first
+			// stack in the 'sibling' space - the space left over between the used box and the selected free space
+			if (index < rotator.length()) {
+				Space remainder = nextPlacement.getSpace().getRemainder();
+				if (remainder.nonEmpty()) {
+					Box box = rotator.get(index);
 
-		// stack in the 'sibling' space - the space left over between the used box and the selected free space
-		if (index < rotator.length()) {
-			Space remainder = nextPlacement.getSpace().getRemainder();
-			if (remainder.nonEmpty()) {
-				Box box = rotator.get(index);
+					if (box.getWeight() <= holder.getFreeWeight()) {
+						if (box.fitsInside3D(remainder)) {
+							Placement placement = placements.get(index);
+							placement.setBox(box);
 
-				if (box.getWeight() <= holder.getFreeWeight()) {
-					if (box.fitsInside3D(remainder)) {
-						Placement placement = placements.get(index);
-						placement.setBox(box);
+							index++;
 
-						index++;
+							placement.getSpace().copyFrom(remainder);
+							placement.getSpace().setParent(remainder);
+							placement.getSpace().getRemainder().setParent(remainder);
 
-						placement.getSpace().copyFrom(remainder);
-						placement.getSpace().setParent(remainder);
-						placement.getSpace().getRemainder().setParent(remainder);
-
-						index = fit2D(rotator, index, placements, holder, placement, interrupt);
+							index = fit2D(rotator, index, placements, holder, placement, interrupt);
+							if(index == -1) {
+								return -1;
+							}
+						}
 					}
 				}
 			}
+
+			// fit the next box in the selected free space
+			// double check that there is still free weight
+			if (holder.getFreeWeight() >= nextBox.getWeight()) {
+				index = fit2D(rotator, index, placements, holder, nextPlacement, interrupt);
+				if(index == -1) {
+					return -1;
+				}
+			}
+		}  else {
+			// no additional boxes can be placed along the level floor
+		}
+		
+		// also use the space above the placed box, if any.
+		if (index < rotator.length()) {
+			if(usedSpace.getSpace().getHeight() > usedSpace.getBox().getHeight()) {
+				// so there is some free room; between the used space and the level height
+
+				nextBox = rotator.get(index);
+				if (nextBox.getWeight() > holder.getFreeWeight()) {
+					return index;
+				}
+
+				// the level by level approach is somewhat crude, but at least some of the inefficiency
+				// can be avoided this way
+				Space free = usedSpace.getSpace();
+				Box used = usedSpace.getBox();
+				
+				Space above;
+				if(!room) {
+					// full width / depth
+					above = new Space(
+							free.getWidth(), 
+							free.getDepth(), 
+							free.getHeight() - used.getHeight(),
+							free.getX(),
+							free.getY(),
+							free.getZ() + used.getHeight()
+							);
+				} else {
+					// just directly above the used space
+					
+					// TODO possible include the sibling space if no box was fitted there
+					above = new Space(
+							used.getWidth(), 
+							used.getDepth(), 
+							free.getHeight() - used.getHeight(),
+							free.getX(),
+							free.getY(),
+							free.getZ() + used.getHeight()
+							);
+				}
+				
+				Placement placement = placements.get(index);
+				Space levelSpace = placement.getSpace();
+				levelSpace.copyFrom(above);
+				
+				placement.setBox(nextBox);
+
+				levelSpace.setParent(usedSpace.getSpace());
+				levelSpace.getRemainder().setParent(usedSpace.getSpace());
+				
+				if (above.fitsInside3D(nextBox)) {
+					index++;
+
+					index = fit2D(rotator, index, placements, holder, nextPlacement, interrupt);
+				}
+			}			
 		}
 
-		// fit the next box in the selected free space
-		// double check that there is still free weight
-		if (holder.getFreeWeight() >= nextBox.getWeight()) {
-			return fit2D(rotator, index, placements, holder, nextPlacement, interrupt);
-		}
 		return index;
 	}
 

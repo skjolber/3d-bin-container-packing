@@ -139,7 +139,7 @@ public class Container extends Box {
 	public Dimension getFreeSpace() {
 		int remainder = height - getStackHeight();
 		if(remainder < 0) {
-			throw new IllegalArgumentException("Remaining free space is negative at " + remainder);
+			throw new IllegalArgumentException("Remaining free space is negative at " + remainder + " for " + this);
 		}
 		return new Dimension(width, depth, remainder);
 	}
@@ -217,32 +217,28 @@ public class Container extends Box {
 				+ volume + ", name=" + name + "]";
 	}
 
-
-
 	public Dimension getUsedSpace() {
 		Dimension maxBox = Dimension.EMPTY;
-		int height = 0;
 		for (Level level : levels) {
-			maxBox = getUsedSpace(level, maxBox, height);
-			height += level.getHeight();
+			maxBox = getUsedSpace(level, maxBox);
 		}
 		return maxBox;
 	}
 
-	private Dimension getUsedSpace(Level level, Dimension maxBox, int height) {
+	private Dimension getUsedSpace(Level level, Dimension maxBox) {
 		for (Placement placement : level) {
-			maxBox = boundingBox(maxBox, getUsedSpace(placement, height));
+			maxBox = boundingBox(maxBox, getOutmostCorner(placement));
 		}
 		return maxBox;
 	}
 
-	private Dimension getUsedSpace(Placement placement, int height) {
+	private Dimension getOutmostCorner(Placement placement) {
 		final Box box = placement.getBox();
 		final Space space = placement.getSpace();
 		return new Dimension(
 				space.getX() + box.getWidth(),
 				space.getY() + box.getDepth(),
-				height + box.getHeight());
+				space.getZ() + box.getHeight());
 	}
 
 	private Dimension boundingBox(final Dimension b1, final Dimension b2) {

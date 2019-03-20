@@ -58,7 +58,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingRectanglesOnSquareRectangleVolumeFirst() {
-
+		// this test uses the space between the level floor and box top
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container("container1", 10, 10, 3, 0));
 		BruteForcePackager packager = new BruteForcePackager(containers);
@@ -71,9 +71,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
-		assertEquals(fits.getLevels().size(), 2);
-
-		assertEquals(1, fits.getLevels().get(fits.getLevels().size() - 1).getHeight());
+		assertEquals(fits.getLevels().size(), 1);
 	}
 
 	@Test
@@ -223,8 +221,6 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 
 		assertEquals(new Dimension(58, 25, 19), fits1.getUsedSpace());
 	}
-
-
 
 	@Test
 	@Disabled

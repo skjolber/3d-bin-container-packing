@@ -303,7 +303,8 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingMultipleLayersFor3Column() {
-
+		// this test is able to fit the boxes since we're also using the free space
+		// between the box top and level roof.
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(30, 10, 6, 0)); // 1800
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
@@ -315,7 +316,7 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		// 2
 		products.add(new BoxItem(new Box("D", 10, 10, 2, 0), 3)); // 200 200 200
 		Container fits = packager.pack(products);
-		assertNull(fits);
+		assertNotNull(fits);
 	}
 
 	@Test
@@ -563,5 +564,27 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 		validate(fits);
 	}
-				
+
+	@Test
+	void testStackingRectanglesOnRectangle() {
+		// this test highlights that the smallest free space is selected if 
+		// all other is equal
+		List<Container> containers = new ArrayList<>();
+		containers.add(new Container(40,50,60, 0));
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, true, true, true);
+
+		List<BoxItem> products = new ArrayList<>();
+
+		products.add(new BoxItem(new Box("J", 20,30,10, 0), 3));
+
+		Container fits = packager.pack(products);
+		assertNotNull(fits);
+		
+		print(fits);
+
+		assertEquals(fits.getLevels().size(), 1);
+
+		validate(fits);
+	}
+	
 }
