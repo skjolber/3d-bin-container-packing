@@ -132,8 +132,10 @@ public class Container extends Box {
 		levels.get(levels.size() - 1).add(placement);
 	}
 
-	public void addLevel() {
-		add(new Level());
+	public Level addLevel() {
+		Level level = new Level();
+		add(level);
+		return level;
 	}
 
 	public Dimension getFreeSpace() {

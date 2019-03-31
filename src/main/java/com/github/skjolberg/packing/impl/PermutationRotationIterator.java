@@ -153,10 +153,14 @@ public class PermutationRotationIterator {
 
 		Arrays.sort(permutations); // ascending order to make the permutation logic work
 	}
+	
+	/**
+	 * Remove permutations, if present.
+	 */
 
 	public void removePermutations(List<Integer> removed) {
 
-		int[] permutations = new int[this.permutations.length - removed.size()];
+		int[] permutations = new int[this.permutations.length];
 
 		int index = 0;
 		permutations:
@@ -175,9 +179,12 @@ public class PermutationRotationIterator {
 			index++;
 		}
 
+		int[] effectivePermutations = new int[index];
+		System.arraycopy(permutations, 0, effectivePermutations, 0, index);
+		
 		this.rotations = new int[permutations.length];
 		this.reset = new int[permutations.length];
-		this.permutations = permutations;
+		this.permutations = effectivePermutations;
 		Arrays.sort(permutations); // ascending order to make the permutation logic work
 	}
 
