@@ -1,6 +1,15 @@
 package com.github.skjolberg.packing;
 
+import com.github.skjolberg.packing.model.PackModel;
+import com.github.skjolberg.packing.model.PlacementModel;
+import com.google.gson.Gson;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -266,5 +275,68 @@ public class Container extends Box {
 
 	public Container rotate2D3D() {
 		return (Container)super.rotate2D3D();
+	}
+
+	/**
+	 * Returns a representation of this {@link Container} in JSON format
+	 * @return a String in JSON format
+	 */
+	public String toJson() {
+		List<PlacementModel> placementModelList = getLevels()
+			.stream()
+			.map(Collection::stream)
+			.flatMap(placementStream ->
+				placementStream.map(placement -> new BoxToSpace(placement.getBox(), placement.getSpace()))
+			)
+			.map(boxToSpace -> new PlacementModel(
+				boxToSpace.getBox().getName(),
+				boxToSpace.getSpace().getX(),
+				boxToSpace.getSpace().getY(),
+				boxToSpace.getSpace().getZ(),
+				boxToSpace.getBox().getWidth(),
+				boxToSpace.getBox().getDepth(),
+				boxToSpace.getBox().getHeight()
+			))
+			.collect(Collectors.toList());
+
+		PackModel packModel = new PackModel(
+			placementModelList,
+			getWeight(),
+			getWidth(),
+			getDepth(),
+			getHeight(),
+			getVolume(),
+			getName()
+		);
+
+		return new Gson().toJson(packModel);
+	}
+
+	/**
+	 * Save a representation of this {@link Container} in JSON format to a file
+	 * @param pathToFile the path to the file where to save the data
+	 * @throws IOException if an I/O error occurs writing to or creating the file
+	 */
+	public void toFile(String pathToFile) throws IOException {
+		Path filePath = Paths.get(pathToFile);
+		Files.write(filePath, toJson().getBytes());
+	}
+
+	private class BoxToSpace {
+		private final Box box;
+		private final Space space;
+
+		protected BoxToSpace(Box box, Space space) {
+			this.box = box;
+			this.space = space;
+		}
+
+		public Box getBox() {
+			return box;
+		}
+
+		public Space getSpace() {
+			return space;
+		}
 	}
 }
