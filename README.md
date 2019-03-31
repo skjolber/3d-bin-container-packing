@@ -25,7 +25,7 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber</groupId>
     <artifactId>3d-bin-container-packing</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.5</version>
 </dependency>
 ```
 
@@ -122,6 +122,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]
 
 # History
+ - 1.2.5: Fix use of 'top' free space in brute force packager (issue #99)
  - 1.2.4: Attempt to use 'top' free space whenever box is not as high as the level.
  - 1.2.3: Fix weight constraint (issue #83). Thanks to [BALACHANDAR S](https://github.com/balachandarsv) for bug reports and unit tests.
  - 1.2.2: ~~Fix~~ Improve weight constraint in LargestAreaFitFirstPackager (issue #83)
