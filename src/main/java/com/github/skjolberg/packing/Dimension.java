@@ -25,7 +25,7 @@ public class Dimension {
 	protected int width; // x
 	protected int depth; // y
 	protected int height; // z
-	long volume;
+	protected long volume;
 
 	protected final String name;
 
@@ -44,6 +44,10 @@ public class Dimension {
 		this.width = w;
 		this.height = h;
 
+		calculateVolume();
+	}
+
+	protected void calculateVolume() {
 		this.volume = ((long)depth) * ((long)width) * ((long)height);
 	}
 
@@ -215,4 +219,21 @@ public class Dimension {
 		return true;
 	}
 
+	public void setDepth(int depth) {
+		this.depth = depth;
+		
+		calculateVolume();
+	}
+	
+	public void setHeight(int height) {
+		this.height = height;
+		
+		calculateVolume();
+	}
+	
+	public void setWidth(int width) {
+		this.width = width;
+		
+		calculateVolume();
+	}
 }

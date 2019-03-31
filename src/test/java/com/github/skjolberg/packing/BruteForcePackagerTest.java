@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,18 +61,28 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 	void testStackingRectanglesOnSquareRectangleVolumeFirst() {
 		// this test uses the space between the level floor and box top
 		List<Container> containers = new ArrayList<>();
-		containers.add(new Container("container1", 10, 10, 3, 0));
+		containers.add(new Container("container1", 10, 10, 4, 0));
 		BruteForcePackager packager = new BruteForcePackager(containers);
 
 		List<BoxItem> products = new ArrayList<>();
 
-		products.add(new BoxItem(new Box("J", 6, 10, 2, 0), 1));
-		products.add(new BoxItem(new Box("L", 4, 10, 1, 0), 1));
-		products.add(new BoxItem(new Box("K", 4, 10, 2, 0), 1));
+		products.add(new BoxItem(new Box("J", 5, 10, 4, 0), 1));
+		products.add(new BoxItem(new Box("L", 5, 10, 1, 0), 1));
+		products.add(new BoxItem(new Box("K", 5, 10, 1, 0), 1));
+		products.add(new BoxItem(new Box("M", 5, 10, 1, 0), 1));
+		products.add(new BoxItem(new Box("N", 5, 10, 1, 0), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
 		assertEquals(fits.getLevels().size(), 1);
+
+		assertEquals(fits.getLevels().get(0).get(0).getSpace().getZ(), 0);
+		assertEquals(fits.getLevels().get(0).get(1).getSpace().getZ(), 0);
+		
+		// note stacking in height:
+		assertEquals(fits.getLevels().get(0).get(2).getSpace().getZ(), 1);
+		assertEquals(fits.getLevels().get(0).get(3).getSpace().getZ(), 2);
+		assertEquals(fits.getLevels().get(0).get(4).getSpace().getZ(), 3);
 	}
 
 	@Test
@@ -561,6 +572,31 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 			return packer.pack(items);
 		};
 	}
-	
+
+	@Test
+    public void packList_shouldChooseBestContainers_issue99() {
+
+        List<Container> boxes = new ArrayList<Container>() {{
+            add(new Container("Box 1", 100, 100, 100, 20000));
+            add(new Container("Box 2", 200, 200, 200, 20000));
+            add(new Container("Box 3", 300, 300, 300, 20000));
+        }};
+
+        Packager packager = new BruteForcePackager(boxes);
+        int maxContainers = 1000;
+
+        List<BoxItem> products = new ArrayList<BoxItem>();
+        products.add(new BoxItem(new Box("Product 1", 299, 299, 99, 25), 1));
+        products.add(new BoxItem(new Box("Product 2", 299, 299, 99, 25), 1));
+        products.add(new BoxItem(new Box("Product 3", 299, 299, 99, 25), 1));
+        products.add(new BoxItem(new Box("Product 4", 99, 99, 99, 25), 1));
+        List<Container> containers = packager.packList(products, maxContainers, System.currentTimeMillis() + 15000);
+        assertEquals(2, containers.size());
+        assertEquals(containers.get(0).getName(), "Box 3");
+        assertEquals(containers.get(0).getLevels().size(), 3);
+        
+        assertEquals(containers.get(1).getName(), "Box 1");
+        assertEquals(containers.get(1).getLevels().size(), 1);
+    }
 	
 }
