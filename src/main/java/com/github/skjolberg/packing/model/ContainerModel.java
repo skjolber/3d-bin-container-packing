@@ -2,7 +2,7 @@ package com.github.skjolberg.packing.model;
 
 import java.util.List;
 
-public class PackModel {
+public class ContainerModel {
 
 	private final List<PlacementModel> placement;
 	private final int weight;
@@ -12,7 +12,7 @@ public class PackModel {
 	private final long volume;
 	private final String name;
 
-	public PackModel(List<PlacementModel> placement, int weight, int width, int length, int height, long volume, String name) {
+	public ContainerModel(List<PlacementModel> placement, int weight, int width, int length, int height, long volume, String name) {
 		this.placement = placement;
 		this.weight = weight;
 		this.width = width;

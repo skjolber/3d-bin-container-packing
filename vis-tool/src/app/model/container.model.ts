@@ -1,6 +1,6 @@
 import {PlacementModel} from './placement.model';
 
-export class PackModel {
+export class ContainerModel {
   placement: PlacementModel[];
   weight: number;
   width: number;

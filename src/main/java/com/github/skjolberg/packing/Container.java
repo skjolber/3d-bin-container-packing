@@ -1,6 +1,6 @@
 package com.github.skjolberg.packing;
 
-import com.github.skjolberg.packing.model.PackModel;
+import com.github.skjolberg.packing.model.ContainerModel;
 import com.github.skjolberg.packing.model.PlacementModel;
 import com.google.gson.Gson;
 
@@ -299,7 +299,7 @@ public class Container extends Box {
 			))
 			.collect(Collectors.toList());
 
-		PackModel packModel = new PackModel(
+		ContainerModel containerModel = new ContainerModel(
 			placementModelList,
 			getWeight(),
 			getWidth(),
@@ -309,7 +309,7 @@ public class Container extends Box {
 			getName()
 		);
 
-		return new Gson().toJson(packModel);
+		return new Gson().toJson(containerModel);
 	}
 
 	/**

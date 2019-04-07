@@ -1,5 +1,5 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {PackModel} from '../../model/pack.model';
+import {ContainerModel} from '../../model/container.model';
 
 @Component({
   selector: 'app-visualisation',
@@ -7,9 +7,9 @@ import {PackModel} from '../../model/pack.model';
   styleUrls: ['./visualisation.2d.component.css']
 })
 export class Visualisation2dComponent implements OnInit {
-  private packModel: PackModel;
+  private containerModel: ContainerModel;
 
-  @ViewChild('myCanvas') canvasRef: ElementRef;
+  @ViewChild('containerCanvas') canvasRef: ElementRef;
   ctx: CanvasRenderingContext2D;
 
   constructor() {
@@ -29,23 +29,23 @@ export class Visualisation2dComponent implements OnInit {
       fileReader.onload = function (fileLoadedEvent) {
         const target: FileReader = <FileReader> fileLoadedEvent.target;
         const textFromFileLoaded = target.result as string;
-        self.packModel = JSON.parse(textFromFileLoaded);
+        self.containerModel = JSON.parse(textFromFileLoaded);
 
-        self.drawPackedContainer(self.packModel);
+        self.drawPackedContainer(self.containerModel);
       };
 
       fileReader.readAsText(fileToRead, 'UTF-8');
     }
   }
 
-  drawPackedContainer(packModel: PackModel) {
+  drawPackedContainer(containerModel: ContainerModel) {
     // Set the canvas size as the container size
-    this.ctx.canvas.width = this.packModel.width;
-    this.ctx.canvas.height = this.packModel.length;
+    this.ctx.canvas.width = this.containerModel.width;
+    this.ctx.canvas.height = this.containerModel.length;
 
     // Draw the container
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-    const placementArray = packModel.placement;
+    const placementArray = containerModel.placement;
     const placementSize = placementArray.length;
 
     // Draw the boxes

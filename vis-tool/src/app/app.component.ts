@@ -1,5 +1,4 @@
-import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {PackModel} from './model/pack.model';
+import {Component, OnInit} from '@angular/core';
 
 @Component({
   selector: 'app-root',
