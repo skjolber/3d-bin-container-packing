@@ -17,7 +17,7 @@
 		<mockito.version>2.26.0</mockito.version>
 		<ascii-renderer.version>2.1.0</ascii-renderer.version>
 		
-		<google-truth.version>0.43</google-truth.version>
+		<google-truth.version>0.44</google-truth.version>
 		<junit.version>5.4.2</junit.version>
 		
 		<!-- plugins -->
