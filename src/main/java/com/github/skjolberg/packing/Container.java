@@ -138,7 +138,14 @@ public class Container extends Box {
 		return level;
 	}
 
-	public Dimension getFreeSpace() {
+	/**
+	 * Get the free level space, i.e. container height with height of 
+	 * levels subtracted.
+	 * 
+	 * @return free height and box dimension
+	 */
+	
+	public Dimension getFreeLevelSpace() {
 		int remainder = height - getStackHeight();
 		if(remainder < 0) {
 			throw new IllegalArgumentException("Remaining free space is negative at " + remainder + " for " + this);

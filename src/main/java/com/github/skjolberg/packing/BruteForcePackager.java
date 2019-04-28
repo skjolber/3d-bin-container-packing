@@ -161,7 +161,7 @@ public class BruteForcePackager extends Packager {
 			}
 			
 			// update remaining space
-			remainingSpace = holder.getFreeSpace();
+			remainingSpace = holder.getFreeLevelSpace();
 		}
 		return index;
 	}

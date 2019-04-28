@@ -98,7 +98,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 				return null;
 			}
 
-			freeSpace = holder.getFreeSpace();
+			freeSpace = holder.getFreeLevelSpace();
 		}
 
 		return new LAFFResult(containerProducts, holder);
