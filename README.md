@@ -111,7 +111,7 @@ This algorithm places the boxes in the same way as the LAFF algorithm, but has n
 
 The maximum complexity of this approach is [exponential] at __n! * 6^n__. The algorithm runs for under a second for small number of products (<= 6), to seconds or minutes (<= 8) or hours for larger numbers.
 
-However accounting for container vs box size plus boxes with equal size might reduce this bound considerably, and the resulting complexity can be calculated using [PermutationRotationIterator](src/main/java/com/github/skjolberg/packing/PermutationRotationIterator.java) before packaging is attempted. See [example] in test sources.
+However accounting for container vs box size plus boxes with equal size might reduce this bound considerably, and the resulting complexity can be calculated using [PermutationRotationIterator](src/main/java/com/github/skjolberg/packing/impl/PermutationRotationIterator.java) before packaging is attempted. See [example] in test sources.
 
 # Get involved
 If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request.
