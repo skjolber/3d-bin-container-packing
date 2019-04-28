@@ -44,7 +44,7 @@ public class Box extends Dimension {
 		return rotateLargestFootprint3D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
 	}
 
-	private boolean heightUp(int w, int d, int h) {
+	private boolean fitsWidthAndDepthDown(int w, int d, int h) {
 
 		if (h < height) {
 			return false;
@@ -53,7 +53,7 @@ public class Box extends Dimension {
 		return (d >= width && w >= depth) || (w >= width && d >= depth);
 	}
 
-	private boolean widthUp(int w, int d, int h) {
+	private boolean fitsHeightAndDepthDown(int w, int d, int h) {
 
 		if (h < width) {
 			return false;
@@ -62,7 +62,7 @@ public class Box extends Dimension {
 		return (d >= height && w >= depth) || (w >= height && d >= depth);
 	}
 
-	private boolean depthUp(int w, int d, int h) {
+	private boolean fitsHeightAndWidthDown(int w, int d, int h) {
 
 		if (h < depth) {
 			return false;
@@ -73,24 +73,23 @@ public class Box extends Dimension {
 
 	private boolean rotateLargestFootprint3D(int w, int d, int h) {
 		int a = Integer.MIN_VALUE;
-		if (heightUp(w, d, h)) {
+		if (fitsWidthAndDepthDown(w, d, h)) {
 			a = width * depth;
 		}
 
 		int b = Integer.MIN_VALUE;
-		if (widthUp(w, d, h)) {
+		if (fitsHeightAndDepthDown(w, d, h)) {
 			b = height * depth;
 		}
 
 		int c = Integer.MIN_VALUE;
-		if (depthUp(w, d, h)) {
+		if (fitsHeightAndWidthDown(w, d, h)) {
 			c = width * height;
 		}
 
 		if (a == Integer.MIN_VALUE && b == Integer.MIN_VALUE && c == Integer.MIN_VALUE) {
 			return false;
 		}
-
 
 		if (a > b && a > c) {
 			// no rotate
@@ -148,17 +147,17 @@ public class Box extends Dimension {
 
 	boolean fitRotate3DSmallestFootprint(int w, int d, int h) {
 		int a = Integer.MAX_VALUE;
-		if (heightUp(w, d, h)) {
+		if (fitsWidthAndDepthDown(w, d, h)) {
 			a = width * depth;
 		}
 
 		int b = Integer.MAX_VALUE;
-		if (widthUp(w, d, h)) {
+		if (fitsHeightAndDepthDown(w, d, h)) {
 			b = height * depth;
 		}
 
 		int c = Integer.MAX_VALUE;
-		if (depthUp(w, d, h)) {
+		if (fitsHeightAndWidthDown(w, d, h)) {
 			c = width * height;
 		}
 

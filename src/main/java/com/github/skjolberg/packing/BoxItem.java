@@ -9,6 +9,8 @@ import java.io.Serializable;
  */
 public class BoxItem implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	private final int count;
 	private final Box box;
 
