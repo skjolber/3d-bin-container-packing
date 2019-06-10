@@ -15,6 +15,9 @@ import java.util.List;
  * bounds and sides with equal lengths the number can be a lot lower (and this
  * number can be obtained before starting the calculation). <br>
  * <br>
+ * Note that permutations are for the boxes which actually fit within this container.
+ * <br>
+ * <br>
  * Assumes a do-while approach:
  *
  * <pre>{@code
@@ -91,6 +94,8 @@ public class PermutationRotationIterator {
 	protected final Dimension dimension;
 	private int[] reset;
 	protected int[] rotations; // 2^n or 6^n
+	
+	// permutations of boxes that fit inside this container
 	protected int[] permutations; // n!
 
 	public PermutationRotationIterator(List<BoxItem> list, Dimension bound, boolean rotate3D) {
@@ -111,8 +116,8 @@ public class PermutationRotationIterator {
 				}
 			}
 
-			// create PermutationRotation even if empty, so that permutations are directly
-			// comparable between parallel instances of this class
+			// create PermutationRotation even if this box does not fit at all, 
+			// so that permutations are directly comparable between parallel instances of this class
 			matrix.add(new PermutationRotation(unconstrained[i].getCount(), result.toArray(new Box[0])));
 
 			if(!result.isEmpty()) {
@@ -224,8 +229,17 @@ public class PermutationRotationIterator {
 		return n;
 	}
 
+	/**
+	 * Return number of permutations for boxes which fit within this container.
+	 * 
+	 * @return permutation count
+	 */
+	
 	long countPermutations() {
 		// reduce permutations for boxes which are duplicated
+		
+		// could be further bounded by looking at how many boxes (i.e. n x the smallest) which actually
+		// fit within the container volume
 
 		int maxCount = 0;
 		for (final PermutationRotation aMatrix1 : matrix) {
