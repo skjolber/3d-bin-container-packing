@@ -1,45 +1,170 @@
 package com.github.skjolberg.packing.impl;
 
+import java.util.List;
+
+import com.github.skjolberg.packing.BoxItem;
 import com.github.skjolberg.packing.Dimension;
+
+/**
+ * 
+ * 
+ */
 
 public class NthPermutationRotationIterator extends PermutationRotationIterator {
 
-	public NthPermutationRotationIterator(Dimension bound, PermutationRotation[] unconstrained) {
+	private int[] frequencies;
+	private int workUnit;
+	private int workUnitCount;
+	private long workUnitPermutations;
+	
+	public NthPermutationRotationIterator(List<BoxItem> list, Dimension bound, boolean rotate3D, int workUnitIndex, int workUnitCount) {
+		this(bound, toRotationMatrix(list, rotate3D), workUnitIndex, workUnitCount);
+	}
+	
+	public NthPermutationRotationIterator(Dimension bound, PermutationRotation[] unconstrained, int workUnitIndex, int workUnitCount) {
 		super(bound, unconstrained);
+		
+		this.workUnit = workUnitIndex;
+		this.workUnitCount = workUnitCount;
+		
+		this.frequencies = new int[unconstrained.length];
+		
+		for (int i = 0; i < unconstrained.length; i++) {
+			PermutationRotation permutationRotation = unconstrained[i];
+			
+			frequencies[i] = permutationRotation.getCount();
+		}
+		
+		enforceWorkUnit();
+	}
+	
+	public void removePermutations(int count) {
+		for(int i = 0; i < count; i++) {
+			frequencies[permutations[i]]--;
+		}
+		super.removePermutations(count);
+		
+		enforceWorkUnit();
+	}
+	
+	public void removePermutations(List<Integer> removed) {
+		for (Integer integer : removed) {
+			frequencies[integer]--;
+		}
+		super.removePermutations(removed);
+		
+		enforceWorkUnit();
 	}
 
-	public static int[] unrank(int[] frequencies, int rank) {
-		// https://stackoverflow.com/questions/22642151/finding-the-ranking-of-a-word-permutations-with-duplicate-letters
+	private void enforceWorkUnit() {
+		int count = getCount();
 		
+		long countPermutations;
+		int first = firstDuplicate(frequencies);
+		if(first == -1) {
+			countPermutations = getPermutationCount(count);
+			
+		} else {
+			countPermutations = getPermutationCountWithRepeatedItems(count, first);
+		}
+		
+		if(countPermutations == -1L) {
+			throw new IllegalArgumentException();
+		}
+		
+		long rank = (countPermutations * workUnit) / workUnitCount;
+		
+		if(first == -1) {
+			// use classic n-th lexographical permutation algorithm
+			this.permutations = kthPermutation(frequencies.length, rank);			
+		} else {
+			// use more complex n-th lexographical permutation algorithm
+			int[] copyOfFrequencies = new int[frequencies.length];
+			System.arraycopy(frequencies, 0, copyOfFrequencies, 0, frequencies.length);
+			this.permutations = kthPermutation(copyOfFrequencies, count, countPermutations, rank);
+		}
+		
+		this.workUnitPermutations = countPermutations / workUnitCount;
+		if(countPermutations % workUnitCount > workUnit) {
+			workUnitPermutations++;
+		}
+	}
+	
+	private int getCount() {
 		int count = 0;
 		for(int f : frequencies) {
 			count += f;
 		}
-		
-		int permutationCount = 1;
+		return count;
+	}
+
+	@Override
+	public boolean nextPermutation() {
+		workUnitPermutations--;
+		if(workUnitPermutations > 0) {
+			return super.nextPermutation();
+		}
+		return false;
+	}
+
+	@Override
+	long countPermutations() {
+		return countPermutations(getCount());
+	}
+
+	long countPermutations(int count) {
 		int first = firstDuplicate(frequencies);
 		if(first == -1) {
-			for(int i = 0; i < count; i++) {
-				permutationCount = permutationCount * (i + 1);
-			}
-			
-			// use classic n-th lexographical permutation algorithm
-			throw new RuntimeException("Not implemented");
+			return getPermutationCount(count);
 		} else {
-			for(int i = frequencies[first]; i < count; i++) {
-				permutationCount = permutationCount * (i + 1);
+			return getPermutationCountWithRepeatedItems(count, first);
+		}
+	}
+
+	private long getPermutationCount(int count) {
+		long permutationCount = 1;
+		for(int i = 0; i < count; i++) {
+			if(Long.MAX_VALUE / (i + 1) <= permutationCount) {
+				return -1L;
 			}
-			for(int i = first + 1; i < frequencies.length; i++) {
-				if(frequencies[i] > 1) {
-					for(int k = 1; k < frequencies[i]; k++) {
-						permutationCount = permutationCount / (k + 1);
-					}
+			permutationCount = permutationCount * (i + 1);
+		}
+		return permutationCount;
+	}
+
+	private long getPermutationCountWithRepeatedItems(int count, int first) {
+		long permutationCount = 1;
+		// cancel out the first set of factors
+		// 
+		// For [3, 4] this would look like:
+		//
+		// 1 * 2 * 3 * 4 * 5 * 6 * 7
+		// -----------------------------
+		// (1 * 2 * 3) (1 * 2 * 3 * 4)
+		//
+		// which is equal to
+		//
+		// 4 * 5 * 6 * 7
+		// -----------------------------
+		// (1 * 2 * 3 * 4)
+		//
+		// above the line:
+		for(int i = frequencies[first]; i < count; i++) {
+			if(Long.MAX_VALUE / (i + 1) <= permutationCount) {
+				return -1L;
+			}
+			permutationCount = permutationCount * (i + 1);
+		}
+		// below the line:
+		for(int i = first + 1; i < frequencies.length; i++) {
+			if(frequencies[i] > 1) {
+				for(int k = 1; k < frequencies[i]; k++) {
+					permutationCount = permutationCount / (k + 1);
 				}
 			}
-			
-		    return unrank(frequencies, count, permutationCount, rank);
 		}
-		
+		// future improvement: cancel out more
+		return permutationCount;
 	}
 	
 	private static int firstDuplicate(int[] frequencies) {
@@ -51,7 +176,7 @@ public class NthPermutationRotationIterator extends PermutationRotationIterator 
 		return -1;
 	}	
 
-	private static int[] unrank(int[] frequencies, int elementCount, int permutationCount, int rank) {
+	static int[] kthPermutation(int[] frequencies, int elementCount, long permutationCount, long rank) {
 		int[] result = new int[elementCount];
 	    
 	    for(int i = 0; i < elementCount; i++) {
@@ -59,7 +184,7 @@ public class NthPermutationRotationIterator extends PermutationRotationIterator 
 		    	if(frequencies[k] == 0) {
 		    		continue;
 		    	}
-	            int suffixcount = permutationCount * frequencies[k] / (elementCount - i);
+	            long suffixcount = permutationCount * frequencies[k] / (elementCount - i);
 	            if (rank <= suffixcount) {
 	            	result[i] = k;
 
@@ -74,13 +199,7 @@ public class NthPermutationRotationIterator extends PermutationRotationIterator 
 		return result;
 	}
 
-	public void skipToPermutation(int k) {
-		kthPermutation(permutations.length, k);
-		
-		
-	}
-
-	public static int[] kthPermutation(int n, int k) {
+	static int[] kthPermutation(int n, long rank) {
 		// http://www.zrzahid.com/k-th-permutation-sequence/
 		if(n > 13) {
 			throw new IllegalArgumentException();
@@ -98,26 +217,26 @@ public class NthPermutationRotationIterator extends PermutationRotationIterator 
 			factorial[i] = i*factorial[i - 1];
 		}
 		
-		if(k <= 1){
+		if(rank <= 1){
 			return nums;
 		}
-		if(k >= factorial[n]){
+		if(rank >= factorial[n]){
 			reverse(nums, 0, n-1);
 			return nums;
 		}
 		
-		k -= 1;//0-based 
+		rank -= 1;//0-based 
 		for(int i = 0; i < n-1; i++){
 			int fact = factorial[n-i-1];
 			//index of the element in the rest of the input set
 			//to put at i position (note, index is offset by i)
-			int index = (k/fact);
+			int index = (int) (rank/fact);
 			//put the element at index (offset by i) element at position i 
 			//and shift the rest on the right of i
 			shiftRight(nums, i, i+index);
 			//decrement k by fact*index as we can have fact number of 
 			//permutations for each element at position less than index
-			k = k - fact*index;
+			rank = rank - fact*index;
 		}
 		
 		return nums;
@@ -170,46 +289,5 @@ public class NthPermutationRotationIterator extends PermutationRotationIterator 
 	    return true;
 	}
 
-    private static boolean nextPermutation2(int[] numList)
-    {
-        /*
-         Knuths
-         1. Find the largest index j such that a[j] < a[j + 1]. If no such index exists, the permutation is the last permutation.
-         2. Find the largest index l such that a[j] < a[l]. Since j + 1 is such an index, l is well defined and satisfies j < l.
-         3. Swap a[j] with a[l].
-         4. Reverse the sequence from a[j + 1] up to and including the final element a[n].
-
-         */
-        int largestIndex = -1;
-        for (int i = numList.length - 2; i >= 0; i--)
-        {
-            if (numList[i] < numList[i + 1]) {
-                largestIndex = i;
-                break;
-            }
-        }
-
-        if (largestIndex < 0) return false;
-
-        int largestIndex2 = -1;
-        for (int i = numList.length - 1 ; i >= 0; i--) {
-            if (numList[largestIndex] < numList[i]) {
-                largestIndex2 = i;
-                break;
-            }
-        }
-
-        int tmp = numList[largestIndex];
-        numList[largestIndex] = numList[largestIndex2];
-        numList[largestIndex2] = tmp;
-
-        for (int i = largestIndex + 1, j = numList.length - 1; i < j; i++, j--) {
-            tmp = numList[i];
-            numList[i] = numList[j];
-            numList[j] = tmp;
-        }
-
-        return true;
-    }
 	
 }

@@ -367,73 +367,75 @@ public class BruteForcePackager extends Packager {
 	}
 
 	@Override
-	protected Adapter adapter() {
+	protected Adapter adapter(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
+		// TODO Auto-generated method stub
+		return new BruteForceAdapter(boxes, containers, interrupt);
+	}
+	
+	private class BruteForceAdapter implements Adapter {
 		// instead of placing boxes, work with placements
 		// this very much reduces the number of objects created
 		// performance gain is something like 25% over the box-centric approach
+	
+		private List<Placement> placements;
+		private PermutationRotationIterator[] iterators;
+		private List<Container> containers;
+		private final BooleanSupplier interrupt;
 
-		return new Adapter() {
-
-			private List<Placement> placements;
-			private PermutationRotationIterator[] iterators;
-			private List<Container> containers;
-
-			@Override
-			public PackResult attempt(int i, BooleanSupplier interrupt) {
-				return BruteForcePackager.this.pack(placements, containers.get(i), iterators[i], interrupt);
+		public BruteForceAdapter(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
+			this.containers = containers;
+			PermutationRotation[] rotations = PermutationRotationIterator.toRotationMatrix(boxes, rotate3D);
+			int count = 0;
+			for (PermutationRotation permutationRotation : rotations) {
+				count += permutationRotation.getCount();
 			}
 
-			@Override
-			public void initialize(List<BoxItem> boxes, List<Container> containers) {
-				this.containers = containers;
-				PermutationRotation[] rotations = PermutationRotationIterator.toRotationMatrix(boxes, rotate3D);
-				int count = 0;
-				for (PermutationRotation permutationRotation : rotations) {
-					count += permutationRotation.getCount();
-				}
+			placements = getPlacements(count);
 
-				placements = getPlacements(count);
-
-				iterators = new PermutationRotationIterator[containers.size()];
-				for (int i = 0; i < containers.size(); i++) {
-					iterators[i] = new PermutationRotationIterator(containers.get(i), rotations);
-				}
+			iterators = new PermutationRotationIterator[containers.size()];
+			for (int i = 0; i < containers.size(); i++) {
+				iterators[i] = new PermutationRotationIterator(containers.get(i), rotations);
 			}
+			this.interrupt = interrupt;
+		}
 
-			@Override
-			public Container accepted(PackResult result) {
-				BruteForceResult bruteForceResult = (BruteForceResult) result;
+		@Override
+		public PackResult attempt(int i) {
+			return BruteForcePackager.this.pack(placements, containers.get(i), iterators[i], interrupt);
+		}
 
-				Container container = bruteForceResult.getContainer();
+		@Override
+		public Container accepted(PackResult result) {
+			BruteForceResult bruteForceResult = (BruteForceResult) result;
 
-				if (bruteForceResult.isRemainder()) {
-					int[] permutations = bruteForceResult.getRotator().getPermutations();
-					List<Integer> p = new ArrayList<>(bruteForceResult.getCount());
-					for (int i = 0; i < bruteForceResult.getCount(); i++) {
-						p.add(permutations[i]);
+			Container container = bruteForceResult.getContainer();
+
+			if (bruteForceResult.isRemainder()) {
+				int[] permutations = bruteForceResult.getRotator().getPermutations();
+				List<Integer> p = new ArrayList<>(bruteForceResult.getCount());
+				for (int i = 0; i < bruteForceResult.getCount(); i++) {
+					p.add(permutations[i]);
+				}
+				for (PermutationRotationIterator it : iterators) {
+					if (it == bruteForceResult.getRotator()) {
+						it.removePermutations(bruteForceResult.getCount());
+					} else {
+						it.removePermutations(p);
 					}
-					for (PermutationRotationIterator it : iterators) {
-						if (it == bruteForceResult.getRotator()) {
-							it.removePermutations(bruteForceResult.getCount());
-						} else {
-							it.removePermutations(p);
-						}
-					}
-					placements = placements.subList(bruteForceResult.getCount(), this.placements.size());
-				} else {
-					placements = Collections.emptyList();
 				}
-
-				return container;
+				placements = placements.subList(bruteForceResult.getCount(), this.placements.size());
+			} else {
+				placements = Collections.emptyList();
 			}
 
-			@Override
-			public boolean hasMore(PackResult result) {
-				BruteForceResult bruteForceResult = (BruteForceResult) result;
-				return placements.size() > bruteForceResult.getCount();
-			}
+			return container;
+		}
 
-		};
+		@Override
+		public boolean hasMore(PackResult result) {
+			BruteForceResult bruteForceResult = (BruteForceResult) result;
+			return placements.size() > bruteForceResult.getCount();
+		}
 	}
 
 }

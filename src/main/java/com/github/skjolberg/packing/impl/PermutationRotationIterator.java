@@ -142,7 +142,6 @@ public class PermutationRotationIterator {
 
 		reset = new int[permutations.length];
 		rotations = new int[permutations.length];
-		System.arraycopy(reset, 0, rotations, 0, rotations.length);
 	}
 
 	public void removePermutations(int count) {
@@ -151,12 +150,11 @@ public class PermutationRotationIterator {
 
 		int[] permutations = new int[this.permutations.length - count];
 		System.arraycopy(this.permutations, count, permutations, 0, newLength);
+		Arrays.sort(permutations); // ascending order to make the permutation logic work
 
 		this.rotations = new int[permutations.length];
 		this.reset = new int[permutations.length];
 		this.permutations = permutations;
-
-		Arrays.sort(permutations); // ascending order to make the permutation logic work
 	}
 	
 	/**
@@ -186,11 +184,11 @@ public class PermutationRotationIterator {
 
 		int[] effectivePermutations = new int[index];
 		System.arraycopy(permutations, 0, effectivePermutations, 0, index);
+		Arrays.sort(effectivePermutations); // ascending order to make the permutation logic work
 		
 		this.rotations = new int[permutations.length];
 		this.reset = new int[permutations.length];
 		this.permutations = effectivePermutations;
-		Arrays.sort(permutations); // ascending order to make the permutation logic work
 	}
 
 	public boolean nextRotation() {
