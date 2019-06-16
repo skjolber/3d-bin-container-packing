@@ -3,6 +3,7 @@ package com.github.skjolberg.packing;
 import com.github.skjolberg.packing.impl.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -14,7 +15,7 @@ import java.util.function.BooleanSupplier;
  * <br><br>
  * This attempts a brute force approach, which is very demanding in terms of resources. For use in scenarios with 'few'
  * boxes, where the complexity of a 'few' can be measured for a specific set of boxes and containers using {@linkplain
- * PermutationRotationIterator#countPermutations()} * {@linkplain PermutationRotationIterator#countRotations()}.
+ * DefaultPermutationRotationIterator#countPermutations()} * {@linkplain DefaultPermutationRotationIterator#countRotations()}.
  * <br><br>
  * Thread-safe implementation. The input Boxes can be used by multiple threads at a time.
  */
@@ -368,7 +369,6 @@ public class BruteForcePackager extends Packager {
 
 	@Override
 	protected Adapter adapter(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
-		// TODO Auto-generated method stub
 		return new BruteForceAdapter(boxes, containers, interrupt);
 	}
 	
@@ -384,7 +384,7 @@ public class BruteForcePackager extends Packager {
 
 		public BruteForceAdapter(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
 			this.containers = containers;
-			PermutationRotation[] rotations = PermutationRotationIterator.toRotationMatrix(boxes, rotate3D);
+			PermutationRotation[] rotations = DefaultPermutationRotationIterator.toRotationMatrix(boxes, rotate3D);
 			int count = 0;
 			for (PermutationRotation permutationRotation : rotations) {
 				count += permutationRotation.getCount();
@@ -394,7 +394,7 @@ public class BruteForcePackager extends Packager {
 
 			iterators = new PermutationRotationIterator[containers.size()];
 			for (int i = 0; i < containers.size(); i++) {
-				iterators[i] = new PermutationRotationIterator(containers.get(i), rotations);
+				iterators[i] = new DefaultPermutationRotationIterator(containers.get(i), rotations);
 			}
 			this.interrupt = interrupt;
 		}
@@ -412,6 +412,7 @@ public class BruteForcePackager extends Packager {
 
 			if (bruteForceResult.isRemainder()) {
 				int[] permutations = bruteForceResult.getRotator().getPermutations();
+				System.out.println("Accept result " + Arrays.toString(permutations));
 				List<Integer> p = new ArrayList<>(bruteForceResult.getCount());
 				for (int i = 0; i < bruteForceResult.getCount(); i++) {
 					p.add(permutations[i]);
@@ -425,6 +426,9 @@ public class BruteForcePackager extends Packager {
 				}
 				placements = placements.subList(bruteForceResult.getCount(), this.placements.size());
 			} else {
+				int[] permutations = bruteForceResult.getRotator().getPermutations();
+				System.out.println("Accept result " + Arrays.toString(permutations));
+
 				placements = Collections.emptyList();
 			}
 

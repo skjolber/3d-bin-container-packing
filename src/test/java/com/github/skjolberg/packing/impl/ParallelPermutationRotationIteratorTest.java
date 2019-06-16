@@ -2,6 +2,7 @@ package com.github.skjolberg.packing.impl;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolberg.packing.Box;
 import com.github.skjolberg.packing.BoxItem;
 
-public class NthPermutationRotationIteratorTest {
+public class ParallelPermutationRotationIteratorTest {
 
 	@Test
 	void testPermutationsSingleWorkUnit() {
@@ -27,20 +28,21 @@ public class NthPermutationRotationIteratorTest {
 		products.add(new BoxItem(new Box("3", 1, 1, 3, 0), 1));
 		products.add(new BoxItem(new Box("4", 1, 1, 3, 0), 1));
 
-		PermutationRotationIterator iterator = new PermutationRotationIterator(products, container, true);
+		DefaultPermutationRotationIterator iterator = new DefaultPermutationRotationIterator(products, container, true);
 
-		NthPermutationRotationIterator nthIterator = new NthPermutationRotationIterator(products, container, true, 0, 1);
+		ParallelPermutationRotationIterator nthIterator = new ParallelPermutationRotationIterator(products, container, true, 1);
 
 		assertEquals(iterator.countPermutations(), nthIterator.countPermutations());
 
 		int count = 0;
 		do {
-			assertThat(nthIterator.getPermutations()).isEqualTo(iterator.getPermutations());
+			assertThat(nthIterator.getPermutations(0)).isEqualTo(iterator.getPermutations());
 
 			count++;
-		} while(nthIterator.nextPermutation() && iterator.nextPermutation());
+		} while(nthIterator.nextPermutation(0) && iterator.nextPermutation());
 
 		assertEquals( 5 * 4 * 3 * 2 * 1, count);
+		assertFalse(nthIterator.nextPermutation(0));
 	}
 
 	@Test
@@ -55,9 +57,9 @@ public class NthPermutationRotationIteratorTest {
 		products.add(new BoxItem(new Box("3", 1, 1, 3, 0), 1));
 		products.add(new BoxItem(new Box("4", 1, 1, 3, 0), 1));
 
-		PermutationRotationIterator iterator = new PermutationRotationIterator(products, container, true);
+		DefaultPermutationRotationIterator iterator = new DefaultPermutationRotationIterator(products, container, true);
 
-		NthPermutationRotationIterator nthIterator = new NthPermutationRotationIterator(products, container, true, 1, 2);
+		ParallelPermutationRotationIterator nthIterator = new ParallelPermutationRotationIterator(products, container, true, 2);
 
 		long countPermutations = nthIterator.countPermutations();
 		assertEquals(iterator.countPermutations(), countPermutations);
@@ -68,11 +70,12 @@ public class NthPermutationRotationIteratorTest {
 		
 		int count = 0;
 		do {
-			assertThat(nthIterator.getPermutations()).isEqualTo(iterator.getPermutations());
+			assertThat(nthIterator.getPermutations(1)).isEqualTo(iterator.getPermutations());
 			count++;
-		} while(nthIterator.nextPermutation() && iterator.nextPermutation());
+		} while(nthIterator.nextPermutation(1) && iterator.nextPermutation());
 
 		assertEquals( 5 * 4 * 3, count);
+		assertFalse(nthIterator.nextPermutation(1));
 	}
 
 	@Test
@@ -85,9 +88,9 @@ public class NthPermutationRotationIteratorTest {
 		products.add(new BoxItem(new Box("1", 1, 1, 3, 0), 3));
 		products.add(new BoxItem(new Box("2", 1, 1, 3, 0), 4));
 
-		PermutationRotationIterator iterator = new PermutationRotationIterator(products, container, true);
+		DefaultPermutationRotationIterator iterator = new DefaultPermutationRotationIterator(products, container, true);
 
-		NthPermutationRotationIterator nthIterator = new NthPermutationRotationIterator(products, container, true, 1, 2);
+		ParallelPermutationRotationIterator nthIterator = new ParallelPermutationRotationIterator(products, container, true, 2);
 
 		long countPermutations = nthIterator.countPermutations();
 		assertEquals(iterator.countPermutations(), countPermutations);
@@ -98,26 +101,13 @@ public class NthPermutationRotationIteratorTest {
 		
 		int count = 0;
 		do {
-			assertThat(nthIterator.getPermutations()).isEqualTo(iterator.getPermutations());
+			assertThat(nthIterator.getPermutations(1)).isEqualTo(iterator.getPermutations());
 			count++;
-		} while(nthIterator.nextPermutation() && iterator.nextPermutation());
+		} while(nthIterator.nextPermutation(1) && iterator.nextPermutation());
 
 		assertEquals( 8 * 7 * 6 * 5 * 4 * 3 * 2 * 1 / ((3 * 2 * 1) * (4 * 3 * 2 * 1) * 2), count);
+		assertFalse(nthIterator.nextPermutation(1));
 	}
-	
-	
-	@Test
-	public void testUnranking() {
-		int count = (7 * 6 * 5 * 4 * 3 * 2 * 1) / ((4 * 3 * 2 * 1) * (3 * 2 * 1));
-		for(int i = 0; i < count; i++) {
-			int[] frequencies = new int[2];
-			frequencies[0] = 3;
-			frequencies[1] = 4;
-
-			System.out.println(Arrays.asList(NthPermutationRotationIterator.kthPermutation(frequencies, 7, count, i + 1)));
-		}
-	}
-
 	
 	public static long rankPerm(String perm) {
 	    long rank = 1;
@@ -181,24 +171,5 @@ public class NthPermutationRotationIteratorTest {
 	    }
 	    return perm.toString();
 	}
-	
-	@Test
-	public void testOriginal() {
-		Box container = new Box(9, 1, 1, 0);
 
-		List<BoxItem> products = new ArrayList<>();
-
-		products.add(new BoxItem(new Box("0", 1, 1, 3, 0), 3));
-		products.add(new BoxItem(new Box("1", 1, 1, 3, 0), 4));
-
-		PermutationRotationIterator iterator = new PermutationRotationIterator(products, container, true);
-
-		int count = (7 * 6 * 5 * 4 * 3 * 2 * 1) / ((4 * 3 * 2 * 1) * (3 * 2 * 1));
-		System.out.println("Count " + count);
-		for(int i = 0; i < count; i++) {
-			System.out.println(unrankperm("0001111", i + 1));
-			System.out.println(Arrays.asList(iterator.getPermutations()));
-			iterator.nextPermutation();
-		}
-	}
 }
