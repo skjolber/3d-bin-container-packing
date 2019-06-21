@@ -164,9 +164,6 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 
 	@Override
 	public void removePermutations(List<Integer> removed) {
-		this.rotations = new int[rotations.length - removed.size()];
-		this.reset = new int[rotations.length];
-
 		int[] permutations = new int[this.permutations.length];
 
 		int index = 0;
@@ -191,6 +188,9 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 		Arrays.sort(effectivePermutations); // ascending order to make the permutation logic work
 		
 		this.permutations = effectivePermutations;
+		
+		this.rotations = new int[effectivePermutations.length];
+		this.reset = new int[effectivePermutations.length];
 	}
 
 	@Override

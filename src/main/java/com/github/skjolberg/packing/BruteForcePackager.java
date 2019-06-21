@@ -412,7 +412,6 @@ public class BruteForcePackager extends Packager {
 
 			if (bruteForceResult.isRemainder()) {
 				int[] permutations = bruteForceResult.getRotator().getPermutations();
-				System.out.println("Accept result " + Arrays.toString(permutations));
 				List<Integer> p = new ArrayList<>(bruteForceResult.getCount());
 				for (int i = 0; i < bruteForceResult.getCount(); i++) {
 					p.add(permutations[i]);
@@ -426,9 +425,6 @@ public class BruteForcePackager extends Packager {
 				}
 				placements = placements.subList(bruteForceResult.getCount(), this.placements.size());
 			} else {
-				int[] permutations = bruteForceResult.getRotator().getPermutations();
-				System.out.println("Accept result " + Arrays.toString(permutations));
-
 				placements = Collections.emptyList();
 			}
 

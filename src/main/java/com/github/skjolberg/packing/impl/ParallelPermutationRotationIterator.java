@@ -1,6 +1,5 @@
 package com.github.skjolberg.packing.impl;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolberg.packing.Box;
