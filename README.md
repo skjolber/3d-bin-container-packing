@@ -113,6 +113,11 @@ The maximum complexity of this approach is [exponential] at __n! * 6^n__. The al
 
 However accounting for container vs box size plus boxes with equal size might reduce this bound considerably, and the resulting complexity can be calculated using [PermutationRotationIterator](src/main/java/com/github/skjolberg/packing/impl/PermutationRotationIterator.java) before packaging is attempted. See [example] in test sources.
 
+There is also a [parallel version](src/main/java/com/github/skjolberg/packing/ParallelBruteForcePackager.java) of the brute-force packager, for those wishing to use it on a multicore system.
+
+Using a brute-force algorithm might seem to hit a wall of complexity, but taking into account number of items 
+per order distribution for web-shops, it will actually cover a considerable part of the total.
+
 # Get involved
 If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request.
 

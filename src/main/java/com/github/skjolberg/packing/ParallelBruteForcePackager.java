@@ -98,7 +98,7 @@ public class ParallelBruteForcePackager extends BruteForcePackager {
 		public PackResult attempt(int i) {
 			// run on single thread for a small amount of combinations
 			ParallelPermutationRotationIterator parallelPermutationRotationIterator = iterators[i];
-			if(parallelPermutationRotationIterator.countPermutations() * parallelPermutationRotationIterator.countRotations() > 933120) { // 5! * 6^n = 933120
+			if(parallelPermutationRotationIterator.countPermutations() * parallelPermutationRotationIterator.countRotations() > threads * 2) { // somewhat conservative, as the number of rotations is unknown 
 				AtomicBoolean localInterrupt = new AtomicBoolean();
 				BooleanSupplier booleanSupplier = () -> localInterrupt.get() || interrupt.getAsBoolean();
 				
