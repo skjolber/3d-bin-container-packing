@@ -3,7 +3,6 @@ package com.github.skjolberg.packing;
 import com.github.skjolberg.packing.impl.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -378,7 +377,7 @@ public class BruteForcePackager extends Packager {
 		// performance gain is something like 25% over the box-centric approach
 	
 		private List<Placement> placements;
-		private PermutationRotationIterator[] iterators;
+		private DefaultPermutationRotationIterator[] iterators;
 		private List<Container> containers;
 		private final BooleanSupplier interrupt;
 
@@ -392,7 +391,7 @@ public class BruteForcePackager extends Packager {
 
 			placements = getPlacements(count);
 
-			iterators = new PermutationRotationIterator[containers.size()];
+			iterators = new DefaultPermutationRotationIterator[containers.size()];
 			for (int i = 0; i < containers.size(); i++) {
 				iterators[i] = new DefaultPermutationRotationIterator(containers.get(i), rotations);
 			}

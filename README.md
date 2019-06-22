@@ -116,7 +116,7 @@ However accounting for container vs box size plus boxes with equal size might re
 There is also a [parallel version](src/main/java/com/github/skjolberg/packing/ParallelBruteForcePackager.java) of the brute-force packager, for those wishing to use it on a multicore system.
 
 Using a brute-force algorithm might seem to hit a wall of complexity, but taking into account number of items 
-per order distribution for web-shops, it will actually cover a considerable part of the total.
+per order distribution for web-shops, a healthy part of the orders are within its grasp.
 
 # Get involved
 If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request.
