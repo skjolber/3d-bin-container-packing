@@ -132,8 +132,7 @@ public abstract class Packager {
 			return null;
 		}
 
-		Adapter pack = adapter();
-		pack.initialize(boxes, containers);
+		Adapter pack = adapter(boxes, containers, interrupt);
 
 		if (!binarySearch || containers.size() <= 2) {
 			for (int i = 0; i < containers.size(); i++) {
@@ -142,7 +141,7 @@ public abstract class Packager {
 					break;
 				}
 
-				PackResult result = pack.attempt(i, interrupt);
+				PackResult result = pack.attempt(i);
 				if (result == null) {
 					return null; // timeout
 				}
@@ -172,7 +171,7 @@ public abstract class Packager {
 					int next = iterator.next();
 					int mid = containerIndexes.get(next);
 
-					PackResult result = pack.attempt(mid, interrupt);
+					PackResult result = pack.attempt(mid);
 					if (result == null) {
 						return null; // timeout
 					}
@@ -264,8 +263,7 @@ public abstract class Packager {
 			return null;
 		}
 
-		Adapter pack = adapter();
-		pack.initialize(boxes, containers);
+		Adapter pack = adapter(boxes, containers, interrupt);
 
 		List<Container> containerPackResults = new ArrayList<>();
 
@@ -279,7 +277,7 @@ public abstract class Packager {
 					return null;
 				}
 
-				PackResult result = pack.attempt(i, interrupt);
+				PackResult result = pack.attempt(i);
 				if (result == null) {
 					return null; // timeout
 				}
@@ -413,7 +411,7 @@ public abstract class Packager {
 	}
 
 
-	protected abstract Adapter adapter();
+	protected abstract Adapter adapter(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt);
 
 	private boolean canHoldAll(Container containerBox, List<Box> boxes) {
 		for (Box box : boxes) {

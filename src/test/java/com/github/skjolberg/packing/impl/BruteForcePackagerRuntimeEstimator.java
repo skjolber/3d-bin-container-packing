@@ -2,7 +2,7 @@ package com.github.skjolberg.packing.impl;
 
 import com.github.skjolberg.packing.*;
 import com.github.skjolberg.packing.impl.PermutationRotation;
-import com.github.skjolberg.packing.impl.PermutationRotationIterator;
+import com.github.skjolberg.packing.impl.DefaultPermutationRotationIterator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,9 +78,9 @@ public class BruteForcePackagerRuntimeEstimator {
 					spent += count;
 				}
 
-				PermutationRotation[] rotationMatrix = PermutationRotationIterator.toRotationMatrix(products1, true);
+				PermutationRotation[] rotationMatrix = DefaultPermutationRotationIterator.toRotationMatrix(products1, true);
 
-				PermutationRotationIterator iterator = new PermutationRotationIterator(containers.get(0), rotationMatrix);
+				DefaultPermutationRotationIterator iterator = new DefaultPermutationRotationIterator(containers.get(0), rotationMatrix);
 				if(iterator.length() != n) {
 					throw new RuntimeException(iterator.length() +" != " + n + " for " + products1.size());
 				}
@@ -176,9 +176,9 @@ public class BruteForcePackagerRuntimeEstimator {
 					spent += count;
 				}
 
-				PermutationRotation[] rotationMatrix = PermutationRotationIterator.toRotationMatrix(products1, true);
+				PermutationRotation[] rotationMatrix = DefaultPermutationRotationIterator.toRotationMatrix(products1, true);
 
-				PermutationRotationIterator iterator = new PermutationRotationIterator(containers.get(0), rotationMatrix);
+				DefaultPermutationRotationIterator iterator = new DefaultPermutationRotationIterator(containers.get(0), rotationMatrix);
 				if(iterator.length() != n) {
 					throw new RuntimeException(iterator.length() +" != " + n + " for " + products1.size());
 				}

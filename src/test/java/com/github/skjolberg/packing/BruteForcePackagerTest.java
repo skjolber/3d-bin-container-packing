@@ -253,6 +253,8 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 		// anyways my laptop cannot do more than perhaps 10 within 5 seconds
 		// on a single thread and this is quite a simple scenario
 
+		// this test only really test rotations, not permutations
+		
 		System.out.println("Run for " + duration + " seconds");
 
 		long deadline = System.currentTimeMillis() + duration * 1000;

@@ -514,72 +514,73 @@ public class LargestAreaFitFirstPackager extends Packager {
 		}
 		return null;
 	}
+	
+	private class LAFFAdapter implements Adapter {
+
+		private List<Box> boxes;
+		private LAFFResult previous;
+		private List<Container> containers;
+		private final BooleanSupplier interrupt;
+		
+		public LAFFAdapter(List<BoxItem> boxItems, List<Container> container, BooleanSupplier interrupt) {
+			this.containers = container;
+
+			List<Box> boxClones = new ArrayList<>(boxItems.size() * 2);
+
+			for(BoxItem item : boxItems) {
+				Box box = item.getBox();
+				boxClones.add(box);
+				for(int i = 1; i < item.getCount(); i++) {
+					boxClones.add(box.clone());
+				}
+			}
+
+			this.boxes = boxClones;
+			this.interrupt = interrupt;
+		}
+		
+		@Override
+		public PackResult attempt(int index) {
+			LAFFResult result = LargestAreaFitFirstPackager.this.pack(new ArrayList<>(boxes), containers.get(index), interrupt);
+
+			return previous = result;
+		}
+
+		@Override
+		public Container accepted(PackResult result) {
+			LAFFResult laffResult = (LAFFResult)result;
+
+			this.boxes = laffResult.getRemainingBoxes();
+
+			if(previous == result) {
+				return laffResult.getContainer();
+			}
+
+			// calculate again
+			Container container = laffResult.getContainer();
+			List<Box> boxes = new ArrayList<>(this.boxes.size());
+			for(Level level : container.getLevels()) {
+				for(Placement placement : level) {
+					boxes.add(placement.getBox());
+				}
+			}
+
+			container.clear();
+
+			LAFFResult pack = LargestAreaFitFirstPackager.this.pack(boxes, container, Long.MAX_VALUE);
+
+			return pack.getContainer();
+		}
+
+		@Override
+		public boolean hasMore(PackResult result) {
+			LAFFResult laffResult = (LAFFResult)result;
+			return !laffResult.getRemainingBoxes().isEmpty();
+		}
+	}
 
 	@Override
-	protected Adapter adapter() {
-		return new Adapter() {
-
-			private List<Box> boxes;
-			private LAFFResult previous;
-			private List<Container> containers;
-
-			@Override
-			public PackResult attempt(int index, BooleanSupplier interrupt) {
-				LAFFResult result = LargestAreaFitFirstPackager.this.pack(new ArrayList<>(boxes), containers.get(index), interrupt);
-
-				return previous = result;
-			}
-
-			@Override
-			public void initialize(List<BoxItem> boxItems, List<Container> container) {
-				this.containers = container;
-
-				List<Box> boxClones = new ArrayList<>(boxItems.size() * 2);
-
-				for(BoxItem item : boxItems) {
-					Box box = item.getBox();
-					boxClones.add(box);
-					for(int i = 1; i < item.getCount(); i++) {
-						boxClones.add(box.clone());
-					}
-				}
-
-				this.boxes = boxClones;
-			}
-
-			@Override
-			public Container accepted(PackResult result) {
-				LAFFResult laffResult = (LAFFResult)result;
-
-				this.boxes = laffResult.getRemainingBoxes();
-
-				if(previous == result) {
-					return laffResult.getContainer();
-				}
-
-				// calculate again
-				Container container = laffResult.getContainer();
-				List<Box> boxes = new ArrayList<>(this.boxes.size());
-				for(Level level : container.getLevels()) {
-					for(Placement placement : level) {
-						boxes.add(placement.getBox());
-					}
-				}
-
-				container.clear();
-
-				LAFFResult pack = LargestAreaFitFirstPackager.this.pack(boxes, container, Long.MAX_VALUE);
-
-				return pack.getContainer();
-			}
-
-			@Override
-			public boolean hasMore(PackResult result) {
-				LAFFResult laffResult = (LAFFResult)result;
-				return !laffResult.getRemainingBoxes().isEmpty();
-			}
-
-		};
-
+	protected Adapter adapter(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
+		return new LAFFAdapter(boxes, containers, interrupt);
 	}
 }
