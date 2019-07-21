@@ -26,7 +26,7 @@
 		<nexus-staging-maven-plugin.version>1.6.7</nexus-staging-maven-plugin.version>
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
 		<maven-source-plugin.version>3.1.0</maven-source-plugin.version>
-		<maven-javadoc-plugin.version>3.1.0</maven-javadoc-plugin.version>
+		<maven-javadoc-plugin.version>3.1.1</maven-javadoc-plugin.version>
 		<maven-release-plugin.version>2.5.3</maven-release-plugin.version>
 		<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
 		<maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
@@ -36,8 +36,8 @@
 		<maven-war-plugin.version>3.2.2</maven-war-plugin.version>
 		<jqwik.version>1.1.6</jqwik.version>
 		<assertj.version>3.12.2</assertj.version>
-		<owasp-dependency-check.version>5.0.0</owasp-dependency-check.version>
-		<pitest.version>1.4.8</pitest.version>
+		<owasp-dependency-check.version>5.1.1</owasp-dependency-check.version>
+		<pitest.version>1.4.9</pitest.version>
 	</properties>
 	
 	<licenses>
