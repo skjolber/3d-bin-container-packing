@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/skjolber/3d-bin-container-packing.svg)](https://travis-ci.org/skjolber/3d-bin-container-packing)
-[![codecov](https://codecov.io/gh/skjolber/3d-bin-container-packing/branch/master/graph/badge.svg)](https://codecov.io/gh/skjolber/3d-bin-container-packing)
+[![Coverage Status](https://img.shields.io/coveralls/skjolber/3d-bin-container-packing/master.svg)](https://coveralls.io/r/skjolber/3d-bin-container-packing)
+
 
 # 3d-bin-container-packing
 
