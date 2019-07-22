@@ -128,7 +128,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]
 
 # History
- - 1.2.6: Refactor project structure into multi-module
+ - 1.2.6: Refactor project structure into multi-module. New group- and artifact-id.
  - 1.2.5: Fix use of 'top' free space in brute force packager (issue #99)
  - 1.2.4: Attempt to use 'top' free space whenever box is not as high as the level.
 
