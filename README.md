@@ -24,9 +24,9 @@ Example dependency config:
 
 ```xml
 <dependency>
-    <groupId>com.github.skjolber</groupId>
-    <artifactId>3d-bin-container-packing</artifactId>
-    <version>1.2.5</version>
+    <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+    <artifactId>core</artifactId>
+    <version>1.2.6</version>
 </dependency>
 ```
 
@@ -128,24 +128,17 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]
 
 # History
+ - 1.2.6: Refactor project structure into multi-module
  - 1.2.5: Fix use of 'top' free space in brute force packager (issue #99)
  - 1.2.4: Attempt to use 'top' free space whenever box is not as high as the level.
- - 1.2.3: Fix weight constraint (issue #83). Thanks to [BALACHANDAR S](https://github.com/balachandarsv) for bug reports and unit tests.
- - 1.2.2: ~~Fix~~ Improve weight constraint in LargestAreaFitFirstPackager (issue #83)
- - 1.2.1: Fix z coordinate propagation in free space (issue #78)
- - 1.2.0: Support for stopping / interrupting packaging, for use in multithreaded scenarios.
- - 1.1.0: Support for multi-container results. Thanks to [Michel Daviot](https://github.com/tyrcho) for QA.
- - 1.0.10: Fix isEmpty method.
- - 1.0.9: Support for calculating the used space bounding box within a container.
- - 1.0.8: Fix for issue #28 (Brute force packager)
 
-[1]: 					https://en.wikipedia.org/wiki/Bin_packing_problem
-[2]: 					http://www.zahidgurbuz.com/yayinlar/An%20Efficient%20Algorithm%20for%203D%20Rectangular%20Box%20Packing.pdf
+[1]: 				https://en.wikipedia.org/wiki/Bin_packing_problem
+[2]: 				http://www.zahidgurbuz.com/yayinlar/An%20Efficient%20Algorithm%20for%203D%20Rectangular%20Box%20Packing.pdf
 [Apache 2.0]: 			http://www.apache.org/licenses/LICENSE-2.0.html
 [issue-tracker]:		https://github.com/skjolber/3d-bin-container-packing/issues
-[Maven]:				http://maven.apache.org/
-[LinkedIn]:				http://lnkd.in/r7PWDz
+[Maven]:			http://maven.apache.org/
+[LinkedIn]:			http://lnkd.in/r7PWDz
 [Github page]:			https://skjolber.github.io
 [NothinRandom]:			https://github.com/NothinRandom
 [exponential]:			https://en.wikipedia.org/wiki/Exponential_function
-[example]:				src/test/java/com/github/skjolberg/packing/BruteForcePackagerRuntimeEstimator.java
+[example]:			src/test/java/com/github/skjolberg/packing/BruteForcePackagerRuntimeEstimator.java

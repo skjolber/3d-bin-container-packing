@@ -1,8 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.github.skjolber</groupId>
-	<artifactId>3d-bin-container-packing</artifactId>
+	<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+	<artifactId>parent</artifactId>
 	<version>1.2.6-SNAPSHOT</version>
+	<packaging>pom</packaging>
 	<name>3D Bin Container Packing</name>
 	<description>Library for 3D rectangular bin packing</description>
 	<url>https://github.com/skjolber/3d-bin-container-packing</url>
@@ -19,6 +20,7 @@
 
 		<google-truth.version>1.0</google-truth.version>
 		<junit.version>5.5.0</junit.version>
+        <jmh.version>1.21</jmh.version>
 		
 		<!-- plugins -->
 		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
@@ -72,59 +74,72 @@
 		</developer>
 	</developers>
 
-	<dependencies>
-		<!-- test -->
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.indvd00m.ascii.render</groupId>
-			<artifactId>ascii-render</artifactId>
-			<version>${ascii-renderer.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.truth</groupId>
-			<artifactId>truth</artifactId>
-			<version>${google-truth.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.truth.extensions</groupId>
-			<artifactId>truth-java8-extension</artifactId>
-			<version>${google-truth.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>${mockito.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.jqwik</groupId>
-			<artifactId>jqwik</artifactId>
-			<version>${jqwik.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<version>${assertj.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-	</dependencies>
-
+	<dependencyManagement>
+		<dependencies>
+			<!-- test -->
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-api</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-engine</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.indvd00m.ascii.render</groupId>
+				<artifactId>ascii-render</artifactId>
+				<version>${ascii-renderer.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.google.truth</groupId>
+				<artifactId>truth</artifactId>
+				<version>${google-truth.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.google.truth.extensions</groupId>
+				<artifactId>truth-java8-extension</artifactId>
+				<version>${google-truth.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-core</artifactId>
+				<version>${mockito.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>net.jqwik</groupId>
+				<artifactId>jqwik</artifactId>
+				<version>${jqwik.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.assertj</groupId>
+				<artifactId>assertj-core</artifactId>
+				<version>${assertj.version}</version>
+				<scope>test</scope>
+			</dependency>
+            <dependency>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-core</artifactId>
+                <version>${jmh.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-generator-annprocess</artifactId>
+                <version>${jmh.version}</version>
+            </dependency>
+		</dependencies>
+	</dependencyManagement>
+    <modules>
+		<module>core</module>
+    </modules>
 	<build>
 		<defaultGoal>clean test</defaultGoal>
 		<plugins>
@@ -187,7 +202,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>${maven-release-plugin.version}</version>
 				<configuration>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<useReleaseProfile>false</useReleaseProfile>
@@ -238,9 +252,17 @@
 		</plugins>
 	</build>
 
-
-
 	<profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>jmh</module>
+            </modules>
+        </profile>
+
 		<profile>
 			<!-- mvn -P release release:perform -->
 			<id>release</id>
