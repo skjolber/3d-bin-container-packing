@@ -24,7 +24,7 @@ In this project, there is end-to-end tests in the which touches the most commonl
 Execute `PackagerBenchmark` using the command
 
 ```
-mvn clean package && java -jar mh/target/benchmark.jar PackagerBenchmark -rf json
+mvn clean package && java -jar jmh/target/benchmark.jar PackagerBenchmark -rf json
 ```
 
 and view the resulting `jmh-result.json` by dropping the file into a [visualizer](https://jmh.morethan.io).
