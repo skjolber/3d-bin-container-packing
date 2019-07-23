@@ -143,3 +143,4 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [NothinRandom]:			https://github.com/NothinRandom
 [exponential]:			https://en.wikipedia.org/wiki/Exponential_function
 [example]:			src/test/java/com/github/skjolberg/packing/BruteForcePackagerRuntimeEstimator.java
+
