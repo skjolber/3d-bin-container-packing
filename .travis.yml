@@ -6,6 +6,5 @@ jdk:
   - openjdk8
 
 after_success:
-  - ./mvnw coveralls:report
-
+  - cd core && mvn clean test jacoco:report coveralls:report
 
