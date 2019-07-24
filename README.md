@@ -134,7 +134,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
  - 1.2.4: Attempt to use 'top' free space whenever box is not as high as the level.
 
 [1]: 				https://en.wikipedia.org/wiki/Bin_packing_problem
-[2]: 				http://www.zahidgurbuz.com/yayinlar/An%20Efficient%20Algorithm%20for%203D%20Rectangular%20Box%20Packing.pdf
+[2]: 				https://www.drupal.org/files/An%20Efficient%20Algorithm%20for%203D%20Rectangular%20Box%20Packing.pdf
 [Apache 2.0]: 			http://www.apache.org/licenses/LICENSE-2.0.html
 [issue-tracker]:		https://github.com/skjolber/3d-bin-container-packing/issues
 [Maven]:			http://maven.apache.org/
