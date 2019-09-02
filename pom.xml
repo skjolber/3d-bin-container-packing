@@ -39,7 +39,7 @@
 		<jqwik.version>1.2.0</jqwik.version>
 		<assertj.version>3.13.2</assertj.version>
 		<owasp-dependency-check.version>5.2.1</owasp-dependency-check.version>
-		<pitest.version>1.4.9</pitest.version>
+		<pitest.version>1.4.10</pitest.version>
 	</properties>
 	
 	<licenses>
