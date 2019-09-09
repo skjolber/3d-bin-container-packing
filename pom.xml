@@ -19,7 +19,7 @@
 		<ascii-renderer.version>2.1.0</ascii-renderer.version>
 
 		<google-truth.version>1.0</google-truth.version>
-		<junit.version>5.5.1</junit.version>
+		<junit.version>5.5.2</junit.version>
         <jmh.version>1.21</jmh.version>
 		
 		<!-- plugins -->
