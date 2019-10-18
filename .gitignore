@@ -9,6 +9,9 @@
 /captures
 /target
 
+**/*.factorypath
+**/*.attach_pid*
+
 #standard-kataloger for deriverte data
 target/
 activemq-data/

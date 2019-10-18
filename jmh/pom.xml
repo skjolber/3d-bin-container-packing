@@ -9,6 +9,11 @@
     <artifactId>jmh</artifactId>
     <name>JMH</name>
     <description>JMH Benchmarks for 3D bin container packaging</description>
+    
+    <properties>
+		<module-name>com.github.skjolber.jmh</module-name>    
+    </properties>
+    
     <dependencies>
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>

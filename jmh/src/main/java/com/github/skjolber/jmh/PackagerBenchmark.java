@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.jmh;
+package com.github.skjolber.jmh;
 
 import java.util.concurrent.TimeUnit;
 
