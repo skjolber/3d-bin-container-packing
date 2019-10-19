@@ -1,13 +1,19 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
-    <parent>
+
+	<parent>
 		<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 		<artifactId>parent</artifactId>
 		<version>1.2.7-SNAPSHOT</version>
-	</parent>	
+	</parent>
 	<artifactId>core</artifactId>
-	
+
+	<properties>
+		<module-name>com.github.skjolber.packing</module-name>
+	</properties>
+
 	<dependencies>
 		<!-- test -->
 		<dependency>
@@ -51,4 +57,64 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-compile</id>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<source>${java.version}</source>
+							<target>${java.version}</target>
+						</configuration>
+					</execution>
+					<execution>
+						<id>module-compile</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<release>9</release>
+							<compileSourceRoots>
+								<compileSourceRoot>${project.basedir}/src/main/java9</compileSourceRoot>
+							</compileSourceRoots>
+							<outputDirectory>${project.build.outputDirectory}/META-INF/versions/9</outputDirectory>
+							<compilerArgs>
+								<arg>--patch-module</arg>
+								<arg>${module-name}=${project.build.outputDirectory}</arg>
+							</compilerArgs>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Bundle-Description>${project.description}</Bundle-Description>
+							<X-Compile-Source-JDK>${maven.compiler.source}</X-Compile-Source-JDK>
+							<X-Compile-Target-JDK>${maven.compiler.target}</X-Compile-Target-JDK>
+							<Implementation-Version>${project.version}</Implementation-Version>
+							<Multi-Release>true</Multi-Release>
+						</manifestEntries>
+					</archive>
+					<skipIfEmpty>true</skipIfEmpty>
+				</configuration>
+			</plugin>
+			<!-- this breaks for the JMH module; however adding it here is sufficient -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 </project>
