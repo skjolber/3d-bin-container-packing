@@ -1,10 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 	<artifactId>parent</artifactId>
-	<version>1.2.8-SNAPSHOT</version>
+	<version>1.2.8</version>
 	<packaging>pom</packaging>
 	<name>3D Bin Container Packing</name>
 	<description>Library for 3D rectangular bin packing</description>
@@ -55,7 +53,7 @@
 		<connection>scm:git:git@github.com:skjolber/3d-bin-container-packing.git</connection>
 		<developerConnection>scm:git:git@github.com:skjolber/3d-bin-container-packing.git</developerConnection>
 		<url>git@github.com:skjolber/3d-bin-container-packing.git</url>
-		<tag>HEAD</tag>
+		<tag>parent-1.2.8</tag>
 	</scm>
 
 	<issueManagement>
@@ -163,8 +161,7 @@
 							<configuration>
 								<finalName>benchmark</finalName>
 								<transformers>
-									<transformer
-										implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 										<mainClass>org.openjdk.jmh.Main</mainClass>
 									</transformer>
 								</transformers>
