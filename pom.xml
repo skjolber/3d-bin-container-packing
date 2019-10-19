@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 	<artifactId>parent</artifactId>
-	<version>1.2.7-SNAPSHOT</version>
+	<version>1.2.8-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>3D Bin Container Packing</name>
 	<description>Library for 3D rectangular bin packing</description>
@@ -183,16 +183,7 @@
 						</execution>
 					</executions>
 				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>${maven-javadoc-plugin.version}</version>
-					<configuration>
-						<sourceFileExcludes>
-							<sourceFileExclude>**/module-info.java</sourceFileExclude>
-						</sourceFileExcludes>
-					</configuration>
-				</plugin>
+				
 			</plugins>
 		</pluginManagement>
 		<plugins>
@@ -276,8 +267,8 @@
 					</execution>
 				</executions>
 			</plugin>
-			
-			
+
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
@@ -390,6 +381,34 @@
 							</execution>
 						</executions>
 					</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${maven-javadoc-plugin.version}</version>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+						<!-- can't make this work with Java 11.  -->
+						<!--  export JAVA8_HOME=/usr/java/jdk1.8.0_XXX -->
+					 	<javadocExecutable>${env.JAVA8_HOME}/bin/javadoc</javadocExecutable>
+						<sourcepath>src/main/java</sourcepath>
+						<additionalOptions>
+							<additionalOption>-Xdoclint:none</additionalOption>
+							<additionalOption>-classpath</additionalOption>
+							<additionalOption>/home/skjolber/git/3d-bin-container-packing2/core/target/classes;/home/skjolber/git/3d-bin-container-packing2/core/target/classes/META-INF/versions/9</additionalOption>
+						</additionalOptions>
+						<sourceFileExcludes>
+							<sourceFileExclude>**/module-info.java</sourceFileExclude>
+						</sourceFileExcludes>						
+					</configuration>
+				</plugin>
+					
 				</plugins>
 			</build>
 		</profile>

@@ -8,6 +8,7 @@ public interface PermutationSet {
 
 	/**
 	 * Remove permutations, if present.
+	 * @param removed list of permutation indexes to remove
 	 */
 
 	void removePermutations(List<Integer> removed);
