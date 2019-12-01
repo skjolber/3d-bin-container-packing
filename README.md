@@ -122,7 +122,7 @@ Using a brute-force algorithm might seem to hit a wall of complexity, but taking
 per order distribution for web-shops, a healthy part of the orders are within its grasp.
 
 # Get involved
-If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request.
+If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request. __DO NOT send me emails unless you're prepared to pay for my time.__
 
 Feel free to connect with me on [LinkedIn], see also my [Github page].
 
