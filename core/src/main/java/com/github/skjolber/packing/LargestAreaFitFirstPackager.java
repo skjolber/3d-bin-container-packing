@@ -313,12 +313,25 @@ public class LargestAreaFitFirstPackager extends Packager {
 						if(widthRemainder.intersectsY(placement) && widthRemainder.intersectsX(placement)) {
 							// there is overlap, subtract area
 							widthRemainder.subtractX(placement);
+							
+							if (widthRemainder.getWidth() == 0) {
+								break;
+							}							
 						}
+					}
+					
+					for(int i = count; i < currentLevel.size(); i++) {
+						Placement placement = currentLevel.get(i);
+						
 						if(depthRemainder.intersectsY(placement) && depthRemainder.intersectsX(placement)) {
 							// there is overlap, subtract area
 							depthRemainder.subtractY(placement);
+							
+							if (depthRemainder.getDepth() == 0) {
+								break;
+							}							
 						}
-					}
+					}					
 
 					Box nextBox = null;
 					Space nextSpace = null;

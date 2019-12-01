@@ -228,31 +228,46 @@ public class BruteForcePackager extends Packager {
 					} else {
 						remainder.setDepth(space.getDepth());
 					}
-					
-					// cut out the area which is already in use, leaving two edges
-					Space depthRemainder = remainder; //
-					Space widthRemainder = new Space(remainder);
-
-					for(int i = fromIndex; i < index; i++) {
-						Placement placement = placements.get(i);
+					if (box.fitsInside3D(remainder)) {
+						// cut out the area which is already in use, leaving two edges
+						Space depthRemainder = remainder; //
+						Space widthRemainder = new Space(remainder);
+	
+						for(int i = fromIndex; i < index; i++) {
+							Placement placement = placements.get(i);
+							
+							if(widthRemainder.intersectsY(placement) && widthRemainder.intersectsX(placement)) {
+								// there is overlap, subtract area
+								widthRemainder.subtractX(placement);
+								
+								if (!box.fitsInside3D(widthRemainder)) {
+									break;
+								}
+							}
+						}
+	
+						for(int i = fromIndex; i < index; i++) {
+							Placement placement = placements.get(i);
+							
+							if(depthRemainder.intersectsY(placement) && depthRemainder.intersectsX(placement)) {
+								// there is overlap, subtract area
+								depthRemainder.subtractY(placement);
+								
+								if (!box.fitsInside3D(depthRemainder)) {
+									break;
+								}
+							}
+						}
+	
+						// see if the box fits now
+						if(box.fitsInside3D(widthRemainder)) {
+							nextSpace = widthRemainder;
+						}
 						
-						if(widthRemainder.intersectsY(placement) && widthRemainder.intersectsX(placement)) {
-							// there is overlap, subtract area
-							widthRemainder.subtractX(placement);
-						}
-						if(depthRemainder.intersectsY(placement) && depthRemainder.intersectsX(placement)) {
-							// there is overlap, subtract area
-							depthRemainder.subtractY(placement);
-						}
-					}
-
-					// see if the box fits now
-					if(box.fitsInside3D(widthRemainder)) {
-						nextSpace = widthRemainder;
-					} 
-					if(box.fitsInside3D(depthRemainder)) {
-						if(nextSpace == null || depthRemainder.getVolume() > nextSpace.getVolume()) {
-							nextSpace = depthRemainder;
+						if(box.fitsInside3D(depthRemainder)) {
+							if(nextSpace == null || depthRemainder.getVolume() > nextSpace.getVolume()) {
+								nextSpace = depthRemainder;
+							}
 						}
 					}
 				}					
