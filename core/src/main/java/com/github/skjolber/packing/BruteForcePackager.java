@@ -215,20 +215,10 @@ public class BruteForcePackager extends Packager {
 
 			Space remainder = nextPlacement.getSpace().getRemainder();
 			if (box.getWeight() <= holder.getFreeWeight()) {
+				
+				Space nextSpace = null;
 				if (box.fitsInside3D(remainder)) {
-
-					remainderPlacement.setBox(box);
-
-					index++;
-
-					remainderPlacement.getSpace().copyFrom(remainder);
-					remainderPlacement.getSpace().setParent(remainder);
-					remainderPlacement.getSpace().getRemainder().setParent(remainder);
-
-					index = fit2D(rotator, index, placements, holder, remainderPlacement, interrupt);
-					if(index == -1) {
-						return -1;
-					}
+					nextSpace = remainder;
 				} else {
 					// is it possible to expand the remainder / secondary
 					// with space not used in the primary space?
@@ -256,8 +246,7 @@ public class BruteForcePackager extends Packager {
 						}
 					}
 
-					// see if the box firts now
-					Space nextSpace = null;
+					// see if the box fits now
 					if(box.fitsInside3D(widthRemainder)) {
 						nextSpace = widthRemainder;
 					} 
@@ -266,20 +255,19 @@ public class BruteForcePackager extends Packager {
 							nextSpace = depthRemainder;
 						}
 					}
-					
-					if(nextSpace != null) {
-						remainderPlacement.setBox(box);
+				}					
+				if(nextSpace != null) {
+					remainderPlacement.setBox(box);
 
-						index++;
+					index++;
 
-						remainderPlacement.getSpace().copyFrom(nextSpace);
-						remainderPlacement.getSpace().setParent(nextSpace);
-						remainderPlacement.getSpace().getRemainder().setParent(nextSpace);
+					remainderPlacement.getSpace().copyFrom(nextSpace);
+					remainderPlacement.getSpace().setParent(nextSpace);
+					remainderPlacement.getSpace().getRemainder().setParent(nextSpace);
 
-						index = fit2D(rotator, index, placements, holder, remainderPlacement, interrupt);
-						if(index == -1) {
-							return -1;
-						}
+					index = fit2D(rotator, index, placements, holder, remainderPlacement, interrupt);
+					if(index == -1) {
+						return -1;
 					}
 				}
 			}
