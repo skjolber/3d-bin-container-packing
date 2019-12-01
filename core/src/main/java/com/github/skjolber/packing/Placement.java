@@ -94,5 +94,5 @@ public class Placement {
 		return startZ <= placement.getSpace().getZ() + placement.getBox().getHeight() - 1 &&
 				placement.getSpace().getZ() + placement.getBox().getHeight() - 1 <= endZ;
 
-	}	
+	}
 }

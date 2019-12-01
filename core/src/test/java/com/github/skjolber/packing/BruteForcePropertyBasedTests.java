@@ -1,7 +1,6 @@
 package com.github.skjolber.packing;
 
 import net.jqwik.api.*;
-import net.jqwik.api.arbitraries.IntegerArbitrary;
 import net.jqwik.api.constraints.IntRange;
 import net.jqwik.api.constraints.Size;
 

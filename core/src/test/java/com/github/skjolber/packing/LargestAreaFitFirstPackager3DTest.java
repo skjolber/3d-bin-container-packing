@@ -6,8 +6,6 @@ import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -594,5 +592,40 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 		validate(fits);
 	}
+
+	@Test
+	void testIssue158() {
+		List<Container> containers = new ArrayList<>();
+		containers.add(new Container("X",10, 10, 5, 1000));
+
+		List<BoxItem> products = new ArrayList<>();
+		for(int i = 0; i < 1000; i++) {
+			products.add(new BoxItem(new Box(Integer.toString(i), 1, 1, 1, 1)));
+		}
+		
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true, true);
+		List<Container> fits = packager.packList(products, 50, Long.MAX_VALUE);
+		assertNotNull(fits);
+		assertEquals(fits.size(), 2);
+	}
 	
+	@Test
+	void testExpansionOfRemainderSpace() {
+		// issue 159
+		List<Container> containers = new ArrayList<>();
+		Container container = new Container("X",100, 36, 5, 1000);
+		containers.add(container);
+
+		List<BoxItem> products = new ArrayList<>();
+		products.add(new BoxItem(new Box("1", 1, 18, 90, 1)));
+		products.add(new BoxItem(new Box("2", 1, 18, 90, 1)));
+		products.add(new BoxItem(new Box("3", 1, 36, 3, 1)));
+		products.add(new BoxItem(new Box("4", 1, 36, 3, 1)));
+		
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, true, true, true);
+		Container pack = packager.pack(products, Long.MAX_VALUE);
+		print(pack);
+
+		assertEquals(pack.getLevels().size(), 1);
+	}	
 }

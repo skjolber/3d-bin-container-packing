@@ -105,6 +105,13 @@ public class Container extends Box {
 
 		return levels.add(element);
 	}
+	
+	public Level currentLevel() {
+		if(!levels.isEmpty()) {
+			return levels.get(levels.size() - 1);
+		}
+		return null;
+	}
 
 	public int getStackHeight() {
 		return stackHeight + currentLevelStackHeight();

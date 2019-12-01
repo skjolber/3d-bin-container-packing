@@ -223,25 +223,127 @@ public class LargestAreaFitFirstPackager extends Packager {
 	
 			removeIdentical(containerProducts, nextPlacement.getBox());
 	
-			// attempt to fit in the remaining (usually smaller) space first
-	
+			// unused dual / remaining space
+			Level currentLevel = holder.currentLevel();
+			int count = currentLevel.size();
+
+			if(!fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), interrupt)) {
+				return false; // time is up
+			}
+			
 			// stack in the 'sibling' space - the space left over between the used box and the selected free space
 			Space remainder = nextPlacement.getSpace().getRemainder();
 			if(remainder.nonEmpty()) {
 				Box box = getBestBoxForSpace(containerProducts, remainder, holder.getFreeWeight());
 				if(box != null) {
 					removeIdentical(containerProducts, box);
-	
+
+					// fit in remainder
 					if(!fit2D(containerProducts, holder, box, remainder, interrupt)) {
-						return false;
+						return false; // time is up
 					}
-				}
-			}
-			// double check that there is still free weight
-			// TODO possibly rewind if the value of the boxes in the remainder is lower than the one in next placement
-			if(holder.getFreeWeight() >= nextPlacement.getBox().getWeight()) {
-				if(!fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), interrupt)) {
-					return false;
+				} else {
+					// is it possible to expand the remainder / secondary
+					// with space not used in the primary space?
+				
+					//
+					// First spaces:
+					// ........................  ........................                .............
+					// .                      .  .                      .                .           .
+					// .                      .  .                      .                .           .
+					// .          A           .  .          A           .                .           .
+					// .                      .  .                      .                .           .
+					// .                B     .  .                      .                .    B      .
+					// ............           .  ........................                .           .
+					// .          .           .                                          .           .
+					// .          .           .                                          .           .
+					// ........................                                          .............
+					//
+					// With expanded unbounded remainders
+					//
+					//                                      .............
+					//                                      .           .
+					//                                      .           .
+			        //                                      .    A''    .   .........................
+					//                                      .           .   .           .           .
+					//                                      .           .   .           .           .
+					//                                      .............   .    B'     .   B''     .
+					//                                      .           .   .           .           .
+					//                                      .    A'     .   .           .           .
+					//                                      .............   .........................
+					//
+					// Second spaces (placed box is rotated 90 degrees):
+					//
+					// ........................   ........................          ..................
+					// .                      .   .                      .          .                .
+					// .          C           .   .         C            .          .                .
+					// .                      .   .                      .          .                .
+					// .......                .   ........................          .                .
+					// .     .       D        .                                     .        D       .
+					// .     .                .                                     .                .
+					// .     .                .                                     .                .
+					// .     .                .                                     .                .
+					// ........................                                     ..................
+					//
+					// With expanded remainders
+					//                                  ..................
+					//                                  .                .
+					//                                  .                .
+					//                                  .      C''       .
+					//                                  .                .
+					//                                  ..................  ..........................
+					//                                  .                .  .     .                  .
+					//                                  .                .  .     .                  .
+					//                                  .       C'       .  .  D' .      D''         .
+					//                                  .                .  .     .                  .
+					//                                  ..................  ..........................
+					//
+					// So basically the maximum available space for the remainder is the sibling free space
+					// which is known to be non-empty since there is a remainder.
+					
+					Space sibling = getSibling(spaces, nextPlacement);
+
+					// cut out the area which is already in use, leaving two edges
+					Space depthRemainder = sibling; //
+					Space widthRemainder = new Space(sibling); // TODO reuse remaining space object for improved performance
+
+					for(int i = count; i < currentLevel.size(); i++) {
+						Placement placement = currentLevel.get(i);
+						
+						if(widthRemainder.intersectsY(placement) && widthRemainder.intersectsX(placement)) {
+							// there is overlap, subtract area
+							widthRemainder.subtractX(placement);
+						}
+						if(depthRemainder.intersectsY(placement) && depthRemainder.intersectsX(placement)) {
+							// there is overlap, subtract area
+							depthRemainder.subtractY(placement);
+						}
+					}
+
+					Box nextBox = null;
+					Space nextSpace = null;
+
+					if(widthRemainder.nonEmpty()) {
+						nextBox = getBestBoxForSpace(containerProducts, widthRemainder, holder.getFreeWeight());
+						nextSpace = widthRemainder;
+					} 
+					if(depthRemainder.nonEmpty()) {
+						Box depthBox = getBestBoxForSpace(containerProducts, depthRemainder, holder.getFreeWeight());
+
+						if(nextBox == null || depthBox.getVolume() > nextBox.getVolume()) {
+							nextBox = depthBox;
+							nextSpace = depthRemainder;
+						}
+					}
+					
+					if(nextBox != null) {
+						removeIdentical(containerProducts, nextBox);
+		
+						// fit in (potentially expanded) remainder
+						if(!fit2D(containerProducts, holder, nextBox, nextSpace, interrupt)) {
+							return false; // time is up
+						}
+					}
 				}
 			}
 		} 
@@ -292,37 +394,69 @@ public class LargestAreaFitFirstPackager extends Packager {
 		
 		return true;
 	}
+	
+	private Space getSibling(Space[] spaces, Placement nextPlacement) {
+		Space nextPlacementSpace = nextPlacement.getSpace();
+		if(nextPlacementSpace == spaces[0]) {
+			return spaces[1];
+		} else if(nextPlacementSpace == spaces[1]) {
+			return spaces[0];
+		} else if(nextPlacementSpace == spaces[2]) {
+			return spaces[3];
+		} else if(nextPlacementSpace == spaces[3]) {
+			return spaces[2];
+		} else {
+			throw new RuntimeException();
+		}
+	}
 
 	protected Space[] getFreespaces(Space freespace, Box used) {
 
 		// Two free spaces, on each rotation of the used space.
 		// Height is always the same, used box is assumed within free space height.
-		// First:
-		// ........................  ........................  .............
-		// .                      .  .                      .  .           .
-		// .                      .  .                      .  .           .
-		// .          A           .  .          A           .  .           .
-		// .                      .  .                      .  .           .
-		// .                B     .  .                      .  .    B      .
-		// ............           .  ........................  .           .
-		// .          .           .                            .           .
-		// .          .           .                            .           .
-		// ........................                            .............
-        //
-		// Second:
+		// First spaces:
+		// ........................  ........................                .............
+		// .                      .  .                      .                .           .
+		// .                      .  .                      .                .           .
+		// .          A           .  .          A           .                .           .
+		// .                      .  .                      .                .           .
+		// .                B     .  .                      .                .    B      .
+		// ............           .  ........................                .           .
+		// .          .           .                                          .           .
+		// .          .           .                                          .           .
+		// ........................                                          .............
 		//
-		// ........................   ........................  ..................
-		// .                      .   .                      .  .                .
-		// .          C           .   .         C            .  .                .
-		// .                      .   .                      .  .                .
-		// .......                .   ........................  .                .
-		// .     .       D        .                             .        D       .
-		// .     .                .                             .                .
-		// .     .                .                             .                .
-		// .     .                .                             .                .
-		// ........................                             ..................
+		// With remainders
+        //                                                     .............
+		//                                                     .           .
+		//                                                     .           .
+		//                                      .............  .    B'     .
+		//                                      .           .  .           .
+		//                                      .    A'     .  .           .
+		//                                      .............  .............
 		//
-		// So there is always a 'big' and a 'small' leftover area (the small is not shown).
+		// Second spaces (placed box is rotated 90 degress):
+		//
+		// ........................   ........................          ..................
+		// .                      .   .                      .          .                .
+		// .          C           .   .         C            .          .                .
+		// .                      .   .                      .          .                .
+		// .......                .   ........................          .                .
+		// .     .       D        .                                     .        D       .
+		// .     .                .                                     .                .
+		// .     .                .                                     .                .
+		// .     .                .                                     .                .
+		// ........................                                     ..................
+		//                            
+		// With remainders
+		//                                  ..................  .......
+		//                                  .                .  .     .
+		//                                  .                .  .     .
+		//                                  .       C'       .  .  D' .
+		//                                  .                .  .     .
+		//                                  ..................  .......		
+		//
+		// So there is always a 'big' and a 'small' remaining / leftover area.
 
 		Space[] freeSpaces = new Space[4];
 		if(freespace.getWidth() >= used.getWidth() && freespace.getDepth() >= used.getDepth()) {

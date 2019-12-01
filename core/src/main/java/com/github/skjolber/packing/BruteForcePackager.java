@@ -194,42 +194,93 @@ public class BruteForcePackager extends Packager {
 		boolean room = isFreeSpace(usedSpace.getSpace(), usedSpace.getBox(), nextPlacement);
 		if (room) {
 			index++;
+			// note to self: pack in the primary space first, if not then the returned index
+			// might be incorrect (if the weight constraint is reached while packaging in the remainder).
+			//
+			int fromIndex = index;
 			// the correct space dimensions is copied into the next placement
+			// fit the next box in the selected free space
+			// fit in primary
+			index = fit2D(rotator, index, placements, holder, nextPlacement, interrupt);
+			if(index == -1) {
+				return -1;
+			} else if(index >= rotator.length()) {
+				return index;
+			}
+			
+			// attempt to fit in the remaining (usually smaller) space
+			Placement remainderPlacement = placements.get(index);
+			
+			Box box = rotator.get(index);
 
-			// attempt to fit in the remaining (usually smaller) space first
+			Space remainder = nextPlacement.getSpace().getRemainder();
+			if (box.getWeight() <= holder.getFreeWeight()) {
+				if (box.fitsInside3D(remainder)) {
 
-			// stack in the 'sibling' space - the space left over between the used box and the selected free space
-			if (index < rotator.length()) {
-				Space remainder = nextPlacement.getSpace().getRemainder();
-				if (remainder.nonEmpty()) {
-					Box box = rotator.get(index);
+					remainderPlacement.setBox(box);
 
-					if (box.getWeight() <= holder.getFreeWeight()) {
-						if (box.fitsInside3D(remainder)) {
-							Placement placement = placements.get(index);
-							placement.setBox(box);
+					index++;
 
-							index++;
+					remainderPlacement.getSpace().copyFrom(remainder);
+					remainderPlacement.getSpace().setParent(remainder);
+					remainderPlacement.getSpace().getRemainder().setParent(remainder);
 
-							placement.getSpace().copyFrom(remainder);
-							placement.getSpace().setParent(remainder);
-							placement.getSpace().getRemainder().setParent(remainder);
+					index = fit2D(rotator, index, placements, holder, remainderPlacement, interrupt);
+					if(index == -1) {
+						return -1;
+					}
+				} else {
+					// is it possible to expand the remainder / secondary
+					// with space not used in the primary space?
+					Space space = usedSpace.getSpace();
+					if(remainder.getX() == space.getX()) {
+						remainder.setWidth(space.getWidth());
+					} else {
+						remainder.setDepth(space.getDepth());
+					}
+					
+					// cut out the area which is already in use, leaving two edges
+					Space depthRemainder = remainder; //
+					Space widthRemainder = new Space(remainder);
 
-							index = fit2D(rotator, index, placements, holder, placement, interrupt);
-							if(index == -1) {
-								return -1;
-							}
+					for(int i = fromIndex; i < index; i++) {
+						Placement placement = placements.get(i);
+						
+						if(widthRemainder.intersectsY(placement) && widthRemainder.intersectsX(placement)) {
+							// there is overlap, subtract area
+							widthRemainder.subtractX(placement);
+						}
+						if(depthRemainder.intersectsY(placement) && depthRemainder.intersectsX(placement)) {
+							// there is overlap, subtract area
+							depthRemainder.subtractY(placement);
 						}
 					}
-				}
-			}
 
-			// fit the next box in the selected free space
-			// double check that there is still free weight
-			if (holder.getFreeWeight() >= nextBox.getWeight()) {
-				index = fit2D(rotator, index, placements, holder, nextPlacement, interrupt);
-				if(index == -1) {
-					return -1;
+					// see if the box firts now
+					Space nextSpace = null;
+					if(box.fitsInside3D(widthRemainder)) {
+						nextSpace = widthRemainder;
+					} 
+					if(box.fitsInside3D(depthRemainder)) {
+						if(nextSpace == null || depthRemainder.getVolume() > nextSpace.getVolume()) {
+							nextSpace = depthRemainder;
+						}
+					}
+					
+					if(nextSpace != null) {
+						remainderPlacement.setBox(box);
+
+						index++;
+
+						remainderPlacement.getSpace().copyFrom(nextSpace);
+						remainderPlacement.getSpace().setParent(nextSpace);
+						remainderPlacement.getSpace().getRemainder().setParent(nextSpace);
+
+						index = fit2D(rotator, index, placements, holder, remainderPlacement, interrupt);
+						if(index == -1) {
+							return -1;
+						}
+					}
 				}
 			}
 		}  else {

@@ -155,27 +155,29 @@ class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 		List<BoxItem> products = new ArrayList<>();
 
 		for(int i = 0; i < 4; i++) {
-			products.add(new BoxItem(new Box("K", 1, 1, 1, 0), 1));
+			products.add(new BoxItem(new Box("K" + i, 1, 1, 1, 0), 1));
 		}
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
 		assertEquals(fits.getLevels().size(), 1);
 
+		print(fits);
+
 		assertThat(fits.get(0, 0).getSpace().getX(), is(0));
 		assertThat(fits.get(0, 0).getSpace().getY(), is(0));
 
-		assertThat(fits.get(0, 1).getSpace().getX(), is(0));
-		assertThat(fits.get(0, 1).getSpace().getY(), is(1));
-
-		assertThat(fits.get(0, 3).getSpace().getX(), is(1));
-		assertThat(fits.get(0, 3).getSpace().getY(), is(1));
+		assertThat(fits.get(0, 1).getSpace().getX(), is(1));
+		assertThat(fits.get(0, 1).getSpace().getY(), is(0));
 
 		assertThat(fits.get(0, 2).getSpace().getX(), is(1));
-		assertThat(fits.get(0, 2).getSpace().getY(), is(0));
+		assertThat(fits.get(0, 2).getSpace().getY(), is(1));
 
-		print(fits);
+		assertThat(fits.get(0, 3).getSpace().getX(), is(0));
+		assertThat(fits.get(0, 3).getSpace().getY(), is(1));
+
 		validate(fits);
+
 	}
 
 	@Test
