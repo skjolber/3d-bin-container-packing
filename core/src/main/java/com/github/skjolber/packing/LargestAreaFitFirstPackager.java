@@ -245,9 +245,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 				} else {
 					// is it possible to expand the remainder / secondary
 					// with space not used in the primary space?
-				
 					//
-					// First spaces:
+					// No rotation:
 					// ........................  ........................                .............
 					// .                      .  .                      .                .           .
 					// .                      .  .                      .                .           .
@@ -259,20 +258,20 @@ public class LargestAreaFitFirstPackager extends Packager {
 					// .          .           .                                          .           .
 					// ........................                                          .............
 					//
-					// With expanded unbounded remainders
+					// With remainders shown as 'r' and the expansion area as double quoted: 
 					//
-					//                                      .............
-					//                                      .           .
-					//                                      .           .
-			        //                                      .    A''    .   .........................
-					//                                      .           .   .           .           .
-					//                                      .           .   .           .           .
-					//                                      .............   .    B'     .   B''     .
-					//                                      .           .   .           .           .
-					//                                      .    A'     .   .           .           .
-					//                                      .............   .........................
+					//                           ........................    .........................
+					//                           .          .           .    .           .           .
+					//                           .          .           .    .           .           .
+			        //                           .     A'   .    A''    .    .    r      .   B''     .
+					//                           .          .           .    .           .           .
+					//    depth                  .          .           .    .           .           .
+					//      ^                    ........................    .........................
+					//      |                               .           .                .           .
+					//      |                               .    r      .                .    B'     .
+					//       ---> width                     .............                .............
 					//
-					// Second spaces (placed box is rotated 90 degrees):
+					// Rotation (placed box is rotated 90 degrees):
 					//
 					// ........................   ........................          ..................
 					// .                      .   .                      .          .                .
@@ -285,28 +284,50 @@ public class LargestAreaFitFirstPackager extends Packager {
 					// .     .                .                                     .                .
 					// ........................                                     ..................
 					//
-					// With expanded remainders
-					//                                  ..................
-					//                                  .                .
-					//                                  .                .
-					//                                  .      C''       .
-					//                                  .                .
-					//                                  ..................  ..........................
-					//                                  .                .  .     .                  .
-					//                                  .                .  .     .                  .
-					//                                  .       C'       .  .  D' .      D''         .
-					//                                  .                .  .     .                  .
-					//                                  ..................  ..........................
+					// With remainders shown as 'r' and the expansion area as double quoted:
 					//
-					// So basically the maximum available space for the remainder is the sibling free space
+					//                           .........................  ..........................
+					//                           .      .                .  .       .                .
+					//                           .  C'  .      C''       .  .  r    .     D''        .
+					//                           .      .                .  .       .                .
+					//                           .........................  ..........................
+					//      depth                       .                .          .                .
+					//       ^                          .                .          .                .
+					//       |                          .       r        .          .      D'        .
+					//       |                          .                .          .                .
+					//        ----> width               ..................          ..................
+					//
+					// So if all remainders are expanded with the double quoted area,  
+					// the maximum available space for the remainder is the 'sibling' free space
 					// which is known to be non-empty since there is a remainder.
+					// 
+					// Cutting out the area actually in use will be done in a bounding box way,
+					// separately for width and depth.
+					// 
+					// Cutting stop conditions (most easily seen in C and D):
+					// 
+					// C:
+					//  - depth cuts: depth equals to remainder depth
+					//  - width cuts: width equal to zero
+					//
+					// D:
+					//  - depth cuts: depth equals to zero
+					//  - width cuts: width equal to remainder width
+					//
 					
-					Space sibling = getSibling(spaces, nextPlacement);
+					int siblingIndex = getSiblingIndex(spaces, nextPlacement);
+					Space sibling = spaces[siblingIndex];
 
 					// cut out the area which is already in use, leaving two edges
 					Space depthRemainder = sibling; //
-					Space widthRemainder = new Space(sibling); // TODO reuse remaining space object for improved performance
+					Space widthRemainder = new Space(sibling); // TODO reuse remainder space object for improved performance
 
+					int widthConstraint;
+					if(siblingIndex % 2 == 0) { // A and C
+						widthConstraint = 0;
+					} else {
+						widthConstraint = remainder.getWidth();
+					}
 					for(int i = count; i < currentLevel.size(); i++) {
 						Placement placement = currentLevel.get(i);
 						
@@ -314,12 +335,18 @@ public class LargestAreaFitFirstPackager extends Packager {
 							// there is overlap, subtract area
 							widthRemainder.subtractX(placement);
 							
-							if (widthRemainder.getWidth() == 0) {
+							if (widthRemainder.getWidth() <= widthConstraint) {
 								break;
 							}							
 						}
 					}
 					
+					int depthConstraint;
+					if(siblingIndex % 2 == 0) { // A and C
+						depthConstraint =remainder.getDepth();
+					} else {
+						depthConstraint = 0;
+					}					
 					for(int i = count; i < currentLevel.size(); i++) {
 						Placement placement = currentLevel.get(i);
 						
@@ -327,7 +354,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 							// there is overlap, subtract area
 							depthRemainder.subtractY(placement);
 							
-							if (depthRemainder.getDepth() == 0) {
+							if (depthRemainder.getDepth() <= depthConstraint) {
 								break;
 							}							
 						}
@@ -408,26 +435,27 @@ public class LargestAreaFitFirstPackager extends Packager {
 		return true;
 	}
 	
-	private Space getSibling(Space[] spaces, Placement nextPlacement) {
+	private int getSiblingIndex(Space[] spaces, Placement nextPlacement) {
 		Space nextPlacementSpace = nextPlacement.getSpace();
 		if(nextPlacementSpace == spaces[0]) {
-			return spaces[1];
+			return 1;
 		} else if(nextPlacementSpace == spaces[1]) {
-			return spaces[0];
+			return 0;
 		} else if(nextPlacementSpace == spaces[2]) {
-			return spaces[3];
+			return 3;
 		} else if(nextPlacementSpace == spaces[3]) {
-			return spaces[2];
+			return 2;
 		} else {
 			throw new RuntimeException();
 		}
-	}
-
+	}	
+	
 	protected Space[] getFreespaces(Space freespace, Box used) {
 
 		// Two free spaces, on each rotation of the used space.
 		// Height is always the same, used box is assumed within free space height.
-		// First spaces:
+		//
+		// No rotation:
 		// ........................  ........................                .............
 		// .                      .  .                      .                .           .
 		// .                      .  .                      .                .           .
@@ -442,13 +470,13 @@ public class LargestAreaFitFirstPackager extends Packager {
 		// With remainders
         //                                                     .............
 		//                                                     .           .
-		//                                                     .           .
-		//                                      .............  .    B'     .
-		//                                      .           .  .           .
-		//                                      .    A'     .  .           .
-		//                                      .............  .............
+		//      depth                                          .           .
+		//        ^                             .............  .    B'     .
+		//        |                             .           .  .           .
+		//        |                             .    A'     .  .           .
+		//         ---> width                   .............  .............
 		//
-		// Second spaces (placed box is rotated 90 degress):
+		// Rotation (placed box is rotated 90 degrees):
 		//
 		// ........................   ........................          ..................
 		// .                      .   .                      .          .                .

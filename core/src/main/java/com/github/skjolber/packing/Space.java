@@ -2,6 +2,14 @@ package com.github.skjolber.packing;
 
 public class Space extends Dimension {
 
+	protected static boolean between(int start, int value, int end) {
+		return start <= value && value <= end;
+	}
+	
+	protected boolean intersects(int start, int end, int value, int distance) {
+		return between(start, value, end) || between(start, value + distance, end);
+	}
+
 	private Space parent;
 	private Space remainder;
 
@@ -138,7 +146,6 @@ public class Space extends Dimension {
 	}
 
 	public boolean intersectsY(Space space) {
-
 		int startY = space.getY();
 		int endY = startY + space.getDepth() - 1;
 	
@@ -146,16 +153,10 @@ public class Space extends Dimension {
 	}
 
 	public boolean intersectsY(int startY, int endY) {
-
-		if (startY <= y && y <= endY) {
-			return true;
-		}
-
-		return startY <= y + depth && y + depth <= endY;
+		return intersects(startY, endY, y, depth);
 	}
 
 	public boolean intersectsX(Space space) {
-
 		int startX = space.getX();
 		int endX = startX + space.getWidth() - 1;
 		
@@ -163,12 +164,7 @@ public class Space extends Dimension {
 	}
 	
 	public boolean intersectsX(int startX, int endX) {
-		if (startX <= x && x <= endX) {
-			return true;
-		}
-
-		return startX <= x + width && x + width <= endX;
-
+		return intersects(startX, endX, x, width);
 	}
 
 	public boolean intersectsZ(Space space) {
@@ -179,16 +175,11 @@ public class Space extends Dimension {
 	}
 
 	public boolean intersectsZ(int startZ, int endZ) {
-		if (startZ <= z && z <= endZ) {
-			return true;
-		}
-
-		return startZ <= z + height && z + height <= endZ;
-
+		return intersects(startZ, endZ, z, height);
 	}
 
 	public boolean intersects(Placement placement) {
-		return false;
+		return intersectsX(placement) && intersectsY(placement) && intersectsZ(placement);
 	}
 	
 	public boolean intersectsY(Placement placement) {
@@ -232,5 +223,6 @@ public class Space extends Dimension {
 			calculateVolume();
 		}
 	}
+	
 
 }
