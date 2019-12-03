@@ -224,5 +224,16 @@ public class Space extends Dimension {
 		}
 	}
 	
+	public void subtractZ(Placement placement) {
+		int endZ = placement.getSpace().getZ() + placement.getBox().getHeight();
+		
+		if(endZ > z) {
+			height -= endZ - z;
+			
+			z = endZ;
+			
+			calculateVolume();
+		}
+	}	
 
 }
