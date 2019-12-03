@@ -26,14 +26,18 @@ public class ParallelBruteForcePackager extends BruteForcePackager {
 	private final int threads;
 	
 	public ParallelBruteForcePackager(List<Container> containers, int threads) {
-		this(containers, Executors.newFixedThreadPool(threads), threads);
+		this(containers, Executors.newFixedThreadPool(threads), threads, true, true);
 	}
-
-	public ParallelBruteForcePackager(List<Container> containers, ExecutorService executorService, int threads) {
-		super(containers);
+	
+	public ParallelBruteForcePackager(List<Container> containers, int threads, boolean rotate3D, boolean binarySearch) {
+		this(containers, Executors.newFixedThreadPool(threads), threads, rotate3D, binarySearch);
+	}
+	
+	public ParallelBruteForcePackager(List<Container> containers, ExecutorService executorService, int threads, boolean rotate3D, boolean binarySearch) {
+		super(containers, rotate3D, binarySearch);
 		
-		this.executorService = new ExecutorCompletionService<PackResult>(executorService);
 		this.threads = threads;
+		this.executorService = new ExecutorCompletionService<PackResult>(executorService);
 	}
 
 	private class RunnableAdapter implements Callable<PackResult> {
