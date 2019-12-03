@@ -14,7 +14,7 @@ import com.github.skjolber.packing.impl.*;
  */
 public class LargestAreaFitFirstPackager extends Packager {
 
-	public static LargestAreaFitFirstPackagerBuilder builder() {
+	public static LargestAreaFitFirstPackagerBuilder newBuilder() {
 		return new LargestAreaFitFirstPackagerBuilder();
 	}
 	

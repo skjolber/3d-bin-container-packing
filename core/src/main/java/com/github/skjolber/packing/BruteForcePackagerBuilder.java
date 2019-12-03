@@ -51,6 +51,10 @@ public class BruteForcePackagerBuilder {
 	}
 
 	public BruteForcePackager build() {
+		if(containers == null) {
+			throw new IllegalStateException("Expected containers");
+		}
+
 		if(threads == 1) {
 			return new BruteForcePackager(containers, rotate3D, binarySearch);
 		}

@@ -47,6 +47,9 @@ public class LargestAreaFitFirstPackagerBuilder {
 	}
 
 	public LargestAreaFitFirstPackager build() {
+		if(containers == null) {
+			throw new IllegalStateException("Expected containers");
+		}
 		return new LargestAreaFitFirstPackager(containers, rotate3D, footprintFirst, binarySearch);
 	}
 	

@@ -21,7 +21,7 @@ import com.github.skjolber.packing.impl.*;
 
 public class BruteForcePackager extends Packager {
 
-	public static BruteForcePackagerBuilder builder() {
+	public static BruteForcePackagerBuilder newBuilder() {
 		return new BruteForcePackagerBuilder();
 	}
 	
