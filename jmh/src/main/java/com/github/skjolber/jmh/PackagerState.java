@@ -32,7 +32,7 @@ public class PackagerState {
 		containers = new ArrayList<>();
 		containers.add(new Container(5 * n, 10, 10, 0));
 		
-		bruteForcePackager = new ParallelBruteForcePackager(containers, pool, count);
+		bruteForcePackager = new ParallelBruteForcePackager(containers, pool, count, true, true);
 
 		products = new ArrayList<>();
 		for(int i = 0; i < n; i++) {

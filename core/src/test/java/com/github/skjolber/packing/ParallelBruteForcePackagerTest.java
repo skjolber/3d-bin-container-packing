@@ -26,7 +26,7 @@ public class ParallelBruteForcePackagerTest {
 		
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container("container1", 10, 10, 1, 0));
-		BruteForcePackager packager = new ParallelBruteForcePackager(containers, pool, 1);
+		BruteForcePackager packager = new ParallelBruteForcePackager(containers, pool, 1, true ,true);
 
 		List<BoxItem> products = new ArrayList<>();
 
@@ -44,7 +44,7 @@ public class ParallelBruteForcePackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container("container1", 10, 10, 1, 0));
-		BruteForcePackager packager = new ParallelBruteForcePackager(containers, pool, 1);
+		BruteForcePackager packager = new ParallelBruteForcePackager(containers, pool, 1, true, true);
 
 		List<BoxItem> products = new ArrayList<>();
 
@@ -63,7 +63,7 @@ public class ParallelBruteForcePackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container("container1", 10, 10, 1, 0));
-		BruteForcePackager packager = new ParallelBruteForcePackager(containers, pool, 4);
+		BruteForcePackager packager = new ParallelBruteForcePackager(containers, pool, 4, true, true);
 
 		List<BoxItem> products = new ArrayList<>();
 
@@ -101,7 +101,7 @@ public class ParallelBruteForcePackagerTest {
 		while(deadline > System.currentTimeMillis()) {
 			List<Container> containers = new ArrayList<>();
 			containers.add(new Container(5 * n, 10, 10, 0));
-			BruteForcePackager bruteForcePackager = new ParallelBruteForcePackager(containers, pool, count);
+			BruteForcePackager bruteForcePackager = new ParallelBruteForcePackager(containers, pool, count, true, true);
 
 			List<BoxItem> products1 = new ArrayList<>();
 
