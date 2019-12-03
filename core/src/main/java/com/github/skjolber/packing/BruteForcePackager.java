@@ -264,10 +264,8 @@ public class BruteForcePackager extends Packager {
 							nextSpace = widthRemainder;
 						}
 						
-						if(box.fitsInside3D(depthRemainder)) {
-							if(nextSpace == null || depthRemainder.getVolume() > nextSpace.getVolume()) {
-								nextSpace = depthRemainder;
-							}
+						if(box.fitsInside3D(depthRemainder) && (nextSpace == null || depthRemainder.getVolume() > nextSpace.getVolume())) {
+							nextSpace = depthRemainder;
 						}
 					}
 				}					

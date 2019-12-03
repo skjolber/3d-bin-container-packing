@@ -443,10 +443,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 			return 0;
 		} else if(nextPlacementSpace == spaces[2]) {
 			return 3;
-		} else if(nextPlacementSpace == spaces[3]) {
+		} else { // if(nextPlacementSpace == spaces[3]) {
 			return 2;
-		} else {
-			throw new RuntimeException();
 		}
 	}	
 	

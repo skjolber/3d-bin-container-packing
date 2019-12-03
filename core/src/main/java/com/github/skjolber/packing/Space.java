@@ -141,7 +141,7 @@ public class Space extends Dimension {
 		this.height = h;
 	}
 
-	boolean intersects(Space space) {
+	public boolean intersects(Space space) {
 		return intersectsX(space) && intersectsY(space) && intersectsZ(space);
 	}
 
