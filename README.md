@@ -42,7 +42,7 @@ Obtain a `Packager` instance:
 // initialization
 List<Container> containers = new ArrayList<Container>();
 containers.add(new Container(10, 10, 3, 100)); // x y z and weight
-Packager packager = new LargestAreaFitFirstPackager(containers);
+Packager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(containers).build()
 ```
 
 The `packager` instance is thread-safe.
@@ -74,18 +74,18 @@ List<Container> fits = packager.packList(products, maxContainers);
 ```
 
 ### Rotation
-By adding an additional argument to the constructor, 2D or 3D rotation of boxes can be toggled:
+By default 3D-rotation is enabled. Configure 2D-only rotation using:
 
 ```java
 boolean rotate3d = ...;
-Packager packager = new LargestAreaFitFirstPackager(containers, rotate3d, true, true);
+Packager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(containers).withRotate2D().build();
 ```
 
 ### Brute-force packager
 For a low number of packages (like <= 6) the brute force packager might be a good fit. 
 
 ```java
-Packager packager = new BruteForcePackager(containers);
+Packager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
 ```
 
 Using a deadline is recommended whenever brute-forcing in a real-time application.
