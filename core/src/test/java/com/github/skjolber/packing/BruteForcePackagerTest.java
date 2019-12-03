@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -603,12 +601,28 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
         products.add(new BoxItem(new Box("Product 3", 299, 299, 99, 25), 1));
         products.add(new BoxItem(new Box("Product 4", 99, 99, 99, 25), 1));
         List<Container> containers = packager.packList(products, maxContainers, System.currentTimeMillis() + 15000);
-        assertEquals(2, containers.size());
+        assertEquals(1, containers.size());
         assertEquals(containers.get(0).getName(), "Box 3");
-        assertEquals(containers.get(0).getLevels().size(), 3);
-        
-        assertEquals(containers.get(1).getName(), "Box 1");
-        assertEquals(containers.get(1).getLevels().size(), 1);
+        assertEquals(containers.get(0).getLevels().size(), 1);
     }
-	
+
+	@Test
+	void testExpansionOfRemainderSpace() {
+		// issue 159
+		List<Container> containers = new ArrayList<>();
+		Container container = new Container("X",100, 36, 1, 1000);
+		containers.add(container);
+
+		List<BoxItem> products = new ArrayList<>();
+		products.add(new BoxItem(new Box("1", 1, 18, 90, 1)));
+		products.add(new BoxItem(new Box("2", 1, 18, 90, 1)));
+		products.add(new BoxItem(new Box("3", 1, 36, 3, 1)));
+		products.add(new BoxItem(new Box("4", 1, 36, 3, 1)));
+		
+		BruteForcePackager packager = new BruteForcePackager(containers, true, true);
+		Container pack = packager.pack(products, Long.MAX_VALUE);
+		print(pack);
+
+		assertEquals(pack.getLevels().size(), 1);
+	}
 }

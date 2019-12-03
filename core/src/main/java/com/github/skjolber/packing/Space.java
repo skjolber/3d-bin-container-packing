@@ -2,6 +2,14 @@ package com.github.skjolber.packing;
 
 public class Space extends Dimension {
 
+	protected static boolean between(int start, int value, int end) {
+		return start <= value && value <= end;
+	}
+	
+	protected boolean intersects(int start, int end, int value, int distance) {
+		return between(start, value, end) || between(start, value + distance, end);
+	}
+
 	private Space parent;
 	private Space remainder;
 
@@ -34,7 +42,10 @@ public class Space extends Dimension {
 	}
 
 	public Space() {
-		super();
+	}
+	
+	public Space(Space clone) {
+		copyFrom(clone);
 	}
 
 	public Space(Space parent, String name, int w, int d, int h, int x, int y, int z) {
@@ -130,5 +141,99 @@ public class Space extends Dimension {
 		this.height = h;
 	}
 
+	public boolean intersects(Space space) {
+		return intersectsX(space) && intersectsY(space) && intersectsZ(space);
+	}
+
+	public boolean intersectsY(Space space) {
+		int startY = space.getY();
+		int endY = startY + space.getDepth() - 1;
+	
+		return intersectsY(startY, endY);
+	}
+
+	public boolean intersectsY(int startY, int endY) {
+		return intersects(startY, endY, y, depth);
+	}
+
+	public boolean intersectsX(Space space) {
+		int startX = space.getX();
+		int endX = startX + space.getWidth() - 1;
+		
+		return intersectsX(startX, endX);
+	}
+	
+	public boolean intersectsX(int startX, int endX) {
+		return intersects(startX, endX, x, width);
+	}
+
+	public boolean intersectsZ(Space space) {
+		int startZ = space.getZ();
+		int endZ = startZ + space.getHeight() - 1;
+
+		return intersectsZ(startZ, endZ);
+	}
+
+	public boolean intersectsZ(int startZ, int endZ) {
+		return intersects(startZ, endZ, z, height);
+	}
+
+	public boolean intersects(Placement placement) {
+		return intersectsX(placement) && intersectsY(placement) && intersectsZ(placement);
+	}
+	
+	public boolean intersectsY(Placement placement) {
+		int startY = placement.getSpace().getY();
+		int endY = startY + placement.getBox().getDepth() - 1;
+		return intersectsY(startY, endY);
+	}
+	
+	public boolean intersectsX(Placement placement) {
+		int startX = placement.getSpace().getX();
+		int endX = startX + placement.getBox().getWidth() - 1;
+		return intersectsY(startX, endX);
+	}
+
+	public boolean intersectsZ(Placement placement) {
+		int startZ = placement.getSpace().getZ();
+		int endZ = startZ + placement.getBox().getHeight() - 1;
+		return intersectsZ(startZ, endZ);
+	}
+
+	public void subtractX(Placement placement) {
+		int endX = placement.getSpace().getX() + placement.getBox().getWidth();
+		
+		if(endX > x) {
+			width -= endX - x;
+			
+			x = endX;
+			
+			calculateVolume();
+		}
+	}
+
+	public void subtractY(Placement placement) {
+		int endY = placement.getSpace().getY() + placement.getBox().getDepth();
+		
+		if(endY > y) {
+			depth -= endY - y;
+			
+			y = endY;
+			
+			calculateVolume();
+		}
+	}
+	
+	public void subtractZ(Placement placement) {
+		int endZ = placement.getSpace().getZ() + placement.getBox().getHeight();
+		
+		if(endZ > z) {
+			height -= endZ - z;
+			
+			z = endZ;
+			
+			calculateVolume();
+		}
+	}	
 
 }
