@@ -130,6 +130,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]
 
 # History
+ - 1.2.9: If the 'remainder' space cannot be used, attempt to expand it with [unused space](https://github.com/skjolber/3d-bin-container-packing/blob/b78f4b8ff62f4c3cd531a160d36c4dc1f23c8897/core/src/main/java/com/github/skjolber/packing/LargestAreaFitFirstPackager.java#L250).
  - 1.2.8: Java module for JDK 9+ (multi-release jar). That was painful.
  - 1.2.6: Refactor project structure into multi-module. New group- and artifact-id.
  - 1.2.5: Fix use of 'top' free space in brute force packager (issue #99)
