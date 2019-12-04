@@ -26,7 +26,7 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
     <artifactId>core</artifactId>
-    <version>1.2.8</version>
+    <version>1.2.9</version>
 </dependency>
 ```
 
