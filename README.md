@@ -127,7 +127,8 @@ If you have any questions, comments or improvement suggestions, please file an i
 Feel free to connect with me on [LinkedIn], see also my [Github page].
 
 ## License
-[Apache 2.0]
+[Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
+
 
 # History
  - 1.2.9: If the 'remainder' space cannot be used, attempt to expand it with [unused space](https://github.com/skjolber/3d-bin-container-packing/blob/b78f4b8ff62f4c3cd531a160d36c4dc1f23c8897/core/src/main/java/com/github/skjolber/packing/LargestAreaFitFirstPackager.java#L250).
