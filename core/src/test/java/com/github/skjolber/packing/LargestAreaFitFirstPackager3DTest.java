@@ -243,19 +243,26 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	void with20IdenticalProducts() {
-		final int w = 28;
+	void with20IdenticalProductsForIssue168() {
+		final int w = 37;
 		final int d = 32;
-		final int h = 37;
+		final int h = 28;
 		final int weight = 128;
-		final Container container = new Container(w * 2, d * 5, h * 2, weight * 20);
-		List<Container> containers = container.rotations();
-		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
+		
+		final Container container = new Container(w * 2, d * 5, h * 2 * 2, weight * 20);
+		List<Container> containers = new ArrayList<>();
+		containers.add(container);
+		
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, true, true, true);
 
 		List<BoxItem> products = listOfIdenticalProducts(w, d, h, weight, 20);
 
 		Container fits1 = packager.pack(products);
 		assertNotNull(fits1);
+		
+		validate(fits1);
+		
+		print(fits1);
 	}
 
 	@Test

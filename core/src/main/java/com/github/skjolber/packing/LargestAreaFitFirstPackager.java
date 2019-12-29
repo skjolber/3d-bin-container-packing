@@ -668,10 +668,12 @@ public class LargestAreaFitFirstPackager extends Packager {
 				if(compare < 0) {
 					best = true;
 				} else if(compare == 0) {
-					// if all is equal, prefer smallest space as a crude indicator on 
-					// how 'difficult' matching the box was. 
-
-					best = space.getVolume() < bestSpace.getVolume();
+					// if all is equal, prefer the box that came closest to one of its edges
+					// in the available space
+					
+					// TODO this is really a complicated decision, which may not have a definitive right answer (all alternatives must explored)
+					
+					best = Math.min(space.getWidth() - box.getWidth(), space.getDepth() - box.getDepth()) < Math.min(bestSpace.getWidth() - bestBox.getWidth(), bestSpace.getDepth() - bestBox.getDepth());
 				} else {
 					best = false;
 				}
