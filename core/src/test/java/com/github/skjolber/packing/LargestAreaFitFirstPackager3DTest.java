@@ -1,21 +1,12 @@
 package com.github.skjolber.packing;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import com.github.skjolber.packing.Box;
-import com.github.skjolber.packing.BoxItem;
-import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.LargestAreaFitFirstPackager;
-import com.github.skjolber.packing.Level;
-import com.github.skjolber.packing.Packager;
-import com.github.skjolber.packing.Placement;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
@@ -246,6 +237,22 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 
 		List<BoxItem> products = listOf20Products();
+
+		Container fits1 = packager.pack(products);
+		assertNotNull(fits1);
+	}
+
+	@Test
+	void with20IdenticalProducts() {
+		final int w = 28;
+		final int d = 32;
+		final int h = 37;
+		final int weight = 128;
+		final Container container = new Container(w * 2, d * 5, h * 2, weight * 20);
+		List<Container> containers = container.rotations();
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
+
+		List<BoxItem> products = listOfIdenticalProducts(w, d, h, weight, 20);
 
 		Container fits1 = packager.pack(products);
 		assertNotNull(fits1);
@@ -498,7 +505,7 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 		List<BoxItem> products = new ArrayList<BoxItem>();
 
-		products.add(new BoxItem(new Box("A", 10, 10, 10, 25), 9));		
+		products.add(new BoxItem(new Box("A", 10, 10, 10, 25), 9));
 
 		Container pack = packager.pack(products, containers, Long.MAX_VALUE);
 
@@ -509,7 +516,7 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 			}
 		}
 	}
-	
+
 	//Issue #83
 	@Test
 	void testRemainingWeightNegative() {
@@ -522,14 +529,14 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		products.add(new BoxItem(new Box("C", 10, 10, 10, 10)));
 		products.add(new BoxItem(new Box("D", 10, 10, 10, 10)));
 		products.add(new BoxItem(new Box("E", 10, 10, 10, 10)));
-		
+
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 		List<Container> fits = packager.packList(products, 2, Long.MAX_VALUE);
 		assertNotNull(fits);
 
 		validate(fits);
 	}
-	
+
 	//Issue #83
 	@Test
 	void testWrongNumberOfContainers() {
@@ -541,7 +548,7 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		products.add(new BoxItem(new Box("C", 10, 10, 10, 10)));
 		products.add(new BoxItem(new Box("D", 10, 10, 10, 10)));
 		products.add(new BoxItem(new Box("E", 10, 10, 10, 10)));
-		
+
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers);
 		List<Container> fits = packager.packList(products, 2, Long.MAX_VALUE);
 		assertNotNull(fits);
@@ -549,7 +556,7 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 		validate(fits);
 	}
-		
+
 	//Issue #83
 	@Test
 	void testRemainingWeightNegative2() {
@@ -563,7 +570,7 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		products.add(new BoxItem(new Box("D", 10, 10, 10, 10)));
 		products.add(new BoxItem(new Box("E", 10, 10, 10, 10)));
 		products.add(new BoxItem(new Box("F", 10, 10, 10, 10)));
-		
+
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true, true);
 		List<Container> fits = packager.packList(products, 50, Long.MAX_VALUE);
 		assertNotNull(fits);
@@ -573,7 +580,7 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingRectanglesOnRectangle() {
-		// this test highlights that the smallest free space is selected if 
+		// this test highlights that the smallest free space is selected if
 		// all other is equal
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(40,50,60, 0));
@@ -585,7 +592,7 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
-		
+
 		print(fits);
 
 		assertEquals(fits.getLevels().size(), 1);
@@ -602,13 +609,13 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		for(int i = 0; i < 1000; i++) {
 			products.add(new BoxItem(new Box(Integer.toString(i), 1, 1, 1, 1)));
 		}
-		
+
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, false, true, true);
 		List<Container> fits = packager.packList(products, 50, Long.MAX_VALUE);
 		assertNotNull(fits);
 		assertEquals(fits.size(), 2);
 	}
-	
+
 	@Test
 	void testExpansionOfRemainderSpace() {
 		// issue 159
@@ -621,11 +628,11 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 		products.add(new BoxItem(new Box("2", 1, 18, 90, 1)));
 		products.add(new BoxItem(new Box("3", 1, 36, 3, 1)));
 		products.add(new BoxItem(new Box("4", 1, 36, 3, 1)));
-		
+
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, true, true, true);
 		Container pack = packager.pack(products, Long.MAX_VALUE);
 		print(pack);
 
 		assertEquals(pack.getLevels().size(), 1);
-	}	
+	}
 }

@@ -1,17 +1,11 @@
 package com.github.skjolber.packing;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.skjolber.packing.Box;
-import com.github.skjolber.packing.BoxItem;
-import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.Level;
-import com.github.skjolber.packing.Packager;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 abstract class AbstractPackagerTest {
 
@@ -21,7 +15,7 @@ abstract class AbstractPackagerTest {
 			level.validate();
 		}
 	}
-	
+
 	static void validate(List<Container> pack) {
 		for (Container container : pack) {
 			for (Level level : container.getLevels()) {
@@ -121,6 +115,13 @@ abstract class AbstractPackagerTest {
 				new BoxItem(new Box("", 1000, 1000, 1000, 0)));
 	}
 
+	List<BoxItem> listOfIdenticalProducts(int w, int d, int h, int weight, int count) {
+		final List<BoxItem> items = new ArrayList<>(count);
+		for (int i = 0; i <count; i++) {
+			items.add(new BoxItem(new Box("", w, d, h, weight)));
+		}
+		return items;
+	}
 
 	List<BoxItem> listOf20Products() {
 		return Arrays.asList(
