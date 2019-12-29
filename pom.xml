@@ -402,7 +402,7 @@
 						</additionalOptions>
 						<sourceFileExcludes>
 							<sourceFileExclude>**/module-info.java</sourceFileExclude>
-						</sourceFileExcludes>						
+						</sourceFileExcludes>			
 					</configuration>
 				</plugin>
 					
