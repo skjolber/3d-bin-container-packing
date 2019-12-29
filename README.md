@@ -26,7 +26,7 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
     <artifactId>core</artifactId>
-    <version>1.2.9</version>
+    <version>1.2.10</version>
 </dependency>
 ```
 
@@ -131,11 +131,10 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 
 
 # History
+ - 1.2.10: Tweak LAFF selecetion of 'best space' for equally sized boxes (issue #168).
  - 1.2.9: If the 'remainder' space cannot be used, attempt to expand it with [unused space](https://github.com/skjolber/3d-bin-container-packing/blob/b78f4b8ff62f4c3cd531a160d36c4dc1f23c8897/core/src/main/java/com/github/skjolber/packing/LargestAreaFitFirstPackager.java#L250).
  - 1.2.8: Java module for JDK 9+ (multi-release jar). That was painful.
  - 1.2.6: Refactor project structure into multi-module. New group- and artifact-id.
- - 1.2.5: Fix use of 'top' free space in brute force packager (issue #99)
- - 1.2.4: Attempt to use 'top' free space whenever box is not as high as the level.
 
 [1]: 				https://en.wikipedia.org/wiki/Bin_packing_problem
 [2]: 				https://www.drupal.org/files/An%20Efficient%20Algorithm%20for%203D%20Rectangular%20Box%20Packing.pdf
