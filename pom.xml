@@ -20,7 +20,7 @@
 
 		<google-truth.version>1.0.1</google-truth.version>
 		<junit.version>5.6.0</junit.version>
-		<jmh.version>1.22</jmh.version>
+		<jmh.version>1.23</jmh.version>
 
 		<!-- plugins -->
 		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
