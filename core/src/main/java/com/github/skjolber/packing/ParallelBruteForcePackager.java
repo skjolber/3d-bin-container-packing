@@ -25,16 +25,16 @@ public class ParallelBruteForcePackager extends BruteForcePackager {
 	private final ExecutorCompletionService<PackResult> executorService;
 	private final int threads;
 	
-	public ParallelBruteForcePackager(List<Container> containers, int threads) {
-		this(containers, Executors.newFixedThreadPool(threads), threads, true, true);
+	public ParallelBruteForcePackager(List<Container> containers, int threads, int checkpointsPerDeadlineCheck) {
+		this(containers, Executors.newFixedThreadPool(threads), threads, true, true, checkpointsPerDeadlineCheck);
 	}
 	
-	public ParallelBruteForcePackager(List<Container> containers, int threads, boolean rotate3D, boolean binarySearch) {
-		this(containers, Executors.newFixedThreadPool(threads), threads, rotate3D, binarySearch);
+	public ParallelBruteForcePackager(List<Container> containers, int threads, boolean rotate3D, boolean binarySearch, int checkpointsPerDeadlineCheck) {
+		this(containers, Executors.newFixedThreadPool(threads), threads, rotate3D, binarySearch, checkpointsPerDeadlineCheck);
 	}
 	
-	public ParallelBruteForcePackager(List<Container> containers, ExecutorService executorService, int threads, boolean rotate3D, boolean binarySearch) {
-		super(containers, rotate3D, binarySearch);
+	public ParallelBruteForcePackager(List<Container> containers, ExecutorService executorService, int threads, boolean rotate3D, boolean binarySearch, int checkpointsPerDeadlineCheck) {
+		super(containers, rotate3D, binarySearch, checkpointsPerDeadlineCheck);
 		
 		this.threads = threads;
 		this.executorService = new ExecutorCompletionService<PackResult>(executorService);

@@ -26,7 +26,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * @param containers list of containers
 	 */
 	public LargestAreaFitFirstPackager(List<Container> containers) {
-		this(containers, true, true, true);
+		this(containers, true, true, true, 1);
 	}
 
 	/**
@@ -38,8 +38,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a container that can hold the boxes, given time, it also tries to find a better match.
 	 */
 
-	public LargestAreaFitFirstPackager(List<Container> containers, boolean rotate3D, boolean footprintFirst, boolean binarySearch) {
-		super(containers, rotate3D, binarySearch);
+	public LargestAreaFitFirstPackager(List<Container> containers, boolean rotate3D, boolean footprintFirst, boolean binarySearch, int checkpointsPerDeadlineCheck) {
+		super(containers, rotate3D, binarySearch, checkpointsPerDeadlineCheck);
 
 		this.footprintFirst = footprintFirst;
 	}
@@ -54,12 +54,12 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * @return null if no match, or deadline reached
 	 */
 
-	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline) {
-		return pack(containerProducts, targetContainer, deadLinePredicate(deadline));
+	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck) {
+		return pack(containerProducts, targetContainer, deadLinePredicate(deadline, checkpointsPerDeadlineCheck));
 	}
 
-	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline, AtomicBoolean interrupt) {
-		return pack(containerProducts, targetContainer, () -> deadlineReached(deadline) || interrupt.get());
+	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck, AtomicBoolean interrupt) {
+		return pack(containerProducts, targetContainer, deadLinePredicateOrInterrupt(deadline, checkpointsPerDeadlineCheck, interrupt));
 	}
 
 	public LAFFResult pack(List<Box> containerProducts, Container targetContainer,  BooleanSupplier interrupt) {
@@ -746,7 +746,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 			container.clear();
 
-			LAFFResult pack = LargestAreaFitFirstPackager.this.pack(boxes, container, Long.MAX_VALUE);
+			LAFFResult pack = LargestAreaFitFirstPackager.this.pack(boxes, container, Long.MAX_VALUE, Integer.MAX_VALUE);
 
 			return pack.getContainer();
 		}

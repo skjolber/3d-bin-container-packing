@@ -17,10 +17,36 @@ import com.github.skjolber.packing.impl.*;
  */
 
 public abstract class Packager {
-	private final Container[] containers;
+	
+	protected static class NthBooleanSupplier implements BooleanSupplier {
 
-	final boolean rotate3D; // if false, then 2d
-	private final boolean binarySearch;
+		private final BooleanSupplier delegate;
+		private final int n;
+		private int count = 0;
+		
+		public NthBooleanSupplier(BooleanSupplier delegate, int n) {
+			super();
+			this.delegate = delegate;
+			this.n = n;
+		}
+
+		@Override
+		public boolean getAsBoolean() {
+			count++;
+			if(n % count == 0) {
+				return delegate.getAsBoolean();
+			}
+			return false;
+		}
+		
+	}
+	
+	protected final Container[] containers;
+	protected final boolean rotate3D; // if false, then 2d
+	protected final boolean binarySearch;
+	
+	/** limit the number of calls to get System.currentTimeMillis() */
+	protected final int checkpointsPerDeadlineCheck;
 
 	/**
 	 * Constructor
@@ -29,7 +55,7 @@ public abstract class Packager {
 	 */
 
 	public Packager(List<Container> containers) {
-		this(containers, true, true);
+		this(containers, true, true, 1);
 	}
 
 	/**
@@ -41,10 +67,11 @@ public abstract class Packager {
 	 *                     match, it searches the preceding boxes as well, until the deadline is passed.
 	 */
 
-	public Packager(List<Container> containers, boolean rotate3D, boolean binarySearch) {
+	public Packager(List<Container> containers, boolean rotate3D, boolean binarySearch, int checkpointsPerDeadlineCheck) {
 		this.containers = containers.toArray(new Container[0]);
 		this.rotate3D = rotate3D;
 		this.binarySearch = binarySearch;
+		this.checkpointsPerDeadlineCheck = checkpointsPerDeadlineCheck;
 
 		long maxVolume = Long.MIN_VALUE;
 		long maxWeight = Long.MIN_VALUE;
@@ -83,7 +110,7 @@ public abstract class Packager {
 	 */
 
 	public Container pack(List<BoxItem> boxes, long deadline) {
-		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadLinePredicate(deadline));
+		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadLinePredicate(deadline, checkpointsPerDeadlineCheck));
 	}
 
 	public Container pack(List<BoxItem> boxes, BooleanSupplier interrupt) {
@@ -111,7 +138,7 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline) {
-		return pack(boxes, containers, deadLinePredicate(deadline));
+		return pack(boxes, containers, deadLinePredicate(deadline, checkpointsPerDeadlineCheck));
 	}
 
 	/**
@@ -225,11 +252,19 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline) {
-		return packList(boxes, limit, deadLinePredicate(deadline));
+		return packList(boxes, limit, deadLinePredicate(deadline, checkpointsPerDeadlineCheck));
 	}
 
-	static BooleanSupplier deadLinePredicate(final long deadline) {
-		return () -> deadlineReached(deadline);
+	static BooleanSupplier deadLinePredicate(long deadline, int checkpointsPerDeadlineCheck) {
+		BooleanSupplier booleanSupplier = () -> deadlineReached(deadline);
+		if(checkpointsPerDeadlineCheck == 1) {
+			return booleanSupplier;
+		}
+		return new NthBooleanSupplier(booleanSupplier, checkpointsPerDeadlineCheck);
+	}
+
+	static BooleanSupplier deadLinePredicateOrInterrupt(final long deadline, int checkpointsPerDeadlineCheck, AtomicBoolean interrupt) {
+		return () -> deadLinePredicate(deadline, checkpointsPerDeadlineCheck).getAsBoolean() || interrupt.get();
 	}
 
 	static boolean deadlineReached(final long deadline) {

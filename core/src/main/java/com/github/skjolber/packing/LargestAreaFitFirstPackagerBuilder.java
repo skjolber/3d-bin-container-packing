@@ -12,6 +12,8 @@ public class LargestAreaFitFirstPackagerBuilder {
 	
 	private boolean binarySearch;
 
+	private int checkpointsPerDeadlineCheck = 1;
+
 	public LargestAreaFitFirstPackagerBuilder withHighestBoxFirst() {
 		this.footprintFirst = false;
 		return this;
@@ -46,11 +48,16 @@ public class LargestAreaFitFirstPackagerBuilder {
 		return this;
 	}
 
+	public LargestAreaFitFirstPackagerBuilder withCheckpointsPerDeadlineCheck(int n) {
+		this.checkpointsPerDeadlineCheck = n;
+		return this;
+	}
+	
 	public LargestAreaFitFirstPackager build() {
 		if(containers == null) {
 			throw new IllegalStateException("Expected containers");
 		}
-		return new LargestAreaFitFirstPackager(containers, rotate3D, footprintFirst, binarySearch);
+		return new LargestAreaFitFirstPackager(containers, rotate3D, footprintFirst, binarySearch, checkpointsPerDeadlineCheck);
 	}
 	
 }

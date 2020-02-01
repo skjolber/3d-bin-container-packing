@@ -206,8 +206,8 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 	void testLargestAreaFitFirstDoesNotWork() {
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container("container1", 15, 10, 10, 0));
-		Packager bruteForcePackager = new BruteForcePackager(containers, true, true);
-		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, true, true, true);
+		Packager bruteForcePackager = new BruteForcePackager(containers, true, true, 1);
+		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, true, true, true, 1);
 
 		List<BoxItem> products1 = new ArrayList<>();
 
@@ -228,7 +228,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 	void testPackagingExposesVolumeUsed() {
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container("container1", 60, 25, 20, 0));
-		Packager bruteForcePackager = new BruteForcePackager(containers, true, true);
+		Packager bruteForcePackager = new BruteForcePackager(containers, true, true, 1);
 
 		List<BoxItem> products1 = Arrays.asList(
 				new BoxItem(new Box("1", 7, 24, 58, 0), 1),
@@ -246,7 +246,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 	void testRunsForLimitedTimeSeconds() {
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container("container1", 5000, 10, 10, 0));
-		runsLimitedTimeSeconds(new BruteForcePackager(containers, true, true), 200);
+		runsLimitedTimeSeconds(new BruteForcePackager(containers, true, true, 1), 200);
 	}
 
 	@Test
@@ -270,7 +270,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 		while(deadline > System.currentTimeMillis()) {
 			List<Container> containers = new ArrayList<>();
 			containers.add(new Container(5 * n, 10, 10, 0));
-			Packager bruteForcePackager = new BruteForcePackager(containers, true, true);
+			Packager bruteForcePackager = new BruteForcePackager(containers, true, true, 1);
 
 			List<BoxItem> products1 = new ArrayList<>();
 
@@ -491,7 +491,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 	void test2DBruteForceFor6PacketsIssue28() {
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container("container1", 152, 252, 1, 0));
-		Packager bruteForcePackager = new BruteForcePackager(containers, false, true);
+		Packager bruteForcePackager = new BruteForcePackager(containers, false, true, 1);
 
 		List<BoxItem> products1 = Arrays.asList(
 				new BoxItem(new Box("1", 73, 82, 1, 0), 1),
@@ -510,7 +510,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 	void test3DBruteForceFor6PacketsIssue28() {
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container("container1", 152, 252, 1, 0));
-		Packager bruteForcePackager = new BruteForcePackager(containers, true, true);
+		Packager bruteForcePackager = new BruteForcePackager(containers, true, true, 1);
 
 		List<BoxItem> products1 = Arrays.asList(
 				new BoxItem(new Box("1", 73, 82, 1, 0), 1),
@@ -529,7 +529,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 	void testBruteForceFor6PacketsIssue28() {
 		List<Container> containers = new ArrayList<>();
 		containers.add(new Container("container1", 152, 252, 58, 0));
-		Packager bruteForcePackager = new BruteForcePackager(containers, false, true);
+		Packager bruteForcePackager = new BruteForcePackager(containers, false, true, 1);
 
 		List<BoxItem> products1 = Arrays.asList(
 				new BoxItem(new Box("1", 73, 82, 54, 0), 1),
@@ -619,7 +619,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 		products.add(new BoxItem(new Box("3", 1, 36, 3, 1)));
 		products.add(new BoxItem(new Box("4", 1, 36, 3, 1)));
 		
-		BruteForcePackager packager = new BruteForcePackager(containers, true, true);
+		BruteForcePackager packager = new BruteForcePackager(containers, true, true, 1);
 		Container pack = packager.pack(products, Long.MAX_VALUE);
 		print(pack);
 
