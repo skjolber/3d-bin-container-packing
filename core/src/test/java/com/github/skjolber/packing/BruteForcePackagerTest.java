@@ -25,7 +25,6 @@ import com.github.skjolber.packing.Container;
 import com.github.skjolber.packing.Dimension;
 import com.github.skjolber.packing.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.Level;
-import com.github.skjolber.packing.Packager;
 import com.github.skjolber.packing.Placement;
 
 class BruteForcePackagerTest extends AbstractPackagerTest {

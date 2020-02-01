@@ -18,29 +18,6 @@ import com.github.skjolber.packing.impl.*;
 
 public abstract class Packager {
 	
-	protected static class NthBooleanSupplier implements BooleanSupplier {
-
-		private final BooleanSupplier delegate;
-		private final int n;
-		private int count = 0;
-		
-		public NthBooleanSupplier(BooleanSupplier delegate, int n) {
-			super();
-			this.delegate = delegate;
-			this.n = n;
-		}
-
-		@Override
-		public boolean getAsBoolean() {
-			count++;
-			if(n % count == 0) {
-				return delegate.getAsBoolean();
-			}
-			return false;
-		}
-		
-	}
-	
 	protected final Container[] containers;
 	protected final boolean rotate3D; // if false, then 2d
 	protected final boolean binarySearch;
@@ -255,7 +232,7 @@ public abstract class Packager {
 		return packList(boxes, limit, deadLinePredicate(deadline, checkpointsPerDeadlineCheck));
 	}
 
-	static BooleanSupplier deadLinePredicate(long deadline, int checkpointsPerDeadlineCheck) {
+	protected static BooleanSupplier deadLinePredicate(long deadline, int checkpointsPerDeadlineCheck) {
 		if(checkpointsPerDeadlineCheck == Integer.MAX_VALUE || deadline == Long.MAX_VALUE) {
 			return () -> false;
 		}
@@ -267,7 +244,7 @@ public abstract class Packager {
 		return new NthBooleanSupplier(booleanSupplier, checkpointsPerDeadlineCheck);
 	}
 
-	static BooleanSupplier deadLinePredicate(final long deadline, int checkpointsPerDeadlineCheck, AtomicBoolean interrupt) {
+	protected static BooleanSupplier deadLinePredicate(final long deadline, int checkpointsPerDeadlineCheck, AtomicBoolean interrupt) {
 		if(checkpointsPerDeadlineCheck == Integer.MAX_VALUE || deadline == Long.MAX_VALUE) {
 			return () -> interrupt.get();
 		}

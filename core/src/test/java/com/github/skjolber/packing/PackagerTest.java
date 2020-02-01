@@ -21,7 +21,6 @@ import com.github.skjolber.packing.BoxItem;
 import com.github.skjolber.packing.BruteForcePackager;
 import com.github.skjolber.packing.Container;
 import com.github.skjolber.packing.LargestAreaFitFirstPackager;
-import com.github.skjolber.packing.Packager;
 import com.github.skjolber.packing.impl.Adapter;
 import com.github.skjolber.packing.impl.PackResult;
 
