@@ -53,7 +53,7 @@ public class BruteForcePackager extends Packager {
 	}
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline, int checkpointsPerDeadlineCheck, AtomicBoolean interrupt) {
-		return pack(placements, container, rotator, deadLinePredicateOrInterrupt(deadline, checkpointsPerDeadlineCheck, interrupt));
+		return pack(placements, container, rotator, deadLinePredicate(deadline, checkpointsPerDeadlineCheck, interrupt));
 	}
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, BooleanSupplier interrupt) {
@@ -101,7 +101,7 @@ public class BruteForcePackager extends Packager {
 	}
 
 	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, int checkpointsPerDeadlineCheck, Container holder, int index, AtomicBoolean interrupt) {
-		return pack(placements, container, rotator, holder, index, deadLinePredicateOrInterrupt(deadline, checkpointsPerDeadlineCheck, interrupt));
+		return pack(placements, container, rotator, holder, index, deadLinePredicate(deadline, checkpointsPerDeadlineCheck, interrupt));
 	}
 
 	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, Container holder, int index, BooleanSupplier interrupt) {

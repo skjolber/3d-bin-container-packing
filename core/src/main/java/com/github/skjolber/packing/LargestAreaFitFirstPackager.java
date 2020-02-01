@@ -59,7 +59,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 	}
 
 	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck, AtomicBoolean interrupt) {
-		return pack(containerProducts, targetContainer, deadLinePredicateOrInterrupt(deadline, checkpointsPerDeadlineCheck, interrupt));
+		return pack(containerProducts, targetContainer, deadLinePredicate(deadline, checkpointsPerDeadlineCheck, interrupt));
 	}
 
 	public LAFFResult pack(List<Box> containerProducts, Container targetContainer,  BooleanSupplier interrupt) {

@@ -21,8 +21,13 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 public class PackagerBenchmark {
 
     @Benchmark
-    public Object packager(PackagerState state) throws Exception {
+    public Object packagerNoDeadline(PackagerState state) throws Exception {
     	return state.getBruteForcePackager().pack(state.getProducts());
+    }
+
+    @Benchmark
+    public Object packagerDeadline(PackagerState state) throws Exception {
+    	return state.getBruteForcePackager().pack(state.getProducts(), System.currentTimeMillis() + 10000);
     }
 
 }

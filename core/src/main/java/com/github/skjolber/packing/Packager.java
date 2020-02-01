@@ -151,7 +151,7 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline, AtomicBoolean interrupt) {
-		return pack(boxes, containers, () -> deadlineReached(deadline) || interrupt.get());
+		return pack(boxes, containers, deadLinePredicate(deadline, checkpointsPerDeadlineCheck, interrupt));
 	}
 
 	public Container pack(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
@@ -256,19 +256,23 @@ public abstract class Packager {
 	}
 
 	static BooleanSupplier deadLinePredicate(long deadline, int checkpointsPerDeadlineCheck) {
-		BooleanSupplier booleanSupplier = () -> deadlineReached(deadline);
+		if(checkpointsPerDeadlineCheck == Integer.MAX_VALUE || deadline == Long.MAX_VALUE) {
+			return () -> false;
+		}
+
+		BooleanSupplier booleanSupplier = () -> System.currentTimeMillis() > deadline;
 		if(checkpointsPerDeadlineCheck == 1) {
 			return booleanSupplier;
 		}
 		return new NthBooleanSupplier(booleanSupplier, checkpointsPerDeadlineCheck);
 	}
 
-	static BooleanSupplier deadLinePredicateOrInterrupt(final long deadline, int checkpointsPerDeadlineCheck, AtomicBoolean interrupt) {
+	static BooleanSupplier deadLinePredicate(final long deadline, int checkpointsPerDeadlineCheck, AtomicBoolean interrupt) {
+		if(checkpointsPerDeadlineCheck == Integer.MAX_VALUE || deadline == Long.MAX_VALUE) {
+			return () -> interrupt.get();
+		}
+		
 		return () -> deadLinePredicate(deadline, checkpointsPerDeadlineCheck).getAsBoolean() || interrupt.get();
-	}
-
-	static boolean deadlineReached(final long deadline) {
-		return System.currentTimeMillis() > deadline;
 	}
 
 	/**
@@ -281,7 +285,7 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline, AtomicBoolean interrupt) {
-		return packList(boxes, limit, () -> deadlineReached(deadline) || interrupt.get());
+		return packList(boxes, limit, deadLinePredicate(deadline, checkpointsPerDeadlineCheck, interrupt));
 	}
 
 	/**
