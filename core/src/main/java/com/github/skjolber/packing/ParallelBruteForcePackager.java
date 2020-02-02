@@ -19,11 +19,13 @@ import com.github.skjolber.packing.impl.ParallelPermutationRotationIterator;
 import com.github.skjolber.packing.impl.ParallelPermutationRotationIteratorAdapter;
 import com.github.skjolber.packing.impl.PermutationRotation;
 import com.github.skjolber.packing.impl.PermutationRotationIterator;
+import com.github.skjolber.packing.impl.deadline.DelegateNthDeadlineCheckBooleanSupplier;
 
 public class ParallelBruteForcePackager extends BruteForcePackager {
 
-	private final ExecutorCompletionService<PackResult> executorService;
+	private final ExecutorCompletionService<PackResult> executorCompletionService;
 	private final int threads;
+	private ExecutorService executorService;
 	
 	public ParallelBruteForcePackager(List<Container> containers, int threads, int checkpointsPerDeadlineCheck) {
 		this(containers, Executors.newFixedThreadPool(threads), threads, true, true, checkpointsPerDeadlineCheck);
@@ -37,7 +39,8 @@ public class ParallelBruteForcePackager extends BruteForcePackager {
 		super(containers, rotate3D, binarySearch, checkpointsPerDeadlineCheck);
 		
 		this.threads = threads;
-		this.executorService = new ExecutorCompletionService<PackResult>(executorService);
+		this.executorService = executorService;
+		this.executorCompletionService = new ExecutorCompletionService<PackResult>(executorService);
 	}
 
 	private class RunnableAdapter implements Callable<PackResult> {
@@ -75,11 +78,24 @@ public class ParallelBruteForcePackager extends BruteForcePackager {
 		private List<Container> containers;
 		private ParallelPermutationRotationIterator[] iterators; // per container
 		private RunnableAdapter[] runnables; // per thread
-		private BooleanSupplier interrupt;
+		private BooleanSupplier[] interrupts;
 
 		protected ParallelAdapter(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
 			this.containers = containers;
-			this.interrupt = interrupt;
+			this.interrupts = new BooleanSupplier[threads];
+
+			// clone nth interrupts so that everything is not slowed down by sharing a single counter
+			if(interrupt instanceof DelegateNthDeadlineCheckBooleanSupplier) {
+				for(int i = 0; i < threads; i++) {
+					DelegateNthDeadlineCheckBooleanSupplier nth = (DelegateNthDeadlineCheckBooleanSupplier)interrupt;
+					BooleanSupplier clone = (BooleanSupplier) nth.clone();
+					this.interrupts[i] = clone;
+				}
+			} else {
+				for(int i = 0; i < threads; i++) {
+					this.interrupts[i] = interrupt;
+				}
+			}
 
 			PermutationRotation[] rotations = DefaultPermutationRotationIterator.toRotationMatrix(boxes, rotate3D);
 			int count = 0;
@@ -103,29 +119,32 @@ public class ParallelBruteForcePackager extends BruteForcePackager {
 			// run on single thread for a small amount of combinations
 			ParallelPermutationRotationIterator parallelPermutationRotationIterator = iterators[i];
 			if(parallelPermutationRotationIterator.countPermutations() * parallelPermutationRotationIterator.countRotations() > threads * 2) { // somewhat conservative, as the number of rotations is unknown 
-				AtomicBoolean localInterrupt = new AtomicBoolean();
-				BooleanSupplier booleanSupplier = () -> localInterrupt.get() || interrupt.getAsBoolean();
 				
+				AtomicBoolean localInterrupt = new AtomicBoolean();
+
 				for (int j = 0; j < runnables.length; j++) {
 					RunnableAdapter runnableAdapter = runnables[j];
 					runnableAdapter.setContainer(containers.get(i));
 					runnableAdapter.setIterator(new ParallelPermutationRotationIteratorAdapter(iterators[i], j));
+					
+					BooleanSupplier booleanSupplier = () -> localInterrupt.get() || interrupts[i].getAsBoolean();
+					
 					runnableAdapter.setInterrupt(booleanSupplier);
 					
-					executorService.submit(runnableAdapter);
+					executorCompletionService.submit(runnableAdapter);
 				}
 	
 				PackResult best = null;
 				for (int j = 0; j < runnables.length; j++) {
 					try {
-						Future<PackResult> future = executorService.take();
+						Future<PackResult> future = executorCompletionService.take();
 						PackResult result = future.get();
 						if(result != null) {
 							if (best == null || result.packsMoreBoxesThan(best)) {
 								best = result;
 			
 								if (!hasMore(best)) { // will not match any better than this
-									// TODO cancel others
+									// cancel others
 									localInterrupt.set(true);
 									// don't break, so we're waiting for all the remaining threads to finish
 								}
@@ -139,13 +158,13 @@ public class ParallelBruteForcePackager extends BruteForcePackager {
 				    }
 				}
 				
-				if(interrupt.getAsBoolean()) {
+				if(interrupts[i].getAsBoolean()) {
 					return null;
 				}
 				return best;
 			}
 			// run with linear approach
-			return ParallelBruteForcePackager.this.pack(runnables[0].placements, containers.get(i), parallelPermutationRotationIterator, interrupt);
+			return ParallelBruteForcePackager.this.pack(runnables[0].placements, containers.get(i), parallelPermutationRotationIterator, interrupts[i]);
 		}
 		
 		@Override
@@ -190,6 +209,14 @@ public class ParallelBruteForcePackager extends BruteForcePackager {
 			
 			return false;
 		}		
+	}
+	
+	public void shutdown() {
+		executorService.shutdown();
+	}
+	
+	public ExecutorService getExecutorService() {
+		return executorService;
 	}
 	
 	@Override

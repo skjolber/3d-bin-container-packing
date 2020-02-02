@@ -316,11 +316,11 @@ class PackagerTest extends AbstractPackagerTest {
 		final AtomicBoolean bruteForceFinished = new AtomicBoolean(false);
 
 		new Thread(() -> {
-			final Container pack = bruteForcePackager.pack(listOf28Products(), System.currentTimeMillis() + 1000, laffFinished);
+			final Container pack = bruteForcePackager.pack(listOf28Products(), System.currentTimeMillis() + 1000, () -> laffFinished.get());
 			bruteForceFinished.set(pack != null);
 		}).start();
 		new Thread(() -> {
-			final Container pack = largestAreaFitFirstPackager.pack(listOf28Products(), System.currentTimeMillis() + 1000, bruteForceFinished);
+			final Container pack = largestAreaFitFirstPackager.pack(listOf28Products(), System.currentTimeMillis() + 1000, () -> bruteForceFinished.get());
 			laffFinished.set(pack != null);
 		}).start();
 		Thread.sleep(100);

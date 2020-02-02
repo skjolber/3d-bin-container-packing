@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.impl.*;
+import com.github.skjolber.packing.impl.deadline.BooleanSupplierBuilder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -55,11 +56,11 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 */
 
 	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck) {
-		return pack(containerProducts, targetContainer, deadLinePredicate(deadline, checkpointsPerDeadlineCheck));
+		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
-	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck, AtomicBoolean interrupt) {
-		return pack(containerProducts, targetContainer, deadLinePredicate(deadline, checkpointsPerDeadlineCheck, interrupt));
+	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck, BooleanSupplier interrupt) {
+		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
 	public LAFFResult pack(List<Box> containerProducts, Container targetContainer,  BooleanSupplier interrupt) {

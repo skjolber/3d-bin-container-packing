@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.impl.*;
+import com.github.skjolber.packing.impl.deadline.BooleanSupplierBuilder;
 
 
 /**
@@ -49,11 +50,11 @@ public class BruteForcePackager extends Packager {
 	}
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline, int checkpointsPerDeadlineCheck) {
-		return pack(placements, container, rotator, deadLinePredicate(deadline, checkpointsPerDeadlineCheck));
+		return pack(placements, container, rotator, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
-	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline, int checkpointsPerDeadlineCheck, AtomicBoolean interrupt) {
-		return pack(placements, container, rotator, deadLinePredicate(deadline, checkpointsPerDeadlineCheck, interrupt));
+	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline, int checkpointsPerDeadlineCheck, BooleanSupplier interrupt) {
+		return pack(placements, container, rotator, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, BooleanSupplier interrupt) {
@@ -97,11 +98,11 @@ public class BruteForcePackager extends Packager {
 	}
 
 	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, int checkpointsPerDeadlineCheck, Container holder, int index) {
-		return pack(placements, container, rotator, holder, index, deadLinePredicate(deadline, checkpointsPerDeadlineCheck));
+		return pack(placements, container, rotator, holder, index, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
-	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, int checkpointsPerDeadlineCheck, Container holder, int index, AtomicBoolean interrupt) {
-		return pack(placements, container, rotator, holder, index, deadLinePredicate(deadline, checkpointsPerDeadlineCheck, interrupt));
+	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, int checkpointsPerDeadlineCheck, Container holder, int index, BooleanSupplier interrupt) {
+		return pack(placements, container, rotator, holder, index, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
 	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, Container holder, int index, BooleanSupplier interrupt) {

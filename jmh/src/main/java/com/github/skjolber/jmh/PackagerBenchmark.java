@@ -15,10 +15,25 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 
 @Fork(value = 1, warmups = 1)
-@Warmup(iterations = 5, time = 10, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = 2, time = 10, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.Throughput)
-@Measurement(iterations = 5, time = 10, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 2, time = 10, timeUnit = TimeUnit.SECONDS)
 public class PackagerBenchmark {
+
+    @Benchmark
+    public Object parallelPackagerNoDeadline(PackagerState state) throws Exception {
+    	return state.getParallelBruteForcePackager().pack(state.getProducts());
+    }
+
+    @Benchmark
+    public Object parallelPackagerDeadline(PackagerState state) throws Exception {
+    	return state.getParallelBruteForcePackager().pack(state.getProducts(), System.currentTimeMillis() + 10000);
+    }
+
+    @Benchmark
+    public Object parallelPackagerDeadlineNth(PackagerState state) throws Exception {
+    	return state.getParallelBruteForcePackagerNth().pack(state.getProducts(), System.currentTimeMillis() + 10000);
+    }
 
     @Benchmark
     public Object packagerNoDeadline(PackagerState state) throws Exception {
@@ -28,6 +43,11 @@ public class PackagerBenchmark {
     @Benchmark
     public Object packagerDeadline(PackagerState state) throws Exception {
     	return state.getBruteForcePackager().pack(state.getProducts(), System.currentTimeMillis() + 10000);
+    }
+
+    @Benchmark
+    public Object packagerDeadlineNth(PackagerState state) throws Exception {
+    	return state.getBruteForcePackagerNth().pack(state.getProducts(), System.currentTimeMillis() + 10000);
     }
 
 }
