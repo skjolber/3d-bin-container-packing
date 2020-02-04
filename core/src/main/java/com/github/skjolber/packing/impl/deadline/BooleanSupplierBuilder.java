@@ -4,7 +4,7 @@ import java.util.function.BooleanSupplier;
 
 public class BooleanSupplierBuilder {
 	
-	private static BooleanSupplier noop = () -> false;
+	private static final BooleanSupplier noop = () -> false;
 	
 	private long deadline = Long.MAX_VALUE;
 	private int checkpointsPerDeadlineCheck = 1;
