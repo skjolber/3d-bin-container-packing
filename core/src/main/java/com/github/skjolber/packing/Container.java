@@ -13,8 +13,11 @@ public class Container extends Box {
 	private int stackHeight = 0;
 	private ArrayList<Level> levels = new ArrayList<>();
 
+	private int containerWeight = 0;
+
 	public Container(Container container) {
 		super(container.getName(), container.getWidth(), container.getDepth(), container.getHeight(), container.getWeight());
+		this.containerWeight = container.containerWeight;
 	}
 
 	/**
@@ -51,6 +54,22 @@ public class Container extends Box {
 	public Container(String name, int w, int d, int h, int weight) {
 		super(name, w, d, h, weight);
 	}
+
+	/**
+	 * Construct new instance.
+	 *
+	 * @param name container name
+	 * @param w width
+	 * @param d depth
+	 * @param h height
+	 * @param nettoWeight maximum weight the container can hold
+	 * @param containerWeight the container weight
+	 */
+	public Container(String name, int w, int d, int h, int nettoWeight, int containerWeight) {
+		super(name, w, d, h, nettoWeight);
+		this.containerWeight = containerWeight;
+	}
+
 
 	/**
 	 * The 6 different possible rotations. If two of the sides are equal, there are only 3 possible orientations.
@@ -193,6 +212,18 @@ public class Container extends Box {
 			count += level.size();
 		}
 		return count;
+	}
+
+	public int getBrutto() {
+		return containerWeight + getStackWeight();
+	}
+
+	public int getNetto() {
+		return getStackWeight();
+	}
+
+	public int getContainerWeight() {
+		return containerWeight;
 	}
 
 	@Override
