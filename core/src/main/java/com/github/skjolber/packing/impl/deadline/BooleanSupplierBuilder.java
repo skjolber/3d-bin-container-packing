@@ -38,6 +38,7 @@ public class BooleanSupplierBuilder {
 			return new DelegateDeadlineCheckBooleanSupplier(deadline, interrupt);
 		}
 		if(interrupt == noop) {
+			//return new DeadlineCheckBooleanSupplier(deadline);
 			return new NthDeadlineCheckBooleanSupplier(deadline, checkpointsPerDeadlineCheck);
 		}
 		return new DelegateNthDeadlineCheckBooleanSupplier(deadline, checkpointsPerDeadlineCheck, interrupt);

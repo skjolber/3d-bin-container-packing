@@ -1,13 +1,12 @@
 package com.github.skjolber.packing.impl.deadline;
 
-import java.util.function.BooleanSupplier;
-
-public class NthDeadlineCheckBooleanSupplier implements BooleanSupplier {
+public class NthDeadlineCheckBooleanSupplier implements ClonableBooleanSupplier {
 
 	protected final int checkpointsPerDeadlineCheck;
 	protected final long deadline;
 	protected int count = 0;
-	
+	public long t1, t2, t3, t4, t5, t6, t7 = 1L;
+
 	public NthDeadlineCheckBooleanSupplier(long deadline, int checkpointsPerDeadlineCheck) {
 		super();
 		this.deadline = deadline;
@@ -20,8 +19,11 @@ public class NthDeadlineCheckBooleanSupplier implements BooleanSupplier {
 	}
 	
 	@Override
-	public Object clone() {
+	public ClonableBooleanSupplier clone() {
 		return new NthDeadlineCheckBooleanSupplier(deadline, checkpointsPerDeadlineCheck);
 	}
-	
+
+	public long preventOptmisation(){
+		return t1 + t2 + t3 + t4 + t5 + t6 + t7;
+	}
 }

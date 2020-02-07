@@ -21,7 +21,7 @@ import com.github.skjolber.packing.ParallelBruteForcePackager;
 public class PackagerState {
 
 	private int count = 8;
-	private int n = 7;
+	private int n = 11;
 	
 	private ExecutorService pool = Executors.newFixedThreadPool(count);
 	private ParallelBruteForcePackager parallelBruteForcePackager;
@@ -39,7 +39,7 @@ public class PackagerState {
 		containers.add(new Container(5 * n, 10, 10, 0));
 		
 		parallelBruteForcePackager = new ParallelBruteForcePackager(containers, pool, count, true, true, 1);
-		parallelBruteForcePackagerNth = new ParallelBruteForcePackager(containers, pool, count, true, true, 1000);
+		parallelBruteForcePackagerNth = new ParallelBruteForcePackager(containers, pool, count, true, true, 200000);
 
 		bruteForcePackager = new BruteForcePackager(containers, true, true, 1);
 		bruteForcePackagerNth = new BruteForcePackager(containers, true, true, 1000);

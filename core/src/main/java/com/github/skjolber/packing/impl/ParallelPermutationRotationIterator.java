@@ -13,23 +13,23 @@ import com.github.skjolber.packing.Dimension;
 
 public class ParallelPermutationRotationIterator extends DefaultPermutationRotationIterator {
 
-	private final static int PADDING = 16;
+	protected final static int PADDING = 16;
 	
-	private int[] frequencies;
+	protected final int[] frequencies;
 	
 	protected WorkUnit[] workUnits;
 	
 	private static class WorkUnit {
-		
-		// try to avoid false sharing by using padding
-		public volatile long t1, t2, t3, t4, t5, t6, t7 = -1L;
-		public long preventOptmisation(){
-			return t1 + t2 + t3 + t4 + t5 + t6 + t7;
-		}
-		 
 		long count;
 		int[] permutations;
 		int[] rotations;
+		
+		public long t1, t2, t3, t4, t5, t6, t7 = -1L;
+		
+		// try to avoid false sharing by using padding
+		public long preventOptmisation(){
+			return t1 + t2 + t3 + t4 + t5 + t6 + t7;
+		}
 	}
 
 	public ParallelPermutationRotationIterator(List<BoxItem> list, Dimension bound, boolean rotate3D, int parallelizationCount) {

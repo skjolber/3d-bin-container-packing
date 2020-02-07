@@ -19,13 +19,13 @@ import com.github.skjolber.packing.impl.ParallelPermutationRotationIterator;
 import com.github.skjolber.packing.impl.ParallelPermutationRotationIteratorAdapter;
 import com.github.skjolber.packing.impl.PermutationRotation;
 import com.github.skjolber.packing.impl.PermutationRotationIterator;
-import com.github.skjolber.packing.impl.deadline.DelegateNthDeadlineCheckBooleanSupplier;
+import com.github.skjolber.packing.impl.deadline.ClonableBooleanSupplier;
 
 public class ParallelBruteForcePackager extends BruteForcePackager {
 
 	private final ExecutorCompletionService<PackResult> executorCompletionService;
 	private final int threads;
-	private ExecutorService executorService;
+	private final ExecutorService executorService;
 	
 	public ParallelBruteForcePackager(List<Container> containers, int threads, int checkpointsPerDeadlineCheck) {
 		this(containers, Executors.newFixedThreadPool(threads), threads, true, true, checkpointsPerDeadlineCheck);
@@ -85,11 +85,13 @@ public class ParallelBruteForcePackager extends BruteForcePackager {
 			this.interrupts = new BooleanSupplier[threads];
 
 			// clone nth interrupts so that everything is not slowed down by sharing a single counter
-			if(interrupt instanceof DelegateNthDeadlineCheckBooleanSupplier) {
+			if(interrupt instanceof ClonableBooleanSupplier) {
+				ClonableBooleanSupplier c = (ClonableBooleanSupplier)interrupt;
+				if(c.preventOptmisation() == 0) {
+					throw new RuntimeException();
+				}
 				for(int i = 0; i < threads; i++) {
-					DelegateNthDeadlineCheckBooleanSupplier nth = (DelegateNthDeadlineCheckBooleanSupplier)interrupt;
-					BooleanSupplier clone = (BooleanSupplier) nth.clone();
-					this.interrupts[i] = clone;
+					this.interrupts[i] = (BooleanSupplier) c.clone();
 				}
 			} else {
 				for(int i = 0; i < threads; i++) {
@@ -127,7 +129,8 @@ public class ParallelBruteForcePackager extends BruteForcePackager {
 					runnableAdapter.setContainer(containers.get(i));
 					runnableAdapter.setIterator(new ParallelPermutationRotationIteratorAdapter(iterators[i], j));
 					
-					BooleanSupplier booleanSupplier = () -> localInterrupt.get() || interrupts[i].getAsBoolean();
+					BooleanSupplier interruptBooleanSupplier = interrupts[i];
+					BooleanSupplier booleanSupplier = () -> localInterrupt.get() || interruptBooleanSupplier.getAsBoolean();
 					
 					runnableAdapter.setInterrupt(booleanSupplier);
 					
