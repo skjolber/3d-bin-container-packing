@@ -20,4 +20,8 @@ public class BouwkampCodes {
 	public List<BouwkampCode> getCodes() {
 		return codes;
 	}
+	
+	public String getSource() {
+		return source;
+	}
 }

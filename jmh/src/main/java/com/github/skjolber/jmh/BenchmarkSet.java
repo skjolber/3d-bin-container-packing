@@ -1,12 +1,10 @@
 package com.github.skjolber.jmh;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.BoxItem;
 import com.github.skjolber.packing.BruteForcePackager;
 import com.github.skjolber.packing.BruteForcePackagerBuilder;
-import com.github.skjolber.packing.Container;
 
 public class BenchmarkSet {
 
