@@ -47,20 +47,6 @@ public class Level extends ArrayList<Placement>{
 					}
 				} else {
 					if(get(i).intersects(get(j))) {
-						
-						Placement a = get(i);
-						Placement b = get(j);
-
-						if(a.intersectsX(b)) {
-							System.out.println("Intersects X");
-						}
-						if(a.intersectsY(b)) {
-							System.out.println("Intersects Y");
-						}
-						
-						System.out.println(a);
-						System.out.println(b);
-						
 						throw new IllegalArgumentException(i + " vs " + j + ": " + get(i) + " vs " + get(j));
 					}
 				}
