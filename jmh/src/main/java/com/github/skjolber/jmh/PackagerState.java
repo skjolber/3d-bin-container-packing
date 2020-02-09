@@ -30,7 +30,7 @@ public class PackagerState {
 	private BruteForcePackager bruteForcePackager;
 	private BruteForcePackager bruteForcePackagerNth;
 	
-	private List<BoxItem> products;
+	private List<BoxItem> identialProducts;
 	private List<Container> containers;
 	
 	@Setup(Level.Trial)
@@ -44,13 +44,13 @@ public class PackagerState {
 		bruteForcePackager = new BruteForcePackager(containers, true, true, 1);
 		bruteForcePackagerNth = new BruteForcePackager(containers, true, true, 1000);
 
-		products = new ArrayList<>();
+		identialProducts = new ArrayList<>();
 		for(int i = 0; i < n; i++) {
 			Box box = new Box(Integer.toString(i), 5, 10, 10, 0);
 			for(int k = 0; k < i % 2; k++) {
 				box.rotate3D();
 			}
-			products.add(new BoxItem(box, 1));
+			identialProducts.add(new BoxItem(box, 1));
 		}
 	}
 	
@@ -78,7 +78,7 @@ public class PackagerState {
 		return bruteForcePackagerNth;
 	}
 	
-	public List<BoxItem> getProducts() {
-		return products;
+	public List<BoxItem> getIdentialProducts() {
+		return identialProducts;
 	}
 }

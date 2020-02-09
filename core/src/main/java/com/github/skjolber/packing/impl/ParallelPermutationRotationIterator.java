@@ -24,9 +24,9 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 		int[] permutations;
 		int[] rotations;
 		
+		// try to avoid false sharing by using padding
 		public long t1, t2, t3, t4, t5, t6, t7 = -1L;
 		
-		// try to avoid false sharing by using padding
 		public long preventOptmisation(){
 			return t1 + t2 + t3 + t4 + t5 + t6 + t7;
 		}

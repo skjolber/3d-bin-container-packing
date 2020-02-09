@@ -34,7 +34,7 @@ public class Placement {
 
 	@Override
 	public String toString() {
-		return "Placement [" + space.getX() + "x" + space.getY() + "x" + space.getZ() + ", width=" + box.getWidth() + ", depth=" + box.getDepth() + ", height="
+		return "Placement [" + box.getName() + " " + space.getX() + "x" + space.getY() + "x" + space.getZ() + ", width=" + box.getWidth() + ", depth=" + box.getDepth() + ", height="
 				+ box.getHeight() + "]";
 	}
 
@@ -54,7 +54,7 @@ public class Placement {
 		return intersectsX(placement) && intersectsY(placement) && intersectsZ(placement);
 	}
 
-	private boolean intersectsY(Placement placement) {
+	public boolean intersectsY(Placement placement) {
 
 		int startY = space.getY();
 		int endY = startY + box.getDepth() - 1;
@@ -68,7 +68,7 @@ public class Placement {
 
 	}
 
-	private boolean intersectsX(Placement placement) {
+	public boolean intersectsX(Placement placement) {
 
 		int startX = space.getX();
 		int endX = startX + box.getWidth() - 1;
@@ -82,7 +82,7 @@ public class Placement {
 
 	}
 	
-	private boolean intersectsZ(Placement placement) {
+	public boolean intersectsZ(Placement placement) {
 
 		int startZ = space.getZ();
 		int endZ = startZ + box.getHeight() - 1;
@@ -95,4 +95,29 @@ public class Placement {
 				placement.getSpace().getZ() + placement.getBox().getHeight() - 1 <= endZ;
 
 	}
+
+	public int getAbsoluteX() {
+		return space.getX();
+	}
+	
+	public int getAbsoluteY() {
+		return space.getY();
+	}
+
+	public int getAbsoluteZ() {
+		return space.getZ();
+	}
+
+	public int getAbsoluteEndX() {
+		return space.getX() + box.getWidth();
+	}
+	
+	public int getAbsoluteEndY() {
+		return space.getY() + box.getDepth();
+	}
+
+	public int getAbsoluteEndZ() {
+		return space.getZ() + box.getHeight();
+	}
+
 }

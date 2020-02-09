@@ -494,9 +494,9 @@ class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
 		List<BoxItem> products = new ArrayList<>();
 
-		products.add(new BoxItem(new Box("J", 20,50, 20, 0), 1));
-		products.add(new BoxItem(new Box("J", 20,50, 15, 0), 1));
-		products.add(new BoxItem(new Box("J", 20,10, 5, 0), 4));
+		products.add(new BoxItem(new Box("J", 20, 50, 20, 0), 1));
+		products.add(new BoxItem(new Box("J", 20, 50, 15, 0), 1));
+		products.add(new BoxItem(new Box("J", 20, 10, 5, 0), 2));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);

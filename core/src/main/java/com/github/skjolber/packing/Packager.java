@@ -101,6 +101,7 @@ public abstract class Packager {
 	 * @param deadline  the system time in millis at which the search should be aborted
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
 	 * @return index of container if match, -1 if not
+	 * 
 	 */
 	public Container pack(List<BoxItem> boxes, long deadline, BooleanSupplier interrupt) {
 		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline, interrupt);

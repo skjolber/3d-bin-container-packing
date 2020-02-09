@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +29,9 @@ import com.github.skjolber.packing.Dimension;
 import com.github.skjolber.packing.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.Level;
 import com.github.skjolber.packing.Placement;
+import com.github.skjolber.packing.test.BouwkampCode;
+import com.github.skjolber.packing.test.BouwkampCodeDirectory;
+import com.github.skjolber.packing.test.BouwkampCodes;
 
 class BruteForcePackagerTest extends AbstractPackagerTest {
 
@@ -623,5 +629,66 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 		print(pack);
 
 		assertEquals(pack.getLevels().size(), 1);
+	}
+
+	@Test
+	void testBouwcampCodes33x32A() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		BouwkampCode bkpLine = directory.codesForCount(9, "33x32A");
+		
+		System.out.println(bkpLine);
+		long time = System.currentTimeMillis();
+		
+		List<Container> containers = new ArrayList<>();
+		containers.add(toContainer(bkpLine));
+		BruteForcePackager packager = new BruteForcePackager(containers);
+
+		List<BoxItem> products = new ArrayList<>();
+		
+		List<Box> boxes = toBoxes(bkpLine);
+		for(Box box : boxes) {
+			products.add(new BoxItem(box, 1));
+		}
+
+		Container fits = packager.pack(products);
+		assertNull(fits);
+	}
+
+	@Test
+	void testBouwcampCodes() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+		
+		List<BouwkampCodes> codesForCount = directory.codesForCount(9);
+		for(BouwkampCodes c : codesForCount) {
+			
+			for(BouwkampCode bkpLine : c.getCodes()) {
+				System.out.println(bkpLine);
+				long time = System.currentTimeMillis();
+				
+				List<Container> containers = new ArrayList<>();
+				containers.add(toContainer(bkpLine));
+				BruteForcePackager packager = new BruteForcePackager(containers);
+		
+				List<BoxItem> products = new ArrayList<>();
+				
+				List<Box> boxes = toBoxes(bkpLine);
+				for(Box box : boxes) {
+					products.add(new BoxItem(box, 1));
+				}
+		
+				Container fits = packager.pack(products);
+				
+				System.out.println((System.currentTimeMillis() - time) / 1000d + " seconds");
+
+				if(fits != null) {
+					System.out.println("Fits");
+					print(fits);
+				}
+				
+			}
+			
+			
+		}
 	}
 }

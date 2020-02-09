@@ -192,6 +192,9 @@ public class LargestAreaFitFirstPackager extends Packager {
 			// minimize footprint
 			usedSpace.fitRotate3DSmallestFootprint(freeSpace);
 		}
+		
+		// make sure the used space fits in the free space
+		usedSpace.fitRotate2D(freeSpace);
 
 		// add used space box now, but possibly rotate later - this depends on the actual remaining free space selected further down
 		// there is up to possible 4 free spaces, 2 in which the used space box is rotated
@@ -199,8 +202,6 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 		if(containerProducts.isEmpty()) {
 			// no additional boxes
-			// just make sure the used space fits in the free space
-			usedSpace.fitRotate2D(freeSpace);
 
 			return true;
 		}
@@ -369,14 +370,17 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 					if(widthRemainder.nonEmpty()) {
 						nextBox = getBestBoxForSpace(containerProducts, widthRemainder, holder.getFreeWeight());
-						nextSpace = widthRemainder;
+						if(nextBox != null) {
+							nextSpace = widthRemainder;
+						}
 					} 
 					if(depthRemainder.nonEmpty()) {
 						Box depthBox = getBestBoxForSpace(containerProducts, depthRemainder, holder.getFreeWeight());
-
-						if(nextBox == null || depthBox.getVolume() > nextBox.getVolume()) {
-							nextBox = depthBox;
-							nextSpace = depthRemainder;
+						if(depthBox != null) {
+							if(nextBox == null || depthBox.getVolume() > nextBox.getVolume()) {
+								nextBox = depthBox;
+								nextSpace = depthRemainder;
+							}
 						}
 					}
 
@@ -672,7 +676,6 @@ public class LargestAreaFitFirstPackager extends Packager {
 					// in the available space
 					
 					// TODO this is really a complicated decision, which may not have a definitive right answer (all alternatives must explored)
-					
 					best = Math.min(space.getWidth() - box.getWidth(), space.getDepth() - box.getDepth()) < Math.min(bestSpace.getWidth() - bestBox.getWidth(), bestSpace.getDepth() - bestBox.getDepth());
 				} else {
 					best = false;

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.github.skjolber.packing.test.BouwkampCode;
+
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -27,6 +29,12 @@ abstract class AbstractPackagerTest {
 	static void print(Container fits) {
 		System.out.println();
 		System.out.println(Visualizer.visualize(fits, 90, 2));
+		System.out.println();
+	}
+	
+	static void printSpace(Container fits) {
+		System.out.println();
+		System.out.println(Visualizer.visualizeSpace(fits, 90, 2));
 		System.out.println();
 	}
 
@@ -153,5 +161,19 @@ abstract class AbstractPackagerTest {
 				new BoxItem(new Box("", 100, 550, 750, 200)),
 				new BoxItem(new Box("", 700, 500, 50, 75)),
 				new BoxItem(new Box("", 1000, 1000, 1000, 100)));
+	}
+	
+	public Container toContainer(BouwkampCode code) {
+		return new Container(code.getWidth(), code.getDepth(), 2 * Math.max(code.getDepth(), code.getWidth()), 0);
+	}
+	
+	public List<Box> toBoxes(BouwkampCode code) {
+		List<Box> boxes = new ArrayList<>();
+		
+		for (Integer integer : code.getSquare()) {
+			boxes.add(new Box(integer, integer, 2 * Math.max(code.getDepth(), code.getWidth()), 0));
+		}
+		
+		return boxes;
 	}
 }

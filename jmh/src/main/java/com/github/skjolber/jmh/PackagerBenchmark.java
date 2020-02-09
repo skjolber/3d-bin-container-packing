@@ -17,33 +17,33 @@ import org.openjdk.jmh.annotations.Warmup;
 public class PackagerBenchmark {
 
     @Benchmark
-    public Object parallelPackagerNoDeadline(PackagerState state) throws Exception {
-    	return state.getParallelBruteForcePackager().pack(state.getProducts());
+    public Object parallelRotationPackagerNoDeadline(PackagerState state) throws Exception {
+    	return state.getParallelBruteForcePackager().pack(state.getIdentialProducts());
     }
 
     @Benchmark
-    public Object parallelPackagerDeadline(PackagerState state) throws Exception {
-    	return state.getParallelBruteForcePackager().pack(state.getProducts(), System.currentTimeMillis() + 10000);
+    public Object parallelRotationPackagerDeadline(PackagerState state) throws Exception {
+    	return state.getParallelBruteForcePackager().pack(state.getIdentialProducts(), System.currentTimeMillis() + 10000);
     }
 
     @Benchmark
-    public Object parallelPackagerDeadlineNth(PackagerState state) throws Exception {
-    	return state.getParallelBruteForcePackagerNth().pack(state.getProducts(), System.currentTimeMillis() + 10000);
+    public Object parallelRotationPackagerDeadlineNth(PackagerState state) throws Exception {
+    	return state.getParallelBruteForcePackagerNth().pack(state.getIdentialProducts(), System.currentTimeMillis() + 10000);
     }
 
     @Benchmark
-    public Object packagerNoDeadline(PackagerState state) throws Exception {
-    	return state.getBruteForcePackager().pack(state.getProducts());
+    public Object packagerRotationNoDeadline(PackagerState state) throws Exception {
+    	return state.getBruteForcePackager().pack(state.getIdentialProducts());
     }
 
     @Benchmark
-    public Object packagerDeadline(PackagerState state) throws Exception {
-    	return state.getBruteForcePackager().pack(state.getProducts(), System.currentTimeMillis() + 10000);
+    public Object packagerRotationDeadline(PackagerState state) throws Exception {
+    	return state.getBruteForcePackager().pack(state.getIdentialProducts(), System.currentTimeMillis() + 10000);
     }
 
     @Benchmark
-    public Object packagerDeadlineNth(PackagerState state) throws Exception {
-    	return state.getBruteForcePackagerNth().pack(state.getProducts(), System.currentTimeMillis() + 10000);
+    public Object packagerRotationDeadlineNth(PackagerState state) throws Exception {
+    	return state.getBruteForcePackagerNth().pack(state.getIdentialProducts(), System.currentTimeMillis() + 10000);
     }
 
 }

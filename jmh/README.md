@@ -40,3 +40,10 @@ Benchmarks can be executed as standalone programs (using `main(..)` method) dire
 Once a potential hotspot is identified, capture the initial state by writing a baseline benchmark. If missing, add unit tests, so you're sure to be comparing apples to apples. Also add a (as close as possible) no-operation / pass-through benchmark to sanity-check the upper limit on your results. Please note that this will need to be submitted in its own PR.
 
 Then add alternative implementations and their corresponding benchmarks. The benchmarks you want to compare go into the same class file (so that the visualizer presents them together). 
+
+# Benchmarks included in this project
+	
+ * idential box brute force packager. Strictly speaking, only tests the rotation and not the permutations. So a bad test for the parallel brute force packager.
+
+http://www.squaring.net/sq/ss/ss.html
+

@@ -137,6 +137,8 @@ public class Container extends Box {
 
 	public void add(Placement placement) {
 		levels.get(levels.size() - 1).add(placement);
+		
+		levels.get(levels.size() - 1).validate();
 	}
 
 	public Level addLevel() {

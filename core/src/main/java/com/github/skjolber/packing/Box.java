@@ -257,8 +257,8 @@ public class Box extends Dimension {
 
 	@Override
 	public String toString() {
-		return "Box [weight=" + weight + ", width=" + width + ", depth=" + depth + ", height=" + height + ", volume="
-				+ volume + ", name=" + name + "]";
+		return "Box [width=" + width + ", depth=" + depth + ", height=" + height + ", volume="
+				+ volume + ", name=" + name + ", weight=" + weight + "]";
 	}
 
 }
