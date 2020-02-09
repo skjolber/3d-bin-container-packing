@@ -18,7 +18,7 @@ import com.github.skjolber.packing.Container;
 import com.github.skjolber.packing.ParallelBruteForcePackager;
 
 @State(Scope.Benchmark)
-public class PackagerState {
+public class RotationPackagerState {
 
 	private int count = 8;
 	private int n = 11;

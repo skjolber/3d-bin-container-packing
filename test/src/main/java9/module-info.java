@@ -1,3 +1,3 @@
-module com.github.skjolber.packing {
+module com.github.skjolber.packing.test {
 	exports com.github.skjolber.packing.test;
 }

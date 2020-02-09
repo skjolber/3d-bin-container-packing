@@ -45,23 +45,7 @@ public class BouwkampCode {
 
 	@Override
 	public String toString() {
-		return "BkpLine [width=" + width + ", depth=" + depth + ", name=" + name + ", square=" + square + "]";
+		return "BouwkampCode [name=" + name + ", width=" + width + ", depth=" + depth + ", square=" + square + "]";
 	}
-	
-	/*
-	public Container toContainer(int height) {
-		return new Container(width, depth, height, 0);
-	}
-	
-	public List<Box> toBoxes(int height) {
-		List<Box> boxes = new ArrayList();
-		
-		for (Integer integer : square) {
-			boxes.add(new Box(integer, integer, height, 0));
-		}
-		
-		return boxes;
-	}
-	*/
 	
 }

@@ -198,11 +198,12 @@ public class BruteForcePackager extends Packager {
 
 		boolean room = isFreeSpace(parentSpace, usedSpace.getBox(), primaryPlacement);
 		if (room) {
+			int fromIndex = index;
+			
 			index++;
 			// note to self: pack in the primary space first, if not then the returned index
 			// might be incorrect (if the weight constraint is reached while packaging in the remainder).
 			//
-			int fromIndex = index;
 			// the correct space dimensions is copied into the next placement
 			// fit the next box in the selected free space
 			// fit in primary
@@ -228,19 +229,74 @@ public class BruteForcePackager extends Packager {
 				} else {
 					// is it possible to expand the remainder / secondary
 					// with space not used in the primary space?
+					//
+					// ........................   ........................          ..................
+					// .                      .   .                      .          .                .
+					// .          C           .   .         C            .          .                .
+					// .                      .   .                      .          .                .
+					// .......                .   ........................          .                .
+					// .     .       D        .                                     .        D       .
+					// .     .                .                                     .                .
+					// .     .                .                                     .                .
+					// .     .                .                                     .                .
+					// ........................                                     ..................
+					//
+					// With remainders shown as 'r' and the expansion area as double quoted:
+					//
+					//                           .........................  ..........................
+					//                           .      .                .  .       .                .
+					//                           .  C'  .      C''       .  .  r1   .     D''        .
+					//                           .      .                .  .       .                .
+					//                           .........................  ..........................
+					//      depth                       .                .          .                .
+					//       ^                          .                .          .                .
+					//       |                          .       r2       .          .      D'        .
+					//       |                          .                .          .                .
+					//        ----> width               ..................          ..................
+					//
+					// So if the remainder is expanded with the double quoted area,  
+					// the maximum available space for the remainder is the 'sibling' free space
+					// which is known to be non-empty since there is a remainder.
+					// 
+					// Cutting out the area actually in use will be done in a bounding box way,
+					// separately for width and depth.
+					// 
+					// Cutting stop conditions:
+					// 
+					// C:
+					//  - depth cuts: depth equals to remainder depth
+					//  - width cuts: width equal to zero
+					//
+					// D:
+					//  - depth cuts: depth equals to zero
+					//  - width cuts: width equal to remainder width
+					//
+					
 					Space expandedRemainder = new Space(remainder); 
-					if(expandedRemainder.getX() == parentSpace.getX()) {
-						expandedRemainder.setWidth(parentSpace.getWidth());
-					} else {
-						expandedRemainder.setDepth(parentSpace.getDepth());
+					if(expandedRemainder.getX() == parentSpace.getX()) { // r1
+						
+						expandedRemainder.setWidth(parentSpace.getWidth()); // expand r1 with D''
+					} else { // r2
+						expandedRemainder.setDepth(parentSpace.getDepth()); // expand r2 with C''
 					}
 					if (remainderBox.fitsInside3D(expandedRemainder)) {
 						// cut out the area which is already in use, leaving two edges
-						Space depthRemainder = new Space(expandedRemainder); //
+						Space depthRemainder = expandedRemainder; //
 						Space widthRemainder = new Space(expandedRemainder);
 	
 						// subtract spaced used in primary (fromIndex to index(exclusive))
-						for(int i = fromIndex - 1; i < index; i++) {
+						// 
+						// Width:
+						//
+						// ......... ..     ...........
+						// .         .      .////|    .
+						// .         .      .////|    .
+						// .         .  ->  .////|    .
+						// .         .      .////|    .
+						// .         .      .////|    .
+						// ...........      ...........
+						
+						for(int i = fromIndex; i < index; i++) {
 							Placement placement = placements.get(i);
 							if(widthRemainder.intersectsY(placement) && widthRemainder.intersectsX(placement)) {
 								// there is overlap, subtract area
@@ -251,8 +307,19 @@ public class BruteForcePackager extends Packager {
 								}
 							}
 						}
-	
-						for(int i = fromIndex - 1; i < index; i++) {
+
+						// 
+						// Depth:
+						//
+						// ...........      ...........
+						// .         .      ./////////.
+						// .         .      ./////////.
+						// .         .  ->  .---------.
+						// .         .      .         .
+						// .         .      .         .
+						// ...........      ...........
+
+						for(int i = fromIndex; i < index; i++) {
 							Placement placement = placements.get(i);
 							if(depthRemainder.intersectsY(placement) && depthRemainder.intersectsX(placement)) {
 								// there is overlap, subtract area
@@ -265,23 +332,23 @@ public class BruteForcePackager extends Packager {
 						}
 	
 						// see if the box fits now
-						if(remainderBox.fitsInside3D(widthRemainder)) {
-							nextSpace = widthRemainder;
-						}
-						
-						if(remainderBox.fitsInside3D(depthRemainder) && (nextSpace == null || depthRemainder.getVolume() > nextSpace.getVolume())) {
+						boolean fitsInWidthRemainder = remainderBox.fitsInside3D(widthRemainder);
+						boolean fitsInDepthRemainder = remainderBox.fitsInside3D(depthRemainder);
+							
+						if(fitsInDepthRemainder && (!fitsInWidthRemainder || depthRemainder.getVolume() > widthRemainder.getVolume())) {
 							nextSpace = depthRemainder;
 							
 							// subtract primary space size
 							Space primary = primaryPlacement.getSpace();
 							primary.setWidth(primary.getWidth() - (depthRemainder.getWidth() - remainder.getWidth()));
-						} else {
-							if(nextSpace != null) {
-								// subtract primary space size
-								Space primary = primaryPlacement.getSpace();
-								primary.setDepth(primary.getDepth() - (widthRemainder.getDepth() - remainder.getDepth()));
-							}
+						} else if(fitsInWidthRemainder) {
+							nextSpace = widthRemainder;
+							
+							// subtract primary space size
+							Space primary = primaryPlacement.getSpace();
+							primary.setDepth(primary.getDepth() - (widthRemainder.getDepth() - remainder.getDepth()));
 						}
+								
 					}
 				}					
 				if(nextSpace != null) {

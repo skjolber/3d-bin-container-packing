@@ -9,9 +9,9 @@ import static java.lang.Math.max;
 
 public class Container extends Box {
 
-	private int stackWeight = 0;
-	private int stackHeight = 0;
-	private ArrayList<Level> levels = new ArrayList<>();
+	protected int stackWeight = 0;
+	protected int stackHeight = 0;
+	protected ArrayList<Level> levels = new ArrayList<>();
 
 	public Container(Container container) {
 		super(container.getName(), container.getWidth(), container.getDepth(), container.getHeight(), container.getWeight());
@@ -137,8 +137,6 @@ public class Container extends Box {
 
 	public void add(Placement placement) {
 		levels.get(levels.size() - 1).add(placement);
-		
-		levels.get(levels.size() - 1).validate();
 	}
 
 	public Level addLevel() {

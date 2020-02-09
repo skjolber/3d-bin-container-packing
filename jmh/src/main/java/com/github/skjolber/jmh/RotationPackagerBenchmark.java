@@ -14,35 +14,35 @@ import org.openjdk.jmh.annotations.Warmup;
 @Warmup(iterations = 1, time = 10, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.Throughput)
 @Measurement(iterations = 1, time = 10, timeUnit = TimeUnit.SECONDS)
-public class PackagerBenchmark {
+public class RotationPackagerBenchmark {
 
     @Benchmark
-    public Object parallelRotationPackagerNoDeadline(PackagerState state) throws Exception {
+    public Object parallelRotationPackagerNoDeadline(RotationPackagerState state) throws Exception {
     	return state.getParallelBruteForcePackager().pack(state.getIdentialProducts());
     }
 
     @Benchmark
-    public Object parallelRotationPackagerDeadline(PackagerState state) throws Exception {
+    public Object parallelRotationPackagerDeadline(RotationPackagerState state) throws Exception {
     	return state.getParallelBruteForcePackager().pack(state.getIdentialProducts(), System.currentTimeMillis() + 10000);
     }
 
     @Benchmark
-    public Object parallelRotationPackagerDeadlineNth(PackagerState state) throws Exception {
+    public Object parallelRotationPackagerDeadlineNth(RotationPackagerState state) throws Exception {
     	return state.getParallelBruteForcePackagerNth().pack(state.getIdentialProducts(), System.currentTimeMillis() + 10000);
     }
 
     @Benchmark
-    public Object packagerRotationNoDeadline(PackagerState state) throws Exception {
+    public Object packagerRotationNoDeadline(RotationPackagerState state) throws Exception {
     	return state.getBruteForcePackager().pack(state.getIdentialProducts());
     }
 
     @Benchmark
-    public Object packagerRotationDeadline(PackagerState state) throws Exception {
+    public Object packagerRotationDeadline(RotationPackagerState state) throws Exception {
     	return state.getBruteForcePackager().pack(state.getIdentialProducts(), System.currentTimeMillis() + 10000);
     }
 
     @Benchmark
-    public Object packagerRotationDeadlineNth(PackagerState state) throws Exception {
+    public Object packagerRotationDeadlineNth(RotationPackagerState state) throws Exception {
     	return state.getBruteForcePackagerNth().pack(state.getIdentialProducts(), System.currentTimeMillis() + 10000);
     }
 

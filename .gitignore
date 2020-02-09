@@ -8,6 +8,7 @@
 /build
 /captures
 /target
+jmh-result.json
 
 **/*.factorypath
 **/*.attach_pid*

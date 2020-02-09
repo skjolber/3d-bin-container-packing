@@ -3,13 +3,21 @@ package com.github.skjolber.packing;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+/**
+ * Brute force packager builder. 
+ * 
+ * Performance note: Setting the number of checkpoints per deadline to any value except 1 and Integer.MAX_VALUE
+ * check seems to slow down parallel packaging (instead of speeding it up).
+ * 
+ */
+
 public class BruteForcePackagerBuilder {
 
 	protected int threads = 1;
 	
 	protected List<Container> containers;
-	protected boolean rotate3D;
-	protected boolean binarySearch;
+	protected boolean rotate3D = true;
+	protected boolean binarySearch = true;
 	protected ExecutorService executorService;
 	protected int checkpointsPerDeadlineCheck = 1;
 
