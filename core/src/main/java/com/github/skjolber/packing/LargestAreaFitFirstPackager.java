@@ -2,10 +2,10 @@ package com.github.skjolber.packing;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.impl.*;
+import com.github.skjolber.packing.impl.deadline.BooleanSupplierBuilder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -26,7 +26,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * @param containers list of containers
 	 */
 	public LargestAreaFitFirstPackager(List<Container> containers) {
-		this(containers, true, true, true);
+		this(containers, true, true, true, 1);
 	}
 
 	/**
@@ -38,8 +38,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a container that can hold the boxes, given time, it also tries to find a better match.
 	 */
 
-	public LargestAreaFitFirstPackager(List<Container> containers, boolean rotate3D, boolean footprintFirst, boolean binarySearch) {
-		super(containers, rotate3D, binarySearch);
+	public LargestAreaFitFirstPackager(List<Container> containers, boolean rotate3D, boolean footprintFirst, boolean binarySearch, int checkpointsPerDeadlineCheck) {
+		super(containers, rotate3D, binarySearch, checkpointsPerDeadlineCheck);
 
 		this.footprintFirst = footprintFirst;
 	}
@@ -54,12 +54,12 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * @return null if no match, or deadline reached
 	 */
 
-	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline) {
-		return pack(containerProducts, targetContainer, deadLinePredicate(deadline));
+	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck) {
+		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
-	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline, AtomicBoolean interrupt) {
-		return pack(containerProducts, targetContainer, () -> deadlineReached(deadline) || interrupt.get());
+	public LAFFResult pack(List<Box> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck, BooleanSupplier interrupt) {
+		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
 	public LAFFResult pack(List<Box> containerProducts, Container targetContainer,  BooleanSupplier interrupt) {
@@ -192,6 +192,9 @@ public class LargestAreaFitFirstPackager extends Packager {
 			// minimize footprint
 			usedSpace.fitRotate3DSmallestFootprint(freeSpace);
 		}
+		
+		// make sure the used space fits in the free space
+		usedSpace.fitRotate2D(freeSpace);
 
 		// add used space box now, but possibly rotate later - this depends on the actual remaining free space selected further down
 		// there is up to possible 4 free spaces, 2 in which the used space box is rotated
@@ -199,8 +202,6 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 		if(containerProducts.isEmpty()) {
 			// no additional boxes
-			// just make sure the used space fits in the free space
-			usedSpace.fitRotate2D(freeSpace);
 
 			return true;
 		}
@@ -211,39 +212,39 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 		Space[] spaces = getFreespaces(freeSpace, usedSpace);
 
-		Placement nextPlacement = getBestBoxAndSpace(containerProducts, spaces, holder.getFreeWeight());
-		if(nextPlacement == null) {
+		Placement primaryPlacement = getBestBoxAndSpace(containerProducts, spaces, holder.getFreeWeight());
+		if(primaryPlacement == null) {
 			// no additional boxes along the level floor (x,y)
 			// just make sure the used space fits in the free space
 			usedSpace.fitRotate2D(freeSpace);
 		} else {
 			// check whether the selected free space requires the used space box to be rotated
-			if(nextPlacement.getSpace() == spaces[2] || nextPlacement.getSpace() == spaces[3]) {
+			if(primaryPlacement.getSpace() == spaces[2] || primaryPlacement.getSpace() == spaces[3]) {
 				// the desired space implies that we rotate the used space box
 				usedSpace.rotate2D();
 			}
 
 			// holder.validateCurrentLevel(); // uncomment for debugging
 
-			removeIdentical(containerProducts, nextPlacement.getBox());
+			removeIdentical(containerProducts, primaryPlacement.getBox());
 
 			// unused dual / remaining space
 			Level currentLevel = holder.currentLevel();
 			int count = currentLevel.size();
 
-			if(!fit2D(containerProducts, holder, nextPlacement.getBox(), nextPlacement.getSpace(), interrupt)) {
+			if(!fit2D(containerProducts, holder, primaryPlacement.getBox(), primaryPlacement.getSpace(), interrupt)) {
 				return false; // time is up
 			}
 
 			// stack in the 'sibling' space - the space left over between the used box and the selected free space
-			Space remainder = nextPlacement.getSpace().getRemainder();
+			Space remainder = primaryPlacement.getSpace().getRemainder();
 			if(remainder.nonEmpty()) {
-				Box box = getBestBoxForSpace(containerProducts, remainder, holder.getFreeWeight());
-				if(box != null) {
-					removeIdentical(containerProducts, box);
+				Box remainderBox = getBestBoxForSpace(containerProducts, remainder, holder.getFreeWeight());
+				if(remainderBox != null) {
+					removeIdentical(containerProducts, remainderBox);
 
 					// fit in remainder
-					if(!fit2D(containerProducts, holder, box, remainder, interrupt)) {
+					if(!fit2D(containerProducts, holder, remainderBox, remainder, interrupt)) {
 						return false; // time is up
 					}
 				} else {
@@ -319,7 +320,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 					//  - width cuts: width equal to remainder width
 					//
 
-					int siblingIndex = getSiblingIndex(spaces, nextPlacement);
+					int siblingIndex = getSiblingIndex(spaces, primaryPlacement);
 					Space sibling = spaces[siblingIndex];
 
 					// cut out the area which is already in use, leaving two edges
@@ -347,7 +348,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 					int depthConstraint;
 					if(siblingIndex % 2 == 0) { // A and C
-						depthConstraint =remainder.getDepth();
+						depthConstraint = remainder.getDepth();
 					} else {
 						depthConstraint = 0;
 					}					
@@ -365,19 +366,33 @@ public class LargestAreaFitFirstPackager extends Packager {
 					}					
 
 					Box nextBox = null;
+					
+					Box widthRemainderBox = null;
+					Box depthRemainderBox = null;
+					
 					Space nextSpace = null;
 
 					if(widthRemainder.nonEmpty()) {
-						nextBox = getBestBoxForSpace(containerProducts, widthRemainder, holder.getFreeWeight());
-						nextSpace = widthRemainder;
+						widthRemainderBox = getBestBoxForSpace(containerProducts, widthRemainder, holder.getFreeWeight());
 					} 
 					if(depthRemainder.nonEmpty()) {
-						Box depthBox = getBestBoxForSpace(containerProducts, depthRemainder, holder.getFreeWeight());
-
-						if(nextBox == null || depthBox.getVolume() > nextBox.getVolume()) {
-							nextBox = depthBox;
-							nextSpace = depthRemainder;
-						}
+						depthRemainderBox = getBestBoxForSpace(containerProducts, depthRemainder, holder.getFreeWeight());
+					}
+					
+					if(depthRemainderBox != null && (widthRemainderBox == null || depthRemainder.getVolume() > widthRemainder.getVolume())) {
+						nextSpace = depthRemainder;
+						nextBox = depthRemainderBox;
+						
+						// subtract primary space size
+						Space primary = primaryPlacement.getSpace();
+						primary.setWidth(primary.getWidth() - (depthRemainder.getWidth() - remainder.getWidth()));
+					} else if(widthRemainderBox != null) {
+						nextSpace = widthRemainder;
+						nextBox = widthRemainderBox;
+						
+						// subtract primary space size
+						Space primary = primaryPlacement.getSpace();
+						primary.setDepth(primary.getDepth() - (widthRemainder.getDepth() - remainder.getDepth()));
 					}
 
 					if(nextBox != null) {
@@ -399,7 +414,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 			// the level by level approach is somewhat crude, but at least some of the inefficiency
 			// can be avoided this way
 			Space above;
-			if(nextPlacement == null) {
+			if(primaryPlacement == null) {
 				// full width / depth
 				above = new Space(
 						freeSpace.getWidth(), 
@@ -672,7 +687,6 @@ public class LargestAreaFitFirstPackager extends Packager {
 					// in the available space
 					
 					// TODO this is really a complicated decision, which may not have a definitive right answer (all alternatives must explored)
-					
 					best = Math.min(space.getWidth() - box.getWidth(), space.getDepth() - box.getDepth()) < Math.min(bestSpace.getWidth() - bestBox.getWidth(), bestSpace.getDepth() - bestBox.getDepth());
 				} else {
 					best = false;
@@ -746,7 +760,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 			container.clear();
 
-			LAFFResult pack = LargestAreaFitFirstPackager.this.pack(boxes, container, Long.MAX_VALUE);
+			LAFFResult pack = LargestAreaFitFirstPackager.this.pack(boxes, container, Long.MAX_VALUE, Integer.MAX_VALUE);
 
 			return pack.getContainer();
 		}

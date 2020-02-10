@@ -15,6 +15,11 @@
 	<dependencies>
 		<!-- test -->
 		<dependency>
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>test</artifactId>
+			<scope>test</scope>
+		</dependency>    
+		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
 			<scope>test</scope>

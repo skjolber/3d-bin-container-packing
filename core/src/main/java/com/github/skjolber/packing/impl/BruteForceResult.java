@@ -33,7 +33,7 @@ public class BruteForceResult implements PackResult {
 		}
 		rotator.setState(state);
 
-		int result = BruteForcePackager.pack(items, container, rotator, Long.MAX_VALUE, container, 0);
+		int result = BruteForcePackager.pack(items, container, rotator, Long.MAX_VALUE, Integer.MAX_VALUE, container, 0);
 		if(result == count) {
 			return container;
 		}

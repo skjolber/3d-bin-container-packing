@@ -21,7 +21,6 @@ import com.github.skjolber.packing.BoxItem;
 import com.github.skjolber.packing.BruteForcePackager;
 import com.github.skjolber.packing.Container;
 import com.github.skjolber.packing.LargestAreaFitFirstPackager;
-import com.github.skjolber.packing.Packager;
 import com.github.skjolber.packing.impl.Adapter;
 import com.github.skjolber.packing.impl.PackResult;
 
@@ -62,13 +61,13 @@ class PackagerTest extends AbstractPackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 
-		containers.add(new Container("0", 5, 5, 1, 0));
-		containers.add(new Container("1", 5, 5, 1, 0));
-		containers.add(new Container("2", 5, 5, 1, 0));
-		containers.add(new Container("3", 5, 5, 1, 0));
-		containers.add(new Container("4", 5, 5, 1, 0));
-		containers.add(new Container("5", 5, 5, 1, 0));
-		containers.add(new Container("6", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("0", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("1", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("2", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("3", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("4", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("5", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("6", 5, 5, 1, 0));
 
 
 		List<BoxItem> products = new ArrayList<>();
@@ -95,7 +94,7 @@ class PackagerTest extends AbstractPackagerTest {
 				.thenReturn(incompleteResult);
 
 		when(mock.accepted(any(PackResult.class)))
-				.thenReturn(new Container("result", 5, 5, 1, 0));
+				.thenReturn(new ValidatingContainer("result", 5, 5, 1, 0));
 
 		when(mock.hasMore(any(PackResult.class))).thenReturn(false, true, true, true);
 
@@ -112,13 +111,13 @@ class PackagerTest extends AbstractPackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 
-		containers.add(new Container("0", 5, 5, 1, 0));
-		containers.add(new Container("1", 5, 5, 1, 0));
-		containers.add(new Container("2", 5, 5, 1, 0));
-		containers.add(new Container("3", 5, 5, 1, 0));
-		containers.add(new Container("4", 5, 5, 1, 0));
-		containers.add(new Container("5", 5, 5, 1, 0));
-		containers.add(new Container("6", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("0", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("1", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("2", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("3", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("4", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("5", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("6", 5, 5, 1, 0));
 
 		long deadline = System.currentTimeMillis() + 100000;
 
@@ -128,7 +127,7 @@ class PackagerTest extends AbstractPackagerTest {
 
 		Adapter mock = mock(Adapter.class);
 		when(mock.accepted(completeResult))
-				.thenReturn(new Container("final", 5, 5, 1, 0));
+				.thenReturn(new ValidatingContainer("final", 5, 5, 1, 0));
 
 		// in the middle first
 		when(mock.attempt(eq(3))).thenReturn(completeResult);
@@ -160,13 +159,13 @@ class PackagerTest extends AbstractPackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 
-		containers.add(new Container("0", 5, 5, 1, 0));
-		containers.add(new Container("1", 5, 5, 1, 0));
-		containers.add(new Container("2", 5, 5, 1, 0));
-		containers.add(new Container("3", 5, 5, 1, 0));
-		containers.add(new Container("4", 5, 5, 1, 0));
-		containers.add(new Container("5", 5, 5, 1, 0));
-		containers.add(new Container("6", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("0", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("1", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("2", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("3", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("4", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("5", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("6", 5, 5, 1, 0));
 
 		List<BoxItem> products = new ArrayList<>();
 
@@ -193,7 +192,7 @@ class PackagerTest extends AbstractPackagerTest {
 		when(mock.attempt(eq(0))).thenReturn(best);
 
 		when(mock.accepted(any(PackResult.class)))
-				.thenReturn(new Container("final", 5, 5, 1, 0));
+				.thenReturn(new ValidatingContainer("final", 5, 5, 1, 0));
 
 		when(mock.hasMore(any(PackResult.class))).thenReturn(false, false, false);
 
@@ -218,13 +217,13 @@ class PackagerTest extends AbstractPackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 
-		containers.add(new Container("0", 5, 5, 1, 0));
-		containers.add(new Container("1", 5, 5, 1, 0));
-		containers.add(new Container("2", 5, 5, 1, 0));
-		containers.add(new Container("3", 5, 5, 1, 0));
-		containers.add(new Container("4", 5, 5, 1, 0));
-		containers.add(new Container("5", 5, 5, 1, 0));
-		containers.add(new Container("6", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("0", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("1", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("2", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("3", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("4", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("5", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("6", 5, 5, 1, 0));
 
 		List<BoxItem> products = new ArrayList<>();
 
@@ -261,7 +260,7 @@ class PackagerTest extends AbstractPackagerTest {
 				.thenReturn(incompleteResult).thenThrow(RuntimeException.class);
 
 		when(mock.accepted(any(PackResult.class)))
-				.thenReturn(new Container("result", 5, 5, 1, 0));
+				.thenReturn(new ValidatingContainer("result", 5, 5, 1, 0));
 
 		when(mock.hasMore(any(PackResult.class))).thenReturn(true, true, false, true, true, true, true);
 
@@ -284,7 +283,7 @@ class PackagerTest extends AbstractPackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 
-		containers.add(new Container("0", 5, 5, 1, 0));
+		containers.add(new ValidatingContainer("0", 5, 5, 1, 0));
 
 		List<BoxItem> products = new ArrayList<>();
 
@@ -308,7 +307,7 @@ class PackagerTest extends AbstractPackagerTest {
 	// interrupting the last one to complete
 	@Test
 	void packagerCanBeInterrupted() throws InterruptedException {
-		final Container container = new Container("", 1000, 1500, 3200, 0);
+		final Container container = new ValidatingContainer("", 1000, 1500, 3200, 0);
 		final List<Container> singleContainer = Collections.singletonList(container);
 		final BruteForcePackager bruteForcePackager = new BruteForcePackager(singleContainer);
 		final LargestAreaFitFirstPackager largestAreaFitFirstPackager = new LargestAreaFitFirstPackager(container.rotations());
@@ -317,11 +316,11 @@ class PackagerTest extends AbstractPackagerTest {
 		final AtomicBoolean bruteForceFinished = new AtomicBoolean(false);
 
 		new Thread(() -> {
-			final Container pack = bruteForcePackager.pack(listOf28Products(), System.currentTimeMillis() + 1000, laffFinished);
+			final Container pack = bruteForcePackager.pack(listOf28Products(), System.currentTimeMillis() + 1000, () -> laffFinished.get());
 			bruteForceFinished.set(pack != null);
 		}).start();
 		new Thread(() -> {
-			final Container pack = largestAreaFitFirstPackager.pack(listOf28Products(), System.currentTimeMillis() + 1000, bruteForceFinished);
+			final Container pack = largestAreaFitFirstPackager.pack(listOf28Products(), System.currentTimeMillis() + 1000, () -> bruteForceFinished.get());
 			laffFinished.set(pack != null);
 		}).start();
 		Thread.sleep(100);
@@ -331,7 +330,7 @@ class PackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void packagerCanBeInterruptedWithAFunction() throws InterruptedException {
-		final Container container = new Container("", 1000, 1500, 3200, 0);
+		final Container container = new ValidatingContainer("", 1000, 1500, 3200, 0);
 		final List<Container> singleContainer = Collections.singletonList(container);
 		final BruteForcePackager bruteForcePackager = new BruteForcePackager(singleContainer);
 		final LargestAreaFitFirstPackager largestAreaFitFirstPackager = new LargestAreaFitFirstPackager(container.rotations());

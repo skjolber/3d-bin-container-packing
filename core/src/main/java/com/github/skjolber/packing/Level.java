@@ -47,7 +47,7 @@ public class Level extends ArrayList<Placement>{
 					}
 				} else {
 					if(get(i).intersects(get(j))) {
-						throw new IllegalArgumentException(i + " vs " + j);
+						throw new IllegalArgumentException(i + " vs " + j + ": " + get(i) + " vs " + get(j));
 					}
 				}
 			}

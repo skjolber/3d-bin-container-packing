@@ -53,4 +53,34 @@ class Visualizer {
 		return b.toString();
 	}
 	
+	public static String visualizeSpace(Container container, int size, double horizontalScaling) {
+		StringBuilder b = new StringBuilder();
+		
+		for(Level level : container.getLevels()) {
+			double factor = (double)size / container.getWidth();
+					
+			IRender render = new Render();
+			IContextBuilder builder = render.newBuilder();
+			
+			int w = (int)(size * horizontalScaling);
+			int d = ((size * container.getDepth()) / container.getWidth());
+			
+			builder.width(w).height(d);
+
+			for(Placement placement : level) {
+				Space space = placement.getSpace();
+
+				builder.element(new Rectangle((int)Math.round(space.getX() * factor * horizontalScaling), (int)Math.round(space.getY() * factor), (int)(space.getWidth()  * factor * horizontalScaling), (int)(space.getDepth()  * factor)));
+			}
+
+			builder.element(new Rectangle(0, 0, (int)(container.getWidth()  * factor * horizontalScaling), (int)(container.getDepth()  * factor)));
+
+			ICanvas canvas = render.render(builder.build());
+			
+			b.append(canvas.getText());
+			b.append("\n");
+		}
+		return b.toString();
+	}	
+	
 }

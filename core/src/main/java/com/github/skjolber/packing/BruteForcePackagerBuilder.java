@@ -3,14 +3,23 @@ package com.github.skjolber.packing;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+/**
+ * Brute force packager builder. 
+ * 
+ * Performance note: Setting the number of checkpoints per deadline to any value except 1 and Integer.MAX_VALUE
+ * check seems to slow down parallel packaging (instead of speeding it up).
+ * 
+ */
+
 public class BruteForcePackagerBuilder {
 
-	private int threads = 1;
+	protected int threads = 1;
 	
-	private List<Container> containers;
-	private boolean rotate3D;
-	private boolean binarySearch;
-	private ExecutorService executorService;
+	protected List<Container> containers;
+	protected boolean rotate3D = true;
+	protected boolean binarySearch = true;
+	protected ExecutorService executorService;
+	protected int checkpointsPerDeadlineCheck = 1;
 
 	public BruteForcePackagerBuilder withThreads(int threads) {
 		if(threads <= 1) {
@@ -50,18 +59,23 @@ public class BruteForcePackagerBuilder {
 		return this;
 	}
 
+	public BruteForcePackagerBuilder withCheckpointsPerDeadlineCheck(int n) {
+		this.checkpointsPerDeadlineCheck = n;
+		return this;
+	}
+
 	public BruteForcePackager build() {
 		if(containers == null) {
 			throw new IllegalStateException("Expected containers");
 		}
 
 		if(threads == 1) {
-			return new BruteForcePackager(containers, rotate3D, binarySearch);
+			return new BruteForcePackager(containers, rotate3D, binarySearch, checkpointsPerDeadlineCheck);
 		}
 		if(executorService != null) {
-			return new ParallelBruteForcePackager(containers, executorService, threads, rotate3D, binarySearch);
+			return new ParallelBruteForcePackager(containers, executorService, threads, rotate3D, binarySearch, checkpointsPerDeadlineCheck);
 		}
-		return new ParallelBruteForcePackager(containers, threads, rotate3D, binarySearch);
+		return new ParallelBruteForcePackager(containers, threads, rotate3D, binarySearch, checkpointsPerDeadlineCheck);
 	}
 	
 }

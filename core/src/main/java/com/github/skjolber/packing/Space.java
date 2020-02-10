@@ -7,7 +7,7 @@ public class Space extends Dimension {
 	}
 	
 	protected boolean intersects(int start, int end, int value, int distance) {
-		return between(start, value, end) || between(start, value + distance, end);
+		return between(start, value, end) || between(start, value + distance, end) || (value < start && end < value + distance);
 	}
 
 	private Space parent;
@@ -191,7 +191,7 @@ public class Space extends Dimension {
 	public boolean intersectsX(Placement placement) {
 		int startX = placement.getSpace().getX();
 		int endX = startX + placement.getBox().getWidth() - 1;
-		return intersectsY(startX, endX);
+		return intersectsX(startX, endX);
 	}
 
 	public boolean intersectsZ(Placement placement) {
@@ -234,6 +234,10 @@ public class Space extends Dimension {
 			
 			calculateVolume();
 		}
+	}
+
+	public Space getParent() {
+		return parent;
 	}	
 
 }

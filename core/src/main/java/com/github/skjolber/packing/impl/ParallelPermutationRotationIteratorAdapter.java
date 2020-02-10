@@ -9,6 +9,13 @@ public class ParallelPermutationRotationIteratorAdapter implements PermutationRo
 	private final ParallelPermutationRotationIterator delegate;
 	private final int index;
 
+	// try to avoid false sharing by using padding
+	public long t1, t2, t3, t4, t5, t6, t7 = -1L;
+	
+	public long preventOptmisation(){
+		return t1 + t2 + t3 + t4 + t5 + t6 + t7;
+	}
+	
 	public ParallelPermutationRotationIteratorAdapter(ParallelPermutationRotationIterator delegate, int index) {
 		super();
 		this.delegate = delegate;

@@ -3,10 +3,10 @@ package com.github.skjolber.packing;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.impl.*;
+import com.github.skjolber.packing.impl.deadline.BooleanSupplierBuilder;
 
 
 /**
@@ -34,8 +34,8 @@ public class BruteForcePackager extends Packager {
 	 *                     container that can hold the boxes, given time, it also tries to find a better match.
 	 */
 
-	public BruteForcePackager(List<Container> containers, boolean rotate3D, boolean binarySearch) {
-		super(containers, rotate3D, binarySearch);
+	public BruteForcePackager(List<Container> containers, boolean rotate3D, boolean binarySearch, int checkpointsPerDeadlineCheck) {
+		super(containers, rotate3D, binarySearch, checkpointsPerDeadlineCheck);
 	}
 
 	/**
@@ -45,15 +45,15 @@ public class BruteForcePackager extends Packager {
 	 */
 
 	public BruteForcePackager(List<Container> containers) {
-		this(containers, true, true);
+		this(containers, true, true, 1);
 	}
 
-	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline) {
-		return pack(placements, container, rotator, deadLinePredicate(deadline));
+	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline, int checkpointsPerDeadlineCheck) {
+		return pack(placements, container, rotator, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
-	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline, AtomicBoolean interrupt) {
-		return pack(placements, container, rotator, () -> deadlineReached(deadline) || interrupt.get());
+	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, long deadline, int checkpointsPerDeadlineCheck, BooleanSupplier interrupt) {
+		return pack(placements, container, rotator, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, BooleanSupplier interrupt) {
@@ -68,7 +68,6 @@ public class BruteForcePackager extends Packager {
 				return null;
 			}
 			// iterator over all rotations
-
 			do {
 				int count = pack(placements, holder, rotator, holder, 0, interrupt);
 				if (count == Integer.MIN_VALUE) {
@@ -96,12 +95,12 @@ public class BruteForcePackager extends Packager {
 		return result;
 	}
 
-	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, Container holder, int index) {
-		return pack(placements, container, rotator, holder, index, deadLinePredicate(deadline));
+	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, int checkpointsPerDeadlineCheck, Container holder, int index) {
+		return pack(placements, container, rotator, holder, index, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
-	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, Container holder, int index, AtomicBoolean interrupt) {
-		return pack(placements, container, rotator, holder, index, () -> deadlineReached(deadline) || interrupt.get());
+	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, long deadline, int checkpointsPerDeadlineCheck, Container holder, int index, BooleanSupplier interrupt) {
+		return pack(placements, container, rotator, holder, index, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
 	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, Container holder, int index, BooleanSupplier interrupt) {
@@ -187,25 +186,29 @@ public class BruteForcePackager extends Packager {
 			return -1;
 		}
 
-		Box nextBox = rotator.get(index);
-		if (nextBox.getWeight() > holder.getFreeWeight()) {
+		Box primaryBox = rotator.get(index);
+		if (primaryBox.getWeight() > holder.getFreeWeight()) {
 			return index;
 		}
 
-		Placement nextPlacement = placements.get(index);
-		nextPlacement.setBox(nextBox);
+		Placement primaryPlacement = placements.get(index);
+		primaryPlacement.setBox(primaryBox);
 
-		boolean room = isFreeSpace(usedSpace.getSpace(), usedSpace.getBox(), nextPlacement);
+		Space parentSpace = usedSpace.getSpace();
+
+		boolean room = isFreeSpace(parentSpace, usedSpace.getBox(), primaryPlacement);
 		if (room) {
+			int fromIndex = index;
+			
 			index++;
 			// note to self: pack in the primary space first, if not then the returned index
 			// might be incorrect (if the weight constraint is reached while packaging in the remainder).
 			//
-			int fromIndex = index;
 			// the correct space dimensions is copied into the next placement
 			// fit the next box in the selected free space
 			// fit in primary
-			index = fit2D(rotator, index, placements, holder, nextPlacement, interrupt);
+			index = fit2D(rotator, index, placements, holder, primaryPlacement, interrupt);
+			
 			if(index == -1) {
 				return -1;
 			} else if(index >= rotator.length()) {
@@ -215,66 +218,141 @@ public class BruteForcePackager extends Packager {
 			// attempt to fit in the remaining (usually smaller) space
 			Placement remainderPlacement = placements.get(index);
 			
-			Box box = rotator.get(index);
+			Box remainderBox = rotator.get(index);
 
-			Space remainder = nextPlacement.getSpace().getRemainder();
-			if (box.getWeight() <= holder.getFreeWeight()) {
+			Space remainder = primaryPlacement.getSpace().getRemainder();
+			if (remainderBox.getWeight() <= holder.getFreeWeight()) {
 				
 				Space nextSpace = null;
-				if (box.fitsInside3D(remainder)) {
+				if (remainderBox.fitsInside3D(remainder)) {
 					nextSpace = remainder;
 				} else {
 					// is it possible to expand the remainder / secondary
 					// with space not used in the primary space?
-					Space space = usedSpace.getSpace();
-					if(remainder.getX() == space.getX()) {
-						remainder.setWidth(space.getWidth());
-					} else {
-						remainder.setDepth(space.getDepth());
+					//
+					// ........................   ........................          ..................
+					// .                      .   .                      .          .                .
+					// .          C           .   .         C            .          .                .
+					// .                      .   .                      .          .                .
+					// .......                .   ........................          .                .
+					// .     .       D        .                                     .        D       .
+					// .     .                .                                     .                .
+					// .     .                .                                     .                .
+					// .     .                .                                     .                .
+					// ........................                                     ..................
+					//
+					// With remainders shown as 'r' and the expansion area as double quoted:
+					//
+					//                           .........................  ..........................
+					//                           .      .                .  .       .                .
+					//                           .  C'  .      C''       .  .  r1   .     D''        .
+					//                           .      .                .  .       .                .
+					//                           .........................  ..........................
+					//      depth                       .                .          .                .
+					//       ^                          .                .          .                .
+					//       |                          .       r2       .          .      D'        .
+					//       |                          .                .          .                .
+					//        ----> width               ..................          ..................
+					//
+					// So if the remainder is expanded with the double quoted area,  
+					// the maximum available space for the remainder is the 'sibling' free space
+					// which is known to be non-empty since there is a remainder.
+					// 
+					// Cutting out the area actually in use will be done in a bounding box way,
+					// separately for width and depth.
+					// 
+					// Cutting stop conditions:
+					// 
+					// C:
+					//  - depth cuts: depth equals to remainder depth
+					//  - width cuts: width equal to zero
+					//
+					// D:
+					//  - depth cuts: depth equals to zero
+					//  - width cuts: width equal to remainder width
+					//
+					
+					Space expandedRemainder = new Space(remainder); 
+					if(expandedRemainder.getX() == parentSpace.getX()) { // r1
+						
+						expandedRemainder.setWidth(parentSpace.getWidth()); // expand r1 with D''
+					} else { // r2
+						expandedRemainder.setDepth(parentSpace.getDepth()); // expand r2 with C''
 					}
-					if (box.fitsInside3D(remainder)) {
+					if (remainderBox.fitsInside3D(expandedRemainder)) {
 						// cut out the area which is already in use, leaving two edges
-						Space depthRemainder = remainder; //
-						Space widthRemainder = new Space(remainder);
+						Space depthRemainder = expandedRemainder; //
+						Space widthRemainder = new Space(expandedRemainder);
 	
+						// subtract spaced used in primary (fromIndex to index(exclusive))
+						// 
+						// Width:
+						//
+						// ......... ..     ...........
+						// .         .      .////|    .
+						// .         .      .////|    .
+						// .         .  ->  .////|    .
+						// .         .      .////|    .
+						// .         .      .////|    .
+						// ...........      ...........
+						
 						for(int i = fromIndex; i < index; i++) {
 							Placement placement = placements.get(i);
-							
 							if(widthRemainder.intersectsY(placement) && widthRemainder.intersectsX(placement)) {
 								// there is overlap, subtract area
 								widthRemainder.subtractX(placement);
-								
-								if (!box.fitsInside3D(widthRemainder)) {
+
+								if (!remainderBox.fitsInside3D(widthRemainder)) {
 									break;
 								}
 							}
 						}
-	
+
+						// 
+						// Depth:
+						//
+						// ...........      ...........
+						// .         .      ./////////.
+						// .         .      ./////////.
+						// .         .  ->  .---------.
+						// .         .      .         .
+						// .         .      .         .
+						// ...........      ...........
+
 						for(int i = fromIndex; i < index; i++) {
 							Placement placement = placements.get(i);
-							
 							if(depthRemainder.intersectsY(placement) && depthRemainder.intersectsX(placement)) {
 								// there is overlap, subtract area
 								depthRemainder.subtractY(placement);
 								
-								if (!box.fitsInside3D(depthRemainder)) {
+								if (!remainderBox.fitsInside3D(depthRemainder)) {
 									break;
 								}
 							}
 						}
 	
 						// see if the box fits now
-						if(box.fitsInside3D(widthRemainder)) {
-							nextSpace = widthRemainder;
-						}
-						
-						if(box.fitsInside3D(depthRemainder) && (nextSpace == null || depthRemainder.getVolume() > nextSpace.getVolume())) {
+						boolean fitsInWidthRemainder = remainderBox.fitsInside3D(widthRemainder);
+						boolean fitsInDepthRemainder = remainderBox.fitsInside3D(depthRemainder);
+							
+						if(fitsInDepthRemainder && (!fitsInWidthRemainder || depthRemainder.getVolume() > widthRemainder.getVolume())) {
 							nextSpace = depthRemainder;
+							
+							// subtract primary space size
+							Space primary = primaryPlacement.getSpace();
+							primary.setWidth(primary.getWidth() - (depthRemainder.getWidth() - remainder.getWidth()));
+						} else if(fitsInWidthRemainder) {
+							nextSpace = widthRemainder;
+							
+							// subtract primary space size
+							Space primary = primaryPlacement.getSpace();
+							primary.setDepth(primary.getDepth() - (widthRemainder.getDepth() - remainder.getDepth()));
 						}
+								
 					}
 				}					
 				if(nextSpace != null) {
-					remainderPlacement.setBox(box);
+					remainderPlacement.setBox(remainderBox);
 
 					index++;
 
@@ -313,14 +391,13 @@ public class BruteForcePackager extends Packager {
 				}
 				
 				Space abovePlacedBox = new Space(
-						placedBox.getWidth(), 
-						placedBox.getDepth(), 
+						placedSpace.getWidth(), 
+						placedSpace.getDepth(), 
 						height,
-						levelSpace.getX(),
-						levelSpace.getY(),
+						placedSpace.getX(),
+						placedSpace.getY(),
 						placedSpace.getZ() + placedBox.getHeight()
 						);
-				
 				if (nextBox.fitsInside3D(abovePlacedBox)) {
 					Placement nextPlacement = placements.get(index);
 					nextPlacement.setBox(nextBox);

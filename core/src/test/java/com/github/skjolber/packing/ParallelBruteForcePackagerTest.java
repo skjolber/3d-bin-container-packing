@@ -15,7 +15,6 @@ import com.github.skjolber.packing.Box;
 import com.github.skjolber.packing.BoxItem;
 import com.github.skjolber.packing.BruteForcePackager;
 import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.ParallelBruteForcePackager;
 
 public class ParallelBruteForcePackagerTest {
 
@@ -25,8 +24,8 @@ public class ParallelBruteForcePackagerTest {
 		final ExecutorService pool = Executors.newFixedThreadPool(1);
 		
 		List<Container> containers = new ArrayList<>();
-		containers.add(new Container("container1", 10, 10, 1, 0));
-		BruteForcePackager packager = new ParallelBruteForcePackager(containers, pool, 1, true ,true);
+		containers.add(new ValidatingContainer("container1", 10, 10, 1, 0));
+		BruteForcePackager packager = new ParallelBruteForcePackager(containers, pool, 1, true ,true, 1);
 
 		List<BoxItem> products = new ArrayList<>();
 
@@ -43,8 +42,8 @@ public class ParallelBruteForcePackagerTest {
 		final ExecutorService pool = Executors.newFixedThreadPool(1);
 
 		List<Container> containers = new ArrayList<>();
-		containers.add(new Container("container1", 10, 10, 1, 0));
-		BruteForcePackager packager = new ParallelBruteForcePackager(containers, pool, 1, true, true);
+		containers.add(new ValidatingContainer("container1", 10, 10, 1, 0));
+		BruteForcePackager packager = new ParallelBruteForcePackager(containers, pool, 1, true, true, 1);
 
 		List<BoxItem> products = new ArrayList<>();
 
@@ -62,8 +61,8 @@ public class ParallelBruteForcePackagerTest {
 		final ExecutorService pool = Executors.newFixedThreadPool(4);
 
 		List<Container> containers = new ArrayList<>();
-		containers.add(new Container("container1", 10, 10, 1, 0));
-		BruteForcePackager packager = new ParallelBruteForcePackager(containers, pool, 4, true, true);
+		containers.add(new ValidatingContainer("container1", 10, 10, 1, 0));
+		BruteForcePackager packager = new ParallelBruteForcePackager(containers, pool, 4, true, true, 1);
 
 		List<BoxItem> products = new ArrayList<>();
 
@@ -100,8 +99,8 @@ public class ParallelBruteForcePackagerTest {
 		int n = 1;
 		while(deadline > System.currentTimeMillis()) {
 			List<Container> containers = new ArrayList<>();
-			containers.add(new Container(5 * n, 10, 10, 0));
-			BruteForcePackager bruteForcePackager = new ParallelBruteForcePackager(containers, pool, count, true, true);
+			containers.add(new ValidatingContainer(5 * n, 10, 10, 0));
+			BruteForcePackager bruteForcePackager = new ParallelBruteForcePackager(containers, pool, count, true, true, 1);
 
 			List<BoxItem> products1 = new ArrayList<>();
 

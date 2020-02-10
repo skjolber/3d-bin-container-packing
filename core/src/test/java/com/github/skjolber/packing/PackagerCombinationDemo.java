@@ -67,7 +67,7 @@ public class PackagerCombinationDemo {
 			if(index > 0) {
 				long deadline = System.currentTimeMillis() + 5000;
 
-				BruteForcePackager heavy = new BruteForcePackager(containers.subList(0, index), true, true);
+				BruteForcePackager heavy = new BruteForcePackager(containers.subList(0, index), true, true, 1);
 
 				Container heavyResult = heavy.pack(products, deadline);
 				// if not to complex, then

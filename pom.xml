@@ -21,7 +21,8 @@
 		<google-truth.version>1.0.1</google-truth.version>
 		<junit.version>5.6.0</junit.version>
 		<jmh.version>1.23</jmh.version>
-
+		<commons-io.version>2.6</commons-io.version>
+		
 		<!-- plugins -->
 		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
 		<jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
@@ -80,6 +81,12 @@
 				<artifactId>core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+			    <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			    <artifactId>test</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
 			<!-- test -->
 			<dependency>
 				<groupId>org.junit.jupiter</groupId>
@@ -139,9 +146,15 @@
 				<artifactId>jmh-generator-annprocess</artifactId>
 				<version>${jmh.version}</version>
 			</dependency>
+			<dependency>
+			    <groupId>commons-io</groupId>
+			    <artifactId>commons-io</artifactId>
+			    <version>${commons-io.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<modules>
+		<module>test</module>
 		<module>core</module>
 	</modules>
 	<build>
@@ -258,8 +271,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>

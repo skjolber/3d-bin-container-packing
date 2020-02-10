@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.impl.*;
+import com.github.skjolber.packing.impl.deadline.BooleanSupplierBuilder;
 
 
 /**
@@ -17,10 +17,13 @@ import com.github.skjolber.packing.impl.*;
  */
 
 public abstract class Packager {
-	private final Container[] containers;
-
-	final boolean rotate3D; // if false, then 2d
-	private final boolean binarySearch;
+	
+	protected final Container[] containers;
+	protected final boolean rotate3D; // if false, then 2d
+	protected final boolean binarySearch;
+	
+	/** limit the number of calls to get System.currentTimeMillis() */
+	protected final int checkpointsPerDeadlineCheck;
 
 	/**
 	 * Constructor
@@ -29,7 +32,7 @@ public abstract class Packager {
 	 */
 
 	public Packager(List<Container> containers) {
-		this(containers, true, true);
+		this(containers, true, true, 1);
 	}
 
 	/**
@@ -41,10 +44,11 @@ public abstract class Packager {
 	 *                     match, it searches the preceding boxes as well, until the deadline is passed.
 	 */
 
-	public Packager(List<Container> containers, boolean rotate3D, boolean binarySearch) {
+	public Packager(List<Container> containers, boolean rotate3D, boolean binarySearch, int checkpointsPerDeadlineCheck) {
 		this.containers = containers.toArray(new Container[0]);
 		this.rotate3D = rotate3D;
 		this.binarySearch = binarySearch;
+		this.checkpointsPerDeadlineCheck = checkpointsPerDeadlineCheck;
 
 		long maxVolume = Long.MIN_VALUE;
 		long maxWeight = Long.MIN_VALUE;
@@ -83,7 +87,7 @@ public abstract class Packager {
 	 */
 
 	public Container pack(List<BoxItem> boxes, long deadline) {
-		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadLinePredicate(deadline));
+		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
 	public Container pack(List<BoxItem> boxes, BooleanSupplier interrupt) {
@@ -97,8 +101,9 @@ public abstract class Packager {
 	 * @param deadline  the system time in millis at which the search should be aborted
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
 	 * @return index of container if match, -1 if not
+	 * 
 	 */
-	public Container pack(List<BoxItem> boxes, long deadline, AtomicBoolean interrupt) {
+	public Container pack(List<BoxItem> boxes, long deadline, BooleanSupplier interrupt) {
 		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline, interrupt);
 	}
 
@@ -111,7 +116,7 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline) {
-		return pack(boxes, containers, deadLinePredicate(deadline));
+		return pack(boxes, containers, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
 	/**
@@ -123,8 +128,8 @@ public abstract class Packager {
 	 * @param interrupt  When true, the computation is interrupted as soon as possible.
 	 * @return index of container if match, -1 if not
 	 */
-	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline, AtomicBoolean interrupt) {
-		return pack(boxes, containers, () -> deadlineReached(deadline) || interrupt.get());
+	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline, BooleanSupplier interrupt) {
+		return pack(boxes, containers, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
 	public Container pack(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
@@ -225,16 +230,10 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline) {
-		return packList(boxes, limit, deadLinePredicate(deadline));
+		return packList(boxes, limit, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
-	static BooleanSupplier deadLinePredicate(final long deadline) {
-		return () -> deadlineReached(deadline);
-	}
 
-	static boolean deadlineReached(final long deadline) {
-		return System.currentTimeMillis() > deadline;
-	}
 
 	/**
 	 * Return a list of containers which holds all the boxes in the argument
@@ -245,8 +244,8 @@ public abstract class Packager {
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
 	 * @return index of container if match, -1 if not
 	 */
-	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline, AtomicBoolean interrupt) {
-		return packList(boxes, limit, () -> deadlineReached(deadline) || interrupt.get());
+	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline, BooleanSupplier interrupt) {
+		return packList(boxes, limit, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
 	/**

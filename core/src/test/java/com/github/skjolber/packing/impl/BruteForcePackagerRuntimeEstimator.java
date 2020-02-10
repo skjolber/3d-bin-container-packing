@@ -29,7 +29,7 @@ public class BruteForcePackagerRuntimeEstimator {
 	private static class BruteForcePackagerEstimator extends BruteForcePackager {
 
 		BruteForcePackagerEstimator(List<Container> containers, boolean rotate3d, boolean binarySearch) {
-			super(containers, rotate3d, binarySearch);
+			super(containers, rotate3d, binarySearch, 1);
 		}
 
 		@Override
