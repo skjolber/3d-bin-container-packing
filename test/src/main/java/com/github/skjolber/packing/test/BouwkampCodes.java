@@ -4,8 +4,8 @@ import java.util.List;
 
 public class BouwkampCodes {
 	
-	private List<BouwkampCode> codes;
-	private String source;
+	protected List<BouwkampCode> codes;
+	protected String source;
 	
 	public BouwkampCodes(List<BouwkampCode> codes, String source) {
 		super();

@@ -5,9 +5,9 @@ import java.util.List;
 
 public class BouwkampCode {
 	
-	private int width;
-	private int depth;
-	private String name;
+	protected int width;
+	protected int depth;
+	protected String name;
 	
 	private List<Integer> square = new ArrayList<>();
 

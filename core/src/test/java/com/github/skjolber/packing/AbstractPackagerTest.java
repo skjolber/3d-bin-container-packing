@@ -12,13 +12,13 @@ import static org.junit.Assert.assertTrue;
 abstract class AbstractPackagerTest {
 
 
-	static void validate(Container pack) {
+	public static void validate(Container pack) {
 		for (Level level : pack.getLevels()) {
 			level.validate();
 		}
 	}
 
-	static void validate(List<Container> pack) {
+	public static void validate(List<Container> pack) {
 		for (Container container : pack) {
 			for (Level level : container.getLevels()) {
 				level.validate();
@@ -26,13 +26,13 @@ abstract class AbstractPackagerTest {
 		}
 	}
 
-	static void print(Container fits) {
+	public static void print(Container fits) {
 		System.out.println();
 		System.out.println(Visualizer.visualize(fits, 90, 2));
 		System.out.println();
 	}
 	
-	static void printSpace(Container fits) {
+	public static void printSpace(Container fits) {
 		System.out.println();
 		System.out.println(Visualizer.visualizeSpace(fits, 90, 2));
 		System.out.println();

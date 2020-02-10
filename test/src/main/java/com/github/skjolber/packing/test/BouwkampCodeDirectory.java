@@ -27,7 +27,7 @@ public class BouwkampCodeDirectory {
 			d.simplePerfectSquaredRectangles.add(parser.parse("/simplePerfectSquaredRectangles/o12spsr.bkp"));
 			d.simplePerfectSquaredRectangles.add(parser.parse("/simplePerfectSquaredRectangles/o13spsr.bkp"));
 		} catch(Exception e) {
-			throw new RuntimeException(e);
+			throw new BouwkampCodeException(e);
 		}
 		directory = d;
 	}
@@ -36,9 +36,9 @@ public class BouwkampCodeDirectory {
 		return directory;
 	}
 	
-	private List<BouwkampCodes> simpleImperfectSquaredRectangles = new ArrayList<>();
-	private List<BouwkampCodes> simpleImperfectSquaredSquares = new ArrayList<>();
-	private List<BouwkampCodes> simplePerfectSquaredRectangles = new ArrayList<>();
+	protected List<BouwkampCodes> simpleImperfectSquaredRectangles = new ArrayList<>();
+	protected List<BouwkampCodes> simpleImperfectSquaredSquares = new ArrayList<>();
+	protected List<BouwkampCodes> simplePerfectSquaredRectangles = new ArrayList<>();
 	
 	private BouwkampCodeDirectory() {
 	}

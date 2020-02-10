@@ -43,7 +43,7 @@ public class BouwkampCodeParser {
 		
 		Matcher matcher = pattern.matcher(line);
 		if(!matcher.find()) {
-			throw new IllegalArgumentException();
+			throw new BouwkampCodeException();
 		}
 
 		bkp.setWidth(Integer.parseInt(matcher.group("width")));

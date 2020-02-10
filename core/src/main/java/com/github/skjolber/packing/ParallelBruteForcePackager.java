@@ -157,7 +157,7 @@ public class ParallelBruteForcePackager extends BruteForcePackager {
 						// ignore
 						return null;
 				    } catch (Exception e) {
-				    	throw new RuntimeException(e);
+				    	throw new PackagerException(e);
 				    }
 				}
 				

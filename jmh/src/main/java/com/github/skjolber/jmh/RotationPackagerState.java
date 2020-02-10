@@ -31,11 +31,10 @@ public class RotationPackagerState {
 	private BruteForcePackager bruteForcePackagerNth;
 	
 	private List<BoxItem> identialProducts;
-	private List<Container> containers;
 	
 	@Setup(Level.Trial)
 	public void init() {
-		containers = new ArrayList<>();
+		List<Container> containers = new ArrayList<>();
 		containers.add(new Container(5 * n, 10, 10, 0));
 		
 		parallelBruteForcePackager = new ParallelBruteForcePackager(containers, pool, count, true, true, 1);
