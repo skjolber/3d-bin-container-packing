@@ -10,6 +10,11 @@
 
 	<properties>
 		<module-name>com.github.skjolber.packing.test</module-name>
+		<!-- 
+			this property prevents the Nexus Staging Maven Plugin to
+			deploy this module's artifacts to Maven Central' staging repo
+		 -->
+		<skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>		
 	</properties>
 
 	<dependencies>
@@ -96,7 +101,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
 				<configuration>
-				  <skip>true</skip>
+					<skip>true</skip>
 				</configuration>
 			</plugin>
 		</plugins>
