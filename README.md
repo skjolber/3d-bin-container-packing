@@ -26,7 +26,7 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
     <artifactId>core</artifactId>
-    <version>1.2.10</version>
+    <version>1.2.11</version>
 </dependency>
 ```
 
@@ -121,6 +121,8 @@ There is also a [parallel version](src/main/java/com/github/skjolberg/packing/Pa
 Using a brute-force algorithm might seem to hit a wall of complexity, but taking into account number of items 
 per order distribution for web-shops, a healthy part of the orders are within its grasp.
 
+Note that placing the boxes as the LAFF algorithm is a limitation; the current approach is 'split and drill down', a better approach would be to sort and keep tabs of corners (boxes). 
+
 # Get involved
 If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request. __DO NOT send me emails unless you're prepared to pay for my time.__
 
@@ -131,6 +133,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 
 
 # History
+ - 1.2.11: Add test artifact, improve use of deadline for better performance, some bugfixes.
  - 1.2.10: Tweak LAFF selecetion of 'best space' for equally sized boxes (issue #168).
  - 1.2.9: If the 'remainder' space cannot be used, attempt to expand it with [unused space](https://github.com/skjolber/3d-bin-container-packing/blob/b78f4b8ff62f4c3cd531a160d36c4dc1f23c8897/core/src/main/java/com/github/skjolber/packing/LargestAreaFitFirstPackager.java#L250).
  - 1.2.8: Java module for JDK 9+ (multi-release jar). That was painful.
