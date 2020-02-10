@@ -627,9 +627,6 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 
 		BouwkampCode bkpLine = directory.codesForCount(9, "33x32A");
 		
-		System.out.println(bkpLine);
-		long time = System.currentTimeMillis();
-		
 		List<Container> containers = new ArrayList<>();
 		containers.add(toContainer(bkpLine));
 		BruteForcePackager packager = new BruteForcePackager(containers);
@@ -654,9 +651,6 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 		for(BouwkampCodes c : codesForCount) {
 			
 			for(BouwkampCode bkpLine : c.getCodes()) {
-				System.out.println(bkpLine);
-				long time = System.currentTimeMillis();
-				
 				List<Container> containers = new ArrayList<>();
 				containers.add(toContainer(bkpLine));
 				BruteForcePackager packager = new BruteForcePackager(containers);
@@ -669,17 +663,8 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 				}
 		
 				Container fits = packager.pack(products);
-				
-				System.out.println((System.currentTimeMillis() - time) / 1000d + " seconds");
-
-				if(fits != null) {
-					System.out.println("Fits");
-					print(fits);
-				}
-				
+				assertNull(fits);
 			}
-			
-			
 		}
 	}
 }

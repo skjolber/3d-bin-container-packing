@@ -15,7 +15,6 @@ import com.github.skjolber.packing.Box;
 import com.github.skjolber.packing.BoxItem;
 import com.github.skjolber.packing.BruteForcePackager;
 import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.ParallelBruteForcePackager;
 
 public class ParallelBruteForcePackagerTest {
 

@@ -87,9 +87,6 @@ public class ParallelBruteForcePackager extends BruteForcePackager {
 			// clone nth interrupts so that everything is not slowed down by sharing a single counter
 			if(interrupt instanceof ClonableBooleanSupplier) {
 				ClonableBooleanSupplier c = (ClonableBooleanSupplier)interrupt;
-				if(c.preventOptmisation() == 0) {
-					throw new RuntimeException();
-				}
 				for(int i = 0; i < threads; i++) {
 					this.interrupts[i] = (BooleanSupplier) c.clone();
 				}
