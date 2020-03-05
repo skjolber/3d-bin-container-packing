@@ -6,37 +6,6 @@ import java.util.List;
 
 import com.github.skjolber.packing.*;
 
-/**
- *
- * Rotation and permutations built into the same class. Minimizes the number of
- * rotations. <br>
- * <br>
- * The maximum number of combinations is n! * 6^n, however after accounting for
- * bounds and sides with equal lengths the number can be a lot lower (and this
- * number can be obtained before starting the calculation). <br>
- * <br>
- * Note that permutations are for the boxes which actually fit within this container.
- * <br>
- * <br>
- * Assumes a do-while approach:
- *
- * <pre>{@code
- * do {
- * 	do {
- * 		for (int i = 0; i < n; i++) {
- * 			Box box = instance.get(i);
- * 			// .. your code here
- * 		}
- * 	} while (instance.nextRotation());
- * } while (instance.nextPermutation());
- *
- * }</pre>
- *
- * @see <a href=
- *      "https://www.nayuki.io/page/next-lexicographical-permutation-algorithm"
- *      target="_top">next-lexicographical-permutation-algorithm</a>
- */
-
 public class DefaultPermutationRotationIterator implements PermutationRotationIterator {
 
 	public static PermutationRotation[] toRotationMatrix(List<BoxItem> list, boolean rotate3D) {
@@ -194,7 +163,7 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 	}
 
 	@Override
-	public boolean nextRotation() {
+	public int nextRotation() {
 		// next rotation
 		for(int i = 0; i < rotations.length; i++) {
 			if(rotations[i] < matrix[permutations[i]].getBoxes().length - 1) {
@@ -203,11 +172,11 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 				// reset all previous counters
 				System.arraycopy(reset, 0, rotations, 0, i);
 
-				return true;
+				return i;
 			}
 		}
 
-		return false;
+		return -1;
 	}
 
 	@Override
@@ -300,7 +269,7 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 	}
 
 	@Override
-	public boolean nextPermutation() {
+	public int nextPermutation() {
 		resetRotations();
 
 	    // Find longest non-increasing suffix
@@ -311,8 +280,9 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 
 	    // Are we at the last permutation already?
 	    if (i <= 0) {
-	        return false;
+	        return -1;
 	    }
+	    
 
 	    // Let array[i - 1] be the pivot
 	    // Find rightmost element that exceeds the pivot
@@ -321,6 +291,8 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 	        j--;
 	    // Now the value array[j] will become the new pivot
 	    // Assertion: j >= i
+
+	    int head = i - 1;
 
 	    // Swap the pivot with j
 	    int temp = permutations[i - 1];
@@ -338,7 +310,7 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 	    }
 
 	    // Successfully computed the next permutation
-	    return true;
+	    return head;
 	}
 
 	@Override

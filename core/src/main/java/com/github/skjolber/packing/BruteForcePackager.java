@@ -89,8 +89,8 @@ public class BruteForcePackager extends Packager {
 						}
 					}
 				}
-			} while (rotator.nextRotation());
-		} while (rotator.nextPermutation());
+			} while (rotator.nextRotation() != -1);
+		} while (rotator.nextPermutation() != -1);
 
 		return result;
 	}

@@ -30,7 +30,7 @@ public class ParallelPermutationRotationIteratorAdapter implements PermutationRo
 		delegate.removePermutations(removed);
 	}
 
-	public boolean nextRotation() {
+	public int nextRotation() {
 		return delegate.nextRotation(index);
 	}
 
@@ -42,7 +42,7 @@ public class ParallelPermutationRotationIteratorAdapter implements PermutationRo
 		return delegate.get(index, this.index);
 	}
 
-	public boolean nextPermutation() {
+	public int nextPermutation() {
 		return delegate.nextPermutation(index);
 	}
 

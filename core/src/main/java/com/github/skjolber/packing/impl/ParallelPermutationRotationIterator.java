@@ -126,7 +126,7 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 		return count;
 	}
 	
-	public boolean nextRotation(int index) {
+	public int nextRotation(int index) {
 		// next rotation
 		for(int i = 0; i < workUnits[index].rotations.length - PADDING; i++) {
 			if(workUnits[index].rotations[PADDING + i] < matrix[workUnits[index].permutations[PADDING + i]].getBoxes().length - 1) {
@@ -135,25 +135,25 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 				// reset all previous counters
 				System.arraycopy(reset, 0, workUnits[index].rotations, PADDING, i);
 
-				return true;
+				return i;
 			}
 		}
 
-		return false;
+		return -1;
 	}
 	
 
-	public boolean nextPermutation(int index) {
+	public int nextPermutation(int index) {
 		workUnits[index].count--;
 		if(workUnits[index].count > 0) {
 			System.arraycopy(reset, 0, workUnits[index].rotations, PADDING, reset.length);
 
 			return nextPermutation(workUnits[index].permutations);
 		}
-		return false;
+		return -1;
 	}
 	
-	protected boolean nextPermutation(int[] permutations) {
+	protected int nextPermutation(int[] permutations) {
 
 	    // Find longest non-increasing suffix
 
@@ -164,7 +164,7 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 
 	    // Are we at the last permutation already?
 	    if (i <= PADDING) {
-	        return false;
+	        return -1;
 	    }
 
 	    // Let array[i - 1] be the pivot
@@ -174,6 +174,8 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 	        j--;
 	    // Now the value array[j] will become the new pivot
 	    // Assertion: j >= i
+
+	    int head = i - 1 - PADDING;
 
 	    // Swap the pivot with j
 	    int temp = permutations[i - 1];
@@ -191,7 +193,7 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 	    }
 
 	    // Successfully computed the next permutation
-	    return true;
+	    return head;
 	}
 	
 
