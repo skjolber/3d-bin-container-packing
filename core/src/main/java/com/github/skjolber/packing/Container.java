@@ -153,6 +153,9 @@ public class Container extends Box {
 	 */
 	
 	public Dimension getFreeLevelSpace() {
+		if(levels.isEmpty()) {
+			return this;
+		}
 		int remainder = height - getStackHeight();
 		if(remainder < 0) {
 			throw new IllegalArgumentException("Remaining free space is negative at " + remainder + " for " + this);
@@ -280,5 +283,36 @@ public class Container extends Box {
 
 	public Container rotate2D3D() {
 		return (Container)super.rotate2D3D();
+	}
+
+	public boolean isFreeSpaceInLevel(int i) {
+		// check if all volume is used
+		Level level = levels.get(i);
+		
+		long volume = (this.volume / getHeight()) * level.getHeight();
+		
+		for(Placement p : level) {
+			volume -= p.getBox().getVolume();
+		}
+		
+		return volume > 0;
+	}
+
+	public void clear(int keep) {
+		for (int i = 0; i < levels.size(); i++) {
+			Level level = levels.get(i);
+			
+			if(keep >= level.size()) {
+				keep -= level.size();
+			} else if(keep > 0) {
+				while(keep > 0) {
+					level.remove(level.size() - 1);
+					keep--;
+				}
+			} else {
+				levels.remove(i);
+				i--;
+			}
+		}
 	}
 }

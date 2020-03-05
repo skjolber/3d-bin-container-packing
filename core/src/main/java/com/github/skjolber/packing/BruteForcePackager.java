@@ -68,28 +68,56 @@ public class BruteForcePackager extends Packager {
 				return null;
 			}
 			// iterator over all rotations
+			int keep = 0;
 			do {
-				int count = pack(placements, holder, rotator, holder, 0, interrupt);
+				int count = pack(placements, holder.getFreeLevelSpace(), rotator, holder, keep, interrupt);
 				if (count == Integer.MIN_VALUE) {
 					return null; // timeout
-				} else {
-					holder.clear();
-
-					if (count == placements.size()) {
-						if (accept()) {
-							result.setCount(count);
-							result.setState(rotator.getState());
-							return result;
-						}
-					} else if (count > 0) {
-						// continue search, but see if this is the best fit so far
-						if (count > result.getCount()) {
-							result.setCount(count);
-							result.setState(rotator.getState());
-						}
+				} 
+				if (count == placements.size()) {
+					if (accept()) {
+						result.setCount(count);
+						result.setState(rotator.getState());
+						
+						return result;
+					}
+				} else if (count > 0) {
+					// continue search, but see if this is the best fit so far
+					if (count > result.getCount()) {
+						result.setCount(count);
+						result.setState(rotator.getState());
 					}
 				}
-			} while (rotator.nextRotation() != -1);
+
+				int diff = rotator.nextRotation();
+				if(diff == -1) {
+					holder.clear();
+
+					break;
+				}
+				if(count > 0 && diff > 0) {
+
+					List<Level> levels = holder.getLevels();
+					Level lastLevel = levels.get(levels.size() - 1);
+					if(!holder.isFreeSpaceInLevel(levels.size() - 1)) {
+						// keep everything; start a new level
+					} else {
+						// reduce to closest full level and retry it
+						count -= lastLevel.size();
+					}
+				
+					keep = Math.min(diff, count);
+					if(keep > 0) {
+						holder.clear(keep);
+					} else {
+						holder.clear();
+					}
+				} else {
+					keep = 0;
+					holder.clear();
+				}
+				
+			} while (true);
 		} while (rotator.nextPermutation() != -1);
 
 		return result;
@@ -103,11 +131,10 @@ public class BruteForcePackager extends Packager {
 		return pack(placements, container, rotator, holder, index, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
-	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, Container holder, int index, BooleanSupplier interrupt) {
+	public static int pack(List<Placement> placements, Dimension remainingSpace, PermutationRotationIterator rotator, Container holder, int index, BooleanSupplier interrupt) {
 		if (placements.isEmpty()) {
 			return -1;
 		}
-		Dimension remainingSpace = container;
 
 		while (index < rotator.length()) {
 			if (interrupt.getAsBoolean()) {
@@ -147,7 +174,7 @@ public class BruteForcePackager extends Packager {
 
 			index = fit2D(rotator, index + 1, placements, holder, placement, interrupt);
 
-			if(index == -1) {
+			if(index == -1) { // interrupted
 				return index;
 			}
 			
@@ -158,7 +185,7 @@ public class BruteForcePackager extends Packager {
 				// now that the level height is know, see whether we can use space between level roof and box roof
 				
 				index = fitWithin(level, levelSpace, rotator, index, placements, holder, interrupt);
-				if(index == -1) {
+				if(index == -1) {  // interrupted
 					return index;
 				}
 			}
@@ -209,7 +236,7 @@ public class BruteForcePackager extends Packager {
 			// fit in primary
 			index = fit2D(rotator, index, placements, holder, primaryPlacement, interrupt);
 			
-			if(index == -1) {
+			if(index == -1) { // interrupted
 				return -1;
 			} else if(index >= rotator.length()) {
 				return index;
@@ -361,7 +388,7 @@ public class BruteForcePackager extends Packager {
 					remainderPlacement.getSpace().getRemainder().setParent(nextSpace);
 
 					index = fit2D(rotator, index, placements, holder, remainderPlacement, interrupt);
-					if(index == -1) {
+					if(index == -1) { // interrupted
 						return -1;
 					}
 				}
