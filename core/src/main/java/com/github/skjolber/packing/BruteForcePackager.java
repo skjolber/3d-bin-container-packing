@@ -68,14 +68,14 @@ public class BruteForcePackager extends Packager {
 				return null;
 			}
 			// iterator over all rotations
-			int keep = 0;
+			int index = 0;
 			do {
-				int count = pack(placements, holder.getFreeLevelSpace(), rotator, holder, keep, interrupt);
+				int count = pack(placements, holder.getFreeLevelSpace(), rotator, holder, index, interrupt);
 				if (count == Integer.MIN_VALUE) {
 					return null; // timeout
 				} 
 				if (count == placements.size()) {
-					if (accept()) {
+					if (accept(count)) {
 						result.setCount(count);
 						result.setState(rotator.getState());
 						
@@ -96,25 +96,11 @@ public class BruteForcePackager extends Packager {
 
 					break;
 				}
-				if(count > 0 && diff > 0) {
-
-					List<Level> levels = holder.getLevels();
-					Level lastLevel = levels.get(levels.size() - 1);
-					if(!holder.isFreeSpaceInLevel(levels.size() - 1)) {
-						// keep everything; start a new level
-					} else {
-						// reduce to closest full level and retry it
-						count -= lastLevel.size();
-					}
 				
-					keep = Math.min(diff, count);
-					if(keep > 0) {
-						holder.clear(keep);
-					} else {
-						holder.clear();
-					}
+				if(count >= 2 && diff >= 2) { // see whether we can reuse some previous calculations
+					index = holder.clearLevelsForBoxes(Math.min(diff, count));
 				} else {
-					keep = 0;
+					index = 0;
 					holder.clear();
 				}
 				
@@ -197,8 +183,8 @@ public class BruteForcePackager extends Packager {
 		return index;
 	}
 
-	protected boolean accept() {
-		return true;
+	protected boolean accept(int count) {
+		return count > 0;
 	}
 
 	protected static int fit2D(PermutationRotationIterator rotator, int index, List<Placement> placements, Container holder, Placement usedSpace, BooleanSupplier interrupt) {

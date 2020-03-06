@@ -297,22 +297,58 @@ public class Container extends Box {
 		
 		return volume > 0;
 	}
+	
+	public void removeLevel(int index) {
+		Level level = levels.remove(index);
+		if(index != levels.size()) {
+			stackHeight -= level.getHeight();
+			stackWeight -= level.getWeight();
+		}
+	}
+	
+	/**
+	 * Clear levels up to and including a number of boxes 
+	 * 
+	 * @param limit number of boxes to keep
+	 * @return number of boxes kept
+	 */
 
-	public void clear(int keep) {
-		for (int i = 0; i < levels.size(); i++) {
+	public int clearLevelsForBoxes(int limit) {
+		int count = 0;
+		int i = 0;
+		while(limit > count && i < levels.size()) {
+			count += levels.get(i).size();
+			
+			i++;
+		}
+		
+		i--;
+		if(count == limit) {
+			// see if we can keep the last level
+			// if so there must be no free space in it
 			Level level = levels.get(i);
 			
-			if(keep >= level.size()) {
-				keep -= level.size();
-			} else if(keep > 0) {
-				while(keep > 0) {
-					level.remove(level.size() - 1);
-					keep--;
-				}
-			} else {
-				levels.remove(i);
-				i--;
+			long v = (volume / height) * level.getHeight();
+			for(Placement p : level) {
+				v -= p.getBox().getVolume();
 			}
+			
+			if(v == 0) {
+				// keep last level
+				i++;
+			} else {
+				// discard also the last level
+				count -= levels.get(i).size();
+			}
+		} else {
+			// discard also the last level
+			count -= levels.get(i).size();
 		}
+		
+		while(i < levels.size()) {
+			removeLevel(i);
+		}
+		
+		return count;
 	}
 }

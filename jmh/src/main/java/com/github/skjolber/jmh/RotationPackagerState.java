@@ -20,10 +20,11 @@ import com.github.skjolber.packing.ParallelBruteForcePackager;
 @State(Scope.Benchmark)
 public class RotationPackagerState {
 
-	private int count = 8;
-	private int n = 11;
+	private int threadPoolSize = 8;
+	private int n = 8;
+	private int boxesPerLevel = 4;
 	
-	private ExecutorService pool = Executors.newFixedThreadPool(count);
+	private ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
 	private ParallelBruteForcePackager parallelBruteForcePackager;
 	private ParallelBruteForcePackager parallelBruteForcePackagerNth;
 	
@@ -34,23 +35,37 @@ public class RotationPackagerState {
 	
 	@Setup(Level.Trial)
 	public void init() {
+
 		List<Container> containers = new ArrayList<>();
-		containers.add(new Container(5 * n, 10, 10, 0));
-		
-		parallelBruteForcePackager = new ParallelBruteForcePackager(containers, pool, count, true, true, 1);
-		parallelBruteForcePackagerNth = new ParallelBruteForcePackager(containers, pool, count, true, true, 200000);
+		int levels = n / boxesPerLevel + (n % boxesPerLevel > 0 ? 1 : 0);
 
-		bruteForcePackager = new BruteForcePackager(containers, true, true, 1);
-		bruteForcePackagerNth = new BruteForcePackager(containers, true, true, 1000);
+		containers.add(new Container(2 * boxesPerLevel / 2, 1 * (boxesPerLevel / 2), 10 * levels, 0));
 
-		identialProducts = new ArrayList<>();
+		// first levels will be easy to populate
+		List<BoxItem> identialProducts = new ArrayList<>();
 		for(int i = 0; i < n; i++) {
-			Box box = new Box(Integer.toString(i), 5, 10, 10, 0);
-			for(int k = 0; k < i % 2; k++) {
-				box.rotate3D();
-			}
+			Box box = new Box(Integer.toString(i), 1, 2, 10, 0);
 			identialProducts.add(new BoxItem(box, 1));
 		}
+		
+		int min = Integer.MAX_VALUE / 2;
+		
+		parallelBruteForcePackager = new MinimumAcceptableParallelBruteForcePackager(containers, pool, threadPoolSize, true, true, 1, min, false, true);
+		parallelBruteForcePackagerNth = new MinimumAcceptableParallelBruteForcePackager(containers, pool, threadPoolSize, true, true, 200000, min, false, true);
+
+		bruteForcePackager = new MinimumAcceptableBruteForcePackager(containers, true, true, 1, min, false, true);
+		bruteForcePackagerNth = new MinimumAcceptableBruteForcePackager(containers, true, true, 1000, min, false, true);
+
+		// verify that will not be able to package successful
+		if(parallelBruteForcePackager.pack(identialProducts) != null) {
+			throw new RuntimeException();
+		}
+		// verify that will not be able to package successful
+		if(bruteForcePackager.pack(identialProducts) != null) {
+			throw new RuntimeException();
+		}
+		
+		this.identialProducts = identialProducts;
 	}
 	
 	@TearDown(Level.Trial)

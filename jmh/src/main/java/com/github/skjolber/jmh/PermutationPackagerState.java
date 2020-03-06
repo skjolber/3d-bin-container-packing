@@ -16,7 +16,6 @@ import com.github.skjolber.packing.BoxItem;
 import com.github.skjolber.packing.BruteForcePackager;
 import com.github.skjolber.packing.BruteForcePackagerBuilder;
 import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.ParallelBruteForcePackager;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.BouwkampCodes;
@@ -24,15 +23,26 @@ import com.github.skjolber.packing.test.BouwkampCodes;
 @State(Scope.Benchmark)
 public class PermutationPackagerState {
 
-	private int count = 8;
-	private int nth = 20000;
+	private final int threadPoolSize;
+	private final int nth;
 	
-	private ExecutorService pool = Executors.newFixedThreadPool(count);
+	private ExecutorService pool;
 	
 	private List<BenchmarkSet> parallelBruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> parallelBruteForcePackagerNth = new ArrayList<>();
 	private List<BenchmarkSet> bruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> bruteForcePackagerNth = new ArrayList<>();
+
+	public PermutationPackagerState() {
+		this(8, 20000);
+	}
+
+	public PermutationPackagerState(int threadPoolSize, int nth) {
+		this.threadPoolSize = threadPoolSize;
+		this.nth = nth;
+		
+		this.pool = Executors.newFixedThreadPool(threadPoolSize);
+	}
 	
 	@Setup(Level.Trial)
 	public void init() {
@@ -65,7 +75,7 @@ public class PermutationPackagerState {
 				BruteForcePackagerBuilder multiThreadBuilder = BruteForcePackager.newBuilder().withContainers(containers);
 
 				multiThreadBuilder.withCheckpointsPerDeadlineCheck(1);
-				multiThreadBuilder.withThreads(count);
+				multiThreadBuilder.withThreads(threadPoolSize);
 				multiThreadBuilder.withExecutorService(pool);
 				
 				parallelBruteForcePackager.add(new BenchmarkSet(multiThreadBuilder, products));

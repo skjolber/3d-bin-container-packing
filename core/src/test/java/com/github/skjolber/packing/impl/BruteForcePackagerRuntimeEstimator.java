@@ -33,7 +33,7 @@ public class BruteForcePackagerRuntimeEstimator {
 		}
 
 		@Override
-		protected boolean accept() {
+		protected boolean accept(int count) {
 			return false;
 		}
 	}

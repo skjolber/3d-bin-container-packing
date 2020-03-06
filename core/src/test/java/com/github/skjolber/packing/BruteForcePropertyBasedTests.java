@@ -42,6 +42,7 @@ class BruteForcePropertyBasedTests {
 		//TODO: we could also randomly rotate the items
 		final List<Container> containers = largeEnoughContainers(item, countBySide);
 		System.out.printf("Fit %d repeated items into one of %d large enough containers\n", repeatedItems.getCount(), containers.size());
+		System.out.println(item);
 		final Container pack = new BruteForcePackager(containers).pack(singletonList(repeatedItems), Long.MAX_VALUE);
 		assertThat(pack).isNotNull();
 	}

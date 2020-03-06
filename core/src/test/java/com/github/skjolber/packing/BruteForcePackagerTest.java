@@ -667,4 +667,42 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 			}
 		}
 	}
+	
+	@Test
+	void testStackingRectanglesOnSquareWithReuse() {
+		int n = 12;
+		int boxesPerLevel = 4;
+
+		List<Container> containers = new ArrayList<>();
+		int levels = n / boxesPerLevel + (n % boxesPerLevel > 0 ? 1 : 0);
+
+		containers.add(new ValidatingContainer(2 * boxesPerLevel / 2, 1 * (boxesPerLevel / 2), 10 * levels, 0));
+
+		// first levels will be easy to populate
+		List<BoxItem> identialProducts = new ArrayList<>();
+		for(int i = 0; i < n - boxesPerLevel; i++) {
+			Box box = new Box(Integer.toString(i), 1, 2, 10, 0);
+			identialProducts.add(new BoxItem(box, 1));
+		}
+
+		// last level will require some more work
+		Box box = new Box("a", 3, 1, 10, 0);
+		box.rotate3D();
+		identialProducts.add(new BoxItem(box, 1));
+
+		box = new Box("b", 3, 1, 10, 0);
+		box.rotate3D();
+		identialProducts.add(new BoxItem(box, 1));
+
+		box = new Box("c", 2, 1, 10, 0);
+		box.rotate3D();
+		identialProducts.add(new BoxItem(box, 1));
+
+		
+		BruteForcePackager packager = new BruteForcePackager(containers);
+
+		Container fits = packager.pack(identialProducts);
+		assertNotNull(fits);
+		assertEquals(fits.getLevels().size(), levels);
+	}	
 }
