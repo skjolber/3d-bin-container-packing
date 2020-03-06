@@ -91,6 +91,7 @@ public class BruteForcePackager extends Packager {
 
 				int diff = rotator.nextRotation();
 				if(diff == -1) {
+					// no more rotations, continue to next permutation
 					holder.clear();
 
 					break;
