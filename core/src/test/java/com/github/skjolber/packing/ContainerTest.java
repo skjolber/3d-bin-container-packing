@@ -4,12 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-import com.github.skjolber.packing.Box;
-import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.Dimension;
-import com.github.skjolber.packing.Placement;
-import com.github.skjolber.packing.Space;
-
 class ContainerTest {
 
 	@Test

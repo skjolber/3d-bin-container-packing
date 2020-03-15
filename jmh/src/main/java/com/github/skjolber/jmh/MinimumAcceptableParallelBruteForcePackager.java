@@ -2,7 +2,6 @@ package com.github.skjolber.jmh;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.Container;

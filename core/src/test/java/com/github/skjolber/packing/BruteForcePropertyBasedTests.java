@@ -1,23 +1,21 @@
 package com.github.skjolber.packing;
 
-import net.jqwik.api.*;
-import net.jqwik.api.constraints.IntRange;
-import net.jqwik.api.constraints.Size;
+import static java.util.Collections.singletonList;
+import static net.jqwik.api.Arbitraries.integers;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.github.skjolber.packing.Box;
-import com.github.skjolber.packing.BoxItem;
-import com.github.skjolber.packing.BruteForcePackager;
-import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.Dimension;
-
-import static java.util.Collections.singletonList;
-import static net.jqwik.api.Arbitraries.integers;
-import static org.assertj.core.api.Assertions.assertThat;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.Combinators;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.Provide;
+import net.jqwik.api.constraints.IntRange;
+import net.jqwik.api.constraints.Size;
 
 class BruteForcePropertyBasedTests {
 	// The maximum number of different, random items which can be reliably packed with brute force

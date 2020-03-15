@@ -1,8 +1,10 @@
 package com.github.skjolber.packing.impl;
 
+import static com.github.skjolber.packing.impl.PermutationRotationIteratorTest.cloneArray;
+import static com.github.skjolber.packing.impl.PermutationRotationIteratorTest.firstDiffIndex;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static com.github.skjolber.packing.impl.PermutationRotationIteratorTest.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -11,8 +13,6 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.Box;
 import com.github.skjolber.packing.BoxItem;
-import com.github.skjolber.packing.impl.DefaultPermutationRotationIterator;
-import com.github.skjolber.packing.impl.ParallelPermutationRotationIterator;
 
 public class ParallelPermutationRotationIteratorTest {
 

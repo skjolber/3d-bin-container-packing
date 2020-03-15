@@ -1,11 +1,13 @@
 package com.github.skjolber.packing.impl;
 
-import com.github.skjolber.packing.*;
-import com.github.skjolber.packing.impl.DefaultPermutationRotationIterator;
-import com.github.skjolber.packing.impl.PermutationRotation;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.github.skjolber.packing.Box;
+import com.github.skjolber.packing.BoxItem;
+import com.github.skjolber.packing.BruteForcePackager;
+import com.github.skjolber.packing.Container;
+import com.github.skjolber.packing.Packager;
 
 public class BruteForcePackagerRuntimeEstimator {
 

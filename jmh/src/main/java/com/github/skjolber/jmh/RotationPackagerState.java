@@ -62,7 +62,7 @@ public class RotationPackagerState {
 		}
 		// verify that will not be able to package successful
 		if(bruteForcePackager.pack(identialProducts) != null) {
-			throw new RuntimeException();
+			throw new IllegalArgumentException();
 		}
 		
 		this.identialProducts = identialProducts;

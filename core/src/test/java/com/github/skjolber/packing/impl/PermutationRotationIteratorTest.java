@@ -1,21 +1,16 @@
 package com.github.skjolber.packing.impl;
 
 import static com.google.common.truth.Truth.assertThat;
-
-import org.assertj.core.util.Arrays;
-import org.junit.jupiter.api.Test;
-
-import com.github.skjolber.packing.Box;
-import com.github.skjolber.packing.BoxItem;
-import com.github.skjolber.packing.impl.DefaultPermutationRotationIterator;
-import com.github.skjolber.packing.impl.PermutationRotation;
-import com.github.skjolber.packing.impl.PermutationRotationIterator;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import com.github.skjolber.packing.Box;
+import com.github.skjolber.packing.BoxItem;
 
 class PermutationRotationIteratorTest {
 

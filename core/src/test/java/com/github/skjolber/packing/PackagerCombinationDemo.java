@@ -5,12 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.github.skjolber.packing.Box;
-import com.github.skjolber.packing.BoxItem;
-import com.github.skjolber.packing.BruteForcePackager;
-import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.LargestAreaFitFirstPackager;
-
 /**
  * Illustrates how the LAFF packager and brute force packager can be used together.
  *
