@@ -5,8 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import com.github.skjolber.packing.impl.BinarySearchIterator;
-
 class BinarySearchIteratorTest {
 
 	@Test

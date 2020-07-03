@@ -1,18 +1,16 @@
 package com.github.skjolber.packing.impl;
 
-import org.junit.jupiter.api.Test;
-
-import com.github.skjolber.packing.Box;
-import com.github.skjolber.packing.BoxItem;
-import com.github.skjolber.packing.impl.DefaultPermutationRotationIterator;
-import com.github.skjolber.packing.impl.PermutationRotation;
-import com.github.skjolber.packing.impl.PermutationRotationIterator;
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import com.github.skjolber.packing.Box;
+import com.github.skjolber.packing.BoxItem;
 
 class PermutationRotationIteratorTest {
 
@@ -35,7 +33,7 @@ class PermutationRotationIteratorTest {
 			int rotate = 0;
 			do {
 				rotate++;
-			} while(rotator.nextRotation());
+			} while(rotator.nextRotation() != -1);
 
 			assertEquals(count, rotate);
 		}
@@ -130,7 +128,7 @@ class PermutationRotationIteratorTest {
 			for(int i = 0; i < products.size(); i++) {
 				assertTrue(rotator.get(i).fitsInside3D(container));
 			}
-		} while(rotator.nextRotation());
+		} while(rotator.nextRotation() != -1);
 
 	}
 
@@ -151,9 +149,56 @@ class PermutationRotationIteratorTest {
 		int count = 0;
 		do {
 			count++;
-		} while(rotator.nextPermutation());
+		} while(rotator.nextPermutation() != -1);
 
 		assertEquals( 5 * 4 * 3 * 2 * 1, count);
+	}
+	
+	@Test
+	void testPermutationDifference() {
+		Box container = new Box(9, 1, 1, 0);
+
+		List<BoxItem> products = new ArrayList<>();
+
+		products.add(new BoxItem(new Box("0", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("1", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("2", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("3", 1, 1, 3, 0), 1));
+
+		PermutationRotationIterator rotator = new DefaultPermutationRotationIterator(products, container, true);
+
+		
+		int count = 0;
+		do {
+			count++;
+			
+			int[] permutations = cloneArray(rotator.getPermutations());
+			
+			int length = rotator.nextPermutation();
+			
+			if(length == -1) {
+				break;
+			}
+			assertThat(firstDiffIndex(permutations, rotator.getPermutations())).isEqualTo(length);
+			
+		} while(true);
+
+		assertEquals(4 * 3 * 2 * 1, count);
+	}
+
+	public static int firstDiffIndex(int[] a, int[] b) {
+		for(int i = 0; i < a.length; i++) {
+			if(a[i] != b[i]) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public static int[] cloneArray(int[] permutations) {
+		int[] clone = new int[permutations.length];
+		System.arraycopy(permutations, 0, clone, 0, permutations.length);
+		return clone;
 	}
 
 	@Test
@@ -170,7 +215,7 @@ class PermutationRotationIteratorTest {
 		int count = 0;
 		do {
 			count++;
-		} while(rotator.nextPermutation());
+		} while(rotator.nextPermutation() != -1);
 
 		assertEquals( (6 * 5 * 4 * 3 * 2 * 1) / ((4 * 3 * 2 * 1) * (2 * 1)), count);
 	}

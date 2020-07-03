@@ -1,10 +1,5 @@
 package com.github.skjolber.packing;
 
-import com.github.skjolber.packing.Box;
-import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.Level;
-import com.github.skjolber.packing.Placement;
-import com.github.skjolber.packing.Space;
 import com.indvd00m.ascii.render.Render;
 import com.indvd00m.ascii.render.api.ICanvas;
 import com.indvd00m.ascii.render.api.IContextBuilder;

@@ -11,11 +11,6 @@ import java.util.concurrent.Executors;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import com.github.skjolber.packing.Box;
-import com.github.skjolber.packing.BoxItem;
-import com.github.skjolber.packing.BruteForcePackager;
-import com.github.skjolber.packing.Container;
-
 public class ParallelBruteForcePackagerTest {
 
 	@Test

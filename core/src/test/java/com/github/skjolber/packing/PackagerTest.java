@@ -1,6 +1,10 @@
 package com.github.skjolber.packing;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -13,14 +17,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.github.skjolber.packing.Box;
-import com.github.skjolber.packing.BoxItem;
-import com.github.skjolber.packing.BruteForcePackager;
-import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.impl.Adapter;
 import com.github.skjolber.packing.impl.PackResult;
 

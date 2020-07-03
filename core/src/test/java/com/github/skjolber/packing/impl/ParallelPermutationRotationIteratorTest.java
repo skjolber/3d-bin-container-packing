@@ -1,8 +1,9 @@
 package com.github.skjolber.packing.impl;
 
+import static com.github.skjolber.packing.impl.PermutationRotationIteratorTest.cloneArray;
+import static com.github.skjolber.packing.impl.PermutationRotationIteratorTest.firstDiffIndex;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,8 +13,6 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.Box;
 import com.github.skjolber.packing.BoxItem;
-import com.github.skjolber.packing.impl.DefaultPermutationRotationIterator;
-import com.github.skjolber.packing.impl.ParallelPermutationRotationIterator;
 
 public class ParallelPermutationRotationIteratorTest {
 
@@ -40,11 +39,42 @@ public class ParallelPermutationRotationIteratorTest {
 			assertThat(nthIterator.getPermutations(0)).isEqualTo(iterator.getPermutations());
 
 			count++;
-		} while(nthIterator.nextPermutation(0) && iterator.nextPermutation());
+		} while(nthIterator.nextPermutation(0) != -1 && iterator.nextPermutation() != -1);
 
 		assertEquals( 5 * 4 * 3 * 2 * 1, count);
-		assertFalse(nthIterator.nextPermutation(0));
+		assertThat(nthIterator.nextPermutation(0)).isEqualTo(-1);
 	}
+	
+	@Test
+	void testPermutationDifference() {
+		Box container = new Box(9, 1, 1, 0);
+
+		List<BoxItem> products = new ArrayList<>();
+
+		products.add(new BoxItem(new Box("0", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("1", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("2", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("3", 1, 1, 3, 0), 1));
+
+		ParallelPermutationRotationIterator nthIterator = new ParallelPermutationRotationIterator(products, container, true, 1);
+		
+		int count = 0;
+		do {
+			count++;
+			
+			int[] permutations = cloneArray(nthIterator.getPermutations(0));
+			
+			int length = nthIterator.nextPermutation(0);
+			
+			if(length == -1) {
+				break;
+			}
+			assertThat(firstDiffIndex(permutations, nthIterator.getPermutations(0))).isEqualTo(length);
+			
+		} while(true);
+
+		assertEquals(4 * 3 * 2 * 1, count);
+	}	
 
 	@Test
 	void testPermutationsMultipleWorkUnits() {
@@ -73,10 +103,10 @@ public class ParallelPermutationRotationIteratorTest {
 		do {
 			assertThat(nthIterator.getPermutations(1)).isEqualTo(iterator.getPermutations());
 			count++;
-		} while(nthIterator.nextPermutation(1) && iterator.nextPermutation());
+		} while(nthIterator.nextPermutation(1) != -1 && iterator.nextPermutation() != -1);
 
 		assertEquals( 5 * 4 * 3, count);
-		assertFalse(nthIterator.nextPermutation(1));
+		assertThat(nthIterator.nextPermutation(1)).isEqualTo(-1);
 	}
 
 	@Test
@@ -104,10 +134,11 @@ public class ParallelPermutationRotationIteratorTest {
 		do {
 			assertThat(nthIterator.getPermutations(1)).isEqualTo(iterator.getPermutations());
 			count++;
-		} while(nthIterator.nextPermutation(1) && iterator.nextPermutation());
+		} while(nthIterator.nextPermutation(1) != -1 && iterator.nextPermutation() != -1);
 
 		assertEquals( 8 * 7 * 6 * 5 * 4 * 3 * 2 * 1 / ((3 * 2 * 1) * (4 * 3 * 2 * 1) * 2), count);
-		assertFalse(nthIterator.nextPermutation(1));
+		
+		assertThat(nthIterator.nextPermutation(1)).isEqualTo(-1);
 	}
 	
 	public static long rankPerm(String perm) {

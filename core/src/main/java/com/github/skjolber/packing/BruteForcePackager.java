@@ -68,29 +68,44 @@ public class BruteForcePackager extends Packager {
 				return null;
 			}
 			// iterator over all rotations
+			int index = 0;
 			do {
-				int count = pack(placements, holder, rotator, holder, 0, interrupt);
+				int count = pack(placements, holder.getFreeLevelSpace(), rotator, holder, index, interrupt);
 				if (count == Integer.MIN_VALUE) {
 					return null; // timeout
-				} else {
-					holder.clear();
-
-					if (count == placements.size()) {
-						if (accept()) {
-							result.setCount(count);
-							result.setState(rotator.getState());
-							return result;
-						}
-					} else if (count > 0) {
-						// continue search, but see if this is the best fit so far
-						if (count > result.getCount()) {
-							result.setCount(count);
-							result.setState(rotator.getState());
-						}
+				} 
+				if (count == placements.size()) {
+					if (accept(count)) {
+						result.setCount(count);
+						result.setState(rotator.getState());
+						
+						return result;
+					}
+				} else if (count > 0) {
+					// continue search, but see if this is the best fit so far
+					if (count > result.getCount()) {
+						result.setCount(count);
+						result.setState(rotator.getState());
 					}
 				}
-			} while (rotator.nextRotation());
-		} while (rotator.nextPermutation());
+
+				int diff = rotator.nextRotation();
+				if(diff == -1) {
+					// no more rotations, continue to next permutation
+					holder.clear();
+
+					break;
+				}
+				
+				if(count >= 2 && diff >= 2) { // see whether we can reuse some previous calculations
+					index = holder.clearLevelsForBoxes(Math.min(diff, count));
+				} else {
+					index = 0;
+					holder.clear();
+				}
+				
+			} while (true);
+		} while (rotator.nextPermutation() != -1);
 
 		return result;
 	}
@@ -103,11 +118,10 @@ public class BruteForcePackager extends Packager {
 		return pack(placements, container, rotator, holder, index, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
-	public static int pack(List<Placement> placements, Dimension container, PermutationRotationIterator rotator, Container holder, int index, BooleanSupplier interrupt) {
+	public static int pack(List<Placement> placements, Dimension remainingSpace, PermutationRotationIterator rotator, Container holder, int index, BooleanSupplier interrupt) {
 		if (placements.isEmpty()) {
 			return -1;
 		}
-		Dimension remainingSpace = container;
 
 		while (index < rotator.length()) {
 			if (interrupt.getAsBoolean()) {
@@ -147,7 +161,7 @@ public class BruteForcePackager extends Packager {
 
 			index = fit2D(rotator, index + 1, placements, holder, placement, interrupt);
 
-			if(index == -1) {
+			if(index == -1) { // interrupted
 				return index;
 			}
 			
@@ -158,7 +172,7 @@ public class BruteForcePackager extends Packager {
 				// now that the level height is know, see whether we can use space between level roof and box roof
 				
 				index = fitWithin(level, levelSpace, rotator, index, placements, holder, interrupt);
-				if(index == -1) {
+				if(index == -1) {  // interrupted
 					return index;
 				}
 			}
@@ -169,8 +183,8 @@ public class BruteForcePackager extends Packager {
 		return index;
 	}
 
-	protected boolean accept() {
-		return true;
+	protected boolean accept(int count) {
+		return count > 0;
 	}
 
 	protected static int fit2D(PermutationRotationIterator rotator, int index, List<Placement> placements, Container holder, Placement usedSpace, BooleanSupplier interrupt) {
@@ -209,7 +223,7 @@ public class BruteForcePackager extends Packager {
 			// fit in primary
 			index = fit2D(rotator, index, placements, holder, primaryPlacement, interrupt);
 			
-			if(index == -1) {
+			if(index == -1) { // interrupted
 				return -1;
 			} else if(index >= rotator.length()) {
 				return index;
@@ -361,7 +375,7 @@ public class BruteForcePackager extends Packager {
 					remainderPlacement.getSpace().getRemainder().setParent(nextSpace);
 
 					index = fit2D(rotator, index, placements, holder, remainderPlacement, interrupt);
-					if(index == -1) {
+					if(index == -1) { // interrupted
 						return -1;
 					}
 				}
