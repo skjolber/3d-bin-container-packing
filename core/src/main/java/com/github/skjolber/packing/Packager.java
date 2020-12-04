@@ -18,6 +18,8 @@ import com.github.skjolber.packing.impl.deadline.BooleanSupplierBuilder;
 
 public abstract class Packager {
 	
+	protected static final EmptyPackResult EMPTY_PACK_RESULT = new EmptyPackResult();
+	
 	protected final Container[] containers;
 	protected final boolean rotate3D; // if false, then 2d
 	protected final boolean binarySearch;
