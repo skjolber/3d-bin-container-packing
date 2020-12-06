@@ -644,4 +644,18 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 		assertEquals(pack.getLevels().size(), 1);
 	}
+	
+	@Test
+	public void issue208() {
+	    List<Container> containers = new ArrayList<Container>();
+	    containers.add(new Container("SmallBox", 200, 200, 200, 10000));
+	    containers.add(new Container("BigBox", 400, 400, 400, 10000));
+	    Packager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
+	    List<BoxItem> products = new ArrayList<BoxItem>();
+	    products.add(new BoxItem(new Box("Foot", 200, 200, 200, 1000), 2));
+	    products.add(new BoxItem(new Box("Leg", 200, 200, 200, 1000), 7));
+	    List<Container> fits = packager.packList(products, 999, System.currentTimeMillis() + 5000);
+	    assertEquals("It should be a big box", fits.get(0).getName(), "BigBox"); // ok
+	    assertEquals("It should be a small box", fits.get(1).getName(), "SmallBox"); // fails
+	}	
 }
