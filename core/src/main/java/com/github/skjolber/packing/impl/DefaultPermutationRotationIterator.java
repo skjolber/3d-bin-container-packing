@@ -46,15 +46,16 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 					}
 				}
 			} else {
-				result.add(box.clone());
-
+				Box box0 = box.clone();
+				result.add(box0);
+				
 				// do not rotate 2d if square
-				if(!box.isSquare2D()) {
-					result.add(box.clone().rotate2D());
+				if(!box0.isSquare2D()) {
+					result.add(box0.clone().rotate2D());
 				}
 			}
 
-			boxes[i] = new PermutationRotation(list.get(i).getCount(), result.toArray(new Box[0]));
+			boxes[i] = new PermutationRotation(list.get(i).getCount(), result.toArray(new Box[result.size()]));
 		}
 		return boxes;
 	}
@@ -87,7 +88,7 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 
 			// create PermutationRotation even if this box does not fit at all, 
 			// so that permutation indexes are directly comparable between parallel instances of this class
-			matrix.add(new PermutationRotation(unconstrained[i].getCount(), result.toArray(new Box[0])));
+			matrix.add(new PermutationRotation(unconstrained[i].getCount(), result.toArray(new Box[result.size()])));
 
 			if(!result.isEmpty()) {
 				for(int k = 0; k < unconstrained[i].getCount(); k++) {
@@ -96,7 +97,7 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 			}
 		}
 
-		this.matrix = matrix.toArray(new PermutationRotation[0]);
+		this.matrix = matrix.toArray(new PermutationRotation[matrix.size()]);
 
 		this.dimension = bound;
 		this.reset = new int[types.size()];
@@ -133,27 +134,28 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 
 	@Override
 	public void removePermutations(List<Integer> removed) {
-		int[] permutations = new int[this.permutations.length];
-
-		int index = 0;
+		int left = permutations.length;
 		permutations:
-		for (int j : this.permutations) {
-			for (int i = 0; i < removed.size(); i++) {
-				if(removed.get(i) == j) {
-					// skip this
-					removed.remove(i);
-
+		for (Integer remove : removed) {
+			for (int k = 0; k < permutations.length; k++) {
+				if(remove == permutations[k]) {
+					permutations[k] = -1; // mark as removed
+					left--;
 					continue permutations;
 				}
 			}
-
-			permutations[index] = j;
-
-			index++;
 		}
-
-		int[] effectivePermutations = new int[index];
-		System.arraycopy(permutations, 0, effectivePermutations, 0, index);
+		
+		int[] effectivePermutations = new int[left];
+		int destinationIndex = 0;
+		
+		for(int i = 0; i < permutations.length; i++) {
+			if(permutations[i] != -1) {
+				effectivePermutations[destinationIndex] = permutations[i];
+				destinationIndex++;
+			}
+		}
+		
 		Arrays.sort(effectivePermutations); // ascending order to make the permutation logic work
 		
 		this.permutations = effectivePermutations;

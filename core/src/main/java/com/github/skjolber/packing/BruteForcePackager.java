@@ -535,7 +535,7 @@ public class BruteForcePackager extends Packager {
 			for (PermutationRotation permutationRotation : rotations) {
 				count += permutationRotation.getCount();
 			}
-
+			
 			placements = getPlacements(count);
 
 			iterators = new DefaultPermutationRotationIterator[containers.size()];
@@ -547,6 +547,11 @@ public class BruteForcePackager extends Packager {
 
 		@Override
 		public PackResult attempt(int i) {
+			
+			if(iterators[i].length() == 0) {
+				return EMPTY_PACK_RESULT;
+			}
+			
 			return BruteForcePackager.this.pack(placements, containers.get(i), iterators[i], interrupt);
 		}
 
