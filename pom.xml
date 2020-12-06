@@ -16,7 +16,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 
 		<mockito.version>3.6.28</mockito.version>
-		<ascii-renderer.version>2.1.3</ascii-renderer.version>
+		<ascii-renderer.version>2.2.0</ascii-renderer.version>
 
 		<google-truth.version>1.0.1</google-truth.version>
 		<junit.version>5.7.0</junit.version>
