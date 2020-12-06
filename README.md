@@ -26,7 +26,7 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
     <artifactId>core</artifactId>
-    <version>1.2.11</version>
+    <version>1.2.12</version>
 </dependency>
 ```
 
@@ -133,6 +133,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 
 
 # History
+ - 1.2.12: Fix for issue #245.
  - 1.2.11: Add test artifact, improve use of deadline for better performance, some bugfixes.
  - 1.2.10: Tweak LAFF selecetion of 'best space' for equally sized boxes (issue #168).
  - 1.2.9: If the 'remainder' space cannot be used, attempt to expand it with [unused space](https://github.com/skjolber/3d-bin-container-packing/blob/b78f4b8ff62f4c3cd531a160d36c4dc1f23c8897/core/src/main/java/com/github/skjolber/packing/LargestAreaFitFirstPackager.java#L250).
