@@ -8,7 +8,7 @@ public class LargestAreaFitFirstPackagerBuilder {
 	
 	private List<Container> containers;
 	
-	private boolean rotate3D;
+	private boolean rotate3D = true;
 	
 	private boolean binarySearch;
 

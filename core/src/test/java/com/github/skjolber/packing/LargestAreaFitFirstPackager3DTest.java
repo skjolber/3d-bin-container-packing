@@ -1,14 +1,13 @@
 package com.github.skjolber.packing;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.Assert.*;
 
 class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
@@ -657,5 +656,11 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 	    List<Container> fits = packager.packList(products, 999, System.currentTimeMillis() + 5000);
 	    assertEquals("It should be a big box", fits.get(0).getName(), "BigBox"); // ok
 	    assertEquals("It should be a small box", fits.get(1).getName(), "SmallBox"); // fails
-	}	
+	}
+
+	@Test
+	public void test3dRotationByDefaultViaBuilder() {
+		final LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(Collections.emptyList()).build();
+		assertTrue("3d rotation should be enabled by default", packager.rotate3D);
+	}
 }
