@@ -37,7 +37,7 @@
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
 		<maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
 		<jqwik.version>1.3.10</jqwik.version>
-		<assertj.version>3.18.1</assertj.version>
+		<assertj.version>3.19.0</assertj.version>
 		<owasp-dependency-check.version>5.3.2</owasp-dependency-check.version>
 		<pitest.version>1.6.2</pitest.version>
 	</properties>
