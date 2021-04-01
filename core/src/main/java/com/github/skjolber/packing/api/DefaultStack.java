@@ -5,13 +5,13 @@ import java.util.List;
 
 public class DefaultStack extends Stack {
 
-	protected List<StackEntry> entries = new ArrayList<>();
+	protected final List<StackPlacement> entries = new ArrayList<>();
 
-	public List<StackEntry> getEntries() {
+	public List<StackPlacement> getPlacements() {
 		return entries;
 	}
 
-	public void add(StackEntry e) {
+	public void add(StackPlacement e) {
 		entries.add(e);
 	}
 
@@ -23,7 +23,7 @@ public class DefaultStack extends Stack {
 	public int getWeight() {
 		int weight = 0;
 		
-		for (StackEntry stackEntry : entries) {
+		for (StackPlacement stackEntry : entries) {
 			weight += stackEntry.getStackable().getWeight();
 		}
 		
@@ -34,7 +34,7 @@ public class DefaultStack extends Stack {
 	public int getDz() {
 		int dz = 0;
 		
-		for (StackEntry stackEntry : entries) {
+		for (StackPlacement stackEntry : entries) {
 			StackValue stackValue = stackEntry.getStackValue();
 			StackSpace space = stackEntry.getSpace();
 			dz += space.getZ() + stackValue.getDz();
@@ -47,7 +47,7 @@ public class DefaultStack extends Stack {
 	public long getVolume() {
 		int volume = 0;
 		
-		for (StackEntry stackEntry : entries) {
+		for (StackPlacement stackEntry : entries) {
 			volume += stackEntry.getStackable().getVolume();
 		}
 		

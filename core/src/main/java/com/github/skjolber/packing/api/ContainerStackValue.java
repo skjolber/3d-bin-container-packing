@@ -1,27 +1,33 @@
 package com.github.skjolber.packing.api;
 
-public class ContainerStackValue extends StackValue {
+public abstract class ContainerStackValue extends StackValue {
 
-	public ContainerStackValue(int dx, int dy, int dz, int weight, int maxSupportedWeight, int maxSupportedCount,
-			int pressureReference, int loadDx, int loadDy, int loadDz, Direction direction) {
-		super(dx, dy, dz, weight, maxSupportedWeight, maxSupportedCount, pressureReference, direction);
+	public ContainerStackValue(
+			int dx, int dy, int dz, 
+			int maxSupportedWeight, int maxSupportedCount,
+			int pressureReference, int loadDx, int loadDy, int loadDz, int emptyWeight, int maxLoadWeight) {
+		super(dx, dy, dz, maxSupportedWeight, maxSupportedCount, pressureReference);
 		
 		this.loadDx = loadDx;
 		this.loadDy = loadDy;
 		this.loadDz = loadDz;
 		
-		this.loadVolume = loadDx * loadDy * loadDz;
+		this.emptyWeight = emptyWeight;
+		
+		this.loadVolume = (long)loadDx * (long)loadDy * (long)loadDz;
+		this.maxLoadWeight = maxLoadWeight;
 	}
-
-	protected int maxLoadWeight;
-
+	
+	protected final int maxLoadWeight;
+	protected final int emptyWeight;
+	
 	protected final int loadDx; // x
 	protected final int loadDy; // y
 	protected final int loadDz; // z
 	
-	protected final int loadVolume;
+	protected final long loadVolume;
 	
-	public int getMaxLoadVolume() {
+	public long getMaxLoadVolume() {
 		return loadVolume;
 	}
 	
@@ -40,4 +46,5 @@ public class ContainerStackValue extends StackValue {
 	public int getLoadDz() {
 		return loadDz;
 	}
+
 }

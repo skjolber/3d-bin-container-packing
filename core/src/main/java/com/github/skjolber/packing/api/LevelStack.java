@@ -10,17 +10,17 @@ public class LevelStack extends Stack {
 	
 	protected List<Stack> levels = new ArrayList<>();
 	
-	public List<StackEntry> getEntries() {
-		List<StackEntry> entries = new ArrayList<>();
+	public List<StackPlacement> getPlacements() {
+		List<StackPlacement> entries = new ArrayList<>();
 		
 		for(Stack level : levels) {
-			entries.addAll(level.getEntries());
+			entries.addAll(level.getPlacements());
 		}
 		
 		return entries;
 	}
 
-	public void add(StackEntry e) {
+	public void add(StackPlacement e) {
 		levels.get(levels.size() - 1).add(e);
 	}
 	
@@ -36,10 +36,9 @@ public class LevelStack extends Stack {
 	public long getFreeVolumeLoad() {
 		long volume = containerStackValue.getMaxLoadVolume();
 		
-		for (StackEntry stackEntry : getEntries()) {
-			volume -= stackEntry.getStackable().getVolume();
+		for(Stack level : levels) {
+			volume -= level.getVolume();
 		}
-		
 		return volume;
 	}
 
@@ -67,11 +66,7 @@ public class LevelStack extends Stack {
 
 	@Override
 	public int getWeight() {
-		int weight = 0;
-		for (StackEntry stackEntry : getEntries()) {
-			weight += stackEntry.getStackable().getWeight();
-		}
-		return weight;
+		return weight + currentLevelStackWeight();
 	}
 
 	@Override
@@ -82,8 +77,8 @@ public class LevelStack extends Stack {
 	@Override
 	public long getVolume() {
 		long volume = 0;
-		for (StackEntry stackEntry : getEntries()) {
-			volume += stackEntry.getStackable().getVolume();
+		for(Stack stack : levels) {
+			volume += stack.getVolume();
 		}
 		return volume;
 	}
@@ -99,11 +94,16 @@ public class LevelStack extends Stack {
 		
 		int dz = getDz();
 		
-		return new ContainerStackValue(
+		int freeWeight = getFreeWeightLoad();
+		
+		DefaultStack stack = new DefaultStack();
+		
+		return new DefaultContainerStackValue(
 						containerStackValue.getDx(), containerStackValue.getDy(), containerStackValue.getDz() - dz,
-						0, getFreeWeight(), getSupportedCount(), containerStackValue.getPressureReference(),
-						containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz() - dz,   
-						containerStackValue.getDirection()
+						freeWeight, getSupportedCount(), containerStackValue.getPressureReference(),
+						containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz() - dz,
+						0, freeWeight,
+						stack
 						);
 	}
 
@@ -111,14 +111,6 @@ public class LevelStack extends Stack {
 		return levels.size(); // XXX not ideal
 	}
 
-	public int getFreeWeight() {
-		int remainder = weight - getWeight();
-		if(remainder < 0) {
-			throw new IllegalArgumentException("Remaining weight is negative at " + remainder);
-		}
-		return remainder;
-	}
-	
 	/**
 	 * Clear levels up to and including a number of boxes 
 	 * 
@@ -130,7 +122,7 @@ public class LevelStack extends Stack {
 		int count = 0;
 		int i = 0;
 		while(limit > count && i < levels.size()) {
-			count += levels.get(i).getEntries().size();
+			count += levels.get(i).getPlacements().size();
 			
 			i++;
 		}
@@ -145,7 +137,7 @@ public class LevelStack extends Stack {
 			
 			long v = (volume / containerStackValue.getLoadDz()) * level.getDz();
 			
-			for (StackEntry stackEntry : level.getEntries()) {
+			for (StackPlacement stackEntry : level.getPlacements()) {
 				v -= stackEntry.getStackable().getVolume();
 			}
 			
@@ -154,11 +146,11 @@ public class LevelStack extends Stack {
 				i++;
 			} else {
 				// discard also the last level
-				count -= levels.get(i).getEntries().size();
+				count -= levels.get(i).getPlacements().size();
 			}
 		} else {
 			// discard also the last level
-			count -= levels.get(i).getEntries().size();
+			count -= levels.get(i).getPlacements().size();
 		}
 		
 		while(i < levels.size()) {

@@ -10,9 +10,9 @@ public abstract class Stack {
 		return containerStackValue;
 	}
 	
-	public abstract List<StackEntry> getEntries();
+	public abstract List<StackPlacement> getPlacements();
 
-	public abstract void add(StackEntry e);
+	public abstract void add(StackPlacement e);
 
 	public long getFreeVolumeLoad() {
 		return containerStackValue.getMaxLoadVolume() - getVolume();
@@ -22,12 +22,12 @@ public abstract class Stack {
 		return containerStackValue.getMaxLoadWeight() - getWeight();
 	}
 	
-	public abstract void clear();
-
 	public abstract int getWeight();
 
 	public abstract int getDz();
 
 	public abstract long getVolume();
+
+	public abstract void clear();
 
 }

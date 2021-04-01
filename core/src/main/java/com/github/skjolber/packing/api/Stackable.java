@@ -1,5 +1,10 @@
 package com.github.skjolber.packing.api;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.github.skjolber.packing.Dimension;
+
 public abstract class Stackable {
 
 	protected final String name;
@@ -19,4 +24,18 @@ public abstract class Stackable {
 		return name;
 	}
 
+	public List<StackValue> fitsInside(Dimension bound) {
+		List<StackValue> list = new ArrayList<>();
+		
+		for (StackValue stackValue : getStackValues()) {
+			if(stackValue.fitsInside3D(bound)) {
+				list.add(stackValue);
+			}
+		}
+		
+		return list;
+	}
+
+	public abstract Stackable rotations(Dimension bound);
+	
 }

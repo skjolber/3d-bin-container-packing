@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.api;
 
-public class StackEntry {
+public class StackPlacement {
 
 	private Stackable stackable;
 	private StackValue value;
@@ -25,11 +25,11 @@ public class StackEntry {
 		this.space = space;
 	}
 
-	boolean intersects(StackEntry placement) {
+	boolean intersects(StackPlacement placement) {
 		return intersectsX(placement) && intersectsY(placement) && intersectsZ(placement);
 	}
 
-	public boolean intersectsY(StackEntry placement) {
+	public boolean intersectsY(StackPlacement placement) {
 
 		int startY = space.getY();
 		int endY = startY + value.getDy() - 1;
@@ -43,7 +43,7 @@ public class StackEntry {
 
 	}
 
-	public boolean intersectsX(StackEntry placement) {
+	public boolean intersectsX(StackPlacement placement) {
 
 		int startX = space.getX();
 		int endX = startX + value.getDx() - 1;
@@ -57,7 +57,7 @@ public class StackEntry {
 
 	}
 	
-	public boolean intersectsZ(StackEntry placement) {
+	public boolean intersectsZ(StackPlacement placement) {
 
 		int startZ = space.getZ();
 		int endZ = startZ + value.getDz() - 1;
@@ -93,5 +93,9 @@ public class StackEntry {
 
 	public int getAbsoluteEndZ() {
 		return space.getZ() + value.getDz();
-	}	
+	}
+	
+	public long getVolume() {
+		return stackable.getVolume();
+	}
 }
