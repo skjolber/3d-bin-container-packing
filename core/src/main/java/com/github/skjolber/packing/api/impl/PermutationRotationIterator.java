@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.api.impl;
 
+import java.util.List;
+
 /**
 *
 * Rotation and permutations built into the same interface. Minimizes the number of
@@ -31,13 +33,13 @@ package com.github.skjolber.packing.api.impl;
 *      target="_top">next-lexicographical-permutation-algorithm</a>
 */
 
-public interface PermutationRotationIterator extends PermutationSet {
+public interface PermutationRotationIterator {
 
 	int[] getPermutations();
 
 	int length();
 	
-	StackableValue get(int index);
+	PermutationRotation get(int index);
 
 	/**
 	 * Next rotation.
@@ -59,4 +61,12 @@ public interface PermutationRotationIterator extends PermutationSet {
 
 	void setState(PermutationRotationState state);
 
+	void removePermutations(int count);
+
+	/**
+	 * Remove permutations, if present.
+	 * @param removed list of permutation indexes to remove
+	 */
+
+	void removePermutations(List<Integer> removed);
 }

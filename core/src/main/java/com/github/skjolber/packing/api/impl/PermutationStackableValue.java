@@ -6,18 +6,18 @@ import com.github.skjolber.packing.api.Stackable;
 public class PermutationStackableValue {
 
     protected final int count;
-    protected final StackableValue[] values;
+    protected final PermutationRotation[] values;
 
     public PermutationStackableValue(int count, Stackable stackable) {
         this.count = count;
         StackValue[] stackValues = stackable.getStackValues();
-        values = new StackableValue[stackValues.length];
+        values = new PermutationRotation[stackValues.length];
         for(int i = 0; i < values.length; i++) {
-        	values[i] = new StackableValue(stackable, stackValues[i]);
+        	values[i] = new PermutationRotation(stackable, stackValues[i]);
         }
     }
 
-    public StackableValue[] getBoxes() {
+    public PermutationRotation[] getBoxes() {
         return values;
     }
 

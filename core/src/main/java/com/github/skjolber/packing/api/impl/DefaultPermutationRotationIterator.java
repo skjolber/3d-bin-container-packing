@@ -24,7 +24,6 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 		List<PermutationStackableValue> matrix = new ArrayList<>(unconstrained.size());
 		for(int i = 0; i < unconstrained.size(); i++) {
 			StackableItem item = unconstrained.get(i);
-			
 			Stackable rotations = item.getStackable().rotations(bound);
 			
 			// create PermutationRotation even if this box does not fit at all, 
@@ -207,7 +206,7 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 
 
 	@Override
-	public StackableValue get(int index) {
+	public PermutationRotation get(int index) {
 		return matrix[permutations[index]].getBoxes()[rotations[index]];
 	}
 

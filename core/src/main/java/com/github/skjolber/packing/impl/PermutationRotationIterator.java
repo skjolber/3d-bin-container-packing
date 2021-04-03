@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.impl;
 
+import java.util.List;
+
 import com.github.skjolber.packing.Box;
 
 /**
@@ -33,7 +35,7 @@ import com.github.skjolber.packing.Box;
 *      target="_top">next-lexicographical-permutation-algorithm</a>
 */
 
-public interface PermutationRotationIterator extends PermutationSet {
+public interface PermutationRotationIterator {
 
 	int[] getPermutations();
 
@@ -61,4 +63,12 @@ public interface PermutationRotationIterator extends PermutationSet {
 
 	void setState(PermutationRotationState state);
 
+	void removePermutations(int count);
+
+	/**
+	 * Remove permutations, if present.
+	 * @param removed list of permutation indexes to remove
+	 */
+
+	void removePermutations(List<Integer> removed);
 }

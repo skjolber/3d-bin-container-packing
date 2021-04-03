@@ -366,7 +366,7 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 		return result;
 	}
 	
-	public StackableValue get(int permutationIndex, int index) {
+	public PermutationRotation get(int permutationIndex, int index) {
 		return matrix[workUnits[index].permutations[PADDING + permutationIndex]].getBoxes()[workUnits[index].rotations[PADDING + permutationIndex]];
 	}
 }

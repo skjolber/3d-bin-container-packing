@@ -38,7 +38,7 @@ public class ParallelPermutationRotationIteratorAdapter implements PermutationRo
 		return delegate.getPermutations(index);
 	}
 
-	public StackableValue get(int index) {
+	public PermutationRotation get(int index) {
 		return delegate.get(index, this.index);
 	}
 
