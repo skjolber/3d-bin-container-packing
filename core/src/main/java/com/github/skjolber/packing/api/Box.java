@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.api;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.Dimension;
@@ -25,7 +26,7 @@ public class Box extends Stackable {
 			if(rotations.isEmpty()) {
 				throw new IllegalStateException("No rotations");
 			}
-			if(weight != null) {
+			if(weight == null) {
 				throw new IllegalStateException("No weight");
 			}
 			
@@ -74,10 +75,13 @@ public class Box extends Stackable {
 				List<StackValue> fitsInside = new ArrayList<>(rotations.length);
 				fitsInside.add(stackValue);
 				
-				while(++i < rotations.length) {
+				
+				i++;
+				while(i < rotations.length) {
 					if(rotations[i].fitsInside3D(bound)) {
 						fitsInside.add(rotations[i]);
 					}
+					i++;
 				}
 				return new Box(name, volume, weight, fitsInside.toArray(new BoxStackValue[fitsInside.size()]));
 			}

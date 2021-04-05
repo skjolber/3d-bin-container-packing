@@ -17,8 +17,6 @@ public class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> {
 
 	public static class Rotation {
 		
-		protected int count;
-		
 		protected int maxSupportedCount;
 		protected int maxSupportedWeight;
 
@@ -26,9 +24,8 @@ public class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> {
 		protected int dy; // depth
 		protected int dz; // height
 
-		public Rotation(int count, int dx, int dy, int dz, int maxSupportedWeight, int maxSupportedCount) {
+		public Rotation(int dx, int dy, int dz, int maxSupportedWeight, int maxSupportedCount) {
 			super();
-			this.count = count;
 			this.dx = dx;
 			this.dy = dy;
 			this.dz = dz;
@@ -53,28 +50,65 @@ public class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> {
 		return (B)this;
 	}
 
-	public B withRotate(int count, int dx, int dy, int dz, int maxSupportedCount, int maxSupportedWeight) {
-		rotations.add(new Rotation(count, dx, dy, dz, maxSupportedWeight, maxSupportedCount));
+	public B withRotate(int dx, int dy, int dz, int maxSupportedCount, int maxSupportedWeight) {
+		rotations.add(new Rotation(dx, dy, dz, maxSupportedWeight, maxSupportedCount));
 		
 		return (B)this;
 
 	}
 
-	public B withRotateXY(int count, int dx, int dy, int dz, int maxSupportedCount, int maxSupportedWeight) {
-		rotations.add(new Rotation(count, dx, dy, dz, maxSupportedWeight, maxSupportedCount));
+	public B withRotateXY(int dx, int dy, int dz, int maxSupportedCount, int maxSupportedWeight) {
+		rotations.add(new Rotation(dx, dy, dz, maxSupportedWeight, maxSupportedCount));
 		
 		if(dx != dy) {
-			rotations.add(new Rotation(count, dy, dx, dz, maxSupportedWeight, maxSupportedCount));
+			rotations.add(new Rotation(dy, dx, dz, maxSupportedWeight, maxSupportedCount));
 		}
 		
 		return (B)this;
 	}
 	
-	public B withRotateXYZ(int count, int dx, int dy, int dz, int maxSupportedCount, int maxSupportedWeight) {
-		rotations.add(new Rotation(count, dx, dy, dz, maxSupportedWeight, maxSupportedCount));
+	public B withRotateXYZ(int dx, int dy, int dz, int maxSupportedCount, int maxSupportedWeight) {
+		rotations.add(new Rotation(dx, dy, dz, maxSupportedWeight, maxSupportedCount));
 		
-		if(!(dx == dy && dx == dz)) {
-
+		if(dx == dy && dx == dz) { // square 3d
+			// all sides are equal
+		} else if(dx == dy || dz == dy || dx == dz) {
+			// one side is equal
+			//
+			//     dx
+			// ---------
+			// |       |
+			// |       | dy
+			// |       |
+			// ---------
+			//
+			//              dz
+			// ---------------------------
+			// |                         |
+			// |                         | dy
+			// |                         |
+			// --------------------------- 
+			//
+			//    dy
+			// --------
+			// |      |
+			// |      |
+			// |      |
+			// |      |
+			// |      |
+			// |      | dz
+			// |      |
+			// |      |
+			// |      |
+			// |      |
+			// |      |
+			// --------
+			//
+			
+			
+			rotations.add(new Rotation(dy, dx, dz, maxSupportedWeight, maxSupportedCount));
+			rotations.add(new Rotation(dz, dx, dy, maxSupportedWeight, maxSupportedCount));
+		} else {
 			//
 			//              dx
 			// ---------------------------
@@ -83,6 +117,21 @@ public class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> {
 			// |                         |
 			// ---------------------------
 			//
+			//    dy
+			// --------
+			// |      |
+			// |      |
+			// |      |
+			// |      |
+			// |      |
+			// |      | dz
+			// |      |
+			// |      |
+			// |      |
+			// |      |
+			// |      |
+			// --------
+			//			
 			//              dx
 			// ---------------------------
 			// |                         |
@@ -93,6 +142,23 @@ public class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> {
 			// |                         |
 			// --------------------------- 
 			//
+			//
+			//    dy
+			// ----------------
+			// |              |
+			// |              |
+			// |              |
+			// |              |
+			// |              |
+			// |              | dx
+			// |              |
+			// |              |
+			// |              |
+			// |              |
+			// |              |
+			// ----------------
+			//			
+			//			
 			//    dy
 			// --------
 			// |      |
@@ -103,20 +169,21 @@ public class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> {
 			// |      |
 			// --------
 			//
+			//        dy
+			// ----------------
+			// |              |
+			// |              | dz
+			// |              |
+			// ----------------
+			//			
 			
-			if(dx != dy) {
-				rotations.add(new Rotation(count, dy, dx, dz, maxSupportedWeight, maxSupportedCount));
-			}
+			rotations.add(new Rotation(dy, dx, dz, maxSupportedWeight, maxSupportedCount));
 			
-			rotations.add(new Rotation(count, dx, dz, dy, maxSupportedWeight, maxSupportedCount));
-			if(dx != dz) {
-				rotations.add(new Rotation(count, dz, dx, dy, maxSupportedWeight, maxSupportedCount));
-			}
+			rotations.add(new Rotation(dx, dz, dy, maxSupportedWeight, maxSupportedCount));
+			rotations.add(new Rotation(dz, dx, dy, maxSupportedWeight, maxSupportedCount));
 			
-			rotations.add(new Rotation(count, dy, dz, dx, maxSupportedWeight, maxSupportedCount));
-			if(dy != dz) {
-				rotations.add(new Rotation(count, dz, dy, dx, maxSupportedWeight, maxSupportedCount));
-			}
+			rotations.add(new Rotation(dy, dz, dx, maxSupportedWeight, maxSupportedCount));
+			rotations.add(new Rotation(dz, dy, dx, maxSupportedWeight, maxSupportedCount));
 		}			
 		
 		return (B)this;

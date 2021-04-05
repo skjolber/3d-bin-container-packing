@@ -87,4 +87,11 @@ public abstract class StackValue {
 	public abstract long getPressure();
 	
 	public abstract int getWeight();
+
+	@Override
+	public String toString() {
+		return "StackValue [dx=" + dx + ", dy=" + dy + ", dz=" + dz + "]";
+	}
+	
+	
 }

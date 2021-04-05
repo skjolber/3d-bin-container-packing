@@ -37,5 +37,6 @@ public abstract class Stackable {
 	}
 
 	public abstract Stackable rotations(Dimension bound);
+
 	
 }

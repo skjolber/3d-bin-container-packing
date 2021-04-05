@@ -15,9 +15,7 @@ import com.github.skjolber.packing.api.StackableItem;
 public class ParallelPermutationRotationIterator extends DefaultPermutationRotationIterator {
 
 	protected final static int PADDING = 16;
-	
 	protected final int[] frequencies;
-	
 	protected WorkUnit[] workUnits;
 	
 	private static class WorkUnit {
