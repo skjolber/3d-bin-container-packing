@@ -75,7 +75,6 @@ public class Box extends Stackable {
 				List<StackValue> fitsInside = new ArrayList<>(rotations.length);
 				fitsInside.add(stackValue);
 				
-				
 				i++;
 				while(i < rotations.length) {
 					if(rotations[i].fitsInside3D(bound)) {
