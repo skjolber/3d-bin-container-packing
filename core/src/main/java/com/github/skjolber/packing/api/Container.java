@@ -152,4 +152,6 @@ public abstract class Container extends Stackable {
 	public int getMaxWeight() {
 		return emptyWeight + maxLoadWeight;
 	}
+
+	protected abstract boolean canLoad(Stackable box);
 }

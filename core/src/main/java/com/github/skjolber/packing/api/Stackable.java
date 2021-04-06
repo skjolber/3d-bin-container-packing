@@ -3,8 +3,6 @@ package com.github.skjolber.packing.api;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.Dimension;
-
 public abstract class Stackable {
 
 	protected final String name;
@@ -38,5 +36,7 @@ public abstract class Stackable {
 
 	public abstract Stackable rotations(Dimension bound);
 
+	@Override
+	public abstract Stackable clone();
 	
 }

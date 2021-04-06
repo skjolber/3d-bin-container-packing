@@ -7,10 +7,9 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Test;
 
-import com.github.skjolber.packing.Dimension;
+import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.StackableItem;
 

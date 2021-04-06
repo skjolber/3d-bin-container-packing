@@ -3,8 +3,6 @@ package com.github.skjolber.packing.api;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.Dimension;
-
 public class DefaultContainer extends Container {
 
 	protected final ContainerStackValue[] stackValues;
@@ -50,5 +48,21 @@ public class DefaultContainer extends Container {
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	public DefaultContainer clone() {
+		return new DefaultContainer(name, volume, emptyWeight, maxLoadVolume, maxLoadWeight, stackValues, stack);
+	}
+	
+	@Override
+	protected boolean canLoad(Stackable stackable) {
+		for(ContainerStackValue stackValue : stackValues) {
+			if(stackValue.canLoad(stackable)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }

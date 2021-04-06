@@ -2,8 +2,6 @@ package com.github.skjolber.packing.api.impl;
 
 import java.util.List;
 
-import com.github.skjolber.packing.Box;
-
 public class ParallelPermutationRotationIteratorAdapter implements PermutationRotationIterator {
 
 	private final ParallelPermutationRotationIterator delegate;

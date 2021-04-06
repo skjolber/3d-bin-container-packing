@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.skjolber.packing.Dimension;
+import com.github.skjolber.packing.api.Dimension;
 
 public class Box extends Stackable {
 
@@ -88,4 +88,10 @@ public class Box extends Stackable {
 		}
 		return null;
 	}
+
+	@Override
+	public Box clone() {
+		return new Box(name, volume, weight, rotations);
+	}
+	
 }

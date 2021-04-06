@@ -10,17 +10,17 @@ import java.io.Serializable;
 public class StackableItem implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private final int count;
-	private final Stackable box;
+	private final Stackable stackable;
 
 	public StackableItem(Stackable box) {
 		this(box, 1);
 	}
 
-	public StackableItem(Stackable box, int count) {
+	public StackableItem(Stackable stackable, int count) {
 		super();
-		this.box = box;
+		this.stackable = stackable;
 		this.count = count;
 	}
 
@@ -29,11 +29,12 @@ public class StackableItem implements Serializable {
 	}
 
 	public Stackable getStackable() {
-		return box;
+		return stackable;
 	}
 
-  @Override
-  public String toString() {
-    return String.format("%dx%s", count, box);
-  }
+	@Override
+	public String toString() {
+		return String.format("%dx%s", count, stackable);
+	}
+
 }

@@ -2,9 +2,8 @@ package com.github.skjolber.packing.api.impl;
 
 import java.util.List;
 
-import com.github.skjolber.packing.Box;
-import com.github.skjolber.packing.BoxItem;
-import com.github.skjolber.packing.Dimension;
+import com.github.skjolber.packing.api.Dimension;
+
 import com.github.skjolber.packing.api.StackableItem;
 
 /**

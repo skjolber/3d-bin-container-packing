@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.api;
 
-import com.github.skjolber.packing.Dimension;
-
 public abstract class StackValue {
 
 	// structural integrity for this oritentation

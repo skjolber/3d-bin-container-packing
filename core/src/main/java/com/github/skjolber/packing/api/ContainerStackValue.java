@@ -47,4 +47,17 @@ public abstract class ContainerStackValue extends StackValue {
 		return loadDz;
 	}
 
+	protected boolean canLoad(Stackable stackable) {
+		for (StackValue stackValue : stackable.getStackValues()) {
+			if(
+				stackValue.getDx() <= loadDx && 
+				stackValue.getDy() <= loadDy && 
+				stackValue.getDz() <= loadDz
+				) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

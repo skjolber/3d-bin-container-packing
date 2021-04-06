@@ -45,6 +45,10 @@ public class StackSpace extends Dimension {
 		this.z = z;
 	}
 
+	public StackSpace() {
+		super(null, 0, 0, 0);
+	}
+	
 	public StackSpace(int w, int d, int h, int x, int y, int z) {
 		this(null, null, w, d, h, x, y, z);
 	}

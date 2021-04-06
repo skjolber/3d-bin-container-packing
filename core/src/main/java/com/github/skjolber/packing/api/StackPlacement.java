@@ -1,10 +1,10 @@
 package com.github.skjolber.packing.api;
 
-public class StackPlacement {
+public class StackPlacement<T extends StackSpace> {
 
-	private Stackable stackable;
-	private StackValue value;
-	private StackSpace space;
+	protected Stackable stackable;
+	protected StackValue value;
+	protected T space;
 	
 	public Stackable getStackable() {
 		return stackable;
@@ -18,19 +18,18 @@ public class StackPlacement {
 	public void setStackValue(StackValue stackValue) {
 		this.value = stackValue;
 	}
-	public StackSpace getSpace() {
+	public T getSpace() {
 		return space;
 	}
-	public void setSpace(StackSpace space) {
+	public void setSpace(T space) {
 		this.space = space;
 	}
 
-	boolean intersects(StackPlacement placement) {
+	boolean intersects(StackPlacement<?> placement) {
 		return intersectsX(placement) && intersectsY(placement) && intersectsZ(placement);
 	}
 
-	public boolean intersectsY(StackPlacement placement) {
-
+	public boolean intersectsY(StackPlacement<?> placement) {
 		int startY = space.getY();
 		int endY = startY + value.getDy() - 1;
 
@@ -40,11 +39,9 @@ public class StackPlacement {
 
 		return startY <= placement.getSpace().getY() + placement.getStackValue().getDy() - 1 &&
 				placement.getSpace().getY() + placement.getStackValue().getDy() - 1 <= endY;
-
 	}
 
-	public boolean intersectsX(StackPlacement placement) {
-
+	public boolean intersectsX(StackPlacement<?> placement) {
 		int startX = space.getX();
 		int endX = startX + value.getDx() - 1;
 
@@ -54,11 +51,9 @@ public class StackPlacement {
 
 		return startX <= placement.getSpace().getX() + placement.getStackValue().getDx() - 1 &&
 				placement.getSpace().getX() + placement.getStackValue().getDx() - 1 <= endX;
-
 	}
 	
-	public boolean intersectsZ(StackPlacement placement) {
-
+	public boolean intersectsZ(StackPlacement<?> placement) {
 		int startZ = space.getZ();
 		int endZ = startZ + value.getDz() - 1;
 
@@ -68,7 +63,6 @@ public class StackPlacement {
 
 		return startZ <= placement.getSpace().getZ() + placement.getStackValue().getDz() - 1 &&
 				placement.getSpace().getZ() + placement.getStackValue().getDz() - 1 <= endZ;
-
 	}
 
 	public int getAbsoluteX() {
