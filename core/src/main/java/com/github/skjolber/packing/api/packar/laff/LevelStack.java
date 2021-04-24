@@ -1,7 +1,13 @@
-package com.github.skjolber.packing.api;
+package com.github.skjolber.packing.api.packar.laff;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.github.skjolber.packing.api.ContainerStackValue;
+import com.github.skjolber.packing.api.DefaultContainerStackValue;
+import com.github.skjolber.packing.api.DefaultStack;
+import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.StackPlacement;
 
 public class LevelStack extends Stack {
 
@@ -31,6 +37,10 @@ public class LevelStack extends Stack {
 		}
 
 		return levels.add(element);
+	}
+	
+	public List<Stack> getLevels() {
+		return levels;
 	}
 	
 	public long getFreeVolumeLoad() {
@@ -167,5 +177,11 @@ public class LevelStack extends Stack {
 			weight -= level.getWeight();
 		}
 	}
+	
+	@Override
+	public boolean isEmpty() {
+		return levels.isEmpty() || levels.get(0).isEmpty();
+	}
+
 	
 }

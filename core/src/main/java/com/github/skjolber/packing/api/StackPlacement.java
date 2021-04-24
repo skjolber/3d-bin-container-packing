@@ -1,11 +1,23 @@
 package com.github.skjolber.packing.api;
 
-public class StackPlacement<T extends StackSpace> {
+import java.util.LinkedList;
+import java.util.List;
+
+public class StackPlacement {
 
 	protected Stackable stackable;
 	protected StackValue value;
-	protected T space;
+	protected StackSpace space;
 	
+	protected List<StackPlacement> dxStart = new LinkedList<>();
+	protected List<StackPlacement> dxEnd = new LinkedList<>();
+	
+	protected List<StackPlacement> dyStart = new LinkedList<>();
+	protected List<StackPlacement> dyEnd = new LinkedList<>();
+	
+	protected List<StackPlacement> dzStart = new LinkedList<>();
+	protected List<StackPlacement> dzEnd = new LinkedList<>();
+
 	public Stackable getStackable() {
 		return stackable;
 	}
@@ -18,18 +30,18 @@ public class StackPlacement<T extends StackSpace> {
 	public void setStackValue(StackValue stackValue) {
 		this.value = stackValue;
 	}
-	public T getSpace() {
+	public StackSpace getSpace() {
 		return space;
 	}
-	public void setSpace(T space) {
+	public void setSpace(StackSpace space) {
 		this.space = space;
 	}
 
-	boolean intersects(StackPlacement<?> placement) {
+	boolean intersects(StackPlacement placement) {
 		return intersectsX(placement) && intersectsY(placement) && intersectsZ(placement);
 	}
 
-	public boolean intersectsY(StackPlacement<?> placement) {
+	public boolean intersectsY(StackPlacement placement) {
 		int startY = space.getY();
 		int endY = startY + value.getDy() - 1;
 
@@ -41,7 +53,7 @@ public class StackPlacement<T extends StackSpace> {
 				placement.getSpace().getY() + placement.getStackValue().getDy() - 1 <= endY;
 	}
 
-	public boolean intersectsX(StackPlacement<?> placement) {
+	public boolean intersectsX(StackPlacement placement) {
 		int startX = space.getX();
 		int endX = startX + value.getDx() - 1;
 
@@ -53,7 +65,7 @@ public class StackPlacement<T extends StackSpace> {
 				placement.getSpace().getX() + placement.getStackValue().getDx() - 1 <= endX;
 	}
 	
-	public boolean intersectsZ(StackPlacement<?> placement) {
+	public boolean intersectsZ(StackPlacement placement) {
 		int startZ = space.getZ();
 		int endZ = startZ + value.getDz() - 1;
 
@@ -92,4 +104,42 @@ public class StackPlacement<T extends StackSpace> {
 	public long getVolume() {
 		return stackable.getVolume();
 	}
+	public List<StackPlacement> getDxStart() {
+		return dxStart;
+	}
+	public void setDxStart(List<StackPlacement> dxStart) {
+		this.dxStart = dxStart;
+	}
+	public List<StackPlacement> getDxEnd() {
+		return dxEnd;
+	}
+	public void setDxEnd(List<StackPlacement> dxEnd) {
+		this.dxEnd = dxEnd;
+	}
+	public List<StackPlacement> getDyStart() {
+		return dyStart;
+	}
+	public void setDyStart(List<StackPlacement> dyStart) {
+		this.dyStart = dyStart;
+	}
+	public List<StackPlacement> getDyEnd() {
+		return dyEnd;
+	}
+	public void setDyEnd(List<StackPlacement> dyEnd) {
+		this.dyEnd = dyEnd;
+	}
+	public List<StackPlacement> getDzStart() {
+		return dzStart;
+	}
+	public void setDzStart(List<StackPlacement> dzStart) {
+		this.dzStart = dzStart;
+	}
+	public List<StackPlacement> getDzEnd() {
+		return dzEnd;
+	}
+	public void setDzEnd(List<StackPlacement> dzEnd) {
+		this.dzEnd = dzEnd;
+	}
+	
+	
 }

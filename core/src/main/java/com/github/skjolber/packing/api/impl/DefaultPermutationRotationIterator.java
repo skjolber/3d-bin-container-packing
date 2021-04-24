@@ -6,12 +6,11 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.packer.StackableItem;
 
 public class DefaultPermutationRotationIterator implements PermutationRotationIterator {
 
 	protected final PermutationStackableValue[] matrix;
-	protected final Dimension dimension;
 	protected int[] reset;
 	protected int[] rotations; // 2^n or 6^n
 	
@@ -38,8 +37,6 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 		}
 
 		this.matrix = matrix.toArray(new PermutationStackableValue[matrix.size()]);
-
-		this.dimension = bound;
 		this.reset = new int[types.size()];
 		this.rotations = new int[types.size()];
 		

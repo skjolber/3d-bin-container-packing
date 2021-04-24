@@ -2,7 +2,7 @@ package com.github.skjolber.packing.api;
 
 public abstract class StackValue {
 
-	// structural integrity for this oritentation
+	// structural integrity for this orientation
 	protected final int maxSupportedCount;
 	protected final int maxSupportedWeight;
 	

@@ -104,9 +104,7 @@ public abstract class Container extends Stackable {
 					} else if(volume != stackValues[i].getVolume()) {
 						throw new IllegalStateException("Expected equal volume for all rotations");
 					}
-
 				}
-				
 				defaultContainer = new DefaultContainer(name, volume, emptyWeight, maxLoadVolume, maxLoadWeight, stackValues, stack);
 			}
 
@@ -153,5 +151,5 @@ public abstract class Container extends Stackable {
 		return emptyWeight + maxLoadWeight;
 	}
 
-	protected abstract boolean canLoad(Stackable box);
+	public abstract boolean canLoad(Stackable box);
 }

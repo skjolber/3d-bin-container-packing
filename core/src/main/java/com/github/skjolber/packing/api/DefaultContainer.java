@@ -56,7 +56,7 @@ public class DefaultContainer extends Container {
 	}
 	
 	@Override
-	protected boolean canLoad(Stackable stackable) {
+	public boolean canLoad(Stackable stackable) {
 		for(ContainerStackValue stackValue : stackValues) {
 			if(stackValue.canLoad(stackable)) {
 				return true;

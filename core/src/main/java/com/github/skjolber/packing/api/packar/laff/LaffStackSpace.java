@@ -1,4 +1,6 @@
-package com.github.skjolber.packing.api;
+package com.github.skjolber.packing.api.packar.laff;
+
+import com.github.skjolber.packing.api.StackSpace;
 
 public class LaffStackSpace extends StackSpace {
 

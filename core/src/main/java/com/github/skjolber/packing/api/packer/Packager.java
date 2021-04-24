@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.api;
+package com.github.skjolber.packing.api.packer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,6 +6,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.StackSpace;
+import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.impl.BinarySearchIterator;
 import com.github.skjolber.packing.impl.deadline.BooleanSupplierBuilder;
 
@@ -40,9 +44,9 @@ public abstract class Packager {
 	 * Constructor
 	 *
 	 * @param containers   list of containers
-	 * @param rotate3D     whether boxes can be rotated in all three directions (two directions otherwise)
 	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a
 	 *                     match, it searches the preceding boxes as well, until the deadline is passed.
+	 * @param checkpointsPerDeadlineCheck number of deadline checks to skip, before checking again
 	 */
 
 	public Packager(List<Container> containers, boolean binarySearch, int checkpointsPerDeadlineCheck) {

@@ -4,9 +4,9 @@ public class StackSpace extends Dimension {
 
 	private StackSpace parent;
 	
-	private int x; // width coordinate
-	private int y; // depth coordinate
-	private int z; // height coordinate
+	protected int x; // width coordinate
+	protected int y; // depth coordinate
+	protected int z; // height coordinate
 	
 	// TODO weight constraint
 	protected int maxSupportedPressure; // i.e.  

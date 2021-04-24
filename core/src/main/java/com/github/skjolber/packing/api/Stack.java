@@ -30,4 +30,6 @@ public abstract class Stack {
 
 	public abstract void clear();
 
+	public abstract boolean isEmpty();
+
 }

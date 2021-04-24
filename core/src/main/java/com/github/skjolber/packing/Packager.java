@@ -44,6 +44,7 @@ public abstract class Packager {
 	 * @param rotate3D     whether boxes can be rotated in all three directions (two directions otherwise)
 	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a
 	 *                     match, it searches the preceding boxes as well, until the deadline is passed.
+	 * @param checkpointsPerDeadlineCheck number of deadline checks to skip, before checking again
 	 */
 
 	public Packager(List<Container> containers, boolean rotate3D, boolean binarySearch, int checkpointsPerDeadlineCheck) {

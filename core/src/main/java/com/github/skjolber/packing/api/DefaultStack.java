@@ -54,4 +54,9 @@ public class DefaultStack extends Stack {
 		return volume;
 	}
 	
+	@Override
+	public boolean isEmpty() {
+		return entries.isEmpty();
+	}
+	
 }

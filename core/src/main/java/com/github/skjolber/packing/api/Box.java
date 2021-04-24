@@ -1,10 +1,7 @@
 package com.github.skjolber.packing.api;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import com.github.skjolber.packing.api.Dimension;
 
 public class Box extends Stackable {
 
