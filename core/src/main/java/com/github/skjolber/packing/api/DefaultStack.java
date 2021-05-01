@@ -6,6 +6,13 @@ import java.util.List;
 public class DefaultStack extends Stack {
 
 	protected final List<StackPlacement> entries = new ArrayList<>();
+	
+	public DefaultStack() {
+	}
+	
+	public DefaultStack(ContainerStackValue containerStackValue) {
+		super(containerStackValue);
+	}
 
 	public List<StackPlacement> getPlacements() {
 		return entries;

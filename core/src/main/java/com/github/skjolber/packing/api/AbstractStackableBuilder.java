@@ -105,8 +105,24 @@ public class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> {
 			// --------
 			//
 			
-			rotations.add(new Rotation(dy, dx, dz, maxSupportedWeight, maxSupportedCount));
+			
+			
 			rotations.add(new Rotation(dz, dx, dy, maxSupportedWeight, maxSupportedCount));
+			rotations.add(new Rotation(dy, dz, dx, maxSupportedWeight, maxSupportedCount));
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
 		} else {
 			//
 			//              dx

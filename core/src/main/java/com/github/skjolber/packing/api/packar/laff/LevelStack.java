@@ -15,7 +15,11 @@ public class LevelStack extends Stack {
 	protected int dz = 0;
 	
 	protected List<Stack> levels = new ArrayList<>();
-	
+
+	public LevelStack(ContainerStackValue containerStackValue) {
+		super(containerStackValue);
+	}
+
 	public List<StackPlacement> getPlacements() {
 		List<StackPlacement> entries = new ArrayList<>();
 		

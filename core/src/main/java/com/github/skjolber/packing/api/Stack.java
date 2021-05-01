@@ -6,6 +6,14 @@ public abstract class Stack {
 
 	protected ContainerStackValue containerStackValue;
 	
+	public Stack() {
+	}
+	
+	public Stack(ContainerStackValue containerStackValue) {
+		super();
+		this.containerStackValue = containerStackValue;
+	}
+
 	public ContainerStackValue getContainerStackValue() {
 		return containerStackValue;
 	}

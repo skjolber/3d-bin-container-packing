@@ -152,4 +152,8 @@ public abstract class Container extends Stackable {
 	}
 
 	public abstract boolean canLoad(Stackable box);
+	
+	@Override
+	public abstract Container clone(); 
+	
 }
