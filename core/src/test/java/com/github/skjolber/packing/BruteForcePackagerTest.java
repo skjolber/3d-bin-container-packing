@@ -594,11 +594,14 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 		products.add(new BoxItem(new Box("Product 1", 299, 299, 99, 25), 1));
 		products.add(new BoxItem(new Box("Product 2", 299, 299, 99, 25), 1));
 		products.add(new BoxItem(new Box("Product 3", 299, 299, 99, 25), 1));
-		products.add(new BoxItem(new Box("Product 4", 99, 99, 99, 25), 1));
+		products.add(new BoxItem(new Box("Product 4", 99, 99, 25, 25), 1));
 		List<Container> containers = packager.packList(products, maxContainers, System.currentTimeMillis() + 15000);
-		assertEquals(1, containers.size());
+		
+		assertEquals(2, containers.size());
 		assertEquals(containers.get(0).getName(), "Box 3");
-		assertEquals(containers.get(0).getLevels().size(), 1);
+		assertEquals(3, containers.get(0).getLevels().size());
+		assertEquals(containers.get(1).getName(), "Box 1");
+		assertEquals(1, containers.get(1).getLevels().size());
 	}
 
 	@Test

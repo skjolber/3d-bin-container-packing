@@ -398,6 +398,7 @@ public class BruteForcePackager extends Packager {
 			Space placedSpace = placement.getSpace();
 			
 			int height = (levelSpace.getZ() + levelSpace.getHeight()) - (placedSpace.getZ() + placedBox.getHeight());
+			
 			if(height > 0) {
 				Box nextBox = rotator.get(index);
 				if (nextBox.getWeight() > holder.getFreeWeight()) {
@@ -405,8 +406,8 @@ public class BruteForcePackager extends Packager {
 				}
 				
 				Space abovePlacedBox = new Space(
-						placedSpace.getWidth(), 
-						placedSpace.getDepth(), 
+						placedBox.getWidth(), 
+						placedBox.getDepth(), 
 						height,
 						placedSpace.getX(),
 						placedSpace.getY(),
