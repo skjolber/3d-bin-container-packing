@@ -26,7 +26,7 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
     <artifactId>core</artifactId>
-    <version>1.2.13</version>
+    <version>1.2.14</version>
 </dependency>
 ```
 
@@ -133,6 +133,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 
 
 # History
+ - 1.2.14: Fix for issue #297.
  - 1.2.13: Fix for issue #251.
  - 1.2.12: Fix for issue #245.
  - 1.2.11: Add test artifact, improve use of deadline for better performance, some bugfixes.
