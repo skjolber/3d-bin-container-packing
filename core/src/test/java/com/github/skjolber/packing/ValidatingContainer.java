@@ -29,4 +29,10 @@ public class ValidatingContainer extends Container {
 		
 		levels.get(levels.size() - 1).validate();
 	}
+	
+	public Container clone() {
+		// shallow clone
+		return new ValidatingContainer(this);
+	}
+	
 }

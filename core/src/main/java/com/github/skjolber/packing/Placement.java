@@ -51,11 +51,34 @@ public class Placement {
 	}
 
 	boolean intersects(Placement placement) {
+
+		// direction -->
+		//
+		//              |------------------|
+		//              |      current     |
+		//              |------------------|
+		//
+		// |------------------|
+		// |      left        |
+		// |------------------|
+		//
+		//                           |------------------|
+		//                           |      right       |
+		//                           |------------------|
+		//
+		//        |-------------------------------|
+		//        |            outside            |
+		//        |------------------------------ |
+		//
+		//                  |----------|
+		//                  |  within  |
+		//                  |----------|
+		
+		
 		return intersectsX(placement) && intersectsY(placement) && intersectsZ(placement);
 	}
 
 	public boolean intersectsY(Placement placement) {
-
 		int startY = space.getY();
 		int endY = startY + box.getDepth() - 1;
 
@@ -63,9 +86,15 @@ public class Placement {
 			return true;
 		}
 
-		return startY <= placement.getSpace().getY() + placement.getBox().getDepth() - 1 &&
-				placement.getSpace().getY() + placement.getBox().getDepth() - 1 <= endY;
+		int placementEndY = placement.getSpace().getY() + placement.getBox().getDepth() - 1;
+		
+		if(startY <= placementEndY &&
+				placementEndY <= endY) {
+			return true;
+		}
 
+		return placement.getSpace().getY() < startY && endY < placementEndY;
+		
 	}
 
 	public boolean intersectsX(Placement placement) {
@@ -77,9 +106,12 @@ public class Placement {
 			return true;
 		}
 
-		return startX <= placement.getSpace().getX() + placement.getBox().getWidth() - 1 &&
-				placement.getSpace().getX() + placement.getBox().getWidth() - 1 <= endX;
+		int placementEndX = placement.getSpace().getX() + placement.getBox().getWidth() - 1;
+		if(startX <= placementEndX && placementEndX <= endX) {
+			return true;
+		}
 
+		return placement.getSpace().getX() < startX && endX < placementEndX;
 	}
 	
 	public boolean intersectsZ(Placement placement) {
@@ -91,9 +123,13 @@ public class Placement {
 			return true;
 		}
 
-		return startZ <= placement.getSpace().getZ() + placement.getBox().getHeight() - 1 &&
-				placement.getSpace().getZ() + placement.getBox().getHeight() - 1 <= endZ;
-
+		int placementEndZ = placement.getSpace().getZ() + placement.getBox().getHeight() - 1;
+		if(startZ <= placementEndZ &&
+				placementEndZ <= endZ) {
+			return true;
+		}
+		
+		return placement.getSpace().getZ() < startZ && endZ < placementEndZ;
 	}
 
 	public int getAbsoluteX() {
