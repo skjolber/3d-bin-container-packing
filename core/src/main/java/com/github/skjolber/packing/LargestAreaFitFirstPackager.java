@@ -63,7 +63,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 	}
 
 	public LAFFResult pack(List<Box> containerProducts, Container targetContainer,  BooleanSupplier interrupt) {
-		Container holder = new Container(targetContainer);
+		Container holder = targetContainer.clone();
 
 		Dimension freeSpace = targetContainer;
 

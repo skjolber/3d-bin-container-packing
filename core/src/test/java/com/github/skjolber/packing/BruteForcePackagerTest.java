@@ -714,10 +714,10 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 				);
 
 		List<Container> containers = Arrays.asList(
-				new Container(440, 400, 90, 0),
-				new Container(440, 400, 190, 0),
-				new Container(440, 400, 380, 0),
-				new Container(440, 400, 740, 0)
+				new ValidatingContainer(440, 400, 90, 0),
+				new ValidatingContainer(440, 400, 190, 0),
+				new ValidatingContainer(440, 400, 380, 0),
+				new ValidatingContainer(440, 400, 740, 0)
 				);
 
 		Packager packager = BruteForcePackager.newBuilder()
@@ -726,4 +726,21 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 
 		List<Container> usedContainers = packager.packList(parcels, 3, () -> false);		
 	}
+	
+	@Test
+	public void testIssue297() {
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new ValidatingContainer(282, 222, 190, 9));
+		Packager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
+	
+		List<BoxItem> products = new ArrayList<BoxItem>();
+		products.add(new BoxItem(new Box("A", 213, 187, 180, 1), 1));
+		products.add(new BoxItem(new Box("B", 217, 170, 78, 1), 1));
+		products.add(new BoxItem(new Box("C", 129, 102, 71, 1), 1));
+		
+		Container match = packager.pack(products);
+		System.out.println(match);
+		
+		
+	}	
 }

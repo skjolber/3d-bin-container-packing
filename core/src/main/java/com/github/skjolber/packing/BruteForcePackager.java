@@ -58,7 +58,7 @@ public class BruteForcePackager extends Packager {
 
 	public BruteForceResult pack(List<Placement> placements, Container container, PermutationRotationIterator rotator, BooleanSupplier interrupt) {
 
-		Container holder = new Container(container);
+		Container holder = container.clone();
 
 		BruteForceResult result = new BruteForceResult(rotator, placements, holder);
 
