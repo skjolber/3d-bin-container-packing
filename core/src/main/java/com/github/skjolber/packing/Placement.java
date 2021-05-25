@@ -52,8 +52,6 @@ public class Placement {
 
 	boolean intersects(Placement placement) {
 
-		// System.out.println(this + " -> " + placement);
-		
 		// direction -->
 		//
 		//              |------------------|
