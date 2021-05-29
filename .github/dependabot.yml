@@ -1,0 +1,18 @@
+version: 2
+updates:
+- package-ecosystem: maven
+  directory: "/"
+  schedule:
+    interval: weekly
+    time: "04:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: org.openjdk.jmh:jmh-generator-annprocess
+    versions:
+    - "1.29"
+  - dependency-name: org.openjdk.jmh:jmh-core
+    versions:
+    - "1.29"
+  - dependency-name: org.pitest:pitest-maven
+    versions:
+    - 1.6.3

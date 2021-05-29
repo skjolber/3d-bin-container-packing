@@ -594,11 +594,14 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 		products.add(new BoxItem(new Box("Product 1", 299, 299, 99, 25), 1));
 		products.add(new BoxItem(new Box("Product 2", 299, 299, 99, 25), 1));
 		products.add(new BoxItem(new Box("Product 3", 299, 299, 99, 25), 1));
-		products.add(new BoxItem(new Box("Product 4", 99, 99, 99, 25), 1));
+		products.add(new BoxItem(new Box("Product 4", 99, 99, 25, 25), 1));
 		List<Container> containers = packager.packList(products, maxContainers, System.currentTimeMillis() + 15000);
-		assertEquals(1, containers.size());
+		
+		assertEquals(2, containers.size());
 		assertEquals(containers.get(0).getName(), "Box 3");
-		assertEquals(containers.get(0).getLevels().size(), 1);
+		assertEquals(3, containers.get(0).getLevels().size());
+		assertEquals(containers.get(1).getName(), "Box 1");
+		assertEquals(1, containers.get(1).getLevels().size());
 	}
 
 	@Test
@@ -714,10 +717,10 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 				);
 
 		List<Container> containers = Arrays.asList(
-				new Container(440, 400, 90, 0),
-				new Container(440, 400, 190, 0),
-				new Container(440, 400, 380, 0),
-				new Container(440, 400, 740, 0)
+				new ValidatingContainer(440, 400, 90, 0),
+				new ValidatingContainer(440, 400, 190, 0),
+				new ValidatingContainer(440, 400, 380, 0),
+				new ValidatingContainer(440, 400, 740, 0)
 				);
 
 		Packager packager = BruteForcePackager.newBuilder()
@@ -726,4 +729,21 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 
 		List<Container> usedContainers = packager.packList(parcels, 3, () -> false);		
 	}
+	
+	@Test
+	public void testIssue297() {
+		List<Container> containers = new ArrayList<Container>();
+		containers.add(new ValidatingContainer(282, 222, 190, 9));
+		Packager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
+	
+		List<BoxItem> products = new ArrayList<BoxItem>();
+		products.add(new BoxItem(new Box("A", 213, 187, 180, 1), 1));
+		products.add(new BoxItem(new Box("B", 217, 170, 78, 1), 1));
+		products.add(new BoxItem(new Box("C", 129, 102, 71, 1), 1));
+		
+		Container match = packager.pack(products);
+		System.out.println(match);
+		
+		
+	}	
 }
