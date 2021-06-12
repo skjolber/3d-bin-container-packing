@@ -12,7 +12,7 @@
     "react-scripts": "2.1.8",
     "simplex-noise": "2.4.0",
     "stats-js": "1.0.1",
-    "three": "0.104.0",
+    "three": "0.125.0",
     "three-gltf-loader": "1.108.0",
     "three-obj-mtl-loader": "1.0.3",
     "three-orbitcontrols": "2.102.1"
