@@ -106,7 +106,6 @@ The box which covers the largest ground area of the container is placed first; i
 
 When no more boxes fit in a level, the level is incremented and the process repeated. Boxes are rotated, containers not.
 
-
 The algorithm runs reasonably fast, usually in milliseconds. 
 
 ###  Brute-force algorithm
@@ -123,6 +122,9 @@ per order distribution for web-shops, a healthy part of the orders are within it
 
 Note that placing the boxes as the LAFF algorithm is a limitation; the current approach is 'split and drill down', a better approach would be to sort and keep tabs of corners (boxes). 
 
+### Visualizer
+There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/).
+
 # Get involved
 If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request. __DO NOT send me emails unless you're prepared to pay for my time.__
 
@@ -130,7 +132,6 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 
 ## License
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
-
 
 # History
  - 1.2.14: Fix for issue #297.

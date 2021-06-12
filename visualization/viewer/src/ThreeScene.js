@@ -116,7 +116,7 @@ class ThreeScene extends Component {
   
           }
         }
-        var visibleContainer = stackableRenderer.add(mainGroup, memoryScheme, new StackPlacement(container, 0, 0, 0), 10, 10, 0);
+        var visibleContainer = stackableRenderer.add(mainGroup, memoryScheme, new StackPlacement(container, 0, 0, 0), 0, 0, 0);
         visibleContainers.push(visibleContainer);
       }
     };
