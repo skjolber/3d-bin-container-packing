@@ -1,0 +1,84 @@
+{
+  "containers" : [ {
+    "id" : "X",
+    "name" : "X",
+    "plugins" : [ ],
+    "dx" : 100,
+    "dy" : 36,
+    "dz" : 5,
+    "loadDx" : 100,
+    "loadDy" : 36,
+    "loadDz" : 5,
+    "stack" : {
+      "id" : null,
+      "name" : null,
+      "plugins" : [ ],
+      "placements" : [ {
+        "id" : null,
+        "name" : null,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 0,
+        "z" : 0,
+        "stackable" : {
+          "id" : "2",
+          "name" : "2",
+          "plugins" : [ ],
+          "dx" : 90,
+          "dy" : 18,
+          "dz" : 3,
+          "type" : "box"
+        }
+      }, {
+        "id" : null,
+        "name" : null,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 18,
+        "z" : 0,
+        "stackable" : {
+          "id" : "1",
+          "name" : "1",
+          "plugins" : [ ],
+          "dx" : 90,
+          "dy" : 18,
+          "dz" : 2,
+          "type" : "box"
+        }
+      }, {
+        "id" : null,
+        "name" : null,
+        "plugins" : [ ],
+        "x" : 90,
+        "y" : 0,
+        "z" : 0,
+        "stackable" : {
+          "id" : "3",
+          "name" : "3",
+          "plugins" : [ ],
+          "dx" : 3,
+          "dy" : 36,
+          "dz" : 3,
+          "type" : "box"
+        }
+      }, {
+        "id" : null,
+        "name" : null,
+        "plugins" : [ ],
+        "x" : 93,
+        "y" : 0,
+        "z" : 0,
+        "stackable" : {
+          "id" : "4",
+          "name" : "4",
+          "plugins" : [ ],
+          "dx" : 2,
+          "dy" : 36,
+          "dz" : 3,
+          "type" : "box"
+        }
+      } ]
+    },
+    "type" : "container"
+  } ]
+}

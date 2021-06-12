@@ -1,0 +1,35 @@
+{
+  "name": "three-template-2",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "main": "src/index.js",
+  "dependencies": {
+    "dat.gui": "0.7.6",
+    "randomcolor": "^0.6.2",
+    "react": "16.8.6",
+    "react-dom": "16.8.6",
+    "react-scripts": "2.1.8",
+    "simplex-noise": "2.4.0",
+    "stats-js": "1.0.1",
+    "three": "0.104.0",
+    "three-gltf-loader": "1.108.0",
+    "three-obj-mtl-loader": "1.0.3",
+    "three-orbitcontrols": "2.102.1"
+  },
+  "devDependencies": {
+    "typescript": "3.3.3"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}
