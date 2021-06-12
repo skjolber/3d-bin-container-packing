@@ -22,6 +22,9 @@ public class ContainerProjection extends AbstractProjection<Container> {
 			containerVisualization.setLoadDy(inputContainer.getDepth());
 			containerVisualization.setLoadDz(inputContainer.getHeight());
 
+			containerVisualization.setId(inputContainer.getName());
+			containerVisualization.setName(inputContainer.getName());
+
 			StackVisualization stackVisualization = new StackVisualization();
 			containerVisualization.setStack(stackVisualization);
 			
@@ -30,6 +33,9 @@ public class ContainerProjection extends AbstractProjection<Container> {
 					
 					Box box = placement.getBox();
 					BoxVisualization boxVisualization = new BoxVisualization();
+					boxVisualization.setId(box.getName());
+					boxVisualization.setName(box.getName());
+					
 					boxVisualization.setDx(box.getWidth());
 					boxVisualization.setDy(box.getDepth());
 					boxVisualization.setDz(box.getHeight());

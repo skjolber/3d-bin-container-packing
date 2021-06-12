@@ -1,6 +1,7 @@
 package visualization;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,10 +25,10 @@ public class VisualizationTest {
 		containers.add(container);
 
 		List<BoxItem> products = new ArrayList<>();
-		products.add(new BoxItem(new Box("1", 1, 18, 90, 1)));
-		products.add(new BoxItem(new Box("2", 1, 18, 90, 1)));
-		products.add(new BoxItem(new Box("3", 1, 36, 3, 1)));
-		products.add(new BoxItem(new Box("4", 1, 36, 3, 1)));
+		products.add(new BoxItem(new Box("1", 2, 18, 90, 1)));
+		products.add(new BoxItem(new Box("2", 3, 18, 90, 1)));
+		products.add(new BoxItem(new Box("3", 3, 36, 3, 1)));
+		products.add(new BoxItem(new Box("4", 2, 36, 3, 1)));
 
 		LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(containers, true, true, true, 1);
 		Container pack = packager.pack(products, Long.MAX_VALUE);		
@@ -35,8 +36,10 @@ public class VisualizationTest {
 		ContainerProjection p = new ContainerProjection();
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		List<Container> a = Arrays.asList(pack);
-		p.project(a , bout);
+
+		File file = new File("../viewer/public/assets/containers.json");
+		p.project(a , file);
+
 		
-		System.out.println(new String(bout.toByteArray()));
 	}
 }
