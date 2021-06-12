@@ -25,7 +25,7 @@ public class PackagingVisualization {
 	public String toJson() throws JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
 		
-		return mapper.writeValueAsString(this);
+		return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
 	}
 	
 }

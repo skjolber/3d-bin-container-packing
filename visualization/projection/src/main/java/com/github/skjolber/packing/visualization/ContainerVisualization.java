@@ -1,21 +1,52 @@
 package com.github.skjolber.packing.visualization;
 
-import java.util.ArrayList;
-import java.util.List;
+public class ContainerVisualization extends StackableVisualization {
 
-public class ContainerVisualization extends AbstractVisualization {
+	private int loadDx;
+	private int loadDy;
+	private int loadDz;
+	
+	private StackVisualization stack;
+	
+	private String type = "container";
+	
+	public int getLoadDx() {
+		return loadDx;
+	}
 
-	private List<BoxVisualization> boxes = new ArrayList<>();
+	public void setLoadDx(int loadDx) {
+		this.loadDx = loadDx;
+	}
 
-	public boolean add(BoxVisualization e) {
-		return boxes.add(e);
+	public int getLoadDy() {
+		return loadDy;
+	}
+
+	public void setLoadDy(int loadDy) {
+		this.loadDy = loadDy;
+	}
+
+	public int getLoadDz() {
+		return loadDz;
+	}
+
+	public void setLoadDz(int loadDz) {
+		this.loadDz = loadDz;
+	}
+
+	public StackVisualization getStack() {
+		return stack;
 	}
 	
-	public List<BoxVisualization> getBoxes() {
-		return boxes;
+	public void setStack(StackVisualization stack) {
+		this.stack = stack;
+	}
+
+	public String getType() {
+		return type;
 	}
 	
-	public void setBoxes(List<BoxVisualization> boxes) {
-		this.boxes = boxes;
+	public void setType(String type) {
+		this.type = type;
 	}
 }

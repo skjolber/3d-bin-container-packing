@@ -13,22 +13,35 @@ public class ContainerProjection extends AbstractProjection<Container> {
 		PackagingVisualization visualization = new PackagingVisualization();
 		for(Container inputContainer : inputContainers) {
 			ContainerVisualization containerVisualization = new ContainerVisualization();
+
+			containerVisualization.setDx(inputContainer.getWidth());
+			containerVisualization.setDy(inputContainer.getDepth());
+			containerVisualization.setDz(inputContainer.getHeight());
+
+			containerVisualization.setLoadDx(inputContainer.getWidth());
+			containerVisualization.setLoadDy(inputContainer.getDepth());
+			containerVisualization.setLoadDz(inputContainer.getHeight());
+
+			StackVisualization stackVisualization = new StackVisualization();
+			containerVisualization.setStack(stackVisualization);
+			
 			for(Level level : inputContainer.getLevels()) {
 				for (Placement placement : level) {
-					BoxVisualization boxVisualization = new BoxVisualization();
 					
-					boxVisualization.setX(placement.getAbsoluteX());
-					boxVisualization.setY(placement.getAbsoluteY());
-					boxVisualization.setZ(placement.getAbsoluteZ());
-
 					Box box = placement.getBox();
+					BoxVisualization boxVisualization = new BoxVisualization();
 					boxVisualization.setDx(box.getWidth());
 					boxVisualization.setDy(box.getDepth());
 					boxVisualization.setDz(box.getHeight());
-
 					boxVisualization.setName(box.getName());
 					
-					containerVisualization.add(boxVisualization);
+					StackPlacementVisualization stackPlacement = new StackPlacementVisualization();
+					stackPlacement.setX(placement.getAbsoluteX());
+					stackPlacement.setY(placement.getAbsoluteY());
+					stackPlacement.setZ(placement.getAbsoluteZ());
+					stackPlacement.setStackable(boxVisualization);
+					
+					stackVisualization.add(stackPlacement);
 				}
 			}
 			
