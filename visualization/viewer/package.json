@@ -17,7 +17,7 @@
     "three": "^0.129.0",
     "three-gltf-loader": "1.111.0",
     "three-obj-mtl-loader": "1.0.3",
-    "three-orbitcontrols": "2.102.1"
+    "three-orbitcontrols": "2.110.2"
   },
   "devDependencies": {
     "typescript": "4.3.2"
