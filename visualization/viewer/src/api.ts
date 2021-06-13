@@ -127,7 +127,7 @@ export class MemoryColorScheme implements ColorScheme {
             // use random
             return this.delegate.getColor(stackable);
         }
-        // use same as before, for the same id
+        // use same as before, for the
         var color = this.map.get(stackable.id);
         if(!color) {
             color = this.delegate.getColor(stackable);
@@ -153,16 +153,16 @@ export class StackableRenderer {
 
             var color = colorScheme.getColor(containerStackable);
             var containerMaterial = new THREE.LineBasicMaterial({ color: color});
-            var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.dx, containerStackable.dy, containerStackable.dz));
+            var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.dy, containerStackable.dz, containerStackable.dx));
 
-            var containerLoadGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.loadDx, containerStackable.loadDy, containerStackable.loadDz));
+            var containerLoadGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.loadDy, containerStackable.loadDz, containerStackable.loadDx));
 
             var container = new THREE.LineSegments(containerGeometry, containerMaterial);
             var containerLoad = new THREE.LineSegments(containerLoadGeometry, containerMaterial);
 
-            container.position.x = stackPlacement.x + containerStackable.dx / 2 + x;
-            container.position.y = stackPlacement.y + containerStackable.dy / 2 + y;
-            container.position.z = stackPlacement.z + containerStackable.dz / 2 + z;
+            container.position.x = stackPlacement.y + containerStackable.dy / 2 + x;
+            container.position.y = stackPlacement.z + containerStackable.dz / 2 + y;
+            container.position.z = stackPlacement.x + containerStackable.dx / 2 + z;
 
             console.log("Add container " + containerStackable.name + " size " + containerStackable.dx + "x" + containerStackable.dy + "x" + containerStackable.dz + " with load " + containerStackable.loadDx + "x" + containerStackable.loadDy + "x" + containerStackable.loadDz + " at " + stackPlacement.x + "x" + stackPlacement.y + "x" + stackPlacement.z) ;
 
@@ -199,12 +199,12 @@ export class StackableRenderer {
             var geometry = new THREE.BoxGeometry(1, 1, 1);
             var box = new THREE.Mesh(geometry, material);
 
-            box.scale.x = boxStackable.dx;
-            box.scale.y = boxStackable.dy;
-            box.scale.z = boxStackable.dz;
-            box.position.x = stackPlacement.x + boxStackable.dx / 2 + x;
-            box.position.y = stackPlacement.y + boxStackable.dy / 2 + y;
-            box.position.z = stackPlacement.z + boxStackable.dz / 2 + z;
+            box.scale.x = boxStackable.dy;
+            box.scale.y = boxStackable.dz;
+            box.scale.z = boxStackable.dx;
+            box.position.x = stackPlacement.y + boxStackable.dy / 2 + x;
+            box.position.y = stackPlacement.z + boxStackable.dz / 2 + y;
+            box.position.z = stackPlacement.x + boxStackable.dx / 2 + z;
 
             parent.add(box);
 

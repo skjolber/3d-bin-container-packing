@@ -16,6 +16,8 @@ const CONTAINERS = "./assets/containers.json";
 //Textures
 const ANGULAR_VELOCITY = 0.01;
 
+const GRID_SPACING = 10;
+
 var camera;
 var orbit; // light orbit
 var helvatiker;
@@ -99,6 +101,8 @@ class ThreeScene extends Component {
       }
 
       var stackableRenderer = new StackableRenderer();
+
+      var x = 0;
   
       for(var i = 0; i < packaging.containers.length; i++) {
         var containerJson = packaging.containers[i];
@@ -108,7 +112,7 @@ class ThreeScene extends Component {
         for(var j = 0; j < containerJson.stack.placements.length; j++) {
           var placement = containerJson.stack.placements[j];
           var stackable = placement.stackable;
-  
+          
           if(stackable.type == "box") {
             var box = new Box(stackable.name, stackable.id, stackable.dx, stackable.dy, stackable.dz);
             container.add(new StackPlacement(box, placement.x, placement.y, placement.z));
@@ -116,8 +120,11 @@ class ThreeScene extends Component {
   
           }
         }
-        var visibleContainer = stackableRenderer.add(mainGroup, memoryScheme, new StackPlacement(container, 0, 0, 0), 0, 0, 0);
+        var visibleContainer = stackableRenderer.add(mainGroup, memoryScheme, new StackPlacement(container, x, 0, 0), 0, 0, 0);
         visibleContainers.push(visibleContainer);
+
+        x += container.dx + GRID_SPACING;
+        x = x - (x % GRID_SPACING);
       }
     };
 
@@ -160,6 +167,8 @@ class ThreeScene extends Component {
   onWindowResize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
+    // https://stackoverflow.com/questions/44630265/how-can-i-set-z-up-coordinate-system-in-three-js
+    
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
   };
@@ -236,11 +245,10 @@ class ThreeScene extends Component {
 
     // -------Add CAMERA ------
     camera = new THREE.PerspectiveCamera(80, width / height, 0.1, 100000);
-    camera.position.z = 200;
-    camera.position.y = 200;
-    camera.position.x = 200;
+    camera.position.z = -50;
+    camera.position.y = 50;
+    camera.position.x = -50;
     camera.lookAt(new THREE.Vector3(0, 0, 0));
-
 
     //------Add ORBIT CONTROLS--------
     controls = new OrbitControls(camera, this.renderer.domElement);
@@ -288,18 +296,14 @@ class ThreeScene extends Component {
   addHelper = () => {
     // Add Grid
     let gridXZ = new THREE.GridHelper(
-      800,
-      40,
+      GRID_SPACING * 10,
+      10,
       0x18ffff, //center line color
       0x42a5f5 //grid color,
     );
     this.scene.add(gridXZ);
     gridXZ.position.y = 0;
 
-    // // Add AXiS
-    let axesHelper = new THREE.AxesHelper(299);
-    axesHelper.position.y = 10;
-    //this.scene.add(axesHelper);
   };
   render() {
     return (
