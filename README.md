@@ -125,6 +125,8 @@ Note that placing the boxes as the LAFF algorithm is a limitation; the current a
 ### Visualizer
 There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/).
 
+![Alt text](visualization/viewer/images/view.png?raw=true "Demo")
+
 # Get involved
 If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request. __DO NOT send me emails unless you're prepared to pay for my time.__
 
