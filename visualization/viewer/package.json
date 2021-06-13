@@ -11,7 +11,7 @@
     "randomcolor": "^0.6.2",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "react-scripts": "2.1.8",
+    "react-scripts": "4.0.3",
     "simplex-noise": "2.4.0",
     "stats-js": "1.0.1",
     "three": "^0.129.0",
