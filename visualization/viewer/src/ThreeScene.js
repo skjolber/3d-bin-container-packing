@@ -1,10 +1,8 @@
 import React, { Component } from "react";
 import * as THREE from "three";
 import OrbitControls from "three-orbitcontrols";
-import Stats from "stats-js";
+import { Stats } from "stats-js";
 import { Color, Font } from "three";
-import { MTLLoader, OBJLoader } from "three-obj-mtl-loader";
-import GLTFLoader from "three-gltf-loader";
 
 import { MemoryColorScheme, RandomColorScheme, StackPlacement, Box, Container, StackableRenderer } from "./api";
 import { http } from "./utils";

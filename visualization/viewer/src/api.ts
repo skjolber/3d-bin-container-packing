@@ -48,7 +48,7 @@ export class Container extends Stackable {
         this.stack = new Stack();
     }
     
-    public add(stackPlacement : StackPlacement) {
+    add(stackPlacement : StackPlacement) {
         this.stack.add(stackPlacement);
     }
 }
@@ -77,7 +77,7 @@ export class Stack {
         this.placements = new Array();
     }
 
-    public add(placement : StackPlacement) {
+    add(placement : StackPlacement) {
         this.placements.push(placement);
     }
 
@@ -149,7 +149,7 @@ export class StackableRenderer {
         var stackable = stackPlacement.stackable;
 
         if(stackable instanceof Container) {
-            var containerStackable = stackable as Container;
+            var containerStackable : Container = stackable;
 
             var color = colorScheme.getColor(containerStackable);
             var containerMaterial = new THREE.LineBasicMaterial({ color: color});
@@ -180,7 +180,7 @@ export class StackableRenderer {
 
             return container;
         } else if(stackable instanceof Box) {
-            var boxStackable = stackable as Box;
+            var boxStackable : Box = stackable;
 
             console.log("Add box " + boxStackable.name + " size " + boxStackable.dx + "x" + boxStackable.dy + "x" + boxStackable.dz + " at " + stackPlacement.x + "x" + stackPlacement.y + "x" + stackPlacement.z);
 
