@@ -20,7 +20,7 @@
     "three-orbitcontrols": "2.102.1"
   },
   "devDependencies": {
-    "typescript": "3.3.3"
+    "typescript": "3.9.9"
   },
   "scripts": {
     "start": "react-scripts start",
