@@ -82,7 +82,7 @@
     "type" : "container"
   },
   {
-    "id" : "X",
+    "id" : "X1",
     "name" : "X",
     "plugins" : [ ],
     "dx" : 4,
@@ -103,7 +103,7 @@
         "y" : 0,
         "z" : 0,
         "stackable" : {
-          "id" : "4",
+          "id" : "41",
           "name" : "4",
           "plugins" : [ ],
           "dx" : 4,
@@ -135,8 +135,8 @@
         "y" : 0,
         "z" : 1,
         "stackable" : {
-          "id" : "2",
-          "name" : "2",
+          "id" : "21",
+          "name" : "21",
           "plugins" : [ ],
           "dx" : 1,
           "dy" : 4,
@@ -151,8 +151,8 @@
         "y" : 0,
         "z" : 1,
         "stackable" : {
-          "id" : "3",
-          "name" : "3",
+          "id" : "31",
+          "name" : "31",
           "plugins" : [ ],
           "dx" : 1,
           "dy" : 4,

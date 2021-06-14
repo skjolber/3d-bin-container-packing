@@ -166,6 +166,7 @@ export class StackableRenderer {
 
             console.log("Add container " + containerStackable.name + " size " + containerStackable.dx + "x" + containerStackable.dy + "x" + containerStackable.dz + " with load " + containerStackable.loadDx + "x" + containerStackable.loadDy + "x" + containerStackable.loadDz + " at " + stackPlacement.x + "x" + stackPlacement.y + "x" + stackPlacement.z) ;
 
+            container.name = containerStackable.name;
             parent.add(container);
             container.add(containerLoad);
 
@@ -198,6 +199,8 @@ export class StackableRenderer {
             });
             var geometry = new THREE.BoxGeometry(1, 1, 1);
             var box = new THREE.Mesh(geometry, material);
+
+            box.name = boxStackable.name;
 
             box.scale.x = boxStackable.dy;
             box.scale.y = boxStackable.dz;

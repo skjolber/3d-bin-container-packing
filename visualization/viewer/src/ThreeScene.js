@@ -8,6 +8,7 @@ import { MemoryColorScheme, RandomColorScheme, StackPlacement, Box, Container, S
 import { http } from "./utils";
 
 import randomColor from "randomcolor";
+import { thisExpression } from "@babel/types";
 
 const CONTAINERS = "./assets/containers.json";
 
@@ -24,6 +25,12 @@ var shouldAnimate;
 var controls;
 var delta = 0;
 var visibleContainers;
+
+
+const pointer = new THREE.Vector2();
+var raycaster;
+var INTERSECTED;
+var stepNumber = -1;
 
 /**
  * Example temnplate of using Three with React
@@ -48,6 +55,9 @@ class ThreeScene extends Component {
     //shaderMaterial.uniforms.delta.value = 0.5 + Math.sin(delta) * 0.0005;
     //shaderMesh.material.uniforms.u_time.value = delta;
 
+    this.handleIntersection();
+    this.handleStepNumber();
+
     //Redraw scene
     this.renderScene();
     this.frameId = window.requestAnimationFrame(this.animate);
@@ -71,7 +81,53 @@ class ThreeScene extends Component {
     this.start();
   }
 
+  handleIntersection = () => {
+    raycaster.setFromCamera( pointer, camera );
+    
+    var target = null;
+    for(var i = 0; i < visibleContainers.length; i++) {
+      for(var k = 0; k < visibleContainers[i].children.length; k++) {
+        var intersects = raycaster.intersectObjects(visibleContainers[i].children[k].children );
+        if ( intersects.length > 0 ) {
+          target = intersects[ 0 ].object;
+        }
+      }
+    }
 
+    if(target) {
+      if ( INTERSECTED != target) {
+        if ( INTERSECTED ) {
+          INTERSECTED.material.emissive = new Color("#000000");
+
+        }
+        INTERSECTED = target
+        INTERSECTED.myColor = INTERSECTED.material.color;
+        INTERSECTED.material.emissive = new Color("#FF0000") 
+      }
+    } else {
+      if ( INTERSECTED ) {
+        INTERSECTED.material.emissive = new Color("#000000") ;
+        INTERSECTED = null;
+      }
+    }
+  };
+
+  handleStepNumber = () => {
+    console.log("Handle box numberda " + stepNumber);
+    if(stepNumber > -1) {
+      var count = 0;
+      for(var i = 0; i < visibleContainers.length; i++) {
+        for(var k = 0; k < visibleContainers[i].children.length; k++) {
+
+          var stackables = visibleContainers[i].children[k].children;
+          for(var j = 0; j < stackables.length; j++) {
+            stackables[j].visible = count < stepNumber;
+            count++;
+          }
+        }          
+      }
+    }
+  };
 
   addModels = () => {
 
@@ -87,7 +143,6 @@ class ThreeScene extends Component {
 
       var data = JSON.stringify(packaging);
       if(latestData != null && data == latestData) {
-        console.log("Wait for data..");
         return;
       }
       console.log("Update model");
@@ -118,6 +173,7 @@ class ThreeScene extends Component {
   
           }
         }
+        // TODO return controls instead
         var visibleContainer = stackableRenderer.add(mainGroup, memoryScheme, new StackPlacement(container, x, 0, 0), 0, 0, 0);
         visibleContainers.push(visibleContainer);
 
@@ -134,10 +190,8 @@ class ThreeScene extends Component {
       http(
         "/assets/containers.json"
       ).then(load);
-    }, 500); //check 5 seconds
-
-
-};
+    }, 500);
+  };
 
   start = () => {
     if (!this.frameId) {
@@ -149,7 +203,9 @@ class ThreeScene extends Component {
   };
 
   renderScene = () => {
-    if (this.renderer) this.renderer.render(this.scene, camera);
+    if (this.renderer) {
+      this.renderer.render(this.scene, camera);
+    }
   };
 
   componentWillUnmount() {
@@ -165,22 +221,16 @@ class ThreeScene extends Component {
   onWindowResize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-    // https://stackoverflow.com/questions/44630265/how-can-i-set-z-up-coordinate-system-in-three-js
-    
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
 
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
   };
 
   onDocumentMouseMove = event => {
     event.preventDefault();
 
     if (event && typeof event !== undefined) {
-      // update normalized Uniform
-      let x = (event.clientX / window.innerWidth) * 2 - 1;
-      let y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-      // update Uniform directly
-      //shaderMaterial1.uniforms.u_mouse.value = new THREE.Vector2(x, y);
+      pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+      pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
     }
   };
 
@@ -201,13 +251,16 @@ class ThreeScene extends Component {
         break;
       }
       case 65: {
-        //shaderMesh1.rotation.y -= ROTATION_ANGLE; //A
         console.log("OnKeyPress A");
+        stepNumber++;
         break;
       }
       case 68: {
-        //shaderMesh1.rotation.y -= ROTATION_ANGLE; //D
         console.log("OnKeyPress D");
+        stepNumber--;
+        if(stepNumber < -1) {
+          stepNumber = -1;
+        }
         break;
       }
       case 32: {
@@ -239,8 +292,6 @@ class ThreeScene extends Component {
     this.renderer.setSize(width, height);
     this.mount.appendChild(this.renderer.domElement);
 
-    
-
     // -------Add CAMERA ------
     camera = new THREE.PerspectiveCamera(80, width / height, 0.1, 100000);
     camera.position.z = -50;
@@ -264,6 +315,8 @@ class ThreeScene extends Component {
     controls.addEventListener("change", () => {
       if (this.renderer) this.renderer.render(this.scene, camera);
     });
+
+    raycaster = new THREE.Raycaster();
 
     var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     var directionalLight1 = new THREE.DirectionalLight(0xFFFFFF, 0.6);
