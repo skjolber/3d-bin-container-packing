@@ -1,4 +1,4 @@
-package visualization;
+package com.github.skjolber.packing.visualization;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

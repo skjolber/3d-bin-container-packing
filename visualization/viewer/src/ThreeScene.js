@@ -31,6 +31,10 @@ const pointer = new THREE.Vector2();
 var raycaster;
 var INTERSECTED;
 var stepNumber = -1;
+var renderedStepNumber = -1;
+
+var maxStepNumber = 0;
+var minStepNumber = 0;
 
 /**
  * Example temnplate of using Three with React
@@ -113,19 +117,28 @@ class ThreeScene extends Component {
   };
 
   handleStepNumber = () => {
-    console.log("Handle box numberda " + stepNumber);
-    if(stepNumber > -1) {
-      var count = 0;
+    if(stepNumber != renderedStepNumber) {
+      console.log("Show step number " + stepNumber);
       for(var i = 0; i < visibleContainers.length; i++) {
+        var visibleContainer = visibleContainers[i];
+        var visibleContainerUserData = visibleContainer.userData;
+        visibleContainer.visible = visibleContainerUserData.step < stepNumber;
+        
         for(var k = 0; k < visibleContainers[i].children.length; k++) {
 
-          var stackables = visibleContainers[i].children[k].children;
+          var container = visibleContainers[i].children[k];
+          var containerUserData = container.userData;
+          
+          container.visible = containerUserData.step < stepNumber;
+          
+          var stackables = container.children;
           for(var j = 0; j < stackables.length; j++) {
-            stackables[j].visible = count < stepNumber;
-            count++;
+            var userData = stackables[j].userData;
+            stackables[j].visible = userData.step < stepNumber;
           }
         }          
       }
+      renderedStepNumber = stepNumber;
     }
   };
 
@@ -156,25 +169,48 @@ class ThreeScene extends Component {
       var stackableRenderer = new StackableRenderer();
 
       var x = 0;
+
+      var minStep = -1;
+      var maxStep = -1;
   
       for(var i = 0; i < packaging.containers.length; i++) {
         var containerJson = packaging.containers[i];
   
-        var container = new Container(containerJson.name, containerJson.id, containerJson.dx, containerJson.dy, containerJson.dz, containerJson.loadDx, containerJson.loadDy, containerJson.loadDz);
+        var container = new Container(containerJson.name, containerJson.id, containerJson.step, containerJson.dx, containerJson.dy, containerJson.dz, containerJson.loadDx, containerJson.loadDy, containerJson.loadDz);
     
+        if(container.step < minStep || minStep == -1) {
+          minStep = container.step;
+        }
+
+        if(container.step > maxStep || maxStep == -1) {
+          maxStep = container.step;
+        }
+
         for(var j = 0; j < containerJson.stack.placements.length; j++) {
           var placement = containerJson.stack.placements[j];
           var stackable = placement.stackable;
-          
-          if(stackable.type == "box") {
-            var box = new Box(stackable.name, stackable.id, stackable.dx, stackable.dy, stackable.dz);
-            container.add(new StackPlacement(box, placement.x, placement.y, placement.z));
-          } else {
+
+          if(stackable.step < minStep || minStep == -1) {
+            minStep = stackable.step;
+          }
   
+          if(stackable.step > maxStep || maxStep == -1) {
+            maxStep = stackable.step;
+          }
+
+          if(stackable.type == "box") {
+            var box = new Box(stackable.name, stackable.id, stackable.step, stackable.dx, stackable.dy, stackable.dz);
+            container.add(new StackPlacement(box, placement.step, placement.x, placement.y, placement.z));
+          } else {
+            // TODO
           }
         }
+
+        maxStepNumber = maxStep + 1;
+        minStepNumber = minStep;
+
         // TODO return controls instead
-        var visibleContainer = stackableRenderer.add(mainGroup, memoryScheme, new StackPlacement(container, x, 0, 0), 0, 0, 0);
+        var visibleContainer = stackableRenderer.add(mainGroup, memoryScheme, new StackPlacement(container, 0, x, 0, 0), 0, 0, 0);
         visibleContainers.push(visibleContainer);
 
         x += container.dx + GRID_SPACING;
@@ -253,13 +289,16 @@ class ThreeScene extends Component {
       case 65: {
         console.log("OnKeyPress A");
         stepNumber++;
+        if(stepNumber > maxStepNumber) {
+          stepNumber = maxStepNumber;
+        }
         break;
       }
       case 68: {
         console.log("OnKeyPress D");
         stepNumber--;
-        if(stepNumber < -1) {
-          stepNumber = -1;
+        if(stepNumber < minStepNumber) {
+          stepNumber = minStepNumber;
         }
         break;
       }

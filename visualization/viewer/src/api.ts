@@ -11,10 +11,13 @@ export class Stackable {
     name: string;
     id: string;
 
-    constructor(name : string, id : string, dx : number, dy : number, dz: number) {
+    step : number;
+
+    constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number) {
 
         this.name = name;
         this.id = id;
+        this.step = step;
         this.dx = dx;
         this.dy = dy;
         this.dz = dz;
@@ -24,8 +27,8 @@ export class Stackable {
 
 export class Box extends Stackable {
 
-    constructor(name : string, id : string, dx : number, dy : number, dz: number) {
-        super(name, id, dx, dy, dz);
+    constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number) {
+        super(name, id, step, dx, dy, dz);
     }
     
 }
@@ -35,17 +38,17 @@ export class Container extends Stackable {
     loadDx : number;
     loadDy : number;
     loadDz : number;
+    
+    stack : Stack;
 
-    stack : Stack
-
-    constructor(name : string, id : string, dx : number, dy : number, dz: number, loadDx : number, loadDy : number, loadDz: number) {
-        super(name, id, dx, dy, dz);
+    constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number, loadDx : number, loadDy : number, loadDz: number) {
+        super(name, id, step, dx, dy, dz);
 
         this.loadDx = loadDx;
         this.loadDy = loadDy;
         this.loadDz = loadDz;
 
-        this.stack = new Stack();
+        this.stack = new Stack(step);
     }
     
     add(stackPlacement : StackPlacement) {
@@ -60,8 +63,11 @@ export class StackPlacement {
     y : number;
     z : number;
 
-    constructor(stackable : Stackable, x : number, y : number, z: number) {
+    step : number;
+
+    constructor(stackable : Stackable, step : number, x : number, y : number, z: number) {
         this.stackable = stackable;
+        this.step = step;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -73,7 +79,10 @@ export class Stack {
 
     placements : Array<StackPlacement>;
 
-    constructor() {
+    step : number;
+
+    constructor(step : number) {
+        this.step = step;
         this.placements = new Array();
     }
 
@@ -83,16 +92,16 @@ export class Stack {
 
 }
 
-export class StackPlacementControls {
+export class ContainerControls {
 
-    stackPlacement : StackPlacement;
-    object3d : Object3D;
-    scene : Scene;
+    parent : Object3D;
+    child : Object3D;
+    container : Container;
 
-    constructor(scene: Scene, object3d : Object3D, stackPlacement : StackPlacement) {
-        this.scene = scene;
-        this.object3d = object3d;
-        this.stackPlacement = stackPlacement;
+    constructor(parent : Object3D, child : Object3D, container : Container) {
+        this.parent = parent;
+        this.child = child;
+        this.container = container;
     }
 }
 
@@ -167,6 +176,11 @@ export class StackableRenderer {
             console.log("Add container " + containerStackable.name + " size " + containerStackable.dx + "x" + containerStackable.dy + "x" + containerStackable.dz + " with load " + containerStackable.loadDx + "x" + containerStackable.loadDy + "x" + containerStackable.loadDz + " at " + stackPlacement.x + "x" + stackPlacement.y + "x" + stackPlacement.z) ;
 
             container.name = containerStackable.name;
+            container.userData = containerStackable;
+            
+            containerLoad.name = containerStackable.name;
+            containerLoad.userData = containerStackable;
+
             parent.add(container);
             container.add(containerLoad);
 
@@ -208,6 +222,8 @@ export class StackableRenderer {
             box.position.x = stackPlacement.y + boxStackable.dy / 2 + x;
             box.position.y = stackPlacement.z + boxStackable.dz / 2 + y;
             box.position.z = stackPlacement.x + boxStackable.dx / 2 + z;
+
+            box.userData = boxStackable;
 
             parent.add(box);
 

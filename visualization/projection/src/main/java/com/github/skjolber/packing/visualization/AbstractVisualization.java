@@ -5,11 +5,20 @@ import java.util.List;
 
 public class AbstractVisualization {
 
+	private int step;
 	private String id;
 	private String name;
 
 	private List<VisualizationPlugin> plugins = new ArrayList<>();
 
+	public void setStep(int step) {
+		this.step = step;
+	}
+	
+	public int getStep() {
+		return step;
+	}
+	
 	public void setName(String name) {
 		this.name = name;
 	}
