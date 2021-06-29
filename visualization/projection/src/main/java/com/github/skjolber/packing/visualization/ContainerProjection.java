@@ -10,10 +10,12 @@ import com.github.skjolber.packing.Placement;
 public class ContainerProjection extends AbstractProjection<Container> {
 
 	public PackagingVisualization project(List<Container> inputContainers) {
+		int step = 0;
 		PackagingVisualization visualization = new PackagingVisualization();
 		for(Container inputContainer : inputContainers) {
 			ContainerVisualization containerVisualization = new ContainerVisualization();
-
+			containerVisualization.setStep(step++);
+			
 			containerVisualization.setDx(inputContainer.getWidth());
 			containerVisualization.setDy(inputContainer.getDepth());
 			containerVisualization.setDz(inputContainer.getHeight());
@@ -26,6 +28,7 @@ public class ContainerProjection extends AbstractProjection<Container> {
 			containerVisualization.setName(inputContainer.getName());
 
 			StackVisualization stackVisualization = new StackVisualization();
+			stackVisualization.setStep(step++);
 			containerVisualization.setStack(stackVisualization);
 			
 			for(Level level : inputContainer.getLevels()) {
@@ -35,19 +38,22 @@ public class ContainerProjection extends AbstractProjection<Container> {
 					BoxVisualization boxVisualization = new BoxVisualization();
 					boxVisualization.setId(box.getName());
 					boxVisualization.setName(box.getName());
-					
+					boxVisualization.setStep(step);
+
 					boxVisualization.setDx(box.getWidth());
 					boxVisualization.setDy(box.getDepth());
 					boxVisualization.setDz(box.getHeight());
-					boxVisualization.setName(box.getName());
 					
 					StackPlacementVisualization stackPlacement = new StackPlacementVisualization();
 					stackPlacement.setX(placement.getAbsoluteX());
 					stackPlacement.setY(placement.getAbsoluteY());
 					stackPlacement.setZ(placement.getAbsoluteZ());
 					stackPlacement.setStackable(boxVisualization);
-					
+					stackPlacement.setStep(step);
+
 					stackVisualization.add(stackPlacement);
+					
+					step++;
 				}
 			}
 			

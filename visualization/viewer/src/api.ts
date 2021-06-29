@@ -11,10 +11,13 @@ export class Stackable {
     name: string;
     id: string;
 
-    constructor(name : string, id : string, dx : number, dy : number, dz: number) {
+    step : number;
+
+    constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number) {
 
         this.name = name;
         this.id = id;
+        this.step = step;
         this.dx = dx;
         this.dy = dy;
         this.dz = dz;
@@ -24,8 +27,8 @@ export class Stackable {
 
 export class Box extends Stackable {
 
-    constructor(name : string, id : string, dx : number, dy : number, dz: number) {
-        super(name, id, dx, dy, dz);
+    constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number) {
+        super(name, id, step, dx, dy, dz);
     }
     
 }
@@ -35,20 +38,20 @@ export class Container extends Stackable {
     loadDx : number;
     loadDy : number;
     loadDz : number;
+    
+    stack : Stack;
 
-    stack : Stack
-
-    constructor(name : string, id : string, dx : number, dy : number, dz: number, loadDx : number, loadDy : number, loadDz: number) {
-        super(name, id, dx, dy, dz);
+    constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number, loadDx : number, loadDy : number, loadDz: number) {
+        super(name, id, step, dx, dy, dz);
 
         this.loadDx = loadDx;
         this.loadDy = loadDy;
         this.loadDz = loadDz;
 
-        this.stack = new Stack();
+        this.stack = new Stack(step);
     }
     
-    public add(stackPlacement : StackPlacement) {
+    add(stackPlacement : StackPlacement) {
         this.stack.add(stackPlacement);
     }
 }
@@ -60,8 +63,11 @@ export class StackPlacement {
     y : number;
     z : number;
 
-    constructor(stackable : Stackable, x : number, y : number, z: number) {
+    step : number;
+
+    constructor(stackable : Stackable, step : number, x : number, y : number, z: number) {
         this.stackable = stackable;
+        this.step = step;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -73,26 +79,29 @@ export class Stack {
 
     placements : Array<StackPlacement>;
 
-    constructor() {
+    step : number;
+
+    constructor(step : number) {
+        this.step = step;
         this.placements = new Array();
     }
 
-    public add(placement : StackPlacement) {
+    add(placement : StackPlacement) {
         this.placements.push(placement);
     }
 
 }
 
-export class StackPlacementControls {
+export class ContainerControls {
 
-    stackPlacement : StackPlacement;
-    object3d : Object3D;
-    scene : Scene;
+    parent : Object3D;
+    child : Object3D;
+    container : Container;
 
-    constructor(scene: Scene, object3d : Object3D, stackPlacement : StackPlacement) {
-        this.scene = scene;
-        this.object3d = object3d;
-        this.stackPlacement = stackPlacement;
+    constructor(parent : Object3D, child : Object3D, container : Container) {
+        this.parent = parent;
+        this.child = child;
+        this.container = container;
     }
 }
 
@@ -127,7 +136,7 @@ export class MemoryColorScheme implements ColorScheme {
             // use random
             return this.delegate.getColor(stackable);
         }
-        // use same as before, for the same id
+        // use same as before, for the
         var color = this.map.get(stackable.id);
         if(!color) {
             color = this.delegate.getColor(stackable);
@@ -149,22 +158,28 @@ export class StackableRenderer {
         var stackable = stackPlacement.stackable;
 
         if(stackable instanceof Container) {
-            var containerStackable = stackable as Container;
+            var containerStackable : Container = stackable;
 
             var color = colorScheme.getColor(containerStackable);
             var containerMaterial = new THREE.LineBasicMaterial({ color: color});
-            var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.dx, containerStackable.dy, containerStackable.dz));
+            var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.dy, containerStackable.dz, containerStackable.dx));
 
-            var containerLoadGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.loadDx, containerStackable.loadDy, containerStackable.loadDz));
+            var containerLoadGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.loadDy, containerStackable.loadDz, containerStackable.loadDx));
 
             var container = new THREE.LineSegments(containerGeometry, containerMaterial);
             var containerLoad = new THREE.LineSegments(containerLoadGeometry, containerMaterial);
 
-            container.position.x = stackPlacement.x + containerStackable.dx / 2 + x;
-            container.position.y = stackPlacement.y + containerStackable.dy / 2 + y;
-            container.position.z = stackPlacement.z + containerStackable.dz / 2 + z;
+            container.position.x = stackPlacement.y + containerStackable.dy / 2 + x;
+            container.position.y = stackPlacement.z + containerStackable.dz / 2 + y;
+            container.position.z = stackPlacement.x + containerStackable.dx / 2 + z;
 
             console.log("Add container " + containerStackable.name + " size " + containerStackable.dx + "x" + containerStackable.dy + "x" + containerStackable.dz + " with load " + containerStackable.loadDx + "x" + containerStackable.loadDy + "x" + containerStackable.loadDz + " at " + stackPlacement.x + "x" + stackPlacement.y + "x" + stackPlacement.z) ;
+
+            container.name = containerStackable.name;
+            container.userData = containerStackable;
+            
+            containerLoad.name = containerStackable.name;
+            containerLoad.userData = containerStackable;
 
             parent.add(container);
             container.add(containerLoad);
@@ -180,7 +195,7 @@ export class StackableRenderer {
 
             return container;
         } else if(stackable instanceof Box) {
-            var boxStackable = stackable as Box;
+            var boxStackable : Box = stackable;
 
             console.log("Add box " + boxStackable.name + " size " + boxStackable.dx + "x" + boxStackable.dy + "x" + boxStackable.dz + " at " + stackPlacement.x + "x" + stackPlacement.y + "x" + stackPlacement.z);
 
@@ -199,12 +214,16 @@ export class StackableRenderer {
             var geometry = new THREE.BoxGeometry(1, 1, 1);
             var box = new THREE.Mesh(geometry, material);
 
-            box.scale.x = boxStackable.dx;
-            box.scale.y = boxStackable.dy;
-            box.scale.z = boxStackable.dz;
-            box.position.x = stackPlacement.x + boxStackable.dx / 2 + x;
-            box.position.y = stackPlacement.y + boxStackable.dy / 2 + y;
-            box.position.z = stackPlacement.z + boxStackable.dz / 2 + z;
+            box.name = boxStackable.name;
+
+            box.scale.x = boxStackable.dy;
+            box.scale.y = boxStackable.dz;
+            box.scale.z = boxStackable.dx;
+            box.position.x = stackPlacement.y + boxStackable.dy / 2 + x;
+            box.position.y = stackPlacement.z + boxStackable.dz / 2 + y;
+            box.position.z = stackPlacement.x + boxStackable.dx / 2 + z;
+
+            box.userData = boxStackable;
 
             parent.add(box);
 

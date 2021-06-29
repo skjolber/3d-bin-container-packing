@@ -1,20 +1,21 @@
 import React, { Component } from "react";
 import * as THREE from "three";
 import OrbitControls from "three-orbitcontrols";
-import Stats from "stats-js";
+import { Stats } from "stats-js";
 import { Color, Font } from "three";
-import { MTLLoader, OBJLoader } from "three-obj-mtl-loader";
-import GLTFLoader from "three-gltf-loader";
 
 import { MemoryColorScheme, RandomColorScheme, StackPlacement, Box, Container, StackableRenderer } from "./api";
 import { http } from "./utils";
 
 import randomColor from "randomcolor";
+import { thisExpression } from "@babel/types";
 
 const CONTAINERS = "./assets/containers.json";
 
 //Textures
 const ANGULAR_VELOCITY = 0.01;
+
+const GRID_SPACING = 10;
 
 var camera;
 var orbit; // light orbit
@@ -24,6 +25,16 @@ var shouldAnimate;
 var controls;
 var delta = 0;
 var visibleContainers;
+
+
+const pointer = new THREE.Vector2();
+var raycaster;
+var INTERSECTED;
+var stepNumber = -1;
+var renderedStepNumber = -1;
+
+var maxStepNumber = 0;
+var minStepNumber = 0;
 
 /**
  * Example temnplate of using Three with React
@@ -48,6 +59,9 @@ class ThreeScene extends Component {
     //shaderMaterial.uniforms.delta.value = 0.5 + Math.sin(delta) * 0.0005;
     //shaderMesh.material.uniforms.u_time.value = delta;
 
+    this.handleIntersection();
+    this.handleStepNumber();
+
     //Redraw scene
     this.renderScene();
     this.frameId = window.requestAnimationFrame(this.animate);
@@ -71,7 +85,62 @@ class ThreeScene extends Component {
     this.start();
   }
 
+  handleIntersection = () => {
+    raycaster.setFromCamera( pointer, camera );
+    
+    var target = null;
+    for(var i = 0; i < visibleContainers.length; i++) {
+      for(var k = 0; k < visibleContainers[i].children.length; k++) {
+        var intersects = raycaster.intersectObjects(visibleContainers[i].children[k].children );
+        if ( intersects.length > 0 ) {
+          target = intersects[ 0 ].object;
+        }
+      }
+    }
 
+    if(target) {
+      if ( INTERSECTED != target) {
+        if ( INTERSECTED ) {
+          INTERSECTED.material.emissive = new Color("#000000");
+
+        }
+        INTERSECTED = target
+        INTERSECTED.myColor = INTERSECTED.material.color;
+        INTERSECTED.material.emissive = new Color("#FF0000") 
+      }
+    } else {
+      if ( INTERSECTED ) {
+        INTERSECTED.material.emissive = new Color("#000000") ;
+        INTERSECTED = null;
+      }
+    }
+  };
+
+  handleStepNumber = () => {
+    if(stepNumber != renderedStepNumber) {
+      console.log("Show step number " + stepNumber);
+      for(var i = 0; i < visibleContainers.length; i++) {
+        var visibleContainer = visibleContainers[i];
+        var visibleContainerUserData = visibleContainer.userData;
+        visibleContainer.visible = visibleContainerUserData.step < stepNumber;
+        
+        for(var k = 0; k < visibleContainers[i].children.length; k++) {
+
+          var container = visibleContainers[i].children[k];
+          var containerUserData = container.userData;
+          
+          container.visible = containerUserData.step < stepNumber;
+          
+          var stackables = container.children;
+          for(var j = 0; j < stackables.length; j++) {
+            var userData = stackables[j].userData;
+            stackables[j].visible = userData.step < stepNumber;
+          }
+        }          
+      }
+      renderedStepNumber = stepNumber;
+    }
+  };
 
   addModels = () => {
 
@@ -87,7 +156,6 @@ class ThreeScene extends Component {
 
       var data = JSON.stringify(packaging);
       if(latestData != null && data == latestData) {
-        console.log("Wait for data..");
         return;
       }
       console.log("Update model");
@@ -99,25 +167,54 @@ class ThreeScene extends Component {
       }
 
       var stackableRenderer = new StackableRenderer();
+
+      var x = 0;
+
+      var minStep = -1;
+      var maxStep = -1;
   
       for(var i = 0; i < packaging.containers.length; i++) {
         var containerJson = packaging.containers[i];
   
-        var container = new Container(containerJson.name, containerJson.id, containerJson.dx, containerJson.dy, containerJson.dz, containerJson.loadDx, containerJson.loadDy, containerJson.loadDz);
+        var container = new Container(containerJson.name, containerJson.id, containerJson.step, containerJson.dx, containerJson.dy, containerJson.dz, containerJson.loadDx, containerJson.loadDy, containerJson.loadDz);
     
+        if(container.step < minStep || minStep == -1) {
+          minStep = container.step;
+        }
+
+        if(container.step > maxStep || maxStep == -1) {
+          maxStep = container.step;
+        }
+
         for(var j = 0; j < containerJson.stack.placements.length; j++) {
           var placement = containerJson.stack.placements[j];
           var stackable = placement.stackable;
+
+          if(stackable.step < minStep || minStep == -1) {
+            minStep = stackable.step;
+          }
   
+          if(stackable.step > maxStep || maxStep == -1) {
+            maxStep = stackable.step;
+          }
+
           if(stackable.type == "box") {
-            var box = new Box(stackable.name, stackable.id, stackable.dx, stackable.dy, stackable.dz);
-            container.add(new StackPlacement(box, placement.x, placement.y, placement.z));
+            var box = new Box(stackable.name, stackable.id, stackable.step, stackable.dx, stackable.dy, stackable.dz);
+            container.add(new StackPlacement(box, placement.step, placement.x, placement.y, placement.z));
           } else {
-  
+            // TODO
           }
         }
-        var visibleContainer = stackableRenderer.add(mainGroup, memoryScheme, new StackPlacement(container, 0, 0, 0), 0, 0, 0);
+
+        maxStepNumber = maxStep + 1;
+        minStepNumber = minStep;
+
+        // TODO return controls instead
+        var visibleContainer = stackableRenderer.add(mainGroup, memoryScheme, new StackPlacement(container, 0, x, 0, 0), 0, 0, 0);
         visibleContainers.push(visibleContainer);
+
+        x += container.dx + GRID_SPACING;
+        x = x - (x % GRID_SPACING);
       }
     };
 
@@ -129,10 +226,8 @@ class ThreeScene extends Component {
       http(
         "/assets/containers.json"
       ).then(load);
-    }, 500); //check 5 seconds
-
-
-};
+    }, 500);
+  };
 
   start = () => {
     if (!this.frameId) {
@@ -144,7 +239,9 @@ class ThreeScene extends Component {
   };
 
   renderScene = () => {
-    if (this.renderer) this.renderer.render(this.scene, camera);
+    if (this.renderer) {
+      this.renderer.render(this.scene, camera);
+    }
   };
 
   componentWillUnmount() {
@@ -160,20 +257,16 @@ class ThreeScene extends Component {
   onWindowResize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
 
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
   };
 
   onDocumentMouseMove = event => {
     event.preventDefault();
 
     if (event && typeof event !== undefined) {
-      // update normalized Uniform
-      let x = (event.clientX / window.innerWidth) * 2 - 1;
-      let y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-      // update Uniform directly
-      //shaderMaterial1.uniforms.u_mouse.value = new THREE.Vector2(x, y);
+      pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+      pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
     }
   };
 
@@ -194,13 +287,19 @@ class ThreeScene extends Component {
         break;
       }
       case 65: {
-        //shaderMesh1.rotation.y -= ROTATION_ANGLE; //A
         console.log("OnKeyPress A");
+        stepNumber++;
+        if(stepNumber > maxStepNumber) {
+          stepNumber = maxStepNumber;
+        }
         break;
       }
       case 68: {
-        //shaderMesh1.rotation.y -= ROTATION_ANGLE; //D
         console.log("OnKeyPress D");
+        stepNumber--;
+        if(stepNumber < minStepNumber) {
+          stepNumber = minStepNumber;
+        }
         break;
       }
       case 32: {
@@ -232,15 +331,12 @@ class ThreeScene extends Component {
     this.renderer.setSize(width, height);
     this.mount.appendChild(this.renderer.domElement);
 
-    
-
     // -------Add CAMERA ------
     camera = new THREE.PerspectiveCamera(80, width / height, 0.1, 100000);
-    camera.position.z = 200;
-    camera.position.y = 200;
-    camera.position.x = 200;
+    camera.position.z = -50;
+    camera.position.y = 50;
+    camera.position.x = -50;
     camera.lookAt(new THREE.Vector3(0, 0, 0));
-
 
     //------Add ORBIT CONTROLS--------
     controls = new OrbitControls(camera, this.renderer.domElement);
@@ -258,6 +354,8 @@ class ThreeScene extends Component {
     controls.addEventListener("change", () => {
       if (this.renderer) this.renderer.render(this.scene, camera);
     });
+
+    raycaster = new THREE.Raycaster();
 
     var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     var directionalLight1 = new THREE.DirectionalLight(0xFFFFFF, 0.6);
@@ -288,18 +386,14 @@ class ThreeScene extends Component {
   addHelper = () => {
     // Add Grid
     let gridXZ = new THREE.GridHelper(
-      800,
-      40,
+      GRID_SPACING * 10,
+      10,
       0x18ffff, //center line color
       0x42a5f5 //grid color,
     );
     this.scene.add(gridXZ);
     gridXZ.position.y = 0;
 
-    // // Add AXiS
-    let axesHelper = new THREE.AxesHelper(299);
-    axesHelper.position.y = 10;
-    //this.scene.add(axesHelper);
   };
   render() {
     return (
