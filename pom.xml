@@ -87,6 +87,21 @@
 				<artifactId>test</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>visualizer-packaging</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>visualizer-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>visualizer-algorithm</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!-- test -->
 			<dependency>
@@ -162,7 +177,9 @@
 	<modules>
 		<module>test</module>
 		<module>core</module>
-		<module>visualization/projection</module>
+		<module>visualizer/api</module>
+		<module>visualizer/algorithm</module>
+		<module>visualizer/packaging</module>
 	</modules>
 
 	<build>
