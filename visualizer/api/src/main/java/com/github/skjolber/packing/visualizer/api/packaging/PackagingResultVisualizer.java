@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.projection;
+package com.github.skjolber.packing.visualizer.api.packaging;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,19 +6,19 @@ import java.util.List;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class PackagingVisualization {
+public class PackagingResultVisualizer {
 
-	private List<ContainerVisualization> containers = new ArrayList<>();
+	private List<ContainerVisualizer> containers = new ArrayList<>();
 
-	public List<ContainerVisualization> getContainers() {
+	public List<ContainerVisualizer> getContainers() {
 		return containers;
 	}
 
-	public void setContainers(List<ContainerVisualization> containers) {
+	public void setContainers(List<ContainerVisualizer> containers) {
 		this.containers = containers;
 	}
 
-	public boolean add(ContainerVisualization e) {
+	public boolean add(ContainerVisualizer e) {
 		return containers.add(e);
 	}
 	
@@ -27,5 +27,5 @@ public class PackagingVisualization {
 		
 		return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
 	}
-	
+
 }

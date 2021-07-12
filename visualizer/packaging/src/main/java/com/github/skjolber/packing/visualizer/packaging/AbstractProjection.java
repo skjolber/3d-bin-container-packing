@@ -6,13 +6,13 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import com.github.skjolber.packing.projection.PackagingVisualization;
+import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
 
 public abstract class AbstractProjection<T> implements Projection<T> {
 
 	@Override
 	public void project(List<T> input, OutputStream out) throws Exception {
-		PackagingVisualization project = project(input);
+		PackagingResultVisualizer project = project(input);
 		
 		out.write(project.toJson().getBytes(StandardCharsets.UTF_8));
 	}

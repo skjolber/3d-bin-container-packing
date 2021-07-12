@@ -6,19 +6,19 @@ import com.github.skjolber.packing.Box;
 import com.github.skjolber.packing.Container;
 import com.github.skjolber.packing.Level;
 import com.github.skjolber.packing.Placement;
-import com.github.skjolber.packing.projection.BoxVisualization;
-import com.github.skjolber.packing.projection.ContainerVisualization;
-import com.github.skjolber.packing.projection.PackagingVisualization;
-import com.github.skjolber.packing.projection.StackPlacementVisualization;
-import com.github.skjolber.packing.projection.StackVisualization;
+import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
+import com.github.skjolber.packing.visualizer.api.packaging.ContainerVisualizer;
+import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
+import com.github.skjolber.packing.visualizer.api.packaging.StackPlacementVisualizer;
+import com.github.skjolber.packing.visualizer.api.packaging.StackVisualizer;
 
 public class ContainerProjection extends AbstractProjection<Container> {
 
-	public PackagingVisualization project(List<Container> inputContainers) {
+	public PackagingResultVisualizer project(List<Container> inputContainers) {
 		int step = 0;
-		PackagingVisualization visualization = new PackagingVisualization();
+		PackagingResultVisualizer visualization = new PackagingResultVisualizer();
 		for(Container inputContainer : inputContainers) {
-			ContainerVisualization containerVisualization = new ContainerVisualization();
+			ContainerVisualizer containerVisualization = new ContainerVisualizer();
 			containerVisualization.setStep(step++);
 			
 			containerVisualization.setDx(inputContainer.getWidth());
@@ -32,7 +32,7 @@ public class ContainerProjection extends AbstractProjection<Container> {
 			containerVisualization.setId(inputContainer.getName());
 			containerVisualization.setName(inputContainer.getName());
 
-			StackVisualization stackVisualization = new StackVisualization();
+			StackVisualizer stackVisualization = new StackVisualizer();
 			stackVisualization.setStep(step++);
 			containerVisualization.setStack(stackVisualization);
 			
@@ -40,7 +40,7 @@ public class ContainerProjection extends AbstractProjection<Container> {
 				for (Placement placement : level) {
 					
 					Box box = placement.getBox();
-					BoxVisualization boxVisualization = new BoxVisualization();
+					BoxVisualizer boxVisualization = new BoxVisualizer();
 					boxVisualization.setId(box.getName());
 					boxVisualization.setName(box.getName());
 					boxVisualization.setStep(step);
@@ -49,7 +49,7 @@ public class ContainerProjection extends AbstractProjection<Container> {
 					boxVisualization.setDy(box.getDepth());
 					boxVisualization.setDz(box.getHeight());
 					
-					StackPlacementVisualization stackPlacement = new StackPlacementVisualization();
+					StackPlacementVisualizer stackPlacement = new StackPlacementVisualizer();
 					stackPlacement.setX(placement.getAbsoluteX());
 					stackPlacement.setY(placement.getAbsoluteY());
 					stackPlacement.setZ(placement.getAbsoluteZ());

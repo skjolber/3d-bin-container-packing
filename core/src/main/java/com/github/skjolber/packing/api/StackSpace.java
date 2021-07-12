@@ -12,30 +12,6 @@ public class StackSpace extends Dimension {
 	protected int maxSupportedPressure; // i.e.  
 	protected int maxSupportedWeight;
 	
-	public int getX() {
-		return x;
-	}
-
-	public void setX(final int x) {
-		this.x = x;
-	}
-
-	public int getY() {
-		return y;
-	}
-
-	public void setY(final int y) {
-		this.y = y;
-	}
-
-	public int getZ() {
-		return z;
-	}
-
-	public void setZ(final int z) {
-		this.z = z;
-	}
-
 	public StackSpace(StackSpace parent, String name, int w, int d, int h, int x, int y, int z) {
 		super(name, w, d, h);
 
@@ -60,4 +36,29 @@ public class StackSpace extends Dimension {
 	public void setParent(StackSpace parent) {
 		this.parent = parent;
 	}
+	
+	public int getX() {
+		return x;
+	}
+
+	public void setX(final int x) {
+		this.x = x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public void setY(final int y) {
+		this.y = y;
+	}
+
+	public int getZ() {
+		return z;
+	}
+
+	public void setZ(final int z) {
+		this.z = z;
+	}
+
 }

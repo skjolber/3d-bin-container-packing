@@ -32,7 +32,9 @@ public class Box extends Stackable {
 			for (int i = 0; i < rotations.size(); i++) {
 				Rotation rotation = rotations.get(i);
 				
-				stackValues[i] = new BoxStackValue(rotation.dx, rotation.dy, rotation.dz, weight, rotation.maxSupportedWeight, rotation.maxSupportedCount, pressureReference);
+				StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : defaultConstraint;
+
+				stackValues[i] = new BoxStackValue(rotation.dx, rotation.dy, rotation.dz, weight, constraint);
 			}	
 			return new Box(name, stackValues[0].getVolume(), weight, stackValues);
 		}

@@ -21,11 +21,11 @@ public class ParallelPermutationRotationIteratorTest {
 
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("0").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("1").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("2").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("3").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("4").withWeight(1).build()));		
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("0").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("1").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("2").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("3").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("4").withWeight(1).build()));		
 		
 		DefaultPermutationRotationIterator iterator = new DefaultPermutationRotationIterator(container, products);
 
@@ -50,10 +50,10 @@ public class ParallelPermutationRotationIteratorTest {
 
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("0").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("1").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("2").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("3").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("0").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("1").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("2").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("3").withWeight(1).build()));
 
 		ParallelPermutationRotationIterator nthIterator = new ParallelPermutationRotationIterator(container, products, 1);
 		
@@ -81,11 +81,11 @@ public class ParallelPermutationRotationIteratorTest {
 
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("0").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("1").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("2").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("3").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("4").withWeight(1).build()));		
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("0").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("1").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("2").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("3").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("4").withWeight(1).build()));		
 
 		DefaultPermutationRotationIterator iterator = new DefaultPermutationRotationIterator(container, products);
 
@@ -114,9 +114,9 @@ public class ParallelPermutationRotationIteratorTest {
 
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("0").withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("1").withWeight(1).build(), 3));
-		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3, 0, 0).withName("2").withWeight(1).build(), 4));		
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("0").withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("1").withWeight(1).build(), 3));
+		products.add(new StackableItem(Box.newBuilder().withRotateXYZ(1, 1, 3).withName("2").withWeight(1).build(), 4));		
 		
 		DefaultPermutationRotationIterator iterator = new DefaultPermutationRotationIterator(container, products);
 

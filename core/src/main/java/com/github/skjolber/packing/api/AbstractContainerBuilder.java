@@ -13,12 +13,8 @@ import java.util.List;
 
 public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 
-	protected static final int DEFAULT_PRESSURE_REFERENCE = 1000;
-
 	public static class Rotation {
-		protected int maxSupportedCount;
-		protected int maxSupportedWeight;
-
+		
 		protected int dx; // width
 		protected int dy; // depth
 		protected int dz; // height
@@ -28,14 +24,15 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 		protected final int loadDx; // x
 		protected final int loadDy; // y
 		protected final int loadDz; // z
+		
+		protected final StackConstraint stackConstraint;
 
-		public Rotation(int dx, int dy, int dz, int maxSupportedWeight, int maxSupportedCount, int loadDx, int loadDy, int loadDz, int maxLoadWeight) {
+		public Rotation(int dx, int dy, int dz, int loadDx, int loadDy, int loadDz, int maxLoadWeight, StackConstraint stackConstraint) {
 			super();
 			this.dx = dx;
 			this.dy = dy;
 			this.dz = dz;
-			this.maxSupportedWeight = maxSupportedWeight;
-			this.maxSupportedCount = maxSupportedCount;
+			this.stackConstraint = stackConstraint;
 			
 			this.loadDx = loadDx;
 			this.loadDy = loadDx;
@@ -46,40 +43,39 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 	}
 	
 	protected List<Rotation> rotations = new ArrayList<>();
-	
-	protected int pressureReference = DEFAULT_PRESSURE_REFERENCE;
+	protected StackConstraint defaultConstraint;
+
 	protected String name;
+	
+	public B withDefaultConstraint(StackConstraint stackConstraint) {
+		this.defaultConstraint = stackConstraint;
+		return (B)this;
+	}
 	
 	public B withName(String name) {
 		this.name = name;
 		return (B)this;
 	}
-	
-	public B withPressureReference(int pressureReference) {
-		this.pressureReference = pressureReference;
-		
-		return (B)this;
-	}
 
-	public B withRotate(int dx, int dy, int dz, int maxSupportedCount, int maxSupportedWeight, int loadDx, int loadDy, int loadDz, int maxLoadWeight) {
-		rotations.add(new Rotation(dx, dy, dz, maxSupportedWeight, maxSupportedCount, loadDx, loadDy, loadDz, maxLoadWeight));
+	public B withRotate(int dx, int dy, int dz, int loadDx, int loadDy, int loadDz, int maxLoadWeight, StackConstraint stackConstraint) {
+		rotations.add(new Rotation(dx, dy, dz, loadDx, loadDy, loadDz, maxLoadWeight, stackConstraint));
 		
 		return (B)this;
 
 	}
 
-	public B withRotateXY(int dx, int dy, int dz, int maxSupportedCount, int maxSupportedWeight, int loadDx, int loadDy, int loadDz, int maxLoadWeight) {
-		rotations.add(new Rotation(dx, dy, dz, maxSupportedWeight, maxSupportedCount, loadDx, loadDy, loadDz, maxLoadWeight));
+	public B withRotateXY(int dx, int dy, int dz, int loadDx, int loadDy, int loadDz, int maxLoadWeight, StackConstraint stackConstraint) {
+		rotations.add(new Rotation(dx, dy, dz, loadDx, loadDy, loadDz, maxLoadWeight, stackConstraint));
 		
 		if(dx != dy) {
-			rotations.add(new Rotation(dy, dx, dz, maxSupportedWeight, maxSupportedCount, loadDy, loadDx, loadDz, maxLoadWeight));
+			rotations.add(new Rotation(dy, dx, dz, loadDy, loadDx, loadDz, maxLoadWeight, stackConstraint));
 		}
 		
 		return (B)this;
 	}
 	
-	public B withRotateXYZ(int dx, int dy, int dz, int maxSupportedCount, int maxSupportedWeight, int loadDx, int loadDy, int loadDz, int maxLoadWeight) {
-		rotations.add(new Rotation(dx, dy, dz, maxSupportedWeight, maxSupportedCount, loadDy, loadDx, loadDz, maxLoadWeight));
+	public B withRotateXYZ(int dx, int dy, int dz, int loadDx, int loadDy, int loadDz, int maxLoadWeight, StackConstraint stackConstraint) {
+		rotations.add(new Rotation(dx, dy, dz, loadDy, loadDx, loadDz, maxLoadWeight, stackConstraint));
 		
 		if(!(dx == dy && dx == dz)) {
 
@@ -113,17 +109,17 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 			//
 			
 			if(dx != dy) {
-				rotations.add(new Rotation(dy, dx, dz, maxSupportedWeight, maxSupportedCount, loadDy, loadDx, loadDz, maxLoadWeight));
+				rotations.add(new Rotation(dy, dx, dz, loadDy, loadDx, loadDz, maxLoadWeight, stackConstraint));
 			}
 			
-			rotations.add(new Rotation(dx, dz, dy, maxSupportedWeight, maxSupportedCount, loadDx, loadDz, loadDy, maxLoadWeight));
+			rotations.add(new Rotation(dx, dz, dy, loadDx, loadDz, loadDy, maxLoadWeight, stackConstraint));
 			if(dx != dz) {
-				rotations.add(new Rotation(dz, dx, dy, maxSupportedWeight, maxSupportedCount, loadDz, loadDx, loadDy, maxLoadWeight));
+				rotations.add(new Rotation(dz, dx, dy, loadDz, loadDx, loadDy, maxLoadWeight, stackConstraint));
 			}
 			
-			rotations.add(new Rotation(dy, dz, dx, maxSupportedWeight, maxSupportedCount, loadDy, loadDz, loadDx, maxLoadWeight));
+			rotations.add(new Rotation(dy, dz, dx, loadDy, loadDz, loadDx, maxLoadWeight, stackConstraint));
 			if(dy != dz) {
-				rotations.add(new Rotation(dz, dy, dx, maxSupportedWeight, maxSupportedCount, loadDz, loadDy, loadDx, maxLoadWeight));
+				rotations.add(new Rotation(dz, dy, dx, loadDz, loadDy, loadDx, maxLoadWeight, stackConstraint));
 			}
 		}			
 		

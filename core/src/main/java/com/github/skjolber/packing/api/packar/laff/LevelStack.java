@@ -6,8 +6,10 @@ import java.util.List;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.DefaultContainerStackValue;
 import com.github.skjolber.packing.api.DefaultStack;
+import com.github.skjolber.packing.api.DefaultStackValueConstraint;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.StackValue;
 
 public class LevelStack extends Stack {
 
@@ -114,7 +116,7 @@ public class LevelStack extends Stack {
 		
 		return new DefaultContainerStackValue(
 						containerStackValue.getDx(), containerStackValue.getDy(), containerStackValue.getDz() - dz,
-						freeWeight, getSupportedCount(), containerStackValue.getPressureReference(),
+						null,
 						containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz() - dz,
 						0, freeWeight,
 						stack

@@ -4,9 +4,9 @@ public abstract class ContainerStackValue extends StackValue {
 
 	public ContainerStackValue(
 			int dx, int dy, int dz, 
-			int maxSupportedWeight, int maxSupportedCount,
-			int pressureReference, int loadDx, int loadDy, int loadDz, int emptyWeight, int maxLoadWeight) {
-		super(dx, dy, dz, maxSupportedWeight, maxSupportedCount, pressureReference);
+			StackConstraint constraint,
+			int loadDx, int loadDy, int loadDz, int emptyWeight, int maxLoadWeight) {
+		super(dx, dy, dz, constraint);
 		
 		this.loadDx = loadDx;
 		this.loadDy = loadDy;

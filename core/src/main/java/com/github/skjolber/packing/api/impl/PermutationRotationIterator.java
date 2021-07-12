@@ -20,7 +20,7 @@ import java.util.List;
 * do {
 * 	do {
 * 		for (int i = 0; i < n; i++) {
-* 			StackableValue box = instance.get(i);
+* 			PermutationRotation box = instance.get(i);
 * 			// .. your code here
 * 		}
 * 	} while (instance.nextRotation() != -1);

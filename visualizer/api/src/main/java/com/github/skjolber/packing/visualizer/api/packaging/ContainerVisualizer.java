@@ -1,12 +1,12 @@
-package com.github.skjolber.packing.projection;
+package com.github.skjolber.packing.visualizer.api.packaging;
 
-public class ContainerVisualization extends StackableVisualization {
+public class ContainerVisualizer extends StackableVisualizer {
 
 	private int loadDx;
 	private int loadDy;
 	private int loadDz;
 	
-	private StackVisualization stack;
+	private StackVisualizer stack;
 	
 	private String type = "container";
 	
@@ -34,11 +34,11 @@ public class ContainerVisualization extends StackableVisualization {
 		this.loadDz = loadDz;
 	}
 
-	public StackVisualization getStack() {
+	public StackVisualizer getStack() {
 		return stack;
 	}
 	
-	public void setStack(StackVisualization stack) {
+	public void setStack(StackVisualizer stack) {
 		this.stack = stack;
 	}
 

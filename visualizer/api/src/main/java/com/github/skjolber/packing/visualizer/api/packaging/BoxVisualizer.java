@@ -1,6 +1,6 @@
-package com.github.skjolber.packing.projection;
+package com.github.skjolber.packing.visualizer.api.packaging;
 
-public class BoxVisualization extends StackableVisualization {
+public class BoxVisualizer extends StackableVisualizer {
 
 	private String type = "box";
 

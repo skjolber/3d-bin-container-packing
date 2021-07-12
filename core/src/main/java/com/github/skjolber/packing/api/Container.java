@@ -50,12 +50,13 @@ public abstract class Container extends Stackable {
 
 				for (int i = 0; i < rotations.size(); i++) {
 					Rotation rotation = rotations.get(i);
+
+					StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : defaultConstraint;
 					
 					stackValues[i] = new FixedContainerStackValue(
 							rotation.dx, rotation.dy, rotation.dz, 
-							rotation.maxSupportedWeight, rotation.maxSupportedCount, 
+							constraint , 
 							stackWeight,
-							pressureReference,
 							rotation.loadDx, rotation.loadDy, rotation.loadDz, 
 							emptyWeight, rotation.maxLoadWeight
 							);
@@ -81,11 +82,12 @@ public abstract class Container extends Stackable {
 				
 				for (int i = 0; i < rotations.size(); i++) {
 					Rotation rotation = rotations.get(i);
-					
+
+					StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : defaultConstraint;
+
 					stackValues[i] = new DefaultContainerStackValue(
 							rotation.dx, rotation.dy, rotation.dz, 
-							rotation.maxSupportedWeight, rotation.maxSupportedCount, 
-							pressureReference,
+							constraint,
 							rotation.loadDx, rotation.loadDy, rotation.loadDz, 
 							emptyWeight, rotation.maxLoadWeight,
 							stack
