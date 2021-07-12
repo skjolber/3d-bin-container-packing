@@ -73,9 +73,9 @@ class PermutationRotationIteratorTest {
 
 		products.add(new BoxItem(new Box("0", 3, 1, 1, 0), 1));
 
-		DefaultPermutationRotationIterator rotator = new DefaultPermutationRotationIterator(products, container, true);
+		DefaultPermutationRotationIterator rotator = new DefaultPermutationRotationIterator(products, container, false);
 
-		assertEquals(3, rotator.countRotations());
+		assertEquals(2, rotator.countRotations());
 	}
 
 	@Test

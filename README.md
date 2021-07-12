@@ -16,7 +16,7 @@ So while the algorithm will not produce the theoretically optimal result (which 
 In short, the library provides a service which is __usually good enough, in time and reasonably user-friendly__ ;-)
 
 Bugs, feature suggestions and help requests can be filed with the [issue-tracker].
- 
+
 ## Obtain
 The project is implemented in Java and built using [Maven]. The project is available on the central Maven repository.
 

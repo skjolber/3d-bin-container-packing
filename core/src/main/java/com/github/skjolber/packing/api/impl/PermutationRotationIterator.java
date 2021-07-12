@@ -1,8 +1,6 @@
-package com.github.skjolber.packing.impl;
+package com.github.skjolber.packing.api.impl;
 
 import java.util.List;
-
-import com.github.skjolber.packing.Box;
 
 /**
 *
@@ -22,7 +20,7 @@ import com.github.skjolber.packing.Box;
 * do {
 * 	do {
 * 		for (int i = 0; i < n; i++) {
-* 			Box box = instance.get(i);
+* 			PermutationRotation box = instance.get(i);
 * 			// .. your code here
 * 		}
 * 	} while (instance.nextRotation() != -1);
@@ -41,7 +39,7 @@ public interface PermutationRotationIterator {
 
 	int length();
 	
-	Box get(int index);
+	PermutationRotation get(int index);
 
 	/**
 	 * Next rotation.

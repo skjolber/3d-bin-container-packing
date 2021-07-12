@@ -1,4 +1,4 @@
-package com.github.skjolber.packing;
+package com.github.skjolber.packing.api.packer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,7 +6,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
-import com.github.skjolber.packing.impl.*;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.StackSpace;
+import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.impl.BinarySearchIterator;
 import com.github.skjolber.packing.impl.deadline.BooleanSupplierBuilder;
 
 
@@ -21,7 +25,6 @@ public abstract class Packager {
 	protected static final EmptyPackResult EMPTY_PACK_RESULT = new EmptyPackResult();
 	
 	protected final Container[] containers;
-	protected final boolean rotate3D; // if false, then 2d
 	protected final boolean binarySearch;
 	
 	/** limit the number of calls to get System.currentTimeMillis() */
@@ -34,22 +37,20 @@ public abstract class Packager {
 	 */
 
 	public Packager(List<Container> containers) {
-		this(containers, true, true, 1);
+		this(containers, true, 1);
 	}
 
 	/**
 	 * Constructor
 	 *
 	 * @param containers   list of containers
-	 * @param rotate3D     whether boxes can be rotated in all three directions (two directions otherwise)
 	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a
 	 *                     match, it searches the preceding boxes as well, until the deadline is passed.
 	 * @param checkpointsPerDeadlineCheck number of deadline checks to skip, before checking again
 	 */
 
-	public Packager(List<Container> containers, boolean rotate3D, boolean binarySearch, int checkpointsPerDeadlineCheck) {
+	public Packager(List<Container> containers, boolean binarySearch, int checkpointsPerDeadlineCheck) {
 		this.containers = containers.toArray(new Container[0]);
-		this.rotate3D = rotate3D;
 		this.binarySearch = binarySearch;
 		this.checkpointsPerDeadlineCheck = checkpointsPerDeadlineCheck;
 
@@ -77,7 +78,7 @@ public abstract class Packager {
 	 * @param boxes list of boxes to fit in a container
 	 * @return null if no match
 	 */
-	public Container pack(List<BoxItem> boxes) {
+	public Container pack(List<StackableItem> boxes) {
 		return pack(boxes, Long.MAX_VALUE);
 	}
 
@@ -89,11 +90,11 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 */
 
-	public Container pack(List<BoxItem> boxes, long deadline) {
+	public Container pack(List<StackableItem> boxes, long deadline) {
 		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
-	public Container pack(List<BoxItem> boxes, BooleanSupplier interrupt) {
+	public Container pack(List<StackableItem> boxes, BooleanSupplier interrupt) {
 		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), interrupt);
 	}
 
@@ -106,7 +107,7 @@ public abstract class Packager {
 	 * @return index of container if match, -1 if not
 	 * 
 	 */
-	public Container pack(List<BoxItem> boxes, long deadline, BooleanSupplier interrupt) {
+	public Container pack(List<StackableItem> boxes, long deadline, BooleanSupplier interrupt) {
 		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline, interrupt);
 	}
 
@@ -118,7 +119,7 @@ public abstract class Packager {
 	 * @param deadline   the system time in milliseconds at which the search should be aborted
 	 * @return index of container if match, -1 if not
 	 */
-	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline) {
+	public Container pack(List<StackableItem> boxes, List<Container> containers, long deadline) {
 		return pack(boxes, containers, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
@@ -131,11 +132,11 @@ public abstract class Packager {
 	 * @param interrupt  When true, the computation is interrupted as soon as possible.
 	 * @return index of container if match, -1 if not
 	 */
-	public Container pack(List<BoxItem> boxes, List<Container> containers, long deadline, BooleanSupplier interrupt) {
+	public Container pack(List<StackableItem> boxes, List<Container> containers, long deadline, BooleanSupplier interrupt) {
 		return pack(boxes, containers, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
-	public Container pack(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
+	public Container pack(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
 		if (containers.isEmpty()) {
 			return null;
 		}
@@ -232,7 +233,7 @@ public abstract class Packager {
 	 * @param deadline the system time in milliseconds at which the search should be aborted
 	 * @return index of container if match, -1 if not
 	 */
-	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline) {
+	public List<Container> packList(List<StackableItem> boxes, int limit, long deadline) {
 		return packList(boxes, limit, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
@@ -247,7 +248,7 @@ public abstract class Packager {
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
 	 * @return index of container if match, -1 if not
 	 */
-	public List<Container> packList(List<BoxItem> boxes, int limit, long deadline, BooleanSupplier interrupt) {
+	public List<Container> packList(List<StackableItem> boxes, int limit, long deadline, BooleanSupplier interrupt) {
 		return packList(boxes, limit, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
@@ -259,7 +260,7 @@ public abstract class Packager {
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
 	 * @return index of container if match, -1 if not
 	 */
-	public List<Container> packList(List<BoxItem> boxes, int limit, BooleanSupplier interrupt) {
+	public List<Container> packList(List<StackableItem> boxes, int limit, BooleanSupplier interrupt) {
 		List<Container> containers = filterByVolumeAndWeight(toBoxes(boxes, true), Arrays.asList(this.containers), limit);
 		if (containers.isEmpty()) {
 			return null;
@@ -322,14 +323,14 @@ public abstract class Packager {
 	 * @param count      maximum number of possible containers
 	 * @return list of containers
 	 */
-	private List<Container> filterByVolumeAndWeight(List<Box> boxes, List<Container> containers, int count) {
+	private List<Container> filterByVolumeAndWeight(List<Stackable> boxes, List<Container> containers, int count) {
 		long volume = 0;
 		long minVolume = Long.MAX_VALUE;
 
 		long weight = 0;
 		long minWeight = Long.MAX_VALUE;
 
-		for (Box box : boxes) {
+		for (Stackable box : boxes) {
 			// volume
 			long boxVolume = box.getVolume();
 			volume += boxVolume;
@@ -398,11 +399,11 @@ public abstract class Packager {
 	}
 
 
-	private static List<Box> toBoxes(List<BoxItem> boxItems, boolean clone) {
-		List<Box> boxClones = new ArrayList<>(boxItems.size() * 2);
+	private static List<Stackable> toBoxes(List<StackableItem> StackableItems, boolean clone) {
+		List<Stackable> boxClones = new ArrayList<>(StackableItems.size() * 2);
 
-		for (BoxItem item : boxItems) {
-			Box box = item.getBox();
+		for (StackableItem item : StackableItems) {
+			Stackable box = item.getStackable();
 			boxClones.add(box);
 			for (int i = 1; i < item.getCount(); i++) {
 				boxClones.add(clone ? box : box.clone());
@@ -413,57 +414,40 @@ public abstract class Packager {
 	}
 
 
-	protected abstract Adapter adapter(List<BoxItem> boxes, List<Container> containers, BooleanSupplier interrupt);
+	protected abstract Adapter adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt);
 
-	private boolean canHoldAll(Container containerBox, List<Box> boxes) {
-		for (Box box : boxes) {
+	private boolean canHoldAll(Container containerBox, List<Stackable> boxes) {
+		for (Stackable box : boxes) {
 			if (containerBox.getWeight() < box.getWeight()) {
 				continue;
 			}
-			if (rotate3D) {
-				if (!containerBox.canHold3D(box)) {
-					return false;
-				}
-			} else {
-				if (!containerBox.canHold2D(box)) {
-					return false;
-				}
+			if (!containerBox.canLoad(box)) {
+				return false;
 			}
 		}
 		return true;
 	}
 
-
-	private boolean canHoldAtLeastOne(Container containerBox, List<Box> boxes) {
-		for (Box box : boxes) {
+	private boolean canHoldAtLeastOne(Container containerBox, List<Stackable> boxes) {
+		for (Stackable box : boxes) {
 			if (containerBox.getWeight() < box.getWeight()) {
 				continue;
 			}
-			if (rotate3D) {
-				if (containerBox.canHold3D(box)) {
-					return true;
-				}
-			} else {
-				if (containerBox.canHold2D(box)) {
-					return true;
-				}
-			}
+			if (containerBox.canLoad(box)) {
+				return true;
+			}			
 		}
 		return false;
 	}
 
-
-	static List<Placement> getPlacements(int size) {
+	static List<StackPlacement> getPlacements(int size) {
 		// each box will at most have a single placement with a space (and its remainder).
-		List<Placement> placements = new ArrayList<>(size);
+		List<StackPlacement> placements = new ArrayList<>(size);
 
 		for (int i = 0; i < size; i++) {
-			Space a = new Space();
-			Space b = new Space();
-			a.setRemainder(b);
-			b.setRemainder(a);
-
-			placements.add(new Placement(a));
+			StackPlacement placement = new StackPlacement();
+			placement.setSpace(new StackSpace());
+			placements.add(placement);
 		}
 		return placements;
 	}
