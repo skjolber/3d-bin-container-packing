@@ -67,7 +67,7 @@ public class Box extends Stackable {
 
 	@Override
 	public Box rotations(Dimension bound) {
-		// TODO optimiazate if max is above min bounds 
+		// TODO optimize if max is above min bounds 
 		for (int i = 0; i < rotations.length; i++) {
 			BoxStackValue stackValue = rotations[i];
 			if(stackValue.fitsInside3D(bound)) {

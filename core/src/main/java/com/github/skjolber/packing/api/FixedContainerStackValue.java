@@ -1,5 +1,12 @@
 package com.github.skjolber.packing.api;
 
+/**
+ * 
+ * Fixed as does not have any container stackables within.
+ *
+ */
+
+
 public class FixedContainerStackValue extends ContainerStackValue {
 
 	protected final int weight;
