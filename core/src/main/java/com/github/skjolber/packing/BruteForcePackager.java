@@ -155,7 +155,6 @@ public class BruteForcePackager extends Packager {
 			levelSpace.setZ(holder.getStackHeight());
 
 			levelSpace.setParent(null);
-			levelSpace.getRemainder().setParent(null);
 
 			Level level = holder.addLevel();
 
@@ -302,7 +301,7 @@ public class BruteForcePackager extends Packager {
 						// 
 						// Width:
 						//
-						// ......... ..     ...........
+						// ...........      ...........
 						// .         .      .////|    .
 						// .         .      .////|    .
 						// .         .  ->  .////|    .
@@ -372,7 +371,6 @@ public class BruteForcePackager extends Packager {
 
 					remainderPlacement.getSpace().copyFrom(nextSpace);
 					remainderPlacement.getSpace().setParent(nextSpace);
-					remainderPlacement.getSpace().getRemainder().setParent(nextSpace);
 
 					index = fit2D(rotator, index, placements, holder, remainderPlacement, interrupt);
 					if(index == -1) { // interrupted
@@ -421,7 +419,6 @@ public class BruteForcePackager extends Packager {
 
 					nextPlacement.getSpace().copyFrom(abovePlacedBox);
 					nextPlacement.getSpace().setParent(levelSpace);
-					nextPlacement.getSpace().getRemainder().setParent(levelSpace);
 
 					index = fit2D(rotator, index, placements, holder, nextPlacement, interrupt);
 					if(index == -1) {
