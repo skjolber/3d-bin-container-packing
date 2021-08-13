@@ -221,7 +221,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 			usedSpace.fitRotate2D(freeSpace);
 		} else {
 			// check whether the selected free space requires the used space box to be rotated
-			if(primaryPlacement.getSpace() == spaces[2] || primaryPlacement.getSpace() == spaces[3]) {
+			if(primaryPlacement.getSpace() == spaces[4] || primaryPlacement.getSpace() == spaces[6]) {
 				// the desired space implies that we rotate the used space box
 				usedSpace.rotate2D();
 			}
@@ -280,11 +280,11 @@ public class LargestAreaFitFirstPackager extends Packager {
 					//
 					// Rotation (placed box is rotated 90 degrees):
 					//
-					// ........................   ........................          ..................
-					// .                      .   .                      .          .                .
-					// .          C           .   .         C            .          .                .
-					// .                      .   .                      .          .                .
-					// .......                .   ........................          .                .
+					// ........................  ........................           ..................
+					// .                      .  .                      .           .                .
+					// .          C           .  .         C            .           .                .
+					// .                      .  .                      .           .                .
+					// .......                .  ........................           .                .
 					// .     .       D        .                                     .        D       .
 					// .     .                .                                     .                .
 					// .     .                .                                     .                .
@@ -293,11 +293,11 @@ public class LargestAreaFitFirstPackager extends Packager {
 					//
 					// With remainders shown as 'r' and the expansion area as double quoted:
 					//
-					//                           .........................  ..........................
-					//                           .      .                .  .       .                .
-					//                           .  C'  .      C''       .  .  r    .     D''        .
-					//                           .      .                .  .       .                .
-					//                           .........................  ..........................
+					//                           .........................    ........................
+					//                           .      .                .    .     .                .
+					//                           .  C'  .      C''       .    .  r  .     D''        .
+					//                           .      .                .    .     .                .
+					//                           .........................    ........................
 					//      depth                       .                .          .                .
 					//       ^                          .                .          .                .
 					//       |                          .       r        .          .      D'        .
@@ -518,40 +518,40 @@ public class LargestAreaFitFirstPackager extends Packager {
 		//
 		// So there is always a 'big' and a 'small' remaining / leftover area.
 
-		Space[] freeSpaces = new Space[4];
+		Space[] freeSpaces = new Space[8];
 		if(freespace.getWidth() >= used.getWidth() && freespace.getDepth() >= used.getDepth()) {
 
 			// if B is empty, then it is sufficient to work with A and the other way around
 
 			// B
 			if(freespace.getWidth() > used.getWidth()) {
-				Space right = new Space(
+				freeSpaces[0] = new Space(
 						freespace.getWidth() - used.getWidth(), freespace.getDepth(), freespace.getHeight(),
 						freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
 						);
 
-				Space rightRemainder = new Space(
-						used.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
-						freespace.getX(), freespace.getY() + used.getDepth(), freespace.getZ()
-						);
-				right.setRemainder(rightRemainder);
-				rightRemainder.setRemainder(right);
-				freeSpaces[0] = right;
+				int depth = freespace.getDepth() - used.getDepth();
+				if(depth > 0) {
+					freeSpaces[1] = new Space(
+							used.getWidth(), depth, freespace.getHeight(),
+							freespace.getX(), freespace.getY() + used.getDepth(), freespace.getZ()
+							);
+				}
 			}
 
 			// A
 			if(freespace.getDepth() > used.getDepth()) {
-				Space top = new Space(
+				freeSpaces[2] = new Space(
 						freespace.getWidth(), freespace.getDepth() - used.getDepth(), freespace.getHeight(),
 						freespace.getX(), freespace.getY() + used.depth, freespace.getZ()
 						);
-				Space topRemainder = new Space(
-						freespace.getWidth() - used.getWidth(), used.getDepth(), freespace.getHeight(),
-						freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
-						);
-				top.setRemainder(topRemainder);
-				topRemainder.setRemainder(top);
-				freeSpaces[1] = top;
+				int width = freespace.getWidth() - used.getWidth();
+				if(width > 0) {
+					freeSpaces[3] = new Space(
+							width, used.getDepth(), freespace.getHeight(),
+							freespace.getX() + used.getWidth(), freespace.getY(), freespace.getZ()
+							);
+				}
 			}
 		}
 
@@ -560,32 +560,35 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 			// D
 			if(freespace.getWidth() > used.getDepth()) {
-				Space right = new Space(
+				freeSpaces[4] = new Space(
 						freespace.getWidth() - used.getDepth(), freespace.getDepth(), freespace.getHeight(),
 						freespace.getX() + used.getDepth(), freespace.getY(), freespace.getZ()
 						);
-				Space rightRemainder = new Space(
-						used.getDepth(), freespace.getDepth() - used.getWidth(), freespace.getHeight(),
-						freespace.getX(), freespace.getY() + used.getWidth(), freespace.getZ()
-						);
-				right.setRemainder(rightRemainder);
-				rightRemainder.setRemainder(right);
-				freeSpaces[2] = right;
+				
+				int d = freespace.getDepth() - used.getWidth();
+				if(d > 0) {
+					freeSpaces[5] = new Space(
+							used.getDepth(), d, freespace.getHeight(),
+							freespace.getX(), freespace.getY() + used.getWidth(), freespace.getZ()
+							);
+				}
 			}
 
 			// C
 			if(freespace.getDepth() > used.getWidth()) {
-				Space top = new Space(
+				freeSpaces[6] = new Space(
 						freespace.getWidth(), freespace.getDepth() - used.getWidth(), freespace.getHeight(),
 						freespace.getX(), freespace.getY() + used.getWidth(), freespace.getZ()
 						);
-				Space topRemainder = new Space(
-						freespace.getWidth() - used.getDepth(), used.getWidth(), freespace.getHeight(),
-						freespace.getX() + used.getDepth(), freespace.getY(), freespace.getZ()
-						);
-				top.setRemainder(topRemainder);
-				topRemainder.setRemainder(top);
-				freeSpaces[3] = top;
+				
+				int width = freespace.getWidth() - used.getDepth();
+				if(width > 0) {
+					freeSpaces[7] = new Space(
+							width, used.getWidth(), freespace.getHeight(),
+							freespace.getX() + used.getDepth(), freespace.getY(), freespace.getZ()
+							);
+				}
+				
 			}
 		}
 		return freeSpaces;

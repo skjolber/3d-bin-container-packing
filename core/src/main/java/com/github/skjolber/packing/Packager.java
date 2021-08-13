@@ -459,9 +459,6 @@ public abstract class Packager {
 
 		for (int i = 0; i < size; i++) {
 			Space a = new Space();
-			Space b = new Space();
-			a.setRemainder(b);
-			b.setRemainder(a);
 
 			placements.add(new Placement(a));
 		}
