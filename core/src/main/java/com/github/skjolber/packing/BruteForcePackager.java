@@ -32,7 +32,6 @@ public class BruteForcePackager extends Packager {
 	 * @param rotate3D     whether boxes can be rotated in all three directions (two directions otherwise)
 	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a
 	 *                     container that can hold the boxes, given time, it also tries to find a better match.
-	 * @param checkpointsPerDeadlineCheck number of deadline checks to skip, before checking again
 	 */
 
 	public BruteForcePackager(List<Container> containers, boolean rotate3D, boolean binarySearch, int checkpointsPerDeadlineCheck) {
@@ -156,6 +155,7 @@ public class BruteForcePackager extends Packager {
 			levelSpace.setZ(holder.getStackHeight());
 
 			levelSpace.setParent(null);
+			levelSpace.getRemainder().setParent(null);
 
 			Level level = holder.addLevel();
 
@@ -302,7 +302,7 @@ public class BruteForcePackager extends Packager {
 						// 
 						// Width:
 						//
-						// ...........      ...........
+						// ......... ..     ...........
 						// .         .      .////|    .
 						// .         .      .////|    .
 						// .         .  ->  .////|    .
@@ -372,6 +372,7 @@ public class BruteForcePackager extends Packager {
 
 					remainderPlacement.getSpace().copyFrom(nextSpace);
 					remainderPlacement.getSpace().setParent(nextSpace);
+					remainderPlacement.getSpace().getRemainder().setParent(nextSpace);
 
 					index = fit2D(rotator, index, placements, holder, remainderPlacement, interrupt);
 					if(index == -1) { // interrupted
@@ -420,6 +421,7 @@ public class BruteForcePackager extends Packager {
 
 					nextPlacement.getSpace().copyFrom(abovePlacedBox);
 					nextPlacement.getSpace().setParent(levelSpace);
+					nextPlacement.getSpace().getRemainder().setParent(levelSpace);
 
 					index = fit2D(rotator, index, placements, holder, nextPlacement, interrupt);
 					if(index == -1) {

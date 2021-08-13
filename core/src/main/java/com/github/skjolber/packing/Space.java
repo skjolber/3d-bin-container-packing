@@ -11,6 +11,7 @@ public class Space extends Dimension {
 	}
 
 	private Space parent;
+	private Space remainder;
 
 	private int x; // width
 	private int y; // depth
@@ -64,6 +65,14 @@ public class Space extends Dimension {
 		this.parent = parent;
 	}
 
+	public void setRemainder(Space dual) {
+		this.remainder = dual;
+	}
+
+	public Space getRemainder() {
+		return remainder;
+	}
+
 	@Override
 	public String toString() {
 		return "Space [name=" + name + ", " + x + "x" + y + "x" + z + ", width=" + width + ", depth=" + depth + ", height="
@@ -75,6 +84,7 @@ public class Space extends Dimension {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
+		result = prime * result + ((remainder == null) ? 0 : remainder.hashCode());
 		result = prime * result + x;
 		result = prime * result + y;
 		result = prime * result + z;
@@ -94,6 +104,11 @@ public class Space extends Dimension {
 			if (other.parent != null)
 				return false;
 		} else if (!parent.equals(other.parent))
+			return false;
+		if (remainder == null) {
+			if (other.remainder != null)
+				return false;
+		} else if (!remainder.equals(other.remainder))
 			return false;
 		if (x != other.x)
 			return false;
