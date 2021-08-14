@@ -27,6 +27,9 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 		
 		protected final StackConstraint stackConstraint;
 
+		protected long volume;
+		protected long loadVolume;
+
 		public Rotation(int dx, int dy, int dz, int loadDx, int loadDy, int loadDz, int maxLoadWeight, StackConstraint stackConstraint) {
 			super();
 			this.dx = dx;
@@ -39,7 +42,23 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 			this.loadDz = loadDz;
 
 			this.maxLoadWeight = maxLoadWeight;
+			
+			this.volume = (long)dx * (long)dy * (long)dz;
+			this.loadVolume = (long)loadDx * (long)loadDy * (long)loadDz;
 		}
+
+		public int getMaxLoadWeight() {
+			return maxLoadWeight;
+		}
+
+		public int getLoadVolume() {
+			return maxLoadWeight;
+		}
+
+		public long getVolume() {
+			return volume;
+		}
+
 	}
 	
 	protected List<Rotation> rotations = new ArrayList<>();

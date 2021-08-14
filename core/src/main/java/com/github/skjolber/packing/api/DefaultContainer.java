@@ -1,19 +1,60 @@
 package com.github.skjolber.packing.api;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import com.github.skjolber.packing.api.AbstractContainerBuilder.Rotation;
 
 public class DefaultContainer extends Container {
 
 	protected final ContainerStackValue[] stackValues;
 	protected final Stack stack;
-	protected final long volume;
 	
-	public DefaultContainer(String name, long volume, int emptyWeight, long maxLoadVolume, int maxLoadWeight, ContainerStackValue[] stackValues, Stack stack) {
-		super(name, emptyWeight, maxLoadVolume, maxLoadWeight);
-		this.volume = volume;
-		this.stackValues = stackValues;
-		this.stack = stack;
+	public DefaultContainer(Builder builder) {
+		super(builder.name, builder.rotations.get(0).getVolume(), builder.emptyWeight, builder.getMaxLoadVolume(), builder.getMaxLoadWeight());
+			
+		List<Rotation> rotations = builder.rotations;
+
+		this.stack = builder.stack;
+
+		if(builder.fixed) {
+			FixedContainerStackValue[] stackValues = new FixedContainerStackValue[rotations.size()];
+			
+			int stackWeight = stack.getWeight();
+
+			for (int i = 0; i < rotations.size(); i++) {
+				Rotation rotation = rotations.get(i);
+
+				StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : builder.defaultConstraint;
+				
+				stackValues[i] = new FixedContainerStackValue(
+						rotation.dx, rotation.dy, rotation.dz, 
+						constraint , 
+						stackWeight,
+						rotation.loadDx, rotation.loadDy, rotation.loadDz, 
+						rotation.getMaxLoadWeight(),
+						this
+						);
+			}
+			this.stackValues = stackValues;
+		} else {
+			DefaultContainerStackValue[] stackValues = new DefaultContainerStackValue[rotations.size()];
+			
+			for (int i = 0; i < rotations.size(); i++) {
+				Rotation rotation = rotations.get(i);
+
+				StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : builder.defaultConstraint;
+
+				stackValues[i] = new DefaultContainerStackValue(
+						rotation.dx, rotation.dy, rotation.dz, 
+						constraint,
+						rotation.loadDx, rotation.loadDy, rotation.loadDz, 
+						rotation.getMaxLoadWeight(),
+						this,
+						builder.stack
+						);
+			}
+			this.stackValues = stackValues;
+		}		
 	}
 
 	@Override
@@ -26,37 +67,19 @@ public class DefaultContainer extends Container {
 		return stack;
 	}
 
-	public long getVolume() {
-		return volume;
-	}
-
-	@Override
-	public DefaultContainer rotations(Dimension bound) {
-		// TODO optimize if max is above min bounds 
-		for (int i = 0; i < stackValues.length; i++) {
-			ContainerStackValue stackValue = stackValues[i];
-			if(stackValue.fitsInside3D(bound)) {
-				List<ContainerStackValue> fitsInside = new ArrayList<>(stackValues.length);
-				fitsInside.add(stackValue);
-				
-				while(++i < stackValues.length) {
-					if(stackValues[i].fitsInside3D(bound)) {
-						fitsInside.add(stackValues[i]);
-					}
-				}
-				return new DefaultContainer(name, volume, emptyWeight, maxLoadVolume, maxLoadWeight, fitsInside.toArray(new ContainerStackValue[fitsInside.size()]), stack);
-			}
-		}
-		return null;
-	}
-	
 	@Override
 	public DefaultContainer clone() {
-		return new DefaultContainer(name, volume, emptyWeight, maxLoadVolume, maxLoadWeight, stackValues, stack);
+		throw new RuntimeException();
 	}
 	
 	@Override
 	public boolean canLoad(Stackable stackable) {
+		if(stackable.getVolume() > maxLoadVolume) {
+			return false;
+		}
+		if(stackable.getWeight() > maxLoadWeight) {
+			return false;
+		}
 		for(ContainerStackValue stackValue : stackValues) {
 			if(stackValue.canLoad(stackable)) {
 				return true;
@@ -65,4 +88,5 @@ public class DefaultContainer extends Container {
 		
 		return false;
 	}
+	
 }

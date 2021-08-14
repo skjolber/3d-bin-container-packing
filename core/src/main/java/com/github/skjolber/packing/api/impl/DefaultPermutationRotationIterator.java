@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Dimension;
+import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.packer.StackableItem;
 
@@ -23,13 +24,15 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 		List<PermutationStackableValue> matrix = new ArrayList<>(unconstrained.size());
 		for(int i = 0; i < unconstrained.size(); i++) {
 			StackableItem item = unconstrained.get(i);
-			Stackable rotations = item.getStackable().rotations(bound);
+			
+			Stackable stackable = item.getStackable();
+			List<StackValue> boundRotations = stackable.rotations(bound);
 			
 			// create PermutationRotation even if this box does not fit at all, 
 			// so that permutation indexes are directly comparable between parallel instances of this class
-			matrix.add(new PermutationStackableValue(item.getCount(), rotations));
+			matrix.add(new PermutationStackableValue(item.getCount(), stackable, boundRotations));
 
-			if(rotations.getStackValues().length > 0) {
+			if(!boundRotations.isEmpty()) {
 				for(int k = 0; k < item.getCount(); k++) {
 					types.add(i);
 				}

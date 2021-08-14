@@ -15,10 +15,10 @@ public class FixedContainerStackValue extends ContainerStackValue {
 			int dx, int dy, int dz, 
 			StackConstraint constraint,
 			int stackWeight,
-			int loadDx, int loadDy, int loadDz, int emptyWeight, int maxLoadWeight) {
-		super(dx, dy, dz, constraint, loadDx, loadDy, loadDz, emptyWeight, maxLoadWeight);
+			int loadDx, int loadDy, int loadDz, int maxLoadWeight, Container container) {
+		super(dx, dy, dz, constraint, loadDx, loadDy, loadDz, maxLoadWeight, container);
 					
-		this.weight = stackWeight + emptyWeight;
+		this.weight = stackWeight + container.getEmptyWeight();
 	}
 	
 	public int getWeight() {

@@ -3,6 +3,8 @@ package com.github.skjolber.packing.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.skjolber.packing.api.AbstractStackableBuilder.Rotation;
+
 
 /**
  * {@linkplain Stackable} builder scaffold.
@@ -20,6 +22,8 @@ public class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> {
 		protected int dz; // height
 		
 		protected StackConstraint stackConstraint;
+		
+		protected long volume;
 
 		public Rotation(int dx, int dy, int dz, StackConstraint stackConstraint) {
 			super();
@@ -27,6 +31,12 @@ public class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> {
 			this.dy = dy;
 			this.dz = dz;
 			this.stackConstraint = stackConstraint;
+			
+			this.volume = (long)dx * (long)dy * (long)dz;;
+		}
+		
+		public long getVolume() {
+			return volume;
 		}
 	}
 	
@@ -36,21 +46,34 @@ public class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> {
 
 	protected StackConstraint defaultConstraint;
 	
+	protected long volume = -1L;
+	
 	public B withName(String name) {
 		this.name = name;
 		return (B)this;
 	}
 
-	public B withRotate(int dx, int dy, int dz) {
-		rotations.add(new Rotation(dx, dy, dz, null));
+	public B withRotate(Rotation rotation) {
+		add(rotation);
 		
 		return (B)this;
 	}
+	
+	protected void add(Rotation rotation) {
+		if(!rotations.isEmpty()) {
+			if(rotations.get(0).getVolume() != rotation.getVolume()) {
+				throw new IllegalStateException("Expected equal volume for all rotations");
+			}
+		}
+		rotations.add(rotation);
+	}
+	
+	public B withRotate(int dx, int dy, int dz) {
+		return withRotate(new Rotation(dx, dy, dz, null));
+	}
 
 	public B withRotate(int dx, int dy, int dz, StackConstraint stackConstraint) {
-		rotations.add(new Rotation(dx, dy, dz, stackConstraint));
-		
-		return (B)this;
+		return withRotate(new Rotation(dx, dy, dz, stackConstraint));
 	}
 	
 	public B withRotateXY(int dx, int dy, int dz) {
@@ -62,12 +85,11 @@ public class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> {
 		return (B)this;
 	}
 
-	
 	public B withRotateXY(int dx, int dy, int dz, StackConstraint stackConstraint) {
-		rotations.add(new Rotation(dx, dy, dz, stackConstraint));
+		add(new Rotation(dx, dy, dz, stackConstraint));
 		
 		if(dx != dy) {
-			rotations.add(new Rotation(dy, dx, dz, stackConstraint));
+			add(new Rotation(dy, dx, dz, stackConstraint));
 		}
 		
 		return (B)this;
@@ -78,7 +100,7 @@ public class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> {
 	}
 
 	public B withRotateXYZ(int dx, int dy, int dz, StackConstraint stackConstraint) {
-		rotations.add(new Rotation(dx, dy, dz, stackConstraint));
+		add(new Rotation(dx, dy, dz, stackConstraint));
 		
 		if(dx == dy && dx == dz) { // square 3d
 			// all sides are equal
@@ -115,8 +137,8 @@ public class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> {
 			// --------
 			//
 			
-			rotations.add(new Rotation(dz, dx, dy, stackConstraint));
-			rotations.add(new Rotation(dy, dz, dx, stackConstraint));
+			add(new Rotation(dz, dx, dy, stackConstraint));
+			add(new Rotation(dy, dz, dx, stackConstraint));
 		} else {
 			//
 			//              dx
@@ -186,16 +208,16 @@ public class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> {
 			// ----------------
 			//			
 			
-			rotations.add(new Rotation(dy, dx, dz, stackConstraint));
+			add(new Rotation(dy, dx, dz, stackConstraint));
 			
-			rotations.add(new Rotation(dx, dz, dy, stackConstraint));
-			rotations.add(new Rotation(dz, dx, dy, stackConstraint));
+			add(new Rotation(dx, dz, dy, stackConstraint));
+			add(new Rotation(dz, dx, dy, stackConstraint));
 			
-			rotations.add(new Rotation(dy, dz, dx, stackConstraint));
-			rotations.add(new Rotation(dz, dy, dx, stackConstraint));
+			add(new Rotation(dy, dz, dx, stackConstraint));
+			add(new Rotation(dz, dy, dx, stackConstraint));
 		}			
 		
 		return (B)this;
 	}
-
+	
 }

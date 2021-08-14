@@ -4,7 +4,7 @@ public abstract class Container extends Stackable {
 
 	public static class Builder extends AbstractContainerBuilder<Builder> {
 		
-		protected Integer emptyWeight;
+		protected int emptyWeight = -1;
 		protected Stack stack;
 		protected boolean fixed = false;
 
@@ -29,102 +29,57 @@ public abstract class Container extends Stackable {
 			
 			return this;
 		}
+		
+		public int getMaxLoadWeight() {
+			int maxLoadWeight = -1;
+			
+			for(Rotation rotation : rotations) {
+				if(rotation.getMaxLoadWeight() > maxLoadWeight) {
+					maxLoadWeight = rotation.getMaxLoadWeight(); 
+				}
+			}
+			return maxLoadWeight;
+		}
+		
+		public long getMaxLoadVolume() {
+			long maxLoadVolume = -1;
+			
+			for(Rotation rotation : rotations) {
+				if(rotation.getLoadVolume() > maxLoadVolume) {
+					maxLoadVolume = rotation.getLoadVolume(); 
+				}
+			}
+			return maxLoadVolume;
+		}
 
 		public DefaultContainer build() {
 			if(rotations.isEmpty()) {
 				throw new IllegalStateException("No rotations");
 			}
-			if(emptyWeight != null) {
-				throw new IllegalStateException("No empty weight");
+			if(emptyWeight == -1) {
+				throw new IllegalStateException("Expected empty weight");
 			}
 			
-			long maxLoadVolume = -1L;
-			int maxLoadWeight = -1;
-			long volume = -1L;
-			
-			DefaultContainer defaultContainer;
-			if(fixed) {
-				FixedContainerStackValue[] stackValues = new FixedContainerStackValue[rotations.size()];
-				
-				int stackWeight = stack.getWeight();
-
-				for (int i = 0; i < rotations.size(); i++) {
-					Rotation rotation = rotations.get(i);
-
-					StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : defaultConstraint;
-					
-					stackValues[i] = new FixedContainerStackValue(
-							rotation.dx, rotation.dy, rotation.dz, 
-							constraint , 
-							stackWeight,
-							rotation.loadDx, rotation.loadDy, rotation.loadDz, 
-							emptyWeight, rotation.maxLoadWeight
-							);
-					
-					if(stackValues[i].getMaxLoadWeight() > maxLoadWeight) {
-						maxLoadWeight = stackValues[i].getMaxLoadWeight(); 
-					}
-					
-					if(stackValues[i].getVolume() > maxLoadVolume) {
-						maxLoadVolume = stackValues[i].getVolume(); 
-					}
-					
-					if(volume == -1L) {
-						volume = stackValues[i].getVolume();
-					} else if(volume != stackValues[i].getVolume()) {
-						throw new IllegalStateException("Expected equal volume for all rotations");
-					}
-				}
-				
-				defaultContainer = new DefaultContainer(name, volume, emptyWeight, maxLoadVolume, maxLoadWeight, stackValues, stack);
-			} else {
-				DefaultContainerStackValue[] stackValues = new DefaultContainerStackValue[rotations.size()];
-				
-				for (int i = 0; i < rotations.size(); i++) {
-					Rotation rotation = rotations.get(i);
-
-					StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : defaultConstraint;
-
-					stackValues[i] = new DefaultContainerStackValue(
-							rotation.dx, rotation.dy, rotation.dz, 
-							constraint,
-							rotation.loadDx, rotation.loadDy, rotation.loadDz, 
-							emptyWeight, rotation.maxLoadWeight,
-							stack
-							);
-					
-					if(stackValues[i].getMaxLoadWeight() > maxLoadWeight) {
-						maxLoadWeight = stackValues[i].getMaxLoadWeight(); 
-					}
-					
-					if(stackValues[i].getVolume() > maxLoadVolume) {
-						maxLoadVolume = stackValues[i].getVolume(); 
-					}
-					
-					if(volume == -1L) {
-						volume = stackValues[i].getVolume();
-					} else if(volume != stackValues[i].getVolume()) {
-						throw new IllegalStateException("Expected equal volume for all rotations");
-					}
-				}
-				defaultContainer = new DefaultContainer(name, volume, emptyWeight, maxLoadVolume, maxLoadWeight, stackValues, stack);
-			}
-
-			return defaultContainer;
+			return new DefaultContainer(this);
 		}
 	}
 	
-	
 	protected final int emptyWeight;
+	/** i.e. best of the stack values */
 	protected final long maxLoadVolume;
+	/** i.e. best of the stack values */
 	protected final int maxLoadWeight;
 
-	public Container(String name, int emptyWeight, long maxLoadVolume, int maxLoadWeight) {
+	protected final long volume;
+	
+	public Container(String name, long volume, int emptyWeight, long maxLoadVolume, int maxLoadWeight) {
 		super(name);
 		
 		this.emptyWeight = emptyWeight;
 		this.maxLoadVolume = maxLoadVolume;
 		this.maxLoadWeight = maxLoadWeight;
+		
+		this.volume = volume;
 	}
 	
 	@Override
@@ -136,7 +91,7 @@ public abstract class Container extends Stackable {
 		return maxLoadVolume;
 	}
 	
-	public long getMaxLoadWeight() {
+	public int getMaxLoadWeight() {
 		return maxLoadWeight;
 	}
 	
@@ -156,6 +111,11 @@ public abstract class Container extends Stackable {
 	public abstract boolean canLoad(Stackable box);
 	
 	@Override
-	public abstract Container clone(); 
+	public abstract Container clone();
+	
+	@Override
+	public long getVolume() {
+		return volume;
+	}
 	
 }

@@ -44,7 +44,7 @@ public class DefaultStack extends Stack {
 		for (StackPlacement stackEntry : entries) {
 			StackValue stackValue = stackEntry.getStackValue();
 			StackSpace space = stackEntry.getSpace();
-			dz += space.getZ() + stackValue.getDz();
+			dz = Math.max(dz, space.getZ() + stackValue.getDz());
 		}
 		
 		return dz;

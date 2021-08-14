@@ -34,9 +34,29 @@ public abstract class Stackable {
 		return list;
 	}
 
-	public abstract Stackable rotations(Dimension bound);
-
 	@Override
 	public abstract Stackable clone();
+	
+	public List<StackValue> rotations(Dimension bound) {
+		// TODO optimize if max is above min bounds 
+		StackValue[] rotations = getStackValues();
+		for (int i = 0; i < rotations.length; i++) {
+			StackValue stackValue = rotations[i];
+			if(stackValue.fitsInside3D(bound)) {
+				List<StackValue> fitsInside = new ArrayList<>(rotations.length);
+				fitsInside.add(stackValue);
+				
+				i++;
+				while(i < rotations.length) {
+					if(rotations[i].fitsInside3D(bound)) {
+						fitsInside.add(rotations[i]);
+					}
+					i++;
+				}
+				return fitsInside;
+			}
+		}
+		return null;
+	}
 	
 }

@@ -69,5 +69,6 @@ public abstract class StackValue {
 		return "StackValue [dx=" + dx + ", dy=" + dy + ", dz=" + dz + "]";
 	}
 	
+	public abstract Stackable getStackable();
 	
 }

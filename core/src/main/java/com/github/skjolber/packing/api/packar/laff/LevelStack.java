@@ -96,7 +96,7 @@ public class LevelStack extends Stack {
 		}
 		return volume;
 	}
-	
+
 	public ContainerStackValue getFreeContainerStackValue() {
 		if(levels.isEmpty()) {
 			return containerStackValue;
@@ -116,6 +116,21 @@ public class LevelStack extends Stack {
 						containerStackValue.getDx(), containerStackValue.getDy(), containerStackValue.getDz() - dz,
 						null,
 						containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz() - dz,
+						0, freeWeight,
+						stack
+						);
+	}
+	
+	public ContainerStackValue getContainerStackValue(int dz) {
+		
+		int freeWeight = getFreeWeightLoad();
+		
+		DefaultStack stack = new DefaultStack();
+		
+		return new DefaultContainerStackValue(
+						containerStackValue.getDx(), containerStackValue.getDy(), dz,
+						null,
+						containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), dz,
 						0, freeWeight,
 						stack
 						);

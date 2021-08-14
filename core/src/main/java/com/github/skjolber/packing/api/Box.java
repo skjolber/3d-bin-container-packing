@@ -1,8 +1,5 @@
 package com.github.skjolber.packing.api;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Box extends Stackable {
 
 	public static Builder newBuilder() {
@@ -19,7 +16,7 @@ public class Box extends Stackable {
 			return this;
 		}
 
-		public Box build() {
+		public Box build(Box box) {
 			if(rotations.isEmpty()) {
 				throw new IllegalStateException("No rotations");
 			}
@@ -27,6 +24,10 @@ public class Box extends Stackable {
 				throw new IllegalStateException("No weight");
 			}
 			
+			return new Box(this);
+		}
+		
+		protected BoxStackValue[] getStackValues(Box box) {
 			BoxStackValue[] stackValues = new BoxStackValue[rotations.size()];
 			
 			for (int i = 0; i < rotations.size(); i++) {
@@ -34,17 +35,26 @@ public class Box extends Stackable {
 				
 				StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : defaultConstraint;
 
-				stackValues[i] = new BoxStackValue(rotation.dx, rotation.dy, rotation.dz, weight, constraint);
+				stackValues[i] = new BoxStackValue(rotation.dx, rotation.dy, rotation.dz, box, constraint);
 			}	
-			return new Box(name, stackValues[0].getVolume(), weight, stackValues);
+			return stackValues;
 		}
+		
 	}
 	
 	protected final int weight;
 	protected final BoxStackValue[] rotations;
 	protected final long volume;
 
-	public Box(String name, long volume, int weight, BoxStackValue[] rotations) {
+	public Box(Builder builder) {
+		super(builder.name);
+		
+		this.weight = builder.weight;
+		this.rotations = builder.getStackValues(this);
+		this.volume = rotations[0].volume;
+	}
+
+	protected Box(String name, long volume, int weight, BoxStackValue[] rotations) {
 		super(name);
 		this.volume = volume;
 		this.weight = weight;
@@ -63,28 +73,6 @@ public class Box extends Stackable {
 
 	public long getVolume() {
 		return volume;
-	}
-
-	@Override
-	public Box rotations(Dimension bound) {
-		// TODO optimize if max is above min bounds 
-		for (int i = 0; i < rotations.length; i++) {
-			BoxStackValue stackValue = rotations[i];
-			if(stackValue.fitsInside3D(bound)) {
-				List<StackValue> fitsInside = new ArrayList<>(rotations.length);
-				fitsInside.add(stackValue);
-				
-				i++;
-				while(i < rotations.length) {
-					if(rotations[i].fitsInside3D(bound)) {
-						fitsInside.add(rotations[i]);
-					}
-					i++;
-				}
-				return new Box(name, volume, weight, fitsInside.toArray(new BoxStackValue[fitsInside.size()]));
-			}
-		}
-		return null;
 	}
 
 	@Override
