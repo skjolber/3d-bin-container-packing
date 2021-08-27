@@ -10,8 +10,13 @@ public class DefaultStackValueConstraint implements StackConstraint {
 	}
 
 	@Override
-	public boolean supports(Stack stack, int weight, long area) {
+	public boolean supports(int weight, long area) {
 		return weight <= maxSupportedWeight;
+	}
+
+	@Override
+	public boolean accepts(Stack stack) {
+		return true;
 	}
 	
 }
