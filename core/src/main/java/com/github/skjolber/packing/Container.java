@@ -162,6 +162,17 @@ public class Container extends Box {
 		}
 		return new Dimension(width, depth, remainder);
 	}
+	
+	public int getFreeLevelHeight() {
+		if(levels.isEmpty()) {
+			return getHeight();
+		}
+		int remainder = height - getStackHeight();
+		if(remainder < 0) {
+			throw new IllegalArgumentException("Remaining free space is negative at " + remainder + " for " + this);
+		}
+		return remainder;
+	}
 
 	public int getFreeWeight() {
 		int remainder = weight - getStackWeight();

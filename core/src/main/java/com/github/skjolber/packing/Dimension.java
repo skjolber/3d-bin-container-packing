@@ -146,7 +146,16 @@ public class Dimension {
 	 */
 
 	public boolean canFitInside3D(Dimension dimension) {
-		return dimension.canHold3D(this);
+		return canFitInside3D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
+	}
+	
+	public boolean canFitInside3D(int w, int d, int h) {
+        return (w >= width && h >= height && d >= depth) ||
+               (h >= width && d >= height && w >= depth) ||
+               (d >= width && w >= height && h >= depth) ||
+               (h >= width && w >= height && d >= depth) ||
+               (d >= width && h >= height && w >= depth) ||
+               (w >= width && d >= height && h >= depth);
 	}
 
 	/**
@@ -158,7 +167,14 @@ public class Dimension {
 	 */
 
 	public boolean canFitInside2D(Dimension dimension) {
-		return dimension.canHold2D(this);
+		return canFitInside2D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
+	}
+	
+	public boolean canFitInside2D(int w, int d, int h) {
+		if(h < height) {
+			return false;
+		}
+		return (w >= width && d >= depth) || (d >= width && w >= depth);
 	}
 
 	public long getVolume() {

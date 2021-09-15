@@ -71,7 +71,7 @@ public class Box extends Dimension {
 		return (d >= height && w >= width) || (w >= height && d >= width);
 	}
 
-	private boolean rotateLargestFootprint3D(int w, int d, int h) {
+	public boolean rotateLargestFootprint3D(int w, int d, int h) {
 		int a = Integer.MIN_VALUE;
 		if (fitsWidthAndDepthDown(w, d, h)) {
 			a = width * depth;
@@ -118,7 +118,7 @@ public class Box extends Dimension {
 
 	}
 
-	boolean fitRotate2D(int w, int d) {
+	public boolean fitRotate2D(int w, int d) {
 
 		if (w >= width && d >= depth) {
 			return true;

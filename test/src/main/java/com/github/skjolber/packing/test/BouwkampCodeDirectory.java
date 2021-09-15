@@ -2,6 +2,8 @@ package com.github.skjolber.packing.test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class BouwkampCodeDirectory {
 
@@ -74,26 +76,32 @@ public class BouwkampCodeDirectory {
 		return null;
 	}
 
-	public List<BouwkampCodes> codesForCount(int count) {
+	public List<BouwkampCodes> codesForCount(int order) {
 		List<BouwkampCodes> result = new ArrayList<>();
 		for(BouwkampCodes code : simpleImperfectSquaredRectangles) {
-			if(code.getCodes().get(0).getSquare().size() == count) {
+			List<BouwkampCode> codes = code.getCodes();
+			if(codes.get(0).getOrder() == order) {
 				result.add(code);
 			}
 		}
 		for(BouwkampCodes code : simpleImperfectSquaredSquares) {
-			if(code.getCodes().get(0).getSquare().size() == count) {
+			List<BouwkampCode> codes = code.getCodes();
+			if(codes.get(0).getOrder() == order) {
 				result.add(code);
 			}
 		}
 		for(BouwkampCodes code : simplePerfectSquaredRectangles) {
-			if(code.getCodes().get(0).getSquare().size() == count) {
+			List<BouwkampCode> codes = code.getCodes();
+			if(codes.get(0).getOrder() == order) {
 				result.add(code);
 			}
 		}
 		return result;
 	}
 	
+	public List<BouwkampCodes> getSimpleImperfectSquaredSquares(Predicate<String> filter) {
+		return simpleImperfectSquaredSquares.stream().filter( p -> filter.test(p.getSource())).collect(Collectors.toList());
+	}
 	
 	
 }

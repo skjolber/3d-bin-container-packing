@@ -176,6 +176,7 @@
 	</dependencyManagement>
 	<modules>
 		<module>test</module>
+		<module>extremepoints</module>
 		<module>core</module>
 		<module>visualizer/api</module>
 		<module>visualizer/algorithm</module>

@@ -96,7 +96,7 @@ public class PermutationPackagerState {
 	public List<Box> toBoxes(BouwkampCode code) {
 		List<Box> boxes = new ArrayList<>();
 		
-		for (Integer integer : code.getSquare()) {
+		for (Integer integer : code.getLines()) {
 			boxes.add(new Box(integer, integer, 2 * Math.max(code.getDepth(), code.getWidth()), 0));
 		}
 		
