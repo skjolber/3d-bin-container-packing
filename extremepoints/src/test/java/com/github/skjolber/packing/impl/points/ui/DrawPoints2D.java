@@ -62,8 +62,10 @@ public class DrawPoints2D {
 					extremePoint.getAbsoluteEndX(), extremePoint.getAbsoluteEndY(), Color.red);
 		}
 
-		for (Point2D extremePoint : p.getValues()) {
-			drawingArea.addCircle(extremePoint.getMinX(), extremePoint.getMinY(), Color.black);
+		for (int i = 0; i < p.getValues().size(); i++) {
+			Point2D point2d = p.getValues().get(i);
+			drawingArea.addCircle(point2d.getMinX(), point2d.getMinY(), Color.black, i);
+			
 		}
 
 		drawingArea.addGuide(0, -5, p.getWidth(), -5, Color.blue);
@@ -124,7 +126,7 @@ public class DrawPoints2D {
 		public void fillRect(int x, int y, int xx, int yy, Color color) {
 			Graphics2D g2d = (Graphics2D) image.getGraphics();
 			g2d.setColor(color);
-			g2d.fillRect(x, depth - yy, xx - x, (yy - y));
+			g2d.fillRect(x, depth - yy, xx - x + 1, (yy - y + 1));
 			repaint();
 
 		}
@@ -163,10 +165,14 @@ public class DrawPoints2D {
 			repaint();
 		}
 
-		public void addCircle(int x1, int y1, Color color) {
+		public void addCircle(int x1, int y1, Color color, int index) {
 			Graphics2D g2d = (Graphics2D) image.getGraphics();
 			g2d.setColor(color);
-			g2d.drawOval(x1 - 3, depth - y1 - 3, 6, 6);
+			
+			int size = 10;
+			
+			g2d.drawOval(x1 - size / 2, depth - y1 - size / 2, size, size);
+			g2d.drawLine(x1, depth - y1, x1, depth - y1);
 			repaint();
 		}
 

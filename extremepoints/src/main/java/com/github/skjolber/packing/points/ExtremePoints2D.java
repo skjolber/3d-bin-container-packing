@@ -19,14 +19,14 @@ public class ExtremePoints2D<P extends Placement2D> {
 
 	public ExtremePoints2D(int dx, int dy) {
 		super();
-		this.containerMaxX = dx;
-		this.containerMaxY = dy;
+		this.containerMaxX = dx - 1;
+		this.containerMaxY = dy - 1;
 		
-		values.add(new DefaultFixedXYPoint2D(0, 0, dx, dy, 0, dx, 0, dy));
+		values.add(new DefaultFixedXYPoint2D(0, 0, containerMaxX, containerMaxY, 0, containerMaxX, 0, containerMaxY));
 	}
 
 	public boolean add(int index, P placement) {
-		return add(index, placement, placement.getAbsoluteEndX() - placement.getAbsoluteX(), placement.getAbsoluteEndY() - placement.getAbsoluteY());
+		return add(index, placement, placement.getAbsoluteEndX() - placement.getAbsoluteX() + 1, placement.getAbsoluteEndY() - placement.getAbsoluteY() + 1);
 	}
 
 	public boolean add(int index, P placement, int boxDx, int boxDy) {
@@ -35,6 +35,8 @@ public class ExtremePoints2D<P extends Placement2D> {
 		
 		int xx = source.getMinX() + boxDx;
 		int yy = source.getMinY() + boxDy;
+		
+		System.out.println("Add at " + source.getMinX() + "x" + source.getMinY());
 		
 		Point2D dx = null;
 		Point2D dy = null;
@@ -127,7 +129,6 @@ public class ExtremePoints2D<P extends Placement2D> {
 				// using dy
 				dy = unsupportedDy(source, xx, yy);
 			} else if(yy < fixedPointX.getFixedMaxY()) {
-
 				//
 				// fmaxY |----|
 				//       |    |   dx
@@ -276,24 +277,136 @@ public class ExtremePoints2D<P extends Placement2D> {
 		}
 
 		// constrain 
+		constrainDy:
 		if(dy != null) {
-			if(constrainMax(dy)) {
-				values.add(index, dy);
-				index++;
-				
-				if(dy.getMaxY() < containerMaxY) {
-					System.out.println("Find more points along x axis with more relaxed maxy");
-				}
+			
+			// constrain to right
+			P closestRight = closestRight(dy.getMinX(), dy.getMinY());
+			if(closestRight != null) {
+				dy.setMaxX(closestRight.getAbsoluteX());
+			} else {
+				dy.setMaxX(containerMaxX);
 			}
-		}
-		if(dx != null) {
-			if(constrainMax(dx)) {
-				values.add(index, dx);
-				index++;
+			if(dy.getMaxX() <= dy.getMinX()) {
+				break constrainDy;
+			}
+
+			// constrain up
+			P closestUp = closestUp(dy.getMinX(), dy.getMinY());
+			if(closestUp != null) {
+				dy.setMaxY(closestUp.getAbsoluteY());
+			} else {
+				dy.setMaxY(containerMaxY);
+			}
+			if(dy.getMaxY() <= dy.getMinY()) {
+				break constrainDy;
+			}
+
+			values.add(index, dy);
+			index++;
+			
+			if(dy.getMaxY() < containerMaxY) {
 				
-				if(dx.getMaxX() < containerMaxX) {
-					System.out.println("Find more points along y axis with more relaxed maxx");
+				// does the closest box span whole the way to the end of the area?
+
+				//    |
+				//    |    
+				//    |      ---------------
+				//    |      | 
+				//    |------|
+				//    |
+				//    |-------------|
+				//    |             |
+				//    |_____________|_________
+				
+
+				System.out.println("Find more points along x axis with more relaxed maxy");
+
+				int x = closestUp.getAbsoluteEndX() + 1;
+				while(x < xx) {
+					P nextClosestUp = closestUp(x, dy.getMinY());
+					int maxY;
+					if(nextClosestUp != null) {
+						maxY = nextClosestUp.getAbsoluteY() + 1;
+					} else {
+						maxY = containerMaxY;
+					}
+
+					values.add(index, new DefaultFixedYPoint2D(x, yy, dy.getMaxX(), maxY, x, xx));
+					index++;
+					
+					if(nextClosestUp == null) {
+						break;
+					}
+
+					x = nextClosestUp.getAbsoluteEndX() + 1;
 				}
+				
+			}
+
+			
+		}
+		constrainDx:
+		if(dx != null) {
+			
+			// constrain to right
+			P closestRight = closestRight(dx.getMinX(), dx.getMinY());
+			if(closestRight != null) {
+				dx.setMaxX(closestRight.getAbsoluteX());
+			} else {
+				dx.setMaxX(containerMaxX);
+			}
+			if(dx.getMaxX() <= dx.getMinX()) {
+				break constrainDx;
+			}
+
+			// constrain up
+			P closestUp = closestUp(dx.getMinX(), dx.getMinY());
+			if(closestUp != null) {
+				dx.setMaxY(closestUp.getAbsoluteY());
+			} else {
+				dx.setMaxY(containerMaxY);
+			}
+			if(dx.getMaxY() <= dx.getMinY()) {
+				break constrainDx;
+			}
+
+			values.add(index, dx);
+			index++;
+			
+			if(dx.getMaxX() < containerMaxX) {
+				// does the closest box span whole the way to the end of the area?
+
+				//    |                        |
+				//    |                        |
+				//    |                        |
+				//    |-------------|          |
+				//    |             |          |
+				//    |             |          |
+				//    |             |     -----|
+				//    |             |     |
+				//    |             |     |
+				//    |_____________|_____|______________
+				
+				int y = closestRight.getAbsoluteEndY() + 1;
+				while(y < yy) {
+					P nextClosestRight = closestRight(dx.getMinX(), y);
+					int maxX;
+					if(nextClosestRight != null) {
+						maxX = nextClosestRight.getAbsoluteX() + 1;
+					} else {
+						maxX = containerMaxX;
+					}
+
+					values.add(index, new DefaultFixedXPoint2D(xx, y, maxX, dx.getMaxY(), y, yy));
+					index++;
+					
+					if(nextClosestRight == null) {
+						break;
+					}
+					y = nextClosestRight.getAbsoluteEndY() + 1;
+				}				
+				
 			}
 		}
 
@@ -355,7 +468,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 	}
 
 	protected Point2D unsupportedDx(Point2D source, int xx, int yy) {
-		P moveY = projectDownRight(xx, yy);
+		P moveY = projectDown(xx, yy);
 		if(moveY == null) {
 			
 			// supported one way (by container border)
@@ -374,86 +487,62 @@ public class ExtremePoints2D<P extends Placement2D> {
 			
 		} else if(moveY.getAbsoluteEndY() < source.getMinY()) {
 
-			if(moveY.getAbsoluteX() <= xx && xx < moveY.getAbsoluteEndX() ) {
+			// supported one way
+			//
+			//      |    |-------------------|
+			//      |    |                   |
+			//      |    |                   |
+			//      |    |                   |
+			// minY |    |--------------------
+			//      |    |               |   ↓
+			//      |    |               |   *--------|
+			//      |    |               |   |        |
+			//      |----|---------------|---|--------|--------
+			//          minX            maxX
 
-				// supported one way
-				//
-				//      |    |-------------------|
-				//      |    |                   |
-				//      |    |                   |
-				//      |    |                   |
-				// minY |    |--------------------
-				//      |    |               |   ↓
-				//      |    |               |   *--------|
-				//      |    |               |   |        |
-				//      |----|---------------|---|--------|--------
-				//          minX            maxX
-	
-				return new DefaultFixedYPoint2D(xx, moveY.getAbsoluteEndY(), containerMaxX, containerMaxY, xx, moveY.getAbsoluteEndX());
-			} else {
+			return new DefaultFixedYPoint2D(xx, moveY.getAbsoluteEndY() + 1, containerMaxX, containerMaxY, xx, moveY.getAbsoluteEndX() + 1);
+		} else if(moveY.getAbsoluteEndY() < yy) {
+			// supported both ways
+			// 
+			//      |    |-------------------|
+			//      |    |                   |
+			//      |    |                   |
+			//      |    |                   |
+			//      |    |                   ↓
+			//      |    |                   *--------|
+			//      |    |                   |        |
+			// minY |    |-------------------|        |
+			//      |    |               |   |        |
+			//      |    |               |   |        |
+			//      |    |               |   |        |
+			//      |----|---------------|---|--------|--------
+			//          minX            maxX
 
-				// unsupported both ways
-				//
-				//      |    |-------------------|
-				//      |    |                   |
-				//      |    |                   |
-				//      |    |                   |
-				// minY |    |--------------------
-				//      |    |               |   ↓
-				//      |    |               |   *    |--------|
-				//      |    |               |        |        |
-				//      |----|---------------|--------|--------|--------
-				//          minX            maxX
-
-				return new DefaultPoint2D(xx, moveY.getAbsoluteEndY(), containerMaxX, containerMaxY);
-			}
-		} else {
-			if(moveY.getAbsoluteX() <= xx && xx < moveY.getAbsoluteEndX() ) {
-				
-				// supported both ways
-				// 
-				//      |    |-------------------|
-				//      |    |                   |
-				//      |    |                   |
-				//      |    |                   |
-				//      |    |                   ↓
-				//      |    |                   *--------|
-				//      |    |                   |        |
-				// minY |    |-------------------|        |
-				//      |    |               |   |        |
-				//      |    |               |   |        |
-				//      |    |               |   |        |
-				//      |----|---------------|---|--------|--------
-				//          minX            maxX
-	
-				return new DefaultFixedXYPoint2D(xx, moveY.getAbsoluteEndY(), containerMaxX, containerMaxY, xx, moveY.getAbsoluteEndX(), moveY.getAbsoluteEndY(), yy);
-			} else {
-
-				// supported one way
-				//
-				//      |    |-------------------|
-				//      |    |                   |
-				//      |    |                   |
-				//      |    |                   |
-				//      |    |                   ↓
-				//      |    |                   *  |-------|
-				//      |    |                   |  |       |
-				// minY |    |-------------------|  |       |
-				//      |    |               |      |       |
-				//      |    |               |      |       |
-				//      |    |               |      |       |
-				//      |----|---------------|------|-------|--------
-				//          minX            maxX
-
-				return new DefaultFixedXPoint2D(xx, moveY.getAbsoluteEndY(), containerMaxX, containerMaxY, moveY.getAbsoluteEndY(), yy);
-			}
+			return new DefaultFixedXYPoint2D(xx, moveY.getAbsoluteEndY() + 1, containerMaxX, containerMaxY, xx, moveY.getAbsoluteEndX() + 1, moveY.getAbsoluteEndY() + 1, yy);
 		}
+		
+		// no space to move
+		// 
+		//      |    |-------------------*---------
+		//      |    |                   |        |
+		//      |    |                   |        | 
+		//      |    |                   |        |
+		//      |    |                   |        |
+		//      |    |                   |        |
+		//      |    |                   |        |
+		// minY |    |-------------------|        |
+		//      |    |               |   |        |
+		//      |    |               |   |        |
+		//      |    |               |   |        |
+		//      |----|---------------|---|--------|--------
+		//          minX            maxX
+		
+		return null;
 	}
 
 	private Point2D unsupportedDy(Point2D source, int xx, int yy) {
-		P moveX = projectLeftTop(xx, yy);
+		P moveX = projectLeft(xx, yy);
 		if(moveX == null) {
-			
 			// supported one way (by container border)
 			//
 			//       |  
@@ -466,78 +555,53 @@ public class ExtremePoints2D<P extends Placement2D> {
 			return new DefaultFixedXPoint2D(0, yy, containerMaxX, containerMaxY, yy, containerMaxY);
 		} else if(moveX.getAbsoluteEndX() < source.getMinX()) {
 			
-			if(moveX.getAbsoluteY() <= yy && yy < moveX.getAbsoluteEndY()) {
+			// supported one way
+			//
+			// aendy |-|
+			//       | |
+			// yy    | |←----------|
+			//       | |  |        |
+			// fmaxY |----|        |
+			//
+			//       aendx
+			
+			return new DefaultFixedXPoint2D(moveX.getAbsoluteEndX() + 1, yy, containerMaxX, containerMaxY, yy, moveX.getAbsoluteEndY() + 1);
 
-				// supported one way
-				//
-				// aendy |-|
-				//       | |
-				// yy    | |←----------|
-				//       | |  |        |
-				// fmaxY |----|        |
-				//
-				//       aendx
-				
-				return new DefaultFixedXPoint2D(moveX.getAbsoluteEndX(), yy, containerMaxX, containerMaxY, yy, moveX.getAbsoluteEndY());
-			} else {
+		} else if(moveX.getAbsoluteEndX() < xx){
 
-				// unsupported both ways
-				//
-				//
-				//       |-|
-				//       | |
-				// aendy |-|
-				//       | 
-				// yy    | *←----------|
-				//       |    |        |
-				// fmaxY |----|        |
-				//
-				//       aendx
-
-				return new DefaultPoint2D(moveX.getAbsoluteEndX(), yy, containerMaxX, containerMaxY);
-			}
-
-		} else {
-
-			if(moveX.getAbsoluteY() <= yy && yy < moveX.getAbsoluteEndY()) {
-
-				// supported both ways
-				//
-				//
-				// aendy |-------|
-				//       |       |
-				//       |       |
-				// yy    |    |--*←----|
-				//       |    |        |
-				// fmaxY |----|        |
-				//
-				//             aendx
-				
-				return new DefaultFixedXYPoint2D(moveX.getAbsoluteX(), yy, containerMaxX, containerMaxY,  moveX.getAbsoluteEndX(), xx, yy, moveX.getAbsoluteEndY());
-			} else {
-
-				// unsupported one way
-				//
-				//
-				//       |-------|
-				//       |       |
-				// aendy |-------|
-				//       |       
-				//       |       
-				// yy    |    |--*←----|
-				//       |    |        |
-				// fmaxY |----|        |
-				//
-				//             aendx
-
-				return new DefaultFixedYPoint2D(moveX.getAbsoluteEndX(), yy, containerMaxX, containerMaxY, moveX.getAbsoluteEndX(), xx);
-			}
+			// supported both ways
+			//
+			//
+			// aendy |-------|
+			//       |       |
+			//       |       |
+			// yy    |    |--*←----|
+			//       |    |        |
+			// fmaxY |----|        |
+			//
+			//             aendx
+			
+			return new DefaultFixedXYPoint2D(moveX.getAbsoluteX() + 1, yy, containerMaxX, containerMaxY,  moveX.getAbsoluteEndX() + 1, xx, yy, moveX.getAbsoluteEndY() + 1);
 		}
+		
+		// no space to move
+		//
+		//
+		// aendy |-------------|
+		//       |             |
+		//       |             |
+		// yy    |    |--------*
+		//       |    |        |
+		// fmaxY |----|        |
+		//
+		//  
+		
+		return null;
 	}
 	
-	private P projectLeftTop(int x, int y) {
+	private P projectLeft(int x, int y) {
 		
-		// included:
+		// excluded:
 		//
 		//         |
 		// absEndy-|-----|
@@ -551,6 +615,8 @@ public class ExtremePoints2D<P extends Placement2D> {
 		//               |
 		//            absEndX
 		//
+		// included:
+		//
 		//         |
 		//         |
 		//         |
@@ -563,6 +629,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		//            absEndX
 		//
 		//
+		// excluded:
 		//         |
 		// absEndy-|-----------|
 		//         |           |
@@ -578,8 +645,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		
 		P rightmost = null;
 		for (P placement : placements) {
-			if(placement.getAbsoluteEndY() >= y && placement.getAbsoluteX() < x) {
-				
+			if(placement.getAbsoluteEndX() <= x && placement.getAbsoluteY() <= y && y <= placement.getAbsoluteEndY() ) {
 				// most to the right
 				if(rightmost == null || placement.getAbsoluteEndX() > rightmost.getAbsoluteEndX()) {
 					rightmost = placement;
@@ -588,11 +654,11 @@ public class ExtremePoints2D<P extends Placement2D> {
 		}
 		
 		return rightmost;
-	}
+	}	
 
-	private P projectDownRight(int x, int y) {
+	protected P projectDown(int x, int y) {
 
-		// included:
+		// excluded:
 		// |
 		// |
 		// |                    |-----| absEndY
@@ -612,6 +678,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		//                      |     |
 		//                    absX absEndX
 		//
+		// included:
 		// |                  
 		// |                 *
 		// |              |------------| absEndY
@@ -623,7 +690,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		
 		P leftmost = null;
 		for (P placement : placements) {
-			if(placement.getAbsoluteY() <= y && placement.getAbsoluteEndX() > x) {
+			if(placement.getAbsoluteEndY() <= y && placement.getAbsoluteX() <= x && x <= placement.getAbsoluteEndX()) {
 				
 				// the highest
 				if(leftmost == null || placement.getAbsoluteEndY() > leftmost.getAbsoluteEndY()) {
@@ -636,27 +703,43 @@ public class ExtremePoints2D<P extends Placement2D> {
 	}
 
 	private int projectRight(int x, int y) {
-		int closest = containerMaxX;
-		for (P placement : placements) {
-			if(placement.getAbsoluteX() >= x) {
-				if(placement.getAbsoluteY() <= y && y < placement.getAbsoluteEndY()) {
-					if(placement.getAbsoluteX() < closest) {
-						closest = placement.getAbsoluteX();
-					}
-				}
-			}
+		P closestUp = closestRight(x, y);
+		if(closestUp != null) {
+			return closestUp.getAbsoluteX();
 		}
-		
-		return closest;
+		return containerMaxX;
 	}
 
 	private int projectUp(int x, int y) {
-		int closest = containerMaxY;
+		P closestUp = closestUp(x, y);
+		if(closestUp != null) {
+			return closestUp.getAbsoluteY();
+		}
+		return containerMaxY;
+	}
+	
+	private P closestUp(int x, int y) {
+		P closest = null;
 		for (P placement : placements) {
 			if(placement.getAbsoluteY() >= y) {
 				if(placement.getAbsoluteX() <= x && x < placement.getAbsoluteEndX()) {
-					if(placement.getAbsoluteY() < closest) {
-						closest = placement.getAbsoluteY();
+					if(closest == null || placement.getAbsoluteY() < closest.getAbsoluteY()) {
+						closest = placement;
+					}
+				}
+			}
+		}
+		
+		return closest;
+	}	
+
+	private P closestRight(int x, int y) {
+		P closest = null;
+		for (P placement : placements) {
+			if(placement.getAbsoluteX() >= x) {
+				if(placement.getAbsoluteY() <= y && y < placement.getAbsoluteEndY()) {
+					if(closest == null || placement.getAbsoluteX() < closest.getAbsoluteX()) {
+						closest = placement;
 					}
 				}
 			}
@@ -665,6 +748,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		return closest;
 	}
 
+	
 	public List<Point2D> getValues() {
 		return values;
 	}

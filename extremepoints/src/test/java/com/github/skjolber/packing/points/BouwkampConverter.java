@@ -12,8 +12,6 @@ public class BouwkampConverter {
 		
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
 
-		int count = 0;
-
 		for(BouwkampCodeLine line : lines) {
 			
 			List<Integer> squares = line.getSquares();
@@ -26,11 +24,8 @@ public class BouwkampConverter {
 			
 			int nextY = minY;
 			
-			
 			for(int square : squares) {
-				System.out.println("Add " + offset + "x" + value.getMinY() + " " + square + "x" + square + " " + count);
-				
-				int factoredSquare = factor * square;
+				int factoredSquare = factor * square - 1;
 				
 				points.add(nextY, new DefaultPlacement2D(offset, value.getMinY(), offset + factoredSquare, value.getMinY() + factoredSquare));
 	
@@ -39,14 +34,7 @@ public class BouwkampConverter {
 				nextY = points.get(offset, value.getMinY());
 
 				count++;
-				
-				if(count > 4) {
-					return points;
-				}
 			}
-
-
-			
 		}
 		return points;
 	}
