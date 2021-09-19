@@ -22,20 +22,6 @@ public class DefaultFixedYPoint3D extends Point3D implements FixedYPoint3D {
 		this.fixedYMinZ = fixedYMinZ;
 		this.fixedYMaxZ = fixedYMaxZ;
 	}
-	
-	@Override
-	public boolean isFixedY() {
-		return true;
-	}
-	@Override
-	public boolean isFixedX() {
-		return false;
-	}
-
-	@Override
-	public boolean isFixedZ() {
-		return false;
-	}
 
 	public int getFixedYMinX() {
 		return fixedYMinX;
@@ -55,5 +41,8 @@ public class DefaultFixedYPoint3D extends Point3D implements FixedYPoint3D {
 		return fixedYMinZ;
 	}
 
-
+	@Override
+	public boolean isFixedY(int x, int z) {
+		return x < fixedYMaxX && z < fixedYMaxZ;
+	}
 }

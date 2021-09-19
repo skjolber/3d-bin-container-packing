@@ -2,7 +2,7 @@ package com.github.skjolber.packing.points3d;
 
 import java.util.Comparator;
 
-import com.github.skjolber.packing.points.Point2D;
+import com.github.skjolber.packing.points2d.Point2D;
 
 public abstract class Point3D extends Point2D {
 
@@ -31,15 +31,25 @@ public abstract class Point3D extends Point2D {
 		super(minX, minY, maxX, maxY);
 		this.minZ = minZ;
 		this.maxZ = maxZ;
-		this.dz = maxZ - minZ;
+		this.dz = maxZ - minZ + 1;
 	}
 
-	public abstract boolean isFixedZ();
+	public boolean isFixedZ(int x, int y) {
+		return false;
+	}
+	
+	public boolean isFixedX(int y, int z) {
+		return false;
+	}
+
+	public boolean isFixedY(int x, int z) {
+		return false;
+	}
 
 	public void setMaxZ(int maxZ) {
 		this.maxZ = maxZ;
 		
-		this.dz = maxZ - minZ;
+		this.dz = maxZ - minZ + 1;
 	}
 	
 	public boolean isWithin(int dx, int dy, int dz) {

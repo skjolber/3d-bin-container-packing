@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.points;
+package com.github.skjolber.packing.points2d;
 
 public class DefaultPoint2D extends Point2D {
 
@@ -7,12 +7,12 @@ public class DefaultPoint2D extends Point2D {
 	}
 
 	@Override
-	public boolean isFixedY() {
+	public boolean isFixedY(int x) {
 		return false;
 	}
 
 	@Override
-	public boolean isFixedX() {
+	public boolean isFixedX(int y) {
 		return false;
 	}
 

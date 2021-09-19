@@ -13,4 +13,7 @@ public interface FixedZPoint3D {
 
 	int getFixedZMinY();
 	int getFixedZMaxY();
+	
+	boolean isFixedZ(int x, int y);
+
 }

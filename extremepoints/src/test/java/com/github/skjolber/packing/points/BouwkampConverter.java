@@ -2,6 +2,7 @@ package com.github.skjolber.packing.points;
 
 import java.util.List;
 
+import com.github.skjolber.packing.points2d.Point2D;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeLine;
 
@@ -32,8 +33,6 @@ public class BouwkampConverter {
 				offset += factoredSquare;
 	
 				nextY = points.get(offset, value.getMinY());
-
-				count++;
 			}
 		}
 		return points;

@@ -13,4 +13,7 @@ public interface FixedYPoint3D {
 
 	int getFixedYMinZ();
 	int getFixedYMaxZ();
+	
+	boolean isFixedY(int x, int z);
+
 }

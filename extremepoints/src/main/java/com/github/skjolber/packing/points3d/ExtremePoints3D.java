@@ -4,6 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.github.skjolber.packing.points2d.DefaultFixedXPoint2D;
+import com.github.skjolber.packing.points2d.DefaultFixedXYPoint2D;
+import com.github.skjolber.packing.points2d.DefaultFixedYPoint2D;
+import com.github.skjolber.packing.points2d.FixedXPoint2D;
+import com.github.skjolber.packing.points2d.FixedYPoint2D;
+import com.github.skjolber.packing.points2d.Point2D;
+
 /**
  * 
  *
@@ -11,18 +18,18 @@ import java.util.List;
 
 public class ExtremePoints3D<P extends Placement3D> {
 	
-	private final int dx;
-	private final int dy;
-	private final int dz;
+	private final int containerMaxX;
+	private final int containerMaxY;
+	private final int containerMaxZ;
 
 	private List<Point3D> values = new ArrayList<>();
 	private List<P> placements = new ArrayList<>();
 
 	public ExtremePoints3D(int dx, int dy, int dz) {
 		super();
-		this.dx = dx;
-		this.dy = dy;
-		this.dz = dz;
+		this.containerMaxX = dx;
+		this.containerMaxY = dy;
+		this.containerMaxZ = dz;
 		
 		values.add(new DefaultFixedXYZPoint3D(
 				0, 0, 0, 
@@ -34,7 +41,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 	}
 	
 	public boolean add(int index, P placement) {
-		return add(index, placement, placement.getAbsoluteEndX() - placement.getAbsoluteX(), placement.getAbsoluteEndY() - placement.getAbsoluteY(), placement.getAbsoluteEndZ() - placement.getAbsoluteZ());
+		return add(index, placement, placement.getAbsoluteEndX() - placement.getAbsoluteX() + 1, placement.getAbsoluteEndY() - placement.getAbsoluteY() + 1, placement.getAbsoluteEndZ() - placement.getAbsoluteZ() + 1);
 	}
 
 	public boolean add(int index, P placement, int boxDx, int boxDy, int boxDz) {		
@@ -47,235 +54,113 @@ public class ExtremePoints3D<P extends Placement3D> {
 		Point3D dx = null;
 		Point3D dy = null;
 		Point3D dz = null;
-
-		boolean fixedY; // need not project in y direction
-		if(source.isFixedY()) {
-			FixedYPoint3D fixedPointY = (FixedYPoint3D)source;
-			
-			fixedY = fixedPointY.getFixedYMaxX() > xx && fixedPointY.getFixedYMaxZ() > zz;
-		} else {
-			fixedY = false;
-		}
-
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		if(source.isFixedY() && source.isFixedX() && source.isFixedZ()) {
+		if(source.isFixedX(yy, zz) && source.isFixedY(xx, zz) && source.isFixedZ(xx, yy)) {
+			// all three planes constrained
 			FixedXPoint3D fixedPointX = (FixedXPoint3D)source;
 			FixedYPoint3D fixedPointY = (FixedYPoint3D)source;
 			FixedZPoint3D fixedPointZ = (FixedZPoint3D)source;
+			
+/*
+			public DefaultFixedXYZPoint3D(
+					int minX, int minY, int minZ, 
+					int maxX, int maxY, int maxZ,
+					
+					int fixedXMinY, int fixedXMaxY,
+					int fixedXMinZ, int fixedXMaxZ,
 
-			System.out.println("Could be fixed in x y z");
-
-			if(xx < fixedPointY.getFixedYMaxX() && yy < fixedPointX.getFixedXMaxY() && zz < fixedPointZ.getFixedXMaxZ()) {
-				
-			}
+					int fixedYMinX, int fixedYMaxX, 
+					int fixedYMinZ, int fixedYMaxZ, 
+					
+					int fixedZMinX, int fixedZMaxX,
+					int fixedZMinY, int fixedZMaxY
+*/					
 			
 			
-		} else if(source.isFixedY() && source.isFixedX()) {
-			FixedYPoint3D fixedPointY = (FixedYPoint3D)source;
+			dx = new DefaultFixedXYZPoint3D(
+					xx, source.getMinY(), source.getMinZ(), 
+					containerMaxX, containerMaxY, containerMaxZ, 
+					
+					// fixed x
+					source.getMinY(), yy, 
+					source.getMinZ(), zz,
+					
+					// fixed y
+					source.getMinX(), fixedPointY.getFixedYMaxX(),
+					source.getMinZ(), zz,
+					
+					// fixed z
+					source.getMinX(), fixedPointZ.getFixedZMaxX(), 
+					source.getMinY(), yy
+					);
+
+			dy = new DefaultFixedXYZPoint3D(
+					source.getMinX(), yy, source.getMinZ(), 
+					containerMaxX, containerMaxY, containerMaxZ, 
+					
+					// fixed x
+					source.getMinY(), fixedPointX.getFixedXMaxY(), 
+					source.getMinZ(), zz,
+					
+					// fixed y
+					source.getMinX(), xx, 
+					source.getMinZ(), zz,
+					
+					// fixed z
+					source.getMinX(), xx, 
+					source.getMinY(), fixedPointZ.getFixedZMaxY()
+					);
+			
+			dy = new DefaultFixedXYZPoint3D(
+					source.getMinX(), source.getMinY(), zz, 
+					containerMaxX, containerMaxY, containerMaxZ, 
+					
+					// fixed x
+					source.getMinY(), yy, 
+					source.getMinZ(), fixedPointX.getFixedXMaxZ(),
+					
+					// fixed y
+					source.getMinX(), xx, 
+					source.getMinZ(), fixedPointY.getFixedYMaxZ(),
+					
+					// fixed z
+					source.getMinX(), xx, 
+					source.getMinY(), yy
+					);
+			
+			
+			
+		} else if(source.isFixedX(yy, zz) && source.isFixedY(xx, zz)) {
+			// two planes constrained
 			FixedXPoint3D fixedPointX = (FixedXPoint3D)source;
-
-			System.out.println("Could be fixed both ways");
-
-			if(xx < fixedPointY.getFixedYMaxX() && yy < fixedPointX.getFixedXMaxY()) {
-
-				System.out.println("Fixed both ways");
-				
-				//
-				// fmaxY |----|
-				//       |    |   dx
-				// yy    |    |--------|
-				//       |    |        |
-				//       |    |        | dy
-				//       |    |        |
-				// minY  |    |---------------|
-				//       |    |               |
-				//       |    |               |
-				//       |----|---------------|-----
-				//          minX      xx    fmaxX
-
-				
-				// using dx
-				//
-				// yy   |             |
-				//      |             |
-				//      |             |
-				//      |             |
-				// minY |             *-------
-				//      |                    
-				//      |                    
-				//      |--------------------------
-				//                    xx   fmaxX
-
-				dx = new DefaultFixedXYPoint3D(xx, source.getMinY(), dy, dx, xx, fixedPointY.getFixedYMaxX(), source.getMinY(), yy);
-				
-				// using dy
-				//
-				//
-				// fmaxY |    |
-				//       |    |   dx
-				// yy    |    *---------
-				//       |
-				//       |
-				//       |
-				//       |
-				//       |
-				//       |
-				//       |--------------------------
-				//           minX      xx    
-
-				dy = new DefaultFixedXYPoint3D(source.getMinX(), yy, dy, dx,  source.getMinX(), xx, yy, fixedPointX.getFixedXMaxY());
-			} else if(xx < fixedPointY.getFixedYMaxX()) {
-
-				System.out.println("Fixed dx");
-
-				//       |
-				//       |
-				// yy    |    |--------|
-				//       |    |        |
-				// fmaxY |----|        |
-				//       |    |        | dy
-				//       |    |        |
-				//       |    |        |
-				//       |    |        | 
-				//       |    |        |
-				//  minY |    |---------------|
-				//       |    |               |
-				//       |    |               |
-				//       |----|---------------|-----
-				//           minX      xx    fmaxX
-				
-				// using dx
-				dx = new DefaultFixedXYPoint3D(xx, source.getMinY(), dy, dx, xx, fixedPointY.getFixedYMaxX(), source.getMinY(), yy);
-
-				// using dy
-				dy = unsupportedDy(source, xx, yy);
-			} else if(yy < fixedPointX.getFixedXMaxY()) {
-
-				System.out.println("Fixed dy");
-
-				//
-				// maxY |----|
-				//      |    |   dx
-				//      |    |-------------------|
-				//      |    |                   |
-				//      |    |                   | dy
-				//      |    |                   |
-				// minY |    |--------------------
-				//      |    |               |
-				//      |    |               |
-				//      |----|---------------|-----
-				//          minX            maxX
-
-				// using dy
-				dy = new DefaultFixedXYPoint3D(source.getMinX(), yy, dy, dx,  source.getMinX(), xx, yy, fixedPointX.getFixedXMaxY());
-
-				// using dx
-				dx = unsupportedDx(source, xx, yy);
-				
-			} else {
-
-				//      |
-				//      |           dx
-				// xx   |    |------------------------|
-				//      |    |                        |
-				// maxY |----|                        |
-				//      |    |                        |  dy
-				//      |    |                        |
-				//      |    |                        |
-				//      |    |                        |
-				//      |    |                        |
-				// minY |    |-------------------------
-				//      |    |               |
-				//      |    |               |
-				//      |----|---------------|-------------	
-				//          minX            maxX     yy
-				
-				dx = unsupportedDx(source, xx, yy);
-				dy = unsupportedDy(source, xx, yy);
-			}
-			
-		} else if(source.isFixedY()) {
-			System.out.println("Could be fixed y");
-
 			FixedYPoint3D fixedPointY = (FixedYPoint3D)source;
-			if(xx < fixedPointY.getFixedYMaxX()) {
-				
-				System.out.println("Is fixed y");
-				//       |
-				//       |
-				// yy    |    |--------|
-				//       |    |        |
-				// fmaxY |----|        |
-				//       |    |        | dy
-				//       |    |        |
-				//       |    |        |
-				//       |    |        | 
-				//       |    |        |
-				//  minY |    |---------------|
-				//       |    |               |
-				//       |    |               |
-				//       |----|---------------|-----
-				//           minX      xx    fmaxX				
-				
-				// using dx
-				dx = new DefaultFixedXYPoint3D(xx, source.getMinY(), dy, dx, xx, fixedPointY.getFixedYMaxX(), source.getMinY(), yy);
-				
-				dy = unsupportedDy(source, xx, yy);
-			} else {
-				System.out.println("Is not fixed y");
-
-				dx = unsupportedDx(source, xx, yy);
-				dy = unsupportedDy(source, xx, yy);
-			}
-		} else if(source.isFixedX()) {
-			System.out.println("Could be fixed x");
 			
+		} else if(source.isFixedX(yy, zz) && source.isFixedZ(xx, yy)) {
+			// two planes constrained
 			FixedXPoint3D fixedPointX = (FixedXPoint3D)source;
-			if(yy < fixedPointX.getFixedXMaxY()) {
-				
-				System.out.println("Fixed x, unsupported y");
-				//
-				// maxY |----|
-				//      |    |                  xx
-				//      |    |-------------------| yy
-				//      |    |                   |
-				//      |    |                   | 
-				//      |    |                   |
-				// minY |    |--------------------
-				//      |                   
-				//      |                   
-				//      |--------------------------
-				//                          
-
-				// using dy
-				values.add(new DefaultFixedXYPoint3D(source.getMinX(), yy, dy, dx,  source.getMinX(), xx, yy, fixedPointX.getFixedXMaxY()));
-
-				dx = unsupportedDx(source, xx, yy);
-			} else {
-				System.out.println("Not fixed x or y");
-				dx = unsupportedDx(source, xx, yy);
-				dy = unsupportedDy(source, xx, yy);
-			}
+			FixedZPoint3D fixedPointZ = (FixedZPoint3D)source;
+			
+		} else if(source.isFixedY(xx, zz) && source.isFixedZ(xx, yy)) {
+			// two planes constrained
+			FixedYPoint3D fixedPointY = (FixedYPoint3D)source;
+			FixedZPoint3D fixedPointZ = (FixedZPoint3D)source;
+			
+		} else if(source.isFixedX(yy, zz)) {
+			// one plane constrained
+			FixedXPoint3D fixedPointX = (FixedXPoint3D)source;
+			
+		} else if(source.isFixedY(xx, zz)) {
+			// one plane constrained
+			FixedYPoint3D fixedPointY = (FixedYPoint3D)source;
+			
+		} else if(source.isFixedZ(xx, yy)) {
+			// one plane constrained
+			FixedZPoint3D fixedPointZ = (FixedZPoint3D)source;
+			
 		} else {
-			System.out.println("Not fixed any way");
-			
-			dx = unsupportedDx(source, xx, yy);
-			dy = unsupportedDy(source, xx, yy);
+			// no planes constrained
 		}
-
+		
 		values.remove(index);
 		if(index != 0) {
 			index--;
@@ -292,43 +177,245 @@ public class ExtremePoints3D<P extends Placement3D> {
 		}
 
 		// constrain 
+		constrainDy:
 		if(dy != null) {
-			if(constrainMax(dy)) {
-				values.add(index, dy);
-				index++;
+			
+			// constrain to right
+			P closestRight = closestPositiveX(dy.getMinX(), dy.getMinY(), dy.getMinZ());
+			if(closestRight != null) {
+				dy.setMaxX(closestRight.getAbsoluteX());
+			} else {
+				dy.setMaxX(containerMaxX);
+			}
+			if(dy.getMaxX() <= dy.getMinX()) {
+				break constrainDy;
+			}
+
+			// constrain up
+			P closestUp = closestPositiveY(dy.getMinX(), dy.getMinY(), dy.getMinZ());
+			if(closestUp != null) {
+				dy.setMaxY(closestUp.getAbsoluteY());
+			} else {
+				dy.setMaxY(containerMaxY);
+			}
+			if(dy.getMaxY() <= dy.getMinY()) {
+				break constrainDy;
+			}
+
+			
+			values.add(index, dy);
+			index++;
+			
+			if(dy.getMaxY() < containerMaxY) {
+				
+				// does the closest box span whole the way to the end of the area?
+
+				//    |
+				//    |    
+				//    |      ---------------
+				//    |      | 
+				//    |------|
+				//    |
+				//    |-------------|
+				//    |             |
+				//    |_____________|_________
+				
+
+				System.out.println("Find more points along x axis with more relaxed maxy");
+
+				int x = closestUp.getAbsoluteEndX() + 1;
+				while(x < xx) {
+					P nextClosestUp = closestPositiveY(x, dy.getMinY(), dy.getMinZ());
+					int maxY;
+					if(nextClosestUp != null) {
+						maxY = nextClosestUp.getAbsoluteY() + 1;
+					} else {
+						maxY = containerMaxY;
+					}
+
+					values.add(index, new DefaultFixedYPoint2D(x, yy, dy.getMaxX(), maxY, x, xx));
+					index++;
+					
+					if(nextClosestUp == null) {
+						break;
+					}
+
+					x = nextClosestUp.getAbsoluteEndX() + 1;
+				}				
 			}
 		}
+		
+		constrainDx:
 		if(dx != null) {
-			if(constrainMax(dx)) {
-				values.add(index, dx);
+			
+			// constrain to right
+			P closestRight = closestPositiveX(dx.getMinX(), dx.getMinY(), dx.getMinZ());
+			if(closestRight != null) {
+				dx.setMaxX(closestRight.getAbsoluteX());
+			} else {
+				dx.setMaxX(containerMaxX);
+			}
+			if(dx.getMaxX() <= dx.getMinX()) {
+				break constrainDx;
+			}
+
+			// constrain up
+			P closestUp = closestPositiveY(dx.getMinX(), dx.getMinY(), dx.getMinZ());
+			if(closestUp != null) {
+				dx.setMaxY(closestUp.getAbsoluteY());
+			} else {
+				dx.setMaxY(containerMaxY);
+			}
+			if(dx.getMaxY() <= dx.getMinY()) {
+				break constrainDx;
+			}
+
+			values.add(index, dx);
+			index++;
+			
+			if(dx.getMaxX() < containerMaxX) {
+				// does the closest box span whole the way to the end of the area?
+
+				//    |                        |
+				//    |                        |
+				//    |                        |
+				//    |-------------|          |
+				//    |             |          |
+				//    |             |          |
+				//    |             |     -----|
+				//    |             |     |
+				//    |             |     |
+				//    |_____________|_____|______________
+				
+				int y = closestRight.getAbsoluteEndY() + 1;
+				while(y < yy) {
+					P nextClosestRight = closestPositiveX(dx.getMinX(), y, dx.getMinZ());
+					int maxX;
+					if(nextClosestRight != null) {
+						maxX = nextClosestRight.getAbsoluteX() + 1;
+					} else {
+						maxX = containerMaxX;
+					}
+
+					values.add(index, new DefaultFixedXPoint2D(xx, y, maxX, dx.getMaxY(), y, yy));
+					index++;
+					
+					if(nextClosestRight == null) {
+						break;
+					}
+					y = nextClosestRight.getAbsoluteEndY() + 1;
+				}				
+				
 			}
 		}
+		
+		constrainDz:
+		if(dz != null) {
+			
+			// constrain to right
+			P closestRight = closestPositiveZ(dz.getMinX(), dz.getMinY(), dz.getMinZ());
+			if(closestRight != null) {
+				dz.setMaxZ(closestRight.getAbsoluteZ());
+			} else {
+				dz.setMaxZ(containerMaxZ);
+			}
+			if(dz.getMaxZ() <= dx.getMinZ()) {
+				break constrainDz;
+			}
+
+			// constrain up
+			P closestUp = closestPositiveZ(dx.getMinX(), dx.getMinY(), dx.getMinZ());
+			if(closestUp != null) {
+				dx.setMaxY(closestUp.getAbsoluteY());
+			} else {
+				dx.setMaxY(containerMaxY);
+			}
+			if(dx.getMaxY() <= dx.getMinY()) {
+				break constrainDx;
+			}
+
+			values.add(index, dx);
+			index++;
+			
+			if(dx.getMaxX() < containerMaxX) {
+				// does the closest box span whole the way to the end of the area?
+
+				//    |                        |
+				//    |                        |
+				//    |                        |
+				//    |-------------|          |
+				//    |             |          |
+				//    |             |          |
+				//    |             |     -----|
+				//    |             |     |
+				//    |             |     |
+				//    |_____________|_____|______________
+				
+				int y = closestRight.getAbsoluteEndY() + 1;
+				while(y < yy) {
+					P nextClosestRight = closestPositiveX(dx.getMinX(), y, dx.getMinZ());
+					int maxX;
+					if(nextClosestRight != null) {
+						maxX = nextClosestRight.getAbsoluteX() + 1;
+					} else {
+						maxX = containerMaxX;
+					}
+
+					values.add(index, new DefaultFixedXPoint2D(xx, y, maxX, dx.getMaxY(), y, yy));
+					index++;
+					
+					if(nextClosestRight == null) {
+						break;
+					}
+					y = nextClosestRight.getAbsoluteEndY() + 1;
+				}				
+				
+			}
+		}		
 
 		placements.add(placement);
-		Collections.sort(values);
+		Collections.sort(values, Point2D.COMPARATOR);
 
 		return !values.isEmpty();
+	}		
+		
+	protected Point2D unsupportedDxy(Point2D source, int xx, int yy, int zz) {
+		return null;
 	}
 
-	private boolean constrainMax(Point3D point, Placement placement) {
-		int maxX = projectRight(point.getMinX(), point.getMinY(), placement, point.getMaxX());
-		int maxY = projectUp(point.getMinX(), point.getMinY(), placement, point.getMaxY());
-		
-		if(maxX <= point.getMinX() || maxY <= point.getMinY()) {
-			System.out.println("Remove " + point.getMinX() + "x" + point.getMinY() + " due to " + maxX + "x" + maxY);
+	protected Point2D unsupportedDxz(Point2D source, int xx, int yy, int zz) {
+		return null;
+	}
 
+	protected Point2D unsupportedDyz(Point2D source, int xx, int yy, int zz) {
+		return null;
+	}
+
+	
+	protected boolean constrainMax(Point3D point, P placement) {
+		int maxX = projectPositiveX(point.getMinX(), point.getMinY(), point.getMinZ(), placement, point.getMaxX());
+		if(maxX <= point.getMinX()) {
 			return false;
-		} else {
-			point.setMaxX(maxX);
-			point.setMaxY(maxY);
 		}
+		int maxY = projectPositiveY(point.getMinX(), point.getMinY(), point.getMinZ(), placement, point.getMaxY());
+		if(maxY <= point.getMinY()) {
+			return false;
+		}
+		int maxZ = projectPositiveZ(point.getMinX(), point.getMinY(), point.getMinZ(), placement, point.getMaxZ());
+		if(maxZ <= point.getMinZ()) {
+			return false;
+		}
+		
+		point.setMaxX(maxX);
+		point.setMaxY(maxY);
+		point.setMaxZ(maxZ);
 
 		return true;
 	}
 
-	private int projectUp(int x, int y, Placement placement, int maxY) {
+	protected int projectPositiveY(int x, int y, int z, P placement, int maxY) {
 		if(placement.getAbsoluteY() >= y) {
-			if(placement.getAbsoluteX() <= x && x < placement.getAbsoluteEndX()) {
+			if(withinX(x, placement) && withinY(y, placement)) {
 				if(placement.getAbsoluteY() < maxY) {
 					maxY = placement.getAbsoluteY();
 				}
@@ -338,9 +425,9 @@ public class ExtremePoints3D<P extends Placement3D> {
 		return maxY;
 	}
 
-	private int projectRight(int x, int y, Placement placement, int maxX) {
+	protected int projectPositiveX(int x, int y, int z, P placement, int maxX) {
 		if(placement.getAbsoluteX() >= x) {
-			if(placement.getAbsoluteY() <= y && y < placement.getAbsoluteEndY()) {
+			if(withinY(y, placement) && withinZ(z, placement)) {
 				if(placement.getAbsoluteX() < maxX) {
 					maxX = placement.getAbsoluteX();
 				}
@@ -349,220 +436,43 @@ public class ExtremePoints3D<P extends Placement3D> {
 		return maxX;
 	}
 
-	private boolean constrainMax(Point3D point) {
-		int maxX = projectRight(point.getMinX(), point.getMinY());
-		int maxY = projectUp(point.getMinX(), point.getMinY() );
-		
-		if(maxX <= point.getMinX() || maxY <= point.getMinY()) {
-			return false;
-		} else {
-			point.setMaxX(maxX);
-			point.setMaxY(maxY);
+	protected int projectPositiveZ(int x, int y, int z, P placement, int maxZ) {
+		if(placement.getAbsoluteZ() >= z) {
+			if(withinX(x, placement) && withinY(y, placement)) {
+				if(placement.getAbsoluteZ() < maxZ) {
+					maxZ = placement.getAbsoluteZ();
+				}
+			}
 		}
+		return maxZ;
+	}	
+	
+	protected boolean constrainMax(Point3D point) {
+		int maxX = projectPositiveX(point.getMinX(), point.getMinY(), point.getMinZ());
+		if(maxX <= point.getMinX()) {
+			return false;
+		}
+		int maxY = projectPositiveY(point.getMinX(), point.getMinY(), point.getMinZ());
+		if(maxY <= point.getMinY()) {
+			return false;
+		}
+		int maxZ = projectPositiveZ(point.getMinX(), point.getMinY(), point.getMinZ());
+		if(maxZ < point.getMinZ()) {
+			return false;
+		}
+		
+		point.setMaxX(maxX);
+		point.setMaxY(maxY);
+		point.setMaxZ(maxZ);
 
+		
+		
 		return true;
 	}
-
-	private Point3D unsupportedDx(Point3D source, int xx, int yy) {
-		System.out.println("Add unsupported dx");
-		Placement moveY = projectDownRight(xx, yy);
-		if(moveY == null) {
-			
-			System.out.println(" all the way");
-			
-			// supported one way (by container border)
-			//
-			//      |    |-------------------|
-			//      |    |                   |
-			//      |    |                   |
-			//      |    |                   |
-			// minY |    |--------------------
-			//      |    |               |   |
-			//      |    |               |   ↓
-			//      |----|---------------|---*-----
-			//          minX            maxX
-			
-			return new DefaultFixedYPoint3D(xx, 0, dy, dx, xx, dx);
-			
-		} else if(moveY.getAbsoluteEndY() < source.getMinY()) {
-
-			System.out.println(" directly below");
-
-			if(moveY.getAbsoluteX() <= xx && xx < moveY.getAbsoluteEndX() ) {
-
-				// supported one way
-				//
-				//      |    |-------------------|
-				//      |    |                   |
-				//      |    |                   |
-				//      |    |                   |
-				// minY |    |--------------------
-				//      |    |               |   ↓
-				//      |    |               |   *--------|
-				//      |    |               |   |        |
-				//      |----|---------------|---|--------|--------
-				//          minX            maxX
 	
-				System.out.println(" directly below one way");
-
-				return new DefaultFixedYPoint3D(xx, moveY.getAbsoluteEndY(), dy, dx, xx, moveY.getAbsoluteEndX());
-
-			} else {
-
-				System.out.println(" below no ways");
-
-				// unsupported both ways
-				//
-				//      |    |-------------------|
-				//      |    |                   |
-				//      |    |                   |
-				//      |    |                   |
-				// minY |    |--------------------
-				//      |    |               |   ↓
-				//      |    |               |   *    |--------|
-				//      |    |               |        |        |
-				//      |----|---------------|--------|--------|--------
-				//          minX            maxX
-
-				return new DefaultPoint(xx, moveY.getAbsoluteEndY(), dx, dy);
-			}
-			
-		} else {
-
-			if(moveY.getAbsoluteX() <= xx && xx < moveY.getAbsoluteEndX() ) {
-				
-				System.out.println("Supported both ways");
-				// supported both ways
-				// 
-				//      |    |-------------------|
-				//      |    |                   |
-				//      |    |                   |
-				//      |    |                   |
-				//      |    |                   ↓
-				//      |    |                   *--------|
-				//      |    |                   |        |
-				// minY |    |-------------------|        |
-				//      |    |               |   |        |
-				//      |    |               |   |        |
-				//      |    |               |   |        |
-				//      |----|---------------|---|--------|--------
-				//          minX            maxX
-	
-				return new DefaultFixedXYPoint3D(xx, moveY.getAbsoluteEndY(), dy, dx, xx, moveY.getAbsoluteEndX(), moveY.getAbsoluteEndY(), yy);
-			} else {
-
-				System.out.println("Supported one way");
-				// supported one way
-				//
-				//      |    |-------------------|
-				//      |    |                   |
-				//      |    |                   |
-				//      |    |                   |
-				//      |    |                   ↓
-				//      |    |                   *  |-------|
-				//      |    |                   |  |       |
-				// minY |    |-------------------|  |       |
-				//      |    |               |      |       |
-				//      |    |               |      |       |
-				//      |    |               |      |       |
-				//      |----|---------------|------|-------|--------
-				//          minX            maxX
-
-				return new DefaultFixedXPoint3D(xx, moveY.getAbsoluteEndY(), dy, dx, moveY.getAbsoluteEndY(), yy);
-			}
-		}
-	}
-
-	private Point3D unsupportedDy(Point3D source, int xx, int yy) {
-		System.out.println("Add unsupported dy");
+	protected P projectNegativeX(int x, int y, int z) {
 		
-		Placement moveX = projectLeftTop(xx, yy);
-		if(moveX == null) {
-			
-			// supported one way (by container border)
-			//
-			//       |  
-			//       |  
-			// yy    |←------------|
-			//       |    |        |
-			// fmaxY |----|        |
-			//
-			
-			return new DefaultFixedXPoint3D(0, yy, dy, dx, yy, dy);
-		} else if(moveX.getAbsoluteEndX() < source.getMinX()) {
-			
-			if(moveX.getAbsoluteY() <= yy && yy < moveX.getAbsoluteEndY()) {
-
-				// supported one way
-				//
-				// aendy |-|
-				//       | |
-				// yy    | |←----------|
-				//       | |  |        |
-				// fmaxY |----|        |
-				//
-				//       aendx
-				
-				return new DefaultFixedXPoint3D(moveX.getAbsoluteEndX(), yy, dy, dx, yy, moveX.getAbsoluteEndY());
-			} else {
-
-				// unsupported both ways
-				//
-				//
-				//       |-|
-				//       | |
-				// aendy |-|
-				//       | 
-				// yy    | *←----------|
-				//       |    |        |
-				// fmaxY |----|        |
-				//
-				//       aendx
-
-				return new DefaultPoint(moveX.getAbsoluteEndX(), yy, dx, dy);
-			}
-
-		} else {
-
-			if(moveX.getAbsoluteY() <= yy && yy < moveX.getAbsoluteEndY()) {
-
-				// supported both ways
-				//
-				//
-				// aendy |-------|
-				//       |       |
-				//       |       |
-				// yy    |    |--*←----|
-				//       |    |        |
-				// fmaxY |----|        |
-				//
-				//             aendx
-				
-				return new DefaultFixedXYPoint3D(moveX.getAbsoluteX(), yy, dy, dx,  moveX.getAbsoluteEndX(), xx, yy, moveX.getAbsoluteEndY());
-			} else {
-
-				// unsupported one way
-				//
-				//
-				//       |-------|
-				//       |       |
-				// aendy |-------|
-				//       |       
-				//       |       
-				// yy    |    |--*←----|
-				//       |    |        |
-				// fmaxY |----|        |
-				//
-				//             aendx
-
-				return new DefaultFixedYPoint3D(moveX.getAbsoluteEndX(), yy, dy, dx, moveX.getAbsoluteEndX(), xx);
-			}
-		}
-	}
-	
-	private Placement projectLeftTop(int x, int y) {
-		
-		// included:
+		// excluded:
 		//
 		//         |
 		// absEndy-|-----|
@@ -576,6 +486,8 @@ public class ExtremePoints3D<P extends Placement3D> {
 		//               |
 		//            absEndX
 		//
+		// included:
+		//
 		//         |
 		//         |
 		//         |
@@ -588,6 +500,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 		//            absEndX
 		//
 		//
+		// excluded:
 		//         |
 		// absEndy-|-----------|
 		//         |           |
@@ -601,10 +514,9 @@ public class ExtremePoints3D<P extends Placement3D> {
 		//        absX       absEndX
 		//
 		
-		Placement rightmost = null;
-		for (Placement placement : placements) {
-			if(placement.getAbsoluteEndY() >= y && placement.getAbsoluteX() < x) {
-				
+		P rightmost = null;
+		for (P placement : placements) {
+			if(placement.getAbsoluteEndX() <= x && withinY(y, placement) && withinZ(z, placement)) {
 				// most to the right
 				if(rightmost == null || placement.getAbsoluteEndX() > rightmost.getAbsoluteEndX()) {
 					rightmost = placement;
@@ -613,11 +525,11 @@ public class ExtremePoints3D<P extends Placement3D> {
 		}
 		
 		return rightmost;
-	}
+	}	
 
-	private P projectDownRight(int x, int y) {
+	protected P projectNegativeY(int x, int y, int z) {
 
-		// included:
+		// excluded:
 		// |
 		// |
 		// |                    |-----| absEndY
@@ -637,6 +549,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 		//                      |     |
 		//                    absX absEndX
 		//
+		// included:
 		// |                  
 		// |                 *
 		// |              |------------| absEndY
@@ -648,7 +561,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 		
 		P leftmost = null;
 		for (P placement : placements) {
-			if(placement.getAbsoluteY() <= y && placement.getAbsoluteEndX() > x) {
+			if(placement.getAbsoluteEndY() <= y && withinX(x, placement) && withinZ(z, placement)) {
 				
 				// the highest
 				if(leftmost == null || placement.getAbsoluteEndY() > leftmost.getAbsoluteEndY()) {
@@ -659,14 +572,55 @@ public class ExtremePoints3D<P extends Placement3D> {
 		
 		return leftmost;
 	}
+	
+	protected P projectNegativeZ(int x, int y, int z) {
+		
+		P downmost = null;
+		for (P placement : placements) {
+			if(placement.getAbsoluteEndZ() <= z && withinX(x, placement) && withinY(y, placement)) {
+				
+				// the highest
+				if(downmost == null || placement.getAbsoluteEndZ() > downmost.getAbsoluteEndZ()) {
+					downmost = placement;
+				}
+			}
+		}
+		
+		return downmost;
+	}
 
-	private int projectRight(int x, int y) {
-		int closest = dx;
-		for (Placement placement : placements) {
+
+	protected int projectPositiveX(int x, int y, int z) {
+		P closestUp = closestPositiveX(x, y, z);
+		if(closestUp != null) {
+			return closestUp.getAbsoluteX();
+		}
+		return containerMaxX;
+	}
+
+	protected int projectPositiveY(int x, int y, int z) {
+		P closestUp = closestPositiveY(x, y, z);
+		if(closestUp != null) {
+			return closestUp.getAbsoluteY();
+		}
+		return containerMaxY;
+	}
+	
+	protected int projectPositiveZ(int x, int y, int z) {
+		P closestUp = closestPositiveZ(x, y, z);
+		if(closestUp != null) {
+			return closestUp.getAbsoluteZ();
+		}
+		return containerMaxZ;
+	}
+
+	protected P closestPositiveX(int x, int y, int z) {
+		P closest = null;
+		for (P placement : placements) {
 			if(placement.getAbsoluteX() >= x) {
-				if(placement.getAbsoluteY() <= y && y < placement.getAbsoluteEndY()) {
-					if(placement.getAbsoluteX() < closest) {
-						closest = placement.getAbsoluteX();
+				if(withinY(y, placement) && withinZ(z, placement)) {
+					if(closest == null || placement.getAbsoluteX() < closest.getAbsoluteX()) {
+						closest = placement;
 					}
 				}
 			}
@@ -674,14 +628,14 @@ public class ExtremePoints3D<P extends Placement3D> {
 		
 		return closest;
 	}
-
-	private int projectUp(int x, int y) {
-		int closest = dy;
-		for (Placement placement : placements) {
+	
+	protected P closestPositiveY(int x, int y, int z) {
+		P closest = null;
+		for (P placement : placements) {
 			if(placement.getAbsoluteY() >= y) {
-				if(placement.getAbsoluteX() <= x && x < placement.getAbsoluteEndX()) {
-					if(placement.getAbsoluteY() < closest) {
-						closest = placement.getAbsoluteY();
+				if(withinX(x, placement) && withinZ(z, placement)) {
+					if(closest == null || placement.getAbsoluteY() < closest.getAbsoluteY()) {
+						closest = placement;
 					}
 				}
 			}
@@ -690,29 +644,72 @@ public class ExtremePoints3D<P extends Placement3D> {
 		return closest;
 	}
 
-	public List<Point3D> getValues() {
-		return values;
+	protected P closestPositiveZ(int x, int y, int z) {
+		P closest = null;
+		for (P placement : placements) {
+			if(placement.getAbsoluteZ() >= z) {
+				if(withinX(x, placement) && withinY(y, placement)) {
+					if(closest == null || placement.getAbsoluteZ() < closest.getAbsoluteZ()) {
+						closest = placement;
+					}
+				}
+			}
+		}
+		
+		return closest;
+	}
+	
+	protected boolean withinX(int x, P placement) {
+		return placement.getAbsoluteX() <= x && x <= placement.getAbsoluteEndX();
+	}
+
+	protected boolean withinY(int y, P placement) {
+		return placement.getAbsoluteY() <= y && y <= placement.getAbsoluteEndY();
+	}
+	
+	protected boolean withinZ(int z, P placement) {
+		return placement.getAbsoluteZ() <= z && z <= placement.getAbsoluteEndZ();
 	}
 	
 	public int getDepth() {
-		return dy;
+		return containerMaxY;
 	}
 	
 	public int getWidth() {
-		return dx;
+		return containerMaxX;
+	}
+	
+	public int getHeight() {
+		return containerMaxX;
 	}
 
 	@Override
 	public String toString() {
-		return "Points [width=" + dx + ", depth=" + dy + ", values=" + values + "]";
+		return "ExtremePoints3D [dx=" + containerMaxX + ", dy=" + containerMaxY + ", dz=" + containerMaxZ + "]";
 	}
 	
-	public List<Placement> getPlacements() {
+	public List<P> getPlacements() {
 		return placements;
 	}
+	
+	public int get(int x, int y, int z) {
+		for (int i = 0; i < values.size(); i++) {
+			Point3D point2d = values.get(i);
+			
+			if(point2d.getMinY() == y && point2d.getMinX() == x && point2d.getMinZ() == z) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	public List<Point3D> getValues() {
+		return values;
+	}
 
-	public Point3D getPoint(int pointIndex) {
-		return values.get(pointIndex);
+	
+	public Point2D getValue(int i) {
+		return values.get(i);
 	}
 	
 }

@@ -58,21 +58,6 @@ public class DefaultFixedXYZPoint3D extends Point3D implements FixedYPoint3D, Fi
 		this.fixedZMinY = fixedZMinY;
 		this.fixedZMaxY = fixedZMaxY;
 	}
-
-	@Override
-	public boolean isFixedY() {
-		return true;
-	}
-	
-	@Override
-	public boolean isFixedX() {
-		return true;
-	}
-	
-	@Override
-	public boolean isFixedZ() {
-		return true;
-	}
 	
 	public int getFixedYMinX() {
 		return fixedYMinX;
@@ -126,4 +111,18 @@ public class DefaultFixedXYZPoint3D extends Point3D implements FixedYPoint3D, Fi
 		return fixedZMaxY;
 	}
 	
+	@Override
+	public boolean isFixedY(int x, int z) {
+		return x < fixedYMaxX && z < fixedYMaxZ;
+	}
+	
+	@Override
+	public boolean isFixedX(int y, int z) {
+		return y < fixedXMaxY && z < fixedXMaxZ;
+	}
+	
+	@Override
+	public boolean isFixedZ(int x, int y) {
+		return x < fixedZMaxX && y < fixedZMaxY;
+	}
 }

@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.points;
+package com.github.skjolber.packing.points2d;
 
 import java.util.Comparator;
 
@@ -33,13 +33,17 @@ public abstract class Point2D {
 		this.maxY = maxY;
 		this.maxX = maxX;
 		
-		this.dx = maxX - minX;
-		this.dy = maxY - minY;
+		this.dx = maxX - minX + 1;
+		this.dy = maxY - minY + 1;
 	}
 
-	public abstract boolean isFixedY();
-	
-	public abstract boolean isFixedX();
+	public boolean isFixedX(int y) {
+		return false;
+	}
+
+	public boolean isFixedY(int z) {
+		return false;
+	}
 
 	public int getMinX() {
 		return minX;
@@ -48,10 +52,24 @@ public abstract class Point2D {
 	public int getMinY() {
 		return minY;
 	}
+	
+	/**
+	 * 
+	 * Get y constraint (inclusive)
+	 * 
+	 * @return
+	 */
 
 	public int getMaxY() {
 		return maxY;
 	}
+
+	/**
+	 * 
+	 * Get x constraint (inclusive)
+	 * 
+	 * @return
+	 */
 
 	public int getMaxX() {
 		return maxX;
@@ -60,13 +78,13 @@ public abstract class Point2D {
 	public void setMaxX(int maxX) {
 		this.maxX = maxX;
 		
-		this.dx = maxX - minX;
+		this.dx = maxX - minX + 1;
 	}
 	
 	public void setMaxY(int maxY) {
 		this.maxY = maxY;
 		
-		this.dy = maxY - minY;
+		this.dy = maxY - minY + 1;
 	}
 	
 	public int getDy() {

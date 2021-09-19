@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.points;
+package com.github.skjolber.packing.points2d;
 
 public interface FixedXPoint2D {
 

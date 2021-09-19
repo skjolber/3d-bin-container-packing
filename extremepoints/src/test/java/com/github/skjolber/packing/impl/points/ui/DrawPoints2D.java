@@ -8,9 +8,9 @@ import javax.swing.event.*;
 
 import com.github.skjolber.packing.points.DefaultExtremePoints2D;
 import com.github.skjolber.packing.points.DefaultPlacement2D;
-import com.github.skjolber.packing.points.ExtremePoints2D;
-import com.github.skjolber.packing.points.Placement2D;
-import com.github.skjolber.packing.points.Point2D;
+import com.github.skjolber.packing.points2d.ExtremePoints2D;
+import com.github.skjolber.packing.points2d.Placement2D;
+import com.github.skjolber.packing.points2d.Point2D;
 
 public class DrawPoints2D {
 

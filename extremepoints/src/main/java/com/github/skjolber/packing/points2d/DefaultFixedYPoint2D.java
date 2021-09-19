@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.points;
+package com.github.skjolber.packing.points2d;
 
 public class DefaultFixedYPoint2D extends Point2D implements FixedYPoint2D {
 
@@ -13,12 +13,8 @@ public class DefaultFixedYPoint2D extends Point2D implements FixedYPoint2D {
 	}
 	
 	@Override
-	public boolean isFixedY() {
-		return true;
-	}
-	@Override
-	public boolean isFixedX() {
-		return false;
+	public boolean isFixedY(int x) {
+		return x < fixedMaxX;
 	}
 	
 	public int getFixedMinX() {

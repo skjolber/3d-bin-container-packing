@@ -6,18 +6,4 @@ public class DefaultPoint extends Point3D {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
-	@Override
-	public boolean isFixedY() {
-		return false;
-	}
-
-	@Override
-	public boolean isFixedX() {
-		return false;
-	}
-
-	@Override
-	public boolean isFixedZ() {
-		return false;
-	}
 }

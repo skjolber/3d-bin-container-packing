@@ -24,19 +24,6 @@ public class DefaultFixedXPoint3D extends Point3D implements FixedXPoint3D  {
 		this.fixedXMinZ = fixedZ;
 		this.fixedXMaxZ = fixedZz;
 	}
-	@Override
-	public boolean isFixedY() {
-		return false;
-	}
-	@Override
-	public boolean isFixedX() {
-		return true;
-	}
-	
-	@Override
-	public boolean isFixedZ() {
-		return false;
-	}
 
 	public int getFixedXMinY() {
 		return fixedXMinY;
@@ -53,6 +40,11 @@ public class DefaultFixedXPoint3D extends Point3D implements FixedXPoint3D  {
 	@Override
 	public int getFixedXMaxZ() {
 		return fixedXMaxZ;
+	}
+	
+	@Override
+	public boolean isFixedX(int y, int z) {
+		return y < fixedXMaxY && z < fixedXMaxZ;
 	}
 	
 	

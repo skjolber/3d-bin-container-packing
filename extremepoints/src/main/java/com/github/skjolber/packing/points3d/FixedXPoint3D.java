@@ -13,4 +13,5 @@ public interface FixedXPoint3D {
 	int getFixedXMinZ();
 	int getFixedXMaxZ();
 
+	boolean isFixedX(int y, int z);
 }
