@@ -34,15 +34,15 @@ public abstract class Point3D extends Point2D {
 		this.dz = maxZ - minZ + 1;
 	}
 
-	public boolean isFixedZ(int x, int y) {
+	public boolean isSupportedXYPlane(int x, int y) { // i.e. z is fixed
 		return false;
 	}
 	
-	public boolean isFixedX(int y, int z) {
+	public boolean isSupportedYZPlane(int y, int z) { // i.e. x is fixed
 		return false;
 	}
 
-	public boolean isFixedY(int x, int z) {
+	public boolean isSupportedXZPlane(int x, int z) { // i.e. y is fixed
 		return false;
 	}
 

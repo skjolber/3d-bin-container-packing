@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.points3d;
 
-public class DefaultFixedYZPoint3D extends Point3D implements FixedYPoint3D, FixedZPoint3D {
+public class DefaultFixedYZPoint3D extends Point3D implements SupportedXZPlanePoint3D, SupportedXYPlanePoint3D {
 
 	/** range constrained to current minY */
 	private final int fixedYMinX;
@@ -42,47 +42,47 @@ public class DefaultFixedYZPoint3D extends Point3D implements FixedYPoint3D, Fix
 		this.fixedZMaxY = fixedZMaxY;
 	}
 	
-	public int getFixedYMinX() {
+	public int getSupportedXZPlaneMinX() {
 		return fixedYMinX;
 	}
 
-	public int getFixedYMaxX() {
+	public int getSupportedXZPlaneMaxX() {
 		return fixedYMaxX;
 	}
 
 	@Override
-	public int getFixedYMinZ() {
+	public int getSupportedXZPlaneMinZ() {
 		return fixedYMinZ;
 	}
 
 	@Override
-	public int getFixedYMaxZ() {
+	public int getSupportedXZPlaneMaxZ() {
 		return fixedYMaxZ;
 	}
 
-	public int getFixedZMinX() {
+	public int getSupportedXYPlaneMinX() {
 		return fixedZMinX;
 	}
 
-	public int getFixedZMaxX() {
+	public int getSupportedXYPlaneMaxX() {
 		return fixedZMaxX;
 	}
 
-	public int getFixedZMinY() {
+	public int getSupportedXYPlaneMinY() {
 		return fixedZMinY;
 	}
 
-	public int getFixedZMaxY() {
+	public int getSupportedXYPlaneMaxY() {
 		return fixedZMaxY;
 	}
 	
 	@Override
-	public boolean isFixedY(int x, int z) {
-		return x < fixedYMaxX && z < fixedYMaxZ;
+	public boolean isSupportedXZPlane(int x, int z) {
+		return fixedYMinX <= x && x <= fixedYMaxX && fixedYMinZ <= z && z <= fixedYMaxZ;
 	}
 
 	@Override
-	public boolean isFixedZ(int x, int y) {
-		return x < fixedZMaxX && y < fixedZMaxY;
+	public boolean isSupportedXYPlane(int x, int y) {
+		return fixedZMinX <= x && x <= fixedZMaxX && fixedZMinY <= y && y <= fixedZMaxY;
 	}
 }

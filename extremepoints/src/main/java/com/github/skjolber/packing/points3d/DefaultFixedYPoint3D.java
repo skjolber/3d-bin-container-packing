@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.points3d;
 
-public class DefaultFixedYPoint3D extends Point3D implements FixedYPoint3D {
+public class DefaultFixedYPoint3D extends Point3D implements SupportedXZPlanePoint3D {
 
 	/** range constrained to current minY */
 	private final int fixedYMinX;
@@ -23,26 +23,26 @@ public class DefaultFixedYPoint3D extends Point3D implements FixedYPoint3D {
 		this.fixedYMaxZ = fixedYMaxZ;
 	}
 
-	public int getFixedYMinX() {
+	public int getSupportedXZPlaneMinX() {
 		return fixedYMinX;
 	}
 	
-	public int getFixedYMaxX() {
+	public int getSupportedXZPlaneMaxX() {
 		return fixedYMaxX;
 	}
 	
 	@Override
-	public int getFixedYMaxZ() {
+	public int getSupportedXZPlaneMaxZ() {
 		return fixedYMaxZ;
 	}
 	
 	@Override
-	public int getFixedYMinZ() {
+	public int getSupportedXZPlaneMinZ() {
 		return fixedYMinZ;
 	}
 
 	@Override
-	public boolean isFixedY(int x, int z) {
-		return x < fixedYMaxX && z < fixedYMaxZ;
+	public boolean isSupportedXZPlane(int x, int z) {
+		return fixedYMinX <= x && x <= fixedYMaxX && fixedYMinZ <= z && z <= fixedYMaxZ;
 	}
 }

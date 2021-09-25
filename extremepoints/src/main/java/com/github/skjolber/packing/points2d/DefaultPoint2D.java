@@ -7,12 +7,12 @@ public class DefaultPoint2D extends Point2D {
 	}
 
 	@Override
-	public boolean isFixedY(int x) {
+	public boolean isHorizontalSupport(int x) {
 		return false;
 	}
 
 	@Override
-	public boolean isFixedX(int y) {
+	public boolean isVerticalSupport(int y) {
 		return false;
 	}
 

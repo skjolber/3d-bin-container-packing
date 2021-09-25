@@ -6,6 +6,7 @@ import java.util.List;
 
 /**
  * 
+ * 
  *
  */
 
@@ -22,7 +23,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		this.containerMaxX = dx - 1;
 		this.containerMaxY = dy - 1;
 		
-		values.add(new DefaultFixedXYPoint2D(0, 0, containerMaxX, containerMaxY, 0, containerMaxX, 0, containerMaxY));
+		values.add(new DefaultHorizontalVerticalSupportPoint2D(0, 0, containerMaxX, containerMaxY, 0, containerMaxX, 0, containerMaxY));
 	}
 
 	public boolean add(int index, P placement) {
@@ -30,6 +31,14 @@ public class ExtremePoints2D<P extends Placement2D> {
 	}
 
 	public boolean add(int index, P placement, int boxDx, int boxDy) {
+		
+		// overall approach:
+		//
+		// project points points swallowed by the placement, then delete them
+		// project points shadowed by the placement to the other side, then constrain them
+		// add points shadowed by the two new points, if they could be moved in the negative direction
+
+		// keep track of placement borders, where possible
 		
 		Point2D source = values.get(index);
 		
@@ -73,10 +82,10 @@ public class ExtremePoints2D<P extends Placement2D> {
 	}
 
 	private List<Point2D> addY(P placement, Point2D source, List<Point2D> deleted, int xx, int yy) {
-		List<Point2D> addedY = new ArrayList<>();
+		List<Point2D> added = new ArrayList<>();
 
-		boolean fixedY = source.isFixedY(xx);
-		if(fixedY) { // for dx
+		boolean horizontalSupport = source.isHorizontalSupport(xx);
+		if(horizontalSupport) { // i.e. when adding dx
 			
 			//       |
 			//       |
@@ -88,7 +97,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			//       |    |        |
 			//       |    |        | 
 			//       |    |        |
-			//  minY |    |---------------|   <---- fixed y
+			//  minY |    |---------------|   <---- horizontal support
 			//       |    |               |
 			//       |    |               |
 			//       |----|---------------|-----
@@ -103,7 +112,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			//       |    |        |
 			//       |    |        | dy
 			//       |    |        |
-			// minY  |    |---------------|  <---- fixed y
+			// minY  |    |---------------|  <---- horizontal support
 			//       |    |               |
 			//       |    |               |
 			//       |----|---------------|-----
@@ -115,14 +124,14 @@ public class ExtremePoints2D<P extends Placement2D> {
 			//      |             |
 			//      |             |
 			//      |             |
-			// minY |             *-------     <---- fixed y
+			// minY |             *-------     <---- horizontal support
 			//      |                    
 			//      |                    
 			//      |--------------------------
 			//                    xx   fmaxX
 			
 			if(source.getMaxX() > xx) {
-				FixedYPoint2D fixedPointY = (FixedYPoint2D)source;
+				HorizontalSupportPoint2D fixedPointY = (HorizontalSupportPoint2D)source;
 				
 				int maxY;
 				if(source.getMaxX() == containerMaxX && source.getMaxY() == containerMaxY) {
@@ -132,9 +141,9 @@ public class ExtremePoints2D<P extends Placement2D> {
 				}
 				
 				if(maxY > source.getMinY()) {
-					DefaultFixedXYPoint2D next = new DefaultFixedXYPoint2D(xx, source.getMinY(), source.getMaxX(), maxY, xx, fixedPointY.getFixedMaxX(), source.getMinY(), yy);
+					DefaultHorizontalVerticalSupportPoint2D next = new DefaultHorizontalVerticalSupportPoint2D(xx, source.getMinY(), source.getMaxX(), maxY, xx, fixedPointY.getHorizontalSupportMaxX(), source.getMinY(), yy);
 
-					addedY.add(next);
+					added.add(next);
 				}
 			}
 		} else {
@@ -146,7 +155,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 
 				if(dx.getMinY() < dx.getMaxY()) {
 				
-					addedY.add(dx);
+					added.add(dx);
 					
 					if(dx.getMinY() < source.getMinY()) {
 						for (int i = 0; i < values.size(); i++) {
@@ -154,7 +163,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 						
 							// Move points swallowed or shadowed by dx
 							if(point.getMinX() < xx && point.getMaxX() > xx && dx.getMinY() < point.getMinY() && point.getMinY() < source.getMinY()) {
-								addedY.add(point);
+								added.add(point);
 							}
 						}
 					}
@@ -162,7 +171,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			}
 		}
 		
-		if(!addedY.isEmpty()) {
+		if(!added.isEmpty()) {
 	
 			// Move points swallowed or shadowed by the placement
 			
@@ -228,7 +237,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 					if(point.getMaxX() > xx) {
 						
 						// add point on the other side
-						// fixed x
+						// vertical support
 
 						int maxY;
 						if(source.getMaxX() == containerMaxX && source.getMaxY() == containerMaxY) {
@@ -237,84 +246,83 @@ public class ExtremePoints2D<P extends Placement2D> {
 							maxY = constrainY(xx, point.getMinY());
 						}
 						
-						DefaultFixedXPoint2D next = new DefaultFixedXPoint2D(
+						DefaultVerticalSupportPoint2D next = new DefaultVerticalSupportPoint2D(
 								xx, point.getMinY(),
 								point.getMaxX(), maxY,
 								xx, point.getMinY()
 								);
 						
-						addedY.add(next);
+						added.add(next);
 					}
 					
 					if(point.getMinX() < source.getMinX()) {
 						// constrain current point
 						point.setMaxX(source.getMinX() - 1);
 					} else {
-						// delete current point
+						// delete current point (which was swallowed)
 						deleted.add(point);
 					}
 				}
 			}
 			
-			Collections.sort(addedY, Point2D.Y_COMPARATOR);
+			Collections.sort(added, Point2D.Y_COMPARATOR);
 
-			for (int j = 0; j < addedY.size(); j++) {
-				Point2D point2d = addedY.get(j);
+			for (int j = 0; j < added.size(); j++) {
+				Point2D point2d = added.get(j);
 				
-				for (int i = j + 1; i < addedY.size(); i++) {
-					Point2D p = addedY.get(i);
+				for (int i = j + 1; i < added.size(); i++) {
+					Point2D p = added.get(i);
 
 					if(point2d.getMaxX() == p.getMaxX() && point2d.getMaxY() == p.getMaxY()) {
-						addedY.remove(i);
+						added.remove(i);
 						i--;
 					}
 				}
 			}
 			
-			Point2D first = addedY.get(0);
-			for (int i = 1; i < addedY.size(); i++) {
-				Point2D point = addedY.get(i);					
+			Point2D first = added.get(0);
+			for (int i = 1; i < added.size(); i++) {
+				Point2D point = added.get(i);					
 				
 				if(point.getMinX() < first.getMinX()) {
-					Point2D p = new DefaultFixedXPoint2D(xx, point.getMinY(), point.getMaxX(), first.getMaxY(), point.getMinY(), yy);
+					Point2D p = new DefaultVerticalSupportPoint2D(xx, point.getMinY(), point.getMaxX(), first.getMaxY(), point.getMinY(), yy);
 	
-					addedY.set(i, p);
+					added.set(i, p);
 				}
 			}
 		}
-		return addedY;
+		return added;
 	}
 
 	private List<Point2D> addX(P placement, Point2D source, List<Point2D> deleted, int xx, int yy) {
-		boolean fixedX = source.isFixedX(yy);
+		boolean verticalSupport = source.isVerticalSupport(yy);
 
-		List<Point2D> addedX = new ArrayList<>();
-		if(fixedX) { // for dy
+		List<Point2D> added = new ArrayList<>();
+		if(verticalSupport) { // i.e. when adding dy
 			
 			//
-			// fmaxY |----|
+			// vmaxY |----|                      <-- vertical support max y
 			//       |    |          
 			//  yy   |    *-------------------|
 			//       |    |                   |
 			//       |    |                   | 
 			//       |    |                   |
-			//  minY |    |--------------------
+			//  minY |    |--------------------  <-- vertical support min y
 			//       |    |               |
 			//       |    |               |
 			//       |----|---------------|-----
 			//           minX            maxX
-			//          fixedX
 			
 			// or
 			
 			//
-			// fmaxY |----|
+			// vmaxY |----|                      <-- vertical support max y
 			//       |    |   dx
 			// yy    |    *--------|
 			//       |    |        |
 			//       |    |        | dy
 			//       |    |        |
-			// minY  |    |---------------|
+			// minY  |    |---------------|      <-- vertical support min y
 			//       |    |               |
 			//       |    |               |
 			//       |----|---------------|-----
@@ -324,7 +332,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			// using dy
 			//
 			//
-			// fmaxY |    |
+			// vmaxY |    |                      <-- vertical support max y
 			//       |    |   dx
 			// yy    |    *---------
 			//       |
@@ -339,7 +347,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			//
 			
 			if(source.getMaxY() > yy) {
-				FixedXPoint2D fixedPointX = (FixedXPoint2D)source;
+				VerticalSupportPoint2D fixedPointX = (VerticalSupportPoint2D)source;
 				
 				int maxX;
 				if(source.getMaxX() == containerMaxX && source.getMaxY() == containerMaxY) {
@@ -348,9 +356,9 @@ public class ExtremePoints2D<P extends Placement2D> {
 					maxX = constrainX(source.getMinX(), yy);
 				}
 				if(maxX > source.getMinX()) {
-					DefaultFixedXYPoint2D next = new DefaultFixedXYPoint2D(source.getMinX(), yy, maxX, source.getMaxY(), source.getMinX(), xx, yy, fixedPointX.getFixedMaxY());
+					DefaultHorizontalVerticalSupportPoint2D next = new DefaultHorizontalVerticalSupportPoint2D(source.getMinX(), yy, maxX, source.getMaxY(), source.getMinX(), xx, yy, fixedPointX.getVeriftalSupportMaxY());
 					
-					addedX.add(next);
+					added.add(next);
 				}
 			}
 		} else {
@@ -362,7 +370,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 				
 				if(negativeX.getMinX() < negativeX.getMaxX()) {
 	
-					addedX.add(negativeX);
+					added.add(negativeX);
 	
 					if(negativeX.getMinX() < source.getMinX()) {
 					
@@ -390,7 +398,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 						
 							// Move points swallowed or shadowed by the dy
 							if(point.getMinY() < yy && point.getMaxY() > yy && negativeX.getMinX() < point.getMinX() && point.getMinX() < source.getMinX()) {
-								addedX.add(point);
+								added.add(point);
 							}
 						}
 					}
@@ -398,7 +406,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			}
 		}
 		
-		if(!addedX.isEmpty()) {
+		if(!added.isEmpty()) {
 
 			// Move points swallowed or shadowed by the placement
 			
@@ -410,7 +418,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			//    |         |
 			//    | *       |
 			//    |         | 
-			//    |---------|---------------
+			//    |---------|----
 			//
 			//    |
 			//    |
@@ -418,7 +426,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			//    |         |
 			//    |         |
 			//    |         | 
-			//    |---------|---------------			
+			//    |---------|-----	
 			//
 			//    shadowed:
 			//
@@ -453,7 +461,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 					
 					if(point.getMaxY() > yy) {
 						// add point
-						// fixed y
+						// horizontal support
 
 						int maxX;
 						if(source.getMaxX() == containerMaxX && source.getMaxY() == containerMaxY) {
@@ -462,52 +470,52 @@ public class ExtremePoints2D<P extends Placement2D> {
 							maxX = constrainX(point.getMinX(), yy);
 						}
 						
-						DefaultFixedYPoint2D next = new DefaultFixedYPoint2D(
+						DefaultHorizontalSupportPoint2D next = new DefaultHorizontalSupportPoint2D(
 								point.getMinX(), yy, 
 								maxX, point.getMaxY(), 
 								point.getMinX(), xx
 								);
 
-						addedX.add(next);
+						added.add(next);
 					}
 					
 					if(point.getMinY() < source.getMinY()) {
 						// constrain current point
 						point.setMaxY(source.getMinY() - 1);
 					} else {
-						// delete current point
+						// delete current point (which was swallowed)
 						deleted.add(point);
 					}
 				}
 			}
 			
-			Collections.sort(addedX, Point2D.X_COMPARATOR);
+			Collections.sort(added, Point2D.X_COMPARATOR);
 
-			for (int j = 0; j < addedX.size(); j++) {
-				Point2D point2d = addedX.get(j);
+			for (int j = 0; j < added.size(); j++) {
+				Point2D point2d = added.get(j);
 				
-				for (int i = j + 1; i < addedX.size(); i++) {
-					Point2D p = addedX.get(i);
+				for (int i = j + 1; i < added.size(); i++) {
+					Point2D p = added.get(i);
 
 					if(point2d.getMaxX() == p.getMaxX() && point2d.getMaxY() == p.getMaxY()) {
-						addedX.remove(i);
+						added.remove(i);
 						i--;
 					}
 				}
 			}
 
-			Point2D first = addedX.get(0);
-			for (int i = 1; i < addedX.size(); i++) {
-				Point2D point = addedX.get(i);					
+			Point2D first = added.get(0);
+			for (int i = 1; i < added.size(); i++) {
+				Point2D point = added.get(i);					
 				
 				if(point.getMinY() < first.getMinY()) {
-					Point2D p = new DefaultFixedYPoint2D(point.getMinX(), yy, first.getMaxX(), point.getMaxY(), point.getMinX(), xx);
+					Point2D p = new DefaultHorizontalSupportPoint2D(point.getMinX(), yy, first.getMaxX(), point.getMaxY(), point.getMinX(), xx);
 	
-					addedX.set(i, p);
+					added.set(i, p);
 				}
 			}
 		}
-		return addedX;
+		return added;
 	}
 
 	protected boolean constrain(Point2D dx) {
@@ -541,6 +549,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		}
 		P moveY = projectNegativeY(xx, yy);
 		if(moveY == null) {
+			
 			// supported one way (by container border)
 			//
 			//      |    |-------------------|
@@ -553,9 +562,10 @@ public class ExtremePoints2D<P extends Placement2D> {
 			//      |----|---------------|---*-----
 			//          minX            maxX
 			
-			return new DefaultFixedYPoint2D(xx, 0, containerMaxX, containerMaxY, xx, containerMaxX);
+			return new DefaultHorizontalSupportPoint2D(xx, 0, containerMaxX, containerMaxY, xx, containerMaxX);
 			
 		} else if(moveY.getAbsoluteEndY() < source.getMinY()) {
+			
 			// supported one way
 			//
 			//      |    |-------------------|
@@ -569,8 +579,9 @@ public class ExtremePoints2D<P extends Placement2D> {
 			//      |----|---------------|---|--------|--------
 			//          minX            maxX
 
-			return new DefaultFixedYPoint2D(xx, moveY.getAbsoluteEndY() + 1, containerMaxX, containerMaxY, xx, moveY.getAbsoluteEndX() + 1);
-		} else if(moveY.getAbsoluteEndY() < yy - 1) {
+			return new DefaultHorizontalSupportPoint2D(xx, moveY.getAbsoluteEndY() + 1, containerMaxX, containerMaxY, xx, moveY.getAbsoluteEndX() + 1);
+		} else if(moveY.getAbsoluteEndY() + 1 < yy) {
+			
 			// supported both ways
 			// 
 			//      |    |-------------------|
@@ -587,7 +598,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			//      |----|---------------|---|--------|--------
 			//          minX            maxX
 
-			return new DefaultFixedXYPoint2D(xx, moveY.getAbsoluteEndY() + 1, containerMaxX, containerMaxY, xx, moveY.getAbsoluteEndX() + 1, moveY.getAbsoluteEndY() + 1, yy);
+			return new DefaultHorizontalVerticalSupportPoint2D(xx, moveY.getAbsoluteEndY() + 1, containerMaxX, containerMaxY, xx, moveY.getAbsoluteEndX() + 1, moveY.getAbsoluteEndY() + 1, yy);
 		}
 		
 		// no space to move
@@ -615,30 +626,37 @@ public class ExtremePoints2D<P extends Placement2D> {
 		}
 		P moveX = projectNegativeX(xx, yy);
 		if(moveX == null) {
+			
 			// supported one way (by container border)
 			//
 			//       |  
 			//       |  
 			// yy    |←------------|
 			//       |    |        |
+			//       |    |        |
+			//       |    |        |
 			// fmaxY |----|        |
 			//
 			
-			return new DefaultFixedXPoint2D(0, yy, containerMaxX, containerMaxY, yy, containerMaxY);
+			return new DefaultVerticalSupportPoint2D(0, yy, containerMaxX, containerMaxY, yy, containerMaxY);
 		} else if(moveX.getAbsoluteEndX() < source.getMinX()) {
+			
 			// supported one way
 			//
 			// aendy |-|
 			//       | |
 			// yy    | |←----------|
+			//       |    |        |
+			//       |    |        |
 			//       | |  |        |
 			// fmaxY |----|        |
 			//
 			//       aendx
 			
-			return new DefaultFixedXPoint2D(moveX.getAbsoluteEndX() + 1, yy, containerMaxX, containerMaxY, yy, moveX.getAbsoluteEndY() + 1);
+			return new DefaultVerticalSupportPoint2D(moveX.getAbsoluteEndX() + 1, yy, containerMaxX, containerMaxY, yy, moveX.getAbsoluteEndY() + 1);
 
-		} else if(moveX.getAbsoluteEndX() < xx - 1) {
+		} else if(moveX.getAbsoluteEndX() + 1 < xx) {
+			
 			// supported both ways
 			//
 			//
@@ -647,11 +665,13 @@ public class ExtremePoints2D<P extends Placement2D> {
 			//       |       |
 			// yy    |    |--*←----|
 			//       |    |        |
+			//       |    |        |
+			//       |    |        |
 			// fmaxY |----|        |
 			//
 			//             aendx
 			
-			return new DefaultFixedXYPoint2D(moveX.getAbsoluteX() + 1, yy, containerMaxX, containerMaxY,  moveX.getAbsoluteEndX() + 1, xx, yy, moveX.getAbsoluteEndY() + 1);
+			return new DefaultHorizontalVerticalSupportPoint2D(moveX.getAbsoluteX() + 1, yy, containerMaxX, containerMaxY,  moveX.getAbsoluteEndX() + 1, xx, yy, moveX.getAbsoluteEndY() + 1);
 		}
 		
 		// no space to move
@@ -661,6 +681,8 @@ public class ExtremePoints2D<P extends Placement2D> {
 		//       |             |
 		//       |             |
 		// yy    |    |--------*
+		//       |    |        |
+		//       |    |        |
 		//       |    |        |
 		// fmaxY |----|        |
 		//
@@ -724,21 +746,6 @@ public class ExtremePoints2D<P extends Placement2D> {
 		//               |
 		//            absEndX
 		//
-		// included:
-		//
-		//         |
-		//         |
-		//         |
-		// absEndy-|-----|
-		//         |     |
-		//         |     |  *
-		//         |     |          
-		//         |-----|--------------------
-		//               |
-		//            absEndX
-		//
-		//
-		// excluded:
 		//         |
 		// absEndy-|-----------|
 		//         |           |
@@ -751,6 +758,19 @@ public class ExtremePoints2D<P extends Placement2D> {
 		//         |           |
 		//        absX       absEndX
 		//
+		//
+		// included:
+		//
+		//         |
+		//         |
+		//         |
+		// absEndy-|-----|
+		//         |     |
+		//         |     |  *
+		//         |     |          
+		//         |-----|--------------------
+		//               |
+		//            absEndX
 		
 		P rightmost = null;
 		for (P placement : placements) {
@@ -768,6 +788,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 	protected P projectNegativeY(int x, int y) {
 
 		// excluded:
+		//
 		// |
 		// |
 		// |                    |-----| absEndY
@@ -788,6 +809,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		//                    absX absEndX
 		//
 		// included:
+		//
 		// |                  
 		// |                 *
 		// |              |------------| absEndY

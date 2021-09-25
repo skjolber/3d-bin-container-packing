@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.github.skjolber.packing.points2d.DefaultFixedXPoint2D;
-import com.github.skjolber.packing.points2d.DefaultFixedXYPoint2D;
-import com.github.skjolber.packing.points2d.DefaultFixedYPoint2D;
-import com.github.skjolber.packing.points2d.FixedXPoint2D;
-import com.github.skjolber.packing.points2d.FixedYPoint2D;
+import com.github.skjolber.packing.points2d.DefaultVerticalSupportPoint2D;
+import com.github.skjolber.packing.points2d.DefaultHorizontalVerticalSupportPoint2D;
+import com.github.skjolber.packing.points2d.DefaultHorizontalSupportPoint2D;
+import com.github.skjolber.packing.points2d.VerticalSupportPoint2D;
+import com.github.skjolber.packing.points2d.HorizontalSupportPoint2D;
 import com.github.skjolber.packing.points2d.Point2D;
 
 /**
@@ -76,11 +76,11 @@ public class ExtremePoints3D<P extends Placement3D> {
 		Point3D yzDy = null;
 		Point3D yzDz = null;
 
-		if(source.isFixedX(yy, zz) && source.isFixedY(xx, zz) && source.isFixedZ(xx, yy)) {
+		if(source.isSupportedYZPlane(yy, zz) && source.isSupportedXZPlane(xx, zz) && source.isSupportedXYPlane(xx, yy)) {
 			// all three planes constrained
-			FixedXPoint3D fixedPointX = (FixedXPoint3D)source;
-			FixedYPoint3D fixedPointY = (FixedYPoint3D)source;
-			FixedZPoint3D fixedPointZ = (FixedZPoint3D)source;
+			SupportedYZPlanePoint3D fixedPointX = (SupportedYZPlanePoint3D)source;
+			SupportedXZPlanePoint3D fixedPointY = (SupportedXZPlanePoint3D)source;
+			SupportedXYPlanePoint3D fixedPointZ = (SupportedXYPlanePoint3D)source;
 			
 			dx = new DefaultFixedXYZPoint3D(
 					xx, source.getMinY(), source.getMinZ(), 
@@ -91,11 +91,11 @@ public class ExtremePoints3D<P extends Placement3D> {
 					source.getMinZ(), zz,
 					
 					// fixed y
-					source.getMinX(), fixedPointY.getFixedYMaxX(),
+					source.getMinX(), fixedPointY.getSupportedXZPlaneMaxX(),
 					source.getMinZ(), zz,
 					
 					// fixed z
-					source.getMinX(), fixedPointZ.getFixedZMaxX(), 
+					source.getMinX(), fixedPointZ.getSupportedXYPlaneMaxX(), 
 					source.getMinY(), yy
 					);
 
@@ -104,7 +104,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 					containerMaxX, containerMaxY, containerMaxZ, 
 					
 					// fixed x
-					source.getMinY(), fixedPointX.getFixedXMaxY(), 
+					source.getMinY(), fixedPointX.getSupportedYZPlaneMaxY(), 
 					source.getMinZ(), zz,
 					
 					// fixed y
@@ -113,7 +113,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 					
 					// fixed z
 					source.getMinX(), xx, 
-					source.getMinY(), fixedPointZ.getFixedZMaxY()
+					source.getMinY(), fixedPointZ.getSupportedXYPlaneMaxY()
 					);
 			
 			dz = new DefaultFixedXYZPoint3D(
@@ -122,11 +122,11 @@ public class ExtremePoints3D<P extends Placement3D> {
 					
 					// fixed x
 					source.getMinY(), yy, 
-					source.getMinZ(), fixedPointX.getFixedXMaxZ(),
+					source.getMinZ(), fixedPointX.getSupportedYZPlaneMaxZ(),
 					
 					// fixed y
 					source.getMinX(), xx, 
-					source.getMinZ(), fixedPointY.getFixedYMaxZ(),
+					source.getMinZ(), fixedPointY.getSupportedXZPlaneMaxZ(),
 					
 					// fixed z
 					source.getMinX(), xx, 
@@ -135,34 +135,34 @@ public class ExtremePoints3D<P extends Placement3D> {
 			
 			
 			
-		} else if(source.isFixedX(yy, zz) && source.isFixedY(xx, zz)) {
+		} else if(source.isSupportedYZPlane(yy, zz) && source.isSupportedXZPlane(xx, zz)) {
 			// two planes constrained
-			FixedXPoint3D fixedPointX = (FixedXPoint3D)source;
-			FixedYPoint3D fixedPointY = (FixedYPoint3D)source;
+			SupportedYZPlanePoint3D fixedPointX = (SupportedYZPlanePoint3D)source;
+			SupportedXZPlanePoint3D fixedPointY = (SupportedXZPlanePoint3D)source;
 			
 			
 			
-		} else if(source.isFixedX(yy, zz) && source.isFixedZ(xx, yy)) {
+		} else if(source.isSupportedYZPlane(yy, zz) && source.isSupportedXYPlane(xx, yy)) {
 			// two planes constrained
-			FixedXPoint3D fixedPointX = (FixedXPoint3D)source;
-			FixedZPoint3D fixedPointZ = (FixedZPoint3D)source;
+			SupportedYZPlanePoint3D fixedPointX = (SupportedYZPlanePoint3D)source;
+			SupportedXYPlanePoint3D fixedPointZ = (SupportedXYPlanePoint3D)source;
 			
-		} else if(source.isFixedY(xx, zz) && source.isFixedZ(xx, yy)) {
+		} else if(source.isSupportedXZPlane(xx, zz) && source.isSupportedXYPlane(xx, yy)) {
 			// two planes constrained
-			FixedYPoint3D fixedPointY = (FixedYPoint3D)source;
-			FixedZPoint3D fixedPointZ = (FixedZPoint3D)source;
+			SupportedXZPlanePoint3D fixedPointY = (SupportedXZPlanePoint3D)source;
+			SupportedXYPlanePoint3D fixedPointZ = (SupportedXYPlanePoint3D)source;
 			
-		} else if(source.isFixedX(yy, zz)) {
+		} else if(source.isSupportedYZPlane(yy, zz)) {
 			// one plane constrained
-			FixedXPoint3D fixedPointX = (FixedXPoint3D)source;
+			SupportedYZPlanePoint3D fixedPointX = (SupportedYZPlanePoint3D)source;
 			
-		} else if(source.isFixedY(xx, zz)) {
+		} else if(source.isSupportedXZPlane(xx, zz)) {
 			// one plane constrained
-			FixedYPoint3D fixedPointY = (FixedYPoint3D)source;
+			SupportedXZPlanePoint3D fixedPointY = (SupportedXZPlanePoint3D)source;
 			
-		} else if(source.isFixedZ(xx, yy)) {
+		} else if(source.isSupportedXYPlane(xx, yy)) {
 			// one plane constrained
-			FixedZPoint3D fixedPointZ = (FixedZPoint3D)source;
+			SupportedXYPlanePoint3D fixedPointZ = (SupportedXYPlanePoint3D)source;
 			
 		} else {
 			// no planes constrained
@@ -299,7 +299,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 						maxX = containerMaxX;
 					}
 
-					values.add(index, new DefaultFixedXPoint2D(xx, y, maxX, dx.getMaxY(), y, yy));
+					values.add(index, new DefaultVerticalSupportPoint2D(xx, y, maxX, dx.getMaxY(), y, yy));
 					index++;
 					
 					if(nextClosestRight == null) {
@@ -351,7 +351,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 						maxX = containerMaxX;
 					}
 
-					values.add(index, new DefaultFixedXPoint2D(xx, y, maxX, dx.getMaxY(), y, yy));
+					values.add(index, new DefaultVerticalSupportPoint2D(xx, y, maxX, dx.getMaxY(), y, yy));
 					index++;
 					
 					if(nextClosestRight == null) {

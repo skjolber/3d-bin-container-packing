@@ -53,11 +53,11 @@ public abstract class Point2D {
 		this.dy = maxY - minY + 1;
 	}
 
-	public boolean isFixedX(int y) {
+	public boolean isVerticalSupport(int y) {
 		return false;
 	}
 
-	public boolean isFixedY(int x) {
+	public boolean isHorizontalSupport(int x) {
 		return false;
 	}
 
