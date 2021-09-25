@@ -14,7 +14,7 @@ public class DefaultFixedYPoint2D extends Point2D implements FixedYPoint2D {
 	
 	@Override
 	public boolean isFixedY(int x) {
-		return x < fixedMaxX;
+		return x <= fixedMaxX;
 	}
 	
 	public int getFixedMinX() {

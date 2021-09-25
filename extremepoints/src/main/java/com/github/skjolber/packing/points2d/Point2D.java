@@ -17,6 +17,22 @@ public abstract class Point2D {
 		}
 	};
 	
+	public static final Comparator<Point2D> X_COMPARATOR = new Comparator<Point2D>() {
+		
+		@Override
+		public int compare(Point2D o1, Point2D o2) {
+			return Integer.compare(o1.minX, o2.minX);
+		}
+	};
+
+	public static final Comparator<Point2D> Y_COMPARATOR = new Comparator<Point2D>() {
+		
+		@Override
+		public int compare(Point2D o1, Point2D o2) {
+			return Integer.compare(o1.minY, o2.minY);
+		}
+	};
+
 	protected final int minX;
 	protected final int minY;
 	
@@ -41,7 +57,7 @@ public abstract class Point2D {
 		return false;
 	}
 
-	public boolean isFixedY(int z) {
+	public boolean isFixedY(int x) {
 		return false;
 	}
 
@@ -76,12 +92,18 @@ public abstract class Point2D {
 	}
 	
 	public void setMaxX(int maxX) {
+		if(maxX < 0) {
+			throw new RuntimeException();
+		}
 		this.maxX = maxX;
 		
 		this.dx = maxX - minX + 1;
 	}
 	
 	public void setMaxY(int maxY) {
+		if(maxY < 0) {
+			throw new RuntimeException();
+		}
 		this.maxY = maxY;
 		
 		this.dy = maxY - minY + 1;

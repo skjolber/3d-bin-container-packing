@@ -12,6 +12,32 @@ public class DefaultFixedXYPoint2D extends Point2D implements FixedYPoint2D, Fix
 	
 	public DefaultFixedXYPoint2D(int minX, int minY, int maxX, int maxY, int fixedX, int fixedXx, int fixedY, int fixedYy) {
 		super(minX, minY, maxX, maxY);
+		
+		if(minX < 0) {
+			throw new RuntimeException();
+		}
+		if(minY < 0) {
+			throw new RuntimeException();
+		}
+		if(maxX < 0) {
+			throw new RuntimeException();
+		}
+		if(maxY < 0) {
+			throw new RuntimeException();
+		}
+		if(fixedX < 0) {
+			throw new RuntimeException();
+		}
+		if(fixedXx < 0) {
+			throw new RuntimeException();
+		}
+		if(fixedY < 0) {
+			throw new RuntimeException();
+		}
+		if(fixedYy < 0) {
+			throw new RuntimeException();
+		}
+		
 		this.fixedMinX = fixedX;
 		this.fixedMaxX = fixedXx;
 		this.fixedMinY = fixedY;
@@ -20,12 +46,12 @@ public class DefaultFixedXYPoint2D extends Point2D implements FixedYPoint2D, Fix
 
 	@Override
 	public boolean isFixedX(int y) {
-		return y < fixedMaxY;
+		return y <= fixedMaxY;
 	}
 
 	@Override
 	public boolean isFixedY(int x) {
-		return x < fixedMaxX;
+		return x <= fixedMaxX;
 	}
 
 	public int getFixedMinX() {

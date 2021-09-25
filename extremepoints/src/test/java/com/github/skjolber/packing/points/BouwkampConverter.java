@@ -34,6 +34,7 @@ public class BouwkampConverter {
 	
 				nextY = points.get(offset, value.getMinY());
 			}
+			
 		}
 		return points;
 	}

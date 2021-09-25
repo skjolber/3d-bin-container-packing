@@ -13,8 +13,8 @@ public class DefaultFixedXPoint2D extends Point2D implements FixedXPoint2D  {
 	}
 	
 	@Override
-	public boolean isFixedY(int x) {
-		return false;
+	public boolean isFixedX(int y) {
+		return y <= fixedMaxY;
 	}
 
 	public int getFixedMinY() {

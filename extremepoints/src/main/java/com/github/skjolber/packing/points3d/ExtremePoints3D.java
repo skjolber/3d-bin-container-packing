@@ -47,35 +47,40 @@ public class ExtremePoints3D<P extends Placement3D> {
 	public boolean add(int index, P placement, int boxDx, int boxDy, int boxDz) {		
 		Point3D source = values.get(index);
 		
+		values.remove(index);
+		if(index != 0) {
+			index--;
+		}
+		
+		
+		// Constrain max values to the new placement
+		for (int i = 0; i < values.size(); i++) {
+			Point3D point = values.get(i);
+			
+			if(!constrainMax(point, placement)) {
+				values.remove(i);
+				i--;
+			}
+		}
+		
 		int xx = source.getMinX() + boxDx;
 		int yy = source.getMinY() + boxDy;
 		int zz = source.getMinZ() + boxDz;
 		
-		Point3D dx = null;
-		Point3D dy = null;
-		Point3D dz = null;
-		
+		Point3D xyDx = null;
+		Point3D xyDy = null;
+
+		Point3D xzDx = null;
+		Point3D xzDz = null;
+
+		Point3D yzDy = null;
+		Point3D yzDz = null;
+
 		if(source.isFixedX(yy, zz) && source.isFixedY(xx, zz) && source.isFixedZ(xx, yy)) {
 			// all three planes constrained
 			FixedXPoint3D fixedPointX = (FixedXPoint3D)source;
 			FixedYPoint3D fixedPointY = (FixedYPoint3D)source;
 			FixedZPoint3D fixedPointZ = (FixedZPoint3D)source;
-			
-/*
-			public DefaultFixedXYZPoint3D(
-					int minX, int minY, int minZ, 
-					int maxX, int maxY, int maxZ,
-					
-					int fixedXMinY, int fixedXMaxY,
-					int fixedXMinZ, int fixedXMaxZ,
-
-					int fixedYMinX, int fixedYMaxX, 
-					int fixedYMinZ, int fixedYMaxZ, 
-					
-					int fixedZMinX, int fixedZMaxX,
-					int fixedZMinY, int fixedZMaxY
-*/					
-			
 			
 			dx = new DefaultFixedXYZPoint3D(
 					xx, source.getMinY(), source.getMinZ(), 
@@ -111,7 +116,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 					source.getMinY(), fixedPointZ.getFixedZMaxY()
 					);
 			
-			dy = new DefaultFixedXYZPoint3D(
+			dz = new DefaultFixedXYZPoint3D(
 					source.getMinX(), source.getMinY(), zz, 
 					containerMaxX, containerMaxY, containerMaxZ, 
 					
@@ -134,6 +139,8 @@ public class ExtremePoints3D<P extends Placement3D> {
 			// two planes constrained
 			FixedXPoint3D fixedPointX = (FixedXPoint3D)source;
 			FixedYPoint3D fixedPointY = (FixedYPoint3D)source;
+			
+			
 			
 		} else if(source.isFixedX(yy, zz) && source.isFixedZ(xx, yy)) {
 			// two planes constrained
@@ -161,25 +168,10 @@ public class ExtremePoints3D<P extends Placement3D> {
 			// no planes constrained
 		}
 		
-		values.remove(index);
-		if(index != 0) {
-			index--;
-		}
-		
-		// Constrain max values to the new placement
-		for (int i = 0; i < values.size(); i++) {
-			Point3D point = values.get(i);
-			
-			if(!constrainMax(point, placement)) {
-				values.remove(i);
-				i--;
-			}
-		}
-
 		// constrain 
-		constrainDy:
 		if(dy != null) {
 			
+			boolean add = true;
 			// constrain to right
 			P closestRight = closestPositiveX(dy.getMinX(), dy.getMinY(), dy.getMinZ());
 			if(closestRight != null) {
@@ -188,7 +180,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 				dy.setMaxX(containerMaxX);
 			}
 			if(dy.getMaxX() <= dy.getMinX()) {
-				break constrainDy;
+				add = false;
 			}
 
 			// constrain up
@@ -199,12 +191,13 @@ public class ExtremePoints3D<P extends Placement3D> {
 				dy.setMaxY(containerMaxY);
 			}
 			if(dy.getMaxY() <= dy.getMinY()) {
-				break constrainDy;
+				add = false;
 			}
 
-			
-			values.add(index, dy);
-			index++;
+			if(add) {
+				values.add(index, dy);
+				index++;
+			}
 			
 			if(dy.getMaxY() < containerMaxY) {
 				
@@ -233,7 +226,14 @@ public class ExtremePoints3D<P extends Placement3D> {
 						maxY = containerMaxY;
 					}
 
-					values.add(index, new DefaultFixedYPoint2D(x, yy, dy.getMaxX(), maxY, x, xx));
+					int maxZ;
+					if(nextClosestUp != null) {
+						maxY = nextClosestUp.getAbsoluteZ() + 1;
+					} else {
+						maxY = containerMaxZ;
+					}
+
+					values.add(index, new DefaultPoint(x, dy.getMinY(), dy.getMinZ(), xx, next, maxY, x, xx));
 					index++;
 					
 					if(nextClosestUp == null) {
@@ -245,9 +245,9 @@ public class ExtremePoints3D<P extends Placement3D> {
 			}
 		}
 		
-		constrainDx:
 		if(dx != null) {
 			
+			boolean add = true;
 			// constrain to right
 			P closestRight = closestPositiveX(dx.getMinX(), dx.getMinY(), dx.getMinZ());
 			if(closestRight != null) {
@@ -256,7 +256,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 				dx.setMaxX(containerMaxX);
 			}
 			if(dx.getMaxX() <= dx.getMinX()) {
-				break constrainDx;
+				add = false;
 			}
 
 			// constrain up
@@ -267,11 +267,13 @@ public class ExtremePoints3D<P extends Placement3D> {
 				dx.setMaxY(containerMaxY);
 			}
 			if(dx.getMaxY() <= dx.getMinY()) {
-				break constrainDx;
+				add = false;
 			}
 
-			values.add(index, dx);
-			index++;
+			if(add) {
+				values.add(index, dx);
+				index++;
+			}
 			
 			if(dx.getMaxX() < containerMaxX) {
 				// does the closest box span whole the way to the end of the area?
@@ -309,7 +311,6 @@ public class ExtremePoints3D<P extends Placement3D> {
 			}
 		}
 		
-		constrainDz:
 		if(dz != null) {
 			
 			// constrain to right
@@ -340,17 +341,6 @@ public class ExtremePoints3D<P extends Placement3D> {
 			if(dx.getMaxX() < containerMaxX) {
 				// does the closest box span whole the way to the end of the area?
 
-				//    |                        |
-				//    |                        |
-				//    |                        |
-				//    |-------------|          |
-				//    |             |          |
-				//    |             |          |
-				//    |             |     -----|
-				//    |             |     |
-				//    |             |     |
-				//    |_____________|_____|______________
-				
 				int y = closestRight.getAbsoluteEndY() + 1;
 				while(y < yy) {
 					P nextClosestRight = closestPositiveX(dx.getMinX(), y, dx.getMinZ());
@@ -711,5 +701,41 @@ public class ExtremePoints3D<P extends Placement3D> {
 	public Point2D getValue(int i) {
 		return values.get(i);
 	}
-	
+
+	public int getMinY() {
+		int min = 0;
+		for (int i = 1; i < values.size(); i++) {
+			Point3D point2d = values.get(i);
+			
+			if(point2d.getMinY() < values.get(min).getMinY()) {
+				min = i;
+			}
+		}
+		return min;
+	}
+
+	public int getMinX() {
+		int min = 0;
+		for (int i = 1; i < values.size(); i++) {
+			Point3D point2d = values.get(i);
+			
+			if(point2d.getMinX() < values.get(min).getMinX()) {
+				min = i;
+			}
+		}
+		return min;
+	}	
+
+	public int getMinZ() {
+		int min = 0;
+		for (int i = 1; i < values.size(); i++) {
+			Point3D point2d = values.get(i);
+			
+			if(point2d.getMinZ() < values.get(min).getMinZ()) {
+				min = i;
+			}
+		}
+		return min;
+	}	
+
 }
