@@ -8,7 +8,6 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackSpace;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.packer.Packager;
@@ -192,7 +191,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 	 * @param containerProducts list of products
 	 * @param currentBox item to remove
 	 */
-	private void removeIdentical(List<Box> containerProducts, Box currentBox) {
+	private void removeIdentical(List<Stackable> containerProducts, Stackable currentBox) {
 		for(int i = 0; i < containerProducts.size(); i++) {
 			if(containerProducts.get(i) == currentBox) {
 				containerProducts.remove(i);

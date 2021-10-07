@@ -6,7 +6,7 @@ package com.github.skjolber.packing.points3d;
  *
  */
 
-public interface SupportedXZPlanePoint3D {
+public interface XZPlanePoint3D {
 
 	int getSupportedXZPlaneMinX();
 	int getSupportedXZPlaneMaxX();

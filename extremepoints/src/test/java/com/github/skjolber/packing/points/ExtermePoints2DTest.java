@@ -1,8 +1,5 @@
 package com.github.skjolber.packing.points;
 
-import static org.junit.Assert.assertNull;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;

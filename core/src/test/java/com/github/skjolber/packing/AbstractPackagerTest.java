@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.test.BouwkampCode;
+import com.github.skjolber.packing.test.BouwkampCodeLine;
 
 abstract class AbstractPackagerTest {
 
@@ -170,8 +171,10 @@ abstract class AbstractPackagerTest {
 	public List<Box> toBoxes(BouwkampCode code) {
 		List<Box> boxes = new ArrayList<>();
 		
-		for (Integer integer : code.getLines()) {
-			boxes.add(new Box(integer, integer, 2 * Math.max(code.getDepth(), code.getWidth()), 0));
+		for (BouwkampCodeLine line : code.getLines()) {
+			for (Integer integer : line.getSquares()) {
+				boxes.add(new Box(integer, integer, 2 * Math.max(code.getDepth(), code.getWidth()), 0));
+			}
 		}
 		
 		return boxes;

@@ -79,6 +79,11 @@
 		<dependencies>
 			<dependency>
 				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>extremepoints</artifactId>
+				<version>${project.version}</version>
+			</dependency>  	
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 				<artifactId>core</artifactId>
 				<version>${project.version}</version>
 			</dependency>

@@ -42,9 +42,7 @@ public class DefaultStack extends Stack {
 		int dz = 0;
 		
 		for (StackPlacement stackEntry : entries) {
-			StackValue stackValue = stackEntry.getStackValue();
-			StackSpace space = stackEntry.getSpace();
-			dz = Math.max(dz, space.getZ() + stackValue.getDz());
+			dz = Math.max(dz, stackEntry.getAbsoluteEndZ());
 		}
 		
 		return dz;

@@ -16,7 +16,7 @@ public class Box extends Stackable {
 			return this;
 		}
 
-		public Box build(Box box) {
+		public Box build() {
 			if(rotations.isEmpty()) {
 				throw new IllegalStateException("No rotations");
 			}

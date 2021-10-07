@@ -8,7 +8,6 @@ import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.StackSpace;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.impl.BinarySearchIterator;
 import com.github.skjolber.packing.impl.deadline.BooleanSupplierBuilder;
@@ -440,6 +439,7 @@ public abstract class Packager {
 		return false;
 	}
 
+	/*
 	static List<StackPlacement> getPlacements(int size) {
 		// each box will at most have a single placement with a space (and its remainder).
 		List<StackPlacement> placements = new ArrayList<>(size);
@@ -451,6 +451,6 @@ public abstract class Packager {
 		}
 		return placements;
 	}
-
+*/
 
 }

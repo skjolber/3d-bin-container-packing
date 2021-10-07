@@ -1,23 +1,32 @@
 package com.github.skjolber.packing.api;
 
-import java.util.LinkedList;
-import java.util.List;
+import com.github.skjolber.packing.points2d.Placement2D;
+import com.github.skjolber.packing.points3d.Placement3D;
 
-public class StackPlacement {
+public class StackPlacement implements Placement3D {
 
 	protected Stackable stackable;
 	protected StackValue value;
-	protected StackSpace space;
 	
-	protected List<StackPlacement> dxStart = new LinkedList<>();
-	protected List<StackPlacement> dxEnd = new LinkedList<>();
+	protected int x; // width coordinate
+	protected int y; // depth coordinate
+	protected int z; // height coordinate
 	
-	protected List<StackPlacement> dyStart = new LinkedList<>();
-	protected List<StackPlacement> dyEnd = new LinkedList<>();
-	
-	protected List<StackPlacement> dzStart = new LinkedList<>();
-	protected List<StackPlacement> dzEnd = new LinkedList<>();
+	// TODO weight constraint
+	protected int maxSupportedPressure; // i.e.  
+	protected int maxSupportedWeight;
 
+	public StackPlacement(Stackable stackable, StackValue value, int x, int y, int z, int maxSupportedPressure,
+			int maxSupportedWeight) {
+		super();
+		this.stackable = stackable;
+		this.value = value;
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.maxSupportedPressure = maxSupportedPressure;
+		this.maxSupportedWeight = maxSupportedWeight;
+	}
 	public Stackable getStackable() {
 		return stackable;
 	}
@@ -30,116 +39,79 @@ public class StackPlacement {
 	public void setStackValue(StackValue stackValue) {
 		this.value = stackValue;
 	}
-	public StackSpace getSpace() {
-		return space;
-	}
-	public void setSpace(StackSpace space) {
-		this.space = space;
-	}
-
+	
 	boolean intersects(StackPlacement placement) {
 		return intersectsX(placement) && intersectsY(placement) && intersectsZ(placement);
 	}
 
 	public boolean intersectsY(StackPlacement placement) {
-		int startY = space.getY();
+		int startY = y;
 		int endY = startY + value.getDy() - 1;
 
-		if (startY <= placement.getSpace().getY() && placement.getSpace().getY() <= endY) {
+		if (startY <= placement.getAbsoluteY() && placement.getAbsoluteY() <= endY) {
 			return true;
 		}
 
-		return startY <= placement.getSpace().getY() + placement.getStackValue().getDy() - 1 &&
-				placement.getSpace().getY() + placement.getStackValue().getDy() - 1 <= endY;
+		return startY <= placement.getAbsoluteY() + placement.getStackValue().getDy() - 1 &&
+				placement.getAbsoluteY() + placement.getStackValue().getDy() - 1 <= endY;
 	}
 
 	public boolean intersectsX(StackPlacement placement) {
-		int startX = space.getX();
+		int startX = x;
 		int endX = startX + value.getDx() - 1;
 
-		if (startX <= placement.getSpace().getX() && placement.getSpace().getX() <= endX) {
+		if (startX <= placement.getAbsoluteX() && placement.getAbsoluteX() <= endX) {
 			return true;
 		}
 
-		return startX <= placement.getSpace().getX() + placement.getStackValue().getDx() - 1 &&
-				placement.getSpace().getX() + placement.getStackValue().getDx() - 1 <= endX;
+		return startX <= placement.getAbsoluteX() + placement.getStackValue().getDx() - 1 &&
+				placement.getAbsoluteX() + placement.getStackValue().getDx() - 1 <= endX;
 	}
 	
 	public boolean intersectsZ(StackPlacement placement) {
-		int startZ = space.getZ();
+		int startZ = z;
 		int endZ = startZ + value.getDz() - 1;
 
-		if (startZ <= placement.getSpace().getZ() && placement.getSpace().getZ() <= endZ) {
+		if (startZ <= placement.getAbsoluteZ() && placement.getAbsoluteZ() <= endZ) {
 			return true;
 		}
 
-		return startZ <= placement.getSpace().getZ() + placement.getStackValue().getDz() - 1 &&
-				placement.getSpace().getZ() + placement.getStackValue().getDz() - 1 <= endZ;
+		return startZ <= placement.getAbsoluteZ() + placement.getStackValue().getDz() - 1 &&
+				placement.getAbsoluteZ() + placement.getStackValue().getDz() - 1 <= endZ;
 	}
 
 	public int getAbsoluteX() {
-		return space.getX();
+		return x;
 	}
 	
 	public int getAbsoluteY() {
-		return space.getY();
+		return y;
 	}
 
 	public int getAbsoluteZ() {
-		return space.getZ();
+		return z;
 	}
 
 	public int getAbsoluteEndX() {
-		return space.getX() + value.getDx();
+		return x + value.getDx();
 	}
 	
 	public int getAbsoluteEndY() {
-		return space.getY() + value.getDy();
+		return y + value.getDy();
 	}
 
 	public int getAbsoluteEndZ() {
-		return space.getZ() + value.getDz();
+		return z + value.getDz();
 	}
 	
 	public long getVolume() {
 		return stackable.getVolume();
 	}
-	public List<StackPlacement> getDxStart() {
-		return dxStart;
+	public boolean intersects(Placement2D point) {
+		return !(point.getAbsoluteEndX() < x || point.getAbsoluteX() > getAbsoluteEndX() || point.getAbsoluteEndY() < y || point.getAbsoluteY() > getAbsoluteEndY());
 	}
-	public void setDxStart(List<StackPlacement> dxStart) {
-		this.dxStart = dxStart;
-	}
-	public List<StackPlacement> getDxEnd() {
-		return dxEnd;
-	}
-	public void setDxEnd(List<StackPlacement> dxEnd) {
-		this.dxEnd = dxEnd;
-	}
-	public List<StackPlacement> getDyStart() {
-		return dyStart;
-	}
-	public void setDyStart(List<StackPlacement> dyStart) {
-		this.dyStart = dyStart;
-	}
-	public List<StackPlacement> getDyEnd() {
-		return dyEnd;
-	}
-	public void setDyEnd(List<StackPlacement> dyEnd) {
-		this.dyEnd = dyEnd;
-	}
-	public List<StackPlacement> getDzStart() {
-		return dzStart;
-	}
-	public void setDzStart(List<StackPlacement> dzStart) {
-		this.dzStart = dzStart;
-	}
-	public List<StackPlacement> getDzEnd() {
-		return dzEnd;
-	}
-	public void setDzEnd(List<StackPlacement> dzEnd) {
-		this.dzEnd = dzEnd;
-	}
-	
-	
+	@Override
+	public boolean intersects(Placement3D point) {
+		return !(point.getAbsoluteEndX() < x || point.getAbsoluteX() > getAbsoluteEndX() || point.getAbsoluteEndY() < y || point.getAbsoluteY() > point.getAbsoluteEndY() || point.getAbsoluteEndZ() < z || point.getAbsoluteZ() >  point.getAbsoluteEndZ());
+	}	
 }

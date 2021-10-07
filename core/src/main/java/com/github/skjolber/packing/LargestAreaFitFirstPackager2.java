@@ -8,6 +8,7 @@ import com.github.skjolber.packing.impl.*;
 import com.github.skjolber.packing.impl.deadline.BooleanSupplierBuilder;
 import com.github.skjolber.packing.impl.points.ExtremePoints;
 import com.github.skjolber.packing.impl.points.Point;
+import com.github.skjolber.packing.points2d.ExtremePoints2D;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -78,7 +79,7 @@ public class LargestAreaFitFirstPackager2 extends Packager {
 	public LAFFResult pack(List<Box> containerProducts, Container targetContainer,  BooleanSupplier interrupt) {
 		Container holder = targetContainer.clone();
 
-		ExtremePoints extremePoints = new ExtremePoints(targetContainer.getWidth(),  targetContainer.getDepth());
+		ExtremePoints2D<Placement2D> extremePoints = new ExtremePoints2D<>(targetContainer.getWidth(), targetContainer.getDepth());
 		
 		Context context = new Context();
 		

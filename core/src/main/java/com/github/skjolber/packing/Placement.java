@@ -1,12 +1,14 @@
 package com.github.skjolber.packing;
 
+import com.github.skjolber.packing.points2d.Placement2D;
+
 /**
  * Placement as in box in a space.
  *
  * The box does not necessarily fill the whole space.
  */
 
-public class Placement {
+public class Placement implements Placement2D {
 
 	private Space space;
 	private Box box;
@@ -154,6 +156,10 @@ public class Placement {
 
 	public int getAbsoluteEndZ() {
 		return space.getZ() + box.getHeight();
+	}
+
+	public boolean intersects(Placement2D point) {
+		return !(point.getAbsoluteEndX() < x || point.getAbsoluteX() > endX || point.getAbsoluteEndY() < y || point.getAbsoluteY() > endY);
 	}
 
 }

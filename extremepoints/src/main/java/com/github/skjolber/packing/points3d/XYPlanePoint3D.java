@@ -6,7 +6,7 @@ package com.github.skjolber.packing.points3d;
  * 
  */
 
-public interface SupportedXYPlanePoint3D {
+public interface XYPlanePoint3D {
 
 	int getSupportedXYPlaneMinX();
 	int getSupportedXYPlaneMaxX();

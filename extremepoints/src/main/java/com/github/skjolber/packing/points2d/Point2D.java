@@ -3,7 +3,7 @@ package com.github.skjolber.packing.points2d;
 import java.util.Comparator;
 
 public abstract class Point2D {
-
+	
 	public static final Comparator<Point2D> COMPARATOR = new Comparator<Point2D>() {
 		
 		@Override
@@ -33,6 +33,23 @@ public abstract class Point2D {
 		}
 	};
 
+	public static Builder newBuilder() {
+		return new Builder();
+	}
+	
+	public static class Builder {
+	
+		private Placement2D startXPlacement;
+		private Placement2D startYPlacement;
+
+		private XSupportPoint2D startX;
+		private Placement2D startY;
+		
+		
+		
+		
+	}
+	
 	protected final int minX;
 	protected final int minY;
 	
@@ -53,11 +70,11 @@ public abstract class Point2D {
 		this.dy = maxY - minY + 1;
 	}
 
-	public boolean isVerticalSupport(int y) {
+	public boolean isYSupport(int y) {
 		return false;
 	}
 
-	public boolean isHorizontalSupport(int x) {
+	public boolean isXSupport(int x) {
 		return false;
 	}
 
@@ -120,4 +137,35 @@ public abstract class Point2D {
 	public boolean intersects(Point2D point) {
 		return !(point.getMaxX() < minX || point.getMinX() > maxX || point.getMaxY() < minY || point.getMinY() > maxY);
 	}
+	
+	public boolean crossesX(int x) {
+		// not including limits
+		return minX < x && maxX > x;
+	}
+	
+	public boolean crossesY(int y) {
+		// not including limits
+		return minY < y && y < maxY; 
+	}
+	
+	public boolean innerX(int x1, int x2) {
+		// not including limits
+		return x1 < minX && minX < x2;
+	}
+
+	public boolean innerY(int y1, int y2) {
+		// not including limits
+		return y1 < minY && minY < y2;
+	}
+	
+	public boolean shadowedOrSwallowedX(int min, int max) {
+		return minX < max && maxX > min;
+	}
+
+	public boolean shadowedOrSwallowedY(int min, int max) {
+		return minY < max && maxY > min;
+	}
+
+
+
 }
