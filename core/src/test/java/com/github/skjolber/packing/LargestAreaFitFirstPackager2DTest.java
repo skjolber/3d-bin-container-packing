@@ -13,6 +13,11 @@ import java.util.List;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import com.github.skjolber.packing.old.Box;
+import com.github.skjolber.packing.old.BoxItem;
+import com.github.skjolber.packing.old.Container;
+import com.github.skjolber.packing.old.LargestAreaFitFirstPackager;
+
 class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 
 	@Test

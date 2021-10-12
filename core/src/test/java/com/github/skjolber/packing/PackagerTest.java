@@ -23,6 +23,12 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.impl.Adapter;
 import com.github.skjolber.packing.impl.PackResult;
+import com.github.skjolber.packing.old.Box;
+import com.github.skjolber.packing.old.BoxItem;
+import com.github.skjolber.packing.old.BruteForcePackager;
+import com.github.skjolber.packing.old.Container;
+import com.github.skjolber.packing.old.LargestAreaFitFirstPackager;
+import com.github.skjolber.packing.old.Packager;
 
 class PackagerTest extends AbstractPackagerTest {
 

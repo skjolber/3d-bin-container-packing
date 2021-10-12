@@ -2,9 +2,9 @@ package com.github.skjolber.jmh;
 
 import java.util.List;
 
-import com.github.skjolber.packing.Box;
 import com.github.skjolber.packing.impl.PermutationRotationIterator;
 import com.github.skjolber.packing.impl.PermutationRotationState;
+import com.github.skjolber.packing.old.Box;
 
 public class SinglePermutationRotationIterator implements PermutationRotationIterator {
 

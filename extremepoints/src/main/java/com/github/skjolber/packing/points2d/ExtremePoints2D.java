@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.github.skjolber.packing.api.Placement2D;
+
 /**
  * 
  * 
@@ -99,7 +101,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			//       |    |        |
 			//       |    |        | 
 			//       |    |        |
-			//  minY |    |---------------|   <---- horizontal support
+			//  minY |    |---------------|   <---- Y-support support
 			//       |    |               |
 			//       |    |               |
 			//       |----|---------------|-----
@@ -114,7 +116,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			//       |    |        |
 			//       |    |        | dy
 			//       |    |        |
-			// minY  |    |---------------|  <---- horizontal support
+			// minY  |    |---------------|  <---- Y-support support
 			//       |    |               |
 			//       |    |               |
 			//       |----|---------------|-----
@@ -123,10 +125,10 @@ public class ExtremePoints2D<P extends Placement2D> {
 			// using dx
 			//
 			// yy   |             |
+			//      |             |	
 			//      |             |
 			//      |             |
-			//      |             |
-			// minY |             *-------     <---- horizontal support
+			// minY |             *-------     <---- Y-support support
 			//      |                    
 			//      |                    
 			//      |--------------------------
@@ -253,7 +255,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 						// add point on the other side
 						// vertical support
 
-						// TODO contrain max y per point?
+						// TODO constrain max y per point?
 						
 						DefaultYSupportPoint2D next = new DefaultYSupportPoint2D(
 								xx, point.getMinY(),
@@ -324,13 +326,13 @@ public class ExtremePoints2D<P extends Placement2D> {
 		if(verticalSupport) { // i.e. when adding dy
 			
 			//
-			// vmaxY |----|                      <-- vertical support max y
+			// vmaxY |----|                      <-- x-support support max y
 			//       |    |          
 			//  yy   |    *-------------------|
 			//       |    |                   |
 			//       |    |                   | 
 			//       |    |                   |
-			//  minY |    |--------------------  <-- vertical support min y
+			//  minY |    |--------------------  <-- x-support support min y
 			//       |    |               |
 			//       |    |               |
 			//       |----|---------------|-----
@@ -339,13 +341,13 @@ public class ExtremePoints2D<P extends Placement2D> {
 			// or
 			
 			//
-			// vmaxY |----|                      <-- vertical support max y
+			// vmaxY |----|                      <-- x-support support max y
 			//       |    |   
 			// yy    |    *--------|
 			//       |    |        |
 			//       |    |        | 
 			//       |    |        |
-			// minY  |    |---------------|      <-- vertical support min y
+			// minY  |    |---------------|      <-- x-support support min y
 			//       |    |               |
 			//       |    |               |
 			//       |----|---------------|-----
@@ -355,7 +357,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			// using dy
 			//
 			//
-			// vmaxY |    |                      <-- vertical support max y
+			// vmaxY |    |                      <-- x-support support max y
 			//       |    |   
 			// yy    |    *---------
 			//       |

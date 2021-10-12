@@ -7,6 +7,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.github.skjolber.packing.old.Container;
+import com.github.skjolber.packing.old.LargestAreaFitFirstPackager;
+
 public class LargestAreaFitFirstPackagerBuilderTest {
 	
 	@Test

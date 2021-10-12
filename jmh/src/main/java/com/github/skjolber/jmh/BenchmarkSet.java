@@ -2,9 +2,9 @@ package com.github.skjolber.jmh;
 
 import java.util.List;
 
-import com.github.skjolber.packing.BoxItem;
-import com.github.skjolber.packing.BruteForcePackager;
-import com.github.skjolber.packing.BruteForcePackagerBuilder;
+import com.github.skjolber.packing.old.BoxItem;
+import com.github.skjolber.packing.old.BruteForcePackager;
+import com.github.skjolber.packing.old.BruteForcePackagerBuilder;
 
 public class BenchmarkSet {
 

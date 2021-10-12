@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BooleanSupplier;
 
-import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.ParallelBruteForcePackager;
-import com.github.skjolber.packing.Placement;
 import com.github.skjolber.packing.impl.BruteForceResult;
 import com.github.skjolber.packing.impl.PermutationRotationIterator;
+import com.github.skjolber.packing.old.Container;
+import com.github.skjolber.packing.old.ParallelBruteForcePackager;
+import com.github.skjolber.packing.old.Placement;
 
 public class MinimumAcceptableParallelBruteForcePackager extends ParallelBruteForcePackager {
 

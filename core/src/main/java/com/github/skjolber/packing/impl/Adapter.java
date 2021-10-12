@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.impl;
 
-import com.github.skjolber.packing.Container;
+import com.github.skjolber.packing.old.Container;
 
 /**
  * Logical packager for wrapping preprocessing / optimizations.

@@ -2,6 +2,8 @@ package com.github.skjolber.packing.points2d;
 
 import java.util.Comparator;
 
+import com.github.skjolber.packing.api.Placement2D;
+
 public abstract class Point2D {
 	
 	public static final Comparator<Point2D> COMPARATOR = new Comparator<Point2D>() {
@@ -32,23 +34,6 @@ public abstract class Point2D {
 			return Integer.compare(o1.minY, o2.minY);
 		}
 	};
-
-	public static Builder newBuilder() {
-		return new Builder();
-	}
-	
-	public static class Builder {
-	
-		private Placement2D startXPlacement;
-		private Placement2D startYPlacement;
-
-		private XSupportPoint2D startX;
-		private Placement2D startY;
-		
-		
-		
-		
-	}
 	
 	protected final int minX;
 	protected final int minY;

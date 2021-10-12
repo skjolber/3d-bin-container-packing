@@ -4,6 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
+import com.github.skjolber.packing.old.Box;
+import com.github.skjolber.packing.old.Level;
+import com.github.skjolber.packing.old.Placement;
+import com.github.skjolber.packing.old.Space;
+
 
 class LevelTest {
 

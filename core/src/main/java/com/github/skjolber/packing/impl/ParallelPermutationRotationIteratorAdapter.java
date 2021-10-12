@@ -2,7 +2,7 @@ package com.github.skjolber.packing.impl;
 
 import java.util.List;
 
-import com.github.skjolber.packing.Box;
+import com.github.skjolber.packing.old.Box;
 
 public class ParallelPermutationRotationIteratorAdapter implements PermutationRotationIterator {
 

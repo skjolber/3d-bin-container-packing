@@ -7,6 +7,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.github.skjolber.packing.old.Box;
+import com.github.skjolber.packing.old.BoxItem;
+import com.github.skjolber.packing.old.Container;
+import com.github.skjolber.packing.old.Level;
+import com.github.skjolber.packing.old.Packager;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeLine;
 

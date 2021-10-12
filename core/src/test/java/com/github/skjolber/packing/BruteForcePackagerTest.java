@@ -19,6 +19,15 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import com.github.skjolber.packing.old.Box;
+import com.github.skjolber.packing.old.BoxItem;
+import com.github.skjolber.packing.old.BruteForcePackager;
+import com.github.skjolber.packing.old.Container;
+import com.github.skjolber.packing.old.Dimension;
+import com.github.skjolber.packing.old.LargestAreaFitFirstPackager;
+import com.github.skjolber.packing.old.Level;
+import com.github.skjolber.packing.old.Packager;
+import com.github.skjolber.packing.old.Placement;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.BouwkampCodes;

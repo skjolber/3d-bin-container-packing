@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.skjolber.packing.*;
+import com.github.skjolber.packing.old.*;
 
 public class DefaultPermutationRotationIterator implements PermutationRotationIterator {
 

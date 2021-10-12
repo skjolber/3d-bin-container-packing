@@ -2,10 +2,10 @@ package com.github.skjolber.packing.visualizer.packaging;
 
 import java.util.List;
 
-import com.github.skjolber.packing.Box;
-import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.Level;
-import com.github.skjolber.packing.Placement;
+import com.github.skjolber.packing.old.Box;
+import com.github.skjolber.packing.old.Container;
+import com.github.skjolber.packing.old.Level;
+import com.github.skjolber.packing.old.Placement;
 import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.ContainerVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;

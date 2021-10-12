@@ -79,6 +79,11 @@
 		<dependencies>
 			<dependency>
 				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 				<artifactId>extremepoints</artifactId>
 				<version>${project.version}</version>
 			</dependency>  	
@@ -180,6 +185,7 @@
 		</dependencies>
 	</dependencyManagement>
 	<modules>
+		<module>api</module>
 		<module>test</module>
 		<module>extremepoints</module>
 		<module>core</module>

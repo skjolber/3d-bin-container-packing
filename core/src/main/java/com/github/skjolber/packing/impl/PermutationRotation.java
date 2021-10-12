@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.impl;
 
-import com.github.skjolber.packing.Box;
+import com.github.skjolber.packing.old.Box;
 
 public final class PermutationRotation {
 

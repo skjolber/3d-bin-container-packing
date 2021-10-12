@@ -7,6 +7,14 @@ import java.util.List;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import com.github.skjolber.packing.old.Box;
+import com.github.skjolber.packing.old.BoxItem;
+import com.github.skjolber.packing.old.Container;
+import com.github.skjolber.packing.old.LargestAreaFitFirstPackager;
+import com.github.skjolber.packing.old.Level;
+import com.github.skjolber.packing.old.Packager;
+import com.github.skjolber.packing.old.Placement;
+
 import static org.junit.Assert.*;
 
 class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {

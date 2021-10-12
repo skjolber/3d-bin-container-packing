@@ -7,6 +7,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.github.skjolber.packing.old.BruteForcePackager;
+import com.github.skjolber.packing.old.Container;
+
 public class BruteForcePackagerBuilderTest {
 
 	@Test

@@ -3,10 +3,10 @@ package com.github.skjolber.jmh;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
-import com.github.skjolber.packing.BruteForcePackager;
-import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.Placement;
 import com.github.skjolber.packing.impl.BruteForceResult;
+import com.github.skjolber.packing.old.BruteForcePackager;
+import com.github.skjolber.packing.old.Container;
+import com.github.skjolber.packing.old.Placement;
 
 public class MinimumAcceptableBruteForcePackager extends BruteForcePackager {
 

@@ -2,9 +2,9 @@ package com.github.skjolber.packing.impl;
 
 import java.util.List;
 
-import com.github.skjolber.packing.Box;
-import com.github.skjolber.packing.BoxItem;
-import com.github.skjolber.packing.Dimension;
+import com.github.skjolber.packing.old.Box;
+import com.github.skjolber.packing.old.BoxItem;
+import com.github.skjolber.packing.old.Dimension;
 
 /**
  * 

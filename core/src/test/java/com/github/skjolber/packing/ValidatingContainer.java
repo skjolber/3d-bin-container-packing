@@ -1,5 +1,9 @@
 package com.github.skjolber.packing;
 
+import com.github.skjolber.packing.old.Container;
+import com.github.skjolber.packing.old.Dimension;
+import com.github.skjolber.packing.old.Placement;
+
 /**
  * Container wrapper used for testing. Validates that boxes do not intercept.
  *
