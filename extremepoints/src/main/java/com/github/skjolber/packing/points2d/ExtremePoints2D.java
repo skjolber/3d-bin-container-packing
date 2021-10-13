@@ -125,7 +125,6 @@ public class ExtremePoints2D<P extends Placement2D> {
 			// using dx
 			//
 			// yy   |             |
-			//      |             |	
 			//      |             |
 			//      |             |
 			// minY |             *-------     <---- Y-support support
@@ -148,14 +147,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			Point2D dx = unsupportedX(source, xx, yy, maxY);
 			if(dx != null) {
 				
-				// constrain to right
-				P closestX = closestPositiveX(dx.getMinX(), dx.getMinY());
-				if(closestX != null) {
-					dx.setMaxX(closestX.getAbsoluteX() - 1);
-				} else {
-					dx.setMaxX(containerMaxX);
-				}
-				if(dx.getMaxX() > dx.getMinX()) {
+				if(constrainX(dx)) {
 					added.add(dx);
 					
 					if(dx.getMinY() < source.getMinY()) {
@@ -255,7 +247,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 						// add point on the other side
 						// vertical support
 
-						// TODO constrain max y per point?
+						// TODO contrain max y per point?
 						
 						DefaultYSupportPoint2D next = new DefaultYSupportPoint2D(
 								xx, point.getMinY(),
@@ -307,14 +299,22 @@ public class ExtremePoints2D<P extends Placement2D> {
 		return added;
 	}
 
-	private int constrainIfNotMaxY(Point2D source, int xx) {
+	private int constrainIfNotMaxY(Point2D source, int x) {
 		int maxY;
 		if(source.getMaxX() == containerMaxX && source.getMaxY() == containerMaxY) {
 			maxY = containerMaxY;
 		} else {
-			maxY = constrainY(xx, source.getMinY());
+			maxY = constrainY(x, source.getMinY());
 		}
 		return maxY;
+	}
+
+	private int constrainY(Point2D source, Point2D point, int xx) {
+		if(source.getMaxX() == containerMaxX && source.getMaxY() == containerMaxY) {
+			return containerMaxY;
+		} else {
+			return constrainY(xx, point.getMinY());
+		}
 	}
 
 	private List<Point2D> addX(P placement, Point2D source, List<Point2D> deleted, int xx, int yy) {
@@ -385,14 +385,8 @@ public class ExtremePoints2D<P extends Placement2D> {
 			Point2D negativeX = unsupportedY(source, xx, yy, maxX);
 			if(negativeX != null) {
 				
-				// constrain to right
-				P closestX = closestPositiveX(negativeX.getMinX(), negativeX.getMinY());
-				if(closestX != null) {
-					negativeX.setMaxX(closestX.getAbsoluteX() - 1);
-				} else {
-					negativeX.setMaxX(containerMaxX);
-				}
-				if(negativeX.getMaxX() > negativeX.getMinX()) {
+				
+				if(constrainY(negativeX)) {
 					added.add(negativeX);
 	
 					if(negativeX.getMinX() < source.getMinX()) {
@@ -545,7 +539,15 @@ public class ExtremePoints2D<P extends Placement2D> {
 		return maxX;
 	}
 
-	protected boolean constrain(Point2D dx) {
+	private int constrainX(Point2D source, Point2D point, int yy) {
+		if(source.getMaxX() == containerMaxX && source.getMaxY() == containerMaxY) {
+			return containerMaxX;
+		} else {
+			return constrainX(point.getMinX(), yy);
+		}
+	}
+
+	protected boolean constrainX(Point2D dx) {
 		// constrain to right
 		P closestX = closestPositiveX(dx.getMinX(), dx.getMinY());
 		if(closestX != null) {
@@ -557,6 +559,10 @@ public class ExtremePoints2D<P extends Placement2D> {
 			return false;
 		}
 
+		return true;
+	}
+	
+	protected boolean constrainY(Point2D dx) {
 		// constrain up
 		P closestY = closestPositiveY(dx.getMinX(), dx.getMinY());
 		if(closestY != null) {

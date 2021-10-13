@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.points;
 
-import com.github.skjolber.packing.points3d.Placement3D;
+import com.github.skjolber.packing.api.Placement3D;
 
 public class DefaultPlacement3D extends DefaultPlacement2D implements Placement3D {
 

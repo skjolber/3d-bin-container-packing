@@ -1,8 +1,8 @@
 package com.github.skjolber.packing.impl.points.ui;
 
+import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.points.DefaultExtremePoints2D;
 import com.github.skjolber.packing.points.DefaultPlacement2D;
-import com.github.skjolber.packing.points2d.Placement2D;
 import com.github.skjolber.packing.points2d.Point2D;
 
 public class DrawPoints2DTest {
@@ -40,7 +40,7 @@ public class DrawPoints2DTest {
 
 		int offset = 6;
 		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - offset);
-		extremePoints.add(extremePoints.getValues().size() - offset, createPlacement(extremePoint, 20, 30));
+		//extremePoints.add(extremePoints.getValues().size() - offset, createPlacement(extremePoint, 20, 30));
 		
 		DrawPoints2D.show(extremePoints);
 	}

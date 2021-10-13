@@ -149,13 +149,13 @@ public class ExtremePoints3D<P extends Placement3D> {
 			P xzPlane = projectNegativeY(source.getMinX(), yy, zz);
 			if(xzPlane != null) {
 				if(xzPlane.getAbsoluteEndY() + 1 < yy) {
+					
+					int x = source.getMinX();
+					int y = xzPlane.getAbsoluteEndY() + 1;
+					int z = zz;
+
 					if(xzPlane.getAbsoluteEndY() >= source.getMinY()) {
 						// found connected plane, so there is a 3x plane support still
-
-						int x = source.getMinX();
-						int y = xzPlane.getAbsoluteEndY() + 1;
-						int z = zz;
-
 						
 						added.add(new Default3DPlanePoint3D(
 							x, y, z,
@@ -177,7 +177,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 						
 					} else {
 						// found unconnected plane, so there is a 1x plane support
-						added.add(new DefaultXZPlanePoint3D(source.getMinX(), xzPlane.getAbsoluteEndY() + 1, zz, containerMaxX, containerMaxY, containerMaxZ, source.getMinX(), xzPlane.getAbsoluteEndX(), zz, xzPlane.getAbsoluteEndZ()));
+						added.add(new DefaultXZPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, xzPlane.getAbsoluteEndX(), z, xzPlane.getAbsoluteEndZ()));
 					}
 				} else {
 					// placement is in line with another point, skip
@@ -193,12 +193,13 @@ public class ExtremePoints3D<P extends Placement3D> {
 			P yzPlane = projectNegativeX(xx, source.getMinY(), zz);
 			if(yzPlane != null) {
 				if(yzPlane.getAbsoluteEndX() + 1 < xx) {
+					
+					int x = yzPlane.getAbsoluteEndX() + 1;
+					int y = source.getMinY();
+					int z = zz;
+					
 					if(yzPlane.getAbsoluteEndX() >= source.getMinX()) {
 						// found connected plane, so there is a 3x plane support still
-						
-						int x = yzPlane.getAbsoluteEndX() + 1;
-						int y = source.getMinY();
-						int z = zz;
 						
 						added.add(new Default3DPlanePoint3D(
 							x, y, z,
@@ -220,7 +221,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 						
 					} else {
 						// found unconnected plane, so there is a 1x plane support
-						added.add(new DefaultYZPlanePoint3D(yzPlane.getAbsoluteEndX() + 1, source.getMinY(), zz, containerMaxX, containerMaxY, containerMaxZ, source.getMinX(), yzPlane.getAbsoluteEndX(), zz, yzPlane.getAbsoluteEndZ()));
+						added.add(new DefaultYZPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, yzPlane.getAbsoluteEndX(), z, yzPlane.getAbsoluteEndZ()));
 					}
 				} else {
 					// placement is in line with another point, skip
@@ -300,12 +301,14 @@ public class ExtremePoints3D<P extends Placement3D> {
 			P xzPlane = projectNegativeY(xx, yy, source.getMinZ());
 			if(xzPlane != null) {
 				if(xzPlane.getAbsoluteEndY() + 1 < yy) {
+					
+					int x = xx;
+					int y = xzPlane.getAbsoluteEndY() + 1;
+					int z = source.getMinZ();
+
 					if(xzPlane.getAbsoluteEndY() >= source.getMinY()) {
 						// found connected plane, so there is a 3x plane support still
 						
-						int x = xx;
-						int y = xzPlane.getAbsoluteEndY() + 1;
-						int z = source.getMinZ();
 						
 						added.add(new Default3DPlanePoint3D(
 							x, y, z,
@@ -327,7 +330,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 						
 					} else {
 						// found unconnected plane, so there is a 1x plane support
-						added.add(new DefaultXZPlanePoint3D(xx, xzPlane.getAbsoluteEndY() + 1, source.getMinZ(), containerMaxX, containerMaxY, containerMaxZ, xx, xzPlane.getAbsoluteEndX(), source.getMinZ(), xzPlane.getAbsoluteEndZ()));
+						added.add(new DefaultXZPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, xzPlane.getAbsoluteEndX(), z, xzPlane.getAbsoluteEndZ()));
 					}
 				} else {
 					// placement is in line with another point, skip
@@ -343,12 +346,13 @@ public class ExtremePoints3D<P extends Placement3D> {
 			P xyPlane = projectNegativeZ(xx, source.getMinY(), zz);
 			if(xyPlane != null) {
 				if(xyPlane.getAbsoluteEndZ() + 1 < zz) {
+					
+					int x = xx;
+					int y = source.getMinY();
+					int z = xyPlane.getAbsoluteEndZ() + 1;
+
 					if(xyPlane.getAbsoluteEndZ() >= source.getMinZ()) {
 						// found connected plane, so there is a 3x plane support still
-						
-						int x = xx;
-						int y = source.getMinY();
-						int z = xyPlane.getAbsoluteEndZ() + 1;
 						
 						added.add(new Default3DPlanePoint3D(
 								
@@ -371,7 +375,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 						
 					} else {
 						// found unconnected plane, so there is a 1x plane support
-						added.add(new DefaultXYPlanePoint3D(xx, source.getMinY(), xyPlane.getAbsoluteEndZ() + 1, containerMaxX, containerMaxY, containerMaxZ, xx, xyPlane.getAbsoluteEndX(), source.getMinY(), xyPlane.getAbsoluteEndY()));
+						added.add(new DefaultXYPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, xyPlane.getAbsoluteEndX(), y, xyPlane.getAbsoluteEndY()));
 					}
 				} else {
 					// placement is in line with another point, skip
@@ -453,12 +457,13 @@ public class ExtremePoints3D<P extends Placement3D> {
 			P zyPlane = projectNegativeX(xx, yy, source.getMinZ());
 			if(zyPlane != null) {
 				if(zyPlane.getAbsoluteEndX() + 1 < xx) {
+					
+					int x = zyPlane.getAbsoluteEndX() + 1;
+					int y = yy;
+					int z = source.getMinZ();
+					
 					if(zyPlane.getAbsoluteEndX() >= source.getMinX()) {
 						// found connected plane, so there is a 3x plane support still
-						
-						int x = zyPlane.getAbsoluteEndX() + 1;
-						int y = yy;
-						int z = source.getMinZ();
 						
 						added.add(new Default3DPlanePoint3D(
 							x, y, z,
@@ -480,7 +485,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 						
 					} else {
 						// found unconnected plane, so there is a 1x plane support
-						added.add(new DefaultYZPlanePoint3D(zyPlane.getAbsoluteEndX() + 1, yy, source.getMinZ(), containerMaxX, containerMaxY, containerMaxZ, yy, zyPlane.getAbsoluteEndY(), source.getMinZ(), zyPlane.getAbsoluteEndZ()));
+						added.add(new DefaultYZPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, y, zyPlane.getAbsoluteEndY(), z, zyPlane.getAbsoluteEndZ()));
 					}
 				} else {
 					// placement is in line with another point, skip
@@ -496,13 +501,14 @@ public class ExtremePoints3D<P extends Placement3D> {
 			P xyPlane = projectNegativeZ(source.getMinX(), yy, zz);
 			if(xyPlane != null) {
 				if(xyPlane.getAbsoluteEndZ() + 1 < zz) {
+					
+					int x = source.getMinX();
+					int y = yy;
+					int z = xyPlane.getAbsoluteEndZ() + 1;
+
 					if(xyPlane.getAbsoluteEndZ() >= source.getMinZ()) {
 						// found connected plane, so there is a 3x plane support still
 						
-						int x = source.getMinX();
-						int y = yy;
-						int z = xyPlane.getAbsoluteEndZ() + 1;
-
 						added.add(new Default3DPlanePoint3D(
 								
 							x, y, z,
@@ -524,7 +530,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 						
 					} else {
 						// found unconnected plane, so there is a 1x plane support
-						added.add(new DefaultXYPlanePoint3D(source.getMinX(), yy, xyPlane.getAbsoluteEndZ() + 1, containerMaxX, containerMaxY, containerMaxZ, source.getMinX(), xyPlane.getAbsoluteEndX(), yy, xyPlane.getAbsoluteEndY()));
+						added.add(new DefaultXYPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, xyPlane.getAbsoluteEndX(), y, xyPlane.getAbsoluteEndY()));
 					}
 				} else {
 					// placement is in line with another point, skip

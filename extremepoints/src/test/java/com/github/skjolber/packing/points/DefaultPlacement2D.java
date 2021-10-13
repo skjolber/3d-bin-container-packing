@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.points;
 
-import com.github.skjolber.packing.points2d.Placement2D;
+import com.github.skjolber.packing.api.Placement2D;
 
 public class DefaultPlacement2D implements Placement2D {
 
