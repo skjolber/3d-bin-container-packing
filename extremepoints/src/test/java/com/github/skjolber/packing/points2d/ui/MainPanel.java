@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.impl.points.ui;
+package com.github.skjolber.packing.points2d.ui;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.MouseInfo;

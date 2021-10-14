@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.impl.points.ui;
+package com.github.skjolber.packing.points2d.ui;
 
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.points.DefaultExtremePoints2D;

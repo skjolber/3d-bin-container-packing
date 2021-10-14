@@ -151,6 +151,12 @@ public abstract class Point2D {
 		return minY < max && maxY > min;
 	}
 
+	@Override
+	public String toString() {
+		return "Point2D [minX=" + minX + ", minY=" + minY + ", maxY=" + maxY + ", maxX=" + maxX + "]";
+	}
+
+	
 
 
 }

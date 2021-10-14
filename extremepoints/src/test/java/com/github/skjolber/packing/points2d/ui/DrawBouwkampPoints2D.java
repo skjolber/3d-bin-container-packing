@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.impl.points.ui;
+package com.github.skjolber.packing.points2d.ui;
 
 import java.util.List;
 
