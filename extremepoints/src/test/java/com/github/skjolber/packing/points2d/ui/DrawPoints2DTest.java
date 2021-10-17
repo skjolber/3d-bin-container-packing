@@ -25,7 +25,7 @@ public class DrawPoints2DTest {
 		
 		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - 1);
 		extremePoints.add(extremePoints.getValues().size() - 1, createPlacement(extremePoint, 20, 20));
-
+		
 		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - 1);
 		extremePoints.add(extremePoints.getValues().size() - 1, createPlacement(extremePoint, 20, 35));
 		
@@ -36,12 +36,15 @@ public class DrawPoints2DTest {
 		extremePoints.add(1, createPlacement(extremePoint, 30, 10));
 		
 		extremePoint = extremePoints.getValues().get(0);
-		extremePoints.add(0, createPlacement(extremePoint, 30, 20));
+		extremePoints.add(0, createPlacement(extremePoint, 25, 20));
 
 		int offset = 6;
 		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - offset);
-		//extremePoints.add(extremePoints.getValues().size() - offset, createPlacement(extremePoint, 20, 30));
+		extremePoints.add(extremePoints.getValues().size() - offset, createPlacement(extremePoint, 20, 30));
 		
+		for (Point2D p : extremePoints.getValues()) {
+			System.out.println(" " + p.getMinX() + "x" + p.getMinY() + " " + p.getMaxX() + "x" + p.getMaxY());
+		}
 		DrawPoints2D.show(extremePoints);
 	}
 }

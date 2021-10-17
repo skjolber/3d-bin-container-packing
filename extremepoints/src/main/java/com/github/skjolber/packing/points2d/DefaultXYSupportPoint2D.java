@@ -69,5 +69,22 @@ public class DefaultXYSupportPoint2D extends Point2D implements XSupportPoint2D,
 	public int getYSupportMaxY() {
 		return ySupportMaxY;
 	}
+	
+	@Override
+	public boolean isYEdge(int y) {
+		return ySupportMaxY == y - 1;
+	}
+
+	@Override
+	public boolean isXEdge(int x) {
+		return xSupportMaxX == x - 1;
+	}
+
+	@Override
+	public String toString() {
+		return "DefaultXYSupportPoint2D [minX=" + minX + ", minY=" + minY + ", maxY=" + maxY + ", maxX=" + maxX
+				+ ", xSupportMinX=" + xSupportMinX + ", xSupportMaxX=" + xSupportMaxX
+				+ ", ySupportMinY=" + ySupportMinY + ", ySupportMaxY=" + ySupportMaxY + "]";
+	}
 
 }

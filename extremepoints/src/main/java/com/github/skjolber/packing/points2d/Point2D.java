@@ -2,8 +2,6 @@ package com.github.skjolber.packing.points2d;
 
 import java.util.Comparator;
 
-import com.github.skjolber.packing.api.Placement2D;
-
 public abstract class Point2D {
 	
 	public static final Comparator<Point2D> COMPARATOR = new Comparator<Point2D>() {
@@ -63,6 +61,14 @@ public abstract class Point2D {
 		return false;
 	}
 
+	public boolean isYEdge(int y) {
+		return false;
+	}
+
+	public boolean isXEdge(int x) {
+		return false;
+	}
+	
 	public int getMinX() {
 		return minX;
 	}
@@ -95,7 +101,7 @@ public abstract class Point2D {
 	
 	public void setMaxX(int maxX) {
 		if(maxX < 0) {
-			throw new RuntimeException();
+			throw new RuntimeException("Cannot set max x to " + maxX + " for " + minX + "x" + minY);
 		}
 		this.maxX = maxX;
 		
@@ -104,7 +110,7 @@ public abstract class Point2D {
 	
 	public void setMaxY(int maxY) {
 		if(maxY < 0) {
-			throw new RuntimeException();
+			throw new RuntimeException("Cannot set max y to " + maxY + " for " + minX + "x" + minY);
 		}
 		this.maxY = maxY;
 		
@@ -149,6 +155,18 @@ public abstract class Point2D {
 
 	public boolean shadowedOrSwallowedY(int min, int max) {
 		return minY < max && maxY > min;
+	}
+
+	public boolean swallowedY(int min, int max) {
+		return min <= minY && minY <= max;
+	}
+
+	public boolean swallowedX(int min, int max) {
+		return min <= minX && minX <= max;
+	}
+
+	public boolean shadowedX(int min, int max) {
+		return min <= minX && minX <= max;
 	}
 
 	@Override

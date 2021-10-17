@@ -24,5 +24,17 @@ public class DefaultXSupportPoint2D extends Point2D implements XSupportPoint2D {
 	public int getXSupportMaxX() {
 		return xSupportMaxX;
 	}
+	
+	@Override
+	public boolean isXEdge(int x) {
+		return xSupportMaxX == x - 1;
+	}
 
+	@Override
+	public String toString() {
+		return "DefaultXSupportPoint2D [minX=" + minX + ", minY=" + minY + ", maxY=" + maxY + ", maxX=" + maxX
+				+ ", xSupportMinX=" + xSupportMinX + ", xSupportMaxX=" + xSupportMaxX + "]";
+	}
+
+	
 }

@@ -15,11 +15,16 @@ public class DrawBouwkampPoints2D {
 		
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 		
-		List<BouwkampCodes> simpleImperfectSquaredSquares = directory.getSimpleImperfectSquaredSquares( p -> p.contains("o13siss.bkp"));
+		//List<BouwkampCodes> simpleImperfectSquaredSquares = directory.getSimpleImperfectSquaredSquares( p -> p.contains("o13siss.bkp"));
+		//List<BouwkampCodes> target = directory.getSimpleImperfectSquaredSquares( p -> p.contains("o13siss.bkp"));
+		List<BouwkampCodes> target = directory.getSimplePerfectSquaredRectangles( p -> p.contains("o13spsr.bkp"));
 		
-		for(BouwkampCodes codes : simpleImperfectSquaredSquares) {
+		for(BouwkampCodes codes : target) {
 			for(BouwkampCode c : codes.getCodes()) {
-				DrawPoints2D.show(converter.convert(c, 16));
+				if(c.getName().equals("521x416A")) {
+					DrawPoints2D.show(converter.convert(c, 2));
+					return;
+				}
 			}
 		}
 	}

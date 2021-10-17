@@ -41,4 +41,9 @@ public class DefaultPlacement2D implements Placement2D {
 		return !(point.getAbsoluteEndX() < x || point.getAbsoluteX() > endX || point.getAbsoluteEndY() < y || point.getAbsoluteY() > endY);
 	}
 
+	@Override
+	public String toString() {
+		return "DefaultPlacement2D [" + x + "x" + y + ", " + endX + "x" + endY + "]";
+	}
+
 }

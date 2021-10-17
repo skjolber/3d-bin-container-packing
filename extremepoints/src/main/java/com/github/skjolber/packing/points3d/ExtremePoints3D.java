@@ -882,7 +882,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 	}
 
 	
-	public Point2D getValue(int i) {
+	public Point3D getValue(int i) {
 		return values.get(i);
 	}
 

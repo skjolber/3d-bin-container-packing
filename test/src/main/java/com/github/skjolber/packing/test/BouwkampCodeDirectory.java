@@ -102,6 +102,14 @@ public class BouwkampCodeDirectory {
 	public List<BouwkampCodes> getSimpleImperfectSquaredSquares(Predicate<String> filter) {
 		return simpleImperfectSquaredSquares.stream().filter( p -> filter.test(p.getSource())).collect(Collectors.toList());
 	}
+
+	public List<BouwkampCodes> getSimpleImperfectSquaredRectangles(Predicate<String> filter) {
+		return simpleImperfectSquaredRectangles.stream().filter( p -> filter.test(p.getSource())).collect(Collectors.toList());
+	}
 	
+	public List<BouwkampCodes> getSimplePerfectSquaredRectangles(Predicate<String> filter) {
+		return simplePerfectSquaredRectangles.stream().filter( p -> filter.test(p.getSource())).collect(Collectors.toList());
+	}
+
 	
 }

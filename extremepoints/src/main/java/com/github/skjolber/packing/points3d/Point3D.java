@@ -72,4 +72,12 @@ public abstract class Point3D extends Point2D {
 		return !(point.getMaxX() < minX || point.getMinX() > maxX || point.getMaxY() < minY || point.getMinY() > maxY || point.getMaxZ() < minZ || point.getMinZ() > maxZ);
 	}
 
+	@Override
+	public String toString() {
+		return "Point3D [minX=" + minX + ", minY=" + minY + ", minZ=" + minZ + ", maxX=" + maxX + ", maxY=" + maxY 
+				+ ", maxZ=" + maxZ + "]";
+	}
+	
+	
+
 }
