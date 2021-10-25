@@ -2,6 +2,7 @@ package com.github.skjolber.packing.points3d;
 
 import java.util.Comparator;
 
+import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.points2d.Point2D;
 
 public abstract class Point3D extends Point2D {
@@ -67,9 +68,61 @@ public abstract class Point3D extends Point2D {
 	public int getMinZ() {
 		return minZ;
 	}
-	
+
+	public boolean intersects(Placement3D p) {
+		return !(p.getAbsoluteEndX() < minX || p.getAbsoluteX() > maxX || p.getAbsoluteEndY() < minY || p.getAbsoluteY() > maxY || p.getAbsoluteEndZ() < minZ || p.getAbsoluteZ() > maxZ);
+	}
+
 	public boolean intersects(Point3D point) {
 		return !(point.getMaxX() < minX || point.getMinX() > maxX || point.getMaxY() < minY || point.getMinY() > maxY || point.getMaxZ() < minZ || point.getMinZ() > maxZ);
+	}
+
+	public boolean isYZPlaneEdgeZ(int z) {
+		return false;
+	}
+
+	public boolean isYZPlaneEdgeY(int z) {
+		return false;
+	}
+
+	public boolean isXYPlaneEdgeX(int z) {
+		return false;
+	}
+
+	public boolean isXYPlaneEdgeY(int z) {
+		return false;
+	}
+
+	public boolean isXZPlaneEdgeX(int x) {
+		return false;
+	}
+	
+	public boolean isXZPlaneEdgeZ(int z) {
+		return false;
+	}
+	
+	public boolean shadowedOrSwallowedX(int min, int max) {
+		return minX < max && maxX > min;
+	}
+
+	public boolean shadowedOrSwallowedY(int min, int max) {
+		return minY < max && maxY > min;
+	}
+
+	public boolean shadowedOrSwallowedZ(int min, int max) {
+		return minZ < max && maxZ > min;
+	}
+
+	public boolean swallowedY(int min, int max) {
+		return min <= minY && minY <= max;
+	}
+
+	public boolean swallowedX(int min, int max) {
+		return min <= minX && minX <= max;
+	}
+
+	public boolean swallowedZ(int min, int max) {
+		return min <= minZ && minZ <= max;
 	}
 
 	@Override
@@ -77,7 +130,6 @@ public abstract class Point3D extends Point2D {
 		return "Point3D [minX=" + minX + ", minY=" + minY + ", minZ=" + minZ + ", maxX=" + maxX + ", maxY=" + maxY 
 				+ ", maxZ=" + maxZ + "]";
 	}
-	
-	
+
 
 }

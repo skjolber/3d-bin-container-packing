@@ -165,10 +165,6 @@ public abstract class Point2D {
 		return min <= minX && minX <= max;
 	}
 
-	public boolean shadowedX(int min, int max) {
-		return min <= minX && minX <= max;
-	}
-
 	@Override
 	public String toString() {
 		return "Point2D [minX=" + minX + ", minY=" + minY + ", maxY=" + maxY + ", maxX=" + maxX + "]";

@@ -12,4 +12,5 @@ public interface YZPlanePoint3D {
 
 	int getSupportedYZPlaneMinZ();
 	int getSupportedYZPlaneMaxZ();
+	
 }

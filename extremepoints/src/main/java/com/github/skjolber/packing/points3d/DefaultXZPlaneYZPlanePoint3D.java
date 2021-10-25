@@ -89,4 +89,20 @@ public class DefaultXZPlaneYZPlanePoint3D extends Point3D implements XZPlanePoin
 	public boolean isSupportedXZPlane(int x, int z) {
 		return xzPlaneMinX <= x && x <= xzPlaneMaxX && xzPlaneMinZ <= z && z <= xzPlaneMaxZ;
 	}
+	
+	public boolean isYZPlaneEdgeZ(int z) {
+		return yzPlaneMaxZ == z - 1;
+	}
+
+	public boolean isYZPlaneEdgeY(int y) {
+		return yzPlaneMaxY == y - 1;
+	}
+	
+	public boolean isXZPlaneEdgeX(int x) {
+		return xzPlaneMaxX == x - 1;
+	}
+
+	public boolean isXZPlaneEdgeZ(int z) {
+		return xzPlaneMaxZ == z - 1;
+	}
 }

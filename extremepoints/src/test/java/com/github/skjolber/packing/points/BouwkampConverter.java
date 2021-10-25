@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.points;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.List;
 
 import com.github.skjolber.packing.points2d.Point2D;

@@ -46,4 +46,13 @@ public class DefaultXZPlanePoint3D extends Point3D implements XZPlanePoint3D {
 	public boolean isSupportedXZPlane(int x, int z) {
 		return xzPlaneMinX <= x && x <= xzPlaneMaxX && xzPlaneMinZ <= z && z <= xzPlaneMaxZ;
 	}
+	
+	public boolean isXZPlaneEdgeX(int x) {
+		return xzPlaneMaxX == x - 1;
+	}
+
+	public boolean isXZPlaneEdgeZ(int z) {
+		return xzPlaneMaxZ == z - 1;
+	}
+
 }

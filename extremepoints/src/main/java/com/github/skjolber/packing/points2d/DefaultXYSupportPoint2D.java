@@ -7,8 +7,8 @@ public class DefaultXYSupportPoint2D extends Point2D implements XSupportPoint2D,
 	private final int xSupportMaxX;
 	
 	/** range constrained to current minX */
-	private int ySupportMinY;
-	private int ySupportMaxY;
+	private final int ySupportMinY;
+	private final int ySupportMaxY;
 	
 	public DefaultXYSupportPoint2D(int minX, int minY, int maxX, int maxY, int xSupportMinX, int xSupportMaxX, int ySupportMinY, int ySupportMaxY) {
 		super(minX, minY, maxX, maxY);

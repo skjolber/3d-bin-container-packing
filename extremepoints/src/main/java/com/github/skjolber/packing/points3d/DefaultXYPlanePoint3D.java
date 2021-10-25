@@ -46,5 +46,12 @@ public class DefaultXYPlanePoint3D extends Point3D implements XYPlanePoint3D  {
 		return xyPlaneMinX <= x && x <= xyPlaneMaxX && xyPlaneMinY <= y && y <= xyPlaneMaxY;
 	}
 	
-	
+	public boolean isXYPlaneEdgeX(int x) {
+		return xyPlaneMaxX == x - 1;
+	}
+
+	public boolean isXYPlaneEdgeY(int y) {
+		return xyPlaneMaxY == y - 1;
+	}
+
 }

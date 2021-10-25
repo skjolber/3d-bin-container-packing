@@ -4,12 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.github.skjolber.packing.points2d.DefaultYSupportPoint2D;
-import com.github.skjolber.packing.points2d.DefaultXYSupportPoint2D;
 import com.github.skjolber.packing.api.Placement3D;
-import com.github.skjolber.packing.points2d.DefaultXSupportPoint2D;
-import com.github.skjolber.packing.points2d.YSupportPoint2D;
-import com.github.skjolber.packing.points2d.XSupportPoint2D;
 import com.github.skjolber.packing.points2d.Point2D;
 
 /**
@@ -28,16 +23,16 @@ public class ExtremePoints3D<P extends Placement3D> {
 
 	public ExtremePoints3D(int dx, int dy, int dz) {
 		super();
-		this.containerMaxX = dx;
-		this.containerMaxY = dy;
-		this.containerMaxZ = dz;
+		this.containerMaxX = dx - 1;
+		this.containerMaxY = dy - 1;
+		this.containerMaxZ = dz - 1;
 		
 		values.add(new Default3DPlanePoint3D(
 				0, 0, 0, 
-				dx, dy, dz, 
-				0, dy, 0, dz, // fixed x
-				0, dx, 0, dz, // fixed y
-				0, dx, 0, dy // fixed z
+				containerMaxX, containerMaxY, containerMaxZ, 
+				0, containerMaxY, 0, containerMaxZ, // fixed x
+				0, containerMaxX, 0, containerMaxZ, // fixed y
+				0, containerMaxX, 0, containerMaxY // fixed z
 				));
 	}
 	
@@ -67,13 +62,17 @@ public class ExtremePoints3D<P extends Placement3D> {
 		int yy = source.getMinY() + boxDy;
 		int zz = source.getMinZ() + boxDz;
 		
+		boolean moveX = xx <= containerMaxX;
+		boolean moveY = yy <= containerMaxY;
+		boolean moveZ = zz <= containerMaxZ;
+		
 		// xx + zz
 		// negative z
 		// negative x
 		//
 		//
 		//          ◄----------| without support
-		//             ◄-------| with support
+		//             ◄-------| with supportyy
 		//       |
 		//       |
 		// zz    |    |--------|      - -
@@ -89,31 +88,55 @@ public class ExtremePoints3D<P extends Placement3D> {
 		
 		List<Point3D> deleted = new ArrayList<>();
 
-		List<Point3D> addX = addX(placement, source, deleted, xx, yy, zz);
-		List<Point3D> addY = addY(placement, source, deleted, xx, yy, zz);
-		List<Point3D> addZ = addZ(placement, source, deleted, xx, yy, zz);
+		List<Point3D> addedX = new ArrayList<>();
+		List<Point3D> addedY = new ArrayList<>();
+		List<Point3D> addedZ = new ArrayList<>();
+
+		if(moveX) {
+			addX(placement, source, deleted, xx, yy, zz, addedX);
+		}
+		if(moveY) {
+			addY(placement, source, deleted, xx, yy, zz, addedY);
+		}
+		if(moveZ) {
+			addZ(placement, source, deleted, xx, yy, zz, addedZ);
+		}
 		
 		deleted.add(source);
 		values.removeAll(deleted);
 		
-		addAll(addX);
-		addAll(addY);
-		addAll(addZ);
+		for(int i = 0; i < values.size(); i++) {
+			Point3D point3d = values.get(i);
+			if(!constrainMax(point3d, placement)) {
+				values.remove(i);
+				i--;
+			}
+		}
+		
+		addAll(addedX);
+		addAll(addedY);
+		addAll(addedZ);
 		
 		placements.add(placement);
-		Collections.sort(values, Point2D.COMPARATOR);
+		Collections.sort(values, Point3D.COMPARATOR);
 
 		return !values.isEmpty();
 	}	
 	
-	private List<Point3D> addZ(P placement, Point3D source, List<Point3D> deleted, int xx, int yy, int zz) {
+	private void addZ(P placement, Point3D source, List<Point3D> deleted, int xx, int yy, int zz, List<Point3D> added) {
+		System.out.println("Add z: " + xx + "x" + yy + "x" + zz + " at " + source.getMinX() + "x" + source.getMinY() + "x" + source.getMinZ());
+		
 		boolean yz = source.isSupportedYZPlane(source.getMinY(), zz);
 		boolean xz = source.isSupportedXZPlane(source.getMinX(), zz);
+
+		boolean xzEdge = source.isXZPlaneEdgeZ(yy);
+		boolean yzEdge = source.isYZPlaneEdgeZ(yy);
 
 		int maxX = projectPositiveX(source.getMinX(), source.getMinY(), zz);
 		int maxY = projectPositiveY(source.getMinX(), source.getMinY(), zz);
 
-		List<Point3D> added = new ArrayList<>();
+		System.out.println("Add z: yz=" + yz + " xz=" + xz);
+		
 		if(yz && xz) {
 			// 3x corner point
 			XZPlanePoint3D xzPlane = (XZPlanePoint3D)source;
@@ -123,7 +146,6 @@ public class ExtremePoints3D<P extends Placement3D> {
 			int y = source.getMinY();
 			int z = zz; 
 
-			
 			added.add(new Default3DPlanePoint3D(
 					x, y, z,
 					maxX, maxY, source.getMaxZ(),
@@ -143,92 +165,101 @@ public class ExtremePoints3D<P extends Placement3D> {
 				)
 			);
 		} else if(yz) {
-
-			YZPlanePoint3D yzPlane = (YZPlanePoint3D)source;
-			
-			P xzPlane = projectNegativeY(source.getMinX(), yy, zz);
-			if(xzPlane != null) {
-				if(xzPlane.getAbsoluteEndY() + 1 < yy) {
-					
-					int x = source.getMinX();
-					int y = xzPlane.getAbsoluteEndY() + 1;
-					int z = zz;
-
-					if(xzPlane.getAbsoluteEndY() >= source.getMinY()) {
-						// found connected plane, so there is a 3x plane support still
+			if(!xzEdge) {
+				YZPlanePoint3D yzPlane = (YZPlanePoint3D)source;
+				
+				P xzPlane = projectNegativeY(source.getMinX(), yy, zz);
+				if(xzPlane != null) {
+					if(xzPlane.getAbsoluteEndY() + 1 < yy) {
 						
-						added.add(new Default3DPlanePoint3D(
-							x, y, z,
-							containerMaxX, containerMaxY, containerMaxZ,
+						if(!xzEdge) {
+							int x = source.getMinX();
+							int y = xzPlane.getAbsoluteEndY() + 1;
+							int z = zz;
+		
+							if(xzPlane.getAbsoluteEndY() >= source.getMinY()) {
+								// found connected plane, so there is a 3x plane support still
+								
+								added.add(new Default3DPlanePoint3D(
+									x, y, z,
+									containerMaxX, containerMaxY, containerMaxZ,
+									
+									// supported planes
+									// yz plane
+									y, yzPlane.getSupportedYZPlaneMaxY(), // y
+									z, yzPlane.getSupportedYZPlaneMaxZ(), // z
+									
+									// xz plane - some placement
+									x, xzPlane.getAbsoluteEndX(), // x
+									z, xzPlane.getAbsoluteEndZ(),  // z
+									
+									// xy plane (i.e. top of the new placement)
+									x, xx - 1, // x
+									y, yy - 1 // y
+								));
+								
+							} else {
+								// found unconnected plane, so there is a 1x plane support
+								added.add(new DefaultXZPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, xzPlane.getAbsoluteEndX(), z, xzPlane.getAbsoluteEndZ()));
+							}
+						} else {
 							
-							// supported planes
-							// yz plane
-							y, yzPlane.getSupportedYZPlaneMaxY(), // y
-							z, yzPlane.getSupportedYZPlaneMaxZ(), // z
-							
-							// xz plane - some placement
-							x, xzPlane.getAbsoluteEndX(), // x
-							z, xzPlane.getAbsoluteEndZ(),  // z
-							
-							// xy plane (i.e. top of the new placement)
-							x, xx - 1, // x
-							y, yy - 1 // y
-						));
-						
+						}
 					} else {
-						// found unconnected plane, so there is a 1x plane support
-						added.add(new DefaultXZPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, xzPlane.getAbsoluteEndX(), z, xzPlane.getAbsoluteEndZ()));
+						// placement is in line with another point, skip
+						System.out.println("Add z: skip yz");
 					}
 				} else {
-					// placement is in line with another point, skip
+					// found unconnected plane (container wall)
+					added.add(new DefaultXZPlanePoint3D(source.getMinX(), 0, zz, containerMaxX, containerMaxY, containerMaxZ, source.getMinX(), containerMaxX, zz, containerMaxZ));
 				}
-			} else {
-				// found container wall
-				added.add(new DefaultXZPlanePoint3D(source.getMinX(), 0, zz, containerMaxX, containerMaxY, containerMaxZ, source.getMinX(), containerMaxX, zz, containerMaxZ));
 			}
-			
 		} else if(xz) {
-			XZPlanePoint3D xzPlane = (XZPlanePoint3D)source;
-			
-			P yzPlane = projectNegativeX(xx, source.getMinY(), zz);
-			if(yzPlane != null) {
-				if(yzPlane.getAbsoluteEndX() + 1 < xx) {
-					
-					int x = yzPlane.getAbsoluteEndX() + 1;
-					int y = source.getMinY();
-					int z = zz;
-					
-					if(yzPlane.getAbsoluteEndX() >= source.getMinX()) {
-						// found connected plane, so there is a 3x plane support still
+			if(!yzEdge) {
+				XZPlanePoint3D xzPlane = (XZPlanePoint3D)source;
+				
+				P yzPlane = projectNegativeX(xx, source.getMinY(), zz);
+				if(yzPlane != null) {
+					if(yzPlane.getAbsoluteEndX() + 1 < xx) {
 						
-						added.add(new Default3DPlanePoint3D(
-							x, y, z,
-							containerMaxX, containerMaxY, containerMaxZ,
-							
-							// supported planes
-							// yz plane - some placement
-							y, yzPlane.getAbsoluteEndY(), // y
-							z, yzPlane.getAbsoluteEndZ(),  // z
-
-							// xz plane
-							x, xzPlane.getSupportedXZPlaneMaxX(), // x
-							z, xzPlane.getSupportedXZPlaneMaxZ(), // z
-							
-							// xy plane (i.e. top of the new placement)
-							x, xx - 1, // x
-							y, yy - 1 // y
-						));
+						int x = yzPlane.getAbsoluteEndX() + 1;
+						int y = source.getMinY();
+						int z = zz;
 						
+						if(yzPlane.getAbsoluteEndX() >= source.getMinX()) {
+							// found connected plane, so there is a 3x plane support still
+							
+							added.add(new Default3DPlanePoint3D(
+								x, y, z,
+								containerMaxX, containerMaxY, containerMaxZ,
+								
+								// supported planes
+								// yz plane - some placement
+								y, yzPlane.getAbsoluteEndY(), // y
+								z, yzPlane.getAbsoluteEndZ(),  // z
+	
+								// xz plane
+								x, xzPlane.getSupportedXZPlaneMaxX(), // x
+								z, xzPlane.getSupportedXZPlaneMaxZ(), // z
+								
+								// xy plane (i.e. top of the new placement)
+								x, xx - 1, // x
+								y, yy - 1 // y
+							));
+							
+						} else {
+							// found unconnected plane, so there is a 1x plane support
+							added.add(new DefaultYZPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, yzPlane.getAbsoluteEndX(), z, yzPlane.getAbsoluteEndZ()));
+						}
 					} else {
-						// found unconnected plane, so there is a 1x plane support
-						added.add(new DefaultYZPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, yzPlane.getAbsoluteEndX(), z, yzPlane.getAbsoluteEndZ()));
+						// placement is in line with another point, skip
+						System.out.println("Skip add z: xz");
 					}
 				} else {
-					// placement is in line with another point, skip
+					// found unconnected plane (container wall)
+					added.add(new DefaultYZPlanePoint3D(source.getMinX(), 0, zz, containerMaxX, containerMaxY, containerMaxZ, source.getMinX(), containerMaxX, zz, containerMaxZ));
+					System.out.println("Add z: add xz container wall");
 				}
-			} else {
-				// found container wall
-				added.add(new DefaultYZPlanePoint3D(source.getMinX(), 0, zz, containerMaxX, containerMaxY, containerMaxZ, source.getMinX(), containerMaxX, zz, containerMaxZ));
 			}
 			
 		} else {
@@ -254,19 +285,26 @@ public class ExtremePoints3D<P extends Placement3D> {
 		
 		if(!added.isEmpty()) {
 			// TODO
+			
+			   
+			
 		}
-		return added;
 	}
 		
 	
-	private List<Point3D> addX(P placement, Point3D source, List<Point3D> deleted, int xx, int yy, int zz) {
+	private List<Point3D> addX(P placement, Point3D source, List<Point3D> deleted, int xx, int yy, int zz, List<Point3D> added) {
 		boolean xy = source.isSupportedXYPlane(xx, source.getMinY());
 		boolean xz = source.isSupportedXZPlane(xx, source.getMinZ());
 
+		boolean xyEdge = source.isXYPlaneEdgeX(xx);
+		boolean xzEdge = source.isXZPlaneEdgeX(xx);
+				
 		int maxZ = projectPositiveZ(xx, source.getMinY(), source.getMinZ());
 		int maxY = projectPositiveY(xx, source.getMinY(), source.getMinZ());
 
-		List<Point3D> added = new ArrayList<>();
+		boolean unconnetedXy = false;
+		boolean unconnetedXz = false;
+
 		if(xy && xz) {
 			// 3x corner point
 			XZPlanePoint3D xzPlane = (XZPlanePoint3D)source;
@@ -296,96 +334,109 @@ public class ExtremePoints3D<P extends Placement3D> {
 			);
 		} else if(xy) {
 
-			XYPlanePoint3D xyPlane = (XYPlanePoint3D)source;
-			
-			P xzPlane = projectNegativeY(xx, yy, source.getMinZ());
-			if(xzPlane != null) {
-				if(xzPlane.getAbsoluteEndY() + 1 < yy) {
-					
-					int x = xx;
-					int y = xzPlane.getAbsoluteEndY() + 1;
-					int z = source.getMinZ();
-
-					if(xzPlane.getAbsoluteEndY() >= source.getMinY()) {
-						// found connected plane, so there is a 3x plane support still
+			if(!xzEdge) {
+				XYPlanePoint3D xyPlane = (XYPlanePoint3D)source;
+				
+				P xzPlane = projectNegativeY(xx, yy, source.getMinZ());
+				if(xzPlane != null) {
+					if(xzPlane.getAbsoluteEndY() + 1 < yy) {
 						
-						
-						added.add(new Default3DPlanePoint3D(
-							x, y, z,
-							containerMaxX, containerMaxY, containerMaxZ,
+						int x = xx;
+						int y = xzPlane.getAbsoluteEndY() + 1;
+						int z = source.getMinZ();
+	
+						if(xzPlane.getAbsoluteEndY() >= source.getMinY()) {
+							// found connected plane, so there is a 3x plane support still
 							
-							// supported planes
-							// yz plane (i.e. side of the new placement, adjusted to xz plane)
-							y, yy - 1, // y
-							z, zz - 1, // z
-							
-							// xz plane - 
-							x, xzPlane.getAbsoluteEndX(), // x
-							z, xzPlane.getAbsoluteEndZ(),  // z
-
-							// xy plane
-							x, xyPlane.getSupportedXYPlaneMaxX(), // x
-							y, xyPlane.getSupportedXYPlaneMaxY() // y
-						));
-						
-					} else {
-						// found unconnected plane, so there is a 1x plane support
-						added.add(new DefaultXZPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, xzPlane.getAbsoluteEndX(), z, xzPlane.getAbsoluteEndZ()));
-					}
-				} else {
-					// placement is in line with another point, skip
-				}
-			} else {
-				// found container wall
-				added.add(new DefaultXZPlanePoint3D(xx, 0, source.getMinZ(), containerMaxX, containerMaxY, containerMaxZ, xx, containerMaxX, source.getMinZ(), containerMaxZ));
-			}
-			
-		} else if(xz) {
-			XZPlanePoint3D xzPlane = (XZPlanePoint3D)source;
-			
-			P xyPlane = projectNegativeZ(xx, source.getMinY(), zz);
-			if(xyPlane != null) {
-				if(xyPlane.getAbsoluteEndZ() + 1 < zz) {
-					
-					int x = xx;
-					int y = source.getMinY();
-					int z = xyPlane.getAbsoluteEndZ() + 1;
-
-					if(xyPlane.getAbsoluteEndZ() >= source.getMinZ()) {
-						// found connected plane, so there is a 3x plane support still
-						
-						added.add(new Default3DPlanePoint3D(
+							added.add(new Default3DPlanePoint3D(
+								x, y, z,
+								containerMaxX, containerMaxY, containerMaxZ,
 								
-							x, y, z,
-							containerMaxX, containerMaxY, containerMaxZ,
-							
-							// supported planes
-							// yz plane (i.e. side of the new placement, adjusted to xy plane)
-							y, yy - 1, // y
-							z, zz - 1,  // z
+								// supported planes
+								// yz plane (i.e. side of the new placement, adjusted to xz plane)
+								y, yy - 1, // y
+								z, zz - 1, // z
+								
+								// xz plane - 
+								x, xzPlane.getAbsoluteEndX(), // x
+								z, xzPlane.getAbsoluteEndZ(),  // z
 
-							// xz plane
-							x, xzPlane.getSupportedXZPlaneMaxX(), // x
-							z, xzPlane.getSupportedXZPlaneMaxZ(), // z
+								// xy plane
+								x, xyPlane.getSupportedXYPlaneMaxX(), // x
+								y, xyPlane.getSupportedXYPlaneMaxY() // y
+							));
 							
-							// xy plane - some placement
-							x, xyPlane.getAbsoluteEndX(), // x
-							y, xyPlane.getAbsoluteEndY() // y
-						));
-						
+						} else {
+							// found unconnected plane, so there is a 1x plane support
+							added.add(new DefaultXZPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, xzPlane.getAbsoluteEndX(), z, xzPlane.getAbsoluteEndZ()));
+							
+							unconnetedXy = true;
+						}
 					} else {
-						// found unconnected plane, so there is a 1x plane support
-						added.add(new DefaultXYPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, xyPlane.getAbsoluteEndX(), y, xyPlane.getAbsoluteEndY()));
+						// placement is in line with another point, skip
 					}
 				} else {
-					// placement is in line with another point, skip
+					// found unconnected plane (container wall)
+					added.add(new DefaultXZPlanePoint3D(xx, 0, source.getMinZ(), containerMaxX, containerMaxY, containerMaxZ, xx, containerMaxX, source.getMinZ(), containerMaxZ));
+					
+					unconnetedXy = true;
 				}
-			} else {
-				// found container wall
-				added.add(new DefaultXYPlanePoint3D(xx, source.getMinY(), 0, containerMaxX, containerMaxY, containerMaxZ, xx, containerMaxX, source.getMinY(), containerMaxY));
+			}
+		} else if(xz) {
+			
+			if(!xyEdge) {
+				XZPlanePoint3D xzPlane = (XZPlanePoint3D)source;
+				
+				P xyPlane = projectNegativeZ(xx, source.getMinY(), zz);
+				if(xyPlane != null) {
+					if(xyPlane.getAbsoluteEndZ() + 1 < zz) {
+						
+						int x = xx;
+						int y = source.getMinY();
+						int z = xyPlane.getAbsoluteEndZ() + 1;
+	
+						if(xyPlane.getAbsoluteEndZ() >= source.getMinZ()) {
+							// found connected plane, so there is a 3x plane support still
+							
+							added.add(new Default3DPlanePoint3D(
+									
+								x, y, z,
+								containerMaxX, containerMaxY, containerMaxZ,
+								
+								// supported planes
+								// yz plane (i.e. side of the new placement, adjusted to xy plane)
+								y, yy - 1, // y
+								z, zz - 1,  // z
+	
+								// xz plane
+								x, xzPlane.getSupportedXZPlaneMaxX(), // x
+								z, xzPlane.getSupportedXZPlaneMaxZ(), // z
+								
+								// xy plane - some placement
+								x, xyPlane.getAbsoluteEndX(), // x
+								y, xyPlane.getAbsoluteEndY() // y
+							));
+							
+						} else {
+							// found unconnected plane, so there is a 1x plane support
+							added.add(new DefaultXYPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, xyPlane.getAbsoluteEndX(), y, xyPlane.getAbsoluteEndY()));
+							
+							unconnetedXz = true;
+						}
+					} else {
+						// placement is in line with another point, skip
+					}
+				} else {
+					// found unconnected plane (container wall)
+					added.add(new DefaultXYPlanePoint3D(xx, source.getMinY(), 0, containerMaxX, containerMaxY, containerMaxZ, xx, containerMaxX, source.getMinY(), containerMaxY));
+					
+					unconnetedXz = true;
+				}
 			}
 			
 		} else {
+			unconnetedXy = true;
+			unconnetedXz = true;
 			
 			// two unsupported points - negative y and z direction
 			P xzPlane = projectNegativeY(xx, yy, source.getMinZ());
@@ -393,17 +444,16 @@ public class ExtremePoints3D<P extends Placement3D> {
 				// found unconnected plane, so there is a 1x plane support
 				added.add(new DefaultXZPlanePoint3D(xx, xzPlane.getAbsoluteEndY() + 1, source.getMinZ(), containerMaxX, containerMaxY, containerMaxZ, xx, xzPlane.getAbsoluteEndX(), source.getMinZ(), xzPlane.getAbsoluteEndZ()));
 			} else {
-				// found container wall
+				// found unconnected plane (container wall)
 				added.add(new DefaultXZPlanePoint3D(xx, 0, source.getMinZ(), containerMaxX, containerMaxY, containerMaxZ, xx, containerMaxX, source.getMinZ(), containerMaxZ));
 			}
-			
 			
 			P xyPlane = projectNegativeZ(xx, source.getMinY(), zz);
 			if(xyPlane != null) {
 				// found unconnected plane, so there is a 1x plane support
 				added.add(new DefaultXYPlanePoint3D(xx, source.getMinY(), xyPlane.getAbsoluteEndZ() + 1, containerMaxX, containerMaxY, containerMaxZ, xx, xyPlane.getAbsoluteEndX(), source.getMinY(), xyPlane.getAbsoluteEndY()));
 			} else {
-				// found container wall
+				// found unconnected plane (container wall)
 				added.add(new DefaultXYPlanePoint3D(xx, source.getMinY(), 0, containerMaxX, containerMaxY, containerMaxZ, xx, containerMaxX, source.getMinY(), containerMaxY));
 			}
 		}
@@ -414,15 +464,16 @@ public class ExtremePoints3D<P extends Placement3D> {
 		return added;
 	}
 
-	private List<Point3D> addY(P placement, Point3D source, List<Point3D> deleted, int xx, int yy, int zz) {
+	private List<Point3D> addY(P placement, Point3D source, List<Point3D> deleted, int xx, int yy, int zz, List<Point3D> added) {
 		boolean xy = source.isSupportedXYPlane(source.getMinX(), yy);
 		boolean yz = source.isSupportedYZPlane(yy, source.getMinZ());
+
+		boolean xyEdge = source.isXYPlaneEdgeY(yy);
+		boolean yzEdge = source.isYZPlaneEdgeY(yy);
 
 		int maxZ = projectPositiveZ(source.getMinX(), yy, source.getMinZ());
 		int maxX = projectPositiveX(source.getMinX(), yy, source.getMinZ());
 		
-		
-		List<Point3D> added = new ArrayList<>();
 		if(xy && yz) {
 			// 3x corner point
 			YZPlanePoint3D yzPlane = (YZPlanePoint3D)source;
@@ -452,94 +503,98 @@ public class ExtremePoints3D<P extends Placement3D> {
 			);
 		} else if(xy) {
 
-			XYPlanePoint3D xyPlane = (XYPlanePoint3D)source;
-			
-			P zyPlane = projectNegativeX(xx, yy, source.getMinZ());
-			if(zyPlane != null) {
-				if(zyPlane.getAbsoluteEndX() + 1 < xx) {
-					
-					int x = zyPlane.getAbsoluteEndX() + 1;
-					int y = yy;
-					int z = source.getMinZ();
-					
-					if(zyPlane.getAbsoluteEndX() >= source.getMinX()) {
-						// found connected plane, so there is a 3x plane support still
+			if(!yzEdge) {
+				XYPlanePoint3D xyPlane = (XYPlanePoint3D)source;
+				
+				P zyPlane = projectNegativeX(xx, yy, source.getMinZ());
+				if(zyPlane != null) {
+					if(zyPlane.getAbsoluteEndX() + 1 < xx) {
 						
-						added.add(new Default3DPlanePoint3D(
-							x, y, z,
-							containerMaxX, containerMaxY, containerMaxZ,
-							
-							// supported planes
-							// yz plane - placement
-							y, zyPlane.getAbsoluteEndY(), // y
-							z, zyPlane.getAbsoluteEndZ(), // z
-							
-							// xz plane - (i.e. side of the new placement, adjusted to zy plane)
-							x, xx - 1, // x
-							z, zz - 1,  // z
-
-							// xy plane (adjusted by zy plane)
-							x, xyPlane.getSupportedXYPlaneMaxX(), // x
-							y, xyPlane.getSupportedXYPlaneMaxY() // y
-						));
+						int x = zyPlane.getAbsoluteEndX() + 1;
+						int y = yy;
+						int z = source.getMinZ();
 						
+						if(zyPlane.getAbsoluteEndX() >= source.getMinX()) {
+							// found connected plane, so there is a 3x plane support still
+							
+							added.add(new Default3DPlanePoint3D(
+								x, y, z,
+								containerMaxX, containerMaxY, containerMaxZ,
+								
+								// supported planes
+								// yz plane - placement
+								y, zyPlane.getAbsoluteEndY(), // y
+								z, zyPlane.getAbsoluteEndZ(), // z
+								
+								// xz plane - (i.e. side of the new placement, adjusted to zy plane)
+								x, xx - 1, // x
+								z, zz - 1,  // z
+	
+								// xy plane (adjusted by zy plane)
+								x, xyPlane.getSupportedXYPlaneMaxX(), // x
+								y, xyPlane.getSupportedXYPlaneMaxY() // y
+							));
+							
+						} else {
+							// found unconnected plane, so there is a 1x plane support
+							added.add(new DefaultYZPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, y, zyPlane.getAbsoluteEndY(), z, zyPlane.getAbsoluteEndZ()));
+						}
 					} else {
-						// found unconnected plane, so there is a 1x plane support
-						added.add(new DefaultYZPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, y, zyPlane.getAbsoluteEndY(), z, zyPlane.getAbsoluteEndZ()));
+						// placement is in line with another point, skip
 					}
 				} else {
-					// placement is in line with another point, skip
+					// found unconnected plane (container wall)
+					added.add(new DefaultYZPlanePoint3D(0, yy, source.getMinZ(), containerMaxX, containerMaxY, containerMaxZ, yy, containerMaxZ, source.getMinZ(), containerMaxZ));
 				}
-			} else {
-				// found container wall
-				added.add(new DefaultYZPlanePoint3D(0, yy, source.getMinZ(), containerMaxX, containerMaxY, containerMaxZ, yy, containerMaxZ, source.getMinZ(), containerMaxZ));
 			}
 			
 		} else if(yz) {
-			YZPlanePoint3D yzPlane = (YZPlanePoint3D)source;
-			
-			P xyPlane = projectNegativeZ(source.getMinX(), yy, zz);
-			if(xyPlane != null) {
-				if(xyPlane.getAbsoluteEndZ() + 1 < zz) {
-					
-					int x = source.getMinX();
-					int y = yy;
-					int z = xyPlane.getAbsoluteEndZ() + 1;
-
-					if(xyPlane.getAbsoluteEndZ() >= source.getMinZ()) {
-						// found connected plane, so there is a 3x plane support still
+			if(!xyEdge) {
+				YZPlanePoint3D yzPlane = (YZPlanePoint3D)source;
+				
+				P xyPlane = projectNegativeZ(source.getMinX(), yy, zz);
+				if(xyPlane != null) {
+					if(xyPlane.getAbsoluteEndZ() + 1 < zz) {
 						
-						added.add(new Default3DPlanePoint3D(
+						int x = source.getMinX();
+						int y = yy;
+						int z = xyPlane.getAbsoluteEndZ() + 1;
+	
+						if(xyPlane.getAbsoluteEndZ() >= source.getMinZ()) {
+							// found connected plane, so there is a 3x plane support still
+							
+							added.add(new Default3DPlanePoint3D(
+	
+								x, y, z,
+								containerMaxX, containerMaxY, containerMaxZ,
 								
-							x, y, z,
-							containerMaxX, containerMaxY, containerMaxZ,
+								// supported planes
+								// yz plane 
+								y, yzPlane.getSupportedYZPlaneMaxY(), // y
+								z, yzPlane.getSupportedYZPlaneMaxZ(),  // z
+	
+								// xz plane
+								x, xx - 1, // x
+								z, zz - 1, // z
+								
+								// xy plane - some placement
+								x, xyPlane.getAbsoluteEndX(), // x
+								y, xyPlane.getAbsoluteEndY() // y
+							));
 							
-							// supported planes
-							// yz plane 
-							y, yzPlane.getSupportedYZPlaneMaxY(), // y
-							z, yzPlane.getSupportedYZPlaneMaxZ(),  // z
-
-							// xz plane
-							x, xx - 1, // x
-							z, zz - 1, // z
-							
-							// xy plane - some placement
-							x, xyPlane.getAbsoluteEndX(), // x
-							y, xyPlane.getAbsoluteEndY() // y
-						));
-						
+						} else {
+							// found unconnected plane, so there is a 1x plane support
+							added.add(new DefaultXYPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, xyPlane.getAbsoluteEndX(), y, xyPlane.getAbsoluteEndY()));
+						}
 					} else {
-						// found unconnected plane, so there is a 1x plane support
-						added.add(new DefaultXYPlanePoint3D(x, y, z, containerMaxX, containerMaxY, containerMaxZ, x, xyPlane.getAbsoluteEndX(), y, xyPlane.getAbsoluteEndY()));
+						// placement is in line with another point, skip
 					}
 				} else {
-					// placement is in line with another point, skip
+					// found unconnected plane (container wall)
+					added.add(new DefaultXYPlanePoint3D(source.getMinX(), yy, 0, containerMaxX, containerMaxY, containerMaxZ, source.getMinX(), containerMaxX, yy, containerMaxY));
 				}
-			} else {
-				// found container wall
-				added.add(new DefaultXYPlanePoint3D(source.getMinX(), yy, 0, containerMaxX, containerMaxY, containerMaxZ, source.getMinX(), containerMaxX, yy, containerMaxY));
 			}
-			
+				
 		} else {
 			
 			// two unsupported points - negative y and z direction
@@ -551,7 +606,6 @@ public class ExtremePoints3D<P extends Placement3D> {
 				// found container wall
 				added.add(new DefaultYZPlanePoint3D(0, yy, source.getMinZ(), containerMaxX, containerMaxY, containerMaxZ, yy, containerMaxZ, source.getMinZ(), containerMaxZ));
 			}
-			
 			
 			P xyPlane = projectNegativeZ(xx, source.getMinY(), zz);
 			if(xyPlane != null) {
@@ -587,8 +641,6 @@ public class ExtremePoints3D<P extends Placement3D> {
 			values.add(p1);	
 		}
 	}
-
-	
 	
 	protected boolean constrainMax(Point3D point, P placement) {
 		int maxX = projectPositiveX(point.getMinX(), point.getMinY(), point.getMinZ(), placement, point.getMaxX());
@@ -663,8 +715,6 @@ public class ExtremePoints3D<P extends Placement3D> {
 		point.setMaxY(maxY);
 		point.setMaxZ(maxZ);
 
-		
-		
 		return true;
 	}
 	
@@ -881,7 +931,6 @@ public class ExtremePoints3D<P extends Placement3D> {
 		return values;
 	}
 
-	
 	public Point3D getValue(int i) {
 		return values.get(i);
 	}
@@ -920,6 +969,24 @@ public class ExtremePoints3D<P extends Placement3D> {
 			}
 		}
 		return min;
-	}	
+	}
 
+	public boolean intercepts(Point3D point, Placement3D placement) {
+		if(point.getMaxX() < placement.getAbsoluteX()) {
+			return false;
+		}
+		if(point.getMaxY() < placement.getAbsoluteY()) {
+			return false;
+		}
+		if(point.getMaxZ() < placement.getAbsoluteZ()) {
+			return false;
+		}
+		
+		
+		
+		return true;
+		
+	}
+	
+	
 }

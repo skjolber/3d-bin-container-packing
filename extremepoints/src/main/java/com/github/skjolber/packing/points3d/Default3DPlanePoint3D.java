@@ -5,7 +5,7 @@ public class Default3DPlanePoint3D extends Point3D implements XZPlanePoint3D, YZ
 
 	/** range constrained to current minX */
 	private final int yzPlaneMinY;
-	private final int yzPlaneXMaxY;
+	private final int yzPlaneMaxY;
 
 	private final int yzPlaneMinZ;
 	private final int yzPlaneMaxZ;
@@ -41,7 +41,7 @@ public class Default3DPlanePoint3D extends Point3D implements XZPlanePoint3D, YZ
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 
 		this.yzPlaneMinY = yzPlaneMinY;
-		this.yzPlaneXMaxY = yzPlaneXMaxY;
+		this.yzPlaneMaxY = yzPlaneXMaxY;
 		
 		this.yzPlaneMinZ = yzPlaneMinZ;
 		this.yzPlaneMaxZ = yzPlaneMaxZ;
@@ -72,7 +72,7 @@ public class Default3DPlanePoint3D extends Point3D implements XZPlanePoint3D, YZ
 	}
 	
 	public int getSupportedYZPlaneMaxY() {
-		return yzPlaneXMaxY;
+		return yzPlaneMaxY;
 	}
 
 	@Override
@@ -118,13 +118,36 @@ public class Default3DPlanePoint3D extends Point3D implements XZPlanePoint3D, YZ
 	
 	@Override
 	public boolean isSupportedYZPlane(int y, int z) {
-		return yzPlaneMinY <= y && y <= yzPlaneXMaxY && yzPlaneMinZ <= z && z <= yzPlaneMaxZ;
+		return yzPlaneMinY <= y && y <= yzPlaneMaxY && yzPlaneMinZ <= z && z <= yzPlaneMaxZ;
 	}
 	
 	@Override
 	public boolean isSupportedXYPlane(int x, int y) {
 		return xyPlaneMinX <= x && x <= xyPlaneMaxX && xyPlaneMinY <= y && y <= xyPlaneMaxY;
 	}
-	
-	
+
+	public boolean isYZPlaneEdgeZ(int z) {
+		return yzPlaneMaxZ == z - 1;
+	}
+
+	public boolean isYZPlaneEdgeY(int y) {
+		return yzPlaneMaxY == y - 1;
+	}
+
+	public boolean isXZPlaneEdgeX(int x) {
+		return xzPlaneMaxX == x - 1;
+	}
+
+	public boolean isXZPlaneEdgeZ(int z) {
+		return xzPlaneMaxZ == z - 1;
+	}
+
+	public boolean isXYPlaneEdgeX(int x) {
+		return xyPlaneMaxX == x - 1;
+	}
+
+	public boolean isXYPlaneEdgeY(int y) {
+		return xyPlaneMaxY == y - 1;
+	}
+
 }

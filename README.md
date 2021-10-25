@@ -136,6 +136,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
 
 # History
+ - 2.x.x: In progres
  - 1.2.14: Fix for issue #297.
  - 1.2.13: Fix for issue #251.
  - 1.2.12: Fix for issue #245.

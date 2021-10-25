@@ -46,5 +46,12 @@ public class DefaultYZPlanePoint3D extends Point3D implements YZPlanePoint3D  {
 		return yzPlaneMinY <= y && y <= yzPlaneMaxY && yzPlaneMinZ <= z && z <= yzPlaneMaxZ;
 	}
 	
+	public boolean isYZPlaneEdgeZ(int z) {
+		return yzPlaneMaxZ == z - 1;
+	}
+
+	public boolean isYZPlaneEdgeY(int y) {
+		return yzPlaneMaxY == y - 1;
+	}
 	
 }
