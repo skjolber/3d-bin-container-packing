@@ -105,4 +105,18 @@ public class DefaultXZPlaneYZPlanePoint3D extends Point3D implements XZPlanePoin
 	public boolean isXZPlaneEdgeZ(int z) {
 		return xzPlaneMaxZ == z - 1;
 	}
+
+	@Override
+	public Point3D clone(int maxX, int maxY, int maxZ) {
+		return new DefaultXZPlaneYZPlanePoint3D(
+				minX, minY, minZ,
+				maxX, maxY, maxZ,
+
+				xzPlaneMinX, Math.min(maxX, xzPlaneMaxX), 
+				xzPlaneMinZ, Math.min(maxZ, xzPlaneMaxZ), 
+
+				yzPlaneMinY, Math.min(maxY, yzPlaneMaxY),
+				yzPlaneMinZ, Math.min(maxZ, yzPlaneMaxZ)
+				);
+	}
 }

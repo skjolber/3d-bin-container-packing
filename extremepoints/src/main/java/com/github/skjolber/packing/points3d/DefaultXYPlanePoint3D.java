@@ -13,15 +13,15 @@ public class DefaultXYPlanePoint3D extends Point3D implements XYPlanePoint3D  {
 			int minX, int minY, int minZ,
 			int maxX, int maxY, int maxZ,
 			
-			int fixedX, int fixedXx, 
-			int fixedY, int fixedYy
+			int xyPlaneMinX, int xyPlaneMaxX, 
+			int xyPlaneMinY, int xyPlaneMaxY
 			) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 		
-		this.xyPlaneMinX = fixedX;
-		this.xyPlaneMaxX = fixedXx;
-		this.xyPlaneMinY = fixedY;
-		this.xyPlaneMaxY = fixedYy;
+		this.xyPlaneMinX = xyPlaneMinX;
+		this.xyPlaneMaxX = xyPlaneMaxX;
+		this.xyPlaneMinY = xyPlaneMinY;
+		this.xyPlaneMaxY = xyPlaneMaxY;
 	}
 
 	public int getSupportedXYPlaneMinY() {
@@ -52,6 +52,17 @@ public class DefaultXYPlanePoint3D extends Point3D implements XYPlanePoint3D  {
 
 	public boolean isXYPlaneEdgeY(int y) {
 		return xyPlaneMaxY == y - 1;
+	}
+	
+	@Override
+	public Point3D clone(int maxX, int maxY, int maxZ) {
+		return new DefaultXYPlanePoint3D(
+			minX, minY, minZ,
+			maxX, maxY, maxZ,
+			
+			xyPlaneMinX, Math.min(xyPlaneMaxX, maxX), 
+			xyPlaneMinY, Math.min(xyPlaneMaxY, maxY)
+		);
 	}
 
 }

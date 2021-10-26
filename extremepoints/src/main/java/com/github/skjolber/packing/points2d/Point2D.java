@@ -170,7 +170,7 @@ public abstract class Point2D {
 		return "Point2D [minX=" + minX + ", minY=" + minY + ", maxY=" + maxY + ", maxX=" + maxX + "]";
 	}
 
-	
+	public abstract Point2D clone(int maxX, int maxY);
 
 
 }

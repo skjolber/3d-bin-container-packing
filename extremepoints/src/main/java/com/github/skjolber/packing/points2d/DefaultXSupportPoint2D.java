@@ -36,5 +36,9 @@ public class DefaultXSupportPoint2D extends Point2D implements XSupportPoint2D {
 				+ ", xSupportMinX=" + xSupportMinX + ", xSupportMaxX=" + xSupportMaxX + "]";
 	}
 
+	public Point2D clone(int maxX, int maxY) {
+		return new DefaultXSupportPoint2D(minX, minY, maxX, maxY, xSupportMinX, Math.min(maxX, xSupportMaxX));
+	}
+
 	
 }

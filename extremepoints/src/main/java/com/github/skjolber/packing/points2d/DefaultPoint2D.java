@@ -16,4 +16,7 @@ public class DefaultPoint2D extends Point2D {
 		return false;
 	}
 
+	public Point2D clone(int maxX, int maxY) {
+		return new DefaultPoint2D(minX, minY, maxX, maxY);
+	}
 }

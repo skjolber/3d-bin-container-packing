@@ -131,5 +131,10 @@ public abstract class Point3D extends Point2D {
 				+ ", maxZ=" + maxZ + "]";
 	}
 
+	public abstract Point3D clone(int maxX, int maxY, int maxZ);
 
+	@Override
+	public Point2D clone(int maxX, int maxY) {
+		return clone(maxX, maxY, this.maxZ);
+	}
 }

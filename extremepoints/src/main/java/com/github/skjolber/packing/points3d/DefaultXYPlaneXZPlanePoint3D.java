@@ -102,4 +102,17 @@ public class DefaultXYPlaneXZPlanePoint3D extends Point3D implements XYPlanePoin
 		return xyPlaneMaxY == y - 1;
 	}
 
+	@Override
+	public Point3D clone(int maxX, int maxY, int maxZ) {
+	
+		return new DefaultXYPlaneXZPlanePoint3D(
+				minX, minY, minZ,
+				maxX, maxY, maxZ,
+				
+				xzPlaneMinX, Math.min(maxX, xzPlaneMaxX), 
+				xzPlaneMinZ, Math.min(maxZ, xzPlaneMaxZ), 
+				
+				xyPlaneMinX, Math.min(maxX, xyPlaneMaxX),
+				xyPlaneMinY, Math.min(maxY, xyPlaneMaxY));
+	}
 }

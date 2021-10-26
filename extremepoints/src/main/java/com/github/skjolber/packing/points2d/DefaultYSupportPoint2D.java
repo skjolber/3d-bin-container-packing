@@ -36,5 +36,9 @@ public class DefaultYSupportPoint2D extends Point2D implements YSupportPoint2D  
 		return ySupportMaxY == y - 1;
 	}
 	
+	public Point2D clone(int maxX, int maxY) {
+		return new DefaultYSupportPoint2D(minX, minY, maxX, maxY, ySupportMinY, Math.min(maxY, ySupportMaxY));
+	}
+
 	
 }

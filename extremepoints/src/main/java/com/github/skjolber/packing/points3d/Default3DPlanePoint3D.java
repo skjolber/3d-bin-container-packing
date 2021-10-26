@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.points3d;
 
+import com.github.skjolber.packing.points2d.Point2D;
+
 public class Default3DPlanePoint3D extends Point3D implements XZPlanePoint3D, YZPlanePoint3D, XYPlanePoint3D {
 
 
@@ -150,4 +152,21 @@ public class Default3DPlanePoint3D extends Point3D implements XZPlanePoint3D, YZ
 		return xyPlaneMaxY == y - 1;
 	}
 
+	@Override
+	public Point3D clone(int maxX, int maxY, int maxZ) {
+		return new Default3DPlanePoint3D(minX, minY, minZ, 
+				maxX, maxY, maxZ,
+				
+				yzPlaneMinY, Math.min(maxY, yzPlaneMaxY),
+				yzPlaneMinZ, Math.min(maxZ, yzPlaneMaxZ),
+
+				xzPlaneMinX, Math.min(maxX, xzPlaneMaxX), 
+				xzPlaneMinZ, Math.min(maxZ, xzPlaneMaxZ), 
+				
+				xyPlaneMinX, Math.min(maxX, xyPlaneMaxX),
+				xyPlaneMinY, Math.min(maxY, xyPlaneMaxY));
+	}
+
+
+	
 }

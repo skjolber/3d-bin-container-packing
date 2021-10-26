@@ -14,11 +14,11 @@ import com.github.skjolber.packing.api.Placement2D;
 
 public class ExtremePoints2D<P extends Placement2D> {
 	
-	private final int containerMaxX;
-	private final int containerMaxY;
+	protected final int containerMaxX;
+	protected final int containerMaxY;
 
-	private List<Point2D> values = new ArrayList<>();
-	private List<P> placements = new ArrayList<>();
+	protected List<Point2D> values = new ArrayList<>();
+	protected List<P> placements = new ArrayList<>();
 
 	public ExtremePoints2D(int dx, int dy) {
 		super();
@@ -114,7 +114,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			values.removeAll(deleted);
 			
 			boolean supported = source instanceof XSupportPoint2D || source instanceof YSupportPoint2D;
-			System.out.println("Supported: " + supported + " " + source);
+			
 			for(int i = 0; i < values.size(); i++) {
 				Point2D point2d = values.get(i);
 				
@@ -122,7 +122,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 				if(supported) {
 					remove = !constrainPositiveMax(point2d, placement);
 				} else {
-					remove = !constrainPositiveNegativeMax(point2d, placement);
+					remove = !constrainPositiveNegativeMax(point2d, placement, addX, addY);
 				}
 				if(remove) {
 					values.remove(i);
@@ -151,22 +151,14 @@ public class ExtremePoints2D<P extends Placement2D> {
 		return !values.isEmpty();
 	}
 
-	private void addX(List<Point2D> add, int x) {
+	protected void addX(List<Point2D> add, int x) {
 		int index = 0;
 		while(index < values.size()) {
 			Point2D existing = values.get(index);
 			if(existing.getMinX() == x) {
 				for (int i = 0; i < add.size(); i++) {
 					Point2D p1 = add.get(i);
-					
-					if(existing.getMinY() == p1.getMinY()) {
-						// same point, do not add the new point
-						add.remove(i);
-						i--;
-						
-						continue;
-					}
-					
+
 					// is the new point shadowed, or shadowing an existing point?
 					if(p1.getMaxY() == existing.getMaxY() && p1.getMaxX() == existing.getMaxX()) {
 						add.remove(i);
@@ -185,21 +177,13 @@ public class ExtremePoints2D<P extends Placement2D> {
 		values.addAll(add);	
 	}
 	
-	private void addY(List<Point2D> add, int y) {
+	protected void addY(List<Point2D> add, int y) {
 		int index = 0;
 		while(index < values.size()) {
 			Point2D existing = values.get(index);
 			if(existing.getMinY() == y) {
 				for (int i = 0; i < add.size(); i++) {
 					Point2D p1 = add.get(i);
-					
-					if(existing.getMinX() == p1.getMinX()) {
-						// same point, do not add the new point
-						add.remove(i);
-						i--;
-						
-						continue;
-					}
 					
 					// is the new point shadowed, or shadowing an existing point?
 					if(p1.getMaxY() == existing.getMaxY() && p1.getMaxX() == existing.getMaxX()) {
@@ -211,6 +195,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 							existing = p1;
 						}
 					}
+
 				}
 			}
 			index++;
@@ -219,7 +204,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		values.addAll(add);	
 	}
 
-	private void addAtXX(P placement, Point2D source, List<Point2D> deleted, int xx, int yy, int maxY, List<Point2D> added) {
+	protected void addAtXX(P placement, Point2D source, List<Point2D> deleted, int xx, int yy, int maxY, List<Point2D> added) {
 		Point2D dx = unsupportedAtXX(source, xx, yy, maxY);
 		if(dx != null) {
 			if(constrainMaxX(dx)) {
@@ -253,7 +238,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		}
 	}
 
-	private void addSwallowedOrShadowedAtXX(P placement, Point2D source, List<Point2D> deleted, int xx, int yy,
+	protected void addSwallowedOrShadowedAtXX(P placement, Point2D source, List<Point2D> deleted, int xx, int yy,
 			List<Point2D> added, int maxY) {
 		
 		// Move points swallowed or shadowed by the placement
@@ -360,7 +345,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		}
 	}
 
-	private DefaultXYSupportPoint2D addSupportedAtXX(Point2D source, int xx, int yy, int maxY) {
+	protected DefaultXYSupportPoint2D addSupportedAtXX(Point2D source, int xx, int yy, int maxY) {
 		// in other words there is a placement in negative y direction at XX 
 		// so the y coordinate is minY
 
@@ -416,7 +401,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		return null;
 	}
 	
-	private void addSwallowedXX(P placement, Point2D source, List<Point2D> deleted, int xx, int yy, List<Point2D> added) {
+	protected void addSwallowedXX(P placement, Point2D source, List<Point2D> deleted, int xx, int yy, List<Point2D> added) {
 		//    swallowed:
 		//
 		//    |
@@ -464,7 +449,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		removeShadowedY(added);
 	}
 	
-	private void addSwallowedYY(P placement, Point2D source, List<Point2D> deleted, int xx, int yy, List<Point2D> added) {
+	protected void addSwallowedYY(P placement, Point2D source, List<Point2D> deleted, int xx, int yy, List<Point2D> added) {
 		//    swallowed:
 		//
 		//    |
@@ -514,13 +499,13 @@ public class ExtremePoints2D<P extends Placement2D> {
 	}
 	
 
-	private void removeShadowedY(List<Point2D> added) {
+	protected void removeShadowedY(List<Point2D> added) {
 		Collections.sort(added, Point2D.Y_COMPARATOR);
 
 		removeShadowed(added);
 	}
 
-	private void removeShadowed(List<Point2D> added) {
+	protected void removeShadowed(List<Point2D> added) {
 		// remove those points which have the same extreme points (they have the same x coordinate)
 		for (int j = 0; j < added.size(); j++) {
 			Point2D point2d = added.get(j);
@@ -536,7 +521,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		}
 	}
 
-	private int constrainIfNotMaxY(Point2D source, int x) {
+	protected int constrainIfNotMaxY(Point2D source, int x) {
 		int maxY;
 		if(source.getMaxX() == containerMaxX && source.getMaxY() == containerMaxY) {
 			maxY = containerMaxY;
@@ -546,7 +531,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		return maxY;
 	}
 
-	private List<Point2D> addAtYY(P placement, Point2D source, List<Point2D> deleted, int xx, int yy, int maxX, List<Point2D> added) {
+	protected List<Point2D> addAtYY(P placement, Point2D source, List<Point2D> deleted, int xx, int yy, int maxX, List<Point2D> added) {
 		// using dy
 		Point2D negativeX = unsupportedAtYY(source, xx, yy, maxX);
 		if(negativeX != null) {
@@ -591,7 +576,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		return added;
 	}
 
-	private void addSwallowedOrShadowedAtYY(P placement, Point2D source, List<Point2D> deleted, int xx, int yy, List<Point2D> added, int maxX) {
+	protected void addSwallowedOrShadowedAtYY(P placement, Point2D source, List<Point2D> deleted, int xx, int yy, List<Point2D> added, int maxX) {
 		// Move points swallowed or shadowed by the placement
 		
 		//    swallowed:
@@ -683,7 +668,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		}
 	}
 	
-	private DefaultXYSupportPoint2D addSupportedAtYY(Point2D source, int xx, int yy, int maxX) {
+	protected DefaultXYSupportPoint2D addSupportedAtYY(Point2D source, int xx, int yy, int maxX) {
 		// in other words there is a placement in negative x direction at YY
 		// so the x coordinate is minX
 		
@@ -741,13 +726,13 @@ public class ExtremePoints2D<P extends Placement2D> {
 		return null;
 	}
 
-	private void removeShadowedX(List<Point2D> added) {
+	protected void removeShadowedX(List<Point2D> added) {
 		Collections.sort(added, Point2D.X_COMPARATOR);
 
 		removeShadowed(added);
 	}
 
-	private int constrainIfNotMaxX(Point2D source, int yy) {
+	protected int constrainIfNotMaxX(Point2D source, int yy) {
 		int maxX;
 		if(source.getMaxX() == containerMaxX && source.getMaxY() == containerMaxY) {
 			maxX = containerMaxX;
@@ -863,7 +848,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		return null;
 	}
 
-	private Point2D unsupportedAtYY(Point2D source, int xx, int yy, int maxX) {
+	protected Point2D unsupportedAtYY(Point2D source, int xx, int yy, int maxX) {
 		if(yy >= containerMaxY) {
 			return null;
 		}
@@ -956,7 +941,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		return true;
 	}
 	
-	protected boolean constrainPositiveNegativeMax(Point2D point, P placement) {
+	protected boolean constrainPositiveNegativeMax(Point2D point, P placement, List<Point2D> addX, List<Point2D> addY) {
 
 		System.out.println("Constraint positive negative max");
 		if(placement.getAbsoluteEndX() < point.getMinX()) {
@@ -1004,6 +989,10 @@ public class ExtremePoints2D<P extends Placement2D> {
 			
 			System.out.println("FLOATING");
 			
+			addX.add(point.clone(point.getMaxX(), placement.getAbsoluteY()));
+			addY.add(point.clone(placement.getAbsoluteX(), point.getMaxY()));
+			
+			return false;
 		}
 		
 		return true;

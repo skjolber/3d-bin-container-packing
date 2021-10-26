@@ -55,4 +55,15 @@ public class DefaultXZPlanePoint3D extends Point3D implements XZPlanePoint3D {
 		return xzPlaneMaxZ == z - 1;
 	}
 
+	@Override
+	public Point3D clone(int maxX, int maxY, int maxZ) {
+		return new DefaultXZPlanePoint3D(
+				minX, minY, minZ, 
+				maxX, maxY, maxZ, 
+				
+				xzPlaneMinX, Math.min(maxX, xzPlaneMaxX), 
+				xzPlaneMinZ, Math.min(maxZ, xzPlaneMaxZ)
+				);
+	}
+
 }
