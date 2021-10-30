@@ -295,7 +295,7 @@ public class ExtremePoints3DTest {
 
 		ep.add(2, new DefaultPlacement3D(10, 0, 0, 19, 19, 19));
 
-	}	
+	}
 	
 	@Test
 	public void testStackHigherItemsInYDirection() throws InterruptedException {

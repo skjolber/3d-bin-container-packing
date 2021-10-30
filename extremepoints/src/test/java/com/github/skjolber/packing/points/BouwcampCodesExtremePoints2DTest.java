@@ -23,7 +23,7 @@ public class BouwcampCodesExtremePoints2DTest {
 		for(BouwkampCodes c : codesForCount) {
 
 			for(BouwkampCode bkpLine : c.getCodes()) {
-				DefaultExtremePoints2D points = converter.convert(bkpLine, 2);
+				DefaultExtremePoints2D points = converter.convert2D(bkpLine, 2);
 				assertEquals(0, points.getValues().size());
 			}
 		}

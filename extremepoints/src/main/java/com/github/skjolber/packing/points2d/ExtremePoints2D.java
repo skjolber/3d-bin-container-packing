@@ -142,11 +142,20 @@ public class ExtremePoints2D<P extends Placement2D> {
 				values.addAll(addY);
 			}
 	
-			placements.add(placement);
 			Collections.sort(values, Point2D.COMPARATOR);
 		} else {
 			values.remove(source);
+			
+			// remove points swallowed
+			for(int i = 0; i < values.size(); i++) {
+				Point2D point2d = values.get(i);
+				if(point2d.swallowedX(placement.getAbsoluteX(), placement.getAbsoluteEndX()) && point2d.swallowedY(placement.getAbsoluteY(), placement.getAbsoluteEndY())) {
+					values.remove(i);
+					i--;
+				}
+			}
 		}
+		placements.add(placement);
 
 		return !values.isEmpty();
 	}

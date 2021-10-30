@@ -3,11 +3,14 @@ package com.github.skjolber.packing.points2d.ui;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
+import java.util.List;
+
 import javax.swing.*;
 import javax.swing.event.*;
 
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.points.DefaultExtremePoints2D;
+import com.github.skjolber.packing.points.DefaultExtremePoints3D;
 import com.github.skjolber.packing.points.DefaultPlacement2D;
 import com.github.skjolber.packing.points2d.ExtremePoints2D;
 import com.github.skjolber.packing.points2d.Point2D;
@@ -17,26 +20,34 @@ public class DrawPoints2D {
 	public static void show(DefaultExtremePoints2D p) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				init(p);
+				
+				init(p.getValues(), p.getPlacements(), p.getWidth(), p.getDepth());
 			}
 		});
 	}
 
-	private static Placement2D createPlacement(Point2D extremePoint, int dx, int dy) {
-		return new DefaultPlacement2D(extremePoint.getMinX(), extremePoint.getMinY(), extremePoint.getMinX() + dx, extremePoint.getMinY() + dy);
+	public static void show(DefaultExtremePoints3D p) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				
+				init(p.getValues(), p.getPlacements(), p.getWidth(), p.getDepth());
+			}
+		});
 	}
+	
+	private static void init(List<? extends Point2D> points, List<? extends Placement2D> placements, int width, int depth) {
+		DrawingArea drawingArea = new DrawingArea(width, depth);
 
-	private static void init(ExtremePoints2D<Placement2D> p) {
-		DrawingArea drawingArea = new DrawingArea(p.getWidth(), p.getDepth());
-
-		for (Point2D extremePoint : p.getValues()) {
-			if (extremePoint.getMaxX() != p.getWidth() || extremePoint.getMaxY() != p.getDepth()) {
+		System.out.println("Show " + width + "x" + depth);
+		
+		for (Point2D extremePoint : points) {
+			if (extremePoint.getMaxX() != width || extremePoint.getMaxY() != depth) {
 				Color c;
-				if (extremePoint.getMaxX() != p.getWidth() && extremePoint.getMaxY() != p.getDepth()) {
+				if (extremePoint.getMaxX() != width && extremePoint.getMaxY() != depth) {
 					c = Color.red;
-				} else if (extremePoint.getMaxX() != p.getWidth()) {
+				} else if (extremePoint.getMaxX() != width) {
 					c = Color.blue;
-				} else { // if(extremePoint.getMaxY() != p.getDepth()) {
+				} else {
 					c = Color.yellow;
 				}
 				drawingArea.fillRect(extremePoint.getMinX(), extremePoint.getMinY(), extremePoint.getMaxX(),
@@ -46,8 +57,8 @@ public class DrawPoints2D {
 			}
 		}
 
-		for (Point2D extremePoint : p.getValues()) {
-			if (extremePoint.getMaxX() == p.getWidth() && extremePoint.getMaxY() == p.getDepth()) {
+		for (Point2D extremePoint : points) {
+			if (extremePoint.getMaxX() == width && extremePoint.getMaxY() == depth) {
 				System.out.println("Paint white " + extremePoint.getMinX() + "x" + extremePoint.getMinY() + " "
 						+ extremePoint.getMaxX() + "x" + extremePoint.getMaxY());
 				drawingArea.fillRect(extremePoint.getMinX(), extremePoint.getMinY(), extremePoint.getMaxX(),
@@ -55,20 +66,22 @@ public class DrawPoints2D {
 			}
 		}
 
-		for (Placement2D extremePoint : p.getPlacements()) {
+		for (Placement2D extremePoint : placements) {
 			drawingArea.addRectangle(extremePoint.getAbsoluteX(), extremePoint.getAbsoluteY(),
 					extremePoint.getAbsoluteEndX(), extremePoint.getAbsoluteEndY(), Color.green);
 			drawingArea.addDashedLine(extremePoint.getAbsoluteX(), extremePoint.getAbsoluteY(),
 					extremePoint.getAbsoluteEndX(), extremePoint.getAbsoluteEndY(), Color.red);
-		}
-
-		for (int i = 0; i < p.getValues().size(); i++) {
-			Point2D point2d = p.getValues().get(i);
-			drawingArea.addCircle(point2d.getMinX(), point2d.getMinY(), Color.black, i);
 			
+			System.out.println(" " + extremePoint.getAbsoluteX() + "x" + extremePoint.getAbsoluteY());
+
 		}
 
-		drawingArea.addGuide(0, -5, p.getWidth(), -5, Color.blue);
+		for (int i = 0; i < points.size(); i++) {
+			Point2D point2d = points.get(i);
+			drawingArea.addCircle(point2d.getMinX(), point2d.getMinY(), Color.black, i);
+		}
+
+		drawingArea.addGuide(0, -5, width, -5, Color.blue);
 
 		JFrame.setDefaultLookAndFeelDecorated(true);
 		JFrame frame = new JFrame("Draw On extreme points");
@@ -80,8 +93,6 @@ public class DrawPoints2D {
 		mainPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		int width = (int) screenSize.getWidth();
-		int height = (int) screenSize.getHeight();
 
 		frame.getContentPane().add(mainPanel);
 
