@@ -14,6 +14,9 @@ import com.github.skjolber.packing.points3d.Point3D;
 public class DrawPoints3DTest {
 
 	private static Placement3D createPlacement(Point3D extremePoint, int dx, int dy, int dz) {
+		if(extremePoint.getMinZ() != 0) {
+			throw new IllegalArgumentException();
+		}
 		return new DefaultPlacement3D(extremePoint.getMinX(), extremePoint.getMinY(), extremePoint.getMinZ(), extremePoint.getMinX() + dx - 1, extremePoint.getMinY() + dy - 1, extremePoint.getMinZ() + dz - 1);
 	}
 
@@ -31,7 +34,10 @@ public class DrawPoints3DTest {
 		
 		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - 1);
 		extremePoints.add(extremePoints.getValues().size() - 1, createPlacement(extremePoint, 20, 20, 1));
-		
+
+		extremePoint = extremePoints.getValues().get(3);
+		extremePoints.add(3, createPlacement(extremePoint, 20, 20, 1));
+
 		/*
 		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - 1);
 		extremePoints.add(extremePoints.getValues().size() - 1, createPlacement(extremePoint, 20, 35, 1));
@@ -66,8 +72,8 @@ public class DrawPoints3DTest {
 				i--;
 			}
 		}		
-		for (Point2D p : extremePoints.getValues()) {
-			System.out.println(" " + p.getMinX() + "x" + p.getMinY() + " " + p.getMaxX() + "x" + p.getMaxY());
+		for (Point3D p : extremePoints.getValues()) {
+			System.out.println(" " + p.getMinX() + "x" + p.getMinY() + "x" + p.getMinZ() + " " + p.getMaxX() + "x" + p.getMaxY() + "x" + p.getMaxZ());
 		}
 		DrawPoints2D.show(extremePoints);
 	}
