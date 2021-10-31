@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.points3d;
 
-import com.github.skjolber.packing.points2d.Point2D;
-
 public class Default3DPlanePoint3D extends Point3D implements XZPlanePoint3D, YZPlanePoint3D, XYPlanePoint3D {
 
 

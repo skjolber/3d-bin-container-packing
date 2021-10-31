@@ -15,7 +15,7 @@ public class DrawPoints3DTest {
 
 	private static Placement3D createPlacement(Point3D extremePoint, int dx, int dy, int dz) {
 		if(extremePoint.getMinZ() != 0) {
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException(extremePoint.getMinX() + "x" + extremePoint.getMinY() + "x" + extremePoint.getMinZ());
 		}
 		return new DefaultPlacement3D(extremePoint.getMinX(), extremePoint.getMinY(), extremePoint.getMinZ(), extremePoint.getMinX() + dx - 1, extremePoint.getMinY() + dy - 1, extremePoint.getMinZ() + dz - 1);
 	}
@@ -31,20 +31,24 @@ public class DrawPoints3DTest {
 		
 		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - 2);
 		extremePoints.add(extremePoints.getValues().size() - 2, createPlacement(extremePoint, 100, 100, 1));
-		
+
 		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - 1);
 		extremePoints.add(extremePoints.getValues().size() - 1, createPlacement(extremePoint, 20, 20, 1));
-
-		extremePoint = extremePoints.getValues().get(3);
-		extremePoints.add(3, createPlacement(extremePoint, 20, 20, 1));
-
-		/*
+		
 		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - 1);
 		extremePoints.add(extremePoints.getValues().size() - 1, createPlacement(extremePoint, 20, 35, 1));
-		
-		extremePoint = extremePoints.getValues().get(1);
-		extremePoints.add(1, createPlacement(extremePoint, 20, 20, 1));
 
+		extremePoint = extremePoints.getValues().get(2);
+		extremePoints.add(2, createPlacement(extremePoint, 20, 20, 1));
+
+//		extremePoint = extremePoints.getValues().get(2);
+//		extremePoints.add(2, createPlacement(extremePoint, 30, 20, 1));
+
+		extremePoint = extremePoints.getValues().get(1);
+		extremePoints.add(1, createPlacement(extremePoint, 30, 20, 1));
+		/*		
+
+		
 		extremePoint = extremePoints.getValues().get(1);
 		extremePoints.add(1, createPlacement(extremePoint, 30, 20, 1));
 		
@@ -63,6 +67,12 @@ public class DrawPoints3DTest {
 		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - offset);
 		extremePoints.add(extremePoints.getValues().size() - offset, createPlacement(extremePoint, 50, 50, 1));
 */
+		System.out.println("xyz:");
+		
+		for (Point3D p : extremePoints.getValues()) {
+			System.out.println(" " + p.getMinX() + "x" + p.getMinY() + "x" + p.getMinZ() + " " + p.getMaxX() + "x" + p.getMaxY() + "x" + p.getMaxZ());
+		}
+		
 		List<Point3D> values = extremePoints.getValues();
 		for (int i = 0; i < values.size(); i++) {
 			Point3D point3d = values.get(i);
@@ -72,6 +82,7 @@ public class DrawPoints3DTest {
 				i--;
 			}
 		}		
+		System.out.println("xy:");
 		for (Point3D p : extremePoints.getValues()) {
 			System.out.println(" " + p.getMinX() + "x" + p.getMinY() + "x" + p.getMinZ() + " " + p.getMaxX() + "x" + p.getMaxY() + "x" + p.getMaxZ());
 		}

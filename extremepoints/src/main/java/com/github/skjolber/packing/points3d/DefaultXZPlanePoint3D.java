@@ -16,7 +16,7 @@ public class DefaultXZPlanePoint3D extends Point3D implements XZPlanePoint3D {
 			int xzPlaneMinX, int xzPlaneMaxX, 
 			int xzPlaneMinZ, int xzPlaneMaxZ
 			) {
-		super(minX, minY, minZ, maxY, maxX, maxZ);
+		super(minX, minY, minZ, maxX, maxY, maxZ);
 		
 		this.xzPlaneMinX = xzPlaneMinX;
 		this.xzPlaneMaxX = xzPlaneMaxX;

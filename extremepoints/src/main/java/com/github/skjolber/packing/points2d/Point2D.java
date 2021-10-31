@@ -44,6 +44,15 @@ public abstract class Point2D {
 	
 	public Point2D(int minX, int minY, int maxX, int maxY) {
 		super();
+		
+		if(maxX < minX) {
+			throw new RuntimeException();
+		}
+
+		if(maxY < minY) {
+			throw new RuntimeException(maxY + " < " + minY);
+		}
+
 		this.minX = minX;
 		this.minY = minY;
 		this.maxY = maxY;
@@ -139,21 +148,21 @@ public abstract class Point2D {
 		return minY < y && y < maxY; 
 	}
 	
-	public boolean innerX(int x1, int x2) {
+	public boolean strictlyInsideX(int x1, int x2) {
 		// not including limits
 		return x1 < minX && minX < x2;
 	}
 
-	public boolean innerY(int y1, int y2) {
+	public boolean strictlyInsideY(int y1, int y2) {
 		// not including limits
 		return y1 < minY && minY < y2;
 	}
 	
-	public boolean shadowedOrSwallowedX(int min, int max) {
+	public boolean isShadowedOrSwallowedByX(int min, int max) {
 		return minX < max && maxX > min;
 	}
 
-	public boolean shadowedOrSwallowedY(int min, int max) {
+	public boolean isShadowedOrSwallowedByY(int min, int max) {
 		return minY < max && maxY > min;
 	}
 

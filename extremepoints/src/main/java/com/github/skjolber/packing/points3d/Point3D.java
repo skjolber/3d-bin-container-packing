@@ -7,6 +7,14 @@ import com.github.skjolber.packing.points2d.Point2D;
 
 public abstract class Point3D extends Point2D {
 
+	public static final Comparator<Point3D> Z_COMPARATOR = new Comparator<Point3D>() {
+		
+		@Override
+		public int compare(Point3D o1, Point3D o2) {
+			return Integer.compare(o1.minZ, o2.minZ);
+		}
+	};
+	
 	public static final Comparator<Point3D> COMPARATOR = new Comparator<Point3D>() {
 		
 		@Override
@@ -30,6 +38,10 @@ public abstract class Point3D extends Point2D {
 	
 	public Point3D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		super(minX, minY, maxX, maxY);
+		
+		if(maxZ < minZ) {
+			throw new RuntimeException("Expected max z " + maxZ + " >= min z " + minZ);
+		}
 		this.minZ = minZ;
 		this.maxZ = maxZ;
 		this.dz = maxZ - minZ + 1;
@@ -100,12 +112,24 @@ public abstract class Point3D extends Point2D {
 	public boolean isXZPlaneEdgeZ(int z) {
 		return false;
 	}
+
+	public boolean shadowedX(int min, int max) {
+		return minX < min && maxX > max;
+	}
+
+	public boolean shadowedY(int min, int max) {
+		return minY < min && maxY > max;
+	}
+
+	public boolean shadowedZ(int min, int max) {
+		return minZ < min && maxZ > max;
+	}
 	
-	public boolean shadowedOrSwallowedX(int min, int max) {
+	public boolean isShadowedOrSwallowedByX(int min, int max) {
 		return minX < max && maxX > min;
 	}
 
-	public boolean shadowedOrSwallowedY(int min, int max) {
+	public boolean isShadowedOrSwallowedByY(int min, int max) {
 		return minY < max && maxY > min;
 	}
 
@@ -127,7 +151,7 @@ public abstract class Point3D extends Point2D {
 
 	@Override
 	public String toString() {
-		return "Point3D [minX=" + minX + ", minY=" + minY + ", minZ=" + minZ + ", maxX=" + maxX + ", maxY=" + maxY 
+		return getClass().getSimpleName() + " [minX=" + minX + ", minY=" + minY + ", minZ=" + minZ + ", maxX=" + maxX + ", maxY=" + maxY 
 				+ ", maxZ=" + maxZ + "]";
 	}
 
@@ -137,4 +161,64 @@ public abstract class Point3D extends Point2D {
 	public Point2D clone(int maxX, int maxY) {
 		return clone(maxX, maxY, this.maxZ);
 	}
+	
+	public boolean containsInYZPlane(Point3D point) {
+		if(point.getMinX() == minX) {
+			return point.swallowedY(minY, maxY) && point.swallowedZ(minZ, maxZ);
+		}
+		return false;
+	}
+	
+	public boolean containsInXYPlane(Point3D point) {
+		if(point.getMinZ() == minZ) {
+			return point.swallowedY(minY, maxY) && point.swallowedX(minX, maxX);
+		}
+		return false;
+	}
+	
+	public boolean containsInXZPlane(Point3D point) {
+		if(point.getMinY() == minY) {
+			return point.swallowedZ(minZ, maxZ) && point.swallowedX(minX, maxX);
+		}
+		return false;
+	}
+	
+	public boolean isInXZPlane(Placement3D point) {
+		if(point.getAbsoluteY() == minY) {
+			return fitsInXZPlane(point);
+		}
+		return false;
+	}
+	
+	public boolean isInXYPlane(Placement3D point) {
+		if(point.getAbsoluteZ() == minZ) {
+			return fitsInXYPlane(point);
+		}
+		return false;
+	}
+	
+	public boolean isInYZPlane(Placement3D point) {
+		if(point.getAbsoluteX() == minX) {
+			return fitsInYZPlane(point);
+		}
+		return false;
+	}
+
+	public boolean fitsInXZPlane(Placement3D point) {
+		return swallowedZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowedX(point.getAbsoluteX(), point.getAbsoluteEndX());
+	}
+	
+	public boolean fitsInXYPlane(Placement3D point) {
+		return swallowedY(point.getAbsoluteY(), point.getAbsoluteEndY()) && swallowedX(point.getAbsoluteX(), point.getAbsoluteEndX());
+	}
+	
+	public boolean fitsInYZPlane(Placement3D point) {
+		return swallowedZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowedY(point.getAbsoluteY(), point.getAbsoluteEndX());
+	}
+
+
+	public boolean isMax(Point3D existing) {
+		return maxY == existing.getMaxY() && maxX == existing.getMaxX() && maxZ == existing.getMaxZ();
+	}
+
 }

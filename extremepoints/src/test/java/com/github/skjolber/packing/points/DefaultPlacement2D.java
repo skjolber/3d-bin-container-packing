@@ -43,7 +43,7 @@ public class DefaultPlacement2D implements Placement2D {
 
 	@Override
 	public String toString() {
-		return "DefaultPlacement2D [" + x + "x" + y + ", " + endX + "x" + endY + "]";
+		return getClass().getSimpleName() + "[" + x + "x" + y + ", " + endX + "x" + endY + "]";
 	}
 
 }

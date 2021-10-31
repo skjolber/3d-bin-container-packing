@@ -45,6 +45,9 @@ public class ExtremePoints3D<P extends Placement3D> {
 	public boolean add(int index, P placement, int boxDx, int boxDy, int boxDz) {		
 		Point3D source = values.get(index);
 		
+		System.out.println();
+		System.out.println("*******************************************************************************");
+		System.out.println();
 		System.out.println("Add " + placement);
 		for(Point2D v : values) {
 			System.out.println(" " + v);
@@ -53,16 +56,6 @@ public class ExtremePoints3D<P extends Placement3D> {
 		values.remove(index);
 		if(index != 0) {
 			index--;
-		}
-		
-		// Constrain max values to the new placement
-		for (int i = 0; i < values.size(); i++) {
-			Point3D point = values.get(i);
-			
-			if(!constrainMax(point, placement)) {
-				values.remove(i);
-				i--;
-			}
 		}
 		
 		int xx = source.getMinX() + boxDx;
@@ -79,7 +72,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 		//
 		//
 		//          ◄----------| without support
-		//             ◄-------| with supportyy
+		//             ◄-------| with support yy
 		//       |
 		//       |
 		// zz    |    |--------|      - -
@@ -100,29 +93,41 @@ public class ExtremePoints3D<P extends Placement3D> {
 		List<Point3D> addedZ = new ArrayList<>();
 
 		if(moveX) {
-			addX(placement, source, deleted, xx, yy, zz, addedX);
+			appendX(placement, source, deleted, xx, yy, zz, addedX);
 		}
 		if(moveY) {
-			addY(placement, source, deleted, xx, yy, zz, addedY);
+			appendY(placement, source, deleted, xx, yy, zz, addedY);
 		}
 		if(moveZ) {
-			addZ(placement, source, deleted, xx, yy, zz, addedZ);
+			appendZ(placement, source, deleted, xx, yy, zz, addedZ);
 		}
-		
+
 		deleted.add(source);
-		values.removeAll(deleted);
-		
-		for(int i = 0; i < values.size(); i++) {
-			Point3D point3d = values.get(i);
-			if(!constrainMax(point3d, placement)) {
+
+		// Constrain max values to the new placement
+		for (int i = 0; i < values.size(); i++) {
+			Point3D point = values.get(i);
+			
+			if(!constrainMax(point, placement)) {
+				System.out.println("Remove by constraint: " + point);
+				
 				values.remove(i);
 				i--;
 			}
 		}
 		
-		addAll(addedX);
-		addAll(addedY);
-		addAll(addedZ);
+		
+		if(!deleted.isEmpty()) {
+			System.out.println("Delete");
+			for(Point3D point : deleted) {
+				System.out.println(" " + point);
+			}
+			values.removeAll(deleted);
+		}
+		
+		addX(addedX, xx);
+		addY(addedY, yy);
+		addZ(addedZ, zz);
 		
 		placements.add(placement);
 		Collections.sort(values, Point3D.COMPARATOR);
@@ -130,7 +135,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 		return !values.isEmpty();
 	}	
 	
-	private void addZ(P placement, Point3D source, List<Point3D> deleted, int xx, int yy, int zz, List<Point3D> added) {
+	private void appendZ(P placement, Point3D source, List<Point3D> deleted, int xx, int yy, int zz, List<Point3D> added) {
 		System.out.println("Add z: " + xx + "x" + yy + "x" + zz + " at " + source.getMinX() + "x" + source.getMinY() + "x" + source.getMinZ());
 		
 		boolean yz = source.isSupportedYZPlane(source.getMinY(), zz);
@@ -142,7 +147,10 @@ public class ExtremePoints3D<P extends Placement3D> {
 		int maxX = projectPositiveX(source.getMinX(), source.getMinY(), zz);
 		int maxY = projectPositiveY(source.getMinX(), source.getMinY(), zz);
 
-		System.out.println("Add z: yz=" + yz + " xz=" + xz);
+		System.out.println("Add z yz:" + yz + " xz:" + xz);
+		
+		DefaultXZPlanePoint3D unconnectedXz = null;
+		DefaultYZPlanePoint3D unconnectedYz = null;
 		
 		if(yz && xz) {
 			// 3x corner point
@@ -210,7 +218,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 								
 							} else {
 								// found unconnected plane, so there is a 1x plane support
-								added.add(new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, x, xzPlane.getAbsoluteEndX(), z, xzPlane.getAbsoluteEndZ()));
+								added.add(unconnectedXz = new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, x, xzPlane.getAbsoluteEndX(), z, xzPlane.getAbsoluteEndZ()));
 							}
 						} else {
 							
@@ -228,7 +236,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 					int pointMaxX = constrainX(x, y, z);
 					int pointMaxZ = constrainZ(x, y, z);
 					
-					added.add(new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, source.getMinX(), containerMaxX, zz, containerMaxZ));
+					added.add(unconnectedXz = new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, source.getMinX(), containerMaxX, zz, containerMaxZ));
 				}
 			}
 		} else if(xz) {
@@ -269,7 +277,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 							
 						} else {
 							// found unconnected plane, so there is a 1x plane support
-							added.add(new DefaultYZPlanePoint3D(x, y, z, maxX, pointMaxY, pointMaxZ, x, yzPlane.getAbsoluteEndX(), z, yzPlane.getAbsoluteEndZ()));
+							added.add(unconnectedYz = new DefaultYZPlanePoint3D(x, y, z, maxX, pointMaxY, pointMaxZ, x, yzPlane.getAbsoluteEndX(), z, yzPlane.getAbsoluteEndZ()));
 						}
 					} else {
 						// placement is in line with another point, skip
@@ -284,8 +292,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 					int pointMaxY = constrainY(x, y, z);
 					int pointMaxZ = constrainZ(x, y, z);
 
-					added.add(new DefaultYZPlanePoint3D(x, y, z, maxX, pointMaxY, pointMaxZ, source.getMinX(), containerMaxX, zz, containerMaxZ));
-					System.out.println("Add z: add xz container wall");
+					added.add(unconnectedYz = new DefaultYZPlanePoint3D(x, y, z, maxX, pointMaxY, pointMaxZ, source.getMinX(), containerMaxX, zz, containerMaxZ));
 				}
 			}
 			
@@ -301,7 +308,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 				int pointMaxY = constrainY(x, y, z);
 				int pointMaxZ = constrainZ(x, y, z);
 
-				added.add(new DefaultYZPlanePoint3D(x, y, z, maxX, pointMaxY, pointMaxZ, source.getMinX(), yzPlane.getAbsoluteEndX(), zz, yzPlane.getAbsoluteEndZ()));
+				added.add(unconnectedYz = new DefaultYZPlanePoint3D(x, y, z, maxX, pointMaxY, pointMaxZ, source.getMinX(), yzPlane.getAbsoluteEndX(), zz, yzPlane.getAbsoluteEndZ()));
 			} else {
 				// found container wall
 				int x = 0;
@@ -311,7 +318,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 				int pointMaxY = constrainY(x, y, z);
 				int pointMaxZ = constrainZ(x, y, z);
 
-				added.add(new DefaultYZPlanePoint3D(x, y, z, maxX, pointMaxY, pointMaxZ, source.getMinX(), containerMaxX, zz, containerMaxZ));
+				added.add(unconnectedYz = new DefaultYZPlanePoint3D(x, y, z, maxX, pointMaxY, pointMaxZ, source.getMinX(), containerMaxX, zz, containerMaxZ));
 			}
 			
 			P xzPlane = projectNegativeY(source.getMinX(), source.getMinY(), zz);
@@ -325,7 +332,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 				int pointMaxX = constrainX(x, y, z);
 				int pointMaxZ = constrainZ(x, y, z);
 
-				added.add(new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, source.getMinX(), xzPlane.getAbsoluteEndX(), zz, xzPlane.getAbsoluteEndZ()));
+				added.add(unconnectedXz = new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, source.getMinX(), xzPlane.getAbsoluteEndX(), zz, xzPlane.getAbsoluteEndZ()));
 			} else {
 				// found container wall
 				int x = source.getMinX();
@@ -335,23 +342,86 @@ public class ExtremePoints3D<P extends Placement3D> {
 				int pointMaxX = constrainX(x, y, z);
 				int pointMaxZ = constrainZ(x, y, z);
 
-				added.add(new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, source.getMinX(), containerMaxX, zz, containerMaxZ));
+				added.add(unconnectedXz = new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, source.getMinX(), containerMaxX, zz, containerMaxZ));
 			}
 		}
 		
+		addShadowedOrSwallowedZZ(placement, source, deleted, zz, added);
+
+		if(unconnectedXz != null) { // negative y
+			System.out.println("Search z shadowed negative y");
+			for (int i = 0; i < values.size(); i++) {
+				Point3D point = values.get(i);
+				
+				if(unconnectedXz.getMinY() <= point.getMinY() && point.getMinY() <= placement.getAbsoluteEndY()) {
+					if(placement.getAbsoluteX() <= point.getMinX() && point.getMinX() <= placement.getAbsoluteEndX()) {
+						if(point.getMinZ() < zz) {
+							if(zz < point.getMaxZ()) {
+								
+								int x = point.getMinX();
+								int y = point.getMinY();
+								int z = zz;
 		
-		addSwallowedZZ(placement, source, deleted, zz, added);
+								System.out.println("Add z shadowed negative y " + x + "x" + y + "x" + z + " (" + point + ")");
 		
-		if(!added.isEmpty()) {
-			// TODO
-			
-			   
-			
+								int pointMaxX = constrainX(x, y, z);
+								int pointMaxZ = constrainZ(x, y, z);
+								
+								added.add(new DefaultPoint3D(x, y, z, pointMaxX, maxY, pointMaxZ));
+							}
+							
+							if(source.getMinY() <= point.getMinY()) {
+								int min = source.getMinZ() - 1;
+								if(point.getMaxZ() > min) {
+									point.setMaxZ(min);
+								}
+							}
+						}
+					}
+				}
+			}
 		}
-	}
 		
+		if(unconnectedYz != null) { // negative x
+			
+			System.out.println("Search z shadowed negative x");
+			for (int i = 0; i < values.size(); i++) {
+				Point3D point = values.get(i);
+				
+				if(unconnectedYz.getMinX() <= point.getMinX() && point.getMinX() <= placement.getAbsoluteEndX()) {
+					if(placement.getAbsoluteY() <= point.getMinY() && point.getMinY() <= placement.getAbsoluteEndY()) {
+						if(point.getMinZ() < zz) {
+							if(zz < point.getMaxZ()) {
+								
+								int x = point.getMinX();
+								int y = point.getMinY();
+								int z = zz;
+		
+								System.out.println("Add z shadowed negative x " + x + "x" + y + "x" + z + " (" + point + ")");
+		
+								int pointMaxY = constrainY(x, y, z);
+								int pointMaxZ = constrainZ(x, y, z);
+								
+								added.add(new DefaultPoint3D(x, y, z, maxX, pointMaxY, pointMaxZ));
+							}
+							
+							if(source.getMinX() <= point.getMinX()) {
+								
+								int min = source.getMinZ() - 1;
+								if(point.getMaxZ() > min) {
+									point.setMaxZ(min);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		removeShadowedZ(added);
+	}
 	
-	private List<Point3D> addX(P placement, Point3D source, List<Point3D> deleted, int xx, int yy, int zz, List<Point3D> added) {
+	private void appendX(P placement, Point3D source, List<Point3D> deleted, int xx, int yy, int zz, List<Point3D> added) {
 		boolean xy = source.isSupportedXYPlane(xx, source.getMinY());
 		boolean xz = source.isSupportedXZPlane(xx, source.getMinZ());
 
@@ -361,9 +431,10 @@ public class ExtremePoints3D<P extends Placement3D> {
 		int maxZ = projectPositiveZ(xx, source.getMinY(), source.getMinZ());
 		int maxY = projectPositiveY(xx, source.getMinY(), source.getMinZ());
 
-		boolean unconnetedXy = false;
-		boolean unconnetedXz = false;
+		DefaultXYPlanePoint3D unconnetedXy = null;
+		DefaultXZPlanePoint3D unconnetedXz = null;
 
+		System.out.println("Add x xy:" + xy + " xz:" + xz);
 		if(xy && xz) {
 			// 3x corner point
 			XZPlanePoint3D xzPlane = (XZPlanePoint3D)source;
@@ -430,9 +501,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 							
 						} else {
 							// found unconnected plane, so there is a 1x plane support
-							added.add(new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, x, xzPlane.getAbsoluteEndX(), z, xzPlane.getAbsoluteEndZ()));
-							
-							unconnetedXy = true;
+							added.add(unconnetedXz = new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, x, xzPlane.getAbsoluteEndX(), z, xzPlane.getAbsoluteEndZ()));
 						}
 					} else {
 						// placement is in line with another point, skip
@@ -446,9 +515,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 					int pointMaxX = constrainX(x, y, z);
 					int pointMaxZ = constrainZ(x, y, z);
 					
-					added.add(new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, xx, containerMaxX, source.getMinZ(), containerMaxZ));
-					
-					unconnetedXy = true;
+					added.add(unconnetedXz = new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, xx, containerMaxX, source.getMinZ(), containerMaxZ));
 				}
 			}
 		} else if(xz) {
@@ -491,9 +558,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 							
 						} else {
 							// found unconnected plane, so there is a 1x plane support
-							added.add(new DefaultXYPlanePoint3D(x, y, z, pointMaxX, pointMaxY, maxZ, x, xyPlane.getAbsoluteEndX(), y, xyPlane.getAbsoluteEndY()));
-							
-							unconnetedXz = true;
+							added.add(unconnetedXy = new DefaultXYPlanePoint3D(x, y, z, pointMaxX, pointMaxY, maxZ, x, xyPlane.getAbsoluteEndX(), y, xyPlane.getAbsoluteEndY()));
 						}
 					} else {
 						// placement is in line with another point, skip
@@ -507,16 +572,11 @@ public class ExtremePoints3D<P extends Placement3D> {
 					int pointMaxX = constrainX(x, y, z);
 					int pointMaxY = constrainY(x, y, z);
 					
-					added.add(new DefaultXYPlanePoint3D(x, y, z, pointMaxX, pointMaxY, maxZ, xx, containerMaxX, source.getMinY(), containerMaxY));
-					
-					unconnetedXz = true;
+					added.add(unconnetedXy = new DefaultXYPlanePoint3D(x, y, z, pointMaxX, pointMaxY, maxZ, xx, containerMaxX, source.getMinY(), containerMaxY));
 				}
 			}
 			
 		} else {
-			unconnetedXy = true;
-			unconnetedXz = true;
-			
 			// two unsupported points - negative y and z direction
 			P xzPlane = projectNegativeY(xx, yy, source.getMinZ());
 			if(xzPlane != null) {
@@ -525,8 +585,11 @@ public class ExtremePoints3D<P extends Placement3D> {
 				int x = xx;
 				int y = xzPlane.getAbsoluteEndY() + 1;
 				int z = source.getMinZ();
-				
-				added.add(new DefaultXZPlanePoint3D(x, y, z, containerMaxX, maxY, containerMaxZ, xx, xzPlane.getAbsoluteEndX(), source.getMinZ(), xzPlane.getAbsoluteEndZ()));
+
+				int pointMaxX = constrainX(x, y, z);
+				int pointMaxZ = constrainZ(x, y, z);
+
+				added.add(unconnetedXz = new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, xx, xzPlane.getAbsoluteEndX(), source.getMinZ(), xzPlane.getAbsoluteEndZ()));
 			} else {
 				// found unconnected plane (container wall)
 				
@@ -537,7 +600,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 				int pointMaxX = constrainX(x, y, z);
 				int pointMaxZ = constrainZ(x, y, z);
 
-				added.add(new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, xx, containerMaxX, source.getMinZ(), containerMaxZ));
+				added.add(unconnetedXz = new DefaultXZPlanePoint3D(x, y, z, pointMaxX, maxY, pointMaxZ, xx, containerMaxX, source.getMinZ(), containerMaxZ));
 			}
 			
 			P xyPlane = projectNegativeZ(xx, source.getMinY(), zz);
@@ -550,7 +613,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 				int pointMaxX = constrainX(x, y, z);
 				int pointMaxY = constrainY(x, y, z);
 
-				added.add(new DefaultXYPlanePoint3D(x, y, z, pointMaxX, pointMaxY, maxZ, xx, xyPlane.getAbsoluteEndX(), source.getMinY(), xyPlane.getAbsoluteEndY()));
+				added.add(unconnetedXy = new DefaultXYPlanePoint3D(x, y, z, pointMaxX, pointMaxY, maxZ, xx, xyPlane.getAbsoluteEndX(), source.getMinY(), xyPlane.getAbsoluteEndY()));
 			} else {
 				// found unconnected plane (container wall)
 				int x = xx;
@@ -560,24 +623,133 @@ public class ExtremePoints3D<P extends Placement3D> {
 				int pointMaxX = constrainX(x, y, z);
 				int pointMaxY = constrainY(x, y, z);
 				
-				added.add(new DefaultXYPlanePoint3D(x, y, z, pointMaxX, pointMaxY, maxZ, xx, containerMaxX, source.getMinY(), containerMaxY));
+				added.add(unconnetedXy = new DefaultXYPlanePoint3D(x, y, z, pointMaxX, pointMaxY, maxZ, xx, containerMaxX, source.getMinY(), containerMaxY));
 			}
 		}
 		
-		
 		// project within 
-		addSwallowedXX(placement, source, deleted, xx, added);
+		addShadowedOrSwallowedXX(placement, source, deleted, xx, added);
+
+		if(unconnetedXy != null) { // negative z
+			System.out.println("Search x shadowed negative z");
+			for (int i = 0; i < values.size(); i++) {
+				Point3D point = values.get(i);
+				
+				if(unconnetedXy.getMinZ() <= point.getMinZ() && point.getMinZ() <= placement.getAbsoluteEndZ()) {
+					if(placement.getAbsoluteY() <= point.getMinY() && point.getMinY() <= placement.getAbsoluteEndY()) {
+						if(point.getMinX() < xx ) {
+							if(xx < point.getMaxX()) {
+	
+								int x = xx;
+								int y = point.getMinY();
+								int z = point.getMinZ();
 		
-		if(!added.isEmpty()) {
-			// TODO
-			
-			
-			
-			
+								System.out.println("Add x shadowed negative z " + x + "x" + y + "x" + z + " (" + point + ")");
+		
+								int pointMaxX = constrainX(x, y, z);
+								int pointMaxY = constrainY(x, y, z);
+								
+								added.add(new DefaultPoint3D(x, y, z, pointMaxX, pointMaxY, maxZ));
+							}
+						}
+					}
+				}
+			}
 		}
-		return added;
+		
+		if(unconnetedXz != null) { // negative z
+			System.out.println("Search x shadowed negative y");
+			for (int i = 0; i < values.size(); i++) {
+				Point3D point = values.get(i);
+				
+				if(unconnetedXz.getMinY() <= point.getMinY() && point.getMinY() <= placement.getAbsoluteEndY()) {
+					if(placement.getAbsoluteZ() <= point.getMinZ() && point.getMinZ() <= placement.getAbsoluteEndZ()) {
+						if(point.getMinX() < xx) {
+							if(xx < point.getMaxX()) {
+								
+								int x = xx;
+								int y = point.getMinY();
+								int z = point.getMinZ();
+		
+								System.out.println("Add x shadowed negative y " + x + "x" + y + "x" + z + " (" + point + ")");
+		
+								int pointMaxX = constrainX(x, y, z);
+								int pointMaxZ = constrainZ(x, y, z);
+								
+								added.add(new DefaultPoint3D(x, y, z, pointMaxX, maxY, pointMaxZ));
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		removeShadowedX(added);
+	}
+	
+	protected void removeShadowedX(List<Point3D> added) {
+		for (int j = 0; j < added.size(); j++) {
+			Point3D point2d = added.get(j);
+			
+			for (int i = j + 1; i < added.size(); i++) {
+				Point3D p = added.get(i);
+
+				// is the new point shadowed, or shadowing an existing point?
+				if(point2d.isMax(p)) {
+					if(point2d.containsInYZPlane(p)) {
+						added.remove(i);
+						i--;
+					} else if(p.containsInYZPlane(point2d)) {
+						added.remove(j);
+						j--;
+					}
+				}				
+			}
+		}
+	}
+	
+	protected void removeShadowedY(List<Point3D> added) {
+		for (int j = 0; j < added.size(); j++) {
+			Point3D point2d = added.get(j);
+			
+			for (int i = j + 1; i < added.size(); i++) {
+				Point3D p = added.get(i);
+
+				// is the new point shadowed, or shadowing an existing point?
+				if(point2d.isMax(p)) {
+					if(point2d.containsInXZPlane(p)) {
+						added.remove(i);
+						i--;
+					} else if(p.containsInXZPlane(point2d)) {
+						added.remove(j);
+						j--;
+					}
+				}				
+			}
+		}
 	}
 
+	protected void removeShadowedZ(List<Point3D> added) {
+		for (int j = 0; j < added.size(); j++) {
+			Point3D point2d = added.get(j);
+			
+			for (int i = j + 1; i < added.size(); i++) {
+				Point3D p = added.get(i);
+
+				// is the new point shadowed, or shadowing an existing point?
+				if(point2d.isMax(p)) {
+					if(point2d.containsInXYPlane(p)) {
+						added.remove(i);
+						i--;
+					} else if(p.containsInXYPlane(point2d)) {
+						added.remove(j);
+						j--;
+					}
+				}				
+			}
+		}
+	}
+	
 	
 	protected void addSwallowedXX(P placement, Point3D source, List<Point3D> deleted, int xx, List<Point3D> added) {
 		//    swallowed:
@@ -603,7 +775,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 			Point3D point = values.get(i);
 
 			// Move points swallowed by the placement
-			if(point.swallowedX(source.getMinX(), xx) && withinY(point.getMinY(), placement) && withinZ(point.getMinZ(), placement)) {
+			if(point.swallowedX(source.getMinX(), xx) && point.fitsInYZPlane(placement)) {
 				if(point.getMaxX() > xx) {
 					// add point on the other side
 					// vertical support
@@ -619,14 +791,103 @@ public class ExtremePoints3D<P extends Placement3D> {
 							);
 
 					added.add(next);
+				}
+				
+				// delete current point (which was swallowed)
+				System.out.println("Point " + point + " was swallowed x");
+				deleted.add(point);
+			}
+		}
+	}
+	
+	protected void addShadowedOrSwallowedXX(P placement, Point3D source, List<Point3D> deleted, int xx, List<Point3D> added) {
+		//    swallowed:
+		//
+		//    |
+		//    |
+		//    |---------|
+		//    |         |
+		//    | *       |
+		//    |         | 
+		//    |---------|---------------> x
+		//
+		//    |
+		//    |
+		//    |---------|
+		//    |         |
+		//    |         *
+		//    |         | 
+		//    |---------|---------------> x			
+		//
+		//
+		//    shadowed:
+		//
+		//    |                          |
+		//    |                          |
+		//    |                          |
+		//    |         |-------|        |
+		//    |         |       |        |
+		//    *         |       |        |
+		//    |         |       |        |
+		//    |         |       |        |
+		//    |         |       |        |
+		//    |---------|       |        |
+		//    |         |       |        |
+		//    |         |       |        |
+		//    |         |       |        |
+		//    |---------|-------|--------|---
+		//			
+		//    |                          |
+		//    |                          |
+		//    |                          |
+		//    |         |-------|        |
+		//    |         |       |        |
+		//    *         |       *        |
+		//    |         |       |        |
+		//    |         |       |        |
+		//    |         |       |        |
+		//    |---------|       |        |
+		//    |         |       |        |
+		//    |         |       |        |
+		//    |         |       |        |
+		//    |---------|-------|--------|---
+		//    			
+		//  point     source   xx      point
+		//  minX       minX            maxX
+		
+		for (int i = 0; i < values.size(); i++) {
+			Point3D point = values.get(i);
+
+			// Move points swallowed by the placement
+			if(point.isShadowedOrSwallowedByX(source.getMinX(), xx) && point.fitsInYZPlane(placement)) {
+				if(point.getMaxX() > xx) {
+					// add point on the other side
+					// vertical support
+					int maxY = constrainIfNotMaxY(source, xx, point.getMinZ());
+					int maxZ = constrainIfNotMaxZ(source, xx, point.getMinY());
+
+					DefaultYZPlanePoint3D next = new DefaultYZPlanePoint3D(
+							xx, point.getMinY(), point.getMinZ(),
+							point.getMaxX(), maxY, maxZ,
+							
+							point.getMinY(), placement.getAbsoluteEndY(),
+							point.getMinZ(), placement.getAbsoluteEndZ()
+							);
+
+					added.add(next);
+				}
+				
+				
+				if(point.getMinX() < source.getMinX()) {
+					// constrain current point
+					point.setMaxX(source.getMinX() - 1);
 				} else {
 					// delete current point (which was swallowed)
+					System.out.println("Point " + point + " was swallowed x");
 					deleted.add(point);
 				}
 			}
 		}
-		
-		//removeShadowedY(added);
 	}
 	
 	protected void addSwallowedYY(P placement, Point3D source, List<Point3D> deleted, int yy, List<Point3D> added) {
@@ -654,7 +915,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 			Point3D point = values.get(i);
 		
 			// Move points swallowed by the placement
-			if(point.swallowedY(source.getMinY(), yy) && withinX(point.getMinX(), placement) && withinZ(point.getMinZ(), placement)) {
+			if(point.swallowedY(source.getMinY(), yy) && point.fitsInXZPlane(placement)) {
 				if(point.getMaxY() > yy) {
 					
 					int maxX = constrainIfNotMaxX(source, yy, point.getMinZ());
@@ -669,15 +930,73 @@ public class ExtremePoints3D<P extends Placement3D> {
 						);
 					
 					added.add(next);
-				} else {
-					// delete current point (which was swallowed)
-					deleted.add(point);
-				}
+				} 
+				
+				// delete current point (which was swallowed)
+				System.out.println("Point " + point + " was swallowed y");
+				deleted.add(point);
 			}
 		}
 
 		// removeShadowedX(added);
 	}
+	
+	
+	protected void addShadowedOrSwallowedYY(P placement, Point3D source, List<Point3D> deleted, int yy, List<Point3D> added) {
+		//    swallowed:
+		//
+		//    |
+		//    |
+		//    |-*-------|
+		//    |         |
+		//    | *       |
+		//    |         | 
+		//    |---------|---------------
+		//
+		//    |
+		//    |
+		//    |-*-------|
+		//    |         |
+		//    |         |
+		//    |         | 
+		//    |---------|---------------
+		//
+		//
+
+		for (int i = 0; i < values.size(); i++) {
+			Point3D point = values.get(i);
+		
+			// Move points swallowed by the placement
+			if(point.swallowedY(source.getMinY(), yy) && point.fitsInXZPlane(placement)) {
+				if(point.getMaxY() > yy) {
+					
+					int maxX = constrainIfNotMaxX(source, yy, point.getMinZ());
+					int maxZ = constrainIfNotMaxZ(source, point.getMinX(), yy);
+
+					DefaultXZPlanePoint3D next = new DefaultXZPlanePoint3D(
+							point.getMinX(), yy, point.getMinZ(),
+							maxX, point.getMaxY(), maxZ,
+							
+							point.getMinX(), placement.getAbsoluteEndX(),
+							point.getMinZ(), placement.getAbsoluteEndZ()
+						);
+					
+					added.add(next);
+				} 
+
+				if(point.getMinY() < source.getMinY()) {
+					// constrain current point
+					point.setMaxY(source.getMinY() - 1);
+				} else {
+					// delete current point (which was swallowed)
+					deleted.add(point);
+				}				
+			}
+		}
+
+		// removeShadowedX(added);
+	}
+		
 		
 	protected void addSwallowedZZ(P placement, Point3D source, List<Point3D> deleted, int zz, List<Point3D> added) {
 		//    swallowed:
@@ -704,7 +1023,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 			Point3D point = values.get(i);
 		
 			// Move points swallowed by the placement
-			if(point.swallowedZ(source.getMinZ(), zz) && withinX(point.getMinX(), placement) && withinY(point.getMinY(), placement)) {
+			if(point.swallowedZ(source.getMinZ(), zz) && point.fitsInXYPlane(placement)) {
 				if(point.getMaxZ() > zz) {
 					
 					int maxX = constrainIfNotMaxX(source, point.getMinY(), zz);
@@ -719,6 +1038,62 @@ public class ExtremePoints3D<P extends Placement3D> {
 						);
 					
 					added.add(next);
+				} 
+				// delete current point (which was swallowed)
+				System.out.println("Point " + point + " was swallowed z");
+				deleted.add(point);
+			}
+		}
+
+		// removeShadowedX(added);
+	}
+	
+	
+	protected void addShadowedOrSwallowedZZ(P placement, Point3D source, List<Point3D> deleted, int zz, List<Point3D> added) {
+		//    swallowed:
+		//
+		//    |
+		//    |
+		//    |-*-------|
+		//    |         |
+		//    | *       |
+		//    |         | 
+		//    |---------|---------------
+		//
+		//    |
+		//    |
+		//    |-*-------|
+		//    |         |
+		//    |         |
+		//    |         | 
+		//    |---------|---------------
+		//
+		//
+
+		for (int i = 0; i < values.size(); i++) {
+			Point3D point = values.get(i);
+		
+			// Move points swallowed by the placement
+			if(point.swallowedZ(source.getMinZ(), zz) && point.fitsInXYPlane(placement)) {
+				if(point.getMaxZ() > zz) {
+					
+					int maxX = constrainIfNotMaxX(source, point.getMinY(), zz);
+					int maxY = constrainIfNotMaxY(source, point.getMinX(), zz);
+
+					DefaultXYPlanePoint3D next = new DefaultXYPlanePoint3D(
+							point.getMinX(), point.getMinY(), zz,
+							maxX, maxY, point.getMaxZ(),
+							
+							point.getMinX(), placement.getAbsoluteEndX(),
+							point.getMinY(), placement.getAbsoluteEndY()
+						);
+					
+					added.add(next);
+				}
+				
+				if(point.getMinZ() < source.getMinZ()) {
+					// constrain current point
+					point.setMaxZ(source.getMinZ() - 1);
 				} else {
 					// delete current point (which was swallowed)
 					deleted.add(point);
@@ -728,8 +1103,8 @@ public class ExtremePoints3D<P extends Placement3D> {
 
 		// removeShadowedX(added);
 	}
-	
-	private List<Point3D> addY(P placement, Point3D source, List<Point3D> deleted, int xx, int yy, int zz, List<Point3D> added) {
+
+	private void appendY(P placement, Point3D source, List<Point3D> deleted, int xx, int yy, int zz, List<Point3D> added) {
 		boolean xy = source.isSupportedXYPlane(source.getMinX(), yy);
 		boolean yz = source.isSupportedYZPlane(yy, source.getMinZ());
 
@@ -738,6 +1113,11 @@ public class ExtremePoints3D<P extends Placement3D> {
 
 		int maxZ = projectPositiveZ(source.getMinX(), yy, source.getMinZ());
 		int maxX = projectPositiveX(source.getMinX(), yy, source.getMinZ());
+		
+		System.out.println("Add y xy:" + xy + " yz:" + yz);
+
+		DefaultXYPlanePoint3D unconnectedXy = null;
+		DefaultYZPlanePoint3D unconnectedYz = null;
 		
 		if(xy && yz) {
 			// 3x corner point
@@ -758,7 +1138,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 					z, yzPlane.getSupportedYZPlaneMaxZ(), // z
 					
 					// xz plane (i.e. side of the new placement)
-					x, xx - 1, // y
+					x, xx - 1, // x
 					z, zz - 1, // z
 
 					// xy plane
@@ -806,7 +1186,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 						} else {
 							System.out.println("Add Y, unconnected x plane");
 							// found unconnected plane, so there is a 1x plane support
-							added.add(new DefaultYZPlanePoint3D(x, y, z, maxX, pointMaxY, pointMaxZ, y, zyPlane.getAbsoluteEndY(), z, zyPlane.getAbsoluteEndZ()));
+							added.add(unconnectedYz = new DefaultYZPlanePoint3D(x, y, z, maxX, pointMaxY, pointMaxZ, y, zyPlane.getAbsoluteEndY(), z, zyPlane.getAbsoluteEndZ()));
 						}
 					} else {
 						// placement is in line with another point, skip
@@ -817,7 +1197,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 					int pointMaxY = constrainY(0, yy, source.getMinZ());
 					int pointMaxZ = constrainZ(0, yy, source.getMinZ());
 					
-					added.add(new DefaultYZPlanePoint3D(0, yy, source.getMinZ(), maxX, pointMaxY, pointMaxZ, yy, containerMaxZ, source.getMinZ(), containerMaxZ));
+					added.add(unconnectedYz = new DefaultYZPlanePoint3D(0, yy, source.getMinZ(), maxX, pointMaxY, pointMaxZ, yy, containerMaxZ, source.getMinZ(), containerMaxZ));
 				}
 			}
 			
@@ -860,7 +1240,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 							
 						} else {
 							// found unconnected plane, so there is a 1x plane support
-							added.add(new DefaultXYPlanePoint3D(x, y, z, pointMaxX, pointMaxY, maxZ, x, xyPlane.getAbsoluteEndX(), y, xyPlane.getAbsoluteEndY()));
+							added.add(unconnectedXy = new DefaultXYPlanePoint3D(x, y, z, pointMaxX, pointMaxY, maxZ, x, xyPlane.getAbsoluteEndX(), y, xyPlane.getAbsoluteEndY()));
 						}
 					} else {
 						// placement is in line with another point, skip
@@ -870,14 +1250,13 @@ public class ExtremePoints3D<P extends Placement3D> {
 					int pointMaxX = constrainX(source.getMinX(), yy, 0);
 					int pointMaxY = constrainY(source.getMinX(), yy, 0);
 					
-					added.add(new DefaultXYPlanePoint3D(source.getMinX(), yy, 0, pointMaxX, pointMaxY, maxZ, source.getMinX(), containerMaxX, yy, containerMaxY));
+					added.add(unconnectedXy = new DefaultXYPlanePoint3D(source.getMinX(), yy, 0, pointMaxX, pointMaxY, maxZ, source.getMinX(), containerMaxX, yy, containerMaxY));
 				}
 			}
 				
 		} else {
 			
 			// TODO constrain
-			
 			// two unsupported points - negative x and z direction
 			P zyPlane = projectNegativeX(xx, yy, source.getMinZ());
 			if(zyPlane != null) {
@@ -889,7 +1268,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 				int pointMaxY = constrainY(x, y, z);
 				int pointMaxZ = constrainZ(x, y, z);
 
-				added.add(new DefaultYZPlanePoint3D(x, y, z, maxX, pointMaxY, pointMaxZ, yy, zyPlane.getAbsoluteEndY(), source.getMinZ(), zyPlane.getAbsoluteEndZ()));
+				added.add(unconnectedYz = new DefaultYZPlanePoint3D(x, y, z, maxX, pointMaxY, pointMaxZ, yy, zyPlane.getAbsoluteEndY(), source.getMinZ(), zyPlane.getAbsoluteEndZ()));
 			} else {
 				// found container wall
 				int x = 0;
@@ -899,7 +1278,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 				int pointMaxY = constrainY(x, y, z);
 				int pointMaxZ = constrainZ(x, y, z);
 
-				added.add(new DefaultYZPlanePoint3D(x, y, z, maxX, pointMaxY, pointMaxZ, yy, containerMaxY, source.getMinZ(), containerMaxZ));
+				added.add(unconnectedYz = new DefaultYZPlanePoint3D(x, y, z, maxX, pointMaxY, pointMaxZ, yy, containerMaxY, source.getMinZ(), containerMaxZ));
 			}
 			
 			P xyPlane = projectNegativeZ(xx, source.getMinY(), zz);
@@ -912,7 +1291,7 @@ public class ExtremePoints3D<P extends Placement3D> {
 				int pointMaxX = constrainX(x, y, z);
 				int pointMaxY = constrainY(x, y, z);
 
-				added.add(new DefaultXYPlanePoint3D(x, y, z, pointMaxX, pointMaxY, maxZ, source.getMinX(), xyPlane.getAbsoluteEndX(), yy, xyPlane.getAbsoluteEndY()));
+				added.add(unconnectedXy = new DefaultXYPlanePoint3D(x, y, z, pointMaxX, pointMaxY, maxZ, source.getMinX(), xyPlane.getAbsoluteEndX(), yy, xyPlane.getAbsoluteEndY()));
 			} else {
 				// found container wall
 				int x = source.getMinX();
@@ -922,17 +1301,168 @@ public class ExtremePoints3D<P extends Placement3D> {
 				int pointMaxX = constrainX(x, y, z);
 				int pointMaxY = constrainY(x, y, z);
 
-				added.add(new DefaultXYPlanePoint3D(x, y, z, pointMaxX, pointMaxY, maxZ, source.getMinX(), containerMaxX, yy, containerMaxY));
+				added.add(unconnectedXy = new DefaultXYPlanePoint3D(x, y, z, pointMaxX, pointMaxY, maxZ, source.getMinX(), containerMaxX, yy, containerMaxY));
 			}
 		}
 		
-		addSwallowedYY(placement, source, deleted, yy, added);
+		addShadowedOrSwallowedYY(placement, source, deleted, yy, added);
+
+		if(unconnectedXy != null) { // negative z
+			
+			System.out.println("Search y shadowed negative z");
+			for (int i = 0; i < values.size(); i++) {
+				Point3D point = values.get(i);
+				
+				if(unconnectedXy.getMinZ() <= point.getMinZ() && point.getMinZ() <= placement.getAbsoluteEndZ()) {
+					if(placement.getAbsoluteX() <= point.getMinX() && point.getMinX() <= placement.getAbsoluteEndX()) {
+						if(point.getMinY() < yy) {
+							if(yy < point.getMaxY()) {
+								int x = point.getMinX();
+								int y = yy;
+								int z = point.getMinZ();
+								
+								System.out.println("Add y shadowed negative z " + x + "x" + y + "x" + z + " (" + point + ")");
 		
-		if(!added.isEmpty()) {
-			// TODO
+								int pointMaxX = constrainX(x, y, z);
+								int pointMaxY = constrainY(x, y, z);
+								
+								added.add(new DefaultPoint3D(x, y, z, pointMaxX, pointMaxY, maxZ));
+							}
+							
+							if(source.getMinZ() <= point.getMinZ()) {
+								int min = source.getMinY() - 1;
+								if(point.getMaxY() > min) {
+									point.setMaxY(min);
+								}
+							}
+						}
+					}
+				}
+			}
 		}
-		return added;
+		
+		if(unconnectedYz != null) { // negative x
+		
+			System.out.println("Search y shadowed negative x");
+			for (int i = 0; i < values.size(); i++) {
+				Point3D point = values.get(i);
+				
+				if(unconnectedYz.getMinX() <= point.getMinX() && point.getMinX() <= placement.getAbsoluteEndX()) {
+					if(placement.getAbsoluteZ() <= point.getMinZ() && point.getMinZ() <= placement.getAbsoluteEndZ()) {
+						if(point.getMinY() < yy) {
+							
+							if(yy < point.getMaxY()) {
+								int x = point.getMinX();
+								int y = yy;
+								int z = point.getMinZ();
+		
+								System.out.println("Add y shadowed negative x " + x + "x" + y + "x" + z + " (" + point + ")");
+		
+								int pointMaxY = constrainY(x, y, z);
+								int pointMaxZ = constrainZ(x, y, z);
+								
+								added.add(new DefaultPoint3D(x, y, z, maxX, pointMaxY, pointMaxZ));
+							}
+							
+							if(source.getMinX() <= point.getMinX()) {
+								int min = source.getMinY() - 1;
+								if(point.getMaxY() > min) {
+									point.setMaxY(min);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		removeShadowedY(added);
 	}
+	
+	protected void addX(List<Point3D> add, int x) {
+		int index = 0;
+		while(index < values.size()) {
+			Point3D existing = values.get(index);
+			
+			if(existing.getMinX() == x) {
+				for (int i = 0; i < add.size(); i++) {
+					Point3D p1 = add.get(i);
+
+					if(p1.isMax(existing)) {
+
+						// is the new point shadowed, or shadowing an existing point?
+						if(existing.containsInYZPlane(p1)) {
+							add.remove(i);
+							i--;
+						} else if(p1.containsInYZPlane(existing)) {
+							values.set(index, p1);
+							existing = p1;
+						}
+					}
+				}
+			}
+			index++;
+		}
+		
+		values.addAll(add);	
+	}
+	
+	protected void addY(List<Point3D> add, int y) {
+		int index = 0;
+		while(index < values.size()) {
+			Point3D existing = values.get(index);
+			
+			if(existing.getMinY() == y) {
+				for (int i = 0; i < add.size(); i++) {
+					Point3D p1 = add.get(i);
+
+					if(p1.isMax(existing)) {
+
+						// is the new point shadowed, or shadowing an existing point?
+						if(existing.containsInXZPlane(p1)) {
+							add.remove(i);
+							i--;
+						} else if(p1.containsInXZPlane(existing)) {
+							values.set(index, p1);
+							existing = p1;
+						}
+					}
+				}
+			}
+			index++;
+		}
+		
+		values.addAll(add);	
+	}
+	
+	protected void addZ(List<Point3D> add, int z) {
+		int index = 0;
+		while(index < values.size()) {
+			Point3D existing = values.get(index);
+			
+			if(existing.getMinZ() == z) {
+				for (int i = 0; i < add.size(); i++) {
+					Point3D p1 = add.get(i);
+
+					if(p1.isMax(existing)) {
+
+						// is the new point shadowed, or shadowing an existing point?
+						if(existing.containsInXYPlane(p1)) {
+							add.remove(i);
+							i--;
+						} else if(p1.containsInXYPlane(existing)) {
+							values.set(index, p1);
+							existing = p1;
+						}
+					}
+				}
+			}
+			index++;
+		}
+		
+		values.addAll(add);	
+	}
+	
 
 	private void addAll(List<Point3D> add) {
 		
@@ -956,14 +1486,18 @@ public class ExtremePoints3D<P extends Placement3D> {
 	protected boolean constrainMax(Point3D point, P placement) {
 		int maxX = projectPositiveX(point.getMinX(), point.getMinY(), point.getMinZ(), placement, point.getMaxX());
 		if(maxX <= point.getMinX()) {
+			System.out.println("Failed x");
 			return false;
 		}
 		int maxY = projectPositiveY(point.getMinX(), point.getMinY(), point.getMinZ(), placement, point.getMaxY());
 		if(maxY <= point.getMinY()) {
+			System.out.println("Failed y with " + maxY + " <= " + point.getMinY());
+			System.out.println(point + " " + placement);
 			return false;
 		}
 		int maxZ = projectPositiveZ(point.getMinX(), point.getMinY(), point.getMinZ(), placement, point.getMaxZ());
 		if(maxZ <= point.getMinZ()) {
+			System.out.println("Failed z");
 			return false;
 		}
 		
@@ -1197,15 +1731,15 @@ public class ExtremePoints3D<P extends Placement3D> {
 		return closest;
 	}
 	
-	protected boolean withinX(int x, P placement) {
+	public boolean withinX(int x, P placement) {
 		return placement.getAbsoluteX() <= x && x <= placement.getAbsoluteEndX();
 	}
 
-	protected boolean withinY(int y, P placement) {
+	public boolean withinY(int y, P placement) {
 		return placement.getAbsoluteY() <= y && y <= placement.getAbsoluteEndY();
 	}
 	
-	protected boolean withinZ(int z, P placement) {
+	public boolean withinZ(int z, P placement) {
 		return placement.getAbsoluteZ() <= z && z <= placement.getAbsoluteEndZ();
 	}
 	
@@ -1284,21 +1818,6 @@ public class ExtremePoints3D<P extends Placement3D> {
 		}
 		return min;
 	}
-
-	public boolean intercepts(Point3D point, Placement3D placement) {
-		if(point.getMaxX() < placement.getAbsoluteX()) {
-			return false;
-		}
-		if(point.getMaxY() < placement.getAbsoluteY()) {
-			return false;
-		}
-		if(point.getMaxZ() < placement.getAbsoluteZ()) {
-			return false;
-		}
-		
-		return true;
-	}
-	
 
 	protected int constrainIfNotMaxY(Point3D source, int x, int z) {
 		int maxY;
