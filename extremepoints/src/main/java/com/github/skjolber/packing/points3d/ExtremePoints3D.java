@@ -23,6 +23,13 @@ public class ExtremePoints3D<P extends Placement3D> {
 	private List<Point3D> values = new ArrayList<>();
 	private List<P> placements = new ArrayList<>();
 
+	// reused working objects
+	private List<Point3D> deleted = new ArrayList<>();
+	private List<Point3D> addedX = new ArrayList<>();
+	private List<Point3D> addedY = new ArrayList<>();
+	private List<Point3D> addedZ = new ArrayList<>();
+
+
 	public ExtremePoints3D(int dx, int dy, int dz) {
 		super();
 		this.containerMaxX = dx - 1;
@@ -86,12 +93,6 @@ public class ExtremePoints3D<P extends Placement3D> {
 		//           minX      xx    
 		//
 		
-		List<Point3D> deleted = new ArrayList<>();
-
-		List<Point3D> addedX = new ArrayList<>();
-		List<Point3D> addedY = new ArrayList<>();
-		List<Point3D> addedZ = new ArrayList<>();
-
 		if(moveX) {
 			appendX(placement, source, deleted, xx, yy, zz, addedX);
 		}
@@ -117,6 +118,20 @@ public class ExtremePoints3D<P extends Placement3D> {
 		}
 		
 		
+		if(source instanceof XZPlanePoint3D && source instanceof YZPlanePoint3D && source instanceof XYPlanePoint3D) {
+			for(Point3D point : values) {
+				if(!constrainMax(point, placement)) {
+					deleted.add(point);
+				}
+			}
+		} else {
+			for(Point3D point : values) {
+				if(!constrainFloatingMax(point, placement, addedX, addedY, addedZ)) {
+					deleted.add(point);
+				}
+			}
+		}
+		
 		if(!deleted.isEmpty()) {
 			System.out.println("Delete");
 			for(Point3D point : deleted) {
@@ -124,14 +139,25 @@ public class ExtremePoints3D<P extends Placement3D> {
 			}
 			values.removeAll(deleted);
 		}
-		
+
 		addX(addedX, xx);
 		addY(addedY, yy);
 		addZ(addedZ, zz);
 		
+		// this should be optimized
+		removeShadowedX(values);
+		removeShadowedY(values);
+		removeShadowedZ(values);
+
 		placements.add(placement);
 		Collections.sort(values, Point3D.COMPARATOR);
 
+		addedX.clear();
+		addedY.clear();
+		addedZ.clear();
+		
+		deleted.clear();
+		
 		return !values.isEmpty();
 	}	
 	
@@ -880,6 +906,8 @@ public class ExtremePoints3D<P extends Placement3D> {
 				
 				if(point.getMinX() < source.getMinX()) {
 					// constrain current point
+					System.out.println("Set " + point + " max x to " + (source.getMinX() - 1));
+
 					point.setMaxX(source.getMinX() - 1);
 				} else {
 					// delete current point (which was swallowed)
@@ -1463,26 +1491,6 @@ public class ExtremePoints3D<P extends Placement3D> {
 		values.addAll(add);	
 	}
 	
-
-	private void addAll(List<Point3D> add) {
-		
-		search:
-		for (int i = 0; i < add.size(); i++) {
-			Point3D p1 = add.get(i);
-			
-			// does a corresponding point already exist?
-			
-			// TODO binary search
-			for (Point3D p2 : values) {
-				if(p1.getMinX() == p2.getMinX() && p2.getMinY() == p1.getMinY() && p2.getMinZ() == p1.getMinZ()) {
-					continue search;
-				}
-			}
-			
-			values.add(p1);	
-		}
-	}
-	
 	protected boolean constrainMax(Point3D point, P placement) {
 		int maxX = projectPositiveX(point.getMinX(), point.getMinY(), point.getMinZ(), placement, point.getMaxX());
 		if(maxX <= point.getMinX()) {
@@ -1500,6 +1508,8 @@ public class ExtremePoints3D<P extends Placement3D> {
 			System.out.println("Failed z");
 			return false;
 		}
+		
+		System.out.println("Set " + point + " new constraints to " + maxX + "x" + maxY + "x" + maxZ);
 		
 		point.setMaxX(maxX);
 		point.setMaxY(maxY);
@@ -1879,5 +1889,51 @@ public class ExtremePoints3D<P extends Placement3D> {
 		}
 	}
 
+	protected boolean constrainFloatingMax(Point3D point, P placement, List<Point3D> addX, List<Point3D> addY, List<Point3D> addZ) {
 
+		System.out.println("Constraint positive negative max");
+		if(placement.getAbsoluteEndX() < point.getMinX()) {
+			return true;
+		}
+
+		if(placement.getAbsoluteEndY() < point.getMinY()) {
+			return true;
+		}
+
+		if(placement.getAbsoluteEndZ() < point.getMinZ()) {
+			return true;
+		}
+
+		if(placement.getAbsoluteX() > point.getMaxX()) {
+			return true;
+		}
+
+		if(placement.getAbsoluteY() > point.getMaxY()) {
+			return true;
+		}	
+
+		if(placement.getAbsoluteZ() > point.getMaxZ()) {
+			return true;
+		}
+		
+		boolean x = placement.getAbsoluteX() > point.getMinX();
+		boolean y = placement.getAbsoluteY() > point.getMinY();
+		boolean z = placement.getAbsoluteZ() > point.getMinZ();
+
+		if(x) {
+			addX.add(point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ()));
+		}
+		
+		if(y) {
+			addY.add(point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ()));
+		}
+
+		if(z) {
+			addZ.add(point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1));
+		}
+		
+		return !(x || y || z);
+	}	
+
+	
 }

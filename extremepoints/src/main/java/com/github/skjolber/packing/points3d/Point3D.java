@@ -151,8 +151,8 @@ public abstract class Point3D extends Point2D {
 
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + " [minX=" + minX + ", minY=" + minY + ", minZ=" + minZ + ", maxX=" + maxX + ", maxY=" + maxY 
-				+ ", maxZ=" + maxZ + "]";
+		return getClass().getSimpleName() + " [" + minX + "x" + minY + "x" + minZ + " " + maxX + "x" + maxY 
+				+ "x" + maxZ + "]";
 	}
 
 	public abstract Point3D clone(int maxX, int maxY, int maxZ);
@@ -213,7 +213,7 @@ public abstract class Point3D extends Point2D {
 	}
 	
 	public boolean fitsInYZPlane(Placement3D point) {
-		return swallowedZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowedY(point.getAbsoluteY(), point.getAbsoluteEndX());
+		return swallowedZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowedY(point.getAbsoluteY(), point.getAbsoluteEndY());
 	}
 
 
