@@ -137,22 +137,16 @@ public abstract class Point3D extends Point2D {
 		return minZ < max && maxZ > min;
 	}
 
-	public boolean swallowedY(int min, int max) {
+	public boolean swallowesMinY(int min, int max) {
 		return min <= minY && minY <= max;
 	}
 
-	public boolean swallowedX(int min, int max) {
+	public boolean swallowesMinX(int min, int max) {
 		return min <= minX && minX <= max;
 	}
 
-	public boolean swallowedZ(int min, int max) {
+	public boolean swallowsMinZ(int min, int max) {
 		return min <= minZ && minZ <= max;
-	}
-
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + " [" + minX + "x" + minY + "x" + minZ + " " + maxX + "x" + maxY 
-				+ "x" + maxZ + "]";
 	}
 
 	public abstract Point3D clone(int maxX, int maxY, int maxZ);
@@ -164,21 +158,21 @@ public abstract class Point3D extends Point2D {
 	
 	public boolean containsInYZPlane(Point3D point) {
 		if(point.getMinX() == minX) {
-			return point.swallowedY(minY, maxY) && point.swallowedZ(minZ, maxZ);
+			return point.swallowesMinY(minY, maxY) && point.swallowsMinZ(minZ, maxZ);
 		}
 		return false;
 	}
 	
 	public boolean containsInXYPlane(Point3D point) {
 		if(point.getMinZ() == minZ) {
-			return point.swallowedY(minY, maxY) && point.swallowedX(minX, maxX);
+			return point.swallowesMinY(minY, maxY) && point.swallowesMinX(minX, maxX);
 		}
 		return false;
 	}
 	
 	public boolean containsInXZPlane(Point3D point) {
 		if(point.getMinY() == minY) {
-			return point.swallowedZ(minZ, maxZ) && point.swallowedX(minX, maxX);
+			return point.swallowsMinZ(minZ, maxZ) && point.swallowesMinX(minX, maxX);
 		}
 		return false;
 	}
@@ -205,20 +199,27 @@ public abstract class Point3D extends Point2D {
 	}
 
 	public boolean fitsInXZPlane(Placement3D point) {
-		return swallowedZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowedX(point.getAbsoluteX(), point.getAbsoluteEndX());
+		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowesMinX(point.getAbsoluteX(), point.getAbsoluteEndX());
 	}
 	
 	public boolean fitsInXYPlane(Placement3D point) {
-		return swallowedY(point.getAbsoluteY(), point.getAbsoluteEndY()) && swallowedX(point.getAbsoluteX(), point.getAbsoluteEndX());
+		return swallowesMinY(point.getAbsoluteY(), point.getAbsoluteEndY()) && swallowesMinX(point.getAbsoluteX(), point.getAbsoluteEndX());
 	}
 	
 	public boolean fitsInYZPlane(Placement3D point) {
-		return swallowedZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowedY(point.getAbsoluteY(), point.getAbsoluteEndY());
+		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowesMinY(point.getAbsoluteY(), point.getAbsoluteEndY());
 	}
 
 
 	public boolean isMax(Point3D existing) {
 		return maxY == existing.getMaxY() && maxX == existing.getMaxX() && maxZ == existing.getMaxZ();
 	}
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + " [" + minX + "x" + minY + "x" + minZ + " " + maxX + "x" + maxY 
+				+ "x" + maxZ + "]";
+	}
+
 
 }

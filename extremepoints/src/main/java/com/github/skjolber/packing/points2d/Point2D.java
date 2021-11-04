@@ -2,6 +2,8 @@ package com.github.skjolber.packing.points2d;
 
 import java.util.Comparator;
 
+import com.github.skjolber.packing.points3d.Point3D;
+
 public abstract class Point2D {
 	
 	public static final Comparator<Point2D> COMPARATOR = new Comparator<Point2D>() {
@@ -166,11 +168,11 @@ public abstract class Point2D {
 		return minY < max && maxY > min;
 	}
 
-	public boolean swallowedY(int min, int max) {
+	public boolean swallowesMinY(int min, int max) {
 		return min <= minY && minY <= max;
 	}
 
-	public boolean swallowedX(int min, int max) {
+	public boolean swallowesMinX(int min, int max) {
 		return min <= minX && minX <= max;
 	}
 
@@ -181,5 +183,8 @@ public abstract class Point2D {
 
 	public abstract Point2D clone(int maxX, int maxY);
 
+	public boolean containsInPlane(Point2D point) {
+		return point.swallowesMinY(minY, maxY) && point.swallowesMinX(minX, maxX);
+	}
 
 }

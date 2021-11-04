@@ -155,7 +155,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			// remove points swallowed
 			for(int i = 0; i < values.size(); i++) {
 				Point2D point2d = values.get(i);
-				if(point2d.swallowedX(placement.getAbsoluteX(), placement.getAbsoluteEndX()) && point2d.swallowedY(placement.getAbsoluteY(), placement.getAbsoluteEndY())) {
+				if(point2d.swallowesMinX(placement.getAbsoluteX(), placement.getAbsoluteEndX()) && point2d.swallowesMinY(placement.getAbsoluteY(), placement.getAbsoluteEndY())) {
 					values.remove(i);
 					i--;
 				}
@@ -446,7 +446,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			Point2D point = values.get(i);
 
 			// Move points swallowed by the placement
-			if(point.swallowedX(source.getMinX(), xx) && withinY(point.getMinY(), placement)) {
+			if(point.swallowesMinX(source.getMinX(), xx) && withinY(point.getMinY(), placement)) {
 				if(point.getMaxX() > xx) {
 					// add point on the other side
 					// vertical support
@@ -495,7 +495,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			Point2D point = values.get(i);
 		
 			// Move points swallowed by the placement
-			if(point.swallowedY(source.getMinY(), yy) && withinX(point.getMinX(), placement)) {
+			if(point.swallowesMinY(source.getMinY(), yy) && withinX(point.getMinX(), placement)) {
 				if(point.getMaxY() > yy) {
 					// add point
 					// horizontal support
@@ -1049,40 +1049,18 @@ public class ExtremePoints2D<P extends Placement2D> {
 			return true;
 		}	
 
-		boolean yLine = placement.getAbsoluteX() <= point.getMinX();
-		if(yLine) { 
-			int limit = placement.getAbsoluteY() - 1;
-			if(limit <= point.getMinY()) {
-				return false;
-			}
-			if(point.getMaxY() > limit) {
-				point.setMaxY(limit);
-			}
+		boolean x = placement.getAbsoluteX() > point.getMinX();
+		boolean y = placement.getAbsoluteY() > point.getMinY();
+
+		if(x) {
+			addX.add(point.clone(placement.getAbsoluteX() - 1, point.getMaxY()));
 		}
 		
-		boolean xLine = placement.getAbsoluteY() <= point.getMinY();
-		if(xLine) {
-			int limit = placement.getAbsoluteX() - 1;
-			if(limit <= point.getMinX()) {
-				return false;
-			}
-			if(point.getMaxX() > limit) {
-				point.setMaxX(limit);
-			}
-			
+		if(y) {
+			addY.add(point.clone(point.getMaxX(), placement.getAbsoluteY() - 1));
 		}
-		
-		if(!xLine && !yLine) {
-			// placement is 'floating' in the x-y quadrant
-			// between max and min points
-			
-			addX.add(point.clone(point.getMaxX(), placement.getAbsoluteY()));
-			addY.add(point.clone(placement.getAbsoluteX(), point.getMaxY()));
-			
-			return false;
-		}
-		
-		return true;
+
+		return !(x || y);
 	}	
 	
 	protected boolean constrainPositiveMax(Point2D point, P placement) {
