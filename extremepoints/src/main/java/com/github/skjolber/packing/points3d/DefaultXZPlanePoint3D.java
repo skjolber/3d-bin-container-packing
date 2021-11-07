@@ -22,6 +22,14 @@ public class DefaultXZPlanePoint3D extends Point3D implements XZPlanePoint3D {
 		this.xzPlaneMaxX = xzPlaneMaxX;
 		this.xzPlaneMinZ = xzPlaneMinZ;
 		this.xzPlaneMaxZ = xzPlaneMaxZ;
+		
+		if(minX == 0 && minY == 23 && minZ == 34) {
+			try {
+				throw new RuntimeException();
+			} catch(Exception e) {
+				e.printStackTrace(System.out);
+			}
+		}
 	}
 
 	public int getSupportedXZPlaneMinX() {

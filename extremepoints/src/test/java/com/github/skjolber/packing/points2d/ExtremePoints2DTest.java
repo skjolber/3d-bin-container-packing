@@ -14,6 +14,27 @@ public class ExtremePoints2DTest {
 		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);
 		ep.add(0, new DefaultPlacement2D(0, 0, 10, 10));
 		assertThat(ep.getValues()).hasSize(2);
+		
+		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
+		assertThat(ep.getValue(0).getMinY()).isEqualTo(11);
+
+		assertThat(ep.getValue(1).getMinX()).isEqualTo(11);
+		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
+
+	}
+	
+	@Test
+	public void testSinglePointCornerCase() {
+		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);
+		ep.add(0, new DefaultPlacement2D(0, 0, 0, 0));
+		assertThat(ep.getValues()).hasSize(2);
+		
+		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
+		assertThat(ep.getValue(0).getMinY()).isEqualTo(1);
+
+		assertThat(ep.getValue(1).getMinX()).isEqualTo(1);
+		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
+
 	}
 	
 	@Test
@@ -114,7 +135,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(20);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
 	}
-	
+
 	@Test
 	public void testStackEqualItemsInYDirection() throws InterruptedException {
 		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);
@@ -161,11 +182,10 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(20);
 		
-
 		assertThat(ep.getValue(2).getMinX()).isEqualTo(20);
 		assertThat(ep.getValue(2).getMinY()).isEqualTo(0);
 	}
-	
+
 	@Test
 	public void testStackHigherItemsInYDirection() throws InterruptedException {
 		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);

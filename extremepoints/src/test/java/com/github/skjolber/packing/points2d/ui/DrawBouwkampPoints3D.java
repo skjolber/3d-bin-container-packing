@@ -1,8 +1,12 @@
 package com.github.skjolber.packing.points2d.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.points.BouwkampConverter;
+import com.github.skjolber.packing.points.DefaultExtremePoints3D;
+import com.github.skjolber.packing.points3d.Point3D;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.BouwkampCodes;
@@ -11,18 +15,37 @@ public class DrawBouwkampPoints3D {
 
 	public static void main(String[] args) {
 		
-		BouwkampConverter converter = new BouwkampConverter();
+		BouwkampConverter converter = new BouwkampConverter(false);
 		
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 		
 		//List<BouwkampCodes> simpleImperfectSquaredSquares = directory.getSimpleImperfectSquaredSquares( p -> p.contains("o13siss.bkp"));
 		//List<BouwkampCodes> target = directory.getSimpleImperfectSquaredSquares( p -> p.contains("o13siss.bkp"));
-		List<BouwkampCodes> target = directory.getSimplePerfectSquaredRectangles( p -> p.contains("o13spsr.bkp"));
+		// List<BouwkampCodes> target = directory.getSimplePerfectSquaredRectangles( p -> p.contains("o13spsr.bkp"));
+		List<BouwkampCodes> target = directory.getAll();
 		
 		for(BouwkampCodes codes : target) {
 			for(BouwkampCode c : codes.getCodes()) {
-				if(true || c.getName().equals("521x416A")) {
-					DrawPoints2D.show(converter.convert3D(c, 2));
+				
+				if(codes.getSource().contains("o15siss.bkp") && c.getName().equals("39B")) {
+				//if(codes.getSource().equals("/simpleImperfectSquaredRectangles/o9sisr.bkp") && c.getName().equals("15x11A")) {
+					DefaultExtremePoints3D convert3dyzPlane = converter.convert3DYZPlane(c, 2);
+					
+					List<Point3D> list = new ArrayList<>();
+					
+					List<Point3D> values = convert3dyzPlane.getValues();
+					for (Point3D point3d : values) {
+						list.add(point3d.rotate());
+					}
+					
+					List<Placement3D> results = new ArrayList<>();
+					
+					List<Placement3D> placements = convert3dyzPlane.getPlacements();
+					for(Placement3D p : placements) {
+						results.add(p.rotate());
+					}
+					
+					DrawPoints2D.show3D(list, results, convert3dyzPlane.getDepth(), convert3dyzPlane.getHeight());
 					return;
 				}
 			}

@@ -29,8 +29,12 @@ public class DefaultPlacement3D extends DefaultPlacement2D implements Placement3
 
 	@Override
 	public String toString() {
-		return "DefaultPlacement3D [x=" + x + ", y=" + y + ", z=" + z + ", endX=" + endX + ", endY=" + endY + ", endZ="
-				+ endZ + "]";
+		return "DefaultPlacement3D [" + x + "x" + y + "x" + z + " " + endX + "x" + endY + "x" + endZ + "]";
+	}
+
+	@Override
+	public Placement3D rotate() {
+		return new DefaultPlacement3D(y, z, x, endY, endZ, endX);
 	}
 
 	

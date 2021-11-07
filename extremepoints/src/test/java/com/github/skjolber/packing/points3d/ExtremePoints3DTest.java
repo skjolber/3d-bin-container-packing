@@ -28,6 +28,25 @@ public class ExtremePoints3DTest {
 	}
 	
 	@Test
+	public void testSinglePointCornercase() {
+		ExtremePoints3D<DefaultPlacement3D> ep = new ExtremePoints3D<>(100, 100, 100);
+		ep.add(0, new DefaultPlacement3D(0, 0, 0, 0, 0, 0));
+		assertThat(ep.getValues()).hasSize(3);
+
+		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
+		assertThat(ep.getValue(0).getMinY()).isEqualTo(0);
+		assertThat(ep.getValue(0).getMinZ()).isEqualTo(1);
+
+		assertThat(ep.getValue(1).getMinX()).isEqualTo(0);
+		assertThat(ep.getValue(1).getMinY()).isEqualTo(1);
+		assertThat(ep.getValue(1).getMinZ()).isEqualTo(0);
+		
+		assertThat(ep.getValue(2).getMinX()).isEqualTo(1);
+		assertThat(ep.getValue(2).getMinY()).isEqualTo(0);
+		assertThat(ep.getValue(2).getMinZ()).isEqualTo(0);
+	}
+	
+	@Test
 	public void testSinglePointCoveringAllX() {
 		ExtremePoints3D<DefaultPlacement3D> ep = new ExtremePoints3D<>(100, 100, 100);
 		ep.add(0, new DefaultPlacement3D(0, 0, 0, 99, 9, 9));
@@ -47,10 +66,9 @@ public class ExtremePoints3DTest {
 	public void testSinglePointCoveringAllY() {
 		ExtremePoints3D<DefaultPlacement3D> ep = new ExtremePoints3D<>(100, 100, 100);
 		ep.add(0, new DefaultPlacement3D(0, 0, 0, 9, 99, 9));
+		
 		assertThat(ep.getValues()).hasSize(2);
 
-		assertThat(ep.getValues()).hasSize(2);
-		
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinZ()).isEqualTo(10);
@@ -107,8 +125,6 @@ public class ExtremePoints3DTest {
 		
 		assertThat(ep.getValues()).hasSize(5);
 		
-		System.out.println(ep.getValues());
-
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinZ()).isEqualTo(10);
@@ -222,7 +238,6 @@ public class ExtremePoints3DTest {
 	public void testStackEqualItemsInXDirection() throws InterruptedException {
 		ExtremePoints3D<DefaultPlacement3D> ep = new ExtremePoints3D<>(100, 100, 100);
 		ep.add(0, new DefaultPlacement3D(0, 0, 0, 9, 9, 9));
-		System.out.println(ep.getValues());
 		
 		ep.add(2, new DefaultPlacement3D(10, 0, 0, 19, 9, 9));
 

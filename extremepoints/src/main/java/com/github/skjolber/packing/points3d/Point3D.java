@@ -19,16 +19,16 @@ public abstract class Point3D extends Point2D {
 		
 		@Override
 		public int compare(Point3D o1, Point3D o2) {
-			int x = Integer.compare(o1.minX, o2.minX);
+			int compare = Integer.compare(o1.minX, o2.minX);
 
-			if(x == 0) {
+			if(compare == 0) {
 				return Integer.compare(o1.minY, o2.minY);
 			}
 			
-			if(x == 0) {
-				x = Integer.compare(o1.minZ, o2.minZ);
+			if(compare == 0) {
+				compare= Integer.compare(o1.minZ, o2.minZ);
 			}
-			return x;
+			return compare;
 		}
 	};
 	
@@ -40,7 +40,7 @@ public abstract class Point3D extends Point2D {
 		super(minX, minY, maxX, maxY);
 		
 		if(maxZ < minZ) {
-			throw new RuntimeException("Expected max z " + maxZ + " >= min z " + minZ);
+			throw new RuntimeException("Z: "+ maxZ + " < " + minZ);
 		}
 		this.minZ = minZ;
 		this.maxZ = maxZ;
@@ -133,15 +133,15 @@ public abstract class Point3D extends Point2D {
 		return minY < max && maxY > min;
 	}
 
-	public boolean shadowedOrSwallowedZ(int min, int max) {
+	public boolean isShadowedOrSwallowedZ(int min, int max) {
 		return minZ < max && maxZ > min;
 	}
 
-	public boolean swallowesMinY(int min, int max) {
+	public boolean swallowsMinY(int min, int max) {
 		return min <= minY && minY <= max;
 	}
 
-	public boolean swallowesMinX(int min, int max) {
+	public boolean swallowsMinX(int min, int max) {
 		return min <= minX && minX <= max;
 	}
 
@@ -158,21 +158,21 @@ public abstract class Point3D extends Point2D {
 	
 	public boolean containsInYZPlane(Point3D point) {
 		if(point.getMinX() == minX) {
-			return point.swallowesMinY(minY, maxY) && point.swallowsMinZ(minZ, maxZ);
+			return point.swallowsMinY(minY, maxY) && point.swallowsMinZ(minZ, maxZ);
 		}
 		return false;
 	}
 	
 	public boolean containsInXYPlane(Point3D point) {
 		if(point.getMinZ() == minZ) {
-			return point.swallowesMinY(minY, maxY) && point.swallowesMinX(minX, maxX);
+			return point.swallowsMinY(minY, maxY) && point.swallowsMinX(minX, maxX);
 		}
 		return false;
 	}
 	
 	public boolean containsInXZPlane(Point3D point) {
 		if(point.getMinY() == minY) {
-			return point.swallowsMinZ(minZ, maxZ) && point.swallowesMinX(minX, maxX);
+			return point.swallowsMinZ(minZ, maxZ) && point.swallowsMinX(minX, maxX);
 		}
 		return false;
 	}
@@ -199,15 +199,15 @@ public abstract class Point3D extends Point2D {
 	}
 
 	public boolean fitsInXZPlane(Placement3D point) {
-		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowesMinX(point.getAbsoluteX(), point.getAbsoluteEndX());
+		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowsMinX(point.getAbsoluteX(), point.getAbsoluteEndX());
 	}
 	
 	public boolean fitsInXYPlane(Placement3D point) {
-		return swallowesMinY(point.getAbsoluteY(), point.getAbsoluteEndY()) && swallowesMinX(point.getAbsoluteX(), point.getAbsoluteEndX());
+		return swallowsMinY(point.getAbsoluteY(), point.getAbsoluteEndY()) && swallowsMinX(point.getAbsoluteX(), point.getAbsoluteEndX());
 	}
 	
 	public boolean fitsInYZPlane(Placement3D point) {
-		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowesMinY(point.getAbsoluteY(), point.getAbsoluteEndY());
+		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowsMinY(point.getAbsoluteY(), point.getAbsoluteEndY());
 	}
 
 
@@ -221,5 +221,12 @@ public abstract class Point3D extends Point2D {
 				+ "x" + maxZ + "]";
 	}
 
+	public Point3D rotate() {
+		DefaultPoint3D defaultPoint3D = new DefaultPoint3D(minY, minZ, minX, maxY, maxZ, maxX);
+		
+		System.out.println(this + " -> " + defaultPoint3D);
+		
+		return defaultPoint3D;
+	}
 
 }

@@ -54,29 +54,6 @@ public class DrawPoints3DTest {
 		extremePoint = extremePoints.getValues().get(6);
 		extremePoints.add(6, createPlacement(extremePoint, 50, 50, 1));
 
-		/*		
-
-
-
-		
-		extremePoint = extremePoints.getValues().get(1);
-		extremePoints.add(1, createPlacement(extremePoint, 30, 20, 1));
-		
-		extremePoint = extremePoints.getValues().get(0);
-		extremePoints.add(0, createPlacement(extremePoint, 25, 20, 1));
-
-		int offset = 7;
-		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - offset);
-		extremePoints.add(extremePoints.getValues().size() - offset, createPlacement(extremePoint, 20, 30, 1));
-
-		offset = 3;
-		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - offset);
-		extremePoints.add(extremePoints.getValues().size() - offset, createPlacement(extremePoint, 50, 50, 1));
-
-		offset = 11;
-		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - offset);
-		extremePoints.add(extremePoints.getValues().size() - offset, createPlacement(extremePoint, 50, 50, 1));
-*/
 		System.out.println("xyz:");
 		
 		for (Point3D p : extremePoints.getValues()) {

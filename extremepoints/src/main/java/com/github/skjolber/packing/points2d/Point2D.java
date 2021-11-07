@@ -48,11 +48,11 @@ public abstract class Point2D {
 		super();
 		
 		if(maxX < minX) {
-			throw new RuntimeException();
+			throw new RuntimeException("X: "+ maxX + " < " + minX);
 		}
 
 		if(maxY < minY) {
-			throw new RuntimeException(maxY + " < " + minY);
+			throw new RuntimeException("Y: "+ maxY + " < " + minY);
 		}
 
 		this.minX = minX;
@@ -168,11 +168,11 @@ public abstract class Point2D {
 		return minY < max && maxY > min;
 	}
 
-	public boolean swallowesMinY(int min, int max) {
+	public boolean swallowsMinY(int min, int max) {
 		return min <= minY && minY <= max;
 	}
 
-	public boolean swallowesMinX(int min, int max) {
+	public boolean swallowsMinX(int min, int max) {
 		return min <= minX && minX <= max;
 	}
 
@@ -184,7 +184,7 @@ public abstract class Point2D {
 	public abstract Point2D clone(int maxX, int maxY);
 
 	public boolean containsInPlane(Point2D point) {
-		return point.swallowesMinY(minY, maxY) && point.swallowesMinX(minX, maxX);
+		return point.swallowsMinY(minY, maxY) && point.swallowsMinX(minX, maxX);
 	}
 
 }

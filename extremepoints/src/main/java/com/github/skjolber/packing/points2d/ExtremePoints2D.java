@@ -40,11 +40,6 @@ public class ExtremePoints2D<P extends Placement2D> {
 
 	public boolean add(int index, P placement, int boxDx, int boxDy) {
 		
-		System.out.println("Add " + placement);
-		for(Point2D v : values) {
-			System.out.println(" " + v);
-		}
-		
 		// overall approach:
 		//
 		// project points points swallowed by the placement, then delete them
@@ -118,49 +113,41 @@ public class ExtremePoints2D<P extends Placement2D> {
 			
 			deleted.add(source);
 			values.removeAll(deleted);
-			
-			boolean supported = source instanceof XSupportPoint2D && source instanceof YSupportPoint2D;
-			
-			for(int i = 0; i < values.size(); i++) {
-				Point2D point2d = values.get(i);
-				
-				boolean remove;
-				if(supported) {
-					remove = !constrainPositiveMax(point2d, placement);
-				} else {
-					remove = !constrainFloatingMax(point2d, placement, addX, addY);
-				}
-				if(remove) {
-					values.remove(i);
-					i--;
-				}
-			}
-			
-			if(xSupport || xEdge) {
-				addX(addX, xx);
-			} else {
-				values.addAll(addX);
-			}
-	
-			if(ySupport || yEdge) {
-				addY(addY, yy);
-			} else {
-				values.addAll(addY);
-			}
-	
-			Collections.sort(values, Point2D.COMPARATOR);
 		} else {
 			values.remove(source);
-			
+
 			// remove points swallowed
 			for(int i = 0; i < values.size(); i++) {
 				Point2D point2d = values.get(i);
-				if(point2d.swallowesMinX(placement.getAbsoluteX(), placement.getAbsoluteEndX()) && point2d.swallowesMinY(placement.getAbsoluteY(), placement.getAbsoluteEndY())) {
+				if(point2d.swallowsMinX(placement.getAbsoluteX(), placement.getAbsoluteEndX()) && point2d.swallowsMinY(placement.getAbsoluteY(), placement.getAbsoluteEndY())) {
 					values.remove(i);
 					i--;
 				}
 			}
 		}
+	
+		boolean supported = source instanceof XSupportPoint2D && source instanceof YSupportPoint2D;
+
+		for(int i = 0; i < values.size(); i++) {
+			Point2D point2d = values.get(i);
+			
+			boolean remove;
+			if(supported) {
+				remove = !constrainPositiveMax(point2d, placement);
+			} else {
+				remove = !constrainFloatingMax(point2d, placement, addX, addY);
+			}
+			if(remove) {
+				values.remove(i);
+				i--;
+			}
+		}
+		
+		addX(addX, xx);
+		addY(addY, yy);
+
+		Collections.sort(values, Point2D.COMPARATOR);
+
 		placements.add(placement);
 		
 		addY.clear();
@@ -410,10 +397,10 @@ public class ExtremePoints2D<P extends Placement2D> {
 		//      |--------------------------
 		//                    xx   fmaxX
 		
-		if(source.getMaxX() > xx) {
+		if(source.getMaxX() >= xx) {
 			XSupportPoint2D fixedPointY = (XSupportPoint2D)source;
 			
-			if(maxY > source.getMinY()) {
+			if(maxY >= source.getMinY()) {
 				return new DefaultXYSupportPoint2D(xx, source.getMinY(), source.getMaxX(), maxY, xx, fixedPointY.getXSupportMaxX(), source.getMinY(), yy - 1);
 			}
 		}
@@ -446,8 +433,8 @@ public class ExtremePoints2D<P extends Placement2D> {
 			Point2D point = values.get(i);
 
 			// Move points swallowed by the placement
-			if(point.swallowesMinX(source.getMinX(), xx) && withinY(point.getMinY(), placement)) {
-				if(point.getMaxX() > xx) {
+			if(point.swallowsMinX(source.getMinX(), xx) && withinY(point.getMinY(), placement)) {
+				if(point.getMaxX() >= xx) {
 					// add point on the other side
 					// vertical support
 
@@ -495,10 +482,11 @@ public class ExtremePoints2D<P extends Placement2D> {
 			Point2D point = values.get(i);
 		
 			// Move points swallowed by the placement
-			if(point.swallowesMinY(source.getMinY(), yy) && withinX(point.getMinX(), placement)) {
-				if(point.getMaxY() > yy) {
+			if(point.swallowsMinY(source.getMinY(), yy) && withinX(point.getMinX(), placement)) {
+				if(point.getMaxY() >= yy) {
 					// add point
 					// horizontal support
+					
 					
 					DefaultXSupportPoint2D next = new DefaultXSupportPoint2D(
 							point.getMinX(), yy, 
@@ -641,10 +629,10 @@ public class ExtremePoints2D<P extends Placement2D> {
 		
 			// Move points swallowed or shadowed by the placement
 			if(point.isShadowedOrSwallowedByY(source.getMinY(), yy) && withinX(point.getMinX(), placement)) {
-				if(point.getMaxY() > yy) {
+				if(point.getMaxY() >= yy) {
 					// add point
 					// horizontal support
-					
+
 					DefaultXSupportPoint2D next = new DefaultXSupportPoint2D(
 							point.getMinX(), yy, 
 							maxX, point.getMaxY(), 
@@ -676,6 +664,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 				if(point.getMinX() < placement.getAbsoluteX()) {
 					p = new DefaultPoint2D(point.getMinX(), yy, maxX, point.getMaxY());
 				} else {
+
 					p = new DefaultXSupportPoint2D(point.getMinX(), yy, maxX, point.getMaxY(), point.getMinX(), xx);
 				}
 
@@ -732,13 +721,14 @@ public class ExtremePoints2D<P extends Placement2D> {
 		//           minX      xx    		
 		//
 		
-		if(source.getMaxY() > yy) {
+		if(source.getMaxY() >= yy) {
 			YSupportPoint2D fixedPointX = (YSupportPoint2D)source;
 			
-			if(maxX > source.getMinX()) {
+			if(maxX >= source.getMinX()) {
 				return new DefaultXYSupportPoint2D(source.getMinX(), yy, maxX, source.getMaxY(), source.getMinX(), xx - 1, yy, fixedPointX.getYSupportMaxY());
 			}
 		}
+		
 		return null;
 	}
 
@@ -817,7 +807,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			} else {
 				maxX = containerMaxX;
 			}
-			if(x < maxX) {
+			if(x <= maxX) {
 				return new DefaultXSupportPoint2D(x, y, maxX, maxY, xx, maxX);
 			}
 		} else if(moveY.getAbsoluteEndY() < source.getMinY()) {
@@ -846,7 +836,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 				maxX = containerMaxX;
 			}
 
-			if(x < maxX) {
+			if(x <= maxX) {
 				return new DefaultXSupportPoint2D(xx, moveY.getAbsoluteEndY() + 1, maxX, maxY, xx, Math.min(maxX, moveY.getAbsoluteEndX()));
 			}
 		} else if(moveY.getAbsoluteEndY() + 1 < yy) {
@@ -879,7 +869,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 				maxX = containerMaxX;
 			}
 			
-			if(x < maxX) {
+			if(x <= maxX) {
 				return new DefaultXYSupportPoint2D(x, y, maxX, maxY, xx, Math.min(maxX, moveY.getAbsoluteEndX()), moveY.getAbsoluteEndY(), yy);
 			}
 		}
@@ -931,7 +921,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			} else {
 				maxY = containerMaxY;
 			}
-			if(y < maxY) {
+			if(y <= maxY) {
 				return new DefaultYSupportPoint2D(x, y, maxX, maxY, yy, maxY);
 			}
 		} else if(moveX.getAbsoluteEndX() < source.getMinX()) {
@@ -958,8 +948,8 @@ public class ExtremePoints2D<P extends Placement2D> {
 			} else {
 				maxY = containerMaxY;
 			}
-			if(y < maxY) {
-				return new DefaultYSupportPoint2D(x, y, maxX, maxY, yy, Math.min(moveX.getAbsoluteEndY(), maxY));
+			if(y <= maxY) {
+				return new DefaultYSupportPoint2D(x, y, maxX, maxY, yy, moveX.getAbsoluteEndY());
 			}
 		} else if(moveX.getAbsoluteEndX() + 1 < xx) {
 			
@@ -986,7 +976,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			} else {
 				maxY = containerMaxY;
 			}
-			if(y < maxY) {
+			if(y <= maxY) {
 				return new DefaultXYSupportPoint2D(moveX.getAbsoluteX() + 1, yy, maxX, maxY,  moveX.getAbsoluteEndX(), xx, yy, Math.min(moveX.getAbsoluteEndY(), maxY));
 			}
 		}
@@ -1032,7 +1022,6 @@ public class ExtremePoints2D<P extends Placement2D> {
 	
 	protected boolean constrainFloatingMax(Point2D point, P placement, List<Point2D> addX, List<Point2D> addY) {
 
-		System.out.println("Constraint positive negative max");
 		if(placement.getAbsoluteEndX() < point.getMinX()) {
 			return true;
 		}
@@ -1067,7 +1056,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		if(placement.getAbsoluteX() >= point.getMinX()) {
 			if(withinY(point.getMinY(), placement)) {
 				int limit = placement.getAbsoluteX() - 1;
-				if(limit <= point.getMinX()) {
+				if(limit < point.getMinX()) {
 					return false;
 				}
 				if(point.getMaxX() > limit) {
@@ -1079,7 +1068,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		if(placement.getAbsoluteY() >= point.getMinY()) {
 			if(withinX(point.getMinX(), placement)) {
 				int limit = placement.getAbsoluteY() - 1;
-				if(limit <= point.getMinY()) {
+				if(limit < point.getMinY()) {
 					return false;
 				}
 				if(point.getMaxY() > limit) {

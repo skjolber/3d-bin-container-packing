@@ -14,6 +14,7 @@ import com.github.skjolber.packing.points.DefaultExtremePoints3D;
 import com.github.skjolber.packing.points.DefaultPlacement2D;
 import com.github.skjolber.packing.points2d.ExtremePoints2D;
 import com.github.skjolber.packing.points2d.Point2D;
+import com.github.skjolber.packing.points3d.Point3D;
 
 public class DrawPoints2D {
 
@@ -26,11 +27,22 @@ public class DrawPoints2D {
 		});
 	}
 
+	public static void show3D(List<? extends Point2D> points, List<? extends Placement2D> placements, int width, int depth) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				
+				init(points, placements, width, depth);
+			}
+		});
+	}
+	
 	public static void show(DefaultExtremePoints3D p) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				
-				init(p.getValues(), p.getPlacements(), p.getWidth(), p.getDepth());
+				List<Point3D> values = p.getValues();
+				
+				init(values, p.getPlacements(), p.getWidth(), p.getDepth());
 			}
 		});
 	}

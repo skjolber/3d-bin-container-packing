@@ -76,6 +76,14 @@ public class BouwkampCodeDirectory {
 		return null;
 	}
 
+	public List<BouwkampCodes> getAll() {
+		List<BouwkampCodes> result = new ArrayList<>();
+		result.addAll(simpleImperfectSquaredRectangles);
+		result.addAll(simpleImperfectSquaredSquares);
+		result.addAll(simplePerfectSquaredRectangles);
+		return result;
+	}
+	
 	public List<BouwkampCodes> codesForCount(int order) {
 		List<BouwkampCodes> result = new ArrayList<>();
 		for(BouwkampCodes code : simpleImperfectSquaredRectangles) {
