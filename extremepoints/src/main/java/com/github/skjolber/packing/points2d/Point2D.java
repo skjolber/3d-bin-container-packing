@@ -44,6 +44,8 @@ public abstract class Point2D {
 	protected int dx;
 	protected int dy;
 	
+	protected long area;
+	
 	public Point2D(int minX, int minY, int maxX, int maxY) {
 		super();
 		
@@ -62,6 +64,12 @@ public abstract class Point2D {
 		
 		this.dx = maxX - minX + 1;
 		this.dy = maxY - minY + 1;
+		
+		calculateArea();
+	}
+	
+	private void calculateArea() {
+		this.area = (long)dx * (long)dy;
 	}
 
 	public boolean isYSupport(int y) {
@@ -117,6 +125,8 @@ public abstract class Point2D {
 		this.maxX = maxX;
 		
 		this.dx = maxX - minX + 1;
+		
+		calculateArea();
 	}
 	
 	public void setMaxY(int maxY) {
@@ -126,6 +136,8 @@ public abstract class Point2D {
 		this.maxY = maxY;
 		
 		this.dy = maxY - minY + 1;
+		
+		calculateArea();
 	}
 	
 	public int getDy() {
@@ -187,4 +199,7 @@ public abstract class Point2D {
 		return point.swallowsMinY(minY, maxY) && point.swallowsMinX(minX, maxX);
 	}
 
+	public long getArea() {
+		return area;
+	}
 }

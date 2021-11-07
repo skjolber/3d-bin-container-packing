@@ -10,9 +10,6 @@ import com.github.skjolber.packing.api.Placement2D;
 
 public interface XSupportPoint2D {
 
-	int getXSupportMinX();
-	int getXSupportMaxX();
-	
 	Placement2D getXSupport();
 
 }

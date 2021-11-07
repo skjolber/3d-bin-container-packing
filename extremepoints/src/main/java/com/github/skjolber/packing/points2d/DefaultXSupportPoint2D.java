@@ -14,7 +14,7 @@ public class DefaultXSupportPoint2D extends Point2D implements XSupportPoint2D {
 	
 	@Override
 	public boolean isXSupport(int x) {
-		return getXSupportMinX() <= x && x <= getXSupportMaxX();
+		return xSupport.getAbsoluteX() <= x && x <= xSupport.getAbsoluteEndX();
 	}
 	
 	public int getXSupportMinX() {
@@ -27,7 +27,7 @@ public class DefaultXSupportPoint2D extends Point2D implements XSupportPoint2D {
 	
 	@Override
 	public boolean isXEdge(int x) {
-		return getXSupportMaxX() == x - 1;
+		return xSupport.getAbsoluteEndX() == x - 1;
 	}
 
 	@Override

@@ -18,15 +18,15 @@ public class ExtremePoints2D<P extends Placement2D> {
 	protected final int containerMaxX;
 	protected final int containerMaxY;
 
-	protected List<Point2D> values = new ArrayList<>();
-	protected List<P> placements = new ArrayList<>();
+	protected final List<Point2D> values = new ArrayList<>();
+	protected final List<P> placements = new ArrayList<>();
 
-	// reused working variables
-	private List<Point2D> deleted = new ArrayList<>();
-	private List<Point2D> addY = new ArrayList<>();
-	private List<Point2D> addX = new ArrayList<>();
+	// reusefinal d working variables
+	private final List<Point2D> deleted = new ArrayList<>();
+	private final List<Point2D> addY = new ArrayList<>();
+	private final List<Point2D> addX = new ArrayList<>();
 
-	private Placement2D containerPlacement;
+	private final Placement2D containerPlacement;
 
 	public ExtremePoints2D(int dx, int dy) {
 		super();
@@ -215,7 +215,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 	}
 
 	protected void appendFirstNegativeYAtXX(P placement, Point2D source, List<Point2D> deleted, int xx, int yy, int maxY, List<Point2D> added) {
-		Point2D dx = projectNegativeYAtXX(source, xx, yy, maxY);
+		Point2D dx = projectNegativeYAtXX(source, placement, xx, yy, maxY);
 		if(dx != null) {
 			added.add(dx);
 			
@@ -547,7 +547,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 
 	protected void appendFirstNegativeXAtYY(P placement, Point2D source, List<Point2D> deleted, int xx, int yy, int maxX, List<Point2D> added) {
 		// using dy
-		Point2D negativeX = projectNegativeXAtYY(source, xx, yy, maxX);
+		Point2D negativeX = projectNegativeXAtYY(source, placement, xx, yy, maxX);
 		if(negativeX != null) {
 			added.add(negativeX);
 
@@ -754,36 +754,48 @@ public class ExtremePoints2D<P extends Placement2D> {
 		return maxX;
 	}
 
+	protected int constrainX(int x, int y) {
+		// constrain up
+		P closestX = closestPositiveX(x, y);
+		if(closestX != null) {
+			return closestX.getAbsoluteX() - 1;
+		} else {
+			return containerMaxX;
+		}
+	}
+
+	protected int constrainY(int x, int y) {
+		// constrain up
+		P closestY = closestPositiveY(x, y);
+		if(closestY != null) {
+			return closestY.getAbsoluteY() - 1;
+		} else {
+			return containerMaxY;
+		}
+	}
+
 	protected boolean constrainMaxX(Point2D point) {
 		// constrain to right
-		P closestX = closestPositiveX(point.getMinX(), point.getMinY());
-		if(closestX != null) {
-			point.setMaxX(closestX.getAbsoluteX() - 1);
-		} else {
-			point.setMaxX(containerMaxX);
-		}
-		if(point.getMaxX() <= point.getMinX()) {
+		int maxX = constrainX(point.getMinX(), point.getMinY());
+		if(maxX < point.getMinX()) {
 			return false;
 		}
-
+		point.setMaxX(maxX);
 		return true;
 	}
 	
 	protected boolean constrainMaxY(Point2D point) {
 		// constrain up
-		P closestY = closestPositiveY(point.getMinX(), point.getMinY());
-		if(closestY != null) {
-			point.setMaxY(closestY.getAbsoluteY() - 1);
-		} else {
-			point.setMaxY(containerMaxY);
-		}
-		if(point.getMaxY() <= point.getMinY()) {
+		int maxY = constrainY(point.getMinX(), point.getMinY());
+		if(maxY < point.getMinY()) {
 			return false;
 		}
+		point.setMaxY(maxY);
+		
 		return true;
 	}
 	
-	protected Point2D projectNegativeYAtXX(Point2D source, int xx, int yy, int maxY) {
+	protected Point2D projectNegativeYAtXX(Point2D source, Placement2D placement, int xx, int yy, int maxY) {
 		if(xx >= containerMaxX) {
 			return null;
 		}
@@ -805,16 +817,9 @@ public class ExtremePoints2D<P extends Placement2D> {
 			int x = xx;
 			int y = 0;
 			
-			int maxX;
-			// constrain to right
-			P closestX = closestPositiveX(x, y);
-			if(closestX != null) {
-				maxX = closestX.getAbsoluteX() - 1;
-			} else {
-				maxX = containerMaxX;
-			}
+			int maxX = constrainX(x, y);
 			if(x <= maxX) {
-				return new DefaultXSupportPoint2D(x, y, maxX, maxY, xx, maxX);
+				return new DefaultXSupportPoint2D(x, y, maxX, maxY, containerPlacement);
 			}
 		} else if(moveY.getAbsoluteEndY() < source.getMinY()) {
 			
@@ -833,17 +838,9 @@ public class ExtremePoints2D<P extends Placement2D> {
 			int x = xx;
 			int y = moveY.getAbsoluteEndY() + 1;
 			
-			int maxX;
-			// constrain to right
-			P closestX = closestPositiveX(x, y);
-			if(closestX != null) {
-				maxX = closestX.getAbsoluteX() - 1;
-			} else {
-				maxX = containerMaxX;
-			}
-
+			int maxX = constrainX(x, y);
 			if(x <= maxX) {
-				return new DefaultXSupportPoint2D(xx, moveY.getAbsoluteEndY() + 1, maxX, maxY, xx, Math.min(maxX, moveY.getAbsoluteEndX()));
+				return new DefaultXSupportPoint2D(xx, moveY.getAbsoluteEndY() + 1, maxX, maxY, moveY);
 			}
 		} else if(moveY.getAbsoluteEndY() + 1 < yy) {
 			
@@ -866,17 +863,9 @@ public class ExtremePoints2D<P extends Placement2D> {
 			int x = xx;
 			int y = moveY.getAbsoluteEndY() + 1;
 			
-			int maxX;
-			// constrain to right
-			P closestX = closestPositiveX(x, y);
-			if(closestX != null) {
-				maxX = closestX.getAbsoluteX() - 1;
-			} else {
-				maxX = containerMaxX;
-			}
-			
+			int maxX = constrainX(x, y);
 			if(x <= maxX) {
-				return new DefaultXYSupportPoint2D(x, y, maxX, maxY, xx, Math.min(maxX, moveY.getAbsoluteEndX()), moveY.getAbsoluteEndY(), yy);
+				return new DefaultXYSupportPoint2D(x, y, maxX, maxY, placement, moveY);
 			}
 		}
 		
@@ -899,7 +888,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		return null;
 	}
 
-	protected Point2D projectNegativeXAtYY(Point2D source, int xx, int yy, int maxX) {
+	protected Point2D projectNegativeXAtYY(Point2D source, Placement2D placement, int xx, int yy, int maxX) {
 		if(yy >= containerMaxY) {
 			return null;
 		}
@@ -920,15 +909,9 @@ public class ExtremePoints2D<P extends Placement2D> {
 			int x = 0;
 			int y = yy;
 
-			int maxY;
-			P closestY = closestPositiveY(x, y);
-			if(closestY != null) {
-				maxY = closestY.getAbsoluteY() - 1;
-			} else {
-				maxY = containerMaxY;
-			}
+			int maxY = constrainY(x, y);
 			if(y <= maxY) {
-				return new DefaultYSupportPoint2D(x, y, maxX, maxY, yy, maxY);
+				return new DefaultYSupportPoint2D(x, y, maxX, maxY, containerPlacement);
 			}
 		} else if(moveX.getAbsoluteEndX() < source.getMinX()) {
 			
@@ -947,15 +930,9 @@ public class ExtremePoints2D<P extends Placement2D> {
 			int x = moveX.getAbsoluteEndX() + 1;
 			int y = yy;
 
-			int maxY;
-			P closestY = closestPositiveY(x, y);
-			if(closestY != null) {
-				maxY = closestY.getAbsoluteY() - 1;
-			} else {
-				maxY = containerMaxY;
-			}
+			int maxY = constrainY(x, y);
 			if(y <= maxY) {
-				return new DefaultYSupportPoint2D(x, y, maxX, maxY, yy, moveX.getAbsoluteEndY());
+				return new DefaultYSupportPoint2D(x, y, maxX, maxY, moveX);
 			}
 		} else if(moveX.getAbsoluteEndX() + 1 < xx) {
 			
@@ -975,15 +952,9 @@ public class ExtremePoints2D<P extends Placement2D> {
 			int x = moveX.getAbsoluteEndX() + 1;
 			int y = yy;
 
-			int maxY;
-			P closestY = closestPositiveY(x, y);
-			if(closestY != null) {
-				maxY = closestY.getAbsoluteY() - 1;
-			} else {
-				maxY = containerMaxY;
-			}
+			int maxY = constrainY(x, y);
 			if(y <= maxY) {
-				return new DefaultXYSupportPoint2D(moveX.getAbsoluteX() + 1, yy, maxX, maxY,  moveX.getAbsoluteEndX(), xx, yy, Math.min(moveX.getAbsoluteEndY(), maxY));
+				return new DefaultXYSupportPoint2D(moveX.getAbsoluteX() + 1, yy, maxX, maxY, moveX, placement);
 			}
 		}
 		
@@ -1002,12 +973,11 @@ public class ExtremePoints2D<P extends Placement2D> {
 		//  
 		
 		return null;
-	}	
-
+	}
 
 	protected boolean constrainMaxX(Point2D point, P placement) {
 		int maxX = projectPositiveX(point.getMinX(), point.getMinY(), placement, point.getMaxX());
-		if(maxX <= point.getMinX()) {
+		if(maxX < point.getMinX()) {
 			return false;
 		}
 		point.setMaxX(maxX);
@@ -1017,7 +987,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 	
 	protected boolean constrainMaxY(Point2D point, P placement) {
 		int maxY = projectPositiveY(point.getMinX(), point.getMinY(), placement, point.getMaxY());
-		if(maxY <= point.getMinY()) {
+		if(maxY < point.getMinY()) {
 			return false;
 		}
 		
@@ -1229,10 +1199,6 @@ public class ExtremePoints2D<P extends Placement2D> {
 		return closest;
 	}
 
-	protected boolean withinX(int x, P placement) {
-		return placement.getAbsoluteX() <= x && x <= placement.getAbsoluteEndX();
-	}	
-
 	protected P closestPositiveX(int x, int y) {
 		P closest = null;
 		for (P placement : placements) {
@@ -1247,26 +1213,10 @@ public class ExtremePoints2D<P extends Placement2D> {
 		
 		return closest;
 	}
-	
-	protected int constrainX(int x, int y) {
-		// constrain up
-		P closestX = closestPositiveX(x, y);
-		if(closestX != null) {
-			return closestX.getAbsoluteX() - 1;
-		} else {
-			return containerMaxX;
-		}
-	}
 
-	protected int constrainY(int x, int y) {
-		// constrain up
-		P closestY = closestPositiveY(x, y);
-		if(closestY != null) {
-			return closestY.getAbsoluteY() - 1;
-		} else {
-			return containerMaxY;
-		}
-	}
+	protected boolean withinX(int x, P placement) {
+		return placement.getAbsoluteX() <= x && x <= placement.getAbsoluteEndX();
+	}	
 
 	protected boolean withinY(int y, P placement) {
 		return placement.getAbsoluteY() <= y && y <= placement.getAbsoluteEndY();

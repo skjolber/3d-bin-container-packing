@@ -90,15 +90,15 @@ public class StackPlacement implements Placement3D {
 	}
 
 	public int getAbsoluteEndX() {
-		return x + value.getDx();
+		return x + value.getDx() - 1;
 	}
 	
 	public int getAbsoluteEndY() {
-		return y + value.getDy();
+		return y + value.getDy() - 1;
 	}
 
 	public int getAbsoluteEndZ() {
-		return z + value.getDz();
+		return z + value.getDz() - 1;
 	}
 	
 	public long getVolume() {

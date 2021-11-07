@@ -36,6 +36,8 @@ public abstract class Point3D extends Point2D {
 	protected int maxZ;
 	protected int dz;
 	
+	protected long volume;
+	
 	public Point3D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		super(minX, minY, maxX, maxY);
 		
@@ -45,6 +47,8 @@ public abstract class Point3D extends Point2D {
 		this.minZ = minZ;
 		this.maxZ = maxZ;
 		this.dz = maxZ - minZ + 1;
+		
+		calculateVolume();
 	}
 
 	public boolean isSupportedXYPlane(int x, int y) { // i.e. z is fixed
@@ -63,6 +67,24 @@ public abstract class Point3D extends Point2D {
 		this.maxZ = maxZ;
 		
 		this.dz = maxZ - minZ + 1;
+		
+		calculateVolume();
+	}
+	
+	@Override
+	public void setMaxX(int maxX) {
+		super.setMaxX(maxX);
+		calculateVolume();
+	}
+	
+	@Override
+	public void setMaxY(int maxY) {
+		super.setMaxY(maxY);
+		calculateVolume();
+	}
+
+	private void calculateVolume() {
+		this.volume = (long)dz * (long)dy * (long)dx;
 	}
 	
 	public boolean isWithin(int dx, int dy, int dz) {
@@ -224,9 +246,10 @@ public abstract class Point3D extends Point2D {
 	public Point3D rotate() {
 		DefaultPoint3D defaultPoint3D = new DefaultPoint3D(minY, minZ, minX, maxY, maxZ, maxX);
 		
-		System.out.println(this + " -> " + defaultPoint3D);
-		
 		return defaultPoint3D;
 	}
 
+	public long getVolume() {
+		return volume;
+	}
 }

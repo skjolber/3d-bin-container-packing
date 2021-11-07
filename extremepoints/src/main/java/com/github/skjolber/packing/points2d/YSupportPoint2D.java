@@ -10,8 +10,6 @@ import com.github.skjolber.packing.api.Placement2D;
 
 public interface YSupportPoint2D {
 
-	int getYSupportMinY();
-	int getYSupportMaxY();
-
 	Placement2D getYSupport();
+	
 }

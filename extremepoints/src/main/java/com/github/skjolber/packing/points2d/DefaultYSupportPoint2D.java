@@ -14,7 +14,7 @@ public class DefaultYSupportPoint2D extends Point2D implements YSupportPoint2D  
 	
 	@Override
 	public boolean isYSupport(int y) {
-		return getYSupportMinY() <= y && y <= getYSupportMaxY();
+		return ySupport.getAbsoluteY() <= y && y <= ySupport.getAbsoluteEndY();
 	}
 
 	public int getYSupportMinY() {
@@ -33,7 +33,7 @@ public class DefaultYSupportPoint2D extends Point2D implements YSupportPoint2D  
 	
 	@Override
 	public boolean isYEdge(int y) {
-		return getYSupportMaxY() == y - 1;
+		return ySupport.getAbsoluteEndY() == y - 1;
 	}
 	
 	public Point2D clone(int maxX, int maxY) {

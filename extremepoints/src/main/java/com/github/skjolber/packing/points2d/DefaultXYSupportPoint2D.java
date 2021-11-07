@@ -29,12 +29,12 @@ public class DefaultXYSupportPoint2D extends Point2D implements XSupportPoint2D,
 
 	@Override
 	public boolean isYSupport(int y) {
-		return getYSupportMinY() <= y && y <= getYSupportMaxY();
+		return ySupport.getAbsoluteY() <= y && y <= ySupport.getAbsoluteEndY();
 	}
 
 	@Override
 	public boolean isXSupport(int x) {
-		return getXSupportMinX() <= x && x <= getXSupportMaxX();
+		return xSupport.getAbsoluteX() <= x && x <= xSupport.getAbsoluteEndX();
 	}
 
 	public int getXSupportMinX() {
@@ -55,12 +55,12 @@ public class DefaultXYSupportPoint2D extends Point2D implements XSupportPoint2D,
 	
 	@Override
 	public boolean isYEdge(int y) {
-		return getYSupportMaxY() == y - 1;
+		return ySupport.getAbsoluteEndY() == y - 1;
 	}
 
 	@Override
 	public boolean isXEdge(int x) {
-		return getXSupportMaxX()  == x - 1;
+		return xSupport.getAbsoluteEndX() == x - 1;
 	}
 
 	@Override
