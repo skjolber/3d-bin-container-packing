@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement2D;
+import com.github.skjolber.packing.api.Placement3D;
 
 /**
  * 
@@ -25,13 +26,16 @@ public class ExtremePoints2D<P extends Placement2D> {
 	private List<Point2D> addY = new ArrayList<>();
 	private List<Point2D> addX = new ArrayList<>();
 
+	private Placement2D containerPlacement;
 
 	public ExtremePoints2D(int dx, int dy) {
 		super();
 		this.containerMaxX = dx - 1;
 		this.containerMaxY = dy - 1;
 		
-		values.add(new DefaultXYSupportPoint2D(0, 0, containerMaxX, containerMaxY, 0, containerMaxX, 0, containerMaxY));
+		this.containerPlacement = new DefaultPlacement2D(0, 0, containerMaxX, containerMaxY);
+		
+		values.add(new DefaultXYSupportPoint2D(0, 0, containerMaxX, containerMaxY, containerPlacement, containerPlacement));
 	}
 
 	public boolean add(int index, P placement) {
@@ -68,7 +72,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 				int maxY = constrainIfNotMaxY(source, xx);
 				if(xSupport || xEdge) {
 					if(xSupport) {
-						DefaultXYSupportPoint2D addSupportedX = getSupportedAtXX(source, xx, yy, maxY);
+						DefaultXYSupportPoint2D addSupportedX = getSupportedAtXX(source, placement, xx, yy, maxY);
 						if(addSupportedX != null) {
 							addX.add(addSupportedX);
 						}
@@ -91,7 +95,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 				int maxX = constrainIfNotMaxX(source, yy);
 				if(ySupport || yEdge) {
 					if(ySupport) {
-						DefaultXYSupportPoint2D addSupportedY = getSupportedAtYY(source, xx, yy, maxX);
+						DefaultXYSupportPoint2D addSupportedY = getSupportedAtYY(source, placement, xx, yy, maxX);
 						if(addSupportedY != null) {
 							addY.add(addSupportedY);
 						}
@@ -313,7 +317,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 					DefaultYSupportPoint2D next = new DefaultYSupportPoint2D(
 							xx, point.getMinY(),
 							point.getMaxX(), maxY,
-							xx, point.getMinY()
+							placement
 							);
 					
 					added.add(next);
@@ -343,7 +347,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 				if(point.getMinY() < placement.getAbsoluteY()) {
 					p = new DefaultPoint2D(xx, point.getMinY(), point.getMaxX(), maxY);
 				} else {
-					p = new DefaultYSupportPoint2D(xx, point.getMinY(), point.getMaxX(), maxY, point.getMinY(), yy);
+					p = new DefaultYSupportPoint2D(xx, point.getMinY(), point.getMaxX(), maxY, placement);
 				}
 
 				added.set(i, p);
@@ -351,7 +355,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		}
 	}
 
-	protected DefaultXYSupportPoint2D getSupportedAtXX(Point2D source, int xx, int yy, int maxY) {
+	protected DefaultXYSupportPoint2D getSupportedAtXX(Point2D source, Placement2D p, int xx, int yy, int maxY) {
 		// in other words there is a placement in negative y direction at XX 
 		// so the y coordinate is minY
 
@@ -401,7 +405,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			XSupportPoint2D fixedPointY = (XSupportPoint2D)source;
 			
 			if(maxY >= source.getMinY()) {
-				return new DefaultXYSupportPoint2D(xx, source.getMinY(), source.getMaxX(), maxY, xx, fixedPointY.getXSupportMaxX(), source.getMinY(), yy - 1);
+				return new DefaultXYSupportPoint2D(xx, source.getMinY(), source.getMaxX(), maxY, fixedPointY.getXSupport(), p);
 			}
 		}
 		return null;
@@ -441,7 +445,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 					DefaultYSupportPoint2D next = new DefaultYSupportPoint2D(
 							xx, point.getMinY(),
 							point.getMaxX(), maxY,
-							xx, point.getMinY()
+							placement
 							);
 
 					added.add(next);
@@ -487,11 +491,10 @@ public class ExtremePoints2D<P extends Placement2D> {
 					// add point
 					// horizontal support
 					
-					
 					DefaultXSupportPoint2D next = new DefaultXSupportPoint2D(
 							point.getMinX(), yy, 
 							maxX, point.getMaxY(), 
-							point.getMinX(), xx
+							placement
 							);
 					
 					added.add(next);
@@ -530,12 +533,16 @@ public class ExtremePoints2D<P extends Placement2D> {
 
 	protected int constrainIfNotMaxY(Point2D source, int x) {
 		int maxY;
-		if(source.getMaxX() == containerMaxX && source.getMaxY() == containerMaxY) {
+		if(isMax(source)) {
 			maxY = containerMaxY;
 		} else {
 			maxY = constrainY(x, source.getMinY());
 		}
 		return maxY;
+	}
+
+	private boolean isMax(Point2D source) {
+		return source.getMaxX() == containerMaxX && source.getMaxY() == containerMaxY;
 	}
 
 	protected void appendFirstNegativeXAtYY(P placement, Point2D source, List<Point2D> deleted, int xx, int yy, int maxX, List<Point2D> added) {
@@ -636,7 +643,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 					DefaultXSupportPoint2D next = new DefaultXSupportPoint2D(
 							point.getMinX(), yy, 
 							maxX, point.getMaxY(), 
-							point.getMinX(), xx
+							placement
 							);
 
 					added.add(next);
@@ -664,8 +671,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 				if(point.getMinX() < placement.getAbsoluteX()) {
 					p = new DefaultPoint2D(point.getMinX(), yy, maxX, point.getMaxY());
 				} else {
-
-					p = new DefaultXSupportPoint2D(point.getMinX(), yy, maxX, point.getMaxY(), point.getMinX(), xx);
+					p = new DefaultXSupportPoint2D(point.getMinX(), yy, maxX, point.getMaxY(), placement);
 				}
 
 				added.set(i, p);
@@ -673,7 +679,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 		}
 	}
 	
-	protected DefaultXYSupportPoint2D getSupportedAtYY(Point2D source, int xx, int yy, int maxX) {
+	protected DefaultXYSupportPoint2D getSupportedAtYY(Point2D source, Placement2D placement, int xx, int yy, int maxX) {
 		// in other words there is a placement in negative x direction at YY
 		// so the x coordinate is minX
 		
@@ -725,7 +731,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 			YSupportPoint2D fixedPointX = (YSupportPoint2D)source;
 			
 			if(maxX >= source.getMinX()) {
-				return new DefaultXYSupportPoint2D(source.getMinX(), yy, maxX, source.getMaxY(), source.getMinX(), xx - 1, yy, fixedPointX.getYSupportMaxY());
+				return new DefaultXYSupportPoint2D(source.getMinX(), yy, maxX, source.getMaxY(), placement, fixedPointX.getYSupport());
 			}
 		}
 		
@@ -740,7 +746,7 @@ public class ExtremePoints2D<P extends Placement2D> {
 
 	protected int constrainIfNotMaxX(Point2D source, int yy) {
 		int maxX;
-		if(source.getMaxX() == containerMaxX && source.getMaxY() == containerMaxY) {
+		if(isMax(source)) {
 			maxX = containerMaxX;
 		} else {
 			maxX = constrainX(source.getMinX(), yy);

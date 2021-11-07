@@ -2,7 +2,9 @@ package com.github.skjolber.packing.points;
 
 import java.util.List;
 
+import com.github.skjolber.packing.points2d.DefaultPlacement2D;
 import com.github.skjolber.packing.points2d.Point2D;
+import com.github.skjolber.packing.points3d.DefaultPlacement3D;
 import com.github.skjolber.packing.points3d.Point3D;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeLine;

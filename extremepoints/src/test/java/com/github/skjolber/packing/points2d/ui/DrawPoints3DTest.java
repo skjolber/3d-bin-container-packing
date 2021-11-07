@@ -6,9 +6,9 @@ import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.points.DefaultExtremePoints2D;
 import com.github.skjolber.packing.points.DefaultExtremePoints3D;
-import com.github.skjolber.packing.points.DefaultPlacement2D;
-import com.github.skjolber.packing.points.DefaultPlacement3D;
+import com.github.skjolber.packing.points2d.DefaultPlacement2D;
 import com.github.skjolber.packing.points2d.Point2D;
+import com.github.skjolber.packing.points3d.DefaultPlacement3D;
 import com.github.skjolber.packing.points3d.Point3D;
 
 public class DrawPoints3DTest {

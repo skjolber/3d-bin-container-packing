@@ -1,6 +1,7 @@
-package com.github.skjolber.packing.points;
+package com.github.skjolber.packing.points3d;
 
 import com.github.skjolber.packing.api.Placement3D;
+import com.github.skjolber.packing.points2d.DefaultPlacement2D;
 
 public class DefaultPlacement3D extends DefaultPlacement2D implements Placement3D {
 
@@ -32,10 +33,6 @@ public class DefaultPlacement3D extends DefaultPlacement2D implements Placement3
 		return "DefaultPlacement3D [" + x + "x" + y + "x" + z + " " + endX + "x" + endY + "x" + endZ + "]";
 	}
 
-	@Override
-	public Placement3D rotate() {
-		return new DefaultPlacement3D(y, z, x, endY, endZ, endX);
-	}
 
 	
 }

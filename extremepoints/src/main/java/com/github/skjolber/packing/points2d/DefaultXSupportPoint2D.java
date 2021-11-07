@@ -1,44 +1,47 @@
 package com.github.skjolber.packing.points2d;
 
+import com.github.skjolber.packing.api.Placement2D;
+
 public class DefaultXSupportPoint2D extends Point2D implements XSupportPoint2D {
 
 	/** range constrained to current minY */
-	private final int xSupportMinX;
-	private final int xSupportMaxX;
+	private final Placement2D xSupport;
 	
-	public DefaultXSupportPoint2D(int minX, int minY, int maxX, int maxY, int xSupportMinX, int xSupportMaxX) {
+	public DefaultXSupportPoint2D(int minX, int minY, int maxX, int maxY, Placement2D xSupport) {
 		super(minX, minY, maxX, maxY);
-		this.xSupportMinX = xSupportMinX;
-		this.xSupportMaxX = xSupportMaxX;
+		this.xSupport = xSupport;
 	}
 	
 	@Override
 	public boolean isXSupport(int x) {
-		return xSupportMinX <= x && x <= xSupportMaxX;
+		return getXSupportMinX() <= x && x <= getXSupportMaxX();
 	}
 	
 	public int getXSupportMinX() {
-		return xSupportMinX;
+		return xSupport.getAbsoluteX();
 	}
 	
 	public int getXSupportMaxX() {
-		return xSupportMaxX;
+		return xSupport.getAbsoluteEndX();
 	}
 	
 	@Override
 	public boolean isXEdge(int x) {
-		return xSupportMaxX == x - 1;
+		return getXSupportMaxX() == x - 1;
 	}
 
 	@Override
 	public String toString() {
-		return "DefaultXSupportPoint2D [minX=" + minX + ", minY=" + minY + ", maxY=" + maxY + ", maxX=" + maxX
-				+ ", xSupportMinX=" + xSupportMinX + ", xSupportMaxX=" + xSupportMaxX + "]";
+		return "DefaultXSupportPoint2D [" +  + minX + "x" + minY + " " + maxX + "x" + maxY 
+				+ ", xSupportMinX=" + getXSupportMinX() + ", xSupportMaxX=" + getXSupportMaxX() + "]";
 	}
 
 	public Point2D clone(int maxX, int maxY) {
-		return new DefaultXSupportPoint2D(minX, minY, maxX, maxY, xSupportMinX, Math.min(maxX, xSupportMaxX));
+		return new DefaultXSupportPoint2D(minX, minY, maxX, maxY, xSupport);
 	}
 
-	
+	@Override
+	public Placement2D getXSupport() {
+		return xSupport;
+	}
 }

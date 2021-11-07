@@ -178,7 +178,7 @@ public abstract class Point2D {
 
 	@Override
 	public String toString() {
-		return "Point2D [minX=" + minX + ", minY=" + minY + ", maxY=" + maxY + ", maxX=" + maxX + "]";
+		return "Point2D [" + minX + "x" + minY + " " + maxX + "x" + maxY + "]";
 	}
 
 	public abstract Point2D clone(int maxX, int maxY);

@@ -1,44 +1,48 @@
 package com.github.skjolber.packing.points2d;
 
+import com.github.skjolber.packing.api.Placement2D;
+
 public class DefaultYSupportPoint2D extends Point2D implements YSupportPoint2D  {
 
 	/** range constrained to current minX */
-	private final int ySupportMinY;
-	private final int ySupportMaxY;
+	private final Placement2D ySupport;
 	
-	public DefaultYSupportPoint2D(int minX, int minY, int maxX, int maxY, int ySupportMinY, int ySupportMaxY) {
+	public DefaultYSupportPoint2D(int minX, int minY, int maxX, int maxY, Placement2D ySupport) {
 		super(minX, minY, maxX, maxY);
-		this.ySupportMinY = ySupportMinY;
-		this.ySupportMaxY = ySupportMaxY;
+		this.ySupport = ySupport;
 	}
 	
 	@Override
 	public boolean isYSupport(int y) {
-		return ySupportMinY <= y && y <= ySupportMaxY;
+		return getYSupportMinY() <= y && y <= getYSupportMaxY();
 	}
 
 	public int getYSupportMinY() {
-		return ySupportMinY;
+		return ySupport.getAbsoluteY();
 	}
 	
 	public int getYSupportMaxY() {
-		return ySupportMaxY;
+		return ySupport.getAbsoluteEndY();
 	}
 
 	@Override
 	public String toString() {
-		return "DefaultYSupportPoint2D [minX=" + minX + ", minY=" + minY + ", maxY=" + maxY + ", maxX=" + maxX 
-				+ ", ySupportMinY=" + ySupportMinY + ", ySupportMaxY=" + ySupportMaxY + "]";
+		return "DefaultYSupportPoint2D [" + minX + "x" + minY + " " + maxX + "x" + maxY 
+				+ ", ySupportMinY=" + getYSupportMinY() + ", ySupportMaxY=" + getYSupportMaxY() + "]";
 	}
 	
 	@Override
 	public boolean isYEdge(int y) {
-		return ySupportMaxY == y - 1;
+		return getYSupportMaxY() == y - 1;
 	}
 	
 	public Point2D clone(int maxX, int maxY) {
-		return new DefaultYSupportPoint2D(minX, minY, maxX, maxY, ySupportMinY, Math.min(maxY, ySupportMaxY));
+		return new DefaultYSupportPoint2D(minX, minY, maxX, maxY, ySupport);
 	}
 
+	@Override
+	public Placement2D getYSupport() {
+		return ySupport;
+	}
 	
 }

@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.points.DefaultExtremePoints2D;
-import com.github.skjolber.packing.points.DefaultPlacement2D;
 
 public class ExtremePoints2DTest {
 

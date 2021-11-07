@@ -8,5 +8,4 @@ public interface Placement3D extends Placement2D  {
 	
 	boolean intersects(Placement3D point);
 
-	Placement3D rotate();
 }

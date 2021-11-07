@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import com.github.skjolber.packing.points.DefaultPlacement3D;
-
 public class ExtremePoints3DTest {
 
 	@Test
