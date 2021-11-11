@@ -42,7 +42,6 @@ class LargestAreaFitFirstPackager2DTest extends AbstractPackagerTest {
 		print(fits);
 	}
 
-
 	@Test
 	void testStackingSquaresOnSquareNo3DRotate() {
 

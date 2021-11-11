@@ -2,10 +2,12 @@ package com.github.skjolber.packing.visualizer.packaging;
 
 import java.util.List;
 
-import com.github.skjolber.packing.old.Box;
-import com.github.skjolber.packing.old.Container;
-import com.github.skjolber.packing.old.Level;
-import com.github.skjolber.packing.old.Placement;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerStackValue;
+import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.ContainerVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
@@ -21,13 +23,17 @@ public class ContainerProjection extends AbstractProjection<Container> {
 			ContainerVisualizer containerVisualization = new ContainerVisualizer();
 			containerVisualization.setStep(step++);
 			
-			containerVisualization.setDx(inputContainer.getWidth());
-			containerVisualization.setDy(inputContainer.getDepth());
-			containerVisualization.setDz(inputContainer.getHeight());
+			ContainerStackValue[] stackValues = inputContainer.getStackValues();
+			
+			ContainerStackValue containerStackValue = stackValues[0];
+			
+			containerVisualization.setDx(containerStackValue.getDx());
+			containerVisualization.setDy(containerStackValue.getDy());
+			containerVisualization.setDz(containerStackValue.getDz());
 
-			containerVisualization.setLoadDx(inputContainer.getWidth());
-			containerVisualization.setLoadDy(inputContainer.getDepth());
-			containerVisualization.setLoadDz(inputContainer.getHeight());
+			containerVisualization.setLoadDx(containerStackValue.getDx());
+			containerVisualization.setLoadDy(containerStackValue.getDy());
+			containerVisualization.setLoadDz(containerStackValue.getDz());
 
 			containerVisualization.setId(inputContainer.getName());
 			containerVisualization.setName(inputContainer.getName());
@@ -36,30 +42,32 @@ public class ContainerProjection extends AbstractProjection<Container> {
 			stackVisualization.setStep(step++);
 			containerVisualization.setStack(stackVisualization);
 			
-			for(Level level : inputContainer.getLevels()) {
-				for (Placement placement : level) {
-					
-					Box box = placement.getBox();
-					BoxVisualizer boxVisualization = new BoxVisualizer();
-					boxVisualization.setId(box.getName());
-					boxVisualization.setName(box.getName());
-					boxVisualization.setStep(step);
+			Stack stack = inputContainer.getStack();
+			List<StackPlacement> placements = stack.getPlacements();
+			System.out.println("Got " + placements.size() + " placements");
+			for (StackPlacement placement : stack.getPlacements()) {
+				Stackable box = placement.getStackable();
+				BoxVisualizer boxVisualization = new BoxVisualizer();
+				boxVisualization.setId(box.getName());
+				boxVisualization.setName(box.getName());
+				boxVisualization.setStep(step);
 
-					boxVisualization.setDx(box.getWidth());
-					boxVisualization.setDy(box.getDepth());
-					boxVisualization.setDz(box.getHeight());
-					
-					StackPlacementVisualizer stackPlacement = new StackPlacementVisualizer();
-					stackPlacement.setX(placement.getAbsoluteX());
-					stackPlacement.setY(placement.getAbsoluteY());
-					stackPlacement.setZ(placement.getAbsoluteZ());
-					stackPlacement.setStackable(boxVisualization);
-					stackPlacement.setStep(step);
+				StackValue stackValue = placement.getStackValue();
+				
+				boxVisualization.setDx(stackValue.getDx());
+				boxVisualization.setDy(stackValue.getDy());
+				boxVisualization.setDz(stackValue.getDz());
+				
+				StackPlacementVisualizer stackPlacement = new StackPlacementVisualizer();
+				stackPlacement.setX(placement.getAbsoluteX());
+				stackPlacement.setY(placement.getAbsoluteY());
+				stackPlacement.setZ(placement.getAbsoluteZ());
+				stackPlacement.setStackable(boxVisualization);
+				stackPlacement.setStep(step);
 
-					stackVisualization.add(stackPlacement);
-					
-					step++;
-				}
+				stackVisualization.add(stackPlacement);
+				
+				step++;
 			}
 			
 			visualization.add(containerVisualization);

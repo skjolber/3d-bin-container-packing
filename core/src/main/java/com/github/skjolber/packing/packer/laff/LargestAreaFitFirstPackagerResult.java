@@ -2,26 +2,29 @@ package com.github.skjolber.packing.packer.laff;
 
 import java.util.List;
 
+import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.packer.PackResult;
 
-public class LaffResult implements PackResult {
+public class LargestAreaFitFirstPackagerResult implements PackResult {
 
 	private List<Stackable> remaining;
 	private LevelStack stack;
+	private Container container;
 
-	public LaffResult(List<Stackable> remaining, LevelStack stack) {
+	public LargestAreaFitFirstPackagerResult(List<Stackable> remaining, LevelStack stack, Container container) {
 		this.remaining = remaining;
 		this.stack = stack;
+		this.container = container;
 	}
 
-	public LevelStack getContainer() {
-		return stack;
+	public Container getContainer() {
+		return container;
 	}
 
 	@Override
 	public boolean packsMoreBoxesThan(PackResult result) {
-		LaffResult laffResult = (LaffResult)result;
+		LargestAreaFitFirstPackagerResult laffResult = (LargestAreaFitFirstPackagerResult)result;
 		if(laffResult.remaining.size() > remaining.size()) { // lower is better
 			return true;
 		} else {

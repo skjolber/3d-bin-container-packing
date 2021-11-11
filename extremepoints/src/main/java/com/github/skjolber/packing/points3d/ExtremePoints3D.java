@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement3D;
-import com.github.skjolber.packing.points2d.Point2D;
 
 /**
  * 
@@ -26,7 +25,6 @@ public class ExtremePoints3D<P extends Placement3D> {
 	private List<Point3D> addedX = new ArrayList<>();
 	private List<Point3D> addedY = new ArrayList<>();
 	private List<Point3D> addedZ = new ArrayList<>();
-
 
 	public ExtremePoints3D(int dx, int dy, int dz) {
 		super();

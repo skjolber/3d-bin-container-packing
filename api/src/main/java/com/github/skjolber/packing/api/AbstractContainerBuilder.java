@@ -38,7 +38,7 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 			this.stackConstraint = stackConstraint;
 			
 			this.loadDx = loadDx;
-			this.loadDy = loadDx;
+			this.loadDy = loadDy;
 			this.loadDz = loadDz;
 
 			this.maxLoadWeight = maxLoadWeight;
@@ -57,6 +57,10 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 
 		public long getVolume() {
 			return volume;
+		}
+
+		public long getArea() {
+			return dx * dy;
 		}
 
 	}
@@ -82,7 +86,7 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 		return (B)this;
 
 	}
-
+	
 	public B withRotateXY(int dx, int dy, int dz, int loadDx, int loadDy, int loadDz, int maxLoadWeight, StackConstraint stackConstraint) {
 		rotations.add(new Rotation(dx, dy, dz, loadDx, loadDy, loadDz, maxLoadWeight, stackConstraint));
 		

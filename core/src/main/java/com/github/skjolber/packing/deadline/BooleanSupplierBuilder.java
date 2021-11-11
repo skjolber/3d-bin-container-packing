@@ -2,12 +2,6 @@ package com.github.skjolber.packing.deadline;
 
 import java.util.function.BooleanSupplier;
 
-import com.github.skjolber.packing.api.deadline.BooleanSupplierBuilder;
-import com.github.skjolber.packing.api.deadline.DeadlineCheckBooleanSupplier;
-import com.github.skjolber.packing.api.deadline.DelegateDeadlineCheckBooleanSupplier;
-import com.github.skjolber.packing.api.deadline.DelegateNthDeadlineCheckBooleanSupplier;
-import com.github.skjolber.packing.api.deadline.NthDeadlineCheckBooleanSupplier;
-
 public class BooleanSupplierBuilder {
 	
 	private static final BooleanSupplier noop = () -> false;

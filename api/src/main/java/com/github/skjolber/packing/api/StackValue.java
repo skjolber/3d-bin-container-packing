@@ -9,7 +9,6 @@ public abstract class StackValue {
 	protected final int dz; // height
 	
 	protected final long area;
-	protected final long volume;
 
 	protected final StackConstraint constraint;
 	
@@ -20,7 +19,6 @@ public abstract class StackValue {
 		this.constraint = constraint;
 		
 		this.area = (long)dx * (long)dy;
-		this.volume = area * (long)dz;
 	}
 
 	public int getDx() {
@@ -33,10 +31,6 @@ public abstract class StackValue {
 	
 	public int getDz() {
 		return dz;
-	}
-
-	public long getVolume() {
-		return volume;
 	}
 
 	/**
@@ -54,12 +48,14 @@ public abstract class StackValue {
 		return dx >= this.dx && dy >= this.dy && dz >= this.dz;
 	}
 	
+	public boolean fitsInside2D(int dx, int dy) {
+		return dx >= this.dx && dy >= this.dy;
+	}
+	
 	public long getArea() {
 		return area;
 	}
 	
-	public abstract int getWeight();
-
 	public StackConstraint getConstraint() {
 		return constraint;
 	}
@@ -68,7 +64,5 @@ public abstract class StackValue {
 	public String toString() {
 		return "StackValue [dx=" + dx + ", dy=" + dy + ", dz=" + dz + "]";
 	}
-	
-	public abstract Stackable getStackable();
 	
 }

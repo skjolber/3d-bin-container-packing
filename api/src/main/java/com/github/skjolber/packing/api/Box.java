@@ -24,10 +24,18 @@ public class Box extends Stackable {
 				throw new IllegalStateException("No weight");
 			}
 			
-			return new Box(this);
+			Rotation rotation = rotations.get(0);
+			long volume = rotation.getVolume();
+			for(int i = 1; i < rotations.size(); i++) {
+				if(rotations.get(i).getVolume() != volume) {
+					throw new IllegalStateException();
+				}
+			}
+			
+			return new Box(name, volume, weight, getStackValues());
 		}
 		
-		protected BoxStackValue[] getStackValues(Box box) {
+		protected BoxStackValue[] getStackValues() {
 			BoxStackValue[] stackValues = new BoxStackValue[rotations.size()];
 			
 			for (int i = 0; i < rotations.size(); i++) {
@@ -35,7 +43,7 @@ public class Box extends Stackable {
 				
 				StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : defaultConstraint;
 
-				stackValues[i] = new BoxStackValue(rotation.dx, rotation.dy, rotation.dz, box, constraint);
+				stackValues[i] = new BoxStackValue(rotation.dx, rotation.dy, rotation.dz, constraint);
 			}	
 			return stackValues;
 		}
@@ -45,20 +53,17 @@ public class Box extends Stackable {
 	protected final int weight;
 	protected final BoxStackValue[] rotations;
 	protected final long volume;
+	protected final long minimumArea;
+	protected final long maximumArea;
 
-	public Box(Builder builder) {
-		super(builder.name);
-		
-		this.weight = builder.weight;
-		this.rotations = builder.getStackValues(this);
-		this.volume = rotations[0].volume;
-	}
-
-	protected Box(String name, long volume, int weight, BoxStackValue[] rotations) {
+	protected Box(String name, long volume, int weight, BoxStackValue[] stackValues) {
 		super(name);
 		this.volume = volume;
 		this.weight = weight;
-		this.rotations = rotations;
+		this.rotations = stackValues;
+		
+		this.minimumArea = getMinimumArea(stackValues);
+		this.maximumArea = getMinimumArea(stackValues);
 	}
 
 	@Override
@@ -78,6 +83,16 @@ public class Box extends Stackable {
 	@Override
 	public Box clone() {
 		return new Box(name, volume, weight, rotations);
+	}
+	
+	@Override
+	public long getMinimumArea() {
+		return minimumArea;
+	}
+	
+	@Override
+	public long getMaximumArea() {
+		return maximumArea;
 	}
 	
 }

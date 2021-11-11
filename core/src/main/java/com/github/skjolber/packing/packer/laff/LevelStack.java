@@ -110,31 +110,27 @@ public class LevelStack extends Stack {
 		
 		int freeWeight = getFreeWeightLoad();
 		
-		DefaultStack stack = new DefaultStack();
-		
 		return new DefaultContainerStackValue(
 						containerStackValue.getDx(), containerStackValue.getDy(), containerStackValue.getDz() - dz,
 						null,
 						containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz() - dz,
-						freeWeight,
-						containerStackValue.getStackable(),
-						stack
+						freeWeight
 						);
 	}
 	
-	public ContainerStackValue getContainerStackValue(int dz) {
+	public int getFreeLoadDz() {
+		return containerStackValue.getDz() - dz;
+	}
+	
+	public DefaultContainerStackValue getContainerStackValue(int dz) {
 		
 		int freeWeight = getFreeWeightLoad();
-		
-		DefaultStack stack = new DefaultStack();
 		
 		return new DefaultContainerStackValue(
 						containerStackValue.getDx(), containerStackValue.getDy(), dz,
 						null,
 						containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), dz,
-						freeWeight,
-						containerStackValue.getStackable(),
-						stack
+						freeWeight
 						);
 	}
 

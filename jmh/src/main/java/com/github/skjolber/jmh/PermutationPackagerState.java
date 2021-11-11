@@ -18,6 +18,7 @@ import com.github.skjolber.packing.old.BruteForcePackagerBuilder;
 import com.github.skjolber.packing.old.Container;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeDirectory;
+import com.github.skjolber.packing.test.BouwkampCodeLine;
 import com.github.skjolber.packing.test.BouwkampCodes;
 
 @State(Scope.Benchmark)
@@ -96,8 +97,11 @@ public class PermutationPackagerState {
 	public List<Box> toBoxes(BouwkampCode code) {
 		List<Box> boxes = new ArrayList<>();
 		
-		for (Integer integer : code.getLines()) {
-			boxes.add(new Box(integer, integer, 2 * Math.max(code.getDepth(), code.getWidth()), 0));
+		for (BouwkampCodeLine bouwkampCodeLine : code.getLines()) {
+			for (Integer integer : bouwkampCodeLine.getSquares()) {
+				
+				boxes.add(new Box(integer, integer, 2 * Math.max(code.getDepth(), code.getWidth()), 0));
+			}
 		}
 		
 		return boxes;

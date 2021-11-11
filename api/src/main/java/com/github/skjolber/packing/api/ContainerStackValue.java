@@ -5,20 +5,16 @@ public abstract class ContainerStackValue extends StackValue {
 	public ContainerStackValue(
 			int dx, int dy, int dz, 
 			StackConstraint constraint,
-			int loadDx, int loadDy, int loadDz, int maxLoadWeight, Container container) {
+			int loadDx, int loadDy, int loadDz, int maxLoadWeight) {
 		super(dx, dy, dz, constraint);
 		
 		this.loadDx = loadDx;
 		this.loadDy = loadDy;
 		this.loadDz = loadDz;
 		
-		this.container = container;
-		
 		this.loadVolume = (long)loadDx * (long)loadDy * (long)loadDz;
 		this.maxLoadWeight = maxLoadWeight;
 	}
-	
-	protected final Container container;
 	
 	protected final int loadDx; // x
 	protected final int loadDy; // y
@@ -48,22 +44,24 @@ public abstract class ContainerStackValue extends StackValue {
 	}
 
 	protected boolean canLoad(Stackable stackable) {
+		if(stackable.getWeight() > maxLoadWeight) {
+			return false;
+		}
 		for (StackValue stackValue : stackable.getStackValues()) {
 			if(
 				stackValue.getDx() <= loadDx && 
 				stackValue.getDy() <= loadDy && 
-				stackValue.getDz() <= loadDz &&
-				stackValue.getWeight() <= maxLoadWeight
+				stackValue.getDz() <= loadDz
 				) {
 				return true;
 			}
 		}
 		return false;
 	}
+
 	
 	@Override
-	public Container getStackable() {
-		return container;
-	}
-
+	public String toString() {
+		return "ContainerStackValue [" + dx + "x" + dy + "x" + dz + " " + loadDx + "x" + loadDy + "x" + loadDz + "]";
+	}	
 }

@@ -1,7 +1,47 @@
 package com.github.skjolber.packing.api;
 
+import java.util.List;
+
+import com.github.skjolber.packing.api.AbstractStackableBuilder.Rotation;
+
 public abstract class Container extends Stackable {
 
+	public static Builder newBuilder() {
+		return new Builder();
+	}
+	
+	protected static int getMaxLoadWeight(ContainerStackValue[] values) {
+		int maxLoadWeight = -1;
+		
+		for(ContainerStackValue value : values) {
+			if(value.getMaxLoadWeight() > maxLoadWeight) {
+				maxLoadWeight = value.getMaxLoadWeight(); 
+			}
+		}
+		return maxLoadWeight;
+	}
+	
+	protected static long calculateMinimumArea(StackValue[] values) {
+		long minimumArea = Long.MAX_VALUE;
+		for (StackValue boxStackValue : values) {
+			if(minimumArea > boxStackValue.getArea()) {
+				minimumArea = boxStackValue.getArea();
+			}
+		}
+		return minimumArea;
+	}
+	
+	protected static long getMaxLoadVolume(ContainerStackValue[] values) {
+		long maxLoadVolume = -1;
+		
+		for(ContainerStackValue value : values) {
+			if(value.getMaxLoadVolume() > maxLoadVolume) {
+				maxLoadVolume = value.getMaxLoadVolume(); 
+			}
+		}
+		return maxLoadVolume;
+	}
+	
 	public static class Builder extends AbstractContainerBuilder<Builder> {
 		
 		protected int emptyWeight = -1;
@@ -60,7 +100,59 @@ public abstract class Container extends Stackable {
 				throw new IllegalStateException("Expected empty weight");
 			}
 			
-			return new DefaultContainer(this);
+			Rotation rotation = rotations.get(0);
+			long volume = rotation.getVolume();
+			for(int i = 1; i < rotations.size(); i++) {
+				if(rotations.get(i).getVolume() != volume) {
+					throw new IllegalStateException();
+				}
+			}
+			
+			return new DefaultContainer(name, volume, emptyWeight, getStackValues(), stack);
+		}
+		
+		protected ContainerStackValue[] getStackValues() {
+			if(fixed) {
+				FixedContainerStackValue[] stackValues = new FixedContainerStackValue[rotations.size()];
+				
+				int stackWeight = stack.getWeight();
+
+				for (int i = 0; i < rotations.size(); i++) {
+					Rotation rotation = rotations.get(i);
+
+					StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : defaultConstraint;
+					
+					stackValues[i] = new FixedContainerStackValue(
+							rotation.dx, rotation.dy, rotation.dz, 
+							constraint , 
+							stackWeight, emptyWeight,
+							rotation.loadDx, rotation.loadDy, rotation.loadDz, 
+							rotation.getMaxLoadWeight()
+							);
+				}
+				return stackValues;
+			} else {
+				DefaultContainerStackValue[] stackValues = new DefaultContainerStackValue[rotations.size()];
+				
+				for (int i = 0; i < rotations.size(); i++) {
+					Rotation rotation = rotations.get(i);
+
+					StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : defaultConstraint;
+
+					stackValues[i] = new DefaultContainerStackValue(
+							rotation.dx, rotation.dy, rotation.dz, 
+							constraint,
+							rotation.loadDx, rotation.loadDy, rotation.loadDz, 
+							rotation.getMaxLoadWeight()
+							);
+				}
+				return stackValues;
+			}
+		}
+			
+
+		public long getVolume() {
+			return rotations.get(0).getVolume();
 		}
 	}
 	
@@ -71,8 +163,9 @@ public abstract class Container extends Stackable {
 	protected final int maxLoadWeight;
 
 	protected final long volume;
+	protected final long minArea;
 	
-	public Container(String name, long volume, int emptyWeight, long maxLoadVolume, int maxLoadWeight) {
+	public Container(String name, long volume, int emptyWeight, long maxLoadVolume, int maxLoadWeight, long minArea) {
 		super(name);
 		
 		this.emptyWeight = emptyWeight;
@@ -80,6 +173,7 @@ public abstract class Container extends Stackable {
 		this.maxLoadWeight = maxLoadWeight;
 		
 		this.volume = volume;
+		this.minArea = minArea;
 	}
 	
 	@Override
@@ -118,4 +212,8 @@ public abstract class Container extends Stackable {
 		return volume;
 	}
 	
+	@Override
+	public long getMinimumArea() {
+		return minArea;
+	}
 }

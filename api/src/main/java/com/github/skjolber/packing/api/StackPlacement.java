@@ -110,5 +110,11 @@ public class StackPlacement implements Placement3D {
 	@Override
 	public boolean intersects(Placement3D point) {
 		return !(point.getAbsoluteEndX() < x || point.getAbsoluteX() > getAbsoluteEndX() || point.getAbsoluteEndY() < y || point.getAbsoluteY() > point.getAbsoluteEndY() || point.getAbsoluteEndZ() < z || point.getAbsoluteZ() >  point.getAbsoluteEndZ());
+	}
+	@Override
+	public String toString() {
+		return stackable.getName() + "[" + x + "x" + y + "x" + z + " " + getAbsoluteEndX() + "x" + getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
 	}	
+	
+	
 }

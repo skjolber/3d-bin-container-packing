@@ -291,4 +291,27 @@ public class ExtremePoints2DTest {
 
 	}		
 	
+	@Test
+	public void testStacking() {
+		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(3, 2);
+		ep.add(0, new DefaultPlacement2D(0, 0, 0, 1));
+		
+		assertThat(ep.getValues()).hasSize(1);
+		
+		assertThat(ep.getValue(0).getMinX()).isEqualTo(1);
+		assertThat(ep.getValue(0).getMinY()).isEqualTo(0);
+
+		ep.add(0, new DefaultPlacement2D(1, 0, 1, 1));
+		
+		assertThat(ep.getValues()).hasSize(1);
+		
+		assertThat(ep.getValue(0).getMinX()).isEqualTo(2);
+		assertThat(ep.getValue(0).getMinY()).isEqualTo(0);
+
+		ep.add(0, new DefaultPlacement2D(2, 0, 2, 1));
+		
+		assertThat(ep.getValues()).hasSize(0);
+
+	}
+	
 }

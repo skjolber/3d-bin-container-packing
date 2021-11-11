@@ -40,4 +40,10 @@ public abstract class Stack {
 
 	public abstract boolean isEmpty();
 
+	public void addAll(List<StackPlacement> placements) {
+		for (StackPlacement p : placements) {
+			add(p);
+		}
+	}
+
 }

@@ -35,6 +35,10 @@ public class ExtremePoints2D<P extends Placement2D> {
 		
 		this.containerPlacement = new DefaultPlacement2D(0, 0, containerMaxX, containerMaxY);
 		
+		init();
+	}
+	
+	protected void init() {
 		values.add(new DefaultXYSupportPoint2D(0, 0, containerMaxX, containerMaxY, containerPlacement, containerPlacement));
 	}
 
@@ -53,15 +57,14 @@ public class ExtremePoints2D<P extends Placement2D> {
 		// keep track of placement borders, where possible
 		
 		Point2D source = values.get(index);
-		
+
 		int xx = source.getMinX() + boxDx;
 		int yy = source.getMinY() + boxDy;
-
+		
 		boolean moveX = xx <= containerMaxX;
 		boolean moveY = yy <= containerMaxY;
-		
+
 		if(moveX || moveY) { 
-		
 			boolean xSupport = source.isXSupport(xx); // i.e. is minY the y coordinate?
 			boolean xEdge = source.isXEdge(xx);
 			
@@ -1280,6 +1283,26 @@ public class ExtremePoints2D<P extends Placement2D> {
 			}
 		}
 		return min;
+	}
+
+	public boolean isEmpty() {
+		return values.isEmpty();
 	}	
 
+	public void reset() {
+		values.clear();
+		placements.clear();
+		
+		init();
+	}
+	
+	public long getMaxArea() {
+		long maxPointArea = -1L;
+		for (Point2D point2d : values) {
+			if(maxPointArea < point2d.getArea()) {
+				maxPointArea = point2d.getArea(); 
+			}
+		}
+		return maxPointArea;
+	}
 }

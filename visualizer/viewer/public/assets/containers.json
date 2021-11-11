@@ -2,14 +2,14 @@
   "containers" : [ {
     "step" : 0,
     "plugins" : [ ],
-    "id" : "X",
-    "name" : "X",
-    "dx" : 4,
-    "dy" : 4,
-    "dz" : 4,
-    "loadDx" : 4,
-    "loadDy" : 4,
-    "loadDz" : 4,
+    "id" : "1",
+    "name" : "1",
+    "dx" : 3,
+    "dy" : 2,
+    "dz" : 1,
+    "loadDx" : 3,
+    "loadDy" : 2,
+    "loadDz" : 1,
     "stack" : {
       "step" : 1,
       "plugins" : [ ],
@@ -22,26 +22,26 @@
         "stackable" : {
           "step" : 2,
           "plugins" : [ ],
-          "id" : "4",
-          "name" : "4",
-          "dx" : 4,
-          "dy" : 3,
+          "id" : "A",
+          "name" : "A",
+          "dx" : 2,
+          "dy" : 1,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 3,
         "plugins" : [ ],
-        "x" : 0,
-        "y" : 3,
+        "x" : 2,
+        "y" : 0,
         "z" : 0,
         "stackable" : {
           "step" : 3,
           "plugins" : [ ],
-          "id" : "1",
-          "name" : "1",
-          "dx" : 4,
-          "dy" : 1,
+          "id" : "B",
+          "name" : "B",
+          "dx" : 1,
+          "dy" : 2,
           "dz" : 1,
           "type" : "box"
         }
@@ -49,31 +49,15 @@
         "step" : 4,
         "plugins" : [ ],
         "x" : 0,
-        "y" : 0,
-        "z" : 1,
+        "y" : 1,
+        "z" : 0,
         "stackable" : {
           "step" : 4,
           "plugins" : [ ],
-          "id" : "2",
-          "name" : "2",
-          "dx" : 1,
-          "dy" : 4,
-          "dz" : 1,
-          "type" : "box"
-        }
-      }, {
-        "step" : 5,
-        "plugins" : [ ],
-        "x" : 1,
-        "y" : 0,
-        "z" : 1,
-        "stackable" : {
-          "step" : 5,
-          "plugins" : [ ],
-          "id" : "3",
-          "name" : "3",
-          "dx" : 1,
-          "dy" : 4,
+          "id" : "C",
+          "name" : "C",
+          "dx" : 2,
+          "dy" : 1,
           "dz" : 1,
           "type" : "box"
         }

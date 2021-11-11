@@ -1,8 +1,5 @@
 package com.github.skjolber.packing.deadline;
 
-import com.github.skjolber.packing.api.deadline.ClonableBooleanSupplier;
-import com.github.skjolber.packing.api.deadline.NthDeadlineCheckBooleanSupplier;
-
 public class NthDeadlineCheckBooleanSupplier implements ClonableBooleanSupplier {
 
 	protected final int checkpointsPerDeadlineCheck;

@@ -50,7 +50,13 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 	 */
 
 	public AbstractPackager(List<Container> containers, int checkpointsPerDeadlineCheck) {
-		this.containers = containers.toArray(new Container[0]);
+		if(containers.isEmpty()) {
+			throw new IllegalArgumentException();
+		}
+		this.containers = containers.toArray(new Container[containers.size()]);
+		if(this.containers.length == 0) {
+			throw new RuntimeException();
+		}
 		this.checkpointsPerDeadlineCheck = checkpointsPerDeadlineCheck;
 
 		long maxVolume = Long.MIN_VALUE;
@@ -358,7 +364,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 			}
 
 			// weight
-			long boxWeight = container.getWeight();
+			long boxWeight = container.getMaxLoadWeight();
 			if (boxWeight > maxWeight) {
 				maxWeight = boxWeight;
 			}
@@ -371,13 +377,13 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 
 		List<Container> list = new ArrayList<>(containers.size());
 		for (Container container : containers) {
-			if (container.getVolume() < minVolume || container.getWeight() < minWeight) {
-				// this box cannot even fit a single box
+			if (container.getMaxLoadVolume() < minVolume || container.getMaxLoadWeight() < minWeight) {
+				// this container cannot even fit a single box
 				continue;
 			}
 
-			if (container.getVolume() + maxVolume * (count - 1) < volume || container.getWeight() + maxWeight * (count - 1) < weight) {
-				// this box cannot be used even together with all biggest boxes
+			if (container.getMaxLoadVolume() + maxVolume * (count - 1) < volume || container.getMaxLoadWeight() + maxWeight * (count - 1) < weight) {
+				// this container cannot be used even together with all biggest boxes
 				continue;
 			}
 
@@ -417,7 +423,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 
 	private boolean canHoldAll(Container containerBox, List<Stackable> boxes) {
 		for (Stackable box : boxes) {
-			if (containerBox.getWeight() < box.getWeight()) {
+			if (containerBox.getMaxLoadWeight() < box.getWeight()) {
 				continue;
 			}
 			if (!containerBox.canLoad(box)) {
@@ -429,7 +435,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 
 	private boolean canHoldAtLeastOne(Container containerBox, List<Stackable> boxes) {
 		for (Stackable box : boxes) {
-			if (containerBox.getWeight() < box.getWeight()) {
+			if (containerBox.getMaxLoadWeight() < box.getWeight()) {
 				continue;
 			}
 			if (containerBox.canLoad(box)) {
@@ -438,19 +444,5 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 		}
 		return false;
 	}
-
-	/*
-	static List<StackPlacement> getPlacements(int size) {
-		// each box will at most have a single placement with a space (and its remainder).
-		List<StackPlacement> placements = new ArrayList<>(size);
-
-		for (int i = 0; i < size; i++) {
-			StackPlacement placement = new StackPlacement();
-			placement.setSpace(new StackSpace());
-			placements.add(placement);
-		}
-		return placements;
-	}
-*/
 
 }

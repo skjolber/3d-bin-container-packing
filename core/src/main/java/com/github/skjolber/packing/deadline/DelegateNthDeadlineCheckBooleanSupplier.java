@@ -2,9 +2,6 @@ package com.github.skjolber.packing.deadline;
 
 import java.util.function.BooleanSupplier;
 
-import com.github.skjolber.packing.api.deadline.ClonableBooleanSupplier;
-import com.github.skjolber.packing.api.deadline.DelegateNthDeadlineCheckBooleanSupplier;
-
 public class DelegateNthDeadlineCheckBooleanSupplier implements ClonableBooleanSupplier {
 
 	protected final BooleanSupplier delegate;

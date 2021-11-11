@@ -3,6 +3,8 @@ package com.github.skjolber.packing.points3d;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.Placement3D;
+import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.points2d.Point2D;
 
 public abstract class Point3D extends Point2D {
@@ -232,6 +234,9 @@ public abstract class Point3D extends Point2D {
 		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowsMinY(point.getAbsoluteY(), point.getAbsoluteEndY());
 	}
 
+	public boolean fits3D(StackValue stackValue) {
+		return !(stackValue.getDx() > dx || stackValue.getDy() > dy || stackValue.getDz() > dz);
+	}
 
 	public boolean isMax(Point3D existing) {
 		return maxY == existing.getMaxY() && maxX == existing.getMaxX() && maxZ == existing.getMaxZ();

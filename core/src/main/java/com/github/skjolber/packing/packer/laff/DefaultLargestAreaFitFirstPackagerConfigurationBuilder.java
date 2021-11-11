@@ -1,0 +1,5 @@
+package com.github.skjolber.packing.packer.laff;
+
+public class DefaultLargestAreaFitFirstPackagerConfigurationBuilder extends LargestAreaFitFirstPackagerConfigurationBuilder<DefaultLargestAreaFitFirstPackagerConfigurationBuilder>{
+
+}

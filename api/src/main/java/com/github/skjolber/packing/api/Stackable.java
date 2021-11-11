@@ -58,5 +58,30 @@ public abstract class Stackable {
 		}
 		return null;
 	}
-	
+
+	public abstract long getMinimumArea();
+
+	public abstract long getMaximumArea();
+
+	protected static long getMinimumArea(StackValue[] rotations) {
+		long minimumArea = Long.MAX_VALUE;
+		for (StackValue boxStackValue : rotations) {
+			if(minimumArea > boxStackValue.getArea()) {
+				minimumArea = boxStackValue.getArea();
+			}
+		}
+		return minimumArea;
+	}
+
+	public static long getMaximumArea(StackValue[] rotations) {
+		long maximumArea = Long.MIN_VALUE;
+		for (StackValue boxStackValue : rotations) {
+			if(maximumArea < boxStackValue.getArea()) {
+				maximumArea = boxStackValue.getArea();
+			}
+		}
+		return maximumArea;
+	}
+
+
 }

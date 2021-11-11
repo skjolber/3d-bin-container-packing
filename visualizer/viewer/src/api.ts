@@ -184,9 +184,9 @@ export class StackableRenderer {
             parent.add(container);
             container.add(containerLoad);
 
-            var offsetX = - containerStackable.dx / 2;
-            var offsetY = - containerStackable.dy / 2;
-            var offsetZ = - containerStackable.dz / 2;
+            var offsetX = - containerStackable.dy / 2;
+            var offsetY = - containerStackable.dz / 2;
+            var offsetZ = - containerStackable.dx / 2;
 
             var nextColorScheme = colorScheme.getColorScheme(containerStackable);
             for (let s of containerStackable.stack.placements) {
