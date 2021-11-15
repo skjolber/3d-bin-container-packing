@@ -14,9 +14,9 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.StackValueComparator;
+import com.github.skjolber.packing.api.StackValuePointFilter;
 import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.StackableComparator;
+import com.github.skjolber.packing.api.StackableFilter;
 import com.github.skjolber.packing.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.points3d.Point3D;
 
@@ -100,11 +100,10 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 		LargestAreaFitFirstPackagerConfiguration<Point3D> configuration = factory.newBuilder().withContainer(targetContainer).withExtremePoints(extremePoints3D).withStack(stack).build();
 		
-		StackableComparator firstComparator = configuration.getFirstComparator();
-		StackValueComparator<Point3D> firstStackValueComparator = configuration.getFirstStackValueComparator();
+		Point3D firstPoint = extremePoints3D.getValue(0);
 		
-		StackableComparator nextComparator = configuration.getNextComparator();
-		StackValueComparator<Point3D> nextStackValueComparator = configuration.getNextStackValueComparator();
+		StackableFilter firstFilter = configuration.getFirstStackableFilter();
+		StackValuePointFilter<Point3D> firstStackValuePointComparator = configuration.getFirstStackValuePointFilter();
 
 		while(!scopedStackables.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
@@ -130,17 +129,17 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				if(constraint != null && !constraint.accepts(stack, box)) {
 					continue;
 				}
-				if(firstBox != null && firstComparator.compare(firstBox, box) <= 0) {
+				if(firstBox != null && !firstFilter.accept(firstBox, box)) {
 					continue;
 				}
 				for (StackValue stackValue : box.getStackValues()) {
 					if(!stackValue.fitsInside3D(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz())) {
 						continue;
 					}
-					if(firstStackValue != null && firstStackValueComparator.compare(value, firstStackValue, value, stackValue) <= 0) {
+					if(firstStackValue != null && !firstStackValuePointComparator.accept(firstBox, firstPoint, firstStackValue, box, firstPoint, stackValue)) {
 						continue;
-						
 					}
+					
 					if(constraint != null && !constraint.supports(stack, box, stackValue, 0, 0, 0)) {
 						continue;
 					}
@@ -168,6 +167,9 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 			extremePoints3D.add(0, first);
 			
+			StackableFilter nextFilter = configuration.getNextStackableFilter();
+			StackValuePointFilter<Point3D> nextStackValuePointComparator = configuration.getNextStackValuePointFilter();
+			
 			while(!extremePoints3D.isEmpty() && maxRemainingLevelWeight > 0 && !scopedStackables.isEmpty()) {
 				
 				long maxPointVolume = extremePoints3D.getMaxVolume();
@@ -190,7 +192,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 						continue;
 					}
 
-					if(bestStackValue != null && nextComparator.compare(box, bestStackable) > 0) {
+					if(bestStackValue != null && !nextFilter.accept(bestStackable, box)) {
 						continue;
 					}
 					for (StackValue stackValue : box.getStackValues()) {
@@ -202,7 +204,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 							if(!point3d.fits3D(stackValue)) {
 								continue;
 							}
-							if(bestStackValuePointIndex != -1 && nextStackValueComparator.compare(point3d, stackValue, points.get(bestStackValuePointIndex), bestStackValue) <= 0) {
+							if(bestStackValuePointIndex != -1 && !nextStackValuePointComparator.accept(bestStackable, points.get(bestStackValuePointIndex), bestStackValue, box, point3d, stackValue)) {
 								continue;
 							}
 							if(constraint != null && !constraint.supports(stack, box, stackValue, point3d.getMinX(), point3d.getMinY(), point3d.getMinZ())) {

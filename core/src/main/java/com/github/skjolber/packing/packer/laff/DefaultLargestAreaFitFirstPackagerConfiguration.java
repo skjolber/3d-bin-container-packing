@@ -1,45 +1,45 @@
 package com.github.skjolber.packing.packer.laff;
 
-import com.github.skjolber.packing.api.StackValueComparator;
-import com.github.skjolber.packing.api.StackableComparator;
+import com.github.skjolber.packing.api.StackValuePointFilter;
+import com.github.skjolber.packing.api.StackableFilter;
 import com.github.skjolber.packing.points2d.Point2D;
 
 public class DefaultLargestAreaFitFirstPackagerConfiguration<P extends Point2D> implements LargestAreaFitFirstPackagerConfiguration<P> {
 
-	private final StackValueComparator<P> nextStackValueComparator;
-	private final StackableComparator nextComparator;
-	private final StackValueComparator<P> firstStackValueComparator;
-	private final StackableComparator firstComparator;
+	private final StackableFilter nextStackableFilter;
+	private final StackValuePointFilter<P> nextStackValuePointFilter;
 
-	public DefaultLargestAreaFitFirstPackagerConfiguration(StackableComparator firstComparator,
-			StackValueComparator<P> firstStackValueComparator, StackableComparator nextComparator,
-			StackValueComparator<P> nextStackValueComparator) {
+	private final StackableFilter firstStackableFilter;
+	private final StackValuePointFilter<P> firstStackValuePointFilter;
+	
+	public DefaultLargestAreaFitFirstPackagerConfiguration(StackableFilter firstStackableFilter,
+			StackValuePointFilter<P> firstStackValuePointFilter,
+			StackableFilter nextStackableFilter, 
+			StackValuePointFilter<P> nextStackValuePointFilter) {
 		super();
-		this.firstComparator = firstComparator;
-		this.firstStackValueComparator = firstStackValueComparator;
-		this.nextComparator = nextComparator;
-		this.nextStackValueComparator = nextStackValueComparator;
+		this.firstStackableFilter = firstStackableFilter;
+		this.firstStackValuePointFilter = firstStackValuePointFilter;
+		this.nextStackableFilter = nextStackableFilter;
+		this.nextStackValuePointFilter = nextStackValuePointFilter;
 	}
 
-	@Override
-	public StackableComparator getFirstComparator() {
-		return firstComparator;
+	public StackableFilter getNextStackableFilter() {
+		return nextStackableFilter;
 	}
 
-	@Override
-	public StackValueComparator<P> getFirstStackValueComparator() {
-		return firstStackValueComparator;
+	public StackValuePointFilter<P> getNextStackValuePointFilter() {
+		return nextStackValuePointFilter;
 	}
 
-	@Override
-	public StackableComparator getNextComparator() {
-		return nextComparator;
+	public StackableFilter getFirstStackableFilter() {
+		return firstStackableFilter;
 	}
 
-	@Override
-	public StackValueComparator<P> getNextStackValueComparator() {
-		return nextStackValueComparator;
+	public StackValuePointFilter<P> getFirstStackValuePointFilter() {
+		return firstStackValuePointFilter;
 	}
+
+	
 
 
 }

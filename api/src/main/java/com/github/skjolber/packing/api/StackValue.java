@@ -62,7 +62,7 @@ public abstract class StackValue {
 	
 	@Override
 	public String toString() {
-		return "StackValue [dx=" + dx + ", dy=" + dy + ", dz=" + dz + "]";
+		return "StackValue [" + dx + "x" + dy + "x" + dz + "]";
 	}
 	
 }

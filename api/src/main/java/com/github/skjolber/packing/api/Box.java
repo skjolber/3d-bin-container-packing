@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.api;
 
+import java.util.Arrays;
+
 public class Box extends Stackable {
 
 	public static Builder newBuilder() {
@@ -94,5 +96,12 @@ public class Box extends Stackable {
 	public long getMaximumArea() {
 		return maximumArea;
 	}
+
+	@Override
+	public String toString() {
+		return "Box [weight=" + weight + ", rotations=" + Arrays.toString(rotations) + ", volume=" + volume + "]";
+	}
+	
+	
 	
 }
