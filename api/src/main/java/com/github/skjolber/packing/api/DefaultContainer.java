@@ -8,7 +8,7 @@ public class DefaultContainer extends Container {
 	protected final Stack stack;
 	
 	public DefaultContainer(String name, long volume, int emptyWeight, ContainerStackValue[] stackValues, Stack stack) {
-		super(name, volume, emptyWeight, getMaxLoadVolume(stackValues), getMaxLoadWeight(stackValues), calculateMinimumArea(stackValues));
+		super(name, volume, emptyWeight, getMaxLoadVolume(stackValues), getMaxLoadWeight(stackValues), calculateMinimumArea(stackValues), getMaximumArea(stackValues));
 		
 		this.stackValues = stackValues;
 		this.stack = stack;
@@ -50,6 +50,7 @@ public class DefaultContainer extends Container {
 	public String toString() {
 		return "DefaultContainer [stackValues=" + Arrays.toString(stackValues) + "]";
 	}
-	
+
+
 	
 }

@@ -1,6 +1,8 @@
 package com.github.skjolber.packing.packer.laff;
 
-public abstract class LargestAreaFitFirstPackagerConfigurationBuilderFactory<B extends LargestAreaFitFirstPackagerConfigurationBuilder<B>> {
+import com.github.skjolber.packing.points2d.Point2D;
+
+public abstract class LargestAreaFitFirstPackagerConfigurationBuilderFactory<P extends Point2D, B extends LargestAreaFitFirstPackagerConfigurationBuilder<P, B>> {
 
 	public abstract B newBuilder();
 	

@@ -1,68 +1,65 @@
 package com.github.skjolber.packing.points3d;
 
+import com.github.skjolber.packing.api.Placement3D;
+
 public class DefaultXYPlanePoint3D extends Point3D implements XYPlanePoint3D  {
 
 	/** range constrained to current minZ */
-	private final int xyPlaneMinX;
-	private final int xyPlaneMaxX;
-
-	private final int xyPlaneMinY;
-	private final int xyPlaneMaxY;
-
+	private final Placement3D xyPlane;
+	
 	public DefaultXYPlanePoint3D(
 			int minX, int minY, int minZ,
 			int maxX, int maxY, int maxZ,
-			
-			int xyPlaneMinX, int xyPlaneMaxX, 
-			int xyPlaneMinY, int xyPlaneMaxY
+			Placement3D xyPlane
 			) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 		
-		this.xyPlaneMinX = xyPlaneMinX;
-		this.xyPlaneMaxX = xyPlaneMaxX;
-		this.xyPlaneMinY = xyPlaneMinY;
-		this.xyPlaneMaxY = xyPlaneMaxY;
+		this.xyPlane = xyPlane;
 	}
 
 	public int getSupportedXYPlaneMinY() {
-		return xyPlaneMinY;
+		return xyPlane.getAbsoluteY();
 	}
 	
 	public int getSupportedXYPlaneMaxY() {
-		return xyPlaneMaxY;
+		return xyPlane.getAbsoluteEndY();
 	}
 	@Override
 	public int getSupportedXYPlaneMinX() {
-		return xyPlaneMinX;
+		return xyPlane.getAbsoluteX();
 	}
 	
 	@Override
 	public int getSupportedXYPlaneMaxX() {
-		return xyPlaneMaxX;
+		return xyPlane.getAbsoluteEndX();
 	}
 	
 	@Override
 	public boolean isSupportedXYPlane(int x, int y) {
-		return xyPlaneMinX <= x && x <= xyPlaneMaxX && xyPlaneMinY <= y && y <= xyPlaneMaxY;
+		return xyPlane.getAbsoluteX() <= x && x <= xyPlane.getAbsoluteEndX() && xyPlane.getAbsoluteY() <= y && y <= xyPlane.getAbsoluteEndY();
 	}
 	
 	public boolean isXYPlaneEdgeX(int x) {
-		return xyPlaneMaxX == x - 1;
+		return xyPlane.getAbsoluteEndX() == x - 1;
 	}
 
 	public boolean isXYPlaneEdgeY(int y) {
-		return xyPlaneMaxY == y - 1;
+		return xyPlane.getAbsoluteEndY() == y - 1;
 	}
+
+
+	@Override
+	public Placement3D getXYPlane() {
+		return xyPlane;
+	}
+	
 	
 	@Override
 	public Point3D clone(int maxX, int maxY, int maxZ) {
 		return new DefaultXYPlanePoint3D(
 			minX, minY, minZ,
 			maxX, maxY, maxZ,
-			
-			xyPlaneMinX, Math.min(xyPlaneMaxX, maxX), 
-			xyPlaneMinY, Math.min(xyPlaneMaxY, maxY)
+			xyPlane
 		);
-	}
-
+	}	
 }

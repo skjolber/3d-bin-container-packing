@@ -1,105 +1,86 @@
 package com.github.skjolber.packing.points3d;
 
+import com.github.skjolber.packing.api.Placement3D;
+
 public class DefaultXYPlaneXZPlanePoint3D extends Point3D implements XYPlanePoint3D, XZPlanePoint3D {
 
 	/** range constrained to current minY */
-	private final int xzPlaneMinX;
-	private final int xzPlaneMaxX;
-
-	private final int xzPlaneMinZ;
-	private final int xzPlaneMaxZ;
+	private final Placement3D xzPlane;
 
 	/** range constrained to current minZ */
-	private final int xyPlaneMinX;
-	private final int xyPlaneMaxX;
-
-	private final int xyPlaneMinY;
-	private final int xyPlaneMaxY;
+	private final Placement3D xyPlane;
 
 	public DefaultXYPlaneXZPlanePoint3D(
 			int minX, int minY, int minZ,
 			int maxX, int maxY, int maxZ,
-			
-			int xzPlaneMinX, int xzPlaneMaxX, 
-			int xzPlaneMinZ, int xzPlaneMaxZ, 
-			
-			int xyPlaneMinX, int xyPlaneMaxX,
-			int xyPlaneMinY, int xyPlaneMaxY
-			
+			Placement3D xzPlane,
+			Placement3D xyPlane
 			) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
-		
-		this.xzPlaneMinX = xzPlaneMinX;
-		this.xzPlaneMaxX = xzPlaneMaxX;
 
-		this.xzPlaneMinZ = xzPlaneMinZ;
-		this.xzPlaneMaxZ = xzPlaneMaxZ;
-
-		this.xyPlaneMinX = xyPlaneMinX;
-		this.xyPlaneMaxX = xyPlaneMaxX;
-		
-		this.xyPlaneMinY = xyPlaneMinY;
-		this.xyPlaneMaxY = xyPlaneMaxY;
+		this.xzPlane = xzPlane;
+		this.xyPlane = xyPlane;
 	}
 	
 	public int getSupportedXZPlaneMinX() {
-		return xzPlaneMinX;
+		return xzPlane.getAbsoluteX();
 	}
-
+	
 	public int getSupportedXZPlaneMaxX() {
-		return xzPlaneMaxX;
+		return xzPlane.getAbsoluteEndX();
 	}
-
-	@Override
-	public int getSupportedXZPlaneMinZ() {
-		return xzPlaneMinZ;
-	}
-
+	
 	@Override
 	public int getSupportedXZPlaneMaxZ() {
-		return xzPlaneMaxZ;
+		return xzPlane.getAbsoluteZ();
 	}
-
-	public int getSupportedXYPlaneMinX() {
-		return xyPlaneMinX;
-	}
-
-	public int getSupportedXYPlaneMaxX() {
-		return xyPlaneMaxX;
+	
+	@Override
+	public int getSupportedXZPlaneMinZ() {
+		return xzPlane.getAbsoluteEndZ();
 	}
 
 	public int getSupportedXYPlaneMinY() {
-		return xyPlaneMinY;
+		return xyPlane.getAbsoluteY();
 	}
-
+	
 	public int getSupportedXYPlaneMaxY() {
-		return xyPlaneMaxY;
+		return xyPlane.getAbsoluteEndY();
+	}
+	@Override
+	public int getSupportedXYPlaneMinX() {
+		return xyPlane.getAbsoluteX();
+	}
+	
+	@Override
+	public int getSupportedXYPlaneMaxX() {
+		return xyPlane.getAbsoluteEndX();
 	}
 	
 	@Override
 	public boolean isSupportedXZPlane(int x, int z) {
-		return xzPlaneMinX <= x && x <= xzPlaneMaxX && xzPlaneMinZ <= z && z <= xzPlaneMaxZ;
+		return xzPlane.getAbsoluteX() <= x && x <= xzPlane.getAbsoluteEndX() && xzPlane.getAbsoluteZ() <= z && z <= xzPlane.getAbsoluteEndZ();
+	}
+	
+	public boolean isXZPlaneEdgeX(int x) {
+		return xzPlane.getAbsoluteX() == x - 1;
+	}
+
+	public boolean isXZPlaneEdgeZ(int z) {
+		return xzPlane.getAbsoluteEndZ() == z - 1;
 	}
 
 	@Override
 	public boolean isSupportedXYPlane(int x, int y) {
-		return xyPlaneMinX <= x && x <= xyPlaneMaxX && xyPlaneMinY <= y && y <= xyPlaneMaxY;
+		return xyPlane.getAbsoluteX() <= x && x <= xyPlane.getAbsoluteEndX() && xyPlane.getAbsoluteY() <= y && y <= xyPlane.getAbsoluteEndY();
 	}
 	
-	public boolean isXZPlaneEdgeX(int x) {
-		return xzPlaneMaxX == x - 1;
-	}
-
-	public boolean isXZPlaneEdgeZ(int z) {
-		return xzPlaneMaxZ == z - 1;
-	}
-
 	public boolean isXYPlaneEdgeX(int x) {
-		return xyPlaneMaxX == x - 1;
+		return xyPlane.getAbsoluteEndX() == x - 1;
 	}
 
 	public boolean isXYPlaneEdgeY(int y) {
-		return xyPlaneMaxY == y - 1;
+		return xyPlane.getAbsoluteEndY() == y - 1;
 	}
 
 	@Override
@@ -108,11 +89,17 @@ public class DefaultXYPlaneXZPlanePoint3D extends Point3D implements XYPlanePoin
 		return new DefaultXYPlaneXZPlanePoint3D(
 				minX, minY, minZ,
 				maxX, maxY, maxZ,
-				
-				xzPlaneMinX, Math.min(maxX, xzPlaneMaxX), 
-				xzPlaneMinZ, Math.min(maxZ, xzPlaneMaxZ), 
-				
-				xyPlaneMinX, Math.min(maxX, xyPlaneMaxX),
-				xyPlaneMinY, Math.min(maxY, xyPlaneMaxY));
+				xzPlane, xyPlane);
 	}
+
+	@Override
+	public Placement3D getXZPlane() {
+		return xzPlane;
+	}
+	
+	@Override
+	public Placement3D getXYPlane() {
+		return xyPlane;
+	}
+	
 }

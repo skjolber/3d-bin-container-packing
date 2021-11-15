@@ -1,10 +1,12 @@
 package com.github.skjolber.packing.packer.laff;
 
-public class DefaultLargestAreaFitFirstPackagerConfigurationBuilderFactory extends LargestAreaFitFirstPackagerConfigurationBuilderFactory<DefaultLargestAreaFitFirstPackagerConfigurationBuilder> {
+import com.github.skjolber.packing.points2d.Point2D;
+
+public class DefaultLargestAreaFitFirstPackagerConfigurationBuilderFactory<P extends Point2D> extends LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, DefaultLargestAreaFitFirstPackagerConfigurationBuilder<P>> {
 
 	@Override
-	public DefaultLargestAreaFitFirstPackagerConfigurationBuilder newBuilder() {
-		return new DefaultLargestAreaFitFirstPackagerConfigurationBuilder();
+	public DefaultLargestAreaFitFirstPackagerConfigurationBuilder<P> newBuilder() {
+		return new DefaultLargestAreaFitFirstPackagerConfigurationBuilder<>();
 	}
 
 }

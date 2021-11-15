@@ -15,7 +15,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.DefaultStack;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
+import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 
 public class VisualizationTest {
 
@@ -29,7 +29,7 @@ public class VisualizationTest {
 		containers.add(container);
 		
 		
-		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
+		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
 

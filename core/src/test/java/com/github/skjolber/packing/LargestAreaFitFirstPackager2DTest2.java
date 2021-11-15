@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.DefaultStack;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
+import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 
 
 
@@ -25,7 +25,7 @@ class LargestAreaFitFirstPackager2DTest2 extends AbstractPackagerTest {
 		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(10, 10, 10, 10, 10, 10, 100, null).withStack(new DefaultStack()).build());
 		
 		
-		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
+		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
 
@@ -47,7 +47,7 @@ class LargestAreaFitFirstPackager2DTest2 extends AbstractPackagerTest {
 		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotateXYZ(3, 2, 1, 3, 2, 1, 100, null).withStack(new DefaultStack()).build());
 		
 		
-		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
+		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
 

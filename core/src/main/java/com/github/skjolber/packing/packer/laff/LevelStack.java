@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.DefaultContainerStackValue;
-import com.github.skjolber.packing.api.DefaultStack;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 

@@ -11,11 +11,11 @@ import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
 
 public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuilder<LargestAreaFitFirstPackagerResultBuilder> {
 
-	private LargestAreaFitFirstPackager packager;
+	private AbstractLargestAreaFitFirstPackager<?> packager;
 
 	private int checkpointsPerDeadlineCheck = 1;
 	
-	public LargestAreaFitFirstPackagerResultBuilder withPackager(LargestAreaFitFirstPackager packager) {
+	public LargestAreaFitFirstPackagerResultBuilder withPackager(AbstractLargestAreaFitFirstPackager<?> packager) {
 		this.packager = packager;
 		return this;
 	}

@@ -1,66 +1,52 @@
 package com.github.skjolber.packing.points3d;
 
+import com.github.skjolber.packing.api.Placement3D;
+
 public class DefaultXZPlanePoint3D extends Point3D implements XZPlanePoint3D {
 
 	/** range constrained to current minY */
-	private final int xzPlaneMinX;
-	private final int xzPlaneMaxX;
-
-	private final int xzPlaneMinZ;
-	private final int xzPlaneMaxZ;
-
+	private final Placement3D xzPlane;
+	
 	public DefaultXZPlanePoint3D(
 			int minX, int minY, int minZ, 
 			int maxX, int maxY, int maxZ, 
 			
-			int xzPlaneMinX, int xzPlaneMaxX, 
-			int xzPlaneMinZ, int xzPlaneMaxZ
+			Placement3D xzPlane
 			) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
-		
-		this.xzPlaneMinX = xzPlaneMinX;
-		this.xzPlaneMaxX = xzPlaneMaxX;
-		this.xzPlaneMinZ = xzPlaneMinZ;
-		this.xzPlaneMaxZ = xzPlaneMaxZ;
-		
-		if(minX == 0 && minY == 23 && minZ == 34) {
-			try {
-				throw new RuntimeException();
-			} catch(Exception e) {
-				e.printStackTrace(System.out);
-			}
-		}
+
+		this.xzPlane = xzPlane;
 	}
 
 	public int getSupportedXZPlaneMinX() {
-		return xzPlaneMinX;
+		return xzPlane.getAbsoluteX();
 	}
 	
 	public int getSupportedXZPlaneMaxX() {
-		return xzPlaneMaxX;
+		return xzPlane.getAbsoluteEndX();
 	}
 	
 	@Override
 	public int getSupportedXZPlaneMaxZ() {
-		return xzPlaneMaxZ;
+		return xzPlane.getAbsoluteZ();
 	}
 	
 	@Override
 	public int getSupportedXZPlaneMinZ() {
-		return xzPlaneMinZ;
+		return xzPlane.getAbsoluteEndZ();
 	}
 
 	@Override
 	public boolean isSupportedXZPlane(int x, int z) {
-		return xzPlaneMinX <= x && x <= xzPlaneMaxX && xzPlaneMinZ <= z && z <= xzPlaneMaxZ;
+		return xzPlane.getAbsoluteX() <= x && x <= xzPlane.getAbsoluteEndX() && xzPlane.getAbsoluteZ() <= z && z <= xzPlane.getAbsoluteEndZ();
 	}
 	
 	public boolean isXZPlaneEdgeX(int x) {
-		return xzPlaneMaxX == x - 1;
+		return xzPlane.getAbsoluteX() == x - 1;
 	}
 
 	public boolean isXZPlaneEdgeZ(int z) {
-		return xzPlaneMaxZ == z - 1;
+		return xzPlane.getAbsoluteEndZ() == z - 1;
 	}
 
 	@Override
@@ -68,10 +54,12 @@ public class DefaultXZPlanePoint3D extends Point3D implements XZPlanePoint3D {
 		return new DefaultXZPlanePoint3D(
 				minX, minY, minZ, 
 				maxX, maxY, maxZ, 
-				
-				xzPlaneMinX, Math.min(maxX, xzPlaneMaxX), 
-				xzPlaneMinZ, Math.min(maxZ, xzPlaneMaxZ)
+				xzPlane
 				);
 	}
 
+	@Override
+	public Placement3D getXZPlane() {
+		return xzPlane;
+	}
 }

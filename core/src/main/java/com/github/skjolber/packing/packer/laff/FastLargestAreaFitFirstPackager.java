@@ -17,19 +17,17 @@ import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.StackValueComparator;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableComparator;
-import com.github.skjolber.packing.points3d.ExtremePoints3D;
-import com.github.skjolber.packing.points3d.Point3D;
+import com.github.skjolber.packing.points2d.ExtremePoints2D;
+import com.github.skjolber.packing.points2d.Point2D;
 
 /**
- * Fit boxes into container, i.e. perform bin packing to a single container.
+ * Fit boxes into container, i.e. perform bin packing to a single container. Only places boxes along the floor of each level.
  * <br><br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
-public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPackager<Point3D> {
+public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPackager<Point2D> {
 
-	protected LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D, ?> factory;
-	
 	public static LargestAreaFitFirstPackagerBuilder newBuilder() {
 		return new LargestAreaFitFirstPackagerBuilder();
 	}
@@ -38,9 +36,9 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 		private List<Container> containers;
 		private int checkpointsPerDeadlineCheck = 1;
-		private LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D, ?> configurationBuilderFactory;
+		private LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D, ?> configurationBuilderFactory;
 
-		public LargestAreaFitFirstPackagerBuilder setConfigurationBuilderFactory(LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D, ?> configurationBuilder) {
+		public LargestAreaFitFirstPackagerBuilder setConfigurationBuilderFactory(LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D, ?> configurationBuilder) {
 			this.configurationBuilderFactory = configurationBuilder;
 			return this;
 		}
@@ -55,14 +53,14 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			return this;
 		}
 		
-		public LargestAreaFitFirstPackager build() {
+		public FastLargestAreaFitFirstPackager build() {
 			if(containers == null) {
 				throw new IllegalStateException("Expected containers");
 			}
 			if(configurationBuilderFactory == null) {
 				configurationBuilderFactory = new DefaultLargestAreaFitFirstPackagerConfigurationBuilderFactory<>();
 			}
-			return new LargestAreaFitFirstPackager(containers, checkpointsPerDeadlineCheck, configurationBuilderFactory);
+			return new FastLargestAreaFitFirstPackager(containers, checkpointsPerDeadlineCheck, configurationBuilderFactory);
 		}	
 	}
 
@@ -75,11 +73,11 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a container that can hold the boxes, given time, it also tries to find a better match.
 	 */
 
-	public LargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D, ?> factory) {
+	public FastLargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D, ?> factory) {
 		super(containers, checkpointsPerDeadlineCheck, factory);
 	}
 
-	public LargestAreaFitFirstPackagerResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt) {
+	public LargestAreaFitFirstPackagerResult pack(List<Stackable> stackables, Container targetContainer,  BooleanSupplier interrupt) {
 		List<Stackable> remainingStackables = new ArrayList<>(stackables);
 		
 		ContainerStackValue[] stackValues = targetContainer.getStackValues();
@@ -96,15 +94,15 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				.filter( s -> constraint == null || constraint.canAccept(s))
 				.collect(Collectors.toList());
 
-		ExtremePoints3D<StackPlacement> extremePoints3D = new ExtremePoints3D<>(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
+		ExtremePoints2D<StackPlacement> extremePoints2D = new ExtremePoints2D<>(containerStackValue.getLoadDx(), containerStackValue.getLoadDy());
 
-		LargestAreaFitFirstPackagerConfiguration<Point3D> configuration = factory.newBuilder().withContainer(targetContainer).withExtremePoints(extremePoints3D).withStack(stack).build();
+		LargestAreaFitFirstPackagerConfiguration<Point2D> configuration = factory.newBuilder().withContainer(targetContainer).withExtremePoints(extremePoints2D).withStack(stack).build();
 		
 		StackableComparator firstComparator = configuration.getFirstComparator();
-		StackValueComparator<Point3D> firstStackValueComparator = configuration.getFirstStackValueComparator();
+		StackValueComparator<Point2D> firstStackValueComparator = configuration.getFirstStackValueComparator();
 		
 		StackableComparator nextComparator = configuration.getNextComparator();
-		StackValueComparator<Point3D> nextStackValueComparator = configuration.getNextStackValueComparator();
+		StackValueComparator<Point2D> nextStackValueComparator = configuration.getNextStackValueComparator();
 
 		while(!scopedStackables.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
@@ -114,12 +112,13 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			}
 			
 			int maxWeight = stack.getFreeWeightLoad();
+			int maxHeight = stack.getFreeLoadDz();
 
-			Point3D value = extremePoints3D.getValue(0);
+			Point2D firstPoint = extremePoints2D.getValue(0);
 			
-			int firstIndex = -1;
-			StackValue firstStackValue = null;
-			Stackable firstBox = null;
+			int bestFirstIndex = -1;
+			StackValue bestFirstStackValue = null;
+			Stackable bestFirstBox = null;
 			
 			// pick the box with the highest area
 			for (int i = 0; i < scopedStackables.size(); i++) {
@@ -127,57 +126,62 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				if(box.getWeight() > maxWeight) {
 					continue;
 				}
-				if(constraint != null && !constraint.accepts(stack, box)) {
+				if(constraint != null && constraint.accepts(stack, box)) {
 					continue;
 				}
-				if(firstBox != null && firstComparator.compare(firstBox, box) <= 0) {
+				if(bestFirstBox != null && firstComparator.compare(box, bestFirstBox) <= 0) {
 					continue;
 				}
 				for (StackValue stackValue : box.getStackValues()) {
-					if(!stackValue.fitsInside3D(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz())) {
+					if(stackValue.getDz() > maxHeight) {
 						continue;
 					}
-					if(firstStackValue != null && firstStackValueComparator.compare(value, firstStackValue, value, stackValue) <= 0) {
+					if(!stackValue.fitsInside2D(containerStackValue.getLoadDx(), containerStackValue.getLoadDy())) {
 						continue;
-						
+					}
+					if(bestFirstStackValue != null && firstStackValueComparator.compare(firstPoint, bestFirstStackValue, firstPoint, stackValue) <= 0) {
+						continue;
 					}
 					if(constraint != null && !constraint.supports(stack, box, stackValue, 0, 0, 0)) {
 						continue;
 					}
-					firstIndex = i;
-					firstStackValue = stackValue;
-					firstBox = box;
+					bestFirstIndex = i;
+					bestFirstStackValue = stackValue;
+					bestFirstBox = box;
 				}
 			}
 
-			if(firstIndex == -1) {
+			if(bestFirstIndex == -1) {
 				break;
 			}
-			Stackable stackable = scopedStackables.remove(firstIndex);
+			Stackable stackable = scopedStackables.remove(bestFirstIndex);
 			remainingStackables.remove(stackable);
 			
-			DefaultContainerStackValue levelStackValue = stack.getContainerStackValue(firstStackValue.getDz());
+			DefaultContainerStackValue levelStackValue = stack.getContainerStackValue(bestFirstStackValue.getDz());
 			Stack levelStack = new DefaultStack();
 			stack.add(levelStack);
 
-			StackPlacement first = new StackPlacement(stackable, firstStackValue, 0, 0, 0, -1, -1);
+			StackPlacement first = new StackPlacement(stackable, bestFirstStackValue, 0, 0, 0, -1, -1);
 
 			levelStack.add(first);
 			
+			int levelHeight = levelStackValue.getDz();
+
 			int maxRemainingLevelWeight = levelStackValue.getMaxLoadWeight() - stackable.getWeight();
 
-			extremePoints3D.add(0, first);
+			extremePoints2D.add(0, first);
 			
-			while(!extremePoints3D.isEmpty() && maxRemainingLevelWeight > 0 && !scopedStackables.isEmpty()) {
+			while(!extremePoints2D.isEmpty() && maxRemainingLevelWeight > 0 && !scopedStackables.isEmpty()) {
 				
-				long maxPointVolume = extremePoints3D.getMaxVolume();
+				long maxPointArea = extremePoints2D.getMaxArea();
+				long maxPointVolume = maxPointArea * levelHeight;
 				
 				int bestPointIndex = -1;
 				int bestIndex = -1;
 				StackValue bestStackValue = null;
 				Stackable bestStackable = null;
 				
-				List<Point3D> points = extremePoints3D.getValues();
+				List<Point2D> points = extremePoints2D.getValues();
 				for (int i = 0; i < scopedStackables.size(); i++) {
 					Stackable box = scopedStackables.get(i);
 					if(box.getVolume() > maxPointVolume) {
@@ -186,28 +190,41 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 					if(box.getWeight() > maxRemainingLevelWeight) {
 						continue;
 					}
-					if(constraint != null && !constraint.accepts(stack, box)) {
+					if(maxPointArea < box.getMinimumArea()) {
 						continue;
 					}
 
-					if(bestStackValue != null && nextComparator.compare(box, bestStackable) > 0) {
+					if(bestStackValue != null && nextComparator.compare(bestStackable, box) <= 0) {
 						continue;
 					}
 					for (StackValue stackValue : box.getStackValues()) {
+						if(stackValue.getArea() > maxPointArea) {
+							continue;
+						}
+						if(levelHeight < stackValue.getDz()) {
+							continue;
+						}
+						
 						// pick the point with the lowest area
 						int bestStackValuePointIndex = -1;
 						
 						for(int k = 0; k < points.size(); k++) {
-							Point3D point3d = points.get(k);
-							if(!point3d.fits3D(stackValue)) {
+							Point2D point2d = points.get(k);
+							if(point2d.getArea() < stackValue.getArea()) {
 								continue;
 							}
-							if(bestStackValuePointIndex != -1 && nextStackValueComparator.compare(point3d, stackValue, points.get(bestStackValuePointIndex), bestStackValue) <= 0) {
+							
+							if(!point2d.fits2D(stackValue)) {
 								continue;
 							}
-							if(constraint != null && !constraint.supports(stack, box, stackValue, point3d.getMinX(), point3d.getMinY(), point3d.getMinZ())) {
+							
+							if(bestStackValuePointIndex != -1 && nextStackValueComparator.compare(points.get(bestStackValuePointIndex), bestStackValue, point2d, stackValue) <= 0) {
 								continue;
 							}
+							if(constraint != null && !constraint.supports(stack, box, stackValue, point2d.getMinX(), point2d.getMinY(), 0)) {
+								continue;
+							}
+
 							bestPointIndex = k;
 							bestIndex = i;
 							bestStackValue = stackValue;
@@ -221,18 +238,18 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				}
 				
 				Stackable remove = scopedStackables.remove(bestIndex);
-				Point3D point = extremePoints3D.getValue(bestPointIndex);
+				Point2D point = extremePoints2D.getValue(bestPointIndex);
 				
-				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ(), -1, -1);
+				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), 0, -1, -1);
 				levelStack.add(stackPlacement);
-				extremePoints3D.add(bestPointIndex, stackPlacement);
+				extremePoints2D.add(bestPointIndex, stackPlacement);
 
 				maxRemainingLevelWeight -= remove.getWeight();
 				
 				remainingStackables.remove(remove);
 			}
 			
-			extremePoints3D.reset();
+			extremePoints2D.reset();
 		}
 		
 		return new LargestAreaFitFirstPackagerResult(remainingStackables, stack, new DefaultContainer(targetContainer.getName(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack));

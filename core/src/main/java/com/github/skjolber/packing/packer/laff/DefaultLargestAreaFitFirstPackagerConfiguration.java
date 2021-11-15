@@ -4,16 +4,16 @@ import com.github.skjolber.packing.api.StackValueComparator;
 import com.github.skjolber.packing.api.StackableComparator;
 import com.github.skjolber.packing.points2d.Point2D;
 
-public class DefaultLargestAreaFitFirstPackagerConfiguration implements LargestAreaFitFirstPackagerConfiguration {
+public class DefaultLargestAreaFitFirstPackagerConfiguration<P extends Point2D> implements LargestAreaFitFirstPackagerConfiguration<P> {
 
-	private final StackValueComparator<Point2D> nextStackValueComparator;
+	private final StackValueComparator<P> nextStackValueComparator;
 	private final StackableComparator nextComparator;
-	private final StackValueComparator<Point2D> firstStackValueComparator;
+	private final StackValueComparator<P> firstStackValueComparator;
 	private final StackableComparator firstComparator;
 
 	public DefaultLargestAreaFitFirstPackagerConfiguration(StackableComparator firstComparator,
-			StackValueComparator<Point2D> firstStackValueComparator, StackableComparator nextComparator,
-			StackValueComparator<Point2D> nextStackValueComparator) {
+			StackValueComparator<P> firstStackValueComparator, StackableComparator nextComparator,
+			StackValueComparator<P> nextStackValueComparator) {
 		super();
 		this.firstComparator = firstComparator;
 		this.firstStackValueComparator = firstStackValueComparator;
@@ -27,7 +27,7 @@ public class DefaultLargestAreaFitFirstPackagerConfiguration implements LargestA
 	}
 
 	@Override
-	public StackValueComparator<Point2D> getFirstStackValueComparator() {
+	public StackValueComparator<P> getFirstStackValueComparator() {
 		return firstStackValueComparator;
 	}
 
@@ -37,7 +37,7 @@ public class DefaultLargestAreaFitFirstPackagerConfiguration implements LargestA
 	}
 
 	@Override
-	public StackValueComparator<Point2D> getNextStackValueComparator() {
+	public StackValueComparator<P> getNextStackValueComparator() {
 		return nextStackValueComparator;
 	}
 

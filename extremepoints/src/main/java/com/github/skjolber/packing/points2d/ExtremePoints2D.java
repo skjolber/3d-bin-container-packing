@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement2D;
-import com.github.skjolber.packing.api.Placement3D;
 
 /**
  * 
@@ -13,7 +12,7 @@ import com.github.skjolber.packing.api.Placement3D;
  *
  */
 
-public class ExtremePoints2D<P extends Placement2D> {
+public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, Point2D> {
 	
 	protected final int containerMaxX;
 	protected final int containerMaxY;

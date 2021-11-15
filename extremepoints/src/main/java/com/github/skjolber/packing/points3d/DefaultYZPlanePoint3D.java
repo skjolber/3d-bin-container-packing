@@ -1,57 +1,55 @@
 package com.github.skjolber.packing.points3d;
 
+import com.github.skjolber.packing.api.Placement3D;
+
 public class DefaultYZPlanePoint3D extends Point3D implements YZPlanePoint3D  {
 
 	/** range constrained to current minX */
-	private final int yzPlaneMinY;
-	private final int yzPlaneMaxY;
-
-	private final int yzPlaneMinZ;
-	private final int yzPlaneMaxZ;
+	private final Placement3D yzPlane;
 
 	public DefaultYZPlanePoint3D(
 			int minX, int minY, int minZ,
 			int maxX, int maxY, int maxZ,
-			
-			int yzPlaneMinY, int yzPlaneMaxY, 
-			int yzPlaneMinZ, int yzPlaneMaxZ
+			Placement3D yzPlane
 			) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
-		
-		this.yzPlaneMinY = yzPlaneMinY;
-		this.yzPlaneMaxY = yzPlaneMaxY;
-		this.yzPlaneMinZ = yzPlaneMinZ;
-		this.yzPlaneMaxZ = yzPlaneMaxZ;
+
+		this.yzPlane = yzPlane;
 	}
 
 	public int getSupportedYZPlaneMinY() {
-		return yzPlaneMinY;
+		return yzPlane.getAbsoluteY();
 	}
 	
 	public int getSupportedYZPlaneMaxY() {
-		return yzPlaneMaxY;
+		return yzPlane.getAbsoluteEndY();
 	}
 	@Override
 	public int getSupportedYZPlaneMinZ() {
-		return yzPlaneMinZ;
+		return yzPlane.getAbsoluteZ();
 	}
 	
 	@Override
 	public int getSupportedYZPlaneMaxZ() {
-		return yzPlaneMaxZ;
+		return yzPlane.getAbsoluteEndZ();
 	}
 	
 	@Override
 	public boolean isSupportedYZPlane(int y, int z) {
-		return yzPlaneMinY <= y && y <= yzPlaneMaxY && yzPlaneMinZ <= z && z <= yzPlaneMaxZ;
+		return yzPlane.getAbsoluteY() <= y && y <= yzPlane.getAbsoluteEndY() && yzPlane.getAbsoluteZ() <= z && z <= yzPlane.getAbsoluteEndZ();
 	}
 	
 	public boolean isYZPlaneEdgeZ(int z) {
-		return yzPlaneMaxZ == z - 1;
+		return yzPlane.getAbsoluteEndZ() == z - 1;
 	}
 
 	public boolean isYZPlaneEdgeY(int y) {
-		return yzPlaneMaxY == y - 1;
+		return yzPlane.getAbsoluteEndY() == y - 1;
+	}
+
+	@Override
+	public Placement3D getYZPlane() {
+		return yzPlane;
 	}
 
 	@Override
@@ -59,10 +57,7 @@ public class DefaultYZPlanePoint3D extends Point3D implements YZPlanePoint3D  {
 		return new DefaultYZPlanePoint3D(
 				minX, minY, minZ,
 				maxX, maxY, maxZ,
-				
-				yzPlaneMinY, Math.min(maxY, yzPlaneMaxY), 
-				yzPlaneMinZ, Math.min(maxZ, yzPlaneMaxZ)				
+				yzPlane
 			);
 	}
-	
 }

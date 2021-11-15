@@ -164,8 +164,9 @@ public abstract class Container extends Stackable {
 
 	protected final long volume;
 	protected final long minArea;
+	protected final long maxArea;
 	
-	public Container(String name, long volume, int emptyWeight, long maxLoadVolume, int maxLoadWeight, long minArea) {
+	public Container(String name, long volume, int emptyWeight, long maxLoadVolume, int maxLoadWeight, long minArea, long maxArea) {
 		super(name);
 		
 		this.emptyWeight = emptyWeight;
@@ -174,6 +175,7 @@ public abstract class Container extends Stackable {
 		
 		this.volume = volume;
 		this.minArea = minArea;
+		this.maxArea = maxArea;
 	}
 	
 	@Override
@@ -215,5 +217,10 @@ public abstract class Container extends Stackable {
 	@Override
 	public long getMinimumArea() {
 		return minArea;
+	}
+	
+	@Override
+	public long getMaximumArea() {
+		return maxArea;
 	}
 }
