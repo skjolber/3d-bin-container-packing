@@ -1,5 +1,9 @@
 package com.github.skjolber.packing.points3d;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.Placement3D;
 
 public class DefaultXZPlaneYZPlanePoint3D extends Point3D implements XZPlanePoint3D, YZPlanePoint3D {
@@ -9,7 +13,6 @@ public class DefaultXZPlaneYZPlanePoint3D extends Point3D implements XZPlanePoin
 
 	/** range constrained to current minX */
 	private final Placement3D yzPlane;
-
 
 	public DefaultXZPlaneYZPlanePoint3D(
 			int minX, int minY, int minZ,
@@ -103,4 +106,20 @@ public class DefaultXZPlaneYZPlanePoint3D extends Point3D implements XZPlanePoin
 	public Placement3D getYZPlane() {
 		return yzPlane;
 	}
+	
+	@Override
+	public List<Placement3D> getPlacements3D() {
+		List<Placement3D> list = new ArrayList<>();
+		list.add(xzPlane);
+		list.add(yzPlane);
+		return list;
+	}
+
+	@Override
+	public List<Placement2D> getPlacements2D() {
+		List<Placement2D> list = new ArrayList<>();
+		list.add(xzPlane);
+		list.add(yzPlane);
+		return list;
+	}		
 }

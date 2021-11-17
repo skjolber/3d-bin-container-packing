@@ -1,7 +1,9 @@
 package com.github.skjolber.packing.points2d;
 
 import java.util.Comparator;
+import java.util.List;
 
+import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.points3d.Point3D;
 
@@ -203,10 +205,11 @@ public abstract class Point2D {
 	public long getArea() {
 		return area;
 	}
-	
 
 	public boolean fits2D(StackValue stackValue) {
 		return !(stackValue.getDx() > dx || stackValue.getDy() > dy);
 	}
 
+	public abstract List<Placement2D> getPlacements2D();
+	
 }

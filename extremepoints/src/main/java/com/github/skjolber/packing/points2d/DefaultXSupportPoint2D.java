@@ -1,5 +1,8 @@
 package com.github.skjolber.packing.points2d;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.github.skjolber.packing.api.Placement2D;
 
 public class DefaultXSupportPoint2D extends Point2D implements XSupportPoint2D {
@@ -44,4 +47,11 @@ public class DefaultXSupportPoint2D extends Point2D implements XSupportPoint2D {
 	public Placement2D getXSupport() {
 		return xSupport;
 	}
+	
+	@Override
+	public List<Placement2D> getPlacements2D() {
+		List<Placement2D> list = new ArrayList<>();
+		list.add(xSupport);
+		return list;
+	}		
 }

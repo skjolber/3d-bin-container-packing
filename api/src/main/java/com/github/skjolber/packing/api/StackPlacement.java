@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.api;
 
+import java.util.List;
+
 public class StackPlacement implements Placement3D {
 
 	protected Stackable stackable;
@@ -12,9 +14,11 @@ public class StackPlacement implements Placement3D {
 	// TODO weight constraint
 	protected int maxSupportedPressure; // i.e.  
 	protected int maxSupportedWeight;
+	
+	protected List<Placement3D> supports;
 
 	public StackPlacement(Stackable stackable, StackValue value, int x, int y, int z, int maxSupportedPressure,
-			int maxSupportedWeight) {
+			int maxSupportedWeight, List<Placement3D> supports) {
 		super();
 		this.stackable = stackable;
 		this.value = value;
@@ -104,17 +108,37 @@ public class StackPlacement implements Placement3D {
 	public long getVolume() {
 		return stackable.getVolume();
 	}
-	public boolean intersects(Placement2D point) {
+	public boolean intersects2D(Placement2D point) {
 		return !(point.getAbsoluteEndX() < x || point.getAbsoluteX() > getAbsoluteEndX() || point.getAbsoluteEndY() < y || point.getAbsoluteY() > getAbsoluteEndY());
 	}
 	@Override
-	public boolean intersects(Placement3D point) {
+	public boolean intersects3D(Placement3D point) {
 		return !(point.getAbsoluteEndX() < x || point.getAbsoluteX() > getAbsoluteEndX() || point.getAbsoluteEndY() < y || point.getAbsoluteY() > point.getAbsoluteEndY() || point.getAbsoluteEndZ() < z || point.getAbsoluteZ() >  point.getAbsoluteEndZ());
 	}
 	@Override
 	public String toString() {
 		return stackable.getName() + "[" + x + "x" + y + "x" + z + " " + getAbsoluteEndX() + "x" + getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
-	}	
+	}
 	
+	public void setX(int x) {
+		this.x = x;
+	}
+	
+	public void setY(int y) {
+		this.y = y;
+	}
+	
+	public void setZ(int z) {
+		this.z = z;
+	}
+
+	@Override
+	public List<Placement3D> getSupports2D() {
+		return supports;
+	}
+	@Override
+	public List<Placement3D> getSupports3D() {
+		return supports;
+	}
 	
 }

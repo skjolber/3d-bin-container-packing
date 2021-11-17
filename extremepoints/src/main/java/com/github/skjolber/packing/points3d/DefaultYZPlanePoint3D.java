@@ -1,5 +1,9 @@
 package com.github.skjolber.packing.points3d;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.Placement3D;
 
 public class DefaultYZPlanePoint3D extends Point3D implements YZPlanePoint3D  {
@@ -60,4 +64,18 @@ public class DefaultYZPlanePoint3D extends Point3D implements YZPlanePoint3D  {
 				yzPlane
 			);
 	}
+	
+	@Override
+	public List<Placement3D> getPlacements3D() {
+		List<Placement3D> list = new ArrayList<>();
+		list.add(yzPlane);
+		return list;
+	}
+
+	@Override
+	public List<Placement2D> getPlacements2D() {
+		List<Placement2D> list = new ArrayList<>();
+		list.add(yzPlane);
+		return list;
+	}		
 }

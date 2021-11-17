@@ -12,6 +12,7 @@ public interface ExtremePoints<P extends Placement2D, Point extends Point2D> {
 	
 	List<Point> getValues();
 
+	void reset(int dx, int dy, int dz);
+	
 	void reset();
-
 }

@@ -1,5 +1,9 @@
 package com.github.skjolber.packing.points2d;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import com.github.skjolber.packing.api.Placement2D;
 
 public class DefaultYSupportPoint2D extends Point2D implements YSupportPoint2D  {
@@ -43,6 +47,13 @@ public class DefaultYSupportPoint2D extends Point2D implements YSupportPoint2D  
 	@Override
 	public Placement2D getYSupport() {
 		return ySupport;
+	}
+
+	@Override
+	public List<Placement2D> getPlacements2D() {
+		List<Placement2D> list = new ArrayList<>();
+		list.add(ySupport);
+		return list;
 	}
 	
 }

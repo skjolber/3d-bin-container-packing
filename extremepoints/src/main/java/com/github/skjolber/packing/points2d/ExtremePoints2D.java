@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement2D;
+import com.github.skjolber.packing.points3d.Default3DPlanePoint3D;
+import com.github.skjolber.packing.points3d.DefaultPlacement3D;
 
 /**
  * 
@@ -14,8 +16,8 @@ import com.github.skjolber.packing.api.Placement2D;
 
 public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, Point2D> {
 	
-	protected final int containerMaxX;
-	protected final int containerMaxY;
+	protected int containerMaxX;
+	protected int containerMaxY;
 
 	protected final List<Point2D> values = new ArrayList<>();
 	protected final List<P> placements = new ArrayList<>();
@@ -25,22 +27,24 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 	private final List<Point2D> addY = new ArrayList<>();
 	private final List<Point2D> addX = new ArrayList<>();
 
-	private final Placement2D containerPlacement;
+	private Placement2D containerPlacement;
 
 	public ExtremePoints2D(int dx, int dy) {
-		super();
-		this.containerMaxX = dx - 1;
-		this.containerMaxY = dy - 1;
-		
-		this.containerPlacement = new DefaultPlacement2D(0, 0, containerMaxX, containerMaxY);
-		
-		init();
+		setSize(dx, dy);
+		addFirstPoint();
 	}
 	
-	protected void init() {
-		values.add(new DefaultXYSupportPoint2D(0, 0, containerMaxX, containerMaxY, containerPlacement, containerPlacement));
+	private void setSize(int dx, int dy) {
+		this.containerMaxX = dx - 1;
+		this.containerMaxY = dy - 1;
+
+		this.containerPlacement = new DefaultPlacement2D(0, 0, containerMaxX, containerMaxY);
 	}
 
+	private void addFirstPoint() {
+		values.add(new DefaultXYSupportPoint2D(0, 0, containerMaxX, containerMaxY, containerPlacement, containerPlacement));
+	}
+	
 	public boolean add(int index, P placement) {
 		return add(index, placement, placement.getAbsoluteEndX() - placement.getAbsoluteX() + 1, placement.getAbsoluteEndY() - placement.getAbsoluteY() + 1);
 	}
@@ -1288,13 +1292,6 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		return values.isEmpty();
 	}	
 
-	public void reset() {
-		values.clear();
-		placements.clear();
-		
-		init();
-	}
-	
 	public long getMaxArea() {
 		long maxPointArea = -1L;
 		for (Point2D point2d : values) {
@@ -1303,5 +1300,19 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			}
 		}
 		return maxPointArea;
+	}
+
+	public void reset() {
+		values.clear();
+		placements.clear();
+		
+		addFirstPoint();
+	}
+
+	@Override
+	public void reset(int dx, int dy, int dz) {
+		setSize(dx, dy);
+		
+		reset();
 	}
 }

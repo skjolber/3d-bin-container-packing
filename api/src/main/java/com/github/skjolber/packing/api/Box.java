@@ -99,7 +99,7 @@ public class Box extends Stackable {
 
 	@Override
 	public String toString() {
-		return "Box [weight=" + weight + ", rotations=" + Arrays.toString(rotations) + ", volume=" + volume + "]";
+		return "Box " + (name != null ? name : "") + "[weight=" + weight + ", rotations=" + Arrays.toString(rotations) + ", volume=" + volume + "]";
 	}
 	
 	

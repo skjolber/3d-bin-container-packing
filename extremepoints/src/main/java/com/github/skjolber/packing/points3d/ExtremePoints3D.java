@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.points3d;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,9 +16,9 @@ import com.github.skjolber.packing.points2d.Point2D;
 
 public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, Point3D> {
 	
-	private final int containerMaxX;
-	private final int containerMaxY;
-	private final int containerMaxZ;
+	private int containerMaxX;
+	private int containerMaxY;
+	private int containerMaxZ;
 
 	private List<Point3D> values = new ArrayList<>();
 	private List<P> placements = new ArrayList<>();
@@ -28,20 +29,22 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	private List<Point3D> addedY = new ArrayList<>();
 	private List<Point3D> addedZ = new ArrayList<>();
 
-	private final Placement3D containerPlacement;
+	private Placement3D containerPlacement;
 
 	public ExtremePoints3D(int dx, int dy, int dz) {
-		super();
+		setSize(dx, dy, dz);
+		addFirstPoint();
+	}
+
+	private void setSize(int dx, int dy, int dz) {
 		this.containerMaxX = dx - 1;
 		this.containerMaxY = dy - 1;
 		this.containerMaxZ = dz - 1;
 
-		this.containerPlacement = new DefaultPlacement3D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ);
-		
-		init();
+		this.containerPlacement = new DefaultPlacement3D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ, Collections.emptyList());
 	}
 
-	private void init() {
+	private void addFirstPoint() {
 		values.add(new Default3DPlanePoint3D(
 				0, 0, 0, 
 				containerMaxX, containerMaxY, containerMaxZ, 
@@ -1923,12 +1926,17 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		return !(x || y || z);
 	}
 
-	@Override
 	public void reset() {
 		values.clear();
 		placements.clear();
 		
-		init();	
+		addFirstPoint();
+	}
+
+	public void reset(int dx, int dy, int dz) {
+		setSize(dx, dy, dz);
+		
+		reset();
 	}
 
 	public boolean isEmpty() {
