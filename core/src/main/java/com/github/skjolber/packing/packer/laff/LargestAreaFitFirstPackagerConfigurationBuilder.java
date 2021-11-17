@@ -10,6 +10,27 @@ import com.github.skjolber.packing.points2d.Point2D;
 
 public abstract class LargestAreaFitFirstPackagerConfigurationBuilder<P extends Point2D, B extends LargestAreaFitFirstPackagerConfigurationBuilder<P, B>> {
 
+	public static StackableFilter FIRST_STACKABLE_FILTER = (best, candidate) -> {
+		// return true if the candidate might be better than the current best
+		return candidate.getMaximumArea() >= best.getMinimumArea(); 
+	};
+
+	public static StackableFilter DEFAULT_STACKABLE_FILTER = (best, candidate) -> {
+		// return true if the candidate might be better than the current best
+		return candidate.getVolume() >= best.getVolume();
+	};
+	
+	public static StackValuePointFilter DEFAULT_STACK_VALUE_POINT_FILTER = (stackable1, point1, stackValue1, stackable2, point2, stackValue2) -> {
+ 			if(stackable2.getVolume() == stackable1.getVolume()) {
+ 				return stackValue2.getArea() < stackValue1.getArea(); // smaller is better
+ 			}
+			return stackable2.getVolume() > stackable1.getVolume(); // more is better 
+		};
+		
+	public static StackValuePointFilter FIRST_STACK_VALUE_POINT_FILTER = (stackable1, point1, stackValue1, stackable2, point2, stackValue2) -> {
+		return stackValue1.getArea() < stackValue2.getArea(); // larger is better
+	};		
+
 	protected Container container;
 	protected Stack stack;
 	protected ExtremePoints<StackPlacement, P> extremePoints;
@@ -47,31 +68,19 @@ public abstract class LargestAreaFitFirstPackagerConfigurationBuilder<P extends 
 	}
 
 	protected StackableFilter createFirstStackableFilter() {
-		return (best, candidate) -> {
-			// return true if the candidate might be better than the current best
-			return candidate.getMaximumArea() >= best.getMinimumArea(); 
-		};
+		return FIRST_STACKABLE_FILTER;
 	}
 	
  	protected StackValuePointFilter<P> createFirstStackValuePointFilter() {
- 		return (stackable1, point1, stackValue1, stackable2, point2, stackValue2) -> {
-			return stackValue1.getArea() < stackValue2.getArea(); // larger is better
-		};
+ 		return FIRST_STACK_VALUE_POINT_FILTER;
  	}
  	
 	protected StackableFilter createNextStackableFilter() {
-		return (best, candidate) -> {
-			return candidate.getVolume() >= best.getVolume();
-		};
+		return DEFAULT_STACKABLE_FILTER;
 	}
 	
  	protected StackValuePointFilter<P> createNextStackValuePointFilter() {
- 		return (stackable1, point1, stackValue1, stackable2, point2, stackValue2) -> {
- 			if(stackable2.getVolume() == stackable1.getVolume()) {
- 				return stackValue1.getArea() > stackValue2.getArea(); // smaller is better
- 			}
-			return stackable2.getVolume() > stackable1.getVolume(); // more is better 
-		};
+ 		return DEFAULT_STACK_VALUE_POINT_FILTER;
  	}
 
 }

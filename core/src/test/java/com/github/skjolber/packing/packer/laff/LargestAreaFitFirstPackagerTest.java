@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.packer.laff;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -11,7 +12,9 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.DefaultStack;
+import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
+import static com.github.skjolber.packing.test.assertj.StackablePlacementAssert.assertThat;
 
 
 
@@ -22,7 +25,7 @@ public class LargestAreaFitFirstPackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(10, 10, 10, 10, 10, 10, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(3, 1, 1, 3, 1, 1, 100, null).withStack(new DefaultStack()).build());
 		
 		
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
@@ -36,14 +39,24 @@ public class LargestAreaFitFirstPackagerTest {
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
 		
+		List<StackPlacement> placements = fits.getStack().getPlacements();
+
 		System.out.println(fits.getStack().getPlacements());
+
+		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
+		assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("B");
+		assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("C");
+		
+		assertThat(placements.get(0)).isAlongsideX(placements.get(1));
+		assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
+		assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 	}
 	
 	@Test
 	void testStackingRectangles() {
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotateXYZ(3, 2, 1, 3, 2, 1, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(3, 2, 1, 3, 2, 1, 100, null).withStack(new DefaultStack()).build());
 		
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
@@ -56,7 +69,13 @@ public class LargestAreaFitFirstPackagerTest {
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
 		
+		List<StackPlacement> placements = fits.getStack().getPlacements();
+
 		System.out.println(fits.getStack().getPlacements());
+		
+		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
+		assertThat(placements.get(1)).isAt(0, 1, 0).hasStackableName("B");
+		assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("C");
 	}
 
 	@Test
@@ -85,7 +104,7 @@ public class LargestAreaFitFirstPackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotateXYZ(6, 1, 1, 6, 1, 1, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(6, 1, 1, 6, 1, 1, 100, null).withStack(new DefaultStack()).build());
 		
 		
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
@@ -100,6 +119,13 @@ public class LargestAreaFitFirstPackagerTest {
 		assertNotNull(fits);
 		
 		System.out.println(fits.getStack().getPlacements());
+		
+		List<StackPlacement> placements = fits.getStack().getPlacements();
+
+		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
+		assertThat(placements.get(1)).isAt(3, 0, 0).hasStackableName("B"); // point with lowest x is selected first
+		assertThat(placements.get(2)).isAt(5, 0, 0).hasStackableName("C");
+
 	}
 	
 	@Test
@@ -122,6 +148,16 @@ public class LargestAreaFitFirstPackagerTest {
 		LevelStack levelStack = (LevelStack)fits.getStack();
 		assertEquals(2, levelStack.getLevels().size());
 		System.out.println(fits.getStack().getPlacements());
+		
+		List<StackPlacement> placements = fits.getStack().getPlacements();
+		
+		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
+		assertThat(placements.get(1)).isAt(0, 1, 0).hasStackableName("A");
+		assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("B");
+		
+		assertThat(placements.get(3)).isAt(0, 0, 1).hasStackableName("B");
+		assertThat(placements.get(4)).isAt(0, 1, 1).hasStackableName("C");
+		assertThat(placements.get(5)).isAt(2, 0, 1).hasStackableName("C");
 	}
 	
 	@Test

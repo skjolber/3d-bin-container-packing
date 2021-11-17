@@ -118,7 +118,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				if(constraint != null && !constraint.accepts(stack, box)) {
 					continue;
 				}
-				if(firstBox != null && !firstFilter.accept(firstBox, box)) {
+				if(firstBox != null && !firstFilter.filter(firstBox, box)) {
 					continue;
 				}
 				for (StackValue stackValue : box.getStackValues()) {
@@ -161,7 +161,6 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			StackValuePointFilter<Point3D> nextStackValuePointComparator = configuration.getNextStackValuePointFilter();
 			
 			while(!extremePoints3D.isEmpty() && maxRemainingLevelWeight > 0 && !scopedStackables.isEmpty()) {
-				
 				long maxPointVolume = extremePoints3D.getMaxVolume();
 				long maxPointArea = extremePoints3D.getMaxArea();
 
@@ -183,7 +182,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 						continue;
 					}
 
-					if(bestStackValue != null && !nextFilter.accept(bestStackable, box)) {
+					if(bestStackValue != null && !nextFilter.filter(bestStackable, box)) {
 						continue;
 					}
 					for (StackValue stackValue : box.getStackValues()) {
@@ -194,15 +193,12 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 							continue;
 						}
 						
-						// pick the best point / stackable combination
-						int bestStackValuePointIndex = -1;
-						
 						for(int k = 0; k < points.size(); k++) {
 							Point3D point3d = points.get(k);
 							if(!point3d.fits3D(stackValue)) {
 								continue;
 							}
-							if(bestStackValuePointIndex != -1 && !nextStackValuePointComparator.accept(bestStackable, points.get(bestStackValuePointIndex), bestStackValue, box, point3d, stackValue)) {
+							if(bestIndex != -1 && !nextStackValuePointComparator.accept(bestStackable, points.get(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
 								continue;
 							}
 							if(constraint != null && !constraint.supports(stack, box, stackValue, point3d.getMinX(), point3d.getMinY(), point3d.getMinZ())) {
@@ -211,7 +207,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 							bestPointIndex = k;
 							bestIndex = i;
 							bestStackValue = stackValue;
-							bestStackable = stackable;
+							bestStackable = box;
 						}
 					}
 				}
