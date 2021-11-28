@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.packer.laff;
 
+import static com.github.skjolber.packing.test.assertj.StackablePlacementAssert.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.DefaultStack;
+import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.old.BoxItem;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
@@ -125,7 +128,6 @@ public class FastLargestAreaFitFirstPackagerTest {
 		assertEquals(2, levelStack.getLevels().size());
 		System.out.println(fits.getStack().getPlacements());
 	}
-
 	
 	@Test
 	void testStackingRectanglesThreeLevels() {
@@ -145,6 +147,8 @@ public class FastLargestAreaFitFirstPackagerTest {
 		LevelStack levelStack = (LevelStack)fits.getStack();
 		assertEquals(3, levelStack.getLevels().size());
 		System.out.println(fits.getStack().getPlacements());
+		
+		List<StackPlacement> placements = fits.getStack().getPlacements();
 	}
 
 

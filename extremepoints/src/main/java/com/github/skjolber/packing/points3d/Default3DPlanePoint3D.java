@@ -8,7 +8,6 @@ import com.github.skjolber.packing.api.Placement3D;
 
 public class Default3DPlanePoint3D extends Point3D implements XZPlanePoint3D, YZPlanePoint3D, XYPlanePoint3D {
 
-
 	/** range constrained to current minX */
 	private final Placement3D yzPlane;
 	
@@ -133,7 +132,6 @@ public class Default3DPlanePoint3D extends Point3D implements XZPlanePoint3D, YZ
 				);
 	}
 
-
 	@Override
 	public Placement3D getXZPlane() {
 		return xzPlane;
@@ -165,6 +163,12 @@ public class Default3DPlanePoint3D extends Point3D implements XZPlanePoint3D, YZ
 		list.add(xzPlane);
 		list.add(yzPlane);
 		return list;
-	}		
+	}
+	
+	@Override
+	public Default3DPlanePoint3D clone() {
+		return new Default3DPlanePoint3D(minX, minY, minZ, maxX, maxY, maxZ, yzPlane, xzPlane, xyPlane);
+	}	
+
 	
 }

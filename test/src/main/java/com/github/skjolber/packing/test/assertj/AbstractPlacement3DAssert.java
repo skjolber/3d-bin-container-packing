@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.test.assertj;
 
+import java.util.List;
+
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.github.skjolber.packing.api.Placement3D;
@@ -261,5 +263,30 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 			failWithMessage("Expected end z at " + (other.getAbsoluteZ() - 1));
 		}
 		return myself;
-	}	
+	}
+	
+	
+	public SELF isSupportedBy(Placement3D ... others) {
+		isNotNull();
+		
+		List<? extends Placement3D> supports3d = actual.getSupports3D();
+		for (Placement3D other : others) {
+			if(!supports3d.contains(other)) {
+				failWithMessage("Not supported by " + other);
+			}
+		}
+		return myself;
+	}
+	
+	public SELF supports(Placement3D ... others) {
+		isNotNull();
+		for (Placement3D other : others) {
+			List<? extends Placement3D> list = other.getSupports3D();
+			if(list == null || !list.contains(actual)) {
+				failWithMessage(actual + " is not supporting " + other + ". Supporters are " + list);
+			}
+		}
+		return myself;
+	}
+	
 }

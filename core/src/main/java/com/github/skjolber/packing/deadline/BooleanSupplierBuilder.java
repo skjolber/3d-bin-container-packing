@@ -4,11 +4,11 @@ import java.util.function.BooleanSupplier;
 
 public class BooleanSupplierBuilder {
 	
-	private static final BooleanSupplier noop = () -> false;
+	public static final BooleanSupplier NOOP = () -> false;
 	
 	private long deadline = Long.MAX_VALUE;
 	private int checkpointsPerDeadlineCheck = 1;
-	private BooleanSupplier interrupt = noop;
+	private BooleanSupplier interrupt = NOOP;
 	
 	public static BooleanSupplierBuilder builder() {
 		return new BooleanSupplierBuilder ();
@@ -32,12 +32,12 @@ public class BooleanSupplierBuilder {
 		}
 		
 		if(checkpointsPerDeadlineCheck == 1) {
-			if(interrupt == noop) {
+			if(interrupt == NOOP) {
 				return new DeadlineCheckBooleanSupplier(deadline);
 			}
 			return new DelegateDeadlineCheckBooleanSupplier(deadline, interrupt);
 		}
-		if(interrupt == noop) {
+		if(interrupt == NOOP) {
 			//return new DeadlineCheckBooleanSupplier(deadline);
 			return new NthDeadlineCheckBooleanSupplier(deadline, checkpointsPerDeadlineCheck);
 		}

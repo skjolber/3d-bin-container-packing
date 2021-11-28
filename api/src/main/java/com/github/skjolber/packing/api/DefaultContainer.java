@@ -26,7 +26,7 @@ public class DefaultContainer extends Container {
 
 	@Override
 	public DefaultContainer clone() {
-		throw new RuntimeException();
+		return new DefaultContainer(name, volume, emptyWeight, stackValues, new DefaultStack());
 	}
 	
 	@Override

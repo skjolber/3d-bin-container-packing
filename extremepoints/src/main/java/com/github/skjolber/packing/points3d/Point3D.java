@@ -262,4 +262,5 @@ public abstract class Point3D extends Point2D {
 	
 	public abstract List<Placement3D> getPlacements3D();
 	
+	public abstract Point3D clone();
 }

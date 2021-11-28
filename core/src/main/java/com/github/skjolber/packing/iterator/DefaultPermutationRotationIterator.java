@@ -277,7 +277,7 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 	 * @return number between 0 and number of {@linkplain BoxItem}s used in the constructor.
 	 */
 
-	int boxItemLength() {
+	public int boxItemLength() {
 		return matrix.length;
 	}
 

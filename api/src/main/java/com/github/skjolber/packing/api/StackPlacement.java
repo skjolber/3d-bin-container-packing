@@ -27,7 +27,13 @@ public class StackPlacement implements Placement3D {
 		this.z = z;
 		this.maxSupportedPressure = maxSupportedPressure;
 		this.maxSupportedWeight = maxSupportedWeight;
+		
+		this.supports = supports;
 	}
+	
+	public StackPlacement() {
+	}
+	
 	public Stackable getStackable() {
 		return stackable;
 	}
@@ -139,6 +145,23 @@ public class StackPlacement implements Placement3D {
 	@Override
 	public List<Placement3D> getSupports3D() {
 		return supports;
+	}
+	public void setValue(StackValue value) {
+		this.value = value;
+	}
+	public void setMaxSupportedPressure(int maxSupportedPressure) {
+		this.maxSupportedPressure = maxSupportedPressure;
+	}
+	public void setMaxSupportedWeight(int maxSupportedWeight) {
+		this.maxSupportedWeight = maxSupportedWeight;
+	}
+	public void setSupports(List<Placement3D> supports) {
+		this.supports = supports;
+	}
+	
+	@Override
+	public StackPlacement clone() {
+		return new StackPlacement(stackable, value, x, y, z,  maxSupportedPressure, maxSupportedWeight, supports);
 	}
 	
 }

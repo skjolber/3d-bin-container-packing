@@ -21,6 +21,11 @@ public class DefaultStack extends Stack {
 	public void add(StackPlacement e) {
 		entries.add(e);
 	}
+	
+	@Override
+	public void remove(StackPlacement e) {
+		entries.remove(e);
+	}
 
 	public void clear() {
 		entries.clear();

@@ -22,6 +22,8 @@ public abstract class Stack {
 
 	public abstract void add(StackPlacement e);
 
+	public abstract void remove(StackPlacement e);
+
 	public long getFreeVolumeLoad() {
 		return containerStackValue.getMaxLoadVolume() - getVolume();
 	}

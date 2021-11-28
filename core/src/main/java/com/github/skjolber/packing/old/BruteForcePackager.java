@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
+import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
 import com.github.skjolber.packing.impl.*;
-import com.github.skjolber.packing.old.impl.deadline.BooleanSupplierBuilder;
 
 
 /**

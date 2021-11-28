@@ -981,27 +981,6 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		return null;
 	}
 
-	protected boolean constrainMaxX(Point2D point, P placement) {
-		int maxX = projectPositiveX(point.getMinX(), point.getMinY(), placement, point.getMaxX());
-		if(maxX < point.getMinX()) {
-			return false;
-		}
-		point.setMaxX(maxX);
-
-		return true;
-	}
-	
-	protected boolean constrainMaxY(Point2D point, P placement) {
-		int maxY = projectPositiveY(point.getMinX(), point.getMinY(), placement, point.getMaxY());
-		if(maxY < point.getMinY()) {
-			return false;
-		}
-		
-		point.setMaxY(maxY);
-
-		return true;
-	}
-	
 	protected boolean constrainFloatingMax(Point2D point, P placement, List<Point2D> addX, List<Point2D> addY) {
 
 		if(placement.getAbsoluteEndX() < point.getMinX()) {

@@ -122,4 +122,9 @@ public class DefaultXZPlaneYZPlanePoint3D extends Point3D implements XZPlanePoin
 		list.add(yzPlane);
 		return list;
 	}		
+	
+	@Override
+	public DefaultXZPlaneYZPlanePoint3D clone() {
+		return new DefaultXZPlaneYZPlanePoint3D(minX, minY, minZ, maxX, maxY, maxZ, xzPlane, yzPlane);
+	}
 }

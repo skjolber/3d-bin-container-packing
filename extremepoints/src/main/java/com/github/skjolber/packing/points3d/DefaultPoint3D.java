@@ -33,6 +33,11 @@ public class DefaultPoint3D extends Point3D {
 	public List<Placement2D> getPlacements2D() {
 		List<Placement2D> list = new ArrayList<>();
 		return list;
+	}
+
+	@Override
+	public DefaultPoint3D clone() {
+		return new DefaultPoint3D(minX, minY, minZ, maxX, maxY, maxZ);
 	}	
 
 }

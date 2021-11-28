@@ -27,7 +27,6 @@ public class LargestAreaFitFirstPackagerTest {
 		
 		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(3, 1, 1, 3, 1, 1, 100, null).withStack(new DefaultStack()).build());
 		
-		
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
@@ -76,6 +75,7 @@ public class LargestAreaFitFirstPackagerTest {
 		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
 		assertThat(placements.get(1)).isAt(0, 1, 0).hasStackableName("B");
 		assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("C");
+		
 	}
 
 	@Test

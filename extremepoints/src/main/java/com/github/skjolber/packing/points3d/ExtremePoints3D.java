@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.points3d;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,11 +29,31 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	private List<Point3D> addedZ = new ArrayList<>();
 
 	private Placement3D containerPlacement;
+	
+	private final boolean cloneOnConstrain;
 
 	public ExtremePoints3D(int dx, int dy, int dz) {
+		this(dx, dy, dz, false);
+	}
+
+	public ExtremePoints3D(int dx, int dy, int dz, boolean cloneOnConstrain) {
 		setSize(dx, dy, dz);
+		this.cloneOnConstrain = cloneOnConstrain;
 		addFirstPoint();
 	}
+	
+	public ExtremePoints3D(boolean cloneOnConstrain, Placement3D containerPlacement, List<Point3D> values, List<P> placements) {
+		this.containerMaxX = containerPlacement.getAbsoluteEndX();
+		this.containerMaxY = containerPlacement.getAbsoluteEndY();
+		this.containerMaxZ = containerPlacement.getAbsoluteEndZ();
+		
+		this.cloneOnConstrain = cloneOnConstrain;
+		this.containerPlacement = containerPlacement;
+				
+		this.values.addAll(values);
+		this.placements.addAll(placements);
+	}
+
 
 	private void setSize(int dx, int dy, int dz) {
 		this.containerMaxX = dx - 1;
@@ -125,9 +144,39 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 		// Constrain max values to the new placement
 		if(source instanceof XZPlanePoint3D && source instanceof YZPlanePoint3D && source instanceof XYPlanePoint3D) {
-			for(Point3D point : values) {
-				if(!constrainMax(point, placement)) {
-					deleted.add(point);
+			for (int i = 0; i < values.size(); i++) {
+				Point3D point3d = values.get(i);
+				
+				int maxX = projectPositiveX(point3d, placement, point3d.getMaxX());
+				if(maxX < point3d.getMinX()) {
+					deleted.add(point3d);
+					continue;
+				}
+				int maxY = projectPositiveY(point3d, placement, point3d.getMaxY());
+				if(maxY < point3d.getMinY()) {
+					deleted.add(point3d);
+					continue;
+				}
+				int maxZ = projectPositiveZ(point3d, placement, point3d.getMaxZ());
+				if(maxZ < point3d.getMinZ()) {
+					deleted.add(point3d);
+					continue;
+				}
+
+				if(cloneOnConstrain) {
+					if(point3d.getMaxX() > maxX || point3d.getMaxY() > maxY || point3d.getMaxZ() > maxZ) {
+						values.set(i, point3d.clone(maxX, maxY, maxZ));
+					}
+				} else {
+					if(point3d.getMaxX() > maxX) {
+						point3d.setMaxX(maxX);
+					}
+					if(point3d.getMaxY() > maxY) {
+						point3d.setMaxY(maxY);
+					}
+					if(point3d.getMaxZ() > maxZ) {
+						point3d.setMaxZ(maxZ);
+					}
 				}
 			}
 		} else {
@@ -908,7 +957,11 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				
 				if(point.getMinX() < source.getMinX()) {
 					// constrain current point
-					point.setMaxX(source.getMinX() - 1);
+					if(cloneOnConstrain) {
+						values.set(i, point.clone(source.getMinX() - 1, point.getMaxY(), point.getMaxY()));
+					} else {
+						point.setMaxX(source.getMinX() - 1);
+					}
 				} else {
 					// delete current point (which was swallowed)
 					deleted.add(point);
@@ -1008,7 +1061,11 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 				if(point.getMinY() < source.getMinY()) {
 					// constrain current point
-					point.setMaxY(source.getMinY() - 1);
+					if(cloneOnConstrain) {
+						values.set(i, point.clone(point.getMaxX(), source.getMinY() - 1, point.getMaxZ()));
+					} else {
+						point.setMaxY(source.getMinY() - 1);
+					}
 				} else {
 					// delete current point (which was swallowed)
 					deleted.add(point);
@@ -1110,7 +1167,12 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				
 				if(point.getMinZ() < source.getMinZ()) {
 					// constrain current point
-					point.setMaxZ(source.getMinZ() - 1);
+					if(cloneOnConstrain) {
+						values.set(i, point.clone(point.getMaxX(), point.getMaxY(), source.getMinZ() - 1));
+					} else {
+						point.setMaxZ(source.getMinZ() - 1);
+					}
+					
 				} else {
 					// delete current point (which was swallowed)
 					deleted.add(point);
@@ -1483,27 +1545,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		
 		values.addAll(add);	
 	}
-	
-	protected boolean constrainMax(Point3D point, P placement) {
-		int maxX = projectPositiveX(point, placement, point.getMaxX());
-		if(maxX < point.getMinX()) {
-			return false;
-		}
-		int maxY = projectPositiveY(point, placement, point.getMaxY());
-		if(maxY < point.getMinY()) {
-			return false;
-		}
-		int maxZ = projectPositiveZ(point, placement, point.getMaxZ());
-		if(maxZ < point.getMinZ()) {
-			return false;
-		}
-		
-		point.setMaxX(maxX);
-		point.setMaxY(maxY);
-		point.setMaxZ(maxZ);
-
-		return true;
-	}
 
 	protected int projectPositiveY(Point3D point, P placement, int maxY) {
 		if(placement.getAbsoluteY() >= point.getMinY()) {
@@ -1528,7 +1569,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			}
 		}
 		return maxX;
-		
 	}
 
 	protected int projectPositiveZ(Point3D point, P placement, int maxZ) {
@@ -1542,27 +1582,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		}
 		return maxZ;
 	}	
-	
-	protected boolean constrainMax(Point3D point) {
-		int maxX = projectPositiveX(point.getMinX(), point.getMinY(), point.getMinZ());
-		if(maxX <= point.getMinX()) {
-			return false;
-		}
-		int maxY = projectPositiveY(point.getMinX(), point.getMinY(), point.getMinZ());
-		if(maxY <= point.getMinY()) {
-			return false;
-		}
-		int maxZ = projectPositiveZ(point.getMinX(), point.getMinY(), point.getMinZ());
-		if(maxZ < point.getMinZ()) {
-			return false;
-		}
-		
-		point.setMaxX(maxX);
-		point.setMaxY(maxY);
-		point.setMaxZ(maxZ);
-
-		return true;
-	}
 	
 	protected P projectNegativeX(int x, int y, int z) {
 		
@@ -1753,11 +1772,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		return containerMaxZ;
 	}
 
-	@Override
-	public String toString() {
-		return "ExtremePoints3D [dx=" + containerMaxX + ", dy=" + containerMaxY + ", dz=" + containerMaxZ + "]";
-	}
-	
 	public List<P> getPlacements() {
 		return placements;
 	}
@@ -1963,4 +1977,13 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		return maxPointVolume;
 	}
 
+	@Override
+	public String toString() {
+		return "ExtremePoints3D [" + containerMaxX + "x" + containerMaxY + "x" + containerMaxZ + "]";
+	}
+
+	public ExtremePoints3D<P> clone() {
+		return new ExtremePoints3D<>(cloneOnConstrain, containerPlacement, values, placements);
+	}
+	
 }

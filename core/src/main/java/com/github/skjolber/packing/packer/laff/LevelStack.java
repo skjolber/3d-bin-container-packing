@@ -33,6 +33,11 @@ public class LevelStack extends Stack {
 		levels.get(levels.size() - 1).add(e);
 	}
 	
+	@Override
+	public void remove(StackPlacement e) {
+		levels.get(levels.size() - 1).remove(e);
+	}
+
 	public boolean add(Stack element) {
 		if(!levels.isEmpty()) {
 			dz += currentLevelStackDz();

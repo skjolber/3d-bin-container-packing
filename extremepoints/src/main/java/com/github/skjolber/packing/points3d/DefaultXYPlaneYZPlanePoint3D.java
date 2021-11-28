@@ -120,4 +120,9 @@ public class DefaultXYPlaneYZPlanePoint3D extends Point3D implements XYPlanePoin
 		return list;
 	}	
 	
+	@Override
+	public DefaultXYPlaneYZPlanePoint3D clone() {
+		return new DefaultXYPlaneYZPlanePoint3D(minX, minY, minZ, maxX, maxY, maxZ, yzPlane, xyPlane);
+	}
+	
 }

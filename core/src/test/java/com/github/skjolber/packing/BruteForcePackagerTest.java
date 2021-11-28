@@ -69,33 +69,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 		assertEquals(fits.getLevels().size(), 1);
 	}
 
-	@Test
-	void testStackingRectanglesOnSquareRectangleVolumeFirst() {
-		// this test uses the space between the level floor and box top
-		List<Container> containers = new ArrayList<>();
-		containers.add(new ValidatingContainer("container1", 10, 10, 4, 0));
-		BruteForcePackager packager = new BruteForcePackager(containers);
 
-		List<BoxItem> products = new ArrayList<>();
-
-		products.add(new BoxItem(new Box("J", 5, 10, 4, 0), 1));
-		products.add(new BoxItem(new Box("L", 5, 10, 1, 0), 1));
-		products.add(new BoxItem(new Box("K", 5, 10, 1, 0), 1));
-		products.add(new BoxItem(new Box("M", 5, 10, 1, 0), 1));
-		products.add(new BoxItem(new Box("N", 5, 10, 1, 0), 1));
-
-		Container fits = packager.pack(products);
-		assertNotNull(fits);
-		assertEquals(fits.getLevels().size(), 1);
-
-		assertEquals(fits.getLevels().get(0).get(0).getSpace().getZ(), 0);
-		assertEquals(fits.getLevels().get(0).get(1).getSpace().getZ(), 0);
-
-		// note stacking in height:
-		assertEquals(fits.getLevels().get(0).get(2).getSpace().getZ(), 1);
-		assertEquals(fits.getLevels().get(0).get(3).getSpace().getZ(), 2);
-		assertEquals(fits.getLevels().get(0).get(4).getSpace().getZ(), 3);
-	}
 
 	@Test
 	void testStackingBinary1() {

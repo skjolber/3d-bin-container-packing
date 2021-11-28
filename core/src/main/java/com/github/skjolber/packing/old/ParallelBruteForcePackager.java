@@ -11,6 +11,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
+import com.github.skjolber.packing.deadline.ClonableBooleanSupplier;
 import com.github.skjolber.packing.impl.Adapter;
 import com.github.skjolber.packing.impl.BruteForceResult;
 import com.github.skjolber.packing.impl.DefaultPermutationRotationIterator;
@@ -19,7 +20,6 @@ import com.github.skjolber.packing.impl.ParallelPermutationRotationIterator;
 import com.github.skjolber.packing.impl.ParallelPermutationRotationIteratorAdapter;
 import com.github.skjolber.packing.impl.PermutationRotation;
 import com.github.skjolber.packing.impl.PermutationRotationIterator;
-import com.github.skjolber.packing.old.impl.deadline.ClonableBooleanSupplier;
 
 public class ParallelBruteForcePackager extends BruteForcePackager {
 
