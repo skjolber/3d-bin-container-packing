@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
@@ -61,7 +62,6 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager<Point3D> 
 
 	public int packStackPlacement(List<StackPlacement> placements, PermutationRotationIterator rotator, Container container, int placementIndex, BooleanSupplier interrupt) {
 		// pack as many items as possible from placementIndex
-		
 		ContainerStackValue[] stackValues = container.getStackValues();
 		
 		ContainerStackValue containerStackValue = stackValues[0];

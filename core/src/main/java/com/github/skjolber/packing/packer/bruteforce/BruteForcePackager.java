@@ -149,7 +149,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager<Point3D> {
 			if(placementIndex + 1 >= iterator.rotator.length()) {
 				extremePoints3D.add(k, placement);
 				stack.add(placement);
-
+				
 				return extremePoints3D;
 			}
 

@@ -83,7 +83,7 @@ public class BruteForcePackagerTest {
 	}
 	
 	@Test
-	void testStackingRectanglesOnSquareRectangleVolumeFirst() {
+	public void testStackingRectanglesOnSquareRectangleVolumeFirst() {
 		List<Container> containers = new ArrayList<>();
 		
 		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotateXYZ(10, 10, 4, 10, 10, 4, 100, null).withStack(new DefaultStack()).build());
@@ -102,4 +102,23 @@ public class BruteForcePackagerTest {
 		assertNotNull(fits);
 	}
 
+	@Test
+	public void testStackingBox() {
+		List<Container> containers = new ArrayList<>();
+		
+		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotateXYZ(5, 5, 1, 5, 5, 1, 100, null).withStack(new DefaultStack()).build());
+		
+		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
+
+		List<StackableItem> products = new ArrayList<>();
+
+		products.add(new StackableItem(Box.newBuilder().withName("A").withRotateXYZ(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("B").withRotateXYZ(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("C").withRotateXYZ(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("D").withRotateXYZ(3, 2, 1).withWeight(1).build(), 1));
+
+		Container fits = packager.pack(products);
+		assertNotNull(fits);
+		System.out.println(fits.getStack().getPlacements());
+	}
 }

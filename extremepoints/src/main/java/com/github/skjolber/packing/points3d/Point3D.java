@@ -46,7 +46,7 @@ public abstract class Point3D extends Point2D {
 		super(minX, minY, maxX, maxY);
 		
 		if(maxZ < minZ) {
-			throw new RuntimeException("Z: "+ maxZ + " < " + minZ);
+			throw new IllegalArgumentException("Z: "+ maxZ + " < " + minZ);
 		}
 		this.minZ = minZ;
 		this.maxZ = maxZ;

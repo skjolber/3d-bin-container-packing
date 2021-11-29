@@ -53,11 +53,11 @@ public abstract class Point2D {
 		super();
 		
 		if(maxX < minX) {
-			throw new RuntimeException("X: "+ maxX + " < " + minX);
+			throw new IllegalArgumentException("X: "+ maxX + " < " + minX);
 		}
 
 		if(maxY < minY) {
-			throw new RuntimeException("Y: "+ maxY + " < " + minY);
+			throw new IllegalArgumentException("Y: "+ maxY + " < " + minY);
 		}
 
 		this.minX = minX;

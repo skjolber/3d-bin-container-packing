@@ -1203,21 +1203,24 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			int y = yy;
 			int z = source.getMinZ(); 
 			
-			added.add(new Default3DPlanePoint3D(
-					x, y, z, 
-					maxX, source.getMaxY(), maxZ,
-					
-					// supported planes
-					// yz plane 
-					yzPlane.getYZPlane(),
-					
-					// xz plane (i.e. side of the new placement)
-					placement,
-
-					// xy plane
-					xyPlane.getXYPlane()
-				)
-			);
+			if(x <= maxX && y <= source.getMaxY() && z <= maxZ) {
+				
+				added.add(new Default3DPlanePoint3D(
+						x, y, z, 
+						maxX, source.getMaxY(), maxZ,
+						
+						// supported planes
+						// yz plane 
+						yzPlane.getYZPlane(),
+						
+						// xz plane (i.e. side of the new placement)
+						placement,
+	
+						// xy plane
+						xyPlane.getXYPlane()
+					)
+				);
+			}
 		} else if(xy) {
 
 			if(!yzEdge) {

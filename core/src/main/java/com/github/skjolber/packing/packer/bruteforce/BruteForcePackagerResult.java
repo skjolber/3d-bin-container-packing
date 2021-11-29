@@ -13,7 +13,7 @@ import com.github.skjolber.packing.points2d.Point2D;
 
 public class BruteForcePackagerResult<P extends Point2D> implements PackResult {
 
-	private List<StackPlacement> placements;
+	private List<StackPlacement> placements = new ArrayList<>();
 	private Container container;
 	private DefaultPermutationRotationIterator iterator;
 	private PermutationRotationState state;

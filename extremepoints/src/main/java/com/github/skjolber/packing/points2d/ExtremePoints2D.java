@@ -22,7 +22,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 	protected final List<Point2D> values = new ArrayList<>();
 	protected final List<P> placements = new ArrayList<>();
 
-	// reusefinal d working variables
+	// reuse working variables
 	private final List<Point2D> deleted = new ArrayList<>();
 	private final List<Point2D> addY = new ArrayList<>();
 	private final List<Point2D> addX = new ArrayList<>();
