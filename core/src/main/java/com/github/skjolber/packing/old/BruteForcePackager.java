@@ -583,11 +583,7 @@ public class BruteForcePackager extends Packager {
 			return container;
 		}
 
-		@Override
-		public boolean hasMore(PackResult result) {
-			BruteForceResult bruteForceResult = (BruteForceResult) result;
-			return placements.size() > bruteForceResult.getCount();
-		}
+
 	}
 
 }

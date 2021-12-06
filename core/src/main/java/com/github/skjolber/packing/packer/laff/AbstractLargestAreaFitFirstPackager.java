@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.Adapter;
+import com.github.skjolber.packing.packer.EmptyPackResult;
 import com.github.skjolber.packing.packer.PackResult;
 import com.github.skjolber.packing.points2d.Point2D;
 
@@ -18,7 +19,7 @@ import com.github.skjolber.packing.points2d.Point2D;
  * <br><br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
-public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D> extends AbstractPackager<LargestAreaFitFirstPackagerResultBuilder> {
+public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D> extends AbstractPackager<LargestAreaFitFirstPackagerResult, LargestAreaFitFirstPackagerResultBuilder> {
 
 	protected LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, ?> factory;
 
@@ -68,7 +69,7 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D> ext
 
 	public abstract LargestAreaFitFirstPackagerResult pack(List<Stackable> stackables, Container targetContainer,  BooleanSupplier interrupt);
 
-	protected class LAFFAdapter implements Adapter {
+	protected class LAFFAdapter implements Adapter<LargestAreaFitFirstPackagerResult> {
 
 		private List<Stackable> boxes;
 		private List<Container> containers;
@@ -92,26 +93,19 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D> ext
 		}
 
 		@Override
-		public PackResult attempt(int index) {
+		public LargestAreaFitFirstPackagerResult attempt(int index, LargestAreaFitFirstPackagerResult best) {
 			return AbstractLargestAreaFitFirstPackager.this.pack(boxes, containers.get(index), interrupt);
 		}
 
 		@Override
-		public Container accepted(PackResult result) {
-			LargestAreaFitFirstPackagerResult laffResult = (LargestAreaFitFirstPackagerResult)result;
-			
-			return laffResult.getContainer();
+		public Container accept(LargestAreaFitFirstPackagerResult result) {
+			return result.getContainer();
 		}
 
-		@Override
-		public boolean hasMore(PackResult result) {
-			LargestAreaFitFirstPackagerResult laffResult = (LargestAreaFitFirstPackagerResult)result;
-			return !laffResult.getRemainingBoxes().isEmpty();
-		}
 	}
 
 	@Override
-	protected Adapter adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
+	protected LAFFAdapter adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
 		return new LAFFAdapter(boxes, containers, interrupt);
 	}
 

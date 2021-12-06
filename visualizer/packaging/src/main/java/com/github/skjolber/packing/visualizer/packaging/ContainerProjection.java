@@ -44,7 +44,7 @@ public class ContainerProjection extends AbstractProjection<Container> {
 			
 			Stack stack = inputContainer.getStack();
 			List<StackPlacement> placements = stack.getPlacements();
-			System.out.println("Got " + placements.size() + " placements");
+			
 			for (StackPlacement placement : stack.getPlacements()) {
 				Stackable box = placement.getStackable();
 				BoxVisualizer boxVisualization = new BoxVisualizer();

@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutorService;
 public class BruteForcePackagerBuilder {
 
 	protected int threads = 1;
+	protected ExecutorService executorService;
 	
 	protected List<Container> containers;
 	protected boolean rotate3D = true;

@@ -48,17 +48,17 @@ public class BouwkampCodeDirectory {
 	public List<BouwkampCodes> getSimpleImperfectSquaredRectangles() {
 		return simpleImperfectSquaredRectangles;
 	}
-	public void setSimpleImperfectSquaredRectangles(List<BouwkampCodes> simpleImperfectSquaredRectangles) {
-		this.simpleImperfectSquaredRectangles = simpleImperfectSquaredRectangles;
-	}
 	public List<BouwkampCodes> getSimpleImperfectSquaredSquares() {
 		return simpleImperfectSquaredSquares;
+	}
+	public List<BouwkampCodes> getSimplePerfectSquaredRectangles() {
+		return simplePerfectSquaredRectangles;
 	}
 	public void setSimpleImperfectSquaredSquares(List<BouwkampCodes> simpleImperfectSquaredSquares) {
 		this.simpleImperfectSquaredSquares = simpleImperfectSquaredSquares;
 	}
-	public List<BouwkampCodes> getSimplePerfectSquaredRectangles() {
-		return simplePerfectSquaredRectangles;
+	public void setSimpleImperfectSquaredRectangles(List<BouwkampCodes> simpleImperfectSquaredRectangles) {
+		this.simpleImperfectSquaredRectangles = simpleImperfectSquaredRectangles;
 	}
 	public void setSimplePerfectSquaredRectangles(List<BouwkampCodes> simplePerfectSquaredRectangles) {
 		this.simplePerfectSquaredRectangles = simplePerfectSquaredRectangles;

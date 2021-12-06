@@ -82,6 +82,7 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 		if(countPermutations == -1L) {
 			throw new IllegalArgumentException();
 		}
+		System.out.println("Got " + countPermutations);
 
 		int[] copyOfFrequencies = new int[frequencies.length];
 		for(int i = 0; i < workUnits.length; i++) {

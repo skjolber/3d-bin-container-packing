@@ -241,7 +241,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			extremePoints3D.reset(containerStackValue.getDx(), containerStackValue.getDy(), containerStackValue.getDz() - levelOffset);
 		}
 		
-		return new LargestAreaFitFirstPackagerResult(remainingStackables, stack, new DefaultContainer(targetContainer.getName(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack));
+		return new LargestAreaFitFirstPackagerResult(stack, new DefaultContainer(targetContainer.getName(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack), remainingStackables.isEmpty());
 	}
 
 	@Override

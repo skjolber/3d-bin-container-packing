@@ -21,7 +21,7 @@ import com.github.skjolber.packing.iterator.BinarySearchIterator;
  * Thread-safe implementation.
  */
 
-public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> implements Packager<B> {
+public abstract class AbstractPackager<P extends PackResult, B extends PackagerResultBuilder<B>> implements Packager<B> {
 	
 	protected static final EmptyPackResult EMPTY_PACK_RESULT = new EmptyPackResult();
 	
@@ -84,7 +84,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 	 * @return null if no match
 	 */
 	public Container pack(List<StackableItem> boxes) {
-		return pack(boxes, Long.MAX_VALUE);
+		return pack(boxes, BooleanSupplierBuilder.NOOP);
 	}
 
 	/**
@@ -96,11 +96,11 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 	 */
 
 	public Container pack(List<StackableItem> boxes, long deadline) {
-		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
+		return pack(boxes, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
 	public Container pack(List<StackableItem> boxes, BooleanSupplier interrupt) {
-		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), interrupt);
+		return packImpl(boxes, Arrays.asList(containers), interrupt);
 	}
 
 	/**
@@ -113,7 +113,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 	 * 
 	 */
 	public Container pack(List<StackableItem> boxes, long deadline, BooleanSupplier interrupt) {
-		return pack(boxes, filterByVolumeAndWeight(toBoxes(boxes, false), Arrays.asList(containers), 1), deadline, interrupt);
+		return pack(boxes, Arrays.asList(containers), deadline, interrupt);
 	}
 
 	/**
@@ -125,7 +125,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 	 * @return index of container if match, -1 if not
 	 */
 	public Container pack(List<StackableItem> boxes, List<Container> containers, long deadline) {
-		return pack(boxes, containers, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
+		return packImpl(boxes, containers, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
 	/**
@@ -138,36 +138,37 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 	 * @return index of container if match, -1 if not
 	 */
 	public Container pack(List<StackableItem> boxes, List<Container> containers, long deadline, BooleanSupplier interrupt) {
-		return pack(boxes, containers, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
+		return packImpl(boxes, containers, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
-	public Container pack(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
+	protected Container packImpl(List<StackableItem> boxes, List<Container> candidateContainers, BooleanSupplier interrupt) {
+		List<Container> containers = filterByVolumeAndWeight(toBoxes(boxes, false), candidateContainers, 1);
+				
 		if (containers.isEmpty()) {
 			return null;
 		}
 
-		Adapter pack = adapter(boxes, containers, interrupt);
+		Adapter<P> pack = adapter(boxes, containers, interrupt);
 
 		if (containers.size() <= 2) {
 			for (int i = 0; i < containers.size(); i++) {
-
 				if (interrupt.getAsBoolean()) {
 					break;
 				}
 
-				PackResult result = pack.attempt(i);
+				P result = pack.attempt(i, null);
 				if (result == null) {
-					return null; // timeout
+					return null; // timeout, no result
 				}
-
-				if (!pack.hasMore(result)) {
-					return pack.accepted(result);
+				if(result.containsLastStackable()) {
+					return pack.accept(result);
 				}
 			}
 		} else {
 			// perform a binary search among the available containers
 			// the list is ranked from most desirable to least.
-			PackResult[] results = new PackResult[containers.size()];
+			@SuppressWarnings("unchecked") // https://stackoverflow.com/a/2924453/459579
+			P[] results = (P[])new Object[containers.size()];
 			boolean[] checked = new boolean[results.length];
 
 			ArrayList<Integer> containerIndexes = new ArrayList<>(containers.size());
@@ -181,19 +182,29 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 			do {
 				iterator.reset(containerIndexes.size() - 1, 0);
 
+				P bestResult = null;
+				int bestIndex = Integer.MAX_VALUE;
+				
 				do {
 					int next = iterator.next();
 					int mid = containerIndexes.get(next);
 
-					PackResult result = pack.attempt(mid);
+					P result = pack.attempt(mid, bestResult);
 					if (result == null) {
-						return null; // timeout
+						// timeout 
+						// return best result so far, whatever it is
+						break search; 
 					}
 					checked[mid] = true;
-					if (!pack.hasMore(result)) {
+					if (result.containsLastStackable()) {
 						results[mid] = result;
 
 						iterator.lower();
+						
+						if(mid < bestIndex) {
+							bestIndex = mid;
+							bestResult = result;
+						}
 					} else {
 						iterator.higher();
 					}
@@ -202,7 +213,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 					}
 				} while (iterator.hasNext());
 
-				// halt when have a result, and checked all containers at the lower indexes
+				// halt when we have a result, and checked all containers at the lower indexes
 				for (int i = 0; i < containerIndexes.size(); i++) {
 					Integer integer = containerIndexes.get(i);
 					if (results[integer] != null) {
@@ -221,9 +232,10 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 				}
 			} while (!containerIndexes.isEmpty());
 
-			for (final PackResult result : results) {
+			// return the best, if any
+			for (final P result : results) {
 				if (result != null) {
-					return pack.accepted(result);
+					return pack.accept(result);
 				}
 			}
 		}
@@ -271,32 +283,34 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 			return null;
 		}
 
-		Adapter pack = adapter(boxes, containers, interrupt);
+		Adapter<P> pack = adapter(boxes, containers, interrupt);
 
 		List<Container> containerPackResults = new ArrayList<>();
 
-		// binary search: not as simple as in the single-container use-case; discarding containers would need some kind
+		// TODO binary search: not as simple as in the single-container use-case; discarding containers would need some kind
 		// of criteria which could be trivially calculated, perhaps on volume.
 		do {
-			PackResult best = null;
+			P best = null;
 			for (int i = 0; i < containers.size(); i++) {
 
 				if (interrupt.getAsBoolean()) {
 					return null;
 				}
 
-				PackResult result = pack.attempt(i);
+				P result = pack.attempt(i, best);
 				if (result == null) {
 					return null; // timeout
 				}
-
-				if (!result.isEmpty()) {
-					if (best == null || result.packsMoreBoxesThan(best)) {
+				if(!result.isEmpty()) {
+					if(result.containsLastStackable()) {
+						// will not match any better than this
 						best = result;
-
-						if (!pack.hasMore(best)) { // will not match any better than this
-							break;
-						}
+						
+						break;
+					}
+					
+					if (best == null || result.isBetterThan(best)) {
+						best = result;
 					}
 				}
 			}
@@ -306,9 +320,9 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 				return null;
 			}
 
-			boolean end = !pack.hasMore(best);
+			boolean end = best.containsLastStackable();
 
-			containerPackResults.add(pack.accepted(best));
+			containerPackResults.add(pack.accept(best));
 
 			if (end) {
 				// positive result
@@ -321,7 +335,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 	}
 
 	/**
-	 * Return a list of containers which can potentially hold the boxes.
+	 * Return a list of containers which can potentially hold the boxes within the provided count
 	 *
 	 * @param boxes      list of boxes
 	 * @param containers list of containers
@@ -330,74 +344,96 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 	 */
 	private List<Container> filterByVolumeAndWeight(List<Stackable> boxes, List<Container> containers, int count) {
 		long volume = 0;
-		long minVolume = Long.MAX_VALUE;
 
 		long weight = 0;
-		long minWeight = Long.MAX_VALUE;
 
 		for (Stackable box : boxes) {
 			// volume
 			long boxVolume = box.getVolume();
 			volume += boxVolume;
 
-			if (boxVolume < minVolume) {
-				minVolume = boxVolume;
-			}
-
 			// weight
 			long boxWeight = box.getWeight();
 			weight += boxWeight;
-
-			if (boxWeight < minWeight) {
-				minWeight = boxWeight;
-			}
-		}
-
-		long maxVolume = Long.MIN_VALUE;
-		long maxWeight = Long.MIN_VALUE;
-
-		for (Container container : containers) {
-			// volume
-			long boxVolume = container.getVolume();
-			if (boxVolume > maxVolume) {
-				maxVolume = boxVolume;
-			}
-
-			// weight
-			long boxWeight = container.getMaxLoadWeight();
-			if (boxWeight > maxWeight) {
-				maxWeight = boxWeight;
-			}
-		}
-
-		if (maxVolume * count < volume || maxWeight * count < weight) {
-			// no containers will work at current count
-			return Collections.emptyList();
 		}
 
 		List<Container> list = new ArrayList<>(containers.size());
-		for (Container container : containers) {
-			if (container.getMaxLoadVolume() < minVolume || container.getMaxLoadWeight() < minWeight) {
-				// this container cannot even fit a single box
-				continue;
-			}
-
-			if (container.getMaxLoadVolume() + maxVolume * (count - 1) < volume || container.getMaxLoadWeight() + maxWeight * (count - 1) < weight) {
-				// this container cannot be used even together with all biggest boxes
-				continue;
-			}
-
-			if (count == 1) {
-				if (!canHoldAll(container, boxes)) {
+		
+		if (count == 1) {
+			containers:
+			for (Container container : containers) {
+				if(container.getMaxLoadVolume() < volume) {
 					continue;
 				}
-			} else {
-				if (!canHoldAtLeastOne(container, boxes)) {
+				if(container.getMaxLoadWeight() < weight) {
 					continue;
+				}
+				
+				for (Stackable box : boxes) {
+					if (!container.canLoad(box)) {
+						continue containers;
+					}
+				}
+				list.add(container);
+			}
+			
+		} else {
+			long maxContainerLoadVolume = Long.MIN_VALUE;
+			long maxContainerLoadWeight = Long.MIN_VALUE;
+
+			for (Container container : containers) {
+				// volume
+				long boxVolume = container.getVolume();
+				if (boxVolume > maxContainerLoadVolume) {
+					maxContainerLoadVolume = boxVolume;
+				}
+
+				// weight
+				long boxWeight = container.getMaxLoadWeight();
+				if (boxWeight > maxContainerLoadWeight) {
+					maxContainerLoadWeight = boxWeight;
 				}
 			}
 
-			list.add(container);
+			if (maxContainerLoadVolume * count < volume || maxContainerLoadWeight * count < weight) {
+				// no containers will work at current count
+				return Collections.emptyList();
+			}
+			
+			long minVolume = Long.MAX_VALUE;
+			long minWeight = Long.MAX_VALUE;
+
+			for (Stackable box : boxes) {
+				// volume
+				long boxVolume = box.getVolume();
+				if (boxVolume < minVolume) {
+					minVolume = boxVolume;
+				}
+
+				// weight
+				long boxWeight = box.getWeight();
+				if (boxWeight < minWeight) {
+					minWeight = boxWeight;
+				}
+			}
+			
+			for (Container container : containers) {
+				if (container.getMaxLoadVolume() < minVolume || container.getMaxLoadWeight() < minWeight) {
+					// this container cannot even fit a single box
+					continue;
+				}
+
+				if (container.getMaxLoadVolume() + maxContainerLoadVolume * (count - 1) < volume || container.getMaxLoadWeight() + maxContainerLoadWeight * (count - 1) < weight) {
+					// this container cannot be used even together with all biggest boxes
+					continue;
+				}
+				
+				if (!canLoadAtLeastOne(container, boxes)) {
+					continue;
+				}
+				
+				list.add(container);
+			}
 		}
 
 		return list;
@@ -415,34 +451,17 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder<B>> imple
 			}
 		}
 		return boxClones;
-
 	}
 
-
-	protected abstract Adapter adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt);
-
-	private boolean canHoldAll(Container containerBox, List<Stackable> boxes) {
+	private boolean canLoadAtLeastOne(Container containerBox, List<Stackable> boxes) {
 		for (Stackable box : boxes) {
-			if (containerBox.getMaxLoadWeight() < box.getWeight()) {
-				continue;
-			}
-			if (!containerBox.canLoad(box)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private boolean canHoldAtLeastOne(Container containerBox, List<Stackable> boxes) {
-		for (Stackable box : boxes) {
-			if (containerBox.getMaxLoadWeight() < box.getWeight()) {
-				continue;
-			}
 			if (containerBox.canLoad(box)) {
 				return true;
 			}			
 		}
 		return false;
 	}
+
+	protected abstract Adapter<P> adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt);
 
 }

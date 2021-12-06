@@ -8,14 +8,13 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotation;
-import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.PackResult;
 import com.github.skjolber.packing.points3d.Point3D;
 
-public class BruteForcePackagerResult implements PackResult {
+public class  FastBruteForcePackagerResult implements PackResult {
 
-	public static final BruteForcePackagerResult EMPTY = new BruteForcePackagerResult(null, null);
+	public static final FastBruteForcePackagerResult EMPTY = new FastBruteForcePackagerResult(null, null);
 	
 	static {
 		EMPTY.setState(Collections.emptyList(), null, Collections.emptyList(), false);
@@ -23,7 +22,7 @@ public class BruteForcePackagerResult implements PackResult {
 	
 	// work objects
 	private final Container container;
-	private final PermutationRotationIterator iterator;
+	private final DefaultPermutationRotationIterator iterator;
 	
 	// state
 	private PermutationRotationState state;
@@ -31,7 +30,7 @@ public class BruteForcePackagerResult implements PackResult {
 	private List<StackPlacement> placements;
 	private boolean last;
 
-	public BruteForcePackagerResult(Container container, PermutationRotationIterator iterator) {
+	public FastBruteForcePackagerResult(Container container, DefaultPermutationRotationIterator iterator) {
 		this.container = container;
 		this.iterator = iterator;
 	}
@@ -60,7 +59,7 @@ public class BruteForcePackagerResult implements PackResult {
 		return container;
 	}
 
-	public PermutationRotationIterator getPermutationRotationIteratorForState() {
+	public DefaultPermutationRotationIterator getPermutationRotationIteratorForState() {
 		iterator.setState(state);
 		return iterator;
 	}
@@ -79,7 +78,7 @@ public class BruteForcePackagerResult implements PackResult {
 		// - lower volume
 		// - lower max weight
 
-		BruteForcePackagerResult bruteForceResult = (BruteForcePackagerResult)result;
+		FastBruteForcePackagerResult bruteForceResult = (FastBruteForcePackagerResult)result;
 		if(bruteForceResult.points.size() < points.size()) {
 			return true;
 		} else if(bruteForceResult.points.size() == points.size()) {
@@ -111,4 +110,6 @@ public class BruteForcePackagerResult implements PackResult {
 	
 	public int getSize() {
 		return points.size();
-	}}
+	}
+
+}

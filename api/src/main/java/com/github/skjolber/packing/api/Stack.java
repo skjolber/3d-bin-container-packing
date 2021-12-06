@@ -47,5 +47,7 @@ public abstract class Stack {
 			add(p);
 		}
 	}
+	
+	public abstract int getSize();
 
 }

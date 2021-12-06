@@ -203,6 +203,16 @@ public class LevelStack extends Stack {
 	public boolean isEmpty() {
 		return levels.isEmpty() || levels.get(0).isEmpty();
 	}
+	
+	@Override
+	public int getSize() {
+		int count = 0;
+		for(Stack stack : levels) {
+			count += stack.getSize();
+		}
+		return count;
+	}
+
 
 	
 }

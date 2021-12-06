@@ -1,21 +1,21 @@
 package com.github.skjolber.packing.packer.laff;
 
-import java.util.List;
-
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.api.DefaultContainerStackValue;
 import com.github.skjolber.packing.packer.PackResult;
 
 public class LargestAreaFitFirstPackagerResult implements PackResult {
-
-	private List<Stackable> remaining;
+	
+	public static LargestAreaFitFirstPackagerResult EMPTY = new LargestAreaFitFirstPackagerResult(new LevelStack(new DefaultContainerStackValue(0, 0, 0, null, 0, 0, 0, 0)), null, false);
+	
 	private LevelStack stack;
 	private Container container;
+	private boolean last;
 
-	public LargestAreaFitFirstPackagerResult(List<Stackable> remaining, LevelStack stack, Container container) {
-		this.remaining = remaining;
+	public LargestAreaFitFirstPackagerResult(LevelStack stack, Container container, boolean last) {
 		this.stack = stack;
 		this.container = container;
+		this.last = last;
 	}
 
 	public Container getContainer() {
@@ -23,29 +23,30 @@ public class LargestAreaFitFirstPackagerResult implements PackResult {
 	}
 
 	@Override
-	public boolean packsMoreBoxesThan(PackResult result) {
+	public boolean isBetterThan(PackResult result) {
 		LargestAreaFitFirstPackagerResult laffResult = (LargestAreaFitFirstPackagerResult)result;
-		if(laffResult.remaining.size() > remaining.size()) { // lower is better
+		if(stack.getSize() >= laffResult.stack.getSize()) {
 			return true;
-		} else {
-			laffResult.remaining.size();
-			remaining.size();
+		} else if(stack.getSize() == laffResult.stack.getSize()) {
+			return container.getWeight() >= laffResult.container.getWeight();
 		}
+		
 		return false;
-	}
-
-	public List<Stackable> getRemainingBoxes() {
-		return remaining;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return stack.getLevels().isEmpty();
+		return stack.isEmpty();
 	}
 
 	@Override
 	public String toString() {
 		return "LaffResult [stack=" + stack + "]";
+	}
+
+	@Override
+	public boolean containsLastStackable() {
+		return last;
 	}
 
 

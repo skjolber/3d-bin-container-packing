@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.laff.bruteforce;
+package com.github.skjolber.packing.packer.bruteforce;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -19,7 +19,11 @@ import com.github.skjolber.packing.old.BoxItem;
 import com.github.skjolber.packing.old.Level;
 import com.github.skjolber.packing.old.Placement;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.test.BouwkampCode;
+import com.github.skjolber.packing.test.BouwkampCodeDirectory;
+import com.github.skjolber.packing.test.BouwkampCodeLine;
+import com.github.skjolber.packing.test.BouwkampCodes;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 
 import static com.github.skjolber.packing.test.assertj.StackablePlacementAssert.assertThat;
 
@@ -46,8 +50,6 @@ public class BruteForcePackagerTest {
 		assertNotNull(fits);
 		
 		List<StackPlacement> placements = fits.getStack().getPlacements();
-
-		System.out.println(fits.getStack().getPlacements());
 
 		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
 		assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("B");
@@ -119,6 +121,56 @@ public class BruteForcePackagerTest {
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
-		System.out.println(fits.getStack().getPlacements());
 	}
+	
+	@Test
+	public void testSimpleImperfectSquaredRectangles() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimpleImperfectSquaredRectangles());
+	}
+	
+	@Test
+	public void testSimpleImperfectSquaredSquares() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimpleImperfectSquaredSquares());
+	}
+	
+	@Test
+	public void testSimplePerfectSquaredRectangles() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimplePerfectSquaredRectangles());
+	}
+	
+	protected void pack(List<BouwkampCodes> codes) {
+		for (BouwkampCodes bouwkampCodes : codes) {
+			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
+				pack(bouwkampCode);
+			}
+		}
+	}
+
+	protected void pack(BouwkampCode bouwkampCode) {
+		List<Container> containers = new ArrayList<>();
+		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotate(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth() * bouwkampCode.getDepth(), null).withStack(new DefaultStack()).build());
+
+		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
+
+		List<StackableItem> products = new ArrayList<>();
+
+		for (BouwkampCodeLine bouwkampCodeLine : bouwkampCode.getLines()) {
+			List<Integer> squares = bouwkampCodeLine.getSquares();
+			
+			for(Integer square : squares) {
+				products.add(new StackableItem(Box.newBuilder().withName(Integer.toString(square)).withRotateXYZ(square, square, 1).withWeight(1).build(), 1));
+			}
+		}
+
+		Container fits = packager.pack(products);
+		assertNotNull(bouwkampCode.getName(), fits);
+		assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), products.size());
+	}
+	
 }

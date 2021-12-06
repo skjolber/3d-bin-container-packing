@@ -2,9 +2,7 @@ package com.github.skjolber.packing.test.assertj;
 
 import java.util.Objects;
 
-import org.assertj.core.api.AbstractObjectAssert;
 
-import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
 

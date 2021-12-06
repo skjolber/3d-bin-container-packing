@@ -69,4 +69,9 @@ public class DefaultStack extends Stack {
 		return entries.isEmpty();
 	}
 	
+	@Override
+	public int getSize() {
+		return entries.size();
+	}
+	
 }

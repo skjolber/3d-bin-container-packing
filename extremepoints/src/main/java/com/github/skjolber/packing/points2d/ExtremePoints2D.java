@@ -1281,7 +1281,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		return maxPointArea;
 	}
 
-	public void reset() {
+	public void redo() {
 		values.clear();
 		placements.clear();
 		
@@ -1292,6 +1292,6 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 	public void reset(int dx, int dy, int dz) {
 		setSize(dx, dy);
 		
-		reset();
+		redo();
 	}
 }

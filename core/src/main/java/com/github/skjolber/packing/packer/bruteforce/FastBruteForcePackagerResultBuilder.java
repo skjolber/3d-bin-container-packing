@@ -9,18 +9,18 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
 
-public class BruteForcePackagerResultBuilder extends PackagerResultBuilder<BruteForcePackagerResultBuilder> {
+public class FastBruteForcePackagerResultBuilder extends PackagerResultBuilder<FastBruteForcePackagerResultBuilder> {
 
-	private AbstractBruteForcePackager packager;
+	private FastBruteForcePackager packager;
 
 	private int checkpointsPerDeadlineCheck = 1;
 	
-	public BruteForcePackagerResultBuilder withPackager(AbstractBruteForcePackager packager) {
+	public FastBruteForcePackagerResultBuilder withPackager(FastBruteForcePackager packager) {
 		this.packager = packager;
 		return this;
 	}
 
-	public BruteForcePackagerResultBuilder withCheckpointsPerDeadlineCheck(int n) {
+	public FastBruteForcePackagerResultBuilder withCheckpointsPerDeadlineCheck(int n) {
 		this.checkpointsPerDeadlineCheck = n;
 		return this;
 	}
