@@ -26,7 +26,17 @@ public abstract class Point2D {
 		
 		@Override
 		public int compare(Point2D o1, Point2D o2) {
-			return Integer.compare(o1.minX, o2.minX);
+			int compare = Integer.compare(o1.minX, o2.minX);
+			if(compare == 0) {
+				compare = Integer.compare(o2.maxX, o1.maxX);
+				if(compare == 0) {
+					boolean o1XSupportPoint2D = o1 instanceof XSupportPoint2D;
+					boolean o2XSupportPoint2D = o2 instanceof XSupportPoint2D;
+					
+					return Boolean.compare(o1XSupportPoint2D, o2XSupportPoint2D);
+				}
+			}
+			return compare;
 		}
 	};
 
@@ -34,7 +44,17 @@ public abstract class Point2D {
 		
 		@Override
 		public int compare(Point2D o1, Point2D o2) {
-			return Integer.compare(o1.minY, o2.minY);
+			int compare = Integer.compare(o1.minY, o2.minY);
+			if(compare == 0) {
+				compare = Integer.compare(o2.maxY, o1.maxY);
+				if(compare == 0) {
+					boolean o1YSupportPoint2D = o1 instanceof YSupportPoint2D;
+					boolean o2YSupportPoint2D = o2 instanceof YSupportPoint2D;
+					
+					return Boolean.compare(o1YSupportPoint2D, o2YSupportPoint2D);
+				}
+			}
+			return compare;
 		}
 	};
 	
@@ -200,6 +220,17 @@ public abstract class Point2D {
 
 	public boolean containsInPlane(Point2D point) {
 		return point.swallowsMinY(minY, maxY) && point.swallowsMinX(minX, maxX);
+	}
+	public boolean eclipses(Point2D point) {
+		return eclipsesX(point) && eclipsesY(point);
+	}
+
+	public boolean eclipsesX(Point2D point) {
+		return minX <= point.getMinX() && point.getMaxX() <= maxX;
+	}
+
+	public boolean eclipsesY(Point2D point) {
+		return minY <= point.getMinY() && point.getMaxY() <= maxY;
 	}
 
 	public long getArea() {

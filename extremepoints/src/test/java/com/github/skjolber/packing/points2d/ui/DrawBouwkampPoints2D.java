@@ -16,11 +16,11 @@ public class DrawBouwkampPoints2D {
 		
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 		
-		List<BouwkampCodes> target = directory.getAll();
+		List<BouwkampCodes> target = directory.getSimplePerfectSquaredRectangles();
 		for(BouwkampCodes codes : target) {
 			System.out.println(codes.getSource());
 			for(BouwkampCode c : codes.getCodes()) {
-				if(codes.getSource().contains("o15siss.bkp") && c.getName().equals("41A")) {
+				if(codes.getSource().contains("o12spsr.bkp") && c.getName().equals("106x99A")) {
 					DefaultExtremePoints2D convert2d = converter.convert2D(c, 1);
 					
 					DrawPoints2D.show(convert2d);
@@ -31,3 +31,6 @@ public class DrawBouwkampPoints2D {
 		}
 	}
 }
+
+
+

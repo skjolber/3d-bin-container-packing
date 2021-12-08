@@ -5,7 +5,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.jupiter.api.Test;
 
@@ -147,11 +151,13 @@ public class BruteForcePackagerTest {
 	protected void pack(List<BouwkampCodes> codes) {
 		for (BouwkampCodes bouwkampCodes : codes) {
 			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
+				long timestamp = System.currentTimeMillis();
 				pack(bouwkampCode);
+				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.currentTimeMillis() - timestamp));
 			}
 		}
 	}
-
+	
 	protected void pack(BouwkampCode bouwkampCode) {
 		List<Container> containers = new ArrayList<>();
 		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotate(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth() * bouwkampCode.getDepth(), null).withStack(new DefaultStack()).build());
@@ -160,17 +166,28 @@ public class BruteForcePackagerTest {
 
 		List<StackableItem> products = new ArrayList<>();
 
+		List<Integer> squares = new ArrayList<>(); 
 		for (BouwkampCodeLine bouwkampCodeLine : bouwkampCode.getLines()) {
-			List<Integer> squares = bouwkampCodeLine.getSquares();
-			
-			for(Integer square : squares) {
-				products.add(new StackableItem(Box.newBuilder().withName(Integer.toString(square)).withRotateXYZ(square, square, 1).withWeight(1).build(), 1));
-			}
+			squares.addAll(bouwkampCodeLine.getSquares());
 		}
+
+		// map similar items to the same stack item - this actually helps a lot
+		Map<Integer, Integer> frequencyMap = new HashMap<>();
+		squares.forEach(word ->
+        	frequencyMap.merge(word, 1, (v, newV) -> v + newV)
+		);
+		
+		for (Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
+			int square = entry.getKey();
+			int count = entry.getValue();
+			products.add(new StackableItem(Box.newBuilder().withName(Integer.toString(square)).withRotateXYZ(square, square, 1).withWeight(1).build(), count));
+		}
+
+		Collections.shuffle(products);
 
 		Container fits = packager.pack(products);
 		assertNotNull(bouwkampCode.getName(), fits);
-		assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), products.size());
+		assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), squares.size());
 	}
-	
+
 }

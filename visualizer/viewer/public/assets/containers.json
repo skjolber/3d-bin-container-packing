@@ -4,11 +4,11 @@
     "plugins" : [ ],
     "id" : "Container",
     "name" : "Container",
-    "dx" : 48,
-    "dy" : 48,
+    "dx" : 185,
+    "dy" : 183,
     "dz" : 1,
-    "loadDx" : 48,
-    "loadDy" : 48,
+    "loadDx" : 185,
+    "loadDy" : 183,
     "loadDz" : 1,
     "stack" : {
       "step" : 1,
@@ -22,250 +22,170 @@
         "stackable" : {
           "step" : 2,
           "plugins" : [ ],
-          "id" : "28",
-          "name" : "28",
-          "dx" : 28,
-          "dy" : 28,
+          "id" : "33",
+          "name" : "33",
+          "dx" : 33,
+          "dy" : 33,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 3,
         "plugins" : [ ],
-        "x" : 0,
-        "y" : 28,
+        "x" : 33,
+        "y" : 0,
         "z" : 0,
         "stackable" : {
           "step" : 3,
           "plugins" : [ ],
-          "id" : "20",
-          "name" : "20",
-          "dx" : 20,
-          "dy" : 20,
+          "id" : "47",
+          "name" : "47",
+          "dx" : 47,
+          "dy" : 47,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 4,
         "plugins" : [ ],
-        "x" : 20,
-        "y" : 28,
+        "x" : 80,
+        "y" : 0,
         "z" : 0,
         "stackable" : {
           "step" : 4,
           "plugins" : [ ],
-          "id" : "8",
-          "name" : "8",
-          "dx" : 8,
-          "dy" : 8,
+          "id" : "105",
+          "name" : "105",
+          "dx" : 105,
+          "dy" : 105,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 5,
         "plugins" : [ ],
-        "x" : 20,
-        "y" : 36,
+        "x" : 0,
+        "y" : 47,
         "z" : 0,
         "stackable" : {
           "step" : 5,
           "plugins" : [ ],
-          "id" : "12",
-          "name" : "12",
-          "dx" : 12,
-          "dy" : 12,
+          "id" : "80",
+          "name" : "80",
+          "dx" : 80,
+          "dy" : 80,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 6,
         "plugins" : [ ],
-        "x" : 28,
-        "y" : 0,
+        "x" : 0,
+        "y" : 127,
         "z" : 0,
         "stackable" : {
           "step" : 6,
           "plugins" : [ ],
-          "id" : "20",
-          "name" : "20",
-          "dx" : 20,
-          "dy" : 20,
+          "id" : "5",
+          "name" : "5",
+          "dx" : 5,
+          "dy" : 5,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 7,
         "plugins" : [ ],
-        "x" : 28,
-        "y" : 20,
+        "x" : 80,
+        "y" : 105,
         "z" : 0,
         "stackable" : {
           "step" : 7,
           "plugins" : [ ],
-          "id" : "7",
-          "name" : "7",
-          "dx" : 7,
-          "dy" : 7,
+          "id" : "27",
+          "name" : "27",
+          "dx" : 27,
+          "dy" : 27,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 8,
         "plugins" : [ ],
-        "x" : 28,
-        "y" : 27,
+        "x" : 5,
+        "y" : 127,
         "z" : 0,
         "stackable" : {
           "step" : 8,
           "plugins" : [ ],
-          "id" : "9",
-          "name" : "9",
-          "dx" : 9,
-          "dy" : 9,
+          "id" : "14",
+          "name" : "14",
+          "dx" : 14,
+          "dy" : 14,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 9,
         "plugins" : [ ],
-        "x" : 32,
-        "y" : 36,
+        "x" : 19,
+        "y" : 132,
         "z" : 0,
         "stackable" : {
           "step" : 9,
           "plugins" : [ ],
-          "id" : "5",
-          "name" : "5",
-          "dx" : 5,
-          "dy" : 5,
+          "id" : "51",
+          "name" : "51",
+          "dx" : 51,
+          "dy" : 51,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 10,
         "plugins" : [ ],
-        "x" : 32,
-        "y" : 41,
+        "x" : 0,
+        "y" : 141,
         "z" : 0,
         "stackable" : {
           "step" : 10,
           "plugins" : [ ],
-          "id" : "7",
-          "name" : "7",
-          "dx" : 7,
-          "dy" : 7,
+          "id" : "19",
+          "name" : "19",
+          "dx" : 19,
+          "dy" : 19,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 11,
         "plugins" : [ ],
-        "x" : 35,
-        "y" : 20,
+        "x" : 19,
+        "y" : 127,
         "z" : 0,
         "stackable" : {
           "step" : 11,
           "plugins" : [ ],
-          "id" : "5",
-          "name" : "5",
-          "dx" : 5,
-          "dy" : 5,
+          "id" : "56",
+          "name" : "56",
+          "dx" : 56,
+          "dy" : 56,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 12,
         "plugins" : [ ],
-        "x" : 35,
-        "y" : 25,
+        "x" : 107,
+        "y" : 105,
         "z" : 0,
         "stackable" : {
           "step" : 12,
           "plugins" : [ ],
-          "id" : "2",
-          "name" : "2",
-          "dx" : 2,
-          "dy" : 2,
-          "dz" : 1,
-          "type" : "box"
-        }
-      }, {
-        "step" : 13,
-        "plugins" : [ ],
-        "x" : 37,
-        "y" : 25,
-        "z" : 0,
-        "stackable" : {
-          "step" : 13,
-          "plugins" : [ ],
-          "id" : "3",
-          "name" : "3",
-          "dx" : 3,
-          "dy" : 3,
-          "dz" : 1,
-          "type" : "box"
-        }
-      }, {
-        "step" : 14,
-        "plugins" : [ ],
-        "x" : 37,
-        "y" : 28,
-        "z" : 0,
-        "stackable" : {
-          "step" : 14,
-          "plugins" : [ ],
-          "id" : "11",
-          "name" : "11",
-          "dx" : 11,
-          "dy" : 11,
-          "dz" : 1,
-          "type" : "box"
-        }
-      }, {
-        "step" : 15,
-        "plugins" : [ ],
-        "x" : 37,
-        "y" : 39,
-        "z" : 0,
-        "stackable" : {
-          "step" : 15,
-          "plugins" : [ ],
-          "id" : "2",
-          "name" : "2",
-          "dx" : 2,
-          "dy" : 2,
-          "dz" : 1,
-          "type" : "box"
-        }
-      }, {
-        "step" : 16,
-        "plugins" : [ ],
-        "x" : 39,
-        "y" : 39,
-        "z" : 0,
-        "stackable" : {
-          "step" : 16,
-          "plugins" : [ ],
-          "id" : "9",
-          "name" : "9",
-          "dx" : 9,
-          "dy" : 9,
-          "dz" : 1,
-          "type" : "box"
-        }
-      }, {
-        "step" : 17,
-        "plugins" : [ ],
-        "x" : 40,
-        "y" : 20,
-        "z" : 0,
-        "stackable" : {
-          "step" : 17,
-          "plugins" : [ ],
-          "id" : "8",
-          "name" : "8",
-          "dx" : 8,
-          "dy" : 8,
+          "id" : "78",
+          "name" : "78",
+          "dx" : 78,
+          "dy" : 78,
           "dz" : 1,
           "type" : "box"
         }

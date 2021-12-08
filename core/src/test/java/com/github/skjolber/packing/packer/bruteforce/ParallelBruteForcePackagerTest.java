@@ -132,7 +132,7 @@ public class ParallelBruteForcePackagerTest {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
 		pack(directory.getSimpleImperfectSquaredSquares());
-	}
+	}	
 	
 	@Test
 	public void testSimplePerfectSquaredRectangles() {

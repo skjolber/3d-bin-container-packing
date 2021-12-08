@@ -29,6 +29,23 @@ public class Default3DPlanePoint3D extends Point3D implements XZPlanePoint3D, YZ
 		this.yzPlane = yzPlane;
 		this.xzPlane = xzPlane;
 		this.xyPlane = xyPlane;
+		if(minX != 0 | minY != 0 || minZ != 0) {
+			if(yzPlane.getAbsoluteX() != 0 || yzPlane.getAbsoluteY() != 0 || yzPlane.getAbsoluteZ() != 0) {
+				if(intersects(yzPlane)) {
+					throw new RuntimeException(this + " " + yzPlane);
+				}
+			}
+			if(xzPlane.getAbsoluteX() != 0 || xzPlane.getAbsoluteY() != 0 || xzPlane.getAbsoluteZ() != 0) {
+				if(intersects(xzPlane)) {
+					throw new RuntimeException(this + " " + xzPlane);
+				}
+			}
+			if(xyPlane.getAbsoluteX() != 0 || xyPlane.getAbsoluteY() != 0 || xyPlane.getAbsoluteZ() != 0) {
+				if(intersects(xyPlane)) {
+					throw new RuntimeException(this + " " + xyPlane);
+				}
+			}
+		}
 	}
 
 	public int getSupportedYZPlaneMinY() {

@@ -116,10 +116,9 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 
 		stackIndex = 0;
 
-		addFirstPoint();
-		stackItems.get(0).values.addAll(values);
-		
 		loadCurrent();
+
+		addFirstPoint();
 	}
 	
 }

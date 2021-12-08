@@ -17,7 +17,6 @@ public class DefaultXYPlanePoint3D extends Point3D implements XYPlanePoint3D  {
 			Placement3D xyPlane
 			) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
-		
 		this.xyPlane = xyPlane;
 	}
 

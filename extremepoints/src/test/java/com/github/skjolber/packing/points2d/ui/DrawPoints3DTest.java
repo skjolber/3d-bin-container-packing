@@ -49,10 +49,10 @@ public class DrawPoints3DTest {
 
 		int offset = 2;
 		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - offset);
-		extremePoints.add(extremePoints.getValues().size() - offset, createPlacement(extremePoint, 50, 50, 1));
+		//extremePoints.add(extremePoints.getValues().size() - offset, createPlacement(extremePoint, 50, 50, 1));
 		
-		extremePoint = extremePoints.getValues().get(6);
-		extremePoints.add(6, createPlacement(extremePoint, 50, 50, 1));
+		//extremePoint = extremePoints.getValues().get(6);
+//		extremePoints.add(6, createPlacement(extremePoint, 50, 50, 1));
 
 		System.out.println("xyz:");
 		

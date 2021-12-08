@@ -46,7 +46,7 @@ public class BouwkampConverter {
 	
 				offset += factoredSquare;
 	
-				nextY = points.get(offset, value.getMinY());
+				nextY = points.findPoint(offset, value.getMinY());
 				
 				count++;
 				

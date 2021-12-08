@@ -90,8 +90,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				}
 			} while (true);
 		} while (rotator.nextPermutation() != -1);
-
-		System.out.println("Got no result for " + Thread.currentThread().getName());
 		
 		return result;
 	}

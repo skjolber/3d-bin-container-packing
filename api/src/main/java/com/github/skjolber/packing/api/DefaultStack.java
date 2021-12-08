@@ -19,6 +19,11 @@ public class DefaultStack extends Stack {
 	}
 
 	public void add(StackPlacement e) {
+		for(StackPlacement stackPlacement : entries) {
+			if(stackPlacement.intersects(e)) {
+				throw new RuntimeException(e + " intersects " + stackPlacement);
+			}
+		}
 		entries.add(e);
 	}
 	
