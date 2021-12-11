@@ -84,7 +84,7 @@
 			</dependency>
 			<dependency>
 				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-				<artifactId>extremepoints</artifactId>
+				<artifactId>extreme-points</artifactId>
 				<version>${project.version}</version>
 			</dependency>  	
 			<dependency>
@@ -187,7 +187,7 @@
 	<modules>
 		<module>api</module>
 		<module>test</module>
-		<module>extremepoints</module>
+		<module>extreme-points</module>
 		<module>core</module>
 		<module>visualizer/api</module>
 		<module>visualizer/algorithm</module>

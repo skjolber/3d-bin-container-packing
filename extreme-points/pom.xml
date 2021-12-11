@@ -7,7 +7,7 @@
 		<version>1.2.15-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
-	<artifactId>extremepoints</artifactId>
+	<artifactId>extreme-points</artifactId>
 
 	<properties>
 		<module-name>com.github.skjolber.packing.extremepoints</module-name>
