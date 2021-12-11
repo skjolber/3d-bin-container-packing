@@ -8,29 +8,59 @@ import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.points2d.Point2D;
+import com.github.skjolber.packing.points2d.XSupportPoint2D;
 
 public abstract class Point3D extends Point2D {
 
+	public static final Comparator<Point3D> X_COMPARATOR = new Comparator<Point3D>() {
+		
+		@Override
+		public int compare(Point3D o1, Point3D o2) {
+			int compare = Integer.compare(o1.minX, o2.minX);
+			if(compare == 0) {
+				return Integer.compare(o2.maxX, o1.maxX);
+			}
+			return compare;
+		}
+	};
+
+	public static final Comparator<Point3D> Y_COMPARATOR = new Comparator<Point3D>() {
+		
+		@Override
+		public int compare(Point3D o1, Point3D o2) {
+			int compare = Integer.compare(o1.minY, o2.minY);
+			if(compare == 0) {
+				return Integer.compare(o2.maxY, o1.maxY);
+			}
+			return compare;
+		}
+	};
+	
 	public static final Comparator<Point3D> Z_COMPARATOR = new Comparator<Point3D>() {
 		
 		@Override
 		public int compare(Point3D o1, Point3D o2) {
-			return Integer.compare(o1.minZ, o2.minZ);
+			int compare = Integer.compare(o1.minZ, o2.minZ);
+			if(compare == 0) {
+				return Integer.compare(o2.maxZ, o1.maxZ);
+			}
+			return compare;
 		}
 	};
+
 	
 	public static final Comparator<Point3D> COMPARATOR = new Comparator<Point3D>() {
 		
 		@Override
 		public int compare(Point3D o1, Point3D o2) {
-			int compare = Integer.compare(o1.minX, o2.minX);
+			int compare = X_COMPARATOR.compare(o1, o2);
 
 			if(compare == 0) {
-				return Integer.compare(o1.minY, o2.minY);
+				compare = Y_COMPARATOR.compare(o1, o2);
 			}
 			
 			if(compare == 0) {
-				compare= Integer.compare(o1.minZ, o2.minZ);
+				return Z_COMPARATOR.compare(o1, o2);
 			}
 			return compare;
 		}
@@ -260,6 +290,22 @@ public abstract class Point3D extends Point2D {
 		return volume;
 	}
 	
+	public boolean eclipses(Point3D point) {
+		return eclipsesX(point) && eclipsesY(point) && eclipsesZ(point);
+	}
+
+	public boolean eclipsesX(Point2D point) {
+		return minX <= point.getMinX() && point.getMaxX() <= maxX;
+	}
+
+	public boolean eclipsesY(Point2D point) {
+		return minY <= point.getMinY() && point.getMaxY() <= maxY;
+	}
+
+	public boolean eclipsesZ(Point3D point) {
+		return minZ <= point.getMinZ() && point.getMaxZ() <= maxZ;
+	}
+
 	public abstract List<Placement3D> getPlacements3D();
 	
 	public abstract Point3D clone();

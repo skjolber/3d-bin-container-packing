@@ -95,10 +95,33 @@ public abstract class Point2D {
 		this.area = (long)dx * (long)dy;
 	}
 
+	//
+	// vmaxY |                    
+	//       |          
+	//  yy   |        ║ 
+	//       |        ║
+	//       |        ║ 
+	//       |        ║   <-- support for a range of Y (at minX)
+	//       |        ║
+	//       |        ║
+	//  minY |        x
+	//       |
+	//       |-----------------------------
+	//                minX  
+	
 	public boolean isYSupport(int y) {
 		return false;
 	}
 
+	//       |
+	//       |
+	//       |    
+	//  minY |    x════════════════         <---- support for a range of x (at minY)
+	//       |                     
+	//       |                    
+	//       |--------------------------
+	//           minX             smaxX
+	
 	public boolean isXSupport(int x) {
 		return false;
 	}

@@ -30,6 +30,10 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 	protected Placement3D containerPlacement;
 	protected final boolean cloneOnConstrain;
+	
+	protected boolean floatingPlacementXY = false;
+	protected boolean floatingPlacementXZ = false;
+	protected boolean floatingPlacementYZ = false;
 
 	public ExtremePoints3D(int dx, int dy, int dz) {
 		this(dx, dy, dz, false);
@@ -557,17 +561,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		boolean xyEdge = source.isXYPlaneEdgeX(xx);
 		boolean xzEdge = source.isXZPlaneEdgeX(xx);
 				
-		
-		
-		
-		// ikke legg til punkter med høyere maks enn original-punktet
-		
-		// projeksering bør holde for å finne "punkter som blir synlige" 
-		
-		
-		
-		
-		
 		int maxX = projectPositiveX(xx, source.getMinY(), source.getMinZ());
 		int maxY = projectPositiveY(xx, source.getMinY(), source.getMinZ());
 		int maxZ = projectPositiveZ(xx, source.getMinY(), source.getMinZ());
@@ -585,7 +578,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			int z = source.getMinZ(); 
 			
 			if(x <= maxX && y <= maxY && z <= maxZ) {
-				added.add(new Default3DPlanePoint3D(
+				
+				Default3DPlanePoint3D supported = new Default3DPlanePoint3D(
 						x, y, z,
 						maxX, maxY, maxZ,
 						
@@ -598,8 +592,9 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 						
 						// xy plane
 						xyPlane.getXYPlane()
-					)
-				);
+					);
+				
+				added.add(supported);
 			}
 		} else if(xy) {
 
@@ -2182,6 +2177,34 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			}
 		}
 		return -1;
+	}
+
+	private void addOutOfBoundsXX(Point3D source, Point3D dx) {
+		if(dx.getMinX() < source.getMinX() || dx.getMaxX() > source.getMaxX() || dx.getMaxY() > source.getMaxY() || dx.getMaxZ() > source.getMaxZ() ) {
+			// outside the known limits of the source point
+
+			int maxX = constrainX(dx.getMinX(), dx.getMaxY(), dx.getMinZ());
+			int maxY = constrainY(dx.getMaxX(), dx.getMinY(), dx.getMinZ());
+			int maxZ = constrainZ(dx.getMaxX(), dx.getMinY(), dx.getMinZ());
+
+			if(maxY < dx.getMaxY() && maxX < dx.getMaxX()) {
+				// split in two
+
+				addX.add(dx.clone(maxX, dx.getMaxY()));
+				addX.add(dx.clone(dx.getMaxX(), maxY));
+			} else {
+				// just constrain
+				if(maxY < dx.getMaxY()) {
+					dx.setMaxY(maxY);
+				}
+				if(maxX < dx.getMaxX()) {
+					dx.setMaxX(maxX);
+				}
+				addX.add(dx);
+			}
+		} else {
+			addX.add(dx);
+		}
 	}
 
 }
