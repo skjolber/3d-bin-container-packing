@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.points.BouwkampConverter;
 import com.github.skjolber.packing.points.DefaultExtremePoints3D;
-import com.github.skjolber.packing.points2d.ui.DrawPoints2D;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.BouwkampCodes;
@@ -32,7 +31,6 @@ public class BouwcampCodesExtremePoints3DTest {
 				
 				DefaultExtremePoints3D yzPoints = converter.convert3DYZPlane(bkpLine, 1);
 				assertEquals(c.getSource() + " " + bkpLine.getName(), 0, yzPoints.getValues().size());
-				
 			}
 		}
 	}

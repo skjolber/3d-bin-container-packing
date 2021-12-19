@@ -21,7 +21,7 @@ public class DrawBouwkampPoints2D {
 			System.out.println(codes.getSource());
 			for(BouwkampCode c : codes.getCodes()) {
 				if(codes.getSource().contains("o12spsr.bkp") && c.getName().equals("106x99A")) {
-					DefaultExtremePoints2D convert2d = converter.convert2D(c, 1);
+					DefaultExtremePoints2D convert2d = converter.convert2D(c, 10);
 					
 					DrawPoints2D.show(convert2d);
 					

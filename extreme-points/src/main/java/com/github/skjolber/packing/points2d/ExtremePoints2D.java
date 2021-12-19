@@ -1,14 +1,10 @@
 package com.github.skjolber.packing.points2d;
 
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement2D;
-import com.github.skjolber.packing.api.Placement3D;
-import com.github.skjolber.packing.points3d.Default3DPlanePoint3D;
-import com.github.skjolber.packing.points3d.DefaultPlacement3D;
 
 /**
  * 
@@ -76,12 +72,6 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		
 		boolean hasSupport = source instanceof XSupportPoint2D || source instanceof YSupportPoint2D;
 
-		System.out.println();
-		System.out.println("Add " + index + " at " + placement.getAbsoluteX() + "x" + placement.getAbsoluteY());
-		for(Point2D p : values) {
-			System.out.println(" " + p);
-		}
-
 		int xx = source.getMinX() + boxDx;
 		int yy = source.getMinY() + boxDy;
 		
@@ -116,12 +106,6 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		
 		boolean ySupport = source.isYSupport(yy); // i.e. is source minX also minX at YY?
 
-		int maxX = -1;
-		int maxYForMaxX = -1;
-		
-		int maxY = -1;
-		int maxXForMaxY = -1;
-		
 		//    y
 		//    |                          |
 		//    |                          |
@@ -152,53 +136,18 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			boolean swallowsMinY = point.swallowsMinY(placement.getAbsoluteY(), placement.getAbsoluteEndY());
 			
 			if(swallowsMinX && swallowsMinY) { // b
-				System.out.println("Swallowed: " + point);
 				swallowed.add(point);
-				
-				if(point.getMaxX() >= xx) {
-					if(maxY == -1 || point.getMaxY() > maxY || (point.getMaxY() == maxY && point.getMaxX() > maxXForMaxY)) {
-						maxY = point.getMaxY();
-						maxXForMaxY = point.getMaxX();
-					}
-				}
-				
-				if(point.getMaxY() >= yy) {
-					if(maxX == -1 || point.getMaxX() > maxX || (point.getMaxX() == maxX && point.getMaxY() > maxYForMaxX)) {
-						maxX = point.getMaxX();
-						maxYForMaxX = point.getMaxY();
-					}
-				}
-
 			} else if(swallowsMinX && !xSupport && point.getMinY() < placement.getAbsoluteY() && placement.getAbsoluteY() <= point.getMaxY()) { // c
 				// shadowed (at negative) y
 				moveToYY.add(point);
-				
-				if(point.getMaxX() >= xx) {
-					if(maxY == -1 || point.getMaxY() > maxY || (point.getMaxY() == maxY && point.getMaxX() > maxXForMaxY)) {
-						maxY = point.getMaxY();
-						maxXForMaxY = point.getMaxX();
-					}
-				}
-
 			} else if(swallowsMinY && !ySupport && point.getMinX() < placement.getAbsoluteX() &&  placement.getAbsoluteX() <= point.getMaxX()) { // a
 				// shadowed (at negative) x
 				moveToXX.add(point);
-				
-				if(point.getMaxY() >= yy) {
-					if(maxX == -1 || point.getMaxX() > maxX || (point.getMaxX() == maxX && point.getMaxY() > maxYForMaxX)) {
-						maxX = point.getMaxX();
-						maxYForMaxX = point.getMaxY();
-					}
-				}
 			}
 		}
 		
-		System.out.println("MaxX " + maxX + "x" + maxYForMaxX);
-		System.out.println("MaxY " + maxXForMaxY + "x" + maxY);
-		
 		// project swallowed or shadowed to xx
 		if(!ySupport) {
-			System.out.println("No y support");
 
 			// not enough y support
 			// 
@@ -236,30 +185,22 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			
 			Placement2D projectNegativeX = projectNegativeX(source.getMinX(), yy);
 			if(projectNegativeX == null) {
-				System.out.println("Negative x for yy limit at container border");
 				for(Point2D point : values) {
 					if(point.getMinX() < source.getMinX() && point.getMinY() <= yy && yy <= point.getMaxY() ) {
 						negativeMoveToYY.add(point);
-						System.out.println("Negative x for yy found point " + point);
 					}
 				}
 				
 			} else {
-				System.out.println("Negative x for yy limit at " + projectNegativeX);
 				for(Point2D point : values) {
 					if(projectNegativeX.getAbsoluteEndX() < point.getMinX() && point.getMinX() < source.getMinX() && point.getMinY() <= yy && yy <= point.getMaxY() ) {
 						negativeMoveToYY.add(point);
-						System.out.println("Negative x for yy found point " + point);
 					}
 				}
 			}
-
-		} else {
-			System.out.println("Y support");
 		}
 		
 		if(!xSupport) {
-			System.out.println("No X support");
 			// not enough x support
 			//
 			//      |
@@ -302,28 +243,20 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			
 			Placement2D projectNegativeY = projectNegativeY(xx, source.getMinY());
 			if(projectNegativeY == null) {
-				System.out.println("Negative y for xx limit at container border");
 				for(Point2D point : values) {
 					if(point.getMinY() < source.getMinY() && point.getMinX() <= xx && xx <= point.getMaxX() ) {
 						negativeMoveToXX.add(point);
 					}
 				}
 			} else {
-				System.out.println("Negative y for xx limit at " + projectNegativeY);
 				for(Point2D point : values) {
 					if(projectNegativeY.getAbsoluteEndY() < point.getMinY() && point.getMinY() < source.getMinY() && point.getMinX() <= xx && xx <= point.getMaxX() ) {
 						negativeMoveToXX.add(point);
 					}
 				}
 			}
-			
-		} else {
-			System.out.println("X support");
 		}
 		
-		
-		System.out.println("Got " + moveToYY.size() + " shadowed below");
-
 		negativeMoveToYY.addAll(moveToYY);
 		negativeMoveToYY.addAll(swallowed);
 		Collections.sort(negativeMoveToYY, Point2D.COMPARATOR_X_THEN_Y);
@@ -335,6 +268,22 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		deleted.addAll(swallowed);
 		
 		if(!negativeMoveToYY.isEmpty()) {
+			
+			int maxX = -1;
+			int maxYForMaxX = -1;
+			
+			for(Point2D point : negativeMoveToYY) {
+				if(point.getMaxY() >= yy) {
+					if(point.getMaxX() < maxX) {
+						continue;
+					}
+					if(point.getMaxX() != maxX || point.getMaxY() > maxYForMaxX) {
+						maxX = point.getMaxX();
+						maxYForMaxX = point.getMaxY();
+					}
+				}
+			}
+			
 			Point2D previousYY = null;
 
 			for(Point2D p : negativeMoveToYY) {
@@ -378,8 +327,24 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		}
 
 		if(!negativeMoveToXX.isEmpty()) {
+			int maxY = -1;
+			int maxXForMaxY = -1;
+
+			for (Point2D point : negativeMoveToXX) {
+				if(point.getMaxX() >= xx) {
+					if(point.getMaxY() < maxY) {
+						continue;
+					}
+					if(point.getMaxY() != maxY || point.getMaxX() > maxXForMaxY) {
+						maxY = point.getMaxY();
+						maxXForMaxY = point.getMaxX();
+					}
+				}
+			}
+
+
 			Point2D previousXX = null;
-			
+
 			for (Point2D p : negativeMoveToXX) {
 				if(p.getMaxX() >= xx) {
 					if(previousXX == null || previousXX.getMaxX() != p.getMaxX()) {
@@ -395,7 +360,6 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 							} else {
 								Point2D moveX = p.moveX(xx, p.getMinY(), p.getMaxX(), maxY);
 								addXX.add(moveX);
-								
 							}
 						} else {
 							if(split) {
@@ -438,8 +402,6 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			}
 		}
 
-		System.out.println("Add x was " + addXX);
-		
 		for(int i = 0; i < values.size(); i++) {
 			Point2D point2d = values.get(i);
 			
@@ -447,7 +409,6 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			if(hasSupport) {
 				remove = !constrainPositiveMax(point2d, placement);
 			} else {
-				System.out.println("Constrain floating max for " + point2d);
 				remove = !constrainFloatingMax(point2d, placement);
 			}
 			if(remove) {
@@ -481,12 +442,6 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		deleted.clear();
 
 		Collections.sort(values, Point2D.COMPARATOR_X_THEN_Y);
-
-		System.out.println("");
-		System.out.println("Finally " + values.size() + " points");
-		for(Point2D p : values) {
-			System.out.println(" " + p);
-		}
 
 		return !values.isEmpty();
 	}
@@ -524,20 +479,12 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 	}
 	
 	protected void removeEclipsed() {
-		
-		System.out.println("");
-		System.out.println("Before eclipses");
-		for(Point2D p : values) {
-			System.out.println(" " + p);
-		}
-		
 		for(int index = 0; index < values.size(); index++) {
 			Point2D lowest = values.get(index);
 			for (int i = index + 1; i < values.size(); i++) {
 				Point2D p1 = values.get(i);
 
 				if(lowest.eclipses(p1)) {
-					System.out.println("Remove eclipsed " + p1 + " by " + lowest);
 					values.remove(i);
 					i--;
 				}
@@ -569,13 +516,11 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		if(x) {
 			Point2D clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY());
 			addXX.add(clone);
-			System.out.println("Add floating clone x " + clone);
 		}
 		
 		if(y) {
 			Point2D clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1);
 			addYY.add(clone);
-			System.out.println("Add floating clone y " + clone);
 		}
 
 		return !(x || y);

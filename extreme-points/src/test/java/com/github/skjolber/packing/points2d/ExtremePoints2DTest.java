@@ -17,8 +17,6 @@ public class ExtremePoints2DTest {
 		ep.add(0, new DefaultPlacement2D(0, 0, 10, 10));
 		assertThat(ep.getValues()).hasSize(2);
 		
-		System.out.println(ep.getValues());
-		
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(11);
 

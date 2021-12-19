@@ -58,6 +58,10 @@ public class BouwkampConverter {
 					
 					break lines;
 				}
+				
+				if(count == -1) {
+					break lines;
+				}
 			}
 		}
 		
