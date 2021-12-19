@@ -9,7 +9,7 @@ import com.github.skjolber.packing.points3d.Point3D;
 
 public abstract class Point2D {
 	
-	public static final Comparator<Point2D> COMPARATOR = new Comparator<Point2D>() {
+	public static final Comparator<Point2D> COMPARATOR_X_THEN_Y = new Comparator<Point2D>() {
 		
 		@Override
 		public int compare(Point2D o1, Point2D o2) {
@@ -21,7 +21,20 @@ public abstract class Point2D {
 			return x;
 		}
 	};
-	
+
+	public static final Comparator<Point2D> COMPARATOR_Y_THEN_X = new Comparator<Point2D>() {
+		
+		@Override
+		public int compare(Point2D o1, Point2D o2) {
+			int x = Integer.compare(o1.minY, o2.minY);
+
+			if(x == 0) {
+				return Integer.compare(o1.minX, o2.minX);
+			}
+			return x;
+		}
+	};
+
 	public static final Comparator<Point2D> X_COMPARATOR = new Comparator<Point2D>() {
 		
 		@Override
@@ -73,11 +86,11 @@ public abstract class Point2D {
 		super();
 		
 		if(maxX < minX) {
-			throw new IllegalArgumentException("X: "+ maxX + " < " + minX);
+			throw new IllegalArgumentException("MaxX " + maxX + " is less than minX " + minX);
 		}
 
 		if(maxY < minY) {
-			throw new IllegalArgumentException("Y: "+ maxY + " < " + minY);
+			throw new IllegalArgumentException("MaxY " + maxY + " is less than minY " + minY);
 		}
 
 		this.minX = minX;
@@ -95,6 +108,9 @@ public abstract class Point2D {
 		this.area = (long)dx * (long)dy;
 	}
 
+	
+	
+	
 	//
 	// vmaxY |                    
 	//       |          
@@ -113,6 +129,9 @@ public abstract class Point2D {
 		return false;
 	}
 
+	
+	
+	
 	//       |
 	//       |
 	//       |    
@@ -217,9 +236,17 @@ public abstract class Point2D {
 		// not including limits
 		return y1 < minY && minY < y2;
 	}
-	
-	public boolean isShadowedOrSwallowedByX(int min, int max) {
-		return minX < max && maxX > min;
+
+	public boolean isShadowedByX(int min, int max) {
+		return minX < min && maxX > max;
+	}
+
+	public boolean isShadowedByY(int min, int max) {
+		return minY < min && maxY > max;
+	}
+
+	public boolean shadowsOrSwallowsX(int min, int max) {
+		return minX <= max && maxX >= min;
 	}
 
 	public boolean isShadowedOrSwallowedByY(int min, int max) {
@@ -234,6 +261,14 @@ public abstract class Point2D {
 		return min <= minX && minX <= max;
 	}
 
+	public boolean swallowsMaxY(int min, int max) {
+		return min <= maxY && maxY <= max;
+	}
+
+	public boolean swallowsMaxX(int min, int max) {
+		return min <= maxX && maxX <= max;
+	}
+
 	@Override
 	public String toString() {
 		return "Point2D [" + minX + "x" + minY + " " + maxX + "x" + maxY + "]";
@@ -241,9 +276,6 @@ public abstract class Point2D {
 
 	public abstract Point2D clone(int maxX, int maxY);
 
-	public boolean containsInPlane(Point2D point) {
-		return point.swallowsMinY(minY, maxY) && point.swallowsMinX(minX, maxX);
-	}
 	public boolean eclipses(Point2D point) {
 		return eclipsesX(point) && eclipsesY(point);
 	}
@@ -265,5 +297,106 @@ public abstract class Point2D {
 	}
 
 	public abstract List<Placement2D> getPlacements2D();
+
+	//       |                  
+	//       |                  
+	//       |                  
+	//       |   |-------|      
+	//       |   |       |      
+	//       |   |       |      
+	//       |---x=========================
+	//
+	//       |                  
+	//       |                  
+	//       |         |-------|
+	//       |         |       |
+	//       |         |       |
+	//       |         |       |
+	//       |---------x===================
+	//
+	
+	public abstract Point2D moveX(int x, int y, int maxX, int maxY);
+	
+	//       |                  
+	//       |                  
+	//       |                  
+	//       |   |-------|      
+	//       |   |       |      
+	//       |   |       |      
+	//       |---x=========================
+	//
+	//       |      added y support        
+	//       |         |         
+	//       |---------║         
+	//       |         ║         
+	//       |         ║-------|
+	//       |         ║       |
+	//       |         ║       |
+	//       |         ║       |
+	//       |---------x===================
+	//
+
+	public abstract Point2D moveX(int x, int y, int maxX, int maxY, Placement2D ySupport);
+
+	
+	//
+	//       |   ║              
+	//       |   ║              
+	//       |   ║              
+	//       |   ║              
+	//       |   ║              
+	//       |   ║              
+	//       |   ║-------|      
+	//       |   ║       |      
+	//       |   ║       |      
+	//       |---x-------|----------------
+	//
+	//       |   ║              
+	//       |   ║              
+	//       |   ║              
+	//       |   ║---------|      
+	//       |   ║         |      
+	//       |   ║         |      
+	//       |   ║         |      
+	//       |   ║         |      
+	//       |   ║         |      
+	//       |   x---------|      
+	//       |                 
+	//       |                 
+	//       |                 
+	//       |                 
+	//       |---------------------------
+
+	public abstract Point2D moveY(int x, int y, int maxX, int maxY);
+
+	//
+	//       |   ║              
+	//       |   ║              
+	//       |   ║              
+	//       |   ║              
+	//       |   ║              
+	//       |   ║              
+	//       |   ║-------|      
+	//       |   ║       |      
+	//       |   ║       |      
+	//       |---x-------|----------------
+	//
+	//       |   ║              
+	//       |   ║              
+	//       |   ║              
+	//       |   ║---------|      
+	//       |   ║         |      
+	//       |   ║         |      
+	//       |   ║         |      
+	//       |   ║         |      
+	//       |   ║         |      
+	//       |   x===================  <-- added x support
+	//       |                 
+	//       |                 
+	//       |                 
+	//       |                 
+	//       |---------------------------
+
+	public abstract Point2D moveY(int x, int y, int maxX, int maxY, Placement2D xSupport);
 	
 }

@@ -1045,7 +1045,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			Point3D point = values.get(i);
 
 			// Move points swallowed by the placement
-			if(point.isShadowedOrSwallowedByX(source.getMinX(), xx) && point.fitsInYZPlane(placement)) {
+			if(point.shadowsOrSwallowsX(source.getMinX(), xx) && point.fitsInYZPlane(placement)) {
 				if(point.getMaxX() > xx) {
 					// add point on the other side
 					// vertical support

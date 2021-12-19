@@ -181,7 +181,7 @@ public abstract class Point3D extends Point2D {
 		return minZ < min && maxZ > max;
 	}
 	
-	public boolean isShadowedOrSwallowedByX(int min, int max) {
+	public boolean shadowsOrSwallowsX(int min, int max) {
 		return minX < max && maxX > min;
 	}
 

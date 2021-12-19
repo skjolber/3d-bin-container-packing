@@ -95,5 +95,31 @@ public class DefaultXYSupportPoint2D extends Point2D implements XSupportPoint2D,
 		list.add(ySupport);
 		return list;
 	}
+	
+	@Override
+	public Point2D moveY(int x, int y, int maxX, int maxY) {
+		if(y <= ySupport.getAbsoluteEndY()) {
+			return new DefaultYSupportPoint2D(x, y, maxX, maxY, ySupport);
+		}
+		return new DefaultPoint2D(x, y, maxY, maxY);
+	}
+	
+	@Override
+	public Point2D moveX(int x, int y, int maxX, int maxY) {
+		if(x <= xSupport.getAbsoluteEndX()) {
+			return new DefaultXSupportPoint2D(x, y, maxX, maxY, xSupport);
+		}
+		return new DefaultPoint2D(x, y, maxY, maxY);
+	}
 
+	@Override
+	public Point2D moveX(int x, int y, int maxX, int maxY, Placement2D ySupport) {
+		return new DefaultXYSupportPoint2D(x, y, maxX, maxY, xSupport, ySupport);
+	}
+
+	@Override
+	public Point2D moveY(int x, int y, int maxX, int maxY, Placement2D xSupport) {
+		return new DefaultXYSupportPoint2D(x, y, maxX, maxY, xSupport, ySupport);
+	}	
+	
 }

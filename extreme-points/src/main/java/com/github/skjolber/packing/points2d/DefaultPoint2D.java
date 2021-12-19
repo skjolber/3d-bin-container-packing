@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement2D;
+import com.github.skjolber.packing.points3d.Point3D;
 
 public class DefaultPoint2D extends Point2D {
 
@@ -29,6 +30,27 @@ public class DefaultPoint2D extends Point2D {
 	public List<Placement2D> getPlacements2D() {
 		List<Placement2D> list = new ArrayList<>();
 		return list;
-	}		
+	}
+
+	@Override
+	public Point2D moveX(int x, int y, int maxX, int maxY) {
+		return new DefaultPoint2D(x, y, maxX, maxY);
+	}
+
+	@Override
+	public Point2D moveY(int x, int y, int maxX, int maxY) {
+		return new DefaultPoint2D(x, y, maxX, maxY);
+	}
+
+	@Override
+	public Point2D moveX(int x, int y, int maxX, int maxY, Placement2D ySupport) {
+		return new DefaultYSupportPoint2D(x, y, maxY, maxY, ySupport);
+	}
+
+	@Override
+	public Point2D moveY(int x, int y, int maxX, int maxY, Placement2D xSupport) {
+		return new DefaultXSupportPoint2D(x, y, maxX, maxX, xSupport);
+	}
+	
 
 }
