@@ -11,6 +11,7 @@ import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.DefaultContainerStackValue;
 import com.github.skjolber.packing.api.DefaultStack;
+import com.github.skjolber.packing.api.Point2D;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
@@ -19,7 +20,6 @@ import com.github.skjolber.packing.api.StackValuePointFilter;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableFilter;
 import com.github.skjolber.packing.points2d.ExtremePoints2D;
-import com.github.skjolber.packing.points2d.Point2D;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. Only places boxes along the floor of each level.

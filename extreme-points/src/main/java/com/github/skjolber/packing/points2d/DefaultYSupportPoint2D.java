@@ -1,17 +1,18 @@
 package com.github.skjolber.packing.points2d;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement2D;
+import com.github.skjolber.packing.api.Point2D;
+import com.github.skjolber.packing.api.YSupportPoint2D;
 
-public class DefaultYSupportPoint2D extends Point2D implements YSupportPoint2D  {
+public class DefaultYSupportPoint2D<P extends Placement2D> extends Point2D<P> implements YSupportPoint2D  {
 
 	/** range constrained to current minX */
-	private final Placement2D ySupport;
+	private final P ySupport;
 	
-	public DefaultYSupportPoint2D(int minX, int minY, int maxX, int maxY, Placement2D ySupport) {
+	public DefaultYSupportPoint2D(int minX, int minY, int maxX, int maxY, P ySupport) {
 		super(minX, minY, maxX, maxY);
 		this.ySupport = ySupport;
 	}
@@ -40,8 +41,8 @@ public class DefaultYSupportPoint2D extends Point2D implements YSupportPoint2D  
 		return ySupport.getAbsoluteEndY() == y - 1;
 	}
 	
-	public Point2D clone(int maxX, int maxY) {
-		return new DefaultYSupportPoint2D(minX, minY, maxX, maxY, ySupport);
+	public Point2D<P> clone(int maxX, int maxY) {
+		return new DefaultYSupportPoint2D<>(minX, minY, maxX, maxY, ySupport);
 	}
 
 	@Override
@@ -50,36 +51,36 @@ public class DefaultYSupportPoint2D extends Point2D implements YSupportPoint2D  
 	}
 
 	@Override
-	public List<Placement2D> getPlacements2D() {
-		List<Placement2D> list = new ArrayList<>();
+	public List<P> getPlacements2D() {
+		List<P> list = new ArrayList<>();
 		list.add(ySupport);
 		return list;
 	}
 	
 	@Override
-	public Point2D moveY(int x, int y, int maxX, int maxY) {
+	public Point2D<P> moveY(int y, int maxX, int maxY) {
 		if(y <= ySupport.getAbsoluteEndY()) {
-			return new DefaultYSupportPoint2D(x, y, maxX, maxY, ySupport);
+			return new DefaultYSupportPoint2D<P>(minX, y, maxX, maxY, ySupport);
 		}
-		return new DefaultPoint2D(x, y, maxY, maxY);
+		return new DefaultPoint2D<P>(minX, y, maxX, maxY);
 	}
 
 	@Override
-	public Point2D moveY(int x, int y, int maxX, int maxY, Placement2D xSupport) {
+	public Point2D<P> moveY(int y, int maxX, int maxY, P xSupport) {
 		if(y <= ySupport.getAbsoluteEndY()) {
-			return new DefaultXYSupportPoint2D(x, y, maxX, maxY, xSupport, ySupport);
+			return new DefaultXYSupportPoint2D<>(minX, y, maxX, maxY, xSupport, ySupport);
 		}
-		return new DefaultXSupportPoint2D(x, y, maxX, maxY, xSupport);
+		return new DefaultXSupportPoint2D<>(minX, y, maxX, maxY, xSupport);
 	}	
 	
 	@Override
-	public Point2D moveX(int x, int y, int maxX, int maxY, Placement2D ySupport) {
-		return new DefaultYSupportPoint2D(x, y, maxX, maxY, ySupport);
+	public Point2D<P> moveX(int x, int maxX, int maxY, P ySupport) {
+		return new DefaultYSupportPoint2D<>(x, minY, maxX, maxY, ySupport);
 	}
 
 	@Override
-	public Point2D moveX(int x, int y, int maxX, int maxY) {
-		return new DefaultPoint2D(x, y, maxY, maxY);
+	public Point2D<P> moveX(int x, int maxX, int maxY) {
+		return new DefaultPoint2D<>(x, minY, maxX, maxY);
 	}
 
 

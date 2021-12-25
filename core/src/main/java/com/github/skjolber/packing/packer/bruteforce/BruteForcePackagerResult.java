@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.Point3D;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
@@ -11,7 +12,6 @@ import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.PackResult;
-import com.github.skjolber.packing.points3d.Point3D;
 
 public class BruteForcePackagerResult implements PackResult {
 

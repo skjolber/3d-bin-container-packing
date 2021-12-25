@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement3D;
+import com.github.skjolber.packing.api.Point3D;
 import com.github.skjolber.packing.points.BouwkampConverter;
 import com.github.skjolber.packing.points.DefaultExtremePoints3D;
 import com.github.skjolber.packing.points3d.DefaultPlacement3D;
-import com.github.skjolber.packing.points3d.Point3D;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.BouwkampCodes;

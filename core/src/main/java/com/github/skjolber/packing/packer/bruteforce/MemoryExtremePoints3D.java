@@ -3,9 +3,9 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.skjolber.packing.api.Point3D;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.points3d.ExtremePoints3D;
-import com.github.skjolber.packing.points3d.Point3D;
 
 public class MemoryExtremePoints3D extends ExtremePoints3D<StackPlacement> {
 	

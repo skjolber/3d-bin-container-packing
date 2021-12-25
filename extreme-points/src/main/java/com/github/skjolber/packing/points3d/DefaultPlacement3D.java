@@ -1,12 +1,10 @@
 package com.github.skjolber.packing.points3d;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.Placement3D;
-import com.github.skjolber.packing.points2d.DefaultPlacement2D;
 
 public class DefaultPlacement3D implements Placement3D {
 

@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.points2d;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement2D;

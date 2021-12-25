@@ -4,29 +4,30 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.github.skjolber.packing.api.ExtremePoints;
 import com.github.skjolber.packing.api.Placement3D;
-import com.github.skjolber.packing.points2d.ExtremePoints;
-import com.github.skjolber.packing.points2d.Point2D;
+import com.github.skjolber.packing.api.Point2D;
+import com.github.skjolber.packing.api.Point3D;
 
 /**
  * 
  * TODO emulate all edges as virtual placements to avoid special case for contained edge
  */
 
-public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, Point3D> {
+public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, Point3D<P>> {
 	
 	protected int containerMaxX;
 	protected int containerMaxY;
 	protected int containerMaxZ;
 
-	protected List<Point3D> values = new ArrayList<>();
+	protected List<Point3D<P>> values = new ArrayList<>();
 	protected List<P> placements = new ArrayList<>();
 
 	// reused working objects
-	protected List<Point3D> deleted = new ArrayList<>();
-	protected List<Point3D> addedX = new ArrayList<>();
-	protected List<Point3D> addedY = new ArrayList<>();
-	protected List<Point3D> addedZ = new ArrayList<>();
+	protected List<Point3D<P>> deleted = new ArrayList<>();
+	protected List<Point3D<P>> addedX = new ArrayList<>();
+	protected List<Point3D<P>> addedY = new ArrayList<>();
+	protected List<Point3D<P>> addedZ = new ArrayList<>();
 
 	protected Placement3D containerPlacement;
 	protected final boolean cloneOnConstrain;
@@ -45,7 +46,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		addFirstPoint();
 	}
 	
-	public ExtremePoints3D(boolean cloneOnConstrain, Placement3D containerPlacement, List<Point3D> values, List<P> placements) {
+	public ExtremePoints3D(boolean cloneOnConstrain, Placement3D containerPlacement, List<Point3D<P>> values, List<P> placements) {
 		this.containerMaxX = containerPlacement.getAbsoluteEndX();
 		this.containerMaxY = containerPlacement.getAbsoluteEndY();
 		this.containerMaxZ = containerPlacement.getAbsoluteEndZ();

@@ -1,8 +1,8 @@
 package com.github.skjolber.packing.packer.laff;
 
+import com.github.skjolber.packing.api.Point2D;
 import com.github.skjolber.packing.api.StackValuePointFilter;
 import com.github.skjolber.packing.api.StackableFilter;
-import com.github.skjolber.packing.points2d.Point2D;
 
 public class DefaultLargestAreaFitFirstPackagerConfiguration<P extends Point2D> implements LargestAreaFitFirstPackagerConfiguration<P> {
 

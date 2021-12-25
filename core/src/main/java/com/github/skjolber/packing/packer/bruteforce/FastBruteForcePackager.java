@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.DefaultStack;
 import com.github.skjolber.packing.api.Dimension;
+import com.github.skjolber.packing.api.Point3D;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
@@ -22,7 +23,6 @@ import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.Adapter;
-import com.github.skjolber.packing.points3d.Point3D;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. This implementation tries all

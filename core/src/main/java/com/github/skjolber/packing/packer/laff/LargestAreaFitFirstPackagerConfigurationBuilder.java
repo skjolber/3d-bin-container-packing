@@ -1,12 +1,12 @@
 package com.github.skjolber.packing.packer.laff;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ExtremePoints;
+import com.github.skjolber.packing.api.Point2D;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValuePointFilter;
 import com.github.skjolber.packing.api.StackableFilter;
-import com.github.skjolber.packing.points2d.ExtremePoints;
-import com.github.skjolber.packing.points2d.Point2D;
 
 public abstract class LargestAreaFitFirstPackagerConfigurationBuilder<P extends Point2D, B extends LargestAreaFitFirstPackagerConfigurationBuilder<P, B>> {
 

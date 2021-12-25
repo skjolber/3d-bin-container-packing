@@ -3,18 +3,18 @@ package com.github.skjolber.packing.points3d;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.Placement3D;
+import com.github.skjolber.packing.api.Point3D;
 
-public class DefaultYZPlanePoint3D extends Point3D implements YZPlanePoint3D  {
+public class DefaultYZPlanePoint3D<P extends Placement3D> extends Point3D<P> implements YZPlanePoint3D  {
 
 	/** range constrained to current minX */
-	private final Placement3D yzPlane;
+	private final P yzPlane;
 
 	public DefaultYZPlanePoint3D(
 			int minX, int minY, int minZ,
 			int maxX, int maxY, int maxZ,
-			Placement3D yzPlane
+			P yzPlane
 			) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 
@@ -57,8 +57,8 @@ public class DefaultYZPlanePoint3D extends Point3D implements YZPlanePoint3D  {
 	}
 
 	@Override
-	public Point3D clone(int maxX, int maxY, int maxZ) {
-		return new DefaultYZPlanePoint3D(
+	public Point3D<P> clone(int maxX, int maxY, int maxZ) {
+		return new DefaultYZPlanePoint3D<>(
 				minX, minY, minZ,
 				maxX, maxY, maxZ,
 				yzPlane
@@ -66,21 +66,80 @@ public class DefaultYZPlanePoint3D extends Point3D implements YZPlanePoint3D  {
 	}
 	
 	@Override
-	public List<Placement3D> getPlacements3D() {
-		List<Placement3D> list = new ArrayList<>();
+	public List<P> getPlacements3D() {
+		List<P> list = new ArrayList<>();
 		list.add(yzPlane);
 		return list;
 	}
 
 	@Override
-	public List<Placement2D> getPlacements2D() {
-		List<Placement2D> list = new ArrayList<>();
+	public List<P> getPlacements2D() {
+		List<P> list = new ArrayList<>();
 		list.add(yzPlane);
 		return list;
 	}		
 	
 	@Override
-	public DefaultYZPlanePoint3D clone() {
-		return new DefaultYZPlanePoint3D(minX, minY, minZ, maxX, maxY, maxZ, yzPlane);
+	public DefaultYZPlanePoint3D<P> clone() {
+		return new DefaultYZPlanePoint3D<>(minX, minY, minZ, maxX, maxY, maxZ, yzPlane);
+	}
+	
+	@Override
+	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ) {
+		// xzPlane support is lost
+		return new DefaultPoint3D<>(x, minY, minZ, maxX, maxY, maxZ);
+	}
+
+	@Override
+	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ, P yzSupport) {
+		// xzPlane support is lost
+		return new DefaultYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, yzSupport);
+	}
+
+	@Override
+	public Point3D<P> moveY(int y, int maxX, int maxY, int maxZ) {
+		// xzPlane support is lost
+		if(y <= yzPlane.getAbsoluteEndY()) {
+			return new DefaultYZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, yzPlane);
+		}
+		return new DefaultPoint3D<>(minX, y, minZ, maxX, maxY, maxZ);
+	}
+
+	@Override
+	public Point3D<P> moveY(int y, int maxX, int maxY, int maxZ, P xzSupport) {
+		// xzPlane support is lost
+		if(y <= yzPlane.getAbsoluteEndY()) {
+			return new DefaultXZPlaneYZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, xzSupport, yzPlane);
+		}
+		return new DefaultXZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, xzSupport);
+	}
+
+	@Override
+	public Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ) {
+		if(z <= yzPlane.getAbsoluteEndZ()) {
+			return new DefaultYZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, yzPlane);
+		}
+		// all previous plane support is lost
+		return new DefaultPoint3D<>(minX, minY, z, maxX, maxY, maxZ);
+	}
+
+	@Override
+	public Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ, P xySupport) {
+		if(z <= yzPlane.getAbsoluteEndZ()) {
+			return new DefaultXYPlaneYZPlanePoint3D<>(minY, minY, z, maxX, maxY, maxZ, yzPlane, xySupport);
+		}
+		// all previous plane support is lost
+		return new DefaultXYPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xySupport);
+	}	
+	
+	/**
+	 * Rotate box, i.e. in 3D
+	 *
+	 * @return this instance
+	 */
+	
+	@Override
+	public Point3D<P> rotate() {
+		return new DefaultPoint3D<>(minY, minZ, minX, maxY, maxZ, maxX);
 	}
 }

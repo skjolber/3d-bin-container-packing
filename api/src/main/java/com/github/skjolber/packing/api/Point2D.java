@@ -1,18 +1,14 @@
-package com.github.skjolber.packing.points2d;
+package com.github.skjolber.packing.api;
 
 import java.util.Comparator;
 import java.util.List;
 
-import com.github.skjolber.packing.api.Placement2D;
-import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.points3d.Point3D;
-
-public abstract class Point2D {
+public abstract class Point2D<P extends Placement2D> {
 	
-	public static final Comparator<Point2D> COMPARATOR_X_THEN_Y = new Comparator<Point2D>() {
+	public static final Comparator<Point2D<?>> COMPARATOR_X_THEN_Y = new Comparator<Point2D<?>>() {
 		
 		@Override
-		public int compare(Point2D o1, Point2D o2) {
+		public int compare(Point2D<?> o1, Point2D<?> o2) {
 			int x = Integer.compare(o1.minX, o2.minX);
 
 			if(x == 0) {
@@ -22,10 +18,10 @@ public abstract class Point2D {
 		}
 	};
 
-	public static final Comparator<Point2D> COMPARATOR_Y_THEN_X = new Comparator<Point2D>() {
+	public static final Comparator<Point2D<?>> COMPARATOR_Y_THEN_X = new Comparator<Point2D<?>>() {
 		
 		@Override
-		public int compare(Point2D o1, Point2D o2) {
+		public int compare(Point2D<?> o1, Point2D<?> o2) {
 			int x = Integer.compare(o1.minY, o2.minY);
 
 			if(x == 0) {
@@ -35,10 +31,10 @@ public abstract class Point2D {
 		}
 	};
 
-	public static final Comparator<Point2D> X_COMPARATOR = new Comparator<Point2D>() {
+	public static final Comparator<Point2D<?>> X_COMPARATOR = new Comparator<Point2D<?>>() {
 		
 		@Override
-		public int compare(Point2D o1, Point2D o2) {
+		public int compare(Point2D<?> o1, Point2D<?> o2) {
 			int compare = Integer.compare(o1.minX, o2.minX);
 			if(compare == 0) {
 				compare = Integer.compare(o2.maxX, o1.maxX);
@@ -53,10 +49,10 @@ public abstract class Point2D {
 		}
 	};
 
-	public static final Comparator<Point2D> Y_COMPARATOR = new Comparator<Point2D>() {
+	public static final Comparator<Point2D<?>> Y_COMPARATOR = new Comparator<Point2D<?>>() {
 		
 		@Override
-		public int compare(Point2D o1, Point2D o2) {
+		public int compare(Point2D<?> o1, Point2D<?> o2) {
 			int compare = Integer.compare(o1.minY, o2.minY);
 			if(compare == 0) {
 				compare = Integer.compare(o2.maxY, o1.maxY);
@@ -213,7 +209,7 @@ public abstract class Point2D {
 		return dx;
 	}
 	
-	public boolean intersects(Point2D point) {
+	public boolean intersects(Point2D<P> point) {
 		return !(point.getMaxX() < minX || point.getMinX() > maxX || point.getMaxY() < minY || point.getMinY() > maxY);
 	}
 	
@@ -274,17 +270,17 @@ public abstract class Point2D {
 		return "Point2D [" + minX + "x" + minY + " " + maxX + "x" + maxY + "]";
 	}
 
-	public abstract Point2D clone(int maxX, int maxY);
+	public abstract Point2D<P> clone(int maxX, int maxY);
 
-	public boolean eclipses(Point2D point) {
+	public boolean eclipses(Point2D<P> point) {
 		return eclipsesX(point) && eclipsesY(point);
 	}
 
-	public boolean eclipsesX(Point2D point) {
+	public boolean eclipsesX(Point2D<P> point) {
 		return minX <= point.getMinX() && point.getMaxX() <= maxX;
 	}
 
-	public boolean eclipsesY(Point2D point) {
+	public boolean eclipsesY(Point2D<P> point) {
 		return minY <= point.getMinY() && point.getMaxY() <= maxY;
 	}
 
@@ -296,7 +292,7 @@ public abstract class Point2D {
 		return !(stackValue.getDx() > dx || stackValue.getDy() > dy);
 	}
 
-	public abstract List<Placement2D> getPlacements2D();
+	public abstract List<P> getPlacements2D();
 
 	//       |                  
 	//       |                  
@@ -315,7 +311,7 @@ public abstract class Point2D {
 	//       |---------x===================
 	//
 	
-	public abstract Point2D moveX(int x, int y, int maxX, int maxY);
+	public abstract Point2D<P> moveX(int x, int maxX, int maxY);
 	
 	//       |                  
 	//       |                  
@@ -336,7 +332,7 @@ public abstract class Point2D {
 	//       |---------x===================
 	//
 
-	public abstract Point2D moveX(int x, int y, int maxX, int maxY, Placement2D ySupport);
+	public abstract Point2D<P> moveX(int x, int maxX, int maxY, P ySupport);
 
 	
 	//
@@ -367,7 +363,7 @@ public abstract class Point2D {
 	//       |                 
 	//       |---------------------------
 
-	public abstract Point2D moveY(int x, int y, int maxX, int maxY);
+	public abstract Point2D<P> moveY(int y, int maxX, int maxY);
 
 	//
 	//       |   ║              
@@ -397,6 +393,6 @@ public abstract class Point2D {
 	//       |                 
 	//       |---------------------------
 
-	public abstract Point2D moveY(int x, int y, int maxX, int maxY, Placement2D xSupport);
+	public abstract Point2D<P> moveY(int y, int maxX, int maxY, P xSupport);
 	
 }
