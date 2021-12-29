@@ -35,9 +35,8 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 	protected final List<P> placements = new ArrayList<>();
 
 	// reuse working variables
-	protected final List<Point2D<P>> deleted = new ArrayList<>();
-	protected final List<Point2D<P>> addYY = new ArrayList<>();
 	protected final List<Point2D<P>> addXX = new ArrayList<>();
+	protected final List<Point2D<P>> addYY = new ArrayList<>();
 
 	protected final List<Point2D<P>> swallowed = new ArrayList<>();
 	protected final List<Point2D<P>> moveToXX = new ArrayList<>();
@@ -45,6 +44,8 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 
 	protected final List<Point2D<P>> negativeMoveToYY = new ArrayList<>();
 	protected final List<Point2D<P>> negativeMoveToXX = new ArrayList<>();
+
+	protected final List<Point2D<P>> deleted = new ArrayList<>();
 
 	protected P containerPlacement;
 
@@ -452,7 +453,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 				}
 			}
 		}
-			
+		
 		values.removeAll(deleted);
 		
 		placements.add(placement);

@@ -31,11 +31,6 @@ public class DefaultXSupportPoint2D<P extends Placement2D> extends Point2D<P> im
 	}
 	
 	@Override
-	public boolean isXEdge(int x) {
-		return xSupport.getAbsoluteEndX() == x - 1;
-	}
-
-	@Override
 	public String toString() {
 		return "DefaultXSupportPoint2D [" +  + minX + "x" + minY + " " + maxX + "x" + maxY 
 				+ ", xSupportMinX=" + getXSupportMinX() + ", xSupportMaxX=" + getXSupportMaxX() + "]";

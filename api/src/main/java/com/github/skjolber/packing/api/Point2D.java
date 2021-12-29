@@ -140,14 +140,6 @@ public abstract class Point2D<P extends Placement2D> {
 	public boolean isXSupport(int x) {
 		return false;
 	}
-
-	public boolean isYEdge(int y) {
-		return false;
-	}
-
-	public boolean isXEdge(int x) {
-		return false;
-	}
 	
 	public int getMinX() {
 		return minX;

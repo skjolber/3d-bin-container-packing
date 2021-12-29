@@ -36,11 +36,6 @@ public class DefaultYSupportPoint2D<P extends Placement2D> extends Point2D<P> im
 				+ ", ySupportMinY=" + getYSupportMinY() + ", ySupportMaxY=" + getYSupportMaxY() + "]";
 	}
 	
-	@Override
-	public boolean isYEdge(int y) {
-		return ySupport.getAbsoluteEndY() == y - 1;
-	}
-	
 	public Point2D<P> clone(int maxX, int maxY) {
 		return new DefaultYSupportPoint2D<>(minX, minY, maxX, maxY, ySupport);
 	}

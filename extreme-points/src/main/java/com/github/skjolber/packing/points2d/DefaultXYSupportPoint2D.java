@@ -58,16 +58,6 @@ public class DefaultXYSupportPoint2D<P extends Placement2D> extends Point2D<P> i
 	public int getYSupportMaxY() {
 		return ySupport.getAbsoluteEndY();
 	}
-	
-	@Override
-	public boolean isYEdge(int y) {
-		return ySupport.getAbsoluteEndY() == y - 1;
-	}
-
-	@Override
-	public boolean isXEdge(int x) {
-		return xSupport.getAbsoluteEndX() == x - 1;
-	}
 
 	@Override
 	public String toString() {

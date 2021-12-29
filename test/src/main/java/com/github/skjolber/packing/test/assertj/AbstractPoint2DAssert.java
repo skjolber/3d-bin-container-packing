@@ -68,7 +68,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		return myself;
 	}
 	
-	public SELF isYSupport(int y) {
+	public SELF isYSupportAt(int y) {
 		isNotNull();
 		if (!actual.isYSupport(y)) {
 			if(actual instanceof YSupportPoint2D) {
@@ -83,7 +83,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		return myself;
 	}
 
-	public SELF isXSupport(int x) {
+	public SELF isXSupportAt(int x) {
 		isNotNull();
 		if (!actual.isXSupport(x)) {
 			if(actual instanceof XSupportPoint2D) {
@@ -98,13 +98,13 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		return myself;
 	}
 
-	public SELF isSupportLimit(int x, int y) {
-		isXSupport(x);
-		isYSupport(y);
+	public SELF isSupport(int x, int y) {
+		isXSupportAt(x);
+		isYSupportAt(y);
 		return myself;
 	}
 
-	public SELF isYSupportLimit(int y) {
+	public SELF isYSupport(int y) {
 		isNotNull();
 		if(actual instanceof YSupportPoint2D) {
 			YSupportPoint2D ySupportPoint2D = (YSupportPoint2D)actual;
@@ -140,7 +140,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 	}
 
 
-	public SELF isXSupportLimit(int x) {
+	public SELF isXSupport(int x) {
 		isNotNull();
 		if(actual instanceof XSupportPoint2D) {
 			XSupportPoint2D xSupportPoint2D = (XSupportPoint2D)actual;
