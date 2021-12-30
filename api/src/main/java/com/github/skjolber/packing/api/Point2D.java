@@ -386,5 +386,14 @@ public abstract class Point2D<P extends Placement2D> {
 	//       |---------------------------
 
 	public abstract Point2D<P> moveY(int y, int maxX, int maxY, P xSupport);
+
+	public boolean isInsideY(int yy) {
+		 return minY <= yy && yy <= maxY;
+	}
+	
+	public boolean isInsideX(int xx) {
+		 return minX <= xx && xx <= maxX;
+	}
+	
 	
 }

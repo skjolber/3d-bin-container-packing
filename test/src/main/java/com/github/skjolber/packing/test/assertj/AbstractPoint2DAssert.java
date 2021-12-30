@@ -92,7 +92,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 				
 				failWithMessage("Expected x support at " + x + ", was " + support.getAbsoluteEndX());
 			} else {
-				failWithMessage("Expected x support at " + x);
+				failWithMessage("Expected x support at " + x + ", was none");
 			}
 		}
 		return myself;
@@ -114,7 +114,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 				failWithMessage("Expected y support limit " + y + ", was " + ySupport.getAbsoluteEndY());
 			}
 		} else {
-			failWithMessage("No y support, expected " + y);
+			failWithMessage("No y support, expected " + y + ", was none");
 		}
 		return myself;
 	}
