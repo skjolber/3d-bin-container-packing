@@ -30,7 +30,7 @@ public abstract class Point2D<P extends Placement2D> {
 			return x;
 		}
 	};
-
+	
 	public static final Comparator<Point2D<?>> X_COMPARATOR = new Comparator<Point2D<?>>() {
 		
 		@Override

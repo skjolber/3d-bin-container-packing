@@ -36,7 +36,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	// reuse working variables
 	protected final List<Point3D<P>> addXX = new ArrayList<>();
 	protected final List<Point3D<P>> addYY = new ArrayList<>();
-	protected List<Point3D<P>> addedZ = new ArrayList<>();
+	protected List<Point3D<P>> addZZ = new ArrayList<>();
 
 	protected final List<Point3D<P>> swallowed = new ArrayList<>();
 	protected final List<Point3D<P>> moveToXX = new ArrayList<>();
@@ -108,8 +108,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		int zz = source.getMinZ() + boxDz;
 		
 		boolean supportedXYPlane = source.isSupportedXYPlane(xx, yy);
-		boolean supportedXZPlane = source.isSupportedXYPlane(xx, zz);
-		boolean supportedYZPlane = source.isSupportedXYPlane(yy, zz);
+		boolean supportedXZPlane = source.isSupportedXZPlane(xx, zz);
+		boolean supportedYZPlane = source.isSupportedYZPlane(yy, zz);
 		/*
 		boolean xSupporteXYPlaneXX = source.isSupportedXYPlane(xx, source.getMinY());
 		boolean xSupporteXYPlaneYY = source.isSupportedXYPlane(source.getMinX(), yy);
@@ -156,37 +156,191 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			boolean lessThanZZ = point.getMinZ() < zz;
 			
 			if(!lessThanXX && !lessThanYY && !lessThanZZ) {
+				
+				// 
+				// |
+				// |
+				// |  *           *        *
+				// |          
+				// |          |------|
+				// |          |      |     *
+				// |          |------|
+				// |                       
+				// |                       *
+				// |                       
+				// ---------------------------
+				//
+
 				continue;
 			}
+
+			// Points within (xx, yy, zz)
+			// 
+			// |
+			// |
+			// |          
+			// | *  *     |------|
+			// |          |  *  *|
+			// |   *      |------|
+			// |              *        
+			// |     *   *       *
+			// | *         *            
+			// ---------------------------
+			//
+
 			boolean lessThanX = point.getMinX() < source.getMinX();
 			boolean lessThanY = point.getMinY() < source.getMinY();
 			boolean lessThanZ = point.getMinZ() < source.getMinZ();
 				
 			if(!lessThanX && !lessThanY && !lessThanZ) {
+				
+				// 
+				// |
+				// |
+				// |
+				// |          
+				// |          |------|
+				// |          | *  * |     
+				// |          |------|
+				// |                       
+				// |                       
+				// |                       
+				// ---------------------------
+				//
+
 				swallowed.add(point);
 				
 				continue;
 			}
 			
 			if(supportedXYPlane && supportedXZPlane && supportedYZPlane) {
+				
+				// 
+				// |
+				// |          ║
+				// |          ║
+				// |          ║------|
+				// |          ║      |
+				// |          ║══════════
+				// |                       
+				// |                  
+				// |                       
+				// ---------------------------
+				// 
+				
 				continue;
 			}
+			
+			// Points within (xx, yy, zz), excluding the placement itself
+			// 
+			// |
+			// |
+			// |          
+			// | *  *     |------|
+			// |          |      |
+			// |   *      |------|
+			// |              *        
+			// |     *   *       *
+			// | *         *            
+			// ---------------------------
+			//
 			
 			boolean maxMoreThanX = point.getMaxX() >= source.getMinX();
 			boolean maxMoreThanY = point.getMaxY() >= source.getMinY();
 			boolean maxMoreThanZ = point.getMaxZ() >= source.getMinZ();
-			
+
 			if(!maxMoreThanX || !maxMoreThanY || !maxMoreThanZ) {
-				// does not touch the new point
-				// shadowed point?
+				
+				// point does not intersect placement
+				// 
+				// 
+				// |          
+				// |          |------|
+				// |          | *  * |     
+				// |          |------|
+				// |                       
+				// |             |--------|          
+				// |             |        |  
+				// |             |--------|          
+				// ---------------------------
+				//				
+
+				// 
+				// | |----|   
+				// | |    |   |------|
+				// | |----|   | *  * |     
+				// |          |------|
+				// |                       
+				// |                       
+				// |                       
+				// |                       
+				// ---------------------------
+				//				
+
+				// 
+				// |          
+				// |          |------|
+				// |          | *  * |     
+				// |          |------|
+				// |                       
+				// |  |----|                     
+				// |  |    |                 
+				// |  |----|                     
+				// ---------------------------
+				//
+
+				// does any point intersect the xx, yy or zz planes?
 				if(point.getMaxX() >= xx) {
+					// yz plane
+
 					negativeMoveToXX.add(point);
+
+					/*
+					if(!supportedXYPlane && !supportedXZPlane) {
+						negativeMoveToXX.add(point);
+					} else if(!supportedXYPlane) {
+
+						// minZ to maxZ
+						// 0 to maxY
+						if(point.getMaxZ() >= source.getMinZ()) {
+							negativeMoveToXX.add(point);
+						}
+					} else if(!supportedXZPlane) {
+						
+						// 0 to maxZ
+						// minY to maxY
+						
+						negativeMoveToXX.add(point);
+					}*/
 				}
+				
 				if(point.getMaxY() >= yy) {
+					// xz plane
 					negativeMoveToYY.add(point);
 				}
+				
 				if(point.getMaxZ() >= zz) {
+					// xy plane
 					negativeMoveToZZ.add(point);
+					
+					/*
+					if(!supportedXZPlane && !supportedYZPlane) {
+						// 0 to maxX
+						// 0 to maxY
+
+						negativeMoveToZZ.add(point);
+					} else if(!supportedXZPlane) {
+						// minX to maxX
+						// 0 to maxY
+						
+						negativeMoveToZZ.add(point);
+					} else if(!supportedYZPlane) {
+						// 0 to maxX
+						// minY to maxY
+						
+						negativeMoveToZZ.add(point);
+					}
+					*/
 				}
 				continue;
 			}
@@ -201,134 +355,44 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				moveToZZ.add(point);
 			}
 
-			/*
-			if(!hasXYSupport && !hasXZSupport && !supportedYZPlane) {
-				moveToXX.add(point);
-				moveToYY.add(point);
-				moveToZZ.add(point);
-			} else if(!hasXZSupport && !supportedYZPlane) {
-				// xy plane support
-				
-				moveToXX.add(point);
-				moveToYY.add(point);
-				
-			} else if(!hasXYSupport && !supportedYZPlane) {
-				// xz plane support
-				
-				moveToXX.add(point);
-				moveToZZ.add(point);
-
-			} else if(!hasXYSupport && !hasXZSupport) {
-				// yz plane support
-
-				moveToYY.add(point);
-				moveToZZ.add(point);
-
-			} else if(!hasXYSupport) {
-				// xz + yz
-				moveToZZ.add(point);
-				
-			} else if(!hasXZSupport) {
-				// xy + yz
-				moveToYY.add(point);
-				
-			} else if(!supportedYZPlane) {
-				// xz + xy
-				moveToXX.add(point);
-			
-			}
-			*/
-		}
-		
-		// project swallowed or shadowed to xx
-		if(!supportedXYPlane) {
-			
-			// extend XY plane to zero 
-			
-			Placement2D projectNegativeX = projectNegativeX(source.getMinX(), yy);
-			if(projectNegativeX == null) {
-				for(Point3D<P> point : values) {
-					if(point.getMinX() < source.getMinX() && point.getMinY() <= yy && yy <= point.getMaxY() ) {
-						negativeMoveToYY.add(point);
-					}
-				}
-				
-			} else {
-				for(Point3D<P> point : values) {
-					if(projectNegativeX.getAbsoluteEndX() < point.getMinX() && point.getMinX() < source.getMinX() && point.getMinY() <= yy && yy <= point.getMaxY() ) {
-						negativeMoveToYY.add(point);
-					}
-				}
-			}
-		}
-		
-		if(!xSupport) {
-			// not enough x support
-			//
-			//      |
-			//      |
-			//      |-------------------|
-			//      |                   |
-			//      |                   |
-			//      |                   |
-			// minY x--------------------
-			//      |           |       |
-			//      |           |       |
-			//      |   box     |       |
-			//      |           |       ↓
-			//      |-----------|-------*-----
-			//     minX       max x     xx
-			//                support
-			//           (not wide enough)
-			//
-			//
-			// or no x support
-			//
-			//      |
-			//      |
-			//  yy  |-------------------|
-			//      |                   |
-			//      |                   |
-			//      |                   |
-			// minY x--------------------
-			//      |                   |
-			//      |                   |
-			//      |      empty        |
-			//      |                   ↓
-			//      |-------------------*-----
-			//     minX                 xx
-			//
-			
-			// project negative yy at x
-			
-			// find the most negative x that swallows xx
-			
-			Placement2D projectNegativeY = projectNegativeY(xx, source.getMinY());
-			if(projectNegativeY == null) {
-				for(Point3D<P> point : values) {
-					if(point.getMinY() < source.getMinY() && point.getMinX() <= xx && xx <= point.getMaxX() ) {
-						negativeMoveToXX.add(point);
-					}
-				}
-			} else {
-				for(Point3D<P> point : values) {
-					if(projectNegativeY.getAbsoluteEndY() < point.getMinY() && point.getMinY() < source.getMinY() && point.getMinX() <= xx && xx <= point.getMaxX() ) {
-						negativeMoveToXX.add(point);
-					}
-				}
-			}
 		}
 		
 		negativeMoveToYY.addAll(moveToYY);
 		negativeMoveToYY.addAll(swallowed);
-		Collections.sort(negativeMoveToYY, Point3D.COMPARATOR_X_THEN_Y);
+		Collections.sort(negativeMoveToYY, Point3D.COMPARATOR_X_THEN_Y_THEN_Z);
 		
 		negativeMoveToXX.addAll(moveToXX);
 		negativeMoveToXX.addAll(swallowed);
-		Collections.sort(negativeMoveToXX, Point3D.COMPARATOR_Y_THEN_X);
-		
+		Collections.sort(negativeMoveToXX, Point3D.COMPARATOR_Y_THEN_Z_THEN_X);
+
+		negativeMoveToZZ.addAll(moveToZZ);
+		negativeMoveToZZ.addAll(swallowed);
+		Collections.sort(negativeMoveToZZ, Point3D.COMPARATOR_Z_THEN_X_THEN_Y);
+
 		deleted.addAll(swallowed);
-		
+
+		List<Point3D<P>> best = new ArrayList<>();
+
+		if(!negativeMoveToXX.isEmpty()) {
+			for(Point3D<P> point : negativeMoveToXX) {
+				if(point.getMaxX() >= xx) {
+					
+					
+					
+					if(point.getMaxX() < maxX) {
+						continue;
+					}
+					if(point.getMaxX() != maxX || point.getMaxY() > maxYForMaxX) {
+						maxX = point.getMaxX();
+						maxYForMaxX = point.getMaxY();
+					}
+				}
+				
+			}
+			
+			
+		}
+
 		if(!negativeMoveToYY.isEmpty()) {
 			
 			int maxX = -1;
@@ -493,22 +557,29 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		
 		values.addAll(addXX);
 		values.addAll(addYY);
+		values.addAll(addZZ);
 
-		Collections.sort(values, Point3D.COMPARATOR_Y_THEN_X);
+		Collections.sort(values, Point3D.COMPARATOR_Z_THEN_X_THEN_Y);
 		removeEclipsed(binarySearchPlusMinY(placement.getAbsoluteEndY()));
 
-		Collections.sort(values, Point3D.COMPARATOR_X_THEN_Y);
+		Collections.sort(values, Point3D.COMPARATOR_Y_THEN_Z_THEN_X);
+		removeEclipsed(binarySearchPlusMinY(placement.getAbsoluteEndY()));
+
+		Collections.sort(values, Point3D.COMPARATOR_X_THEN_Y_THEN_Z);
 		removeEclipsed(binarySearchPlusMinX(placement.getAbsoluteEndX()));
 
 		swallowed.clear();
 		moveToXX.clear();
 		moveToYY.clear();
+		moveToZZ.clear();
 		
-		negativeMoveToYY.clear();
 		negativeMoveToXX.clear();
+		negativeMoveToYY.clear();
+		negativeMoveToZZ.clear();
 		
 		addXX.clear();
 		addYY.clear();
+		addZZ.clear();
 		
 		deleted.clear();
 
