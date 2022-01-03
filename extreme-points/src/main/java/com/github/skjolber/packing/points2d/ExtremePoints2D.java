@@ -169,9 +169,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 				// shadowed (at negative) x
 				moveToXX.add(point);
 			} else {
-				
-				// TODO hvis floating, behold i en egen liste for constraining
-				
+				// TODO if floating, add to own list as an optimization, 
 			}
 		}
 		
@@ -219,7 +217,6 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 						negativeMoveToYY.add(point);
 					}
 				}
-				
 			} else {
 				for(Point2D<P> point : values) {
 					if(projectNegativeX.getAbsoluteEndX() < point.getMinX() && point.getMinX() < source.getMinX() && point.getMinY() <= yy && yy <= point.getMaxY() ) {
@@ -298,112 +295,46 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		
 		if(!negativeMoveToYY.isEmpty()) {
 			
-			int maxX = -1;
-			int maxYForMaxX = -1;
-			
-			for(Point2D<P> point : negativeMoveToYY) {
-				if(point.getMaxY() >= yy) {
-					if(point.getMaxX() < maxX) {
-						continue;
-					}
-					if(point.getMaxX() != maxX || point.getMaxY() > maxYForMaxX) {
-						maxX = point.getMaxX();
-						maxYForMaxX = point.getMaxY();
-					}
-				}
-			}
-			
-			Point2D<P> previousYY = null;
-
+			add:
 			for(Point2D<P> p : negativeMoveToYY) {
 				// add point on the other side
 				// with x support
 				if(p.getMaxY() >= yy) {
-					
-					// TODO if not floating elements yet, this could be simplified
-					if(previousYY == null || previousYY.getMaxY() != p.getMaxY()) {
-						boolean split = maxYForMaxX < p.getMaxY() && p.getMaxX() < maxX;
-						if(p.getMinX() < placement.getAbsoluteX()) {
-							if(split) {
-								Point2D<P> moveY1 = p.moveY(yy, maxX, maxYForMaxX);
-								addYY.add(moveY1);
-
-								Point2D<P> moveY2 = p.moveY(yy, p.getMaxX(), p.getMaxY());
-								addYY.add(moveY2);
-
-							} else {
-								Point2D<P> moveY = p.moveY(yy, maxX, p.getMaxY());
-								addYY.add(moveY);
-							}
-						} else {
-							if(split) {
-								Point2D<P> moveY1 = p.moveY(yy, maxX, maxYForMaxX, placement);
-								addYY.add(moveY1);
-
-								Point2D<P> moveY2 = p.moveY(yy, p.getMaxX(), p.getMaxY(), placement);
-								addYY.add(moveY2);
-
-							} else {
-								Point2D<P> moveY = p.moveY(yy, maxX, p.getMaxY(), placement);
-								addYY.add(moveY);
-							}
+					for(Point2D<P> add : addYY) {
+						if(add.eclipsesMovedY(p, yy)) {
+							continue add;
 						}
-						previousYY = p;
+					}
+					if(p.getMinX() < placement.getAbsoluteX()) {
+						// too low, no support
+						addYY.add(p.moveY(yy, p.getMaxX(), p.getMaxY()));
+					} else {
+						addYY.add(p.moveY(yy, p.getMaxX(), p.getMaxY(), placement));
 					}
 				}
 			}			
 		}
 
 		if(!negativeMoveToXX.isEmpty()) {
-			int maxY = -1;
-			int maxXForMaxY = -1;
 
-			for (Point2D<P> point : negativeMoveToXX) {
-				if(point.getMaxX() >= xx) {
-					if(point.getMaxY() < maxY) {
-						continue;
-					}
-					if(point.getMaxY() != maxY || point.getMaxX() > maxXForMaxY) {
-						maxY = point.getMaxY();
-						maxXForMaxY = point.getMaxX();
-					}
-				}
-			}
-
-			Point2D<P> previousXX = null;
-			for (Point2D<P> p : negativeMoveToXX) {
+			add:
+			for(Point2D<P> p : negativeMoveToXX) {
+				// add point on the other side
+				// with x support
 				if(p.getMaxX() >= xx) {
-					if(previousXX == null || previousXX.getMaxX() != p.getMaxX()) {
-						boolean split = maxXForMaxY < p.getMaxX() && p.getMaxY() < maxY;
-						
-						if(p.getMinY() < placement.getAbsoluteY()) {
-							if(split) {
-								Point2D<P> moveX1 = p.moveX(xx, maxXForMaxY, maxY);
-								addXX.add(moveX1);
-
-								Point2D<P> moveX2 = p.moveX(xx, p.getMaxX(), p.getMaxY());
-								addXX.add(moveX2);
-							} else {
-								Point2D<P> moveX = p.moveX(xx, p.getMaxX(), maxY);
-								addXX.add(moveX);
-							}
-						} else {
-							if(split) {
-								Point2D<P> moveX1 = p.moveX(xx, maxXForMaxY, maxY, placement);
-								addXX.add(moveX1);
-
-								Point2D<P> moveX2 = p.moveX(xx, p.getMaxX(), p.getMaxY(), placement);
-								addXX.add(moveX2);
-							} else {
-								Point2D<P> moveX = p.moveX(xx, p.getMaxX(), maxY, placement);	
-								addXX.add(moveX);
-							}
+					for(Point2D<P> add : addXX) {
+						if(add.eclipsesMovedX(p, xx)) {
+							continue add;
 						}
-
-						previousXX = p;
+					}
+					if(p.getMinY() < placement.getAbsoluteY()) {
+						// too low, no support
+						addXX.add(p.moveX(xx, p.getMaxX(), p.getMaxY()));
+					} else {
+						addXX.add(p.moveX(xx, p.getMaxX(), p.getMaxY(), placement));
 					}
 				}
-			}
+			}			
 		}
 		
 		// project swallowed or shadowed to yy

@@ -54,6 +54,17 @@ public class BouwkampCodeDirectory {
 	public List<BouwkampCodes> getSimplePerfectSquaredRectangles() {
 		return simplePerfectSquaredRectangles;
 	}
+	
+	public List<BouwkampCodes> getSimpleImperfectSquaredRectangles(int maxOrder) {
+		return simpleImperfectSquaredRectangles.stream().filter(p -> p.getCodes().get(0).getOrder() <= maxOrder).collect(Collectors.toList());
+	}
+	public List<BouwkampCodes> getSimpleImperfectSquaredSquares(int maxOrder) {
+		return simpleImperfectSquaredSquares.stream().filter(p -> p.getCodes().get(0).getOrder() <= maxOrder).collect(Collectors.toList());
+	}
+	public List<BouwkampCodes> getSimplePerfectSquaredRectangles(int maxOrder) {
+		return simplePerfectSquaredRectangles.stream().filter(p -> p.getCodes().get(0).getOrder() <= maxOrder).collect(Collectors.toList());
+	}
+	
 	public void setSimpleImperfectSquaredSquares(List<BouwkampCodes> simpleImperfectSquaredSquares) {
 		this.simpleImperfectSquaredSquares = simpleImperfectSquaredSquares;
 	}

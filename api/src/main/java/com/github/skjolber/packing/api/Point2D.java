@@ -12,8 +12,16 @@ public abstract class Point2D<P extends Placement2D> {
 			int x = Integer.compare(o1.minX, o2.minX);
 
 			if(x == 0) {
-				return Integer.compare(o1.minY, o2.minY);
+				x = Integer.compare(o1.minY, o2.minY);
 			}
+			
+			if(x == 0) {
+				x = -Integer.compare(o1.maxX, o2.maxX);
+			}
+			if(x == 0) {
+				x = -Integer.compare(o1.maxY, o2.maxY);
+			}
+			
 			return x;
 		}
 	};
@@ -25,7 +33,13 @@ public abstract class Point2D<P extends Placement2D> {
 			int x = Integer.compare(o1.minY, o2.minY);
 
 			if(x == 0) {
-				return Integer.compare(o1.minX, o2.minX);
+				x = Integer.compare(o1.minX, o2.minX);
+			}
+			if(x == 0) {
+				x = -Integer.compare(o1.maxY, o2.maxY);
+			}
+			if(x == 0) {
+				x = -Integer.compare(o1.maxX, o2.maxX);
 			}
 			return x;
 		}
@@ -153,7 +167,7 @@ public abstract class Point2D<P extends Placement2D> {
 	 * 
 	 * Get y constraint (inclusive)
 	 * 
-	 * @return
+	 * @return max y
 	 */
 
 	public int getMaxY() {
@@ -164,7 +178,7 @@ public abstract class Point2D<P extends Placement2D> {
 	 * 
 	 * Get x constraint (inclusive)
 	 * 
-	 * @return
+	 * @return max x
 	 */
 
 	public int getMaxX() {
@@ -266,6 +280,14 @@ public abstract class Point2D<P extends Placement2D> {
 
 	public boolean eclipses(Point2D<P> point) {
 		return eclipsesX(point) && eclipsesY(point);
+	}
+	
+	public boolean eclipsesMovedX(Point2D<P> point, int x) {
+		return minX <= x && point.getMaxX() <= maxX && eclipsesY(point);
+	}
+
+	public boolean eclipsesMovedY(Point2D<P> point, int y) {
+		return minY <= y && point.getMaxY() <= maxY && eclipsesX(point);
 	}
 
 	public boolean eclipsesX(Point2D<P> point) {

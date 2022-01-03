@@ -1,7 +1,8 @@
 package com.github.skjolber.packing.points2d;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static com.github.skjolber.packing.test.assertj.Point2DAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -9,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.Point2D;
 import com.github.skjolber.packing.points.DefaultExtremePoints2D;
-import com.github.skjolber.packing.points2d.ExtremePoints2D;
 
 public class ExtremePoints2DTest {
 
@@ -523,10 +523,18 @@ public class ExtremePoints2DTest {
 
 		assertThat(values.get(0).getMinX()).isEqualTo(0);
 		assertThat(values.get(0).getMinY()).isEqualTo(20);
+		assertThat(ep.getValue(0)).isXSupport(19);
+		assertThat(ep.getValue(0)).isYSupport(99);
+
 		assertThat(values.get(1).getMinX()).isEqualTo(10);
 		assertThat(values.get(1).getMinY()).isEqualTo(0);
+		assertThat(ep.getValue(1)).isXSupport(99);
+		assertThat(ep.getValue(1)).isYSupport(9);
+		
 		assertThat(values.get(2).getMinX()).isEqualTo(20);
 		assertThat(values.get(2).getMinY()).isEqualTo(0);
+		assertThat(ep.getValue(2)).isXSupport(99);
+		assertThat(ep.getValue(2)).isNoYSupport();
 
 		ep.add(1, new DefaultPlacement2D(10, 0, 24, 4));
 		
@@ -543,10 +551,12 @@ public class ExtremePoints2DTest {
 		//    |----------|-----------x-----
 		//             10       20   25
 
+		assertThat(ep.getValues()).hasSize(4);
+
 		assertThat(values.get(0).getMinX()).isEqualTo(0);
 		assertThat(values.get(0).getMinY()).isEqualTo(20);
 		assertThat(ep.getValue(0)).isMax(99, 99);
-		assertThat(ep.getValue(0)).isXSupportAt(19);
+		assertThat(ep.getValue(0)).isXSupport(19);
 		assertThat(ep.getValue(0)).isYSupport(99);
 
 		assertThat(values.get(1).getMinX()).isEqualTo(10);
@@ -620,7 +630,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValues()).hasSize(4);
 		assertThat(values.get(0)).isMin(0, 25);
 		assertThat(values.get(0)).isMax(99, 99);
-		assertThat(values.get(0)).isSupport(20, 99);
+		assertThat(values.get(0)).isSupport(24, 99);
 		
 		assertThat(values.get(1).getMinX()).isEqualTo(10);
 		assertThat(values.get(1).getMinY()).isEqualTo(0);
@@ -955,7 +965,7 @@ public class ExtremePoints2DTest {
 		
 		assertThat(ep.getValue(2).getMinX()).isEqualTo(100);
 		assertThat(ep.getValue(2).getMinY()).isEqualTo(0);
-		assertThat(ep.getValue(2)).isSupport(139, 19);
+		assertThat(ep.getValue(2)).isSupport(999, 19);
 		
 		// split point
 		assertThat(ep.getValue(3).getMinX()).isEqualTo(100);
@@ -1215,6 +1225,7 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(3).getMinX()).isEqualTo(70);
 		assertThat(ep.getValue(3).getMinY()).isEqualTo(150);
+		assertThat(ep.getValue(3)).isYSupport(189);
 
 		assertThat(ep.getValue(4).getMinX()).isEqualTo(100);
 		assertThat(ep.getValue(4).getMinY()).isEqualTo(0);
@@ -1274,11 +1285,11 @@ public class ExtremePoints2DTest {
 		
 		assertThat(ep.getValue(6).getMinX()).isEqualTo(70);
 		assertThat(ep.getValue(6).getMinY()).isEqualTo(150);
-		assertThat(ep.getValue(6)).isSupport(149, 49);
+		assertThat(ep.getValue(6)).isYSupport(189);
 		
 		assertThat(ep.getValue(7).getMinX()).isEqualTo(100);
 		assertThat(ep.getValue(7).getMinY()).isEqualTo(0);
-		assertThat(ep.getValue(7)).isSupport(150, 190);
+		assertThat(ep.getValue(7)).isSupport(999, 49);
 
 		assertThat(ep.getValue(8).getMinX()).isEqualTo(150);
 		assertThat(ep.getValue(8).getMinY()).isEqualTo(0);

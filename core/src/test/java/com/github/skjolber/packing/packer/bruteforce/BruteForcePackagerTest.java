@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.assertj.StackablePlacementAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -13,23 +13,16 @@ import java.util.Map.Entry;
 
 import org.junit.jupiter.api.Test;
 
-import com.github.skjolber.packing.ValidatingContainer;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.DefaultStack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.old.BoxItem;
-import com.github.skjolber.packing.old.Level;
-import com.github.skjolber.packing.old.Placement;
-import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
+import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.BouwkampCodeLine;
 import com.github.skjolber.packing.test.BouwkampCodes;
-import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
-
-import static com.github.skjolber.packing.test.assertj.StackablePlacementAssert.assertThat;
 
 
 
@@ -40,7 +33,7 @@ public class BruteForcePackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(3, 1, 1, 3, 1, 1, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(3, 1, 1, 3, 1, 1, 100, null).withStack(new ValidatingStack()).build());
 		
 		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
 		
@@ -69,7 +62,7 @@ public class BruteForcePackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(8, 8, 1, 8, 8, 1, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(8, 8, 1, 8, 8, 1, 100, null).withStack(new ValidatingStack()).build());
 		
 		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
 
@@ -92,7 +85,7 @@ public class BruteForcePackagerTest {
 	public void testStackingRectanglesOnSquareRectangleVolumeFirst() {
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotateXYZ(10, 10, 4, 10, 10, 4, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotateXYZ(10, 10, 4, 10, 10, 4, 100, null).withStack(new ValidatingStack()).build());
 		
 		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
 
@@ -112,7 +105,7 @@ public class BruteForcePackagerTest {
 	public void testStackingBox() {
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotateXYZ(5, 5, 1, 5, 5, 1, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotateXYZ(5, 5, 1, 5, 5, 1, 100, null).withStack(new ValidatingStack()).build());
 		
 		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
 
@@ -131,27 +124,28 @@ public class BruteForcePackagerTest {
 	public void testSimpleImperfectSquaredRectangles() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimpleImperfectSquaredRectangles());
+		pack(directory.getSimpleImperfectSquaredRectangles(9));
 	}
 	
 	@Test
 	public void testSimpleImperfectSquaredSquares() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimpleImperfectSquaredSquares());
+		pack(directory.getSimpleImperfectSquaredSquares(9));
 	}
 	
 	@Test
 	public void testSimplePerfectSquaredRectangles() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimplePerfectSquaredRectangles());
+		pack(directory.getSimplePerfectSquaredRectangles(9));
 	}
 	
 	protected void pack(List<BouwkampCodes> codes) {
 		for (BouwkampCodes bouwkampCodes : codes) {
 			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
 				long timestamp = System.currentTimeMillis();
+				System.out.println("Package " + bouwkampCode.getName() + " " + bouwkampCodes.getSource());
 				pack(bouwkampCode);
 				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.currentTimeMillis() - timestamp));
 			}

@@ -1,6 +1,4 @@
-package com.github.skjolber.packing.points3d;
-
-import com.github.skjolber.packing.api.Placement3D;
+package com.github.skjolber.packing.api;
 
 /**
  * 

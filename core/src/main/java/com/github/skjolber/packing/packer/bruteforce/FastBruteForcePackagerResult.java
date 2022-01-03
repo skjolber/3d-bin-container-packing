@@ -26,7 +26,7 @@ public class  FastBruteForcePackagerResult implements PackResult {
 	
 	// state
 	private PermutationRotationState state;
-	private List<Point3D> points = Collections.emptyList();
+	private List<Point3D<StackPlacement>> points = Collections.emptyList();
 	private List<StackPlacement> placements;
 	private boolean last;
 
@@ -48,7 +48,7 @@ public class  FastBruteForcePackagerResult implements PackResult {
 			stackPlacement.setValue(permutationRotation.getValue());
 			stackPlacement.setStackable(permutationRotation.getStackable());
 
-			Point3D point3d = points.get(i);
+			Point3D<StackPlacement> point3d = points.get(i);
 			stackPlacement.setX(point3d.getMinX());
 			stackPlacement.setY(point3d.getMinY());
 			stackPlacement.setZ(point3d.getMinZ());
@@ -64,7 +64,7 @@ public class  FastBruteForcePackagerResult implements PackResult {
 		return iterator;
 	}
 	
-	public void setState(List<Point3D> items, PermutationRotationState state, List<StackPlacement> placements, boolean last) {
+	public void setState(List<Point3D<StackPlacement>> items, PermutationRotationState state, List<StackPlacement> placements, boolean last) {
 		this.points = items;
 		this.state = state;
 		this.placements = placements;

@@ -20,6 +20,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.DefaultStack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.BouwkampCodeLine;
@@ -34,7 +35,7 @@ public class ParallelBruteForcePackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(3, 1, 1, 3, 1, 1, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(3, 1, 1, 3, 1, 1, 100, null).withStack(new ValidatingStack()).build());
 		
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withContainers(containers).build();
 		
@@ -64,7 +65,7 @@ public class ParallelBruteForcePackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(8, 8, 1, 8, 8, 1, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(8, 8, 1, 8, 8, 1, 100, null).withStack(new ValidatingStack()).build());
 		
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withContainers(containers).build();
 
@@ -84,7 +85,7 @@ public class ParallelBruteForcePackagerTest {
 	public void testStackingRectanglesOnSquareRectangleVolumeFirst() {
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotateXYZ(10, 10, 4, 10, 10, 4, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotateXYZ(10, 10, 4, 10, 10, 4, 100, null).withStack(new ValidatingStack()).build());
 		
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withContainers(containers).build();
 
@@ -104,7 +105,7 @@ public class ParallelBruteForcePackagerTest {
 	@Test
 	public void testStackingBox() {
 		List<Container> containers = new ArrayList<>();
-		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotateXYZ(5, 5, 1, 5, 5, 1, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotateXYZ(5, 5, 1, 5, 5, 1, 100, null).withStack(new ValidatingStack()).build());
 		
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withContainers(containers).build();
 
@@ -124,21 +125,21 @@ public class ParallelBruteForcePackagerTest {
 	public void testSimpleImperfectSquaredRectangles() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimpleImperfectSquaredRectangles());
+		pack(directory.getSimpleImperfectSquaredRectangles(9));
 	}
 	
 	@Test
 	public void testSimpleImperfectSquaredSquares() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimpleImperfectSquaredSquares());
+		pack(directory.getSimpleImperfectSquaredSquares(9));
 	}	
 	
 	@Test
 	public void testSimplePerfectSquaredRectangles() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimplePerfectSquaredRectangles());
+		pack(directory.getSimplePerfectSquaredRectangles(9));
 	}
 	
 	protected void pack(List<BouwkampCodes> codes) {
@@ -153,7 +154,7 @@ public class ParallelBruteForcePackagerTest {
 
 	protected void pack(BouwkampCode bouwkampCode) {
 		List<Container> containers = new ArrayList<>();
-		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotate(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth() * bouwkampCode.getDepth(), null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotate(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth() * bouwkampCode.getDepth(), null).withStack(new ValidatingStack()).build());
 
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(256).withCheckpointsPerDeadlineCheck(1024).withContainers(containers).build();
 

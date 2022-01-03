@@ -3,8 +3,6 @@ package com.github.skjolber.packing.api;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.AbstractStackableBuilder.Rotation;
-
 
 /**
  * {@linkplain Stackable} builder scaffold.

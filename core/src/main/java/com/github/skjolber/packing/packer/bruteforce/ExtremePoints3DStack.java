@@ -10,10 +10,10 @@ import com.github.skjolber.packing.points3d.ExtremePoints3D;
 public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 	
 	protected static class StackItem {
-		protected List<Point3D> values = new ArrayList<>();
+		protected List<Point3D<StackPlacement>> values = new ArrayList<>();
 		protected List<StackPlacement> placements = new ArrayList<>();
 		protected StackPlacement stackPlacement = new StackPlacement();
-		protected Point3D point;
+		protected Point3D<StackPlacement> point;
 	}
 	
 	protected List<StackItem> stackItems = new ArrayList<>();
@@ -85,9 +85,9 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		this.placements = stackItem.placements;
 	}
 	
-	public List<Point3D> getPoints() {
+	public List<Point3D<StackPlacement>> getPoints() {
 		// item 0 is always empty
-		List<Point3D> list = new ArrayList<>(stackIndex + 1);
+		List<Point3D<StackPlacement>> list = new ArrayList<>(stackIndex + 1);
 		for (int i = 1; i < stackIndex + 1; i++) {
 			StackItem stackItem = stackItems.get(i);
 			list.add(stackItem.point);

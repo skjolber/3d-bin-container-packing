@@ -66,7 +66,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			}
 			// iterator over all rotations
 			do {
-				List<Point3D> points = packStackPlacement(extremePoints, stackPlacements, rotator, holder, interrupt);
+				List<Point3D<StackPlacement>> points = packStackPlacement(extremePoints, stackPlacements, rotator, holder, interrupt);
 				if (points == null) {
 					return null; // timeout
 				}
@@ -94,11 +94,11 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		return result;
 	}
 
-	protected List<Point3D> packStackPlacement(ExtremePoints3DStack extremePoints, List<StackPlacement> placements, PermutationRotationIterator iterator, Container container) {
+	protected List<Point3D<StackPlacement>> packStackPlacement(ExtremePoints3DStack extremePoints, List<StackPlacement> placements, PermutationRotationIterator iterator, Container container) {
 		return packStackPlacement(extremePoints, placements, iterator, container, BooleanSupplierBuilder.NOOP);
 	}
 
-	public List<Point3D> packStackPlacement(ExtremePoints3DStack extremePoints, List<StackPlacement> placements, PermutationRotationIterator rotator, Container container, BooleanSupplier interrupt) {
+	public List<Point3D<StackPlacement>> packStackPlacement(ExtremePoints3DStack extremePoints, List<StackPlacement> placements, PermutationRotationIterator rotator, Container container, BooleanSupplier interrupt) {
 		if (placements.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -115,7 +115,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		return packStackPlacement(extremePoints, placements, rotator, container, maxLoadWeight, 0, interrupt, containerStackValue.getConstraint());
 	}
 	
-	private List<Point3D> packStackPlacement(ExtremePoints3DStack extremePointsStack, List<StackPlacement> placements, PermutationRotationIterator rotator, Container container, int maxLoadWeight, int placementIndex, BooleanSupplier interrupt, StackConstraint constraint) {
+	private List<Point3D<StackPlacement>> packStackPlacement(ExtremePoints3DStack extremePointsStack, List<StackPlacement> placements, PermutationRotationIterator rotator, Container container, int maxLoadWeight, int placementIndex, BooleanSupplier interrupt, StackConstraint constraint) {
 		if (interrupt.getAsBoolean()) {
 			// fit2d below might have returned due to deadline
 			return null;
@@ -141,13 +141,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 		maxLoadWeight -= stackable.getWeight();
 
-		List<Point3D> best = extremePointsStack.getPoints();
+		List<Point3D<StackPlacement>> best = extremePointsStack.getPoints();
 
 		extremePointsStack.push();
 
-		List<Point3D> currentPoints = extremePointsStack.getValues();
+		List<Point3D<StackPlacement>> currentPoints = extremePointsStack.getValues();
 		for(int k = 0; k < currentPoints.size(); k++) {
-			Point3D point3d = currentPoints.get(k);
+			Point3D<StackPlacement> point3d = currentPoints.get(k);
 			if(!point3d.fits3D(stackValue)) {
 				continue;
 			}
@@ -169,7 +169,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 			stack.add(placement);
 
-			List<Point3D> points = packStackPlacement(extremePointsStack, placements, rotator, container, maxLoadWeight, placementIndex + 1, interrupt, constraint);
+			List<Point3D<StackPlacement>> points = packStackPlacement(extremePointsStack, placements, rotator, container, maxLoadWeight, placementIndex + 1, interrupt, constraint);
 			
 			stack.remove(placement);
 

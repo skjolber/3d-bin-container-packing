@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.points2d.ui;
+package com.github.skjolber.packing.points3d;
 
 import static org.junit.Assert.assertEquals;
 

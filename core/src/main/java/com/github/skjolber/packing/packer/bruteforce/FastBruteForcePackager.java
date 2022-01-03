@@ -60,7 +60,6 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 		}	
 	}
 	
-
 	private class FastBruteForceAdapter implements Adapter<FastBruteForcePackagerResult> {
 
 		private DefaultPermutationRotationIterator[] iterators;
@@ -245,7 +244,7 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 			
 			StackValue stackValue = permutationRotation.getValue();
 			
-			List<Point3D> points = extremePoints3D.getValues();
+			List<Point3D<StackPlacement>> points = extremePoints3D.getValues();
 			
 			// TODO brute force in 3d point dimension too
 			// a recursive algorithm is perhaps appropriate since the number of boxes is limited
@@ -253,7 +252,7 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 			
 			int bestPointIndex = -1;
 			for(int k = 0; k < points.size(); k++) {
-				Point3D point3d = points.get(k);
+				Point3D<StackPlacement> point3d = points.get(k);
 				if(!point3d.fits3D(stackValue)) {
 					continue;
 				}
@@ -262,7 +261,7 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 				}
 
 				if(bestPointIndex != -1) {
-					Point3D bestPoint = points.get(bestPointIndex);
+					Point3D<StackPlacement> bestPoint = points.get(bestPointIndex);
 					if(bestPoint.getArea() < point3d.getArea()) {
 						continue;
 					} else if(bestPoint.getArea() == point3d.getArea() && bestPoint.getVolume() < point3d.getVolume()) {
@@ -276,7 +275,7 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 				break;
 			}
 			
-			Point3D point3d = points.get(bestPointIndex);
+			Point3D<StackPlacement> point3d = points.get(bestPointIndex);
 			
 			placement.setStackable(stackable);
 			placement.setStackValue(stackValue);

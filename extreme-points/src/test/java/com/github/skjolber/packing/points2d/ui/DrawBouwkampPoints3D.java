@@ -27,12 +27,12 @@ public class DrawBouwkampPoints3D {
 				
 				if(codes.getSource().contains("o15siss.bkp") && c.getName().equals("39B")) {
 				//if(codes.getSource().equals("/simpleImperfectSquaredRectangles/o9sisr.bkp") && c.getName().equals("15x11A")) {
-					DefaultExtremePoints3D convert3dyzPlane = converter.convert3DYZPlane(c, 2);
+					DefaultExtremePoints3D convert3dyzPlane = converter.convert3DYZPlane(c, 12);
 					
-					List<Point3D> list = new ArrayList<>();
+					List<Point3D<?>> list = new ArrayList<>();
 					
-					List<Point3D> values = convert3dyzPlane.getValues();
-					for (Point3D point3d : values) {
+					List<Point3D<Placement3D>> values = convert3dyzPlane.getValues();
+					for (Point3D<Placement3D> point3d : values) {
 						list.add(point3d.rotate());
 					}
 					

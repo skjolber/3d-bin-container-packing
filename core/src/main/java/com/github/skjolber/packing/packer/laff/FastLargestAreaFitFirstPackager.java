@@ -19,6 +19,7 @@ import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.StackValuePointFilter;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableFilter;
+import com.github.skjolber.packing.points2d.DefaultPlacement2D;
 import com.github.skjolber.packing.points2d.ExtremePoints2D;
 
 /**
@@ -27,7 +28,7 @@ import com.github.skjolber.packing.points2d.ExtremePoints2D;
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
-public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPackager<Point2D> {
+public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPackager<Point2D<StackPlacement>> {
 
 	public static LargestAreaFitFirstPackagerBuilder newBuilder() {
 		return new LargestAreaFitFirstPackagerBuilder();
@@ -37,9 +38,9 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 
 		private List<Container> containers;
 		private int checkpointsPerDeadlineCheck = 1;
-		private LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D, ?> configurationBuilderFactory;
+		private LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D<StackPlacement>, ?> configurationBuilderFactory;
 
-		public LargestAreaFitFirstPackagerBuilder setConfigurationBuilderFactory(LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D, ?> configurationBuilder) {
+		public LargestAreaFitFirstPackagerBuilder setConfigurationBuilderFactory(LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D<StackPlacement>, ?> configurationBuilder) {
 			this.configurationBuilderFactory = configurationBuilder;
 			return this;
 		}
@@ -74,11 +75,11 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a container that can hold the boxes, given time, it also tries to find a better match.
 	 */
 
-	public FastLargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D, ?> factory) {
+	public FastLargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D<StackPlacement>, ?> factory) {
 		super(containers, checkpointsPerDeadlineCheck, factory);
 	}
 
-	public LargestAreaFitFirstPackagerResult pack(List<Stackable> stackables, Container targetContainer,  BooleanSupplier interrupt) {
+	public LargestAreaFitFirstPackagerResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt) {
 		List<Stackable> remainingStackables = new ArrayList<>(stackables);
 		
 		ContainerStackValue[] stackValues = targetContainer.getStackValues();
@@ -97,10 +98,10 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 
 		ExtremePoints2D<StackPlacement> extremePoints2D = new ExtremePoints2D<>(containerStackValue.getLoadDx(), containerStackValue.getLoadDy());
 
-		LargestAreaFitFirstPackagerConfiguration<Point2D> configuration = factory.newBuilder().withContainer(targetContainer).withExtremePoints(extremePoints2D).withStack(stack).build();
+		LargestAreaFitFirstPackagerConfiguration<Point2D<StackPlacement>> configuration = factory.newBuilder().withContainer(targetContainer).withExtremePoints(extremePoints2D).withStack(stack).build();
 		
 		StackableFilter firstFilter = configuration.getFirstStackableFilter();
-		StackValuePointFilter<Point2D> firstStackValuePointComparator = configuration.getFirstStackValuePointFilter();
+		StackValuePointFilter<Point2D<StackPlacement>> firstStackValuePointComparator = configuration.getFirstStackValuePointFilter();
 
 		int levelOffset = 0;
 		
@@ -114,7 +115,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			int maxWeight = stack.getFreeWeightLoad();
 			int maxHeight = stack.getFreeLoadDz();
 
-			Point2D firstPoint = extremePoints2D.getValue(0);
+			Point2D<StackPlacement> firstPoint = extremePoints2D.getValue(0);
 			
 			int bestFirstIndex = -1;
 			StackValue bestFirstStackValue = null;
@@ -174,7 +175,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			extremePoints2D.add(0, first);
 			
 			StackableFilter nextFilter = configuration.getNextStackableFilter();
-			StackValuePointFilter<Point2D> nextStackValuePointComparator = configuration.getNextStackValuePointFilter();
+			StackValuePointFilter<Point2D<StackPlacement>> nextStackValuePointComparator = configuration.getNextStackValuePointFilter();
 
 			while(!extremePoints2D.isEmpty() && maxRemainingLevelWeight > 0 && !scopedStackables.isEmpty()) {
 				if(interrupt.getAsBoolean()) {
@@ -191,7 +192,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 				StackValue bestStackValue = null;
 				Stackable bestStackable = null;
 				
-				List<Point2D> points = extremePoints2D.getValues();
+				List<Point2D<StackPlacement>> points = extremePoints2D.getValues();
 				for (int i = 0; i < scopedStackables.size(); i++) {
 					Stackable box = scopedStackables.get(i);
 					if(box.getVolume() > maxPointVolume) {
@@ -217,7 +218,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 
 						// pick the best point / stackable combination
 						for(int k = 0; k < points.size(); k++) {
-							Point2D point2d = points.get(k);
+							Point2D<StackPlacement> point2d = points.get(k);
 							if(point2d.getArea() < stackValue.getArea()) {
 								continue;
 							}
@@ -248,7 +249,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 				Stackable remove = scopedStackables.remove(bestIndex);
 				remainingStackables.remove(remove);
 				
-				Point2D point = extremePoints2D.getValue(bestPointIndex);
+				Point2D<StackPlacement> point = extremePoints2D.getValue(bestPointIndex);
 				
 				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), 0, -1, -1, Collections.emptyList());
 				levelStack.add(stackPlacement);

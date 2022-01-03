@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValuePointFilter;
 import com.github.skjolber.packing.api.StackableFilter;
 
-public abstract class LargestAreaFitFirstPackagerConfigurationBuilder<P extends Point2D, B extends LargestAreaFitFirstPackagerConfigurationBuilder<P, B>> {
+public abstract class LargestAreaFitFirstPackagerConfigurationBuilder<P extends Point2D<StackPlacement>, B extends LargestAreaFitFirstPackagerConfigurationBuilder<P, B>> {
 
 	public static StackableFilter FIRST_STACKABLE_FILTER = (best, candidate) -> {
 		// return true if the candidate might be better than the current best
@@ -21,11 +21,11 @@ public abstract class LargestAreaFitFirstPackagerConfigurationBuilder<P extends 
 	};
 	
 	public static StackValuePointFilter DEFAULT_STACK_VALUE_POINT_FILTER = (stackable1, point1, stackValue1, stackable2, point2, stackValue2) -> {
- 			if(stackable2.getVolume() == stackable1.getVolume()) {
- 				return stackValue2.getArea() < stackValue1.getArea(); // smaller is better
- 			}
-			return stackable2.getVolume() > stackable1.getVolume(); // more is better 
-		};
+		if(stackable2.getVolume() == stackable1.getVolume()) {
+			return stackValue2.getArea() < stackValue1.getArea(); // smaller is better
+		}
+		return stackable2.getVolume() > stackable1.getVolume(); // more is better 
+	};
 		
 	public static StackValuePointFilter FIRST_STACK_VALUE_POINT_FILTER = (stackable1, point1, stackValue1, stackable2, point2, stackValue2) -> {
 		return stackValue1.getArea() < stackValue2.getArea(); // larger is better

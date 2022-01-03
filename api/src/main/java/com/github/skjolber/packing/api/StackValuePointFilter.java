@@ -1,19 +1,17 @@
 package com.github.skjolber.packing.api;
 
-import java.util.Comparator;
-
 @FunctionalInterface
 public interface StackValuePointFilter<T> {
 
 	/**
 	 * Check whether to let 2 replace 1 as the best.
 	 * 
-	 * @param stackable1
-	 * @param point1
-	 * @param stackValue1
-	 * @param stackable2
-	 * @param point2
-	 * @param stackValue2
+	 * @param stackable1 first stackable
+	 * @param point1 first point
+	 * @param stackValue1 first stack value
+	 * @param stackable2 second stackable
+	 * @param point2 second point
+	 * @param stackValue2 second stack value
      * @return true if point2 is superior to point1
      * @throws ClassCastException if the arguments' types prevent them from
      *         being compared by this comparator.

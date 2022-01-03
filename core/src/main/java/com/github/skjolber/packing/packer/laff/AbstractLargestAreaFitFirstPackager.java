@@ -6,20 +6,21 @@ import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Point2D;
+import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.Adapter;
-import com.github.skjolber.packing.packer.EmptyPackResult;
 import com.github.skjolber.packing.packer.PackResult;
+import com.github.skjolber.packing.points2d.DefaultPlacement2D;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
  * <br><br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
-public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D> extends AbstractPackager<LargestAreaFitFirstPackagerResult, LargestAreaFitFirstPackagerResultBuilder> {
+public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<StackPlacement>> extends AbstractPackager<LargestAreaFitFirstPackagerResult, LargestAreaFitFirstPackagerResultBuilder> {
 
 	protected LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, ?> factory;
 

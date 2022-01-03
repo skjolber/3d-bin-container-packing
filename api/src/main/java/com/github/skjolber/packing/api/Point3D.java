@@ -48,11 +48,22 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			int x = Integer.compare(o1.minX, o2.minX);
 
 			if(x == 0) {
-				return Integer.compare(o1.minY, o2.minY);
+				x = Integer.compare(o1.minY, o2.minY);
 			}
 			if(x == 0) {
-				return Integer.compare(o1.minZ, o2.minZ);
+				x = Integer.compare(o1.minZ, o2.minZ);
 			}
+
+			if(x == 0) {
+				x = Integer.compare(o1.maxX, o2.maxX);
+			}
+			if(x == 0) {
+				x = Integer.compare(o1.maxY, o2.maxY);
+			}
+			if(x == 0) {
+				x = Integer.compare(o1.maxZ, o2.maxZ);
+			}
+
 			return x;
 		}
 	};
@@ -64,11 +75,22 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			int x = Integer.compare(o1.minY, o2.minY);
 
 			if(x == 0) {
-				return Integer.compare(o1.minZ, o2.minZ);
+				x = Integer.compare(o1.minZ, o2.minZ);
 			}
 			if(x == 0) {
-				return Integer.compare(o1.minX, o2.minX);
+				x = Integer.compare(o1.minX, o2.minX);
 			}
+			
+			if(x == 0) {
+				x = Integer.compare(o1.maxY, o2.maxY);
+			}
+			if(x == 0) {
+				x = Integer.compare(o1.maxZ, o2.maxZ);
+			}
+			if(x == 0) {
+				x = Integer.compare(o1.maxX, o2.maxX);
+			}
+
 			return x;
 		}
 	};
@@ -80,11 +102,22 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			int x = Integer.compare(o1.minZ, o2.minZ);
 
 			if(x == 0) {
-				return Integer.compare(o1.minX, o2.minX);
+				x = Integer.compare(o1.minX, o2.minX);
 			}
 			if(x == 0) {
-				return Integer.compare(o1.minY, o2.minY);
+				x = Integer.compare(o1.minY, o2.minY);
 			}
+			
+			if(x == 0) {
+				x = Integer.compare(o1.maxZ, o2.maxZ);
+			}
+			if(x == 0) {
+				x = Integer.compare(o1.maxX, o2.maxX);
+			}
+			if(x == 0) {
+				x = Integer.compare(o1.maxY, o2.maxY);
+			}
+			
 			return x;
 		}
 	};
@@ -339,6 +372,18 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	public boolean eclipsesZ(Point3D<P> point) {
 		return minZ <= point.getMinZ() && point.getMaxZ() <= maxZ;
 	}
+	
+	public boolean eclipsesMovedX(Point3D<P> point, int x) {
+		return minX <= x && point.getMaxX() <= maxX && eclipsesY(point) && eclipsesZ(point);
+	}
+
+	public boolean eclipsesMovedY(Point3D<P> point, int y) {
+		return minY <= y && point.getMaxY() <= maxY && eclipsesX(point) && eclipsesZ(point);
+	}
+
+	public boolean eclipsesMovedZ(Point3D<P> point, int z) {
+		return minZ <= z && point.getMaxZ() <= maxZ && eclipsesX(point) && eclipsesY(point);
+	}
 
 	public abstract List<P> getPlacements3D();
 	
@@ -468,7 +513,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |---------x===================
 	//
 	
-	public Point2D<P> moveX(int x, int maxX, int maxY) {
+	public Point3D<P> moveX(int x, int maxX, int maxY) {
 		return moveX(x, maxX, maxY, maxZ);
 	}
 	
@@ -491,7 +536,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |---------x===================
 	//
 
-	public Point2D<P> moveX(int x, int maxX, int maxY, P ySupport) {
+	public Point3D<P> moveX(int x, int maxX, int maxY, P ySupport) {
 		return moveX(x, maxX, maxY, maxZ, ySupport);
 	}
 
@@ -524,7 +569,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |                 
 	//       |---------------------------
 
-	public Point2D<P> moveY(int y, int maxX, int maxY) {
+	public Point3D<P> moveY(int y, int maxX, int maxY) {
 		return moveY(y, maxX, maxY, maxZ);
 	}
 
@@ -556,7 +601,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |                 
 	//       |---------------------------
 
-	public Point2D<P> moveY(int y, int maxX, int maxY, P xSupport) {
+	public Point3D<P> moveY(int y, int maxX, int maxY, P xSupport) {
 		return moveY(y, maxX, maxY, maxZ, xSupport);
 	}
 

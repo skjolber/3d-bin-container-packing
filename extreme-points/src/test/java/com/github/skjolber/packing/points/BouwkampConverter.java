@@ -216,7 +216,6 @@ public class BouwkampConverter {
 					
 					break lines;
 				}
-
 			}
 		}
 		

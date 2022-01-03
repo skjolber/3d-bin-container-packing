@@ -1,10 +1,11 @@
 package com.github.skjolber.packing.packer.laff;
 
 import com.github.skjolber.packing.api.Point2D;
+import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValuePointFilter;
 import com.github.skjolber.packing.api.StackableFilter;
 
-public class DefaultLargestAreaFitFirstPackagerConfiguration<P extends Point2D> implements LargestAreaFitFirstPackagerConfiguration<P> {
+public class DefaultLargestAreaFitFirstPackagerConfiguration<P extends Point2D<StackPlacement>> implements LargestAreaFitFirstPackagerConfiguration<P> {
 
 	private final StackableFilter nextStackableFilter;
 	private final StackValuePointFilter<P> nextStackValuePointFilter;

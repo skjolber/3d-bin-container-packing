@@ -7,7 +7,7 @@ import com.github.skjolber.packing.api.Point2D;
 import com.github.skjolber.packing.api.XSupportPoint2D;
 import com.github.skjolber.packing.api.YSupportPoint2D;
 
-public abstract class AbstractPoint2DAssert<SELF extends AbstractPoint2DAssert<SELF, ACTUAL>, ACTUAL extends Point2D<?>>
+public abstract class AbstractPoint2DAssert<SELF extends AbstractPoint2DAssert<SELF, ACTUAL>, ACTUAL extends Point2D>
 extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	protected AbstractPoint2DAssert(ACTUAL actual, Class<?> selfType) {
@@ -75,7 +75,9 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 				YSupportPoint2D ySupportPoint2D = (YSupportPoint2D)actual;
 				Placement2D support = ySupportPoint2D.getYSupport();
 				
-				failWithMessage("Expected y support at " + y + ", was " + support.getAbsoluteEndY());
+				if(support.getAbsoluteEndY() != y) {
+					failWithMessage("Expected y support at " + y + ", was " + support.getAbsoluteEndY());
+				}
 			} else {
 				failWithMessage("Expected y support at " + y);
 			}
@@ -85,15 +87,15 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	public SELF isXSupportAt(int x) {
 		isNotNull();
-		if (!actual.isXSupport(x)) {
-			if(actual instanceof XSupportPoint2D) {
-				XSupportPoint2D ySupportPoint2D = (XSupportPoint2D)actual;
-				Placement2D support = ySupportPoint2D.getXSupport();
-				
+		if(actual instanceof XSupportPoint2D) {
+			XSupportPoint2D ySupportPoint2D = (XSupportPoint2D)actual;
+			Placement2D support = ySupportPoint2D.getXSupport();
+			
+			if(support.getAbsoluteEndX() != x) {
 				failWithMessage("Expected x support at " + x + ", was " + support.getAbsoluteEndX());
-			} else {
-				failWithMessage("Expected x support at " + x + ", was none");
 			}
+		} else {
+			failWithMessage("Expected x support at " + x + ", was none for " + actual);
 		}
 		return myself;
 	}
@@ -110,11 +112,10 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 			YSupportPoint2D ySupportPoint2D = (YSupportPoint2D)actual;
 			Placement2D ySupport = ySupportPoint2D.getYSupport();
 			if(ySupport.getAbsoluteEndY() != y) {
-				
 				failWithMessage("Expected y support limit " + y + ", was " + ySupport.getAbsoluteEndY());
 			}
 		} else {
-			failWithMessage("No y support, expected " + y + ", was none");
+			failWithMessage("No y support, expected " + y + ", was none for " + actual);
 		}
 		return myself;
 	}

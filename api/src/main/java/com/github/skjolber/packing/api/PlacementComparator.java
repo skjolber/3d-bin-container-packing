@@ -10,12 +10,12 @@ public interface PlacementComparator<L> {
 	 * <br>
 	 * 
      * @param s1 the first object to be compared.
-	 * @param sv1
-	 * @param l1
+	 * @param sv1 the first stack value
+	 * @param l1 TODO
      * @param s2 the second object to be compared.
-	 * @param sv2
-	 * @param l2
-     * @return a negative integer if o1 < o2. A positive integer if o1 > o2. Otherwise zero.
+	 * @param sv2 the second stack value
+	 * @param l2 TODO
+     * @return a negative integer if o1 less than o2. A positive integer if o1 more than o2. Otherwise zero.
      * @throws NullPointerException if an argument is null and this
      *         comparator does not permit null arguments
      * @throws ClassCastException if the arguments' types prevent them from

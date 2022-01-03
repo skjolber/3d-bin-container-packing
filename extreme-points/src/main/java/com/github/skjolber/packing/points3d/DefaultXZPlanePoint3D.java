@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.Point3D;
+import com.github.skjolber.packing.api.XZPlanePoint3D;
 
 public class DefaultXZPlanePoint3D<P extends Placement3D> extends Point3D<P> implements XZPlanePoint3D {
 
@@ -119,7 +120,7 @@ public class DefaultXZPlanePoint3D<P extends Placement3D> extends Point3D<P> imp
 	@Override
 	public Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ) {
 		if(z <= xzPlane.getAbsoluteEndZ()) {
-			return new DefaultXZPlanePoint3D<>(minY, minY, z, maxX, maxY, maxZ, xzPlane);
+			return new DefaultXZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xzPlane);
 		}
 		// all previous plane support is lost
 		return new DefaultPoint3D<>(minX, minY, z, maxX, maxY, maxZ);
@@ -128,7 +129,7 @@ public class DefaultXZPlanePoint3D<P extends Placement3D> extends Point3D<P> imp
 	@Override
 	public Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ, P xySupport) {
 		if(z <= xzPlane.getAbsoluteEndZ()) {
-			return new DefaultXYPlaneXZPlanePoint3D<>(minY, minY, z, maxX, maxY, maxZ, xzPlane, xySupport);
+			return new DefaultXYPlaneXZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xzPlane, xySupport);
 		}
 		// all previous plane support is lost
 		return new DefaultXYPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xySupport);

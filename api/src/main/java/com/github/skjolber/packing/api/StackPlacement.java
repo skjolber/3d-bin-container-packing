@@ -15,10 +15,10 @@ public class StackPlacement implements Placement3D {
 	protected int maxSupportedPressure; // i.e.  
 	protected int maxSupportedWeight;
 	
-	protected List<Placement3D> supports;
+	protected List<StackPlacement> supports;
 
 	public StackPlacement(Stackable stackable, StackValue value, int x, int y, int z, int maxSupportedPressure,
-			int maxSupportedWeight, List<Placement3D> supports) {
+			int maxSupportedWeight, List<StackPlacement> supports) {
 		super();
 		this.stackable = stackable;
 		this.value = value;
@@ -47,7 +47,7 @@ public class StackPlacement implements Placement3D {
 		this.value = stackValue;
 	}
 	
-	boolean intersects(StackPlacement placement) {
+	public boolean intersects(StackPlacement placement) {
 		return intersectsX(placement) && intersectsY(placement) && intersectsZ(placement);
 	}
 
@@ -139,11 +139,11 @@ public class StackPlacement implements Placement3D {
 	}
 
 	@Override
-	public List<Placement3D> getSupports2D() {
+	public List<StackPlacement> getSupports2D() {
 		return supports;
 	}
 	@Override
-	public List<Placement3D> getSupports3D() {
+	public List<StackPlacement> getSupports3D() {
 		return supports;
 	}
 	public void setValue(StackValue value) {
@@ -155,7 +155,7 @@ public class StackPlacement implements Placement3D {
 	public void setMaxSupportedWeight(int maxSupportedWeight) {
 		this.maxSupportedWeight = maxSupportedWeight;
 	}
-	public void setSupports(List<Placement3D> supports) {
+	public void setSupports(List<StackPlacement> supports) {
 		this.supports = supports;
 	}
 	

@@ -4,8 +4,8 @@ package com.github.skjolber.packing.api;
 public interface StackableFilter {
 
 	/**
-	 * @param s1
-	 * @param s2
+	 * @param s1 stackable 1
+	 * @param s2 stackable 2
 	 * @return true if 2 is superior to 1
 	 */
 	

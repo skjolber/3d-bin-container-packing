@@ -26,7 +26,7 @@ import com.github.skjolber.packing.points3d.ExtremePoints3D;
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
-public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPackager<Point3D> {
+public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPackager<Point3D<StackPlacement>> {
 
 	public static LargestAreaFitFirstPackagerBuilder newBuilder() {
 		return new LargestAreaFitFirstPackagerBuilder();
@@ -36,9 +36,9 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 		private List<Container> containers;
 		private int checkpointsPerDeadlineCheck = 1;
-		private LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D, ?> configurationBuilderFactory;
+		private LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D<StackPlacement>, ?> configurationBuilderFactory;
 
-		public LargestAreaFitFirstPackagerBuilder setConfigurationBuilderFactory(LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D, ?> configurationBuilder) {
+		public LargestAreaFitFirstPackagerBuilder setConfigurationBuilderFactory(LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D<StackPlacement>, ?> configurationBuilder) {
 			this.configurationBuilderFactory = configurationBuilder;
 			return this;
 		}
@@ -64,7 +64,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 		}	
 	}
 
-	public LargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D, ?> factory) {
+	public LargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D<StackPlacement>, ?> factory) {
 		super(containers, checkpointsPerDeadlineCheck, factory);
 	}
 
@@ -87,10 +87,10 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 		ExtremePoints3D<StackPlacement> extremePoints3D = new ExtremePoints3D<>(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
 
-		LargestAreaFitFirstPackagerConfiguration<Point3D> configuration = factory.newBuilder().withContainer(targetContainer).withExtremePoints(extremePoints3D).withStack(stack).build();
+		LargestAreaFitFirstPackagerConfiguration<Point3D<StackPlacement>> configuration = factory.newBuilder().withContainer(targetContainer).withExtremePoints(extremePoints3D).withStack(stack).build();
 		
 		StackableFilter firstFilter = configuration.getFirstStackableFilter();
-		StackValuePointFilter<Point3D> firstStackValuePointComparator = configuration.getFirstStackValuePointFilter();
+		StackValuePointFilter<Point3D<StackPlacement>> firstStackValuePointComparator = configuration.getFirstStackValuePointFilter();
 
 		int levelOffset = 0;
 
@@ -103,7 +103,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			
 			int maxWeight = stack.getFreeWeightLoad();
 
-			Point3D firstPoint = extremePoints3D.getValue(0);
+			Point3D<StackPlacement> firstPoint = extremePoints3D.getValue(0);
 			
 			int firstIndex = -1;
 			StackValue firstStackValue = null;
@@ -158,7 +158,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			extremePoints3D.add(0, first);
 			
 			StackableFilter nextFilter = configuration.getNextStackableFilter();
-			StackValuePointFilter<Point3D> nextStackValuePointComparator = configuration.getNextStackValuePointFilter();
+			StackValuePointFilter<Point3D<StackPlacement>> nextStackValuePointComparator = configuration.getNextStackValuePointFilter();
 			
 			while(!extremePoints3D.isEmpty() && maxRemainingLevelWeight > 0 && !scopedStackables.isEmpty()) {
 				long maxPointVolume = extremePoints3D.getMaxVolume();
@@ -169,7 +169,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				StackValue bestStackValue = null;
 				Stackable bestStackable = null;
 				
-				List<Point3D> points = extremePoints3D.getValues();
+				List<Point3D<StackPlacement>> points = extremePoints3D.getValues();
 				for (int i = 0; i < scopedStackables.size(); i++) {
 					Stackable box = scopedStackables.get(i);
 					if(box.getVolume() > maxPointVolume) {
@@ -194,7 +194,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 						}
 						
 						for(int k = 0; k < points.size(); k++) {
-							Point3D point3d = points.get(k);
+							Point3D<StackPlacement> point3d = points.get(k);
 							if(!point3d.fits3D(stackValue)) {
 								continue;
 							}
@@ -219,14 +219,13 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				Stackable remove = scopedStackables.remove(bestIndex);
 				remainingStackables.remove(remove);
 
-				Point3D point = extremePoints3D.getValue(bestPointIndex);
+				Point3D<StackPlacement> point = extremePoints3D.getValue(bestPointIndex);
 				
 				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ(), -1, -1, point.getPlacements3D());
 				levelStack.add(stackPlacement);
 				extremePoints3D.add(bestPointIndex, stackPlacement);
 
 				maxRemainingLevelWeight -= remove.getWeight();
-				
 			}
 			
 			for (StackPlacement stackPlacement : levelStack.getPlacements()) {

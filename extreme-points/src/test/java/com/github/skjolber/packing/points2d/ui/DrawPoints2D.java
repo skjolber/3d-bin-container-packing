@@ -1,20 +1,27 @@
 package com.github.skjolber.packing.points2d.ui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.List;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.MouseInputAdapter;
 
 import com.github.skjolber.packing.api.Placement2D;
+import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.Point2D;
 import com.github.skjolber.packing.api.Point3D;
 import com.github.skjolber.packing.points.DefaultExtremePoints2D;
 import com.github.skjolber.packing.points.DefaultExtremePoints3D;
-import com.github.skjolber.packing.points2d.DefaultPlacement2D;
-import com.github.skjolber.packing.points2d.ExtremePoints2D;
 
 public class DrawPoints2D {
 
@@ -40,7 +47,7 @@ public class DrawPoints2D {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				
-				List<Point3D> values = p.getValues();
+				List<Point3D<Placement3D>> values = p.getValues();
 				
 				init(values, p.getPlacements(), p.getWidth(), p.getDepth());
 			}

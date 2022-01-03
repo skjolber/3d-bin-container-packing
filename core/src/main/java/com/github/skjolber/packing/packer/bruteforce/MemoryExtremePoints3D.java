@@ -13,7 +13,7 @@ public class MemoryExtremePoints3D extends ExtremePoints3D<StackPlacement> {
 		super(dx, dy, dz);
 	}
 
-	protected List<Point3D> points = new ArrayList<>();
+	protected List<Point3D<StackPlacement>> points = new ArrayList<>();
 
 	@Override
 	public boolean add(int index, StackPlacement placement) {
@@ -22,7 +22,7 @@ public class MemoryExtremePoints3D extends ExtremePoints3D<StackPlacement> {
 		return super.add(index, placement);
 	}
 
-	public List<Point3D> getPoints() {
+	public List<Point3D<StackPlacement>> getPoints() {
 		return points;
 	}
 
