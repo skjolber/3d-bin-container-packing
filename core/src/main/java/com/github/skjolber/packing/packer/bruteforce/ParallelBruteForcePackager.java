@@ -56,7 +56,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		 * 
 		 * Number of units to split the work into. This number should by an order of magnitude larger than the threads.
 		 * 
-		 * @param parallelizationCount
+		 * @param parallelizationCount number of pieces to split the workload into
 		 * @return this builder
 		 */
 		

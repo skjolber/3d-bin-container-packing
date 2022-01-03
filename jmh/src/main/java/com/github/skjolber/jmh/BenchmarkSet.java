@@ -2,28 +2,28 @@ package com.github.skjolber.jmh;
 
 import java.util.List;
 
-import com.github.skjolber.packing.old.BoxItem;
-import com.github.skjolber.packing.old.BruteForcePackager;
-import com.github.skjolber.packing.old.BruteForcePackagerBuilder;
+import com.github.skjolber.packing.api.Packager;
+import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.packer.AbstractPackager;
 
 public class BenchmarkSet {
 
-	private final List<BoxItem> products;
-	private final BruteForcePackager bruteForcePackager;
+	private final List<StackableItem> products;
+	private final AbstractPackager packager;
 	
-	public BenchmarkSet(BruteForcePackagerBuilder builder, List<BoxItem> products) {
-		this.bruteForcePackager = builder.build();
+	public BenchmarkSet(AbstractPackager packager, List<StackableItem> products) {
+		this.packager = packager;
 		this.products = products;
 	}
 	
-	public boolean add(BoxItem arg0) {
+	public boolean add(StackableItem arg0) {
 		return products.add(arg0);
 	}
-	public List<BoxItem> getProducts() {
+	public List<StackableItem> getProducts() {
 		return products;
 	}
 
-	public BruteForcePackager getBruteForcePackager() {
-		return bruteForcePackager;
+	public AbstractPackager getPackager() {
+		return packager;
 	}
 }

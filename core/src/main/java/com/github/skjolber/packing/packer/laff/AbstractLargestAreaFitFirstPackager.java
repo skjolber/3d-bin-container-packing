@@ -24,25 +24,9 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 
 	protected LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, ?> factory;
 
-	/**
-	 * Constructor
-	 *
-	 * @param containers list of containers
-	 * @param configurationBuilder 
-	 * @param checkpointsPerDeadlineCheck 
-	 */
 	public AbstractLargestAreaFitFirstPackager(List<Container> containers, LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, ?> factory) {
 		this(containers, 1, factory);
 	}
-
-	/**
-	 * Constructor
-	 *
-	 * @param containers list of containers
-	 * @param footprintFirst start with box which has the largest footprint. If not, the highest box is first.
-	 * @param rotate3D whether boxes can be rotated in all three directions (two directions otherwise)
-	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a container that can hold the boxes, given time, it also tries to find a better match.
-	 */
 
 	public AbstractLargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, ?> factory) {
 		super(containers, checkpointsPerDeadlineCheck);
@@ -50,16 +34,6 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 		this.factory = factory;
 	}
 	
-	/**
-	 *
-	 * Return a container which holds all the boxes in the argument
-	 *
-	 * @param containerProducts list of boxes to fit in a container.
-	 * @param targetContainer the container to fit within
-	 * @param deadline the system time in milliseconds at which the search should be aborted
-	 * @return null if no match, or deadline reached
-	 */
-
 	public LargestAreaFitFirstPackagerResult pack(List<Stackable> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck) {
 		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}

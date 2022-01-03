@@ -50,7 +50,7 @@ public class PermutationPackagerBenchmark {
     public int process(List<BenchmarkSet> sets, long deadline) {
     	int i = 0;
     	for(BenchmarkSet set : sets) {
-    		if(set.getBruteForcePackager().pack(set.getProducts(), deadline) != null) {
+    		if(set.getPackager().pack(set.getProducts()) != null) {
     			i++;
     		}
     	}

@@ -47,7 +47,6 @@ public class VisualizationTest {
 		DefaultContainer container = Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(3, 2, 1, 3, 2, 1, 100, null).withStack(new DefaultStack()).build();
 		containers.add(container);
 		
-		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
@@ -65,7 +64,6 @@ public class VisualizationTest {
 		write(container);
 	}
 	
-
 	@Test
 	public void testBruteForcePackager() throws Exception {
 		List<Container> containers = new ArrayList<>();
@@ -219,7 +217,7 @@ public class VisualizationTest {
 	public void testBowcampCodes() throws Exception {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		List<BouwkampCodes> codes = directory.codesForCount(16);
+		List<BouwkampCodes> codes = directory.codesForCount(9);
 		
 		BouwkampCodes bouwkampCodes = codes.get(0);
 		
@@ -248,11 +246,23 @@ public class VisualizationTest {
 	}
 	
 	@Test
-	public void testSimplePerfectSquaredRectangles() throws Exception {
+	public void testSimpleImperfectSquaredRectangles() throws Exception {
+		// if you do not have a lot of CPU cores, this will take quite some time
+		
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimplePerfectSquaredRectangles());
-	}
+		int level = 10;
+		
+		pack(directory.getSimpleImperfectSquaredRectangles(level));
+		
+		directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimpleImperfectSquaredSquares(level));
+		
+		directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimplePerfectSquaredRectangles(level));
+	}	
 	
 	protected void pack(List<BouwkampCodes> codes) throws Exception {
 		for (BouwkampCodes bouwkampCodes : codes) {
@@ -260,6 +270,8 @@ public class VisualizationTest {
 				long timestamp = System.currentTimeMillis();
 				pack(bouwkampCode);
 				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.currentTimeMillis() - timestamp));
+				
+				Thread.sleep(5000);
 			}
 		}
 	}
@@ -269,8 +281,6 @@ public class VisualizationTest {
 		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotate(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth() * bouwkampCode.getDepth(), null).withStack(new DefaultStack()).build());
 
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(256).withCheckpointsPerDeadlineCheck(1024).withContainers(containers).build();
-
-		List<StackableItem> products = new ArrayList<>();
 
 		List<Integer> squares = new ArrayList<>(); 
 		for (BouwkampCodeLine bouwkampCodeLine : bouwkampCode.getLines()) {
@@ -283,6 +293,7 @@ public class VisualizationTest {
         	frequencyMap.merge(word, 1, (v, newV) -> v + newV)
 		);
 		
+		List<StackableItem> products = new ArrayList<>();
 		for (Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
 			int square = entry.getKey();
 			int count = entry.getValue();

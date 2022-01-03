@@ -17,6 +17,15 @@ public class BouwkampCodes {
 		this.codes = codes;
 	}
 	
+	public BouwkampCode findCode(String name) {
+		for (BouwkampCode bouwkampCode : codes) {
+			if(bouwkampCode.getName().equals(name)) {
+				return bouwkampCode;
+			}
+		}
+		return null;
+	}
+	
 	public List<BouwkampCode> getCodes() {
 		return codes;
 	}

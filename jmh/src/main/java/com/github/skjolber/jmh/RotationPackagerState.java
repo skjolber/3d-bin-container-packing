@@ -11,61 +11,68 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
-import com.github.skjolber.packing.old.Box;
-import com.github.skjolber.packing.old.BoxItem;
-import com.github.skjolber.packing.old.BruteForcePackager;
-import com.github.skjolber.packing.old.Container;
-import com.github.skjolber.packing.old.ParallelBruteForcePackager;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.DefaultStack;
+import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
+import com.github.skjolber.packing.test.BouwkampCode;
+import com.github.skjolber.packing.test.BouwkampCodeDirectory;
+import com.github.skjolber.packing.test.BouwkampCodes;
 
 @State(Scope.Benchmark)
 public class RotationPackagerState {
 
 	private int threadPoolSize = 8;
-	private int n = 8;
-	private int boxesPerLevel = 4;
 	
 	private ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
+	
 	private ParallelBruteForcePackager parallelBruteForcePackager;
 	private ParallelBruteForcePackager parallelBruteForcePackagerNth;
 	
 	private BruteForcePackager bruteForcePackager;
 	private BruteForcePackager bruteForcePackagerNth;
 	
-	private List<BoxItem> identialProducts;
+	private List<StackableItem> items;
 	
 	@Setup(Level.Trial)
 	public void init() {
 
-		List<Container> containers = new ArrayList<>();
-		int levels = n / boxesPerLevel + (n % boxesPerLevel > 0 ? 1 : 0);
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		containers.add(new Container(2 * boxesPerLevel / 2, 1 * (boxesPerLevel / 2), 10 * levels, 0));
+		List<BouwkampCodes> list = directory.getSimplePerfectSquaredRectangles(p -> p.contains("o10spsr.bkp"));
 
-		// first levels will be easy to populate
-		List<BoxItem> identialProducts = new ArrayList<>();
-		for(int i = 0; i < n; i++) {
-			Box box = new Box(Integer.toString(i), 1, 2, 10, 0);
-			identialProducts.add(new BoxItem(box, 1));
+		BouwkampCode code = null; 
+		for(BouwkampCodes codes : list) {
+			code = codes.findCode("115x94A");
+			if(code != null) {
+				break;
+			}
 		}
-		
-		int min = Integer.MAX_VALUE / 2;
-		
-		parallelBruteForcePackager = new MinimumAcceptableParallelBruteForcePackager(containers, pool, threadPoolSize, true, true, 1, min, false, true);
-		parallelBruteForcePackagerNth = new MinimumAcceptableParallelBruteForcePackager(containers, pool, threadPoolSize, true, true, 200000, min, false, true);
-
-		bruteForcePackager = new MinimumAcceptableBruteForcePackager(containers, true, true, 1, min, false, true);
-		bruteForcePackagerNth = new MinimumAcceptableBruteForcePackager(containers, true, true, 1000, min, false, true);
-
-		// verify that will not be able to package successful
-		if(parallelBruteForcePackager.pack(identialProducts) != null) {
-			throw new RuntimeException();
-		}
-		// verify that will not be able to package successful
-		if(bruteForcePackager.pack(identialProducts) != null) {
+		if(code == null) {
 			throw new IllegalArgumentException();
 		}
 		
-		this.identialProducts = identialProducts;
+		List<Container> containers = new ArrayList<>();
+		containers.add(BouwkampConverter.getContainer3D(code));
+
+		parallelBruteForcePackagerNth = ParallelBruteForcePackager.newBuilder().withExecutorService(Executors.newFixedThreadPool(threadPoolSize, new DefaultThreadFactory())).withCheckpointsPerDeadlineCheck(1024).withContainers(containers).build();
+		parallelBruteForcePackager = ParallelBruteForcePackager.newBuilder().withExecutorService(Executors.newFixedThreadPool(threadPoolSize, new DefaultThreadFactory())).withParallelizationCount(256).withContainers(containers).build();
+
+		bruteForcePackagerNth = BruteForcePackager.newBuilder().withCheckpointsPerDeadlineCheck(1024).withContainers(containers).build();
+		bruteForcePackager = BruteForcePackager.newBuilder().withContainers(containers).build();
+		
+		// verify that will not be able to package successful
+		if(parallelBruteForcePackager.pack(items) != null) {
+			throw new RuntimeException();
+		}
+		// verify that will not be able to package successful
+		if(bruteForcePackager.pack(items) != null) {
+			throw new IllegalArgumentException();
+		}
+		
+		this.items = BouwkampConverter.getStackableItems3D(code);
 	}
 	
 	@TearDown(Level.Trial)
@@ -92,7 +99,7 @@ public class RotationPackagerState {
 		return bruteForcePackagerNth;
 	}
 	
-	public List<BoxItem> getIdentialProducts() {
-		return identialProducts;
+	public List<StackableItem> getIdentialProducts() {
+		return items;
 	}
 }

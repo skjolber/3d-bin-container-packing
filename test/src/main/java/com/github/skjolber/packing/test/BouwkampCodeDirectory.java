@@ -130,5 +130,4 @@ public class BouwkampCodeDirectory {
 		return simplePerfectSquaredRectangles.stream().filter( p -> filter.test(p.getSource())).collect(Collectors.toList());
 	}
 
-	
 }

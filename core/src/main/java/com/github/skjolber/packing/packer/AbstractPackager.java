@@ -44,8 +44,6 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * Constructor
 	 *
 	 * @param containers   list of containers
-	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a
-	 *                     match, it searches the preceding boxes as well, until the deadline is passed.
 	 * @param checkpointsPerDeadlineCheck number of deadline checks to skip, before checking again
 	 */
 

@@ -11,14 +11,13 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
-import com.github.skjolber.packing.old.Box;
-import com.github.skjolber.packing.old.BoxItem;
-import com.github.skjolber.packing.old.BruteForcePackager;
-import com.github.skjolber.packing.old.BruteForcePackagerBuilder;
-import com.github.skjolber.packing.old.Container;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeDirectory;
-import com.github.skjolber.packing.test.BouwkampCodeLine;
 import com.github.skjolber.packing.test.BouwkampCodes;
 
 @State(Scope.Benchmark)
@@ -27,7 +26,8 @@ public class PermutationPackagerState {
 	private final int threadPoolSize;
 	private final int nth;
 	
-	private ExecutorService pool;
+	private ExecutorService pool1;
+	private ExecutorService pool2;
 	
 	private List<BenchmarkSet> parallelBruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> parallelBruteForcePackagerNth = new ArrayList<>();
@@ -41,8 +41,9 @@ public class PermutationPackagerState {
 	public PermutationPackagerState(int threadPoolSize, int nth) {
 		this.threadPoolSize = threadPoolSize;
 		this.nth = nth;
-		
-		this.pool = Executors.newFixedThreadPool(threadPoolSize);
+
+		this.pool1 = Executors.newFixedThreadPool(threadPoolSize, new DefaultThreadFactory());
+		this.pool2 = Executors.newFixedThreadPool(threadPoolSize, new DefaultThreadFactory());
 	}
 	
 	@Setup(Level.Trial)
@@ -50,66 +51,38 @@ public class PermutationPackagerState {
 		// these does not really result in successful stacking, but still should run as expected
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 		
-		List<BouwkampCodes> codesForCount = directory.codesForCount(10);
+		List<BouwkampCodes> codesForCount = directory.codesForCount(9);
 		for(BouwkampCodes c : codesForCount) {
 			for(BouwkampCode bkpLine : c.getCodes()) {
+				
 				List<Container> containers = new ArrayList<>();
-				containers.add(toContainer(bkpLine));
+				containers.add(BouwkampConverter.getContainer3D(bkpLine));
 		
-				List<BoxItem> products = new ArrayList<>();
+				List<StackableItem> stackableItems3D = BouwkampConverter.getStackableItems3D(bkpLine);
 				
-				List<Box> boxes = toBoxes(bkpLine);
-				for(Box box : boxes) {
-					products.add(new BoxItem(box, 1));
-				}
+				ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(256).withContainers(containers).build();
+				ParallelBruteForcePackager parallelPackagerNth = ParallelBruteForcePackager.newBuilder().withExecutorService(pool1).withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
 
+				BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
+				BruteForcePackager packagerNth = BruteForcePackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
+				
 				// single-threaded
-				BruteForcePackagerBuilder singleThreadBuilder = BruteForcePackager.newBuilder();
-				singleThreadBuilder.withContainers(containers);
-				
-				bruteForcePackager.add(new BenchmarkSet(singleThreadBuilder, products));
-				
-				singleThreadBuilder.withCheckpointsPerDeadlineCheck(nth);
-				bruteForcePackagerNth.add(new BenchmarkSet(singleThreadBuilder, products));
+				bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D));
+				bruteForcePackagerNth.add(new BenchmarkSet(packagerNth, stackableItems3D));
 
 				// multi-threaded
-				BruteForcePackagerBuilder multiThreadBuilder = BruteForcePackager.newBuilder().withContainers(containers);
-
-				multiThreadBuilder.withCheckpointsPerDeadlineCheck(1);
-				multiThreadBuilder.withThreads(threadPoolSize);
-				multiThreadBuilder.withExecutorService(pool);
-				
-				parallelBruteForcePackager.add(new BenchmarkSet(multiThreadBuilder, products));
-				
-				multiThreadBuilder.withCheckpointsPerDeadlineCheck(nth);
-				parallelBruteForcePackagerNth.add(new BenchmarkSet(multiThreadBuilder, products));
+				parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D));
+				parallelBruteForcePackagerNth.add(new BenchmarkSet(parallelPackagerNth, stackableItems3D));
 				
 				break;
 			}
 		}
 	}
 
-	
-	public Container toContainer(BouwkampCode code) {
-		return new Container(code.getWidth(), code.getDepth(), 2 * Math.max(code.getDepth(), code.getWidth()), 0);
-	}
-	
-	public List<Box> toBoxes(BouwkampCode code) {
-		List<Box> boxes = new ArrayList<>();
-		
-		for (BouwkampCodeLine bouwkampCodeLine : code.getLines()) {
-			for (Integer integer : bouwkampCodeLine.getSquares()) {
-				
-				boxes.add(new Box(integer, integer, 2 * Math.max(code.getDepth(), code.getWidth()), 0));
-			}
-		}
-		
-		return boxes;
-	}
-	
 	@TearDown(Level.Trial)
 	public void shutdown() throws InterruptedException {
-		pool.shutdown();
+		pool1.shutdown();
+		pool2.shutdown();
 		
 		Thread.sleep(500);
 	}

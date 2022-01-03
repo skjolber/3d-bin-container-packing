@@ -66,15 +66,6 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 		}	
 	}
 
-	/**
-	 * Constructor
-	 *
-	 * @param containers list of containers
-	 * @param footprintFirst start with box which has the largest footprint. If not, the highest box is first.
-	 * @param rotate3D whether boxes can be rotated in all three directions (two directions otherwise)
-	 * @param binarySearch if true, the packager attempts to find the best box given a binary search. Upon finding a container that can hold the boxes, given time, it also tries to find a better match.
-	 */
-
 	public FastLargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D<StackPlacement>, ?> factory) {
 		super(containers, checkpointsPerDeadlineCheck, factory);
 	}
