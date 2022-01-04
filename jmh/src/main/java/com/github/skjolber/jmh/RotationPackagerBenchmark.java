@@ -9,11 +9,12 @@ import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.Warmup;
 
-
+/*
 @Fork(value = 1, warmups = 1)
 @Warmup(iterations = 1, time = 10, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.Throughput)
 @Measurement(iterations = 1, time = 10, timeUnit = TimeUnit.SECONDS)
+*/
 public class RotationPackagerBenchmark {
 
     @Benchmark

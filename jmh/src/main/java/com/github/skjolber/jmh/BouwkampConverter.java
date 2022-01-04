@@ -39,7 +39,7 @@ public class BouwkampConverter {
 			products.add(new StackableItem(Box.newBuilder().withName(Integer.toString(square)).withRotateXYZ(square, square, 1).withWeight(1).build(), count));
 		}
 
-		Collections.shuffle(products);
+		Collections.reverse(products);
 		
 		return products;
 	}

@@ -55,6 +55,10 @@ public class PermutationPackagerState {
 		for(BouwkampCodes c : codesForCount) {
 			for(BouwkampCode bkpLine : c.getCodes()) {
 				
+				if(!c.getSource().equals("/simpleImperfectSquaredRectangles/o9sisr.bkp") || !bkpLine.getName().equals("15x11A")) {
+					continue;
+				}
+
 				List<Container> containers = new ArrayList<>();
 				containers.add(BouwkampConverter.getContainer3D(bkpLine));
 		

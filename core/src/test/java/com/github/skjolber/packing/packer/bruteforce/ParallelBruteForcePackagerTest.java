@@ -71,9 +71,7 @@ public class ParallelBruteForcePackagerTest {
 
 		List<StackableItem> products = new ArrayList<>();
 		products.add(new StackableItem(Box.newBuilder().withName("J").withRotateXYZ(4, 4, 1).withWeight(1).build(), 1));
-
 		products.add(new StackableItem(Box.newBuilder().withName("K").withRotate(2, 2, 1).withWeight(1).build(), 4));
-		
 		products.add(new StackableItem(Box.newBuilder().withName("K").withRotate(1, 1, 1).withWeight(1).build(), 16));
 
 		Container fits = packager.pack(products);

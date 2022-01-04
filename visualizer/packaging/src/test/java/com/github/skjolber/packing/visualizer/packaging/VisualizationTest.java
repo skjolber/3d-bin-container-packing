@@ -300,7 +300,7 @@ public class VisualizationTest {
 			products.add(new StackableItem(Box.newBuilder().withName(Integer.toString(square)).withRotateXYZ(square, square, 1).withWeight(1).build(), count));
 		}
 
-		Collections.shuffle(products);
+		Collections.reverse(products);
 
 		Container fits = packager.pack(products);
 		assertNotNull(bouwkampCode.getName(), fits);

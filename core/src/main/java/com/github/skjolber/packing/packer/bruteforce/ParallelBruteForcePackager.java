@@ -18,6 +18,7 @@ import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.ClonableBooleanSupplier;
+import com.github.skjolber.packing.deadline.NthBooleanSupplier;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorAdapter;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
@@ -228,7 +229,15 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 					runnableAdapter.setIterator(new ParallelPermutationRotationIteratorAdapter(iterators[i], j));
 					
 					BooleanSupplier interruptBooleanSupplier = interrupts[i];
-					BooleanSupplier booleanSupplier = () -> localInterrupt.get() || interruptBooleanSupplier.getAsBoolean();
+					
+					BooleanSupplier booleanSupplier;
+					if(checkpointsPerDeadlineCheck == 1) {
+						booleanSupplier = () -> localInterrupt.get() || interruptBooleanSupplier.getAsBoolean();	
+					} else {
+						NthBooleanSupplier nthBooleanSupplier = new NthBooleanSupplier(localInterrupt, checkpointsPerDeadlineCheck);
+						
+						booleanSupplier =  () -> nthBooleanSupplier.getAsBoolean() || interruptBooleanSupplier.getAsBoolean();
+					}
 					
 					runnableAdapter.setInterrupt(booleanSupplier);
 					

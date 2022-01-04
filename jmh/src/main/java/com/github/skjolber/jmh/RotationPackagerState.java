@@ -26,8 +26,6 @@ public class RotationPackagerState {
 
 	private int threadPoolSize = 8;
 	
-	private ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
-	
 	private ParallelBruteForcePackager parallelBruteForcePackager;
 	private ParallelBruteForcePackager parallelBruteForcePackagerNth;
 	
@@ -62,15 +60,6 @@ public class RotationPackagerState {
 
 		bruteForcePackagerNth = BruteForcePackager.newBuilder().withCheckpointsPerDeadlineCheck(1024).withContainers(containers).build();
 		bruteForcePackager = BruteForcePackager.newBuilder().withContainers(containers).build();
-		
-		// verify that will not be able to package successful
-		if(parallelBruteForcePackager.pack(items) != null) {
-			throw new RuntimeException();
-		}
-		// verify that will not be able to package successful
-		if(bruteForcePackager.pack(items) != null) {
-			throw new IllegalArgumentException();
-		}
 		
 		this.items = BouwkampConverter.getStackableItems3D(code);
 	}
