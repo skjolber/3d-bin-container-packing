@@ -5,11 +5,13 @@ import java.util.List;
 
 public abstract class Stackable {
 
-	protected final String name;
-
-	public Stackable(String name) {
+	protected final String id;
+	protected final String description;
+	
+	public Stackable(String id, String description) {
 		super();
-		this.name = name;
+		this.id = id;
+		this.description = description;
 	}
 
 	public abstract long getVolume();
@@ -18,8 +20,12 @@ public abstract class Stackable {
 	
 	public abstract StackValue[] getStackValues();
 	
-	public String getName() {
-		return name;
+	public String getDescription() {
+		return description;
+	}
+	
+	public String getId() {
+		return id;
 	}
 
 	public List<StackValue> fitsInside(Dimension bound) {

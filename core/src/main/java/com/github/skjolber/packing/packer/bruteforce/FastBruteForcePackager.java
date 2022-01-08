@@ -166,7 +166,7 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 
 
 	public FastBruteForcePackagerResult pack(MemoryExtremePoints3D extremePoints, List<StackPlacement> stackPlacements, Container targetContainer, DefaultPermutationRotationIterator rotator, BooleanSupplier interrupt) {
-		Container holder = new DefaultContainer(targetContainer.getName(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), targetContainer.getStackValues(), new DefaultStack());
+		Container holder = new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), targetContainer.getStackValues(), new DefaultStack());
 		
 		FastBruteForcePackagerResult result = new FastBruteForcePackagerResult(holder, rotator);
 

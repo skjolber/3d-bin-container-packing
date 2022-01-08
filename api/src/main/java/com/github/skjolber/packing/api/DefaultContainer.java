@@ -7,8 +7,8 @@ public class DefaultContainer extends Container {
 	protected final ContainerStackValue[] stackValues;
 	protected final Stack stack;
 	
-	public DefaultContainer(String name, long volume, int emptyWeight, ContainerStackValue[] stackValues, Stack stack) {
-		super(name, volume, emptyWeight, getMaxLoadVolume(stackValues), getMaxLoadWeight(stackValues), calculateMinimumArea(stackValues), getMaximumArea(stackValues));
+	public DefaultContainer(String id, String description, long volume, int emptyWeight, ContainerStackValue[] stackValues, Stack stack) {
+		super(id, description, volume, emptyWeight, getMaxLoadVolume(stackValues), getMaxLoadWeight(stackValues), calculateMinimumArea(stackValues), getMaximumArea(stackValues));
 		
 		this.stackValues = stackValues;
 		this.stack = stack;
@@ -26,7 +26,7 @@ public class DefaultContainer extends Container {
 
 	@Override
 	public DefaultContainer clone() {
-		return new DefaultContainer(name, volume, emptyWeight, stackValues, new DefaultStack());
+		return new DefaultContainer(id, description, volume, emptyWeight, stackValues, new DefaultStack());
 	}
 	
 	@Override

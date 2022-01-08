@@ -7,8 +7,8 @@ public abstract class ContainerStackValue extends StackValue {
 	public ContainerStackValue(
 			int dx, int dy, int dz, 
 			StackConstraint constraint,
-			int loadDx, int loadDy, int loadDz, int maxLoadWeight, List<Surface> sides) {
-		super(dx, dy, dz, constraint, sides);
+			int loadDx, int loadDy, int loadDz, int maxLoadWeight, List<Surface> surfaces) {
+		super(dx, dy, dz, constraint, surfaces);
 		
 		this.loadDx = loadDx;
 		this.loadDy = loadDy;

@@ -17,8 +17,8 @@ public class FixedContainerStackValue extends ContainerStackValue {
 			int dx, int dy, int dz, 
 			StackConstraint constraint,
 			int stackWeight, int emptyWeight,
-			int loadDx, int loadDy, int loadDz, int maxLoadWeight, List<Surface> sides) {
-		super(dx, dy, dz, constraint, loadDx, loadDy, loadDz, maxLoadWeight, sides);
+			int loadDx, int loadDy, int loadDz, int maxLoadWeight, List<Surface> surfaces) {
+		super(dx, dy, dz, constraint, loadDx, loadDy, loadDz, maxLoadWeight, surfaces);
 					
 		this.weight = stackWeight + emptyWeight;
 	}

@@ -21,15 +21,15 @@ public class FastLargestAreaFitFirstPackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(2, 2, 1, 2, 2, 1, 100, null).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotate(2, 2, 1, 2, 2, 1, 100, null).withStack(new ValidatingStack()).build());
 		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withOrientation(1, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").withOrientation(1, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").withOrientation(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -41,15 +41,15 @@ public class FastLargestAreaFitFirstPackagerTest {
 	void testStackingRectangles() {
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotateXYZ(3, 2, 1, 3, 2, 1, 100, null).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotateXYZ(3, 2, 1, 3, 2, 1, 100, null).withStack(new ValidatingStack()).build());
 		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(2, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").with3DOrientations(2, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(2, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -60,15 +60,15 @@ public class FastLargestAreaFitFirstPackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotateXYZ(10, 10, 1, 6, 10, 10, 100, null).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotateXYZ(10, 10, 1, 6, 10, 10, 100, null).withStack(new ValidatingStack()).build());
 		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(5, 10, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").with3DOrientations(5, 5, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(5, 5, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(5, 10, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -79,16 +79,16 @@ public class FastLargestAreaFitFirstPackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotateXYZ(6, 1, 1, 6, 1, 1, 100, null).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotateXYZ(6, 1, 1, 6, 1, 1, 100, null).withStack(new ValidatingStack()).build());
 		
 		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(3, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").with3DOrientations(2, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(3, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -98,15 +98,15 @@ public class FastLargestAreaFitFirstPackagerTest {
 	void testStackingRectanglesTwoLevels() {
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotateXYZ(3, 2, 2, 3, 2, 2, 100, null).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotateXYZ(3, 2, 2, 3, 2, 2, 100, null).withStack(new ValidatingStack()).build());
 		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(2, 1, 1).withWeight(1).build(), 2));
-		products.add(new StackableItem(Box.newBuilder().withName("B").with3DOrientations(2, 1, 1).withWeight(1).build(), 2));
-		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(2, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -119,13 +119,13 @@ public class FastLargestAreaFitFirstPackagerTest {
 	void testStackingRectanglesThreeLevels() {
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotateXYZ(3, 2, 3, 3, 2, 3, 100, null).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotateXYZ(3, 2, 3, 3, 2, 3, 100, null).withStack(new ValidatingStack()).build());
 		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withOrientation(2, 2, 1).withWeight(1).build(), 3));
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 3));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -139,14 +139,14 @@ public class FastLargestAreaFitFirstPackagerTest {
 		List<Container> containers = new ArrayList<>();
 
 		// capacity is 3*2*3 = 18
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotateXYZ(3, 2, 3, 3, 2, 3, 100, null).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotateXYZ(3, 2, 3, 3, 2, 3, 100, null).withStack(new ValidatingStack()).build());
 		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(1, 2, 1).withWeight(1).build(), 18)); // 12
-		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(1, 1, 1).withWeight(1).build(), 1)); // 1
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 18)); // 12
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1)); // 1
 
 		Container fits = packager.pack(products);
 

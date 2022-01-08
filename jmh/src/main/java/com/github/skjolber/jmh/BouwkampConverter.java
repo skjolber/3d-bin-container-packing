@@ -17,7 +17,7 @@ import com.github.skjolber.packing.test.BouwkampCodeLine;
 public class BouwkampConverter {
 
 	public static Container getContainer3D(BouwkampCode bouwkampCode) {
-		return Container.newBuilder().withName("Container").withEmptyWeight(1).withRotate(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth() * bouwkampCode.getDepth(), null).withStack(new DefaultStack()).build();
+		return Container.newBuilder().withDescription("Container").withEmptyWeight(1).withRotate(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth() * bouwkampCode.getDepth(), null).withStack(new DefaultStack()).build();
 	}
 	
 	public static List<StackableItem> getStackableItems3D(BouwkampCode bouwkampCode) {
@@ -36,7 +36,7 @@ public class BouwkampConverter {
 		for (Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
 			int square = entry.getKey();
 			int count = entry.getValue();
-			products.add(new StackableItem(Box.newBuilder().withName(Integer.toString(square)).with3DOrientations(square, square, 1).withWeight(1).build(), count));
+			products.add(new StackableItem(Box.newBuilder().withDescription(Integer.toString(square)).withSize(square, square, 1).withRotate3D().withWeight(1).build(), count));
 		}
 
 		Collections.reverse(products);

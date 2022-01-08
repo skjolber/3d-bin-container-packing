@@ -44,16 +44,16 @@ public class VisualizationTest {
 	public void testPackager() throws Exception {
 		List<Container> containers = new ArrayList<>();
 		
-		DefaultContainer container = Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(3, 2, 1, 3, 2, 1, 100, null).withStack(new DefaultStack()).build();
+		DefaultContainer container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotate(3, 2, 1, 3, 2, 1, 100, null).withStack(new DefaultStack()).build();
 		containers.add(container);
 		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(2, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").with3DOrientations(2, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(2, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").with3DOrientations(2, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").with3DOrientations(2, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").with3DOrientations(2, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -68,17 +68,17 @@ public class VisualizationTest {
 	public void testBruteForcePackager() throws Exception {
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotateXYZ(5, 5, 1, 5, 5, 1, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withDescription("Container").withEmptyWeight(1).withRotateXYZ(5, 5, 1, 5, 5, 1, 100, null).withStack(new DefaultStack()).build());
 		
 		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
 
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("D").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("E").with3DOrientations(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("D").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("E").with3DOrientations(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -91,17 +91,17 @@ public class VisualizationTest {
 	public void testFastBruteForcePackager() throws Exception {
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotateXYZ(5, 5, 1, 5, 5, 1, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withDescription("Container").withEmptyWeight(1).withRotateXYZ(5, 5, 1, 5, 5, 1, 100, null).withStack(new DefaultStack()).build());
 		
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
 
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("D").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("E").with3DOrientations(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("D").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("E").with3DOrientations(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -115,15 +115,15 @@ public class VisualizationTest {
 
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(3, 1, 1, 3, 1, 1, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotate(3, 1, 1, 3, 1, 1, 100, null).withStack(new DefaultStack()).build());
 		
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withOrientation(1, 1, 1).withWeight(1).build(), 2));
-		products.add(new StackableItem(Box.newBuilder().withName("B").withOrientation(1, 1, 1).withWeight(1).build(), 2));
-		products.add(new StackableItem(Box.newBuilder().withName("C").withOrientation(1, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").withOrientation(1, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").withOrientation(1, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").withOrientation(1, 1, 1).withWeight(1).build(), 2));
 
 		List<Container> packList = packager.packList(products, 5, System.currentTimeMillis() + 5000);
 		assertThat(packList).hasSize(2);
@@ -150,15 +150,15 @@ public class VisualizationTest {
 
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(3, 1, 1, 3, 1, 1, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotate(3, 1, 1, 3, 1, 1, 100, null).withStack(new DefaultStack()).build());
 		
 		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withOrientation(1, 1, 1).withWeight(1).build(), 2));
-		products.add(new StackableItem(Box.newBuilder().withName("B").withOrientation(1, 1, 1).withWeight(1).build(), 2));
-		products.add(new StackableItem(Box.newBuilder().withName("C").withOrientation(1, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").withOrientation(1, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").withOrientation(1, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").withOrientation(1, 1, 1).withWeight(1).build(), 2));
 
 		List<Container> packList = packager.packList(products, 5, System.currentTimeMillis() + 5000);
 		assertThat(packList).hasSize(2);
@@ -183,18 +183,18 @@ public class VisualizationTest {
 
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withName("1").withEmptyWeight(1).withRotate(8, 8, 1, 8, 8, 1, 100, null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotate(8, 8, 1, 8, 8, 1, 100, null).withStack(new DefaultStack()).build());
 		
 		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
 
 		List<StackableItem> products = new ArrayList<>();
-		products.add(new StackableItem(Box.newBuilder().withName("J").with3DOrientations(4, 4, 1).withWeight(1).build(), 1)); // 16
+		products.add(new StackableItem(Box.newBuilder().withDescription("J").with3DOrientations(4, 4, 1).withWeight(1).build(), 1)); // 16
 
 		for(int i = 0; i < 8; i++) {
-			products.add(new StackableItem(Box.newBuilder().withName("K").with3DOrientations(2, 2, 1).withWeight(1).build(), 1)); // 4 * 8 = 32
+			products.add(new StackableItem(Box.newBuilder().withDescription("K").with3DOrientations(2, 2, 1).withWeight(1).build(), 1)); // 4 * 8 = 32
 		}
 		for(int i = 0; i < 16; i++) {
-			products.add(new StackableItem(Box.newBuilder().withName("K").with3DOrientations(1, 1, 1).withWeight(1).build(), 1)); // 16
+			products.add(new StackableItem(Box.newBuilder().withDescription("K").with3DOrientations(1, 1, 1).withWeight(1).build(), 1)); // 16
 		}
 
 		Container fits = packager.pack(products);
@@ -224,7 +224,7 @@ public class VisualizationTest {
 		BouwkampCode bouwkampCode = bouwkampCodes.getCodes().get(0);
 		
 		List<Container> containers = new ArrayList<>();
-		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotate(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth() * bouwkampCode.getDepth(), null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withDescription("Container").withEmptyWeight(1).withRotate(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth() * bouwkampCode.getDepth(), null).withStack(new DefaultStack()).build());
 
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withContainers(containers).build();
 
@@ -234,7 +234,7 @@ public class VisualizationTest {
 			List<Integer> squares = bouwkampCodeLine.getSquares();
 			
 			for(Integer square : squares) {
-				products.add(new StackableItem(Box.newBuilder().withName(Integer.toString(square)).with3DOrientations(square, square, 1).withWeight(1).build(), 1));
+				products.add(new StackableItem(Box.newBuilder().withDescription(Integer.toString(square)).with3DOrientations(square, square, 1).withWeight(1).build(), 1));
 			}
 		}
 
@@ -278,7 +278,7 @@ public class VisualizationTest {
 
 	protected void pack(BouwkampCode bouwkampCode) throws Exception {
 		List<Container> containers = new ArrayList<>();
-		containers.add(Container.newBuilder().withName("Container").withEmptyWeight(1).withRotate(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth() * bouwkampCode.getDepth(), null).withStack(new DefaultStack()).build());
+		containers.add(Container.newBuilder().withDescription("Container").withEmptyWeight(1).withRotate(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth() * bouwkampCode.getDepth(), null).withStack(new DefaultStack()).build());
 
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(256).withCheckpointsPerDeadlineCheck(1024).withContainers(containers).build();
 
@@ -297,7 +297,7 @@ public class VisualizationTest {
 		for (Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
 			int square = entry.getKey();
 			int count = entry.getValue();
-			products.add(new StackableItem(Box.newBuilder().withName(Integer.toString(square)).with3DOrientations(square, square, 1).withWeight(1).build(), count));
+			products.add(new StackableItem(Box.newBuilder().withDescription(Integer.toString(square)).with3DOrientations(square, square, 1).withWeight(1).build(), count));
 		}
 
 		Collections.reverse(products);

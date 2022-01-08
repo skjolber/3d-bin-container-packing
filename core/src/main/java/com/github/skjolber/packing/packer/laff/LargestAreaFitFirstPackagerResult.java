@@ -1,12 +1,14 @@
 package com.github.skjolber.packing.packer.laff;
 
+import java.util.Collections;
+
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.DefaultContainerStackValue;
 import com.github.skjolber.packing.packer.PackResult;
 
 public class LargestAreaFitFirstPackagerResult implements PackResult {
 	
-	public static LargestAreaFitFirstPackagerResult EMPTY = new LargestAreaFitFirstPackagerResult(new LevelStack(new DefaultContainerStackValue(0, 0, 0, null, 0, 0, 0, 0)), null, false);
+	public static LargestAreaFitFirstPackagerResult EMPTY = new LargestAreaFitFirstPackagerResult(new LevelStack(new DefaultContainerStackValue(0, 0, 0, null, 0, 0, 0, 0, Collections.emptyList())), null, false);
 	
 	private LevelStack stack;
 	private Container container;

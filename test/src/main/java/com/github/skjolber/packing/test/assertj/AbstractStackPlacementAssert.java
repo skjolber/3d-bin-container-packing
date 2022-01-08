@@ -15,8 +15,8 @@ extends AbstractPlacement3DAssert<SELF, ACTUAL> {
 
 	public SELF hasStackableName(String name) {
 		isNotNull();
-		if (!Objects.equals(name, actual.getStackable().getName())) {
-			failWithMessage("Expected stackable name " + name + ", not " + actual.getStackable().getName());
+		if (!Objects.equals(name, actual.getStackable().getDescription())) {
+			failWithMessage("Expected stackable name " + name + ", not " + actual.getStackable().getDescription());
 		}
 		return myself;
 	}

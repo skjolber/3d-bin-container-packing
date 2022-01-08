@@ -1,5 +1,10 @@
 package com.github.skjolber.packing.api;
 
+import java.util.Arrays;
+import java.util.List;
+
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter.DEFAULT;
+
 public abstract class Container extends Stackable {
 
 	public static Builder newBuilder() {
@@ -104,7 +109,7 @@ public abstract class Container extends Stackable {
 				}
 			}
 			
-			return new DefaultContainer(name, volume, emptyWeight, getStackValues(), stack);
+			return new DefaultContainer(id, description, volume, emptyWeight, getStackValues(), stack);
 		}
 		
 		protected ContainerStackValue[] getStackValues() {
@@ -118,12 +123,20 @@ public abstract class Container extends Stackable {
 
 					StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : defaultConstraint;
 					
+					List<Surface> surfaces = rotation.surfaces;
+					if(surfaces == null) {
+						surfaces = Surface.DEFAULT_SURFACE;
+					} else if(surfaces.isEmpty()) {
+						surfaces = Surface.DEFAULT_SURFACE;
+					}
+					
 					stackValues[i] = new FixedContainerStackValue(
 							rotation.dx, rotation.dy, rotation.dz, 
 							constraint , 
 							stackWeight, emptyWeight,
 							rotation.loadDx, rotation.loadDy, rotation.loadDz, 
-							rotation.getMaxLoadWeight()
+							rotation.getMaxLoadWeight(),
+							surfaces
 							);
 				}
 				return stackValues;
@@ -135,11 +148,19 @@ public abstract class Container extends Stackable {
 
 					StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : defaultConstraint;
 
+					List<Surface> surfaces = rotation.surfaces;
+					if(surfaces == null) {
+						surfaces = Surface.DEFAULT_SURFACE;
+					} else if(surfaces.isEmpty()) {
+						surfaces = Surface.DEFAULT_SURFACE;
+					}
+					
 					stackValues[i] = new DefaultContainerStackValue(
 							rotation.dx, rotation.dy, rotation.dz, 
 							constraint,
 							rotation.loadDx, rotation.loadDy, rotation.loadDz, 
-							rotation.getMaxLoadWeight()
+							rotation.getMaxLoadWeight(),
+							surfaces
 							);
 				}
 				return stackValues;
@@ -162,8 +183,8 @@ public abstract class Container extends Stackable {
 	protected final long minArea;
 	protected final long maxArea;
 	
-	public Container(String name, long volume, int emptyWeight, long maxLoadVolume, int maxLoadWeight, long minArea, long maxArea) {
-		super(name);
+	public Container(String id, String name, long volume, int emptyWeight, long maxLoadVolume, int maxLoadWeight, long minArea, long maxArea) {
+		super(id, name);
 		
 		this.emptyWeight = emptyWeight;
 		this.maxLoadVolume = maxLoadVolume;

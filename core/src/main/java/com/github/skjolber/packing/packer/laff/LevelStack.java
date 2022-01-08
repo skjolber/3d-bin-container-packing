@@ -118,7 +118,8 @@ public class LevelStack extends Stack {
 						containerStackValue.getDx(), containerStackValue.getDy(), containerStackValue.getDz() - dz,
 						null,
 						containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz() - dz,
-						freeWeight
+						freeWeight,
+						containerStackValue.getSurfaces()
 						);
 	}
 	
@@ -134,7 +135,8 @@ public class LevelStack extends Stack {
 						containerStackValue.getDx(), containerStackValue.getDy(), dz,
 						null,
 						containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), dz,
-						freeWeight
+						freeWeight,
+						containerStackValue.getSurfaces()
 						);
 	}
 

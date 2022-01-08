@@ -2,7 +2,6 @@ package com.github.skjolber.packing.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.github.skjolber.packing.api.Surface.Label;
@@ -16,11 +15,11 @@ public class StackableSurface {
 		return new Builder();
 	}
 	
-	private static class SideRotate {
+	private static class SurfaceRotate {
 		private Surface surface;
 		private boolean rotated; // 90 degrees
-		
-		public SideRotate(Surface surface, boolean rotated) {
+
+		public SurfaceRotate(Surface surface, boolean rotated) {
 			super();
 			this.surface = surface;
 			this.rotated = rotated;
@@ -29,7 +28,7 @@ public class StackableSurface {
 		public boolean isRotated() {
 			return rotated;
 		}
-		
+
 		public Surface getSurface() {
 			return surface;
 		}
@@ -37,86 +36,86 @@ public class StackableSurface {
 
 	public static class Builder {
 		
-		protected List<SideRotate> sides = new ArrayList<>();
+		protected List<SurfaceRotate> sides = new ArrayList<>();
 
 		public Builder withFrontAnyRotation() {
-			return withSide(new SideRotate(new Surface(Label.FRONT), false)).withSide(new SideRotate(new Surface(Label.FRONT), true));
+			return withSide(new SurfaceRotate(new Surface(Label.FRONT), false)).withSide(new SurfaceRotate(new Surface(Label.FRONT), true));
 		}
 
 		public Builder withFrontAtZeroDegrees() {
-			return withSide(new SideRotate(new Surface(Label.FRONT), false));
+			return withSide(new SurfaceRotate(new Surface(Label.FRONT), false));
 		}
 
 		public Builder withFrontAtNinetyDegrees() {
-			return withSide(new SideRotate(new Surface(Label.FRONT), true));
+			return withSide(new SurfaceRotate(new Surface(Label.FRONT), true));
 		}
 		
 		public Builder withBack() {
-			return withSide(new SideRotate(new Surface(Label.REAR), false)).withSide(new SideRotate(new Surface(Label.REAR), true));
+			return withSide(new SurfaceRotate(new Surface(Label.REAR), false)).withSide(new SurfaceRotate(new Surface(Label.REAR), true));
 		}
 
 		public Builder withBackAtZeroDegrees() {
-			return withSide(new SideRotate(new Surface(Label.REAR), false));
+			return withSide(new SurfaceRotate(new Surface(Label.REAR), false));
 		}
 
 		public Builder withBackAtNinetyDegrees() {
-			return withSide(new SideRotate(new Surface(Label.REAR), true));
+			return withSide(new SurfaceRotate(new Surface(Label.REAR), true));
 		}
 
 		public Builder withLeft() {
-			return withSide(new SideRotate(new Surface(Label.LEFT), false)).withSide(new SideRotate(new Surface(Label.LEFT), true));
+			return withSide(new SurfaceRotate(new Surface(Label.LEFT), false)).withSide(new SurfaceRotate(new Surface(Label.LEFT), true));
 		}
 
 		public Builder withLeftAtZeroDegrees() {
-			return withSide(new SideRotate(new Surface(Label.LEFT), false));
+			return withSide(new SurfaceRotate(new Surface(Label.LEFT), false));
 		}
 
 		public Builder withLeftAtNinetyDegrees() {
-			return withSide(new SideRotate(new Surface(Label.LEFT), true));
+			return withSide(new SurfaceRotate(new Surface(Label.LEFT), true));
 		}
 
 		public Builder withRight() {
-			return withSide(new SideRotate(new Surface(Label.RIGHT), false)).withSide(new SideRotate(new Surface(Label.RIGHT), true));
+			return withSide(new SurfaceRotate(new Surface(Label.RIGHT), false)).withSide(new SurfaceRotate(new Surface(Label.RIGHT), true));
 		}
 
 		public Builder withRightAtZeroDegrees() {
-			return withSide(new SideRotate(new Surface(Label.RIGHT), false));
+			return withSide(new SurfaceRotate(new Surface(Label.RIGHT), false));
 		}
 
 		public Builder withRightAtNinetyDegrees() {
-			return withSide(new SideRotate(new Surface(Label.RIGHT), false));
+			return withSide(new SurfaceRotate(new Surface(Label.RIGHT), false));
 		}
 
 		public Builder withTop() {
-			return withSide(new SideRotate(new Surface(Label.TOP), false)).withSide(new SideRotate(new Surface(Label.TOP), true));
+			return withSide(new SurfaceRotate(new Surface(Label.TOP), false)).withSide(new SurfaceRotate(new Surface(Label.TOP), true));
 		}
 
 		public Builder withTopAtZeroDegrees() {
-			return withSide(new SideRotate(new Surface(Label.TOP), false));
+			return withSide(new SurfaceRotate(new Surface(Label.TOP), false));
 		}
 
 		public Builder withTopAtNinetyDegrees() {
-			return withSide(new SideRotate(new Surface(Label.TOP), true));
+			return withSide(new SurfaceRotate(new Surface(Label.TOP), true));
 		}
 
 		public Builder withBottom() {
-			return withSide(new SideRotate(new Surface(Label.BOTTOM), false)).withSide(new SideRotate(new Surface(Label.BOTTOM), true));
+			return withSide(new SurfaceRotate(new Surface(Label.BOTTOM), false)).withSide(new SurfaceRotate(new Surface(Label.BOTTOM), true));
 		}
 
 		public Builder withBottomAtZeroDegrees() {
-			return withSide(new SideRotate(new Surface(Label.BOTTOM), false));
+			return withSide(new SurfaceRotate(new Surface(Label.BOTTOM), false));
 		}
 
 		public Builder withBottomAtNinetyDegrees() {
-			return withSide(new SideRotate(new Surface(Label.BOTTOM), true));
+			return withSide(new SurfaceRotate(new Surface(Label.BOTTOM), true));
 		}
 
 		public Builder withSide(Surface side, boolean rotate) {
-			sides.add(new SideRotate(side, rotate));
+			sides.add(new SurfaceRotate(side, rotate));
 			return this;
 		}
 		
-		protected Builder withSide(SideRotate side) {
+		protected Builder withSide(SurfaceRotate side) {
 			sides.add(side);
 			return this;
 		}
@@ -141,10 +140,10 @@ public class StackableSurface {
 	protected Surface rear0; // xz
 	protected Surface rear90;
 	
-	public StackableSurface(List<SideRotate> sides) {
+	public StackableSurface(List<SurfaceRotate> sides) {
 		super();
 		this.surfaces = sides.stream().map(s -> s.getSurface()).collect(Collectors.toList());
-		for(SideRotate sideRotate : sides) {
+		for(SurfaceRotate sideRotate : sides) {
 			
 			switch(sideRotate.getSurface().label) {
 			case TOP: {
@@ -295,6 +294,23 @@ public class StackableSurface {
 		
 		return surfaces;
 	}
+	
+	public List<Surface> getXY0Surfaces() {
+		List<Surface> surfaces = new ArrayList<>();
+		
+		addXY0(surfaces);
+		
+		return surfaces;
+	}
+
+	public List<Surface> getXY90Surfaces() {
+		List<Surface> surfaces = new ArrayList<>();
+		
+		addXY90(surfaces);
+		
+		return surfaces;
+	}
+	
 	private void addXY(List<Surface> surfaces) {
 		addXY0(surfaces);
 		addXY90(surfaces);
@@ -322,6 +338,22 @@ public class StackableSurface {
 		List<Surface> surfaces = new ArrayList<>();
 		
 		addXZ(surfaces);
+		
+		return surfaces;
+	}
+	
+	public List<Surface> getXZ0Surfaces() {
+		List<Surface> surfaces = new ArrayList<>();
+		
+		addXZ0(surfaces);
+		
+		return surfaces;
+	}
+
+	public List<Surface> getXZ90Surfaces() {
+		List<Surface> surfaces = new ArrayList<>();
+		
+		addXZ90(surfaces);
 		
 		return surfaces;
 	}
@@ -434,6 +466,22 @@ public class StackableSurface {
 		List<Surface> surfaces = new ArrayList<>();
 		
 		addYZ(surfaces);
+		
+		return surfaces;
+	}
+	
+	public List<Surface> getYZ0Surfaces() {
+		List<Surface> surfaces = new ArrayList<>();
+		
+		addYZ0(surfaces);
+		
+		return surfaces;
+	}
+
+	public List<Surface> getYZ90Surfaces() {
+		List<Surface> surfaces = new ArrayList<>();
+		
+		addYZ90(surfaces);
 		
 		return surfaces;
 	}

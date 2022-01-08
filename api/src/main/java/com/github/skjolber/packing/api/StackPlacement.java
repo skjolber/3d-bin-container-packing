@@ -123,7 +123,7 @@ public class StackPlacement implements Placement3D {
 	}
 	@Override
 	public String toString() {
-		return stackable.getName() + "[" + x + "x" + y + "x" + z + " " + getAbsoluteEndX() + "x" + getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
+		return stackable.getDescription() + "[" + x + "x" + y + "x" + z + " " + getAbsoluteEndX() + "x" + getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
 	}
 	
 	public void setX(int x) {

@@ -262,7 +262,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			extremePoints2D.reset(containerStackValue.getDx(), containerStackValue.getDy(), containerStackValue.getDz() - levelOffset);
 		}
 		
-		return new LargestAreaFitFirstPackagerResult(stack, new DefaultContainer(targetContainer.getName(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack), remainingStackables.isEmpty());
+		return new LargestAreaFitFirstPackagerResult(stack, new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack), remainingStackables.isEmpty());
 	}
 
 	@Override

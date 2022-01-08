@@ -20,7 +20,7 @@ public class AbstractPhysicsBuilder<B extends AbstractPhysicsBuilder<B>> {
 		return (B) this;
 	}
 
-	public B withRotation2D() {
+	public B withRotate2D() {
 		return withStackableSurface(StackableSurface.TWO_D);
 	}
 

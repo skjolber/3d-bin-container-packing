@@ -35,8 +35,8 @@ public class ContainerProjection extends AbstractProjection<Container> {
 			containerVisualization.setLoadDy(containerStackValue.getDy());
 			containerVisualization.setLoadDz(containerStackValue.getDz());
 
-			containerVisualization.setId(inputContainer.getName());
-			containerVisualization.setName(inputContainer.getName());
+			containerVisualization.setId(inputContainer.getDescription());
+			containerVisualization.setName(inputContainer.getDescription());
 
 			StackVisualizer stackVisualization = new StackVisualizer();
 			stackVisualization.setStep(step++);
@@ -48,8 +48,8 @@ public class ContainerProjection extends AbstractProjection<Container> {
 			for (StackPlacement placement : stack.getPlacements()) {
 				Stackable box = placement.getStackable();
 				BoxVisualizer boxVisualization = new BoxVisualizer();
-				boxVisualization.setId(box.getName());
-				boxVisualization.setName(box.getName());
+				boxVisualization.setId(box.getDescription());
+				boxVisualization.setName(box.getDescription());
 				boxVisualization.setStep(step);
 
 				StackValue stackValue = placement.getStackValue();

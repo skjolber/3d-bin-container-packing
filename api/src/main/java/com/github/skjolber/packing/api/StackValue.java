@@ -14,14 +14,14 @@ public abstract class StackValue {
 
 	protected final StackConstraint constraint;
 	
-	protected final List<Surface> sides;
+	protected final List<Surface> surfaces;
 	
-	public StackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> sides) {
+	public StackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> surfaces) {
 		this.dx = dx;
 		this.dy = dy;
 		this.dz = dz;
 		this.constraint = constraint;
-		this.sides = sides;
+		this.surfaces = surfaces;
 		
 		this.area = (long)dx * (long)dy;
 	}
@@ -65,13 +65,13 @@ public abstract class StackValue {
 		return constraint;
 	}
 	
-	public List<Surface> getSides() {
-		return sides;
+	public List<Surface> getSurfaces() {
+		return surfaces;
 	}
 	
 	@Override
 	public String toString() {
-		return "StackValue [" + dx + "x" + dy + "x" + dz + "]";
+		return "StackValue[" + surfaces + " " + dx + "x" + dy + "x" + dz + "]";
 	}
 	
 }
