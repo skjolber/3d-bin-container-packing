@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.points2d;
+package com.github.skjolber.packing.ep.points2d;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -31,9 +31,9 @@ public class LargestAreaFitFirstPackagerTest {
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withRotate(1, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").withRotate(1, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").withRotate(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("A").withOrientation(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("B").withOrientation(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("C").withOrientation(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -59,9 +59,9 @@ public class LargestAreaFitFirstPackagerTest {
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withRotateXYZ(2, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").withRotateXYZ(2, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").withRotateXYZ(2, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(2, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("B").with3DOrientations(2, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(2, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -85,9 +85,9 @@ public class LargestAreaFitFirstPackagerTest {
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withRotateXYZ(5, 10, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").withRotateXYZ(5, 5, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").withRotateXYZ(5, 5, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(5, 10, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("B").with3DOrientations(5, 5, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(5, 5, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -104,9 +104,9 @@ public class LargestAreaFitFirstPackagerTest {
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withRotateXYZ(3, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").withRotateXYZ(2, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").withRotateXYZ(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(3, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("B").with3DOrientations(2, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -129,9 +129,9 @@ public class LargestAreaFitFirstPackagerTest {
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withRotateXYZ(2, 1, 1).withWeight(1).build(), 2));
-		products.add(new StackableItem(Box.newBuilder().withName("B").withRotateXYZ(2, 1, 1).withWeight(1).build(), 2));
-		products.add(new StackableItem(Box.newBuilder().withName("C").withRotateXYZ(2, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(2, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withName("B").with3DOrientations(2, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(2, 1, 1).withWeight(1).build(), 2));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -160,9 +160,9 @@ public class LargestAreaFitFirstPackagerTest {
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withRotateXYZ(2, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").withRotateXYZ(2, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").withRotateXYZ(2, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(2, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("B").with3DOrientations(2, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(2, 2, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 
@@ -183,8 +183,8 @@ public class LargestAreaFitFirstPackagerTest {
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withRotateXYZ(1, 2, 1).withWeight(1).build(), 18)); // 12
-		products.add(new StackableItem(Box.newBuilder().withName("C").withRotateXYZ(1, 1, 1).withWeight(1).build(), 1)); // 1
+		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(1, 2, 1).withWeight(1).build(), 18)); // 12
+		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(1, 1, 1).withWeight(1).build(), 1)); // 1
 
 		Container fits = packager.pack(products);
 

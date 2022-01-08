@@ -1,62 +1,25 @@
-package com.github.skjolber.packing.points3d;
+package com.github.skjolber.packing.ep.points3d;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.Point3D;
-import com.github.skjolber.packing.api.XZPlanePoint3D;
 import com.github.skjolber.packing.api.YZPlanePoint3D;
 
-public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D> extends Point3D<P> implements XZPlanePoint3D, YZPlanePoint3D {
-
-	/** range constrained to current minY */
-	private final P xzPlane;
+public class DefaultYZPlanePoint3D<P extends Placement3D> extends Point3D<P> implements YZPlanePoint3D  {
 
 	/** range constrained to current minX */
 	private final P yzPlane;
 
-	public DefaultXZPlaneYZPlanePoint3D(
+	public DefaultYZPlanePoint3D(
 			int minX, int minY, int minZ,
 			int maxX, int maxY, int maxZ,
-			P xzPlane,
 			P yzPlane
 			) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 
-		this.xzPlane = xzPlane;
 		this.yzPlane = yzPlane;
-	}
-
-	public int getSupportedXZPlaneMinX() {
-		return xzPlane.getAbsoluteX();
-	}
-	
-	public int getSupportedXZPlaneMaxX() {
-		return xzPlane.getAbsoluteEndX();
-	}
-	
-	@Override
-	public int getSupportedXZPlaneMaxZ() {
-		return xzPlane.getAbsoluteZ();
-	}
-	
-	@Override
-	public int getSupportedXZPlaneMinZ() {
-		return xzPlane.getAbsoluteEndZ();
-	}
-
-	@Override
-	public boolean isSupportedXZPlane(int x, int z) {
-		return xzPlane.getAbsoluteX() <= x && x <= xzPlane.getAbsoluteEndX() && xzPlane.getAbsoluteZ() <= z && z <= xzPlane.getAbsoluteEndZ();
-	}
-	
-	public boolean isXZPlaneEdgeX(int x) {
-		return xzPlane.getAbsoluteX() == x - 1;
-	}
-
-	public boolean isXZPlaneEdgeZ(int z) {
-		return xzPlane.getAbsoluteEndZ() == z - 1;
 	}
 
 	public int getSupportedYZPlaneMinY() {
@@ -87,32 +50,25 @@ public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D> extends Point3D
 
 	public boolean isYZPlaneEdgeY(int y) {
 		return yzPlane.getAbsoluteEndY() == y - 1;
-	}	
-	
-	@Override
-	public Point3D<P> clone(int maxX, int maxY, int maxZ) {
-		return new DefaultXZPlaneYZPlanePoint3D<>(
-				minX, minY, minZ,
-				maxX, maxY, maxZ,
-				xzPlane, yzPlane
-				);
 	}
-	
 
-	@Override
-	public Placement3D getXZPlane() {
-		return xzPlane;
-	}
-	
 	@Override
 	public Placement3D getYZPlane() {
 		return yzPlane;
+	}
+
+	@Override
+	public Point3D<P> clone(int maxX, int maxY, int maxZ) {
+		return new DefaultYZPlanePoint3D<>(
+				minX, minY, minZ,
+				maxX, maxY, maxZ,
+				yzPlane
+			);
 	}
 	
 	@Override
 	public List<P> getPlacements3D() {
 		List<P> list = new ArrayList<>();
-		list.add(xzPlane);
 		list.add(yzPlane);
 		return list;
 	}
@@ -120,86 +76,62 @@ public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D> extends Point3D
 	@Override
 	public List<P> getPlacements2D() {
 		List<P> list = new ArrayList<>();
-		list.add(xzPlane);
 		list.add(yzPlane);
 		return list;
 	}		
 	
 	@Override
-	public DefaultXZPlaneYZPlanePoint3D<P> clone() {
-		return new DefaultXZPlaneYZPlanePoint3D<>(minX, minY, minZ, maxX, maxY, maxZ, xzPlane, yzPlane);
+	public DefaultYZPlanePoint3D<P> clone() {
+		return new DefaultYZPlanePoint3D<>(minX, minY, minZ, maxX, maxY, maxZ, yzPlane);
 	}
 	
 	@Override
 	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ) {
-		// yzPlane support is lost
-		if(x <= xzPlane.getAbsoluteEndX()) {
-			return new DefaultXZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, xzPlane);
-		}
-		// all previous support is lost
+		// xzPlane support is lost
 		return new DefaultPoint3D<>(x, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
 	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ, P yzSupport) {
-		if(x <= xzPlane.getAbsoluteEndX()) {
-			return new DefaultXZPlaneYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, xzPlane, yzSupport);
-		}
 		// xzPlane support is lost
 		return new DefaultYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, yzSupport);
 	}
 
 	@Override
 	public Point3D<P> moveY(int y, int maxX, int maxY, int maxZ) {
+		// xzPlane support is lost
 		if(y <= yzPlane.getAbsoluteEndY()) {
 			return new DefaultYZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, yzPlane);
 		}
-		// all previous support is lost
 		return new DefaultPoint3D<>(minX, y, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
 	public Point3D<P> moveY(int y, int maxX, int maxY, int maxZ, P xzSupport) {
+		// xzPlane support is lost
 		if(y <= yzPlane.getAbsoluteEndY()) {
 			return new DefaultXZPlaneYZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, xzSupport, yzPlane);
 		}
-		// yz plane support is lost
 		return new DefaultXZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, xzSupport);
 	}
 
 	@Override
 	public Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ) {
-		boolean withinXZPlane = z <= xzPlane.getAbsoluteEndZ();
-		boolean withinYZPlane = z <= yzPlane.getAbsoluteEndZ();
-
-		if(withinXZPlane && withinYZPlane) {
-			return new DefaultXZPlaneYZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, yzPlane, xzPlane);
-		} else if(withinXZPlane) {
-			return new DefaultXZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xzPlane);
-		} else if(withinYZPlane) {
+		if(z <= yzPlane.getAbsoluteEndZ()) {
 			return new DefaultYZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, yzPlane);
 		}
-		
-		// all previous support is lost
+		// all previous plane support is lost
 		return new DefaultPoint3D<>(minX, minY, z, maxX, maxY, maxZ);
 	}
 
 	@Override
 	public Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ, P xySupport) {
-		boolean withinXZPlane = z <= xzPlane.getAbsoluteEndZ();
-		boolean withinYZPlane = z <= yzPlane.getAbsoluteEndZ();
-
-		if(withinXZPlane && withinYZPlane) {
-			return new Default3DPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, yzPlane, xzPlane, xySupport);
-		} else if(withinXZPlane) {
-			return new DefaultXYPlaneXZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xzPlane, xySupport);
-		} else if(withinYZPlane) {
+		if(z <= yzPlane.getAbsoluteEndZ()) {
 			return new DefaultXYPlaneYZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, yzPlane, xySupport);
 		}
-		
-		// all previous support is lost
+		// all previous plane support is lost
 		return new DefaultXYPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xySupport);
-	}	
+	}
 	
 	/**
 	 * Rotate box, i.e. in 3D

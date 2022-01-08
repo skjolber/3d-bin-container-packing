@@ -18,7 +18,7 @@ import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.StackValuePointFilter;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableFilter;
-import com.github.skjolber.packing.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.

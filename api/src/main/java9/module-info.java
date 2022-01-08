@@ -1,4 +1,3 @@
-module com.github.skjolber.packing {
-	exports com.github.skjolber.packing.impl;
-	exports com.github.skjolber.packing;
+module com.github.skjolber.packing.api {
+	exports com.github.skjolber.packing.api;
 }

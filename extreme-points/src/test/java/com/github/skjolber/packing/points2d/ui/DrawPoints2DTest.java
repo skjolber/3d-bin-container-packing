@@ -2,8 +2,8 @@ package com.github.skjolber.packing.points2d.ui;
 
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.Point2D;
+import com.github.skjolber.packing.ep.points2d.DefaultPlacement2D;
 import com.github.skjolber.packing.points.DefaultExtremePoints2D;
-import com.github.skjolber.packing.points2d.DefaultPlacement2D;
 
 public class DrawPoints2DTest {
 

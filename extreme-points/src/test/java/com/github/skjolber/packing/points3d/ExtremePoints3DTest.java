@@ -5,6 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
+import com.github.skjolber.packing.ep.points3d.DefaultPlacement3D;
+import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+
 public class ExtremePoints3DTest {
 
 	@Test

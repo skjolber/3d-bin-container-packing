@@ -16,6 +16,13 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 	protected final int[] frequencies;
 	protected WorkUnit[] workUnits;
 	
+	// try to avoid false sharing by using padding
+	public long t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15 = -1L;
+	
+	public long preventOptmisation(){
+		return t0 + t1 + t2 + t3 + t4 + t5 + t6 + t7 + t8 + t9 + t10 + t11 + t12 + t13 + t14 + t15;
+	}
+	
 	private static class WorkUnit {
 		long count;
 		int[] permutations;

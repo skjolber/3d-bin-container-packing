@@ -10,6 +10,10 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.runner.options.TimeValue;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.StackableItem;
@@ -64,8 +68,8 @@ public class PermutationPackagerState {
 		
 				List<StackableItem> stackableItems3D = BouwkampConverter.getStackableItems3D(bkpLine);
 				
-				ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(256).withContainers(containers).build();
-				ParallelBruteForcePackager parallelPackagerNth = ParallelBruteForcePackager.newBuilder().withExecutorService(pool1).withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
+				ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16).withContainers(containers).build();
+				ParallelBruteForcePackager parallelPackagerNth = ParallelBruteForcePackager.newBuilder().withExecutorService(pool1).withParallelizationCount(threadPoolSize * 16).withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
 
 				BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
 				BruteForcePackager packagerNth = BruteForcePackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
@@ -106,4 +110,5 @@ public class PermutationPackagerState {
 	public List<BenchmarkSet> getParallelBruteForcePackagerNth() {
 		return parallelBruteForcePackagerNth;
 	}
+
 }

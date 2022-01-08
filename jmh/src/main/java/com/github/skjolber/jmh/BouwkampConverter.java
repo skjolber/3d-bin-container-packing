@@ -36,7 +36,7 @@ public class BouwkampConverter {
 		for (Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
 			int square = entry.getKey();
 			int count = entry.getValue();
-			products.add(new StackableItem(Box.newBuilder().withName(Integer.toString(square)).withRotateXYZ(square, square, 1).withWeight(1).build(), count));
+			products.add(new StackableItem(Box.newBuilder().withName(Integer.toString(square)).with3DOrientations(square, square, 1).withWeight(1).build(), count));
 		}
 
 		Collections.reverse(products);

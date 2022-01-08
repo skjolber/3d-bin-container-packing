@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.points3d;
+package com.github.skjolber.packing.ep.points3d;
 
 import java.util.ArrayList;
 import java.util.List;

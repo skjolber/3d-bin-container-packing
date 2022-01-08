@@ -19,13 +19,12 @@ import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.StackValuePointFilter;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableFilter;
-import com.github.skjolber.packing.points2d.DefaultPlacement2D;
-import com.github.skjolber.packing.points2d.ExtremePoints2D;
+import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. Only places boxes along the floor of each level.
  * <br><br>
- * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
+ * Thread-safe implementation. The input boxes must however only be used in a single thread at a time.
  */
 
 public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPackager<Point2D<StackPlacement>> {

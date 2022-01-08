@@ -39,9 +39,9 @@ public class BruteForcePackagerTest {
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withRotate(1, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").withRotate(1, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").withRotate(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("A").withOrientation(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("B").withOrientation(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("C").withOrientation(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -67,13 +67,13 @@ public class BruteForcePackagerTest {
 		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
 
 		List<StackableItem> products = new ArrayList<>();
-		products.add(new StackableItem(Box.newBuilder().withName("J").withRotate(4, 4, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("J").withOrientation(4, 4, 1).withWeight(1).build(), 1));
 
 		for(int i = 0; i < 4; i++) {
-			products.add(new StackableItem(Box.newBuilder().withName("K").withRotate(2, 2, 1).withWeight(1).build(), 1));
+			products.add(new StackableItem(Box.newBuilder().withName("K").withOrientation(2, 2, 1).withWeight(1).build(), 1));
 		}
 		for(int i = 0; i < 16; i++) {
-			products.add(new StackableItem(Box.newBuilder().withName("K").withRotate(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new StackableItem(Box.newBuilder().withName("K").withOrientation(1, 1, 1).withWeight(1).build(), 1));
 		}
 
 		Container fits = packager.pack(products);
@@ -91,11 +91,11 @@ public class BruteForcePackagerTest {
 
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("J").withRotate(5, 10, 4).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("L").withRotate(5, 10, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("J").withRotate(5, 10, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("M").withRotate(5, 10, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("N").withRotate(5, 10, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("J").withOrientation(5, 10, 4).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("L").withOrientation(5, 10, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("J").withOrientation(5, 10, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("M").withOrientation(5, 10, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("N").withOrientation(5, 10, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -111,10 +111,10 @@ public class BruteForcePackagerTest {
 
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withRotateXYZ(3, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").withRotateXYZ(3, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").withRotateXYZ(3, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("D").withRotateXYZ(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("B").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("D").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -174,7 +174,7 @@ public class BruteForcePackagerTest {
 		for (Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
 			int square = entry.getKey();
 			int count = entry.getValue();
-			products.add(new StackableItem(Box.newBuilder().withName(Integer.toString(square)).withRotateXYZ(square, square, 1).withWeight(1).build(), count));
+			products.add(new StackableItem(Box.newBuilder().withName(Integer.toString(square)).with3DOrientations(square, square, 1).withWeight(1).build(), count));
 		}
 
 		Collections.shuffle(products);

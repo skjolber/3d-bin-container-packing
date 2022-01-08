@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.DefaultStack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
@@ -41,9 +40,9 @@ public class ParallelBruteForcePackagerTest {
 		
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withRotate(1, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").withRotate(1, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").withRotate(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("A").withOrientation(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("B").withOrientation(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("C").withOrientation(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -70,9 +69,9 @@ public class ParallelBruteForcePackagerTest {
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withContainers(containers).build();
 
 		List<StackableItem> products = new ArrayList<>();
-		products.add(new StackableItem(Box.newBuilder().withName("J").withRotateXYZ(4, 4, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("K").withRotate(2, 2, 1).withWeight(1).build(), 4));
-		products.add(new StackableItem(Box.newBuilder().withName("K").withRotate(1, 1, 1).withWeight(1).build(), 16));
+		products.add(new StackableItem(Box.newBuilder().withName("J").with3DOrientations(4, 4, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("K").withOrientation(2, 2, 1).withWeight(1).build(), 4));
+		products.add(new StackableItem(Box.newBuilder().withName("K").withOrientation(1, 1, 1).withWeight(1).build(), 16));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -89,11 +88,11 @@ public class ParallelBruteForcePackagerTest {
 
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("J").withRotateXYZ(5, 10, 4).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("L").withRotateXYZ(5, 10, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("J").withRotateXYZ(5, 10, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("M").withRotateXYZ(5, 10, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("N").withRotateXYZ(5, 10, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("J").with3DOrientations(5, 10, 4).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("L").with3DOrientations(5, 10, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("J").with3DOrientations(5, 10, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("M").with3DOrientations(5, 10, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("N").with3DOrientations(5, 10, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -109,10 +108,10 @@ public class ParallelBruteForcePackagerTest {
 
 		List<StackableItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withName("A").withRotateXYZ(3, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("B").withRotateXYZ(3, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("C").withRotateXYZ(3, 2, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withName("D").withRotateXYZ(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("A").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("B").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("C").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withName("D").with3DOrientations(3, 2, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
@@ -172,7 +171,7 @@ public class ParallelBruteForcePackagerTest {
 		for (Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
 			int square = entry.getKey();
 			int count = entry.getValue();
-			products.add(new StackableItem(Box.newBuilder().withName(Integer.toString(square)).withRotateXYZ(square, square, 1).withWeight(1).build(), count));
+			products.add(new StackableItem(Box.newBuilder().withName(Integer.toString(square)).with3DOrientations(square, square, 1).withWeight(1).build(), count));
 		}
 
 		Collections.shuffle(products);

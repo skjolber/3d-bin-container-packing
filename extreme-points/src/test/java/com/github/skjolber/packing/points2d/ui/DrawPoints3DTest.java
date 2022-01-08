@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.Point3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPlacement3D;
 import com.github.skjolber.packing.points.DefaultExtremePoints3D;
-import com.github.skjolber.packing.points3d.DefaultPlacement3D;
 
 public class DrawPoints3DTest {
 

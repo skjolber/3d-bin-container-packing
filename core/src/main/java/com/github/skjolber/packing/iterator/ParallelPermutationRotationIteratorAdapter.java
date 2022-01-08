@@ -8,10 +8,10 @@ public class ParallelPermutationRotationIteratorAdapter implements PermutationRo
 	private final int index;
 
 	// try to avoid false sharing by using padding
-	public long t1, t2, t3, t4, t5, t6, t7 = -1L;
+	public long t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15 = -1L;
 	
 	public long preventOptmisation(){
-		return t1 + t2 + t3 + t4 + t5 + t6 + t7;
+		return t0 + t1 + t2 + t3 + t4 + t5 + t6 + t7 + t8 + t9 + t10 + t11 + t12 + t13 + t14 + t15;
 	}
 	
 	public ParallelPermutationRotationIteratorAdapter(ParallelPermutationRotationIterator delegate, int index) {

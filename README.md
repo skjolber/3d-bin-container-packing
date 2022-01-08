@@ -8,8 +8,7 @@ This library does 3D rectangular bin packing; it attempts to match a set of 3D i
 Projects using this library will benefit from:
  * short and predictable calculation time,
  * fairly good use of container space, 
- * brute-force support for low number of boxes, and
- * intuitive use for a human
+ * brute-force support for low number of boxes
  
 So while the algorithm will not produce the theoretically optimal result (which is NP-hard), its reasonable simplicity means that in many cases it would be possible to stack the resulting container for a human without instructions.
 
@@ -26,11 +25,11 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
     <artifactId>core</artifactId>
-    <version>1.2.14</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
-Java 11+ projects please use module `com.github.skjolber.packing`.
+Java 11+ projects please use module `com.github.skjolber.packing.core`.
 
 # Usage
 The units of measure is out-of-scope, be they cm, mm or inches.
@@ -106,7 +105,7 @@ The box which covers the largest ground area of the container is placed first; i
 
 When no more boxes fit in a level, the level is incremented and the process repeated. Boxes are rotated, containers not.
 
-The algorithm runs reasonably fast, usually in milliseconds. 
+The algorithm runs reasonably fast, usually in milliseconds. Some customization is possible.
 
 ###  Brute-force algorithm
 This algorithm places the boxes in the same way as the LAFF algorithm, but has no logic for selecting the best box or rotation; running through all permutations, for each permutation all rotations. 

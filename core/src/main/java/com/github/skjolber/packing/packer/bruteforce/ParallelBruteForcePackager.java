@@ -9,7 +9,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
@@ -18,7 +17,6 @@ import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.ClonableBooleanSupplier;
-import com.github.skjolber.packing.deadline.NthBooleanSupplier;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorAdapter;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
@@ -219,8 +217,10 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		public BruteForcePackagerResult attempt(int i, BruteForcePackagerResult currentBest) {
 			// run on single thread for a small amount of combinations
 			ParallelPermutationRotationIterator parallelPermutationRotationIterator = iterators[i];
-			if(parallelPermutationRotationIterator.countPermutations() * parallelPermutationRotationIterator.countRotations() > parallelizationCount * 2) { // somewhat conservative, as the number of rotations is unknown 
-				AtomicBoolean localInterrupt = new AtomicBoolean();
+			if(parallelPermutationRotationIterator.countPermutations() * parallelPermutationRotationIterator.countRotations() > parallelizationCount * 2) { // somewhat conservative, as the number of rotations is unknown
+				
+				// interrupt needs not be accurate (i.e. atomic boolean)
+				Boolean[] localInterrupt = new Boolean[32]; // add padding to avoid false sharing
 
 				List<Future<BruteForcePackagerResult>> futures = new ArrayList<>(runnables.length);
 				for (int j = 0; j < runnables.length; j++) {
@@ -230,14 +230,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 					
 					BooleanSupplier interruptBooleanSupplier = interrupts[i];
 					
-					BooleanSupplier booleanSupplier;
-					if(checkpointsPerDeadlineCheck == 1) {
-						booleanSupplier = () -> localInterrupt.get() || interruptBooleanSupplier.getAsBoolean();	
-					} else {
-						NthBooleanSupplier nthBooleanSupplier = new NthBooleanSupplier(localInterrupt, checkpointsPerDeadlineCheck);
-						
-						booleanSupplier =  () -> nthBooleanSupplier.getAsBoolean() || interruptBooleanSupplier.getAsBoolean();
-					}
+					BooleanSupplier booleanSupplier = () -> localInterrupt[15] != null || interruptBooleanSupplier.getAsBoolean();	
 					
 					runnableAdapter.setInterrupt(booleanSupplier);
 					
@@ -256,7 +249,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				
 									if (best.containsLastStackable()) { // will not match any better than this
 										// cancel others
-										localInterrupt.set(true);
+										localInterrupt[15] = Boolean.TRUE;
 										// don't break, so we're waiting for all the remaining threads to finish
 									}
 								}
@@ -264,10 +257,10 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 							
 						} catch (InterruptedException e1) {
 							// ignore
-							localInterrupt.set(true);
+							localInterrupt[15] = Boolean.TRUE;
 							return null;
 					    } catch (Exception e) {
-							localInterrupt.set(true);
+							localInterrupt[15] = Boolean.TRUE;
 					    	throw new PackagerException(e);
 					    }
 					}

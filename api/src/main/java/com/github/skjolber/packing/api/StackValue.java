@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.api;
 
+import java.util.List;
+
 public abstract class StackValue {
 
 	public final static long PRESSURE_REFERENCE = 1000;
@@ -12,11 +14,14 @@ public abstract class StackValue {
 
 	protected final StackConstraint constraint;
 	
-	public StackValue(int dx, int dy, int dz, StackConstraint constraint) {
+	protected final List<Surface> sides;
+	
+	public StackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> sides) {
 		this.dx = dx;
 		this.dy = dy;
 		this.dz = dz;
 		this.constraint = constraint;
+		this.sides = sides;
 		
 		this.area = (long)dx * (long)dy;
 	}
@@ -58,6 +63,10 @@ public abstract class StackValue {
 	
 	public StackConstraint getConstraint() {
 		return constraint;
+	}
+	
+	public List<Surface> getSides() {
+		return sides;
 	}
 	
 	@Override
