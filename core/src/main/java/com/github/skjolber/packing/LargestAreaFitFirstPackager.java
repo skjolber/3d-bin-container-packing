@@ -1,6 +1,7 @@
 package com.github.skjolber.packing;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
@@ -19,6 +20,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 	}
 
 	private final boolean footprintFirst;
+
+	private PackCallback packCallback = PackCallback.DEFAULT;
 
 	/**
 	 * Constructor
@@ -42,6 +45,10 @@ public class LargestAreaFitFirstPackager extends Packager {
 		super(containers, rotate3D, binarySearch, checkpointsPerDeadlineCheck);
 
 		this.footprintFirst = footprintFirst;
+	}
+
+	public void setPackCallback(final PackCallback pPackCallback) {
+		packCallback = pPackCallback;
 	}
 
 	/**
@@ -198,7 +205,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 		// add used space box now, but possibly rotate later - this depends on the actual remaining free space selected further down
 		// there is up to possible 4 free spaces, 2 in which the used space box is rotated
-		holder.add(new Placement(freeSpace, usedSpace));
+		final Placement tPlacement = new Placement(freeSpace, usedSpace);
+		holder.add(tPlacement);
 
 		if(containerProducts.isEmpty()) {
 			// no additional boxes
@@ -217,12 +225,17 @@ public class LargestAreaFitFirstPackager extends Packager {
 			// no additional boxes along the level floor (x,y)
 			// just make sure the used space fits in the free space
 			usedSpace.fitRotate2D(freeSpace);
+			packCallback.placementAdded(tPlacement);
+			packCallback.freeSpacesCalculated(Arrays.asList(spaces));
+
 		} else {
 			// check whether the selected free space requires the used space box to be rotated
 			if(primaryPlacement.getSpace() == spaces[2] || primaryPlacement.getSpace() == spaces[3]) {
 				// the desired space implies that we rotate the used space box
 				usedSpace.rotate2D();
 			}
+			packCallback.placementAdded(tPlacement);
+			packCallback.freeSpacesCalculated(Arrays.asList(spaces));
 
 			// holder.validateCurrentLevel(); // uncomment for debugging
 
