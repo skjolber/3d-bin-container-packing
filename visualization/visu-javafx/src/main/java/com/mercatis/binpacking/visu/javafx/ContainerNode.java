@@ -32,6 +32,7 @@ public class ContainerNode extends Group {
 		this.container = pContainer;
 
 		final javafx.scene.shape.Box tContainerBox = createBox(pContainer);
+		tContainerBox.setMaterial(new PhongMaterial(Color.BLACK));
 		tContainerBox.setTranslateX(tContainerBox.getTranslateX() - pContainer.getWidth() / 2.0);
 		tContainerBox.setTranslateY(tContainerBox.getTranslateY() + pContainer.getHeight() / 2.0);
 		tContainerBox.setTranslateZ(tContainerBox.getTranslateZ() - pContainer.getDepth() / 2.0);

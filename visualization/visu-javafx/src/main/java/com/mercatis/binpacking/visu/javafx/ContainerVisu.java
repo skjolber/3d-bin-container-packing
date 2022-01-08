@@ -1,38 +1,45 @@
 package com.mercatis.binpacking.visu.javafx;
 
 import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.Dimension;
 import com.github.skjolber.packing.Level;
 import com.github.skjolber.packing.Placement;
 import javafx.geometry.Bounds;
+import javafx.scene.AmbientLight;
 import javafx.scene.Camera;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
+import javafx.scene.SceneAntialiasing;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.DrawMode;
 
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ContainerVisu extends Scene {
 
 	private final Group containerGroup = new Group();
-	private final Camera perspectiveCamera;
+	private final PerspectiveCamera perspectiveCamera;
 	private final SimpleCameraControl simpleCameraControl;
 
 	public ContainerVisu() {
-		super(new Group(), 500, 500, true);
+		super(new Group(), 500, 500, true, SceneAntialiasing.BALANCED);
 
 		setRoot(containerGroup);
-		setFill(new Color(1, 1, 0, 1));
+		setFill(Color.WHITE);
 
 		perspectiveCamera = new PerspectiveCamera(false);
-		perspectiveCamera.setTranslateZ(-200);
-		perspectiveCamera.setTranslateY(-150);
+		perspectiveCamera.setNearClip(0.01);
 		setCamera(perspectiveCamera);
 
+		containerGroup.getChildren().add(new AmbientLight(Color.WHITE));
+
 		simpleCameraControl = new SimpleCameraControl(this, perspectiveCamera);
+	}
+
+	public void removeAll() {
+		List<Node> tChildren = new ArrayList<>(containerGroup.getChildren());
+		containerGroup.getChildren().removeAll(tChildren);
 	}
 
 	public ContainerNode show(Container pContainer) {
@@ -44,17 +51,6 @@ public class ContainerVisu extends Scene {
 		}
 
 		containerGroup.getChildren().add(tContainerNode);
-		
-		// add to right
-		final Bounds tRootBounds = containerGroup.getBoundsInParent();
-		tContainerNode.setTranslateX(tRootBounds.getMaxX() + tContainerNode.getBoundsInParent().getWidth());
-
-		// adapt camera to show everything
-		final Bounds tAllBounds = containerGroup.getBoundsInParent();
-		simpleCameraControl.moveTo(tAllBounds.getCenterX() - getWidth() / 2,
-								   tAllBounds.getCenterY() - getHeight() / 2,
-								   tAllBounds.getCenterZ() - tAllBounds.getDepth());
-
 
 		return tContainerNode;
 	}
