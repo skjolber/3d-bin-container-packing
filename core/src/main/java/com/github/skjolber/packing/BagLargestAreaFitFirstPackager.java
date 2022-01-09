@@ -51,6 +51,12 @@ public class BagLargestAreaFitFirstPackager extends LargestAreaFitFirstPackager 
 		if (tCurrentIndex >= 0) {
 			// fold box to height of selected Box
 			final Box tSelectedBox = pContainerProducts.get(tCurrentIndex);
+			// rotate box
+			final Dimension tLargestAreaDownDim = pHolder.rotateLargestAreaDown(tSelectedBox);
+			tSelectedBox.width = tLargestAreaDownDim.getWidth();
+			tSelectedBox.depth = tLargestAreaDownDim.getDepth();
+			tSelectedBox.height = tLargestAreaDownDim.getHeight();
+
 			pHolder.foldBoxToHeight(getShortestSide(tSelectedBox));
 		} else {
 			tCurrentIndex = super.getBestBox(pHolder, pFreeSpace, pContainerProducts);

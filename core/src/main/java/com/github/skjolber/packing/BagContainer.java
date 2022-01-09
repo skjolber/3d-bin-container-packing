@@ -59,7 +59,7 @@ public class BagContainer extends Container {
 		height = tDimension.getHeight();
 	}
 
-	private Dimension rotateLargestAreaDown(Dimension pDimension) {
+	Dimension rotateLargestAreaDown(Dimension pDimension) {
 		final int tMax1Dim = Math.max(pDimension.getWidth(), Math.max(pDimension.getHeight(), pDimension.getDepth()));
 		final int tMax2Dim = Math.min(pDimension.getWidth(), Math.max(pDimension.getHeight(), pDimension.getDepth()));
 		final int tMax3Dim = Math.min(pDimension.getWidth(), Math.min(pDimension.getHeight(), pDimension.getDepth()));
