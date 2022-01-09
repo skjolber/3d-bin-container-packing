@@ -137,7 +137,9 @@ There is a simple output [visualizer](visualization) included in this project, b
 ![Alt text](visualization/viewer/images/view.png?raw=true "Demo")
 
 # Customization
-The code has been structured so it is possible to extend and adapt to specialized needs. See `AbstractPackager` class, the `extreme-points` and `test` artifacts. To use the visualizer, make your unit tests write directly to a file in the project (see `VisualizationTest` example). 
+The code has been structured so it is possible to extend and adapt to specialized needs. See `AbstractPackager` class, the `extreme-points` and `test` artifacts. 
+
+To use the visualizer during development, make your unit tests write directly to a file in the project (see `VisualizationTest` example). 
 
 # Get involved
 If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request.
@@ -148,9 +150,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
 
 # History
- * 2.0.0: Major refactoring. Improvements to just about everything.
-     * Much improved API
-     * Improved spatial tracking
+ * 2.0.0: Major refactoring and improvements. Note: __New Maven coordinates__
  * 1.2.14: Fix for issue #297.
  * 1.2.13: Fix for issue #251.
  * 1.2.12: Fix for issue #245.
