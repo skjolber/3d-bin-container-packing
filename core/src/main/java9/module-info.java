@@ -8,4 +8,5 @@ module com.github.skjolber.packing.core {
 	exports com.github.skjolber.packing.packager;
 	exports com.github.skjolber.packing.packager.bruteforce;
 	exports com.github.skjolber.packing.packager.laff;
+	exports com.github.skjolber.packing.packager.plain;
 }

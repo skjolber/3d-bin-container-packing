@@ -10,11 +10,7 @@
 	<artifactId>extreme-points</artifactId>
 
 	<properties>
-		<module-name>com.github.skjolber.packing.extremepoints</module-name>
-		<!-- 
-			this property prevents the Nexus Staging Maven Plugin to
-			deploy this module's artifacts to Maven Central' staging repo
-		 -->
+		<module-name>com.github.skjolber.packing.ep</module-name>
 	</properties>
 
 	<dependencies>

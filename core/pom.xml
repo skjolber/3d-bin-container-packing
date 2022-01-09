@@ -9,7 +9,7 @@
 	<artifactId>core</artifactId>
 
 	<properties>
-		<module-name>com.github.skjolber.packing</module-name>
+		<module-name>com.github.skjolber.packing.core</module-name>
 	</properties>
 
 	<dependencies>
