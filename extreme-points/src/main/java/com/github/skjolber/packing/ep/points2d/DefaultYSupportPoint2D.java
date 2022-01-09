@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement2D;
-import com.github.skjolber.packing.api.Point2D;
-import com.github.skjolber.packing.api.YSupportPoint2D;
+import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.ep.YSupportPoint2D;
 
 public class DefaultYSupportPoint2D<P extends Placement2D> extends Point2D<P> implements YSupportPoint2D  {
 

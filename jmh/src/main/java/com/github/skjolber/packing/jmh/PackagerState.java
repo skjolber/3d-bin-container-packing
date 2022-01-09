@@ -1,4 +1,4 @@
-package com.github.skjolber.jmh;
+package com.github.skjolber.packing.jmh;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +20,13 @@ import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
+import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.BouwkampCodes;
 
 @State(Scope.Benchmark)
-public class PermutationPackagerState {
+public class PackagerState {
 
 	private final int threadPoolSize;
 	private final int nth;
@@ -37,12 +38,14 @@ public class PermutationPackagerState {
 	private List<BenchmarkSet> parallelBruteForcePackagerNth = new ArrayList<>();
 	private List<BenchmarkSet> bruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> bruteForcePackagerNth = new ArrayList<>();
+	private List<BenchmarkSet> plainPackager = new ArrayList<>();
+	private List<BenchmarkSet> plainPackagerNth = new ArrayList<>();
 
-	public PermutationPackagerState() {
+	public PackagerState() {
 		this(8, 20000);
 	}
 
-	public PermutationPackagerState(int threadPoolSize, int nth) {
+	public PackagerState(int threadPoolSize, int nth) {
 		this.threadPoolSize = threadPoolSize;
 		this.nth = nth;
 
@@ -73,14 +76,20 @@ public class PermutationPackagerState {
 
 				BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
 				BruteForcePackager packagerNth = BruteForcePackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
-				
+
+				PlainPackager plainPackager = PlainPackager.newBuilder().withContainers(containers).build();
+				PlainPackager plainPackagerNth = PlainPackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
+
 				// single-threaded
-				bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D));
-				bruteForcePackagerNth.add(new BenchmarkSet(packagerNth, stackableItems3D));
+				this.bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D));
+				this.bruteForcePackagerNth.add(new BenchmarkSet(packagerNth, stackableItems3D));
+
+				this.plainPackager.add(new BenchmarkSet(plainPackager, stackableItems3D));
+				this.plainPackagerNth.add(new BenchmarkSet(plainPackagerNth, stackableItems3D));
 
 				// multi-threaded
-				parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D));
-				parallelBruteForcePackagerNth.add(new BenchmarkSet(parallelPackagerNth, stackableItems3D));
+				this.parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D));
+				this.parallelBruteForcePackagerNth.add(new BenchmarkSet(parallelPackagerNth, stackableItems3D));
 				
 				break;
 			}
@@ -111,4 +120,11 @@ public class PermutationPackagerState {
 		return parallelBruteForcePackagerNth;
 	}
 
+	public List<BenchmarkSet> getPlainPackager() {
+		return plainPackager;
+	}
+	
+	public List<BenchmarkSet> getPlainPackagerNth() {
+		return plainPackagerNth;
+	}
 }

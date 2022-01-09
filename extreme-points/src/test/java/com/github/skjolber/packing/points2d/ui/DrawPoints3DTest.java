@@ -3,7 +3,7 @@ package com.github.skjolber.packing.points2d.ui;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement3D;
-import com.github.skjolber.packing.api.Point3D;
+import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPlacement3D;
 import com.github.skjolber.packing.points.DefaultExtremePoints3D;
 

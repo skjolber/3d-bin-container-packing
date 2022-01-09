@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.test.assertj;
 
-import com.github.skjolber.packing.api.Point2D;
-import com.github.skjolber.packing.api.Point3D;
+import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.ep.Point3D;
 
 public class Point3DAssert extends AbstractPoint3DAssert<Point3DAssert, Point3D> {
 

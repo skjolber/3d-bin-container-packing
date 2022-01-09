@@ -4,9 +4,9 @@ import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.Point3D;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;

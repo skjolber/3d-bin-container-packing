@@ -1,4 +1,4 @@
-package com.github.skjolber.jmh;
+package com.github.skjolber.packing.jmh;
 
 import java.util.List;
 

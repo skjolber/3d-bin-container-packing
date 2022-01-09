@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.api;
 
-import java.util.List;
-
 public abstract class Container extends Stackable {
 
 	public static Builder newBuilder() {

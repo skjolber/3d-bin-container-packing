@@ -5,11 +5,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import com.github.skjolber.packing.api.ExtremePoints;
 import com.github.skjolber.packing.api.Placement2D;
-import com.github.skjolber.packing.api.Point2D;
-import com.github.skjolber.packing.api.XSupportPoint2D;
-import com.github.skjolber.packing.api.YSupportPoint2D;
+import com.github.skjolber.packing.api.ep.ExtremePoints;
+import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.ep.XSupportPoint2D;
+import com.github.skjolber.packing.api.ep.YSupportPoint2D;
 
 /**
  * 

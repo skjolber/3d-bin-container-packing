@@ -8,7 +8,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Placement2D;
-import com.github.skjolber.packing.api.Point2D;
+import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.ep.points2d.DefaultPlacement2D;
 import com.github.skjolber.packing.ep.points2d.DefaultPoint2D;
 import com.github.skjolber.packing.ep.points2d.DefaultXSupportPoint2D;

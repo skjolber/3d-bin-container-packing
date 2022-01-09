@@ -4,10 +4,9 @@ import java.util.List;
 
 /**
  * 
- * Fixed as does not have any container stackables within.
+ * Fixed as does not have any container stackables within; weight is constant.
  *
  */
-
 
 public class FixedContainerStackValue extends ContainerStackValue {
 

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement2D;
-import com.github.skjolber.packing.api.Point2D;
-import com.github.skjolber.packing.api.XSupportPoint2D;
+import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.ep.XSupportPoint2D;
 
 public class DefaultXSupportPoint2D<P extends Placement2D> extends Point2D<P> implements XSupportPoint2D {
 

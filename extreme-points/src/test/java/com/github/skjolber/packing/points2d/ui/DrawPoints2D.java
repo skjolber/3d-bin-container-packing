@@ -18,8 +18,8 @@ import javax.swing.event.MouseInputAdapter;
 
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.Placement3D;
-import com.github.skjolber.packing.api.Point2D;
-import com.github.skjolber.packing.api.Point3D;
+import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.points.DefaultExtremePoints2D;
 import com.github.skjolber.packing.points.DefaultExtremePoints3D;
 

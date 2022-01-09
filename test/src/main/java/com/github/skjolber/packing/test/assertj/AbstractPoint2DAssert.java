@@ -3,9 +3,9 @@ package com.github.skjolber.packing.test.assertj;
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.github.skjolber.packing.api.Placement2D;
-import com.github.skjolber.packing.api.Point2D;
-import com.github.skjolber.packing.api.XSupportPoint2D;
-import com.github.skjolber.packing.api.YSupportPoint2D;
+import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.ep.XSupportPoint2D;
+import com.github.skjolber.packing.api.ep.YSupportPoint2D;
 
 public abstract class AbstractPoint2DAssert<SELF extends AbstractPoint2DAssert<SELF, ACTUAL>, ACTUAL extends Point2D>
 extends AbstractObjectAssert<SELF, ACTUAL> {

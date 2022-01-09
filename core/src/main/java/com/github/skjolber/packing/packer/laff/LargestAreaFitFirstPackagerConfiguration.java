@@ -1,9 +1,9 @@
 package com.github.skjolber.packing.packer.laff;
 
-import com.github.skjolber.packing.api.Point2D;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.StackValuePointFilter;
 import com.github.skjolber.packing.api.StackableFilter;
+import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.ep.StackValuePointFilter;
 
 public interface LargestAreaFitFirstPackagerConfiguration<P extends Point2D<StackPlacement>> {
 

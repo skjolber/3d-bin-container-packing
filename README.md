@@ -111,6 +111,9 @@ When no more boxes fit in a level, the level is incremented and the process repe
 
 The algorithm runs reasonably fast, usually in milliseconds. Some customization is possible.
 
+### Plain algorithm
+This algorithm selects the box with the biggest volume, fitting it in the tightest possible point.
+
 ###  Brute-force algorithm
 This algorithm has no logic for selecting the best box or rotation; running through all permutations, for each permutation all rotations:
 
@@ -129,12 +132,12 @@ per order distribution for web-shops, a healthy part of the orders are within it
 Note that the algorithm is recursive on the number of boxes, so do not attempt this with many boxe (it will likely not complete in time anyhow).
 
 ### Visualizer
-There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently best suited for development support.
+There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms (not as stacking instructions).
 
 ![Alt text](visualization/viewer/images/view.png?raw=true "Demo")
 
 # Customization
-The code has been structured so it is possible to extend and adapt to specialized needs. See `AbstractPackager` class, the `extreme-points` and `test`artifacts. Using the the visualizer while developing is recommended (i.e. output the result of unit tests directly to the visualizer
+The code has been structured so it is possible to extend and adapt to specialized needs. See `AbstractPackager` class, the `extreme-points` and `test` artifacts. To use the visualizer, make your unit tests write directly to a file in the project (see `VisualizationTest` example). 
 
 # Get involved
 If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request.
@@ -145,15 +148,17 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
 
 # History
- - 2.0.0: Major refactoring. Improvements to just about everything.
- - 1.2.14: Fix for issue #297.
- - 1.2.13: Fix for issue #251.
- - 1.2.12: Fix for issue #245.
- - 1.2.11: Add test artifact, improve use of deadline for better performance, some bugfixes.
- - 1.2.10: Tweak LAFF selecetion of 'best space' for equally sized boxes (issue #168).
- - 1.2.9: If the 'remainder' space cannot be used, attempt to expand it with [unused space](https://github.com/skjolber/3d-bin-container-packing/blob/b78f4b8ff62f4c3cd531a160d36c4dc1f23c8897/core/src/main/java/com/github/skjolber/packing/LargestAreaFitFirstPackager.java#L250).
- - 1.2.8: Java module for JDK 9+ (multi-release jar). That was painful.
- - 1.2.6: Refactor project structure into multi-module. New group- and artifact-id.
+ * 2.0.0: Major refactoring. Improvements to just about everything.
+     * Much improved API
+     * Improved spatial tracking
+ * 1.2.14: Fix for issue #297.
+ * 1.2.13: Fix for issue #251.
+ * 1.2.12: Fix for issue #245.
+ * 1.2.11: Add test artifact, improve use of deadline for better performance, some bugfixes.
+ * 1.2.10: Tweak LAFF selecetion of 'best space' for equally sized boxes (issue #168).
+ * 1.2.9: If the 'remainder' space cannot be used, attempt to expand it with [unused space](https://github.com/skjolber/3d-bin-container-packing/blob/b78f4b8ff62f4c3cd531a160d36c4dc1f23c8897/core/src/main/java/com/github/skjolber/packing/LargestAreaFitFirstPackager.java#L250).
+ * 1.2.8: Java module for JDK 9+ (multi-release jar). That was painful.
+ * 1.2.6: Refactor project structure into multi-module. New group- and artifact-id.
 
 [1]: 				https://en.wikipedia.org/wiki/Bin_packing_problem
 [2]: 				https://www.drupal.org/files/An%20Efficient%20Algorithm%20for%203D%20Rectangular%20Box%20Packing.pdf

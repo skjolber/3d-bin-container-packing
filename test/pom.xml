@@ -22,6 +22,11 @@
 			<artifactId>assertj-core</artifactId>
 			<scope>compile</scope>
 		</dependency>		
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-math3</artifactId>
+		    <version>${commons-math3.version}</version>
+		</dependency>
 		<!-- test -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>

@@ -1,7 +1,10 @@
-package com.github.skjolber.packing.api;
+package com.github.skjolber.packing.api.ep;
 
 import java.util.Comparator;
 import java.util.List;
+
+import com.github.skjolber.packing.api.Placement3D;
+import com.github.skjolber.packing.api.StackValue;
 
 public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 

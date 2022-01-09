@@ -1,4 +1,6 @@
-package com.github.skjolber.packing.api;
+package com.github.skjolber.packing.api.ep;
+
+import com.github.skjolber.packing.api.Placement3D;
 
 /**
  * 

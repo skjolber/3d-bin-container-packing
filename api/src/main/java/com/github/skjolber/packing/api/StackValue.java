@@ -2,10 +2,15 @@ package com.github.skjolber.packing.api;
 
 import java.util.List;
 
+/**
+ * Basic build block for stacking multiple boxes or containers. 
+ * Denotes a size (i.e. actual dimensions and downwards surface) and stacking constraints. 
+ * A box which can be rotated typically contain 2 (2D rotation) or 6 (3D rotation) of this class.   
+ * 
+ */
+
 public abstract class StackValue {
 
-	public final static long PRESSURE_REFERENCE = 1000;
-	
 	protected final int dx; // width
 	protected final int dy; // depth
 	protected final int dz; // height
@@ -15,6 +20,7 @@ public abstract class StackValue {
 	protected final StackConstraint constraint;
 	
 	protected final List<Surface> surfaces;
+	protected long volume;
 	
 	public StackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> surfaces) {
 		this.dx = dx;
@@ -24,6 +30,7 @@ public abstract class StackValue {
 		this.surfaces = surfaces;
 		
 		this.area = (long)dx * (long)dy;
+		this.volume = (long)dx * (long)dy * (long)dz;
 	}
 
 	public int getDx() {
@@ -59,6 +66,10 @@ public abstract class StackValue {
 	
 	public long getArea() {
 		return area;
+	}
+	
+	public long getVolume() {
+		return volume;
 	}
 	
 	public StackConstraint getConstraint() {

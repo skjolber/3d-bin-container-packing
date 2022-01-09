@@ -3,8 +3,8 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.Point3D;
 import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 
 public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {

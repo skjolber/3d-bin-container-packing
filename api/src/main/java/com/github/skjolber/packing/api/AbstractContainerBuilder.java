@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.api;
 
-import java.util.ArrayList;
 import java.util.List;
 
 

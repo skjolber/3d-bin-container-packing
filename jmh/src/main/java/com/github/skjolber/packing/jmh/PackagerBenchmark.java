@@ -1,4 +1,4 @@
-package com.github.skjolber.jmh;
+package com.github.skjolber.packing.jmh;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -20,38 +20,48 @@ import org.openjdk.jmh.runner.options.TimeValue;
 @Warmup(iterations = 1, time = 10, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.Throughput)
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
-public class PermutationPackagerBenchmark {
+public class PackagerBenchmark {
 
     @Benchmark
-    public Object parallelPackagerNoDeadline(PermutationPackagerState state) throws Exception {
+    public Object parallelPackagerNoDeadline(PackagerState state) throws Exception {
     	return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
     }
 
     @Benchmark
-    public Object parallelPackagerDeadline(PermutationPackagerState state) throws Exception {
+    public Object parallelPackagerDeadline(PackagerState state) throws Exception {
     	return process(state.getParallelBruteForcePackager(), System.currentTimeMillis() + 10000);
     }
 
     @Benchmark
-    public Object parallelPackagerDeadlineNth(PermutationPackagerState state) throws Exception {
+    public Object parallelPackagerDeadlineNth(PackagerState state) throws Exception {
     	return process(state.getParallelBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
     }
 
     @Benchmark
-    public Object packagerNoDeadline(PermutationPackagerState state) throws Exception {
+    public Object packagerNoDeadline(PackagerState state) throws Exception {
     	return process(state.getBruteForcePackager(), Long.MAX_VALUE);
     }
 
     @Benchmark
-    public Object packagerDeadline(PermutationPackagerState state) throws Exception {
+    public Object packagerDeadline(PackagerState state) throws Exception {
     	return process(state.getBruteForcePackager(), System.currentTimeMillis() + 10000);
     }
 
     @Benchmark
-    public Object packagerDeadlineNth(PermutationPackagerState state) throws Exception {
+    public Object packagerDeadlineNth(PackagerState state) throws Exception {
     	return process(state.getBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
     }
 
+    @Benchmark
+    public Object plainDeadline(PackagerState state) throws Exception {
+    	return process(state.getPlainPackager(), System.currentTimeMillis() + 10000);
+    }
+
+    @Benchmark
+    public Object plainDeadlineNth(PackagerState state) throws Exception {
+    	return process(state.getPlainPackagerNth(), System.currentTimeMillis() + 10000);
+    }
+    
     public int process(List<BenchmarkSet> sets, long deadline) {
     	int i = 0;
     	for(BenchmarkSet set : sets) {
@@ -65,7 +75,7 @@ public class PermutationPackagerBenchmark {
     
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(PermutationPackagerState.class.getSimpleName())
+                .include(PackagerState.class.getSimpleName())
                 .mode(Mode.Throughput)
                 .forks(1)
                 .measurementIterations(1)
