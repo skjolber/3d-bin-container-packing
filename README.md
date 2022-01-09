@@ -1,5 +1,4 @@
 [![Build Status](https://travis-ci.org/skjolber/3d-bin-container-packing.svg)](https://travis-ci.org/skjolber/3d-bin-container-packing)
-[![Coverage Status](https://coveralls.io/repos/github/skjolber/3d-bin-container-packing/badge.svg?branch=master)](https://coveralls.io/github/skjolber/3d-bin-container-packing?branch=master)
 
 # 3d-bin-container-packing
 
