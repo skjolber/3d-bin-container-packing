@@ -134,7 +134,7 @@ Note that the algorithm is recursive on the number of boxes, so do not attempt t
 ### Visualizer
 There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms (not as stacking instructions).
 
-![Alt text](visualization/viewer/images/view.png?raw=true "Demo")
+![Alt text](visualizer/viewer/images/view.png?raw=true "Demo")
 
 # Customization
 The code has been structured so it is possible to extend and adapt to specialized needs. See `AbstractPackager` class, the `extreme-points` and `test` artifacts. 
