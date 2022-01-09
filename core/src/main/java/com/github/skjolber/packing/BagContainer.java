@@ -40,10 +40,15 @@ public class BagContainer extends Container {
 		// grösste Flache nach unten drehen
 		final Dimension tLargestAreaDownDim = rotateLargestAreaDown(pDimension);
 
-		final Dimension tFoldedDimension = new Dimension(tLargestAreaDownDim.getWidth(), tLargestAreaDownDim.getDepth()
-				, calcFoldedHeightForBaseArea(tLargestAreaDownDim.getWidth(), tLargestAreaDownDim.getDepth()));
+		// only if folding is possible
+		if (tLargestAreaDownDim.getWidth() < width && tLargestAreaDownDim.getDepth() < depth) {
+			final Dimension tFoldedDimension = new Dimension(tLargestAreaDownDim.getWidth(), tLargestAreaDownDim.getDepth()
+					, calcFoldedHeightForBaseArea(tLargestAreaDownDim.getWidth(), tLargestAreaDownDim.getDepth()));
 
-		return tFoldedDimension.canHold3D(pDimension);
+			return tFoldedDimension.canHold3D(pDimension);
+		} else {
+			return false;
+		}
 	}
 
 	private void rotateLargestAreaDown() {
@@ -65,6 +70,18 @@ public class BagContainer extends Container {
 
 	public Level addLevel() {
 		// adapt box size to used base area
+		adaptDimensions();
+
+		return super.addLevel();
+	}
+
+	@Override
+	public Dimension getFreeLevelSpace() {
+		adaptDimensions();
+		return super.getFreeLevelSpace();
+	}
+
+	void adaptDimensions() {
 		if (levels.size() == 1) {
 			// calc base area
 			int tMaxX = 0;
@@ -76,8 +93,6 @@ public class BagContainer extends Container {
 
 			foldBoxToBaseArea(tMaxX, tMaxY);
 		}
-
-		return super.addLevel();
 	}
 
 	void foldBoxToBaseArea(final int pMaxX, final int pMaxY) {
@@ -99,8 +114,12 @@ public class BagContainer extends Container {
 	}
 
 	protected int calcFoldedHeightForBaseArea(int pWidth, int pDepth) {
-		final int tFoldLength = Math.min(pWidth, pDepth);
-		return height + tFoldLength;
+		if (pWidth < width && pDepth < depth) {
+			final int tFoldLength = Math.min(pWidth, pDepth);
+			return height + tFoldLength;
+		} else {
+			return height;
+		}
 	}
 
 
