@@ -164,6 +164,7 @@
 		<module>test</module>
 		<module>core</module>
 		<module>visualization/projection</module>
+		<module>visualization/visu-javafx</module>
 	</modules>
 
 	<build>
