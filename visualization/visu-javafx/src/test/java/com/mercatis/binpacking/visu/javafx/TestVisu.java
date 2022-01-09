@@ -1,8 +1,9 @@
 package com.mercatis.binpacking.visu.javafx;
 
+import com.github.skjolber.packing.BagContainer;
+import com.github.skjolber.packing.BagLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.Box;
 import com.github.skjolber.packing.Container;
-import com.github.skjolber.packing.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.PackCallback;
 import com.github.skjolber.packing.Placement;
 import com.github.skjolber.packing.Space;
@@ -26,15 +27,21 @@ public class TestVisu extends Application {
 
 	public void start(Stage pStage) {
 
-		final Container tCarton = new Container("1", 200, 250, 100, 0);
-		LargestAreaFitFirstPackager tPackager = new LargestAreaFitFirstPackager(Collections.singletonList(tCarton));
+		final Container tCarton = new BagContainer("1", 200, 200, 100, 0);
+		BagLargestAreaFitFirstPackager tPackager = new BagLargestAreaFitFirstPackager(Collections.singletonList(tCarton));
+
+		final List<Box> tItems = new ArrayList<>();
 
 
+		tItems.add(new Box(140, 140, 140, 0));
+		tItems.add(new Box(80, 80, 110, 0));
+//		tPackager.pack(tItems, tCarton, Long.MAX_VALUE, 1);
+
+//
 		final Random random = new Random();
-		final double tMinSizeFactor = 0.1;
+		final double tMinSizeFactor = 0.2;
 		final double tMaxSizeFactor = 0.7;
-		List<Box> tItems = new ArrayList<>();
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 10; i++) {
 			tItems.add(new com.github.skjolber.packing.Box("" + i,
 														   (int)(tCarton.getWidth() * tMinSizeFactor + tCarton.getWidth() * random.nextDouble() * (tMaxSizeFactor - tMinSizeFactor)),
 														   (int)(tCarton.getDepth() * tMinSizeFactor + tCarton.getDepth() * random.nextDouble() * (tMaxSizeFactor - tMinSizeFactor)),
@@ -70,6 +77,12 @@ public class TestVisu extends Application {
 				});
 
 				waitForNextStep();
+			}
+
+			@Override
+			public void levelAdded(final Container pContainer, final long pNewLevel) {
+				// grösse des Containers kann sich geändert haben -> Bag!!
+				tContainerNode.updateContainerBox(pContainer);
 			}
 		});
 

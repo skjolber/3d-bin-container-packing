@@ -5,13 +5,11 @@ import com.github.skjolber.packing.Dimension;
 import com.github.skjolber.packing.Placement;
 import com.github.skjolber.packing.Space;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.DrawMode;
 
-import javax.swing.text.Position;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -27,19 +25,36 @@ public class ContainerNode extends Group {
 	private final Container container;
 
 	final List<Box> transientBoxes = new ArrayList<>();
+	private final Box containerBox;
 
 	public ContainerNode(Container pContainer) {
-		this.container = pContainer;
+		this.container = pContainer.clone();
 
-		final javafx.scene.shape.Box tContainerBox = createBox(pContainer);
-		tContainerBox.setMaterial(new PhongMaterial(Color.BLACK));
-		tContainerBox.setTranslateX(tContainerBox.getTranslateX() - pContainer.getWidth() / 2.0);
-		tContainerBox.setTranslateY(tContainerBox.getTranslateY() + pContainer.getHeight() / 2.0);
-		tContainerBox.setTranslateZ(tContainerBox.getTranslateZ() - pContainer.getDepth() / 2.0);
-		tContainerBox.drawModeProperty().set(DrawMode.LINE);
+		containerBox = createBox(pContainer);
+		containerBox.setMaterial(new PhongMaterial(Color.BLACK));
+		containerBox.setTranslateX(containerBox.getTranslateX() - pContainer.getWidth() / 2.0);
+		containerBox.setTranslateY(containerBox.getTranslateY() + pContainer.getHeight() / 2.0);
+		containerBox.setTranslateZ(containerBox.getTranslateZ() - pContainer.getDepth() / 2.0);
+		containerBox.drawModeProperty().set(DrawMode.LINE);
 
-		getChildren().add(tContainerBox);
+		getChildren().add(containerBox);
 		new SimpleMouseControl(this);
+	}
+
+
+	public void updateContainerBox(Container pContainer) {
+		if (containerBox.getWidth() != pContainer.getWidth()) {
+			containerBox.translateXProperty().set(containerBox.getTranslateX() + (pContainer.getWidth() - containerBox.getWidth()) / 2.0);
+			containerBox.setWidth(pContainer.getWidth());
+		}
+		if (containerBox.getDepth() != pContainer.getDepth()) {
+			containerBox.translateZProperty().set(containerBox.getTranslateZ() + (pContainer.getDepth() - containerBox.getDepth()) / 2.0);
+			containerBox.setDepth(pContainer.getDepth());
+		}
+		if (containerBox.getHeight() != pContainer.getHeight()) {
+			containerBox.translateYProperty().set(containerBox.getTranslateY() - (pContainer.getHeight() - containerBox.getHeight()) / 2.0);
+			containerBox.setHeight(pContainer.getHeight());
+		}
 	}
 
 	public void addPlacement(Placement tPlacement) {

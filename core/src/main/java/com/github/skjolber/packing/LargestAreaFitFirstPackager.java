@@ -94,8 +94,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 			// current box should have the optimal orientation already
 			// create a space which holds the full level
 			Space levelSpace = new Space(
-					targetContainer.getWidth(),
-					targetContainer.getDepth(),
+					holder.getWidth(),
+					holder.getDepth(),
 					currentBox.getHeight(),
 					0,
 					0,
@@ -103,6 +103,8 @@ public class LargestAreaFitFirstPackager extends Packager {
 					);
 
 			holder.addLevel();
+			packCallback.levelAdded(holder, holder.getLevels().size());
+			
 			containerProducts.remove(currentIndex);
 
 			if(!fit2D(containerProducts, holder, currentBox, levelSpace, interrupt)) {
@@ -210,7 +212,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 
 		if(containerProducts.isEmpty()) {
 			// no additional boxes
-
+			packCallback.placementAdded(tPlacement);
 			return true;
 		}
 

@@ -18,7 +18,7 @@ public interface PackCallback {
 	default void placementAdded(Placement pPlacement) {
 	}
 
-	default void levelChanged(long pNewLevel) {
+	default void levelAdded(Container pContainer, long pNewLevel) {
 	}
 
 	default void packDone() {
