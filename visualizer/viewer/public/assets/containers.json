@@ -1,0 +1,133 @@
+{
+  "containers" : [ {
+    "step" : 0,
+    "plugins" : [ ],
+    "id" : "1",
+    "name" : "1",
+    "dx" : 3,
+    "dy" : 1,
+    "dz" : 1,
+    "loadDx" : 3,
+    "loadDy" : 1,
+    "loadDz" : 1,
+    "stack" : {
+      "step" : 1,
+      "plugins" : [ ],
+      "placements" : [ {
+        "step" : 2,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 0,
+        "z" : 0,
+        "stackable" : {
+          "step" : 2,
+          "plugins" : [ ],
+          "id" : "A",
+          "name" : "A",
+          "dx" : 1,
+          "dy" : 1,
+          "dz" : 1,
+          "type" : "box"
+        }
+      }, {
+        "step" : 3,
+        "plugins" : [ ],
+        "x" : 1,
+        "y" : 0,
+        "z" : 0,
+        "stackable" : {
+          "step" : 3,
+          "plugins" : [ ],
+          "id" : "A",
+          "name" : "A",
+          "dx" : 1,
+          "dy" : 1,
+          "dz" : 1,
+          "type" : "box"
+        }
+      }, {
+        "step" : 4,
+        "plugins" : [ ],
+        "x" : 2,
+        "y" : 0,
+        "z" : 0,
+        "stackable" : {
+          "step" : 4,
+          "plugins" : [ ],
+          "id" : "B",
+          "name" : "B",
+          "dx" : 1,
+          "dy" : 1,
+          "dz" : 1,
+          "type" : "box"
+        }
+      } ]
+    },
+    "type" : "container"
+  }, {
+    "step" : 5,
+    "plugins" : [ ],
+    "id" : "1",
+    "name" : "1",
+    "dx" : 3,
+    "dy" : 1,
+    "dz" : 1,
+    "loadDx" : 3,
+    "loadDy" : 1,
+    "loadDz" : 1,
+    "stack" : {
+      "step" : 6,
+      "plugins" : [ ],
+      "placements" : [ {
+        "step" : 7,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 0,
+        "z" : 0,
+        "stackable" : {
+          "step" : 7,
+          "plugins" : [ ],
+          "id" : "B",
+          "name" : "B",
+          "dx" : 1,
+          "dy" : 1,
+          "dz" : 1,
+          "type" : "box"
+        }
+      }, {
+        "step" : 8,
+        "plugins" : [ ],
+        "x" : 1,
+        "y" : 0,
+        "z" : 0,
+        "stackable" : {
+          "step" : 8,
+          "plugins" : [ ],
+          "id" : "C",
+          "name" : "C",
+          "dx" : 1,
+          "dy" : 1,
+          "dz" : 1,
+          "type" : "box"
+        }
+      }, {
+        "step" : 9,
+        "plugins" : [ ],
+        "x" : 2,
+        "y" : 0,
+        "z" : 0,
+        "stackable" : {
+          "step" : 9,
+          "plugins" : [ ],
+          "id" : "C",
+          "name" : "C",
+          "dx" : 1,
+          "dy" : 1,
+          "dz" : 1,
+          "type" : "box"
+        }
+      } ]
+    },
+    "type" : "container"
+  } ]
+}

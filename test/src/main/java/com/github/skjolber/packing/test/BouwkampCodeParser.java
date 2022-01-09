@@ -52,11 +52,23 @@ public class BouwkampCodeParser {
 		
 		String boxes = matcher.group("boxes");
 
-		Pattern boxPattern = Pattern.compile("[0-9]+");
-		
-		Matcher boxMatcher = boxPattern.matcher(boxes);
-		while(boxMatcher.find()) {
-			bkp.getSquare().add(Integer.parseInt(boxes.substring(boxMatcher.start(), boxMatcher.end())));
+		Pattern linePattern = Pattern.compile("\\([0-9,]+\\)");
+
+		Matcher lineMatcher = linePattern.matcher(boxes);
+		while(lineMatcher.find()) {
+			
+			String codeLine = boxes.substring(lineMatcher.start(), lineMatcher.end());
+			
+			List<Integer> squares = new ArrayList<>();
+			
+			Pattern boxPattern = Pattern.compile("[0-9]+");
+			
+			Matcher boxMatcher = boxPattern.matcher(codeLine);
+			while(boxMatcher.find()) {
+				squares.add(Integer.parseInt(codeLine.substring(boxMatcher.start(), boxMatcher.end())));
+			}
+			
+			bkp.addLine(new BouwkampCodeLine(squares));
 		}
 		
 		return bkp;

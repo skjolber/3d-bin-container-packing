@@ -2,6 +2,8 @@ package com.github.skjolber.packing.test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class BouwkampCodeDirectory {
 
@@ -46,17 +48,28 @@ public class BouwkampCodeDirectory {
 	public List<BouwkampCodes> getSimpleImperfectSquaredRectangles() {
 		return simpleImperfectSquaredRectangles;
 	}
-	public void setSimpleImperfectSquaredRectangles(List<BouwkampCodes> simpleImperfectSquaredRectangles) {
-		this.simpleImperfectSquaredRectangles = simpleImperfectSquaredRectangles;
-	}
 	public List<BouwkampCodes> getSimpleImperfectSquaredSquares() {
 		return simpleImperfectSquaredSquares;
 	}
+	public List<BouwkampCodes> getSimplePerfectSquaredRectangles() {
+		return simplePerfectSquaredRectangles;
+	}
+	
+	public List<BouwkampCodes> getSimpleImperfectSquaredRectangles(int maxOrder) {
+		return simpleImperfectSquaredRectangles.stream().filter(p -> p.getCodes().get(0).getOrder() <= maxOrder).collect(Collectors.toList());
+	}
+	public List<BouwkampCodes> getSimpleImperfectSquaredSquares(int maxOrder) {
+		return simpleImperfectSquaredSquares.stream().filter(p -> p.getCodes().get(0).getOrder() <= maxOrder).collect(Collectors.toList());
+	}
+	public List<BouwkampCodes> getSimplePerfectSquaredRectangles(int maxOrder) {
+		return simplePerfectSquaredRectangles.stream().filter(p -> p.getCodes().get(0).getOrder() <= maxOrder).collect(Collectors.toList());
+	}
+	
 	public void setSimpleImperfectSquaredSquares(List<BouwkampCodes> simpleImperfectSquaredSquares) {
 		this.simpleImperfectSquaredSquares = simpleImperfectSquaredSquares;
 	}
-	public List<BouwkampCodes> getSimplePerfectSquaredRectangles() {
-		return simplePerfectSquaredRectangles;
+	public void setSimpleImperfectSquaredRectangles(List<BouwkampCodes> simpleImperfectSquaredRectangles) {
+		this.simpleImperfectSquaredRectangles = simpleImperfectSquaredRectangles;
 	}
 	public void setSimplePerfectSquaredRectangles(List<BouwkampCodes> simplePerfectSquaredRectangles) {
 		this.simplePerfectSquaredRectangles = simplePerfectSquaredRectangles;
@@ -74,26 +87,47 @@ public class BouwkampCodeDirectory {
 		return null;
 	}
 
-	public List<BouwkampCodes> codesForCount(int count) {
+	public List<BouwkampCodes> getAll() {
+		List<BouwkampCodes> result = new ArrayList<>();
+		result.addAll(simpleImperfectSquaredRectangles);
+		result.addAll(simpleImperfectSquaredSquares);
+		result.addAll(simplePerfectSquaredRectangles);
+		return result;
+	}
+	
+	public List<BouwkampCodes> codesForCount(int order) {
 		List<BouwkampCodes> result = new ArrayList<>();
 		for(BouwkampCodes code : simpleImperfectSquaredRectangles) {
-			if(code.getCodes().get(0).getSquare().size() == count) {
+			List<BouwkampCode> codes = code.getCodes();
+			if(codes.get(0).getOrder() == order) {
 				result.add(code);
 			}
 		}
 		for(BouwkampCodes code : simpleImperfectSquaredSquares) {
-			if(code.getCodes().get(0).getSquare().size() == count) {
+			List<BouwkampCode> codes = code.getCodes();
+			if(codes.get(0).getOrder() == order) {
 				result.add(code);
 			}
 		}
 		for(BouwkampCodes code : simplePerfectSquaredRectangles) {
-			if(code.getCodes().get(0).getSquare().size() == count) {
+			List<BouwkampCode> codes = code.getCodes();
+			if(codes.get(0).getOrder() == order) {
 				result.add(code);
 			}
 		}
 		return result;
 	}
 	
+	public List<BouwkampCodes> getSimpleImperfectSquaredSquares(Predicate<String> filter) {
+		return simpleImperfectSquaredSquares.stream().filter( p -> filter.test(p.getSource())).collect(Collectors.toList());
+	}
+
+	public List<BouwkampCodes> getSimpleImperfectSquaredRectangles(Predicate<String> filter) {
+		return simpleImperfectSquaredRectangles.stream().filter( p -> filter.test(p.getSource())).collect(Collectors.toList());
+	}
 	
-	
+	public List<BouwkampCodes> getSimplePerfectSquaredRectangles(Predicate<String> filter) {
+		return simplePerfectSquaredRectangles.stream().filter( p -> filter.test(p.getSource())).collect(Collectors.toList());
+	}
+
 }

@@ -80,12 +80,37 @@
 		<dependencies>
 			<dependency>
 				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>extreme-points</artifactId>
+				<version>${project.version}</version>
+			</dependency>  	
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 				<artifactId>core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 				<artifactId>test</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>visualizer-packaging</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>visualizer-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>visualizer-algorithm</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
@@ -161,9 +186,13 @@
 		</dependencies>
 	</dependencyManagement>
 	<modules>
+		<module>api</module>
 		<module>test</module>
+		<module>extreme-points</module>
 		<module>core</module>
-		<module>visualization/projection</module>
+		<module>visualizer/api</module>
+		<module>visualizer/algorithm</module>
+		<module>visualizer/packaging</module>
 	</modules>
 
 	<build>

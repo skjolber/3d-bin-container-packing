@@ -9,10 +9,18 @@
 	<artifactId>core</artifactId>
 
 	<properties>
-		<module-name>com.github.skjolber.packing</module-name>
+		<module-name>com.github.skjolber.packing.core</module-name>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>extreme-points</artifactId>
+		</dependency>  	
 		<!-- test -->
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
