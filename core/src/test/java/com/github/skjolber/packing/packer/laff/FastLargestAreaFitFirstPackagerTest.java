@@ -20,8 +20,7 @@ public class FastLargestAreaFitFirstPackagerTest {
 	void testStackingSquaresOnSquare() {
 
 		List<Container> containers = new ArrayList<>();
-		
-		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotate(2, 2, 1, 2, 2, 1, 100, null).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
 		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
@@ -40,8 +39,7 @@ public class FastLargestAreaFitFirstPackagerTest {
 	@Test
 	void testStackingRectangles() {
 		List<Container> containers = new ArrayList<>();
-		
-		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotateXYZ(3, 2, 1, 3, 2, 1, 100, null).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
 		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
@@ -59,9 +57,8 @@ public class FastLargestAreaFitFirstPackagerTest {
 	void testStackingSquaresAndRectangle() {
 
 		List<Container> containers = new ArrayList<>();
-		
-		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotateXYZ(10, 10, 1, 6, 10, 10, 100, null).withStack(new ValidatingStack()).build());
-		
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(6, 10, 10).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
@@ -78,10 +75,8 @@ public class FastLargestAreaFitFirstPackagerTest {
 	void testStackingDecreasingRectangles() {
 
 		List<Container> containers = new ArrayList<>();
-		
-		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotateXYZ(6, 1, 1, 6, 1, 1, 100, null).withStack(new ValidatingStack()).build());
-		
-		
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(6, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();
@@ -97,8 +92,7 @@ public class FastLargestAreaFitFirstPackagerTest {
 	@Test
 	void testStackingRectanglesTwoLevels() {
 		List<Container> containers = new ArrayList<>();
-		
-		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotateXYZ(3, 2, 2, 3, 2, 2, 100, null).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 2).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
 		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
@@ -118,8 +112,7 @@ public class FastLargestAreaFitFirstPackagerTest {
 	@Test
 	void testStackingRectanglesThreeLevels() {
 		List<Container> containers = new ArrayList<>();
-		
-		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotateXYZ(3, 2, 3, 3, 2, 3, 100, null).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
 		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		
@@ -139,7 +132,7 @@ public class FastLargestAreaFitFirstPackagerTest {
 		List<Container> containers = new ArrayList<>();
 
 		// capacity is 3*2*3 = 18
-		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotateXYZ(3, 2, 3, 3, 2, 3, 100, null).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
 		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
 		

@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.api;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,6 +34,7 @@ public class Box extends Stackable {
 			return new Box(id, description, size.getVolume(), weight, getStackValues());
 		}
 		
+		@SuppressWarnings("unchecked")
 		protected <T> T[] newStackValueArray(int size) {
 			return (T[]) new BoxStackValue[size];
 		}
@@ -45,7 +45,7 @@ public class Box extends Stackable {
 	}
 	
 	protected final int weight;
-	protected final BoxStackValue[] rotations;
+	protected final BoxStackValue[] stackValues;
 	protected final long volume;
 	protected final long minimumArea;
 	protected final long maximumArea;
@@ -54,7 +54,7 @@ public class Box extends Stackable {
 		super(id, name);
 		this.volume = volume;
 		this.weight = weight;
-		this.rotations = stackValues;
+		this.stackValues = stackValues;
 		
 		this.minimumArea = getMinimumArea(stackValues);
 		this.maximumArea = getMinimumArea(stackValues);
@@ -67,7 +67,7 @@ public class Box extends Stackable {
 
 	@Override
 	public BoxStackValue[] getStackValues() {
-		return rotations;
+		return stackValues;
 	}
 
 	public long getVolume() {
@@ -76,7 +76,7 @@ public class Box extends Stackable {
 
 	@Override
 	public Box clone() {
-		return new Box(id, description, volume, weight, rotations);
+		return new Box(id, description, volume, weight, stackValues);
 	}
 	
 	@Override
@@ -91,7 +91,7 @@ public class Box extends Stackable {
 
 	@Override
 	public String toString() {
-		return "Box " + (description != null ? description : "") + "[weight=" + weight + ", rotations=" + Arrays.toString(rotations) + ", volume=" + volume + "]";
+		return "Box " + (description != null ? description : "") + "[weight=" + weight + ", rotations=" + Arrays.toString(stackValues) + ", volume=" + volume + "]";
 	}
 	
 	

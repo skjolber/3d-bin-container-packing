@@ -1,9 +1,6 @@
 package com.github.skjolber.packing.api;
 
-import java.util.Arrays;
 import java.util.List;
-
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter.DEFAULT;
 
 public abstract class Container extends Stackable {
 
@@ -71,106 +68,76 @@ public abstract class Container extends Stackable {
 			return this;
 		}
 		
-		public int getMaxLoadWeight() {
-			int maxLoadWeight = -1;
-			
-			for(Rotation rotation : rotations) {
-				if(rotation.getMaxLoadWeight() > maxLoadWeight) {
-					maxLoadWeight = rotation.getMaxLoadWeight(); 
-				}
-			}
-			return maxLoadWeight;
-		}
-		
-		public long getMaxLoadVolume() {
-			long maxLoadVolume = -1;
-			
-			for(Rotation rotation : rotations) {
-				if(rotation.getLoadVolume() > maxLoadVolume) {
-					maxLoadVolume = rotation.getLoadVolume(); 
-				}
-			}
-			return maxLoadVolume;
-		}
-
 		public DefaultContainer build() {
-			if(rotations.isEmpty()) {
-				throw new IllegalStateException("No rotations");
+			if(dx == -1) {
+				throw new IllegalStateException("Expected size");
 			}
+			if(dy == -1) {
+				throw new IllegalStateException("Expected size");
+			}
+			if(dz == -1) {
+				throw new IllegalStateException("Expected size");
+			}
+			if(maxLoadWeight == -1) {
+				throw new IllegalStateException("Expected max weight");
+			}
+			if(loadDx == -1) {
+				loadDx = dx;
+			}
+			if(loadDy == -1) {
+				loadDy = dy;
+			}
+			if(loadDz == -1) {
+				loadDz = dz;
+			}
+			if(surfaces == null || surfaces.isEmpty()) {
+				surfaces = Surface.DEFAULT_SURFACE;
+			}
+
 			if(emptyWeight == -1) {
 				throw new IllegalStateException("Expected empty weight");
 			}
-			
-			Rotation rotation = rotations.get(0);
-			long volume = rotation.getVolume();
-			for(int i = 1; i < rotations.size(); i++) {
-				if(rotations.get(i).getVolume() != volume) {
-					throw new IllegalStateException();
-				}
+			if(stack == null) {
+				stack = new DefaultStack();
 			}
+			
+			long volume = (long)dx * (long)dy * (long)dz;
 			
 			return new DefaultContainer(id, description, volume, emptyWeight, getStackValues(), stack);
 		}
 		
 		protected ContainerStackValue[] getStackValues() {
 			if(fixed) {
-				FixedContainerStackValue[] stackValues = new FixedContainerStackValue[rotations.size()];
+				FixedContainerStackValue[] stackValues = new FixedContainerStackValue[1];
 				
 				int stackWeight = stack.getWeight();
-
-				for (int i = 0; i < rotations.size(); i++) {
-					Rotation rotation = rotations.get(i);
-
-					StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : defaultConstraint;
-					
-					List<Surface> surfaces = rotation.surfaces;
-					if(surfaces == null) {
-						surfaces = Surface.DEFAULT_SURFACE;
-					} else if(surfaces.isEmpty()) {
-						surfaces = Surface.DEFAULT_SURFACE;
-					}
-					
-					stackValues[i] = new FixedContainerStackValue(
-							rotation.dx, rotation.dy, rotation.dz, 
-							constraint , 
-							stackWeight, emptyWeight,
-							rotation.loadDx, rotation.loadDy, rotation.loadDz, 
-							rotation.getMaxLoadWeight(),
-							surfaces
-							);
-				}
+				
+				stackValues[0] = new FixedContainerStackValue(
+						dx, dy, dz, 
+						stackConstraint, 
+						stackWeight, emptyWeight,
+						loadDx, loadDy, loadDz, 
+						maxLoadWeight,
+						surfaces
+						);
+				
 				return stackValues;
 			} else {
-				DefaultContainerStackValue[] stackValues = new DefaultContainerStackValue[rotations.size()];
+				DefaultContainerStackValue[] stackValues = new DefaultContainerStackValue[1];
 				
-				for (int i = 0; i < rotations.size(); i++) {
-					Rotation rotation = rotations.get(i);
-
-					StackConstraint constraint = rotation.stackConstraint != null ? rotation.stackConstraint : defaultConstraint;
-
-					List<Surface> surfaces = rotation.surfaces;
-					if(surfaces == null) {
-						surfaces = Surface.DEFAULT_SURFACE;
-					} else if(surfaces.isEmpty()) {
-						surfaces = Surface.DEFAULT_SURFACE;
-					}
-					
-					stackValues[i] = new DefaultContainerStackValue(
-							rotation.dx, rotation.dy, rotation.dz, 
-							constraint,
-							rotation.loadDx, rotation.loadDy, rotation.loadDz, 
-							rotation.getMaxLoadWeight(),
-							surfaces
-							);
-				}
+				stackValues[0] = new DefaultContainerStackValue(
+						dx, dy, dz, 
+						stackConstraint,
+						loadDx, loadDy, loadDz, 
+						maxLoadWeight,
+						surfaces
+						);
+				
 				return stackValues;
 			}
 		}
 			
 
-		public long getVolume() {
-			return rotations.get(0).getVolume();
-		}
 	}
 	
 	protected final int emptyWeight;

@@ -52,9 +52,9 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 		
 		List<BoxStackValue> list = new ArrayList<>();
 
-		int dx = size.getWidth();
-		int dy = size.getDepth();
-		int dz = size.getHeight();
+		int dx = size.getDx();
+		int dy = size.getDy();
+		int dz = size.getDz();
 		
 		 // dx, dy, dz
 		

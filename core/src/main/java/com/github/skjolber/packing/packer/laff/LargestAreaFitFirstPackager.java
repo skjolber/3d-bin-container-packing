@@ -19,6 +19,7 @@ import com.github.skjolber.packing.api.StackValuePointFilter;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableFilter;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager.LargestAreaFitFirstPackagerBuilder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -40,6 +41,16 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 		public LargestAreaFitFirstPackagerBuilder setConfigurationBuilderFactory(LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D<StackPlacement>, ?> configurationBuilder) {
 			this.configurationBuilderFactory = configurationBuilder;
+			return this;
+		}
+		
+		public LargestAreaFitFirstPackagerBuilder withContainers(Container ...  containers) {
+			if(this.containers == null) {
+				this.containers = new ArrayList<>();
+			}
+			for (Container container : containers) {
+				this.containers.add(container);
+			}
 			return this;
 		}
 		

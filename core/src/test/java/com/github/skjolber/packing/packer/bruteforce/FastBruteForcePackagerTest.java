@@ -25,7 +25,7 @@ public class FastBruteForcePackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotate(3, 1, 1, 3, 1, 1, 100, null).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
 		
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
 		
@@ -57,8 +57,8 @@ public class FastBruteForcePackagerTest {
 
 		List<Container> containers = new ArrayList<>();
 		
-		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withRotate(3, 1, 1, 3, 1, 1, 100, null).withStack(new ValidatingStack()).build());
-		
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
 		
 		List<StackableItem> products = new ArrayList<>();

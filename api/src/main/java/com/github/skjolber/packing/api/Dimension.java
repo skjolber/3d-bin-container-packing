@@ -11,7 +11,7 @@ public class Dimension {
 	}
 
 	public static String encode(Dimension dto) {
-		return encode(dto.getWidth(), dto.getDepth(), dto.getHeight());
+		return encode(dto.getDx(), dto.getDy(), dto.getDz());
 	}
 
 	public static String encode(int width, int depth, int height) {
@@ -22,41 +22,41 @@ public class Dimension {
 		return new Dimension(width, depth, height);
 	}
 
-	protected final int width; // x
-	protected final int depth; // y
-	protected final int height; // z
+	protected final int dx; // dx
+	protected final int dy; // dy
+	protected final int dz; // dz
 	
 	protected final long area;
 	protected final long volume;
 
 	protected final String name;
 
-	public Dimension(String name, int w, int d, int h) {
+	public Dimension(String name, int dx, int dy, int dz) {
 		this.name = name;
 
-		this.depth = d;
-		this.width = w;
-		this.height = h;
+		this.dx = dx;
+		this.dy = dy;
+		this.dz = dz;
 
-		this.volume = ((long)depth) * ((long)width) * ((long)height);
-		this.area = ((long)depth) * ((long)width);
+		this.volume = ((long)dy) * ((long)dx) * ((long)dz);
+		this.area = ((long)dy) * ((long)dx);
 	}
 
 
-	public Dimension(int w, int d, int h) {
-		this(null, w, d, h);
+	public Dimension(int dx, int dy, int dz) {
+		this(null, dx, dy, dz);
 	}
 
-	public int getWidth() {
-		return width;
+	public int getDx() {
+		return dx;
 	}
 
-	public int getHeight() {
-		return height;
+	public int getDz() {
+		return dz;
 	}
 
-	public int getDepth() {
-		return depth;
+	public int getDy() {
+		return dy;
 	}
 
 	/**
@@ -68,16 +68,16 @@ public class Dimension {
 	 *
 	 */
 	public boolean canHold3D(Dimension dimension) {
-		return canHold3D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
+		return canHold3D(dimension.getDx(), dimension.getDy(), dimension.getDz());
 	}
 
 	public boolean canHold3D(int w, int d, int h) {
-        return (w <= width && h <= height && d <= depth) ||
-               (h <= width && d <= height && w <= depth) ||
-               (d <= width && w <= height && h <= depth) ||
-               (h <= width && w <= height && d <= depth) ||
-               (d <= width && h <= height && w <= depth) ||
-               (w <= width && d <= height && h <= depth);
+        return (w <= dx && h <= dz && d <= dy) ||
+               (h <= dx && d <= dz && w <= dy) ||
+               (d <= dx && w <= dz && h <= dy) ||
+               (h <= dx && w <= dz && d <= dy) ||
+               (d <= dx && h <= dz && w <= dy) ||
+               (w <= dx && d <= dz && h <= dy);
 	}
 
 
@@ -90,26 +90,26 @@ public class Dimension {
 	 *
 	 */
 	public boolean canHold2D(Dimension dimension) {
-		return canHold2D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
+		return canHold2D(dimension.getDx(), dimension.getDy(), dimension.getDz());
 	}
 
 	public boolean canHold2D(int w, int d, int h) {
-		if(h > height) {
+		if(h > dz) {
 			return false;
 		}
-		return (w <= width && d <= depth) || (d <= width && w <= depth);
+		return (w <= dx && d <= dy) || (d <= dx && w <= dy);
 	}
 
 	public int getFootprint() {
-		return width * depth;
+		return dx * dy;
 	}
 
 	public boolean isSquare2D() {
-		return width == depth;
+		return dx == dy;
 	}
 
 	public boolean isSquare3D() {
-		return width == depth && width == height;
+		return dx == dy && dx == dz;
 	}
 
 	/**
@@ -120,11 +120,11 @@ public class Dimension {
 	 */
 
 	public boolean fitsInside3D(Dimension dimension) {
-		return fitsInside3D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
+		return fitsInside3D(dimension.getDx(), dimension.getDy(), dimension.getDz());
 	}
 
 	public boolean fitsInside3D(int w, int d, int h) {
-		return w >= width && h >= height && d >= depth;
+		return w >= dx && h >= dz && d >= dy;
 	}
 
 
@@ -158,16 +158,16 @@ public class Dimension {
 	}
 
 	public boolean nonEmpty() {
-		return width > 0 && depth > 0 && height > 0;
+		return dx > 0 && dy > 0 && dz > 0;
 	}
 
 	@Override
 	public String toString() {
-		return "Dimension [width=" + width + ", depth=" + depth + ", height=" + height + ", volume=" + volume + "]";
+		return "Dimension [width=" + dx + ", depth=" + dy + ", height=" + dz + ", volume=" + volume + "]";
 	}
 
 	public String encode() {
-		return encode(width, depth, height);
+		return encode(dx, dy, dz);
 	}
 
 	public String getName() {
@@ -178,11 +178,11 @@ public class Dimension {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + depth;
-		result = prime * result + height;
+		result = prime * result + dy;
+		result = prime * result + dz;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + (int) (volume ^ (volume >>> 32));
-		result = prime * result + width;
+		result = prime * result + dx;
 		return result;
 	}
 
@@ -195,9 +195,9 @@ public class Dimension {
 		if (getClass() != obj.getClass())
 			return false;
 		Dimension other = (Dimension) obj;
-		if (depth != other.depth)
+		if (dy != other.dy)
 			return false;
-		if (height != other.height)
+		if (dz != other.dz)
 			return false;
 		if (name == null) {
 			if (other.name != null)
@@ -206,7 +206,7 @@ public class Dimension {
 			return false;
 		if (volume != other.volume)
 			return false;
-		if (width != other.width)
+		if (dx != other.dx)
 			return false;
 		return true;
 	}

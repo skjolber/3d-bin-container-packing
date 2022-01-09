@@ -12,7 +12,7 @@ Projects using this library will benefit from:
  
 So while the algorithm will not produce the theoretically optimal result (which is NP-hard), its reasonable simplicity means that in many cases it would be possible to stack the resulting container for a human without instructions.
 
-In short, the library provides a service which is __usually good enough, in time and reasonably user-friendly__ ;-)
+In short, the library provides a service which is  __usually good enough, in time and reasonably user-friendly__ ;-)
 
 Bugs, feature suggestions and help requests can be filed with the [issue-tracker].
 
@@ -38,10 +38,16 @@ The units of measure is out-of-scope, be they cm, mm or inches.
 Obtain a `Packager` instance:
 
 ```java
-// initialization
-List<Container> containers = new ArrayList<Container>();
-containers.add(new Container(10, 10, 3, 100)); // x y z and weight
-Packager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(containers).build()
+Container container = Container.newBuilder()
+    .withDescription("1")
+    .withSize(3, 2, 3)
+    .withEmptyWeight(1)
+    .withMaxLoadWeight(100)
+    .build();
+    
+Packager packager = LargestAreaFitFirstPackager.newBuilder()
+    .withContainers(Arrays.asList(container)
+    .build();
 ```
 
 The `packager` instance is thread-safe.
@@ -50,11 +56,12 @@ The `packager` instance is thread-safe.
 Then compose your item list and perform packing:
 
 ```java
-List<BoxItem> products = new ArrayList<BoxItem>();
-products.add(new BoxItem(new Box("Foot", 6, 10, 2, 25), 1));
-products.add(new BoxItem(new Box("Leg", 4, 10, 1, 25), 1));
-products.add(new BoxItem(new Box("Arm", 4, 10, 2, 50), 1));
-	
+List<StackableItem> products = new ArrayList<StackableItem>();
+
+products.add(new StackableItem(Box.newBuilder().withId("Foot").withSize(6, 10, 2).withRotate3D().withWeight(25).build(), 1));
+products.add(new StackableItem(Box.newBuilder().withId("Leg").withSize(4, 10, 1).withRotate3D().withWeight(25).build(), 1));
+products.add(new StackableItem(Box.newBuilder().withId("Arm").withSize(4, 10, 2).withRotate3D().withWeight(50).build(), 1));
+
 // match a single container
 Container match = packager.pack(products);
 ```
@@ -72,19 +79,13 @@ int maxContainers = ...; // maximum number of containers which can be used
 List<Container> fits = packager.packList(products, maxContainers);
 ```
 
-### Rotation
-By default 3D-rotation is enabled. Configure 2D-only rotation using:
-
-```java
-boolean rotate3d = ...;
-Packager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(containers).withRotate2D().build();
-```
-
 ### Brute-force packager
 For a low number of packages (like <= 6) the brute force packager might be a good fit. 
 
 ```java
-Packager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
+Packager packager = BruteForcePackager.newBuilder()
+    .withContainers(Arrays.asList(container)
+    .build();
 ```
 
 Using a deadline is recommended whenever brute-forcing in a real-time application.
@@ -99,22 +100,28 @@ Container match = packager.pack(products, deadline);
 ## Details
 
 ### Largest Area Fit First algorithm
-The implementation is based on [this paper][2], and is not a traditional [Bin packing problem][1] solver.
+The implementation is based on [this paper][2], and is not a traditional [bin packing problem][1] solver.
 
 The box which covers the largest ground area of the container is placed first; its height becomes the level height. Boxes which fill the full remaining height take priority. Subsequent boxes are stacked in the remaining space in at the same level, the boxes with the greatest volume first. If box height is lower than level height, the algorithm attempts to place some there as well. 
 
 When no more boxes fit in a level, the level is incremented and the process repeated. Boxes are rotated, containers not.
 
+ * `LargestAreaFitFirstPackager` stacks in 3D within each level
+ * `FastLargestAreaFitFirstPackager` stacks in 2D within each level
+
 The algorithm runs reasonably fast, usually in milliseconds. Some customization is possible.
 
 ###  Brute-force algorithm
-This algorithm places the boxes in the same way as the LAFF algorithm, but has no logic for selecting the best box or rotation; running through all permutations, for each permutation all rotations. 
+This algorithm has no logic for selecting the best box or rotation; running through all permutations, for each permutation all rotations:
 
-The maximum complexity of this approach is [exponential] at __n! * 6^n__. The algorithm runs for under a second for small number of products (<= 6), to seconds or minutes (<= 8) or hours for larger numbers.
+ * `BruteForcePackager` attempts all box orders, rotations and placement positions.
+ * `FastLargestAreaFitFirstPackager` selects all box orders and rotations, selecting the most appropriate placement position.
 
-However accounting for container vs box size plus boxes with equal size might reduce this bound considerably, and the resulting complexity can be calculated using [PermutationRotationIterator](core/src/main/java/com/github/skjolber/packing/impl/PermutationRotationIterator.java) before packaging is attempted. See [example] in test sources.
+The maximum complexity of this approach is [exponential] at __n! * 6^n__ or worse. The algorithm runs for under a second for small number of products (<= 6), to seconds or minutes (<= 8) or hours for larger numbers.
 
-There is also a [parallel version](core/src/main/java/com/github/skjolber/packing/ParallelBruteForcePackager.java) of the brute-force packager, for those wishing to use it on a multicore system.
+However accounting for container vs box size plus boxes with equal size might reduce this bound considerably, and the resulting complexity can be calculated using [PermutationRotationIterator](core/src/main/java/com/github/skjolber/packing/iterator/PermutationRotationIterator.java) before packaging is attempted. See [example] in test sources.
+
+There is also a parallel version `ParallelBruteForcePackager` of the brute-force packager, for those wishing to use it on a multicore system.
 
 Using a brute-force algorithm might seem to hit a wall of complexity, but taking into account number of items 
 per order distribution for web-shops, a healthy part of the orders are within its grasp.

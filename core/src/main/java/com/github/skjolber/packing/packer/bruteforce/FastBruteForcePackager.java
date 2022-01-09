@@ -42,6 +42,16 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 		private List<Container> containers;
 		private int checkpointsPerDeadlineCheck = 1;
 
+		public LargestAreaFitFirstPackagerBuilder withContainers(Container ...  containers) {
+			if(this.containers == null) {
+				this.containers = new ArrayList<>();
+			}
+			for (Container container : containers) {
+				this.containers.add(container);
+			}
+			return this;
+		}
+
 		public LargestAreaFitFirstPackagerBuilder withContainers(List<Container> containers) {
 			this.containers = containers;
 			return this;

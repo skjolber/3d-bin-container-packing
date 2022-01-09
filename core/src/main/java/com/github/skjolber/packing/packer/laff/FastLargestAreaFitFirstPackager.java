@@ -20,6 +20,7 @@ import com.github.skjolber.packing.api.StackValuePointFilter;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableFilter;
 import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePackagerBuilder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. Only places boxes along the floor of each level.
@@ -41,6 +42,16 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 
 		public LargestAreaFitFirstPackagerBuilder setConfigurationBuilderFactory(LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D<StackPlacement>, ?> configurationBuilder) {
 			this.configurationBuilderFactory = configurationBuilder;
+			return this;
+		}
+		
+		public LargestAreaFitFirstPackagerBuilder withContainers(Container ...  containers) {
+			if(this.containers == null) {
+				this.containers = new ArrayList<>();
+			}
+			for (Container container : containers) {
+				this.containers.add(container);
+			}
 			return this;
 		}
 		

@@ -17,7 +17,7 @@ import com.github.skjolber.packing.test.BouwkampCodeLine;
 public class BouwkampConverter {
 
 	public static Container getContainer3D(BouwkampCode bouwkampCode) {
-		return Container.newBuilder().withDescription("Container").withEmptyWeight(1).withRotate(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1, bouwkampCode.getWidth() * bouwkampCode.getDepth(), null).withStack(new DefaultStack()).build();
+		return Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(bouwkampCode.getWidth() * bouwkampCode.getDepth()).withStack(new DefaultStack()).build();
 	}
 	
 	public static List<StackableItem> getStackableItems3D(BouwkampCode bouwkampCode) {

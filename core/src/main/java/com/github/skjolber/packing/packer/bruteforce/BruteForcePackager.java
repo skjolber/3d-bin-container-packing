@@ -13,6 +13,7 @@ import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.packer.Adapter;
+import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager.LargestAreaFitFirstPackagerBuilder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. 
@@ -34,6 +35,16 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		private List<Container> containers;
 		private int checkpointsPerDeadlineCheck = 1;
 
+		public BruteForcePackagerBuilder withContainers(Container ...  containers) {
+			if(this.containers == null) {
+				this.containers = new ArrayList<>();
+			}
+			for (Container container : containers) {
+				this.containers.add(container);
+			}
+			return this;
+		}
+		
 		public BruteForcePackagerBuilder withContainers(List<Container> containers) {
 			this.containers = containers;
 			return this;

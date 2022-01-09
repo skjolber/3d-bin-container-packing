@@ -267,6 +267,10 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		return packList(boxes, limit, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
+	public List<Container> packList(List<StackableItem> boxes, int limit) {
+		return packList(boxes, limit, BooleanSupplierBuilder.NOOP);
+	}
+
 	/**
 	 * Return a list of containers which holds all the boxes in the argument
 	 *

@@ -46,7 +46,7 @@ public abstract class StackValue {
 	 */
 
 	public boolean fitsInside3D(Dimension dimension) {
-		return fitsInside3D(dimension.getWidth(), dimension.getDepth(), dimension.getHeight());
+		return fitsInside3D(dimension.getDx(), dimension.getDy(), dimension.getDz());
 	}
 
 	public boolean fitsInside3D(int dx, int dy, int dz) {
