@@ -97,6 +97,9 @@ public class BagContainer extends Container {
 
 	void foldBoxToBaseArea(final int pMaxX, final int pMaxY) {
 		final int tFoldLength = Math.min(width - pMaxX, depth - pMaxY);
+		if (tFoldLength < 0) {
+			throw new IllegalArgumentException("got fold length less than zero");
+		}
 		height += tFoldLength;
 		width -= tFoldLength;
 		depth -= tFoldLength;
@@ -110,12 +113,14 @@ public class BagContainer extends Container {
 			width -= tFoldLength;
 			depth -= tFoldLength;
 			calculateVolume();
+		} else {
+			throw new IllegalArgumentException("cannot fold to smaller height");
 		}
 	}
 
 	protected int calcFoldedHeightForBaseArea(int pWidth, int pDepth) {
 		if (pWidth < width && pDepth < depth) {
-			final int tFoldLength = Math.min(pWidth, pDepth);
+			final int tFoldLength = Math.min(width - pWidth, depth - pDepth);
 			return height + tFoldLength;
 		} else {
 			return height;
