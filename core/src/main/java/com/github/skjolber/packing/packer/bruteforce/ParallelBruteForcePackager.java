@@ -22,7 +22,6 @@ import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorA
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.packer.Adapter;
 import com.github.skjolber.packing.packer.PackagerException;
-import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager.LargestAreaFitFirstPackagerBuilder;
 
 /**
  * 

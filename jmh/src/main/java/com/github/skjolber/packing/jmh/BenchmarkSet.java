@@ -2,7 +2,6 @@ package com.github.skjolber.packing.jmh;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.packer.AbstractPackager;
 

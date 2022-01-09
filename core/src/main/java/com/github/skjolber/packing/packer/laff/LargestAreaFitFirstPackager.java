@@ -19,7 +19,6 @@ import com.github.skjolber.packing.api.StackableFilter;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.api.ep.StackValuePointFilter;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
-import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager.LargestAreaFitFirstPackagerBuilder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.

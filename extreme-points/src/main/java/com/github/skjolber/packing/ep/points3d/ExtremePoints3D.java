@@ -7,11 +7,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
-import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.Point3D;
-import com.github.skjolber.packing.api.ep.XYPlanePoint3D;
-import com.github.skjolber.packing.api.ep.XZPlanePoint3D;
-import com.github.skjolber.packing.api.ep.YZPlanePoint3D;
 
 /**
  * 

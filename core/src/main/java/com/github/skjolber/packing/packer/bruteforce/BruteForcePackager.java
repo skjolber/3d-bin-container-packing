@@ -13,7 +13,6 @@ import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.packer.Adapter;
-import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager.LargestAreaFitFirstPackagerBuilder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. 
