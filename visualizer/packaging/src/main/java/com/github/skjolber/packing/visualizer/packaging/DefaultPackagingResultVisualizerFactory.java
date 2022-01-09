@@ -14,9 +14,9 @@ import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisua
 import com.github.skjolber.packing.visualizer.api.packaging.StackPlacementVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.StackVisualizer;
 
-public class ContainerProjection extends AbstractProjection<Container> {
+public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingResultVisualizerFactory<Container> {
 
-	public PackagingResultVisualizer project(List<Container> inputContainers) {
+	public PackagingResultVisualizer visualize(List<Container> inputContainers) {
 		int step = 0;
 		PackagingResultVisualizer visualization = new PackagingResultVisualizer();
 		for(Container inputContainer : inputContainers) {
@@ -35,7 +35,7 @@ public class ContainerProjection extends AbstractProjection<Container> {
 			containerVisualization.setLoadDy(containerStackValue.getDy());
 			containerVisualization.setLoadDz(containerStackValue.getDz());
 
-			containerVisualization.setId(inputContainer.getDescription());
+			containerVisualization.setId(inputContainer.getId());
 			containerVisualization.setName(inputContainer.getDescription());
 
 			StackVisualizer stackVisualization = new StackVisualizer();
@@ -43,12 +43,11 @@ public class ContainerProjection extends AbstractProjection<Container> {
 			containerVisualization.setStack(stackVisualization);
 			
 			Stack stack = inputContainer.getStack();
-			List<StackPlacement> placements = stack.getPlacements();
 			
 			for (StackPlacement placement : stack.getPlacements()) {
 				Stackable box = placement.getStackable();
 				BoxVisualizer boxVisualization = new BoxVisualizer();
-				boxVisualization.setId(box.getDescription());
+				boxVisualization.setId(box.getId());
 				boxVisualization.setName(box.getDescription());
 				boxVisualization.setStep(step);
 

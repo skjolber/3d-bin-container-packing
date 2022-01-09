@@ -10,7 +10,7 @@ Projects using this library will benefit from:
  * fairly good use of container space, 
  * brute-force support for low number of boxes
  
-So while the algorithm will not produce the theoretically optimal result (which is NP-hard), its reasonable simplicity means that in many cases it would be possible to stack the resulting container for a human without instructions.
+So while the algorithm will not produce the theoretically optimal result (which has an O(n<sup>2</sup>) complexity), its reasonable simplicity means that in many cases it would be possible to stack the resulting container for a human without instructions.
 
 In short, the library provides a service which is  __usually good enough, in time and reasonably user-friendly__ ;-)
 
@@ -40,7 +40,7 @@ Obtain a `Packager` instance:
 ```java
 Container container = Container.newBuilder()
     .withDescription("1")
-    .withSize(3, 2, 3)
+    .withSize(10, 10, 3)
     .withEmptyWeight(1)
     .withMaxLoadWeight(100)
     .build();
@@ -68,7 +68,7 @@ Container match = packager.pack(products);
 
 The resulting `match` variable returning the resulting packaging details or null if no match. 
 
-The above example would return a match (Foot and Arm would be packaged at the height 0, Leg at height 2). 
+The above example would return a match (`Foot` and `Arm` would be packaged at the height 0, `Leg` at height 2). 
 
 For matching against multiple containers use
 
@@ -119,22 +119,25 @@ This algorithm has no logic for selecting the best box or rotation; running thro
 
 The maximum complexity of this approach is [exponential] at __n! * 6^n__ or worse. The algorithm runs for under a second for small number of products (<= 6), to seconds or minutes (<= 8) or hours for larger numbers.
 
-However accounting for container vs box size plus boxes with equal size might reduce this bound considerably, and the resulting complexity can be calculated using [PermutationRotationIterator](core/src/main/java/com/github/skjolber/packing/iterator/PermutationRotationIterator.java) before packaging is attempted. See [example] in test sources.
+However accounting for container vs box size plus boxes with equal size might reduce this bound considerably, and the resulting complexity can be calculated using a `PermutationRotationIterator` before packaging is attempted.
 
-There is also a parallel version `ParallelBruteForcePackager` of the brute-force packager, for those wishing to use it on a multicore system.
+There is also a parallel version `ParallelBruteForcePackager` of the brute-force packager, for those wishing to use it on a multi-core system.
 
 Using a brute-force algorithm might seem to hit a wall of complexity, but taking into account number of items 
 per order distribution for web-shops, a healthy part of the orders are within its grasp.
 
-Note that placing the boxes as the LAFF algorithm is a limitation; the current approach is 'split and drill down', a better approach would be to sort and keep tabs of corners (boxes). 
+Note that the algorithm is recursive on the number of boxes, so do not attempt this with many boxe (it will likely not complete in time anyhow).
 
 ### Visualizer
-There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/).
+There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently best suited for development support.
 
 ![Alt text](visualization/viewer/images/view.png?raw=true "Demo")
 
+# Customization
+The code has been structured so it is possible to extend and adapt to specialized needs. See `AbstractPackager` class, the `extreme-points` and `test`artifacts. Using the the visualizer while developing is recommended (i.e. output the result of unit tests directly to the visualizer
+
 # Get involved
-If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request. __DO NOT send me emails unless you're prepared to pay for my time.__
+If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request.
 
 Feel free to connect with me on [LinkedIn], see also my [Github page].
 
@@ -142,7 +145,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
 
 # History
- - 2.x.x: In progres
+ - 2.0.0: Major refactoring. Improvements to just about everything.
  - 1.2.14: Fix for issue #297.
  - 1.2.13: Fix for issue #251.
  - 1.2.12: Fix for issue #245.
@@ -154,12 +157,11 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 
 [1]: 				https://en.wikipedia.org/wiki/Bin_packing_problem
 [2]: 				https://www.drupal.org/files/An%20Efficient%20Algorithm%20for%203D%20Rectangular%20Box%20Packing.pdf
-[Apache 2.0]: 			http://www.apache.org/licenses/LICENSE-2.0.html
-[issue-tracker]:		https://github.com/skjolber/3d-bin-container-packing/issues
+[Apache 2.0]: 		http://www.apache.org/licenses/LICENSE-2.0.html
+[issue-tracker]:	https://github.com/skjolber/3d-bin-container-packing/issues
 [Maven]:			http://maven.apache.org/
 [LinkedIn]:			http://lnkd.in/r7PWDz
-[Github page]:			https://skjolber.github.io
-[NothinRandom]:			https://github.com/NothinRandom
-[exponential]:			https://en.wikipedia.org/wiki/Exponential_function
-[example]:			core/src/test/java/com/github/skjolber/packing/impl/BruteForcePackagerRuntimeEstimator.java
+[Github page]:		https://skjolber.github.io
+[NothinRandom]:		https://github.com/NothinRandom
+[exponential]:		https://en.wikipedia.org/wiki/Exponential_function
 

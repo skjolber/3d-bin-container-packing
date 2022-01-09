@@ -8,23 +8,20 @@ import java.util.List;
 
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
 
-public abstract class AbstractProjection<T> implements Projection<T> {
+public abstract class AbstractPackagingResultVisualizerFactory<T> implements PackagingResultVisualizerFactory<T> {
 
-	@Override
-	public void project(List<T> input, OutputStream out) throws Exception {
-		PackagingResultVisualizer project = project(input);
+	public void visualize(List<T> input, OutputStream out) throws Exception {
+		PackagingResultVisualizer project = visualize(input);
 		
 		out.write(project.toJson().getBytes(StandardCharsets.UTF_8));
 	}
 
-	@Override
-	public void project(List<T> input, File output) throws Exception {
+	public void visualize(List<T> input, File output) throws Exception {
 		FileOutputStream fout = new FileOutputStream(output);
 		try {
-			project(input,fout);
+			visualize(input,fout);
 		} finally {
 			fout.close();
 		}
 	}
-
 }

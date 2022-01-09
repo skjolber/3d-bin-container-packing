@@ -164,7 +164,7 @@ public class VisualizationTest {
 	@Test
 	void testStackingBinary1() throws Exception {
 
-		DefaultContainer container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(8, 8, 1).withMaxLoadWeight(100).build();
+		DefaultContainer container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(8, 8, 2).withMaxLoadWeight(100).build();
 		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(container).build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -270,8 +270,9 @@ public class VisualizationTest {
 			products.add(new StackableItem(Box.newBuilder().withDescription(Integer.toString(square)).withSize(square, square, 1).withRotate3D().withWeight(1).build(), count));
 		}
 
-		Collections.reverse(products);
-
+		// shuffle
+		Collections.shuffle(products);
+		
 		Container fits = packager.pack(products);
 		assertNotNull(bouwkampCode.getName(), fits);
 		assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), squares.size());
@@ -289,10 +290,10 @@ public class VisualizationTest {
 	}
 
 	private void write(List<Container> packList) throws Exception {
-		ContainerProjection p = new ContainerProjection();
+		DefaultPackagingResultVisualizerFactory p = new DefaultPackagingResultVisualizerFactory();
 		
 		File file = new File("../viewer/public/assets/containers.json");
-		p.project(packList , file);
+		p.visualize(packList , file);
 	}
 	
 }

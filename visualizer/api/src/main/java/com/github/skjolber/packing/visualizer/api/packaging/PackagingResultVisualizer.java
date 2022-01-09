@@ -27,5 +27,6 @@ public class PackagingResultVisualizer {
 		
 		return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
 	}
+	
 
 }
