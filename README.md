@@ -74,9 +74,10 @@ For matching against multiple containers use
 
 ```java
 int maxContainers = ...; // maximum number of containers which can be used
+long deadline = ...; // system time in milliseconds at which the search should be aborted
 
 // match multiple containers
-List<Container> fits = packager.packList(products, maxContainers);
+List<Container> fits = packager.packList(products, maxContainers, deadline);
 ```
 
 ### Brute-force packager
