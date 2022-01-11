@@ -1,7 +1,7 @@
 # This workflow will build a Java project with Maven
 # This runs only on PR
  
-name: SonarCloud
+name: SonarCloud  QA
 
 on: [push, pull_request] 
  
