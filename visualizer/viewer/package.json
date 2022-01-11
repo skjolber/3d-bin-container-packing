@@ -6,7 +6,7 @@
   "main": "src/index.js",
   "dependencies": {
     "@types/randomcolor": "^0.5.5",
-    "@types/three": "^0.130.0",
+    "@types/three": "^0.136.0",
     "dat.gui": "0.7.7",
     "randomcolor": "^0.6.2",
     "react": "17.0.2",
