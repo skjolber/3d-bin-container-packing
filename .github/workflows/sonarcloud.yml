@@ -1,0 +1,32 @@
+# This workflow will build a Java project with Maven
+# This runs only on PR
+ 
+name: SonarCloud
+
+on: [push, pull_request] 
+ 
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: ['ubuntu-latest']
+    runs-on: ${{ matrix.os }}
+    permissions:
+      checks: write
+      pull-requests: write
+      statuses: read
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+    - uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-v2-${{ hashFiles('**/pom.xml') }}    
+        restore-keys: |
+          ${{ runner.os }}-maven-v2-
+    - name: Build with Maven
+      run: mvn -B verify --file pom.xml -B verify sonar:sonar -Dsonar.projectKey=3d-bin-container-packing -Dsonar.organization=skjolber-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
+
