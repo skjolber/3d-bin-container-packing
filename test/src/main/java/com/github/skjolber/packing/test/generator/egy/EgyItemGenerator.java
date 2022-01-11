@@ -21,38 +21,38 @@ import com.github.skjolber.packing.test.generator.ItemGenerator;
 public class EgyItemGenerator implements ItemGenerator {
 
 	public static Clazz CLASS_1 = new Clazz.Builder()
-			.withCategory(Category.K1, new BigDecimal(28.48))
-			.withCategory(Category.K2, new BigDecimal(58.75))
-			.withCategory(Category.K3, new BigDecimal(12.67))
-			.withCategory(Category.K4, new BigDecimal(0.1))
-			.withCategory(Category.K5, new BigDecimal(0))
+			.withCategory(Category.K1, BigDecimal.valueOf(28.48))
+			.withCategory(Category.K2, BigDecimal.valueOf(58.75))
+			.withCategory(Category.K3, BigDecimal.valueOf(12.67))
+			.withCategory(Category.K4, BigDecimal.valueOf(0.1))
+			.withCategory(Category.K5, BigDecimal.valueOf(0))
 			.withName("1")
 			.build();
 	
 	public static Clazz CLASS_2 = new Clazz.Builder()
-			.withCategory(Category.K1, new BigDecimal(33.08))
-			.withCategory(Category.K2, new BigDecimal(32.36))
-			.withCategory(Category.K3, new BigDecimal(23.34))
-			.withCategory(Category.K4, new BigDecimal(7.94))
-			.withCategory(Category.K5, new BigDecimal(3.28))
+			.withCategory(Category.K1, BigDecimal.valueOf(33.08))
+			.withCategory(Category.K2, BigDecimal.valueOf(32.36))
+			.withCategory(Category.K3, BigDecimal.valueOf(23.34))
+			.withCategory(Category.K4, BigDecimal.valueOf(7.94))
+			.withCategory(Category.K5, BigDecimal.valueOf(3.28))
 			.withName("2")
 			.build();
 	
 	public static Clazz CLASS_3 = new Clazz.Builder()
-			.withCategory(Category.K1, new BigDecimal(66.88))
-			.withCategory(Category.K2, new BigDecimal(24.75))
-			.withCategory(Category.K3, new BigDecimal(5.7))
-			.withCategory(Category.K4, new BigDecimal(2.6))
-			.withCategory(Category.K5, new BigDecimal(0.08))
+			.withCategory(Category.K1, BigDecimal.valueOf(66.88))
+			.withCategory(Category.K2, BigDecimal.valueOf(24.75))
+			.withCategory(Category.K3, BigDecimal.valueOf(5.7))
+			.withCategory(Category.K4, BigDecimal.valueOf(2.6))
+			.withCategory(Category.K5, BigDecimal.valueOf(0.08))
 			.withName("3")
 			.build();
 	
 	public static Clazz CLASS_4 = new Clazz.Builder()
-			.withCategory(Category.K1, new BigDecimal(78.58))
-			.withCategory(Category.K2, new BigDecimal(13.16))
-			.withCategory(Category.K3, new BigDecimal(6.33))
-			.withCategory(Category.K4, new BigDecimal(1.78))
-			.withCategory(Category.K5, new BigDecimal(0.15))
+			.withCategory(Category.K1, BigDecimal.valueOf(78.58))
+			.withCategory(Category.K2, BigDecimal.valueOf(13.16))
+			.withCategory(Category.K3, BigDecimal.valueOf(6.33))
+			.withCategory(Category.K4, BigDecimal.valueOf(1.78))
+			.withCategory(Category.K5, BigDecimal.valueOf(0.15))
 			.withName("4")
 			.build();
 	
