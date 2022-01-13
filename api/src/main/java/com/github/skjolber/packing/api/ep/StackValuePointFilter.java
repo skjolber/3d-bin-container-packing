@@ -17,7 +17,7 @@ public interface StackValuePointFilter<T> {
 	 * @param stackValue2 second stack value
      * @return true if point2 is superior to point1
      * @throws ClassCastException if the arguments' types prevent them from
-     *         being compared by this comparator.
+     *         being compared by this filter.
      */
 
 	

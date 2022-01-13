@@ -68,45 +68,69 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		return myself;
 	}
 	
-	public SELF isYSupportAt(int y) {
+	public SELF isYSupport(int y) {
 		isNotNull();
-		if (!actual.isYSupport(y)) {
+		if(!actual.isYSupport(y)) {
 			if(actual instanceof YSupportPoint2D) {
 				YSupportPoint2D ySupportPoint2D = (YSupportPoint2D)actual;
 				Placement2D support = ySupportPoint2D.getYSupport();
 				
-				if(support.getAbsoluteEndY() != y) {
-					failWithMessage("Expected y support at " + y + ", was " + support.getAbsoluteEndY());
-				}
+				failWithMessage("Expected y support at " + y + ", was " + support.getAbsoluteY() + " to " + support.getAbsoluteEndY());
 			} else {
-				failWithMessage("Expected y support at " + y);
+				failWithMessage("Expected y support at " + y + ", was none for " + actual);
+			}
+		}
+		return myself;
+	}
+	
+	public SELF isNoYSupport(int y) {
+		isNotNull();
+		if(actual.isYSupport(y)) {
+			if(actual instanceof YSupportPoint2D) {
+				YSupportPoint2D ySupportPoint2D = (YSupportPoint2D)actual;
+				Placement2D support = ySupportPoint2D.getYSupport();
+				
+				failWithMessage("Expected no y support at " + y + ", was " + support.getAbsoluteY() + " to " + support.getAbsoluteEndY());
 			}
 		}
 		return myself;
 	}
 
-	public SELF isXSupportAt(int x) {
+	public SELF isXSupport(int x) {
 		isNotNull();
-		if(actual instanceof XSupportPoint2D) {
-			XSupportPoint2D ySupportPoint2D = (XSupportPoint2D)actual;
-			Placement2D support = ySupportPoint2D.getXSupport();
-			
-			if(support.getAbsoluteEndX() != x) {
-				failWithMessage("Expected x support at " + x + ", was " + support.getAbsoluteEndX());
+		if(!actual.isXSupport(x)) {
+			if(actual instanceof XSupportPoint2D) {
+				XSupportPoint2D ySupportPoint2D = (XSupportPoint2D)actual;
+				Placement2D support = ySupportPoint2D.getXSupport();
+				
+				failWithMessage("Expected x support at " + x + ", was " + support.getAbsoluteX() + " to " + support.getAbsoluteEndX());
+			} else {
+				failWithMessage("Expected x support at " + x + ", was none for " + actual);
 			}
-		} else {
-			failWithMessage("Expected x support at " + x + ", was none for " + actual);
+		}
+		return myself;
+	}
+
+	public SELF isNoXSupport(int x) {
+		isNotNull();
+		if(actual.isXSupport(x)) {
+			if(actual instanceof XSupportPoint2D) {
+				XSupportPoint2D ySupportPoint2D = (XSupportPoint2D)actual;
+				Placement2D support = ySupportPoint2D.getXSupport();
+				
+				failWithMessage("Expected no x support at " + x + ", was " + support.getAbsoluteX() + " to " + support.getAbsoluteEndX());
+			}
 		}
 		return myself;
 	}
 
 	public SELF isSupport(int x, int y) {
-		isXSupportAt(x);
-		isYSupportAt(y);
+		isXSupport(x);
+		isYSupport(y);
 		return myself;
 	}
 
-	public SELF isYSupport(int y) {
+	public SELF isMaxYSupport(int y) {
 		isNotNull();
 		if(actual instanceof YSupportPoint2D) {
 			YSupportPoint2D ySupportPoint2D = (YSupportPoint2D)actual;
@@ -141,7 +165,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 	}
 
 
-	public SELF isXSupport(int x) {
+	public SELF isMaxXSupport(int x) {
 		isNotNull();
 		if(actual instanceof XSupportPoint2D) {
 			XSupportPoint2D xSupportPoint2D = (XSupportPoint2D)actual;

@@ -83,8 +83,9 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		// keep track of placement borders, where possible
 		Point2D<P> source = values.get(index);
 		
-		boolean hasSupport = source instanceof XSupportPoint2D || source instanceof YSupportPoint2D;
-
+		boolean xSupport = source.isXSupport(source.getMinX());
+		boolean ySupport = source.isYSupport(source.getMinY());
+		
 		int xx = source.getMinX() + boxDx;
 		int yy = source.getMinY() + boxDy;
 		
@@ -100,7 +101,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		//       |--------------------------
 		//               minX             maxX
 		
-		boolean xSupport = source.isXSupport(xx); // i.e. is source minY also minY at XX?
+		boolean xxSupport = xSupport && source.isXSupport(xx); // i.e. is source minY also minY at XX?
 
 		//
 		// vmaxY |                    
@@ -117,7 +118,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		//               minX    maxX
 		//   
 		
-		boolean ySupport = source.isYSupport(yy); // i.e. is source minX also minX at YY?
+		boolean yySupport = ySupport && source.isYSupport(yy); // i.e. is source minX also minX at YY?
 
 		//    y
 		//    |                          |
@@ -147,7 +148,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		// determine start and end index based on previous sort (in x direction)
 		
 		int pointIndex;
-		if(ySupport) {
+		if(yySupport) {
 			pointIndex = binarySearchMinusMinX(placement.getAbsoluteX());
 		} else {
 			pointIndex = 0;
@@ -162,10 +163,10 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			
 			if(swallowsMinX && swallowsMinY) { // b
 				swallowed.add(point);
-			} else if(swallowsMinX && !xSupport && point.getMinY() < placement.getAbsoluteY() && placement.getAbsoluteY() <= point.getMaxY()) { // c
+			} else if(swallowsMinX && !xxSupport && point.getMinY() < placement.getAbsoluteY() && placement.getAbsoluteY() <= point.getMaxY()) { // c
 				// shadowed (at negative) y
 				moveToYY.add(point);
-			} else if(swallowsMinY && !ySupport && point.getMinX() < placement.getAbsoluteX() &&  placement.getAbsoluteX() <= point.getMaxX()) { // a
+			} else if(swallowsMinY && !yySupport && point.getMinX() < placement.getAbsoluteX() &&  placement.getAbsoluteX() <= point.getMaxX()) { // a
 				// shadowed (at negative) x
 				moveToXX.add(point);
 			} else {
@@ -174,7 +175,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		}
 		
 		// project swallowed or shadowed to xx
-		if(!ySupport) {
+		if(!yySupport) {
 
 			// not enough y support
 			// 
@@ -226,7 +227,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			}
 		}
 		
-		if(!xSupport) {
+		if(!xxSupport) {
 			// not enough x support
 			//
 			//      |
@@ -305,12 +306,12 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 							continue add;
 						}
 					}
-					if(p.getMinX() < placement.getAbsoluteX()) {
-						// too low, no support
-						addYY.add(p.moveY(yy, p.getMaxX(), p.getMaxY()));
-					} else {
-						addYY.add(p.moveY(yy, p.getMaxX(), p.getMaxY(), placement));
-					}
+					// intentionally do not check if
+					// p.getMinX() < placement.getAbsoluteX()
+					// nor
+					// p.getMaxX() < placement.getAbsoluteX()
+					
+					addYY.add(p.moveY(yy, p.getMaxX(), p.getMaxY(), placement));
 				}
 			}			
 		}
@@ -327,12 +328,11 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 							continue add;
 						}
 					}
-					if(p.getMinY() < placement.getAbsoluteY()) {
-						// too low, no support
-						addXX.add(p.moveX(xx, p.getMaxX(), p.getMaxY()));
-					} else {
-						addXX.add(p.moveX(xx, p.getMaxX(), p.getMaxY(), placement));
-					}
+					// intentionally do not check if
+					// p.getMinY() < placement.getAbsoluteY()
+					// nor
+					// p.getMaxY() < placement.getAbsoluteY()
+					addXX.add(p.moveX(xx, p.getMaxX(), p.getMaxY(), placement));
 				}
 			}			
 		}
@@ -369,9 +369,9 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 				deleted.add(point);
 			}
 		}
-		if(!hasSupport) {
+		if(!(xSupport || ySupport)) {
 			
-			if(!ySupport) {
+			if(!yySupport) {
 				// search has not been performed yet
 				pointIndex = binarySearchMinusMinX(placement.getAbsoluteX());
 			}

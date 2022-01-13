@@ -28,14 +28,14 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(11);
 		assertThat(ep.getValue(0)).isMax(99, 99);
-		assertThat(ep.getValue(0)).isXSupport(10);
-		assertThat(ep.getValue(0)).isYSupport(99);
+		assertThat(ep.getValue(0)).isMaxXSupport(10);
+		assertThat(ep.getValue(0)).isMaxYSupport(99);
 
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(11);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
 		assertThat(ep.getValue(1)).isMax(99, 99);
-		assertThat(ep.getValue(1)).isXSupport(99);
-		assertThat(ep.getValue(1)).isYSupport(10);
+		assertThat(ep.getValue(1)).isMaxXSupport(99);
+		assertThat(ep.getValue(1)).isMaxYSupport(10);
 	}
 	
 	@Test
@@ -47,14 +47,14 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(1);
 		assertThat(ep.getValue(0)).isMax(99, 99);
-		assertThat(ep.getValue(0)).isXSupport(0);
-		assertThat(ep.getValue(0)).isYSupport(99);
+		assertThat(ep.getValue(0)).isMaxXSupport(0);
+		assertThat(ep.getValue(0)).isMaxYSupport(99);
 		
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(1);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
 		assertThat(ep.getValue(1)).isMax(99, 99);
-		assertThat(ep.getValue(1)).isXSupport(99);
-		assertThat(ep.getValue(1)).isYSupport(0);
+		assertThat(ep.getValue(1)).isMaxXSupport(99);
+		assertThat(ep.getValue(1)).isMaxYSupport(0);
 	}
 	
 	@Test
@@ -102,20 +102,20 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(50);
 		assertThat(ep.getValue(0)).isMax(99, 99);
-		assertThat(ep.getValue(0)).isXSupport(9);
-		assertThat(ep.getValue(0)).isYSupport(99);
+		assertThat(ep.getValue(0)).isMaxXSupport(9);
+		assertThat(ep.getValue(0)).isMaxYSupport(99);
 
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(10);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(25);
 		assertThat(ep.getValue(1)).isMax(99, 99);
-		assertThat(ep.getValue(1)).isXSupport(19);
-		assertThat(ep.getValue(1)).isYSupport(49);
+		assertThat(ep.getValue(1)).isMaxXSupport(19);
+		assertThat(ep.getValue(1)).isMaxYSupport(49);
 
 		assertThat(ep.getValue(2).getMinX()).isEqualTo(20);
 		assertThat(ep.getValue(2).getMinY()).isEqualTo(0);		
 		assertThat(ep.getValue(2)).isMax(99, 99);
-		assertThat(ep.getValue(2)).isXSupport(99);
-		assertThat(ep.getValue(2)).isYSupport(24);
+		assertThat(ep.getValue(2)).isMaxXSupport(99);
+		assertThat(ep.getValue(2)).isMaxYSupport(24);
 
 	}
 	
@@ -190,14 +190,14 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(10);
 		assertThat(ep.getValue(0)).isMax(99, 99);
-		assertThat(ep.getValue(0)).isXSupport(9); // XXX support is not extended to 19
-		assertThat(ep.getValue(0)).isYSupport(99);
+		assertThat(ep.getValue(0)).isMaxXSupport(9); // XXX support is not extended to 19
+		assertThat(ep.getValue(0)).isMaxYSupport(99);
 
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(20);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
 		assertThat(ep.getValue(1)).isMax(99, 99);
-		assertThat(ep.getValue(1)).isXSupport(99);
-		assertThat(ep.getValue(1)).isYSupport(9);
+		assertThat(ep.getValue(1)).isMaxXSupport(99);
+		assertThat(ep.getValue(1)).isMaxYSupport(9);
 
 	}
 
@@ -232,14 +232,14 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(20);
 		assertThat(ep.getValue(0)).isMax(99, 99);
-		assertThat(ep.getValue(0)).isXSupport(9);
-		assertThat(ep.getValue(0)).isYSupport(99);
+		assertThat(ep.getValue(0)).isMaxXSupport(9);
+		assertThat(ep.getValue(0)).isMaxYSupport(99);
 
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(10);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
 		assertThat(ep.getValue(1)).isMax(99, 99);
-		assertThat(ep.getValue(1)).isXSupport(99);
-		assertThat(ep.getValue(1)).isYSupport(9); // XXX support is not extended to 19
+		assertThat(ep.getValue(1)).isMaxXSupport(99);
+		assertThat(ep.getValue(1)).isMaxYSupport(9); // XXX support is not extended to 19
 	}
 
 	@Test
@@ -274,18 +274,19 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(10);
 		assertThat(ep.getValue(0).getMaxY()).isEqualTo(99);
 		assertThat(ep.getValue(0).getMaxX()).isEqualTo(9);
-		assertThat(ep.getValue(0)).isXSupport(9);
-		assertThat(ep.getValue(0)).isYSupport(99);
+		assertThat(ep.getValue(0)).isMaxXSupport(9);
+		assertThat(ep.getValue(0)).isMaxYSupport(99);
 
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(20);
-		assertThat(ep.getValue(1)).isYSupport(99);
-		assertThat(ep.getValue(1)).isNoXSupport();
+		assertThat(ep.getValue(1)).isMaxYSupport(99);
+		assertThat(ep.getValue(1)).isXSupport(10);
+		assertThat(ep.getValue(1)).isNoXSupport(0);
 		
 		assertThat(ep.getValue(2).getMinX()).isEqualTo(20);
 		assertThat(ep.getValue(2).getMinY()).isEqualTo(0);
-		assertThat(ep.getValue(2)).isXSupport(99);
-		assertThat(ep.getValue(2)).isYSupport(19);
+		assertThat(ep.getValue(2)).isMaxXSupport(99);
+		assertThat(ep.getValue(2)).isMaxYSupport(19);
 	}
 
 	@Test
@@ -318,20 +319,21 @@ public class ExtremePoints2DTest {
 		
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(20);
-		assertThat(ep.getValue(0)).isXSupport(19);
-		assertThat(ep.getValue(0)).isYSupport(99);
+		assertThat(ep.getValue(0)).isMaxXSupport(19);
+		assertThat(ep.getValue(0)).isMaxYSupport(99);
 
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(10);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
 		assertThat(ep.getValue(1).getMaxX()).isEqualTo(99);
 		assertThat(ep.getValue(1).getMaxY()).isEqualTo(9);
-		assertThat(ep.getValue(1)).isXSupport(99);
-		assertThat(ep.getValue(1)).isYSupport(9);
+		assertThat(ep.getValue(1)).isMaxXSupport(99);
+		assertThat(ep.getValue(1)).isMaxYSupport(9);
 		
 		assertThat(ep.getValue(2).getMinX()).isEqualTo(20);
 		assertThat(ep.getValue(2).getMinY()).isEqualTo(0);
-		assertThat(ep.getValue(2)).isNoYSupport();
-		assertThat(ep.getValue(2)).isXSupport(99);
+		assertThat(ep.getValue(2)).isNoYSupport(0);
+		assertThat(ep.getValue(2)).isYSupport(10);
+		assertThat(ep.getValue(2)).isMaxXSupport(99);
 		assertThat(ep.getValue(2)).isMax(99, 99);
 	}		
 	
@@ -372,14 +374,14 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(0)).isMin(0, 25);
 		assertThat(ep.getValue(0).getMaxX()).isEqualTo(99);
 		assertThat(ep.getValue(0).getMaxY()).isEqualTo(99);
-		assertThat(ep.getValue(0)).isXSupport(4);
-		assertThat(ep.getValue(0)).isYSupport(99);
+		assertThat(ep.getValue(0)).isMaxXSupport(4);
+		assertThat(ep.getValue(0)).isMaxYSupport(99);
 
 		assertThat(ep.getValue(1)).isMin(5, 10);
 		assertThat(ep.getValue(1).getMaxX()).isEqualTo(9);
 		assertThat(ep.getValue(1).getMaxY()).isEqualTo(99);
-		assertThat(ep.getValue(1)).isXSupport(9);
-		assertThat(ep.getValue(1)).isYSupport(24);
+		assertThat(ep.getValue(1)).isMaxXSupport(9);
+		assertThat(ep.getValue(1)).isMaxYSupport(24);
 
 		assertThat(ep.getValue(2)).isMin(5, 20);
 		assertThat(ep.getValue(2).getMaxX()).isEqualTo(99);
@@ -447,14 +449,16 @@ public class ExtremePoints2DTest {
 		assertThat(values.get(1).getMinX()).isEqualTo(0);
 		assertThat(values.get(1).getMinY()).isEqualTo(20);
 		assertThat(ep.getValue(1)).isMax(19, 99);
-		assertThat(ep.getValue(1)).isNoXSupport();
-		assertThat(ep.getValue(1)).isYSupport(99);
+		assertThat(ep.getValue(1)).isNoXSupport(0);
+		assertThat(ep.getValue(1)).isXSupport(19);
+		assertThat(ep.getValue(1)).isMaxYSupport(99);
 
 		assertThat(values.get(2).getMinX()).isEqualTo(0);
 		assertThat(values.get(2).getMinY()).isEqualTo(25);
 		assertThat(ep.getValue(2)).isMax(99, 99);
-		assertThat(ep.getValue(2)).isNoXSupport();
-		assertThat(ep.getValue(2)).isYSupport(99);
+		assertThat(ep.getValue(2)).isNoXSupport(0);
+		assertThat(ep.getValue(2)).isXSupport(24);
+		assertThat(ep.getValue(2)).isMaxYSupport(99);
 
 		assertThat(values.get(3).getMinX()).isEqualTo(25);
 		assertThat(values.get(3).getMinY()).isEqualTo(0);
@@ -486,19 +490,21 @@ public class ExtremePoints2DTest {
 		
 		assertThat(values.get(1).getMinX()).isEqualTo(5);
 		assertThat(values.get(1).getMinY()).isEqualTo(10);
-		assertThat(ep.getValue(1)).isXSupportAt(9);
-		assertThat(ep.getValue(1)).isYSupport(29);
+		assertThat(ep.getValue(1)).isXSupport(9);
+		assertThat(ep.getValue(1)).isMaxYSupport(29);
 
 		assertThat(values.get(2).getMinX()).isEqualTo(5);
 		assertThat(values.get(2).getMinY()).isEqualTo(20);
-		assertThat(ep.getValue(2)).isNoXSupport();
-		assertThat(ep.getValue(2)).isYSupport(29);
+		assertThat(ep.getValue(2)).isNoXSupport(0);
+		assertThat(ep.getValue(2)).isXSupport(19);
+		assertThat(ep.getValue(2)).isMaxYSupport(29);
 		
 		assertThat(values.get(3).getMinX()).isEqualTo(5);
 		assertThat(values.get(3).getMinY()).isEqualTo(25);
 		assertThat(values.get(3)).isMax(99, 99);
-		assertThat(ep.getValue(3)).isNoXSupport();
-		assertThat(ep.getValue(3)).isYSupport(29);
+		assertThat(ep.getValue(3)).isNoXSupport(0);
+		assertThat(ep.getValue(3)).isXSupport(24);
+		assertThat(ep.getValue(3)).isMaxYSupport(29);
 		
 		assertThat(values.get(4)).isMin(25, 0);
 		assertThat(values.get(4)).isMax(99, 99);
@@ -529,18 +535,19 @@ public class ExtremePoints2DTest {
 
 		assertThat(values.get(0).getMinX()).isEqualTo(0);
 		assertThat(values.get(0).getMinY()).isEqualTo(20);
-		assertThat(ep.getValue(0)).isXSupport(19);
-		assertThat(ep.getValue(0)).isYSupport(99);
+		assertThat(ep.getValue(0)).isMaxXSupport(19);
+		assertThat(ep.getValue(0)).isMaxYSupport(99);
 
 		assertThat(values.get(1).getMinX()).isEqualTo(10);
 		assertThat(values.get(1).getMinY()).isEqualTo(0);
-		assertThat(ep.getValue(1)).isXSupport(99);
-		assertThat(ep.getValue(1)).isYSupport(9);
+		assertThat(ep.getValue(1)).isMaxXSupport(99);
+		assertThat(ep.getValue(1)).isMaxYSupport(9);
 		
 		assertThat(values.get(2).getMinX()).isEqualTo(20);
 		assertThat(values.get(2).getMinY()).isEqualTo(0);
-		assertThat(ep.getValue(2)).isXSupport(99);
-		assertThat(ep.getValue(2)).isNoYSupport();
+		assertThat(ep.getValue(2)).isMaxXSupport(99);
+		assertThat(ep.getValue(2)).isNoYSupport(0);
+		assertThat(ep.getValue(2)).isYSupport(19);
 
 		ep.add(1, new DefaultPlacement2D(10, 0, 24, 4));
 		
@@ -562,26 +569,28 @@ public class ExtremePoints2DTest {
 		assertThat(values.get(0).getMinX()).isEqualTo(0);
 		assertThat(values.get(0).getMinY()).isEqualTo(20);
 		assertThat(ep.getValue(0)).isMax(99, 99);
-		assertThat(ep.getValue(0)).isXSupport(19);
-		assertThat(ep.getValue(0)).isYSupport(99);
+		assertThat(ep.getValue(0)).isMaxXSupport(19);
+		assertThat(ep.getValue(0)).isMaxYSupport(99);
 
 		assertThat(values.get(1).getMinX()).isEqualTo(10);
 		assertThat(values.get(1).getMinY()).isEqualTo(5);
 		assertThat(ep.getValue(1)).isMax(99, 9);
-		assertThat(ep.getValue(1)).isXSupportAt(24);
-		assertThat(ep.getValue(1)).isYSupport(9);
+		assertThat(ep.getValue(1)).isXSupport(24);
+		assertThat(ep.getValue(1)).isMaxYSupport(9);
 
 		assertThat(values.get(2).getMinX()).isEqualTo(20);
 		assertThat(values.get(2).getMinY()).isEqualTo(5);
 		assertThat(ep.getValue(2)).isMax(99, 99);
-		assertThat(ep.getValue(2)).isXSupportAt(24);
-		assertThat(ep.getValue(2)).isNoYSupport();
+		assertThat(ep.getValue(2)).isXSupport(24);
+		assertThat(ep.getValue(2)).isNoYSupport(0);
+		assertThat(ep.getValue(2)).isYSupport(19);
+		
 		
 		assertThat(values.get(3).getMinX()).isEqualTo(25);
 		assertThat(values.get(3).getMinY()).isEqualTo(0);
 		assertThat(ep.getValue(3)).isMax(99, 99);
-		assertThat(ep.getValue(3)).isXSupport(99);
-		assertThat(ep.getValue(3)).isYSupport(4);
+		assertThat(ep.getValue(3)).isMaxXSupport(99);
+		assertThat(ep.getValue(3)).isMaxYSupport(4);
 
 		assertThat(ep.getValues()).hasSize(4);
 	}
@@ -644,14 +653,16 @@ public class ExtremePoints2DTest {
 		
 		assertThat(values.get(2).getMinX()).isEqualTo(20);
 		assertThat(values.get(2).getMinY()).isEqualTo(0);
-		assertThat(values.get(2)).isXSupport(99);
-		assertThat(values.get(2)).isNoYSupport();
+		assertThat(values.get(2)).isMaxXSupport(99);
+		assertThat(values.get(2)).isYSupport(19);
+		assertThat(values.get(2)).isNoYSupport(0);
 		
 		assertThat(values.get(3).getMinX()).isEqualTo(25);
 		assertThat(values.get(3).getMinY()).isEqualTo(0);
 		assertThat(values.get(3)).isMax(99, 99);
-		assertThat(values.get(3)).isXSupport(99);
-		assertThat(values.get(3)).isNoYSupport();
+		assertThat(values.get(3)).isMaxXSupport(99);
+		assertThat(values.get(3)).isNoYSupport(0);
+		assertThat(values.get(3)).isYSupport(24);
 		
 		ep.add(1, new DefaultPlacement2D(10, 0, 29, 4));
 		
@@ -764,7 +775,7 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(150);
-		assertThat(ep.getValue(1)).isInstanceOf(DefaultYSupportPoint2D.class);
+		assertThat(ep.getValue(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		
 		assertThat(ep.getValue(2).getMinX()).isEqualTo(100);
 		assertThat(ep.getValue(2).getMinY()).isEqualTo(0);
@@ -772,7 +783,7 @@ public class ExtremePoints2DTest {
 		
 		assertThat(ep.getValue(3).getMinX()).isEqualTo(150);
 		assertThat(ep.getValue(3).getMinY()).isEqualTo(0);
-		assertThat(ep.getValue(3)).isInstanceOf(DefaultXSupportPoint2D.class);
+		assertThat(ep.getValue(3)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		
 		ep.add(3, new DefaultPlacement2D(150, 0, 169, 19));
 
@@ -804,7 +815,7 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(150);
-		assertThat(ep.getValue(1)).isInstanceOf(DefaultYSupportPoint2D.class);
+		assertThat(ep.getValue(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		assertThat(ep.getValue(1)).isMax(999, 999);
 
 		assertThat(ep.getValue(2).getMinX()).isEqualTo(100);
@@ -814,15 +825,16 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(3).getMinX()).isEqualTo(100);
 		assertThat(ep.getValue(3).getMinY()).isEqualTo(20);
-		assertThat(ep.getValue(3)).isInstanceOf(DefaultYSupportPoint2D.class);
+		assertThat(ep.getValue(3)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		assertThat(ep.getValue(3)).isMax(999, 49);
 
 		assertThat(ep.getValue(4).getMinX()).isEqualTo(150);
 		assertThat(ep.getValue(4).getMinY()).isEqualTo(20);
-		assertThat(ep.getValue(4)).isInstanceOf(DefaultXSupportPoint2D.class);
+		assertThat(ep.getValue(4)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		assertThat(ep.getValue(4)).isMax(999, 999);
-		assertThat(ep.getValue(4)).isXSupportAt(169);
-		assertThat(ep.getValue(4)).isNoYSupport();
+		assertThat(ep.getValue(4)).isXSupport(169);
+		assertThat(ep.getValue(4)).isNoYSupport(0);
+		assertThat(ep.getValue(4)).isYSupport(149);
 
 		assertThat(ep.getValue(5).getMinX()).isEqualTo(170);
 		assertThat(ep.getValue(5).getMinY()).isEqualTo(0);
@@ -863,7 +875,7 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(150);
-		assertThat(ep.getValue(1)).isInstanceOf(DefaultYSupportPoint2D.class);
+		assertThat(ep.getValue(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
 		assertThat(ep.getValue(2).getMinX()).isEqualTo(100);
 		assertThat(ep.getValue(2).getMinY()).isEqualTo(0);
@@ -871,20 +883,20 @@ public class ExtremePoints2DTest {
 		
 		assertThat(ep.getValue(3).getMinX()).isEqualTo(100);
 		assertThat(ep.getValue(3).getMinY()).isEqualTo(20);
-		assertThat(ep.getValue(3)).isInstanceOf(DefaultYSupportPoint2D.class);
+		assertThat(ep.getValue(3)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
 		assertThat(ep.getValue(4).getMinX()).isEqualTo(100);
 		assertThat(ep.getValue(4).getMinY()).isEqualTo(30);
-		assertThat(ep.getValue(4)).isInstanceOf(DefaultYSupportPoint2D.class);
+		assertThat(ep.getValue(4)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
 		assertThat(ep.getValue(5).getMinX()).isEqualTo(150);
 		assertThat(ep.getValue(5).getMinY()).isEqualTo(20);
-		assertThat(ep.getValue(5)).isInstanceOf(DefaultXSupportPoint2D.class);
+		assertThat(ep.getValue(5)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		assertThat(ep.getValue(5)).isMax(169, 999);
 
 		assertThat(ep.getValue(6).getMinX()).isEqualTo(150);
 		assertThat(ep.getValue(6).getMinY()).isEqualTo(30);
-		assertThat(ep.getValue(6)).isInstanceOf(DefaultPoint2D.class);
+		assertThat(ep.getValue(6)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		assertThat(ep.getValue(6)).isMax(999, 999);
 
 		assertThat(ep.getValue(7).getMinX()).isEqualTo(190);
@@ -1062,7 +1074,7 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(150);
-		assertThat(ep.getValue(1)).isInstanceOf(DefaultYSupportPoint2D.class);
+		assertThat(ep.getValue(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		
 		assertThat(ep.getValue(2).getMinX()).isEqualTo(100);
 		assertThat(ep.getValue(2).getMinY()).isEqualTo(0);
@@ -1070,7 +1082,7 @@ public class ExtremePoints2DTest {
 		
 		assertThat(ep.getValue(3).getMinX()).isEqualTo(150);
 		assertThat(ep.getValue(3).getMinY()).isEqualTo(0);
-		assertThat(ep.getValue(3)).isInstanceOf(DefaultXSupportPoint2D.class);
+		assertThat(ep.getValue(3)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		
 		ep.add(1, new DefaultPlacement2D(0, 150, 19, 169));
 
@@ -1108,11 +1120,11 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(2).getMinX()).isEqualTo(20);
 		assertThat(ep.getValue(2).getMinY()).isEqualTo(100);
-		assertThat(ep.getValue(2)).isInstanceOf(DefaultXSupportPoint2D.class);
+		assertThat(ep.getValue(2)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
 		assertThat(ep.getValue(3).getMinX()).isEqualTo(20);
 		assertThat(ep.getValue(3).getMinY()).isEqualTo(150);
-		assertThat(ep.getValue(3)).isInstanceOf(DefaultYSupportPoint2D.class);
+		assertThat(ep.getValue(3)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
 		assertThat(ep.getValue(4).getMinX()).isEqualTo(100);
 		assertThat(ep.getValue(4).getMinY()).isEqualTo(0);
@@ -1120,7 +1132,7 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(5).getMinX()).isEqualTo(150);
 		assertThat(ep.getValue(5).getMinY()).isEqualTo(0);
-		assertThat(ep.getValue(5)).isInstanceOf(DefaultXSupportPoint2D.class);
+		assertThat(ep.getValue(5)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
 		assertThat(values).hasSize(6);
 
@@ -1165,19 +1177,19 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(2).getMinX()).isEqualTo(20);
 		assertThat(ep.getValue(2).getMinY()).isEqualTo(100);
-		assertThat(ep.getValue(2)).isInstanceOf(DefaultXSupportPoint2D.class);
+		assertThat(ep.getValue(2)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
 		assertThat(ep.getValue(3).getMinX()).isEqualTo(20);
 		assertThat(ep.getValue(3).getMinY()).isEqualTo(150);
-		assertThat(ep.getValue(3)).isInstanceOf(DefaultYSupportPoint2D.class);
+		assertThat(ep.getValue(3)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
 		assertThat(ep.getValue(4).getMinX()).isEqualTo(30);
 		assertThat(ep.getValue(4).getMinY()).isEqualTo(100);
-		assertThat(ep.getValue(4)).isInstanceOf(DefaultXSupportPoint2D.class);
+		assertThat(ep.getValue(4)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		
 		assertThat(ep.getValue(5).getMinX()).isEqualTo(30);
 		assertThat(ep.getValue(5).getMinY()).isEqualTo(150);
-		assertThat(ep.getValue(5)).isInstanceOf(DefaultPoint2D.class);
+		assertThat(ep.getValue(5)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
 		assertThat(ep.getValue(6).getMinX()).isEqualTo(100);
 		assertThat(ep.getValue(6).getMinY()).isEqualTo(0);
@@ -1185,7 +1197,7 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(7).getMinX()).isEqualTo(150);
 		assertThat(ep.getValue(7).getMinY()).isEqualTo(0);
-		assertThat(ep.getValue(7)).isInstanceOf(DefaultXSupportPoint2D.class);
+		assertThat(ep.getValue(7)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		
 		ep.add(5, new DefaultPlacement2D(30, 150, 69, 189));
 
@@ -1231,7 +1243,7 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(3).getMinX()).isEqualTo(70);
 		assertThat(ep.getValue(3).getMinY()).isEqualTo(150);
-		assertThat(ep.getValue(3)).isYSupport(189);
+		assertThat(ep.getValue(3)).isMaxYSupport(189);
 
 		assertThat(ep.getValue(4).getMinX()).isEqualTo(100);
 		assertThat(ep.getValue(4).getMinY()).isEqualTo(0);
@@ -1239,7 +1251,7 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(5).getMinX()).isEqualTo(150);
 		assertThat(ep.getValue(5).getMinY()).isEqualTo(0);
-		assertThat(ep.getValue(5)).isInstanceOf(DefaultXSupportPoint2D.class);
+		assertThat(ep.getValue(5)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		
 		ep.add(2, new DefaultPlacement2D(20, 100, 24, 139));
 
@@ -1291,7 +1303,7 @@ public class ExtremePoints2DTest {
 		
 		assertThat(ep.getValue(6).getMinX()).isEqualTo(70);
 		assertThat(ep.getValue(6).getMinY()).isEqualTo(150);
-		assertThat(ep.getValue(6)).isYSupport(189);
+		assertThat(ep.getValue(6)).isMaxYSupport(189);
 		
 		assertThat(ep.getValue(7).getMinX()).isEqualTo(100);
 		assertThat(ep.getValue(7).getMinY()).isEqualTo(0);
@@ -1299,8 +1311,8 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(8).getMinX()).isEqualTo(150);
 		assertThat(ep.getValue(8).getMinY()).isEqualTo(0);
-		assertThat(ep.getValue(8)).isInstanceOf(DefaultXSupportPoint2D.class);
-		assertThat(ep.getValue(8)).isXSupport(999);
+		assertThat(ep.getValue(8)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.getValue(8)).isMaxXSupport(999);
 		
 		assertThat(values).hasSize(9);
 
