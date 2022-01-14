@@ -100,6 +100,7 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 			this.stackPlacements = getPlacements(count);
 			
 			this.extremePoints3D = new MemoryExtremePoints3D(1, 1, 1);
+			this.extremePoints3D.setMinVolume(getMinStackableItemVolume(stackableItems));
 		}
 
 		@Override

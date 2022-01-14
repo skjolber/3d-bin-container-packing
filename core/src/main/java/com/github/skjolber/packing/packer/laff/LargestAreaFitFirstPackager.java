@@ -97,13 +97,15 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 		ExtremePoints3D<StackPlacement> extremePoints3D = new ExtremePoints3D<>(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
 
+		extremePoints3D.setMinVolume(getMinStackableVolume(scopedStackables));
+		
 		LargestAreaFitFirstPackagerConfiguration<Point3D<StackPlacement>> configuration = factory.newBuilder().withContainer(targetContainer).withExtremePoints(extremePoints3D).withStack(stack).build();
 		
 		StackableFilter firstFilter = configuration.getFirstStackableFilter();
 		StackValuePointFilter<Point3D<StackPlacement>> firstStackValuePointComparator = configuration.getFirstStackValuePointFilter();
 
 		int levelOffset = 0;
-
+		
 		while(!scopedStackables.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
 				// fit2d below might have returned due to deadline

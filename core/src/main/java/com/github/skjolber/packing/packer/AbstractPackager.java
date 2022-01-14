@@ -9,6 +9,7 @@ import java.util.function.BooleanSupplier;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
+import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
@@ -466,4 +467,35 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 
 	protected abstract Adapter<P> adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt);
 
+	protected long getMinStackableItemVolume(List<StackableItem> stackables) {
+		long minVolume = Integer.MAX_VALUE;
+		for(StackableItem stackableItem : stackables) {
+			Stackable stackable = stackableItem.getStackable();
+			if(stackable.getVolume() < minVolume) {
+				minVolume = stackable.getVolume();
+			}
+		}
+		return minVolume;
+	}
+	
+	protected long getMinStackableVolume(List<Stackable> stackables) {
+		long minVolume = Integer.MAX_VALUE;
+		for(Stackable stackable : stackables) {
+			if(stackable.getVolume() < minVolume) {
+				minVolume = stackable.getVolume();
+			}
+		}
+		return minVolume;
+	}
+	
+
+	protected long getMinStackableArea(List<Stackable> stackables) {
+		long minArea = Integer.MAX_VALUE;
+		for(Stackable stackable : stackables) {
+			if(stackable.getMinimumArea() < minArea) {
+				minArea = stackable.getMinimumArea();
+			}
+		}
+		return minArea;
+	}
 }

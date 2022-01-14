@@ -8,6 +8,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.api.ep.XSupportPoint2D;
 import com.github.skjolber.packing.api.ep.YSupportPoint2D;
 
@@ -48,6 +49,8 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 	protected final List<Point2D<P>> deleted = new ArrayList<>();
 
 	protected P containerPlacement;
+
+	private long minArea = -1;
 
 	public ExtremePoints2D(int dx, int dy) {
 		setSize(dx, dy);
@@ -388,6 +391,10 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		values.removeAll(deleted);
 		
 		placements.add(placement);
+		
+		if(minArea != -1L) {
+			filterMinArea();
+		}
 		
 		values.addAll(addXX);
 		values.addAll(addYY);
@@ -788,4 +795,23 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
         return low;
     }
 
+	public void setMinArea(long minArea) {
+		this.minArea = minArea;
+	}
+
+	private void filterMinArea() {
+		filterMinArea(addXX);
+		filterMinArea(addYY);
+	}
+
+	private void filterMinArea(List<Point2D<P>> addXX) {
+		for (int i = 0; i < addXX.size(); i++) {
+			Point2D<P> p = addXX.get(i);
+			
+			if(p.getArea() < minArea) {
+				addXX.remove(i);
+				i--;
+			}
+		}
+	}
 }

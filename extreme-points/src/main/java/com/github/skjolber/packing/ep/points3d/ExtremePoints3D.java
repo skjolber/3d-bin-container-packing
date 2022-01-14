@@ -29,6 +29,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	protected int containerMaxY;
 	protected int containerMaxZ;
 	
+	protected long minVolume = -1L;
+	
 	protected List<Point3D<P>> values = new ArrayList<>();
 	protected List<P> placements = new ArrayList<>();
 
@@ -434,6 +436,10 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		
 		placements.add(placement);
 		
+		if(minVolume != -1L) {
+			filterMinVolume();
+		}
+		
 		removeEclipsed(values, addXX);
 		removeEclipsed(values, addYY);
 		removeEclipsed(values, addZZ);
@@ -465,6 +471,24 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		return !values.isEmpty();
 	}
 	
+	private void filterMinVolume() {
+		
+		filterMinVolume(addXX);
+		filterMinVolume(addYY);
+		filterMinVolume(addZZ);
+	}
+
+	private void filterMinVolume(List<Point3D<P>> addXX) {
+		for (int i = 0; i < addXX.size(); i++) {
+			Point3D<P> p = addXX.get(i);
+			
+			if(p.getVolume() < minVolume) {
+				addXX.remove(i);
+				i--;
+			}
+		}
+	}
+
 	private void validate(P target) {
 		
 		for (P p : placements) {
@@ -861,4 +885,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		return maxPointVolume;
 	}
 
+	public void setMinVolume(long minVolume) {
+		this.minVolume = minVolume;
+	}
 }

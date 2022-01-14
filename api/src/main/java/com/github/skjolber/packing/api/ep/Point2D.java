@@ -94,6 +94,7 @@ public abstract class Point2D<P extends Placement2D> {
 	protected int dy;
 	
 	protected long area;
+	protected long volume;
 	
 	public Point2D(int minX, int minY, int maxX, int maxY) {
 		super();

@@ -152,10 +152,11 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		private ExtremePoints3DStack extremePoints3D;
 		private BooleanSupplier interrupt;
 
-		public RunnableAdapter(int placementsCount) {
+		public RunnableAdapter(int placementsCount, long minStackableItemVolume) {
 			this.placements = getPlacements(placementsCount);
 			
 			extremePoints3D = new ExtremePoints3DStack(1, 1, 1, placementsCount + 1);
+			extremePoints3D.setMinVolume(minStackableItemVolume);
 		}
 
 		public void setContainer(Container container) {
@@ -208,10 +209,12 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			for (StackableItem stackable : stackables) {
 				count += stackable.getCount();
 			}
+			
+			long minStackableItemVolume = getMinStackableItemVolume(stackables);
 
 			runnables = new RunnableAdapter[parallelizationCount];
 			for(int i = 0; i < parallelizationCount; i++) {
-				runnables[i] = new RunnableAdapter(count);
+				runnables[i] = new RunnableAdapter(count, minStackableItemVolume);
 			}
 
 			iterators = new ParallelPermutationRotationIterator[containers.size()];

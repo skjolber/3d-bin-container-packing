@@ -97,7 +97,9 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 				.collect(Collectors.toList());
 
 		ExtremePoints2D<StackPlacement> extremePoints2D = new ExtremePoints2D<>(containerStackValue.getLoadDx(), containerStackValue.getLoadDy());
-
+		
+		extremePoints2D.setMinArea(getMinStackableArea(scopedStackables));
+		
 		LargestAreaFitFirstPackagerConfiguration<Point2D<StackPlacement>> configuration = factory.newBuilder().withContainer(targetContainer).withExtremePoints(extremePoints2D).withStack(stack).build();
 		
 		StackableFilter firstFilter = configuration.getFirstStackableFilter();
