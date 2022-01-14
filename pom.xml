@@ -35,7 +35,7 @@
 		<maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
 		<maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
 		<jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
-		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		<maven-compiler-plugin.version>3.9.0</maven-compiler-plugin.version>
 		<maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
 		<jqwik.version>1.6.2</jqwik.version>
 		<assertj.version>3.22.0</assertj.version>
@@ -386,7 +386,7 @@
 				<plugin>
 					<groupId>org.moditect</groupId>
 					<artifactId>moditect-maven-plugin</artifactId>
-					<version>1.0.0.RC1</version>
+					<version>1.0.0.RC2</version>
 					<executions>
 						<execution>
 							<id>add-module-infos</id>
