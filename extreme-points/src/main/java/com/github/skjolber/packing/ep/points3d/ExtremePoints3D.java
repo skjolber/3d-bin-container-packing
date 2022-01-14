@@ -29,6 +29,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	protected int containerMaxY;
 	protected int containerMaxZ;
 	
+	// TODO should there be a min area constraint too? 
 	protected long minVolume = -1L;
 	
 	protected List<Point3D<P>> values = new ArrayList<>();
@@ -570,6 +571,12 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					if(point.getMinX() < placement.getAbsoluteX()) {
 						point.setMaxX(placement.getAbsoluteX() - 1);
 						
+						if(minVolume != -1L && point.getVolume() < minVolume) {
+							deleted.add(point);
+							
+							continue;
+						}
+						
 						// is the point now eclipsed?
 						for (int j = 0; j < i - 1; j++) {
 							Point3D<P> point3d = values.get(j);
@@ -590,6 +597,12 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					if(point.getMinY() < placement.getAbsoluteY()) {
 						point.setMaxY(placement.getAbsoluteY() - 1);
 						
+						if(minVolume != -1L && point.getVolume() < minVolume) {
+							deleted.add(point);
+							
+							continue;
+						}
+
 						// is the point now eclipsed?
 						for (int j = 0; j < i - 1; j++) {
 							Point3D<P> point3d = values.get(j);
@@ -610,6 +623,12 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					if(point.getMinZ() < placement.getAbsoluteZ()) {
 						point.setMaxZ(placement.getAbsoluteZ() - 1);
 						
+						if(minVolume != -1L && point.getVolume() < minVolume) {
+							deleted.add(point);
+							
+							continue;
+						}
+
 						// is the point now eclipsed?
 						for (int j = 0; j < i - 1; j++) {
 							Point3D<P> point3d = values.get(j);

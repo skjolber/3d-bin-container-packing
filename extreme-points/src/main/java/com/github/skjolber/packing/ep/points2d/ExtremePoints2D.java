@@ -477,8 +477,10 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		if(point.getMaxY() > limit) {
 			point.setMaxY(limit);
 		}
+		if(minArea != -1L && point.getArea() < minArea) {
+			return false;
+		}
 		return true;
-
 	}
 
 	private boolean constrainPositiveMaxX(Point2D<P> point, P placement) {
@@ -488,6 +490,9 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		}
 		if(point.getMaxX() > limit) {
 			point.setMaxX(limit);
+		}
+		if(minArea != -1L && point.getArea() < minArea) {
+			return false;
 		}
 		return true;
 	}	
