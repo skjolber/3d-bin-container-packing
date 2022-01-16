@@ -50,7 +50,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 
 	protected P containerPlacement;
 
-	private long minArea = -1;
+	private long minArea = 0;
 
 	public ExtremePoints2D(int dx, int dy) {
 		setSize(dx, dy);

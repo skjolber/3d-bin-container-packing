@@ -16,20 +16,46 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 
 
+/**
+ * 
+ * Check the impact of using a variable deadline, avoiding doing frequent system calls.
+ *
+ */
+
 @Fork(value = 1, warmups = 1)
 @Warmup(iterations = 1, time = 15, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.Throughput)
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
-public class PackagerBenchmark {
+public class DeadlineBenchmark {
 
     @Benchmark
-    public Object parallelPackager(PackagerState state) throws Exception {
+    public Object parallelPackagerNoDeadline(PackagerState state) throws Exception {
     	return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
     }
 
     @Benchmark
-    public Object packager(PackagerState state) throws Exception {
+    public Object parallelPackagerDeadline(PackagerState state) throws Exception {
+    	return process(state.getParallelBruteForcePackager(), System.currentTimeMillis() + 10000);
+    }
+
+    @Benchmark
+    public Object parallelPackagerDeadlineNth(PackagerState state) throws Exception {
+    	return process(state.getParallelBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
+    }
+
+    @Benchmark
+    public Object packagerNoDeadline(PackagerState state) throws Exception {
     	return process(state.getBruteForcePackager(), Long.MAX_VALUE);
+    }
+
+    @Benchmark
+    public Object packagerDeadline(PackagerState state) throws Exception {
+    	return process(state.getBruteForcePackager(), System.currentTimeMillis() + 10000);
+    }
+
+    @Benchmark
+    public Object packagerDeadlineNth(PackagerState state) throws Exception {
+    	return process(state.getBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
     }
 
     public int process(List<BenchmarkSet> sets, long deadline) {
@@ -45,7 +71,7 @@ public class PackagerBenchmark {
     
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(PackagerBenchmark.class.getSimpleName())
+                .include(DeadlineBenchmark.class.getSimpleName())
                 .mode(Mode.Throughput)
                 /*
                 .forks(1)

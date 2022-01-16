@@ -2,13 +2,13 @@
   "containers" : [ {
     "step" : 0,
     "plugins" : [ ],
-    "id" : "1",
+    "id" : null,
     "name" : "1",
-    "dx" : 3,
-    "dy" : 1,
+    "dx" : 130,
+    "dy" : 79,
     "dz" : 1,
-    "loadDx" : 3,
-    "loadDy" : 1,
+    "loadDx" : 130,
+    "loadDy" : 79,
     "loadDz" : 1,
     "stack" : {
       "step" : 1,
@@ -22,107 +22,154 @@
         "stackable" : {
           "step" : 2,
           "plugins" : [ ],
-          "id" : "A",
-          "name" : "A",
-          "dx" : 1,
-          "dy" : 1,
+          "id" : null,
+          "name" : "41",
+          "dx" : 41,
+          "dy" : 41,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 3,
         "plugins" : [ ],
-        "x" : 1,
+        "x" : 41,
         "y" : 0,
         "z" : 0,
         "stackable" : {
           "step" : 3,
           "plugins" : [ ],
-          "id" : "A",
-          "name" : "A",
-          "dx" : 1,
-          "dy" : 1,
+          "id" : null,
+          "name" : "44",
+          "dx" : 44,
+          "dy" : 44,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 4,
         "plugins" : [ ],
-        "x" : 2,
-        "y" : 0,
+        "x" : 0,
+        "y" : 41,
         "z" : 0,
         "stackable" : {
           "step" : 4,
           "plugins" : [ ],
-          "id" : "B",
-          "name" : "B",
-          "dx" : 1,
-          "dy" : 1,
+          "id" : null,
+          "name" : "38",
+          "dx" : 38,
+          "dy" : 38,
           "dz" : 1,
           "type" : "box"
         }
-      } ]
-    },
-    "type" : "container"
-  }, {
-    "step" : 5,
-    "plugins" : [ ],
-    "id" : "1",
-    "name" : "1",
-    "dx" : 3,
-    "dy" : 1,
-    "dz" : 1,
-    "loadDx" : 3,
-    "loadDy" : 1,
-    "loadDz" : 1,
-    "stack" : {
-      "step" : 6,
-      "plugins" : [ ],
-      "placements" : [ {
+      }, {
+        "step" : 5,
+        "plugins" : [ ],
+        "x" : 38,
+        "y" : 44,
+        "z" : 0,
+        "stackable" : {
+          "step" : 5,
+          "plugins" : [ ],
+          "id" : null,
+          "name" : "35",
+          "dx" : 35,
+          "dy" : 35,
+          "dz" : 1,
+          "type" : "box"
+        }
+      }, {
+        "step" : 6,
+        "plugins" : [ ],
+        "x" : 73,
+        "y" : 44,
+        "z" : 0,
+        "stackable" : {
+          "step" : 6,
+          "plugins" : [ ],
+          "id" : null,
+          "name" : "12",
+          "dx" : 12,
+          "dy" : 12,
+          "dz" : 1,
+          "type" : "box"
+        }
+      }, {
         "step" : 7,
         "plugins" : [ ],
-        "x" : 0,
-        "y" : 0,
+        "x" : 38,
+        "y" : 41,
         "z" : 0,
         "stackable" : {
           "step" : 7,
           "plugins" : [ ],
-          "id" : "B",
-          "name" : "B",
-          "dx" : 1,
-          "dy" : 1,
+          "id" : null,
+          "name" : "3",
+          "dx" : 3,
+          "dy" : 3,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 8,
         "plugins" : [ ],
-        "x" : 1,
-        "y" : 0,
+        "x" : 73,
+        "y" : 56,
         "z" : 0,
         "stackable" : {
           "step" : 8,
           "plugins" : [ ],
-          "id" : "C",
-          "name" : "C",
-          "dx" : 1,
-          "dy" : 1,
+          "id" : null,
+          "name" : "23",
+          "dx" : 23,
+          "dy" : 23,
           "dz" : 1,
           "type" : "box"
         }
       }, {
         "step" : 9,
         "plugins" : [ ],
-        "x" : 2,
+        "x" : 85,
         "y" : 0,
         "z" : 0,
         "stackable" : {
           "step" : 9,
           "plugins" : [ ],
-          "id" : "C",
-          "name" : "C",
-          "dx" : 1,
-          "dy" : 1,
+          "id" : null,
+          "name" : "45",
+          "dx" : 45,
+          "dy" : 45,
+          "dz" : 1,
+          "type" : "box"
+        }
+      }, {
+        "step" : 10,
+        "plugins" : [ ],
+        "x" : 96,
+        "y" : 45,
+        "z" : 0,
+        "stackable" : {
+          "step" : 10,
+          "plugins" : [ ],
+          "id" : null,
+          "name" : "34",
+          "dx" : 34,
+          "dy" : 34,
+          "dz" : 1,
+          "type" : "box"
+        }
+      }, {
+        "step" : 11,
+        "plugins" : [ ],
+        "x" : 85,
+        "y" : 45,
+        "z" : 0,
+        "stackable" : {
+          "step" : 11,
+          "plugins" : [ ],
+          "id" : null,
+          "name" : "11",
+          "dx" : 11,
+          "dy" : 11,
           "dz" : 1,
           "type" : "box"
         }

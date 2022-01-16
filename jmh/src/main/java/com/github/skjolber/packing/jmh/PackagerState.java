@@ -97,7 +97,11 @@ public class PackagerState {
 		pool1.shutdown();
 		pool2.shutdown();
 		
-		Thread.sleep(500);
+		try {
+			Thread.sleep(500);
+		} catch(Exception e) {
+			// ignore
+		}
 	}
 	
 	public List<BenchmarkSet> getBruteForcePackager() {

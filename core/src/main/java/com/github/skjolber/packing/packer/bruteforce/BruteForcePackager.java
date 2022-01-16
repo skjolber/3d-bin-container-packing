@@ -92,7 +92,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			this.stackPlacements = getPlacements(count);
 			
 			this.extremePoints3D = new ExtremePoints3DStack(1, 1, 1, count + 1);
-			this.extremePoints3D.setMinVolume(getMinStackableItemVolume(stackableItems));
+			this.extremePoints3D.setMinimumVolumeLimit(getMinStackableItemVolume(stackableItems));
+			this.extremePoints3D.setMinimumAreaLimit(getMinStackableItemArea(stackableItems));
 		}
 
 		@Override

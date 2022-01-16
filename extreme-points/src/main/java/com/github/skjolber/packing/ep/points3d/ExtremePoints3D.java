@@ -29,8 +29,9 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	protected int containerMaxY;
 	protected int containerMaxZ;
 	
-	// TODO should there be a min area constraint too? 
-	protected long minVolume = -1L;
+	// TODO should there be a min area constraint on min z, min y and min x too?
+	protected long minVolumeLimit = 0;
+	protected long minAreaLimit = 0;
 	
 	protected List<Point3D<P>> values = new ArrayList<>();
 	protected List<P> placements = new ArrayList<>();
@@ -437,9 +438,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		
 		placements.add(placement);
 		
-		if(minVolume != -1L) {
-			filterMinVolume();
-		}
+		filterMinimums();
 		
 		removeEclipsed(values, addXX);
 		removeEclipsed(values, addYY);
@@ -472,18 +471,17 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		return !values.isEmpty();
 	}
 	
-	private void filterMinVolume() {
-		
-		filterMinVolume(addXX);
-		filterMinVolume(addYY);
-		filterMinVolume(addZZ);
+	private void filterMinimums() {
+		filterMinimums(addXX);
+		filterMinimums(addYY);
+		filterMinimums(addZZ);
 	}
 
-	private void filterMinVolume(List<Point3D<P>> addXX) {
+	private void filterMinimums(List<Point3D<P>> addXX) {
 		for (int i = 0; i < addXX.size(); i++) {
 			Point3D<P> p = addXX.get(i);
 			
-			if(p.getVolume() < minVolume) {
+			if(p.getVolume() < minVolumeLimit || p.getArea() < minAreaLimit) {
 				addXX.remove(i);
 				i--;
 			}
@@ -529,6 +527,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 	protected void constrainFloatingMax(P placement) {
 
+		// TODO take advantage of sorted values along x axis
+		
 		for (int i = 0; i < values.size(); i++) {
 			Point3D<P> point = values.get(i);
 			
@@ -571,7 +571,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					if(point.getMinX() < placement.getAbsoluteX()) {
 						point.setMaxX(placement.getAbsoluteX() - 1);
 						
-						if(minVolume != -1L && point.getVolume() < minVolume) {
+						if(point.getVolume() < minVolumeLimit) {
 							deleted.add(point);
 							
 							continue;
@@ -597,7 +597,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					if(point.getMinY() < placement.getAbsoluteY()) {
 						point.setMaxY(placement.getAbsoluteY() - 1);
 						
-						if(minVolume != -1L && point.getVolume() < minVolume) {
+						if(minVolumeLimit != -1L && point.getVolume() < minVolumeLimit) {
 							deleted.add(point);
 							
 							continue;
@@ -623,7 +623,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					if(point.getMinZ() < placement.getAbsoluteZ()) {
 						point.setMaxZ(placement.getAbsoluteZ() - 1);
 						
-						if(minVolume != -1L && point.getVolume() < minVolume) {
+						if(minVolumeLimit != -1L && point.getVolume() < minVolumeLimit) {
 							deleted.add(point);
 							
 							continue;
@@ -903,8 +903,12 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		}
 		return maxPointVolume;
 	}
+	
+	public void setMinimumAreaLimit(long min) {
+		this.minAreaLimit = min;
+	}
 
-	public void setMinVolume(long minVolume) {
-		this.minVolume = minVolume;
+	public void setMinimumVolumeLimit(long minVolume) {
+		this.minVolumeLimit = minVolume;
 	}
 }

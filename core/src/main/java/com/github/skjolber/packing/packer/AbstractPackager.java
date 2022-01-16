@@ -478,6 +478,17 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		return minVolume;
 	}
 	
+	protected long getMinStackableItemArea(List<StackableItem> stackables) {
+		long minArea = Integer.MAX_VALUE;
+		for(StackableItem stackableItem : stackables) {
+			Stackable stackable = stackableItem.getStackable();
+			if(stackable.getMinimumArea() < minArea) {
+				minArea = stackable.getMinimumArea();
+			}
+		}
+		return minArea;
+	}
+	
 	protected long getMinStackableVolume(List<Stackable> stackables) {
 		long minVolume = Integer.MAX_VALUE;
 		for(Stackable stackable : stackables) {
@@ -498,4 +509,5 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		}
 		return minArea;
 	}
+	
 }
