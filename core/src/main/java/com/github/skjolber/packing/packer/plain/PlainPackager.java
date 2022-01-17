@@ -86,8 +86,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 
 		ExtremePoints3D<StackPlacement> extremePoints3D = new ExtremePoints3D<>(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
 
-		extremePoints3D.setMinimumVolumeLimit(getMinStackableVolume(scopedStackables));
-		extremePoints3D.setMinimumAreaLimit(getMinStackableArea(scopedStackables));
+		extremePoints3D.setMinimumAreaAndVolumeLimit(getMinStackableArea(scopedStackables), getMinStackableVolume(scopedStackables));
 
 		Stack levelStack = new DefaultStack();
 

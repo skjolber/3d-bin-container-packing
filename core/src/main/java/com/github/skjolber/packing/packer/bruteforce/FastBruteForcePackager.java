@@ -72,10 +72,10 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 	
 	private class FastBruteForceAdapter implements Adapter<FastBruteForcePackagerResult> {
 
-		private DefaultPermutationRotationIterator[] iterators;
-		private List<Container> containers;
+		private final DefaultPermutationRotationIterator[] iterators;
+		private final List<Container> containers;
 		private final BooleanSupplier interrupt;
-		private MemoryExtremePoints3D extremePoints3D;
+		private final MemoryExtremePoints3D extremePoints3D;
 		private List<StackPlacement> stackPlacements;
 
 		public FastBruteForceAdapter(List<StackableItem> stackableItems, List<Container> containers, BooleanSupplier interrupt) {
@@ -100,8 +100,7 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 			this.stackPlacements = getPlacements(count);
 			
 			this.extremePoints3D = new MemoryExtremePoints3D(1, 1, 1);
-			this.extremePoints3D.setMinimumVolumeLimit(getMinStackableItemVolume(stackableItems));
-			this.extremePoints3D.setMinimumAreaLimit(getMinStackableItemArea(stackableItems));
+			this.extremePoints3D.setMinimumAreaAndVolumeLimit(getMinStackableItemArea(stackableItems), getMinStackableItemVolume(stackableItems));
 		}
 
 		@Override
@@ -141,6 +140,8 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 					}
 				}
 				stackPlacements = stackPlacements.subList(size, this.stackPlacements.size());
+				
+				this.extremePoints3D.setMinimumAreaAndVolumeLimit(iterators[0].getMinStackableArea(), iterators[0].getMinStackableVolume());
 			} else {
 				stackPlacements = Collections.emptyList();
 			}

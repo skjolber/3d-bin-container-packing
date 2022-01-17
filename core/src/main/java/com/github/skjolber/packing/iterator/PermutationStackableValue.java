@@ -10,12 +10,32 @@ public class PermutationStackableValue {
     protected final int count;
     protected final PermutationRotation[] values;
 
+	protected final long minVolumeLimit;
+	protected final long minAreaLimit;
+    
     public PermutationStackableValue(int count, Stackable stackable, List<StackValue> boundStackValues) {
         this.count = count;
         this.values = new PermutationRotation[boundStackValues.size()];
+        
+    	long minVolumeLimit = Long.MAX_VALUE;
+    	long minAreaLimit = Long.MAX_VALUE;
+        
         for(int i = 0; i < values.length; i++) {
-        	values[i] = new PermutationRotation(stackable, boundStackValues.get(i));
+        	StackValue stackValue = boundStackValues.get(i);
+        	
+        	values[i] = new PermutationRotation(stackable, stackValue);
+        	
+        	if(minVolumeLimit > stackValue.getVolume()) {
+        		minVolumeLimit = stackValue.getVolume();
+        	}
+
+        	if(minAreaLimit > stackValue.getArea()) {
+        		minAreaLimit = stackValue.getArea();
+        	}
         }
+        
+        this.minAreaLimit = minAreaLimit;
+        this.minVolumeLimit = minVolumeLimit;
     }
 
     public PermutationRotation[] getBoxes() {
@@ -25,5 +45,12 @@ public class PermutationStackableValue {
     public int getCount() {
         return count;
     }
+
+    public long getMinAreaLimit() {
+		return minAreaLimit;
+	}
     
+    public long getMinVolumeLimit() {
+		return minVolumeLimit;
+	}
 }

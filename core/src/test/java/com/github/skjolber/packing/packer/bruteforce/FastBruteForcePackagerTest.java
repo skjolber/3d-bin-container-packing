@@ -50,7 +50,6 @@ public class FastBruteForcePackagerTest {
 		assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 		assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 	}
-	
 
 	@Test
 	void testStackMultipleContainers() {

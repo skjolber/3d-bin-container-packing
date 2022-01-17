@@ -90,13 +90,6 @@ Packager packager = BruteForcePackager.newBuilder()
 
 Using a deadline is recommended whenever brute-forcing in a real-time application.
 
-```
-// limit search using 5 seconds deadline
-long deadline = System.currentTimeMillis() + 5000;
-
-Container match = packager.pack(products, deadline);
-```
-
 ## Details
 
 ### Largest Area Fit First algorithm

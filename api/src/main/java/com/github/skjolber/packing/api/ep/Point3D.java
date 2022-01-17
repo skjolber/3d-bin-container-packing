@@ -609,4 +609,9 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	}
 
 	public abstract Point3D<P> rotate();
+
+	public long getVolumeAtZ(int zz) {
+		return (long)dx *  (long)dy * (long)(maxZ - zz + 1);
+	}
+
 }
