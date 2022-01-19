@@ -56,17 +56,11 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 	protected P containerPlacement;
 	
-	private IntComparator COMPARATOR_Y_THEN_Z_THEN_X = (a, b) -> {
-		return Point3D.COMPARATOR_Y_THEN_Z_THEN_X.compare(values.get(a), values.get(b));
-	};
+	private IntComparator COMPARATOR_Y_THEN_Z_THEN_X = (a, b) -> Point3D.COMPARATOR_Y_THEN_Z_THEN_X.compare(values.get(a), values.get(b));
 	
-	private IntComparator COMPARATOR_Z_THEN_X_THEN_Y = (a, b) -> {
-		return Point3D.COMPARATOR_Z_THEN_X_THEN_Y.compare(values.get(a), values.get(b));
-	};
+	private IntComparator COMPARATOR_Z_THEN_X_THEN_Y = (a, b) -> Point3D.COMPARATOR_Z_THEN_X_THEN_Y.compare(values.get(a), values.get(b));
 	
-	private IntComparator COMPARATOR_X_THEN_Y_THEN_Z = (a, b) -> {
-		return Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(values.get(a), values.get(b));
-	};
+	private IntComparator COMPARATOR_X_THEN_Y_THEN_Z = (a, b) -> Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(values.get(a), values.get(b));
 	
 	public ExtremePoints3D(int dx, int dy, int dz) {
 		this(dx, dy, dz, false);

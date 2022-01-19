@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.packer.laff;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.assertj.StackablePlacementAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -15,8 +15,6 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
-
-import static com.github.skjolber.packing.test.assertj.StackablePlacementAssert.assertThat;
 
 public class LargestAreaFitFirstPackagerTest {
 

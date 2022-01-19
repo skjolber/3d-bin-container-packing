@@ -138,8 +138,6 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 						// * Prefer the tightest placement, i.e. waste as little as possible
 						// ********************************************************************************
 						if(bestIndex != -1) {
-							Point3D<StackPlacement> p = extremePoints3D.getValue(bestPointIndex);
-							
 							if(!isBetter(bestStackable, extremePoints3D.getValue(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
 								continue;
 							}

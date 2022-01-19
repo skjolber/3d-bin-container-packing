@@ -2,8 +2,6 @@ package com.github.skjolber.packing.iterator;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.Stackable;
-
 /**
 *
 * Rotation and permutations built into the same interface. Minimizes the number of
