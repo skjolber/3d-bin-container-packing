@@ -11,6 +11,8 @@ public interface ExtremePoints<P extends Placement2D, Point extends Point2D<P>> 
 	Point getValue(int i);
 	
 	List<Point> getValues();
+	
+	int getValueCount();
 
 	void reset(int dx, int dy, int dz);
 	

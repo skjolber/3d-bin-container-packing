@@ -1,16 +1,15 @@
 package com.github.skjolber.packing.ep.points2d;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
+import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point2D;
-import com.github.skjolber.packing.api.ep.Point3D;
-import com.github.skjolber.packing.api.ep.XSupportPoint2D;
-import com.github.skjolber.packing.api.ep.YSupportPoint2D;
 
 /**
  * 
@@ -30,27 +29,32 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 	
 	protected int containerMaxX;
 	protected int containerMaxY;
-	// TODO use more suitable list implementation
 	
-	protected final List<Point2D<P>> values = new ArrayList<>();
+	protected final Point2DFlagList<P> values = new Point2DFlagList<>();
 	protected final List<P> placements = new ArrayList<>();
 
 	// reuse working variables
-	protected final List<Point2D<P>> addXX = new ArrayList<>();
-	protected final List<Point2D<P>> addYY = new ArrayList<>();
+	protected final Point2DList<P> addXX = new Point2DList<>();
+	protected final Point2DList<P> addYY = new Point2DList<>();
 
-	protected final List<Point2D<P>> swallowed = new ArrayList<>();
-	protected final List<Point2D<P>> moveToXX = new ArrayList<>();
-	protected final List<Point2D<P>> moveToYY = new ArrayList<>();
+	protected final IntArrayList swallowed = new IntArrayList();
+	protected final IntArrayList moveToXX = new IntArrayList();
+	protected final IntArrayList moveToYY = new IntArrayList();
 
-	protected final List<Point2D<P>> negativeMoveToYY = new ArrayList<>();
-	protected final List<Point2D<P>> negativeMoveToXX = new ArrayList<>();
-
-	protected final List<Point2D<P>> deleted = new ArrayList<>();
+	protected final IntArrayList negativeMoveToYY = new IntArrayList();
+	protected final IntArrayList negativeMoveToXX = new IntArrayList();
 
 	protected P containerPlacement;
 
 	private long minArea = 0;
+
+	private IntComparator COMPARATOR_X_THEN_Y = (a, b) -> {
+		return Point2D.COMPARATOR_X_THEN_Y.compare(values.get(a), values.get(b));
+	};
+
+	private IntComparator COMPARATOR_Y_THEN_X = (a, b) -> {
+		return Point2D.COMPARATOR_Y_THEN_X.compare(values.get(a), values.get(b));
+	};
 
 	public ExtremePoints2D(int dx, int dy) {
 		setSize(dx, dy);
@@ -91,6 +95,8 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		
 		int xx = source.getMinX() + boxDx;
 		int yy = source.getMinY() + boxDy;
+		
+		values.flag(index);
 		
 		//       |
 		//       |
@@ -165,13 +171,15 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			boolean swallowsMinY = point.swallowsMinY(placement.getAbsoluteY(), placement.getAbsoluteEndY());
 			
 			if(swallowsMinX && swallowsMinY) { // b
-				swallowed.add(point);
+				swallowed.add(i);
+				
+				values.flag(i);
 			} else if(swallowsMinX && !xxSupport && point.getMinY() < placement.getAbsoluteY() && placement.getAbsoluteY() <= point.getMaxY()) { // c
 				// shadowed (at negative) y
-				moveToYY.add(point);
+				moveToYY.add(i);
 			} else if(swallowsMinY && !yySupport && point.getMinX() < placement.getAbsoluteX() &&  placement.getAbsoluteX() <= point.getMaxX()) { // a
 				// shadowed (at negative) x
-				moveToXX.add(point);
+				moveToXX.add(i);
 			} else {
 				// TODO if floating, add to own list as an optimization, 
 			}
@@ -216,15 +224,17 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			
 			Placement2D projectNegativeX = projectNegativeX(source.getMinX(), yy);
 			if(projectNegativeX == null) {
-				for(Point2D<P> point : values) {
+				for(int i = 0; i < values.size(); i++) {
+					Point2D<P> point = values.get(i);					
 					if(point.getMinX() < source.getMinX() && point.getMinY() <= yy && yy <= point.getMaxY() ) {
-						negativeMoveToYY.add(point);
+						negativeMoveToYY.add(i);
 					}
 				}
 			} else {
-				for(Point2D<P> point : values) {
+				for(int i = 0; i < values.size(); i++) {
+					Point2D<P> point = values.get(i);
 					if(projectNegativeX.getAbsoluteEndX() < point.getMinX() && point.getMinX() < source.getMinX() && point.getMinY() <= yy && yy <= point.getMaxY() ) {
-						negativeMoveToYY.add(point);
+						negativeMoveToYY.add(i);
 					}
 				}
 			}
@@ -273,15 +283,17 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			
 			Placement2D projectNegativeY = projectNegativeY(xx, source.getMinY());
 			if(projectNegativeY == null) {
-				for(Point2D<P> point : values) {
+				for(int i = 0; i < values.size(); i++) {
+					Point2D<P> point = values.get(i);
 					if(point.getMinY() < source.getMinY() && point.getMinX() <= xx && xx <= point.getMaxX() ) {
-						negativeMoveToXX.add(point);
+						negativeMoveToXX.add(i);
 					}
 				}
 			} else {
-				for(Point2D<P> point : values) {
+				for(int i = 0; i < values.size(); i++) {
+					Point2D<P> point = values.get(i);
 					if(projectNegativeY.getAbsoluteEndY() < point.getMinY() && point.getMinY() < source.getMinY() && point.getMinX() <= xx && xx <= point.getMaxX() ) {
-						negativeMoveToXX.add(point);
+						negativeMoveToXX.add(i);
 					}
 				}
 			}
@@ -289,22 +301,22 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		
 		negativeMoveToYY.addAll(moveToYY);
 		negativeMoveToYY.addAll(swallowed);
-		Collections.sort(negativeMoveToYY, Point2D.COMPARATOR_X_THEN_Y);
+		negativeMoveToYY.sortThis(COMPARATOR_X_THEN_Y);
 		
 		negativeMoveToXX.addAll(moveToXX);
 		negativeMoveToXX.addAll(swallowed);
-		Collections.sort(negativeMoveToXX, Point2D.COMPARATOR_Y_THEN_X);
-		
-		deleted.addAll(swallowed);
+		negativeMoveToXX.sortThis(COMPARATOR_Y_THEN_X);
 		
 		if(!negativeMoveToYY.isEmpty()) {
 			
 			add:
-			for(Point2D<P> p : negativeMoveToYY) {
+			for(int i = 0; i < negativeMoveToYY.size(); i++) {
+				Point2D<P> p = values.get(negativeMoveToYY.get(i));
 				// add point on the other side
 				// with x support
 				if(p.getMaxY() >= yy) {
-					for(Point2D<P> add : addYY) {
+					for(int k = 0; k < addYY.size(); k++) {
+						Point2D<P> add = addYY.get(k);
 						if(add.eclipsesMovedY(p, yy)) {
 							continue add;
 						}
@@ -320,13 +332,16 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		}
 
 		if(!negativeMoveToXX.isEmpty()) {
+			addXX.ensureCapacity(negativeMoveToXX.size());
 
 			add:
-			for(Point2D<P> p : negativeMoveToXX) {
+			for(int i = 0; i < negativeMoveToXX.size(); i++) {
+				Point2D<P> p = values.get(negativeMoveToXX.get(i));
 				// add point on the other side
 				// with x support
 				if(p.getMaxX() >= xx) {
-					for(Point2D<P> add : addXX) {
+					for(int k = 0; k < addXX.size(); k++) {
+						Point2D<P> add = addXX.get(k);
 						if(add.eclipsesMovedX(p, xx)) {
 							continue add;
 						}
@@ -343,35 +358,25 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		// project swallowed or shadowed to yy
 		if(!moveToYY.isEmpty()) {
 			// shadowedX
-			for(Point2D<P> point : moveToYY) {
-				if(point.getMinY() < placement.getAbsoluteY()) {
-					point.setMaxY(placement.getAbsoluteY() - 1);
-				} else {
-					deleted.add(point);
+			for(int i = 0; i < moveToYY.size(); i++) {
+				int slot = moveToYY.get(i);
+				Point2D<P> point = values.get(slot);
+				if(!constraintPositiveMaxY(point, placement)) {
+					values.flag(slot);
 				}
 			}
 		}
 		
 		if(!moveToXX.isEmpty()) {
-			for (Point2D<P> point : moveToXX) {
-				if(point.getMinX() < placement.getAbsoluteX()) {
-					point.setMaxX(placement.getAbsoluteX() - 1);
-				} else {
-					deleted.add(point);
+			for(int i = 0; i < moveToXX.size(); i++) {
+				int slot = moveToXX.get(i);
+				Point2D<P> point = values.get(slot);
+				if(!constrainPositiveMaxX(point, placement)) {
+					values.flag(slot);
 				}
 			}
 		}
 
-		for(Point2D<P> point : moveToYY) {
-			if(!constraintPositiveMaxY(point, placement)) {
-				deleted.add(point);
-			}
-		}
-		for(Point2D<P> point : moveToXX) {
-			if(!constrainPositiveMaxX(point, placement)) {
-				deleted.add(point);
-			}
-		}
 		if(!(xSupport || ySupport)) {
 			
 			if(!yySupport) {
@@ -383,27 +388,39 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 				Point2D<P> point2d = values.get(i);
 		
 				if(!constrainFloatingMax(point2d, placement)) {
-					deleted.add(point2d);
+					values.flag(i);
 				}
 			}
 		}
 		
-		values.removeAll(deleted);
+		values.compress();
 		
 		placements.add(placement);
 		
-		if(minArea != -1L) {
-			filterMinArea();
+		values.ensureCapacity(values.size() + addXX.size() + addYY.size());
+		
+		for (int i = 0; i < addXX.size(); i++) {
+			Point2D<P> p = addXX.get(i);
+			
+			if(p.getArea() >= minArea) {
+				values.add(p);
+			}
+		}
+		for (int i = 0; i < addYY.size(); i++) {
+			Point2D<P> p = addYY.get(i);
+			
+			if(p.getArea() >= minArea) {
+				values.add(p);
+			}
 		}
 		
-		values.addAll(addXX);
-		values.addAll(addYY);
-
-		Collections.sort(values, Point2D.COMPARATOR_Y_THEN_X);
+		values.sort(Point2D.COMPARATOR_Y_THEN_X);
 		removeEclipsed(binarySearchPlusMinY(placement.getAbsoluteEndY()));
+		values.compress();
 
-		Collections.sort(values, Point2D.COMPARATOR_X_THEN_Y);
+		values.sort(Point2D.COMPARATOR_X_THEN_Y);
 		removeEclipsed(binarySearchPlusMinX(placement.getAbsoluteEndX()));
+		values.compress();
 
 		swallowed.clear();
 		moveToXX.clear();
@@ -414,8 +431,6 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		
 		addXX.clear();
 		addYY.clear();
-		
-		deleted.clear();
 
 		return !values.isEmpty();
 	}
@@ -427,9 +442,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 				Point2D<P> p1 = values.get(i);
 
 				if(lowest.eclipses(p1)) {
-					values.remove(i);
-					i--;
-					limit--;
+					values.flag(i);
 				}
 			}
 		}
@@ -477,7 +490,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		if(point.getMaxY() > limit) {
 			point.setMaxY(limit);
 		}
-		if(minArea != -1L && point.getArea() < minArea) {
+		if(point.getArea() < minArea) {
 			return false;
 		}
 		return true;
@@ -491,7 +504,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		if(point.getMaxX() > limit) {
 			point.setMaxX(limit);
 		}
-		if(minArea != -1L && point.getArea() < minArea) {
+		if(point.getArea() < minArea) {
 			return false;
 		}
 		return true;
@@ -632,8 +645,14 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 	}
 	
 	public List<Point2D<P>> getValues() {
-		return values;
+		return values.toList();
 	}
+	
+	@Override
+	public int getValueCount() {
+		return values.size();
+	}
+
 	
 	public int getMinY() {
 		int min = 0;
@@ -665,9 +684,10 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 
 	public long getMaxArea() {
 		long maxPointArea = -1L;
-		for (Point2D<P> point2d : values) {
-			if(maxPointArea < point2d.getArea()) {
-				maxPointArea = point2d.getArea(); 
+		for(int i = 0; i < values.size(); i++) {
+			Point2D<P> point = values.get(i);
+			if(maxPointArea < point.getArea()) {
+				maxPointArea = point.getArea(); 
 			}
 		}
 		return maxPointArea;
@@ -804,19 +824,4 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		this.minArea = minArea;
 	}
 
-	private void filterMinArea() {
-		filterMinArea(addXX);
-		filterMinArea(addYY);
-	}
-
-	private void filterMinArea(List<Point2D<P>> addXX) {
-		for (int i = 0; i < addXX.size(); i++) {
-			Point2D<P> p = addXX.get(i);
-			
-			if(p.getArea() < minArea) {
-				addXX.remove(i);
-				i--;
-			}
-		}
-	}
 }

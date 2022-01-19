@@ -85,7 +85,6 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 				.collect(Collectors.toList());
 
 		ExtremePoints3D<StackPlacement> extremePoints3D = new ExtremePoints3D<>(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
-
 		extremePoints3D.setMinimumAreaAndVolumeLimit(getMinStackableArea(scopedStackables), getMinStackableVolume(scopedStackables));
 
 		Stack levelStack = new DefaultStack();
@@ -102,7 +101,6 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 			StackValue bestStackValue = null;
 			Stackable bestStackable = null;
 			
-			List<Point3D<StackPlacement>> points = extremePoints3D.getValues();
 			for (int i = 0; i < scopedStackables.size(); i++) {
 				Stackable box = scopedStackables.get(i);
 				if(box.getVolume() > maxPointVolume) {
@@ -128,8 +126,10 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 						continue;
 					}
 					
-					for(int k = 0; k < points.size(); k++) {
-						Point3D<StackPlacement> point3d = points.get(k);
+					int currentPointsCount = extremePoints3D.getValueCount();
+					for(int k = 0; k < currentPointsCount; k++) {
+						Point3D<StackPlacement> point3d = extremePoints3D.getValue(k);
+						
 						if(!point3d.fits3D(stackValue)) {
 							continue;
 						}
@@ -138,9 +138,9 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 						// * Prefer the tightest placement, i.e. waste as little as possible
 						// ********************************************************************************
 						if(bestIndex != -1) {
-							Point3D<StackPlacement> p = points.get(bestPointIndex);
+							Point3D<StackPlacement> p = extremePoints3D.getValue(bestPointIndex);
 							
-							if(!isBetter(bestStackable, points.get(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
+							if(!isBetter(bestStackable, extremePoints3D.getValue(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
 								continue;
 							}
 

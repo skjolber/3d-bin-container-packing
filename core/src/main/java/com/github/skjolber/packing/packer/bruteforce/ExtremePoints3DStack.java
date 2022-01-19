@@ -6,11 +6,12 @@ import java.util.List;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
 
 public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 	
 	protected static class StackItem {
-		protected List<Point3D<StackPlacement>> values = new ArrayList<>();
+		protected Point3DFlagList<StackPlacement> values = new Point3DFlagList<>();
 		protected List<StackPlacement> placements = new ArrayList<>();
 		protected StackPlacement stackPlacement = new StackPlacement();
 		protected Point3D<StackPlacement> point;
@@ -26,7 +27,7 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 			stackItems.add(new StackItem());
 		}
 		
-		stackItems.get(0).values.addAll(values);
+		values.copyInto(stackItems.get(0).values);
 		
 		loadCurrent();
 	}
@@ -45,7 +46,7 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		
 		StackItem nextStackItem = stackItems.get(stackIndex);
 		nextStackItem.placements.addAll(stackItem.placements);
-		nextStackItem.values.addAll(stackItem.values);
+		stackItem.values.copyInto(nextStackItem.values);
 		
 		loadCurrent();
 		
@@ -55,7 +56,6 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 	public void redo() {
 		// clear current level
 		placements.clear();
-		values.clear();
 
 		StackItem stackItem = stackItems.get(stackIndex);
 		stackItem.point = null;
@@ -64,7 +64,8 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		StackItem previousStackItem = stackItems.get(stackIndex - 1);
 
 		placements.addAll(previousStackItem.placements);
-		values.addAll(previousStackItem.values);
+		
+		previousStackItem.values.copyInto(values);
 	}
 
 	public void pop() {

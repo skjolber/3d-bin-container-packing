@@ -92,7 +92,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			this.stackPlacements = getPlacements(count);
 			
 			this.extremePoints3D = new ExtremePoints3DStack(1, 1, 1, count + 1);
-			this.extremePoints3D.setMinimumAreaAndVolumeLimit(getMinStackableItemArea(stackableItems), getMinStackableItemVolume(stackableItems));
 		}
 
 		@Override
@@ -130,8 +129,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 					}
 				}
 				stackPlacements = stackPlacements.subList(size, this.stackPlacements.size());
-				
-				extremePoints3D.setMinimumAreaAndVolumeLimit(iterators[0].getMinStackableArea(), iterators[0].getMinStackableVolume());
 			} else {
 				stackPlacements = Collections.emptyList();
 			}

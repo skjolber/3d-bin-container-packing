@@ -386,8 +386,8 @@ class ThreeScene extends Component {
   addHelper = () => {
     // Add Grid
     let gridXZ = new THREE.GridHelper(
-      GRID_SPACING * 10,
-      10,
+      GRID_SPACING * 100,
+      100,
       0x18ffff, //center line color
       0x42a5f5 //grid color,
     );

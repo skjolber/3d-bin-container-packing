@@ -31,7 +31,7 @@ public class DrawBouwkampPoints3D {
 					
 					List<Point3D<?>> list = new ArrayList<>();
 					
-					List<Point3D<Placement3D>> values = convert3dyzPlane.getValues();
+					List<Point3D<Placement3D>> values = convert3dyzPlane.getValuesAsList();
 					for (Point3D<Placement3D> point3d : values) {
 						list.add(point3d.rotate());
 					}

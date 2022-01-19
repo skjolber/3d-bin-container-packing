@@ -156,7 +156,6 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			this.placements = getPlacements(placementsCount);
 			
 			this.extremePoints3D = new ExtremePoints3DStack(1, 1, 1, placementsCount + 1);
-			this.extremePoints3D.setMinimumAreaAndVolumeLimit(minStackableArea, minStackableItemVolume);
 		}
 		
 		public void setContainer(Container container) {
@@ -315,13 +314,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 					}
 				}
 				
-				long area = iterators[0].getMinStackableArea();
-				long volume = iterators[0].getMinStackableVolume();
-				
 				for(RunnableAdapter runner : runnables) {
 					runner.placements = runner.placements.subList(size, runner.placements.size());
-					
-					runner.extremePoints3D.setMinimumAreaAndVolumeLimit(area, volume);
 				}
 			} else {
 				for(RunnableAdapter runner : runnables) {

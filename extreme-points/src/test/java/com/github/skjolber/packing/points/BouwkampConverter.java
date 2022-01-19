@@ -65,9 +65,9 @@ public class BouwkampConverter {
 			}
 		}
 		
-		if(!points.getValues().isEmpty()) {
+		if(points.getValueCount() > 0) {
 			if(throwException) {
-				throw new IllegalStateException("Still have " + points.getValues().size() + ": " + points.getValues());
+				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
 			}
 		}
 		
@@ -117,9 +117,9 @@ public class BouwkampConverter {
 			}
 		}
 		
-		if(!points.getValues().isEmpty()) {
+		if(points.getValueCount() > 0) {
 			if(throwException) {
-				throw new IllegalStateException("Still have " + points.getValues().size() + ": " + points.getValues());
+				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
 			}
 		}
 
@@ -168,9 +168,9 @@ public class BouwkampConverter {
 			}
 		}
 		
-		if(!points.getValues().isEmpty()) {
+		if(points.getValueCount() > 0) {
 			if(throwException) {
-				throw new IllegalStateException("Still have " + points.getValues().size() + ": " + points.getValues());
+				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
 			}
 		}
 
@@ -219,9 +219,9 @@ public class BouwkampConverter {
 			}
 		}
 		
-		if(!points.getValues().isEmpty()) {
+		if(points.getValueCount() > 0) {
 			if(throwException) {
-				throw new IllegalStateException("Still have " + points.getValues().size() + ": " + points.getValues());
+				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
 			}
 		}
 
