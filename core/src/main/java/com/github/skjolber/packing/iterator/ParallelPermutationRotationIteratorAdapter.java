@@ -55,5 +55,15 @@ public class ParallelPermutationRotationIteratorAdapter implements PermutationRo
 	public void setState(PermutationRotationState state) {
 		delegate.setState(state);
 	}
+
+	@Override
+	public long getMinStackableVolume() {
+		return delegate.getMinStackableVolume();
+	}
+
+	@Override
+	public long getMinStackableArea() {
+		return delegate.getMinStackableArea();
+	}
 	
 }

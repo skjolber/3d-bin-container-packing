@@ -64,10 +64,10 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	
 	private class BruteForceAdapter implements Adapter<BruteForcePackagerResult> {
 
-		private DefaultPermutationRotationIterator[] iterators;
-		private List<Container> containers;
+		private final DefaultPermutationRotationIterator[] iterators;
+		private final List<Container> containers;
 		private final BooleanSupplier interrupt;
-		private ExtremePoints3DStack extremePoints3D;
+		private final ExtremePoints3DStack extremePoints3D;
 		private List<StackPlacement> stackPlacements;
 
 		public BruteForceAdapter(List<StackableItem> stackableItems, List<Container> containers, BooleanSupplier interrupt) {
@@ -92,8 +92,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			this.stackPlacements = getPlacements(count);
 			
 			this.extremePoints3D = new ExtremePoints3DStack(1, 1, 1, count + 1);
-			this.extremePoints3D.setMinimumVolumeLimit(getMinStackableItemVolume(stackableItems));
-			this.extremePoints3D.setMinimumAreaLimit(getMinStackableItemArea(stackableItems));
 		}
 
 		@Override

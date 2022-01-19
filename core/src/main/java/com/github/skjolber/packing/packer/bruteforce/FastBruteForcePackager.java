@@ -26,7 +26,7 @@ import com.github.skjolber.packing.packer.Adapter;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. This implementation tries all
- * permutations and rotations, for each selecting the perceived best placement. So it does not try all possible placements.
+ * permutations and rotations, for each selecting the perceived best placement. So it does not try all possible placements (as i not all extreme-points)-
  * <br><br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
@@ -72,10 +72,10 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 	
 	private class FastBruteForceAdapter implements Adapter<FastBruteForcePackagerResult> {
 
-		private DefaultPermutationRotationIterator[] iterators;
-		private List<Container> containers;
+		private final DefaultPermutationRotationIterator[] iterators;
+		private final List<Container> containers;
 		private final BooleanSupplier interrupt;
-		private MemoryExtremePoints3D extremePoints3D;
+		private final MemoryExtremePoints3D extremePoints3D;
 		private List<StackPlacement> stackPlacements;
 
 		public FastBruteForceAdapter(List<StackableItem> stackableItems, List<Container> containers, BooleanSupplier interrupt) {
@@ -100,8 +100,6 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 			this.stackPlacements = getPlacements(count);
 			
 			this.extremePoints3D = new MemoryExtremePoints3D(1, 1, 1);
-			this.extremePoints3D.setMinimumVolumeLimit(getMinStackableItemVolume(stackableItems));
-			this.extremePoints3D.setMinimumAreaLimit(getMinStackableItemArea(stackableItems));
 		}
 
 		@Override
@@ -111,7 +109,6 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 			}
 			
 			// TODO break if this container cannot beat the existing best result
-			
 			return FastBruteForcePackager.this.pack(extremePoints3D, stackPlacements, containers.get(i), iterators[i], interrupt);
 		}
 
@@ -229,6 +226,7 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 		ContainerStackValue containerStackValue = stackValues[0];
 		
 		extremePoints3D.reset(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
+		extremePoints3D.setMinimumAreaAndVolumeLimit(rotator.getMinStackableArea(), rotator.getMinStackableVolume());
 
 		StackConstraint constraint = containerStackValue.getConstraint();
 		
@@ -256,15 +254,15 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 			
 			StackValue stackValue = permutationRotation.getValue();
 			
-			List<Point3D<StackPlacement>> points = extremePoints3D.getValues();
+			int pointCount = extremePoints3D.getValueCount();
 			
 			// TODO brute force in 3d point dimension too
 			// a recursive algorithm is perhaps appropriate since the number of boxes is limited
 			// so there 
 			
 			int bestPointIndex = -1;
-			for(int k = 0; k < points.size(); k++) {
-				Point3D<StackPlacement> point3d = points.get(k);
+			for(int k = 0; k < pointCount; k++) {
+				Point3D<StackPlacement> point3d = extremePoints3D.getValue(k);
 				if(!point3d.fits3D(stackValue)) {
 					continue;
 				}
@@ -273,7 +271,7 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 				}
 
 				if(bestPointIndex != -1) {
-					Point3D<StackPlacement> bestPoint = points.get(bestPointIndex);
+					Point3D<StackPlacement> bestPoint = extremePoints3D.getValue(bestPointIndex);
 					if(bestPoint.getArea() < point3d.getArea()) {
 						continue;
 					} else if(bestPoint.getArea() == point3d.getArea() && bestPoint.getVolume() < point3d.getVolume()) {
@@ -287,7 +285,7 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 				break;
 			}
 			
-			Point3D<StackPlacement> point3d = points.get(bestPointIndex);
+			Point3D<StackPlacement> point3d =  extremePoints3D.getValue(bestPointIndex);
 			
 			placement.setStackable(stackable);
 			placement.setStackValue(stackValue);

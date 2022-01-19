@@ -194,7 +194,6 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 				StackValue bestStackValue = null;
 				Stackable bestStackable = null;
 				
-				List<Point2D<StackPlacement>> points = extremePoints2D.getValues();
 				for (int i = 0; i < scopedStackables.size(); i++) {
 					Stackable box = scopedStackables.get(i);
 					if(box.getVolume() > maxPointVolume) {
@@ -219,8 +218,9 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 						}
 
 						// pick the best point / stackable combination
-						for(int k = 0; k < points.size(); k++) {
-							Point2D<StackPlacement> point2d = points.get(k);
+						int pointCount = extremePoints2D.getValueCount();
+						for(int k = 0; k < pointCount; k++) {
+							Point2D<StackPlacement> point2d = extremePoints2D.getValue(k);
 							if(point2d.getArea() < stackValue.getArea()) {
 								continue;
 							}
@@ -229,7 +229,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 								continue;
 							}
 							
-							if(bestIndex != -1 && !nextStackValuePointComparator.accept(bestStackable, points.get(bestPointIndex), bestStackValue, box, point2d, stackValue)) {
+							if(bestIndex != -1 && !nextStackValuePointComparator.accept(bestStackable, extremePoints2D.getValue(bestPointIndex), bestStackValue, box, point2d, stackValue)) {
 								continue;
 							}
 							if(constraint != null && !constraint.supports(stack, box, stackValue, point2d.getMinX(), point2d.getMinY(), 0)) {

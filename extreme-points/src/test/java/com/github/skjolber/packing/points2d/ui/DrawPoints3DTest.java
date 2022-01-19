@@ -19,44 +19,44 @@ public class DrawPoints3DTest {
 	public static void main(String[] args) {
 		DefaultExtremePoints3D extremePoints = new DefaultExtremePoints3D(1000, 1000, 1000);
 
-		Point3D extremePoint = extremePoints.getValues().get(0);
+		Point3D extremePoint = extremePoints.getValuesAsList().get(0);
 		extremePoints.add(0, createPlacement(extremePoint, 50, 100, 1));
 
-		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - 1);
-		extremePoints.add(extremePoints.getValues().size() - 1, createPlacement(extremePoint, 50, 50, 1));
+		extremePoint = extremePoints.getValuesAsList().get(extremePoints.getValuesAsList().size() - 1);
+		extremePoints.add(extremePoints.getValuesAsList().size() - 1, createPlacement(extremePoint, 50, 50, 1));
 		
-		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - 2);
-		extremePoints.add(extremePoints.getValues().size() - 2, createPlacement(extremePoint, 100, 100, 1));
+		extremePoint = extremePoints.getValuesAsList().get(extremePoints.getValuesAsList().size() - 2);
+		extremePoints.add(extremePoints.getValuesAsList().size() - 2, createPlacement(extremePoint, 100, 100, 1));
 
-		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - 1);
-		extremePoints.add(extremePoints.getValues().size() - 1, createPlacement(extremePoint, 20, 20, 1));
+		extremePoint = extremePoints.getValuesAsList().get(extremePoints.getValuesAsList().size() - 1);
+		extremePoints.add(extremePoints.getValuesAsList().size() - 1, createPlacement(extremePoint, 20, 20, 1));
 		
-		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - 1);
-		extremePoints.add(extremePoints.getValues().size() - 1, createPlacement(extremePoint, 20, 35, 1));
+		extremePoint = extremePoints.getValuesAsList().get(extremePoints.getValuesAsList().size() - 1);
+		extremePoints.add(extremePoints.getValuesAsList().size() - 1, createPlacement(extremePoint, 20, 35, 1));
 
-		extremePoint = extremePoints.getValues().get(2);
+		extremePoint = extremePoints.getValuesAsList().get(2);
 		extremePoints.add(2, createPlacement(extremePoint, 20, 20, 1));
 
-		extremePoint = extremePoints.getValues().get(1);
+		extremePoint = extremePoints.getValuesAsList().get(1);
 		extremePoints.add(1, createPlacement(extremePoint, 30, 20, 1));
 
-		extremePoint = extremePoints.getValues().get(2);
+		extremePoint = extremePoints.getValuesAsList().get(2);
 		extremePoints.add(2, createPlacement(extremePoint, 30, 20, 1));
 
 		int offset = 2;
-		extremePoint = extremePoints.getValues().get(extremePoints.getValues().size() - offset);
-		//extremePoints.add(extremePoints.getValues().size() - offset, createPlacement(extremePoint, 50, 50, 1));
+		extremePoint = extremePoints.getValuesAsList().get(extremePoints.getValuesAsList().size() - offset);
+		//extremePoints.add(extremePoints.getValuesAsList().size() - offset, createPlacement(extremePoint, 50, 50, 1));
 		
-		//extremePoint = extremePoints.getValues().get(6);
+		//extremePoint = extremePoints.getValuesAsList().get(6);
 //		extremePoints.add(6, createPlacement(extremePoint, 50, 50, 1));
 
 		System.out.println("xyz:");
 		
-		for (Point3D p : extremePoints.getValues()) {
+		for (Point3D p : extremePoints.getValuesAsList()) {
 			System.out.println(" " + p.getMinX() + "x" + p.getMinY() + "x" + p.getMinZ() + " " + p.getMaxX() + "x" + p.getMaxY() + "x" + p.getMaxZ());
 		}
 		
-		List<Point3D<Placement3D>> values = extremePoints.getValues();
+		List<Point3D<Placement3D>> values = extremePoints.getValuesAsList();
 		for (int i = 0; i < values.size(); i++) {
 			Point3D point3d = values.get(i);
 			
@@ -67,7 +67,7 @@ public class DrawPoints3DTest {
 		}
 		
 		System.out.println("xy:");
-		for (Point3D p : extremePoints.getValues()) {
+		for (Point3D p : extremePoints.getValuesAsList()) {
 			System.out.println(" " + p.getMinX() + "x" + p.getMinY() + "x" + p.getMinZ() + " " + p.getMaxX() + "x" + p.getMaxY() + "x" + p.getMaxZ());
 		}
 		DrawPoints2D.show(extremePoints);

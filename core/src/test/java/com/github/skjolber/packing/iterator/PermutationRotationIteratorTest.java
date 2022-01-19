@@ -9,9 +9,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.api.Box;
 
 
 class PermutationRotationIteratorTest {

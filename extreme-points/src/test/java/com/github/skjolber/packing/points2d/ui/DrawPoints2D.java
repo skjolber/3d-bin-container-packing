@@ -47,7 +47,7 @@ public class DrawPoints2D {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				
-				List<Point3D<Placement3D>> values = p.getValues();
+				List<Point3D<Placement3D>> values = p.getValuesAsList();
 				
 				init(values, p.getPlacements(), p.getWidth(), p.getDepth());
 			}

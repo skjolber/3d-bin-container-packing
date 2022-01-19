@@ -155,9 +155,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		public RunnableAdapter(int placementsCount, long minStackableItemVolume, long minStackableArea) {
 			this.placements = getPlacements(placementsCount);
 			
-			extremePoints3D = new ExtremePoints3DStack(1, 1, 1, placementsCount + 1);
-			extremePoints3D.setMinimumVolumeLimit(minStackableItemVolume);
-			extremePoints3D.setMinimumAreaLimit(minStackableArea);
+			this.extremePoints3D = new ExtremePoints3DStack(1, 1, 1, placementsCount + 1);
 		}
 		
 		public void setContainer(Container container) {
@@ -174,21 +172,16 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		
 		@Override
 		public BruteForcePackagerResult call() {
-			//System.out.println("Start work " + Thread.currentThread().getName());
-			try {
-				return ParallelBruteForcePackager.this.pack(extremePoints3D, placements, container, iterator, interrupt);
-			} finally {
-				//System.out.println("End work " + Thread.currentThread().getName());
-			}
+			return ParallelBruteForcePackager.this.pack(extremePoints3D, placements, container, iterator, interrupt);
 		}
 	}
 	
 	private class ParallelAdapter implements Adapter<BruteForcePackagerResult> {
 		
-		private List<Container> containers;
-		private ParallelPermutationRotationIterator[] iterators; // per container
-		private RunnableAdapter[] runnables; // per thread
-		private BooleanSupplier[] interrupts;
+		private final List<Container> containers;
+		private final ParallelPermutationRotationIterator[] iterators; // per container
+		private final RunnableAdapter[] runnables; // per thread
+		private final BooleanSupplier[] interrupts;
 
 		protected ParallelAdapter(List<StackableItem> stackables, List<Container> containers, BooleanSupplier interrupt) {
 			this.containers = containers;
@@ -320,6 +313,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 						it.removePermutations(p);
 					}
 				}
+				
 				for(RunnableAdapter runner : runnables) {
 					runner.placements = runner.placements.subList(size, runner.placements.size());
 				}

@@ -96,9 +96,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				.collect(Collectors.toList());
 
 		ExtremePoints3D<StackPlacement> extremePoints3D = new ExtremePoints3D<>(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
-
-		extremePoints3D.setMinimumVolumeLimit(getMinStackableVolume(scopedStackables));
-		extremePoints3D.setMinimumAreaLimit(getMinStackableArea(scopedStackables));
+		extremePoints3D.setMinimumAreaAndVolumeLimit(getMinStackableArea(scopedStackables), getMinStackableVolume(scopedStackables));
 		
 		LargestAreaFitFirstPackagerConfiguration<Point3D<StackPlacement>> configuration = factory.newBuilder().withContainer(targetContainer).withExtremePoints(extremePoints3D).withStack(stack).build();
 		
@@ -182,7 +180,6 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				StackValue bestStackValue = null;
 				Stackable bestStackable = null;
 				
-				List<Point3D<StackPlacement>> points = extremePoints3D.getValues();
 				for (int i = 0; i < scopedStackables.size(); i++) {
 					Stackable box = scopedStackables.get(i);
 					if(box.getVolume() > maxPointVolume) {
@@ -206,12 +203,14 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 							continue;
 						}
 						
-						for(int k = 0; k < points.size(); k++) {
-							Point3D<StackPlacement> point3d = points.get(k);
+						int currentPointsCount = extremePoints3D.getValueCount();
+						for(int k = 0; k < currentPointsCount; k++) {
+							Point3D<StackPlacement> point3d = extremePoints3D.getValue(k);
+							
 							if(!point3d.fits3D(stackValue)) {
 								continue;
 							}
-							if(bestIndex != -1 && !nextStackValuePointComparator.accept(bestStackable, points.get(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
+							if(bestIndex != -1 && !nextStackValuePointComparator.accept(bestStackable, extremePoints3D.getValue(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
 								continue;
 							}
 							if(constraint != null && !constraint.supports(stack, box, stackValue, point3d.getMinX(), point3d.getMinY(), point3d.getMinZ())) {

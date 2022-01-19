@@ -69,4 +69,9 @@ public interface PermutationRotationIterator {
 	 */
 
 	void removePermutations(List<Integer> removed);
+	
+	long getMinStackableVolume();
+
+	long getMinStackableArea();
+	
 }

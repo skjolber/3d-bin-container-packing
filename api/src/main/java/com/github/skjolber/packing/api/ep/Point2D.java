@@ -420,6 +420,14 @@ public abstract class Point2D<P extends Placement2D> {
 	public boolean isInsideX(int xx) {
 		 return minX <= xx && xx <= maxX;
 	}
-	
-	
+
+
+	public long getAreaAtX(int xx) {
+		return dy * (long)(maxX - xx + 1);
+	}
+
+	public long getAreaAtY(int yy) {
+		return dx * (long)(maxY - yy + 1);
+	}
+
 }

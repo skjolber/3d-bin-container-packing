@@ -280,5 +280,25 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 	public int boxItemLength() {
 		return matrix.length;
 	}
+	
+	public long getMinStackableVolume() {
+		long minVolume = Integer.MAX_VALUE;
+		for (PermutationStackableValue permutationStackableValue : matrix) {
+			if(permutationStackableValue.getMinVolumeLimit() < minVolume) {
+				minVolume = permutationStackableValue.getMinVolumeLimit();
+			}
+		}
+		return minVolume;
+	}
+
+	public long getMinStackableArea() {
+		long minArea = Integer.MAX_VALUE;
+		for (PermutationStackableValue permutationStackableValue : matrix) {
+			if(permutationStackableValue.getMinAreaLimit() < minArea) {
+				minArea = permutationStackableValue.getMinAreaLimit();
+			}
+		}
+		return minArea;
+	}
 
 }

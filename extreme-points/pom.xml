@@ -15,9 +15,13 @@
 
 	<dependencies>
 		<dependency>
+		    <groupId>org.eclipse.collections</groupId>
+		    <artifactId>eclipse-collections</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 			<artifactId>api</artifactId>
-		</dependency>	
+		</dependency>
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 			<artifactId>test</artifactId>
