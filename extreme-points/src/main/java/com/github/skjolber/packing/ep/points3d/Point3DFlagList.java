@@ -49,13 +49,6 @@ public class Point3DFlagList<P extends Placement3D> {
 	}
 
 	public void sort(Comparator<Point3D<?>> comparator, int maxSize) {
-		/*
-		if(maxSize == size) {
-			System.out.println("Dang");
-		} else {
-			System.out.println("DING " + (size - maxSize));
-		}
-		*/
 		Arrays.sort(points, 0, maxSize, comparator);
 	}
 	
