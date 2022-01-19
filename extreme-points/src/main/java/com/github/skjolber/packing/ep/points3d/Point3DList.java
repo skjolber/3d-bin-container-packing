@@ -10,7 +10,7 @@ import com.github.skjolber.packing.api.ep.Point3D;
 
 /**
  * 
- * Custom list for working with to-be-removed points. 
+ * Custom list for working with points.
  * 
  */
 
@@ -19,7 +19,7 @@ public class Point3DList<P extends Placement3D> {
 	private int size = 0;
 	private Point3D<P>[] points = new Point3D[16];
 	
-	public void addCapacity(int count) {
+	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
 	}
 

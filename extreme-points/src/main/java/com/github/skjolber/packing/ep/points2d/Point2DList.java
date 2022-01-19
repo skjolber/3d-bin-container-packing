@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.ep.Point2D;
 
 /**
  * 
- * Custom list for working with to-be-removed points. 
+ * Custom list for working with points. 
  * 
  */
 
@@ -18,7 +18,7 @@ public class Point2DList<P extends Placement2D> {
 	private Point2D<P>[] points = new Point2D[16];
 	
 	@SuppressWarnings("unchecked")
-	public void addCapacity(int count) {
+	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
 	}
 

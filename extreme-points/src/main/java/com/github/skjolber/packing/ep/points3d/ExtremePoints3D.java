@@ -358,7 +358,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		
 		if(!negativeMoveToXX.isEmpty()) {
 
-			addXX.addCapacity(negativeMoveToXX.size());
+			addXX.ensureAdditionalCapacity(negativeMoveToXX.size());
 
 			add:
 			for(int i = 0; i < negativeMoveToXX.size(); i++) {
@@ -385,7 +385,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		
 		if(!negativeMoveToYY.isEmpty()) {
 			
-			addYY.addCapacity(negativeMoveToYY.size());
+			addYY.ensureAdditionalCapacity(negativeMoveToYY.size());
 
 			add:
 			for(int i = 0; i < negativeMoveToYY.size(); i++) {
@@ -413,7 +413,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 		if(!negativeMoveToZZ.isEmpty()) {
 			
-			addZZ.addCapacity(negativeMoveToZZ.size());
+			addZZ.ensureAdditionalCapacity(negativeMoveToZZ.size());
 			
 			add:
 			for(int i = 0; i < negativeMoveToZZ.size(); i++) {
@@ -451,7 +451,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		// insert them at the start of the existing data
 		// so that the sorting algorithm does not have to do a full sort
 		// rather only sort points with x coordinates from 0 to xx.
-		values.addCapacity(added);
+		values.ensureAdditionalCapacity(added);
 		
 		// insert xx last, because it has the highest x coordinate
 		values.move(added);
@@ -577,9 +577,9 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 		// TODO take advantage of sorted values along x axis
 		
-		addXX.ensureCapacity(addXX.size() + values.size());
-		addYY.ensureCapacity(addYY.size() + values.size());
-		addZZ.ensureCapacity(addZZ.size() + values.size());
+		addXX.ensureAdditionalCapacity(values.size());
+		addYY.ensureAdditionalCapacity(values.size());
+		addZZ.ensureAdditionalCapacity(values.size());
 		
 		for (int i = 0; i < values.size(); i++) {
 			Point3D<P> point = values.get(i);

@@ -22,7 +22,7 @@ public class Point2DFlagList<P extends Placement2D> {
 	private boolean[] flag = new boolean[16];
 	
 	@SuppressWarnings("unchecked")
-	public void addCapacity(int count) {
+	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
 	}
 

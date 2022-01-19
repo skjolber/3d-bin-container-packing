@@ -21,7 +21,7 @@ public class Point3DFlagList<P extends Placement3D> {
 	private boolean[] flag = new boolean[16];
 	
 	@SuppressWarnings("unchecked")
-	public void addCapacity(int count) {
+	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
 	}
 	
