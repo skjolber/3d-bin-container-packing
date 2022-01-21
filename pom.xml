@@ -491,9 +491,5 @@
 			<id>mavenCentral</id>
 			<url>https://repo1.maven.org/maven2</url>
 		</repository>
-		<repository>
-			<id>indvd00m-github-repo</id>
-			<url>https://github.com/indvd00m/maven-repo/raw/master/repository</url>
-		</repository>
 	</repositories>
 </project>
