@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.packer.plain;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -17,7 +18,6 @@ public class PlainPackagerTest {
 
 	@Test
 	void testStackingSquaresOnSquare() {
-
 		List<Container> containers = new ArrayList<>();
 		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
 		
@@ -31,8 +31,6 @@ public class PlainPackagerTest {
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
-		
-		System.out.println(fits.getStack().getPlacements());
 	}
 	
 	@Test
@@ -138,4 +136,27 @@ public class PlainPackagerTest {
 
 		assertNull(fits);
 	}
+	
+	@Test
+	void testStackingMultipleContainers() {
+		List<Container> containers = new ArrayList<>();
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("2").withEmptyWeight(1).withSize(1, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("3").withEmptyWeight(1).withSize(2, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("4").withEmptyWeight(1).withSize(2, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+		
+		PlainPackager packager = PlainPackager.newBuilder().withContainers(containers).build();
+		
+		List<StackableItem> products = new ArrayList<>();
+
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+
+		Container fits = packager.pack(products);
+		assertNotNull(fits);
+		assertEquals(fits.getVolume(), containers.get(3).getVolume());
+	}
+	
+
 }

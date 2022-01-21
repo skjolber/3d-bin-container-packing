@@ -165,8 +165,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		} else {
 			// perform a binary search among the available containers
 			// the list is ranked from most desirable to least.
-			@SuppressWarnings("unchecked") // https://stackoverflow.com/a/2924453/459579
-			P[] results = (P[])new Object[containers.size()];
+			PackResult[] results = new PackResult[containers.size()];
 			boolean[] checked = new boolean[results.length];
 
 			ArrayList<Integer> containerIndexes = new ArrayList<>(containers.size());
@@ -231,9 +230,9 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			} while (!containerIndexes.isEmpty());
 
 			// return the best, if any
-			for (final P result : results) {
+			for (final PackResult result : results) {
 				if (result != null) {
-					return pack.accept(result);
+					return pack.accept((P)result);
 				}
 			}
 		}
