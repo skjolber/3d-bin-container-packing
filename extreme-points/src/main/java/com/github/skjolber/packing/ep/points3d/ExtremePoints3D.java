@@ -105,7 +105,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		
 		int xx = placement.getAbsoluteEndX() + 1;
 		int yy = placement.getAbsoluteEndY() + 1;
-		int zz = placement.getAbsoluteZ() + 1;
+		int zz = placement.getAbsoluteEndZ() + 1;
 			
 		boolean supported = source.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY()) 
 				&& source.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ()) 
