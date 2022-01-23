@@ -3,8 +3,6 @@ package com.github.skjolber.packing.ep.points2d;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
-
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point2D;

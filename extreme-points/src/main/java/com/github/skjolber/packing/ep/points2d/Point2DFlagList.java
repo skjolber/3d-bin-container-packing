@@ -7,9 +7,6 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.Point2D;
-import com.github.skjolber.packing.api.ep.Point3D;
-import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
-import com.github.skjolber.packing.ep.points3d.Point3DList;
 
 
 /**
