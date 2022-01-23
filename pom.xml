@@ -196,10 +196,10 @@
 		<module>test</module>
 		<module>extreme-points</module>
 		<module>core</module>
+		<module>jmh</module>
 		<module>visualizer/api</module>
 		<module>visualizer/algorithm</module>
 		<module>visualizer/packaging</module>
-		<module>jmh</module>
 	</modules>
 
 	<build>
