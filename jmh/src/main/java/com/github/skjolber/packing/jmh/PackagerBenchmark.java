@@ -21,12 +21,12 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 public class PackagerBenchmark {
 
     @Benchmark
-    public Object parallelPackager(PackagerState state) throws Exception {
+    public int parallelPackager(PackagerState state) throws Exception {
     	return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
     }
 
     @Benchmark
-    public Object packager(PackagerState state) throws Exception {
+    public int packager(PackagerState state) throws Exception {
     	return process(state.getBruteForcePackager(), Long.MAX_VALUE);
     }
 

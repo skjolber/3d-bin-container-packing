@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.ep.points2d.DefaultPlacement2D;
 import com.github.skjolber.packing.ep.points2d.DefaultXYSupportPoint2D;
@@ -178,6 +179,7 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(10);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
+		assertThat(ep.getValues()).hasSize(2);
 		
 		ep.add(1, new DefaultPlacement2D(10, 0, 19, 9));
 
@@ -308,7 +310,9 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(10);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
-		
+
+		assertThat(ep.getValues()).hasSize(2);
+
 		ep.add(0, new DefaultPlacement2D(0, 10, 19, 19));
 		
 		assertThat(ep.getValues()).hasSize(3);
@@ -500,7 +504,6 @@ public class ExtremePoints2DTest {
 		
 		assertThat(ep.getValue(4)).isMin(25, 0);
 		assertThat(ep.getValue(4)).isMax(99, 99);
-
 	}
 	
 	@Test
@@ -597,8 +600,7 @@ public class ExtremePoints2DTest {
 		//    |----------x-------x---------
 		//              10       20 
 
-		List<Point2D<DefaultPlacement2D>> values = ep.getValues();
-		assertThat(values).hasSize(3);
+		assertThat(ep.getValues()).hasSize(3);
 
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(20);
@@ -910,7 +912,7 @@ public class ExtremePoints2DTest {
 		//    |          |         |          |     |     |
 		//    |----------|---------x----------|-----|-----x----------------
 		//               50       100        150   170
-
+		
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(100);
 

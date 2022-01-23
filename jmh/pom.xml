@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
         <artifactId>parent</artifactId>
-        <version>2.0.1</version>
+        <version>2.0.3-SNAPSHOT</version>
     </parent>
     <artifactId>jmh</artifactId>
     <name>JMH</name>
@@ -12,8 +12,13 @@
     
     <properties>
 		<module-name>com.github.skjolber.packager.jmh</module-name>    
-    </properties>
-    
+		<!-- 
+			this property prevents the Nexus Staging Maven Plugin to
+			deploy this module's artifacts to Maven Central' staging repo
+		 -->
+		<skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+	</properties>
+	    
     <dependencies>
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>

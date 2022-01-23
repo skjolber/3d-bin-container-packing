@@ -60,7 +60,6 @@ public class DefaultXYPlaneYZPlanePoint3D<P extends Placement3D> extends Point3D
 	public Placement3D getYZPlane() {
 		return yzPlane;
 	}
-	
 
 	public int getSupportedXYPlaneMinY() {
 		return xyPlane.getAbsoluteY();
@@ -91,7 +90,6 @@ public class DefaultXYPlaneYZPlanePoint3D<P extends Placement3D> extends Point3D
 	public boolean isXYPlaneEdgeY(int y) {
 		return xyPlane.getAbsoluteEndY() == y - 1;
 	}
-
 
 	@Override
 	public Placement3D getXYPlane() {
