@@ -51,12 +51,10 @@ public class DefaultXYPlanePoint3D<P extends Placement3D> extends Point3D<P> imp
 		return xyPlane.getAbsoluteEndY() == y - 1;
 	}
 
-
 	@Override
 	public Placement3D getXYPlane() {
 		return xyPlane;
 	}
-	
 	
 	@Override
 	public Point3D<P> clone(int maxX, int maxY, int maxZ) {

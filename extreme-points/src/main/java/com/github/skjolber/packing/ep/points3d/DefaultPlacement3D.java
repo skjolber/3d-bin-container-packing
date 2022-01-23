@@ -8,7 +8,6 @@ import com.github.skjolber.packing.api.Placement3D;
 
 public class DefaultPlacement3D implements Placement3D {
 
-
 	protected final int x;
 	protected final int y;
 	protected final int z;

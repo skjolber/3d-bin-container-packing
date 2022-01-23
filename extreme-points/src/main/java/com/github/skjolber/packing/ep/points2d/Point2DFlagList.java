@@ -81,7 +81,31 @@ public class Point2DFlagList<P extends Placement2D> {
 		size = 0;
 	}
 	
-	public void compress() {
+
+	public void offset(int offset) {
+		move(offset);
+		for(int i = 0; i < offset; i++) {
+			flag[i] = true;
+		}
+	}
+
+	public void move(int offset) {
+		ensureCapacity(size + offset);
+		
+		System.arraycopy(points, 0, points, offset, size);
+		System.arraycopy(flag, 0, flag, offset, size);
+		this.size += offset;
+	}  
+	
+	public void copyInto(Point2DFlagList<P> destination) {
+		destination.ensureCapacity(size);
+		
+		System.arraycopy(points, 0, destination.points, 0, size);
+		System.arraycopy(flag, 0, destination.flag, 0, size);
+		destination.size = size;
+	}
+	
+	public int removeFlagged() {
 		int offset = 0;
 		int index = 0;
 		while(index < size) {
@@ -94,6 +118,8 @@ public class Point2DFlagList<P extends Placement2D> {
 			index++;
 		}
 		size = offset;
+		
+		return index - offset;
 	}
 
 	public List<Point2D<P>> toList() {
@@ -146,5 +172,22 @@ public class Point2DFlagList<P extends Placement2D> {
     		return true;
     	}
     	return super.equals(obj);
-    }   
+    }
+
+
+	public void setAll(Point2DList add, int offset) {
+		System.arraycopy(add.getPoints(), 0, points, offset, add.size());
+		int limit = offset + add.size();
+		for(int i = offset; i < limit; i++) {
+			flag[i] = false;
+		}
+
+	}
+
+	public void sort(Comparator<Point2D<?>> comparator, int maxSize) {
+		Arrays.sort(points, 0, maxSize, comparator);
+	}
+	
+
+	
 }

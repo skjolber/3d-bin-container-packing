@@ -12,7 +12,7 @@ import com.github.skjolber.packing.api.ep.Point2D;
  * 
  */
 
-public class Point2DList<P extends Placement2D> {
+public class Point2DList<P extends Placement2D, Point extends Point2D<P>> {
 
 	private int size = 0;
 	private Point2D<P>[] points = new Point2D[16];
@@ -31,7 +31,7 @@ public class Point2DList<P extends Placement2D> {
 		}
 	}
 	
-	public void add(Point2D<P> point) {
+	public void add(Point point) {
 		points[size] = point;
 		size++;
 	}
@@ -47,8 +47,8 @@ public class Point2DList<P extends Placement2D> {
 		size = 0;
 	}
 	
-	public Point2D<P> get(int i) {
-		return points[i];
+	public Point get(int i) {
+		return (Point) points[i];
 	}
 
 	public boolean isEmpty() {
@@ -80,7 +80,7 @@ public class Point2DList<P extends Placement2D> {
 	@Override
     public boolean equals(Object obj) {
     	if(obj instanceof Point2DList) {
-    		Point2DList<P> other = (Point2DList)obj;
+    		Point2DList<P, Point> other = (Point2DList)obj;
     		if(other.size() == size) {
     			for(int i = 0; i < size; i++) {
     	            if(!points[i].equals(other.get(i))) {
@@ -92,5 +92,11 @@ public class Point2DList<P extends Placement2D> {
     	}
     	return super.equals(obj);
     }    
+    
+	public Point2D<P>[] getPoints() {
+		return points;
+	}
+	
+	
 	
 }

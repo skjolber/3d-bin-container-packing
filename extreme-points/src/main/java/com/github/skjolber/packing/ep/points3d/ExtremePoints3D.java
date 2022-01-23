@@ -490,6 +490,10 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 	protected void constrainFloatingMax(P placement, int limit) {
 
+		addXX.ensureAdditionalCapacity(limit);
+		addYY.ensureAdditionalCapacity(limit);
+		addZZ.ensureAdditionalCapacity(limit);
+		
 		for (int i = 0; i < limit; i++) {
 			Point3D<P> point = values.get(i);
 			
