@@ -199,6 +199,7 @@
 		<module>visualizer/api</module>
 		<module>visualizer/algorithm</module>
 		<module>visualizer/packaging</module>
+		<module>jmh</module>
 	</modules>
 
 	<build>
@@ -436,16 +437,6 @@
 	</build>
 
 	<profiles>
-		<profile>
-			<id>default</id>
-			<activation>
-				<!-- i.e. not active for release -->
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<modules>
-				<module>jmh</module>
-			</modules>
-		</profile>
 
 		<profile>
 			<!-- mvn -P release release:perform -->

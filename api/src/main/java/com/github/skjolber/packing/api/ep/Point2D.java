@@ -28,22 +28,38 @@ public abstract class Point2D<P extends Placement2D> {
 			return x;
 		}
 	};
+	
+	public static final Comparator<Point2D<?>> COMPARATOR_MOVE_YY = new Comparator<Point2D<?>>() {
+		
+		@Override
+		public int compare(Point2D<?> o1, Point2D<?> o2) {
+			int x = Integer.compare(o1.minX, o2.minX);
 
-	public static final Comparator<Point2D<?>> COMPARATOR_Y_THEN_X = new Comparator<Point2D<?>>() {
+			if(x == 0) {
+				x = -Integer.compare(o1.maxX, o2.maxX);
+			}
+
+			if(x == 0) {
+				x = -Integer.compare(o1.maxY, o2.maxY);
+			}
+			
+			return x;
+		}
+	};
+
+	public static final Comparator<Point2D<?>> COMPARATOR_MOVE_XX = new Comparator<Point2D<?>>() {
 		
 		@Override
 		public int compare(Point2D<?> o1, Point2D<?> o2) {
 			int x = Integer.compare(o1.minY, o2.minY);
 
 			if(x == 0) {
-				x = Integer.compare(o1.minX, o2.minX);
-			}
-			if(x == 0) {
 				x = -Integer.compare(o1.maxY, o2.maxY);
 			}
 			if(x == 0) {
 				x = -Integer.compare(o1.maxX, o2.maxX);
 			}
+			
 			return x;
 		}
 	};
@@ -428,6 +444,14 @@ public abstract class Point2D<P extends Placement2D> {
 
 	public long getAreaAtY(int yy) {
 		return dx * (long)(maxY - yy + 1);
+	}
+
+	public long getAreaAtMaxX(int maxX) {
+		return dy * (long)(maxX - minX + 1);
+	}
+
+	public long getAreaAtMaxY(int maxX) {
+		return dx * (long)(maxY - minY + 1);
 	}
 
 }
