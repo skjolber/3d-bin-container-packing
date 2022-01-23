@@ -145,9 +145,9 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		negativeMoveToYY.ensureCapacity(endIndex);
 		negativeMoveToZZ.ensureCapacity(endIndex);
 		
-		addXX.ensureAdditionalCapacity(values.size());
-		addYY.ensureAdditionalCapacity(values.size());
-		addZZ.ensureAdditionalCapacity(values.size());
+		addXX.ensureCapacity(values.size());
+		addYY.ensureCapacity(values.size());
+		addZZ.ensureCapacity(values.size());
 		
 		for(int i = 0; i < endIndex; i++) {		
 			Point3D<P> point = values.get(i);
@@ -169,7 +169,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 				continue;
 			}
-			
+
 			// Points within (xx, yy, zz)
 			// 
 			// |
@@ -217,24 +217,21 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			
 			if(supported) {
 				
-				// do not move points to xx, yy, or zz
 				// 
 				// |
 				// |          ║
 				// |          ║
 				// |          ║------|
-				// |   *      ║      |
-				// |      *   ║══════════
+				// |          ║      |
+				// |          ║══════════
 				// |                       
-				// |    *    *    *   
+				// |                  
 				// |                       
 				// ---------------------------
 				// 
 				
 				continue;
 			}
-			
-			// TODO what if just one or two planes is supported?
 			
 			// Points within (xx, yy, zz), excluding the placement itself
 			// 
@@ -249,7 +246,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			// | *         *            
 			// ---------------------------
 			//
-
+			
 			// does any point intersect the xx, yy or zz planes?
 			if(canMoveX(point, xx)) {
 				// yz plane
@@ -282,7 +279,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					}
 				}
 
-				// TODO: the new point might shadow one of the previous ones?
 				if(p.getMinY() < placement.getAbsoluteY() || p.getMinZ() < placement.getAbsoluteZ()) {
 					// too low, no support
 					addXX.add(p.moveX(xx, p.getMaxX(), p.getMaxY(), p.getMaxZ()));
@@ -308,7 +304,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					}
 				}
 
-				// TODO: the new point might shadow one of the previous ones?
 				if(p.getMinX() < placement.getAbsoluteX() || p.getMinZ() < placement.getAbsoluteZ()) {
 					// too low, no support
 					addYY.add(p.moveY(yy, p.getMaxX(), p.getMaxY(), p.getMaxZ()));
@@ -334,7 +329,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					}
 				}
 				
-				// TODO: the new point might shadow one of the previous ones?
 				if(p.getMinX() < placement.getAbsoluteX() || p.getMinY() < placement.getAbsoluteY()) {
 					// too low, no support
 					addZZ.add(p.moveZ(zz, p.getMaxX(), p.getMaxY(), p.getMaxZ()));
@@ -345,7 +339,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		}
 
 		// Constrain max values to the new placement
-		constrainFloatingMax(placement, endIndex, xx, yy, zz);
+		constrainFloatingMax(placement, endIndex);
 		
 		endIndex -= values.removeFlagged();
 		
@@ -372,6 +366,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		while(endIndex < values.size() && values.get(endIndex).getMinX() <= xx) {
 			endIndex++;
 		}
+		
 		values.sort(Point3D.COMPARATOR_X_THEN_Y_THEN_Z, endIndex);
 
 		negativeMoveToXX.clear();
@@ -389,29 +384,62 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		if(p.getMaxZ() < zz) {
 			return false;
 		}
-		return p.getVolumeAtZ(zz) >= minVolumeLimit;
+		return !isConstrainedAtZ(p, zz);
+	}
+
+	private boolean isConstrainedAtZ(Point3D<P> p, int zz) {
+		return p.getVolumeAtZ(zz) < minVolumeLimit;
 	}
 
 	private boolean canMoveX(Point3D<P> p, int xx) {
 		if(p.getMaxX() < xx) {
 			return false;
 		}
+		return !isConstrainedAtX(p, xx);
+	}
+
+	private boolean isConstrainedAtX(Point3D<P> p, int xx) {
 		long areaAtX = p.getAreaAtX(xx);
-		if(areaAtX < minAreaLimit) {
+		if(areaAtX >= minAreaLimit) {
 			return false;
 		}
-		return areaAtX * p.getDz() >= minVolumeLimit;
+		return areaAtX * p.getDz() < minVolumeLimit;
 	}
+	
+	private boolean isConstrainedAtMaxX(Point3D<P> p, int maxX) {
+		long areaAtMaxX = p.getAreaAtMaxX(maxX);
+		if(areaAtMaxX >= minAreaLimit) {
+			return false;
+		}
+		return areaAtMaxX * p.getDz() < minVolumeLimit;
+	}
+	
+	private boolean isConstrainedAtMaxY(Point3D<P> p, int maxY) {
+		long areaAtMaxY = p.getAreaAtMaxY(maxY);
+		if(areaAtMaxY >= minAreaLimit) {
+			return false;
+		}
+		return areaAtMaxY * p.getDz() < minVolumeLimit;
+	}
+	
+	private boolean isConstrainedAtMaxZ(Point3D<P> p, int maxZ) {
+		return p.getVolumeAtMaxZ(maxZ) < minVolumeLimit;
+	}
+	
 
 	private boolean canMoveY(Point3D<P> p, int yy) {
 		if(p.getMaxY() < yy) {
 			return false;
 		}
+		return !isConstraintedAtY(p, yy);
+	}
+
+	private boolean isConstraintedAtY(Point3D<P> p, int yy) {
 		long areaAtY = p.getAreaAtY(yy);
-		if(areaAtY < minAreaLimit) {
+		if(areaAtY >= minAreaLimit) {
 			return false;
 		}
-		return areaAtY * p.getDz() >= minVolumeLimit;
+		return areaAtY * p.getDz() < minVolumeLimit;
 	}
 
 	private void filterMinimums() {
@@ -460,9 +488,11 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	}
 	
 
-	protected void constrainFloatingMax(P placement, int limit, int xx, int yy, int zz) {
+	protected void constrainFloatingMax(P placement, int limit) {
 
-		// TODO take advantage of sorted values along x axis
+		addXX.ensureAdditionalCapacity(limit);
+		addYY.ensureAdditionalCapacity(limit);
+		addZZ.ensureAdditionalCapacity(limit);
 		
 		for (int i = 0; i < limit; i++) {
 			Point3D<P> point = values.get(i);
@@ -580,11 +610,13 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					}
 					continue;
 				}
+				
+				// fall through: must add multiple points
 			}
 			
 			if(x) {
 				if(point.getMinX() < placement.getAbsoluteX()) {
-					if(canMoveX(point, xx)) {
+					if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
 						addXX.add(point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ()));
 					}
 				}
@@ -592,7 +624,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			
 			if(y) {
 				if(point.getMinY() < placement.getAbsoluteY()) {
-					if(canMoveY(point, yy)) {
+					if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
 						addYY.add(point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ()));
 					}
 				}
@@ -600,7 +632,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			
 			if(z) {
 				if(point.getMinZ() < placement.getAbsoluteZ()) {
-					if(canMoveZ(point, zz)) {
+					if(!isConstrainedAtMaxZ(point, placement.getAbsoluteZ() - 1)) {
 						addZZ.add(point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1));
 					}
 				}
@@ -632,7 +664,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 	@Override
 	public String toString() {
-		return "ExtremePoints2D [" + containerMaxX + "x" + containerMaxY + "x" + containerMaxZ + ": " + values + "]";
+		return "ExtremePoints2D [width=" + containerMaxX + ", depth=" + containerMaxY + ", values=" + values + "]";
 	}
 	
 	public List<P> getPlacements() {

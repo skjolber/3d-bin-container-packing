@@ -341,7 +341,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 				}
 			}
 		} else {
-			constrainFloatingMax(placement, endIndex, xx, yy);			
+			constrainFloatingMax(placement, endIndex);			
 		}
 		
 		endIndex -= values.removeFlagged();
@@ -413,7 +413,10 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		}
 	}
 
-	protected void constrainFloatingMax(P placement, int limit, int xx, int yy) {
+	protected void constrainFloatingMax(P placement, int limit) {
+
+		addXX.ensureAdditionalCapacity(limit);
+		addYY.ensureAdditionalCapacity(limit);
 
 		for (int i = 0; i < limit; i++) {
 			if(values.isFlag(i)) {
@@ -503,20 +506,32 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			
 			if(x) {
 				if(point.getMinX() < placement.getAbsoluteX()) {
-					addXX.add(point.clone(placement.getAbsoluteX() - 1, point.getMaxY()));
+					if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
+						addXX.add(point.clone(placement.getAbsoluteX() - 1, point.getMaxY()));
+					}
 				}
 			}
 			
 			if(y) {
 				if(point.getMinY() < placement.getAbsoluteY()) {
-					addYY.add(point.clone(point.getMaxX(), placement.getAbsoluteY() - 1));
+					if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
+						addYY.add(point.clone(point.getMaxX(), placement.getAbsoluteY() - 1));
+					}
 				}
 			}
 			
 			values.flag(i);
 		}
 		
-	}	
+	}
+	
+	private boolean isConstrainedAtMaxX(Point2D<P> p, int maxX) {
+		return p.getAreaAtMaxX(maxX) < minAreaLimit;
+	}
+	
+	private boolean isConstrainedAtMaxY(Point2D<P> p, int maxY) {
+		return p.getAreaAtMaxY(maxY) < minAreaLimit;
+	}
 	
 	protected boolean withinX(int x, P placement) {
 		return placement.getAbsoluteX() <= x && x <= placement.getAbsoluteEndX();
