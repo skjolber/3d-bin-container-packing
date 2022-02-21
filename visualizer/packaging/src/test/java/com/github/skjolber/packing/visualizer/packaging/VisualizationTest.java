@@ -314,7 +314,7 @@ public class VisualizationTest {
 
 		Container pack = packager.pack(
 				Arrays.asList(
-						new StackableItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 20)
+						new StackableItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 16)
 						)
 				);
 

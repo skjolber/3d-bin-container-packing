@@ -114,6 +114,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			
 			int maxWeight = stack.getFreeWeightLoad();
 
+			// there is only point, spanning the free space in the level
 			Point3D<StackPlacement> firstPoint = extremePoints3D.getValue(0);
 			
 			int firstIndex = -1;
@@ -133,7 +134,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 					continue;
 				}
 				for (StackValue stackValue : box.getStackValues()) {
-					if(!stackValue.fitsInside3D(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz())) {
+					if(!firstPoint.fits3D(stackValue)) {
 						continue;
 					}
 					if(firstStackValue != null && !firstStackValuePointComparator.accept(firstBox, firstPoint, firstStackValue, box, firstPoint, stackValue)) {
@@ -165,7 +166,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			
 			int maxRemainingLevelWeight = levelStackValue.getMaxLoadWeight() - stackable.getWeight();
 
-			extremePoints3D.reset(containerStackValue.getDx(), containerStackValue.getDy(), firstStackValue.getDz());
+			extremePoints3D.reset(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), firstStackValue.getDz());
 			extremePoints3D.add(0, first);
 			
 			StackableFilter nextFilter = configuration.getNextStackableFilter();
@@ -206,7 +207,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 						int currentPointsCount = extremePoints3D.getValueCount();
 						for(int k = 0; k < currentPointsCount; k++) {
 							Point3D<StackPlacement> point3d = extremePoints3D.getValue(k);
-							
+
 							if(!point3d.fits3D(stackValue)) {
 								continue;
 							}
@@ -232,7 +233,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				remainingStackables.remove(remove);
 
 				Point3D<StackPlacement> point = extremePoints3D.getValue(bestPointIndex);
-				
+
 				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ(), -1, -1, point.getPlacements3D());
 				levelStack.add(stackPlacement);
 				extremePoints3D.add(bestPointIndex, stackPlacement);
@@ -246,10 +247,11 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			
 			levelOffset += firstStackValue.getDz();
 			
-			if(levelOffset >= containerStackValue.getDz()) {
+			int remainingDz = containerStackValue.getLoadDz() - levelOffset;
+			if(remainingDz == 0) {
 				break;
 			}
-			extremePoints3D.reset(containerStackValue.getDx(), containerStackValue.getDy(), containerStackValue.getDz() - levelOffset);
+			extremePoints3D.reset(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), remainingDz);
 		}
 		
 		return new LargestAreaFitFirstPackagerResult(stack, new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack), remainingStackables.isEmpty());
