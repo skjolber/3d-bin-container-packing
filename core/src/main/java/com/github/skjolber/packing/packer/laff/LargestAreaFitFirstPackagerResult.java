@@ -43,7 +43,7 @@ public class LargestAreaFitFirstPackagerResult implements PackResult {
 
 	@Override
 	public String toString() {
-		return "LaffResult [stack=" + stack + "]";
+		return "LargestAreaFitFirstPackagerResult [stack=" + stack + "]";
 	}
 
 	@Override

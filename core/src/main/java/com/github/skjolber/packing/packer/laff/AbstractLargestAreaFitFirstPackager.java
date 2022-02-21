@@ -3,8 +3,10 @@ package com.github.skjolber.packing.packer.laff;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import java.util.stream.Collectors;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
@@ -72,7 +74,14 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 
 		@Override
 		public Container accept(LargestAreaFitFirstPackagerResult result) {
-			return result.getContainer();
+			Container container = result.getContainer();
+			Stack stack = container.getStack();
+
+			List<Stackable> placed = stack.getPlacements().stream().map( p -> p.getStackable()).collect(Collectors.toList());
+			
+			boxes.removeAll(placed);
+			
+			return container;
 		}
 
 	}

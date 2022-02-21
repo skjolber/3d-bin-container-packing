@@ -87,8 +87,6 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 		ExtremePoints3D<StackPlacement> extremePoints3D = new ExtremePoints3D<>(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
 		extremePoints3D.setMinimumAreaAndVolumeLimit(getMinStackableArea(scopedStackables), getMinStackableVolume(scopedStackables));
 
-		Stack levelStack = new DefaultStack();
-
 		int maxRemainingWeight = containerStackValue.getMaxLoadWeight();
 
 		while(!extremePoints3D.isEmpty() && maxRemainingWeight > 0 && !scopedStackables.isEmpty()) {
@@ -164,7 +162,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 			Point3D<StackPlacement> point = extremePoints3D.getValue(bestPointIndex);
 			
 			StackPlacement stackPlacement = new StackPlacement(bestStackable, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ(), -1, -1, point.getPlacements3D());
-			levelStack.add(stackPlacement);
+			stack.add(stackPlacement);
 			extremePoints3D.add(bestPointIndex, stackPlacement);
 
 			maxRemainingWeight -= bestStackable.getWeight();
