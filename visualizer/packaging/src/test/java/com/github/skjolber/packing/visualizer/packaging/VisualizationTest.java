@@ -299,24 +299,27 @@ public class VisualizationTest {
 
 	@Test
 	void issue433() throws Exception {
-		Container container = Container
-				.newBuilder()
-				.withDescription("1")
-				.withSize(14, 185, 78)
-				.withEmptyWeight(0)
-				.withMaxLoadWeight(100)
-				.build();
+			Container container = Container
+					.newBuilder()
+					.withDescription("1")
+					.withSize(14, 195, 74)
+					.withEmptyWeight(0)
+					.withMaxLoadWeight(100)
+					.build();
 
-		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager
-				.newBuilder()
-				.withContainers(container)
-				.build();
+			LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager
+					.newBuilder()
+					.withContainers(container)
+					.build();
 
-		Container pack = packager.pack(
-				Arrays.asList(
-						new StackableItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 16)
-						)
-				);
+			Container pack = packager.pack(
+					Arrays.asList(
+							new StackableItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 20)
+							)
+					);
+
+			assertNotNull(pack);
+			
 
 		write(pack);
 	}

@@ -193,7 +193,7 @@ public class LargestAreaFitFirstPackagerTest {
 		Container container = Container
 				.newBuilder()
 				.withDescription("1")
-				.withSize(14, 185, 78)
+				.withSize(14, 195, 74)
 				.withEmptyWeight(0)
 				.withMaxLoadWeight(100)
 				.build();
@@ -209,6 +209,8 @@ public class LargestAreaFitFirstPackagerTest {
 						)
 				);
 
+		assertNotNull(pack);
+		
 	}
 
 
