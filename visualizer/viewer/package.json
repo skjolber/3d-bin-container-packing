@@ -7,7 +7,7 @@
   "dependencies": {
     "@types/randomcolor": "^0.5.5",
     "@types/three": "^0.137.0",
-    "dat.gui": "0.7.7",
+    "dat.gui": "0.7.9",
     "randomcolor": "^0.6.2",
     "react": "17.0.2",
     "react-dom": "17.0.2",
