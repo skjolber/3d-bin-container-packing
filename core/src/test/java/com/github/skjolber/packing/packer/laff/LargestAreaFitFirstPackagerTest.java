@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -186,6 +188,28 @@ public class LargestAreaFitFirstPackagerTest {
 		assertNull(fits);
 	}
 
+	@Test
+	void issue433() {
+		Container container = Container
+				.newBuilder()
+				.withDescription("1")
+				.withSize(14, 185, 78)
+				.withEmptyWeight(0)
+				.withMaxLoadWeight(100)
+				.build();
+
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager
+				.newBuilder()
+				.withContainers(container)
+				.build();
+
+		Container pack = packager.pack(
+				Arrays.asList(
+						new StackableItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 20)
+						)
+				);
+
+	}
 
 
 }

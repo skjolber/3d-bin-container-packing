@@ -122,7 +122,7 @@ There is also a parallel version `ParallelBruteForcePackager` of the brute-force
 Using a brute-force algorithm might seem to hit a wall of complexity, but taking into account number of items 
 per order distribution for web-shops, a healthy part of the orders are within its grasp.
 
-Note that the algorithm is recursive on the number of boxes, so do not attempt this with many boxe (it will likely not complete in time anyhow).
+Note that the algorithm is recursive on the number of boxes, so do not attempt this with many boxes (it will likely not complete in time anyhow).
 
 ### Visualizer
 There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms (not as stacking instructions).

@@ -29,6 +29,7 @@ import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
+import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.BouwkampCodeLine;
@@ -295,5 +296,29 @@ public class VisualizationTest {
 		File file = new File("../viewer/public/assets/containers.json");
 		p.visualize(packList , file);
 	}
-	
+
+	@Test
+	void issue433() throws Exception {
+		Container container = Container
+				.newBuilder()
+				.withDescription("1")
+				.withSize(14, 185, 78)
+				.withEmptyWeight(0)
+				.withMaxLoadWeight(100)
+				.build();
+
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager
+				.newBuilder()
+				.withContainers(container)
+				.build();
+
+		Container pack = packager.pack(
+				Arrays.asList(
+						new StackableItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 20)
+						)
+				);
+
+		write(pack);
+	}
+
 }
