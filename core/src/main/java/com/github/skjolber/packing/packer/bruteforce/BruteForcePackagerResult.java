@@ -48,7 +48,7 @@ public class BruteForcePackagerResult implements PackResult {
 			stackPlacement.setValue(permutationRotation.getValue());
 			stackPlacement.setStackable(permutationRotation.getStackable());
 
-			Point3D point3d = points.get(i);
+			Point3D<StackPlacement> point3d = points.get(i);
 			stackPlacement.setX(point3d.getMinX());
 			stackPlacement.setY(point3d.getMinY());
 			stackPlacement.setZ(point3d.getMinZ());

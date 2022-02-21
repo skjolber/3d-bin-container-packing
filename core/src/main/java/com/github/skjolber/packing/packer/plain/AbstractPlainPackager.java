@@ -3,8 +3,10 @@ package com.github.skjolber.packing.packer.plain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import java.util.stream.Collectors;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
@@ -12,6 +14,7 @@ import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.Adapter;
+import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackagerResult;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -65,10 +68,17 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 		public PlainPackagerResult attempt(int index, PlainPackagerResult best) {
 			return AbstractPlainPackager.this.pack(boxes, containers.get(index), interrupt);
 		}
-
+		
 		@Override
 		public Container accept(PlainPackagerResult result) {
-			return result.getContainer();
+			Container container = result.getContainer();
+			Stack stack = container.getStack();
+
+			List<Stackable> placed = stack.getPlacements().stream().map(p -> p.getStackable()).collect(Collectors.toList());
+			
+			boxes.removeAll(placed);
+			
+			return container;
 		}
 
 	}

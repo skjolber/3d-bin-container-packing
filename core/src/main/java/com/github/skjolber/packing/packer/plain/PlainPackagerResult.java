@@ -45,7 +45,7 @@ public class PlainPackagerResult implements PackResult {
 
 	@Override
 	public String toString() {
-		return "PlainResult [stack=" + stack + "]";
+		return "PlainPackagerResult [stack=" + stack + "]";
 	}
 
 	@Override

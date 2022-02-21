@@ -4,6 +4,7 @@ import static com.github.skjolber.packing.test.assertj.StackablePlacementAssert.
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
+import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.BouwkampCodeLine;
@@ -322,6 +324,57 @@ public class VisualizationTest {
 			
 
 		write(pack);
+	}
+	
+	@Test
+	void issue440() throws Exception {
+		DefaultContainer build = Container.newBuilder()
+				.withDescription("1")
+				.withSize(2352, 2394, 12031)
+				.withEmptyWeight(4000)
+				.withMaxLoadWeight(26480)
+				.build();
+
+		PlainPackager packager = PlainPackager.newBuilder()
+				.withContainers(Arrays.asList(build))
+				.build();
+
+		for(int i = 1; i <= 10; i++) { 
+			int boxCountPerStackableItem = i;
+
+			List<StackableItem> stackableItems = Arrays.asList(
+					createStackableItem("1",1200,750, 2280, 285, boxCountPerStackableItem),
+					createStackableItem("2",1200,450, 2280, 155, boxCountPerStackableItem),
+					createStackableItem("3",360,360, 570, 20, boxCountPerStackableItem),
+					createStackableItem("4",2250,1200, 2250, 900, boxCountPerStackableItem),
+					createStackableItem("5",1140,750, 1450, 395, boxCountPerStackableItem),
+					createStackableItem("6",1130,1500, 3100, 800, boxCountPerStackableItem),
+					createStackableItem("7",800,490, 1140, 156, boxCountPerStackableItem),
+					createStackableItem("8",800,2100, 1200, 135, boxCountPerStackableItem),
+					createStackableItem("9",1120,1700, 2120, 160, boxCountPerStackableItem),
+					createStackableItem("10",1200,1050, 2280, 390, boxCountPerStackableItem)
+					);
+
+			List<Container> packList = packager.packList(stackableItems, i + 2);
+
+			assertNotNull(packList);
+			assertTrue(i >= packList.size());
+			
+			write(packList);
+			
+			Thread.sleep(5000);
+		}
+	}
+	
+	private StackableItem createStackableItem(String id, int width, int height,int depth, int weight, int boxCountPerStackableItem) {
+		Box box = Box.newBuilder()
+				.withId(id)
+				.withSize(width, height, depth)
+				.withWeight(weight)
+				.withRotate3D()
+				.build();
+
+		return new StackableItem(box, boxCountPerStackableItem);
 	}
 
 }
