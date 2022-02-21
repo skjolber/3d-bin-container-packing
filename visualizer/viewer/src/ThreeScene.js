@@ -1,6 +1,5 @@
-import React, { Component } from "react";
 import * as THREE from "three";
-import OrbitControls from "three-orbitcontrols";
+import React, { Component } from "react";
 import { Stats } from "stats-js";
 import { Color, Font } from "three";
 
@@ -9,6 +8,8 @@ import { http } from "./utils";
 
 import randomColor from "randomcolor";
 import { thisExpression } from "@babel/types";
+
+import OrbitControls from "three-orbitcontrols";
 
 const CONTAINERS = "./assets/containers.json";
 
