@@ -454,36 +454,44 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 	protected void removeEclipsed(int limit) {
 
+		//   unsorted        sorted
+		// |   new    |   existing current   |
+		// |----------|----------------------|--> x
+
+		Point3DFlagList<P> values = this.values;
+		
+		int size = values.size();
+		
 		added:
 		for (int i = 0; i < limit; i++) {
-			Point3D<P> p1 = values.get(i);
+			Point3D<P> unsorted = values.get(i);
 
-			for(int index = limit; index < values.size(); index++) {
+			// check if one of the existing values contains the new value
+			for(int index = limit; index < size; index++) {
 				if(values.isFlag(index) ) {
 					continue;
 				}
-				Point3D<P> value = values.get(index);
-				if(value.eclipses(p1)) {
-					values.flag(i);
-					
-					continue added;
+				
+				Point3D<P> sorted = values.get(index);
+				if(sorted.getMinX() > unsorted.getMinX()) {
+					// so sorted cannot contain unsorted
+					// at this index or later
+					break;
+				}
+				if(unsorted.getVolume() <= sorted.getVolume() && unsorted.getArea() <= sorted.getArea()) {
+					if(sorted.eclipses(unsorted)) {
+						// discard unsorted
+						values.flag(i);
+						
+						continue added;
+					}
 				}
 			}
 
-			// add value
-			
-			// do we want to remove any of the existing?
-			for(int index = limit; index < values.size(); index++) {
-				Point3D<P> value = values.get(index);
-				if(values.isFlag(index) ) {
-					continue;
-				}
-
-				if(p1.eclipses(value)) {
-					values.flag(index);
-				}
-			}
-
+			// all new points are the result of moving or constraining
+			// existing points, so none of the new points 
+			// can contain the old, less the previous points would
+			// already have contained them.
 		}
 	}
 	

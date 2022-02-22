@@ -376,5 +376,78 @@ public class VisualizationTest {
 
 		return new StackableItem(box, boxCountPerStackableItem);
 	}
+	
+	@Test
+	public void issueNew() throws Exception {
+		for(int i = 0; i < 100000000; i++) {
+		Container container = Container
+			.newBuilder()
+			.withDescription("1")
+			.withSize(100, 150, 200)
+			.withEmptyWeight(0)
+			.withMaxLoadWeight(100)
+			.build();
+
+		FastBruteForcePackager packager = FastBruteForcePackager
+			.newBuilder()
+			.withContainers(container)
+			.build();
+
+		Container pack = packager.pack(
+			Arrays.asList(
+				new StackableItem(Box.newBuilder().withId("1").withSize(200, 2, 50).withRotate3D().withWeight(0).build(), 4),
+				new StackableItem(Box.newBuilder().withId("2").withSize(1, 1, 1).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("3").withSize(53, 11, 21).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("4").withSize(38, 7, 19).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("5").withSize(15, 3, 7).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("6").withSize(95, 5, 3).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("7").withSize(48, 15, 42).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("8").withSize(140, 10, 10).withRotate3D().withWeight(0).build(), 2),
+				new StackableItem(Box.newBuilder().withId("9").withSize(150, 4, 65).withRotate3D().withWeight(0).build(), 2),
+				new StackableItem(Box.newBuilder().withId("10").withSize(75, 17, 60).withRotate3D().withWeight(0).build(), 1)
+				)
+		);
+
+		if(pack == null) {
+			throw new RuntimeException();
+		}
+			
+		}		
+	}
+	
+	
+	@Test
+	public void issueNewFast() throws Exception {
+		Container container = Container
+			.newBuilder()
+			.withDescription("1")
+			.withSize(100, 150, 200)
+			.withEmptyWeight(0)
+			.withMaxLoadWeight(100)
+			.build();
+
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager
+			.newBuilder()
+			.withContainers(container)
+			.build();
+
+		Container pack = packager.pack(
+			Arrays.asList(
+				new StackableItem(Box.newBuilder().withId("1").withSize(200, 2, 50).withRotate3D().withWeight(0).build(), 4),
+				new StackableItem(Box.newBuilder().withId("2").withSize(1, 1, 1).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("3").withSize(53, 11, 21).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("4").withSize(38, 7, 19).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("5").withSize(15, 3, 7).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("6").withSize(95, 5, 3).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("7").withSize(48, 15, 42).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("8").withSize(140, 10, 10).withRotate3D().withWeight(0).build(), 2),
+				new StackableItem(Box.newBuilder().withId("9").withSize(150, 4, 65).withRotate3D().withWeight(0).build(), 2),
+				new StackableItem(Box.newBuilder().withId("10").withSize(75, 17, 60).withRotate3D().withWeight(0).build(), 1)
+				)
+		);
+
+		write(pack);
+		
+	}
 
 }
