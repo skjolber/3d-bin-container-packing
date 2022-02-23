@@ -718,6 +718,11 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		addYY.ensureAdditionalCapacity(limit);
 		addZZ.ensureAdditionalCapacity(limit);
 		
+		
+		int startAddXX = addXX.size();
+		int startAddYY = addYY.size();
+		int startAddZZ = addZZ.size();
+		
 		boolean splitXX = false;
 		boolean splitYY = false;
 		boolean splitZZ = false;
@@ -760,142 +765,147 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				continue;
 			}
 			
-			if(!cloneOnConstrain) {
-				if(point.getMinY() >= placement.getAbsoluteY() && point.getMinZ() >= placement.getAbsoluteZ() ) {
-					// adjusting x is sufficient
-					if(point.getMinX() < placement.getAbsoluteX()) {
-						point.setMaxX(placement.getAbsoluteX() - 1);
+			if(point.getMinY() >= placement.getAbsoluteY() && point.getMinZ() >= placement.getAbsoluteZ() ) {
+				// adjusting x is sufficient
+				if(point.getMinX() < placement.getAbsoluteX()) {
+					point.setMaxX(placement.getAbsoluteX() - 1);
+					
+					if(point.getVolume() < minVolumeLimit || point.getArea() < minAreaLimit) {
+						values.flag(i);
 						
-						if(point.getVolume() < minVolumeLimit || point.getArea() < minAreaLimit) {
-							values.flag(i);
-							
-							continue;
+						continue;
+					}
+					
+					// is the point now eclipsed by current points?
+					for (int j = 0; j < i - 1; j++) {
+						Point3D<P> point3d = values.get(j);
+						if(point3d.getMinX() > point.getMinX()) {
+							break;
+						}							
+						if(point3d.getVolume() >= point.getVolume()) {
+							if(point3d.eclipses(point)) {
+								values.flag(i);
+								
+								continue limitLoop;
+							}
 						}
-						
-						// is the point now eclipsed by current points?
-						for (int j = 0; j < i - 1; j++) {
-							Point3D<P> point3d = values.get(j);
+					}
+					
+					if(splitXX) {
+						// is the point now eclipsed by new points?
+						for (int j = startAddXX; j < addXX.size(); j++) {
+							Point3D<P> point3d = addXX.get(j);
 							
 							if(point3d.getVolume() >= point.getVolume()) {
 								if(point3d.eclipses(point)) {
 									values.flag(i);
 									
-									continue limitLoop;
+									break;
 								}
 							}
 						}
-						
-						if(splitXX) {
-							// is the point now eclipsed by new points?
-							for (int j = 0; j < addXX.size(); j++) {
-								Point3D<P> point3d = addXX.get(j);
-								
-								if(point3d.getVolume() >= point.getVolume()) {
-									if(point3d.eclipses(point)) {
-										values.flag(i);
-										
-										break;
-									}
-								}
-							}
-						}						
-					} else {
-						values.flag(i);
-					}
-					continue;
+					}						
+				} else {
+					values.flag(i);
 				}
-				if(point.getMinX() >= placement.getAbsoluteX() && point.getMinZ() >= placement.getAbsoluteZ() ) {
-					// adjusting y is sufficient
-					if(point.getMinY() < placement.getAbsoluteY()) {
-						point.setMaxY(placement.getAbsoluteY() - 1);
+				continue;
+			}
+			if(point.getMinX() >= placement.getAbsoluteX() && point.getMinZ() >= placement.getAbsoluteZ() ) {
+				// adjusting y is sufficient
+				if(point.getMinY() < placement.getAbsoluteY()) {
+					point.setMaxY(placement.getAbsoluteY() - 1);
+					
+					if(point.getVolume() < minVolumeLimit || point.getArea() < minAreaLimit) {
+						values.flag(i);
 						
-						if(point.getVolume() < minVolumeLimit || point.getArea() < minAreaLimit) {
-							values.flag(i);
-							
-							continue;
-						}
+						continue;
+					}
 
-						// is the point now eclipsed by current points?
-						for (int j = 0; j < i - 1; j++) {
-							Point3D<P> point3d = values.get(j);
+					// is the point now eclipsed by current points?
+					for (int j = 0; j < i - 1; j++) {
+						Point3D<P> point3d = values.get(j);
+						if(point3d.getMinX() > point.getMinX()) {
+							break;
+						}							
+						if(point3d.getVolume() >= point.getVolume()) {
+							if(point3d.eclipses(point)) {
+								values.flag(i);
+								
+								continue limitLoop;
+							}
+						}
+					}
+					
+					if(splitYY) {
+						// is the point now eclipsed by new points?
+						for (int j = startAddYY; j < addYY.size(); j++) {
+							Point3D<P> point3d = addYY.get(j);
 							
 							if(point3d.getVolume() >= point.getVolume()) {
 								if(point3d.eclipses(point)) {
 									values.flag(i);
 									
-									continue limitLoop;
+									break;
 								}
 							}
 						}
-						
-						if(splitYY) {
-							// is the point now eclipsed by new points?
-							for (int j = 0; j < addYY.size(); j++) {
-								Point3D<P> point3d = addYY.get(j);
-								
-								if(point3d.getVolume() >= point.getVolume()) {
-									if(point3d.eclipses(point)) {
-										values.flag(i);
-										
-										break;
-									}
-								}
-							}
-						}
-						
-					} else {
-						values.flag(i);
 					}
-					continue;
+					
+				} else {
+					values.flag(i);
 				}
-				if(point.getMinY() >= placement.getAbsoluteY() && point.getMinX() >= placement.getAbsoluteX() ) {
-					// adjusting z is sufficient
-					if(point.getMinZ() < placement.getAbsoluteZ()) {
-						point.setMaxZ(placement.getAbsoluteZ() - 1);
+				continue;
+			}
+			if(point.getMinY() >= placement.getAbsoluteY() && point.getMinX() >= placement.getAbsoluteX() ) {
+				// adjusting z is sufficient
+				if(point.getMinZ() < placement.getAbsoluteZ()) {
+					point.setMaxZ(placement.getAbsoluteZ() - 1);
+					
+					if(point.getVolume() < minVolumeLimit || point.getArea() < minAreaLimit) {
+						values.flag(i);
 						
-						if(point.getVolume() < minVolumeLimit || point.getArea() < minAreaLimit) {
-							values.flag(i);
-							
-							continue;
-						}
+						continue;
+					}
 
-						// is the point now eclipsed by current points?
-						for (int j = 0; j < i - 1; j++) {
-							Point3D<P> point3d = values.get(j);
+					// is the point now eclipsed by current points?
+					for (int j = 0; j < i - 1; j++) {
+						Point3D<P> point3d = values.get(j);
+						if(point3d.getMinX() > point.getMinX()) {
+							break;
+						}
+						if(point3d.getVolume() >= point.getVolume()) {
+							if(point3d.eclipses(point)) {
+								values.flag(i);
+								
+								continue limitLoop;
+							}
+						}
+					}
+
+					if(splitZZ) {
+						// is the point now eclipsed by new points?
+						for (int j = startAddZZ; j < addZZ.size(); j++) {
+							Point3D<P> point3d = addZZ.get(j);
 							
 							if(point3d.getVolume() >= point.getVolume()) {
 								if(point3d.eclipses(point)) {
 									values.flag(i);
 									
-									continue limitLoop;
+									break;
 								}
 							}
 						}
-
-						if(splitZZ) {
-							// is the point now eclipsed by new points?
-							for (int j = 0; j < addZZ.size(); j++) {
-								Point3D<P> point3d = addZZ.get(j);
-								
-								if(point3d.getVolume() >= point.getVolume()) {
-									if(point3d.eclipses(point)) {
-										values.flag(i);
-										
-										break;
-									}
-								}
-							}
-						}
-
-					} else {
-						values.flag(i);
 					}
-					continue;
+
+				} else {
+					values.flag(i);
 				}
-				
-				// fall through: must add multiple points
+				continue;
 			}
 			
+			// fall through: must add multiple points
+			
+			// Points eclipsed by others:
 			// before add
 			//    
 			//    |

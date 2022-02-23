@@ -10,7 +10,6 @@ import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point2D;
-import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
 
 /**
  * 
@@ -462,6 +461,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 				continue;
 			}
 			
+			// Points eclipsed by others:
 			// before add
 			//    
 			//    |
@@ -521,7 +521,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 								continue;
 							}
 							Point2D<P> point3d = values.get(j);
-							if(point3d.getDx() > clone.getMinX()) {
+							if(point3d.getMinX() > clone.getMinX()) {
 								break;
 							}
 
@@ -561,7 +561,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 								continue;
 							}
 							Point2D<P> point3d = values.get(j);
-							if(point3d.getDx() > clone.getMinX()) {
+							if(point3d.getMinX() > clone.getMinX()) {
 								break;
 							}
 
@@ -597,6 +597,9 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 
 		addXX.ensureAdditionalCapacity(limit);
 		addYY.ensureAdditionalCapacity(limit);
+		
+		int startAddXX = addXX.size();
+		int startAddYY = addYY.size();
 		
 		boolean splitXX = false;
 		boolean splitYY = false;
@@ -649,6 +652,9 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 							continue;
 						}
 						Point2D<P> point3d = values.get(j);
+						if(point3d.getMinX() > point.getMinX()) {
+							break;
+						}
 						
 						if(point3d.getArea() >= point.getArea()) {
 							if(point3d.eclipses(point)) {
@@ -661,7 +667,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 					
 					if(splitXX) {
 						// is the point now eclipsed by new points?
-						for (int j = 0; j < addXX.size(); j++) {
+						for (int j = startAddXX; j < addXX.size(); j++) {
 							Point2D<P> point3d = addXX.get(j);
 							
 							if(point3d.getArea() >= point.getArea()) {
@@ -696,6 +702,9 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 							continue;
 						}
 						Point2D<P> point3d = values.get(j);
+						if(point3d.getMinX() > point.getMinX()) {
+							break;
+						}
 						
 						if(point3d.getArea() >= point.getArea()) {
 							if(point3d.eclipses(point)) {
@@ -708,7 +717,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 					
 					if(splitYY) {
 						// is the point now eclipsed by new points?
-						for (int j = 0; j < addYY.size(); j++) {
+						for (int j = startAddYY; j < addYY.size(); j++) {
 							Point2D<P> point3d = addYY.get(j);
 							
 							if(point3d.getArea() >= point.getArea()) {
