@@ -9,6 +9,7 @@ import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
+import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.Point3D;
 
 /**
@@ -339,7 +340,11 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		}
 
 		// Constrain max values to the new placement
-		constrainFloatingMax(placement, endIndex);
+		if(cloneOnConstrain) {
+			constrainFloatingMaxWithClone(placement, endIndex);
+		} else {
+			constrainFloatingMax(placement, endIndex);
+		}
 		
 		endIndex -= values.removeFlagged();
 		
@@ -496,12 +501,229 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	}
 	
 
+	protected void constrainFloatingMaxWithClone(P placement, int limit) {
+
+		addXX.ensureAdditionalCapacity(limit);
+		addYY.ensureAdditionalCapacity(limit);
+		addZZ.ensureAdditionalCapacity(limit);
+		
+		for (int i = 0; i < limit; i++) {
+			Point3D<P> point = values.get(i);
+			
+			if(placement.getAbsoluteEndX() < point.getMinX()) {
+				continue;
+			}
+
+			if(placement.getAbsoluteEndY() < point.getMinY()) {
+				continue;
+			}
+
+			if(placement.getAbsoluteEndZ() < point.getMinZ()) {
+				continue;
+			}
+
+			if(placement.getAbsoluteX() > point.getMaxX()) {
+				continue;
+			}
+
+			if(placement.getAbsoluteY() > point.getMaxY()) {
+				continue;
+			}	
+
+			if(placement.getAbsoluteZ() > point.getMaxZ()) {
+				continue;
+			}	
+
+			boolean x = placement.getAbsoluteX() <= point.getMaxX();
+			boolean y = placement.getAbsoluteY() <= point.getMaxY();
+			boolean z = placement.getAbsoluteZ() <= point.getMaxZ();
+
+			boolean constrain = x && y && z;
+			if(!constrain) {
+				continue;
+			}
+			
+			// before add
+			//    
+			//    |
+			//    |--------|
+			//    |        |
+			//    |--------| 
+			//    |
+			//    |
+			//    |
+			// a  *        *      |---------|
+			//    |               |         |
+			//    |               |         |
+			//    *--------*------|---------|-----
+			//    c        b
+
+			//  after add
+			//             
+			//    |        |---------|
+			//    |--------|         | 
+			//    |        |         |
+			//    |--------|         |
+			//    |        |         |
+			//    |        |         |
+			// a  *        |------|--|------|
+			//    |               |         |
+			//    |               |         |
+			//    *--------*------|---------|-----
+			//    c        b
+			
+			//
+			// Point c is split in three, each of which eclipse a or b
+			//
+			// So that we end up with
+			//             
+			//    |        |---------|
+			//    |--------|         | 
+			//    |        |         |
+			//    |--------|         |
+			//    |        |         |
+			//    |        |         |
+			//    |        |------|--|------|
+			//    |               |         |
+			//    |               |         |
+			//    *---------------|---------|-----
+			//    c         
+			
+			
+			addX: 
+			if(x) {
+				if(point.getMinX() < placement.getAbsoluteX()) {
+					if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
+						Point3D<P> clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+						
+						// is the point now eclipsed by current points?
+						for (int j = 0; j < i - 1; j++) {
+							if(values.isFlag(j)) {
+								continue;
+							}
+							Point3D<P> point3d = values.get(j);
+							if(point3d.getDx() > clone.getMinX()) {
+								break;
+							}
+
+							if(point3d.getVolume() >= clone.getVolume()) {
+								if(point3d.eclipses(clone)) {
+									break addX;
+								}
+							}
+						}
+						
+						// is the point now eclipsed by new points?
+						for (int j = 0; j < addXX.size(); j++) {
+							Point3D<P> point3d = addXX.get(j);
+							
+							if(point3d.getVolume() >= clone.getVolume()) {
+								if(point3d.eclipses(clone)) {
+									break addX;
+								}
+							}
+						}
+						
+						addXX.add(clone);
+					}
+				}
+			}
+			
+			addY:
+			if(y) {
+				if(point.getMinY() < placement.getAbsoluteY()) {
+					if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
+						Point3D<P> clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+						
+						// is the point now eclipsed by current points?
+						for (int j = 0; j < i - 1; j++) {
+							if(values.isFlag(j)) {
+								continue;
+							}
+							Point3D<P> point3d = values.get(j);
+							if(point3d.getDx() > clone.getMinX()) {
+								break;
+							}
+							
+							if(point3d.getVolume() >= clone.getVolume()) {
+								if(point3d.eclipses(clone)) {
+									break addY;
+								}
+							}
+						}
+						
+						// is the point now eclipsed by new points?
+						for (int j = 0; j < addYY.size(); j++) {
+							Point3D<P> point3d = addYY.get(j);
+							
+							if(point3d.getVolume() >= clone.getVolume()) {
+								if(point3d.eclipses(clone)) {
+									break addY;
+								}
+							}
+						}						
+						
+						addYY.add(clone);
+					}
+				}
+			}
+			
+			addZ:
+			if(z) {
+				if(point.getMinZ() < placement.getAbsoluteZ()) {
+					if(!isConstrainedAtMaxZ(point, placement.getAbsoluteZ() - 1)) {
+						Point3D<P> clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+						
+						// is the point now eclipsed by current points?
+						for (int j = 0; j < i - 1; j++) {
+							if(values.isFlag(j)) {
+								continue;
+							}
+							Point3D<P> point3d = values.get(j);
+							if(point3d.getDx() > clone.getMinX()) {
+								break;
+							}
+
+							if(point3d.getVolume() >= clone.getVolume()) {
+								if(point3d.eclipses(clone)) {
+									break addZ;
+								}
+							}
+						}
+						
+						// is the point now eclipsed by new points?
+						for (int j = 0; j < addZZ.size(); j++) {
+							Point3D<P> point3d = addZZ.get(j);
+							
+							if(point3d.getVolume() >= clone.getVolume()) {
+								if(point3d.eclipses(clone)) {
+									break addZ;
+								}
+							}
+						}						
+						
+						
+						addZZ.add(clone);
+					}
+				}
+			}
+			values.flag(i);
+		}
+		
+	}		
+
 	protected void constrainFloatingMax(P placement, int limit) {
 
 		addXX.ensureAdditionalCapacity(limit);
 		addYY.ensureAdditionalCapacity(limit);
 		addZZ.ensureAdditionalCapacity(limit);
 		
+		boolean splitXX = false;
+		boolean splitYY = false;
+		boolean splitZZ = false;
+
+		limitLoop:
+
 		for (int i = 0; i < limit; i++) {
 			Point3D<P> point = values.get(i);
 			
@@ -550,16 +772,33 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 							continue;
 						}
 						
-						// is the point now eclipsed?
+						// is the point now eclipsed by current points?
 						for (int j = 0; j < i - 1; j++) {
 							Point3D<P> point3d = values.get(j);
 							
-							if(point3d.eclipses(point)) {
-								values.flag(i);
-								
-								break;
+							if(point3d.getVolume() >= point.getVolume()) {
+								if(point3d.eclipses(point)) {
+									values.flag(i);
+									
+									continue limitLoop;
+								}
 							}
 						}
+						
+						if(splitXX) {
+							// is the point now eclipsed by new points?
+							for (int j = 0; j < addXX.size(); j++) {
+								Point3D<P> point3d = addXX.get(j);
+								
+								if(point3d.getVolume() >= point.getVolume()) {
+									if(point3d.eclipses(point)) {
+										values.flag(i);
+										
+										break;
+									}
+								}
+							}
+						}						
 					} else {
 						values.flag(i);
 					}
@@ -576,16 +815,34 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 							continue;
 						}
 
-						// is the point now eclipsed?
+						// is the point now eclipsed by current points?
 						for (int j = 0; j < i - 1; j++) {
 							Point3D<P> point3d = values.get(j);
 							
-							if(point3d.eclipses(point)) {
-								values.flag(i);
-								
-								break;
+							if(point3d.getVolume() >= point.getVolume()) {
+								if(point3d.eclipses(point)) {
+									values.flag(i);
+									
+									continue limitLoop;
+								}
 							}
 						}
+						
+						if(splitYY) {
+							// is the point now eclipsed by new points?
+							for (int j = 0; j < addYY.size(); j++) {
+								Point3D<P> point3d = addYY.get(j);
+								
+								if(point3d.getVolume() >= point.getVolume()) {
+									if(point3d.eclipses(point)) {
+										values.flag(i);
+										
+										break;
+									}
+								}
+							}
+						}
+						
 					} else {
 						values.flag(i);
 					}
@@ -602,14 +859,31 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 							continue;
 						}
 
-						// is the point now eclipsed?
+						// is the point now eclipsed by current points?
 						for (int j = 0; j < i - 1; j++) {
 							Point3D<P> point3d = values.get(j);
 							
-							if(point3d.eclipses(point)) {
-								values.flag(i);
+							if(point3d.getVolume() >= point.getVolume()) {
+								if(point3d.eclipses(point)) {
+									values.flag(i);
+									
+									continue limitLoop;
+								}
+							}
+						}
+
+						if(splitZZ) {
+							// is the point now eclipsed by new points?
+							for (int j = 0; j < addZZ.size(); j++) {
+								Point3D<P> point3d = addZZ.get(j);
 								
-								break;
+								if(point3d.getVolume() >= point.getVolume()) {
+									if(point3d.eclipses(point)) {
+										values.flag(i);
+										
+										break;
+									}
+								}
 							}
 						}
 
@@ -622,10 +896,59 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				// fall through: must add multiple points
 			}
 			
+			// before add
+			//    
+			//    |
+			//    |--------|
+			//    |        |
+			//    |--------| 
+			//    |
+			//    |
+			//    |
+			// a  *        *      |---------|
+			//    |               |         |
+			//    |               |         |
+			//    *--------*------|---------|-----
+			//    c        b
+
+			//  after add
+			//             
+			//    |        |---------|
+			//    |--------|         | 
+			//    |        |         |
+			//    |--------|         |
+			//    |        |         |
+			//    |        |         |
+			// a  *        |------|--|------|
+			//    |               |         |
+			//    |               |         |
+			//    *--------*------|---------|-----
+			//    c        b
+			
+			//
+			// Point c is split in two, each of which eclipse a or b
+			//
+			// So that we end up with
+			//             
+			//    |        |---------|
+			//    |--------|         | 
+			//    |        |         |
+			//    |--------|         |
+			//    |        |         |
+			//    |        |         |
+			//    |        |------|--|------|
+			//    |               |         |
+			//    |               |         |
+			//    *---------------|---------|-----
+			//    c         
+			
+			
 			if(x) {
 				if(point.getMinX() < placement.getAbsoluteX()) {
 					if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
 						addXX.add(point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ()));
+						
+						splitXX = true;
 					}
 				}
 			}
@@ -634,6 +957,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				if(point.getMinY() < placement.getAbsoluteY()) {
 					if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
 						addYY.add(point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ()));
+						splitYY = true;
 					}
 				}
 			}
@@ -642,6 +966,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				if(point.getMinZ() < placement.getAbsoluteZ()) {
 					if(!isConstrainedAtMaxZ(point, placement.getAbsoluteZ() - 1)) {
 						addZZ.add(point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1));
+						
+						splitZZ = true;
 					}
 				}
 			}
