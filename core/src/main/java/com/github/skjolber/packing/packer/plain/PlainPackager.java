@@ -26,16 +26,16 @@ import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 
 public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>> {
 
-	public static LargestAreaFitFirstPackagerBuilder newBuilder() {
-		return new LargestAreaFitFirstPackagerBuilder();
+	public static Builder newBuilder() {
+		return new Builder();
 	}
 
-	public static class LargestAreaFitFirstPackagerBuilder {
+	public static class Builder {
 
 		private List<Container> containers;
 		private int checkpointsPerDeadlineCheck = 1;
 
-		public LargestAreaFitFirstPackagerBuilder withContainers(Container ...  containers) {
+		public Builder withContainers(Container ...  containers) {
 			if(this.containers == null) {
 				this.containers = new ArrayList<>();
 			}
@@ -45,12 +45,12 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 			return this;
 		}
 		
-		public LargestAreaFitFirstPackagerBuilder withContainers(List<Container> containers) {
+		public Builder withContainers(List<Container> containers) {
 			this.containers = containers;
 			return this;
 		}
 
-		public LargestAreaFitFirstPackagerBuilder withCheckpointsPerDeadlineCheck(int n) {
+		public Builder withCheckpointsPerDeadlineCheck(int n) {
 			this.checkpointsPerDeadlineCheck = n;
 			return this;
 		}
