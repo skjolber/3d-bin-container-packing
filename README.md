@@ -44,8 +44,8 @@ Container container = Container.newBuilder()
     .withMaxLoadWeight(100)
     .build();
     
-Packager packager = LargestAreaFitFirstPackager.newBuilder()
-    .withContainers(Arrays.asList(container)
+LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder()
+    .withContainers(Arrays.asList(container))
     .build();
 ```
 
