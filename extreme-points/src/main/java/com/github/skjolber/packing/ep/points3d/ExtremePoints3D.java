@@ -338,13 +338,94 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				}
 			}			
 		}
+		
 
 		// Constrain max values to the new placement
-		if(cloneOnConstrain) {
-			constrainFloatingMaxWithClone(placement, endIndex);
+		if(supported) {
+			if(cloneOnConstrain) {
+				for (int i = 0; i < endIndex; i++) {
+					if(values.isFlag(i)) {
+						continue;
+					}
+					
+					Point3D<P> point = values.get(i);
+					
+					boolean withinX = withinX(point.getMinX(), placement);
+					boolean withinY = withinY(point.getMinY(), placement);
+					boolean withinZ = withinZ(point.getMinZ(), placement);
+					
+					if(point.getMinY() < placement.getAbsoluteY() && withinX && withinZ) {
+						if(point.getMaxY() >= placement.getAbsoluteY()) {
+							Point3D<P> clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+							if(clone.getArea() >= minAreaLimit) {
+								addYY.add(clone);
+							}
+							values.flag(i);
+						}
+					} else if(point.getMinX() < placement.getAbsoluteX() && withinY && withinZ) {
+						if(point.getMaxX() >= placement.getAbsoluteX()) {
+							Point3D<P> clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+							if(clone.getArea() >= minAreaLimit) {
+								addXX.add(clone);
+							}
+							values.flag(i);
+						}
+					} else if(point.getMinZ() < placement.getAbsoluteZ() && withinY && withinX) {
+						if(point.getMaxZ() >= placement.getAbsoluteZ()) {
+							Point3D<P> clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+							if(clone.getArea() >= minAreaLimit) {
+								addZZ.add(clone);
+							}
+							values.flag(i);
+						}
+					}
+				}
+				
+			} else  {
+				for (int i = 0; i < endIndex; i++) {
+					if(values.isFlag(i)) {
+						continue;
+					}
+					
+					Point3D<P> point = values.get(i);
+					
+					boolean withinX = withinX(point.getMinX(), placement);
+					boolean withinY = withinY(point.getMinY(), placement);
+					boolean withinZ = withinZ(point.getMinZ(), placement);
+					
+					if(point.getMinY() < placement.getAbsoluteY() && withinX && withinZ) {
+						if(point.getMaxY() >= placement.getAbsoluteY()) {
+							point.setMaxY(placement.getAbsoluteY() - 1);
+							if(point.getArea() < minAreaLimit) {
+								values.flag(i);
+							}
+						}
+					} else if(point.getMinX() < placement.getAbsoluteX() && withinY && withinZ) {
+						if(point.getMaxX() >= placement.getAbsoluteX()) {
+							point.setMaxX(placement.getAbsoluteX() - 1);
+							if(point.getArea() < minAreaLimit) {
+								values.flag(i);
+							}
+						}
+					} else if(point.getMinZ() < placement.getAbsoluteZ() && withinY && withinX) {
+						if(point.getMaxZ() >= placement.getAbsoluteZ()) {
+							point.setMaxZ(placement.getAbsoluteZ() - 1);
+							if(point.getArea() < minAreaLimit) {
+								values.flag(i);
+							}
+						}
+					}
+				}
+			}
 		} else {
-			constrainFloatingMax(placement, endIndex);
+			// Constrain max values to the new placement
+			if(cloneOnConstrain) {
+				constrainFloatingMaxWithClone(placement, endIndex);
+			} else {
+				constrainFloatingMax(placement, endIndex);
+			}
 		}
+
 		
 		endIndex -= values.removeFlagged();
 		
@@ -994,6 +1075,10 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		return placement.getAbsoluteY() <= y && y <= placement.getAbsoluteEndY();
 	}
 	
+	protected boolean withinZ(int z, P placement) {
+		return placement.getAbsoluteZ() <= z && z <= placement.getAbsoluteEndZ();
+	}
+
 	public int getDepth() {
 		return containerMaxY + 1;
 	}
