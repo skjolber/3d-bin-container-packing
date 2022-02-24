@@ -299,7 +299,11 @@ public abstract class Point2D<P extends Placement2D> {
 	public abstract Point2D<P> clone(int maxX, int maxY);
 
 	public boolean eclipses(Point2D<P> point) {
-		return eclipsesX(point) && eclipsesY(point);
+		return 
+			minY <= point.getMinY() && 
+			minX <= point.getMinX() && 
+			point.getMaxX() <= maxX && 
+			point.getMaxY() <= maxY;
 	}
 	
 	public boolean eclipsesMovedX(Point2D<P> point, int x) {
@@ -450,7 +454,7 @@ public abstract class Point2D<P extends Placement2D> {
 		return dy * (long)(maxX - minX + 1);
 	}
 
-	public long getAreaAtMaxY(int maxX) {
+	public long getAreaAtMaxY(int maxY) {
 		return dx * (long)(maxY - minY + 1);
 	}
 
