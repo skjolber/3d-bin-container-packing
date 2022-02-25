@@ -156,7 +156,12 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		int pointIndex;
 		if(yySupport) {
 			// b and c only
-			pointIndex = binarySearchMinusMinX(placement.getAbsoluteX());
+			
+			// already have index for point at absoluteX
+			pointIndex = index;
+        	while(pointIndex > 0 && values.get(pointIndex - 1).getMinX() == placement.getAbsoluteX()) {
+        		pointIndex--;
+        	}
 		} else {
 			pointIndex = 0;
 		}
@@ -317,27 +322,59 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		}
 
 		if(xxSupport && yySupport) {
-			for (int i = pointIndex; i < endIndex; i++) {
-				if(values.isFlag(i)) {
-					continue;
-				}
-				
-				Point2D<P> point = values.get(i);
-				if(point.getMinY() < placement.getAbsoluteY() && withinX(point.getMinX(), placement)) {
-					if(point.getMaxY() >= placement.getAbsoluteY()) {
-						point.setMaxY(placement.getAbsoluteY() - 1);
-						if(point.getArea() < minAreaLimit) {
-							values.flag(i);
-						}
-					}
-				} else if(point.getMinX() < placement.getAbsoluteX() && withinY(point.getMinY(), placement)) {
-					if(point.getMaxX() >= placement.getAbsoluteX()) {
-						point.setMaxX(placement.getAbsoluteX() - 1);
-						if(point.getArea() < minAreaLimit) {
-							values.flag(i);
-						}
-					}
-				}
+			// no constrain necessary
+		} else if(yySupport) {
+			
+			//
+			// vmaxY |                    
+			//       |          
+			//  yy   |        ║ - - - |
+			//       |        ║
+			//       |        ║       |
+			//       |        ║              
+			//       |        ║       |
+			//       |        ║  
+			//  minY |        x - - - |
+			//       |          *   *
+			//       |        *   *
+			//       |          *    *
+			//       |-----------------------------
+			//               minX    maxX
+			//   
+			// so only those points between 0 and minY 
+			// and between minX and maxX need to be constrained
+			
+			if(cloneOnConstrain) {
+				constrainMaxYWithClone(placement, pointIndex, endIndex);
+			} else {
+				constrainMaxY(placement, pointIndex, endIndex);
+			}
+		} else if(xxSupport) {
+			
+			//       |
+			//       |
+			//       |     *  |---------------| 
+			//       | *     
+			//       |    *   |               |
+			//       |  * 
+			//  minY |    *   x════════════════        
+			//       |                     
+			//       |                    
+			//       |--------------------------
+			//               minX             maxX
+			//
+			// so only those points between 0 and minX 
+			// and between minY and maxY need to be constrained
+			
+			pointIndex = index;
+        	while(pointIndex > 0 && values.get(pointIndex - 1).getMinX() == placement.getAbsoluteX()) {
+        		pointIndex--;
+        	}
+
+			if(cloneOnConstrain) {
+				constrainMaxXWithClone(placement, 0, pointIndex);
+			} else {
+				constrainMaxX(placement, 0, pointIndex);
 			}
 		} else {
 			if(cloneOnConstrain) {
@@ -382,6 +419,86 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		
 		return !values.isEmpty();
 	}
+
+	private void constrainMaxXWithClone(P placement, int pointIndex, int endIndex) {
+		for (int i = pointIndex; i < endIndex; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+			
+			Point2D<P> point = values.get(i);
+			if(point.getMinX() < placement.getAbsoluteX() && withinY(point.getMinY(), placement)) {
+				if(point.getMaxX() >= placement.getAbsoluteX()) {
+					int limitX = placement.getAbsoluteX() - 1;
+					if(!isConstrainedAtMaxX(point, limitX)) {
+						Point2D<P> clone = point.clone(limitX, point.getMaxY());
+						
+						addXX.add(clone);
+					}
+				
+					values.flag(i);
+				}
+			}
+		}
+	}
+	
+	private void constrainMaxYWithClone(P placement, int pointIndex, int endIndex) {
+		for (int i = pointIndex; i < endIndex; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+			
+			Point2D<P> point = values.get(i);
+			if(point.getMinY() < placement.getAbsoluteY() && withinX(point.getMinX(), placement)) {
+				if(point.getMaxY() >= placement.getAbsoluteY()) {
+					int limitY = placement.getAbsoluteY() - 1;
+					if(!isConstrainedAtMaxY(point, limitY)) {
+						Point2D<P> clone = point.clone(point.getMaxX(), limitY);
+						
+						addXX.add(clone);
+					}
+					values.flag(i);
+				}
+			}
+		}
+	}	
+
+	private void constrainMaxX(P placement, int pointIndex, int endIndex) {
+		for (int i = pointIndex; i < endIndex; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+			
+			Point2D<P> point = values.get(i);
+			if(point.getMinX() < placement.getAbsoluteX() && withinY(point.getMinY(), placement)) {
+				if(point.getMaxX() >= placement.getAbsoluteX()) {
+					point.setMaxX(placement.getAbsoluteX() - 1);
+					if(point.getArea() < minAreaLimit) {
+						values.flag(i);
+					}
+				}
+			}
+		}
+	}
+	
+	private void constrainMaxY(P placement, int pointIndex, int endIndex) {
+		for (int i = pointIndex; i < endIndex; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+			
+			Point2D<P> point = values.get(i);
+			if(point.getMinY() < placement.getAbsoluteY() && withinX(point.getMinX(), placement)) {
+				if(point.getMaxY() >= placement.getAbsoluteY()) {
+					point.setMaxY(placement.getAbsoluteY() - 1);
+					if(point.getArea() < minAreaLimit) {
+						values.flag(i);
+					}
+				}
+			}
+		}
+	}
+		
 	
 	protected void removeEclipsed(int limit) {
 		
@@ -933,6 +1050,8 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
             	do {
             		mid++;
             	} while(mid < values.size() && values.get(mid).getMinX() == key);
+            	
+            	// so if there was multiple points at key, we are at the index of the last of them, plus one.
             	
                 return mid; 
             }

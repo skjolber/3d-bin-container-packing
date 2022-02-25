@@ -105,9 +105,11 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		int yy = placement.getAbsoluteEndY() + 1;
 		int zz = placement.getAbsoluteEndZ() + 1;
 			
-		boolean supported = source.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY()) 
-				&& source.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ()) 
-				&& source.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
+		boolean supportedXYPlane = source.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY()); 
+		boolean supportedXZPlane = source.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
+		boolean supportedYZPlane = source.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
+		
+		boolean supported = supportedXYPlane && supportedXZPlane && supportedYZPlane;
 		
 		//    y
 		//    |                          |
@@ -147,7 +149,20 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		addYY.ensureCapacity(values.size());
 		addZZ.ensureCapacity(values.size());
 		
-		for(int i = 0; i < endIndex; i++) {		
+		int pointIndex;
+		if(supportedYZPlane) {
+			// b and c only
+			
+			// already have index for point at absoluteX
+			pointIndex = index;
+        	while(pointIndex > 0 && values.get(pointIndex - 1).getMinX() == placement.getAbsoluteX()) {
+        		pointIndex--;
+        	}
+		} else {
+			pointIndex = 0;
+		}
+		
+		for(int i = pointIndex; i < endIndex; i++) {		
 			Point3D<P> point = values.get(i);
 			
 			if(point.getMinY() > placement.getAbsoluteEndY() || point.getMinZ() > placement.getAbsoluteEndZ()) {
@@ -339,6 +354,9 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		// Constrain max values to the new placement
 
 		if(supported) {
+			// not necessary
+		} else if(supportedXYPlane || supportedXZPlane || supportedYZPlane ) {
+			// TODO
 			if(cloneOnConstrain) {
 				constrainMaxWithClone(placement, endIndex);
 			} else  {
@@ -485,8 +503,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					}
 					continue;
 				}
-			//} else if(!withinZ(point.getMinZ(), placement)) {
-			} else if(point.getMinZ() < placement.getAbsoluteZ()) {
+			} else if(point.getMinZ() < placement.getAbsoluteZ()) { // i.e. if(!withinZ(point.getMinZ(), placement)) {
+				
 				if(point.getMaxZ() >= placement.getAbsoluteZ()) {
 					Point3D<P> clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
 					if(clone.getArea() >= minAreaLimit) {

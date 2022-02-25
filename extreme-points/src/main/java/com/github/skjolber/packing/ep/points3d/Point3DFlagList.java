@@ -27,7 +27,7 @@ public class Point3DFlagList<P extends Placement3D> {
 	
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			Point3D[] nextPoints = new Point3D[size];
+			Point3D<P>[] nextPoints = new Point3D[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 
 			boolean[] nextFlag = new boolean[size];
@@ -162,7 +162,7 @@ public class Point3DFlagList<P extends Placement3D> {
     @Override
     public boolean equals(Object obj) {
     	if(obj instanceof Point3DFlagList) {
-    		Point3DFlagList other = (Point3DFlagList)obj;
+    		Point3DFlagList<P> other = (Point3DFlagList<P>)obj;
     		if(other.size() == size) {
     			for(int i = 0; i < size; i++) {
     	            if(!points[i].equals(other.get(i))) {
