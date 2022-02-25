@@ -450,7 +450,7 @@ public abstract class Point2D<P extends Placement2D> {
 		return dy * (long)(maxX - minX + 1);
 	}
 
-	public long getAreaAtMaxY(int maxX) {
+	public long getAreaAtMaxY(int maxY) {
 		return dx * (long)(maxY - minY + 1);
 	}
 
