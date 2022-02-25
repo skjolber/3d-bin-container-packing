@@ -43,9 +43,9 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	protected final Point3DList<P> addYY = new Point3DList<>();
 	protected final Point3DList<P> addZZ = new Point3DList<>();
 
-	protected final IntArrayList negativeMoveToXX = new IntArrayList();
-	protected final IntArrayList negativeMoveToYY = new IntArrayList();
-	protected final IntArrayList negativeMoveToZZ = new IntArrayList();
+	protected final IntArrayList moveToXX = new IntArrayList();
+	protected final IntArrayList moveToYY = new IntArrayList();
+	protected final IntArrayList moveToZZ = new IntArrayList();
 
 	protected final boolean cloneOnConstrain;
 
@@ -141,9 +141,9 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		
 		int endIndex = binarySearchPlusMinX(placement.getAbsoluteEndX());
 		
-		negativeMoveToXX.ensureCapacity(endIndex);
-		negativeMoveToYY.ensureCapacity(endIndex);
-		negativeMoveToZZ.ensureCapacity(endIndex);
+		moveToXX.ensureCapacity(endIndex);
+		moveToYY.ensureCapacity(endIndex);
+		moveToZZ.ensureCapacity(endIndex);
 		
 		addXX.ensureCapacity(values.size());
 		addYY.ensureCapacity(values.size());
@@ -214,13 +214,13 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				//
 
 				if(canMoveX(point, xx)) {
-					negativeMoveToXX.add(i);
+					moveToXX.add(i);
 				}
 				if(canMoveY(point, yy)) {
-					negativeMoveToYY.add(i);
+					moveToYY.add(i);
 				}
 				if(canMoveZ(point, zz)) {
-					negativeMoveToZZ.add(i);
+					moveToZZ.add(i);
 				}
 				
 				values.flag(i);
@@ -263,26 +263,26 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			// does any point intersect the xx, yy or zz planes?
 			if(canMoveX(point, xx)) {
 				// yz plane
-				negativeMoveToXX.add(i);
+				moveToXX.add(i);
 			}
 			
 			if(canMoveY(point, yy)) {
 				// xz plane
-				negativeMoveToYY.add(i);
+				moveToYY.add(i);
 			}
 			
 			if(canMoveZ(point, zz)) {
 				// xy plane
-				negativeMoveToZZ.add(i);
+				moveToZZ.add(i);
 			}
 		}
 
-		if(!negativeMoveToXX.isEmpty()) {
-			negativeMoveToXX.sortThis(COMPARATOR_Y_THEN_Z_THEN_X);
+		if(!moveToXX.isEmpty()) {
+			moveToXX.sortThis(COMPARATOR_Y_THEN_Z_THEN_X);
 			
 			add:
-			for(int i = 0; i < negativeMoveToXX.size(); i++) {
-				Point3D<P> p = values.get(negativeMoveToXX.get(i));
+			for(int i = 0; i < moveToXX.size(); i++) {
+				Point3D<P> p = values.get(moveToXX.get(i));
 				// add point on the other side
 				// with x support
 				for(int k = 0; k < addXX.size(); k++) {
@@ -301,12 +301,12 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			}			
 		}
 		
-		if(!negativeMoveToYY.isEmpty()) {
-			negativeMoveToYY.sortThis(COMPARATOR_Z_THEN_X_THEN_Y);
+		if(!moveToYY.isEmpty()) {
+			moveToYY.sortThis(COMPARATOR_Z_THEN_X_THEN_Y);
 			
 			add:
-			for(int i = 0; i < negativeMoveToYY.size(); i++) {
-				Point3D<P> p = values.get(negativeMoveToYY.get(i));
+			for(int i = 0; i < moveToYY.size(); i++) {
+				Point3D<P> p = values.get(moveToYY.get(i));
 				
 				// add point on the other side
 				// with x support
@@ -326,12 +326,12 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			}			
 		}
 
-		if(!negativeMoveToZZ.isEmpty()) {
-			negativeMoveToZZ.sortThis(COMPARATOR_X_THEN_Y_THEN_Z);
+		if(!moveToZZ.isEmpty()) {
+			moveToZZ.sortThis(COMPARATOR_X_THEN_Y_THEN_Z);
 			
 			add:
-			for(int i = 0; i < negativeMoveToZZ.size(); i++) {
-				Point3D<P> p = values.get(negativeMoveToZZ.get(i));
+			for(int i = 0; i < moveToZZ.size(); i++) {
+				Point3D<P> p = values.get(moveToZZ.get(i));
 				
 				// add point on the other side
 				// with x support
@@ -399,9 +399,9 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		
 		values.sort(Point3D.COMPARATOR_X_THEN_Y_THEN_Z, endIndex);
 
-		negativeMoveToXX.clear();
-		negativeMoveToYY.clear();
-		negativeMoveToZZ.clear();
+		moveToXX.clear();
+		moveToYY.clear();
+		moveToZZ.clear();
 		
 		addXX.clear();
 		addYY.clear();

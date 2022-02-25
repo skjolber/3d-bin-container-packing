@@ -37,8 +37,8 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 	protected final Point2DList<P, Point2D<P>> addXX = new Point2DList<>();
 	protected final Point2DList<P, Point2D<P>> addYY = new Point2DList<>();
 
-	protected final IntArrayList negativeMoveToYY = new IntArrayList();
-	protected final IntArrayList negativeMoveToXX = new IntArrayList();
+	protected final IntArrayList moveToYY = new IntArrayList();
+	protected final IntArrayList moveToXX = new IntArrayList();
 
 	protected P containerPlacement;
 
@@ -167,8 +167,8 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		}
 		int endIndex = binarySearchPlusMinX(placement.getAbsoluteEndX());
 		
-		negativeMoveToXX.ensureCapacity(endIndex);
-		negativeMoveToYY.ensureCapacity(endIndex);
+		moveToXX.ensureCapacity(endIndex);
+		moveToYY.ensureCapacity(endIndex);
 		
 		addXX.ensureAdditionalCapacity(values.size());
 		addYY.ensureAdditionalCapacity(values.size());
@@ -224,10 +224,10 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 				//
 
 				if(canMoveX(point, xx)) {
-					negativeMoveToXX.add(i);
+					moveToXX.add(i);
 				}
 				if(canMoveY(point, yy)) {
-					negativeMoveToYY.add(i);
+					moveToYY.add(i);
 				}
 				
 				values.flag(i);
@@ -270,21 +270,21 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			// does any point intersect the xx, yy or zz planes?
 			if(canMoveX(point, xx)) {
 				// yz plane
-				negativeMoveToXX.add(i);
+				moveToXX.add(i);
 			}
 			
 			if(canMoveY(point, yy)) {
 				// xz plane
-				negativeMoveToYY.add(i);
+				moveToYY.add(i);
 			}
 		}
 		
-		if(!negativeMoveToXX.isEmpty()) {
-			negativeMoveToXX.sortThis(COMPARATOR_MOVE_TO_XX);
+		if(!moveToXX.isEmpty()) {
+			moveToXX.sortThis(COMPARATOR_MOVE_TO_XX);
 			
 			add:
-			for(int i = 0; i < negativeMoveToXX.size(); i++) {
-				Point2D<P> p = values.get(negativeMoveToXX.get(i));
+			for(int i = 0; i < moveToXX.size(); i++) {
+				Point2D<P> p = values.get(moveToXX.get(i));
 				// add point on the other side
 				// with x support
 				for(int k = 0; k < addXX.size(); k++) {
@@ -300,12 +300,12 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			}			
 		}
 		
-		if(!negativeMoveToYY.isEmpty()) {
-			negativeMoveToYY.sortThis(COMPARATOR_MOVE_TO_YY);
+		if(!moveToYY.isEmpty()) {
+			moveToYY.sortThis(COMPARATOR_MOVE_TO_YY);
 			
 			add:
-			for(int i = 0; i < negativeMoveToYY.size(); i++) {
-				Point2D<P> p = values.get(negativeMoveToYY.get(i));
+			for(int i = 0; i < moveToYY.size(); i++) {
+				Point2D<P> p = values.get(moveToYY.get(i));
 				
 				// add point on the other side
 				// with x support
@@ -411,8 +411,8 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		
 		values.sort(Point2D.COMPARATOR_X_THEN_Y, endIndex);
 
-		negativeMoveToXX.clear();
-		negativeMoveToYY.clear();
+		moveToXX.clear();
+		moveToYY.clear();
 		
 		addXX.clear();
 		addYY.clear();
