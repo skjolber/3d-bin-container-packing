@@ -19,6 +19,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		isNotNull();
 		isWithinLoadDimensions();
 		isWithinLoadWeight();
+		placementsDoNotIntersect();
 		return myself;
 	}
 

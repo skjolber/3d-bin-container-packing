@@ -355,8 +355,11 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 		if(supported) {
 			// not necessary
-		} else if(supportedXYPlane || supportedXZPlane || supportedYZPlane ) {
-			// TODO
+		} else if( 
+				(supportedXYPlane && supportedXZPlane) ||
+				(supportedXYPlane && supportedYZPlane) ||
+				(supportedXZPlane && supportedYZPlane)
+				) {
 			if(cloneOnConstrain) {
 				constrainMaxWithClone(placement, endIndex);
 			} else  {
