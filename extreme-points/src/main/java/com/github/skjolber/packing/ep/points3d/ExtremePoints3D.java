@@ -418,33 +418,27 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			
 			Point3D<P> point = values.get(i);
 			if(!withinX(point.getMinX(), placement)) {
-				if(!withinZ(point.getMinZ(), placement)) {
-					continue;
-				}
-				if(!withinY(point.getMinY(), placement)) {
-					continue;
-				}
-				if(point.getMinX() < placement.getAbsoluteX()) {
-					if(point.getMaxX() >= placement.getAbsoluteX()) {
-						point.setMaxX(placement.getAbsoluteX() - 1);
-						if(point.getArea() < minAreaLimit) {
-							values.flag(i);
+				if(withinZ(point.getMinZ(), placement) && withinY(point.getMinY(), placement)) {
+					if(point.getMinX() < placement.getAbsoluteX()) {
+						if(point.getMaxX() >= placement.getAbsoluteX()) {
+							point.setMaxX(placement.getAbsoluteX() - 1);
+							if(point.getArea() < minAreaLimit) {
+								values.flag(i);
+							}
 						}
 					}
 				}				
 			} else if(!withinY(point.getMinY(), placement)) {
 				// already within x
-				if(!withinZ(point.getMinZ(), placement)) {
-					continue;
-				}
-				if(point.getMinY() < placement.getAbsoluteY()) {
-					if(point.getMaxY() >= placement.getAbsoluteY()) {
-						point.setMaxY(placement.getAbsoluteY() - 1);
-						if(point.getArea() < minAreaLimit) {
-							values.flag(i);
+				if(withinZ(point.getMinZ(), placement)) {
+					if(point.getMinY() < placement.getAbsoluteY()) {
+						if(point.getMaxY() >= placement.getAbsoluteY()) {
+							point.setMaxY(placement.getAbsoluteY() - 1);
+							if(point.getArea() < minAreaLimit) {
+								values.flag(i);
+							}
 						}
 					}
-					continue;
 				}
 			} else if(point.getMinZ() < placement.getAbsoluteZ()) { // i.e. not within z
 				// already within x and y
@@ -472,36 +466,29 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			}
 			
 			Point3D<P> point = values.get(i);
-			
 			if(!withinX(point.getMinX(), placement)) {
-				if(!withinZ(point.getMinZ(), placement)) {
-					continue;
-				}
-				if(!withinY(point.getMinY(), placement)) {
-					continue;
-				}
-				if(point.getMinX() < placement.getAbsoluteX()) {
-					if(point.getMaxX() >= placement.getAbsoluteX()) {
-						Point3D<P> clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
-						if(clone.getArea() >= minAreaLimit) {
-							addXX.add(clone);
+				if(withinZ(point.getMinZ(), placement) && withinY(point.getMinY(), placement)) {
+					if(point.getMinX() < placement.getAbsoluteX()) {
+						if(point.getMaxX() >= placement.getAbsoluteX()) {
+							Point3D<P> clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+							if(clone.getArea() >= minAreaLimit) {
+								addXX.add(clone);
+							}
+							values.flag(i);
 						}
-						values.flag(i);
 					}
 				}				
 			} else if(!withinY(point.getMinY(), placement)) {
-				if(!withinZ(point.getMinZ(), placement)) {
-					continue;
-				}
-				if(point.getMinY() < placement.getAbsoluteY()) {
-					if(point.getMaxY() >= placement.getAbsoluteY()) {
-						Point3D<P> clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
-						if(clone.getArea() >= minAreaLimit) {
-							addYY.add(clone);
+				if(withinZ(point.getMinZ(), placement)) {
+					if(point.getMinY() < placement.getAbsoluteY()) {
+						if(point.getMaxY() >= placement.getAbsoluteY()) {
+							Point3D<P> clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+							if(clone.getArea() >= minAreaLimit) {
+								addYY.add(clone);
+							}
+							values.flag(i);
 						}
-						values.flag(i);
 					}
-					continue;
 				}
 			} else if(point.getMinZ() < placement.getAbsoluteZ()) { // i.e. if(!withinZ(point.getMinZ(), placement)) {
 				
@@ -1107,7 +1094,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 	@Override
 	public String toString() {
-		return "ExtremePoints2D [width=" + containerMaxX + ", depth=" + containerMaxY + ", values=" + values + "]";
+		return "ExtremePoints3D [width=" + containerMaxX + ", depth=" + containerMaxY + ", values=" + values + "]";
 	}
 	
 	public List<P> getPlacements() {
