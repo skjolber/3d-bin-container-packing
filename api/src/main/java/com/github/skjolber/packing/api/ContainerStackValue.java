@@ -65,5 +65,6 @@ public abstract class ContainerStackValue extends StackValue {
 	@Override
 	public String toString() {
 		return "ContainerStackValue [" + dx + "x" + dy + "x" + dz + " " + loadDx + "x" + loadDy + "x" + loadDz + "]";
-	}	
+	}
+	
 }

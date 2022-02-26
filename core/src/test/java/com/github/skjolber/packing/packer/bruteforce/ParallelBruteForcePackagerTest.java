@@ -20,12 +20,13 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
+import com.github.skjolber.packing.packer.AbstractPackagerTest;
 import com.github.skjolber.packing.test.BouwkampCode;
 import com.github.skjolber.packing.test.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.BouwkampCodeLine;
 import com.github.skjolber.packing.test.BouwkampCodes;
 
-public class ParallelBruteForcePackagerTest {
+public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 
 	private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory());
 	
@@ -45,7 +46,7 @@ public class ParallelBruteForcePackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 		assertEquals(fits.getStack().getSize(), products.size());
 
 		List<StackPlacement> placements = fits.getStack().getPlacements();
@@ -74,7 +75,7 @@ public class ParallelBruteForcePackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("K").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 16));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 		assertEquals(21, fits.getStack().getPlacements().size());
 	}
 	
@@ -95,7 +96,7 @@ public class ParallelBruteForcePackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("N").withRotate3D().withSize(5, 10, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 		assertEquals(fits.getStack().getSize(), products.size());
 	}
 
@@ -114,7 +115,7 @@ public class ParallelBruteForcePackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("D").withRotate3D().withSize(3, 2, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 		assertEquals(fits.getStack().getSize(), products.size());
 	}
 	
@@ -178,6 +179,7 @@ public class ParallelBruteForcePackagerTest {
 
 		Container fits = packager.pack(products);
 		assertNotNull(bouwkampCode.getName(), fits);
+		assertValid(fits);
 		assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), squares.size());
 	}
 	

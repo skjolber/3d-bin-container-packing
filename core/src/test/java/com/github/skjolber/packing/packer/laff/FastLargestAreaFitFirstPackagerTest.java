@@ -8,15 +8,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.skjolber.packing.impl.ResultValidator;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
+import com.github.skjolber.packing.packer.AbstractPackagerTest;
 
-public class FastLargestAreaFitFirstPackagerTest {
+public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingSquaresOnSquare() {
@@ -33,9 +33,7 @@ public class FastLargestAreaFitFirstPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
-
-		System.out.println(fits.getStack().getPlacements());
+		assertValid(fits);
 	}
 
 	@Test
@@ -52,7 +50,7 @@ public class FastLargestAreaFitFirstPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 	}
 
 	@Test
@@ -70,7 +68,7 @@ public class FastLargestAreaFitFirstPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 	}
 
 	@Test
@@ -88,7 +86,7 @@ public class FastLargestAreaFitFirstPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 	}
 
 	@Test
@@ -105,7 +103,7 @@ public class FastLargestAreaFitFirstPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 
 		LevelStack levelStack = (LevelStack) fits.getStack();
 		assertEquals(2, levelStack.getLevels().size());
@@ -123,7 +121,7 @@ public class FastLargestAreaFitFirstPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 3));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 
 		LevelStack levelStack = (LevelStack) fits.getStack();
 		assertEquals(3, levelStack.getLevels().size());
@@ -144,7 +142,6 @@ public class FastLargestAreaFitFirstPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1)); // 1
 
 		Container fits = packager.pack(products);
-
 		assertNull(fits);
 	}
 	

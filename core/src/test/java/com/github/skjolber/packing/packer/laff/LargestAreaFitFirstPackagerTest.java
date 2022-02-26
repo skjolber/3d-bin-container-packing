@@ -19,8 +19,9 @@ import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
+import com.github.skjolber.packing.packer.AbstractPackagerTest;
 
-public class LargestAreaFitFirstPackagerTest {
+public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingSquaresOnSquare() {
@@ -68,8 +69,6 @@ public class LargestAreaFitFirstPackagerTest {
 		assertNotNull(fits);
 
 		List<StackPlacement> placements = fits.getStack().getPlacements();
-
-		System.out.println(placements);
 
 		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
 		assertThat(placements.get(1)).isAt(0, 1, 0).hasStackableName("B");

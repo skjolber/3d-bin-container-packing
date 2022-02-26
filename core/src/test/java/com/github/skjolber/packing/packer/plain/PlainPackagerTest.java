@@ -16,9 +16,9 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
-import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
+import com.github.skjolber.packing.packer.AbstractPackagerTest;
 
-public class PlainPackagerTest {
+public class PlainPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingSquaresOnSquare() {
@@ -34,7 +34,7 @@ public class PlainPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 	}
 	
 	@Test
@@ -51,7 +51,7 @@ public class PlainPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 	}
 
 	@Test
@@ -69,7 +69,7 @@ public class PlainPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 	}
 
 	@Test
@@ -87,7 +87,7 @@ public class PlainPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 	}
 	
 	@Test
@@ -104,7 +104,7 @@ public class PlainPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 	}
 	
 	@Test
@@ -158,7 +158,7 @@ public class PlainPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 		assertEquals(fits.getVolume(), containers.get(3).getVolume());
 	}
 	
