@@ -18,6 +18,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
+import com.github.skjolber.packing.packer.AbstractPackagerTest;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
@@ -25,7 +26,7 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 
 
-public class BruteForcePackagerTest {
+public class BruteForcePackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingSquaresOnSquare() {
@@ -43,7 +44,7 @@ public class BruteForcePackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 		
 		List<StackPlacement> placements = fits.getStack().getPlacements();
 
@@ -76,7 +77,7 @@ public class BruteForcePackagerTest {
 		}
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 		assertEquals(products.size(), fits.getStack().getPlacements().size());
 	}
 	
@@ -97,7 +98,7 @@ public class BruteForcePackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("N").withRotate3D().withSize(5, 10, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 	}
 
 	@Test
@@ -116,7 +117,7 @@ public class BruteForcePackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("D").withSize(3, 2, 1).withRotate3D().withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 	}
 	
 	@Test
@@ -181,6 +182,7 @@ public class BruteForcePackagerTest {
 
 		Container fits = packager.pack(products);
 		assertNotNull(bouwkampCode.getName(), fits);
+		assertValid(fits);
 		assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), squares.size());
 	}
 

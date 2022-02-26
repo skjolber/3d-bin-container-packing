@@ -14,10 +14,11 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
+import com.github.skjolber.packing.packer.AbstractPackagerTest;
 
 
 
-public class FastBruteForcePackagerTest {
+public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingSquaresOnSquare() {
@@ -35,11 +36,9 @@ public class FastBruteForcePackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
-		assertNotNull(fits);
+		assertValid(fits);
 		
 		List<StackPlacement> placements = fits.getStack().getPlacements();
-
-		System.out.println(fits.getStack().getPlacements());
 
 		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
 		assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("B");
@@ -66,13 +65,12 @@ public class FastBruteForcePackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 
 		List<Container> packList = packager.packList(products, 5, System.currentTimeMillis() + 5000);
+		assertValid(packList);
 		assertThat(packList).hasSize(2);
 		
 		Container fits = packList.get(0);
 		
 		List<StackPlacement> placements = fits.getStack().getPlacements();
-
-		System.out.println(fits.getStack().getPlacements());
 
 		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
 		assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("A");

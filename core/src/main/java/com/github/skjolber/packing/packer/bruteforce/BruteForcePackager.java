@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
@@ -65,6 +66,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	private class BruteForceAdapter implements Adapter<BruteForcePackagerResult> {
 
 		private final DefaultPermutationRotationIterator[] iterators;
+		private final ContainerStackValue[] containerStackValue;
 		private final List<Container> containers;
 		private final BooleanSupplier interrupt;
 		private final ExtremePoints3DStack extremePoints3D;
@@ -73,13 +75,15 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		public BruteForceAdapter(List<StackableItem> stackableItems, List<Container> containers, BooleanSupplier interrupt) {
 			this.containers = containers;
 			this.iterators = new DefaultPermutationRotationIterator[containers.size()];
-			
+			this.containerStackValue = new ContainerStackValue[containers.size()];
+
 			for (int i = 0; i < containers.size(); i++) {
 				Container container = containers.get(i);
 				
-				StackValue[] stackValues = container.getStackValues();
+				ContainerStackValue stackValue = container.getStackValues()[0];
 				
-				iterators[i] = new DefaultPermutationRotationIterator(new Dimension(stackValues[0].getDx(), stackValues[0].getDy(), stackValues[0].getDz()), stackableItems);
+				containerStackValue[i] = stackValue;
+				iterators[i] = new DefaultPermutationRotationIterator(new Dimension(stackValue.getDx(), stackValue.getDy(), stackValue.getDz()), stackableItems);
 			}
 
 			this.interrupt = interrupt;
@@ -101,7 +105,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			}
 			// TODO break if this container cannot beat the existing best result
 			
-			return BruteForcePackager.this.pack(extremePoints3D, stackPlacements, containers.get(i), iterators[i], interrupt);
+			return BruteForcePackager.this.pack(extremePoints3D, stackPlacements, containers.get(i), containerStackValue[i], iterators[i], interrupt);
 		}
 
 		@Override

@@ -107,7 +107,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 
 		int levelOffset = 0;
 		
-		while(!scopedStackables.isEmpty()) {
+		while(!scopedStackables.isEmpty() && levelOffset < containerStackValue.getLoadDz()) {
 			if(interrupt.getAsBoolean()) {
 				// fit2d below might have returned due to deadline
 
@@ -115,7 +115,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			}
 			
 			int maxWeight = stack.getFreeWeightLoad();
-			int maxHeight = stack.getFreeLoadDz();
+			int maxHeight = containerStackValue.getLoadDz() - levelOffset;
 
 			// there is only point, spanning the free space in the level
 			Point2D<StackPlacement> firstPoint = extremePoints2D.getValue(0); 
@@ -268,13 +268,8 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			}
 			
 			levelOffset += levelHeight;
-			
-			int remainingDz = containerStackValue.getLoadDz() - levelOffset;
-			if(remainingDz == 0) {
-				break;
-			}
-			
-			extremePoints2D.reset(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), remainingDz);
+
+			extremePoints2D.reset(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), -1);
 		}
 		
 		return new LargestAreaFitFirstPackagerResult(stack, new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack), remainingStackables.isEmpty());
