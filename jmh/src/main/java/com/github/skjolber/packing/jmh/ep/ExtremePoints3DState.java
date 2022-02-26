@@ -13,10 +13,10 @@ import org.openjdk.jmh.annotations.TearDown;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPlacement3D;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
-import com.github.skjolber.packing.test.BouwkampCode;
-import com.github.skjolber.packing.test.BouwkampCodeDirectory;
-import com.github.skjolber.packing.test.BouwkampCodeLine;
-import com.github.skjolber.packing.test.BouwkampCodes;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 @State(Scope.Benchmark)
 public class ExtremePoints3DState {

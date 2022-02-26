@@ -241,8 +241,9 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				maxRemainingLevelWeight -= remove.getWeight();
 			}
 			
+			// move boxes up
 			for (StackPlacement stackPlacement : levelStack.getPlacements()) {
-				stackPlacement.setZ(levelOffset);
+				stackPlacement.setZ(levelOffset + stackPlacement.getAbsoluteZ());
 			}
 			
 			levelOffset += firstStackValue.getDz();

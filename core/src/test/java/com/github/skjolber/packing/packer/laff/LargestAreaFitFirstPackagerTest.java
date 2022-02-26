@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -20,6 +19,8 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
+import com.github.skjolber.packing.test.assertj.StackAssert;
+import com.github.skjolber.packing.test.assertj.StackAssert;
 
 public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
@@ -39,6 +40,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
+		validate(fits);
 
 		List<StackPlacement> placements = fits.getStack().getPlacements();
 
@@ -67,6 +69,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
+		validate(fits);
 
 		List<StackPlacement> placements = fits.getStack().getPlacements();
 
@@ -92,6 +95,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
+		validate(fits);
 	}
 
 	@Test
@@ -110,6 +114,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
+		validate(fits);
 
 		List<StackPlacement> placements = fits.getStack().getPlacements();
 
@@ -134,6 +139,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
+		validate(fits);
 
 		LevelStack levelStack = (LevelStack)fits.getStack();
 		assertEquals(2, levelStack.getLevels().size());
@@ -165,6 +171,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		Container fits = packager.pack(products);
 
 		assertNotNull(fits);
+		validate(fits);
 
 		LevelStack levelStack = (LevelStack)fits.getStack();
 		assertEquals(3, levelStack.getLevels().size());
@@ -185,7 +192,6 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1)); // 1
 
 		Container fits = packager.pack(products);
-
 		assertNull(fits);
 	}
 
@@ -248,8 +254,38 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 			assertNotNull(packList);
 			assertTrue(i >= packList.size());
+			validate(packList);
 		}
 
+	}
+	
+	@Test
+	void testCorrectLevelZOffsetAdjustments() { // issue 450
+		DefaultContainer build = Container.newBuilder()
+				.withDescription("1")
+				.withSize(2352, 2394, 12031)
+				.withEmptyWeight(4000)
+				.withMaxLoadWeight(26480)
+				.build();
+
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder()
+				.withContainers(Arrays.asList(build))
+				.build();
+
+		int boxCountPerStackableItem = 1;
+
+		List<StackableItem> stackableItems = Arrays.asList(
+	            createStackableItem("1", 1200, 750, 2280, 285, boxCountPerStackableItem),
+	            createStackableItem("2", 1200, 450, 2280, 155, boxCountPerStackableItem),
+	            createStackableItem("3", 360, 360, 570, 20, boxCountPerStackableItem),
+	            createStackableItem("4", 2250, 1200, 2250, 900, boxCountPerStackableItem),
+	            createStackableItem("5", 1140, 750, 1450, 395, boxCountPerStackableItem),
+	            createStackableItem("6", 1130, 1500, 3100, 800, boxCountPerStackableItem),
+	            createStackableItem("7", 800, 490, 1140, 156, boxCountPerStackableItem)
+				);
+
+		List<Container> packList = packager.packList(stackableItems, 1);
+		validate(packList);
 	}
 
 	private StackableItem createStackableItem(String id, int width, int height,int depth, int weight, int boxCountPerStackableItem) {
@@ -261,6 +297,17 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				.build();
 
 		return new StackableItem(box, boxCountPerStackableItem);
+	}
+
+	
+	void validate(Container container) {
+		StackAssert.assertThat(container.getStack()).placementsDoNotIntersect();
+	}
+
+	void validate(List<Container> list) {
+		for (Container container : list) {
+			StackAssert.assertThat(container.getStack()).placementsDoNotIntersect();
+		}
 	}
 
 }

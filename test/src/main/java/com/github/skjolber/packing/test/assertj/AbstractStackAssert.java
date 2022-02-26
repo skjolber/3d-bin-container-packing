@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.test.assertj;
 
+import java.util.List;
+
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.github.skjolber.packing.api.ContainerStackValue;
@@ -20,6 +22,23 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		return myself;
 	}
 
+	public SELF placementsDoNotIntersect() {
+		isNotNull();
+		
+		List<StackPlacement> entries = actual.getPlacements();
+		
+		for(StackPlacement stackPlacement1 : entries) {
+			for(StackPlacement stackPlacement2 : entries) {
+				if(stackPlacement1 != stackPlacement2) {
+					if(stackPlacement1.intersects(stackPlacement2)) {
+						failWithMessage(stackPlacement1 + " intersects " + stackPlacement2 + " for stack " + actual.getClass().getName());
+					}
+				}
+			}
+		}
+		return myself;
+	}
+	
 	public SELF isWithinLoadDimensions() {
 		isNotNull();
 		

@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.points.BouwkampConverter;
 import com.github.skjolber.packing.points.DefaultExtremePoints3D;
-import com.github.skjolber.packing.test.BouwkampCode;
-import com.github.skjolber.packing.test.BouwkampCodeDirectory;
-import com.github.skjolber.packing.test.BouwkampCodes;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 public class BouwcampCodesExtremePoints3DTest {
 

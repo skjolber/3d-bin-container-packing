@@ -24,7 +24,7 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
     <artifactId>core</artifactId>
-    <version>2.0.5</version>
+    <version>2.0.6</version>
 </dependency>
 ```
 
@@ -143,19 +143,12 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
 
 # History
+ * 2.0.6: Fix issue #450
  * 2.0.5: Fix issue #440 and #433
  * 2.0.4: Performance improvements, minor bug fixes.
  * 2.0.2: Fix bug with multiple containers.
  * 2.0.1: Performance improvements.
  * 2.0.0: Major refactoring and improvements. Note: __New Maven coordinates__
- * 1.2.14: Fix for issue #297.
- * 1.2.13: Fix for issue #251.
- * 1.2.12: Fix for issue #245.
- * 1.2.11: Add test artifact, improve use of deadline for better performance, some bugfixes.
- * 1.2.10: Tweak LAFF selecetion of 'best space' for equally sized boxes (issue #168).
- * 1.2.9: If the 'remainder' space cannot be used, attempt to expand it with [unused space](https://github.com/skjolber/3d-bin-container-packing/blob/b78f4b8ff62f4c3cd531a160d36c4dc1f23c8897/core/src/main/java/com/github/skjolber/packing/LargestAreaFitFirstPackager.java#L250).
- * 1.2.8: Java module for JDK 9+ (multi-release jar). That was painful.
- * 1.2.6: Refactor project structure into multi-module. New group- and artifact-id.
 
 [1]: 				https://en.wikipedia.org/wiki/Bin_packing_problem
 [2]: 				https://www.drupal.org/files/An%20Efficient%20Algorithm%20for%203D%20Rectangular%20Box%20Packing.pdf

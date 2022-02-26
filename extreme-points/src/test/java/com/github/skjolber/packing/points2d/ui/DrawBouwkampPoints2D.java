@@ -4,9 +4,9 @@ import java.util.List;
 
 import com.github.skjolber.packing.points.BouwkampConverter;
 import com.github.skjolber.packing.points.DefaultExtremePoints2D;
-import com.github.skjolber.packing.test.BouwkampCode;
-import com.github.skjolber.packing.test.BouwkampCodeDirectory;
-import com.github.skjolber.packing.test.BouwkampCodes;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 public class DrawBouwkampPoints2D {
 

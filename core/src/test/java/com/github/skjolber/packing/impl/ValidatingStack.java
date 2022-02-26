@@ -8,7 +8,7 @@ public class ValidatingStack extends DefaultStack {
 	public void add(StackPlacement e) {
 		for(StackPlacement stackPlacement : entries) {
 			if(stackPlacement.intersects(e)) {
-				throw new RuntimeException(e + " intersects " + stackPlacement);
+				throw new IllegalArgumentException(e + " intersects " + stackPlacement);
 			}
 		}
 		super.add(e);
