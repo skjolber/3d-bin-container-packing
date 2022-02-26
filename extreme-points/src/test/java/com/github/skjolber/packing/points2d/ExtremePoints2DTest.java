@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.Point2D;
@@ -702,9 +704,10 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValues()).hasSize(0);
 	}
 	
-	@Test
-	public void testFloatingX() {
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(1000, 1000);
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testFloatingX(boolean b) {
+		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(1000, 1000, b);
 		ep.add(0, new DefaultPlacement2D(0, 0, 49, 99));
 		assertThat(ep.getValue(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
 				
@@ -1000,9 +1003,10 @@ public class ExtremePoints2DTest {
 
 	}
 
-	@Test
-	public void testFloatingY() {
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(1000, 1000);
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testFloatingY(boolean b) {
+		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(1000, 1000, b);
 		ep.add(0, new DefaultPlacement2D(0, 0, 49, 99));
 		assertThat(ep.getValue(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
 				

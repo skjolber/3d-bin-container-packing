@@ -37,8 +37,8 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 	protected final Point2DList<P, Point2D<P>> addXX = new Point2DList<>();
 	protected final Point2DList<P, Point2D<P>> addYY = new Point2DList<>();
 
-	protected final IntArrayList negativeMoveToYY = new IntArrayList();
-	protected final IntArrayList negativeMoveToXX = new IntArrayList();
+	protected final IntArrayList moveToYY = new IntArrayList();
+	protected final IntArrayList moveToXX = new IntArrayList();
 
 	protected P containerPlacement;
 
@@ -156,14 +156,19 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		int pointIndex;
 		if(yySupport) {
 			// b and c only
-			pointIndex = binarySearchMinusMinX(placement.getAbsoluteX());
+			
+			// already have index for point at absoluteX
+			pointIndex = index;
+        	while(pointIndex > 0 && values.get(pointIndex - 1).getMinX() == placement.getAbsoluteX()) {
+        		pointIndex--;
+        	}
 		} else {
 			pointIndex = 0;
 		}
 		int endIndex = binarySearchPlusMinX(placement.getAbsoluteEndX());
 		
-		negativeMoveToXX.ensureCapacity(endIndex);
-		negativeMoveToYY.ensureCapacity(endIndex);
+		moveToXX.ensureCapacity(endIndex);
+		moveToYY.ensureCapacity(endIndex);
 		
 		addXX.ensureAdditionalCapacity(values.size());
 		addYY.ensureAdditionalCapacity(values.size());
@@ -219,10 +224,10 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 				//
 
 				if(canMoveX(point, xx)) {
-					negativeMoveToXX.add(i);
+					moveToXX.add(i);
 				}
 				if(canMoveY(point, yy)) {
-					negativeMoveToYY.add(i);
+					moveToYY.add(i);
 				}
 				
 				values.flag(i);
@@ -265,21 +270,21 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			// does any point intersect the xx, yy or zz planes?
 			if(canMoveX(point, xx)) {
 				// yz plane
-				negativeMoveToXX.add(i);
+				moveToXX.add(i);
 			}
 			
 			if(canMoveY(point, yy)) {
 				// xz plane
-				negativeMoveToYY.add(i);
+				moveToYY.add(i);
 			}
 		}
 		
-		if(!negativeMoveToXX.isEmpty()) {
-			negativeMoveToXX.sortThis(COMPARATOR_MOVE_TO_XX);
+		if(!moveToXX.isEmpty()) {
+			moveToXX.sortThis(COMPARATOR_MOVE_TO_XX);
 			
 			add:
-			for(int i = 0; i < negativeMoveToXX.size(); i++) {
-				Point2D<P> p = values.get(negativeMoveToXX.get(i));
+			for(int i = 0; i < moveToXX.size(); i++) {
+				Point2D<P> p = values.get(moveToXX.get(i));
 				// add point on the other side
 				// with x support
 				for(int k = 0; k < addXX.size(); k++) {
@@ -295,12 +300,12 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			}			
 		}
 		
-		if(!negativeMoveToYY.isEmpty()) {
-			negativeMoveToYY.sortThis(COMPARATOR_MOVE_TO_YY);
+		if(!moveToYY.isEmpty()) {
+			moveToYY.sortThis(COMPARATOR_MOVE_TO_YY);
 			
 			add:
-			for(int i = 0; i < negativeMoveToYY.size(); i++) {
-				Point2D<P> p = values.get(negativeMoveToYY.get(i));
+			for(int i = 0; i < moveToYY.size(); i++) {
+				Point2D<P> p = values.get(moveToYY.get(i));
 				
 				// add point on the other side
 				// with x support
@@ -317,30 +322,66 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		}
 
 		if(xxSupport && yySupport) {
-			for (int i = pointIndex; i < endIndex; i++) {
-				if(values.isFlag(i)) {
-					continue;
-				}
-				
-				Point2D<P> point = values.get(i);
-				if(point.getMinY() < placement.getAbsoluteY() && withinX(point.getMinX(), placement)) {
-					if(point.getMaxY() >= placement.getAbsoluteY()) {
-						point.setMaxY(placement.getAbsoluteY() - 1);
-						if(point.getArea() < minAreaLimit) {
-							values.flag(i);
-						}
-					}
-				} else if(point.getMinX() < placement.getAbsoluteX() && withinY(point.getMinY(), placement)) {
-					if(point.getMaxX() >= placement.getAbsoluteX()) {
-						point.setMaxX(placement.getAbsoluteX() - 1);
-						if(point.getArea() < minAreaLimit) {
-							values.flag(i);
-						}
-					}
-				}
+			// no constrain necessary
+		} else if(yySupport) {
+			
+			//
+			// vmaxY |                    
+			//       |          
+			//  yy   |        ║ - - - |
+			//       |        ║
+			//       |        ║       |
+			//       |        ║              
+			//       |        ║       |
+			//       |        ║  
+			//  minY |        x - - - |
+			//       |          *   *
+			//       |        *   *
+			//       |          *    *
+			//       |-----------------------------
+			//               minX    maxX
+			//   
+			// so only those points between 0 and minY 
+			// and between minX and maxX need to be constrained
+			
+			if(cloneOnConstrain) {
+				constrainMaxYWithClone(placement, pointIndex, endIndex);
+			} else {
+				constrainMaxY(placement, pointIndex, endIndex);
+			}
+		} else if(xxSupport) {
+			
+			//       |
+			//       |
+			//       |     *  |---------------| 
+			//       | *     
+			//       |    *   |               |
+			//       |  * 
+			//  minY |    *   x════════════════        
+			//       |                     
+			//       |                    
+			//       |--------------------------
+			//               minX             maxX
+			//
+			// so only those points between 0 and minX 
+			// and between minY and maxY need to be constrained
+			
+			pointIndex = index;
+        	while(pointIndex > 0 && values.get(pointIndex - 1).getMinX() == placement.getAbsoluteX()) {
+        		pointIndex--;
+        	}
+
+			if(cloneOnConstrain) {
+				constrainMaxXWithClone(placement, 0, pointIndex);
+			} else {
+				constrainMaxX(placement, 0, pointIndex);
 			}
 		} else {
-			constrainFloatingMax(placement, endIndex);			
+			if(cloneOnConstrain) {
+				constrainFloatingMaxWithClone(placement, endIndex);
+			} else {
+				constrainFloatingMax(placement, endIndex);
+			}
 		}
 		
 		endIndex -= values.removeFlagged();
@@ -370,53 +411,308 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		
 		values.sort(Point2D.COMPARATOR_X_THEN_Y, endIndex);
 
-		negativeMoveToXX.clear();
-		negativeMoveToYY.clear();
+		moveToXX.clear();
+		moveToYY.clear();
 		
 		addXX.clear();
 		addYY.clear();
 		
 		return !values.isEmpty();
 	}
+
+	private void constrainMaxXWithClone(P placement, int pointIndex, int endIndex) {
+		for (int i = pointIndex; i < endIndex; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+			
+			Point2D<P> point = values.get(i);
+			if(point.getMinX() < placement.getAbsoluteX() && withinY(point.getMinY(), placement)) {
+				if(point.getMaxX() >= placement.getAbsoluteX()) {
+					int limitX = placement.getAbsoluteX() - 1;
+					if(!isConstrainedAtMaxX(point, limitX)) {
+						Point2D<P> clone = point.clone(limitX, point.getMaxY());
+						
+						addXX.add(clone);
+					}
+				
+					values.flag(i);
+				}
+			}
+		}
+	}
+	
+	private void constrainMaxYWithClone(P placement, int pointIndex, int endIndex) {
+		for (int i = pointIndex; i < endIndex; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+			
+			Point2D<P> point = values.get(i);
+			if(point.getMinY() < placement.getAbsoluteY() && withinX(point.getMinX(), placement)) {
+				if(point.getMaxY() >= placement.getAbsoluteY()) {
+					int limitY = placement.getAbsoluteY() - 1;
+					if(!isConstrainedAtMaxY(point, limitY)) {
+						Point2D<P> clone = point.clone(point.getMaxX(), limitY);
+						
+						addXX.add(clone);
+					}
+					values.flag(i);
+				}
+			}
+		}
+	}	
+
+	private void constrainMaxX(P placement, int pointIndex, int endIndex) {
+		for (int i = pointIndex; i < endIndex; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+			
+			Point2D<P> point = values.get(i);
+			if(point.getMinX() < placement.getAbsoluteX() && withinY(point.getMinY(), placement)) {
+				if(point.getMaxX() >= placement.getAbsoluteX()) {
+					point.setMaxX(placement.getAbsoluteX() - 1);
+					if(point.getArea() < minAreaLimit) {
+						values.flag(i);
+					}
+				}
+			}
+		}
+	}
+	
+	private void constrainMaxY(P placement, int pointIndex, int endIndex) {
+		for (int i = pointIndex; i < endIndex; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+			
+			Point2D<P> point = values.get(i);
+			if(point.getMinY() < placement.getAbsoluteY() && withinX(point.getMinX(), placement)) {
+				if(point.getMaxY() >= placement.getAbsoluteY()) {
+					point.setMaxY(placement.getAbsoluteY() - 1);
+					if(point.getArea() < minAreaLimit) {
+						values.flag(i);
+					}
+				}
+			}
+		}
+	}
+		
 	
 	protected void removeEclipsed(int limit) {
+		
+		//   unsorted        sorted
+		// |   new    |   existing / current |
+		// |----------|----------------------|--> x
+
+		Point2DFlagList<P> values = this.values;
+		
+		int size = values.size();
+		
 		added:
 		for (int i = 0; i < limit; i++) {
 			if(values.isFlag(i) ) {
 				continue;
 			}
-			Point2D<P> p1 = values.get(i);
+			Point2D<P> unsorted = values.get(i);
 
-			for(int index = limit; index < values.size(); index++) {
+			for(int index = limit; index < size; index++) {
 				if(values.isFlag(index) ) {
 					continue;
 				}
-				Point2D<P> value = values.get(index);
-				if(value.eclipses(p1)) {
-					values.flag(i);
-					continue added;
+				Point2D<P> sorted = values.get(index);
+				if(sorted.getMinX() > unsorted.getMinX()) {
+					// so sorted cannot contain unsorted
+					// at this index or later
+					break;
 				}
+				if(unsorted.getArea() <= sorted.getArea()) {
+					if(sorted.eclipses(unsorted)) {
+						values.flag(i);
+						continue added;
+					}
+				}
+			}
+			
+			// all new points are the result of moving or constraining
+			// existing points, so none of the new points 
+			// can contain the old, less the previous points would
+			// already have contained them.			
+		}
+	}
+	
+	protected void constrainFloatingMaxWithClone(P placement, int limit) {
+
+		Point2DFlagList<P> values = this.values;
+		Point2DList<P, Point2D<P>> addXX = this.addXX;
+		Point2DList<P,Point2D<P>> addYY = this.addYY;
+		
+		addXX.ensureAdditionalCapacity(limit);
+		addYY.ensureAdditionalCapacity(limit);
+		
+		for (int i = 0; i < limit; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+			
+			Point2D<P> point = values.get(i);
+
+			if(
+					placement.getAbsoluteEndY() < point.getMinY() ||
+					placement.getAbsoluteEndX() < point.getMinX() ||
+					placement.getAbsoluteX() > point.getMaxX() || 
+					placement.getAbsoluteY() > point.getMaxY()
+					) {
+					continue;
 			}
 
-			// add value
-			// do we want to remove any of the existing?
-			for(int index = limit; index < values.size(); index++) {
-				if(values.isFlag(index) ) {
-					continue;
-				}
-				Point2D<P> value = values.get(index);
-				if(p1.eclipses(value)) {
-					values.flag(index);
+			// Points eclipsed by others:
+			// before add
+			//    
+			//    |
+			//    |--------|
+			//    |        |
+			//    |--------| 
+			//    |
+			//    |
+			//    |
+			// a  *        *      |---------|
+			//    |               |         |
+			//    |               |         |
+			//    *--------*------|---------|-----
+			//    c        b
+
+			//  after add
+			//             
+			//    |        |---------|
+			//    |--------|         | 
+			//    |        |         |
+			//    |--------|         |
+			//    |        |         |
+			//    |        |         |
+			// a  *        |------|--|------|
+			//    |               |         |
+			//    |               |         |
+			//    *--------*------|---------|-----
+			//    c        b
+			
+			//
+			// Point c is split in two, each of which eclipse a or b
+			//
+			// So that we end up with
+			//             
+			//    |        |---------|
+			//    |--------|         | 
+			//    |        |         |
+			//    |--------|         |
+			//    |        |         |
+			//    |        |         |
+			//    |        |------|--|------|
+			//    |               |         |
+			//    |               |         |
+			//    *---------------|---------|-----
+			//    c         
+
+			
+			addX: 
+			if(point.getMinX() < placement.getAbsoluteX()) {
+				int limitX = placement.getAbsoluteX() - 1;
+				if(!isConstrainedAtMaxX(point, limitX)) {
+					Point2D<P> clone = point.clone(limitX, point.getMaxY());
+
+					// is the point now eclipsed by current points?
+					for (int j = 0; j < i - 1; j++) {
+						if(values.isFlag(j)) {
+							continue;
+						}
+						Point2D<P> point3d = values.get(j);
+						if(point3d.getMinX() > clone.getMinX()) {
+							break;
+						}
+
+						if(point3d.getArea() >= clone.getArea()) {
+							if(point3d.eclipses(clone)) {
+								break addX;
+							}
+						}
+					}
+					
+					// is the point now eclipsed by new points?
+					for (int j = 0; j < addXX.size(); j++) {
+						Point2D<P> point3d = addXX.get(j);
+						
+						if(point3d.getArea() >= clone.getArea()) {
+							if(point3d.eclipses(clone)) {
+								break addX;
+							}
+						}
+					}
+
+					addXX.add(clone);
 				}
 			}
+			
+			addY:
+			if(point.getMinY() < placement.getAbsoluteY()) {
+				int limitY = placement.getAbsoluteY() - 1;
+				if(!isConstrainedAtMaxY(point, limitY)) {
+					Point2D<P> clone = point.clone(point.getMaxX(), limitY);
+					
+					// is the point now eclipsed by current points?
+					for (int j = 0; j < i - 1; j++) {
+						if(values.isFlag(j)) {
+							continue;
+						}
+						Point2D<P> point3d = values.get(j);
+						if(point3d.getMinX() > clone.getMinX()) {
+							break;
+						}
+
+						if(point3d.getArea() >= clone.getArea()) {
+							if(point3d.eclipses(clone)) {
+								break addY;
+							}
+						}
+					}
+					
+					// is the point now eclipsed by new points?
+					for (int j = 0; j < addYY.size(); j++) {
+						Point2D<P> point3d = addYY.get(j);
+						
+						if(point3d.getArea() >= clone.getArea()) {
+							if(point3d.eclipses(clone)) {
+								break addY;
+							}
+						}
+					}
+					
+					addYY.add(clone);
+				}
+			}
+			
+			values.flag(i);
 		}
 	}
 
+
 	protected void constrainFloatingMax(P placement, int limit) {
 
+		Point2DFlagList<P> values = this.values;
+		Point2DList<P, Point2D<P>> addXX = this.addXX;
+		Point2DList<P,Point2D<P>> addYY = this.addYY;
+		long minAreaLimit = this.minAreaLimit;
+		
 		addXX.ensureAdditionalCapacity(limit);
 		addYY.ensureAdditionalCapacity(limit);
+		
+		int startAddXX = addXX.size();
+		int startAddYY = addYY.size();
+		
+		boolean splitXX = false;
+		boolean splitYY = false;
 
+		limitLoop:
 		for (int i = 0; i < limit; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -424,104 +720,199 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			
 			Point2D<P> point = values.get(i);
 			
-			if(placement.getAbsoluteEndX() < point.getMinX()) {
+			if(
+				placement.getAbsoluteEndY() < point.getMinY() ||
+				placement.getAbsoluteEndX() < point.getMinX() ||
+				placement.getAbsoluteX() > point.getMaxX() || 
+				placement.getAbsoluteY() > point.getMaxY()
+				) {
 				continue;
 			}
 
-			if(placement.getAbsoluteEndY() < point.getMinY()) {
-				continue;
-			}
-
-			if(placement.getAbsoluteX() > point.getMaxX()) {
-				continue;
-			}
-
-			if(placement.getAbsoluteY() > point.getMaxY()) {
-				continue;
-			}	
-
-			boolean x = placement.getAbsoluteX() <= point.getMaxX();
-			boolean y = placement.getAbsoluteY() <= point.getMaxY();
-
-			boolean constrain = x && y;
-			if(!constrain) {
-				continue;
-			}
-			
-			if(!cloneOnConstrain) {
-				if(point.getMinY() >= placement.getAbsoluteY()) {
-					// adjusting x is sufficient
-					if(point.getMinX() < placement.getAbsoluteX()) {
-						point.setMaxX(placement.getAbsoluteX() - 1);
-						
-						if(point.getArea() < minAreaLimit) {
-							values.flag(i);
-							
-							continue;
-						}
-						
-						// is the point now eclipsed?
-						for (int j = 0; j < i - 1; j++) {
-							Point2D<P> point3d = values.get(j);
-							
-							if(point3d.eclipses(point)) {
-								values.flag(i);
-								
-								break;
-							}
-						}
-					} else {
-						values.flag(i);
-					}
-					continue;
-				}
-				if(point.getMinX() >= placement.getAbsoluteX()) {
-					// adjusting y is sufficient
-					if(point.getMinY() < placement.getAbsoluteY()) {
-						point.setMaxY(placement.getAbsoluteY() - 1);
-						
-						if(point.getArea() < minAreaLimit) {
-							values.flag(i);
-							
-							continue;
-						}
-
-						// is the point now eclipsed?
-						for (int j = 0; j < i - 1; j++) {
-							Point2D<P> point3d = values.get(j);
-							
-							if(point3d.eclipses(point)) {
-								values.flag(i);
-								
-								break;
-							}
-						}
-					} else {
-						values.flag(i);
-					}
-					continue;
-				}
-			}
-			
-			if(x) {
+			if(point.getMinY() >= placement.getAbsoluteY()) {
+				// point is to the left of placement
+				// adjusting max x is sufficient
 				if(point.getMinX() < placement.getAbsoluteX()) {
-					if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
-						addXX.add(point.clone(placement.getAbsoluteX() - 1, point.getMaxY()));
+					point.setMaxX(placement.getAbsoluteX() - 1);
+					if(point.getArea() < minAreaLimit) {
+						values.flag(i);
+						
+						continue;
 					}
+					
+					// is the point now eclipsed by current points?
+					for (int j = 0; j < i - 1; j++) {
+						if(values.isFlag(j)) {
+							continue;
+						}
+						Point2D<P> point3d = values.get(j);
+						if(point3d.getMinX() > point.getMinX()) {
+							break;
+						}
+						
+						if(point3d.getArea() >= point.getArea()) {
+							if(point3d.eclipses(point)) {
+								values.flag(i);
+								
+								continue limitLoop;
+							}
+						}
+					}
+					
+					if(splitXX) {
+						// is the point now eclipsed by new points?
+						for (int j = startAddXX; j < addXX.size(); j++) {
+							Point2D<P> point3d = addXX.get(j);
+							
+							if(point3d.getArea() >= point.getArea()) {
+								if(point3d.eclipses(point)) {
+									values.flag(i);
+									
+									break;
+								}
+							}
+						}
+					}
+				} else {
+					values.flag(i);
 				}
+				continue;
 			}
 			
-			if(y) {
+			if(point.getMinX() >= placement.getAbsoluteX()) {
+				// point is below placement
+				// adjusting max y is sufficient
 				if(point.getMinY() < placement.getAbsoluteY()) {
-					if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
-						addYY.add(point.clone(point.getMaxX(), placement.getAbsoluteY() - 1));
+					point.setMaxY(placement.getAbsoluteY() - 1);
+					
+					if(point.getArea() < minAreaLimit) {
+						values.flag(i);
+						
+						continue;
 					}
+
+					// is the point now eclipsed by current points?
+					for (int j = 0; j < i - 1; j++) {
+						if(values.isFlag(j)) {
+							continue;
+						}
+						Point2D<P> point3d = values.get(j);
+						if(point3d.getMinX() > point.getMinX()) {
+							break;
+						}
+						
+						if(point3d.getArea() >= point.getArea()) {
+							if(point3d.eclipses(point)) {
+								values.flag(i);
+								
+								continue limitLoop;
+							}
+						}
+					}
+					
+					if(splitYY) {
+						// is the point now eclipsed by new points?
+						for (int j = startAddYY; j < addYY.size(); j++) {
+							Point2D<P> point3d = addYY.get(j);
+							
+							if(point3d.getArea() >= point.getArea()) {
+								if(point3d.eclipses(point)) {
+									values.flag(i);
+									
+									break;
+								}
+							}
+						}
+					}
+					
+				} else {
+					values.flag(i);
 				}
+				continue;
+			}
+			
+			// before add
+			//    
+			//    |
+			//    |--------|
+			//    |        |
+			//    |--------| 
+			//    |
+			//    |
+			//    |
+			// a  *        *      |---------|
+			//    |               |         |
+			//    |               |         |
+			//    *--------*------|---------|-----
+			//    c        b
+
+			//  after add
+			//             
+			//    |        |---------|
+			//    |--------|         | 
+			//    |        |         |
+			//    |--------|         |
+			//    |        |         |
+			//    |        |         |
+			// a  *        |------|--|------|
+			//    |               |         |
+			//    |               |         |
+			//    *--------*------|---------|-----
+			//    c        b
+			
+			//
+			// Point c is split in two, each of which eclipse a or b
+			//
+			// So that we end up with
+			//             
+			//    |        |---------|
+			//    |--------|         | 
+			//    |        |         |
+			//    |--------|         |
+			//    |        |         |
+			//    |        |         |
+			//    |        |------|--|------|
+			//    |               |         |
+			//    |               |         |
+			//    *---------------|---------|-----
+			//    c         
+			//
+			// i.e. with c
+			//             
+			//    |--------|         
+			//    |        |         
+			//    |        |         
+			//    |        |
+			//    |        |          
+			//    |        |                
+			//    *--------|----------------------
+			//
+			// and
+			//
+			//    |         
+			//    |                 
+			//    |                 
+			//    |---------------|
+			//    |               |         
+			//    |               |         
+			//    *---------------|--------------
+			//             
+			
+			if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
+				Point2D<P> clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY());
+				addXX.add(clone);
+
+				splitXX = true;
+			}
+			if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
+				Point2D<P> clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1);
+				addYY.add(clone);
+				
+				splitYY = true;
 			}
 			
 			values.flag(i);
 		}
-		
 	}
 	
 	private boolean isConstrainedAtMaxX(Point2D<P> p, int maxX) {
@@ -659,6 +1050,8 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
             	do {
             		mid++;
             	} while(mid < values.size() && values.get(mid).getMinX() == key);
+            	
+            	// so if there was multiple points at key, we are at the index of the last of them, plus one.
             	
                 return mid; 
             }

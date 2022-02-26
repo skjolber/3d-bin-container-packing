@@ -361,7 +361,13 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	}
 	
 	public boolean eclipses(Point3D<P> point) {
-		return eclipsesX(point) && eclipsesY(point) && eclipsesZ(point);
+		return 
+				minX <= point.getMinX() && 
+				minY <= point.getMinY() && 
+				minZ <= point.getMinZ() && 
+				point.getMaxX() <= maxX &&
+				point.getMaxY() <= maxY &&
+				point.getMaxZ() <= maxZ;
 	}
 
 	public boolean eclipsesX(Point2D<P> point) {

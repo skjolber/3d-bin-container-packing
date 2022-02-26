@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import java.util.logging.Logger;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerStackValue;
@@ -30,6 +31,8 @@ import com.github.skjolber.packing.packer.AbstractPackager;
  */
 
 public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteForcePackagerResult, BruteForcePackagerResultBuilder> {
+	
+	private static Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
 	
 	public AbstractBruteForcePackager(List<Container> containers, int checkpointsPerDeadlineCheck) {
 		super(containers, checkpointsPerDeadlineCheck);
@@ -108,7 +111,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		extremePoints.reset(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
 		extremePoints.setMinimumAreaAndVolumeLimit(iterator.getMinStackableArea(), iterator.getMinStackableVolume());
 
-		return packStackPlacement(extremePoints, placements, iterator, stack, maxLoadWeight, 0, interrupt, containerStackValue.getConstraint());
+		try {
+			// note: currently implemented as a recursive algorithm
+			return packStackPlacement(extremePoints, placements, iterator, stack, maxLoadWeight, 0, interrupt, containerStackValue.getConstraint());
+		} catch(StackOverflowError e) {
+			LOGGER.warning("Stack overflow occoured for " + placements.size() + " boxes. Limit number of boxes or increase thread stack") ;
+			return null;
+		}
 	}
 	
 	private List<Point3D<StackPlacement>> packStackPlacement(ExtremePoints3DStack extremePointsStack, List<StackPlacement> placements, PermutationRotationIterator rotator, Stack stack, int maxLoadWeight, int placementIndex, BooleanSupplier interrupt, StackConstraint constraint) {

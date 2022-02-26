@@ -257,10 +257,6 @@ public class FastBruteForcePackager extends AbstractPackager<FastBruteForcePacka
 			
 			int pointCount = extremePoints3D.getValueCount();
 			
-			// TODO brute force in 3d point dimension too
-			// a recursive algorithm is perhaps appropriate since the number of boxes is limited
-			// so there 
-			
 			int bestPointIndex = -1;
 			for(int k = 0; k < pointCount; k++) {
 				Point3D<StackPlacement> point3d = extremePoints3D.getValue(k);
