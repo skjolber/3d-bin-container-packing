@@ -17,9 +17,9 @@ import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.test.BouwkampCode;
-import com.github.skjolber.packing.test.BouwkampCodeDirectory;
-import com.github.skjolber.packing.test.BouwkampCodes;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 @State(Scope.Benchmark)
 public class PackagerState {

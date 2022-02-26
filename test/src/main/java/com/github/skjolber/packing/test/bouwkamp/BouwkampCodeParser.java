@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.test;
+package com.github.skjolber.packing.test.bouwkamp;
 
 import java.io.BufferedReader;
 import java.io.IOException;

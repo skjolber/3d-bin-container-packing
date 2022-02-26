@@ -16,7 +16,6 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
-import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 
 public class PlainPackagerTest {
 

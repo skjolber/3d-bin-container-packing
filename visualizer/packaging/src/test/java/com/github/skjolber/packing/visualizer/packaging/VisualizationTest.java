@@ -32,10 +32,11 @@ import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.test.BouwkampCode;
-import com.github.skjolber.packing.test.BouwkampCodeDirectory;
-import com.github.skjolber.packing.test.BouwkampCodeLine;
-import com.github.skjolber.packing.test.BouwkampCodes;
+import com.github.skjolber.packing.test.assertj.StackAssert;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 public class VisualizationTest {
 
@@ -274,8 +275,7 @@ public class VisualizationTest {
 		}
 
 		// shuffle
-		//Collections.shuffle(products);
-		Collections.reverse(products);
+		Collections.shuffle(products);
 		
 		Container fits = packager.pack(products);
 		assertNotNull(bouwkampCode.getName(), fits);

@@ -14,10 +14,10 @@ import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.ep.points2d.DefaultPlacement2D;
 import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
-import com.github.skjolber.packing.test.BouwkampCode;
-import com.github.skjolber.packing.test.BouwkampCodeDirectory;
-import com.github.skjolber.packing.test.BouwkampCodeLine;
-import com.github.skjolber.packing.test.BouwkampCodes;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 @State(Scope.Benchmark)
 public class ExtremePoints2DState {

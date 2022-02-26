@@ -262,8 +262,9 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 				
 			}
 			
+			// move boxes up 
 			for (StackPlacement stackPlacement : levelStack.getPlacements()) {
-				stackPlacement.setZ(levelOffset);
+				stackPlacement.setZ(levelOffset); // all z positions are zero and thus omitted
 			}
 			
 			levelOffset += levelHeight;
