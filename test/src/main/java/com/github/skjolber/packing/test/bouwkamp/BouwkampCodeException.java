@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.test;
+package com.github.skjolber.packing.test.bouwkamp;
 
 public class BouwkampCodeException extends RuntimeException {
 

@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.test;
+package com.github.skjolber.packing.test.bouwkamp;
 
 import java.util.ArrayList;
 import java.util.List;

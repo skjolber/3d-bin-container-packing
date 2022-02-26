@@ -18,10 +18,10 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
-import com.github.skjolber.packing.test.BouwkampCode;
-import com.github.skjolber.packing.test.BouwkampCodeDirectory;
-import com.github.skjolber.packing.test.BouwkampCodeLine;
-import com.github.skjolber.packing.test.BouwkampCodes;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 
 

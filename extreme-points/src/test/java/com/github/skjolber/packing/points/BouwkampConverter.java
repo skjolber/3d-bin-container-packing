@@ -7,8 +7,8 @@ import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.ep.points2d.DefaultPlacement2D;
 import com.github.skjolber.packing.ep.points3d.DefaultPlacement3D;
-import com.github.skjolber.packing.test.BouwkampCode;
-import com.github.skjolber.packing.test.BouwkampCodeLine;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 
 public class BouwkampConverter {
 

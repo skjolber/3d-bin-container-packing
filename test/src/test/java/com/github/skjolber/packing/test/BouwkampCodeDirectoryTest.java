@@ -6,6 +6,8 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
+
 public class BouwkampCodeDirectoryTest {
 
 	@Test
