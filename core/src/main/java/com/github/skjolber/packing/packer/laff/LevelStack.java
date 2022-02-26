@@ -10,8 +10,8 @@ import com.github.skjolber.packing.api.StackPlacement;
 
 public class LevelStack extends Stack {
 
-	protected int weight = 0;
-	protected int dz = 0;
+	protected int weight = 0; // not including current level
+	protected int dz = 0; // not including current level
 	
 	protected List<Stack> levels = new ArrayList<>();
 
@@ -124,7 +124,7 @@ public class LevelStack extends Stack {
 	}
 	
 	public int getFreeLoadDz() {
-		return containerStackValue.getDz() - dz;
+		return containerStackValue.getDz() - getDz();
 	}
 	
 	public DefaultContainerStackValue getContainerStackValue(int dz) {

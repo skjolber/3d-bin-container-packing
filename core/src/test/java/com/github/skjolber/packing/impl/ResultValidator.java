@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+// TODO move into assertions in test artifact
 public class ResultValidator {
 	public static void assertContained(Container container, Container result) {
 		final ContainerStackValue containerStackValue = container.getStackValues()[0];
