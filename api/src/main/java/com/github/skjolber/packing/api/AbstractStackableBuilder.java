@@ -23,8 +23,8 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 		return (B)this;
 	}
 
-	public B withId(String name) {
-		this.description = name;
+	public B withId(String id) {
+		this.id = id;
 		return (B)this;
 	}
 	
