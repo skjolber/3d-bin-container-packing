@@ -19,11 +19,11 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		Stack stack = actual.getStack();
 		if(stack == null) {
 			failWithMessage("Expected stack");
-		}
-		isStackValue(stack.getContainerStackValue());
-		
-		StackAssert.assertThat(actual.getStack()).isWithinLoadContraints();
-		
+		} else {
+			isStackValue(stack.getContainerStackValue());
+			
+			StackAssert.assertThat(actual.getStack()).isWithinLoadContraints();
+		}		
 		return myself;
 	}
 
@@ -33,11 +33,11 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		Stack stack = actual.getStack();
 		if(stack == null) {
 			failWithMessage("Expected stack");
-		}
-		isStackValue(stack.getContainerStackValue());
-		
-		StackAssert.assertThat(actual.getStack()).isWithinLoadDimensions();
-		
+		} else {
+			isStackValue(stack.getContainerStackValue());
+			
+			StackAssert.assertThat(actual.getStack()).isWithinLoadDimensions();
+		}		
 		return myself;
 	}
 	
@@ -47,10 +47,11 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		Stack stack = actual.getStack();
 		if(stack == null) {
 			failWithMessage("Expected stack");
+		} else {
+			isStackValue(stack.getContainerStackValue());
+			
+			StackAssert.assertThat(stack).isWithinLoadWeight();
 		}
-		isStackValue(stack.getContainerStackValue());
-		
-		StackAssert.assertThat(stack).isWithinLoadWeight();
 
 		return myself;
 	}
