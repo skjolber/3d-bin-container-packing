@@ -14,6 +14,7 @@ import com.pholser.junit.quickcheck.From;
 import com.pholser.junit.quickcheck.Property;
 import com.pholser.junit.quickcheck.generator.InRange;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
+import org.junit.Assert;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
@@ -38,10 +39,43 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 
 
 	@Property
-	public void eightBoxes2x2x2(@From(DimensionGenerator.class) Dimension boxSize,
-															@InRange(min = "0", max = "9") int xVariation,
-															@InRange(min = "0", max = "9") int yVariation,
-															@InRange(min = "0", max = "9") int zVariation
+	public void eightBoxesTight2x2x2(@From(DimensionGenerator.class) Dimension boxSize
+	) {
+		final int count = 8;
+		Dimension containerSize = Dimension.newInstance(
+			2 * boxSize.getDx(),
+			2 * boxSize.getDy(),
+			2 * boxSize.getDz());
+
+		runTest(containerSize, boxSize, count,
+			bruteForcePackager,
+			fastBruteForcePackager,
+			parallelBruteForcePackager,
+			plainPackager
+		);
+	}
+
+
+	@Property
+	public void fiveBoxesTightRow(@From(DimensionGenerator.class) Dimension boxSize
+	) {
+		final int count = 5;
+		Dimension containerSize = Dimension.newInstance(
+			5 * boxSize.getDx(),
+			boxSize.getDy(),
+			boxSize.getDz());
+
+		runTest(containerSize, boxSize, count,
+			bruteForcePackager,
+			fastBruteForcePackager,
+			parallelBruteForcePackager);
+	}
+
+	@Property
+	public void eightBoxesWithExtraSpace(@From(DimensionGenerator.class) Dimension boxSize,
+																			 @InRange(min = "0", max = "9") int xVariation,
+																			 @InRange(min = "0", max = "9") int yVariation,
+																			 @InRange(min = "0", max = "9") int zVariation
 	) {
 		final int count = 8;
 		Dimension containerSize = Dimension.newInstance(
@@ -49,7 +83,8 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 			2 * boxSize.getDy() + yVariation,
 			2 * boxSize.getDz() + zVariation);
 
-		runTest(containerSize, boxSize, count, bruteForcePackager,
+		runTest(containerSize, boxSize, count,
+			bruteForcePackager,
 			fastBruteForcePackager,
 			parallelBruteForcePackager
 		);
@@ -66,12 +101,11 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 			2 * boxSize.getDy() + yVariation,
 			2 * boxSize.getDz() + zVariation);
 
-		runTest(containerSize, boxSize, count, bruteForcePackager,
+		runTest(containerSize, boxSize, count,
+			bruteForcePackager,
 			fastBruteForcePackager,
-			parallelBruteForcePackager,
-			plainPackager
+			parallelBruteForcePackager
 		);
-
 	}
 
 	private void runTest(final Dimension containerSize,
@@ -96,6 +130,8 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 				.withWeight(1)
 				.build();
 			Container fits = packager.pack(singletonList(new StackableItem(box, count)));
+			// identifies which packager has failed
+			Assert.assertNotNull(packager.getClass().getSimpleName() + " is expected to pack", fits);
 			assertValid(fits);
 		}
 	}
