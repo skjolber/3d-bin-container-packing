@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.plain;
+package com.github.skjolber.packing.packer;
 
 import com.github.skjolber.packing.api.Dimension;
 import com.pholser.junit.quickcheck.generator.GenerationStatus;
