@@ -14,7 +14,7 @@ public abstract class ContainerStackValue extends StackValue {
 		this.loadDy = loadDy;
 		this.loadDz = loadDz;
 		
-		this.loadVolume = (long)loadDx * (long)loadDy * (long)loadDz;
+		this.maxLoadVolume = (long)loadDx * (long)loadDy * (long)loadDz;
 		this.maxLoadWeight = maxLoadWeight;
 	}
 	
@@ -23,10 +23,10 @@ public abstract class ContainerStackValue extends StackValue {
 	protected final int loadDz; // z
 	
 	protected final int maxLoadWeight;
-	protected final long loadVolume;
+	protected final long maxLoadVolume;
 	
 	public long getMaxLoadVolume() {
-		return loadVolume;
+		return maxLoadVolume;
 	}
 	
 	public int getMaxLoadWeight() {
