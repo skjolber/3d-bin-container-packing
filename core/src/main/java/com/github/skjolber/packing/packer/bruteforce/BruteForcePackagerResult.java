@@ -43,13 +43,11 @@ public class BruteForcePackagerResult implements PackResult {
 	
 	private void calculateLoad() {
 		if(dirty) {
-			dirty = true;
+			dirty = false;
 			long loadVolume = 0;
 			int loadWeight = 0;
 	
 			for(int i = 0; i < points.size(); i++) {
-				
-	
 				PermutationRotation permutationRotation = iterator.get(i);
 				Stackable stackable = permutationRotation.getStackable();
 				loadVolume += stackable.getVolume();
@@ -103,6 +101,7 @@ public class BruteForcePackagerResult implements PackResult {
 		this.points = Collections.emptyList();
 		this.state = null;
 		this.placements = Collections.emptyList();
+		this.dirty = true;
 	}
 
 	@Override
