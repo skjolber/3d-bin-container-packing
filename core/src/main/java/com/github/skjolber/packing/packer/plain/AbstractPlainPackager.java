@@ -6,6 +6,7 @@ import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.Stackable;
@@ -14,34 +15,30 @@ import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.Adapter;
-import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackagerResult;
+import com.github.skjolber.packing.packer.DefaultPackResult;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
  * <br><br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
-public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> extends AbstractPackager<PlainPackagerResult, PlainPackagerResultBuilder> {
+public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> extends AbstractPackager<DefaultPackResult, PlainPackagerResultBuilder> {
 
-	public AbstractPlainPackager(List<Container> containers) {
-		this(containers, 1);
-	}
-
-	public AbstractPlainPackager(List<Container> containers, int checkpointsPerDeadlineCheck) {
-		super(containers, checkpointsPerDeadlineCheck);
+	public AbstractPlainPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
+		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
 	}
 	
-	public PlainPackagerResult pack(List<Stackable> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck) {
+	public DefaultPackResult pack(List<Stackable> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck) {
 		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
 
-	public PlainPackagerResult pack(List<Stackable> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck, BooleanSupplier interrupt) {
+	public DefaultPackResult pack(List<Stackable> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck, BooleanSupplier interrupt) {
 		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
-	public abstract PlainPackagerResult pack(List<Stackable> stackables, Container targetContainer,  BooleanSupplier interrupt);
+	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer,  BooleanSupplier interrupt);
 
-	protected class PlainAdapter implements Adapter<PlainPackagerResult> {
+	protected class PlainAdapter implements Adapter<DefaultPackResult> {
 
 		private List<Stackable> boxes;
 		private List<Container> containers;
@@ -65,12 +62,12 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 		}
 
 		@Override
-		public PlainPackagerResult attempt(int index, PlainPackagerResult best) {
+		public DefaultPackResult attempt(int index, DefaultPackResult best) {
 			return AbstractPlainPackager.this.pack(boxes, containers.get(index), interrupt);
 		}
 		
 		@Override
-		public Container accept(PlainPackagerResult result) {
+		public Container accept(DefaultPackResult result) {
 			Container container = result.getContainer();
 			Stack stack = container.getStack();
 

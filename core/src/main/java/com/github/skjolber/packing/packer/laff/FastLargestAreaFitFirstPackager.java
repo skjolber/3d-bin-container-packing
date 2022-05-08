@@ -11,6 +11,7 @@ import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.DefaultContainerStackValue;
 import com.github.skjolber.packing.api.DefaultStack;
+import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
@@ -20,6 +21,8 @@ import com.github.skjolber.packing.api.StackableFilter;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.StackValuePointFilter;
 import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
+import com.github.skjolber.packing.packer.DefaultPackResultComparator;
+import com.github.skjolber.packing.packer.DefaultPackResult;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. Only places boxes along the floor of each level.
@@ -38,9 +41,16 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 		private List<Container> containers;
 		private int checkpointsPerDeadlineCheck = 1;
 		private LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D<StackPlacement>, ?> configurationBuilderFactory;
-
+		private PackResultComparator packResultComparator;
+		
 		public LargestAreaFitFirstPackagerBuilder setConfigurationBuilderFactory(LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D<StackPlacement>, ?> configurationBuilder) {
 			this.configurationBuilderFactory = configurationBuilder;
+			return this;
+		}
+		
+		public LargestAreaFitFirstPackagerBuilder withPackResultComparator(PackResultComparator packResultComparator) {
+			this.packResultComparator = packResultComparator;
+			
 			return this;
 		}
 		
@@ -71,15 +81,18 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			if(configurationBuilderFactory == null) {
 				configurationBuilderFactory = new DefaultLargestAreaFitFirstPackagerConfigurationBuilderFactory<>();
 			}
-			return new FastLargestAreaFitFirstPackager(containers, checkpointsPerDeadlineCheck, configurationBuilderFactory);
+			if(packResultComparator == null) {
+				packResultComparator = new DefaultPackResultComparator();
+			}
+			return new FastLargestAreaFitFirstPackager(containers, checkpointsPerDeadlineCheck, packResultComparator, configurationBuilderFactory);
 		}	
 	}
 
-	public FastLargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D<StackPlacement>, ?> factory) {
-		super(containers, checkpointsPerDeadlineCheck, factory);
+	public FastLargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator, LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point2D<StackPlacement>, ?> factory) {
+		super(containers, checkpointsPerDeadlineCheck, packResultComparator, factory);
 	}
 
-	public LargestAreaFitFirstPackagerResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt) {
+	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt) {
 		List<Stackable> remainingStackables = new ArrayList<>(stackables);
 		
 		ContainerStackValue[] stackValues = targetContainer.getStackValues();
@@ -272,7 +285,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			extremePoints2D.reset(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), -1);
 		}
 		
-		return new LargestAreaFitFirstPackagerResult(stack, new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack), remainingStackables.isEmpty());
+		return new DefaultPackResult(new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack), stack, remainingStackables.isEmpty());
 	}
 
 	@Override

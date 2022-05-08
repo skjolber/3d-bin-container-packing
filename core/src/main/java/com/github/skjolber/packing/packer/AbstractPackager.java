@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.PackResult;
+import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.Stackable;
@@ -23,22 +25,13 @@ import com.github.skjolber.packing.iterator.BinarySearchIterator;
 
 public abstract class AbstractPackager<P extends PackResult, B extends PackagerResultBuilder<B>> implements Packager<B> {
 	
-	protected static final EmptyPackResult EMPTY_PACK_RESULT = new EmptyPackResult();
+	protected static final EmptyPackResult EMPTY_PACK_RESULT = EmptyPackResult.EMPTY;
 	
 	protected final Container[] containers;
+	protected final PackResultComparator packResultComparator;
 	
 	/** limit the number of calls to get System.currentTimeMillis() */
 	protected final int checkpointsPerDeadlineCheck;
-
-	/**
-	 * Constructor
-	 *
-	 * @param containers list of containers
-	 */
-
-	public AbstractPackager(List<Container> containers) {
-		this(containers, 1);
-	}
 
 	/**
 	 * Constructor
@@ -47,7 +40,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @param checkpointsPerDeadlineCheck number of deadline checks to skip, before checking again
 	 */
 
-	public AbstractPackager(List<Container> containers, int checkpointsPerDeadlineCheck) {
+	public AbstractPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
 		if(containers.isEmpty()) {
 			throw new IllegalArgumentException();
 		}
@@ -56,6 +49,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			throw new RuntimeException();
 		}
 		this.checkpointsPerDeadlineCheck = checkpointsPerDeadlineCheck;
+		this.packResultComparator = packResultComparator;
 
 		long maxVolume = Long.MIN_VALUE;
 		long maxWeight = Long.MIN_VALUE;
@@ -310,7 +304,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 						break;
 					}
 					
-					if (best == null || result.isBetterThan(best)) {
+					if (best == null || packResultComparator.compare(best, result) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
 						best = result;
 					}
 				}

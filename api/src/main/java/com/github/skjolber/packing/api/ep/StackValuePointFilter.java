@@ -4,7 +4,7 @@ import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 
 @FunctionalInterface
-public interface StackValuePointFilter<T> {
+public interface StackValuePointFilter<T extends Point2D> {
 
 	/**
 	 * Check whether to let 2 replace 1 as the best.

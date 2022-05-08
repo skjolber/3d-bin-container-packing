@@ -191,6 +191,10 @@ public abstract class Container extends Stackable {
 	@Override
 	public abstract Container clone();
 	
+	public int getLoadWeight() {
+		return getStack().getWeight();
+	}
+	
 	@Override
 	public long getVolume() {
 		return volume;
@@ -204,5 +208,9 @@ public abstract class Container extends Stackable {
 	@Override
 	public long getMaximumArea() {
 		return maxArea;
+	}
+
+	public long getLoadVolume() {
+		return getStack().getVolume();
 	}
 }

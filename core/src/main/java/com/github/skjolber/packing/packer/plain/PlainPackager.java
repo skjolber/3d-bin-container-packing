@@ -9,13 +9,15 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.DefaultStack;
-import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.packer.DefaultPackResultComparator;
+import com.github.skjolber.packing.packer.DefaultPackResult;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. 
@@ -34,7 +36,8 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 
 		private List<Container> containers;
 		private int checkpointsPerDeadlineCheck = 1;
-
+		private PackResultComparator packResultComparator;
+		
 		public Builder withContainers(Container ...  containers) {
 			if(this.containers == null) {
 				this.containers = new ArrayList<>();
@@ -42,6 +45,12 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 			for (Container container : containers) {
 				this.containers.add(container);
 			}
+			return this;
+		}
+		
+		public Builder withPackResultComparator(PackResultComparator packResultComparator) {
+			this.packResultComparator = packResultComparator;
+			
 			return this;
 		}
 		
@@ -59,15 +68,18 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 			if(containers == null) {
 				throw new IllegalStateException("Expected containers");
 			}
-			return new PlainPackager(containers, checkpointsPerDeadlineCheck);
+			if(packResultComparator == null) {
+				packResultComparator = new DefaultPackResultComparator();
+			}
+			return new PlainPackager(containers, checkpointsPerDeadlineCheck, packResultComparator);
 		}	
 	}
 
-	public PlainPackager(List<Container> containers, int checkpointsPerDeadlineCheck) {
-		super(containers, checkpointsPerDeadlineCheck);
+	public PlainPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
+		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
 	}
 
-	public PlainPackagerResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt) {
+	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt) {
 		List<Stackable> remainingStackables = new ArrayList<>(stackables);
 		
 		ContainerStackValue[] stackValues = targetContainer.getStackValues();
@@ -168,7 +180,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 			maxRemainingWeight -= bestStackable.getWeight();
 		}
 		
-		return new PlainPackagerResult(stack, new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack), remainingStackables.isEmpty());
+		return new DefaultPackResult(new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack), stack, remainingStackables.isEmpty());
 	}
 
 	protected boolean isBetter(Stackable bestStackable, Point3D<StackPlacement> bestPoint, StackValue bestStackValue, Stackable candidateBox, Point3D<StackPlacement> candidatePoint, StackValue candidateStackValue) {

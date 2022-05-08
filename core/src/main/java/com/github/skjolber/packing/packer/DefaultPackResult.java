@@ -6,9 +6,15 @@ import com.github.skjolber.packing.api.Stack;
 
 public class DefaultPackResult implements PackResult {
 
-	private Stack stack;
-	private Container container;
-	private boolean last;
+	private final Stack stack;
+	private final Container container;
+	private final boolean last;
+	
+	public DefaultPackResult(Container container, Stack stack, boolean last) {
+		this.stack = stack;
+		this.container = container;
+		this.last = last;
+	}
 
 	@Override
 	public boolean isEmpty() {
@@ -16,7 +22,7 @@ public class DefaultPackResult implements PackResult {
 	}
 
 	@Override
-	public int getCount() {
+	public int getSize() {
 		return stack.getSize();
 	}
 
@@ -51,13 +57,12 @@ public class DefaultPackResult implements PackResult {
 	}
 
 	@Override
-	public Stack getStack() {
-		return stack;
-	}
-
-	@Override
 	public boolean containsLastStackable() {
 		return last;
 	}
 
+	@Override
+	public Container getContainer() {
+		return container;
+	}
 }

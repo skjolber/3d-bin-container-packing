@@ -4,13 +4,14 @@ import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.PackResult;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.PackResult;
 
 public class BruteForcePackagerResult implements PackResult {
 
@@ -29,10 +30,35 @@ public class BruteForcePackagerResult implements PackResult {
 	private List<Point3D<StackPlacement>> points = Collections.emptyList();
 	private List<StackPlacement> placements;
 	private boolean last;
-
+	
+	private boolean dirty = true;
+	
+	private long loadVolume;
+	private int loadWeight;
+	
 	public BruteForcePackagerResult(Container container, PermutationRotationIterator iterator) {
 		this.container = container;
 		this.iterator = iterator;
+	}
+	
+	private void calculateLoad() {
+		if(dirty) {
+			dirty = true;
+			long loadVolume = 0;
+			int loadWeight = 0;
+	
+			for(int i = 0; i < points.size(); i++) {
+				
+	
+				PermutationRotation permutationRotation = iterator.get(i);
+				Stackable stackable = permutationRotation.getStackable();
+				loadVolume += stackable.getVolume();
+				loadWeight += stackable.getWeight();
+			}
+	
+			this.loadVolume = loadVolume;
+			this.loadWeight = loadWeight;
+		}
 	}
 	
 	public Container getContainer() {
@@ -69,33 +95,14 @@ public class BruteForcePackagerResult implements PackResult {
 		this.state = state;
 		this.placements = placements;
 		this.last = last;
+		
+		this.dirty = true;
 	}
-
-	@Override
-	public boolean isBetterThan(PackResult result) {
-		// return true if 'this' is better:
-		// - higher number of boxes
-		// - lower volume
-		// - lower max weight
-
-		BruteForcePackagerResult bruteForceResult = (BruteForcePackagerResult)result;
-		if(bruteForceResult.points.size() < points.size()) {
-			return true;
-		} else if(bruteForceResult.points.size() == points.size()) {
-			// check volume (of container)
-			if(bruteForceResult.container.getVolume() > container.getVolume()) {
-				// this instance packs more items with a lower volume
-				return true;
-			} else if(bruteForceResult.container.getVolume() == container.getVolume()) {
-				// check weight (max weight of container, suboptimal but quick)
-				if(bruteForceResult.container.getWeight() > container.getWeight()) {
-					// this instance is best
-					return true;
-				}
-			}
-		}
-
-		return false;
+	
+	public void reset() {
+		this.points = Collections.emptyList();
+		this.state = null;
+		this.placements = Collections.emptyList();
 	}
 
 	@Override
@@ -107,7 +114,47 @@ public class BruteForcePackagerResult implements PackResult {
 	public boolean containsLastStackable() {
 		return last;
 	}
-	
+
+	@Override
 	public int getSize() {
 		return points.size();
-	}}
+	}
+
+	@Override
+	public long getLoadVolume() {
+		calculateLoad();
+		return loadVolume;
+	}
+
+	@Override
+	public int getLoadWeight() {
+		calculateLoad();
+		return loadWeight;
+	}
+
+	@Override
+	public int getMaxLoadWeight() {
+		return container.getStack().getContainerStackValue().getMaxLoadWeight();
+	}
+
+	@Override
+	public int getWeight() {
+		calculateLoad();
+		return loadWeight + container.getEmptyWeight();
+	}
+
+	@Override
+	public long getVolume() {
+		return container.getVolume();
+	}
+
+	@Override
+	public long getMaxLoadVolume() {
+		return container.getStack().getContainerStackValue().getMaxLoadVolume();
+	}
+
+	public void markDirty() {
+		this.dirty = true;
+	}
+
+}

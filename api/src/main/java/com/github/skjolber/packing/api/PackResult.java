@@ -4,7 +4,7 @@ public interface PackResult {
 
 	boolean isEmpty();
 
-	int getCount();
+	int getSize();
 	long getLoadVolume();
 	int getLoadWeight();
 	
@@ -14,7 +14,7 @@ public interface PackResult {
 	long getVolume();
 	long getMaxLoadVolume();
 
-	Stack getStack();
+	Container getContainer();
 
 	boolean containsLastStackable();
 

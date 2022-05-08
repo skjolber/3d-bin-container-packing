@@ -72,10 +72,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		validate(fits);
 
 		List<StackPlacement> placements = fits.getStack().getPlacements();
-
+		
 		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
-		assertThat(placements.get(1)).isAt(0, 1, 0).hasStackableName("B");
-		assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("C");
+		assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("B");
+		assertThat(placements.get(2)).isAt(1, 1, 0).hasStackableName("C");
 
 	}
 
@@ -147,12 +147,12 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		List<StackPlacement> placements = fits.getStack().getPlacements();
 
 		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
-		assertThat(placements.get(1)).isAt(0, 1, 0).hasStackableName("A");
-		assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("B");
+		assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("A");
+		assertThat(placements.get(2)).isAt(1, 1, 0).hasStackableName("B");
 
 		assertThat(placements.get(3)).isAt(0, 0, 1).hasStackableName("B");
-		assertThat(placements.get(4)).isAt(0, 1, 1).hasStackableName("C");
-		assertThat(placements.get(5)).isAt(2, 0, 1).hasStackableName("C");
+		assertThat(placements.get(4)).isAt(1, 0, 1).hasStackableName("C");
+		assertThat(placements.get(5)).isAt(1, 1, 1).hasStackableName("C");
 	}
 
 	@Test

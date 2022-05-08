@@ -2,33 +2,51 @@ package com.github.skjolber.packing.packer;
 
 import com.github.skjolber.packing.api.PackResult;
 import com.github.skjolber.packing.api.PackResultComparator;
-import com.github.skjolber.packing.packer.plain.PlainPackagerResult;
 
 public class DefaultPackResultComparator implements PackResultComparator {
-
-	
-	/**
-	 * 
-	 * Returns a negative integer if o1 is less / worse than o2. 
-	 * Returns a positive integer if o1 is more / better than o2. 
-	 * 
-	 * Return 0 otherwise.
-	 */
 	
 	@Override
 	public int compare(PackResult o1, PackResult o2) {
 		
-		PlainPackagerResult plainResult = (PlainPackagerResult)result;
-		if(stack.getSize() >= plainResult.stack.getSize()) {
-			return true;
-		} else if(stack.getSize() == plainResult.stack.getSize()) {
-			return container.getWeight() >= plainResult.container.getWeight();
+		// load volume - more is better
+		if(o1.getLoadVolume() > o2.getLoadVolume()) {
+			return ARGUMENT_1_IS_BETTER;
+		} else if(o1.getLoadVolume() < o2.getLoadVolume()) {
+			return ARGUMENT_2_IS_BETTER;
+		}
+
+		// load weight - more is better
+		if(o1.getLoadWeight() > o2.getLoadWeight()) {
+			return ARGUMENT_1_IS_BETTER;
+		} else if(o1.getLoadWeight() < o2.getLoadWeight()) {
+			return ARGUMENT_2_IS_BETTER;
 		}
 		
-		return false;
+		// load count - more is better
+		if(o1.getSize() > o2.getSize()) {
+			return ARGUMENT_1_IS_BETTER;
+		} else if(o1.getSize() < o2.getSize()) {
+			return ARGUMENT_2_IS_BETTER;
+		}
 		
+		// are both empty?
+		if(o1.isEmpty()) {
+			return 0;
+		}
+		// total volume - less is better
+		if(o1.getVolume() > o2.getVolume()) {
+			return ARGUMENT_2_IS_BETTER;
+		} else if(o1.getVolume() < o2.getVolume()) {
+			return ARGUMENT_1_IS_BETTER;
+		}
 		
-		
+		// total weight - less is better
+		if(o1.getWeight() > o2.getWeight()) {
+			return ARGUMENT_2_IS_BETTER;
+		} else if(o1.getWeight() < o2.getWeight()) {
+			return ARGUMENT_1_IS_BETTER;
+		}
+
 		return 0;
 	}
 

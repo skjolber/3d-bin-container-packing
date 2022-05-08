@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.DefaultStack;
+import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
@@ -34,8 +35,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 	
 	private static Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
 	
-	public AbstractBruteForcePackager(List<Container> containers, int checkpointsPerDeadlineCheck) {
-		super(containers, checkpointsPerDeadlineCheck);
+	public AbstractBruteForcePackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
+		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
 	}
 
 	@Override
@@ -57,7 +58,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		DefaultStack stack = new DefaultStack(stackValue);
 		Container holder = new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), targetContainer.getStackValues(), stack);
 		
-		BruteForcePackagerResult result = new BruteForcePackagerResult(holder, iterator);
+		BruteForcePackagerResult bestResult = new BruteForcePackagerResult(holder, iterator);
+		// optimization: compare pack results by looking only at count within the same permutation 
+		BruteForcePackagerResult bestPermutationResult = new BruteForcePackagerResult(holder, iterator);
 
 		// iterator over all permutations
 		do {
@@ -65,6 +68,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				return null;
 			}
 			// iterator over all rotations
+			bestPermutationResult.reset();
+			
 			do {
 				List<Point3D<StackPlacement>> points = packStackPlacement(extremePoints, stackPlacements, iterator, stack, interrupt);
 				if (points == null) {
@@ -72,12 +77,14 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				}
 				if (points.size() == iterator.length()) {
 					// best possible result for this container
-					result.setState(points, iterator.getState(), stackPlacements.subList(0, points.size()), points.size() == stackPlacements.size());
-					return result;
+					bestPermutationResult.setState(points, iterator.getState(), stackPlacements.subList(0, points.size()), points.size() == stackPlacements.size());
+					return bestPermutationResult;
 				} else if (points.size() > 0) {
 					// continue search, but see if this is the best fit so far
-					if (points.size() > result.getSize()) {
-						result.setState(points, iterator.getState(), stackPlacements.subList(0, points.size()), points.size() == stackPlacements.size());
+					// higher count implies higher volume and weight
+					// since the items are the same within each permutation
+					if (points.size() > bestPermutationResult.getSize()) {
+						bestPermutationResult.setState(points, iterator.getState(), stackPlacements.subList(0, points.size()), points.size() == stackPlacements.size());
 					}
 				}
 
@@ -89,9 +96,20 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 					break;
 				}
 			} while (true);
+			
+			if(!bestPermutationResult.isEmpty()) {
+				// compare against other permutation's result
+
+				if (bestResult.isEmpty() || packResultComparator.compare(bestResult, bestPermutationResult) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
+					// switch the two results for one another
+					BruteForcePackagerResult tmp = bestResult;
+					bestResult = bestPermutationResult;
+					bestPermutationResult = tmp;
+				}
+			}
 		} while (iterator.nextPermutation() != -1);
 		
-		return result;
+		return bestResult;
 	}
 
 	protected List<Point3D<StackPlacement>> packStackPlacement(ExtremePoints3DStack extremePoints, List<StackPlacement> placements, PermutationRotationIterator iterator, Stack stack) {
