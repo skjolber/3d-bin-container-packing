@@ -9,6 +9,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.PackResultComparator;
+import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
@@ -37,12 +38,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		private int checkpointsPerDeadlineCheck = 1;
 		private PackResultComparator packResultComparator;
 
-		public BruteForcePackagerBuilder withPackResultComparator(PackResultComparator packResultComparator) {
-			this.packResultComparator = packResultComparator;
-			
-			return this;
-		}
-		
 		public BruteForcePackagerBuilder withContainers(Container ...  containers) {
 			if(this.containers == null) {
 				this.containers = new ArrayList<>();
@@ -62,6 +57,12 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			this.checkpointsPerDeadlineCheck = n;
 			return this;
 		}
+
+		public BruteForcePackagerBuilder withPackResultComparator(PackResultComparator packResultComparator) {
+			this.packResultComparator = packResultComparator;
+			
+			return this;
+		}
 		
 		public BruteForcePackager build() {
 			if(containers == null) {
@@ -76,8 +77,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	
 	private class BruteForceAdapter implements Adapter<BruteForcePackagerResult> {
 
-		private final DefaultPermutationRotationIterator[] iterators;
 		private final ContainerStackValue[] containerStackValue;
+		private final DefaultPermutationRotationIterator[] iterators;
 		private final List<Container> containers;
 		private final BooleanSupplier interrupt;
 		private final ExtremePoints3DStack extremePoints3D;
@@ -87,7 +88,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			this.containers = containers;
 			this.iterators = new DefaultPermutationRotationIterator[containers.size()];
 			this.containerStackValue = new ContainerStackValue[containers.size()];
-
+					
 			for (int i = 0; i < containers.size(); i++) {
 				Container container = containers.get(i);
 				
@@ -115,18 +116,18 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 				return BruteForcePackagerResult.EMPTY;
 			}
 			// TODO break if this container cannot beat the existing best result
-			
 			return BruteForcePackager.this.pack(extremePoints3D, stackPlacements, containers.get(i), containerStackValue[i], iterators[i], interrupt);
 		}
 
 		@Override
 		public Container accept(BruteForcePackagerResult bruteForceResult) {
 			Container container = bruteForceResult.getContainer();
-			if (!bruteForceResult.containsLastStackable()) {
+			Stack stack = container.getStack();
+			
+			int size = stack.getSize();
+			if (stackPlacements.size() > size) {
 				// this result does not consume all placements
 				// remove consumed items from the iterators
-				
-				int size = container.getStack().getSize();
 				
 				PermutationRotationIterator iterator = bruteForceResult.getPermutationRotationIteratorForState();
 				

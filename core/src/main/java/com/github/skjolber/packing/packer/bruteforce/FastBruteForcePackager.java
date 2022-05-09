@@ -18,7 +18,6 @@ import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.ep.Point3D;
-import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
@@ -117,12 +116,21 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			this.extremePoints3D = new MemoryExtremePoints3D(1, 1, 1);
 		}
 
+		private List<StackPlacement> getPlacements(int size) {
+			// each box will at most have a single placement with a space (and its remainder).
+			List<StackPlacement> placements = new ArrayList<>(size);
+
+			for (int i = 0; i < size; i++) {
+				placements.add(new StackPlacement());
+			}
+			return placements;
+		}
+		
 		@Override
 		public BruteForcePackagerResult attempt(int i, BruteForcePackagerResult best) {
 			if(iterators[i].length() == 0) {
 				return BruteForcePackagerResult.EMPTY;
 			}
-			
 			// TODO break if this container cannot beat the existing best result
 			return FastBruteForcePackager.this.pack(extremePoints3D, stackPlacements, containers.get(i), containerStackValue[i], iterators[i], interrupt);
 		}
@@ -176,62 +184,6 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		return new FastBruteForceAdapter(boxes, containers, interrupt);
 	}
 	
-
-	static List<StackPlacement> getPlacements(int size) {
-		// each box will at most have a single placement with a space (and its remainder).
-		List<StackPlacement> placements = new ArrayList<>(size);
-
-		for (int i = 0; i < size; i++) {
-			placements.add(new StackPlacement());
-		}
-		return placements;
-	}
-
-	public BruteForcePackagerResult pack2(MemoryExtremePoints3D extremePoints, List<StackPlacement> stackPlacements, Container targetContainer, ContainerStackValue stackValue, DefaultPermutationRotationIterator rotator, BooleanSupplier interrupt) {
-		Stack stack = new DefaultStack(stackValue);
-		
-		Container holder = new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), targetContainer.getStackValues(), stack);
-		
-		BruteForcePackagerResult result = new BruteForcePackagerResult(holder, rotator);
-
-		BruteForcePackagerResult bestPermutationResult = new BruteForcePackagerResult(holder, rotator);
-
-		// iterator over all permutations
-		do {
-			if (interrupt.getAsBoolean()) {
-				return null;
-			}
-			// iterator over all rotations
-			do {
-				int count = packStackPlacement(extremePoints, stackPlacements, rotator, stack, interrupt);
-				if (count == Integer.MIN_VALUE) {
-					return null; // timeout
-				}
-				if (count == rotator.length()) {
-					// best possible result for this container
-					result.setState(extremePoints.getPoints(), rotator.getState(), stackPlacements.subList(0, count), count == stackPlacements.size());
-					
-					return result;
-				} else if (count > 0) {
-					// continue search, but see if this is the best fit so far
-					if (count > result.getSize()) {
-						result.setState(extremePoints.getPoints(), rotator.getState(), stackPlacements.subList(0, count), count == stackPlacements.size());
-					}
-				}
-
-				holder.getStack().clear();
-
-				int diff = rotator.nextRotation();
-				if(diff == -1) {
-					// no more rotations, continue to next permutation
-					break;
-				}
-			} while (true);
-		} while (rotator.nextPermutation() != -1);
-		
-		return result;
-	}
-
 	public BruteForcePackagerResult pack(MemoryExtremePoints3D extremePoints, List<StackPlacement> stackPlacements, Container targetContainer, ContainerStackValue stackValue, DefaultPermutationRotationIterator rotator, BooleanSupplier interrupt) {
 		Stack stack = new DefaultStack(stackValue);
 		
@@ -292,10 +244,6 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		} while (rotator.nextPermutation() != -1);
 		
 		return bestResult;
-	}
-
-	protected int packStackPlacement(MemoryExtremePoints3D extremePoints, List<StackPlacement> placements, PermutationRotationIterator iterator, Stack stack) {
-		return packStackPlacement(extremePoints, placements, iterator, stack, BooleanSupplierBuilder.NOOP);
 	}
 
 	public int packStackPlacement(MemoryExtremePoints3D extremePoints3D, List<StackPlacement> placements, PermutationRotationIterator rotator, Stack stack, BooleanSupplier interrupt) {
