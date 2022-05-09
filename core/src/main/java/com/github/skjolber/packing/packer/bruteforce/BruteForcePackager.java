@@ -8,12 +8,13 @@ import java.util.function.BooleanSupplier;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Dimension;
+import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.packer.Adapter;
+import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. 
@@ -34,7 +35,14 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 		private List<Container> containers;
 		private int checkpointsPerDeadlineCheck = 1;
+		private PackResultComparator packResultComparator;
 
+		public BruteForcePackagerBuilder withPackResultComparator(PackResultComparator packResultComparator) {
+			this.packResultComparator = packResultComparator;
+			
+			return this;
+		}
+		
 		public BruteForcePackagerBuilder withContainers(Container ...  containers) {
 			if(this.containers == null) {
 				this.containers = new ArrayList<>();
@@ -59,7 +67,10 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(containers == null) {
 				throw new IllegalStateException("Expected containers");
 			}
-			return new BruteForcePackager(containers, checkpointsPerDeadlineCheck);
+			if(packResultComparator == null) {
+				packResultComparator = new DefaultPackResultComparator();
+			}
+			return new BruteForcePackager(containers, checkpointsPerDeadlineCheck, packResultComparator);
 		}	
 	}
 	
@@ -141,8 +152,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		}
 	}
 
-	public BruteForcePackager(List<Container> containers, int checkpointsPerDeadlineCheck) {
-		super(containers, checkpointsPerDeadlineCheck);
+	public BruteForcePackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
+		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
 	}
 
 	@Override

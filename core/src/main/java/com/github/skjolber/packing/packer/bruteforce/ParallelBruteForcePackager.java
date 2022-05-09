@@ -14,6 +14,7 @@ import java.util.function.BooleanSupplier;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Dimension;
+import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.ClonableBooleanSupplier;
@@ -21,6 +22,7 @@ import com.github.skjolber.packing.iterator.ParallelPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorAdapter;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.packer.Adapter;
+import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 import com.github.skjolber.packing.packer.PackagerException;
 
 /**
@@ -42,6 +44,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		protected int threads = -1;
 		protected int parallelizationCount = -1;
 		protected ExecutorService executorService;
+		protected PackResultComparator packResultComparator;
 
 		public ParallelBruteForcePackagerBuilder withThreads(int threads) {
 			if(threads < 1) {
@@ -64,6 +67,12 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				throw new IllegalArgumentException("Unexpected parallelization count " + parallelizationCount);
 			}
 			this.parallelizationCount = parallelizationCount;
+			return this;
+		}
+		
+		public ParallelBruteForcePackagerBuilder withPackResultComparator(PackResultComparator packResultComparator) {
+			this.packResultComparator = packResultComparator;
+			
 			return this;
 		}
 		
@@ -103,6 +112,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			if(containers == null) {
 				throw new IllegalStateException("Expected containers");
 			}
+			if(packResultComparator == null) {
+				packResultComparator = new DefaultPackResultComparator();
+			}
 			if(executorService == null) {
 				if(threads == -1) {
 					threads = Runtime.getRuntime().availableProcessors();
@@ -128,7 +140,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				}
 			}
 			
-			return new ParallelBruteForcePackager(containers, executorService, parallelizationCount, checkpointsPerDeadlineCheck);
+			return new ParallelBruteForcePackager(containers, executorService, parallelizationCount, checkpointsPerDeadlineCheck, packResultComparator);
 		}
 	}
 	
@@ -136,8 +148,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	private final int parallelizationCount;
 	private final ExecutorService executorService;
 
-	public ParallelBruteForcePackager(List<Container> containers, ExecutorService executorService, int parallelizationCount, int checkpointsPerDeadlineCheck) {
-		super(containers, checkpointsPerDeadlineCheck);
+	public ParallelBruteForcePackager(List<Container> containers, ExecutorService executorService, int parallelizationCount, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
+		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
 		
 		this.parallelizationCount = parallelizationCount;
 		this.executorService = executorService;
@@ -263,7 +275,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 							Future<BruteForcePackagerResult> future = executorCompletionService.take();
 							BruteForcePackagerResult result = future.get();
 							if(result != null) {
-								if (best == null || result.isBetterThan(best)) {
+								if (best == null || packResultComparator.compare(best, result) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
 									best = result;
 				
 									if (best.containsLastStackable()) { // will not match any better than this

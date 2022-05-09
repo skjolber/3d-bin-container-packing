@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.PackResult;
 
 /**
  * Logical packager for wrapping preprocessing / optimizations.

@@ -1,68 +1,68 @@
 package com.github.skjolber.packing.packer;
 
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.DefaultStack;
 import com.github.skjolber.packing.api.PackResult;
 import com.github.skjolber.packing.api.Stack;
 
-public class EmptyPackResult implements PackResult {
-	
-	public static final EmptyPackResult EMPTY = new EmptyPackResult();
+public class DefaultPackResult implements PackResult {
 
 	private final Stack stack;
+	private final Container container;
+	private final boolean last;
 	
-	private EmptyPackResult() {
-		stack = new DefaultStack();
+	public DefaultPackResult(Container container, Stack stack, boolean last) {
+		this.stack = stack;
+		this.container = container;
+		this.last = last;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return true;
+		return stack.isEmpty();
 	}
 
 	@Override
 	public int getSize() {
-		return 0;
+		return stack.getSize();
 	}
 
 	@Override
 	public long getLoadVolume() {
-		return 0;
+		return stack.getVolume();
 	}
 
 	@Override
 	public int getLoadWeight() {
-		return 0;
+		return stack.getWeight();
 	}
 
 	@Override
 	public int getMaxLoadWeight() {
-		return 0;
+		return stack.getContainerStackValue().getMaxLoadWeight();
 	}
 
 	@Override
 	public int getWeight() {
-		return 0;
+		return stack.getWeight() + container.getEmptyWeight();
 	}
 
 	@Override
 	public long getVolume() {
-		return 0;
+		return container.getVolume();
 	}
 
 	@Override
 	public long getMaxLoadVolume() {
-		return 0;
+		return stack.getContainerStackValue().getMaxLoadVolume();
 	}
 
 	@Override
 	public boolean containsLastStackable() {
-		return false;
+		return last;
 	}
 
 	@Override
 	public Container getContainer() {
-		return null;
+		return container;
 	}
-
 }

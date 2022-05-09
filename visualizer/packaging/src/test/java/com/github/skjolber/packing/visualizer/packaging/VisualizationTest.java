@@ -32,7 +32,6 @@ import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.test.assertj.StackAssert;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
@@ -484,6 +483,54 @@ public class VisualizationTest {
 			throw new RuntimeException();
 		}
 		//write(pack);
+	}
+	
+	@Test
+	void issue453BoxesShouldNotFit() throws Exception {
+		Container container = Container
+			.newBuilder()
+			.withDescription("1")
+			.withSize(70, 44, 56)
+			.withEmptyWeight(0)
+			.withMaxLoadWeight(100)
+			.build();
+
+		PlainPackager packager = PlainPackager
+			.newBuilder()
+			.withContainers(container)
+			.build();
+
+		Container packaging = packager.pack(
+			Arrays.asList(
+				new StackableItem(Box.newBuilder().withId("1").withSize(32, 19, 24).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("2").withSize(32, 21, 27).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("3").withSize(34, 21, 24).withRotate3D().withWeight(0).build(), 1),
+				new StackableItem(Box.newBuilder().withId("4").withSize(30, 19, 23).withRotate3D().withWeight(0).build(), 1)
+				//new StackableItem(Box.newBuilder().withId("5").withSize(30, 21, 25).withRotate3D().withWeight(0).build(), 1)
+			)
+		);
+		
+		write(packaging);
+
+	}
+	
+	@Test
+	public void test() throws Exception {
+		List<Container> containers = new ArrayList<>();
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 2).withMaxLoadWeight(100).build());
+
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
+
+		List<StackableItem> products = new ArrayList<>();
+
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+
+		Container fits = packager.pack(products);
+		assertNotNull(fits);
+		write(fits);
+
 	}
 	
 	
