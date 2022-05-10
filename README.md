@@ -24,7 +24,7 @@ Example dependency config:
 <dependency>
     <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
     <artifactId>core</artifactId>
-    <version>2.0.8</version>
+    <version>2.0.9</version>
 </dependency>
 ```
 
@@ -143,6 +143,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
 
 # History
+ * 2.0.9: Better abstractions for comparisons of pack result.
  * 2.0.8: Fix regression, improve testing.
  * 2.0.7: Fix issue #453, improve performance.
  * 2.0.6: Fix issue #450
