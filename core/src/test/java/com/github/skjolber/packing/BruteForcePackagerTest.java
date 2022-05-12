@@ -745,5 +745,22 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 		System.out.println(match);
 		
 		
-	}	
+	}
+	
+	@Test
+	void testProblematicContainer() {
+
+		List<Container> containers = new ArrayList<>();
+		containers.add(new ValidatingContainer("container1", 1000, 2000, 1500, 0));
+		BruteForcePackager packager = new BruteForcePackager(containers);
+
+		List<BoxItem> products = new ArrayList<>();
+
+		products.add(new BoxItem(new Box("E", 1900, 1360, 930, 0), 1));
+		products.add(new BoxItem(new Box("F", 1220, 690, 120, 0), 1));
+		products.add(new BoxItem(new Box("G", 1875, 565, 100, 0), 1));
+
+		Container fits = packager.pack(products);
+		assertNull(fits);
+	}
 }
