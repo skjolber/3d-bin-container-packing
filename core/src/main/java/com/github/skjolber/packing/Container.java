@@ -245,7 +245,7 @@ public class Container extends Box {
 	}
 
 	private Dimension getUsedSpace(Level level, Dimension maxBox) {
-		for (Placement placement : level) {
+		for (Placement placement : level.iterable()) {
 			maxBox = boundingBox(maxBox, getOutmostCorner(placement));
 		}
 		return maxBox;
@@ -291,7 +291,7 @@ public class Container extends Box {
 		
 		long volume = (this.volume / getHeight()) * level.getHeight();
 		
-		for(Placement p : level) {
+		for(Placement p : level.iterable()) {
 			volume -= p.getBox().getVolume();
 		}
 		
@@ -321,7 +321,6 @@ public class Container extends Box {
 		int boxCount = 0;
 		int levelCount = 0;
 		while(levelCount < levels.size()) {
-			
 			Level level = levels.get(levelCount);
 			if(boxCount + level.size() < maxNumberOfBoxes) {
 				boxCount += level.size();

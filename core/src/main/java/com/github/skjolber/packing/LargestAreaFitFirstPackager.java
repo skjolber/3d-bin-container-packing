@@ -753,7 +753,7 @@ public class LargestAreaFitFirstPackager extends Packager {
 			Container container = laffResult.getContainer();
 			List<Box> boxes = new ArrayList<>(this.boxes.size());
 			for(Level level : container.getLevels()) {
-				for(Placement placement : level) {
+				for(Placement placement : level.iterable()) {
 					boxes.add(placement.getBox());
 				}
 			}
