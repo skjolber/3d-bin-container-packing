@@ -9,6 +9,8 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
+
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;
 import net.jqwik.api.ForAll;
@@ -34,7 +36,7 @@ class BruteForcePropertyBasedTests {
 		assertThat(pack).isNotNull();
 	}
 
-	@Property(tries = 10)
+	@Property(tries = 1000)
 	void identicalBoxesShouldFitInContainers(@ForAll("boxItem") BoxItem item, @ForAll @IntRange(min = 1, max = 2) int countBySide) {
 		final BoxItem repeatedItems = new BoxItem(item.getBox(), countBySide * countBySide * countBySide);
 		//TODO: we could also randomly rotate the items
