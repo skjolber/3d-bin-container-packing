@@ -26,6 +26,20 @@ import com.github.skjolber.packing.test.BouwkampCodes;
 class BruteForcePackagerTest extends AbstractPackagerTest {
 
 	@Test
+	void testForIllegalArgumentException() {
+
+		List<Container> containers = new ArrayList<>();
+		containers.add(new ValidatingContainer("container1", 37*2, 99*2, 60*2, 0));
+		BruteForcePackager packager = new BruteForcePackager(containers);
+
+		List<BoxItem> products = new ArrayList<>();
+
+		products.add(new BoxItem(new Box("E", 37,99,60, 0), 8));
+
+		Container fits = packager.pack(products);
+		assertNotNull(fits);
+	}
+	@Test
 	void testStackingRectanglesOnSquare() {
 
 		List<Container> containers = new ArrayList<>();

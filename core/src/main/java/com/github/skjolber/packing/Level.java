@@ -1,6 +1,7 @@
 package com.github.skjolber.packing;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * A level within a container
@@ -54,5 +55,8 @@ public class Level extends ArrayList<Placement>{
 		}
 	}
 
-
+	@Override
+	public String toString() {
+		return stream().map(Placement::toString).collect(Collectors.joining(","));
+	}
 }
