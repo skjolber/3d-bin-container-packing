@@ -144,7 +144,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 
 		assertEquals(1, fits.getLevels().size());
 		for (Level level : fits.getLevels()) {
-			for(Placement p : level) {
+			for(Placement p : level.iterable()) {
 				assertEquals(0, p.getSpace().getZ());
 			}
 		}		

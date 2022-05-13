@@ -5,50 +5,34 @@ import java.util.stream.Collectors;
 
 /**
  * A level within a container
- *
  */
-public class Level extends ArrayList<Placement>{
+public class Level {
 
-	private static final long serialVersionUID = 1L;
+	final private ArrayList<Placement> placements = new ArrayList<>();
+	private int height = 0;
+	private int weight = 0;
 
 	public int getHeight() {
-		int height = 0;
-
-		for(Placement placement : this) {
-			Box box = placement.getBox();
-			if(box.getHeight() > height) {
-				height = box.getHeight();
-			}
-		}
-
 		return height;
 	}
 
 	public int getWeight() {
-		int weight = 0;
-
-		for(Placement placement : this) {
-			weight += placement.getBox().getWeight();
-		}
-
 		return weight;
 	}
 
 	/**
-	 *
 	 * Check whether placement is valid, i.e. no overlaps.
-	 *
 	 */
 	public void validate() {
-		for(int i = 0; i < size(); i++) {
-			for(int j = 0; j < size(); j++) {
-				if(j == i) {
-					if(!get(i).intersects(get(j))) {
+		for (int i = 0; i < placements.size(); i++) {
+			for (int j = 0; j < placements.size(); j++) {
+				if (j == i) {
+					if (!placements.get(i).intersects(placements.get(j))) {
 						throw new IllegalArgumentException();
 					}
 				} else {
-					if(get(i).intersects(get(j))) {
-						throw new IllegalArgumentException(i + " vs " + j + ": " + get(i) + " vs " + get(j));
+					if (placements.get(i).intersects(placements.get(j))) {
+						throw new IllegalArgumentException(i + " vs " + j + ": " + placements.get(i) + " vs " + placements.get(j));
 					}
 				}
 			}
@@ -57,6 +41,28 @@ public class Level extends ArrayList<Placement>{
 
 	@Override
 	public String toString() {
-		return stream().map(Placement::toString).collect(Collectors.joining(","));
+		return placements.stream().map(Placement::toString).collect(Collectors.joining(","));
+	}
+
+	public int size() {
+		return placements.size();
+	}
+
+	public Placement get(final int i) {
+		return placements.get(i);
+	}
+
+	public void add(final Placement placement) {
+		placements.add(placement);
+		height = Math.max(height, placement.getBox().getHeight());
+		weight += placement.getBox().getWeight();
+	}
+
+	public Iterable<Placement> iterable() {
+		return placements;
+	}
+
+	public boolean isEmpty() {
+		return placements.isEmpty();
 	}
 }

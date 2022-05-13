@@ -28,7 +28,7 @@ class Visualizer {
 			
 			builder.width(w).height(d);
 
-			for(Placement placement : level) {
+			for(Placement placement : level.iterable()) {
 				Space space = placement.getSpace();
 				Box box = placement.getBox();
 
@@ -62,7 +62,7 @@ class Visualizer {
 			
 			builder.width(w).height(d);
 
-			for(Placement placement : level) {
+			for(Placement placement : level.iterable()) {
 				Space space = placement.getSpace();
 
 				builder.element(new Rectangle((int)Math.round(space.getX() * factor * horizontalScaling), (int)Math.round(space.getY() * factor), (int)(space.getWidth()  * factor * horizontalScaling), (int)(space.getDepth()  * factor)));

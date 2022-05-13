@@ -519,7 +519,7 @@ class LargestAreaFitFirstPackager3DTest extends AbstractPackagerTest {
 
 		assertEquals(1, pack.getLevels().size());
 		for (Level level : pack.getLevels()) {
-			for(Placement p : level) {
+			for(Placement p : level.iterable()) {
 				assertEquals(0, p.getSpace().getZ());
 			}
 		}
