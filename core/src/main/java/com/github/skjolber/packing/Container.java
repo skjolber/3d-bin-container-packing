@@ -299,8 +299,11 @@ public class Container extends Box {
 	}
 	
 	public void removeLevel(int index) {
+		System.out.println("Remove level " + index + " of " + levels.size());
+		boolean last = index == levels.size() - 1;
 		Level level = levels.remove(index);
-		if(index != levels.size()) {
+
+		if(!last) {
 			stackHeight -= level.getHeight();
 			stackWeight -= level.getWeight();
 		}
@@ -315,38 +318,46 @@ public class Container extends Box {
 
 	public int clearLevelsForBoxes(int limit) {
 		int count = 0;
-		int i = 0;
-		while(limit > count && i < levels.size()) {
-			count += levels.get(i).size();
+		int size = 0;
+		while(limit > count && size < levels.size()) {
+			count += levels.get(size).size();
 			
-			i++;
+			size++;
 		}
 		
-		i--;
-		if(count == limit) {
-			// see if we can keep the last level
-			// if so there must be no free space in it
-			Level level = levels.get(i);
+		// see if we can keep the last level
+		// if so there must be no free space in it
+		Level level = levels.get(size - 1);
 			
-			long v = (volume / height) * level.getHeight();
-			for(Placement p : level) {
-				v -= p.getBox().getVolume();
-			}
-			
-			if(v == 0) {
-				// keep last level
-				i++;
-			} else {
-				// discard also the last level
-				count -= levels.get(i).size();
-			}
+		long v = (volume / height) * level.getHeight();
+		for(Placement p : level) {
+			v -= p.getBox().getVolume();
+		}
+	
+		if(v == 0) {
+			// keep last level, it is full
 		} else {
 			// discard also the last level
-			count -= levels.get(i).size();
+			size--;
+			count -= levels.get(size).size();
+		}
+
+		if(size == 0) {
+			levels.clear();
+			
+			return 0;
 		}
 		
-		while(i < levels.size()) {
-			removeLevel(i);
+		// don't subtract the last box, but the box before the last
+		for(int k = size - 1; k < levels.size() - 1; k++) {
+			Level removeLevel = levels.get(k);
+
+			stackHeight -= removeLevel.getHeight();
+			stackWeight -= removeLevel.getWeight();
+		}
+		
+		while(levels.size() > size) {
+			levels.remove(levels.size() - 1);
 		}
 		
 		return count;
