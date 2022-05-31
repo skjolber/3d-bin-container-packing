@@ -6,7 +6,7 @@
   "main": "src/index.js",
   "dependencies": {
     "@types/randomcolor": "^0.5.5",
-    "@types/three": "^0.137.0",
+    "@types/three": "^0.141.0",
     "dat.gui": "0.7.9",
     "randomcolor": "^0.6.2",
     "react": "17.0.2",
@@ -14,7 +14,7 @@
     "react-scripts": "4.0.3",
     "simplex-noise": "3.0.1",
     "stats-js": "1.0.1",
-    "three": "^0.137.0",
+    "three": "^0.141.0",
     "three-orbitcontrols": "2.110.3"
   },
   "devDependencies": {
