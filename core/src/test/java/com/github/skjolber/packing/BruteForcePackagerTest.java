@@ -13,6 +13,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -38,6 +39,21 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 
 		Container fits = packager.pack(products);
 		assertNotNull(fits);
+	}
+
+	@Test
+	void testForAnotherIllegalArgumentException() {
+		BruteForcePackager packager = new BruteForcePackager(Arrays.asList(
+			new Container("container1", 350, 300, 300, 0)
+		));
+
+		List<BoxItem> products = Arrays.asList(
+			new BoxItem(new Box("E", 182, 15, 182, 0), 8),
+			new BoxItem(new Box("A", 66, 50, 231, 0), 24)
+		);
+
+		Container fits = packager.pack(products);
+		assertNull(fits);
 	}
 	@Test
 	void testStackingRectanglesOnSquare() {
@@ -147,7 +163,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 			for(Placement p : level.iterable()) {
 				assertEquals(0, p.getSpace().getZ());
 			}
-		}		
+		}
 	}
 
 	@Test
@@ -610,7 +626,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 		products.add(new BoxItem(new Box("Product 3", 299, 299, 99, 25), 1));
 		products.add(new BoxItem(new Box("Product 4", 99, 99, 25, 25), 1));
 		List<Container> containers = packager.packList(products, maxContainers, System.currentTimeMillis() + 15000);
-		
+
 		assertEquals(2, containers.size());
 		assertEquals(containers.get(0).getName(), "Box 3");
 		assertEquals(3, containers.get(0).getLevels().size());
@@ -741,26 +757,26 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 				.withContainers(containers)
 				.build();
 
-		List<Container> usedContainers = packager.packList(parcels, 3, () -> false);		
+		List<Container> usedContainers = packager.packList(parcels, 3, () -> false);
 	}
-	
+
 	@Test
 	public void testIssue297() {
 		List<Container> containers = new ArrayList<Container>();
 		containers.add(new ValidatingContainer(282, 222, 190, 9));
 		Packager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
-	
+
 		List<BoxItem> products = new ArrayList<BoxItem>();
 		products.add(new BoxItem(new Box("A", 213, 187, 180, 1), 1));
 		products.add(new BoxItem(new Box("B", 217, 170, 78, 1), 1));
 		products.add(new BoxItem(new Box("C", 129, 102, 71, 1), 1));
-		
+
 		Container match = packager.pack(products);
 		System.out.println(match);
-		
-		
+
+
 	}
-	
+
 	@Test
 	void testProblematicContainer() {
 
