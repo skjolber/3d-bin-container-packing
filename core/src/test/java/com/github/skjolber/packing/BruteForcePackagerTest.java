@@ -777,4 +777,19 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 		Container fits = packager.pack(products);
 		assertNull(fits);
 	}
+	
+	@Test
+	void testForAnotherIllegalArgumentException() {
+		BruteForcePackager packager = new BruteForcePackager(Arrays.asList(
+			new Container("container1", 350, 300, 300, 0)
+		));
+
+		List<BoxItem> products = Arrays.asList(
+			new BoxItem(new Box("E", 182, 15, 182, 0), 8),
+			new BoxItem(new Box("A", 66, 50, 231, 0), 24)
+		);
+
+		Container fits = packager.pack(products);
+		assertNotNull(fits);
+	}
 }

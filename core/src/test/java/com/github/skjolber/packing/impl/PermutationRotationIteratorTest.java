@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.Box;
@@ -321,6 +322,29 @@ class PermutationRotationIteratorTest {
 		assertEquals(0, permutations[0]);
 		assertEquals(1, permutations[1]);
 		assertEquals(3, permutations[2]);
+	}
+	
+	@Test
+	void testRotations() {
+		Box container = new Box(9, 9, 9, 0);
+
+		List<BoxItem> products = new ArrayList<>();
+
+		products.add(new BoxItem(new Box("0", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("1", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("2", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("3", 1, 1, 3, 0), 1));
+		products.add(new BoxItem(new Box("4", 1, 1, 3, 0), 1));
+
+		PermutationRotationIterator rotator = new DefaultPermutationRotationIterator(products, container, true);
+
+		do {
+			int rotate = rotator.nextRotation();
+			if(rotate == -1) {
+				break;
+			}
+			System.out.println(Arrays.asList(rotator.getState().getRotations()));
+		} while(true);
 	}
 
 }
