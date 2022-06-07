@@ -55,7 +55,7 @@ public class DefaultStack extends Stack {
 
 	@Override
 	public long getVolume() {
-		int volume = 0;
+		long volume = 0;
 		
 		for (StackPlacement stackEntry : entries) {
 			volume += stackEntry.getStackable().getVolume();
