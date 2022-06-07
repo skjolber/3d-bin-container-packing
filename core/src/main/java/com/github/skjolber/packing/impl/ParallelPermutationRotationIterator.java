@@ -128,12 +128,14 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 	
 	public int nextRotation(int index) {
 		// next rotation
-		for(int i = 0; i < workUnits[index].rotations.length - PADDING; i++) {
-			if(workUnits[index].rotations[PADDING + i] < matrix[workUnits[index].permutations[PADDING + i]].getBoxes().length - 1) {
-				workUnits[index].rotations[PADDING + i]++;
+		for(int i = workUnits[index].rotations.length - 1; i >= PADDING; i--) {
+			if(workUnits[index].rotations[i] < matrix[workUnits[index].permutations[i]].getBoxes().length - 1) {
+				workUnits[index].rotations[i]++;
 
-				// reset all previous counters
-				System.arraycopy(reset, 0, workUnits[index].rotations, PADDING, i);
+				// reset all following counters
+				if(i + 1 < workUnits[index].rotations.length) {
+					System.arraycopy(reset, 0, workUnits[index].rotations, i + 1, rotations.length - (i + 1));
+				}
 
 				return i;
 			}
@@ -141,7 +143,6 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 
 		return -1;
 	}
-	
 
 	public int nextPermutation(int index) {
 		workUnits[index].count--;

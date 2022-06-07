@@ -16,6 +16,7 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -779,6 +780,7 @@ class BruteForcePackagerTest extends AbstractPackagerTest {
 	}
 	
 	@Test
+	@Disabled // takes too long
 	void testForAnotherIllegalArgumentException() {
 		BruteForcePackager packager = new BruteForcePackager(Arrays.asList(
 			new Container("container1", 350, 300, 300, 0)

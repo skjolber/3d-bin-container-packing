@@ -167,13 +167,12 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 	@Override
 	public int nextRotation() {
 		// next rotation
-		for(int i = 0; i < rotations.length; i++) {
+		for(int i = rotations.length - 1; i >= 0; i--) {
 			if(rotations[i] < matrix[permutations[i]].getBoxes().length - 1) {
 				rotations[i]++;
 
 				if(i + 1 < rotations.length) {
-					// reset all following counters
-					System.arraycopy(reset, 0, rotations, i + 1, rotations.length - i - 1);
+					System.arraycopy(reset, 0, rotations, i + 1, rotations.length - (i + 1));
 				}
 
 				return i;
