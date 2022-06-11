@@ -5,7 +5,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
 
@@ -160,6 +162,7 @@ class PermutationRotationIteratorTest {
 		int count = 0;
 		do {
 			count++;
+			System.out.println(Arrays.toString(rotator.getPermutations()));
 		} while(rotator.nextPermutation() != -1);
 
 		assertEquals( 5 * 4 * 3 * 2 * 1, count);
@@ -329,4 +332,26 @@ class PermutationRotationIteratorTest {
 		assertEquals(3, permutations[2]);
 	}
 
+	@Test
+	void testRotations() {
+		Dimension container = new Dimension(null, 9, 9, 9);
+
+		List<StackableItem> products = new ArrayList<>();
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
+
+		DefaultPermutationRotationIterator rotator = new DefaultPermutationRotationIterator(container, products);
+
+		do {
+			int rotate = rotator.nextRotation();
+			if(rotate == -1) {
+				break;
+			}
+			int[] rotations = rotator.getState().getRotations();
+			System.out.println(String.join("", IntStream.of(rotations).mapToObj(String::valueOf).toArray(String[]::new)));
+		} while(true);
+	}
 }
