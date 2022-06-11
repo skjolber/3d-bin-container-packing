@@ -20,6 +20,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
 public class PackagerBenchmark {
 
+	/*
     @Benchmark
     public int parallelPackager(PackagerState state) throws Exception {
     	return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
@@ -29,6 +30,12 @@ public class PackagerBenchmark {
     public int packager(PackagerState state) throws Exception {
     	return process(state.getBruteForcePackager(), Long.MAX_VALUE);
     }
+    */
+    @Benchmark
+    public int fastPackager(PackagerState state) throws Exception {
+    	return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
+    }
+
 
     public int process(List<BenchmarkSet> sets, long deadline) {
     	int i = 0;

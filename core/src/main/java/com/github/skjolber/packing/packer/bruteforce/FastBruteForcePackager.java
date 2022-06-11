@@ -34,17 +34,17 @@ import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 
 public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerResult, FastBruteForcePackagerResultBuilder> {
 
-	public static LargestAreaFitFirstPackagerBuilder newBuilder() {
-		return new LargestAreaFitFirstPackagerBuilder();
+	public static FastBruteForcePackagerBuilder newBuilder() {
+		return new FastBruteForcePackagerBuilder();
 	}
 
-	public static class LargestAreaFitFirstPackagerBuilder {
+	public static class FastBruteForcePackagerBuilder {
 
 		private List<Container> containers;
 		private int checkpointsPerDeadlineCheck = 1;
 		private PackResultComparator packResultComparator;
 
-		public LargestAreaFitFirstPackagerBuilder withContainers(Container ...  containers) {
+		public FastBruteForcePackagerBuilder withContainers(Container ...  containers) {
 			if(this.containers == null) {
 				this.containers = new ArrayList<>();
 			}
@@ -54,17 +54,17 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			return this;
 		}
 
-		public LargestAreaFitFirstPackagerBuilder withContainers(List<Container> containers) {
+		public FastBruteForcePackagerBuilder withContainers(List<Container> containers) {
 			this.containers = containers;
 			return this;
 		}
 
-		public LargestAreaFitFirstPackagerBuilder withCheckpointsPerDeadlineCheck(int n) {
+		public FastBruteForcePackagerBuilder withCheckpointsPerDeadlineCheck(int n) {
 			this.checkpointsPerDeadlineCheck = n;
 			return this;
 		}
 		
-		public LargestAreaFitFirstPackagerBuilder withPackResultComparator(PackResultComparator packResultComparator) {
+		public FastBruteForcePackagerBuilder withPackResultComparator(PackResultComparator packResultComparator) {
 			this.packResultComparator = packResultComparator;
 			
 			return this;
