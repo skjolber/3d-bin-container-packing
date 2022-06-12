@@ -93,7 +93,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				int rotationIndex;
 				do {
 					rotationIndex = iterator.nextRotation();
-				} while(rotationIndex - 4>= points.size());
+				} while(rotationIndex > points.size());
 
 				if(rotationIndex == -1) {
 					// no more rotations, continue to next permutation
