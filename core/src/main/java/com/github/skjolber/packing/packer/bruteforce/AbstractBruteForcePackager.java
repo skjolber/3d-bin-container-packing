@@ -74,27 +74,40 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				if (points == null) {
 					return null; // timeout
 				}
-				if (points.size() == iterator.length()) {
-					// best possible result for this container
+				if (points.size() > bestPermutationResult.getSize()) {
 					bestPermutationResult.setState(points, iterator.getState(), stackPlacements.subList(0, points.size()), points.size() == stackPlacements.size());
-					return bestPermutationResult;
-				} else if (points.size() > 0) {
-					// continue search, but see if this is the best fit so far
-					// higher count implies higher volume and weight
-					// since the items are the same within each permutation
-					if (points.size() > bestPermutationResult.getSize()) {
-						bestPermutationResult.setState(points, iterator.getState(), stackPlacements.subList(0, points.size()), points.size() == stackPlacements.size());
+					if (points.size() == iterator.length()) {
+						// best possible result for this container
+						return bestPermutationResult;
 					}
 				}
 
 				holder.getStack().clear();
+				
+				// search for the next rotation which actually 
+				// has a chance of affecting the result.
+				// i.e. if we have four boxes, and two boxes could be placed with the 
+				// current rotations, and the new rotation only changes the rotation of box 4,
+				// then we know that attempting to stack again will not work
+				int rotationIndex;
+				do {
+					rotationIndex = iterator.nextRotation();
+				} while(rotationIndex >= points.size());
 
-				int diff = iterator.nextRotation();
-				if(diff == -1) {
+				if(rotationIndex == -1) {
 					// no more rotations, continue to next permutation
 					break;
-				}
+				}				
+
 			} while (true);
+			
+			// search for the next permutation which actually 
+			// has a chance of affecting the result.
+
+			int permutationIndex;
+			do {
+				permutationIndex = iterator.nextPermutation();
+			} while(permutationIndex > bestPermutationResult.getSize());
 			
 			if(!bestPermutationResult.isEmpty()) {
 				// compare against other permutation's result
@@ -106,7 +119,11 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 					bestPermutationResult = tmp;
 				}
 			}
-		} while (iterator.nextPermutation() != -1);
+
+			if(permutationIndex == -1) {
+				break;
+			}
+		} while (true);
 		
 		return bestResult;
 	}
