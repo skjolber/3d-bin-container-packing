@@ -222,16 +222,14 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				if (count == Integer.MIN_VALUE) {
 					return null; // timeout
 				}
-				if (count == rotator.length()) {
-					// best possible result for this container
+				// continue search, but see if this is the best fit so far
+				// higher count implies higher volume and weight
+				// since the items are the same within each permutation
+				if (count > bestPermutationResult.getSize()) {
 					bestPermutationResult.setState(extremePoints.getPoints(), rotator.getState(), stackPlacements.subList(0, count), count == stackPlacements.size());
-					
-					return bestPermutationResult;
-				} else if (count > bestPermutationResult.getSize()) {
-					// continue search, but see if this is the best fit so far
-					// higher count implies higher volume and weight
-					// since the items are the same within each permutation
-					bestPermutationResult.setState(extremePoints.getPoints(), rotator.getState(), stackPlacements.subList(0, count), count == stackPlacements.size());
+					if (count == rotator.length()) {
+						return bestPermutationResult;
+					}
 				}
 
 				// search for the next rotation which actually 

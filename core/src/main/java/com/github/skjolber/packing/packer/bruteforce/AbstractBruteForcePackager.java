@@ -74,18 +74,14 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				if (points == null) {
 					return null; // timeout
 				}
-				if (points.size() == iterator.length()) {
-					// best possible result for this container
+				if (points.size() > bestPermutationResult.getSize()) {
 					bestPermutationResult.setState(points, iterator.getState(), stackPlacements.subList(0, points.size()), points.size() == stackPlacements.size());
-					return bestPermutationResult;
-				} else if (!points.isEmpty()) {
-					// continue search, but see if this is the best fit so far
-					// higher count implies higher volume and weight
-					// since the items are the same within each permutation
-					if (points.size() > bestPermutationResult.getSize()) {
-						bestPermutationResult.setState(points, iterator.getState(), stackPlacements.subList(0, points.size()), points.size() == stackPlacements.size());
+					if (points.size() == iterator.length()) {
+						// best possible result for this container
+						return bestPermutationResult;
 					}
 				}
+
 
 				holder.getStack().clear();
 				
