@@ -134,11 +134,9 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 				workUnitRotations[i]++;
 
 				// reset all following counters
-				if(i + 1 < workUnitRotations.length) {
-					System.arraycopy(reset, 0, workUnitRotations, i + 1, workUnitRotations.length - (i + 1));
-				}
+				System.arraycopy(reset, 0, workUnitRotations, i + 1, workUnitRotations.length - (i + 1));
 
-				return i;
+				return i - PADDING;
 			}
 		}
 

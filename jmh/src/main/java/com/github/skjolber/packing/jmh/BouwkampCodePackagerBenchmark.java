@@ -18,24 +18,24 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @Warmup(iterations = 1, time = 15, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.Throughput)
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
-public class PackagerBenchmark {
+public class BouwkampCodePackagerBenchmark {
 
-	/*
+	
     @Benchmark
-    public int parallelPackager(PackagerState state) throws Exception {
+    public int parallelPackager(BouwkampCodePackagerState state) throws Exception {
     	return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
     }
 
     @Benchmark
-    public int packager(PackagerState state) throws Exception {
+    public int packager(BouwkampCodePackagerState state) throws Exception {
     	return process(state.getBruteForcePackager(), Long.MAX_VALUE);
     }
-    */
+    /*
     @Benchmark
-    public int fastPackager(PackagerState state) throws Exception {
+    public int fastPackager(BouwkampCodePackagerState state) throws Exception {
     	return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
     }
-
+*/
 
     public int process(List<BenchmarkSet> sets, long deadline) {
     	int i = 0;
@@ -50,7 +50,7 @@ public class PackagerBenchmark {
     
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(PackagerBenchmark.class.getSimpleName())
+                .include(BouwkampCodePackagerBenchmark.class.getSimpleName())
                 .mode(Mode.Throughput)
                 /*
                 .forks(1)

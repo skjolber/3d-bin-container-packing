@@ -14,46 +14,31 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-/**
- * 
- * Check the impact of using a variable deadline, avoiding doing frequent system calls.
- *
- */
-
 @Fork(value = 1, warmups = 1)
 @Warmup(iterations = 1, time = 15, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.Throughput)
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
-public class DeadlineBenchmark {
+public class EgyPackagerBenchmark {
 
+	
     @Benchmark
-    public Object parallelPackagerNoDeadline(BouwkampCodePackagerState state) throws Exception {
+    public int parallelPackager(EgyPackagerState state) throws Exception {
     	return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
     }
 
     @Benchmark
-    public Object parallelPackagerDeadline(BouwkampCodePackagerState state) throws Exception {
-    	return process(state.getParallelBruteForcePackager(), System.currentTimeMillis() + 10000);
-    }
-
-    @Benchmark
-    public Object parallelPackagerDeadlineNth(BouwkampCodePackagerState state) throws Exception {
-    	return process(state.getParallelBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
-    }
-
-    @Benchmark
-    public Object packagerNoDeadline(BouwkampCodePackagerState state) throws Exception {
+    public int packager(EgyPackagerState state) throws Exception {
     	return process(state.getBruteForcePackager(), Long.MAX_VALUE);
     }
-
+    
     @Benchmark
-    public Object packagerDeadline(BouwkampCodePackagerState state) throws Exception {
-    	return process(state.getBruteForcePackager(), System.currentTimeMillis() + 10000);
+    public int fastPackager(EgyPackagerState state) throws Exception {
+    	return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
     }
 
     @Benchmark
-    public Object packagerDeadlineNth(BouwkampCodePackagerState state) throws Exception {
-    	return process(state.getBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
+    public int fastPackager2(EgyPackagerState state) throws Exception {
+    	return process(state.getFastBruteForcePackager2(), Long.MAX_VALUE);
     }
 
     public int process(List<BenchmarkSet> sets, long deadline) {
@@ -69,7 +54,7 @@ public class DeadlineBenchmark {
     
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(DeadlineBenchmark.class.getSimpleName())
+                .include(EgyPackagerBenchmark.class.getSimpleName())
                 .mode(Mode.Throughput)
                 /*
                 .forks(1)

@@ -22,8 +22,14 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
+/**
+ * 
+ * This benchmark is heavy on permutations (not rotations)
+ * 
+ */
+
 @State(Scope.Benchmark)
-public class PackagerState {
+public class BouwkampCodePackagerState {
 
 	private final int threadPoolSize;
 	private final int nth;
@@ -39,11 +45,11 @@ public class PackagerState {
 	private List<BenchmarkSet> plainPackagerNth = new ArrayList<>();
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 
-	public PackagerState() {
+	public BouwkampCodePackagerState() {
 		this(8, 20000);
 	}
 
-	public PackagerState(int threadPoolSize, int nth) {
+	public BouwkampCodePackagerState(int threadPoolSize, int nth) {
 		this.threadPoolSize = threadPoolSize;
 		this.nth = nth;
 

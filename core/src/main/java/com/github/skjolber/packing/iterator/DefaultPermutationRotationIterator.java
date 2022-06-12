@@ -111,9 +111,7 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 			if(rotations[i] < matrix[permutations[i]].getBoxes().length - 1) {
 				rotations[i]++;
 
-				if(i + 1 < rotations.length) {
-					System.arraycopy(reset, 0, rotations, i + 1, rotations.length - (i + 1));
-				}
+				System.arraycopy(reset, 0, rotations, i + 1, rotations.length - (i + 1));
 
 				return i;
 			}
