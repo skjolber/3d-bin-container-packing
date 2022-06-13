@@ -32,7 +32,7 @@ public class Default3DPlanePoint3D<P extends Placement3D> extends Point3D<P> imp
 		this.yzPlane = yzPlane;
 		this.xzPlane = xzPlane;
 		this.xyPlane = xyPlane;
-		if(minX != 0 | minY != 0 || minZ != 0) {
+		if(minX != 0 || minY != 0 || minZ != 0) {
 			if(yzPlane.getAbsoluteX() != 0 || yzPlane.getAbsoluteY() != 0 || yzPlane.getAbsoluteZ() != 0) {
 				if(intersects(yzPlane)) {
 					throw new RuntimeException(this + " " + yzPlane);

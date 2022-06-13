@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -212,16 +211,11 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			// iterator over all rotations
 			int index = 0;
 			do {
-				if(extremePoints.getPoints().size() != index) {
-					throw new RuntimeException();
-				}
-				if(stack.getSize() != index) {
-					throw new RuntimeException();
-				}
 				int count = packStackPlacement(extremePoints, stackPlacements, rotator, stack, index, interrupt);
 				if (count == Integer.MIN_VALUE) {
 					return null; // timeout
 				}
+
 				// continue search, but see if this is the best fit so far
 				// higher count implies higher volume and weight
 				// since the items are the same within each permutation
@@ -250,11 +244,13 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 					stack.clear();
 					break;
 				}
-
-				extremePoints.setStackSize(rotationIndex);
-				stack.setSize(rotationIndex);
 				
-				index = rotationIndex;
+				int diff = Math.max(Math.min(rotationIndex - 1, count), 0);
+
+				extremePoints.setStackSize(diff);
+				stack.setSize(diff);
+				
+				index = diff;
 			} while (true);
 			
 			int permutationIndex;
@@ -298,7 +294,6 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			
 			Stackable stackable = permutationRotation.getStackable();
 			if (stackable.getWeight() > freeWeightLoad) {
-				System.out.println("Weight bust");
 				break;
 			}
 			

@@ -480,7 +480,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 							values.flag(i);
 						}
 					}
-				}				
+				}
 			} else if(!withinY(point.getMinY(), placement)) {
 				if(withinZ(point.getMinZ(), placement)) {
 					if(point.getMinY() < placement.getAbsoluteY()) {

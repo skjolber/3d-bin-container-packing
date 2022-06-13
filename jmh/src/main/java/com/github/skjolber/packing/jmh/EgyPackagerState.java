@@ -119,7 +119,7 @@ public class EgyPackagerState {
 			originalVolume += item.getVolume();
 		}
 		
-		double multiplier = 1.0;
+		double multiplier = 1.45;
 		while(true) {
 			long volume = (long)(originalVolume * multiplier);
 			
@@ -136,15 +136,16 @@ public class EgyPackagerState {
 	
 			List<StackableItem> stackableItems3D = getStackableItems3D(items);
 	
-			FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
+			FastBruteForcePackager2 fastPackager = FastBruteForcePackager2.newBuilder().withContainers(containers).build();
 	
-			Container pack = fastPackager.pack(stackableItems3D);
+			Container pack = fastPackager.pack(stackableItems3D, System.currentTimeMillis() + 5000);
 			
 			if(pack != null) {
 				System.out.println("Go container " + volume + " from " + originalVolume);
 				return container;
 			}
-			multiplier += 0.01;
+			multiplier += 0.05;
+			System.out.println("Try " + multiplier);
 		}		
 	}
 
