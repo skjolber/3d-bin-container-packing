@@ -2,12 +2,15 @@ package com.github.skjolber.packing.test.generator;
 
 public class Item {
 
-	protected final int dx;
-	protected final int dy;
-	protected final int dz;
+	protected int dx;
+	protected int dy;
+	protected int dz;
 	
-	protected final int count;
-	protected final long volume;
+	protected int count;
+	protected long volume;
+	
+	public Item() {
+	}
 	
 	public Item(int dx, int dy, int dz, int count) {
 		super();
@@ -44,6 +47,24 @@ public class Item {
 		return "Item [dx=" + dx + ", dy=" + dy + ", dz=" + dz + ", count=" + count + ", volume=" + volume + "]";
 	}
 
-	
+	public void setDx(int dx) {
+		this.dx = dx;
+	}
+
+	public void setDy(int dy) {
+		this.dy = dy;
+	}
+
+	public void setDz(int dz) {
+		this.dz = dz;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
+	}
+
+	public void setVolume(long volume) {
+		this.volume = volume;
+	}	
 	
 }

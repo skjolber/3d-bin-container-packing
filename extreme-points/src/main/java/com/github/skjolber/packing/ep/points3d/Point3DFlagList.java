@@ -135,6 +135,11 @@ public class Point3DFlagList<P extends Placement3D> {
 		System.arraycopy(points, 0, destination.points, 0, size);
 		System.arraycopy(flag, 0, destination.flag, 0, size);
 		destination.size = size;
+		
+		for(int i = size; i < destination.flag.length; i++) {
+			destination.flag[i] = false;
+			destination.points[i] = null;
+		}
 	}
 	
 	public Point3D<P>[] getPoints() {

@@ -23,5 +23,7 @@ public class PermutationRotationState {
 	public int[] getRotations() {
 		return rotations;
 	}
+	
+	
 
 }

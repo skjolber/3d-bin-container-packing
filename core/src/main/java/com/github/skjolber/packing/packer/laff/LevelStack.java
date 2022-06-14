@@ -215,6 +215,11 @@ public class LevelStack extends Stack {
 		return count;
 	}
 
+	@Override
+	public void setSize(int size) {
+		clearLevelsForBoxes(size); // inaccurate
+	}
+
 
 	
 }

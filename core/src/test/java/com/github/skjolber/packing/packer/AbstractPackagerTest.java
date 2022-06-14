@@ -1,10 +1,11 @@
 package com.github.skjolber.packing.packer;
 
+import static com.github.skjolber.packing.test.assertj.ContainerAssert.assertThat;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
-import static com.github.skjolber.packing.test.assertj.ContainerAssert.*;
-import static org.junit.Assert.assertNotNull;
 
 public class AbstractPackagerTest {
 

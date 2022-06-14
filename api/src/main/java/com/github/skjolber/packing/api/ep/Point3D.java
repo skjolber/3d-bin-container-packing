@@ -174,6 +174,9 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	}
 
 	public void setMaxZ(int maxZ) {
+		if(maxX < 0) {
+			throw new RuntimeException("Cannot set max z to " + maxZ + " for " + minZ + "x" + minY + "x" + minZ);
+		}
 		this.maxZ = maxZ;
 		
 		this.dz = maxZ - minZ + 1;

@@ -50,4 +50,6 @@ public abstract class Stack {
 	
 	public abstract int getSize();
 
+	public abstract void setSize(int size);
+
 }

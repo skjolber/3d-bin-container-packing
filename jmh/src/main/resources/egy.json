@@ -1,0 +1,42 @@
+[
+	{
+		"dx": 26,
+		"dy": 18,
+		"dz": 21,
+		"count": 2,
+		"volume": 9828,
+		"category": "K1"
+	},
+	{
+		"dx": 42,
+		"dy": 25,
+		"dz": 17,
+		"count": 1,
+		"volume": 17850,
+		"category": "K2"
+	},
+	{
+		"dx": 31,
+		"dy": 15,
+		"dz": 37,
+		"count": 1,
+		"volume": 17205,
+		"category": "K2"
+	},
+	{
+		"dx": 35,
+		"dy": 31,
+		"dz": 18,
+		"count": 1,
+		"volume": 19530,
+		"category": "K2"
+	},
+	{
+		"dx": 40,
+		"dy": 34,
+		"dz": 17,
+		"count": 1,
+		"volume": 23120,
+		"category": "K3"
+	}
+]

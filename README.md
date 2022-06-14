@@ -7,26 +7,54 @@ This library does 3D rectangular bin packing; it attempts to match a set of 3D i
 Projects using this library will benefit from:
  * short and predictable calculation time,
  * fairly good use of container space, 
- * brute-force support for low number of boxes
- 
-So while the algorithm will not produce the theoretically optimal result (which has an O(n<sup>2</sup>) complexity), its reasonable simplicity means that in many cases it would be possible to stack the resulting container for a human without instructions.
-
-In short, the library provides a service which is  __usually good enough, in time and reasonably user-friendly__ ;-)
-
+ * brute-force support for low number of boxes (ideal for small orders)
+    
 Bugs, feature suggestions and help requests can be filed with the [issue-tracker].
 
 ## Obtain
 The project is implemented in Java and built using [Maven]. The project is available on the central Maven repository.
 
-Example dependency config:
+<details>
+  <summary>Maven coordinates</summary>
+
+Add
+ 
+```xml
+<3d-bin-container-packing.version>2.0.11</3d-bin-container-packing.version>
+```
+
+and
 
 ```xml
 <dependency>
     <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
     <artifactId>core</artifactId>
-    <version>2.0.10</version>
+    <version>${3d-bin-container-packing.version}</version>
 </dependency>
 ```
+
+</details>
+
+or
+
+<details>
+  <summary>Gradle coordinates</summary>
+
+For
+
+```groovy
+ext {
+  containerBinPackingVersion = '2.0.11'
+}
+```
+
+add
+
+```groovy
+api("com.github.skjolber.3d-bin-container-packing:core:${containerBinPackingVersion}")
+```
+
+</details>
 
 Java 11+ projects please use module `com.github.skjolber.packing.core`.
 
@@ -90,8 +118,9 @@ Packager packager = BruteForcePackager.newBuilder()
 
 Using a deadline is recommended whenever brute-forcing in a real-time application.
 
-## Details
-
+<details>
+  <summary>Algorithm details</summary>
+ 
 ### Largest Area Fit First algorithm
 The implementation is based on [this paper][2], and is not a traditional [bin packing problem][1] solver.
 
@@ -124,6 +153,8 @@ per order distribution for web-shops, a healthy part of the orders are within it
 
 Note that the algorithm is recursive on the number of boxes, so do not attempt this with many boxes (it will likely not complete in time anyhow).
 
+</details> 
+ 
 ### Visualizer
 There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms (not as stacking instructions).
 

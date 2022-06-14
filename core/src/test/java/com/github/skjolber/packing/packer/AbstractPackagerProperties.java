@@ -1,5 +1,12 @@
 package com.github.skjolber.packing.packer;
 
+import static java.util.Collections.singletonList;
+
+import java.util.function.Function;
+
+import org.junit.Assert;
+import org.junit.runner.RunWith;
+
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Dimension;
@@ -14,14 +21,6 @@ import com.pholser.junit.quickcheck.From;
 import com.pholser.junit.quickcheck.Property;
 import com.pholser.junit.quickcheck.generator.InRange;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
-import org.junit.Assert;
-import org.junit.runner.RunWith;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-
-import static java.util.Collections.singletonList;
 
 @RunWith(JUnitQuickcheck.class)
 public class AbstractPackagerProperties extends AbstractPackagerTest {

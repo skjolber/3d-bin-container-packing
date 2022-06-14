@@ -82,6 +82,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 					}
 				}
 
+
 				holder.getStack().clear();
 				
 				// search for the next rotation which actually 
@@ -92,7 +93,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				int rotationIndex;
 				do {
 					rotationIndex = iterator.nextRotation();
-				} while(rotationIndex >= points.size());
+				} while(rotationIndex > points.size());
 
 				if(rotationIndex == -1) {
 					// no more rotations, continue to next permutation

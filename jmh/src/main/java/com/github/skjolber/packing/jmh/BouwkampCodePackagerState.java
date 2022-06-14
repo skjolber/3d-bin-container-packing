@@ -15,14 +15,21 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
+import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
+/**
+ * 
+ * This benchmark is heavy on permutations (not rotations)
+ * 
+ */
+
 @State(Scope.Benchmark)
-public class PackagerState {
+public class BouwkampCodePackagerState {
 
 	private final int threadPoolSize;
 	private final int nth;
@@ -36,12 +43,13 @@ public class PackagerState {
 	private List<BenchmarkSet> bruteForcePackagerNth = new ArrayList<>();
 	private List<BenchmarkSet> plainPackager = new ArrayList<>();
 	private List<BenchmarkSet> plainPackagerNth = new ArrayList<>();
+	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 
-	public PackagerState() {
+	public BouwkampCodePackagerState() {
 		this(8, 20000);
 	}
 
-	public PackagerState(int threadPoolSize, int nth) {
+	public BouwkampCodePackagerState(int threadPoolSize, int nth) {
 		this.threadPoolSize = threadPoolSize;
 		this.nth = nth;
 
@@ -53,15 +61,15 @@ public class PackagerState {
 	public void init() {
 		// these does not really result in successful stacking, but still should run as expected
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
-		
 		List<BouwkampCodes> codesForCount = directory.codesForCount(9);
 		for(BouwkampCodes c : codesForCount) {
 			for(BouwkampCode bkpLine : c.getCodes()) {
-				
+
+				/*
 				if(!c.getSource().equals("/simpleImperfectSquaredRectangles/o9sisr.bkp") || !bkpLine.getName().equals("15x11A")) {
 					continue;
 				}
-
+*/
 				List<Container> containers = new ArrayList<>();
 				containers.add(BouwkampConverter.getContainer3D(bkpLine));
 		
@@ -76,6 +84,8 @@ public class PackagerState {
 				PlainPackager plainPackager = PlainPackager.newBuilder().withContainers(containers).build();
 				PlainPackager plainPackagerNth = PlainPackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
 
+				FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
+
 				// single-threaded
 				this.bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D));
 				this.bruteForcePackagerNth.add(new BenchmarkSet(packagerNth, stackableItems3D));
@@ -83,6 +93,8 @@ public class PackagerState {
 				this.plainPackager.add(new BenchmarkSet(plainPackager, stackableItems3D));
 				this.plainPackagerNth.add(new BenchmarkSet(plainPackagerNth, stackableItems3D));
 
+				this.fastBruteForcePackager.add(new BenchmarkSet(fastPackager, stackableItems3D));
+				
 				// multi-threaded
 				this.parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D));
 				this.parallelBruteForcePackagerNth.add(new BenchmarkSet(parallelPackagerNth, stackableItems3D));
@@ -126,5 +138,9 @@ public class PackagerState {
 	
 	public List<BenchmarkSet> getPlainPackagerNth() {
 		return plainPackagerNth;
+	}
+	
+	public List<BenchmarkSet> getFastBruteForcePackager() {
+		return fastBruteForcePackager;
 	}
 }

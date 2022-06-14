@@ -8,7 +8,6 @@ import org.apache.commons.math3.distribution.LogNormalDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.random.RandomDataGenerator;
 
-import com.github.skjolber.packing.test.generator.Item;
 import com.github.skjolber.packing.test.generator.ItemGenerator;
 
 /**
@@ -18,7 +17,7 @@ import com.github.skjolber.packing.test.generator.ItemGenerator;
  *
  */
 
-public class EgyItemGenerator implements ItemGenerator {
+public class EgyItemGenerator implements ItemGenerator<EgyItem> {
 
 	public static Clazz CLASS_1 = new Clazz.Builder()
 			.withCategory(Category.K1, BigDecimal.valueOf(28.48))
@@ -80,10 +79,10 @@ public class EgyItemGenerator implements ItemGenerator {
 	}
 
 	@Override
-	public List<Item> getItems(int count) {
+	public List<EgyItem> getItems(int count) {
 		CategoryCounts counts = clazz.getCounts(count);
 		
-		List<Item> items = new ArrayList<>();
+		List<EgyItem> items = new ArrayList<>();
 		
 		for (Category category : Category.values()) {
 			
@@ -92,7 +91,7 @@ public class EgyItemGenerator implements ItemGenerator {
 				
 				double volume = category.getVolume(randomDataGenerator);
 				
-				Item item = getItem((volume * volumeReference), c, category);
+				EgyItem item = getItem((volume * volumeReference), c, category);
 				
 				c -= item.getCount();
 				
@@ -103,7 +102,7 @@ public class EgyItemGenerator implements ItemGenerator {
 		return items;
 	}
 	
-	private Item getItem(double volume, int maxCount, Category category) {
+	private EgyItem getItem(double volume, int maxCount, Category category) {
 		
 		// dy / dx = depthWidth
 		// dy      = dx * depthWidth
@@ -136,9 +135,7 @@ public class EgyItemGenerator implements ItemGenerator {
 		}
 		int count = Math.min(maxCount, (int)Math.floor(sample));
 		
-		Item item = new EgyItem(dx, dy, dz, count, category);
-		
-		return item;
+		return new EgyItem(dx, dy, dz, count, category);
 	}
 	
 	

@@ -74,4 +74,11 @@ public class DefaultStack extends Stack {
 		return entries.size();
 	}
 	
+	@Override
+	public void setSize(int size) {
+		while(size < entries.size()) {
+			entries.remove(entries.size() - 1);
+		}
+	}
+	
 }

@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer.laff;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;

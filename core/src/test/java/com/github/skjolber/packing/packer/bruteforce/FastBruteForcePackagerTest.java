@@ -2,10 +2,15 @@ package com.github.skjolber.packing.packer.bruteforce;
 
 import static com.github.skjolber.packing.test.assertj.StackablePlacementAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +20,10 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 
 
@@ -81,5 +90,70 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 		assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 	}
 	
+	@Test
+	public void testSimpleImperfectSquaredRectangles() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimpleImperfectSquaredRectangles(9));
+	}
+	
+	@Test
+	public void testSimpleImperfectSquaredSquares() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimpleImperfectSquaredSquares(9));
+	}
+	
+	@Test
+	public void testSimplePerfectSquaredRectangles() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimplePerfectSquaredRectangles(9));
+	}
+	
+	protected void pack(List<BouwkampCodes> codes) {
+		for (BouwkampCodes bouwkampCodes : codes) {
+			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
+				long timestamp = System.currentTimeMillis();
+				System.out.println("Package " + bouwkampCode.getName() + " " + bouwkampCodes.getSource());
+				pack(bouwkampCode);
+				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.currentTimeMillis() - timestamp));
+			}
+		}
+	}
+	
+	protected void pack(BouwkampCode bouwkampCode) {
+		List<Container> containers = new ArrayList<>();
+		
+		containers.add(Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+
+		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
+
+		List<StackableItem> products = new ArrayList<>();
+
+		List<Integer> squares = new ArrayList<>(); 
+		for (BouwkampCodeLine bouwkampCodeLine : bouwkampCode.getLines()) {
+			squares.addAll(bouwkampCodeLine.getSquares());
+		}
+
+		// map similar items to the same stack item - this actually helps a lot
+		Map<Integer, Integer> frequencyMap = new HashMap<>();
+		squares.forEach(word ->
+        	frequencyMap.merge(word, 1, (v, newV) -> v + newV)
+		);
+		
+		for (Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
+			int square = entry.getKey();
+			int count = entry.getValue();
+			products.add(new StackableItem(Box.newBuilder().withDescription(Integer.toString(square)).withSize(square, square, 1).withRotate3D().withWeight(1).build(), count));
+		}
+
+		Collections.shuffle(products);
+
+		Container fits = packager.pack(products);
+		assertNotNull(bouwkampCode.getName(), fits);
+		assertValid(fits);
+		assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), squares.size());
+	}
 
 }
