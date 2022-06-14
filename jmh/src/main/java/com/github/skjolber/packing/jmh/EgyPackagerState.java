@@ -22,7 +22,6 @@ import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager2;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.generator.Item;
@@ -50,7 +49,6 @@ public class EgyPackagerState {
 	private List<BenchmarkSet> plainPackager = new ArrayList<>();
 	private List<BenchmarkSet> plainPackagerNth = new ArrayList<>();
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
-	private List<BenchmarkSet> fastBruteForcePackager2 = new ArrayList<>();
 
 	private static List<StackableItem> stackableItems3D;
 	private static List<Container> containers;
@@ -95,7 +93,6 @@ public class EgyPackagerState {
 		PlainPackager plainPackagerNth = PlainPackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
 
 		FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
-		FastBruteForcePackager2 fastPackager2 = FastBruteForcePackager2.newBuilder().withContainers(containers).build();
 
 		// single-threaded
 		this.bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D));
@@ -105,7 +102,6 @@ public class EgyPackagerState {
 		this.plainPackagerNth.add(new BenchmarkSet(plainPackagerNth, stackableItems3D));
 
 		this.fastBruteForcePackager.add(new BenchmarkSet(fastPackager, stackableItems3D));
-		this.fastBruteForcePackager2.add(new BenchmarkSet(fastPackager2, stackableItems3D));
 		
 		// multi-threaded
 		this.parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D));
@@ -136,7 +132,7 @@ public class EgyPackagerState {
 	
 			List<StackableItem> stackableItems3D = getStackableItems3D(items);
 	
-			FastBruteForcePackager2 fastPackager = FastBruteForcePackager2.newBuilder().withContainers(containers).build();
+			FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
 	
 			Container pack = fastPackager.pack(stackableItems3D, System.currentTimeMillis() + 5000);
 			
@@ -199,8 +195,5 @@ public class EgyPackagerState {
 	public List<BenchmarkSet> getFastBruteForcePackager() {
 		return fastBruteForcePackager;
 	}
-	
-	public List<BenchmarkSet> getFastBruteForcePackager2() {
-		return fastBruteForcePackager2;
-	}
+
 }

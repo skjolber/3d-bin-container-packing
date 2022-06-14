@@ -44,11 +44,6 @@ public class EgyPackagerBenchmarkTest {
     	assertValid(state.getFastBruteForcePackager(), Long.MAX_VALUE);
     }
 
-	@Test
-    public void fastPackager2() throws Exception {
-    	assertValid(state.getFastBruteForcePackager2(), Long.MAX_VALUE);
-    }
-
     public void assertValid(List<BenchmarkSet> sets, long deadline) {
     	for(BenchmarkSet set : sets) {
     		assertNotNull(set.getPackager().pack(set.getProducts(), deadline));
@@ -57,7 +52,9 @@ public class EgyPackagerBenchmarkTest {
     
     @AfterEach
     public void shutdown() throws InterruptedException {
-    	state.shutdown();
+    	if(state != null) {
+    		state.shutdown();
+    	}
     }
 
 }

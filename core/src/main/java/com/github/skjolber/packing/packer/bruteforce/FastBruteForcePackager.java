@@ -245,12 +245,10 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 					break;
 				}
 				
-				int diff = Math.max(Math.min(rotationIndex - 1, count), 0);
-
-				extremePoints.setStackSize(diff);
-				stack.setSize(diff);
+				extremePoints.setStackSize(rotationIndex);
+				stack.setSize(rotationIndex);
 				
-				index = diff;
+				index = rotationIndex;
 			} while (true);
 			
 			int permutationIndex;

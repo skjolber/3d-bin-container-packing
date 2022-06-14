@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
@@ -135,10 +136,11 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		pack(directory.getSimpleImperfectSquaredSquares(9));
 	}
 	
+	@Disabled // takes too long
 	@Test
 	public void testSimplePerfectSquaredRectangles() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
-
+		
 		pack(directory.getSimplePerfectSquaredRectangles(9));
 	}
 	

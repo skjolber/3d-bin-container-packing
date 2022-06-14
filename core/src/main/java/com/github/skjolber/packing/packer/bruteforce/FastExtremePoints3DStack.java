@@ -62,13 +62,15 @@ public class FastExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 	}
 	
 	public void setStackSize(int size) {
-		stackSize = size;
-
-		while(size < placements.size()) {
-			placements.remove(placements.size() - 1);
+		if(stackSize != size) {
+			stackSize = size;
+	
+			while(size < placements.size()) {
+				placements.remove(placements.size() - 1);
+			}
+	
+			reload();
 		}
-
-		reload();
 	}
 
 	private void reload() {

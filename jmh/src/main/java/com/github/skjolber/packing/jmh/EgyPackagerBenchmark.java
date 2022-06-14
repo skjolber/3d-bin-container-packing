@@ -20,7 +20,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
 public class EgyPackagerBenchmark {
 
-	/*
+	
     @Benchmark
     public int parallelPackager(EgyPackagerState state) throws Exception {
     	return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
@@ -30,15 +30,10 @@ public class EgyPackagerBenchmark {
     public int packager(EgyPackagerState state) throws Exception {
     	return process(state.getBruteForcePackager(), Long.MAX_VALUE);
     }
-    */
+    
     @Benchmark
     public int fastPackager(EgyPackagerState state) throws Exception {
     	return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
-    }
-
-    @Benchmark
-    public int fastPackager2(EgyPackagerState state) throws Exception {
-    	return process(state.getFastBruteForcePackager2(), Long.MAX_VALUE);
     }
 
     public int process(List<BenchmarkSet> sets, long deadline) {
