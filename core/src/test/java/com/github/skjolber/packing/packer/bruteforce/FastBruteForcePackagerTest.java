@@ -2,8 +2,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 
 import static com.github.skjolber.packing.test.assertj.StackablePlacementAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,6 +26,48 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 
 public class FastBruteForcePackagerTest extends AbstractPackagerTest {
+
+
+
+	@Test
+	void testAnotherLargeProblemShouldRespectDeadline() {
+
+		List<Container> containers = new ArrayList<>();
+
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1900, 1500, 4000)
+			.withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+
+		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
+
+		List<StackableItem> products = new ArrayList<>();
+
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1000, 1000, 1000).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1000,1000,1000).withWeight(1).build(), 4));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(100,1050,750).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(100,650,750).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(16,2500,11).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(250,150,80).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(280,800,480).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(30,620,10).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(40,1000,1000).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(40,100,165).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(44,575,534).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(475,530,150).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(47,3160,660).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(530,120,570).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(55,500,745).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(670,25,15).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(700,300,30).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(700,400,30).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(75,400,720).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(77,360,750).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(80,450,760).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(90,210,680).withWeight(1).build(), 1));
+
+		// strangely when the timeout is set to now + 200ms it properly returns null
+		Container fits = packager.pack(products, System.currentTimeMillis() + 1000);
+		assertNull(fits);
+	}
 
 	@Test
 	void testLargeProblem48BoxesShouldRespectDeadline() {
@@ -59,8 +100,8 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(75, 650, 1600).withWeight(1).build(), 2));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(80, 770, 850).withWeight(1).build(), 4));
 
-		Container fits = packager.pack(products, System.currentTimeMillis() + 500);
-		assertValid(fits);
+		Container fits = packager.pack(products, System.currentTimeMillis() + 1000);
+		assertNull(fits);
 	}
 
 	@Test
