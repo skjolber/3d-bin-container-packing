@@ -49,6 +49,9 @@ public interface PermutationRotationIterator {
 	
 	int nextRotation();
 
+	int nextRotation(int maxIndex);
+
+	
 	/**
 	 * Next permutation.
 	 * 

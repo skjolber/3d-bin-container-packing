@@ -107,7 +107,13 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 	@Override
 	public int nextRotation() {
 		// next rotation
-		for(int i = rotations.length - 1; i >= 0; i--) {
+		return nextRotation(rotations.length - 1);
+	}
+	
+	@Override
+	public int nextRotation(int maxIndex) {
+		// next rotation
+		for(int i = maxIndex; i >= 0; i--) {
 			if(rotations[i] < matrix[permutations[i]].getBoxes().length - 1) {
 				rotations[i]++;
 
@@ -119,6 +125,7 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 
 		return -1;
 	}
+
 
 	@Override
 	public int[] getPermutations() {

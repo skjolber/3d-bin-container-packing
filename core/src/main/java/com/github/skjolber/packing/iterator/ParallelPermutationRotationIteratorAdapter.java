@@ -29,8 +29,13 @@ public class ParallelPermutationRotationIteratorAdapter implements PermutationRo
 	}
 
 	public int nextRotation() {
-		return delegate.nextRotation(index);
+		return delegate.nextWorkUnitRotation(index);
 	}
+	
+	public int nextRotation(int maxIndex) {
+		return delegate.nextWorkUnitRotation(index, maxIndex);
+	}
+
 
 	public int[] getPermutations() {
 		return delegate.getPermutations(index);

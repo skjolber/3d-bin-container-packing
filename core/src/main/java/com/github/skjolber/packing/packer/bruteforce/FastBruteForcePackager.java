@@ -233,10 +233,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				// then we know that attempting to stack again will not work since box
 				// 3 will still remain in the same rotation (which could not be placed)
 
-				int rotationIndex;
-				do {
-					rotationIndex = rotator.nextRotation();
-				} while(rotationIndex > count);
+				int rotationIndex = rotator.nextRotation(count);
 				
 				if(rotationIndex == -1) {
 					// no more rotations, continue to next permutation
@@ -254,6 +251,10 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			int permutationIndex;
 			do {
 				permutationIndex = rotator.nextPermutation();
+				
+				if (interrupt.getAsBoolean()) {
+					return null;
+				}
 			} while(permutationIndex > bestPermutationResult.getSize());
 			
 			if(!bestPermutationResult.isEmpty()) {

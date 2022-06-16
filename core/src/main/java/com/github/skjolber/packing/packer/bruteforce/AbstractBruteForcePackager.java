@@ -90,11 +90,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				// i.e. if we have four boxes, and two boxes could be placed with the 
 				// current rotations, and the new rotation only changes the rotation of box 4,
 				// then we know that attempting to stack again will not work
-				int rotationIndex;
-				do {
-					rotationIndex = iterator.nextRotation();
-				} while(rotationIndex > points.size());
-
+				
+				int rotationIndex = iterator.nextRotation(points.size());
+				
 				if(rotationIndex == -1) {
 					// no more rotations, continue to next permutation
 					break;
@@ -108,6 +106,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			int permutationIndex;
 			do {
 				permutationIndex = iterator.nextPermutation();
+				
+				if (interrupt.getAsBoolean()) {
+					return null;
+				}
 			} while(permutationIndex > bestPermutationResult.getSize());
 			
 			if(!bestPermutationResult.isEmpty()) {
