@@ -18,15 +18,13 @@ public class EgyGeneratorTool {
     public static void main(String[] args) throws RunnerException, IOException {    	
 		ItemGenerator<EgyItem> generator = new EgyItemGenerator(EgyItemGenerator.CLASS_1);
 		
-		List<EgyItem> items = generator.getItems(6);
+		List<EgyItem> items = generator.getItems(12);
 		for(Item item : items) {
 			System.out.println(item);
 		}
 		
 		Path path = Paths.get("src","main","resources", "egy.json");
 		
-		System.out.println(path.toFile().getCanonicalPath());
-    	
 		ItemIO.write(path, items);
     }
 	

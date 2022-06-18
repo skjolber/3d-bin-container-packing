@@ -16,8 +16,8 @@ import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
-import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 import com.github.skjolber.packing.packer.DefaultPackResult;
+import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. 
@@ -173,7 +173,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 
 			Point3D<StackPlacement> point = extremePoints3D.getValue(bestPointIndex);
 			
-			StackPlacement stackPlacement = new StackPlacement(bestStackable, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ(), -1, -1, point.getPlacements3D());
+			StackPlacement stackPlacement = new StackPlacement(bestStackable, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ(), -1, -1);
 			stack.add(stackPlacement);
 			extremePoints3D.add(bestPointIndex, stackPlacement);
 

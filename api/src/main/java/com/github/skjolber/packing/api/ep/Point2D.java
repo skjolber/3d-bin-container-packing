@@ -115,6 +115,7 @@ public abstract class Point2D<P extends Placement2D> {
 	public Point2D(int minX, int minY, int maxX, int maxY) {
 		super();
 		
+		/*
 		if(maxX < minX) {
 			throw new IllegalArgumentException("MaxX " + maxX + " is less than minX " + minX);
 		}
@@ -122,7 +123,8 @@ public abstract class Point2D<P extends Placement2D> {
 		if(maxY < minY) {
 			throw new IllegalArgumentException("MaxY " + maxY + " is less than minY " + minY);
 		}
-
+		*/
+		
 		this.minX = minX;
 		this.minY = minY;
 		this.maxY = maxY;
@@ -138,9 +140,6 @@ public abstract class Point2D<P extends Placement2D> {
 		this.area = (long)dx * (long)dy;
 	}
 
-	
-	
-	
 	//
 	// vmaxY |                    
 	//       |          

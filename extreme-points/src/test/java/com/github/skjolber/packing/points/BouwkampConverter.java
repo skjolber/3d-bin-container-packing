@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.points;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.ep.Point2D;
@@ -42,7 +41,7 @@ public class BouwkampConverter {
 				
 				int factoredSquare = factor * square;
 				
-				points.add(nextY, new DefaultPlacement2D(offset, value.getMinY(), offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, Collections.emptyList()));
+				points.add(nextY, new DefaultPlacement2D(offset, value.getMinY(), offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1));
 	
 				offset += factoredSquare;
 	
@@ -97,7 +96,7 @@ public class BouwkampConverter {
 				Integer square = squares.get(i);
 				int factoredSquare = factor * square;
 				
-				points.add(nextY, new DefaultPlacement3D(offset, value.getMinY(), 0, offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, factor - 1, Collections.emptyList()));
+				points.add(nextY, new DefaultPlacement3D(offset, value.getMinY(), 0, offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, factor - 1));
 	
 				offset += factoredSquare;
 	
@@ -149,7 +148,7 @@ public class BouwkampConverter {
 				Integer square = squares.get(i);
 				int factoredSquare = factor * square;
 				
-				points.add(nextZ, new DefaultPlacement3D(offset, 0, value.getMinZ(), offset + factoredSquare - 1, factor - 1, value.getMinZ() + factoredSquare - 1, Collections.emptyList()));
+				points.add(nextZ, new DefaultPlacement3D(offset, 0, value.getMinZ(), offset + factoredSquare - 1, factor - 1, value.getMinZ() + factoredSquare - 1));
 	
 				offset += factoredSquare;
 	
@@ -200,7 +199,7 @@ public class BouwkampConverter {
 				Integer square = squares.get(i);
 				int factoredSquare = factor * square;
 				
-				points.add(nextZ, new DefaultPlacement3D(0, offset, value.getMinZ(), factor - 1, offset + factoredSquare - 1, value.getMinZ() + factoredSquare - 1, Collections.emptyList()));
+				points.add(nextZ, new DefaultPlacement3D(0, offset, value.getMinZ(), factor - 1, offset + factoredSquare - 1, value.getMinZ() + factoredSquare - 1));
 	
 				offset += factoredSquare;
 	

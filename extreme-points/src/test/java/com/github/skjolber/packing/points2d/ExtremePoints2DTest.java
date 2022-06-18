@@ -3,13 +3,10 @@ package com.github.skjolber.packing.points2d;
 import static com.github.skjolber.packing.test.assertj.Point2DAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.ep.points2d.DefaultPlacement2D;
 import com.github.skjolber.packing.ep.points2d.DefaultXYSupportPoint2D;

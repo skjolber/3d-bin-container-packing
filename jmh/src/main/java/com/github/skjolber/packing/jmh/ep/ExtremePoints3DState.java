@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.jmh.ep;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.openjdk.jmh.annotations.Level;
@@ -60,7 +59,7 @@ public class ExtremePoints3DState {
 				Integer square = squares.get(i);
 				int factoredSquare = square;
 				
-				DefaultPlacement3D defaultPlacement3D = new DefaultPlacement3D(offset, value.getMinY(), 0, offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, 0, Collections.emptyList());
+				DefaultPlacement3D defaultPlacement3D = new DefaultPlacement3D(offset, value.getMinY(), 0, offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, 0);
 				extremePointsEntries.add(new ExtremePoint3DEntry(nextY, defaultPlacement3D));
 				points.add(nextY, defaultPlacement3D);
 	

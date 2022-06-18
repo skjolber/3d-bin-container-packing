@@ -110,7 +110,7 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D> extends Point3D
 	
 	@Override
 	public List<P> getPlacements3D() {
-		List<P> list = new ArrayList<>();
+		List<P> list = new ArrayList<>(2);
 		list.add(xyPlane);
 		list.add(xzPlane);
 		return list;
@@ -118,7 +118,7 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D> extends Point3D
 
 	@Override
 	public List<P> getPlacements2D() {
-		List<P> list = new ArrayList<>();
+		List<P> list = new ArrayList<>(2);
 		list.add(xyPlane);
 		list.add(xzPlane);
 		return list;

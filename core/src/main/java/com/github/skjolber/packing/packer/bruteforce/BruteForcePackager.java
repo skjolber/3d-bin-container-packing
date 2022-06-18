@@ -14,6 +14,7 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
+import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.Adapter;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 
@@ -95,7 +96,9 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 				ContainerStackValue stackValue = container.getStackValues()[0];
 				
 				containerStackValue[i] = stackValue;
-				iterators[i] = new DefaultPermutationRotationIterator(new Dimension(stackValue.getDx(), stackValue.getDy(), stackValue.getDz()), stackableItems);
+				
+				Dimension dimension = new Dimension(stackValue.getLoadDx(), stackValue.getLoadDy(), stackValue.getLoadDz());
+				iterators[i] = new DefaultPermutationRotationIterator(dimension, stackableItems);
 			}
 
 			this.interrupt = interrupt;
@@ -129,20 +132,16 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 				// this result does not consume all placements
 				// remove consumed items from the iterators
 				
-				PermutationRotationIterator iterator = bruteForceResult.getPermutationRotationIteratorForState();
+				PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
 				
-				int[] permutations = iterator.getPermutations();
+				int[] permutations = state.getPermutations();
 				List<Integer> p = new ArrayList<>(size);
 				for (int i = 0; i < size; i++) {
 					p.add(permutations[i]);
 				}
 				
 				for (PermutationRotationIterator it : iterators) {
-					if (it == bruteForceResult.getPermutationRotationIteratorForState()) {
-						it.removePermutations(size);
-					} else {
-						it.removePermutations(p);
-					}
+					it.removePermutations(p);
 				}
 				stackPlacements = stackPlacements.subList(size, this.stackPlacements.size());
 			} else {

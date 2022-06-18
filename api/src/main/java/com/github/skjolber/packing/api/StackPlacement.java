@@ -15,10 +15,8 @@ public class StackPlacement implements Placement3D {
 	protected int maxSupportedPressure; // i.e.  
 	protected int maxSupportedWeight;
 	
-	protected List<StackPlacement> supports;
-
 	public StackPlacement(Stackable stackable, StackValue value, int x, int y, int z, int maxSupportedPressure,
-			int maxSupportedWeight, List<StackPlacement> supports) {
+			int maxSupportedWeight) {
 		super();
 		this.stackable = stackable;
 		this.value = value;
@@ -27,8 +25,6 @@ public class StackPlacement implements Placement3D {
 		this.z = z;
 		this.maxSupportedPressure = maxSupportedPressure;
 		this.maxSupportedWeight = maxSupportedWeight;
-		
-		this.supports = supports;
 	}
 	
 	public StackPlacement() {
@@ -137,15 +133,7 @@ public class StackPlacement implements Placement3D {
 	public void setZ(int z) {
 		this.z = z;
 	}
-
-	@Override
-	public List<StackPlacement> getSupports2D() {
-		return supports;
-	}
-	@Override
-	public List<StackPlacement> getSupports3D() {
-		return supports;
-	}
+	
 	public void setValue(StackValue value) {
 		this.value = value;
 	}
@@ -155,13 +143,10 @@ public class StackPlacement implements Placement3D {
 	public void setMaxSupportedWeight(int maxSupportedWeight) {
 		this.maxSupportedWeight = maxSupportedWeight;
 	}
-	public void setSupports(List<StackPlacement> supports) {
-		this.supports = supports;
-	}
 	
 	@Override
 	public StackPlacement clone() {
-		return new StackPlacement(stackable, value, x, y, z,  maxSupportedPressure, maxSupportedWeight, supports);
+		return new StackPlacement(stackable, value, x, y, z,  maxSupportedPressure, maxSupportedWeight);
 	}
 	
 }

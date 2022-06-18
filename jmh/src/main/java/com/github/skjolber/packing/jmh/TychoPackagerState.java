@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.jmh;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -35,7 +34,7 @@ import com.github.skjolber.packing.test.generator.ItemIO;
  */
 
 @State(Scope.Benchmark)
-public class EgyPackagerState {
+public class TychoPackagerState {
 
 	private final int threadPoolSize;
 	private final int nth;
@@ -57,10 +56,6 @@ public class EgyPackagerState {
 	static {
 		Path path = Paths.get("src","main","resources", "egy.json");
 
-		if(!Files.exists(path)) {
-			path = Paths.get("jmh", "src","main","resources", "egy.json");
-		}
-		
 		try {
 			List<Item> items = ItemIO.read(path);
 		
@@ -74,11 +69,11 @@ public class EgyPackagerState {
 		}
 	}
 	
-	public EgyPackagerState() {
+	public TychoPackagerState() {
 		this(8, 20000);
 	}
 
-	public EgyPackagerState(int threadPoolSize, int nth) {
+	public TychoPackagerState(int threadPoolSize, int nth) {
 		this.threadPoolSize = threadPoolSize;
 		this.nth = nth;
 

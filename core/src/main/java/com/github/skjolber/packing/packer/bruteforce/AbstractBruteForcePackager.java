@@ -75,13 +75,12 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 					return null; // timeout
 				}
 				if (points.size() > bestPermutationResult.getSize()) {
-					bestPermutationResult.setState(points, iterator.getState(), stackPlacements.subList(0, points.size()), points.size() == stackPlacements.size());
+					bestPermutationResult.setState(points, iterator.getState(), stackPlacements);
 					if (points.size() == iterator.length()) {
 						// best possible result for this container
 						return bestPermutationResult;
 					}
 				}
-
 
 				holder.getStack().clear();
 				
@@ -103,6 +102,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			// search for the next permutation which actually 
 			// has a chance of affecting the result.
 
+			int permutationIndex = iterator.nextPermutation(bestPermutationResult.getSize());
+			/*
 			int permutationIndex;
 			do {
 				permutationIndex = iterator.nextPermutation();
@@ -111,7 +112,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 					return null;
 				}
 			} while(permutationIndex > bestPermutationResult.getSize());
-			
+			*/
 			if(!bestPermutationResult.isEmpty()) {
 				// compare against other permutation's result
 

@@ -49,6 +49,13 @@ public interface PermutationRotationIterator {
 	
 	int nextRotation();
 
+	/**
+	 * Next rotation. Returns the index of the lowest element which as affected.
+	 *
+	 * @param maxIndex skip ahead so that rotation affects the argument at index or lower.
+	 * @return change index, or -1 if none
+	 */
+	
 	int nextRotation(int maxIndex);
 
 	
@@ -60,11 +67,16 @@ public interface PermutationRotationIterator {
 
 	int nextPermutation();
 
+	/**
+	 * Next permutation. Returns the index of the lowest element which as affected.
+	 *
+	 * @param maxIndex skip ahead so that permutation affects the argument at index or lower.
+	 * @return change index, or -1 if none
+	 */
+
+	int nextPermutation(int maxIndex);
+	
 	PermutationRotationState getState();
-
-	void setState(PermutationRotationState state);
-
-	void removePermutations(int count);
 
 	/**
 	 * Remove permutations, if present.
@@ -76,5 +88,8 @@ public interface PermutationRotationIterator {
 	long getMinStackableVolume();
 
 	long getMinStackableArea();
+	
+	List<PermutationRotation> get(PermutationRotationState state, int length);
+
 	
 }

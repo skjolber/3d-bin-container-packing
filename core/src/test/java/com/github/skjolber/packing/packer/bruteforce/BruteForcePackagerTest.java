@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -170,7 +171,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		}
 
 		// map similar items to the same stack item - this actually helps a lot
-		Map<Integer, Integer> frequencyMap = new HashMap<>();
+		Map<Integer, Integer> frequencyMap = new TreeMap<>();
 		squares.forEach(word ->
         	frequencyMap.merge(word, 1, (v, newV) -> v + newV)
 		);
@@ -181,7 +182,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 			products.add(new StackableItem(Box.newBuilder().withDescription(Integer.toString(square)).withSize(square, square, 1).withRotate3D().withWeight(1).build(), count));
 		}
 
-		Collections.shuffle(products);
+		//Collections.shuffle(products);
 
 		Container fits = packager.pack(products);
 		assertNotNull(bouwkampCode.getName(), fits);

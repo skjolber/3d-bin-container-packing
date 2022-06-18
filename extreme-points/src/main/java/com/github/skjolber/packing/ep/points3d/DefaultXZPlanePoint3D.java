@@ -70,14 +70,14 @@ public class DefaultXZPlanePoint3D<P extends Placement3D> extends Point3D<P> imp
 	
 	@Override
 	public List<P> getPlacements3D() {
-		List<P> list = new ArrayList<>();
+		List<P> list = new ArrayList<>(2);
 		list.add(xzPlane);
 		return list;
 	}
 
 	@Override
 	public List<P> getPlacements2D() {
-		List<P> list = new ArrayList<>();
+		List<P> list = new ArrayList<>(2);
 		list.add(xzPlane);
 		return list;
 	}	

@@ -20,7 +20,6 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
 public class BouwkampCodePackagerBenchmark {
 
-	
     @Benchmark
     public int parallelPackager(BouwkampCodePackagerState state) throws Exception {
     	return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
@@ -30,7 +29,7 @@ public class BouwkampCodePackagerBenchmark {
     public int packager(BouwkampCodePackagerState state) throws Exception {
     	return process(state.getBruteForcePackager(), Long.MAX_VALUE);
     }
-    
+
     @Benchmark
     public int fastPackager(BouwkampCodePackagerState state) throws Exception {
     	return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);

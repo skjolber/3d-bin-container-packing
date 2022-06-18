@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer.laff;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
@@ -21,8 +20,8 @@ import com.github.skjolber.packing.api.StackableFilter;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.StackValuePointFilter;
 import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
-import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 import com.github.skjolber.packing.packer.DefaultPackResult;
+import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. Only places boxes along the floor of each level.
@@ -178,7 +177,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			Stack levelStack = new DefaultStack();
 			stack.add(levelStack);
 
-			StackPlacement first = new StackPlacement(stackable, bestFirstStackValue, 0, 0, 0, -1, -1, Collections.emptyList());
+			StackPlacement first = new StackPlacement(stackable, bestFirstStackValue, 0, 0, 0, -1, -1);
 
 			levelStack.add(first);
 			
@@ -267,7 +266,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 				
 				Point2D<StackPlacement> point = extremePoints2D.getValue(bestPointIndex);
 				
-				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), 0, -1, -1, Collections.emptyList());
+				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), 0, -1, -1);
 				levelStack.add(stackPlacement);
 				extremePoints2D.add(bestPointIndex, stackPlacement);
 
