@@ -35,16 +35,19 @@ public class ExtremePoints3DTest {
 		//
 
 		assertThat(ep.getValue(0)).isMin(0, 0, 10);
+		assertThat(ep.getValue(0)).isMax(99, 99, 99);
 		assertThat(ep.getValue(0)).isXYSupportAt(9, 9);
 		assertThat(ep.getValue(0)).isYZSupportAt(99, 99);
 		assertThat(ep.getValue(0)).isXZSupportAt(99, 99);
 
 		assertThat(ep.getValue(1)).isMin(0, 10, 0);
+		assertThat(ep.getValue(1)).isMax(99, 99, 99);
 		assertThat(ep.getValue(1)).isXYSupportAt(99, 99);
 		assertThat(ep.getValue(1)).isYZSupportAt(99, 99);
 		assertThat(ep.getValue(1)).isXZSupportAt(9, 9);
 		
 		assertThat(ep.getValue(2)).isMin(10, 0, 0);
+		assertThat(ep.getValue(2)).isMax(99, 99, 99);
 		assertThat(ep.getValue(2)).isXYSupportAt(99, 99);
 		assertThat(ep.getValue(2)).isYZSupportAt(9, 9);
 		assertThat(ep.getValue(2)).isXZSupportAt(99, 99);

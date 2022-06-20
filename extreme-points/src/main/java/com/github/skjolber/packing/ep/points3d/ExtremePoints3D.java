@@ -582,6 +582,9 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 	protected void removeEclipsed(int limit) {
 
+		// implementation note:
+		// this does not scale too well for many points
+		
 		//   unsorted        sorted
 		// |   new    |   existing current   |
 		// |----------|----------------------|--> x

@@ -1,5 +1,8 @@
 package com.github.skjolber.packing.visualizer.api.packaging;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class StackPlacementVisualizer extends AbstractVisualizer {
 
 	private int x;
@@ -7,6 +10,20 @@ public class StackPlacementVisualizer extends AbstractVisualizer {
 	private int z;
 	
 	private StackableVisualizer stackable;
+	
+	private List<PointVisualizer> points = new ArrayList<>();
+
+	public List<PointVisualizer> getPoints() {
+		return points;
+	}
+	
+	public void setPoints(List<PointVisualizer> points) {
+		this.points = points;
+	}
+	
+	public void add(PointVisualizer p) {
+		this.points.add(p);
+	}
 
 	public int getX() {
 		return x;

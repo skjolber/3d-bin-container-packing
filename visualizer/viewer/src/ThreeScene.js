@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import { Stats } from "stats-js";
 import { Color, Font } from "three";
 
-import { MemoryColorScheme, RandomColorScheme, StackPlacement, Box, Container, StackableRenderer } from "./api";
+import { MemoryColorScheme, RandomColorScheme, StackPlacement, Box, Container, Point, StackableRenderer } from "./api";
 import { http } from "./utils";
 
 import randomColor from "randomcolor";
@@ -134,8 +134,15 @@ class ThreeScene extends Component {
           
           var stackables = container.children;
           for(var j = 0; j < stackables.length; j++) {
+            var stackable = stackables[j];
             var userData = stackables[j].userData;
-            stackables[j].visible = userData.step < stepNumber;
+            
+            if(userData.type == "box") {
+                stackable.visible = userData.step < stepNumber;
+            } else if(userData.type == "point") {
+                stackable.visible = userData.step == stepNumber - 1;                        
+            }
+            
           }
         }          
       }
@@ -198,10 +205,19 @@ class ThreeScene extends Component {
           if(stackable.step > maxStep || maxStep == -1) {
             maxStep = stackable.step;
           }
+          
+          var points = new Array();
+          
+          for(var l = 0; l < placement.points.length; l++) {
+                var point = placement.points[l];
+                
+                points.push(new Point(point.x, point.y, point.z, point.dx, point.dy, point.dz));
+          }
 
           if(stackable.type == "box") {
             var box = new Box(stackable.name, stackable.id, stackable.step, stackable.dx, stackable.dy, stackable.dz);
-            container.add(new StackPlacement(box, placement.step, placement.x, placement.y, placement.z));
+            
+            container.add(new StackPlacement(box, placement.step, placement.x, placement.y, placement.z, points));
           } else {
             // TODO
           }

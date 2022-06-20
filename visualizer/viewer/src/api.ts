@@ -2,6 +2,27 @@ import * as THREE from "three";
 import { Color, Mesh, Object3D, Scene } from "three";
 import randomColor from "randomcolor";
 
+export class Point {
+    
+    x : number;
+    y : number;
+    z : number;
+    
+    dx : number;
+    dy : number;
+    dz : number;
+
+    constructor(x : number, y : number, z: number, dx : number, dy : number, dz: number) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+
+        this.dx = dx;
+        this.dy = dy;
+        this.dz = dz;
+    }
+}
+
 export class Stackable {
 
     dx : number;
@@ -12,9 +33,8 @@ export class Stackable {
     id: string;
 
     step : number;
-
+    
     constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number) {
-
         this.name = name;
         this.id = id;
         this.step = step;
@@ -65,12 +85,15 @@ export class StackPlacement {
 
     step : number;
 
-    constructor(stackable : Stackable, step : number, x : number, y : number, z: number) {
+    points : Array<Point>;
+
+    constructor(stackable : Stackable, step : number, x : number, y : number, z: number, points: Array<Point>) {
         this.stackable = stackable;
         this.step = step;
         this.x = x;
         this.y = y;
         this.z = z;
+        this.points = points;
     }
 
 }
@@ -156,14 +179,14 @@ export class StackableRenderer {
     add(parent: Object3D, colorScheme : ColorScheme, stackPlacement : StackPlacement, x: number, y:number, z: number): Object3D | undefined {
 
         var stackable = stackPlacement.stackable;
-
+        
         if(stackable instanceof Container) {
             var containerStackable : Container = stackable;
 
             var color = colorScheme.getColor(containerStackable);
             var containerMaterial = new THREE.LineBasicMaterial({ color: color});
+            
             var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.dy, containerStackable.dz, containerStackable.dx));
-
             var containerLoadGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.loadDy, containerStackable.loadDz, containerStackable.loadDx));
 
             var container = new THREE.LineSegments(containerGeometry, containerMaterial);
@@ -223,10 +246,38 @@ export class StackableRenderer {
             box.position.y = stackPlacement.z + boxStackable.dz / 2 + y;
             box.position.z = stackPlacement.x + boxStackable.dx / 2 + z;
 
-            box.userData = boxStackable;
+            box.userData = {
+                step: boxStackable.step,
+                type: "box"
+            };
 
             parent.add(box);
 
+            for (let p of stackPlacement.points) {
+    
+                // zero is relative to center of box
+                var color = new THREE.Color( 0xff0000 );
+                var containerMaterial = new THREE.LineBasicMaterial({ color: color});
+                var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1));
+                var pp = new THREE.LineSegments(containerGeometry, containerMaterial);
+
+                pp.scale.x = p.dy;
+                pp.scale.y = p.dz;
+                pp.scale.z = p.dx;
+                pp.position.x = p.y + p.dy / 2 + x;
+                pp.position.y = p.z + p.dz / 2 + y;
+                pp.position.z = p.x + p.dx / 2 + z;
+
+                pp.userData = {
+                    step: boxStackable.step,
+                    type: "point"
+                };
+    
+                pp.visible = false;
+                
+                parent.add(pp)
+            }
+            
             return box;
         }
         return undefined;

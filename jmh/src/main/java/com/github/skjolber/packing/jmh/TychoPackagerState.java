@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -50,24 +51,11 @@ public class TychoPackagerState {
 	private List<BenchmarkSet> plainPackagerNth = new ArrayList<>();
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 
-	private static List<StackableItem> stackableItems3D;
-	private static List<Container> containers;
+	private List<StackableItem> stackableItems3D;
 	
-	static {
-		Path path = Paths.get("src","main","resources", "egy.json");
-
-		try {
-			List<Item> items = ItemIO.read(path);
-		
-			containers = new ArrayList<>();
-			Container container = getContainer(items);
-			containers.add(container);
-	
-			stackableItems3D = getStackableItems3D(items);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+	private	List<Container> containers = Arrays.asList(
+				Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build()
+	);
 	
 	public TychoPackagerState() {
 		this(8, 20000);
@@ -106,52 +94,6 @@ public class TychoPackagerState {
 		// multi-threaded
 		this.parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D));
 		this.parallelBruteForcePackagerNth.add(new BenchmarkSet(parallelPackagerNth, stackableItems3D));
-	}
-	
-	private static Container getContainer(List<Item> items) {
-		
-		long originalVolume = 0;
-		for(Item item : items) {
-			originalVolume += item.getVolume();
-		}
-		
-		double multiplier = 1.45;
-		while(true) {
-			long volume = (long)(originalVolume * multiplier);
-			
-			long side = (long) Math.pow(volume,(1/3));
-			while(side * side * side < volume) {
-				side++;
-			}
-			
-			int length = (int)side;
-			
-			List<Container> containers = new ArrayList<>();
-			DefaultContainer container = Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(length, length, length).withMaxLoadWeight(length * length * length).withStack(new DefaultStack()).build();
-			containers.add(container);
-	
-			List<StackableItem> stackableItems3D = getStackableItems3D(items);
-	
-			FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
-	
-			Container pack = fastPackager.pack(stackableItems3D, System.currentTimeMillis() + 5000);
-			
-			if(pack != null) {
-				System.out.println("Go container " + volume + " from " + originalVolume);
-				return container;
-			}
-			multiplier += 0.05;
-			System.out.println("Try " + multiplier);
-		}		
-	}
-
-	private static List<StackableItem> getStackableItems3D(List<Item> items) {
-		List<StackableItem> products = new ArrayList<>();
-		for (Item item : items) {
-			products.add(new StackableItem(Box.newBuilder().withDescription(item.toString()).withSize(item.getDx(), item.getDy(), item.getDz()).withRotate3D().withWeight(1).build(), item.getCount()));
-		}
-
-		return products;
 	}
 
 	@TearDown(Level.Trial)

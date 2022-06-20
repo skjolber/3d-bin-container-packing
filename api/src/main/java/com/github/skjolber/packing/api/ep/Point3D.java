@@ -233,11 +233,11 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 		return false;
 	}
 
-	public boolean isXYPlaneEdgeX(int z) {
+	public boolean isXYPlaneEdgeX(int x) {
 		return false;
 	}
 
-	public boolean isXYPlaneEdgeY(int z) {
+	public boolean isXYPlaneEdgeY(int y) {
 		return false;
 	}
 

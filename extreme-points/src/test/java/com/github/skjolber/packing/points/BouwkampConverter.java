@@ -67,6 +67,8 @@ public class BouwkampConverter {
 		if(points.getValueCount() > 0) {
 			if(throwException) {
 				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+			} else {
+				System.out.println("Still have " + points.getValueCount() + ": " + points.getValues());
 			}
 		}
 		
@@ -107,7 +109,9 @@ public class BouwkampConverter {
 				if(nextY == -1 && i + 1 < squares.size()) {
 					
 					if(throwException) {
-						throw new IllegalStateException("No next y at " + offset + "x" + value.getMinY() +  "x0 with " + (squares.size() - 1 - i) + " remaining");
+						throw new IllegalStateException("No next y at " + offset + "x" + value.getMinY() +  "x0 with " + (squares.size() - 1 - i) + " remaining for " + bkpLine);
+					} else {
+						System.out.println("No next y at " + offset + "x" + value.getMinY() +  "x0 with " + (squares.size() - 1 - i) + " remaining for " + bkpLine);
 					}
 					
 					break lines;
@@ -119,6 +123,8 @@ public class BouwkampConverter {
 		if(points.getValueCount() > 0) {
 			if(throwException) {
 				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+			} else {
+				System.out.println("Still have " + points.getValueCount() + ": " + points.getValues());
 			}
 		}
 
@@ -160,6 +166,8 @@ public class BouwkampConverter {
 					
 					if(throwException) {
 						throw new IllegalStateException("No next z at " + offset + "x" + 0 + "x" + value.getMinZ() +  " with " + (squares.size() - 1 - i) + " remaining");
+					} else {
+						System.out.println("No next z at " + 0 + "x" + offset + "x" + value.getMinZ() +  " with " + (squares.size() - 1 - i) + " remaining");
 					}
 					
 					break lines;
@@ -170,6 +178,8 @@ public class BouwkampConverter {
 		if(points.getValueCount() > 0) {
 			if(throwException) {
 				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+			} else {
+				System.out.println("Still have " + points.getValueCount() + ": " + points.getValues());
 			}
 		}
 
@@ -211,6 +221,8 @@ public class BouwkampConverter {
 					
 					if(throwException) {
 						throw new IllegalStateException("No next z at " + 0 + "x" + offset + "x" + value.getMinZ() +  " with " + (squares.size() - 1 - i) + " remaining");
+					} else {
+						System.out.println("No next z at " + 0 + "x" + offset + "x" + value.getMinZ() +  " with " + (squares.size() - 1 - i) + " remaining");
 					}
 					
 					break lines;
@@ -221,6 +233,8 @@ public class BouwkampConverter {
 		if(points.getValueCount() > 0) {
 			if(throwException) {
 				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+			} else {
+				System.out.println("Still have " + points.getValueCount() + ": " + points.getValues());
 			}
 		}
 

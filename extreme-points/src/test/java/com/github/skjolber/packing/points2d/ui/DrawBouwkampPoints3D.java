@@ -25,26 +25,39 @@ public class DrawBouwkampPoints3D {
 		for(BouwkampCodes codes : target) {
 			for(BouwkampCode c : codes.getCodes()) {
 				
-				if(codes.getSource().contains("o15siss.bkp") && c.getName().equals("39B")) {
-				//if(codes.getSource().equals("/simpleImperfectSquaredRectangles/o9sisr.bkp") && c.getName().equals("15x11A")) {
-					DefaultExtremePoints3D convert3dyzPlane = converter.convert3DYZPlane(c, 12);
-					
-					List<Point3D<?>> list = new ArrayList<>();
-					
-					List<Point3D<Placement3D>> values = convert3dyzPlane.getValuesAsList();
-					for (Point3D<Placement3D> point3d : values) {
+				DefaultExtremePoints3D plane = converter.convert3DXYPlane(c, 1);
+				
+				List<Point3D<?>> list = new ArrayList<>();
+				
+				List<Point3D<Placement3D>> values = plane.getValuesAsList();
+
+				List<Placement3D> placements = plane.getPlacements();
+
+				Placement3D last = placements.get(placements.size() - 1);
+				boolean rotate = last.getAbsoluteX() == 0;
+
+				for (Point3D<Placement3D> point3d : values) {
+					if(rotate) {
 						list.add(point3d.rotate());
+					} else {
+						list.add(point3d);
 					}
-					
-					List<Placement3D> results = new ArrayList<>();
-					
-					List<Placement3D> placements = convert3dyzPlane.getPlacements();
-					for(Placement3D p : placements) {
+				}
+				
+				List<Placement3D> results = new ArrayList<>();
+				
+				for(Placement3D p : placements) {
+					if(rotate) {
 						results.add(rotate(p));
+					} else {
+						results.add(p);
 					}
-					
-					DrawPoints2D.show3D(list, results, convert3dyzPlane.getDepth(), convert3dyzPlane.getHeight());
-					return;
+				}
+				
+				if(rotate) {
+					DrawPoints2D.show3D(list, results, plane.getDepth(), plane.getHeight());
+				} else {
+					DrawPoints2D.show3D(list, results, plane.getWidth(), plane.getDepth());
 				}
 			}
 		}
