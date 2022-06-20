@@ -14,3 +14,4 @@ then
  * mouse wheel: zoom in and out
  * keyboard arrows: move in xy plane
  * mouse click + drag: rotate view
+ * space: show / hide points (free spaces)

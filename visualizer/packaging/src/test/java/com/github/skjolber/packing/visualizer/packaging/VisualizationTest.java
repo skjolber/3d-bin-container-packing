@@ -411,7 +411,7 @@ public class VisualizationTest {
 		if(pack == null) {
 			throw new RuntimeException();
 		}
-		//write(pack);
+		write(pack);
 	}
 	
 	@Test
@@ -483,7 +483,7 @@ public class VisualizationTest {
 		if(pack == null) {
 			throw new RuntimeException();
 		}
-		//write(pack);
+		write(pack);
 	}
 	
 	@Test
