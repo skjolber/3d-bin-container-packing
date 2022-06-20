@@ -150,10 +150,11 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	
 	public Point3D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		super(minX, minY, maxX, maxY);
-		
+		/*
 		if(maxZ < minZ) {
 			throw new IllegalArgumentException("Z: "+ maxZ + " < " + minZ);
 		}
+		*/
 		this.minZ = minZ;
 		this.maxZ = maxZ;
 		this.dz = maxZ - minZ + 1;
@@ -232,11 +233,11 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 		return false;
 	}
 
-	public boolean isXYPlaneEdgeX(int z) {
+	public boolean isXYPlaneEdgeX(int x) {
 		return false;
 	}
 
-	public boolean isXYPlaneEdgeY(int z) {
+	public boolean isXYPlaneEdgeY(int y) {
 		return false;
 	}
 

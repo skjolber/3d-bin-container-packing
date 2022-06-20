@@ -1,8 +1,5 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.Placement3D;
 
@@ -15,21 +12,15 @@ public class DefaultPlacement3D implements Placement3D {
 	protected final int endY;
 	protected final int endZ;
 	
-	protected final List<DefaultPlacement3D> supports;
+	// protected final List<DefaultPlacement3D> supports;
 
 	public DefaultPlacement3D(int x, int y, int z, int endX, int endY, int endZ) {
-		this(x, y, z, endX, endY, endZ, new ArrayList<>());
-	}
-
-	public DefaultPlacement3D(int x, int y, int z, int endX, int endY, int endZ, List<DefaultPlacement3D> supports) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
 		this.endX = endX;
 		this.endY = endY;
 		this.endZ = endZ;
-		
-		this.supports = supports;
 	}
 	
 	@Override
@@ -77,6 +68,7 @@ public class DefaultPlacement3D implements Placement3D {
 		return "DefaultPlacement3D [" + x + "x" + y + "x" + z + " " + endX + "x" + endY + "x" + endZ + "]";
 	}
 
+	/*
 	@Override
 	public List<DefaultPlacement3D> getSupports3D() {
 		return (List<DefaultPlacement3D>) supports;
@@ -86,5 +78,5 @@ public class DefaultPlacement3D implements Placement3D {
 	public List<? extends Placement2D> getSupports2D() {
 		return supports;
 	}
-	
+	*/
 }

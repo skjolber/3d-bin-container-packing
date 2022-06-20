@@ -21,6 +21,7 @@ import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
+import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.Adapter;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
@@ -144,20 +145,16 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				// this result does not consume all placements
 				// remove consumed items from the iterators
 				
-				PermutationRotationIterator iterator = bruteForceResult.getPermutationRotationIteratorForState();
+				PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
 				
-				int[] permutations = iterator.getPermutations();
+				int[] permutations = state.getPermutations();
 				List<Integer> p = new ArrayList<>(size);
 				for (int i = 0; i < size; i++) {
 					p.add(permutations[i]);
 				}
 				
 				for (PermutationRotationIterator it : iterators) {
-					if (it == bruteForceResult.getPermutationRotationIteratorForState()) {
-						it.removePermutations(size);
-					} else {
-						it.removePermutations(p);
-					}
+					it.removePermutations(p);
 				}
 				stackPlacements = stackPlacements.subList(size, this.stackPlacements.size());
 			} else {
@@ -220,7 +217,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				// higher count implies higher volume and weight
 				// since the items are the same within each permutation
 				if (count > bestPermutationResult.getSize()) {
-					bestPermutationResult.setState(extremePoints.getPoints(), rotator.getState(), stackPlacements.subList(0, count), count == stackPlacements.size());
+					bestPermutationResult.setState(extremePoints.getPoints(), rotator.getState(), stackPlacements);
 					if (count == rotator.length()) {
 						return bestPermutationResult;
 					}
@@ -248,15 +245,8 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				index = rotationIndex;
 			} while (true);
 			
-			int permutationIndex;
-			do {
-				permutationIndex = rotator.nextPermutation();
-				
-				if (interrupt.getAsBoolean()) {
-					return null;
-				}
-			} while(permutationIndex > bestPermutationResult.getSize());
-			
+			int permutationIndex = rotator.nextPermutation(bestPermutationResult.getSize());
+
 			if(!bestPermutationResult.isEmpty()) {
 				// compare against other permutation's result
 

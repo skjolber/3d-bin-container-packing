@@ -18,9 +18,11 @@ import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.ClonableBooleanSupplier;
+import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorAdapter;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
+import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.Adapter;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 import com.github.skjolber.packing.packer.PackagerException;
@@ -196,7 +198,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	private class ParallelAdapter implements Adapter<BruteForcePackagerResult> {
 		
 		private final List<Container> containers;
-		private final ParallelPermutationRotationIterator[] iterators; // per container
+		private final DefaultPermutationRotationIterator[] iterators; // per container
+		private final ParallelPermutationRotationIterator[] parallelIterators; // per container
 		private final ContainerStackValue[] containerStackValues;
 		private final RunnableAdapter[] runnables; // per thread
 		private final BooleanSupplier[] interrupts;
@@ -231,22 +234,24 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				runnables[i] = new RunnableAdapter(count, minStackableItemVolume, minStackableArea);
 			}
 
-			iterators = new ParallelPermutationRotationIterator[containers.size()];
+			parallelIterators = new ParallelPermutationRotationIterator[containers.size()];
+			iterators = new DefaultPermutationRotationIterator[containers.size()];
 			for (int i = 0; i < containers.size(); i++) {
 				Container container = containers.get(i);
 				ContainerStackValue stackValue = container.getStackValues()[0];
 				
 				containerStackValues[i] = stackValue;
 				
-				iterators[i] = new ParallelPermutationRotationIterator(new Dimension(stackValue.getLoadDx(), stackValue.getLoadDy(), stackValue.getLoadDz()), stackables, parallelizationCount);
+				Dimension dimension = new Dimension(stackValue.getLoadDx(), stackValue.getLoadDy(), stackValue.getLoadDz());
+				parallelIterators[i] = new ParallelPermutationRotationIterator(dimension, stackables, parallelizationCount);
+				iterators[i] = new DefaultPermutationRotationIterator(dimension, stackables);
 			}
 		}
 		
 		@Override
 		public BruteForcePackagerResult attempt(int i, BruteForcePackagerResult currentBest) {
 			// run on single thread for a small amount of combinations
-			ParallelPermutationRotationIterator parallelPermutationRotationIterator = iterators[i];
-			if(parallelPermutationRotationIterator.countPermutations() * parallelPermutationRotationIterator.countRotations() > parallelizationCount * 2) { // somewhat conservative, as the number of rotations is unknown
+			if(iterators[i].countPermutations() * iterators[i].countRotations() > parallelizationCount * 2) { // somewhat conservative, as the number of rotations is unknown
 				
 				// interrupt needs not be accurate (i.e. atomic boolean)
 				Boolean[] localInterrupt = new Boolean[32]; // add padding to avoid false sharing
@@ -257,7 +262,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 					runnableAdapter.setContainer(containers.get(i));
 					runnableAdapter.setContainerStackValue(containerStackValues[i]);
 					
-					runnableAdapter.setIterator(new ParallelPermutationRotationIteratorAdapter(iterators[i], j));
+					runnableAdapter.setIterator(new ParallelPermutationRotationIteratorAdapter(parallelIterators[i], j));
 					
 					BooleanSupplier interruptBooleanSupplier = interrupts[i];
 					
@@ -308,7 +313,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			}
 			// no need to split this job
 			// run with linear approach
-			return ParallelBruteForcePackager.this.pack(runnables[0].extremePoints3D, runnables[0].placements, containers.get(i), containerStackValues[i], parallelPermutationRotationIterator, interrupts[i]);
+			return ParallelBruteForcePackager.this.pack(runnables[0].extremePoints3D, runnables[0].placements, containers.get(i), containerStackValues[i], iterators[i], interrupts[i]);
 		}
 		
 		@Override
@@ -321,20 +326,16 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				
 				int size = container.getStack().getSize();
 
-				PermutationRotationIterator iterator = bruteForceResult.getPermutationRotationIteratorForState();
+				PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
 				
-				int[] permutations = iterator.getPermutations();
+				int[] permutations = state.getPermutations();
 				List<Integer> p = new ArrayList<>(size);
 				for (int i = 0; i < size; i++) {
 					p.add(permutations[i]);
 				}
 				
-				for (PermutationRotationIterator it : iterators) {
-					if (it == bruteForceResult.getPermutationRotationIteratorForState()) {
-						it.removePermutations(size);
-					} else {
-						it.removePermutations(p);
-					}
+				for (ParallelPermutationRotationIterator it : parallelIterators) {
+					it.removePermutations(p);
 				}
 				
 				for(RunnableAdapter runner : runnables) {

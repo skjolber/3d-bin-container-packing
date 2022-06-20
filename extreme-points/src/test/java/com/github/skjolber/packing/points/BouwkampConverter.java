@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.points;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.ep.Point2D;
@@ -42,7 +41,7 @@ public class BouwkampConverter {
 				
 				int factoredSquare = factor * square;
 				
-				points.add(nextY, new DefaultPlacement2D(offset, value.getMinY(), offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, Collections.emptyList()));
+				points.add(nextY, new DefaultPlacement2D(offset, value.getMinY(), offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1));
 	
 				offset += factoredSquare;
 	
@@ -68,6 +67,8 @@ public class BouwkampConverter {
 		if(points.getValueCount() > 0) {
 			if(throwException) {
 				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+			} else {
+				System.out.println("Still have " + points.getValueCount() + ": " + points.getValues());
 			}
 		}
 		
@@ -97,7 +98,7 @@ public class BouwkampConverter {
 				Integer square = squares.get(i);
 				int factoredSquare = factor * square;
 				
-				points.add(nextY, new DefaultPlacement3D(offset, value.getMinY(), 0, offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, factor - 1, Collections.emptyList()));
+				points.add(nextY, new DefaultPlacement3D(offset, value.getMinY(), 0, offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, factor - 1));
 	
 				offset += factoredSquare;
 	
@@ -108,7 +109,9 @@ public class BouwkampConverter {
 				if(nextY == -1 && i + 1 < squares.size()) {
 					
 					if(throwException) {
-						throw new IllegalStateException("No next y at " + offset + "x" + value.getMinY() +  "x0 with " + (squares.size() - 1 - i) + " remaining");
+						throw new IllegalStateException("No next y at " + offset + "x" + value.getMinY() +  "x0 with " + (squares.size() - 1 - i) + " remaining for " + bkpLine);
+					} else {
+						System.out.println("No next y at " + offset + "x" + value.getMinY() +  "x0 with " + (squares.size() - 1 - i) + " remaining for " + bkpLine);
 					}
 					
 					break lines;
@@ -120,6 +123,8 @@ public class BouwkampConverter {
 		if(points.getValueCount() > 0) {
 			if(throwException) {
 				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+			} else {
+				System.out.println("Still have " + points.getValueCount() + ": " + points.getValues());
 			}
 		}
 
@@ -149,7 +154,7 @@ public class BouwkampConverter {
 				Integer square = squares.get(i);
 				int factoredSquare = factor * square;
 				
-				points.add(nextZ, new DefaultPlacement3D(offset, 0, value.getMinZ(), offset + factoredSquare - 1, factor - 1, value.getMinZ() + factoredSquare - 1, Collections.emptyList()));
+				points.add(nextZ, new DefaultPlacement3D(offset, 0, value.getMinZ(), offset + factoredSquare - 1, factor - 1, value.getMinZ() + factoredSquare - 1));
 	
 				offset += factoredSquare;
 	
@@ -161,6 +166,8 @@ public class BouwkampConverter {
 					
 					if(throwException) {
 						throw new IllegalStateException("No next z at " + offset + "x" + 0 + "x" + value.getMinZ() +  " with " + (squares.size() - 1 - i) + " remaining");
+					} else {
+						System.out.println("No next z at " + 0 + "x" + offset + "x" + value.getMinZ() +  " with " + (squares.size() - 1 - i) + " remaining");
 					}
 					
 					break lines;
@@ -171,6 +178,8 @@ public class BouwkampConverter {
 		if(points.getValueCount() > 0) {
 			if(throwException) {
 				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+			} else {
+				System.out.println("Still have " + points.getValueCount() + ": " + points.getValues());
 			}
 		}
 
@@ -200,7 +209,7 @@ public class BouwkampConverter {
 				Integer square = squares.get(i);
 				int factoredSquare = factor * square;
 				
-				points.add(nextZ, new DefaultPlacement3D(0, offset, value.getMinZ(), factor - 1, offset + factoredSquare - 1, value.getMinZ() + factoredSquare - 1, Collections.emptyList()));
+				points.add(nextZ, new DefaultPlacement3D(0, offset, value.getMinZ(), factor - 1, offset + factoredSquare - 1, value.getMinZ() + factoredSquare - 1));
 	
 				offset += factoredSquare;
 	
@@ -212,6 +221,8 @@ public class BouwkampConverter {
 					
 					if(throwException) {
 						throw new IllegalStateException("No next z at " + 0 + "x" + offset + "x" + value.getMinZ() +  " with " + (squares.size() - 1 - i) + " remaining");
+					} else {
+						System.out.println("No next z at " + 0 + "x" + offset + "x" + value.getMinZ() +  " with " + (squares.size() - 1 - i) + " remaining");
 					}
 					
 					break lines;
@@ -222,6 +233,8 @@ public class BouwkampConverter {
 		if(points.getValueCount() > 0) {
 			if(throwException) {
 				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+			} else {
+				System.out.println("Still have " + points.getValueCount() + ": " + points.getValues());
 			}
 		}
 

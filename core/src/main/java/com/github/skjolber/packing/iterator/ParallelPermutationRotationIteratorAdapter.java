@@ -20,10 +20,6 @@ public class ParallelPermutationRotationIteratorAdapter implements PermutationRo
 		this.index = index;
 	}
 
-	public void removePermutations(int count) {
-		delegate.removePermutations(count);
-	}
-
 	public void removePermutations(List<Integer> removed) {
 		delegate.removePermutations(removed);
 	}
@@ -41,12 +37,12 @@ public class ParallelPermutationRotationIteratorAdapter implements PermutationRo
 		return delegate.getPermutations(index);
 	}
 
-	public PermutationRotation get(int index) {
-		return delegate.get(index, this.index);
+	public PermutationRotation get(int permutationIndex) {
+		return delegate.get(index, permutationIndex);
 	}
 
 	public int nextPermutation() {
-		return delegate.nextPermutation(index);
+		return delegate.nextWorkUnitPermutation(index);
 	}
 
 	public int length() {
@@ -57,10 +53,6 @@ public class ParallelPermutationRotationIteratorAdapter implements PermutationRo
 		return delegate.getState(index);
 	}
 
-	public void setState(PermutationRotationState state) {
-		delegate.setState(state);
-	}
-
 	@Override
 	public long getMinStackableVolume() {
 		return delegate.getMinStackableVolume();
@@ -69,6 +61,16 @@ public class ParallelPermutationRotationIteratorAdapter implements PermutationRo
 	@Override
 	public long getMinStackableArea() {
 		return delegate.getMinStackableArea();
+	}
+
+	@Override
+	public int nextPermutation(int maxIndex) {
+		return delegate.nextWorkUnitPermutation(index, maxIndex);
+	}
+
+	@Override
+	public List<PermutationRotation> get(PermutationRotationState state, int length) {
+		return delegate.get(state, length);
 	}
 	
 }

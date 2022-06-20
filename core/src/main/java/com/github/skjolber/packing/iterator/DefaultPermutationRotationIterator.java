@@ -5,41 +5,26 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Dimension;
-import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 
-public class DefaultPermutationRotationIterator implements PermutationRotationIterator {
+public class DefaultPermutationRotationIterator extends AbstractPermutationRotationIterator implements PermutationRotationIterator {
 
-	protected final PermutationStackableValue[] matrix;
-	protected int[] reset;
 	protected int[] rotations; // 2^n or 6^n
 	
 	// permutations of boxes that fit inside this container
 	protected int[] permutations; // n!
 
 	public DefaultPermutationRotationIterator(Dimension bound, List<StackableItem> unconstrained) {
+		super(bound, unconstrained);
+		
 		List<Integer> types = new ArrayList<>(unconstrained.size() * 2);
-
-		List<PermutationStackableValue> matrix = new ArrayList<>(unconstrained.size());
-		for(int i = 0; i < unconstrained.size(); i++) {
-			StackableItem item = unconstrained.get(i);
-			
-			Stackable stackable = item.getStackable();
-			List<StackValue> boundRotations = stackable.rotations(bound);
-			
-			// create PermutationRotation even if this box does not fit at all, 
-			// so that permutation indexes are directly comparable between parallel instances of this class
-			matrix.add(new PermutationStackableValue(item.getCount(), stackable, boundRotations));
-
-			if(!boundRotations.isEmpty()) {
-				for(int k = 0; k < item.getCount(); k++) {
-					types.add(i);
-				}
+		for (int j = 0; j < matrix.length; j++) {
+			PermutationStackableValue value = matrix[j];
+			for(int k = 0; k < value.count; k++) {
+				types.add(j);
 			}
 		}
 
-		this.matrix = matrix.toArray(new PermutationStackableValue[matrix.size()]);
 		this.reset = new int[types.size()];
 		this.rotations = new int[types.size()];
 		
@@ -53,7 +38,6 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 		}
 	}
 
-	@Override
 	public void removePermutations(int count) {
 		this.rotations = new int[rotations.length - count];
 		this.reset = new int[rotations.length];
@@ -154,7 +138,7 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 	 * @return permutation count
 	 */
 	
-	long countPermutations() {
+	public long countPermutations() {
 		// reduce permutations for boxes which are duplicated
 		
 		// could be further bounded by looking at how many boxes (i.e. n x the smallest) which actually
@@ -210,10 +194,44 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 		return n;
 	}
 
-
 	@Override
 	public PermutationRotation get(int index) {
 		return matrix[permutations[index]].getBoxes()[rotations[index]];
+	}
+
+	public int nextPermutation(int maxIndex) {
+		while(maxIndex >= 0) {
+		
+			int current = permutations[maxIndex];
+		
+			// find the lexicographically next item to the right of the max index
+			int minIndex = -1;
+			for(int i = maxIndex + 1; i < permutations.length; i++) {
+				if(permutations[i] > current && (minIndex == -1 || permutations[i] < permutations[minIndex])) {
+					minIndex = i;
+				}
+			}
+			
+			// if there is no such item, decrement and try again
+			if(minIndex == -1) {
+				// TODO search backwards?
+				maxIndex--;
+				
+				continue;
+			}
+			
+			// increment to the next lexigrapically item
+			// and sort the items to the right of the max index
+		    permutations[maxIndex] = permutations[minIndex];
+		    permutations[minIndex] = current;
+		    
+		    Arrays.sort(permutations, maxIndex + 1, permutations.length);
+		    
+		    resetRotations();
+		    
+		    return maxIndex;
+		}
+		return -1;
 	}
 
 	@Override
@@ -265,46 +283,10 @@ public class DefaultPermutationRotationIterator implements PermutationRotationIt
 	public int length() {
 		return permutations.length;
 	}
-
+	
 	@Override
 	public PermutationRotationState getState() {
 		return new PermutationRotationState(rotations, permutations);
-	}
-
-	@Override
-	public void setState(PermutationRotationState state) {
-		this.rotations = state.getRotations();
-		this.permutations = state.getPermutations();
-	}
-
-	/**
-	 * Get number of box items within the constraints.
-	 *
-	 * @return number between 0 and number of {@linkplain StackableItem}s used in the constructor.
-	 */
-
-	public int boxItemLength() {
-		return matrix.length;
-	}
-	
-	public long getMinStackableVolume() {
-		long minVolume = Integer.MAX_VALUE;
-		for (PermutationStackableValue permutationStackableValue : matrix) {
-			if(permutationStackableValue.getMinVolumeLimit() < minVolume) {
-				minVolume = permutationStackableValue.getMinVolumeLimit();
-			}
-		}
-		return minVolume;
-	}
-
-	public long getMinStackableArea() {
-		long minArea = Integer.MAX_VALUE;
-		for (PermutationStackableValue permutationStackableValue : matrix) {
-			if(permutationStackableValue.getMinAreaLimit() < minArea) {
-				minArea = permutationStackableValue.getMinAreaLimit();
-			}
-		}
-		return minArea;
 	}
 
 }

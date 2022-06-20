@@ -23,14 +23,16 @@ public class BouwcampCodesExtremePoints3DTest {
 		List<BouwkampCodes> codesForCount = directory.getAll();
 		for(BouwkampCodes c : codesForCount) {
 			for(BouwkampCode bkpLine : c.getCodes()) {
-				DefaultExtremePoints3D xyPoints = converter.convert3DXYPlane(bkpLine, 1);
-				assertEquals(c.getSource() + " " + bkpLine.getName(), 0, xyPoints.getValueCount());
-				
-				DefaultExtremePoints3D xzPoints = converter.convert3DXZPlane(bkpLine, 1);
-				assertEquals(c.getSource() + " " + bkpLine.getName(), 0, xzPoints.getValueCount());
-				
-				DefaultExtremePoints3D yzPoints = converter.convert3DYZPlane(bkpLine, 1);
-				assertEquals(c.getSource() + " " + bkpLine.getName(), 0, yzPoints.getValueCount());
+				for(int i = 1; i < 3; i++) {
+					DefaultExtremePoints3D xyPoints = converter.convert3DXYPlane(bkpLine, i);
+					assertEquals(c.getSource() + " " + bkpLine.getName(), 0, xyPoints.getValueCount());
+					
+					DefaultExtremePoints3D xzPoints = converter.convert3DXZPlane(bkpLine, i);
+					assertEquals(c.getSource() + " " + bkpLine.getName(), 0, xzPoints.getValueCount());
+					
+					DefaultExtremePoints3D yzPoints = converter.convert3DYZPlane(bkpLine, i);
+					assertEquals(c.getSource() + " " + bkpLine.getName(), 0, yzPoints.getValueCount());
+				}
 			}
 		}
 	}

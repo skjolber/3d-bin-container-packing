@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,7 +41,6 @@ public class BouwkampCodeParser {
 		
 		Pattern pattern = Pattern.compile("(?<boxCount>[0-9]+)\\s(?<width>[0-9]+)\\s(?<depth>[0-9]+) (?<boxes>[\\(\\),0-9]+) \\* [0-9]+ : (?<name>[0-9A-Za-z]+)");
 		// 16 48 48 (28,20)(8,12)(20,7,9)(5,7)(5,2)(3,11,2)(9)(8) * 16 : 48A
-		
 		Matcher matcher = pattern.matcher(line);
 		if(!matcher.find()) {
 			throw new BouwkampCodeException();

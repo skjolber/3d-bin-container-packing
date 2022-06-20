@@ -18,7 +18,7 @@ public class BruteForcePackagerResult implements PackResult {
 	public static final BruteForcePackagerResult EMPTY = new BruteForcePackagerResult(null, null);
 	
 	static {
-		EMPTY.setState(Collections.emptyList(), null, Collections.emptyList(), false);
+		EMPTY.setState(Collections.emptyList(), null, Collections.emptyList());
 	}
 	
 	// work objects
@@ -29,7 +29,6 @@ public class BruteForcePackagerResult implements PackResult {
 	private PermutationRotationState state;
 	private List<Point3D<StackPlacement>> points = Collections.emptyList();
 	private List<StackPlacement> placements;
-	private boolean last;
 	
 	private boolean dirty = true;
 	
@@ -63,12 +62,12 @@ public class BruteForcePackagerResult implements PackResult {
 		Stack stack = container.getStack();
 		stack.clear();
 		
-		iterator.setState(state);
+		List<PermutationRotation> list = iterator.get(state, points.size());
 		
 		for(int i = 0; i < points.size(); i++) {
 			StackPlacement stackPlacement = placements.get(i);
 
-			PermutationRotation permutationRotation = iterator.get(i);
+			PermutationRotation permutationRotation = list.get(i);
 			stackPlacement.setValue(permutationRotation.getValue());
 			stackPlacement.setStackable(permutationRotation.getStackable());
 
@@ -83,16 +82,14 @@ public class BruteForcePackagerResult implements PackResult {
 		return container;
 	}
 
-	public PermutationRotationIterator getPermutationRotationIteratorForState() {
-		iterator.setState(state);
-		return iterator;
+	public PermutationRotationState getPermutationRotationIteratorForState() {
+		return state;
 	}
 	
-	public void setState(List<Point3D<StackPlacement>> items, PermutationRotationState state, List<StackPlacement> placements, boolean last) {
+	public void setState(List<Point3D<StackPlacement>> items, PermutationRotationState state, List<StackPlacement> placements) {
 		this.points = items;
 		this.state = state;
 		this.placements = placements;
-		this.last = last;
 		
 		this.dirty = true;
 	}
@@ -111,7 +108,7 @@ public class BruteForcePackagerResult implements PackResult {
 
 	@Override
 	public boolean containsLastStackable() {
-		return last;
+		return placements.size() == points.size();
 	}
 
 	@Override

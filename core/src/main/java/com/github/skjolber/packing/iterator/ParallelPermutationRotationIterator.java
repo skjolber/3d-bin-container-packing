@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.iterator;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Dimension;
@@ -10,7 +11,7 @@ import com.github.skjolber.packing.api.StackableItem;
  * 
  */
 
-public class ParallelPermutationRotationIterator extends DefaultPermutationRotationIterator {
+public class ParallelPermutationRotationIterator extends AbstractPermutationRotationIterator {
 
 	protected final static int PADDING = 16;
 	protected final int[] frequencies;
@@ -27,6 +28,9 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 		long count;
 		int[] permutations;
 		int[] rotations;
+
+		int[] lastPermutation;
+		int lastPermutationMaxIndex;
 		
 		// try to avoid false sharing by using padding
 		public long t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15 = -1L;
@@ -41,11 +45,15 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 		
 		this.frequencies = new int[unconstrained.size()];
 		
+		int count = 0;
 		for (int i = 0; i < unconstrained.size(); i++) {
 			StackableItem permutationRotation = unconstrained.get(i);
 			
 			frequencies[i] = permutationRotation.getCount();
+			
+			count += frequencies[i];
 		}
+		this.reset = new int[count];
 		
 		workUnits = new WorkUnit[parallelizationCount]; 
 		for(int i = 0; i < parallelizationCount; i++) {
@@ -54,14 +62,6 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 				throw new RuntimeException();
 			}
 		}
-		enforceWorkUnit();
-	}
-	
-	public void removePermutations(int count) {
-		for(int i = 0; i < count; i++) {
-			frequencies[permutations[PADDING + i]]--;
-		}
-		super.removePermutations(count);
 		
 		enforceWorkUnit();
 	}
@@ -70,7 +70,7 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 		for (Integer integer : removed) {
 			frequencies[integer]--;
 		}
-		super.removePermutations(removed);
+		this.reset = new int[reset.length - removed.size()];
 		
 		enforceWorkUnit();
 	}
@@ -114,7 +114,24 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 				workUnits[i].count++;
 			}
 			
-			workUnits[i].rotations = new int[PADDING + rotations.length];
+			workUnits[i].rotations = new int[PADDING + reset.length];
+		}
+		
+		for(int i = 0; i < workUnits.length - 1; i++) {
+			int[] lastPermutation = new int[workUnits[i + 1].permutations.length];
+			System.arraycopy(workUnits[i + 1].permutations, 0, lastPermutation, 0, lastPermutation.length);
+			
+			workUnits[i].lastPermutation = lastPermutation;
+			
+			// find the first item that differs, so that we do not have to
+			// compare items for each iteration (to detect whether we have done enough work)
+			for(int k = PADDING; k < lastPermutation.length; k++) {
+				if(workUnits[i].permutations[k] != lastPermutation[k]) {
+					workUnits[i].lastPermutationMaxIndex = k;
+					
+					break;
+				}
+			}
 		}
 	}
 	
@@ -129,7 +146,7 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 	public int nextWorkUnitRotation(int index) {
 		// next rotation
 		int[] workUnitRotations = workUnits[index].rotations;
-		return nextWorkUnitRotation(index, workUnitRotations.length - 1);
+		return nextWorkUnitRotation(index, workUnitRotations.length - 1 - PADDING);
 	}
 	
 	public int nextWorkUnitRotation(int index, int maxIndex) {
@@ -149,7 +166,7 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 		return -1;
 	}
 
-	public int nextPermutation(int index) {
+	public int nextWorkUnitPermutation(int index) {
 		workUnits[index].count--;
 		if(workUnits[index].count > 0) {
 			System.arraycopy(reset, 0, workUnits[index].rotations, PADDING, reset.length);
@@ -160,7 +177,8 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 	}
 	
 	protected int nextPermutation(int[] permutations) {
-
+		// https://www.baeldung.com/cs/array-generate-all-permutations#permutations-in-lexicographic-order
+		
 	    // Find longest non-increasing suffix
 
 	    int i = permutations.length - 1;
@@ -203,7 +221,6 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 	}
 	
 
-	@Override
 	public long countPermutations() {
 		return countPermutations(getCount());
 	}
@@ -360,7 +377,7 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 	}
 
 	public int[] getPermutations(int i) {
-		int[] result = new int[permutations.length];
+		int[] result = new int[workUnits[i].permutations.length - PADDING];
 		System.arraycopy(workUnits[i].permutations, PADDING, result, 0, result.length);
 		return result;
 	}
@@ -370,12 +387,77 @@ public class ParallelPermutationRotationIterator extends DefaultPermutationRotat
 	}
 
 	private int[] getRotations(int index) {
-		int[] result = new int[rotations.length];
+		int[] result = new int[reset.length];
 		System.arraycopy(workUnits[index].rotations, PADDING, result, 0, result.length);
 		return result;
 	}
 	
-	public PermutationRotation get(int permutationIndex, int index) {
+	public PermutationRotation get(int index, int permutationIndex) {
 		return matrix[workUnits[index].permutations[PADDING + permutationIndex]].getBoxes()[workUnits[index].rotations[PADDING + permutationIndex]];
 	}
+
+	public int nextWorkUnitPermutation(int index, int maxIndex) {
+		workUnits[index].count--;
+		if(workUnits[index].count > 0) {
+			// reset rotations
+			System.arraycopy(reset, 0, workUnits[index].rotations, PADDING, reset.length);
+
+			int resultIndex = nextWorkUnitPermutation(workUnits[index].permutations, maxIndex);
+			
+			if(index < workUnits.length - 1) {
+				if(resultIndex <= workUnits[index].lastPermutationMaxIndex) {
+					// TODO initial check for bounds here
+					
+					// are we still within our designated range?
+					// the next permutation must be lexicographically less than the first permutation
+					// in the next block
+					
+					int[] lastPermutation = workUnits[index].lastPermutation;
+					int[] currentPermutation = workUnits[index].permutations;
+					int i = PADDING;
+					while(i <= workUnits[index].lastPermutationMaxIndex) {
+						if(currentPermutation[i] < lastPermutation[i]) {
+							return resultIndex;
+						} else if(currentPermutation[i] > lastPermutation[i]) {
+							return -1;
+						}
+						i++;
+					}
+				}
+			}			
+			
+			return resultIndex;
+		}
+		return -1;
+	}
+	
+	public int nextWorkUnitPermutation(int[] permutations, int maxIndex) {
+		while(maxIndex >= 0) {
+		
+			int current = permutations[PADDING + maxIndex];
+			
+			int minIndex = -1;
+			for(int i = PADDING + maxIndex + 1; i < permutations.length; i++) {
+				if(current < permutations[i] && (minIndex == -1 || permutations[i] < permutations[minIndex])) {
+					minIndex = i;
+				}
+			}
+			
+			if(minIndex == -1) {
+				maxIndex--;
+				
+				continue;
+			}
+			
+			// swap indexes
+		    permutations[PADDING + maxIndex] = permutations[minIndex];
+		    permutations[minIndex] = current;
+		    
+		    Arrays.sort(permutations, PADDING + maxIndex + 1, permutations.length);
+		    
+		    return maxIndex;
+		}
+		return -1;
+	}
+
 }

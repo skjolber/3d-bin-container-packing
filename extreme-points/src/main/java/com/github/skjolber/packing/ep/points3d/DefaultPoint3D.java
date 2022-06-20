@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement3D;
@@ -25,14 +25,12 @@ public class DefaultPoint3D<P extends Placement3D> extends Point3D<P> {
 	
 	@Override
 	public List<P> getPlacements3D() {
-		List<P> list = new ArrayList<>();
-		return list;
+		return Collections.emptyList();
 	}
 
 	@Override
 	public List<P> getPlacements2D() {
-		List<P> list = new ArrayList<>();
-		return list;
+		return Collections.emptyList();
 	}
 
 	@Override

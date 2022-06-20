@@ -14,5 +14,5 @@ public interface Placement2D {
 	
 	boolean intersects2D(Placement2D point);
 	
-	List<? extends Placement2D> getSupports2D();
+	// List<? extends Placement2D> getSupports2D();
 }

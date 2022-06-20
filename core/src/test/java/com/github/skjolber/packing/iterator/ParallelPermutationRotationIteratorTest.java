@@ -2,8 +2,10 @@ package com.github.skjolber.packing.iterator;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -37,16 +39,80 @@ public class ParallelPermutationRotationIteratorTest {
 		int count = 0;
 		do {
 			assertThat(nthIterator.getPermutations(0)).isEqualTo(iterator.getPermutations());
-
 			count++;
-		} while(nthIterator.nextPermutation(0) != -1 && iterator.nextPermutation() != -1);
+		} while(nthIterator.nextWorkUnitPermutation(0) != -1 && iterator.nextPermutation() != -1);
 
 		assertEquals( 5 * 4 * 3 * 2 * 1, count);
-		assertThat(nthIterator.nextPermutation(0)).isEqualTo(-1);
+		assertThat(nthIterator.nextWorkUnitPermutation(0)).isEqualTo(-1);
 	}
 	
 	@Test
-	void testPermutationDifference() {
+	void testPermutationsForMaxIndexInRightOrder() {
+		Dimension container = new Dimension(null, 9, 1, 1);
+
+		List<StackableItem> products = new ArrayList<>();
+
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
+
+		long max = 5 * 4 * 3 * 2 * 1;
+		
+		for(int i = 0; i < 3; i++) {
+			int l = i + 1;
+			
+			DefaultPermutationRotationIterator rotator1 = new DefaultPermutationRotationIterator(container, products);
+			ParallelPermutationRotationIterator rotator2 = new ParallelPermutationRotationIterator(container, products, l);
+	
+			long limit = rotator1.countPermutations() / l;
+			long count = 0;
+			do {
+				int[] permutations1 = rotator1.getPermutations();
+				int[] permutations2 = rotator2.getPermutations(0);
+				
+				assertArrayEquals(permutations1, permutations2);
+				
+				count++;
+			} while(count < limit && rotator1.nextPermutation(rotator1.length() - 1) != -1 && rotator2.nextWorkUnitPermutation(0) != -1);
+	
+			assertEquals(max / l, limit);
+		}
+	}
+	
+	@Test
+	void testPermutationsSkip() {
+		Dimension container = new Dimension(null, 9, 1, 1);
+
+		List<StackableItem> products = new ArrayList<>();
+
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
+		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
+
+		for(int i = 0; i < 3; i++) {
+			int l = i + 1;
+			
+			DefaultPermutationRotationIterator rotator1 = new DefaultPermutationRotationIterator(container, products);
+			ParallelPermutationRotationIterator rotator2 = new ParallelPermutationRotationIterator(container, products, l);
+
+			int permutationIndex1;
+			do {
+				permutationIndex1 = rotator1.nextPermutation();
+			} while(permutationIndex1 > 2);
+			
+			int permutationIndex2 = rotator2.nextWorkUnitPermutation(0, 2);
+			assertArrayEquals(rotator1.getPermutations(), rotator2.getPermutations(0));
+		}
+	}
+
+
+	
+	@Test
+	void testPermutationCorrectIndexReturned() {
 		Dimension container = new Dimension(null, 9, 1, 1);
 
 		List<StackableItem> products = new ArrayList<>();
@@ -64,7 +130,7 @@ public class ParallelPermutationRotationIteratorTest {
 			
 			int[] permutations = PermutationRotationIteratorTest.cloneArray(nthIterator.getPermutations(0));
 			
-			int length = nthIterator.nextPermutation(0);
+			int length = nthIterator.nextWorkUnitPermutation(0);
 			
 			if(length == -1) {
 				break;
@@ -103,10 +169,10 @@ public class ParallelPermutationRotationIteratorTest {
 		do {
 			assertThat(nthIterator.getPermutations(1)).isEqualTo(iterator.getPermutations());
 			count++;
-		} while(nthIterator.nextPermutation(1) != -1 && iterator.nextPermutation() != -1);
+		} while(nthIterator.nextWorkUnitPermutation(1) != -1 && iterator.nextPermutation() != -1);
 
 		assertEquals( 5 * 4 * 3, count);
-		assertThat(nthIterator.nextPermutation(1)).isEqualTo(-1);
+		assertThat(nthIterator.nextWorkUnitPermutation(1)).isEqualTo(-1);
 	}
 
 	@Test
@@ -134,11 +200,11 @@ public class ParallelPermutationRotationIteratorTest {
 		do {
 			assertThat(nthIterator.getPermutations(1)).isEqualTo(iterator.getPermutations());
 			count++;
-		} while(nthIterator.nextPermutation(1) != -1 && iterator.nextPermutation() != -1);
+		} while(nthIterator.nextWorkUnitPermutation(1) != -1 && iterator.nextPermutation() != -1);
 
 		assertEquals( 8 * 7 * 6 * 5 * 4 * 3 * 2 * 1 / ((3 * 2 * 1) * (4 * 3 * 2 * 1) * 2), count);
 		
-		assertThat(nthIterator.nextPermutation(1)).isEqualTo(-1);
+		assertThat(nthIterator.nextWorkUnitPermutation(1)).isEqualTo(-1);
 	}
 	
 	public static long rankPerm(String perm) {
@@ -202,29 +268,6 @@ public class ParallelPermutationRotationIteratorTest {
 	    	}
 	    }
 	    return perm.toString();
-	}
-	
-	@Test
-	void testRotations() {
-		Dimension container = new Dimension(null, 9, 9, 9);
-
-		List<StackableItem> products = new ArrayList<>();
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
-
-		ParallelPermutationRotationIterator rotator = new ParallelPermutationRotationIterator(container, products, 2);
-
-		do {
-			int rotate = rotator.nextRotation();
-			if(rotate == -1) {
-				break;
-			}
-			int[] rotations = rotator.getState().getRotations();
-			System.out.println(String.join("", IntStream.of(rotations).mapToObj(String::valueOf).toArray(String[]::new)));
-		} while(true);
 	}
 
 }

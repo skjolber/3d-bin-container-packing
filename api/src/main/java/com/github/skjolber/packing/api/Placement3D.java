@@ -10,6 +10,6 @@ public interface Placement3D extends Placement2D  {
 	
 	boolean intersects3D(Placement3D point);
 	
-	List<? extends Placement3D> getSupports3D();
+	// List<? extends Placement3D> getSupports3D();
 
 }

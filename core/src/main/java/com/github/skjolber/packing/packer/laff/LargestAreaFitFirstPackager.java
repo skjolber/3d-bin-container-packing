@@ -20,8 +20,8 @@ import com.github.skjolber.packing.api.StackableFilter;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.api.ep.StackValuePointFilter;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
-import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 import com.github.skjolber.packing.packer.DefaultPackResult;
+import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -173,7 +173,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			Stack levelStack = new DefaultStack();
 			stack.add(levelStack);
 
-			StackPlacement first = new StackPlacement(stackable, firstStackValue, 0, 0, 0, -1, -1, firstPoint.getPlacements3D());
+			StackPlacement first = new StackPlacement(stackable, firstStackValue, 0, 0, 0, -1, -1);
 
 			levelStack.add(first);
 			
@@ -247,7 +247,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 				Point3D<StackPlacement> point = extremePoints3D.getValue(bestPointIndex);
 
-				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ(), -1, -1, point.getPlacements3D());
+				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ(), -1, -1);
 				levelStack.add(stackPlacement);
 				extremePoints3D.add(bestPointIndex, stackPlacement);
 

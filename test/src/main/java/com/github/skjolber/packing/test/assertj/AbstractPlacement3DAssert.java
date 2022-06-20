@@ -265,7 +265,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		return myself;
 	}
 	
-	
+	/*
 	public SELF isSupportedBy(Placement3D ... others) {
 		isNotNull();
 		
@@ -288,5 +288,5 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		}
 		return myself;
 	}
-	
+	*/
 }

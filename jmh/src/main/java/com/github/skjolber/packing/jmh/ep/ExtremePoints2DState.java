@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.jmh.ep;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.openjdk.jmh.annotations.Level;
@@ -64,7 +63,7 @@ public class ExtremePoints2DState {
 				
 				int factoredSquare = square;
 				
-				DefaultPlacement2D placement = new DefaultPlacement2D(offset, value.getMinY(), offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, Collections.emptyList());
+				DefaultPlacement2D placement = new DefaultPlacement2D(offset, value.getMinY(), offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1);
 				extremePointsEntries.add(new ExtremePoint2DEntry(nextY, placement));
 				points.add(nextY, placement);
 	
