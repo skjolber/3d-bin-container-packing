@@ -8,9 +8,12 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.ContainerVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
+import com.github.skjolber.packing.visualizer.api.packaging.PointVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.StackPlacementVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.StackVisualizer;
 
@@ -31,9 +34,9 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			containerVisualization.setDy(containerStackValue.getDy());
 			containerVisualization.setDz(containerStackValue.getDz());
 
-			containerVisualization.setLoadDx(containerStackValue.getDx());
-			containerVisualization.setLoadDy(containerStackValue.getDy());
-			containerVisualization.setLoadDz(containerStackValue.getDz());
+			containerVisualization.setLoadDx(containerStackValue.getLoadDx());
+			containerVisualization.setLoadDy(containerStackValue.getLoadDy());
+			containerVisualization.setLoadDz(containerStackValue.getLoadDz());
 
 			containerVisualization.setId(inputContainer.getId());
 			containerVisualization.setName(inputContainer.getDescription());
@@ -43,6 +46,8 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			containerVisualization.setStack(stackVisualization);
 			
 			Stack stack = inputContainer.getStack();
+
+			ExtremePoints3D<StackPlacement> extremePoints = new ExtremePoints3D<>(containerStackValue.getDx(), containerStackValue.getDy(), containerStackValue.getDz());
 			
 			for (StackPlacement placement : stack.getPlacements()) {
 				Stackable box = placement.getStackable();
@@ -63,7 +68,25 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 				stackPlacement.setZ(placement.getAbsoluteZ());
 				stackPlacement.setStackable(boxVisualization);
 				stackPlacement.setStep(step);
-
+				
+				int pointIndex = extremePoints.findPoint(placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ());
+				
+				extremePoints.add(pointIndex, placement);
+				
+				for(Point3D<StackPlacement> point : extremePoints.getValues()) {
+					PointVisualizer p = new PointVisualizer();
+					
+					p.setX(point.getMinX());
+					p.setY(point.getMinY());
+					p.setZ(point.getMinZ());
+					
+					p.setDx(point.getMaxX() - point.getMinX() + 1);
+					p.setDy(point.getMaxY() - point.getMinY() + 1);
+					p.setDz(point.getMaxZ() - point.getMinZ() + 1);
+					
+					stackPlacement.add(p);
+				}
+				
 				stackVisualization.add(stackPlacement);
 				
 				step++;
