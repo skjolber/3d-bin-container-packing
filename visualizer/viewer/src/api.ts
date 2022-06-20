@@ -129,15 +129,18 @@ export class ContainerControls {
 }
 
 export interface ColorScheme {
-    getColor(stackable : Stackable) : Color;
+    getPoint(point : Point) : Color;
+    getStackable(stackable : Stackable) : Color;
     getColorScheme(container : Container) : ColorScheme;
 }
 
 export class RandomColorScheme implements ColorScheme {
-    getColor(stackable : Stackable) : Color {
+    getPoint(point : Point) : Color {
         return new Color(randomColor());
     }
-
+    getStackable(stackable : Stackable) : Color {
+        return new Color(randomColor());
+    }
     getColorScheme(container : Container) : ColorScheme {
         return this;
     }
@@ -154,15 +157,15 @@ export class MemoryColorScheme implements ColorScheme {
         this.map = new Map();
     }
 
-    getColor(stackable : Stackable) : Color {
+    getStackable(stackable : Stackable) : Color {
         if(!stackable.id) {
             // use random
-            return this.delegate.getColor(stackable);
+            return this.delegate.getStackable(stackable);
         }
         // use same as before, for the
         var color = this.map.get(stackable.id);
         if(!color) {
-            color = this.delegate.getColor(stackable);
+            color = this.delegate.getStackable(stackable);
             this.map.set(stackable.id, color);
         }
         return color;
@@ -170,6 +173,17 @@ export class MemoryColorScheme implements ColorScheme {
 
     getColorScheme(container : Container) : ColorScheme {
         return this;
+    }
+    
+    getPoint(point : Point) : Color {
+        // use same as before, for the
+        var id = point.x + "x"+point.y + "x" + point.z + " " + point.dx+"x" + point.dy + "x" + point.dz;
+        var color = this.map.get(id);
+        if(!color) {
+            color = this.delegate.getPoint(point);
+            this.map.set(id, color);
+        }
+        return color;
     }
 
 }
@@ -183,7 +197,7 @@ export class StackableRenderer {
         if(stackable instanceof Container) {
             var containerStackable : Container = stackable;
 
-            var color = colorScheme.getColor(containerStackable);
+            var color = colorScheme.getStackable(containerStackable);
             var containerMaterial = new THREE.LineBasicMaterial({ color: color});
             
             var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.dy, containerStackable.dz, containerStackable.dx));
@@ -222,7 +236,7 @@ export class StackableRenderer {
 
             console.log("Add box " + boxStackable.name + " size " + boxStackable.dx + "x" + boxStackable.dy + "x" + boxStackable.dz + " at " + stackPlacement.x + "x" + stackPlacement.y + "x" + stackPlacement.z);
 
-            var sColor = colorScheme.getColor(boxStackable);
+            var sColor = colorScheme.getStackable(boxStackable);
 
             var material = new THREE.MeshStandardMaterial({
                 color: sColor,
@@ -255,8 +269,7 @@ export class StackableRenderer {
 
             for (let p of stackPlacement.points) {
     
-                // zero is relative to center of box
-                var color = new THREE.Color( 0xff0000 );
+                var color = colorScheme.getPoint(p);
                 var containerMaterial = new THREE.LineBasicMaterial({ color: color});
                 var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1));
                 var pp = new THREE.LineSegments(containerGeometry, containerMaterial);

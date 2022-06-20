@@ -37,6 +37,8 @@ var renderedStepNumber = -1;
 var maxStepNumber = 0;
 var minStepNumber = 0;
 
+var points = true;
+
 /**
  * Example temnplate of using Three with React
  */
@@ -140,7 +142,11 @@ class ThreeScene extends Component {
             if(userData.type == "box") {
                 stackable.visible = userData.step < stepNumber;
             } else if(userData.type == "point") {
-                stackable.visible = userData.step == stepNumber - 1;                        
+                if(points) {
+                    stackable.visible = userData.step == stepNumber - 1;
+                } else {
+                    stackable.visible = false;
+                }                         
             }
             
           }
@@ -321,6 +327,9 @@ class ThreeScene extends Component {
       }
       case 32: {
         console.log("OnKeyPress SPACE");
+        points = !points;
+        shouldAnimate = false;
+        renderedStepNumber = -1;
         break;
       }
       default: {
