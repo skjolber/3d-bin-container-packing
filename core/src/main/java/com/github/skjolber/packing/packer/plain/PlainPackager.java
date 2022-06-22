@@ -185,13 +185,14 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 
 	protected boolean isBetter(Stackable bestStackable, Point3D<StackPlacement> bestPoint, StackValue bestStackValue, Stackable candidateBox, Point3D<StackPlacement> candidatePoint, StackValue candidateStackValue) {
 		// ********************************************
-		// * Prefer point with lowest volume remaining
+		// * Prefer lowest point
 		// ********************************************
-		long bestRemaining = bestPoint.getVolume() - bestStackValue.getVolume();
-		long candidateRemaining = candidatePoint.getVolume() - candidateStackValue.getVolume();
-		
-		return candidateRemaining < bestRemaining;
+		if(candidatePoint.getMinZ() == bestPoint.getMinZ()) {
+			// if at same z, prefer the rotation with the largest area
+			return candidateStackValue.getArea() > bestStackValue.getArea();
+		}
 
+		return candidatePoint.getMinZ() < bestPoint.getMinZ();
 	}
 
 	protected boolean isBetter(Stackable bestStackable, Stackable box) {
