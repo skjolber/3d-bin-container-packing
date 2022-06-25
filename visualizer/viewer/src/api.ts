@@ -200,8 +200,8 @@ export class StackableRenderer {
             var color = colorScheme.getStackable(containerStackable);
             var containerMaterial = new THREE.LineBasicMaterial({ color: color});
             
-            var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.dy, containerStackable.dz, containerStackable.dx));
-            var containerLoadGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.loadDy, containerStackable.loadDz, containerStackable.loadDx));
+            var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxBufferGeometry(containerStackable.dy, containerStackable.dz, containerStackable.dx));
+            var containerLoadGeometry = new THREE.EdgesGeometry(new THREE.BoxBufferGeometry(containerStackable.loadDy, containerStackable.loadDz, containerStackable.loadDx));
 
             var container = new THREE.LineSegments(containerGeometry, containerMaterial);
             var containerLoad = new THREE.LineSegments(containerLoadGeometry, containerMaterial);
@@ -248,7 +248,7 @@ export class StackableRenderer {
                 polygonOffsetFactor: 1,
                 polygonOffsetUnits: 1
             });
-            var geometry = new THREE.BoxGeometry(1, 1, 1);
+            var geometry = new THREE.BoxBufferGeometry(1, 1, 1);
             var box = new THREE.Mesh(geometry, material);
 
             box.name = boxStackable.name;
@@ -271,7 +271,7 @@ export class StackableRenderer {
     
                 var color = colorScheme.getPoint(p);
                 var containerMaterial = new THREE.LineBasicMaterial({ color: color});
-                var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1));
+                var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxBufferGeometry(1, 1, 1));
                 var pp = new THREE.LineSegments(containerGeometry, containerMaterial);
 
                 pp.scale.x = p.dy;

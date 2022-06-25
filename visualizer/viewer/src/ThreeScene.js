@@ -32,12 +32,11 @@ const pointer = new THREE.Vector2();
 var raycaster;
 var INTERSECTED;
 var stepNumber = -1;
-var renderedStepNumber = -1;
 
 var maxStepNumber = 0;
 var minStepNumber = 0;
 
-var points = true;
+var points = false;
 
 /**
  * Example temnplate of using Three with React
@@ -63,7 +62,6 @@ class ThreeScene extends Component {
     //shaderMesh.material.uniforms.u_time.value = delta;
 
     this.handleIntersection();
-    this.handleStepNumber();
 
     //Redraw scene
     this.renderScene();
@@ -120,7 +118,6 @@ class ThreeScene extends Component {
   };
 
   handleStepNumber = () => {
-    if(stepNumber != renderedStepNumber) {
       console.log("Show step number " + stepNumber);
       for(var i = 0; i < visibleContainers.length; i++) {
         var visibleContainer = visibleContainers[i];
@@ -148,11 +145,8 @@ class ThreeScene extends Component {
                     stackable.visible = false;
                 }                         
             }
-            
           }
         }          
-      }
-      renderedStepNumber = stepNumber;
     }
   };
 
@@ -231,6 +225,8 @@ class ThreeScene extends Component {
 
         maxStepNumber = maxStep + 1;
         minStepNumber = minStep;
+        
+        stepNumber = maxStepNumber;
 
         // TODO return controls instead
         var visibleContainer = stackableRenderer.add(mainGroup, memoryScheme, new StackPlacement(container, 0, x, 0, 0), 0, 0, 0);
@@ -299,37 +295,44 @@ class ThreeScene extends Component {
     switch (keyCode) {
       case 87: {
         // shaderMesh1.rotation.x += ROTATION_ANGLE; //W
-        console.log("OnKeyPress W");
         mainGroup.rotation.y += 0.1;
         break;
       }
       case 83: {
         // shaderMesh1.rotation.x -= ROTATION_ANGLE; //S
-        console.log("OnKeyPress S");
         mainGroup.rotation.y -= 0.1;
         break;
       }
       case 65: {
-        console.log("OnKeyPress A");
         stepNumber++;
         if(stepNumber > maxStepNumber) {
-          stepNumber = maxStepNumber;
+          stepNumber = 0;
         }
+        
+        this.handleStepNumber();
+        
         break;
       }
       case 68: {
-        console.log("OnKeyPress D");
         stepNumber--;
         if(stepNumber < minStepNumber) {
-          stepNumber = minStepNumber;
+          stepNumber = maxStepNumber;
         }
+        this.handleStepNumber();
+        
         break;
       }
-      case 32: {
-        console.log("OnKeyPress SPACE");
+      case 80: {
         points = !points;
-        shouldAnimate = false;
-        renderedStepNumber = -1;
+        if(points) {
+          console.log("Show points");
+        } else {
+          console.log("Hide points");
+        }
+        
+        this.handleStepNumber();
+        this.renderScene();
+
         break;
       }
       default: {

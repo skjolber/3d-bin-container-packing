@@ -627,4 +627,11 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	public long getVolumeAtMaxZ(int maxZ) {
 		return (long)dx * (long)dy * (maxZ - minZ + 1);
 	}
+
+	public abstract long calculateXYSupport(int dx, int dy);
+	
+	public abstract long calculateXZSupport(int dx, int dz);
+	
+	public abstract long calculateYZSupport(int dy, int dz);
+
 }

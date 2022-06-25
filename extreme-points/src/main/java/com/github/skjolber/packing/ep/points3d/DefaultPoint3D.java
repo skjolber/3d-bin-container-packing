@@ -79,4 +79,18 @@ public class DefaultPoint3D<P extends Placement3D> extends Point3D<P> {
 		return new DefaultPoint3D<>(minY, minZ, minX, maxY, maxZ, maxX);
 	}
 
+	@Override
+	public long calculateXYSupport(int dx, int dy) {
+		return 0;
+	}
+
+	@Override
+	public long calculateXZSupport(int dx, int dz) {
+		return 0;
+	}
+	
+	@Override
+	public long calculateYZSupport(int dy, int dz) {
+		return 0;
+	}
 }

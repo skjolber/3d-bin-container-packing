@@ -206,4 +206,20 @@ public class DefaultXYPlaneYZPlanePoint3D<P extends Placement3D> extends Point3D
 	public Point3D<P> rotate() {
 		return new DefaultPoint3D<>(minY, minZ, minX, maxY, maxZ, maxX);
 	}
+	
+	@Override
+	public long calculateXYSupport(int dx, int dy) {
+		return Math.min(dx, xyPlane.getAbsoluteEndX() - minX + 1) * (long)Math.min(dy, xyPlane.getAbsoluteEndY() - minY + 1);
+	}
+
+	@Override
+	public long calculateXZSupport(int dx, int dz) {
+		return 0;
+	}
+
+	@Override
+	public long calculateYZSupport(int dy, int dz) {
+		return (long)Math.min(dy, yzPlane.getAbsoluteEndY() - minY + 1) * Math.min(dz, yzPlane.getAbsoluteEndZ() - minZ + 1) ;
+	}
+
 }

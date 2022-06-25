@@ -120,7 +120,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 					continue;
 				}
 				
-				if(bestStackable != null && isBetter(bestStackable, box)) {
+				if(bestStackable != null && !isBetter(bestStackable, box)) {
 					continue;
 				}
 				
@@ -144,9 +144,6 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 							continue;
 						}
 						
-						// ********************************************************************************
-						// * Prefer the tightest placement, i.e. waste as little as possible
-						// ********************************************************************************
 						if(bestIndex != -1) {
 							if(!isBetter(bestStackable, extremePoints3D.getValue(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
 								continue;
@@ -183,27 +180,53 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 		return new DefaultPackResult(new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack), stack, remainingStackables.isEmpty());
 	}
 
-	protected boolean isBetter(Stackable bestStackable, Point3D<StackPlacement> bestPoint, StackValue bestStackValue, Stackable candidateBox, Point3D<StackPlacement> candidatePoint, StackValue candidateStackValue) {
+	protected boolean isBetter(Stackable referenceStackable, Point3D<StackPlacement> referencePoint, StackValue referenceStackValue, Stackable candidateBox, Point3D<StackPlacement> candidatePoint, StackValue candidateStackValue) {
 		// ********************************************
 		// * Prefer lowest point
 		// ********************************************
-		if(candidatePoint.getMinZ() == bestPoint.getMinZ()) {
-			// if at same z, prefer the rotation with the largest area
-			return candidateStackValue.getArea() > bestStackValue.getArea();
-		}
+		
+		// compare supported area
+		long referenceSupport = referencePoint.calculateXYSupport(referenceStackValue.getDx(), referenceStackValue.getDy());
+		long candidateSupport = candidatePoint.calculateXYSupport(candidateStackValue.getDx(), candidateStackValue.getDy());
 
-		return candidatePoint.getMinZ() < bestPoint.getMinZ();
+		if(candidateSupport == referenceSupport) {
+			
+			if(candidatePoint.getMinZ() == referencePoint.getMinZ()) {
+				
+				if(candidateStackValue.getArea() == referenceStackValue.getArea()) {
+					
+					// compare sideways support	
+					referenceSupport = 
+							referencePoint.calculateXZSupport(referenceStackValue.getDx(), referenceStackValue.getDz()) + 
+							referencePoint.calculateYZSupport(referenceStackValue.getDy(), referenceStackValue.getDz());
+
+					candidateSupport = 
+							candidatePoint.calculateXZSupport(candidateStackValue.getDx(), candidateStackValue.getDz()) + 
+							candidatePoint.calculateYZSupport(candidateStackValue.getDy(), candidateStackValue.getDz());
+
+					if(candidateSupport == referenceSupport) {
+						// if everything is equal, the point with the tightest fit 
+						return candidatePoint.getArea() < referencePoint.getArea();
+					}
+					return candidateSupport > referenceSupport;
+				}
+				return candidateStackValue.getArea() > referenceStackValue.getArea();
+				
+			}
+			return candidatePoint.getMinZ() < referencePoint.getMinZ();
+		}
+		return candidateSupport > referenceSupport;
 	}
 
-	protected boolean isBetter(Stackable bestStackable, Stackable box) {
+	protected boolean isBetter(Stackable referenceStackable, Stackable potentiallyBetterStackable) {
 		// ****************************************
 		// * Prefer the highest volume
 		// ****************************************
 		
-		if(bestStackable.getVolume() == box.getVolume()) {
-			return bestStackable.getWeight() > box.getWeight();
+		if(referenceStackable.getVolume() == potentiallyBetterStackable.getVolume()) {
+			return referenceStackable.getWeight() < potentiallyBetterStackable.getWeight();
 		}
-		return bestStackable.getVolume() > box.getVolume();
+		return referenceStackable.getVolume() < potentiallyBetterStackable.getVolume();
 	}
 
 	@Override

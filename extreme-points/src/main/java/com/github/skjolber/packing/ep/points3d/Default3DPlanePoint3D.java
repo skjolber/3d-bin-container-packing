@@ -292,4 +292,19 @@ public class Default3DPlanePoint3D<P extends Placement3D> extends Point3D<P> imp
 				+ "x" + maxZ + " xy=" + xyPlane + " xz=" + xzPlane + " yz=" + yzPlane + "]";
 	}
 
+	@Override
+	public long calculateXYSupport(int dx, int dy) {
+		return Math.min(dx, xyPlane.getAbsoluteEndX() - minX + 1) * (long)Math.min(dy, xyPlane.getAbsoluteEndY() - minY + 1);
+	}
+	
+	@Override
+	public long calculateXZSupport(int dx, int dz) {
+		return Math.min(dx, xzPlane.getAbsoluteEndX() - minX + 1) * (long)Math.min(dz, xzPlane.getAbsoluteEndZ() - minZ + 1);
+	}
+	
+	@Override
+	public long calculateYZSupport(int dy, int dz) {
+		return (long)Math.min(dy, yzPlane.getAbsoluteEndY() - minY + 1) * Math.min(dz, yzPlane.getAbsoluteEndZ() - minZ + 1) ;
+	}
+
 }
