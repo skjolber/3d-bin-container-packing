@@ -210,20 +210,32 @@ export class StackableRenderer {
             container.position.y = stackPlacement.z + containerStackable.dz / 2 + y;
             container.position.z = stackPlacement.x + containerStackable.dx / 2 + z;
 
+            var offsetX = - containerStackable.dy / 2;
+            var offsetY = - containerStackable.dz / 2;
+            var offsetZ = - containerStackable.dx / 2;
+
             console.log("Add container " + containerStackable.name + " size " + containerStackable.dx + "x" + containerStackable.dy + "x" + containerStackable.dz + " with load " + containerStackable.loadDx + "x" + containerStackable.loadDy + "x" + containerStackable.loadDz + " at " + stackPlacement.x + "x" + stackPlacement.y + "x" + stackPlacement.z) ;
 
             container.name = containerStackable.name;
             container.userData = containerStackable;
             
+            container.userData = {
+                step: 0,
+                type: "container",
+                source: container
+            };
+            
             containerLoad.name = containerStackable.name;
-            containerLoad.userData = containerStackable;
+            containerLoad.userData = {
+                step: 0,
+                type: "containerLoad",
+                offsetX : offsetX,
+                offsetY : offsetY,
+                offsetZ : offsetZ
+            };
 
             parent.add(container);
             container.add(containerLoad);
-
-            var offsetX = - containerStackable.dy / 2;
-            var offsetY = - containerStackable.dz / 2;
-            var offsetZ = - containerStackable.dx / 2;
 
             var nextColorScheme = colorScheme.getColorScheme(containerStackable);
             for (let s of containerStackable.stack.placements) {
@@ -248,52 +260,92 @@ export class StackableRenderer {
                 polygonOffsetFactor: 1,
                 polygonOffsetUnits: 1
             });
-            var geometry = new THREE.BoxBufferGeometry(1, 1, 1);
+            material.color.convertSRGBToLinear();
+            var geometry = new THREE.BoxBufferGeometry(boxStackable.dy, boxStackable.dz, boxStackable.dx);
             var box = new THREE.Mesh(geometry, material);
 
             box.name = boxStackable.name;
 
-            box.scale.x = boxStackable.dy;
-            box.scale.y = boxStackable.dz;
-            box.scale.z = boxStackable.dx;
             box.position.x = stackPlacement.y + boxStackable.dy / 2 + x;
             box.position.y = stackPlacement.z + boxStackable.dz / 2 + y;
             box.position.z = stackPlacement.x + boxStackable.dx / 2 + z;
 
             box.userData = {
                 step: boxStackable.step,
-                type: "box"
+                type: "box",
+                source: stackPlacement
             };
 
             parent.add(box);
 
-            for (let p of stackPlacement.points) {
-    
-                var color = colorScheme.getPoint(p);
-                var containerMaterial = new THREE.LineBasicMaterial({ color: color});
-                var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxBufferGeometry(1, 1, 1));
-                var pp = new THREE.LineSegments(containerGeometry, containerMaterial);
-
-                pp.scale.x = p.dy;
-                pp.scale.y = p.dz;
-                pp.scale.z = p.dx;
-                pp.position.x = p.y + p.dy / 2 + x;
-                pp.position.y = p.z + p.dz / 2 + y;
-                pp.position.z = p.x + p.dx / 2 + z;
-
-                pp.userData = {
-                    step: boxStackable.step,
-                    type: "point"
-                };
-    
-                pp.visible = false;
-                
-                parent.add(pp)
-            }
-            
             return box;
         }
         return undefined;
     }
+    
+    removePoints(container: Object3D) {
+		  var children = container.children;
+	      for(var j = 0; j < children.length; j++) {
+	        var userData = children[j].userData;
+	        
+	        if(userData.type == "containerLoad") {
+				var containerLoad = children[j];
+				var containerLoadChildren = containerLoad.children;
+				
+				for (var i = containerLoadChildren.length - 1; i >= 0; i--) {
+					var child = containerLoadChildren[i];
+					var userData = child.userData;
+					
+	    		    if(userData.type == "point") {
+						containerLoad.remove(child);
+					}
+				}
+			}
+	      }
+	}
+	
+	addPoints(container: Object3D, colorScheme : ColorScheme, stepNumber: number) {
+		
+		var children = container.children;
+	      for(var j = 0; j < children.length; j++) {
+	        var userData = children[j].userData;
+	        
+	        if(userData.type == "containerLoad") {
+				var containerLoad = children[j];
+				var containerLoadChildren = containerLoad.children;
+				
+				for(var i = 0; i < containerLoadChildren.length; i++) { 
+					var child = containerLoadChildren[i];
+
+					var containerLoadChildUserData = child.userData;
+					
+	    		    if(containerLoadChildUserData.type == "box" && containerLoadChildUserData.step == stepNumber - 1) {
+			            for (let p of containerLoadChildUserData.source.points) {
+			                var color = colorScheme.getPoint(p);
+			                
+			                var pointMaterial = new THREE.LineBasicMaterial({ color: color});
+			                pointMaterial.color.convertSRGBToLinear();
+			                var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxBufferGeometry(p.dy, p.dz, p.dx));
+			                var pp = new THREE.LineSegments(containerGeometry, pointMaterial);
+			
+			                pp.position.x = p.y + p.dy / 2 + userData.offsetX;
+			                pp.position.y = p.z + p.dz / 2 + userData.offsetY;
+			                pp.position.z = p.x + p.dx / 2 + userData.offsetZ;
+			
+			                pp.userData = {
+			                    type: "point"
+			                };
+			                
+			                pp.visible = true;
+			    
+			                containerLoad.add(pp)
+			            }
+						break;
+					}
+				}
+			}
+	      }
+
+	}
 }    
 

@@ -38,6 +38,9 @@ var minStepNumber = 0;
 
 var points = false;
 
+var stackableRenderer = new StackableRenderer();
+var memoryScheme = new MemoryColorScheme(new RandomColorScheme());
+
 /**
  * Example temnplate of using Three with React
  */
@@ -119,10 +122,19 @@ class ThreeScene extends Component {
 
   handleStepNumber = () => {
       console.log("Show step number " + stepNumber);
+      
       for(var i = 0; i < visibleContainers.length; i++) {
         var visibleContainer = visibleContainers[i];
+        
         var visibleContainerUserData = visibleContainer.userData;
         visibleContainer.visible = visibleContainerUserData.step < stepNumber;
+
+		// adding alle the points is too expensive
+		// so add for a single step at a time 
+        stackableRenderer.removePoints(visibleContainer);
+        if(points) {
+        	stackableRenderer.addPoints(visibleContainer, memoryScheme, stepNumber);
+        }
         
         for(var k = 0; k < visibleContainers[i].children.length; k++) {
 
@@ -138,12 +150,6 @@ class ThreeScene extends Component {
             
             if(userData.type == "box") {
                 stackable.visible = userData.step < stepNumber;
-            } else if(userData.type == "point") {
-                if(points) {
-                    stackable.visible = userData.step == stepNumber - 1;
-                } else {
-                    stackable.visible = false;
-                }                         
             }
           }
         }          
@@ -158,8 +164,6 @@ class ThreeScene extends Component {
     
     var latestData = null;
 
-    var memoryScheme = new MemoryColorScheme(new RandomColorScheme());
-
     var load = function(packaging) {
 
       var data = JSON.stringify(packaging);
@@ -173,8 +177,6 @@ class ThreeScene extends Component {
       for(var i = 0; i < visibleContainers.length; i++) {
         mainGroup.remove(visibleContainers[i]);
       }
-
-      var stackableRenderer = new StackableRenderer();
 
       var x = 0;
 
@@ -355,7 +357,7 @@ class ThreeScene extends Component {
     this.scene = new THREE.Scene();
 
     // ------- Add RENDERED ------
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setClearColor("#263238");
     this.renderer.setSize(width, height);
     this.mount.appendChild(this.renderer.domElement);
@@ -387,27 +389,8 @@ class ThreeScene extends Component {
     raycaster = new THREE.Raycaster();
 
     var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    var directionalLight1 = new THREE.DirectionalLight(0xFFFFFF, 0.6);
-    var directionalLight2 = new THREE.DirectionalLight(0xFFFFFF, 0.8);
-    var directionalLight3 = new THREE.DirectionalLight(0xFFFFFF, 0.9);
-
-    // set directionalLights to random places
-    directionalLight1.position.set(3, 4, 5);
-    directionalLight2.position.set(-3, 4, -5);
-    directionalLight3.position.set(2, 5, 4);
-
-    // (0, 0, 0) to target directionalLights at
-    var origin = new THREE.Object3D();
-
-    // target directionalLights to origin
-    directionalLight1.target = origin;
-    directionalLight2.target = origin;
-    directionalLight3.target = origin;
-
+    
     this.scene.add(ambientLight);
-    this.scene.add(directionalLight1);
-    this.scene.add(directionalLight2);
-    this.scene.add(directionalLight3);
 
     this.addHelper();
   };
