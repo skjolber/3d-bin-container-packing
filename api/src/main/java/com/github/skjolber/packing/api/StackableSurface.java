@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.Surface.Label;
 
 public class StackableSurface {
 
-	public static final StackableSurface THREE_D = newBuilder().withBottom().withLeft().withBack().build();
+	public static final StackableSurface THREE_D = newBuilder().withBottom().withLeft().withRear().build();
 	public static final StackableSurface TWO_D = newBuilder().withBottom().build();
 
 	public static Builder newBuilder() {
@@ -38,7 +38,7 @@ public class StackableSurface {
 		
 		protected List<SurfaceRotate> sides = new ArrayList<>();
 
-		public Builder withFrontAnyRotation() {
+		public Builder withFront() {
 			return withSide(new SurfaceRotate(new Surface(Label.FRONT), false)).withSide(new SurfaceRotate(new Surface(Label.FRONT), true));
 		}
 
@@ -50,11 +50,11 @@ public class StackableSurface {
 			return withSide(new SurfaceRotate(new Surface(Label.FRONT), true));
 		}
 		
-		public Builder withBack() {
+		public Builder withRear() {
 			return withSide(new SurfaceRotate(new Surface(Label.REAR), false)).withSide(new SurfaceRotate(new Surface(Label.REAR), true));
 		}
 
-		public Builder withBackAtZeroDegrees() {
+		public Builder withRearAtZeroDegrees() {
 			return withSide(new SurfaceRotate(new Surface(Label.REAR), false));
 		}
 
@@ -143,57 +143,60 @@ public class StackableSurface {
 	public StackableSurface(List<SurfaceRotate> sides) {
 		super();
 		this.surfaces = sides.stream().map(s -> s.getSurface()).collect(Collectors.toList());
-		for(SurfaceRotate sideRotate : sides) {
+		for(SurfaceRotate surfaceRotate : sides) {
 			
-			switch(sideRotate.getSurface().label) {
+			switch(surfaceRotate.getSurface().label) {
 			case TOP: {
-				if(sideRotate.isRotated()) {
-					top90 = sideRotate.getSurface();
+				if(surfaceRotate.isRotated()) {
+					top90 = surfaceRotate.getSurface();
 				} else {
-					top0 = sideRotate.getSurface();
+					top0 = surfaceRotate.getSurface();
 				}
 				break;
 			}
 			case BOTTOM: {
-				if(sideRotate.isRotated()) {
-					bottom90 = sideRotate.getSurface();
+				if(surfaceRotate.isRotated()) {
+					bottom90 = surfaceRotate.getSurface();
 				} else {
-					bottom0 = sideRotate.getSurface();
+					bottom0 = surfaceRotate.getSurface();
 				}
 				break;
 			}
 			case LEFT: {
-				if(sideRotate.isRotated()) {
-					left90 = sideRotate.getSurface();
+				if(surfaceRotate.isRotated()) {
+					left90 = surfaceRotate.getSurface();
 				} else {
-					left0 = sideRotate.getSurface();
+					left0 = surfaceRotate.getSurface();
 				}
 				break;
 			}
 			case RIGHT: {
-				if(sideRotate.isRotated()) {
-					right90 = sideRotate.getSurface();
+				if(surfaceRotate.isRotated()) {
+					right90 = surfaceRotate.getSurface();
 				} else {
-					right0 = sideRotate.getSurface();
+					right0 = surfaceRotate.getSurface();
 				}
 				break;
 			}
 			case FRONT: {
-				if(sideRotate.isRotated()) {
-					front90 = sideRotate.getSurface();
+				if(surfaceRotate.isRotated()) {
+					front90 = surfaceRotate.getSurface();
 				} else {
-					front0 = sideRotate.getSurface();
+					front0 = surfaceRotate.getSurface();
 				}
 				break;
 			}
 			case REAR: {
-				if(sideRotate.isRotated()) {
-					rear90 = sideRotate.getSurface();
+				if(surfaceRotate.isRotated()) {
+					rear90 = surfaceRotate.getSurface();
 				} else {
-					rear0 = sideRotate.getSurface();
+					rear0 = surfaceRotate.getSurface();
 				}
 				
 				break;
+			}
+			default : {
+				throw new IllegalStateException();
 			}
 			}
 		}

@@ -7,21 +7,25 @@ import com.github.skjolber.packing.api.Stackable;
 
 public class PermutationStackableValue {
 
+    protected final int index;
     protected final int count;
     protected final PermutationRotation[] values;
+    protected final Stackable stackable;
 
 	protected final long minVolumeLimit;
 	protected final long minAreaLimit;
     
-    public PermutationStackableValue(int count, Stackable stackable, List<StackValue> boundStackValues) {
+    public PermutationStackableValue(int index, int count, Stackable stackable, List<StackValue> stackValues) {
+    	this.index = index;
         this.count = count;
-        this.values = new PermutationRotation[boundStackValues.size()];
+        this.values = new PermutationRotation[stackValues.size()];
+        this.stackable = stackable;
         
     	long minVolumeLimit = Long.MAX_VALUE;
     	long minAreaLimit = Long.MAX_VALUE;
         
         for(int i = 0; i < values.length; i++) {
-        	StackValue stackValue = boundStackValues.get(i);
+        	StackValue stackValue = stackValues.get(i);
         	
         	values[i] = new PermutationRotation(stackable, stackValue);
         	
@@ -52,5 +56,13 @@ public class PermutationStackableValue {
     
     public long getMinVolumeLimit() {
 		return minVolumeLimit;
+	}
+    
+    public int getIndex() {
+		return index;
+	}
+    
+    public Stackable getStackable() {
+		return stackable;
 	}
 }

@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
@@ -97,8 +98,17 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 				
 				containerStackValue[i] = stackValue;
 				
+				StackConstraint constraint = stackValue.getConstraint();
+
 				Dimension dimension = new Dimension(stackValue.getLoadDx(), stackValue.getLoadDy(), stackValue.getLoadDz());
-				iterators[i] = new DefaultPermutationRotationIterator(dimension, stackableItems);
+				
+				iterators[i] = DefaultPermutationRotationIterator
+						.newBuilder()
+						.withLoadSize(dimension)
+						.withStackableItems(stackableItems)
+						.withMaxLoadWeight(stackValue.getMaxLoadWeight())
+						.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
+						.build();
 			}
 
 			this.interrupt = interrupt;

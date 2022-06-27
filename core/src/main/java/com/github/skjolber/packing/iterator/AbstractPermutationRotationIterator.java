@@ -3,30 +3,15 @@ package com.github.skjolber.packing.iterator;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.Dimension;
-import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 
-public abstract class AbstractPermutationRotationIterator {
+public abstract class AbstractPermutationRotationIterator implements PermutationRotationIterator {
 
 	protected final PermutationStackableValue[] matrix;
 	protected int[] reset;
 	
-	public AbstractPermutationRotationIterator(Dimension bound, List<StackableItem> unconstrained) {
-		List<PermutationStackableValue> matrix = new ArrayList<>(unconstrained.size());
-		for(int i = 0; i < unconstrained.size(); i++) {
-			StackableItem item = unconstrained.get(i);
-			
-			Stackable stackable = item.getStackable();
-			List<StackValue> boundRotations = stackable.rotations(bound);
-			
-			// create PermutationRotation even if this box does not fit at all, 
-			// so that permutation indexes are directly comparable between parallel instances of this class
-			matrix.add(new PermutationStackableValue(item.getCount(), stackable, boundRotations));
-		}
-		
-		this.matrix = matrix.toArray(new PermutationStackableValue[matrix.size()]);
+	public AbstractPermutationRotationIterator(PermutationStackableValue[] matrix) {
+		this.matrix = matrix;
 	}
 	
 	/**
@@ -58,7 +43,6 @@ public abstract class AbstractPermutationRotationIterator {
 		}
 		return minArea;
 	}
-	
 	
 	public List<PermutationRotation> get(PermutationRotationState state, int length) {
 		int[] permutations = state.getPermutations();

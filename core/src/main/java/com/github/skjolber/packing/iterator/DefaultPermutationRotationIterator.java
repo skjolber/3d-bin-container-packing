@@ -4,24 +4,45 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.skjolber.packing.api.Dimension;
-import com.github.skjolber.packing.api.StackableItem;
-
 public class DefaultPermutationRotationIterator extends AbstractPermutationRotationIterator implements PermutationRotationIterator {
 
+	
+	public static Builder newBuilder() {
+		return new Builder();
+	}
+	
+	public static class Builder extends AbstractPermutationRotationIteratorBuilder<Builder> {
+
+		public DefaultPermutationRotationIterator build() {
+			if(maxLoadWeight == -1) {
+				throw new IllegalStateException();
+			}
+			if(size == null) {
+				throw new IllegalStateException();
+			}
+			
+			PermutationStackableValue[] matrix = toMatrix();
+			
+			return new DefaultPermutationRotationIterator(matrix);
+		}
+		
+	}
+	
 	protected int[] rotations; // 2^n or 6^n
 	
 	// permutations of boxes that fit inside this container
 	protected int[] permutations; // n!
 
-	public DefaultPermutationRotationIterator(Dimension bound, List<StackableItem> unconstrained) {
-		super(bound, unconstrained);
+	public DefaultPermutationRotationIterator(PermutationStackableValue[] matrix) {
+		super(matrix);
 		
-		List<Integer> types = new ArrayList<>(unconstrained.size() * 2);
+		List<Integer> types = new ArrayList<>(matrix.length * 2);
 		for (int j = 0; j < matrix.length; j++) {
 			PermutationStackableValue value = matrix[j];
-			for(int k = 0; k < value.count; k++) {
-				types.add(j);
+			if(value != null) {
+				for(int k = 0; k < value.count; k++) {
+					types.add(j);
+				}
 			}
 		}
 
@@ -249,7 +270,6 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	        return -1;
 	    }
 	    
-
 	    // Let array[i - 1] be the pivot
 	    // Find rightmost element that exceeds the pivot
 	    int j = permutations.length - 1;

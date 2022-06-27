@@ -15,12 +15,13 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.PackResultComparator;
+import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.ClonableBooleanSupplier;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
-import com.github.skjolber.packing.iterator.ParallelPermutationRotationIterator;
-import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorAdapter;
+import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorListBuilder;
+import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.Adapter;
@@ -199,12 +200,12 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		
 		private final List<Container> containers;
 		private final DefaultPermutationRotationIterator[] iterators; // per container
-		private final ParallelPermutationRotationIterator[] parallelIterators; // per container
+		private final ParallelPermutationRotationIteratorList[] parallelIterators; // per container
 		private final ContainerStackValue[] containerStackValues;
 		private final RunnableAdapter[] runnables; // per thread
 		private final BooleanSupplier[] interrupts;
 
-		protected ParallelAdapter(List<StackableItem> stackables, List<Container> containers, BooleanSupplier interrupt) {
+		protected ParallelAdapter(List<StackableItem> stackableItems, List<Container> containers, BooleanSupplier interrupt) {
 			this.containers = containers;
 			this.interrupts = new BooleanSupplier[parallelizationCount];
 			this.containerStackValues = new ContainerStackValue[containers.size()];
@@ -222,29 +223,45 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			}
 
 			int count = 0;
-			for (StackableItem stackable : stackables) {
+			for (StackableItem stackable : stackableItems) {
 				count += stackable.getCount();
 			}
 			
-			long minStackableItemVolume = getMinStackableItemVolume(stackables);
-			long minStackableArea = getMinStackableItemArea(stackables);
+			long minStackableItemVolume = getMinStackableItemVolume(stackableItems);
+			long minStackableArea = getMinStackableItemArea(stackableItems);
 
 			runnables = new RunnableAdapter[parallelizationCount];
 			for(int i = 0; i < parallelizationCount; i++) {
 				runnables[i] = new RunnableAdapter(count, minStackableItemVolume, minStackableArea);
 			}
 
-			parallelIterators = new ParallelPermutationRotationIterator[containers.size()];
+			parallelIterators = new ParallelPermutationRotationIteratorList[containers.size()];
 			iterators = new DefaultPermutationRotationIterator[containers.size()];
 			for (int i = 0; i < containers.size(); i++) {
 				Container container = containers.get(i);
 				ContainerStackValue stackValue = container.getStackValues()[0];
 				
 				containerStackValues[i] = stackValue;
-				
+
+				StackConstraint constraint = stackValue.getConstraint();
+
 				Dimension dimension = new Dimension(stackValue.getLoadDx(), stackValue.getLoadDy(), stackValue.getLoadDz());
-				parallelIterators[i] = new ParallelPermutationRotationIterator(dimension, stackables, parallelizationCount);
-				iterators[i] = new DefaultPermutationRotationIterator(dimension, stackables);
+				
+				parallelIterators[i] = new ParallelPermutationRotationIteratorListBuilder()
+						.withLoadSize(dimension)
+						.withStackableItems(stackableItems)
+						.withMaxLoadWeight(stackValue.getMaxLoadWeight())
+						.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
+						.withParallelizationCount(parallelizationCount)
+						.build();
+				
+				iterators[i] = DefaultPermutationRotationIterator
+						.newBuilder()
+						.withLoadSize(dimension)
+						.withStackableItems(stackableItems)
+						.withMaxLoadWeight(stackValue.getMaxLoadWeight())
+						.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
+						.build();
 			}
 		}
 		
@@ -262,7 +279,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 					runnableAdapter.setContainer(containers.get(i));
 					runnableAdapter.setContainerStackValue(containerStackValues[i]);
 					
-					runnableAdapter.setIterator(new ParallelPermutationRotationIteratorAdapter(parallelIterators[i], j));
+					runnableAdapter.setIterator(parallelIterators[i].getIterator(j));
 					
 					BooleanSupplier interruptBooleanSupplier = interrupts[i];
 					
@@ -334,7 +351,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 					p.add(permutations[i]);
 				}
 				
-				for (ParallelPermutationRotationIterator it : parallelIterators) {
+				for (ParallelPermutationRotationIteratorList it : parallelIterators) {
 					it.removePermutations(p);
 				}
 				

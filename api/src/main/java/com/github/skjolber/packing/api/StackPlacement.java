@@ -148,5 +148,9 @@ public class StackPlacement implements Placement3D {
 	public StackPlacement clone() {
 		return new StackPlacement(stackable, value, x, y, z,  maxSupportedPressure, maxSupportedWeight);
 	}
+
+	public int getWeight() {
+		return stackable.getWeight();
+	}
 	
 }

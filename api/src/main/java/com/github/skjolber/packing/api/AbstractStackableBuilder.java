@@ -13,8 +13,6 @@ import java.util.List;
 
 public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> extends AbstractPhysicsBuilder<B> {
 
-	protected List<StackablePhysics> physics = new ArrayList<>();
-	
 	protected String id;
 	protected String description;
 

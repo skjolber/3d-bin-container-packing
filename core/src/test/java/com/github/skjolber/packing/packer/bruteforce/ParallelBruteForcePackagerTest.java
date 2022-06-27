@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -115,6 +116,7 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("D").withRotate3D().withSize(3, 2, 1).withWeight(1).build(), 1));
 
 		Container fits = packager.pack(products);
+		
 		assertValid(fits);
 		assertEquals(fits.getStack().getSize(), products.size());
 	}

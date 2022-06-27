@@ -103,16 +103,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			// has a chance of affecting the result.
 
 			int permutationIndex = iterator.nextPermutation(bestPermutationResult.getSize());
-			/*
-			int permutationIndex;
-			do {
-				permutationIndex = iterator.nextPermutation();
-				
-				if (interrupt.getAsBoolean()) {
-					return null;
-				}
-			} while(permutationIndex > bestPermutationResult.getSize());
-			*/
+
 			if(!bestPermutationResult.isEmpty()) {
 				// compare against other permutation's result
 
