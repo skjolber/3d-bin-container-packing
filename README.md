@@ -20,7 +20,7 @@ The project is implemented in Java and built using [Maven]. The project is avail
 Add
  
 ```xml
-<3d-bin-container-packing.version>2.0.11</3d-bin-container-packing.version>
+<3d-bin-container-packing.version>2.1.0</3d-bin-container-packing.version>
 ```
 
 and
@@ -44,7 +44,7 @@ For
 
 ```groovy
 ext {
-  containerBinPackingVersion = '2.0.11'
+  containerBinPackingVersion = '2.1.0'
 }
 ```
 
@@ -174,6 +174,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
 
 # History
+ * 2.1.0: Improve brute force iterators, respect deadlines in brute for packagers.
  * 2.0.10: Fix volume calculation overflow
  * 2.0.9: Better abstractions for comparisons of pack result.
  * 2.0.8: Fix regression, improve testing.
