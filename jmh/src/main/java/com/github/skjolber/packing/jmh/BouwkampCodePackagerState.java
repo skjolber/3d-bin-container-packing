@@ -98,8 +98,6 @@ public class BouwkampCodePackagerState {
 				// multi-threaded
 				this.parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D));
 				this.parallelBruteForcePackagerNth.add(new BenchmarkSet(parallelPackagerNth, stackableItems3D));
-				
-				break;
 			}
 		}
 	}

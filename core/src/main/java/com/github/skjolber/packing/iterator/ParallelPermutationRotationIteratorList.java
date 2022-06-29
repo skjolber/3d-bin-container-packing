@@ -74,7 +74,6 @@ public class ParallelPermutationRotationIteratorList {
 				throw new IllegalStateException("Expected size >= " + PADDING + ", found " + permutations.length);
 			}
 			workUnits[i].setPermutations(permutations);
-
 			workUnits[i].setRotations(new int[PADDING + reset.length]);
 			workUnits[i].setReset(reset);
 		}
@@ -186,70 +185,6 @@ public class ParallelPermutationRotationIteratorList {
 		    }
 	    }
 		return result;
-	}
-
-	static int[] kthPermutation(int n, long rank) {
-		// http://www.zrzahid.com/k-th-permutation-sequence/
-		final int[] nums = new int[n + PADDING];
-		if(n <= 1) {
-			return nums;
-		}
-		
-		final int[] factorial = new int[n+1];
-
-		factorial[0] = 1;
-		factorial[1] = 1;
-		nums[PADDING + 1] = 1;
-		
-		for (int i = 2; i <= n; i++) {
-			nums[PADDING + i-1] = i - 1;
-			factorial[i] = i*factorial[i - 1];
-		}
-		
-		if(rank <= 1){
-			return nums;
-		}
-		if(rank >= factorial[n]){
-			reverse(nums, PADDING, PADDING + n-1);
-			return nums;
-		}
-		
-		rank -= 1;//0-based 
-		for(int i = 0; i < n-1; i++){
-			int fact = factorial[n-i-1];
-			//index of the element in the rest of the input set
-			//to put at i position (note, index is offset by i)
-			int index = (int) (rank/fact);
-			//put the element at index (offset by i) element at position i 
-			//and shift the rest on the right of i
-			shiftRight(nums, PADDING + i, PADDING + i+index);
-			//decrement k by fact*index as we can have fact number of 
-			//permutations for each element at position less than index
-			rank = rank - fact*index;
-		}
-		return nums;
-	}
-
-	private static void shiftRight(int[] a, int s, int e){
-		int temp = a[e];
-		for(int i = e; i > s; i--){
-			a[i] = a[i-1];
-		}
-		a[s] = temp;
-	}
-
-	public static void reverse(int A[], int i, int j){
-		while(i < j){
-			swap(A, i, j);
-			i++;
-			j--;
-		}
-	}
-
-	private static void swap(int[] a, int i, int j) {
-		int spare = a[i];
-		a[i] = a[j];
-		a[j] = spare;
 	}
 
 	public ParallelPermutationRotationIterator[] getIterators() {

@@ -355,6 +355,10 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 					it.removePermutations(p);
 				}
 				
+				for (DefaultPermutationRotationIterator it : iterators) {
+					it.removePermutations(p);
+				}
+				
 				for(RunnableAdapter runner : runnables) {
 					runner.placements = runner.placements.subList(size, runner.placements.size());
 				}

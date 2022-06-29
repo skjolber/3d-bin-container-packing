@@ -402,6 +402,8 @@ public class ParallelPermutationRotationIteratorTest {
 			calculator.removePermutations(remove);
 			iterator.removePermutations(remove);
 			
+			assertEquals(iterator.length(), products.size() - remove.size());
+			
 			ParallelPermutationRotationIterator iterator0 = calculator.getIterator(0);
 			
 			long countPermutations = calculator.getIterator(0).countPermutations();
