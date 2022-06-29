@@ -154,7 +154,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 						continue;
 					}
 					
-					if(constraint != null && !constraint.supports(stack, box, stackValue, 0, 0, 0)) {
+					if(constraint != null && !constraint.supports(stack, box, stackValue, 0, 0, levelOffset)) {
 						continue;
 					}
 					firstIndex = i;
@@ -227,7 +227,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 							if(bestIndex != -1 && !nextStackValuePointComparator.accept(bestStackable, extremePoints3D.getValue(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
 								continue;
 							}
-							if(constraint != null && !constraint.supports(stack, box, stackValue, point3d.getMinX(), point3d.getMinY(), point3d.getMinZ())) {
+							if(constraint != null && !constraint.supports(stack, box, stackValue, point3d.getMinX(), point3d.getMinY(), levelOffset + point3d.getMinZ())) {
 								continue;
 							}
 							bestPointIndex = k;

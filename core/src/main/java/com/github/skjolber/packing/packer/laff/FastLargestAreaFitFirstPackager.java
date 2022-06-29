@@ -155,7 +155,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 					if(!firstPoint.fits2D(stackValue)) {
 						continue;
 					}
-					if(constraint != null && !constraint.supports(stack, box, stackValue, 0, 0, 0)) {
+					if(constraint != null && !constraint.supports(stack, box, stackValue, 0, 0, levelOffset)) {
 						continue;
 					}
 					if(bestFirstStackValue != null && !firstStackValuePointComparator.accept(bestFirstBox, firstPoint, bestFirstStackValue, box, firstPoint, stackValue)) {
@@ -245,7 +245,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 							if(bestIndex != -1 && !nextStackValuePointComparator.accept(bestStackable, extremePoints2D.getValue(bestPointIndex), bestStackValue, box, point2d, stackValue)) {
 								continue;
 							}
-							if(constraint != null && !constraint.supports(stack, box, stackValue, point2d.getMinX(), point2d.getMinY(), 0)) {
+							if(constraint != null && !constraint.supports(stack, box, stackValue, point2d.getMinX(), point2d.getMinY(), levelOffset)) {
 								continue;
 							}
 
