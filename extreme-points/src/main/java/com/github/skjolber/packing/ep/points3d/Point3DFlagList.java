@@ -196,5 +196,8 @@ public class Point3DFlagList<P extends Placement3D> {
 		flag[i] = false;
 	}
 
+	public void merge(Point3DList<P> a, Point3DList<P> b, Point3DList<P> c) {
+		
+	}
     
 }

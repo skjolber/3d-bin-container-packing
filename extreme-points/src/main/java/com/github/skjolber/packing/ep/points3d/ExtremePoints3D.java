@@ -246,7 +246,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				continue;
 			}
 			
-			// Points within (xx, yy, zz), excluding the placement itself
+			// Points within (xx, yy, zz)
 			// 
 			// |
 			// |
@@ -277,6 +277,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			}
 		}
 
+		System.out.println(values.size() + ": " +  moveToXX.size() + " " + moveToYY.size() + " " + moveToZZ.size() );
+		
 		if(!moveToXX.isEmpty()) {
 			moveToXX.sortThis(COMPARATOR_Y_THEN_Z_THEN_X);
 			
@@ -294,8 +296,35 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 				if(p.getMinY() < placement.getAbsoluteY() || p.getMinZ() < placement.getAbsoluteZ()) {
 					// too low, no support
+					
+					// |
+					// |
+					// |          
+					// |          |------|
+					// |          |      |
+					// |          |------|
+					// |              *        
+					// |     *   *       *
+					// | *         *            
+					// ---------------------------
+					//
+
 					addXX.add(p.moveX(xx, p.getMaxX(), p.getMaxY(), p.getMaxZ()));
 				} else {
+					
+					// 
+					// |
+					// |
+					// |          
+					// | *  *     |------|
+					// |          |  *  *|
+					// |   *      |------|
+					// |                       
+					// |                  
+					// |                        
+					// ---------------------------
+					//
+
 					addXX.add(p.moveX(xx, p.getMaxX(), p.getMaxY(), p.getMaxZ(), placement));
 				}
 			}			
@@ -327,8 +356,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		}
 
 		if(!moveToZZ.isEmpty()) {
-			moveToZZ.sortThis(COMPARATOR_X_THEN_Y_THEN_Z);
-			
+			// sort: already x y z
 			add:
 			for(int i = 0; i < moveToZZ.size(); i++) {
 				Point3D<P> p = values.get(moveToZZ.get(i));
@@ -387,9 +415,28 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		
 		// insert xx last, because it has the highest x coordinate
 		values.move(added);
+		
+//		addXX.sort(Point3D.COMPARATOR_X_THEN_Y_THEN_Z);
+//		addYY.sort(Point3D.COMPARATOR_X_THEN_Y_THEN_Z);
+		
+		StringBuilder b = new StringBuilder();
+		for(int i = 0; i < addXX.size(); i++) {
+			b.append(addXX.get(i).getMinX());
+			b.append(" ");
+		}
+		b.append("| ");
+		for(int i = 0; i < addYY.size(); i++) {
+			b.append(addYY.get(i).getMinX());
+			b.append(" ");
+		}
+
+		System.out.println(b + " (" + xx + ")");
+		
 		values.setAll(addZZ, 0);
 		values.setAll(addYY, addZZ.size());
 		values.setAll(addXX, addZZ.size() + addYY.size());
+		
+		values.merge(addZZ, addYY, addXX);
 		
 		removeEclipsed(added);
 		
@@ -592,6 +639,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		Point3DFlagList<P> values = this.values;
 		
 		int size = values.size();
+		
+		// TODO: Remove 3-plane supported points, can't be eclipsed
 		
 		added:
 		for (int i = 0; i < limit; i++) {
