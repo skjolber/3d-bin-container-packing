@@ -42,9 +42,7 @@ public class Point3DList<P extends Placement3D> {
 	}
 
 	public void reset() {
-		for(int i = 0; i < points.length; i++) {
-			points[i] = null;
-		}
+		Arrays.fill(this.points, 0, size, null);
 		size = 0;
 	}
 	

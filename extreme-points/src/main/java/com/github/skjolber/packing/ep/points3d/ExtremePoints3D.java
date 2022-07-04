@@ -437,18 +437,21 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				if(!isEclipsed(constrainXXPoint, endIndex)) {
 					otherValues.add(constrainXXPoint);
 				}
+				constrainXX.set(null, i);
 			}
 			Point3D<P> constrainYYPoint = constrainYY.get(i);
 			if(constrainYYPoint != null) {
 				if(!isEclipsed(constrainYYPoint, endIndex)) {
 					otherValues.add(constrainYYPoint);
 				}
+				constrainYY.set(null, i);
 			}
 			Point3D<P> constrainZZPoint = constrainZZ.get(i);
 			if(constrainZZPoint != null) {
 				if(!isEclipsed(constrainZZPoint, endIndex)) {
 					otherValues.add(constrainZZPoint);
 				}
+				constrainZZ.set(null, i);
 			}
 			
 			Point3D<P> addYYPoint3d = addYY.get(i);
@@ -456,12 +459,14 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				if(!isEclipsed(addYYPoint3d, endIndex)) {
 					otherValues.add(addYYPoint3d);
 				}
+				addYY.set(null, i);
 			}
 			Point3D<P> addZZPoint3d = addZZ.get(i);
 			if(addZZPoint3d != null) {
 				if(!isEclipsed(addZZPoint3d, endIndex)) {
 					otherValues.add(addZZPoint3d);
 				}
+				addZZ.set(null, i);
 			}
 		}
 		
@@ -472,36 +477,19 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			}
 		}
 		
-		int mark = otherValues.size();
-
 		for(int i = continuation; i < values.size(); i++) {
 			if(!values.isFlag(i)) {
 				otherValues.add(values.get(i));
 			}
 		}
 
-		//removeEclipsed(mark);
-
-		mark -= otherValues.removeFlagged();
-
-		// make sure to capture all point <= xx
-		while(mark < otherValues.size() && otherValues.get(mark).getMinX() <= xx) {
-			mark++;
-		}
-		
-		otherValues.sort(Point3D.COMPARATOR_X_THEN_Y_THEN_Z, mark);
-
 		moveToXX.clear();
 		moveToYY.clear();
 		moveToZZ.clear();
 		
 		addXX.reset();
-		addYY.reset();
-		addZZ.reset();
-		
-		constrainXX.reset();
-		constrainYY.reset();
-		constrainZZ.reset();
+		addYY.clear();
+		addZZ.clear();
 		
 		addedXX.clear();
 		addedYY.clear();
@@ -522,6 +510,12 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				continue;
 			}
 			Point3D<P> sorted = values.get(index);
+			
+			if(sorted.getMinX() > unsorted.getMinX()) {
+				// so sorted cannot contain unsorted
+				// at this index or later
+				break;
+			}
 			
 			if(unsorted.getVolume() <= sorted.getVolume() && unsorted.getArea() <= sorted.getArea()) {
 				if(sorted.eclipses(unsorted)) {

@@ -43,9 +43,7 @@ public class Point3DArray<P extends Placement3D> {
 	}
 
 	public void reset() {
-		for(int i = 0; i < points.length; i++) {
-			points[i] = null;
-		}
+		Arrays.fill(this.points, 0, points.length, null);
 		size = 0;
 	}
 	
