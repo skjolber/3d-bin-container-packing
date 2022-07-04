@@ -196,5 +196,9 @@ public class Point3DFlagList<P extends Placement3D> {
 		flag[i] = false;
 	}
 
+	public void set(Point3D<P> point, int i) {
+		points[i] = point;
+	}
+
     
 }
