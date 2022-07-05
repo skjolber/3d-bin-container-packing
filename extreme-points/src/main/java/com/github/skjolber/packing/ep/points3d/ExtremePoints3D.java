@@ -98,6 +98,9 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	
 	public boolean add(int index, P placement) {	
 
+		if(values == otherValues) {
+			throw new RuntimeException();
+		}
 		// overall approach:
 		// Do not iterate over placements to find point max / mins, rather
 		// project existing points. 
@@ -416,10 +419,13 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		//  values      | x | x |   |   |   | x | x | x |   |   |   |   |   |   | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1   
 		//
 
-		int added = addedXX.size() + addedYY.size() + addedZZ.size() + constrainXX.size() + constrainYY.size() + constrainZZ.size();
+		int added = addXX.size() + addYY.size() + addZZ.size() + constrainXX.size() + constrainYY.size() + constrainZZ.size();
 		
+		//System.out.println("Ensure capacity " + values.size() + " " + added);
 		otherValues.ensureCapacity(values.size() + added);
 
+		otherValues.clear();
+		
 		int continuation = endIndex;
 		
 		// make sure to capture all point <= xx
@@ -477,15 +483,24 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			}
 		}
 		
-		if(this.values == this.otherValues) {
-			throw new RuntimeException();
-		}
-		
+		int mark = otherValues.size();
+
 		for(int i = continuation; i < values.size(); i++) {
 			if(!values.isFlag(i)) {
 				otherValues.add(values.get(i));
 			}
 		}
+
+		//removeEclipsed(mark);
+
+		mark -= otherValues.removeFlagged();
+
+		// make sure to capture all point <= xx
+		while(mark < otherValues.size() && otherValues.get(mark).getMinX() <= xx) {
+			mark++;
+		}
+		
+		otherValues.sort(Point3D.COMPARATOR_X_THEN_Y_THEN_Z, mark);
 
 		moveToXX.clear();
 		moveToYY.clear();
