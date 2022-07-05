@@ -6,11 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.junit.jupiter.api.Test;
@@ -167,30 +163,29 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
 
-		List<StackableItem> products = new ArrayList<>();
-
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1000, 1000, 1000).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1000,1000,1000).withWeight(1).build(), 4));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(100,1050,750).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(100,650,750).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(16,2500,11).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(250,150,80).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(280,800,480).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(30,620,10).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(40,1000,1000).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(40,100,165).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(44,575,534).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(475,530,150).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(47,3160,660).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(530,120,570).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(55,500,745).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(670,25,15).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(700,300,30).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(700,400,30).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(75,400,720).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(77,360,750).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(80,450,760).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(90,210,680).withWeight(1).build(), 1));
+		List<StackableItem> products = Arrays.asList(
+			box(1000, 1000, 1000, 1),
+			box(1000, 1000, 1000, 4),
+			box(100, 1050, 750, 1),
+			box(100, 650, 750, 1),
+			box(16, 2500, 11, 1),
+			box(250, 150, 80, 1),
+			box(280, 800, 480, 1),
+			box(30, 620, 10, 1),
+			box(40, 1000, 1000, 1),
+			box(40, 100, 165, 1),
+			box(44, 575, 534, 1),
+			box(475, 530, 150, 1),
+			box(47, 3160, 660, 1),
+			box(530, 120, 570, 1),
+			box(55, 500, 745, 1),
+			box(670, 25, 15, 1),
+			box(700, 300, 30, 1),
+			box(700, 400, 30, 1),
+			box(75, 400, 720, 1),
+			box(77, 360, 750, 1),
+			box(80, 450, 760, 1),
+			box(90, 210, 680, 1));
 
 		// strangely when the timeout is set to now + 200ms it properly returns null
 		Container fits = packager.pack(products, System.currentTimeMillis() + 1000);
