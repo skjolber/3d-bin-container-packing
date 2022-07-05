@@ -416,7 +416,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		//  values      | x | x |   |   |   | x | x | x |   |   |   |   |   |   | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1   
 		//
 
-		int added = addXX.size() + addYY.size() + addZZ.size() + constrainXX.size() + constrainYY.size() + constrainZZ.size();
+		int added = addedXX.size() + addedYY.size() + addedZZ.size() + constrainXX.size() + constrainYY.size() + constrainZZ.size();
 		
 		otherValues.ensureCapacity(values.size() + added);
 
@@ -477,6 +477,10 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			}
 		}
 		
+		if(this.values == this.otherValues) {
+			throw new RuntimeException();
+		}
+		
 		for(int i = continuation; i < values.size(); i++) {
 			if(!values.isFlag(i)) {
 				otherValues.add(values.get(i));
@@ -487,16 +491,21 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		moveToYY.clear();
 		moveToZZ.clear();
 		
-		addXX.reset();
-		addYY.clear();
-		addZZ.clear();
+		addXX.clear();
+		addYY.reset();
+		addZZ.reset();
 		
 		addedXX.clear();
 		addedYY.clear();
 		addedZZ.clear();
 		
-		Point3DFlagList<P> tmp = values;
-		values = otherValues;
+		constrainXX.reset();
+		constrainYY.reset();
+		constrainZZ.reset();
+		
+		Point3DFlagList<P> tmp = this.values;
+		this.values = otherValues;
+		
 		otherValues = tmp;
 		otherValues.reset();
 		
