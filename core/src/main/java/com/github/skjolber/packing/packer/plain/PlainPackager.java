@@ -102,6 +102,12 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 		int maxRemainingWeight = containerStackValue.getMaxLoadWeight();
 
 		while(!extremePoints3D.isEmpty() && maxRemainingWeight > 0 && !scopedStackables.isEmpty()) {
+			if(interrupt.getAsBoolean()) {
+				// fit2d below might have returned due to deadline
+
+				return null;
+			}
+			
 			long maxPointVolume = extremePoints3D.getMaxVolume();
 			long maxPointArea = extremePoints3D.getMaxArea();
 
