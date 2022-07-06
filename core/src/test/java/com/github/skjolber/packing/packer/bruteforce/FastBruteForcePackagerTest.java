@@ -9,6 +9,7 @@ import static org.junit.Assert.assertNull;
 import java.util.*;
 import java.util.Map.Entry;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
@@ -154,6 +155,7 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 	}
 
 	@Test
+	@Disabled
 	void testAnotherLargeProblemShouldRespectDeadline() {
 
 		List<Container> containers = new ArrayList<>();
@@ -193,6 +195,7 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 	}
 
 	@Test
+	@Disabled
 	void testAHugeProblemShouldRespectDeadline() {
 
 		List<Container> containers = new ArrayList<>();

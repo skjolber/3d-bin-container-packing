@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.plain;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
@@ -47,7 +48,7 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 		public PlainAdapter(List<StackableItem> boxItems, List<Container> container, BooleanSupplier interrupt) {
 			this.containers = container;
 
-			List<Stackable> boxClones = new ArrayList<>(boxItems.size() * 2);
+			List<Stackable> boxClones = new LinkedList<>();
 
 			for(StackableItem item : boxItems) {
 				Stackable box = item.getStackable();
