@@ -10,6 +10,7 @@ import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.ep.Point3D;
 
 /**
  * 
@@ -1095,7 +1096,21 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
     }
 
 	public void setMinArea(long minArea) {
-		this.minAreaLimit = minArea;
+		if(minAreaLimit != minArea) {
+			this.minAreaLimit = minArea;
+			filterMinimums();
+		}
+	}
+	
+	private void filterMinimums() {
+		for (int i = 0; i < values.size(); i++) {
+			Point2D<P> p = values.get(i);
+			
+			if(p.getArea() < minAreaLimit) {
+				values.flag(i);
+			}
+		}
+		values.removeFlagged();
 	}
 
 	private boolean canMoveX(Point2D<P> p, int xx) {
@@ -1110,6 +1125,10 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 			return false;
 		}
 		return p.getAreaAtY(yy) >= minAreaLimit;
+	}
+	
+	public long getMinAreaLimit() {
+		return minAreaLimit;
 	}
 
 }

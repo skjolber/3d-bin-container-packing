@@ -91,5 +91,11 @@ public interface PermutationRotationIterator {
 	
 	List<PermutationRotation> get(PermutationRotationState state, int length);
 
-	
+	long getMinStackableVolume(int i);
+
+	long getMinStackableArea(int i);
+
+	int getMinStackableVolumeIndex(int i);
+
+	int getMinStackableAreaIndex(int i);	
 }

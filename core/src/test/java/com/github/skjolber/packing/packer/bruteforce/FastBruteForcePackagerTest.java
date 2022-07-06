@@ -275,9 +275,9 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 
 
 		final long start = System.currentTimeMillis();
-		Container fits = packager.pack(products, start + 200);
+		Container fits = packager.pack(products, start + 100);
 		final long duration = System.currentTimeMillis() - start;
-		assertThat(duration).isLessThan(250);
+		assertThat(duration).isLessThan(150);
 		assertNull(fits);
 	}
 
