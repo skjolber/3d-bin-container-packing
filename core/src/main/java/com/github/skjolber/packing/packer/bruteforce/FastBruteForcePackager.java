@@ -212,10 +212,12 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			extremePoints.reset(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
 			
 			int index = 0;
+			
+			int minStackableVolumeIndex = rotator.getMinStackableVolumeIndex(0);
+
 			do {
 				// attempt to limit the number of points created
 				// by calculating the minimum point volume and area
-				int minStackableVolumeIndex = rotator.getMinStackableVolumeIndex(index);
 				int minStackableAreaIndex = rotator.getMinStackableAreaIndex(index);
 				
 				extremePoints.setMinimumAreaAndVolumeLimit(rotator.get(minStackableAreaIndex).getValue().getArea(), rotator.get(minStackableVolumeIndex).getValue().getVolume());
@@ -255,6 +257,10 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				stack.setSize(rotationIndex);
 				
 				index = rotationIndex;
+				
+				if(rotationIndex > minStackableVolumeIndex) {
+					minStackableVolumeIndex = rotator.getMinStackableVolumeIndex(index);
+				}
 			} while (true);
 			
 			int permutationIndex = rotator.nextPermutation(bestPermutationResult.getSize());
