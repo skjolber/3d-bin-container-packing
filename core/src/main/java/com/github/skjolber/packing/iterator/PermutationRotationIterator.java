@@ -35,8 +35,21 @@ import java.util.List;
 
 public interface PermutationRotationIterator {
 
+	/**
+	 * Get current permutations
+	 * 
+	 * @return
+	 */
+	
 	int[] getPermutations();
 
+	/**
+	 * 
+	 * Get current length
+	 * 
+	 * @return
+	 */
+	
 	int length();
 	
 	PermutationRotation get(int index);
@@ -76,6 +89,12 @@ public interface PermutationRotationIterator {
 
 	int nextPermutation(int maxIndex);
 	
+	/**
+	 * Get current state
+	 * 
+	 * @return current state
+	 */
+	
 	PermutationRotationState getState();
 
 	/**
@@ -85,11 +104,20 @@ public interface PermutationRotationIterator {
 
 	void removePermutations(List<Integer> removed);
 	
-	long getMinStackableVolume();
-
-	long getMinStackableArea();
+	/**
+	 * 
+	 * Get permutations + rotations for a state
+	 * 
+	 * @param state previously saved state
+	 * @param length number of items
+	 * @return
+	 */
 	
 	List<PermutationRotation> get(PermutationRotationState state, int length);
 
+	long getMinStackableVolume();
+	long getMinStackableArea();
 	
+	int getMinStackableVolumeIndex(int i);
+	int getMinStackableAreaIndex(int i);	
 }

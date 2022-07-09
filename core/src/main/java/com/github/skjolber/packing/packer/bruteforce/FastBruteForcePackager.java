@@ -185,7 +185,6 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		return new FastBruteForcePackagerResultBuilder().withCheckpointsPerDeadlineCheck(checkpointsPerDeadlineCheck).withPackager(this);
 	}
 
-	
 	@Override
 	protected Adapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
 		return new FastBruteForceAdapter(boxes, containers, interrupt);
@@ -200,24 +199,30 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		// optimization: compare pack results by looking only at count within the same permutation 
 		BruteForcePackagerResult bestPermutationResult = new BruteForcePackagerResult(holder, rotator);
 
-		extremePoints.setMinimumAreaAndVolumeLimit(rotator.getMinStackableArea(), rotator.getMinStackableVolume());
-
 		// iterator over all permutations
 		do {
 			
 			if (interrupt.getAsBoolean()) {
 				return null;
 			}
-			// iterator over all rotations
+			// iterate over all rotations
 			
 			bestPermutationResult.reset();
-			
 			extremePoints.reset(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
 			
-			// iterator over all rotations
 			int index = 0;
+			
+			int firstMinStackableVolumeIndex = rotator.getMinStackableVolumeIndex(0);
+			int minStackableVolumeIndex = firstMinStackableVolumeIndex;
+
 			do {
-				int count = packStackPlacement(extremePoints, stackPlacements, rotator, stack, index, interrupt);
+				// attempt to limit the number of points created
+				// by calculating the minimum point volume and area
+				int minStackableAreaIndex = rotator.getMinStackableAreaIndex(index);
+				
+				extremePoints.setMinimumAreaAndVolumeLimit(rotator.get(minStackableAreaIndex).getValue().getArea(), rotator.get(minStackableVolumeIndex).getValue().getVolume());
+
+				int count = packStackPlacement(extremePoints, stackPlacements, rotator, stack, index, interrupt, minStackableAreaIndex, minStackableVolumeIndex);
 				if (count == Integer.MIN_VALUE) {
 					return null; // timeout
 				}
@@ -252,6 +257,13 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				stack.setSize(rotationIndex);
 				
 				index = rotationIndex;
+				
+				if(index > minStackableVolumeIndex) {
+					// these could be cached?
+					minStackableVolumeIndex = rotator.getMinStackableVolumeIndex(index);
+				} else {
+					minStackableVolumeIndex = firstMinStackableVolumeIndex;
+				}
 			} while (true);
 			
 			int permutationIndex = rotator.nextPermutation(bestPermutationResult.getSize());
@@ -275,7 +287,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		return bestResult;
 	}
 
-	public int packStackPlacement(FastExtremePoints3DStack extremePoints3D, List<StackPlacement> placements, PermutationRotationIterator iterator, Stack stack, int placementIndex, BooleanSupplier interrupt) {
+	public int packStackPlacement(FastExtremePoints3DStack extremePoints3D, List<StackPlacement> placements, PermutationRotationIterator iterator, Stack stack, int placementIndex, BooleanSupplier interrupt, int minStackableAreaIndex, int minStackableVolumeIndex) {
 		// pack as many items as possible from placementIndex
 		ContainerStackValue containerStackValue = stack.getContainerStackValue();
 		
@@ -345,6 +357,24 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			stack.add(placement);
 			
 			placementIndex++;
+			
+			if(placementIndex < iterator.length()) {
+				// check whether minimum point volume and area should be adjusted 
+				boolean minArea = placementIndex == minStackableAreaIndex;
+				boolean minVolume = placementIndex == minStackableVolumeIndex;
+				if(minArea && minVolume) {
+					minStackableVolumeIndex = iterator.getMinStackableVolumeIndex(placementIndex);
+					minStackableAreaIndex = iterator.getMinStackableAreaIndex(placementIndex);
+					
+					extremePoints3D.setMinimumAreaAndVolumeLimit(iterator.get(minStackableAreaIndex).getValue().getArea(), iterator.get(minStackableVolumeIndex).getValue().getVolume());
+				} else if(minArea) {
+					minStackableAreaIndex = iterator.getMinStackableAreaIndex(placementIndex);
+					extremePoints3D.setMinimumAreaLimit(iterator.get(minStackableAreaIndex).getValue().getArea());
+				} else if(minVolume) {
+					minStackableVolumeIndex = iterator.getMinStackableVolumeIndex(placementIndex);
+					extremePoints3D.setMinimumVolumeLimit(iterator.get(minStackableVolumeIndex).getValue().getVolume());
+				}
+			}
 		}
 		
 		return placementIndex;

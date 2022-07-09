@@ -22,6 +22,11 @@ public class EgyPackagerBenchmark {
 
 	
     @Benchmark
+    public int plainPackager(EgyPackagerState state) throws Exception {
+    	return process(state.getPlainPackager(), Long.MAX_VALUE);
+    }
+    
+    @Benchmark
     public int parallelPackager(EgyPackagerState state) throws Exception {
     	return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
     }

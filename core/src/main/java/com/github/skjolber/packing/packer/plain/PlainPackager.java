@@ -102,6 +102,12 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 		int maxRemainingWeight = containerStackValue.getMaxLoadWeight();
 
 		while(!extremePoints3D.isEmpty() && maxRemainingWeight > 0 && !scopedStackables.isEmpty()) {
+			if(interrupt.getAsBoolean()) {
+				// fit2d below might have returned due to deadline
+
+				return null;
+			}
+			
 			long maxPointVolume = extremePoints3D.getMaxVolume();
 			long maxPointArea = extremePoints3D.getMaxArea();
 
@@ -173,7 +179,19 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 			StackPlacement stackPlacement = new StackPlacement(bestStackable, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ(), -1, -1);
 			stack.add(stackPlacement);
 			extremePoints3D.add(bestPointIndex, stackPlacement);
-
+			
+			if(!scopedStackables.isEmpty()) {
+				boolean minArea = bestStackValue.getArea() == extremePoints3D.getMinAreaLimit();
+				boolean minVolume = extremePoints3D.getMinVolumeLimit() == bestStackable.getVolume();
+				if(minArea && minVolume) {
+					extremePoints3D.setMinimumAreaAndVolumeLimit(getMinStackableArea(scopedStackables), getMinStackableVolume(scopedStackables));
+				} else if(minArea) {
+					extremePoints3D.setMinimumAreaLimit(getMinStackableArea(scopedStackables));
+				} else if(minVolume) {
+					extremePoints3D.setMinimumVolumeLimit(getMinStackableVolume(scopedStackables));
+				}
+			}
+			
 			maxRemainingWeight -= bestStackable.getWeight();
 		}
 		

@@ -618,12 +618,18 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	}
 
 	private void filterMinimums() {
+		boolean flagged = false;
 		for (int i = 0; i < values.size(); i++) {
 			Point3D<P> p = values.get(i);
 			
 			if(p.getVolume() < minVolumeLimit || p.getArea() < minAreaLimit) {
 				values.flag(i);
+				
+				flagged = true;
 			}
+		}
+		if(flagged) {
+			values.removeFlagged();
 		}
 	}
 
