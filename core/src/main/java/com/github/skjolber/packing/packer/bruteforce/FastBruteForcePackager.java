@@ -185,7 +185,6 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		return new FastBruteForcePackagerResultBuilder().withCheckpointsPerDeadlineCheck(checkpointsPerDeadlineCheck).withPackager(this);
 	}
 
-	
 	@Override
 	protected Adapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
 		return new FastBruteForceAdapter(boxes, containers, interrupt);
@@ -213,7 +212,8 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			
 			int index = 0;
 			
-			int minStackableVolumeIndex = rotator.getMinStackableVolumeIndex(0);
+			int firstMinStackableVolumeIndex = rotator.getMinStackableVolumeIndex(0);
+			int minStackableVolumeIndex = firstMinStackableVolumeIndex;
 
 			do {
 				// attempt to limit the number of points created
@@ -258,8 +258,11 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				
 				index = rotationIndex;
 				
-				if(rotationIndex > minStackableVolumeIndex) {
+				if(index > minStackableVolumeIndex) {
+					// these could be cached?
 					minStackableVolumeIndex = rotator.getMinStackableVolumeIndex(index);
+				} else {
+					minStackableVolumeIndex = firstMinStackableVolumeIndex;
 				}
 			} while (true);
 			
