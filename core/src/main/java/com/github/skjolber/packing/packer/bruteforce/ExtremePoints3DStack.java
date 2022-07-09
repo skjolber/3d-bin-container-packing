@@ -15,6 +15,9 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		protected List<StackPlacement> placements = new ArrayList<>();
 		protected StackPlacement stackPlacement = new StackPlacement();
 		protected Point3D<StackPlacement> point;
+		protected long minVolumeLimit;
+		protected long minAreaLimit;
+
 	}
 	
 	protected List<StackItem> stackItems = new ArrayList<>();
@@ -48,6 +51,9 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		nextStackItem.placements.addAll(stackItem.placements);
 		stackItem.values.copyInto(nextStackItem.values);
 		
+		stackItem.minAreaLimit = minAreaLimit;
+		stackItem.minVolumeLimit = minVolumeLimit;
+		
 		loadCurrent();
 		
 		return nextStackItem.stackPlacement;
@@ -62,7 +68,9 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 
 		// copy from previous level
 		StackItem previousStackItem = stackItems.get(stackIndex - 1);
-
+		minAreaLimit = previousStackItem.minAreaLimit;
+		minVolumeLimit = previousStackItem.minVolumeLimit;
+		
 		placements.addAll(previousStackItem.placements);
 		
 		previousStackItem.values.copyInto(values);
@@ -72,6 +80,9 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		StackItem nextStackItem = stackItems.get(stackIndex);
 		nextStackItem.placements.clear();
 		nextStackItem.values.clear();
+
+		this.minAreaLimit = 0;
+		this.minVolumeLimit = 0;
 
 		nextStackItem.point = null;
 
@@ -84,6 +95,9 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		
 		this.values = stackItem.values;
 		this.placements = stackItem.placements;
+		this.minAreaLimit = stackItem.minAreaLimit;
+		this.minVolumeLimit = stackItem.minVolumeLimit;
+
 	}
 	
 	public List<Point3D<StackPlacement>> getPoints() {
