@@ -185,7 +185,6 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		return new FastBruteForcePackagerResultBuilder().withCheckpointsPerDeadlineCheck(checkpointsPerDeadlineCheck).withPackager(this);
 	}
 
-	
 	@Override
 	protected Adapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
 		return new FastBruteForceAdapter(boxes, containers, interrupt);
@@ -212,10 +211,13 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			extremePoints.reset(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
 			
 			int index = 0;
+			
+			int firstMinStackableVolumeIndex = rotator.getMinStackableVolumeIndex(0);
+			int minStackableVolumeIndex = firstMinStackableVolumeIndex;
+
 			do {
 				// attempt to limit the number of points created
 				// by calculating the minimum point volume and area
-				int minStackableVolumeIndex = rotator.getMinStackableVolumeIndex(index);
 				int minStackableAreaIndex = rotator.getMinStackableAreaIndex(index);
 				
 				extremePoints.setMinimumAreaAndVolumeLimit(rotator.get(minStackableAreaIndex).getValue().getArea(), rotator.get(minStackableVolumeIndex).getValue().getVolume());
@@ -255,6 +257,13 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				stack.setSize(rotationIndex);
 				
 				index = rotationIndex;
+				
+				if(index > minStackableVolumeIndex) {
+					// these could be cached?
+					minStackableVolumeIndex = rotator.getMinStackableVolumeIndex(index);
+				} else {
+					minStackableVolumeIndex = firstMinStackableVolumeIndex;
+				}
 			} while (true);
 			
 			int permutationIndex = rotator.nextPermutation(bestPermutationResult.getSize());

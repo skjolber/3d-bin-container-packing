@@ -69,9 +69,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			// iterator over all rotations
 			bestPermutationResult.reset();
 			
-			do {
+			int firstMinStackableVolumeIndex = iterator.getMinStackableVolumeIndex(0);
+			int minStackableVolumeIndex = firstMinStackableVolumeIndex;
 
-				List<Point3D<StackPlacement>> points = packStackPlacement(extremePoints, stackPlacements, iterator, stack, interrupt);
+			do {
+				int minStackableAreaIndex = iterator.getMinStackableAreaIndex(0);
+
+				List<Point3D<StackPlacement>> points = packStackPlacement(extremePoints, stackPlacements, iterator, stack, interrupt, minStackableAreaIndex, minStackableVolumeIndex);
 				if (points == null) {
 					return null; // timeout
 				}
@@ -96,7 +100,14 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				if(rotationIndex == -1) {
 					// no more rotations, continue to next permutation
 					break;
-				}				
+				}
+				
+				if(rotationIndex > minStackableVolumeIndex) {
+					// these could be cached?
+					minStackableVolumeIndex = iterator.getMinStackableVolumeIndex(rotationIndex);
+				} else {
+					minStackableVolumeIndex = firstMinStackableVolumeIndex;
+				}
 
 			} while (true);
 			
@@ -125,7 +136,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 	}
 
 
-	public List<Point3D<StackPlacement>> packStackPlacement(ExtremePoints3DStack extremePoints, List<StackPlacement> placements, PermutationRotationIterator iterator, Stack stack, BooleanSupplier interrupt) {
+	public List<Point3D<StackPlacement>> packStackPlacement(ExtremePoints3DStack extremePoints, List<StackPlacement> placements, PermutationRotationIterator iterator, Stack stack, BooleanSupplier interrupt, int minStackableAreaIndex, int minStackableVolumeIndex) {
 		if (placements.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -136,11 +147,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		int maxLoadWeight = containerStackValue.getMaxLoadWeight();
 		
 		extremePoints.reset(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
-		extremePoints.setMinimumAreaAndVolumeLimit(iterator.getMinStackableArea(), iterator.getMinStackableVolume());
-		
-		int minStackableVolumeIndex = iterator.getMinStackableVolumeIndex(0);
-		int minStackableAreaIndex = iterator.getMinStackableAreaIndex(0);
-		
 		extremePoints.setMinimumAreaAndVolumeLimit(iterator.get(minStackableAreaIndex).getValue().getArea(), iterator.get(minStackableVolumeIndex).getValue().getVolume());
 
 		try {
