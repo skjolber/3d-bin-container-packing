@@ -270,6 +270,10 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 				levelStack.add(stackPlacement);
 				extremePoints2D.add(bestPointIndex, stackPlacement);
 
+				if(bestStackValue.getArea() == extremePoints2D.getMinAreaLimit() ) {
+					extremePoints2D.setMinArea(getMinStackableArea(scopedStackables));
+				}
+
 				maxRemainingLevelWeight -= remove.getWeight();
 				
 			}
