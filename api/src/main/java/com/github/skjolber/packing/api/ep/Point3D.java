@@ -70,6 +70,24 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			return x;
 		}
 	};
+	
+	public static final Comparator<Point3D<?>> COMPARATOR_X_THEN_Y = new Comparator<Point3D<?>>() {
+		
+		@Override
+		public int compare(Point3D<?> o1, Point3D<?> o2) {
+			int x = Integer.compare(o1.minX, o2.minX);
+
+			if(x == 0) {
+				x = Integer.compare(o1.minY, o2.minY);
+			}
+
+			if(x == 0) {
+				x = Long.compare(o1.volume, o2.volume);
+			}
+
+			return x;
+		}
+	};
 
 	public static final Comparator<Point3D<?>> COMPARATOR_Y_THEN_Z_THEN_X = new Comparator<Point3D<?>>() {
 		

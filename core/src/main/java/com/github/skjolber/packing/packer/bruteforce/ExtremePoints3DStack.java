@@ -95,6 +95,11 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		StackItem stackItem = stackItems.get(stackIndex);
 		
 		this.values = stackItem.values;
+		
+		xxComparator.setValues(values);
+		yyComparator.setValues(values);
+		zzComparator.setValues(values);
+		
 		this.otherValues = stackItem.otherValues;
 		this.placements = stackItem.placements;
 		this.minAreaLimit = stackItem.minAreaLimit;

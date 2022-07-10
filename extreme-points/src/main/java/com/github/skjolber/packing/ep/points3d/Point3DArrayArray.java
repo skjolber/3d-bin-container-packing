@@ -15,11 +15,18 @@ import com.github.skjolber.packing.api.ep.Point3D;
  * 
  */
 
-public class Point3DArray<P extends Placement3D> {
+public class Point3DArrayArray<P extends Placement3D> {
 
 
 	private int size = 0;
-	private Point3D<P>[] points = new Point3D[16];
+	private List<Point3D<P>>[] points = new List[16];
+	
+	public Point3DArrayArray() {
+		 points = new List[16];
+		 for(int i = 0; i < points.length;i++) {
+			 points[i] = new ArrayList<>(6);
+		 }
+	}
 	
 	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
@@ -28,14 +35,17 @@ public class Point3DArray<P extends Placement3D> {
 	@SuppressWarnings("unchecked")
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			Point3D[] nextPoints = new Point3D[size];
+			List<Point3D<P>>[] nextPoints = new List[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.points.length);
+			for(int i = this.points.length; i < size; i++) {
+				nextPoints[i] = new ArrayList<>(6);
+			}
 			this.points = nextPoints;
 		}
 	}
 	
-	public void set(Point3D<P> point, int index) {
-		points[index] = point;
+	public void add(Point3D<P> point, int index) {
+		points[index].add(point);
 		size++;
 	}
 	
@@ -44,11 +54,17 @@ public class Point3DArray<P extends Placement3D> {
 	}
 
 	public void reset() {
-		Arrays.fill(this.points, 0, points.length, null);
+		for(int i = 0; i < this.points.length; i++) {
+			this.points[i].clear();
+		}
 		size = 0;
 	}
 	
-	public Point3D<P> get(int i) {
+	public boolean isEmpty(int index) {
+		return points[index].isEmpty();
+	}
+	
+	public List<Point3D<P>> get(int i) {
 		return points[i];
 	}
 
@@ -92,13 +108,5 @@ public class Point3DArray<P extends Placement3D> {
     	}
     	return super.equals(obj);
     }
-    
-    public Point3D<P>[] getPoints() {
-		return points;
-	}
-
-	public void sort(Comparator<Point3D<?>> comparator) {
-		Arrays.sort(points, 0, size, comparator);
-	}
 
 }

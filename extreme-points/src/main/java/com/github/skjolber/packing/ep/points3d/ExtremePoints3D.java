@@ -41,8 +41,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 	// reuse working variables
 	protected final Point3DList<P> addXX = new Point3DList<>();
-	protected final Point3DArray<P> addYY = new Point3DArray<>();
-	protected final Point3DArray<P> addZZ = new Point3DArray<>();
+	protected final Point3DArrayArray<P> addYY = new Point3DArrayArray<>();
+	protected final Point3DArrayArray<P> addZZ = new Point3DArrayArray<>();
 
 	protected final Point3DArray<P> constrainXX = new Point3DArray<>();
 	protected final Point3DArray<P> constrainYY = new Point3DArray<>();
@@ -64,6 +64,10 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	private IntComparator COMPARATOR_Z_THEN_X_THEN_Y = (a, b) -> Point3D.COMPARATOR_Z_THEN_X_THEN_Y.compare(values.get(a), values.get(b));
 	private IntComparator COMPARATOR_X_THEN_Y_THEN_Z = (a, b) -> Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(values.get(a), values.get(b));
 	
+	protected CustomIntXComparator xxComparator = new CustomIntXComparator();
+	protected CustomIntYComparator yyComparator = new CustomIntYComparator();
+	protected CustomIntZComparator zzComparator = new CustomIntZComparator();
+	
 	public ExtremePoints3D(int dx, int dy, int dz) {
 		this(dx, dy, dz, false);
 	}
@@ -72,6 +76,10 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		setSize(dx, dy, dz);
 		this.cloneOnConstrain = cloneOnConstrain;
 		addFirstPoint();
+		
+		xxComparator.setValues(values);
+		yyComparator.setValues(values);
+		zzComparator.setValues(values);
 	}
 	
 	protected void setSize(int dx, int dy, int dz) {
@@ -98,9 +106,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	
 	public boolean add(int index, P placement) {	
 
-		if(values == otherValues) {
-			throw new RuntimeException();
-		}
 		// overall approach:
 		// Do not iterate over placements to find point max / mins, rather
 		// project existing points. 
@@ -117,7 +122,9 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		int xx = placement.getAbsoluteEndX() + 1;
 		int yy = placement.getAbsoluteEndY() + 1;
 		int zz = placement.getAbsoluteEndZ() + 1;
-			
+
+		// System.out.println("******************* add point " + xx + "x" + yy + "x" + zz);
+
 		boolean supportedXYPlane = source.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY()); 
 		boolean supportedXZPlane = source.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
 		boolean supportedYZPlane = source.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
@@ -159,8 +166,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		moveToZZ.ensureCapacity(endIndex);
 		
 		addXX.ensureCapacity(values.size());
-		addYY.ensureCapacity(values.size());
-		addZZ.ensureCapacity(values.size());
+		addYY.ensureCapacity(values.size() + 1);
+		addZZ.ensureCapacity(values.size() + 1);
 		
 		constrainXX.ensureCapacity(values.size());
 		constrainYY.ensureCapacity(values.size());
@@ -296,7 +303,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		}
 
 		if(!moveToXX.isEmpty()) {
-			moveToXX.sortThis(COMPARATOR_Y_THEN_Z_THEN_X);
+			xxComparator.setXx(xx);
+			moveToXX.sortThis(xxComparator);
 			
 			add:
 			for(int i = 0; i < moveToXX.size(); i++) {
@@ -325,8 +333,9 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		}
 		
 		if(!moveToYY.isEmpty()) {
-			moveToYY.sortThis(COMPARATOR_Z_THEN_X_THEN_Y);
-			
+			yyComparator.setYy(yy);
+			moveToYY.sortThis(yyComparator);
+
 			add:
 			for(int i = 0; i < moveToYY.size(); i++) {
 				int currentIndex = moveToYY.get(i);
@@ -349,13 +358,21 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				} else {
 					added = p.moveY(yy, p.getMaxX(), p.getMaxY(), p.getMaxZ(), placement);
 				}
-				addYY.set(added, currentIndex);
+				
+				// find right insertion point
+				int targetIndex = currentIndex + 1;
+				while(targetIndex < values.size() && Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
+					targetIndex++;
+				}
+
+				addYY.add(added, targetIndex);
 				addedYY.add(added);
 			}
 		}
-
+		
 		if(!moveToZZ.isEmpty()) {
-			moveToZZ.sortThis(COMPARATOR_X_THEN_Y_THEN_Z);
+			zzComparator.setZz(zz);
+			moveToZZ.sortThis(zzComparator);
 			
 			add:
 			for(int i = 0; i < moveToZZ.size(); i++) {
@@ -364,7 +381,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				Point3D<P> p = values.get(currentIndex);
 				
 				// add point on the other side
-				// with x support
 				for(int k = 0; k < addedZZ.size(); k++) {
 					Point3D<P> add = addedZZ.get(k);
 					if(add.eclipsesMovedZ(p, zz)) {
@@ -379,7 +395,14 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				} else {
 					added = p.moveZ(zz, p.getMaxX(), p.getMaxY(), p.getMaxZ(), placement);
 				}
-				addZZ.set(added, currentIndex);
+				
+				// find right insertion point
+				int targetIndex = currentIndex + 1;
+				while(targetIndex < values.size() && Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
+					targetIndex++;
+				}
+				
+				addZZ.add(added, targetIndex);
 				addedZZ.add(added);
 			}			
 		}
@@ -427,6 +450,25 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		int continuation = endIndex;
 		
 		for(int i = 0; i < continuation; i++) {
+			
+			List<Point3D<P>> addZZPoint3d = addZZ.get(i);
+			if(!addZZPoint3d.isEmpty()) {
+				for(Point3D<P> p : addZZPoint3d) {
+					if(!isEclipsed(p, continuation)) {
+						otherValues.add(p);
+					}
+				}
+			}
+			
+			List<Point3D<P>> addYYPoint3d = addYY.get(i);
+			if(!addYYPoint3d.isEmpty()) {
+				for(Point3D<P> p : addYYPoint3d) {
+					if(!isEclipsed(p, continuation)) {
+						otherValues.add(p);
+					}
+				}
+			}
+
 			if(!values.isFlag(i)) {
 				otherValues.add(values.get(i));
 			}
@@ -449,18 +491,22 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					otherValues.add(constrainZZPoint);
 				}
 			}
-
-			Point3D<P> addZZPoint3d = addZZ.get(i);
-			if(addZZPoint3d != null) {
-				if(!isEclipsed(addZZPoint3d, continuation)) {
-					otherValues.add(addZZPoint3d);
+		}
+		
+		List<Point3D<P>> addZZPoint3d = addZZ.get(continuation);
+		if(!addZZPoint3d.isEmpty()) {
+			for(Point3D<P> p : addZZPoint3d) {
+				if(!isEclipsed(p, continuation)) {
+					otherValues.add(p);
 				}
 			}
-			
-			Point3D<P> addYYPoint3d = addYY.get(i);
-			if(addYYPoint3d != null) {
-				if(!isEclipsed(addYYPoint3d, continuation)) {
-					otherValues.add(addYYPoint3d);
+		}
+		
+		List<Point3D<P>> addYYPoint3d = addYY.get(continuation);
+		if(!addYYPoint3d.isEmpty()) {
+			for(Point3D<P> p : addYYPoint3d) {
+				if(!isEclipsed(p, continuation)) {
+					otherValues.add(p);
 				}
 			}
 		}
@@ -470,19 +516,51 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			endIndex++;
 		}
 		
+		for(int i = continuation; i < endIndex; i++) {
+			if(!values.isFlag(i)) {
+				otherValues.add(values.get(i));
+			}
+		}
+		
 		for(int i = 0; i < addXX.size(); i++) {
 			Point3D<P> point3d = addXX.get(i);
-			if(!isEclipsed(point3d, endIndex)) {
+			if(!isEclipsed(point3d, otherValues.size())) {
 				otherValues.add(point3d);
 			}
 		}
 		
-		for(int i = continuation; i < values.size(); i++) {
+		for(int i = endIndex; i < values.size(); i++) {
 			if(!values.isFlag(i)) {
 				otherValues.add(values.get(i));
 			}
 		}
 
+		otherValues.copyInto(values);
+		otherValues.reset();
+
+		/*
+		System.out.println();
+		System.out.println("Finally");
+		for(int i = 0; i < values.size(); i++) {
+			System.out.println(values.get(i));
+		}
+		System.out.println();
+		for(int i = 0; i < values.size() - 1; i++) {
+			Point3D<P> a = values.get(i);
+			Point3D<P> b = values.get(i + 1);
+			if(a.eclipses(b) || b.eclipses(a)) {
+				System.out.println(xx + "x" + yy + "x" + zz);
+				System.out.println(a);
+				System.out.println(b);
+				System.out.println();
+				System.out.println(addedXX);
+				System.out.println(addedYY);
+				System.out.println(addedZZ);
+				
+				throw new RuntimeException();
+			}
+		}
+*/
 		moveToXX.clear();
 		moveToYY.clear();
 		moveToZZ.clear();
@@ -498,24 +576,19 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		constrainXX.reset();
 		constrainYY.reset();
 		constrainZZ.reset();
-		
-		otherValues.copyInto(values);
-		otherValues.reset();
-		
+
 		return !values.isEmpty();
 	}
 
 	private boolean isEclipsed(Point3D<P> unsorted, int limit) {
 		// check if one of the existing values contains the new value
-		for(int index = 0; index < limit; index++) {
-			if(values.isFlag(index) ) {
-				continue;
-			}
-			Point3D<P> sorted = values.get(index);
+		for(int index = 0; index < otherValues.size(); index++) {
+			Point3D<P> sorted = otherValues.get(index);
 			
 			if(unsorted.getVolume() <= sorted.getVolume() && unsorted.getArea() <= sorted.getArea()) {
 				if(sorted.eclipses(unsorted)) {
 					// discard unsorted
+					//System.out.println(sorted + " eclipses " + unsorted);
 					return true;
 				}
 			}
@@ -526,6 +599,10 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	
 
 	private void constrainMax(P placement, int endIndex) {
+		constrainXX.ensureAdditionalCapacity(endIndex);
+		constrainYY.ensureAdditionalCapacity(endIndex);
+		constrainZZ.ensureAdditionalCapacity(endIndex);
+
 		for (int i = 0; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -537,9 +614,13 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					if(point.getMinX() < placement.getAbsoluteX()) {
 						if(point.getMaxX() >= placement.getAbsoluteX()) {
 							point.setMaxX(placement.getAbsoluteX() - 1);
+							/*
 							if(point.getArea() < minAreaLimit) {
 								values.flag(i);
 							}
+							*/
+							values.flag(i);
+							constrainXX.set(point, i);
 						}
 					}
 				}
@@ -549,9 +630,13 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					if(point.getMinY() < placement.getAbsoluteY()) {
 						if(point.getMaxY() >= placement.getAbsoluteY()) {
 							point.setMaxY(placement.getAbsoluteY() - 1);
+							/*
 							if(point.getArea() < minAreaLimit) {
 								values.flag(i);
 							}
+							*/
+							values.flag(i);
+							constrainYY.set(point, i);
 						}
 					}
 				}
@@ -560,9 +645,13 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				if(point.getMaxZ() >= placement.getAbsoluteZ()) {
 					if(point.getMaxZ() >= placement.getAbsoluteZ()) {
 						point.setMaxZ(placement.getAbsoluteZ() - 1);
+						/*
 						if(point.getArea() < minAreaLimit) {
 							values.flag(i);
 						}
+						*/
+						values.flag(i);
+						constrainZZ.set(point, i);
 					}
 				}
 			}				

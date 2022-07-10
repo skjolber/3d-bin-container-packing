@@ -52,6 +52,7 @@ public class EgyPackagerBenchmark {
     }
     
     public static void main(String[] args) throws RunnerException {
+    	System.setProperty("jmh.ignoreLock", "true ");
         Options opt = new OptionsBuilder()
                 .include(EgyPackagerBenchmark.class.getSimpleName())
                 .mode(Mode.Throughput)
