@@ -624,7 +624,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	
 	private boolean isEclipsedAtXX(Point3D<P> point, int xx) {
 		// check if one of the existing values contains the new value
-		for(int index = 0; index < otherValues.size(); index++) {
+		for(int index = otherValues.size() - 1; index >= 0; index--) {
 			Point3D<P> otherValue = otherValues.get(index);
 			if(otherValue.getMinX() < xx) {
 				return false;
