@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
@@ -19,6 +20,7 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
+import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.assertj.StackAssert;
 
 public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
@@ -308,5 +310,12 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			StackAssert.assertThat(container.getStack()).placementsDoNotIntersect();
 		}
 	}
+	
+	@Test
+	@Disabled
+	public void testAHugeProblemShouldRespectDeadline() {
+		assertDeadlineRespected(LargestAreaFitFirstPackager.newBuilder());
+	}
+
 
 }

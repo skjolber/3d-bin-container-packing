@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
@@ -23,6 +24,7 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
+import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
@@ -217,5 +219,12 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 		assertValid(fits);
 		assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), squares.size());
 	}
+
+	@Disabled // TODO
+	@Test
+	public void testAHugeProblemShouldRespectDeadline() {
+		assertDeadlineRespected(ParallelBruteForcePackager.newBuilder());
+	}
+
 	
 }

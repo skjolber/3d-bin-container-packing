@@ -254,6 +254,12 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		);
 
 		assertNotNull(pack);
+	}	
+
+	@Test
+	@Disabled
+	public void testAHugeProblemShouldRespectDeadline() {
+		assertDeadlineRespected(BruteForcePackager.newBuilder());
 	}
 
 }

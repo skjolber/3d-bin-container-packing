@@ -16,8 +16,10 @@ import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
+import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.Adapter;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
+import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager.FastBruteForcePackagerBuilder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. 
@@ -34,37 +36,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		return new BruteForcePackagerBuilder();
 	}
 
-	public static class BruteForcePackagerBuilder {
-
-		private List<Container> containers;
-		private int checkpointsPerDeadlineCheck = 1;
-		private PackResultComparator packResultComparator;
-
-		public BruteForcePackagerBuilder withContainers(Container ...  containers) {
-			if(this.containers == null) {
-				this.containers = new ArrayList<>();
-			}
-			for (Container container : containers) {
-				this.containers.add(container);
-			}
-			return this;
-		}
-		
-		public BruteForcePackagerBuilder withContainers(List<Container> containers) {
-			this.containers = containers;
-			return this;
-		}
-
-		public BruteForcePackagerBuilder withCheckpointsPerDeadlineCheck(int n) {
-			this.checkpointsPerDeadlineCheck = n;
-			return this;
-		}
-
-		public BruteForcePackagerBuilder withPackResultComparator(PackResultComparator packResultComparator) {
-			this.packResultComparator = packResultComparator;
-			
-			return this;
-		}
+	public static class BruteForcePackagerBuilder extends AbstractPackagerBuilder<BruteForcePackager, BruteForcePackagerBuilder> {
 		
 		public BruteForcePackager build() {
 			if(containers == null) {

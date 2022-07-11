@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.plain;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
@@ -30,21 +31,24 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 		
 		BooleanSupplierBuilder booleanSupplierBuilder = BooleanSupplierBuilder.builder();
 		if(deadline != -1L) {
-			booleanSupplierBuilder.withDeadline(start, checkpointsPerDeadlineCheck);
+			booleanSupplierBuilder.withDeadline(deadline, checkpointsPerDeadlineCheck);
 		}
 		if(interrupt != null) {
 			booleanSupplierBuilder.withInterrupt(interrupt);
 		}
 		
-		BooleanSupplier build = BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build();
+		BooleanSupplier build = booleanSupplierBuilder.build();
 		
 		List<Container> packList;
 		if(maxResults > 1) {
 			packList = packager.packList(items, maxResults, build);
 		} else {
 			Container result = packager.pack(items, build);
-			
-			packList = Arrays.asList(result);
+			if(result != null) {
+				packList = Arrays.asList(result);
+			} else {
+				packList = Collections.emptyList();
+			}
 		}
 		return new PackagerResult(packList, System.currentTimeMillis() - start);
 	}
