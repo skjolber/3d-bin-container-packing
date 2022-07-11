@@ -10,6 +10,7 @@ import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.YZPlanePoint3D;
 
 /**
  * 
@@ -306,6 +307,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			xxComparator.setXx(xx);
 			moveToXX.sortThis(xxComparator);
 			
+			int targetIndex = endIndex;
 			add:
 			for(int i = 0; i < moveToXX.size(); i++) {
 				int currentIndex = moveToXX.get(i);
@@ -328,7 +330,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				}
 				
 				// find right insertion point
-				int targetIndex = endIndex;
+				// TODO skip x
 				while(targetIndex < values.size() && Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
 				}
@@ -367,6 +369,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				
 				// find right insertion point
 				int targetIndex = currentIndex + 1;
+				
+				// TODO skip y
 				while(targetIndex < values.size() && Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
 				}
@@ -404,6 +408,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				
 				// find right insertion point
 				int targetIndex = currentIndex + 1;
+				// TODO skip z
 				while(targetIndex < values.size() && Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
 				}
@@ -446,7 +451,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		//  constrainXX |   |   | 1 | 1 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   
 		//  constrainYY |   |   | 1 | 1 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   
 		//  constrainZZ | 1 |   |   |   | 1 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   
-		//  values      | x | x |   |   |   | x | x | x |   |   |   |   |   |   | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1   
+		//  values      | x | x | 1 | 1 | 1 | x | x | x | 1 | 1 | 1 | 1 | 1 | x | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1   
 		//
 
 		int added = addedXX.size() + addedYY.size() + addedZZ.size() + constrainXX.size() + constrainYY.size() + constrainZZ.size();
@@ -523,8 +528,14 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			List<Point3D<P>> addXXPoint3d = addXX.get(i);
 			if(!addXXPoint3d.isEmpty()) {
 				for(Point3D<P> p : addXXPoint3d) {
-					if(!isEclipsed(p)) {
-						otherValues.add(p);
+					if(p instanceof YZPlanePoint3D) {
+						if(!isEclipsedAtXX(p, xx)) {
+							otherValues.add(p);
+						}
+					} else {
+						if(!isEclipsed(p)) {
+							otherValues.add(p);
+						}
 					}
 				}
 				addXXPoint3d.clear();
@@ -539,8 +550,14 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		List<Point3D<P>> addXXPoint3d = addXX.get(values.size());
 		if(!addXXPoint3d.isEmpty()) {
 			for(Point3D<P> p : addXXPoint3d) {
-				if(!isEclipsed(p)) {
-					otherValues.add(p);
+				if(p instanceof YZPlanePoint3D) {
+					if(!isEclipsedAtXX(p, xx)) {
+						otherValues.add(p);
+					}
+				} else {
+					if(!isEclipsed(p)) {
+						otherValues.add(p);
+					}
 				}
 			}
 			addXXPoint3d.clear();
@@ -605,6 +622,22 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	}
 	
 	
+	private boolean isEclipsedAtXX(Point3D<P> point, int xx) {
+		// check if one of the existing values contains the new value
+		for(int index = 0; index < otherValues.size(); index++) {
+			Point3D<P> otherValue = otherValues.get(index);
+			if(otherValue.getMinX() < xx) {
+				return false;
+			}
+			if(point.getVolume() <= otherValue.getVolume() && point.getArea() <= otherValue.getArea()) {
+				if(otherValue.eclipses(point)) {
+					// discard 
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 	private void constrainMax(P placement, int endIndex) {
 		constrainXX.ensureAdditionalCapacity(endIndex);
