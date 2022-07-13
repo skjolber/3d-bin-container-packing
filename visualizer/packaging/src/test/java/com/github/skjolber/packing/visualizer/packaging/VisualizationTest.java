@@ -241,13 +241,11 @@ public class VisualizationTest {
 	protected void pack(List<BouwkampCodes> codes) throws Exception {
 		for (BouwkampCodes bouwkampCodes : codes) {
 			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
-				if(bouwkampCode.getName().equals("130x79A")) {
-					long timestamp = System.currentTimeMillis();
-					pack(bouwkampCode);
-					System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.currentTimeMillis() - timestamp));
-					
-					Thread.sleep(5000);
-				}
+				long timestamp = System.currentTimeMillis();
+				pack(bouwkampCode);
+				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.currentTimeMillis() - timestamp));
+				
+				Thread.sleep(5000);
 			}
 		}
 	}

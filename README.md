@@ -142,14 +142,20 @@ This algorithm has no logic for selecting the best box or rotation; running thro
  * `BruteForcePackager` attempts all box orders, rotations and placement positions.
  * `FastLargestAreaFitFirstPackager` selects all box orders and rotations, selecting the most appropriate placement position.
 
-The maximum complexity of this approach is [exponential] at __n! * 6^n__ or worse. The algorithm runs for under a second for small number of products (<= 6), to seconds or minutes (<= 8) or hours for larger numbers.
+The complexity of this approach is [exponential], and thus there is a limit to the feasible number of boxes which can be packaged within a reasonable time. However, for real-life applications,  a healthy part of for example online shopping orders are within its grasp.
 
-However accounting for container vs box size plus boxes with equal size might reduce this bound considerably, and the resulting complexity can be calculated using a `PermutationRotationIterator` before packaging is attempted.
+The worst case complexity can be estimated using the `DefaultPermutationRotationIterator` before packaging is attempted.
 
+The algorithm tries to skip combinations which will obviously not yield a (better) result:
+
+ * permutations
+   * two or more boxes have the same dimensions
+   * permutations which mutated at a previously unreachable index
+ * fewer rotations
+   * two or more sides have the same length
+   * rotations which mutated at a previously unreachable index
+ 
 There is also a parallel version `ParallelBruteForcePackager` of the brute-force packager, for those wishing to use it on a multi-core system.
-
-Using a brute-force algorithm might seem to hit a wall of complexity, but taking into account number of items 
-per order distribution for web-shops, a healthy part of the orders are within its grasp.
 
 Note that the algorithm is recursive on the number of boxes, so do not attempt this with many boxes (it will likely not complete in time anyhow).
 
