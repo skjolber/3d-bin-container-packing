@@ -24,8 +24,8 @@ public class CustomIntXComparator implements IntComparator {
 		}
 
 		if(x == 0) {
-			long volume1 = o1.getDy() * o1.getDz() * (o1.getMaxX() - xx + 1);
-			long volume2 = o2.getDy() * o2.getDz() * (o2.getMaxX() - xx + 1);
+			long volume1 = o1.getDy() * o1.getDz() * (o1.getMaxX() - xx + 1L);
+			long volume2 = o2.getDy() * o2.getDz() * (o2.getMaxX() - xx + 1L);
 			
 			return -Long.compare(volume1, volume2);
 		}
