@@ -164,8 +164,6 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	protected int maxZ;
 	protected int dz;
 	
-	protected long volume;
-	
 	public Point3D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		super(minX, minY, maxX, maxY);
 		/*

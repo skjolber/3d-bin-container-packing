@@ -92,5 +92,6 @@ public class ExtremePoints3DState {
 
 	@TearDown(Level.Trial)
 	public void shutdown() throws InterruptedException {
+		// NOOP
 	}
 }
