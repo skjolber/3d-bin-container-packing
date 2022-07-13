@@ -16,6 +16,7 @@ import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.DefaultPackResult;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 
@@ -32,38 +33,8 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 		return new Builder();
 	}
 
-	public static class Builder {
+	public static class Builder extends AbstractPackagerBuilder<PlainPackager, Builder> {
 
-		private List<Container> containers;
-		private int checkpointsPerDeadlineCheck = 1;
-		private PackResultComparator packResultComparator;
-		
-		public Builder withContainers(Container ...  containers) {
-			if(this.containers == null) {
-				this.containers = new ArrayList<>();
-			}
-			for (Container container : containers) {
-				this.containers.add(container);
-			}
-			return this;
-		}
-		
-		public Builder withPackResultComparator(PackResultComparator packResultComparator) {
-			this.packResultComparator = packResultComparator;
-			
-			return this;
-		}
-		
-		public Builder withContainers(List<Container> containers) {
-			this.containers = containers;
-			return this;
-		}
-
-		public Builder withCheckpointsPerDeadlineCheck(int n) {
-			this.checkpointsPerDeadlineCheck = n;
-			return this;
-		}
-		
 		public PlainPackager build() {
 			if(containers == null) {
 				throw new IllegalStateException("Expected containers");

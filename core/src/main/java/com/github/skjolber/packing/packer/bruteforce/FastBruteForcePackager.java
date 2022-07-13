@@ -23,8 +23,10 @@ import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.AbstractPackager;
+import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.Adapter;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager.ParallelBruteForcePackagerBuilder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. This implementation tries all
@@ -39,38 +41,8 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		return new FastBruteForcePackagerBuilder();
 	}
 
-	public static class FastBruteForcePackagerBuilder {
+	public static class FastBruteForcePackagerBuilder extends AbstractPackagerBuilder<FastBruteForcePackager, FastBruteForcePackagerBuilder> {
 
-		private List<Container> containers;
-		private int checkpointsPerDeadlineCheck = 1;
-		private PackResultComparator packResultComparator;
-
-		public FastBruteForcePackagerBuilder withContainers(Container ...  containers) {
-			if(this.containers == null) {
-				this.containers = new ArrayList<>();
-			}
-			for (Container container : containers) {
-				this.containers.add(container);
-			}
-			return this;
-		}
-
-		public FastBruteForcePackagerBuilder withContainers(List<Container> containers) {
-			this.containers = containers;
-			return this;
-		}
-
-		public FastBruteForcePackagerBuilder withCheckpointsPerDeadlineCheck(int n) {
-			this.checkpointsPerDeadlineCheck = n;
-			return this;
-		}
-		
-		public FastBruteForcePackagerBuilder withPackResultComparator(PackResultComparator packResultComparator) {
-			this.packResultComparator = packResultComparator;
-			
-			return this;
-		}
-		
 		public FastBruteForcePackager build() {
 			if(containers == null) {
 				throw new IllegalStateException("Expected containers");

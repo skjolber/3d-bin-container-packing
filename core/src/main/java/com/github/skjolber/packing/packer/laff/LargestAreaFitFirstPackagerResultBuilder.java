@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.laff;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
@@ -36,7 +37,7 @@ public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuil
 			booleanSupplierBuilder.withInterrupt(interrupt);
 		}
 		
-		BooleanSupplier build = BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build();
+		BooleanSupplier build = booleanSupplierBuilder.build();
 		
 		List<Container> packList;
 		if(maxResults > 1) {
@@ -44,7 +45,11 @@ public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuil
 		} else {
 			Container result = packager.pack(items, build);
 			
-			packList = Arrays.asList(result);
+			if(result != null) {
+				packList = Arrays.asList(result);
+			} else {
+				packList = Collections.emptyList();
+			}
 		}
 		return new PackagerResult(packList, System.currentTimeMillis() - start);
 	}

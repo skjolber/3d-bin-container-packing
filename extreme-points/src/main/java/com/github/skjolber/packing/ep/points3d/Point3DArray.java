@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -14,7 +15,8 @@ import com.github.skjolber.packing.api.ep.Point3D;
  * 
  */
 
-public class Point3DList<P extends Placement3D> {
+public class Point3DArray<P extends Placement3D> {
+
 
 	private int size = 0;
 	private Point3D<P>[] points = new Point3D[16];
@@ -27,13 +29,13 @@ public class Point3DList<P extends Placement3D> {
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
 			Point3D[] nextPoints = new Point3D[size];
-			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
+			System.arraycopy(this.points, 0, nextPoints, 0, this.points.length);
 			this.points = nextPoints;
 		}
 	}
 	
-	public void add(Point3D<P> point) {
-		points[size] = point;
+	public void set(Point3D<P> point, int index) {
+		points[index] = point;
 		size++;
 	}
 	
@@ -42,7 +44,7 @@ public class Point3DList<P extends Placement3D> {
 	}
 
 	public void reset() {
-		Arrays.fill(this.points, 0, size, null);
+		Arrays.fill(this.points, 0, points.length, null);
 		size = 0;
 	}
 	

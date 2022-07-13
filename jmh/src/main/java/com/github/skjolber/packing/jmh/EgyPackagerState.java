@@ -120,7 +120,7 @@ public class EgyPackagerState {
 			originalVolume += item.getVolume();
 		}
 		
-		double multiplier = 10.05;
+		double multiplier = 5;
 		while(true) {
 			long volume = (long)(originalVolume * multiplier);
 			

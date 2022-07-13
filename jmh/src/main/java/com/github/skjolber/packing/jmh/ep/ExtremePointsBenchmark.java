@@ -23,6 +23,7 @@ import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
 public class ExtremePointsBenchmark {
 
+	/*
 	@Benchmark
 	public int points2D(ExtremePoints2DState state) throws Exception {
 		int size = 0;
@@ -40,6 +41,7 @@ public class ExtremePointsBenchmark {
 		
 		return size;
 	}
+	*/
 
 	@Benchmark
 	public int points3D(ExtremePoints3DState state) throws Exception {

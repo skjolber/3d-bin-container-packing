@@ -24,9 +24,12 @@ import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorL
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
+import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.Adapter;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 import com.github.skjolber.packing.packer.PackagerException;
+import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
+import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager.LargestAreaFitFirstPackagerBuilder;
 
 /**
  * 
@@ -40,14 +43,11 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		return new ParallelBruteForcePackagerBuilder();
 	}
 
-	public static class ParallelBruteForcePackagerBuilder {
+	public static class ParallelBruteForcePackagerBuilder extends AbstractPackagerBuilder<ParallelBruteForcePackager, ParallelBruteForcePackagerBuilder> {
 
-		protected List<Container> containers;
-		protected int checkpointsPerDeadlineCheck = 1;
 		protected int threads = -1;
 		protected int parallelizationCount = -1;
 		protected ExecutorService executorService;
-		protected PackResultComparator packResultComparator;
 
 		public ParallelBruteForcePackagerBuilder withThreads(int threads) {
 			if(threads < 1) {
@@ -70,32 +70,6 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				throw new IllegalArgumentException("Unexpected parallelization count " + parallelizationCount);
 			}
 			this.parallelizationCount = parallelizationCount;
-			return this;
-		}
-		
-		public ParallelBruteForcePackagerBuilder withPackResultComparator(PackResultComparator packResultComparator) {
-			this.packResultComparator = packResultComparator;
-			
-			return this;
-		}
-		
-		public ParallelBruteForcePackagerBuilder withContainers(Container ...  containers) {
-			if(this.containers == null) {
-				this.containers = new ArrayList<>();
-			}
-			for (Container container : containers) {
-				this.containers.add(container);
-			}
-			return this;
-		}
-
-		public ParallelBruteForcePackagerBuilder withContainers(List<Container> containers) {
-			this.containers = containers;
-			return this;
-		}
-
-		public ParallelBruteForcePackagerBuilder withCheckpointsPerDeadlineCheck(int n) {
-			this.checkpointsPerDeadlineCheck = n;
 			return this;
 		}
 		

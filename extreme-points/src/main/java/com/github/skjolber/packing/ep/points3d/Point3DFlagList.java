@@ -61,10 +61,8 @@ public class Point3DFlagList<P extends Placement3D> {
 	}
 	
 	public void reset() {
-		for(int i = 0; i < points.length; i++) {
-			points[i] = null;
-			flag[i] = false;
-		}
+		Arrays.fill(this.points, 0, size, null);
+		Arrays.fill(this.flag, 0, size, false);
 		size = 0;
 	}
 
@@ -194,6 +192,10 @@ public class Point3DFlagList<P extends Placement3D> {
 
 	public void unflag(int i) {
 		flag[i] = false;
+	}
+
+	public void set(Point3D<P> point, int i) {
+		points[i] = point;
 	}
 
     

@@ -20,8 +20,11 @@ import com.github.skjolber.packing.api.StackableFilter;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.api.ep.StackValuePointFilter;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.DefaultPackResult;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
+import com.github.skjolber.packing.packer.plain.PlainPackager;
+import com.github.skjolber.packing.packer.plain.PlainPackager.Builder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -35,41 +38,12 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 		return new LargestAreaFitFirstPackagerBuilder();
 	}
 
-	public static class LargestAreaFitFirstPackagerBuilder {
+	public static class LargestAreaFitFirstPackagerBuilder extends AbstractPackagerBuilder<LargestAreaFitFirstPackager, LargestAreaFitFirstPackagerBuilder> {
 
-		private List<Container> containers;
-		private int checkpointsPerDeadlineCheck = 1;
 		private LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D<StackPlacement>, ?> configurationBuilderFactory;
-		private PackResultComparator packResultComparator;
 
 		public LargestAreaFitFirstPackagerBuilder withConfigurationBuilderFactory(LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D<StackPlacement>, ?> configurationBuilder) {
 			this.configurationBuilderFactory = configurationBuilder;
-			return this;
-		}
-		
-		public LargestAreaFitFirstPackagerBuilder withPackResultComparator(PackResultComparator packResultComparator) {
-			this.packResultComparator = packResultComparator;
-			
-			return this;
-		}
-		
-		public LargestAreaFitFirstPackagerBuilder withContainers(Container ...  containers) {
-			if(this.containers == null) {
-				this.containers = new ArrayList<>();
-			}
-			for (Container container : containers) {
-				this.containers.add(container);
-			}
-			return this;
-		}
-		
-		public LargestAreaFitFirstPackagerBuilder withContainers(List<Container> containers) {
-			this.containers = containers;
-			return this;
-		}
-
-		public LargestAreaFitFirstPackagerBuilder withCheckpointsPerDeadlineCheck(int n) {
-			this.checkpointsPerDeadlineCheck = n;
 			return this;
 		}
 		

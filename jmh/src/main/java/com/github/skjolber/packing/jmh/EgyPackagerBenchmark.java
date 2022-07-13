@@ -20,17 +20,16 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
 public class EgyPackagerBenchmark {
 
-	
     @Benchmark
     public int plainPackager(EgyPackagerState state) throws Exception {
     	return process(state.getPlainPackager(), Long.MAX_VALUE);
     }
-    
+
     @Benchmark
     public int parallelPackager(EgyPackagerState state) throws Exception {
     	return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
     }
-
+    
     @Benchmark
     public int packager(EgyPackagerState state) throws Exception {
     	return process(state.getBruteForcePackager(), Long.MAX_VALUE);
@@ -40,7 +39,7 @@ public class EgyPackagerBenchmark {
     public int fastPackager(EgyPackagerState state) throws Exception {
     	return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
     }
-
+    
     public int process(List<BenchmarkSet> sets, long deadline) {
     	int i = 0;
     	for(BenchmarkSet set : sets) {
@@ -53,6 +52,7 @@ public class EgyPackagerBenchmark {
     }
     
     public static void main(String[] args) throws RunnerException {
+    	System.setProperty("jmh.ignoreLock", "true ");
         Options opt = new OptionsBuilder()
                 .include(EgyPackagerBenchmark.class.getSimpleName())
                 .mode(Mode.Throughput)
