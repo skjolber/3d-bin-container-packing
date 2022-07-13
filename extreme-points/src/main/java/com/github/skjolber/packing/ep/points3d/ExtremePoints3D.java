@@ -566,31 +566,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		otherValues.copyInto(values);
 		otherValues.reset();
 
-		/*
-		System.out.println();
-		System.out.println("Finally " + values.size());
-		for(int i = 0; i < values.size(); i++) {
-			System.out.println(values.get(i));
-		}
-		System.out.println();
-		
-		/*
-		for(int i = 0; i < values.size() - 1; i++) {
-			Point3D<P> a = values.get(i);
-			Point3D<P> b = values.get(i + 1);
-			if(a.eclipses(b) || b.eclipses(a)) {
-				System.out.println(xx + "x" + yy + "x" + zz);
-				System.out.println(a);
-				System.out.println(b);
-				System.out.println();
-				System.out.println(addedXX);
-				System.out.println(addedYY);
-				System.out.println(addedZZ);
-				
-				throw new RuntimeException();
-			}
-		}
-*/
 		moveToXX.clear();
 		moveToYY.clear();
 		moveToZZ.clear();
