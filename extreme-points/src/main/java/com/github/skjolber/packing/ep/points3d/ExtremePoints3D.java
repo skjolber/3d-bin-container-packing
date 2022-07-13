@@ -124,8 +124,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		int yy = placement.getAbsoluteEndY() + 1;
 		int zz = placement.getAbsoluteEndZ() + 1;
 
-		// System.out.println("******************* add point " + xx + "x" + yy + "x" + zz);
-
 		boolean supportedXYPlane = source.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY()); 
 		boolean supportedXZPlane = source.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
 		boolean supportedYZPlane = source.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
@@ -187,7 +185,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			pointIndex = 0;
 		}
 		
-		//System.out.println(pointIndex + " -> " + endIndex + " of " + values.size());
 		for(int i = pointIndex; i < endIndex; i++) {		
 			Point3D<P> point = values.get(i);
 			
@@ -793,7 +790,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			Point3D<P> p = values.get(i);
 			
 			if(p.getVolume() < minVolumeLimit || p.getArea() < minAreaLimit) {
-				//System.out.println("Filtered minimum " + p.getVolume() + " >= " + minVolumeLimit + " || " + p.getArea() + " >= " + minAreaLimit);
 				values.flag(i);
 				
 				flagged = true;
