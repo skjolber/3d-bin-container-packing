@@ -5,7 +5,6 @@ import org.assertj.core.api.AbstractObjectAssert;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
 
 public abstract class AbstractContainerAssert<SELF extends AbstractContainerAssert<SELF, ACTUAL>, ACTUAL extends Container>
 extends AbstractObjectAssert<SELF, ACTUAL> {

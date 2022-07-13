@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.test.assertj;
 
-import java.util.List;
-
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.github.skjolber.packing.api.Placement2D;

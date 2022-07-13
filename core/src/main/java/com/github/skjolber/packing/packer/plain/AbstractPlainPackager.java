@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer.plain;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BooleanSupplier;

@@ -1,8 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement3D;

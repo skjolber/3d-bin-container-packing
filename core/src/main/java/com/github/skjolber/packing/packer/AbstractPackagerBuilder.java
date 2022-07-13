@@ -2,13 +2,10 @@ package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Packager;
-import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.packer.plain.PlainPackager.Builder;
 
 
 /**

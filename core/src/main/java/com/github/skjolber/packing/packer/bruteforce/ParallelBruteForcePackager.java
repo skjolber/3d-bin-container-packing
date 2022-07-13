@@ -20,16 +20,14 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.ClonableBooleanSupplier;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
-import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorListBuilder;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorList;
+import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorListBuilder;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.Adapter;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 import com.github.skjolber.packing.packer.PackagerException;
-import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
-import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager.LargestAreaFitFirstPackagerBuilder;
 
 /**
  * 

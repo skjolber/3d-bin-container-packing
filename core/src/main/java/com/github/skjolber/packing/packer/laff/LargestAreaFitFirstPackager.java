@@ -23,8 +23,6 @@ import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.DefaultPackResult;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
-import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.packer.plain.PlainPackager.Builder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.

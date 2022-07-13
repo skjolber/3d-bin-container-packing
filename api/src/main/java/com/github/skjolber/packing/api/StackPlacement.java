@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.api;
 
-import java.util.List;
-
 public class StackPlacement implements Placement3D {
 
 	protected Stackable stackable;

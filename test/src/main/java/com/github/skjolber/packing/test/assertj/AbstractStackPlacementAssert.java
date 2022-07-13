@@ -2,7 +2,6 @@ package com.github.skjolber.packing.test.assertj;
 
 import java.util.Objects;
 
-
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
 

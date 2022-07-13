@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.api;
 
-import java.util.List;
-
 public interface Placement3D extends Placement2D  {
 
 	int getAbsoluteZ();
