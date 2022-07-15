@@ -143,7 +143,7 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 	}
 	
 	public int nextPermutation() {
-		System.arraycopy(reset, 0, rotations, ParallelPermutationRotationIteratorList.PADDING, reset.length);
+		resetRotations();
 
 		int resultIndex = nextPermutationImpl();
 		
@@ -152,7 +152,7 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 	
 	public int nextPermutation(int maxIndex) {
 		// reset rotations
-		System.arraycopy(reset, 0, rotations, ParallelPermutationRotationIteratorList.PADDING, reset.length);
+		resetRotations();
 
 		int resultIndex = nextWorkUnitPermutation(permutations, maxIndex);
 		
@@ -235,6 +235,10 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 	
 	public long countPermutations() {
 		return iterator.countPermutations();
+	}
+
+	public void resetRotations() {
+		System.arraycopy(reset, 0, rotations, ParallelPermutationRotationIteratorList.PADDING, reset.length);
 	}
 
 }

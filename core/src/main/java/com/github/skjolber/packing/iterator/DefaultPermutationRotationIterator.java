@@ -137,7 +137,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		return permutations;
 	}
 
-	private void resetRotations() {
+	public void resetRotations() {
 		System.arraycopy(reset, 0, rotations, 0, rotations.length);
 	}
 
