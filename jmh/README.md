@@ -31,6 +31,13 @@ and view the resulting `jmh-result.json` by dropping the file into a [visualizer
 
 Remember to disable CPU turbo / boost in BIOS, and close active programs competing for CPU resources.
 
+### False sharing
+Some resources might be subject to so-called [false sharing](https://www.baeldung.com/java-false-sharing-contended). Run test using the `perf` tools, for example using the command
+
+```
+mvn clean install && perf stat -d  java -jar jmh/target/benchmark.jar ParallelIteratorBenchmark -rf json
+```
+
 ### Performance analysis
 Analyze the source code, tweak the end-to-end and noop benchmarks and/or use a profiler to identify hotspots. 
 

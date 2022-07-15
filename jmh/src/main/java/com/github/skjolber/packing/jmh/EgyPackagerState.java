@@ -113,7 +113,7 @@ public class EgyPackagerState {
 		this.parallelBruteForcePackagerNth.add(new BenchmarkSet(parallelPackagerNth, stackableItems3D));
 	}
 	
-	private static Container getContainer(List<Item> items) {
+	public static Container getContainer(List<Item> items) {
 		
 		long originalVolume = 0;
 		for(Item item : items) {

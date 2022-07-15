@@ -1,0 +1,100 @@
+[
+	{
+		"dx": 16,
+		"dy": 9,
+		"dz": 22,
+		"count": 3,
+		"volume": 3168,
+		"category": "K1"
+	},
+	{
+		"dx": 25,
+		"dy": 17,
+		"dz": 22,
+		"count": 1,
+		"volume": 9350,
+		"category": "K1"
+	},
+	{
+		"dx": 26,
+		"dy": 18,
+		"dz": 9,
+		"count": 1,
+		"volume": 4212,
+		"category": "K1"
+	},
+	{
+		"dx": 26,
+		"dy": 16,
+		"dz": 12,
+		"count": 1,
+		"volume": 4992,
+		"category": "K1"
+	},
+	{
+		"dx": 28,
+		"dy": 14,
+		"dz": 18,
+		"count": 4,
+		"volume": 7056,
+		"category": "K1"
+	},
+	{
+		"dx": 42,
+		"dy": 28,
+		"dz": 17,
+		"count": 2,
+		"volume": 19992,
+		"category": "K2"
+	},
+	{
+		"dx": 32,
+		"dy": 20,
+		"dz": 24,
+		"count": 2,
+		"volume": 15360,
+		"category": "K2"
+	},
+	{
+		"dx": 32,
+		"dy": 22,
+		"dz": 26,
+		"count": 1,
+		"volume": 18304,
+		"category": "K2"
+	},
+	{
+		"dx": 33,
+		"dy": 25,
+		"dz": 23,
+		"count": 1,
+		"volume": 18975,
+		"category": "K2"
+	},
+	{
+		"dx": 43,
+		"dy": 39,
+		"dz": 12,
+		"count": 3,
+		"volume": 20124,
+		"category": "K2"
+	},
+	{
+		"dx": 46,
+		"dy": 31,
+		"dz": 13,
+		"count": 1,
+		"volume": 18538,
+		"category": "K2"
+	},
+	{
+		"dx": 26,
+		"dy": 20,
+		"dz": 30,
+		"count": 1,
+		"volume": 15600,
+		"category": "K2"
+	}
+
+
+]

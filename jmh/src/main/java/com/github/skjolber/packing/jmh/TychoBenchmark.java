@@ -23,7 +23,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.StackableItem;
 
 @State(Scope.Thread)
-@Fork(value = 1, warmups = 1)
+@Fork(value = 1, warmups = 1, jvmArgsPrepend = "-XX:-RestrictContended")
 @Warmup(iterations = 1, time = 15, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.Throughput)
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
@@ -238,6 +238,11 @@ public class TychoBenchmark {
 	@Benchmark
 	public int fastPackager(TychoPackagerState state) throws Exception {
 		return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
+	}
+	
+	@Benchmark
+	public int plainPackager(TychoPackagerState state) throws Exception {
+		return process(state.getPlainPackager(), Long.MAX_VALUE);
 	}
 
 	public int process(List<BenchmarkSet> sets, long deadline) {

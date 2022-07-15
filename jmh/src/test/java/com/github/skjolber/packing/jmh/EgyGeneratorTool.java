@@ -18,7 +18,7 @@ public class EgyGeneratorTool {
     public static void main(String[] args) throws RunnerException, IOException {    	
 		ItemGenerator<EgyItem> generator = new EgyItemGenerator(EgyItemGenerator.CLASS_1);
 		
-		List<EgyItem> items = generator.getItems(33);
+		List<EgyItem> items = generator.getItems(10);
 		for(Item item : items) {
 			System.out.println(item);
 		}

@@ -14,22 +14,23 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-@Fork(value = 1, warmups = 1)
+@Fork(value = 1, warmups = 1, jvmArgsPrepend = "-XX:-RestrictContended")
 @Warmup(iterations = 1, time = 15, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.Throughput)
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
 public class EgyPackagerBenchmark {
 
+	/*
     @Benchmark
     public int plainPackager(EgyPackagerState state) throws Exception {
     	return process(state.getPlainPackager(), Long.MAX_VALUE);
     }
-
+*/
     @Benchmark
     public int parallelPackager(EgyPackagerState state) throws Exception {
     	return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
     }
-    
+/*    
     @Benchmark
     public int packager(EgyPackagerState state) throws Exception {
     	return process(state.getBruteForcePackager(), Long.MAX_VALUE);
@@ -39,7 +40,7 @@ public class EgyPackagerBenchmark {
     public int fastPackager(EgyPackagerState state) throws Exception {
     	return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
     }
-    
+  */	  
     public int process(List<BenchmarkSet> sets, long deadline) {
     	int i = 0;
     	for(BenchmarkSet set : sets) {
