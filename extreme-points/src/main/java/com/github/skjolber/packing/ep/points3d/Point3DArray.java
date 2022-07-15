@@ -16,7 +16,6 @@ import com.github.skjolber.packing.api.ep.Point3D;
 
 public class Point3DArray<P extends Placement3D> {
 
-
 	private int size = 0;
 	private Point3D<P>[] points = new Point3D[16];
 	

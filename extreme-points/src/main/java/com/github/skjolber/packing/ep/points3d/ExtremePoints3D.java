@@ -41,9 +41,9 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 	protected List<P> placements = new ArrayList<>();
 
 	// reuse working variables
-	protected final Point3DArrayArray<P> addXX = new Point3DArrayArray<>();
-	protected final Point3DArrayArray<P> addYY = new Point3DArrayArray<>();
-	protected final Point3DArrayArray<P> addZZ = new Point3DArrayArray<>();
+	protected final Point3DListArray<P> addXX = new Point3DListArray<>();
+	protected final Point3DListArray<P> addYY = new Point3DListArray<>();
+	protected final Point3DListArray<P> addZZ = new Point3DListArray<>();
 
 	protected final Point3DArray<P> constrainXX = new Point3DArray<>();
 	protected final Point3DArray<P> constrainYY = new Point3DArray<>();
@@ -305,6 +305,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			moveToXX.sortThis(xxComparator);
 			
 			int targetIndex = endIndex;
+			addXX.ensureAdditionalCapacity(targetIndex, moveToXX.size());
+
 			add:
 			for(int i = 0; i < moveToXX.size(); i++) {
 				int currentIndex = moveToXX.get(i);
@@ -330,6 +332,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				// TODO skip x
 				while(targetIndex < values.size() && Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
+					
+					addXX.ensureAdditionalCapacity(targetIndex, moveToXX.size() - i);
 				}
 
 				addXX.add(added, targetIndex);
@@ -372,6 +376,8 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 					targetIndex++;
 				}
 
+				addYY.ensureAdditionalCapacity(targetIndex, 1);
+
 				addYY.add(added, targetIndex);
 				addedYY.add(added);
 			}
@@ -409,7 +415,9 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				while(targetIndex < values.size() && Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
 				}
-				
+
+				addZZ.ensureAdditionalCapacity(targetIndex, 1);
+
 				addZZ.add(added, targetIndex);
 				addedZZ.add(added);
 			}			
@@ -457,9 +465,10 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 		for(int i = 0; i < endIndex; i++) {
 			
-			List<Point3D<P>> addZZPoint3d = addZZ.get(i);
+			Point3DList<P> addZZPoint3d = addZZ.get(i);
 			if(!addZZPoint3d.isEmpty()) {
-				for(Point3D<P> p : addZZPoint3d) {
+				for(int k = 0; k < addZZPoint3d.size(); k++) {
+					Point3D<P> p = addZZPoint3d.get(k);
 					if(!isEclipsed(p)) {
 						otherValues.add(p);
 					}
@@ -467,9 +476,10 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 				addZZPoint3d.clear();
 			}
 			
-			List<Point3D<P>> addYYPoint3d = addYY.get(i);
+			Point3DList<P> addYYPoint3d = addYY.get(i);
 			if(!addYYPoint3d.isEmpty()) {
-				for(Point3D<P> p : addYYPoint3d) {
+				for(int k = 0; k < addYYPoint3d.size(); k++) {
+					Point3D<P> p = addYYPoint3d.get(k);
 					if(!isEclipsed(p)) {
 						otherValues.add(p);
 					}
@@ -501,9 +511,10 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			}
 		}
 
-		List<Point3D<P>> addZZPoint3d = addZZ.get(endIndex);
+		Point3DList<P> addZZPoint3d = addZZ.get(endIndex);
 		if(!addZZPoint3d.isEmpty()) {
-			for(Point3D<P> p : addZZPoint3d) {
+			for(int k = 0; k < addZZPoint3d.size(); k++) {
+				Point3D<P> p = addZZPoint3d.get(k);
 				if(!isEclipsed(p)) {
 					otherValues.add(p);
 				}
@@ -511,9 +522,10 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 			addZZPoint3d.clear();
 		}
 		
-		List<Point3D<P>> addYYPoint3d = addYY.get(endIndex);
+		Point3DList<P> addYYPoint3d = addYY.get(endIndex);
 		if(!addYYPoint3d.isEmpty()) {
-			for(Point3D<P> p : addYYPoint3d) {
+			for(int k = 0; k < addYYPoint3d.size(); k++) {
+				Point3D<P> p = addYYPoint3d.get(k);
 				if(!isEclipsed(p)) {
 					otherValues.add(p);
 				}
@@ -522,9 +534,10 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		}
 		
 		for(int i = endIndex; i < values.size(); i++) {
-			List<Point3D<P>> addXXPoint3d = addXX.get(i);
+			Point3DList<P> addXXPoint3d = addXX.get(i);
 			if(!addXXPoint3d.isEmpty()) {
-				for(Point3D<P> p : addXXPoint3d) {
+				for(int k = 0; k < addXXPoint3d.size(); k++) {
+					Point3D<P> p = addXXPoint3d.get(k);
 					if(p instanceof YZPlanePoint3D) {
 						if(!isEclipsedAtXX(p, xx)) {
 							otherValues.add(p);
@@ -544,9 +557,10 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		}
 		
 		// get the last element, if any
-		List<Point3D<P>> addXXPoint3d = addXX.get(values.size());
+		Point3DList<P> addXXPoint3d = addXX.get(values.size());
 		if(!addXXPoint3d.isEmpty()) {
-			for(Point3D<P> p : addXXPoint3d) {
+			for(int k = 0; k < addXXPoint3d.size(); k++) {
+				Point3D<P> p = addXXPoint3d.get(k);
 				if(p instanceof YZPlanePoint3D) {
 					if(!isEclipsedAtXX(p, xx)) {
 						otherValues.add(p);

@@ -17,8 +17,16 @@ import com.github.skjolber.packing.api.ep.Point3D;
 public class Point3DList<P extends Placement3D> {
 
 	private int size = 0;
-	private Point3D<P>[] points = new Point3D[16];
+	private Point3D<P>[] points;
 	
+	public Point3DList() {
+		this(16);
+	}
+	
+	public Point3DList(int initialSize) {
+		points = new Point3D[initialSize];
+	}
+
 	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
 	}

@@ -1,42 +1,40 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.Point3D;
 
 
 /**
  * 
- * Custom list for working with points.
+ * Custom list array for working with points.
  * 
  */
 
-public class Point3DArrayArray<P extends Placement3D> {
+public class Point3DListArray<P extends Placement3D> {
 
+	private static final int INITIAL_CAPACITY = 8;
 
-	private List<Point3D<P>>[] points = new List[16];
-	
-	public Point3DArrayArray() {
-		 points = new List[16];
-		 for(int i = 0; i < points.length;i++) {
-			 points[i] = new ArrayList<>(6);
-		 }
+	private Point3DList<P>[] points = new Point3DList[16];
+
+	public Point3DListArray() {
+		points = new Point3DList[16];
+		for(int i = 0; i < points.length;i++) {
+			points[i] = new Point3DList<>(INITIAL_CAPACITY);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			List<Point3D<P>>[] nextPoints = new List[size];
+			Point3DList<P>[] nextPoints = new Point3DList[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.points.length);
 			for(int i = this.points.length; i < size; i++) {
-				nextPoints[i] = new ArrayList<>(6);
+				nextPoints[i] = new Point3DList<>(INITIAL_CAPACITY);
 			}
 			this.points = nextPoints;
 		}
 	}
-	
+
 	public void add(Point3D<P> point, int index) {
 		points[index].add(point);
 	}
@@ -46,13 +44,17 @@ public class Point3DArrayArray<P extends Placement3D> {
 			this.points[i].clear();
 		}
 	}
-	
+
 	public boolean isEmpty(int index) {
 		return points[index].isEmpty();
 	}
-	
-	public List<Point3D<P>> get(int i) {
+
+	public Point3DList<P> get(int i) {
 		return points[i];
+	}
+
+	public void ensureAdditionalCapacity(int index, int count) {
+		points[index].ensureAdditionalCapacity(count);
 	}
 
 }
