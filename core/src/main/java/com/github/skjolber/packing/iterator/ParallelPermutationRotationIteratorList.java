@@ -10,8 +10,6 @@ import java.util.List;
 
 public class ParallelPermutationRotationIteratorList {
 
-	protected final static int PADDING = 16;
-	
 	protected final int[] frequencies;
 	protected ParallelPermutationRotationIterator[] workUnits;
 
@@ -27,9 +25,6 @@ public class ParallelPermutationRotationIteratorList {
 		workUnits = new ParallelPermutationRotationIterator[parallelizationCount]; 
 		for(int i = 0; i < parallelizationCount; i++) {
 			workUnits[i] = new ParallelPermutationRotationIterator(matrix, this);
-			if(workUnits[i].preventOptmisation() != -1L) {
-				throw new RuntimeException();
-			}
 		}
 		
 		calculate();
@@ -70,11 +65,11 @@ public class ParallelPermutationRotationIteratorList {
 			// which also handles zero frequencies
 			System.arraycopy(frequencies, 0, copyOfFrequencies, 0, frequencies.length);
 			int[] permutations = kthPermutation(copyOfFrequencies, count, countPermutations, rank);
-			if(permutations.length < PADDING) {
-				throw new IllegalStateException("Expected size >= " + PADDING + ", found " + permutations.length);
+			if(permutations.length < 0) {
+				throw new IllegalStateException("Expected size >= " + 0 + ", found " + permutations.length);
 			}
 			workUnits[i].setPermutations(permutations);
-			workUnits[i].setRotations(new int[PADDING + reset.length]);
+			workUnits[i].setRotations(new int[reset.length]);
 			workUnits[i].setReset(reset);
 		}
 		
@@ -165,7 +160,7 @@ public class ParallelPermutationRotationIteratorList {
 	}	
 
 	static int[] kthPermutation(int[] frequencies, int elementCount, long permutationCount, long rank) {
-		int[] result = new int[PADDING + elementCount];
+		int[] result = new int[elementCount];
 	    
 	    for(int i = 0; i < elementCount; i++) {
 		    for(int k = 0; k < frequencies.length; k++) {
@@ -174,7 +169,7 @@ public class ParallelPermutationRotationIteratorList {
 		    	}
 	            long suffixcount = permutationCount * frequencies[k] / (elementCount - i);
 	            if (rank <= suffixcount) {
-	            	result[PADDING + i] = k;
+	            	result[i] = k;
 
 	            	permutationCount = suffixcount;
 

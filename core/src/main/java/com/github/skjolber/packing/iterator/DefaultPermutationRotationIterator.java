@@ -115,13 +115,13 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		return nextRotation(rotations.length - 1);
 	}
 	
-	@Override
 	public int nextRotation(int maxIndex) {
 		// next rotation
 		for(int i = maxIndex; i >= 0; i--) {
 			if(rotations[i] < matrix[permutations[i]].getBoxes().length - 1) {
 				rotations[i]++;
 
+				// reset all following counters
 				System.arraycopy(reset, 0, rotations, i + 1, rotations.length - (i + 1));
 
 				return i;
@@ -137,7 +137,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		return permutations;
 	}
 
-	private void resetRotations() {
+	public void resetRotations() {
 		System.arraycopy(reset, 0, rotations, 0, rotations.length);
 	}
 
@@ -254,11 +254,15 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		}
 		return -1;
 	}
-
-	@Override
+	
 	public int nextPermutation() {
 		resetRotations();
 
+		return nextPermutationImpl();
+	}
+
+	protected int nextPermutationImpl() {
+		int[] permutations = this.permutations;
 	    // Find longest non-increasing suffix
 	    int i = permutations.length - 1;
 	    while (i > 0 && permutations[i - 1] >= permutations[i])
