@@ -41,6 +41,7 @@ var points = false;
 var stackableRenderer = new StackableRenderer();
 var memoryScheme = new MemoryColorScheme(new RandomColorScheme());
 
+var gridXZ;
 /**
  * Example temnplate of using Three with React
  */
@@ -162,6 +163,8 @@ class ThreeScene extends Component {
     mainGroup = new THREE.Object3D();
     this.scene.add(mainGroup);
     
+    let scene = this.scene;
+    
     var latestData = null;
 
     var load = function(packaging) {
@@ -182,6 +185,10 @@ class ThreeScene extends Component {
 
       var minStep = -1;
       var maxStep = -1;
+      
+      var maxX = 0;
+      var maxY = 0;
+      var maxZ = 0;
   
       for(var i = 0; i < packaging.containers.length; i++) {
         var containerJson = packaging.containers[i];
@@ -234,9 +241,37 @@ class ThreeScene extends Component {
         var visibleContainer = stackableRenderer.add(mainGroup, memoryScheme, new StackPlacement(container, 0, x, 0, 0), 0, 0, 0);
         visibleContainers.push(visibleContainer);
 
+
+		if(x + container.dx > maxX) {
+			maxX = x + container.dx;
+		}
+		if(container.dy > maxY) {
+			maxY = container.dy;
+		}
+		if(container.dz > maxZ) {
+			maxZ = container.dz;
+		}
+
         x += container.dx + GRID_SPACING;
         x = x - (x % GRID_SPACING);
       }
+      
+      camera.position.z = maxY * 2;
+      camera.position.y = maxZ * 1.25;
+      camera.position.x = maxX * 2;
+      
+	  // Add grid corresponding to containers
+      var size = Math.max(maxY, maxX) + GRID_SPACING + GRID_SPACING;
+      let gridXZ = new THREE.GridHelper(
+		      size,
+		      size / GRID_SPACING,
+		      0x42a5f5, // center line color
+		      0x42a5f5 // grid color,
+	    );
+       scene.add(gridXZ);
+       gridXZ.position.y = 0;
+       gridXZ.position.x = size / 2 - GRID_SPACING;
+       gridXZ.position.z = size / 2 - GRID_SPACING;
     };
 
     http(
@@ -367,7 +402,7 @@ class ThreeScene extends Component {
     camera.position.z = -50;
     camera.position.y = 50;
     camera.position.x = -50;
-    camera.lookAt(new THREE.Vector3(0, 0, 0));
+//    camera.lookAt(new THREE.Vector3(19000, 0, 0));
 
     //------Add ORBIT CONTROLS--------
     controls = new OrbitControls(camera, this.renderer.domElement);
@@ -391,22 +426,8 @@ class ThreeScene extends Component {
     var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     
     this.scene.add(ambientLight);
-
-    this.addHelper();
   };
   //-------------HELPER------------------
-  addHelper = () => {
-    // Add Grid
-    let gridXZ = new THREE.GridHelper(
-      GRID_SPACING * 100,
-      100,
-      0x18ffff, //center line color
-      0x42a5f5 //grid color,
-    );
-    this.scene.add(gridXZ);
-    gridXZ.position.y = 0;
-
-  };
   render() {
     return (
       <div

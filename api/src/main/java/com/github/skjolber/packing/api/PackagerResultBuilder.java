@@ -38,6 +38,13 @@ public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> 
 		return (B)this;
 	}
 	
+	/**
+	 * 
+	 * Build result (perform packaging)
+	 * 
+	 * @return the result
+	 */
+	
 	public abstract PackagerResult build();
 	
 }
