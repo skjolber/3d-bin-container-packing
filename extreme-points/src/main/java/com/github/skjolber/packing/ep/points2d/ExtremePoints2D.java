@@ -63,6 +63,7 @@ public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, 
 		addFirstPoint();
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void setSize(int dx, int dy) {
 		this.containerMaxX = dx - 1;
 		this.containerMaxY = dy - 1;

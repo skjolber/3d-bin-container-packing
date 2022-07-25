@@ -15,17 +15,25 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 	public SELF isAtX(int x) {
 		isNotNull();
 		if (actual.getAbsoluteX() != x) {
-			failWithMessage("Expected x at " + x);
+			failWithExpectedXAt(x);
 		}
 		return myself;
+	}
+
+	private void failWithExpectedXAt(int x) {
+		failWithMessage("Expected x at " + x);
 	}
 
 	public SELF isAtY(int y) {
 		isNotNull();
 		if (actual.getAbsoluteY() != y) {
-			failWithMessage("Expected y at " + y);
+			failWithExpectedYAt(y);
 		}
 		return myself;
+	}
+
+	private void failWithExpectedYAt(int y) {
+		failWithMessage("Expected y at " + y);
 	}
 
 	public SELF isAt(int x, int y) {
@@ -95,7 +103,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		isNotNull();
 		
 		if(!isOverlapX(other)) {
-			failWithMessage("Not overlapping in x dimension");
+			failWithNotOverlappingInXDimension();
 		}
 		if (actual.getAbsoluteEndY() + 1 != other.getAbsoluteY() && other.getAbsoluteEndY() + 1 != actual.getAbsoluteY()) {
 			failWithMessage("Expected start y at " + (other.getAbsoluteEndY() + 1) + " or end y at " + (other.getAbsoluteY() - 1));
@@ -107,7 +115,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		isNotNull();
 		
 		if(!isOverlapY(other)) {
-			failWithMessage("Not overlapping in y dimension");
+			failWithNotOverlappingInYDimension();
 		}
 
 		if (actual.getAbsoluteEndX() + 1 != other.getAbsoluteX() && other.getAbsoluteEndX() + 1 != actual.getAbsoluteX()) {
@@ -120,7 +128,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		isNotNull();
 		
 		if(!isOverlapY(other)) {
-			failWithMessage("Not overlapping in y dimension");
+			failWithNotOverlappingInYDimension();
 		}
 		
 		if (other.getAbsoluteEndX() + 1 != actual.getAbsoluteX()) {
@@ -133,7 +141,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		isNotNull();
 		
 		if(!isOverlapX(other)) {
-			failWithMessage("Not overlapping in x dimension");
+			failWithNotOverlappingInXDimension();
 		}
 		
 		if (other.getAbsoluteEndY() + 1 != actual.getAbsoluteY()) {
@@ -146,20 +154,28 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		isNotNull();
 		
 		if(!isOverlapX(other)) {
-			failWithMessage("Not overlapping in x dimension");
+			failWithNotOverlappingInXDimension();
 		}
 		if(!isOverlapY(other)) {
-			failWithMessage("Not overlapping in y dimension");
+			failWithNotOverlappingInYDimension();
 		}
 		
 		return myself;
+	}
+
+	private void failWithNotOverlappingInXDimension() {
+		failWithMessage("Not overlapping in x dimension");
+	}
+
+	private void failWithNotOverlappingInYDimension() {
+		failWithMessage("Not overlapping in y dimension");
 	}
 
 	public SELF preceedsAlongsideY(Placement3D other) {
 		isNotNull();
 		
 		if(!isOverlapX(other)) {
-			failWithMessage("Not overlapping in x dimension");
+			failWithNotOverlappingInXDimension();
 		}
 		
 		if (actual.getAbsoluteEndY() + 1 != other.getAbsoluteY()) {
@@ -172,7 +188,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		isNotNull();
 		
 		if(!isOverlapY(other)) {
-			failWithMessage("Not overlapping in y dimension");
+			failWithNotOverlappingInYDimension();
 		}
 		
 		if (actual.getAbsoluteEndX() + 1 != other.getAbsoluteX() ) {
@@ -185,10 +201,10 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		isNotNull();
 		
 		if(!isOverlapX(other)) {
-			failWithMessage("Not overlapping in x dimension");
+			failWithNotOverlappingInXDimension();
 		}
 		if(!isOverlapY(other)) {
-			failWithMessage("Not overlapping in y dimension");
+			failWithNotOverlappingInYDimension();
 		}
 		
 		return myself;

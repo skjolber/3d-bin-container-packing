@@ -9,6 +9,7 @@ import java.util.function.BooleanSupplier;
  * 
  */
 
+@SuppressWarnings("unchecked")
 public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> {
 
 	protected List<StackableItem> items;

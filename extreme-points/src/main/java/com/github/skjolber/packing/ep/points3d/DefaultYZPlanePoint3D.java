@@ -9,6 +9,8 @@ import com.github.skjolber.packing.api.ep.YZPlanePoint3D;
 
 public class DefaultYZPlanePoint3D<P extends Placement3D> extends Point3D<P> implements YZPlanePoint3D  {
 
+	private static final long serialVersionUID = 1L;
+	
 	/** range constrained to current minX */
 	private final P yzPlane;
 
@@ -78,11 +80,6 @@ public class DefaultYZPlanePoint3D<P extends Placement3D> extends Point3D<P> imp
 		List<P> list = new ArrayList<>(2);
 		list.add(yzPlane);
 		return list;
-	}		
-	
-	@Override
-	public DefaultYZPlanePoint3D<P> clone() {
-		return new DefaultYZPlanePoint3D<>(minX, minY, minZ, maxX, maxY, maxZ, yzPlane);
 	}
 	
 	@Override

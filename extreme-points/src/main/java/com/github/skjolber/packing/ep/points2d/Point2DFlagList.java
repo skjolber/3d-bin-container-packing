@@ -15,21 +15,20 @@ import com.github.skjolber.packing.api.ep.Point2D;
  * 
  */
 
+@SuppressWarnings("unchecked")
 public class Point2DFlagList<P extends Placement2D> {
 
 	private int size = 0;
 	private Point2D<P>[] points = new Point2D[16];
 	private boolean[] flag = new boolean[16];
 	
-	@SuppressWarnings("unchecked")
 	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			Point2D[] nextPoints = new Point2D[size];
+			Point2D<P>[] nextPoints = new Point2D[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 
 			boolean[] nextFlag = new boolean[size];
@@ -158,7 +157,7 @@ public class Point2DFlagList<P extends Placement2D> {
     @Override
     public boolean equals(Object obj) {
     	if(obj instanceof Point2DFlagList) {
-    		Point2DFlagList other = (Point2DFlagList)obj;
+    		Point2DFlagList<P> other = (Point2DFlagList<P>)obj;
     		if(other.size() == size) {
     			for(int i = 0; i < size; i++) {
     	            if(!points[i].equals(other.get(i))) {
@@ -175,7 +174,7 @@ public class Point2DFlagList<P extends Placement2D> {
     }
 
 
-	public void setAll(Point2DList add, int offset) {
+	public void setAll(Point2DList<P, Point2D<P>> add, int offset) {
 		System.arraycopy(add.getPoints(), 0, points, offset, add.size());
 		int limit = offset + add.size();
 		for(int i = offset; i < limit; i++) {

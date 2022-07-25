@@ -14,6 +14,7 @@ import com.github.skjolber.packing.api.ep.Point3D;
  * 
  */
 
+@SuppressWarnings("unchecked")
 public class Point3DList<P extends Placement3D> {
 
 	private int size = 0;
@@ -31,10 +32,9 @@ public class Point3DList<P extends Placement3D> {
 		ensureCapacity(size + count);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			Point3D[] nextPoints = new Point3D[size];
+			Point3D<P>[] nextPoints = new Point3D[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 			this.points = nextPoints;
 		}
@@ -86,7 +86,7 @@ public class Point3DList<P extends Placement3D> {
     @Override
     public boolean equals(Object obj) {
     	if(obj instanceof Point3DList) {
-    		Point3DList other = (Point3DList)obj;
+    		Point3DList<P> other = (Point3DList<P>)obj;
     		if(other.size() == size) {
     			for(int i = 0; i < size; i++) {
     	            if(!points[i].equals(other.get(i))) {

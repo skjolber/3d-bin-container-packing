@@ -9,6 +9,7 @@ import com.github.skjolber.packing.api.ep.XSupportPoint2D;
 
 public class DefaultXSupportPoint2D<P extends Placement2D> extends Point2D<P> implements XSupportPoint2D {
 
+	private static final long serialVersionUID = 1L;
 	/** range constrained to current minY */
 	private final P xSupport;
 	

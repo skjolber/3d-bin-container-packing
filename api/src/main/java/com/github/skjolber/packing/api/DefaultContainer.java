@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 public class DefaultContainer extends Container {
 
+	private static final long serialVersionUID = 1L;
+
 	protected final ContainerStackValue[] stackValues;
 	protected final Stack stack;
 	

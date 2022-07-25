@@ -2,6 +2,8 @@ package com.github.skjolber.packing.api;
 
 public abstract class Container extends Stackable {
 
+	private static final long serialVersionUID = 1L;
+
 	public static Builder newBuilder() {
 		return new Builder();
 	}

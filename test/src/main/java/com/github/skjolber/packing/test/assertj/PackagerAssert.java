@@ -2,6 +2,7 @@ package com.github.skjolber.packing.test.assertj;
 
 import com.github.skjolber.packing.api.Packager;
 
+@SuppressWarnings("rawtypes")
 public class PackagerAssert extends AbstractPackagerAssert<PackagerAssert, Packager> {
 
 	public static PackagerAssert assertThat(Packager actual) {

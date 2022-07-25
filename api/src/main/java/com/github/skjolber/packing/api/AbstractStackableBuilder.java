@@ -11,6 +11,7 @@ import java.util.List;
  *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
  */
 
+@SuppressWarnings("unchecked")
 public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilder<B>> extends AbstractPhysicsBuilder<B> {
 
 	protected String id;

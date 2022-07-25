@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.ep.YSupportPoint2D;
 
 public class DefaultXYSupportPoint2D<P extends Placement2D> extends Point2D<P> implements XSupportPoint2D, YSupportPoint2D {
 
+	private static final long serialVersionUID = 1L;
 	private final P xSupport;
 	private final P ySupport;
 		

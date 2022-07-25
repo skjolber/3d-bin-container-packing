@@ -5,6 +5,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.packer.AbstractPackager;
 
+@SuppressWarnings("rawtypes")
 public class BenchmarkSet {
 
 	private final List<StackableItem> products;

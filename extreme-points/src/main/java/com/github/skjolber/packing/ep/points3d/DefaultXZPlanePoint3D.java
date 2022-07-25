@@ -9,6 +9,8 @@ import com.github.skjolber.packing.api.ep.XZPlanePoint3D;
 
 public class DefaultXZPlanePoint3D<P extends Placement3D> extends Point3D<P> implements XZPlanePoint3D {
 
+	private static final long serialVersionUID = 1L;
+	
 	/** range constrained to current minY */
 	private final P xzPlane;
 	
@@ -82,10 +84,6 @@ public class DefaultXZPlanePoint3D<P extends Placement3D> extends Point3D<P> imp
 		return list;
 	}	
 	
-	@Override
-	public DefaultXZPlanePoint3D<P> clone() {
-		return new DefaultXZPlanePoint3D<>(minX, minY, minZ, maxX, maxY, maxZ, xzPlane);
-	}
 	
 	@Override
 	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ) {

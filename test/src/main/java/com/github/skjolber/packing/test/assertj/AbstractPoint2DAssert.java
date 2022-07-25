@@ -7,6 +7,7 @@ import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.XSupportPoint2D;
 import com.github.skjolber.packing.api.ep.YSupportPoint2D;
 
+@SuppressWarnings("rawtypes")
 public abstract class AbstractPoint2DAssert<SELF extends AbstractPoint2DAssert<SELF, ACTUAL>, ACTUAL extends Point2D>
 extends AbstractObjectAssert<SELF, ACTUAL> {
 

@@ -21,6 +21,8 @@ import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 @Warmup(iterations = 1, time = 15, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.Throughput)
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
+
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class ExtremePointsBenchmark {
 
 	/*

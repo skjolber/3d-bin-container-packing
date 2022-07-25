@@ -8,6 +8,7 @@ import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackableItem;
 
+@SuppressWarnings("rawtypes")
 public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert<SELF, ACTUAL>, ACTUAL extends Packager>
 extends AbstractObjectAssert<SELF, ACTUAL> {
 
@@ -17,6 +18,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		super(actual, selfType);
 	}
 
+	@SuppressWarnings("unchecked")
 	public SELF respectsDeadline(List<StackableItem> items, long maxTime) {
 		isNotNull();
 		

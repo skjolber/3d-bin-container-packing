@@ -8,6 +8,8 @@ import com.github.skjolber.packing.api.ep.Point2D;
 
 public class DefaultPoint2D<P extends Placement2D> extends Point2D<P> {
 
+	private static final long serialVersionUID = 1L;
+
 	public DefaultPoint2D(int minX, int minY, int maxX, int maxY) {
 		super(minX, minY, maxX, maxY);
 	}

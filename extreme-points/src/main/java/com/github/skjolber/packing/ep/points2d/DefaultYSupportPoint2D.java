@@ -9,6 +9,7 @@ import com.github.skjolber.packing.api.ep.YSupportPoint2D;
 
 public class DefaultYSupportPoint2D<P extends Placement2D> extends Point2D<P> implements YSupportPoint2D  {
 
+	private static final long serialVersionUID = 1L;
 	/** range constrained to current minX */
 	private final P ySupport;
 	

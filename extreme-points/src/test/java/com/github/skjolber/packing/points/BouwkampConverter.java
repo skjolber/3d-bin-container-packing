@@ -9,6 +9,7 @@ import com.github.skjolber.packing.ep.points3d.DefaultPlacement3D;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 
+@SuppressWarnings({"rawtypes"})
 public class BouwkampConverter {
 
 	private boolean throwException;

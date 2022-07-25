@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.ep.Point3D;
  * 
  */
 
+@SuppressWarnings("unchecked")
 public class Point3DListArray<P extends Placement3D> {
 
 	private static final int INITIAL_CAPACITY = 8;
@@ -23,7 +24,6 @@ public class Point3DListArray<P extends Placement3D> {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
 			Point3DList<P>[] nextPoints = new Point3DList[size];

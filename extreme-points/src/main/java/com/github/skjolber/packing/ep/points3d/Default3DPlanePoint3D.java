@@ -11,6 +11,8 @@ import com.github.skjolber.packing.api.ep.YZPlanePoint3D;
 
 public class Default3DPlanePoint3D<P extends Placement3D> extends Point3D<P> implements XZPlanePoint3D, YZPlanePoint3D, XYPlanePoint3D {
 
+	private static final long serialVersionUID = 1L;
+
 	/** range constrained to current minX */
 	private final P yzPlane;
 	

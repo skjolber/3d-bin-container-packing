@@ -12,20 +12,19 @@ import com.github.skjolber.packing.api.ep.Point2D;
  * 
  */
 
+@SuppressWarnings("unchecked")
 public class Point2DList<P extends Placement2D, Point extends Point2D<P>> {
 
 	private int size = 0;
 	private Point2D<P>[] points = new Point2D[16];
 	
-	@SuppressWarnings("unchecked")
 	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			Point2D[] nextPoints = new Point2D[size];
+			Point2D<P>[] nextPoints = new Point2D[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 			this.points = nextPoints;
 		}
@@ -76,11 +75,10 @@ public class Point2DList<P extends Placement2D, Point extends Point2D<P>> {
         return hashCode;
     }
     
-    @SuppressWarnings("unchecked")
 	@Override
     public boolean equals(Object obj) {
     	if(obj instanceof Point2DList) {
-    		Point2DList<P, Point> other = (Point2DList)obj;
+    		Point2DList<P, Point> other = (Point2DList<P, Point>)obj;
     		if(other.size() == size) {
     			for(int i = 0; i < size; i++) {
     	            if(!points[i].equals(other.get(i))) {

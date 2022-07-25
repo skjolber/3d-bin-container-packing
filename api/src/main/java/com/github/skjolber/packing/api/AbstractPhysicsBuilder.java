@@ -8,6 +8,7 @@ package com.github.skjolber.packing.api;
  *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
  */
 
+@SuppressWarnings("unchecked")
 public class AbstractPhysicsBuilder<B extends AbstractPhysicsBuilder<B>> {
 
 	protected StackConstraint constraint;

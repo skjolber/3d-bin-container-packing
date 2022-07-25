@@ -17,6 +17,7 @@ import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.assertj.PackagerAssert;
 
+@SuppressWarnings("rawtypes")
 public abstract class AbstractPackagerTest {
 
 	protected static void assertValid(List<Container> containers) {

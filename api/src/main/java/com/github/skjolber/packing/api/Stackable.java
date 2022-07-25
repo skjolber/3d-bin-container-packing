@@ -1,10 +1,13 @@
 package com.github.skjolber.packing.api;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Stackable {
+public abstract class Stackable implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	protected final String id;
 	protected final String description;
 	
