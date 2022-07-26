@@ -7,6 +7,7 @@ import com.github.skjolber.packing.api.ep.XYPlanePoint3D;
 import com.github.skjolber.packing.api.ep.XZPlanePoint3D;
 import com.github.skjolber.packing.api.ep.YZPlanePoint3D;
 
+@SuppressWarnings("rawtypes")
 public abstract class AbstractPoint3DAssert<SELF extends AbstractPoint3DAssert<SELF, ACTUAL>, ACTUAL extends Point3D>
 extends AbstractObjectAssert<SELF, ACTUAL> {
 

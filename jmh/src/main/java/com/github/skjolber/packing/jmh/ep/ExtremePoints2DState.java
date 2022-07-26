@@ -37,7 +37,7 @@ public class ExtremePoints2DState {
 	}
 
 	private void add(BouwkampCode bkpLine) {
-		ExtremePoints2D<Placement2D> points = new ExtremePoints2D<>(bkpLine.getWidth(), bkpLine.getDepth());
+		ExtremePoints2D<DefaultPlacement2D> points = new ExtremePoints2D<>(bkpLine.getWidth(), bkpLine.getDepth());
 		
 		ExtremePoints2DEntries extremePointsEntries = new ExtremePoints2DEntries(points);
 

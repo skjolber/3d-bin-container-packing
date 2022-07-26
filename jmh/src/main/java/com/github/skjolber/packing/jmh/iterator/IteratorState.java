@@ -103,6 +103,9 @@ public class IteratorState {
 		
 		try {
 			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			// ignore
 		} catch(Exception e) {
 			// ignore
 		}

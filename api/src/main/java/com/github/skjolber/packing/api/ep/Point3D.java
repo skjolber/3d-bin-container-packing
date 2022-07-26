@@ -8,6 +8,8 @@ import com.github.skjolber.packing.api.StackValue;
 
 public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 
+	private static final long serialVersionUID = 1L;
+
 	public static final Comparator<Point3D<?>> X_COMPARATOR = new Comparator<Point3D<?>>() {
 		
 		@Override
@@ -416,8 +418,6 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 
 	public abstract List<P> getPlacements3D();
 	
-	public abstract Point3D<P> clone();
-																										
 	public abstract List<P> getPlacements2D();
 
 	//       |                  

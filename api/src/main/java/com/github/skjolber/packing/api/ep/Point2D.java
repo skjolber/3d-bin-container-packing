@@ -1,13 +1,16 @@
 package com.github.skjolber.packing.api.ep;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.StackValue;
 
-public abstract class Point2D<P extends Placement2D> {
+public abstract class Point2D<P extends Placement2D> implements Serializable {
 	
+	private static final long serialVersionUID = 1L;
+
 	public static final Comparator<Point2D<?>> COMPARATOR_X_THEN_Y = new Comparator<Point2D<?>>() {
 		
 		@Override

@@ -22,7 +22,7 @@ import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 @Measurement(iterations = 1, time = 8, timeUnit = TimeUnit.SECONDS)
 public class DefaultIteratorBenchmark {
 
-	private static final long MAX_COUNT = 8 * 1024 * 1024;
+	private static final long MAX_COUNT = 8 * 1024 * 1024L;
 
 	@Benchmark
 	public long rotations(IteratorState state) throws Exception {

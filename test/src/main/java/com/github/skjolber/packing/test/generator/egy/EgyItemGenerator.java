@@ -55,8 +55,6 @@ public class EgyItemGenerator implements ItemGenerator<EgyItem> {
 			.withName("4")
 			.build();
 	
-	private static Clazz[] CLASSES = {CLASS_1, CLASS_2, CLASS_3, CLASS_4};
-	
 	private final RandomDataGenerator randomDataGenerator;
 	
 	private NormalDistribution depthWidthRatio = new NormalDistribution(0.695d, 0.118d);

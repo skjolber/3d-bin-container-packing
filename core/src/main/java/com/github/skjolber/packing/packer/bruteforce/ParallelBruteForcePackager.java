@@ -110,7 +110,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 						ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor)executorService;
 						parallelizationCount = 16 * threadPoolExecutor.getMaximumPoolSize();
 					} else {
-						throw new IllegalArgumentException("Expected a parallelization count for custom exectutor service");
+						throw new ParallelBruteForcePackagerException("Expected a parallelization count for custom exectutor service");
 					}
 				}
 			}

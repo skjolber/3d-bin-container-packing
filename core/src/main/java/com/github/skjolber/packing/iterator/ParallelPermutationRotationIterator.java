@@ -232,7 +232,7 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 	}
 
 	public void resetRotations() {
-		System.arraycopy(reset, 0, rotations, 0, rotations.length);
+		System.arraycopy(reset, 0, rotations, 0, reset.length);
 	}
 
 }

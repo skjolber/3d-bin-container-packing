@@ -26,7 +26,7 @@ import com.github.skjolber.packing.iterator.ParallelPermutationRotationIterator;
 @Measurement(iterations = 1, time = 15, timeUnit = TimeUnit.SECONDS)
 public class ParallelIteratorBenchmark {
 
-	private static final long MAX_COUNT = 8 * 1024 * 1024;
+	private static final long MAX_COUNT = 8 * 1024 * 1024L;
 
 	@Benchmark
 	public long rotations(IteratorState state) throws Exception {

@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,8 +8,10 @@ import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.api.ep.XYPlanePoint3D;
 
-public class DefaultXYPlanePoint3D<P extends Placement3D> extends Point3D<P> implements XYPlanePoint3D  {
+public class DefaultXYPlanePoint3D<P extends Placement3D & Serializable> extends Point3D<P> implements XYPlanePoint3D  {
 
+	private static final long serialVersionUID = 1L;
+	
 	/** range constrained to current minZ */
 	private final P xyPlane;
 	
@@ -77,11 +80,6 @@ public class DefaultXYPlanePoint3D<P extends Placement3D> extends Point3D<P> imp
 		List<P> list = new ArrayList<>(1);
 		list.add(xyPlane);
 		return list;
-	}
-
-	@Override
-	public DefaultXYPlanePoint3D<P> clone() {
-		return new DefaultXYPlanePoint3D<>(minX, minY, minZ, maxX, maxY, maxZ, xyPlane);
 	}
 
 	@Override

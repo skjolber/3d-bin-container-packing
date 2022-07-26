@@ -9,6 +9,7 @@ import java.util.function.BooleanSupplier;
  * 
  */
 
+@SuppressWarnings("unchecked")
 public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> {
 
 	protected List<StackableItem> items;
@@ -37,6 +38,13 @@ public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> 
 		this.maxResults = maxResults;
 		return (B)this;
 	}
+	
+	/**
+	 * 
+	 * Build result (perform packaging)
+	 * 
+	 * @return the result
+	 */
 	
 	public abstract PackagerResult build();
 	

@@ -1,9 +1,13 @@
 package com.github.skjolber.packing.ep.points2d;
 
+import java.io.Serializable;
+
 import com.github.skjolber.packing.api.Placement2D;
 
-public class DefaultPlacement2D implements Placement2D {
+public class DefaultPlacement2D implements Placement2D, Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	protected final int x;
 	protected final int y;
 	protected final int endX;

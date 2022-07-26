@@ -123,7 +123,7 @@ public class Clazz {
 		CategoryCounts.Builder newBuilder = CategoryCounts.newBuilder().withName(name);
 
 		for (int i = 0; i < items.size(); i++) {
-			newBuilder.withCategory(items.get(i).category, categoryCounts[i]);
+			newBuilder.withCategory(items.get(i).getCategory(), categoryCounts[i]);
 		}
 		
 		return newBuilder.build();

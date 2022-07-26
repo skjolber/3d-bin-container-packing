@@ -1,10 +1,10 @@
 package com.github.skjolber.packing.ep.points3d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
 import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 
 import com.github.skjolber.packing.api.Placement3D;
@@ -18,7 +18,7 @@ import com.github.skjolber.packing.api.ep.YZPlanePoint3D;
  *
  */
 
-public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, Point3D<P>> {
+public class ExtremePoints3D<P extends Placement3D & Serializable> implements ExtremePoints<P, Point3D<P>> {
 	public static final Comparator<Point3D<?>> COMPARATOR_X = new Comparator<Point3D<?>>() {
 		
 		@Override
@@ -61,10 +61,6 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 
 	protected P containerPlacement;
 	
-	private IntComparator COMPARATOR_Y_THEN_Z_THEN_X = (a, b) -> Point3D.COMPARATOR_Y_THEN_Z_THEN_X.compare(values.get(a), values.get(b));
-	private IntComparator COMPARATOR_Z_THEN_X_THEN_Y = (a, b) -> Point3D.COMPARATOR_Z_THEN_X_THEN_Y.compare(values.get(a), values.get(b));
-	private IntComparator COMPARATOR_X_THEN_Y_THEN_Z = (a, b) -> Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(values.get(a), values.get(b));
-	
 	protected CustomIntXComparator xxComparator = new CustomIntXComparator();
 	protected CustomIntYComparator yyComparator = new CustomIntYComparator();
 	protected CustomIntZComparator zzComparator = new CustomIntZComparator();
@@ -91,6 +87,7 @@ public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, 
 		this.containerPlacement = createContainerPlacement();
 	}
 
+	@SuppressWarnings("unchecked")
 	private P createContainerPlacement() {
 		return (P) new DefaultPlacement3D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ);
 	}

@@ -1,10 +1,14 @@
 package com.github.skjolber.packing.ep.points3d;
 
+import java.io.Serializable;
+
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.Placement3D;
 
-public class DefaultPlacement3D implements Placement3D {
+public class DefaultPlacement3D implements Placement3D, Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	protected final int x;
 	protected final int y;
 	protected final int z;

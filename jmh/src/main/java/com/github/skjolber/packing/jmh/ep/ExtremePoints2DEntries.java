@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
 
+@SuppressWarnings("rawtypes")
 public class ExtremePoints2DEntries {
 
 	private final List<ExtremePoint2DEntry> entries = new ArrayList<>();

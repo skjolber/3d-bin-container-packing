@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -14,13 +15,15 @@ import com.github.skjolber.packing.api.ep.Point3D;
  * 
  */
 
-public class Point3DFlagList<P extends Placement3D> {
+@SuppressWarnings("unchecked")
+public class Point3DFlagList<P extends Placement3D> implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	private int size = 0;
 	private Point3D<P>[] points = new Point3D[16];
 	private boolean[] flag = new boolean[16];
 	
-	@SuppressWarnings("unchecked")
 	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
 	}

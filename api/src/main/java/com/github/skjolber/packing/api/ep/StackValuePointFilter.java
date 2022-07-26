@@ -3,6 +3,7 @@ package com.github.skjolber.packing.api.ep;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 
+@SuppressWarnings("rawtypes")
 @FunctionalInterface
 public interface StackValuePointFilter<T extends Point2D> {
 

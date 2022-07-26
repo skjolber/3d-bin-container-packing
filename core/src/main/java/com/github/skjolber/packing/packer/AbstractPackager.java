@@ -84,7 +84,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 *
 	 * @param boxes    list of boxes to fit in a container
 	 * @param deadline the system time in millis at which the search should be aborted
-	 * @return index of container if match, -1 if not
+	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
 	 */
 
 	public Container pack(List<StackableItem> boxes, long deadline) {
@@ -101,7 +101,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @param boxes     list of boxes to fit in a container
 	 * @param deadline  the system time in millis at which the search should be aborted
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
-	 * @return index of container if match, -1 if not
+	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
 	 * 
 	 */
 	public Container pack(List<StackableItem> boxes, long deadline, BooleanSupplier interrupt) {
@@ -114,7 +114,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @param boxes      list of boxes to fit in a container
 	 * @param containers list of containers
 	 * @param deadline   the system time in milliseconds at which the search should be aborted
-	 * @return index of container if match, -1 if not
+	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
 	 */
 	public Container pack(List<StackableItem> boxes, List<Container> containers, long deadline) {
 		return packImpl(boxes, containers, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
@@ -127,7 +127,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @param containers list of containers
 	 * @param deadline   the system time in milliseconds at which the search should be aborted
 	 * @param interrupt  When true, the computation is interrupted as soon as possible.
-	 * @return index of container if match, -1 if not
+	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
 	 */
 	public Container pack(List<StackableItem> boxes, List<Container> containers, long deadline, BooleanSupplier interrupt) {
 		return packImpl(boxes, containers, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
@@ -239,7 +239,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @param boxes    list of boxes to fit in a container
 	 * @param limit    maximum number of containers
 	 * @param deadline the system time in milliseconds at which the search should be aborted
-	 * @return index of container if match, -1 if not
+	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
 	 */
 	public List<Container> packList(List<StackableItem> boxes, int limit, long deadline) {
 		return packList(boxes, limit, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
@@ -254,7 +254,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @param limit     maximum number of containers
 	 * @param deadline  the system time in milliseconds at which the search should be aborted
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
-	 * @return index of container if match, -1 if not
+	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
 	 */
 	public List<Container> packList(List<StackableItem> boxes, int limit, long deadline, BooleanSupplier interrupt) {
 		return packList(boxes, limit, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
@@ -270,7 +270,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @param boxes     list of boxes to fit in a container
 	 * @param limit     maximum number of containers
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
-	 * @return index of container if match, -1 if not
+	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
 	 */
 	public List<Container> packList(List<StackableItem> boxes, int limit, BooleanSupplier interrupt) {
 		List<Container> containers = filterByVolumeAndWeight(toBoxes(boxes, true), Arrays.asList(this.containers), limit);

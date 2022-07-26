@@ -10,6 +10,7 @@ import java.util.List;
  *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
  */
 
+@SuppressWarnings("unchecked")
 public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 
 	protected String id;

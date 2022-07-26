@@ -13,6 +13,7 @@ import com.github.skjolber.packing.api.Packager;
  * 
  */
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractPackagerBuilder<P extends Packager, B extends AbstractPackagerBuilder<P, B>> {
 
 	protected List<Container> containers;

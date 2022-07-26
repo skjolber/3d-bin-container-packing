@@ -5,6 +5,8 @@ import java.util.List;
 
 public class Box extends Stackable {
 
+	private static final long serialVersionUID = 1L;
+
 	public static Builder newBuilder() {
 		return new Builder();
 	}
