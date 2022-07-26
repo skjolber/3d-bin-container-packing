@@ -1,9 +1,12 @@
 package com.github.skjolber.packing.api;
 
+import java.io.Serializable;
 import java.util.List;
 
-public abstract class Stack {
+public abstract class Stack implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	protected ContainerStackValue containerStackValue;
 	
 	public Stack() {

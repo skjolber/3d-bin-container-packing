@@ -2,22 +2,23 @@ package com.github.skjolber.packing.points;
 
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPlacement3D;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 
-public class DefaultExtremePoints3D extends ExtremePoints3D<Placement3D> {
+public class DefaultExtremePoints3D extends ExtremePoints3D<DefaultPlacement3D> {
 
 	public DefaultExtremePoints3D(int dx, int dy, int dz) {
 		super(dx, dy, dz);
 	}
 
 	@Override
-	public boolean add(int index, Placement3D placement) {
+	public boolean add(int index, DefaultPlacement3D placement) {
 		boolean add = super.add(index, placement);
 		validate(placement);
 		return add;
 	}
 
-	private void validate(Placement3D target) {
+	private void validate(DefaultPlacement3D target) {
 		
 		for (Placement3D p : placements) {
 			for (int i = 0; i < values.size(); i++) {

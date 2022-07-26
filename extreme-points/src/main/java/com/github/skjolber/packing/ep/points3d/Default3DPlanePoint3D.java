@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +10,7 @@ import com.github.skjolber.packing.api.ep.XYPlanePoint3D;
 import com.github.skjolber.packing.api.ep.XZPlanePoint3D;
 import com.github.skjolber.packing.api.ep.YZPlanePoint3D;
 
-public class Default3DPlanePoint3D<P extends Placement3D> extends Point3D<P> implements XZPlanePoint3D, YZPlanePoint3D, XYPlanePoint3D {
+public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends Point3D<P> implements XZPlanePoint3D, YZPlanePoint3D, XYPlanePoint3D {
 
 	private static final long serialVersionUID = 1L;
 

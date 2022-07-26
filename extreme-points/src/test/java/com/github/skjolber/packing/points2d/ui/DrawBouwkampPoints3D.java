@@ -29,14 +29,14 @@ public class DrawBouwkampPoints3D {
 				
 				List<Point3D<?>> list = new ArrayList<>();
 				
-				List<Point3D<Placement3D>> values = plane.getValuesAsList();
+				List<Point3D<DefaultPlacement3D>> values = plane.getValuesAsList();
 
-				List<Placement3D> placements = plane.getPlacements();
+				List<DefaultPlacement3D> placements = plane.getPlacements();
 
 				Placement3D last = placements.get(placements.size() - 1);
 				boolean rotate = last.getAbsoluteX() == 0;
 
-				for (Point3D<Placement3D> point3d : values) {
+				for (Point3D<DefaultPlacement3D> point3d : values) {
 					if(rotate) {
 						list.add(point3d.rotate());
 					} else {

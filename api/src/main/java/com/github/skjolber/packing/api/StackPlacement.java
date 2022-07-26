@@ -1,7 +1,11 @@
 package com.github.skjolber.packing.api;
 
-public class StackPlacement implements Placement3D {
+import java.io.Serializable;
 
+public class StackPlacement implements Placement3D, Serializable {
+
+	private static final long serialVersionUID = 1L;
+	
 	protected Stackable stackable;
 	protected StackValue value;
 	
@@ -142,11 +146,6 @@ public class StackPlacement implements Placement3D {
 		this.maxSupportedWeight = maxSupportedWeight;
 	}
 	
-	@Override
-	public StackPlacement clone() {
-		return new StackPlacement(stackable, value, x, y, z,  maxSupportedPressure, maxSupportedWeight);
-	}
-
 	public int getWeight() {
 		return stackable.getWeight();
 	}

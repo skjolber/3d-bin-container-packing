@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -17,7 +18,7 @@ import com.github.skjolber.packing.api.ep.YZPlanePoint3D;
  *
  */
 
-public class ExtremePoints3D<P extends Placement3D> implements ExtremePoints<P, Point3D<P>> {
+public class ExtremePoints3D<P extends Placement3D & Serializable> implements ExtremePoints<P, Point3D<P>> {
 	public static final Comparator<Point3D<?>> COMPARATOR_X = new Comparator<Point3D<?>>() {
 		
 		@Override

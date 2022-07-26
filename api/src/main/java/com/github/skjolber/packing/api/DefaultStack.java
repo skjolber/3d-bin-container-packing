@@ -5,6 +5,8 @@ import java.util.List;
 
 public class DefaultStack extends Stack {
 
+	private static final long serialVersionUID = 1L
+			;
 	protected final List<StackPlacement> entries = new ArrayList<>();
 	
 	public DefaultStack() {

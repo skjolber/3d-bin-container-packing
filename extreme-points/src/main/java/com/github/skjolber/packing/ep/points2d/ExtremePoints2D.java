@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.ep.points2d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -17,7 +18,7 @@ import com.github.skjolber.packing.api.ep.Point2D;
  *
  */
 
-public class ExtremePoints2D<P extends Placement2D> implements ExtremePoints<P, Point2D<P>> {
+public class ExtremePoints2D<P extends Placement2D & Serializable> implements ExtremePoints<P, Point2D<P>> {
 	
 	public static final Comparator<Point2D<?>> COMPARATOR_X = new Comparator<Point2D<?>>() {
 		

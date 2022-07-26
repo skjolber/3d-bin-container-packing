@@ -4,6 +4,8 @@ import java.util.List;
 
 public abstract class ContainerStackValue extends StackValue {
 
+	private static final long serialVersionUID = 1L;
+
 	public ContainerStackValue(
 			int dx, int dy, int dz, 
 			StackConstraint constraint,

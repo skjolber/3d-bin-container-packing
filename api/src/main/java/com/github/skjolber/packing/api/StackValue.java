@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -9,8 +10,10 @@ import java.util.List;
  * 
  */
 
-public abstract class StackValue {
+public abstract class StackValue implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	protected final int dx; // width
 	protected final int dy; // depth
 	protected final int dz; // height

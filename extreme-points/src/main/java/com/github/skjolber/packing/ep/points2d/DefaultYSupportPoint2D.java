@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.ep.points2d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +8,7 @@ import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.YSupportPoint2D;
 
-public class DefaultYSupportPoint2D<P extends Placement2D> extends Point2D<P> implements YSupportPoint2D  {
+public class DefaultYSupportPoint2D<P extends Placement2D & Serializable> extends Point2D<P> implements YSupportPoint2D  {
 
 	private static final long serialVersionUID = 1L;
 	/** range constrained to current minX */

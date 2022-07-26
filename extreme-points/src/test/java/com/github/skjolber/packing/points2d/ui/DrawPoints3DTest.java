@@ -9,7 +9,7 @@ import com.github.skjolber.packing.points.DefaultExtremePoints3D;
 
 public class DrawPoints3DTest {
 
-	private static Placement3D createPlacement(Point3D extremePoint, int dx, int dy, int dz) {
+	private static DefaultPlacement3D createPlacement(Point3D extremePoint, int dx, int dy, int dz) {
 		if(extremePoint.getMinZ() != 0) {
 			throw new IllegalArgumentException(extremePoint.getMinX() + "x" + extremePoint.getMinY() + "x" + extremePoint.getMinZ());
 		}
@@ -56,7 +56,7 @@ public class DrawPoints3DTest {
 			System.out.println(" " + p.getMinX() + "x" + p.getMinY() + "x" + p.getMinZ() + " " + p.getMaxX() + "x" + p.getMaxY() + "x" + p.getMaxZ());
 		}
 		
-		List<Point3D<Placement3D>> values = extremePoints.getValuesAsList();
+		List<Point3D<DefaultPlacement3D>> values = extremePoints.getValuesAsList();
 		for (int i = 0; i < values.size(); i++) {
 			Point3D point3d = values.get(i);
 			

@@ -10,6 +10,8 @@ import java.util.List;
 
 public class FixedContainerStackValue extends ContainerStackValue {
 
+	private static final long serialVersionUID = 1L;
+	
 	protected final int weight;
 
 	public FixedContainerStackValue(
