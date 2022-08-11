@@ -134,7 +134,7 @@ When no more boxes fit in a level, the level is incremented and the process repe
 The algorithm runs reasonably fast, usually in milliseconds. Some customization is possible.
 
 ### Plain algorithm
-This algorithm selects the box with the biggest volume, fitting it in the tightest possible point.
+This algorithm selects the box with the biggest volume, fitting it where it is best supported.
 
 ###  Brute-force algorithm
 This algorithm has no logic for selecting the best box or rotation; running through all permutations, for each permutation all rotations:
