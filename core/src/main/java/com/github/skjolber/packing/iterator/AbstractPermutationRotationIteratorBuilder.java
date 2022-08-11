@@ -68,7 +68,7 @@ public abstract class AbstractPermutationRotationIteratorBuilder<B extends Abstr
 			}
 			
 			List<StackValue> boundRotations = stackable.rotations(size);
-			if(boundRotations.isEmpty()) {
+			if(boundRotations == null || boundRotations.isEmpty()) {
 				continue;
 			}
 			
