@@ -292,7 +292,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	@Override
 	public String toString() {
 		return getClass().getSimpleName() + " [" + minX + "x" + minY + "x" + minZ + " " + maxX + "x" + maxY 
-				+ "x" + maxZ + " xy=" + xyPlane + " xz=" + xzPlane + " yz=" + yzPlane + "]";
+				+ "x" + maxZ + " " + "(" + dx + "x" + dy + "x" + dz + ") xy=" + xyPlane + " xz=" + xzPlane + " yz=" + yzPlane + "]";
 	}
 
 	@Override

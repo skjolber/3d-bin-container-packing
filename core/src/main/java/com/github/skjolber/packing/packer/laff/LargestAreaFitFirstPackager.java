@@ -147,7 +147,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 			StackPlacement first = new StackPlacement(stackable, firstStackValue, 0, 0, 0, -1, -1);
 
-			levelStack.add(first);
+			levelStack.add(first); 
 			
 			int maxRemainingLevelWeight = levelStackValue.getMaxLoadWeight() - stackable.getWeight();
 

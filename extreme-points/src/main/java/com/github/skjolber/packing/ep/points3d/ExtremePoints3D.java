@@ -1550,7 +1550,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		long maxPointVolume = -1L;
 		for(int i = 0; i < values.size(); i++) {
 			Point3D<P> point = values.get(i);
-			if(maxPointVolume < point.getArea()) {
+			if(maxPointVolume < point.getVolume()) {
 				maxPointVolume = point.getVolume(); 
 			}
 		}

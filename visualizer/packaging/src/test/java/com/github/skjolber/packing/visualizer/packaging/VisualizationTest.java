@@ -611,4 +611,20 @@ public class VisualizationTest {
 		
 		write(fits);
 	}
+	
+	@Test
+	public void testFourForTwo() throws Exception {
+		List<Container> containers = new ArrayList<>();
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(0).withSize(60, 40, 25).withMaxLoadWeight(100).build());
+
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().withContainers(containers).build();
+
+		StackableItem b1 = new StackableItem(Box.newBuilder().withId("b1").withDescription("b1").withSize(35, 25, 14).withWeight(0).withRotate3D().build(), 1);
+		StackableItem b2 = new StackableItem(Box.newBuilder().withId("b2").withDescription("b2").withSize(35, 25, 14).withWeight(0).withRotate3D().build(), 1);
+		StackableItem b3 = new StackableItem(Box.newBuilder().withId("b3").withDescription("b3").withSize(35, 23, 13).withWeight(0).withRotate3D().build(), 1);
+		StackableItem b4 = new StackableItem(Box.newBuilder().withId("b4").withDescription("b4").withSize(35, 25, 14).withWeight(0).withRotate3D().build(), 1);
+
+		List<Container> packaging = packager.packList(Arrays.asList(b1, b2, b3, b4), 100);
+		write(packaging);
+	}
 }
