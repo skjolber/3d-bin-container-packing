@@ -172,7 +172,9 @@ The code has been structured so it is possible to extend and adapt to specialize
 To use the visualizer during development, make your unit tests write directly to a file in the project (see `VisualizationTest` example). 
 
 # Get involved
-If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request.
+If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request. 
+
+Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example and [file a test case with a visualization](https://github.com/skjolber/3d-bin-container-packing/issues/574).
 
 Feel free to connect with me on [LinkedIn], see also my [Github page].
 
