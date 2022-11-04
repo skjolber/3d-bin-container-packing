@@ -166,10 +166,10 @@ There is a simple output [visualizer](visualization) included in this project, b
 
 ![Alt text](visualizer/viewer/images/view.png?raw=true "Demo")
 
+To use the visualizer during development, make your unit tests write directly to a file in the project (see `VisualizationTest` example). 
+
 # Customization
 The code has been structured so it is possible to extend and adapt to specialized needs. See `AbstractPackager` class, the `extreme-points` and `test` artifacts. 
-
-To use the visualizer during development, make your unit tests write directly to a file in the project (see `VisualizationTest` example). 
 
 # Get involved
 If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request. 
