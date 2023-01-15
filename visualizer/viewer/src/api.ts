@@ -200,8 +200,8 @@ export class StackableRenderer {
             var color = colorScheme.getStackable(containerStackable);
             var containerMaterial = new THREE.LineBasicMaterial({ color: color});
             
-            var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxBufferGeometry(containerStackable.dy, containerStackable.dz, containerStackable.dx));
-            var containerLoadGeometry = new THREE.EdgesGeometry(new THREE.BoxBufferGeometry(containerStackable.loadDy, containerStackable.loadDz, containerStackable.loadDx));
+            var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.dy, containerStackable.dz, containerStackable.dx));
+            var containerLoadGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.loadDy, containerStackable.loadDz, containerStackable.loadDx));
 
             var container = new THREE.LineSegments(containerGeometry, containerMaterial);
             var containerLoad = new THREE.LineSegments(containerLoadGeometry, containerMaterial);
@@ -261,7 +261,7 @@ export class StackableRenderer {
                 polygonOffsetUnits: 1
             });
             material.color.convertSRGBToLinear();
-            var geometry = new THREE.BoxBufferGeometry(boxStackable.dy, boxStackable.dz, boxStackable.dx);
+            var geometry = new THREE.BoxGeometry(boxStackable.dy, boxStackable.dz, boxStackable.dx);
             var box = new THREE.Mesh(geometry, material);
 
             box.name = boxStackable.name;
@@ -325,7 +325,7 @@ export class StackableRenderer {
 			                
 			                var pointMaterial = new THREE.LineBasicMaterial({ color: color});
 			                pointMaterial.color.convertSRGBToLinear();
-			                var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxBufferGeometry(p.dy, p.dz, p.dx));
+			                var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(p.dy, p.dz, p.dx));
 			                var pp = new THREE.LineSegments(containerGeometry, pointMaterial);
 			
 			                pp.position.x = p.y + p.dy / 2 + userData.offsetX;
