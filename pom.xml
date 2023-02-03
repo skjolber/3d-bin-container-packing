@@ -43,6 +43,7 @@
 		<owasp-dependency-check.version>5.3.2</owasp-dependency-check.version>
 		<pitest.version>1.10.4</pitest.version>
 		<jackson.version>2.14.1</jackson.version>
+		<spotless.version>2.31.0</spotless.version>
 	</properties>
 
 	<licenses>
@@ -442,6 +443,18 @@
 					<groupId>org.eluder.coveralls</groupId>
 					<artifactId>coveralls-maven-plugin</artifactId>
 					<version>4.3.0</version>
+				</plugin>
+				<plugin>
+					<groupId>com.diffplug.spotless</groupId>
+					<artifactId>spotless-maven-plugin</artifactId>
+					<version>${spotless.version}</version>
+					<configuration>
+						<java>
+							<eclipse>
+								<file>${maven.multiModuleProjectDirectory}/eclipse-formatter.xml</file> <!-- optional -->
+							</eclipse>							
+						</java>
+					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
