@@ -11,7 +11,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	private static final long serialVersionUID = 1L;
 
 	public static final Comparator<Point3D<?>> X_COMPARATOR = new Comparator<Point3D<?>>() {
-		
+
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
 			int compare = Integer.compare(o1.minX, o2.minX);
@@ -23,7 +23,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	};
 
 	public static final Comparator<Point3D<?>> Y_COMPARATOR = new Comparator<Point3D<?>>() {
-		
+
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
 			int compare = Integer.compare(o1.minY, o2.minY);
@@ -33,9 +33,9 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			return compare;
 		}
 	};
-	
+
 	public static final Comparator<Point3D<?>> Z_COMPARATOR = new Comparator<Point3D<?>>() {
-		
+
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
 			int compare = Integer.compare(o1.minZ, o2.minZ);
@@ -47,7 +47,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	};
 
 	public static final Comparator<Point3D<?>> COMPARATOR_X_THEN_Y_THEN_Z = new Comparator<Point3D<?>>() {
-		
+
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
 			int x = Integer.compare(o1.minX, o2.minX);
@@ -72,9 +72,9 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			return x;
 		}
 	};
-	
+
 	public static final Comparator<Point3D<?>> COMPARATOR_X_THEN_Y = new Comparator<Point3D<?>>() {
-		
+
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
 			int x = Integer.compare(o1.minX, o2.minX);
@@ -92,7 +92,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	};
 
 	public static final Comparator<Point3D<?>> COMPARATOR_Y_THEN_Z_THEN_X = new Comparator<Point3D<?>>() {
-		
+
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
 			int x = Integer.compare(o1.minY, o2.minY);
@@ -103,7 +103,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			if(x == 0) {
 				x = Integer.compare(o1.minX, o2.minX);
 			}
-			
+
 			if(x == 0) {
 				x = Integer.compare(o1.maxY, o2.maxY);
 			}
@@ -119,7 +119,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	};
 
 	public static final Comparator<Point3D<?>> COMPARATOR_Z_THEN_X_THEN_Y = new Comparator<Point3D<?>>() {
-		
+
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
 			int x = Integer.compare(o1.minZ, o2.minZ);
@@ -130,7 +130,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			if(x == 0) {
 				x = Integer.compare(o1.minY, o2.minY);
 			}
-			
+
 			if(x == 0) {
 				x = Integer.compare(o1.maxZ, o2.maxZ);
 			}
@@ -140,13 +140,13 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			if(x == 0) {
 				x = Integer.compare(o1.maxY, o2.maxY);
 			}
-			
+
 			return x;
 		}
 	};
 
 	public static final Comparator<Point3D<?>> COMPARATOR = new Comparator<Point3D<?>>() {
-		
+
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
 			int compare = X_COMPARATOR.compare(o1, o2);
@@ -154,18 +154,18 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			if(compare == 0) {
 				compare = Y_COMPARATOR.compare(o1, o2);
 			}
-			
+
 			if(compare == 0) {
 				return Z_COMPARATOR.compare(o1, o2);
 			}
 			return compare;
 		}
 	};
-	
+
 	protected final int minZ;
 	protected int maxZ;
 	protected int dz;
-	
+
 	public Point3D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		super(minX, minY, maxX, maxY);
 		/*
@@ -176,14 +176,14 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 		this.minZ = minZ;
 		this.maxZ = maxZ;
 		this.dz = maxZ - minZ + 1;
-		
+
 		calculateVolume();
 	}
 
 	public boolean isSupportedXYPlane(int x, int y) { // i.e. z is fixed
 		return false;
 	}
-	
+
 	public boolean isSupportedYZPlane(int y, int z) { // i.e. x is fixed
 		return false;
 	}
@@ -197,18 +197,18 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			throw new RuntimeException("Cannot set max z to " + maxZ + " for " + minZ + "x" + minY + "x" + minZ);
 		}
 		this.maxZ = maxZ;
-		
+
 		this.dz = maxZ - minZ + 1;
-		
+
 		calculateVolume();
 	}
-	
+
 	@Override
 	public void setMaxX(int maxX) {
 		super.setMaxX(maxX);
 		calculateVolume();
 	}
-	
+
 	@Override
 	public void setMaxY(int maxY) {
 		super.setMaxY(maxY);
@@ -218,19 +218,19 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	private void calculateVolume() {
 		this.volume = (long)dz * (long)dy * (long)dx;
 	}
-	
+
 	public boolean isWithin(int dx, int dy, int dz) {
 		return dx <= this.dx && dy <= this.dy && dz <= this.dz;
 	}
-	
+
 	public int getDz() {
 		return dz;
 	}
-	
+
 	public int getMaxZ() {
 		return maxZ;
 	}
-	
+
 	public int getMinZ() {
 		return minZ;
 	}
@@ -262,7 +262,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	public boolean isXZPlaneEdgeX(int x) {
 		return false;
 	}
-	
+
 	public boolean isXZPlaneEdgeZ(int z) {
 		return false;
 	}
@@ -278,7 +278,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	public boolean shadowedZ(int min, int max) {
 		return minZ < min && maxZ > max;
 	}
-	
+
 	public boolean shadowsOrSwallowsX(int min, int max) {
 		return minX < max && maxX > min;
 	}
@@ -309,42 +309,42 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	public Point2D<P> clone(int maxX, int maxY) {
 		return clone(maxX, maxY, this.maxZ);
 	}
-	
+
 	public boolean containsInYZPlane(Point3D<P> point) {
 		if(point.getMinX() == minX) {
 			return point.swallowsMinY(minY, maxY) && point.swallowsMinZ(minZ, maxZ);
 		}
 		return false;
 	}
-	
+
 	public boolean containsInXYPlane(Point3D<P> point) {
 		if(point.getMinZ() == minZ) {
 			return point.swallowsMinY(minY, maxY) && point.swallowsMinX(minX, maxX);
 		}
 		return false;
 	}
-	
+
 	public boolean containsInXZPlane(Point3D<P> point) {
 		if(point.getMinY() == minY) {
 			return point.swallowsMinZ(minZ, maxZ) && point.swallowsMinX(minX, maxX);
 		}
 		return false;
 	}
-	
+
 	public boolean isInXZPlane(P point) {
 		if(point.getAbsoluteY() == minY) {
 			return fitsInXZPlane(point);
 		}
 		return false;
 	}
-	
+
 	public boolean isInXYPlane(P point) {
 		if(point.getAbsoluteZ() == minZ) {
 			return fitsInXYPlane(point);
 		}
 		return false;
 	}
-	
+
 	public boolean isInYZPlane(P point) {
 		if(point.getAbsoluteX() == minX) {
 			return fitsInYZPlane(point);
@@ -355,11 +355,11 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	public boolean fitsInXZPlane(P point) {
 		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowsMinX(point.getAbsoluteX(), point.getAbsoluteEndX());
 	}
-	
+
 	public boolean fitsInXYPlane(P point) {
 		return swallowsMinY(point.getAbsoluteY(), point.getAbsoluteEndY()) && swallowsMinX(point.getAbsoluteX(), point.getAbsoluteEndX());
 	}
-	
+
 	public boolean fitsInYZPlane(P point) {
 		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowsMinY(point.getAbsoluteY(), point.getAbsoluteEndY());
 	}
@@ -374,19 +374,18 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + " [" + minX + "x" + minY + "x" + minZ + " " + maxX + "x" + maxY 
+		return getClass().getSimpleName() + " [" + minX + "x" + minY + "x" + minZ + " " + maxX + "x" + maxY
 				+ "x" + maxZ + "]";
 	}
 
 	public long getVolume() {
 		return volume;
 	}
-	
+
 	public boolean eclipses(Point3D<P> point) {
-		return 
-				minX <= point.getMinX() && 
-				minY <= point.getMinY() && 
-				minZ <= point.getMinZ() && 
+		return minX <= point.getMinX() &&
+				minY <= point.getMinY() &&
+				minZ <= point.getMinZ() &&
 				point.getMaxX() <= maxX &&
 				point.getMaxY() <= maxY &&
 				point.getMaxZ() <= maxZ;
@@ -403,7 +402,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	public boolean eclipsesZ(Point3D<P> point) {
 		return minZ <= point.getMinZ() && point.getMaxZ() <= maxZ;
 	}
-	
+
 	public boolean eclipsesMovedX(Point3D<P> point, int x) {
 		return minX <= x && point.getMaxX() <= maxX && eclipsesY(point) && eclipsesZ(point);
 	}
@@ -417,7 +416,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	}
 
 	public abstract List<P> getPlacements3D();
-	
+
 	public abstract List<P> getPlacements2D();
 
 	//       |                  
@@ -436,9 +435,9 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |         |       |
 	//       |---------x===================
 	//
-	
+
 	public abstract Point3D<P> moveX(int x, int maxX, int maxY, int maxZ);
-	
+
 	//       |                  
 	//       |                  
 	//       |                  
@@ -460,7 +459,6 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 
 	public abstract Point3D<P> moveX(int x, int maxX, int maxY, int maxZ, P yzSupport);
 
-	
 	//
 	//       |   ║              
 	//       |   ║              
@@ -520,11 +518,11 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |---------------------------
 
 	public abstract Point3D<P> moveY(int y, int maxX, int maxY, int maxZ, P xzSupport);
-	
+
 	public abstract Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ);
 
 	public abstract Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ, P xySupport);
-	
+
 	//       |                  
 	//       |                  
 	//       |                  
@@ -541,11 +539,11 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |         |       |
 	//       |---------x===================
 	//
-	
+
 	public Point3D<P> moveX(int x, int maxX, int maxY) {
 		return moveX(x, maxX, maxY, maxZ);
 	}
-	
+
 	//       |                  
 	//       |                  
 	//       |                  
@@ -569,7 +567,6 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 		return moveX(x, maxX, maxY, maxZ, ySupport);
 	}
 
-	
 	//
 	//       |   ║              
 	//       |   ║              
@@ -645,9 +642,9 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	}
 
 	public abstract long calculateXYSupport(int dx, int dy);
-	
+
 	public abstract long calculateXZSupport(int dx, int dz);
-	
+
 	public abstract long calculateYZSupport(int dy, int dz);
 
 }

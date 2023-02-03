@@ -7,7 +7,6 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 
 	// try to avoid false sharing by using padding
 	public long t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15 = -1L;
-	
 
 	private int[] permutations;
 	private int[] rotations;
@@ -15,19 +14,19 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 	private int[] lastPermutation;
 	private int lastPermutationMaxIndex;
 	private boolean checkLastPermutation = false;
-	
+
 	private ParallelPermutationRotationIteratorList iterator;
 
 	public ParallelPermutationRotationIterator(PermutationStackableValue[] matrix, ParallelPermutationRotationIteratorList iterator) {
 		super(matrix);
-		
+
 		this.iterator = iterator;
 	}
 
-	public long preventOptmisation(){
+	public long preventOptmisation() {
 		return t0 + t1 + t2 + t3 + t4 + t5 + t6 + t7 + t8 + t9 + t10 + t11 + t12 + t13 + t14 + t15;
 	}
-	
+
 	public void setReset(int[] reset) {
 		this.reset = reset;
 	}
@@ -59,32 +58,32 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 
 	public void setLastPermutation(int[] lastPermutation) {
 		this.lastPermutation = lastPermutation;
-		
+
 		this.checkLastPermutation = false;
-		
+
 		// find the first item that differs, so that we do not have to
 		// compare items for each iteration (to detect whether we have done enough work)
-		for(int k = 0; k < lastPermutation.length; k++) {
+		for (int k = 0; k < lastPermutation.length; k++) {
 			if(permutations[ParallelPermutationRotationIteratorList.PADDING + k] != lastPermutation[k]) {
 				lastPermutationMaxIndex = k;
-				
+
 				break;
 			}
 		}
-		
+
 	}
 
 	public int getLastPermutationMaxIndex() {
 		return lastPermutationMaxIndex;
 	}
-	
+
 	public int nextRotation() {
 		return nextRotation(rotations.length - 1 - ParallelPermutationRotationIteratorList.PADDING);
 	}
-	
+
 	public int nextRotation(int maxIndex) {
 		// next rotation
-		for(int i = ParallelPermutationRotationIteratorList.PADDING + maxIndex; i >= ParallelPermutationRotationIteratorList.PADDING; i--) {
+		for (int i = ParallelPermutationRotationIteratorList.PADDING + maxIndex; i >= ParallelPermutationRotationIteratorList.PADDING; i--) {
 			if(rotations[i] < matrix[permutations[i]].getBoxes().length - 1) {
 				rotations[i]++;
 
@@ -97,65 +96,65 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 
 		return -1;
 	}
-	
+
 	protected int nextPermutationImpl() {
 		// https://www.baeldung.com/cs/array-generate-all-permutations#permutations-in-lexicographic-order
-		
-	    // Find longest non-increasing suffix
 
-	    int i = permutations.length - 1;
-	    while (i > ParallelPermutationRotationIteratorList.PADDING && permutations[i - 1] >= permutations[i])
-	        i--;
-	    // Now i is the head index of the suffix
+		// Find longest non-increasing suffix
 
-	    // Are we at the last permutation already?
-	    if (i <= ParallelPermutationRotationIteratorList.PADDING) {
-	        return -1;
-	    }
+		int i = permutations.length - 1;
+		while (i > ParallelPermutationRotationIteratorList.PADDING && permutations[i - 1] >= permutations[i])
+			i--;
+		// Now i is the head index of the suffix
 
-	    // Let array[i - 1] be the pivot
-	    // Find rightmost element that exceeds the pivot
-	    int j = permutations.length - 1;
-	    while (permutations[j] <= permutations[i - 1])
-	        j--;
-	    // Now the value array[j] will become the new pivot
-	    // Assertion: j >= i
+		// Are we at the last permutation already?
+		if(i <= ParallelPermutationRotationIteratorList.PADDING) {
+			return -1;
+		}
 
-	    int head = i - 1 - ParallelPermutationRotationIteratorList.PADDING;
+		// Let array[i - 1] be the pivot
+		// Find rightmost element that exceeds the pivot
+		int j = permutations.length - 1;
+		while (permutations[j] <= permutations[i - 1])
+			j--;
+		// Now the value array[j] will become the new pivot
+		// Assertion: j >= i
 
-	    // Swap the pivot with j
-	    int temp = permutations[i - 1];
-	    permutations[i - 1] = permutations[j];
-	    permutations[j] = temp;
+		int head = i - 1 - ParallelPermutationRotationIteratorList.PADDING;
 
-	    // Reverse the suffix
-	    j = permutations.length - 1;
-	    while (i < j) {
-	        temp = permutations[i];
-	        permutations[i] = permutations[j];
-	        permutations[j] = temp;
-	        i++;
-	        j--;
-	    }
+		// Swap the pivot with j
+		int temp = permutations[i - 1];
+		permutations[i - 1] = permutations[j];
+		permutations[j] = temp;
 
-	    // Successfully computed the next permutation
-	    return head;
+		// Reverse the suffix
+		j = permutations.length - 1;
+		while (i < j) {
+			temp = permutations[i];
+			permutations[i] = permutations[j];
+			permutations[j] = temp;
+			i++;
+			j--;
+		}
+
+		// Successfully computed the next permutation
+		return head;
 	}
-	
+
 	public int nextPermutation() {
 		resetRotations();
 
 		int resultIndex = nextPermutationImpl();
-		
+
 		return returnPermuationWithinRangeOrMinusOne(resultIndex);
 	}
-	
+
 	public int nextPermutation(int maxIndex) {
 		// reset rotations
 		resetRotations();
 
 		int resultIndex = nextWorkUnitPermutation(permutations, maxIndex);
-		
+
 		return returnPermuationWithinRangeOrMinusOne(resultIndex);
 	}
 
@@ -170,9 +169,9 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 				// are we still within our designated range?
 				// the next permutation must be lexicographically less than the first permutation
 				// in the next block
-				
+
 				int i = 0;
-				while(i < lastPermutation.length) {
+				while (i < lastPermutation.length) {
 					int value = permutations[i + ParallelPermutationRotationIteratorList.PADDING];
 					if(value < lastPermutation[i]) {
 						return resultIndex;
@@ -186,39 +185,39 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 				return -1;
 			}
 		}
-		
+
 		return resultIndex;
 	}
-	
+
 	public int nextWorkUnitPermutation(int[] permutations, int maxIndex) {
-		while(maxIndex >= 0) {
-		
+		while (maxIndex >= 0) {
+
 			int current = permutations[ParallelPermutationRotationIteratorList.PADDING + maxIndex];
-			
+
 			int minIndex = -1;
-			for(int i = ParallelPermutationRotationIteratorList.PADDING + maxIndex + 1; i < permutations.length; i++) {
+			for (int i = ParallelPermutationRotationIteratorList.PADDING + maxIndex + 1; i < permutations.length; i++) {
 				if(current < permutations[i] && (minIndex == -1 || permutations[i] < permutations[minIndex])) {
 					minIndex = i;
 				}
 			}
-			
+
 			if(minIndex == -1) {
 				maxIndex--;
-				
+
 				continue;
 			}
-			
+
 			// swap indexes
-		    permutations[ParallelPermutationRotationIteratorList.PADDING + maxIndex] = permutations[minIndex];
-		    permutations[minIndex] = current;
-		    
-		    Arrays.sort(permutations, ParallelPermutationRotationIteratorList.PADDING + maxIndex + 1, permutations.length);
-		    
-		    return maxIndex;
+			permutations[ParallelPermutationRotationIteratorList.PADDING + maxIndex] = permutations[minIndex];
+			permutations[minIndex] = current;
+
+			Arrays.sort(permutations, ParallelPermutationRotationIteratorList.PADDING + maxIndex + 1, permutations.length);
+
+			return maxIndex;
 		}
 		return -1;
 	}
-	
+
 	public PermutationRotation get(int permutationIndex) {
 		return matrix[permutations[ParallelPermutationRotationIteratorList.PADDING + permutationIndex]].getBoxes()[rotations[ParallelPermutationRotationIteratorList.PADDING + permutationIndex]];
 	}
@@ -232,7 +231,7 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 	public void removePermutations(List<Integer> removed) {
 		iterator.removePermutations(removed);
 	}
-	
+
 	public long countPermutations() {
 		return iterator.countPermutations();
 	}

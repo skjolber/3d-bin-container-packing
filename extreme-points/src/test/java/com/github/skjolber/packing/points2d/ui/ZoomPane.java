@@ -1,4 +1,5 @@
 package com.github.skjolber.packing.points2d.ui;
+
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -25,16 +26,16 @@ public class ZoomPane extends JPanel implements MouseWheelListener {
 
 	/**
 	 * @author samkortchmar
-	 * Mostly taken from various StackOverflow posts such as:
-	 * http://stackoverflow.com/questions/13155382/jscrollpane-zoom-relative-to-mouse-position
-	 * But I've modded it (clumsily) to support the pan-by-dragging and zoom-by-scrolling 
-	 * behavior we want for the map. There are problems with the panning right now, I think it's
-	 * redrawing too quickly which makes it jerky.
+	 *         Mostly taken from various StackOverflow posts such as:
+	 *         http://stackoverflow.com/questions/13155382/jscrollpane-zoom-relative-to-mouse-position
+	 *         But I've modded it (clumsily) to support the pan-by-dragging and zoom-by-scrolling
+	 *         behavior we want for the map. There are problems with the panning right now, I think it's
+	 *         redrawing too quickly which makes it jerky.
 	 * 
-	 * Supports:
-	 * Zoom in/out to mouse pointer from mousewheel
-	 * Click and drag to pan (not quite right)
-	 * Zoom in/out via SHIFT-EQUALS or MINUS
+	 *         Supports:
+	 *         Zoom in/out to mouse pointer from mousewheel
+	 *         Click and drag to pan (not quite right)
+	 *         Zoom in/out via SHIFT-EQUALS or MINUS
 	 */
 	private Image background;
 	private Image scaled;
@@ -62,7 +63,7 @@ public class ZoomPane extends JPanel implements MouseWheelListener {
 				setZoom(getZoom() + 0.5f);
 			}
 		});
-		
+
 		//key binding for zoom out
 		am.put("minus", new AbstractAction() {
 			@Override
@@ -70,17 +71,15 @@ public class ZoomPane extends JPanel implements MouseWheelListener {
 				setZoom(getZoom() - 0.5f);
 			}
 		});
-		
-	    //key binding for zooming with scroll wheel
-	    addMouseWheelListener(this);
 
-		
+		//key binding for zooming with scroll wheel
+		addMouseWheelListener(this);
+
 		//key binding for panning with click-n-drag.
 		//TODO fix the jerkiness.
-	    MouseAdapter ma = new HandScrollListener();
-	    addMouseMotionListener(ma);
-	    addMouseListener(ma);
-	    
+		MouseAdapter ma = new HandScrollListener();
+		addMouseMotionListener(ma);
+		addMouseListener(ma);
 
 		setFocusable(true);
 		requestFocusInWindow();
@@ -88,17 +87,21 @@ public class ZoomPane extends JPanel implements MouseWheelListener {
 
 	static class HandScrollListener extends MouseAdapter {
 		private final Point pp = new Point();
-		@Override public void mouseDragged(MouseEvent e) {
-			ZoomPane z = (ZoomPane) e.getSource();
-			JViewport vport = (JViewport) z.getParent();
-			JComponent img = (JComponent) vport.getView();
+
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			ZoomPane z = (ZoomPane)e.getSource();
+			JViewport vport = (JViewport)z.getParent();
+			JComponent img = (JComponent)vport.getView();
 			Point cp = e.getPoint();
 			Point vp = vport.getViewPosition();
-			vp.translate(pp.x-cp.x, pp.y-cp.y);
+			vp.translate(pp.x - cp.x, pp.y - cp.y);
 			img.scrollRectToVisible(new Rectangle(vp, vport.getSize()));
 			pp.setLocation(cp);
 		}
-		@Override public void mousePressed(MouseEvent e) {
+
+		@Override
+		public void mousePressed(MouseEvent e) {
 			pp.setLocation(e.getPoint());
 		}
 	}
@@ -116,26 +119,24 @@ public class ZoomPane extends JPanel implements MouseWheelListener {
 		//We need the mouse to be in the JViewport to do anything, since
 		//all zoom actions are dependent on mouse location.
 		Point mouse = getMousePosition();
-		if (zoom != value && value > 0 && mouse != null) {
-			
-			
-			JViewport parent = (JViewport) getParent();
+		if(zoom != value && value > 0 && mouse != null) {
+
+			JViewport parent = (JViewport)getParent();
 			Point viewPort = parent.getViewPosition();
 			Rectangle viewRect = parent.getViewRect();
 
-			int width = (int) Math.floor(background.getWidth(this) * value);
-			int height = (int) Math.floor(background.getHeight(this) * value);
-			
-			
+			int width = (int)Math.floor(background.getWidth(this) * value);
+			int height = (int)Math.floor(background.getHeight(this) * value);
+
 			//Things stop working if the image is smaller than the jviewport.
-			if (width < viewRect.width || height < viewRect.height) {
+			if(width < viewRect.width || height < viewRect.height) {
 				return;
 			}
-			
+
 			//The appropriately scaled version of the background image to be repainted.
 			scaled = background.getScaledInstance(width, height, Image.SCALE_SMOOTH);
 			scaledSize = new Dimension(width, height);
-			
+
 			//I think this is a little bit ungraceful - we need it because
 			//the MousePosition() and JViewport are relative to the component
 			//which is basically the image, which means they both already have
@@ -144,15 +145,15 @@ public class ZoomPane extends JPanel implements MouseWheelListener {
 			//not sure if there is a better way to do it. 
 			float scaleFactor = value / zoom;
 
-			if (getParent() instanceof JViewport) {
+			if(getParent() instanceof JViewport) {
 				//Establishes the top left corner of the viewPort relative to the image. See: 
 				//http://stackoverflow.com/questions/13155382/jscrollpane-zoom-relative-to-mouse-position
 				//for a helpful description. 
 				//					(Ix' component)											(Vx component)
-				viewRect.x = (int) ((mouse.x - viewPort.x) * (scaleFactor - 1) + (scaleFactor) * viewPort.x);
-				viewRect.y = (int) ((mouse.y - viewPort.y) * (scaleFactor - 1) + (scaleFactor) * viewPort.y);
+				viewRect.x = (int)((mouse.x - viewPort.x) * (scaleFactor - 1) + (scaleFactor) * viewPort.x);
+				viewRect.y = (int)((mouse.y - viewPort.y) * (scaleFactor - 1) + (scaleFactor) * viewPort.y);
 				zoom = value;
-				
+
 				//scrollRectToVisible(viewRect);
 			}
 			invalidate();
@@ -168,16 +169,16 @@ public class ZoomPane extends JPanel implements MouseWheelListener {
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		if (scaled != null) {
+		if(scaled != null) {
 			g.drawImage(scaled, 0, 0, this);
 		}
 	}
 
 	protected void centerInViewport() {
 		Container container = getParent();
-		if (container instanceof JViewport) {
+		if(container instanceof JViewport) {
 
-			JViewport port = (JViewport) container;
+			JViewport port = (JViewport)container;
 			Rectangle viewRect = port.getViewRect();
 
 			int width = getWidth();

@@ -17,21 +17,20 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 public class BouwkampConverter {
 
 	public static Container getContainer3D(BouwkampCode bouwkampCode) {
-		return Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(bouwkampCode.getWidth() * bouwkampCode.getDepth()).withStack(new DefaultStack()).build();
+		return Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1)
+				.withMaxLoadWeight(bouwkampCode.getWidth() * bouwkampCode.getDepth()).withStack(new DefaultStack()).build();
 	}
-	
+
 	public static List<StackableItem> getStackableItems3D(BouwkampCode bouwkampCode) {
 		// map similar items to the same stack item - this actually helps a lot
-		List<Integer> squares = new ArrayList<>(); 
+		List<Integer> squares = new ArrayList<>();
 		for (BouwkampCodeLine bouwkampCodeLine : bouwkampCode.getLines()) {
 			squares.addAll(bouwkampCodeLine.getSquares());
 		}
 
 		Map<Integer, Integer> frequencyMap = new HashMap<>();
-		squares.forEach(word ->
-        	frequencyMap.merge(word, 1, (v, newV) -> v + newV)
-		);
-		
+		squares.forEach(word -> frequencyMap.merge(word, 1, (v, newV) -> v + newV));
+
 		List<StackableItem> products = new ArrayList<>();
 		for (Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
 			int square = entry.getKey();
@@ -40,7 +39,7 @@ public class BouwkampConverter {
 		}
 
 		Collections.reverse(products);
-		
+
 		return products;
 	}
 

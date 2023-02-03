@@ -11,5 +11,5 @@ import com.github.skjolber.packing.api.Placement2D;
 public interface YSupportPoint2D {
 
 	Placement2D getYSupport();
-	
+
 }

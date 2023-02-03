@@ -10,22 +10,22 @@ public class EgyItem extends Item {
 		super(dx, dy, dz, count);
 		this.category = category;
 	}
-	
+
 	public EgyItem() {
 	}
-	
+
 	public Category getCategory() {
 		return category;
 	}
-	
+
 	public void setCategory(Category category) {
 		this.category = category;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "EgyItem [dx=" + dx + ", dy=" + dy + ", dz=" + dz + ", count=" + count + ", volume=" + volume
 				+ ", category=" + category + "]";
 	}
-	
+
 }

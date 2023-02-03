@@ -108,7 +108,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		Container fits = packager.pack(products);
 		assertValid(fits);
 
-		LevelStack levelStack = (LevelStack) fits.getStack();
+		LevelStack levelStack = (LevelStack)fits.getStack();
 		assertEquals(2, levelStack.getLevels().size());
 	}
 
@@ -126,7 +126,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		Container fits = packager.pack(products);
 		assertValid(fits);
 
-		LevelStack levelStack = (LevelStack) fits.getStack();
+		LevelStack levelStack = (LevelStack)fits.getStack();
 		assertEquals(3, levelStack.getLevels().size());
 	}
 
@@ -147,31 +147,29 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		Container fits = packager.pack(products);
 		assertNull(fits);
 	}
-	
+
 	@Test
 	void issue453BoxesShouldNotFit() {
 		Container container = Container
-			.newBuilder()
-			.withDescription("1")
-			.withSize(70, 44, 56)
-			.withEmptyWeight(0)
-			.withMaxLoadWeight(100)
-			.build();
+				.newBuilder()
+				.withDescription("1")
+				.withSize(70, 44, 56)
+				.withEmptyWeight(0)
+				.withMaxLoadWeight(100)
+				.build();
 
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager
-			.newBuilder()
-			.withContainers(container)
-			.build();
+				.newBuilder()
+				.withContainers(container)
+				.build();
 
 		Container packaging = packager.pack(
-			Arrays.asList(
-				new StackableItem(Box.newBuilder().withId("1").withSize(32, 19, 24).withRotate3D().withWeight(0).build(), 1),
-				new StackableItem(Box.newBuilder().withId("2").withSize(32, 21, 27).withRotate3D().withWeight(0).build(), 1),
-				new StackableItem(Box.newBuilder().withId("3").withSize(34, 21, 24).withRotate3D().withWeight(0).build(), 1),
-				new StackableItem(Box.newBuilder().withId("4").withSize(30, 19, 23).withRotate3D().withWeight(0).build(), 1),
-				new StackableItem(Box.newBuilder().withId("5").withSize(30, 21, 25).withRotate3D().withWeight(0).build(), 1)
-			)
-		);
+				Arrays.asList(
+						new StackableItem(Box.newBuilder().withId("1").withSize(32, 19, 24).withRotate3D().withWeight(0).build(), 1),
+						new StackableItem(Box.newBuilder().withId("2").withSize(32, 21, 27).withRotate3D().withWeight(0).build(), 1),
+						new StackableItem(Box.newBuilder().withId("3").withSize(34, 21, 24).withRotate3D().withWeight(0).build(), 1),
+						new StackableItem(Box.newBuilder().withId("4").withSize(30, 19, 23).withRotate3D().withWeight(0).build(), 1),
+						new StackableItem(Box.newBuilder().withId("5").withSize(30, 21, 25).withRotate3D().withWeight(0).build(), 1)));
 
 		assertNull(packaging);
 	}

@@ -6,12 +6,12 @@ import java.util.List;
 public abstract class Stack implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	protected ContainerStackValue containerStackValue;
-	
+
 	public Stack() {
 	}
-	
+
 	public Stack(ContainerStackValue containerStackValue) {
 		super();
 		this.containerStackValue = containerStackValue;
@@ -20,7 +20,7 @@ public abstract class Stack implements Serializable {
 	public ContainerStackValue getContainerStackValue() {
 		return containerStackValue;
 	}
-	
+
 	public abstract List<StackPlacement> getPlacements();
 
 	public abstract void add(StackPlacement e);
@@ -34,7 +34,7 @@ public abstract class Stack implements Serializable {
 	public int getFreeWeightLoad() {
 		return containerStackValue.getMaxLoadWeight() - getWeight();
 	}
-	
+
 	public abstract int getWeight();
 
 	public abstract int getDz();
@@ -50,7 +50,7 @@ public abstract class Stack implements Serializable {
 			add(p);
 		}
 	}
-	
+
 	public abstract int getSize();
 
 	public abstract void setSize(int size);

@@ -28,7 +28,7 @@ public class DefaultPoint2D<P extends Placement2D & Serializable> extends Point2
 	public Point2D<P> clone(int maxX, int maxY) {
 		return new DefaultPoint2D<>(minX, minY, maxX, maxY);
 	}
-	
+
 	@Override
 	public List<P> getPlacements2D() {
 		List<P> list = new ArrayList<>();
@@ -54,6 +54,5 @@ public class DefaultPoint2D<P extends Placement2D & Serializable> extends Point2
 	public Point2D<P> moveY(int y, int maxX, int maxY, P xSupport) {
 		return new DefaultXSupportPoint2D<>(minX, y, maxX, maxX, xSupport);
 	}
-	
 
 }

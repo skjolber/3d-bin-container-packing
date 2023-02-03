@@ -14,7 +14,7 @@ public class CompositeStackConstraint implements StackConstraint {
 	public CompositeStackConstraint(StackConstraint[] constraints) {
 		this.constraints = constraints;
 	}
-	
+
 	@Override
 	public boolean supports(Stack stack, Stackable stackable, StackValue value, int x, int y, int z) {
 		for (StackConstraint constraint : constraints) {
@@ -44,5 +44,5 @@ public class CompositeStackConstraint implements StackConstraint {
 		}
 		return true;
 	}
-	
+
 }

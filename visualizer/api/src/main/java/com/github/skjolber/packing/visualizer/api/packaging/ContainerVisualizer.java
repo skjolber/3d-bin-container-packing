@@ -5,11 +5,11 @@ public class ContainerVisualizer extends StackableVisualizer {
 	private int loadDx;
 	private int loadDy;
 	private int loadDz;
-	
+
 	private StackVisualizer stack;
-	
+
 	private String type = "container";
-	
+
 	public int getLoadDx() {
 		return loadDx;
 	}
@@ -37,7 +37,7 @@ public class ContainerVisualizer extends StackableVisualizer {
 	public StackVisualizer getStack() {
 		return stack;
 	}
-	
+
 	public void setStack(StackVisualizer stack) {
 		this.stack = stack;
 	}
@@ -45,7 +45,7 @@ public class ContainerVisualizer extends StackableVisualizer {
 	public String getType() {
 		return type;
 	}
-	
+
 	public void setType(String type) {
 		this.type = type;
 	}

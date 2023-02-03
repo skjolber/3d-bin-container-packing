@@ -12,10 +12,10 @@ public class DefaultLargestAreaFitFirstPackagerConfiguration<P extends Point2D<S
 
 	private final StackableFilter firstStackableFilter;
 	private final StackValuePointFilter<P> firstStackValuePointFilter;
-	
+
 	public DefaultLargestAreaFitFirstPackagerConfiguration(StackableFilter firstStackableFilter,
 			StackValuePointFilter<P> firstStackValuePointFilter,
-			StackableFilter nextStackableFilter, 
+			StackableFilter nextStackableFilter,
 			StackValuePointFilter<P> nextStackValuePointFilter) {
 		super();
 		this.firstStackableFilter = firstStackableFilter;
@@ -39,8 +39,5 @@ public class DefaultLargestAreaFitFirstPackagerConfiguration<P extends Point2D<S
 	public StackValuePointFilter<P> getFirstStackValuePointFilter() {
 		return firstStackValuePointFilter;
 	}
-
-	
-
 
 }

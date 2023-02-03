@@ -6,7 +6,7 @@ public class DelegateDeadlineCheckBooleanSupplier implements BooleanSupplier {
 
 	protected final BooleanSupplier delegate;
 	protected final long deadline;
-	
+
 	public DelegateDeadlineCheckBooleanSupplier(long deadline, BooleanSupplier delegate) {
 		super();
 		this.deadline = deadline;
@@ -17,5 +17,5 @@ public class DelegateDeadlineCheckBooleanSupplier implements BooleanSupplier {
 	public boolean getAsBoolean() {
 		return delegate.getAsBoolean() || System.currentTimeMillis() > deadline;
 	}
-	
+
 }

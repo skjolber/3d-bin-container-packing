@@ -5,7 +5,7 @@ import com.github.skjolber.packing.api.Stackable;
 
 /**
  * 
- * A {@linkplain Stackable} in a specific {@linkplain StackValue}. 
+ * A {@linkplain Stackable} in a specific {@linkplain StackValue}.
  *
  */
 
@@ -13,7 +13,7 @@ public class PermutationRotation {
 
 	private final Stackable stackable;
 	private final StackValue value;
-	
+
 	public PermutationRotation(Stackable stackable, StackValue value) {
 		super();
 		this.stackable = stackable;
@@ -23,9 +23,9 @@ public class PermutationRotation {
 	public Stackable getStackable() {
 		return stackable;
 	}
-	
+
 	public StackValue getValue() {
 		return value;
 	}
-	
+
 }

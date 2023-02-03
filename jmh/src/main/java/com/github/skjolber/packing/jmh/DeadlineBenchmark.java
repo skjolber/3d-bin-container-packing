@@ -26,60 +26,60 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
 public class DeadlineBenchmark {
 
-    @Benchmark
-    public Object parallelPackagerNoDeadline(BouwkampCodePackagerState state) throws Exception {
-    	return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
-    }
+	@Benchmark
+	public Object parallelPackagerNoDeadline(BouwkampCodePackagerState state) throws Exception {
+		return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
+	}
 
-    @Benchmark
-    public Object parallelPackagerDeadline(BouwkampCodePackagerState state) throws Exception {
-    	return process(state.getParallelBruteForcePackager(), System.currentTimeMillis() + 10000);
-    }
+	@Benchmark
+	public Object parallelPackagerDeadline(BouwkampCodePackagerState state) throws Exception {
+		return process(state.getParallelBruteForcePackager(), System.currentTimeMillis() + 10000);
+	}
 
-    @Benchmark
-    public Object parallelPackagerDeadlineNth(BouwkampCodePackagerState state) throws Exception {
-    	return process(state.getParallelBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
-    }
+	@Benchmark
+	public Object parallelPackagerDeadlineNth(BouwkampCodePackagerState state) throws Exception {
+		return process(state.getParallelBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
+	}
 
-    @Benchmark
-    public Object packagerNoDeadline(BouwkampCodePackagerState state) throws Exception {
-    	return process(state.getBruteForcePackager(), Long.MAX_VALUE);
-    }
+	@Benchmark
+	public Object packagerNoDeadline(BouwkampCodePackagerState state) throws Exception {
+		return process(state.getBruteForcePackager(), Long.MAX_VALUE);
+	}
 
-    @Benchmark
-    public Object packagerDeadline(BouwkampCodePackagerState state) throws Exception {
-    	return process(state.getBruteForcePackager(), System.currentTimeMillis() + 10000);
-    }
+	@Benchmark
+	public Object packagerDeadline(BouwkampCodePackagerState state) throws Exception {
+		return process(state.getBruteForcePackager(), System.currentTimeMillis() + 10000);
+	}
 
-    @Benchmark
-    public Object packagerDeadlineNth(BouwkampCodePackagerState state) throws Exception {
-    	return process(state.getBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
-    }
+	@Benchmark
+	public Object packagerDeadlineNth(BouwkampCodePackagerState state) throws Exception {
+		return process(state.getBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
+	}
 
-    public int process(List<BenchmarkSet> sets, long deadline) {
-    	int i = 0;
-    	for(BenchmarkSet set : sets) {
-    		if(set.getPackager().pack(set.getProducts(), deadline) != null) {
-    			i++;
-    		}
-    	}
-    	
-    	return i;
-    }
-    
-    public static void main(String[] args) throws RunnerException {
-        Options opt = new OptionsBuilder()
-                .include(DeadlineBenchmark.class.getSimpleName())
-                .mode(Mode.Throughput)
-                /*
-                .forks(1)
-                .measurementIterations(1)
-                .measurementTime(TimeValue.seconds(15))
-                .timeout(TimeValue.seconds(10))
-                */
-                .build();
+	public int process(List<BenchmarkSet> sets, long deadline) {
+		int i = 0;
+		for (BenchmarkSet set : sets) {
+			if(set.getPackager().pack(set.getProducts(), deadline) != null) {
+				i++;
+			}
+		}
 
-        new Runner(opt).run();
-    }    
+		return i;
+	}
+
+	public static void main(String[] args) throws RunnerException {
+		Options opt = new OptionsBuilder()
+				.include(DeadlineBenchmark.class.getSimpleName())
+				.mode(Mode.Throughput)
+				/*
+				.forks(1)
+				.measurementIterations(1)
+				.measurementTime(TimeValue.seconds(15))
+				.timeout(TimeValue.seconds(10))
+				*/
+				.build();
+
+		new Runner(opt).run();
+	}
 
 }

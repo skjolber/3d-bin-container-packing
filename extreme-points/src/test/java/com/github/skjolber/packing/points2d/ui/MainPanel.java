@@ -1,4 +1,5 @@
 package com.github.skjolber.packing.points2d.ui;
+
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.MouseInfo;
@@ -20,134 +21,134 @@ import javax.swing.JPanel;
  * @version 1.0
  */
 public class MainPanel extends JPanel implements MouseWheelListener, MouseListener, MouseMotionListener {
-    
-    private final BufferedImage image;
-    
-    private double zoomFactor = 1;
-    private double prevZoomFactor = 1;
-    private boolean zoomer;
-    private boolean dragger;
-    private boolean released;
-    private double xOffset = 0;
-    private double yOffset = 0;
-    private int xDiff;
-    private int yDiff;
-    private Point startPoint;
 
-    public MainPanel(BufferedImage image) {
+	private final BufferedImage image;
 
-        this.image = image;
-        initComponent();
+	private double zoomFactor = 1;
+	private double prevZoomFactor = 1;
+	private boolean zoomer;
+	private boolean dragger;
+	private boolean released;
+	private double xOffset = 0;
+	private double yOffset = 0;
+	private int xDiff;
+	private int yDiff;
+	private Point startPoint;
 
-    }
+	public MainPanel(BufferedImage image) {
 
-    private void initComponent() {
-        addMouseWheelListener(this);
-        addMouseMotionListener(this);
-        addMouseListener(this);
-    }
+		this.image = image;
+		initComponent();
 
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g);
+	}
 
-        Graphics2D g2 = (Graphics2D) g;
+	private void initComponent() {
+		addMouseWheelListener(this);
+		addMouseMotionListener(this);
+		addMouseListener(this);
+	}
 
-        if (zoomer) {
-            AffineTransform at = new AffineTransform();
+	@Override
+	public void paint(Graphics g) {
+		super.paint(g);
 
-            double xRel = MouseInfo.getPointerInfo().getLocation().getX() - getLocationOnScreen().getX();
-            double yRel = MouseInfo.getPointerInfo().getLocation().getY() - getLocationOnScreen().getY();
+		Graphics2D g2 = (Graphics2D)g;
 
-            double zoomDiv = zoomFactor / prevZoomFactor;
+		if(zoomer) {
+			AffineTransform at = new AffineTransform();
 
-            xOffset = (zoomDiv) * (xOffset) + (1 - zoomDiv) * xRel;
-            yOffset = (zoomDiv) * (yOffset) + (1 - zoomDiv) * yRel;
+			double xRel = MouseInfo.getPointerInfo().getLocation().getX() - getLocationOnScreen().getX();
+			double yRel = MouseInfo.getPointerInfo().getLocation().getY() - getLocationOnScreen().getY();
 
-            at.translate(xOffset, yOffset);
-            at.scale(zoomFactor, zoomFactor);
-            prevZoomFactor = zoomFactor;
-            g2.transform(at);
-            zoomer = false;
-        }
+			double zoomDiv = zoomFactor / prevZoomFactor;
 
-        if (dragger) {
-            AffineTransform at = new AffineTransform();
-            at.translate(xOffset + xDiff, yOffset + yDiff);
-            at.scale(zoomFactor, zoomFactor);
-            g2.transform(at);
+			xOffset = (zoomDiv) * (xOffset) + (1 - zoomDiv) * xRel;
+			yOffset = (zoomDiv) * (yOffset) + (1 - zoomDiv) * yRel;
 
-            if (released) {
-                xOffset += xDiff;
-                yOffset += yDiff;
-                dragger = false;
-            }
+			at.translate(xOffset, yOffset);
+			at.scale(zoomFactor, zoomFactor);
+			prevZoomFactor = zoomFactor;
+			g2.transform(at);
+			zoomer = false;
+		}
 
-        }
+		if(dragger) {
+			AffineTransform at = new AffineTransform();
+			at.translate(xOffset + xDiff, yOffset + yDiff);
+			at.scale(zoomFactor, zoomFactor);
+			g2.transform(at);
 
-        // All drawings go here
-        
-        g2.drawImage(image, 0, 0, this);
+			if(released) {
+				xOffset += xDiff;
+				yOffset += yDiff;
+				dragger = false;
+			}
 
-    }
+		}
 
-    @Override
-    public void mouseWheelMoved(MouseWheelEvent e) {
+		// All drawings go here
 
-        zoomer = true;
+		g2.drawImage(image, 0, 0, this);
 
-        //Zoom in
-        if (e.getWheelRotation() < 0) {
-            zoomFactor *= 1.1;
-            repaint();
-        }
-        //Zoom out
-        if (e.getWheelRotation() > 0) {
-            zoomFactor /= 1.1;
-            repaint();
-        }
-    }
+	}
 
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        Point curPoint = e.getLocationOnScreen();
-        xDiff = curPoint.x - startPoint.x;
-        yDiff = curPoint.y - startPoint.y;
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e) {
 
-        dragger = true;
-        repaint();
+		zoomer = true;
 
-    }
+		//Zoom in
+		if(e.getWheelRotation() < 0) {
+			zoomFactor *= 1.1;
+			repaint();
+		}
+		//Zoom out
+		if(e.getWheelRotation() > 0) {
+			zoomFactor /= 1.1;
+			repaint();
+		}
+	}
 
-    @Override
-    public void mouseMoved(MouseEvent e) {
-    }
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		Point curPoint = e.getLocationOnScreen();
+		xDiff = curPoint.x - startPoint.x;
+		yDiff = curPoint.y - startPoint.y;
 
-    @Override
-    public void mouseClicked(MouseEvent e) {
+		dragger = true;
+		repaint();
 
-    }
+	}
 
-    @Override
-    public void mousePressed(MouseEvent e) {
-        released = false;
-        startPoint = MouseInfo.getPointerInfo().getLocation();
-    }
+	@Override
+	public void mouseMoved(MouseEvent e) {
+	}
 
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        released = true;
-        repaint();
-    }
+	@Override
+	public void mouseClicked(MouseEvent e) {
 
-    @Override
-    public void mouseEntered(MouseEvent e) {
+	}
 
-    }
+	@Override
+	public void mousePressed(MouseEvent e) {
+		released = false;
+		startPoint = MouseInfo.getPointerInfo().getLocation();
+	}
 
-    @Override
-    public void mouseExited(MouseEvent e) {
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		released = true;
+		repaint();
+	}
 
-    }
+	@Override
+	public void mouseEntered(MouseEvent e) {
+
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+
+	}
 
 }

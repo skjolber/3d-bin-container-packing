@@ -5,13 +5,12 @@ import java.util.List;
 
 public class DefaultStack extends Stack {
 
-	private static final long serialVersionUID = 1L
-			;
+	private static final long serialVersionUID = 1L;
 	protected final List<StackPlacement> entries = new ArrayList<>();
-	
+
 	public DefaultStack() {
 	}
-	
+
 	public DefaultStack(ContainerStackValue containerStackValue) {
 		super(containerStackValue);
 	}
@@ -23,7 +22,7 @@ public class DefaultStack extends Stack {
 	public void add(StackPlacement e) {
 		entries.add(e);
 	}
-	
+
 	@Override
 	public void remove(StackPlacement e) {
 		entries.remove(e);
@@ -36,51 +35,51 @@ public class DefaultStack extends Stack {
 	@Override
 	public int getWeight() {
 		int weight = 0;
-		
+
 		for (StackPlacement stackEntry : entries) {
 			weight += stackEntry.getStackable().getWeight();
 		}
-		
+
 		return weight;
 	}
 
 	@Override
 	public int getDz() {
 		int dz = 0;
-		
+
 		for (StackPlacement stackEntry : entries) {
 			dz = Math.max(dz, stackEntry.getAbsoluteEndZ());
 		}
-		
+
 		return dz;
 	}
 
 	@Override
 	public long getVolume() {
 		long volume = 0;
-		
+
 		for (StackPlacement stackEntry : entries) {
 			volume += stackEntry.getStackable().getVolume();
 		}
-		
+
 		return volume;
 	}
-	
+
 	@Override
 	public boolean isEmpty() {
 		return entries.isEmpty();
 	}
-	
+
 	@Override
 	public int getSize() {
 		return entries.size();
 	}
-	
+
 	@Override
 	public void setSize(int size) {
-		while(size < entries.size()) {
+		while (size < entries.size()) {
 			entries.remove(entries.size() - 1);
 		}
 	}
-	
+
 }

@@ -6,11 +6,11 @@ import com.github.skjolber.packing.api.PackResult;
 import com.github.skjolber.packing.api.Stack;
 
 public class EmptyPackResult implements PackResult {
-	
+
 	public static final EmptyPackResult EMPTY = new EmptyPackResult();
 
 	private final Stack stack;
-	
+
 	private EmptyPackResult() {
 		stack = new DefaultStack();
 	}

@@ -13,28 +13,28 @@ public class DefaultXSupportPoint2D<P extends Placement2D & Serializable> extend
 	private static final long serialVersionUID = 1L;
 	/** range constrained to current minY */
 	private final P xSupport;
-	
+
 	public DefaultXSupportPoint2D(int minX, int minY, int maxX, int maxY, P xSupport) {
 		super(minX, minY, maxX, maxY);
 		this.xSupport = xSupport;
 	}
-	
+
 	@Override
 	public boolean isXSupport(int x) {
 		return xSupport.getAbsoluteX() <= x && x <= xSupport.getAbsoluteEndX();
 	}
-	
+
 	public int getXSupportMinX() {
 		return xSupport.getAbsoluteX();
 	}
-	
+
 	public int getXSupportMaxX() {
 		return xSupport.getAbsoluteEndX();
 	}
-	
+
 	@Override
 	public String toString() {
-		return "DefaultXSupportPoint2D [" +  + minX + "x" + minY + " " + maxX + "x" + maxY 
+		return "DefaultXSupportPoint2D [" + +minX + "x" + minY + " " + maxX + "x" + maxY
 				+ ", xSupportMinX=" + getXSupportMinX() + ", xSupportMaxX=" + getXSupportMaxX() + "]";
 	}
 
@@ -46,7 +46,7 @@ public class DefaultXSupportPoint2D<P extends Placement2D & Serializable> extend
 	public Placement2D getXSupport() {
 		return xSupport;
 	}
-	
+
 	@Override
 	public List<P> getPlacements2D() {
 		List<P> list = new ArrayList<>();
@@ -69,7 +69,7 @@ public class DefaultXSupportPoint2D<P extends Placement2D & Serializable> extend
 		}
 		return new DefaultYSupportPoint2D<>(x, minY, maxX, maxY, ySupport);
 	}
-	
+
 	@Override
 	public Point2D<P> moveY(int y, int maxX, int maxY) {
 		return new DefaultPoint2D<>(minX, y, maxX, maxY);
@@ -78,5 +78,5 @@ public class DefaultXSupportPoint2D<P extends Placement2D & Serializable> extend
 	@Override
 	public Point2D<P> moveY(int y, int maxX, int maxY, P xSupport) {
 		return new DefaultXSupportPoint2D<>(minX, y, maxX, maxY, xSupport);
-	}	
+	}
 }

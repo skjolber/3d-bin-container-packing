@@ -11,10 +11,12 @@ import com.github.skjolber.packing.api.Placement3D;
 public interface XYPlanePoint3D {
 
 	int getSupportedXYPlaneMinX();
+
 	int getSupportedXYPlaneMaxX();
 
 	int getSupportedXYPlaneMinY();
+
 	int getSupportedXYPlaneMaxY();
-	
+
 	Placement3D getXYPlane();
 }

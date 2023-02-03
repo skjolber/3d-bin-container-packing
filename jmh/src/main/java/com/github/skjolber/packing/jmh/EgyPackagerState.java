@@ -39,10 +39,10 @@ public class EgyPackagerState {
 
 	private final int threadPoolSize;
 	private final int nth;
-	
+
 	private ExecutorService pool1;
 	private ExecutorService pool2;
-	
+
 	private List<BenchmarkSet> parallelBruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> parallelBruteForcePackagerNth = new ArrayList<>();
 	private List<BenchmarkSet> bruteForcePackager = new ArrayList<>();
@@ -53,27 +53,27 @@ public class EgyPackagerState {
 
 	private static List<StackableItem> stackableItems3D;
 	private static List<Container> containers;
-	
+
 	static {
-		Path path = Paths.get("src","main","resources", "egy.json");
+		Path path = Paths.get("src", "main", "resources", "egy.json");
 
 		if(!Files.exists(path)) {
-			path = Paths.get("jmh", "src","main","resources", "egy.json");
+			path = Paths.get("jmh", "src", "main", "resources", "egy.json");
 		}
-		
+
 		try {
 			List<Item> items = ItemIO.read(path);
-		
+
 			containers = new ArrayList<>();
 			Container container = getContainer(items);
 			containers.add(container);
-	
+
 			stackableItems3D = getStackableItems3D(items);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	public EgyPackagerState() {
 		this(8, 20000);
 	}
@@ -85,11 +85,13 @@ public class EgyPackagerState {
 		this.pool1 = Executors.newFixedThreadPool(threadPoolSize, new DefaultThreadFactory());
 		this.pool2 = Executors.newFixedThreadPool(threadPoolSize, new DefaultThreadFactory());
 	}
-	
+
 	@Setup(Level.Trial)
 	public void init() {
-		ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16).withContainers(containers).build();
-		ParallelBruteForcePackager parallelPackagerNth = ParallelBruteForcePackager.newBuilder().withExecutorService(pool1).withParallelizationCount(threadPoolSize * 16).withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
+		ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16).withContainers(containers)
+				.build();
+		ParallelBruteForcePackager parallelPackagerNth = ParallelBruteForcePackager.newBuilder().withExecutorService(pool1).withParallelizationCount(threadPoolSize * 16)
+				.withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
 
 		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
 		BruteForcePackager packagerNth = BruteForcePackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
@@ -107,47 +109,48 @@ public class EgyPackagerState {
 		this.plainPackagerNth.add(new BenchmarkSet(plainPackagerNth, stackableItems3D));
 
 		this.fastBruteForcePackager.add(new BenchmarkSet(fastPackager, stackableItems3D));
-		
+
 		// multi-threaded
 		this.parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D));
 		this.parallelBruteForcePackagerNth.add(new BenchmarkSet(parallelPackagerNth, stackableItems3D));
 	}
-	
+
 	public static Container getContainer(List<Item> items) {
-		
+
 		long originalVolume = 0;
-		for(Item item : items) {
+		for (Item item : items) {
 			originalVolume += item.getVolume();
 		}
-		
+
 		double multiplier = 5;
-		while(true) {
+		while (true) {
 			long volume = (long)(originalVolume * multiplier);
-			
-			long side = (long) Math.pow(volume,(1/3));
-			while(side * side * side < volume) {
+
+			long side = (long)Math.pow(volume, (1 / 3));
+			while (side * side * side < volume) {
 				side++;
 			}
-			
+
 			int length = (int)side;
-			
+
 			List<Container> containers = new ArrayList<>();
-			DefaultContainer container = Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(length, length, length).withMaxLoadWeight(length * length * length).withStack(new DefaultStack()).build();
+			DefaultContainer container = Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(length, length, length).withMaxLoadWeight(length * length * length)
+					.withStack(new DefaultStack()).build();
 			containers.add(container);
-	
+
 			List<StackableItem> stackableItems3D = getStackableItems3D(items);
-	
+
 			FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
-	
+
 			Container pack = fastPackager.pack(stackableItems3D, System.currentTimeMillis() + 5000);
-			
+
 			if(pack != null) {
 				System.out.println("Go container " + volume + " from " + originalVolume);
 				return container;
 			}
 			multiplier += 0.05;
 			System.out.println("Try " + multiplier);
-		}		
+		}
 	}
 
 	private static List<StackableItem> getStackableItems3D(List<Item> items) {
@@ -163,28 +166,26 @@ public class EgyPackagerState {
 	public void shutdown() throws InterruptedException {
 		pool1.shutdown();
 		pool2.shutdown();
-		
+
 		try {
 			Thread.sleep(500);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			// ignore
 		}
 	}
-	
-	
-	
+
 	public List<BenchmarkSet> getBruteForcePackager() {
 		return bruteForcePackager;
 	}
-	
+
 	public List<BenchmarkSet> getBruteForcePackagerNth() {
 		return bruteForcePackagerNth;
 	}
-	
+
 	public List<BenchmarkSet> getParallelBruteForcePackager() {
 		return parallelBruteForcePackager;
 	}
-	
+
 	public List<BenchmarkSet> getParallelBruteForcePackagerNth() {
 		return parallelBruteForcePackagerNth;
 	}
@@ -192,11 +193,11 @@ public class EgyPackagerState {
 	public List<BenchmarkSet> getPlainPackager() {
 		return plainPackager;
 	}
-	
+
 	public List<BenchmarkSet> getPlainPackagerNth() {
 		return plainPackagerNth;
 	}
-	
+
 	public List<BenchmarkSet> getFastBruteForcePackager() {
 		return fastBruteForcePackager;
 	}

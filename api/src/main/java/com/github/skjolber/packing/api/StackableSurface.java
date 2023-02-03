@@ -14,7 +14,7 @@ public class StackableSurface {
 	public static Builder newBuilder() {
 		return new Builder();
 	}
-	
+
 	private static class SurfaceRotate {
 		private Surface surface;
 		private boolean rotated; // 90 degrees
@@ -35,7 +35,7 @@ public class StackableSurface {
 	}
 
 	public static class Builder {
-		
+
 		protected List<SurfaceRotate> sides = new ArrayList<>();
 
 		public Builder withFront() {
@@ -49,7 +49,7 @@ public class StackableSurface {
 		public Builder withFrontAtNinetyDegrees() {
 			return withSide(new SurfaceRotate(new Surface(Label.FRONT), true));
 		}
-		
+
 		public Builder withRear() {
 			return withSide(new SurfaceRotate(new Surface(Label.REAR), false)).withSide(new SurfaceRotate(new Surface(Label.REAR), true));
 		}
@@ -114,7 +114,7 @@ public class StackableSurface {
 			sides.add(new SurfaceRotate(side, rotate));
 			return this;
 		}
-		
+
 		protected Builder withSide(SurfaceRotate side) {
 			sides.add(side);
 			return this;
@@ -124,9 +124,9 @@ public class StackableSurface {
 			return new StackableSurface(sides);
 		}
 	}
-	
+
 	protected List<Surface> surfaces;
-	
+
 	protected Surface top0; // xy
 	protected Surface top90;
 	protected Surface bottom0; // xy
@@ -139,13 +139,13 @@ public class StackableSurface {
 	protected Surface front90;
 	protected Surface rear0; // xz
 	protected Surface rear90;
-	
+
 	public StackableSurface(List<SurfaceRotate> sides) {
 		super();
 		this.surfaces = sides.stream().map(s -> s.getSurface()).collect(Collectors.toList());
-		for(SurfaceRotate surfaceRotate : sides) {
-			
-			switch(surfaceRotate.getSurface().label) {
+		for (SurfaceRotate surfaceRotate : sides) {
+
+			switch (surfaceRotate.getSurface().label) {
 			case TOP: {
 				if(surfaceRotate.isRotated()) {
 					top90 = surfaceRotate.getSurface();
@@ -192,16 +192,16 @@ public class StackableSurface {
 				} else {
 					rear0 = surfaceRotate.getSurface();
 				}
-				
+
 				break;
 			}
-			default : {
+			default: {
 				throw new IllegalStateException();
 			}
 			}
 		}
 	}
-	
+
 	public boolean isXY() {
 		return isXY0() || isXY90();
 	}
@@ -229,7 +229,7 @@ public class StackableSurface {
 	public boolean isYZ90() {
 		return left90 != null || right90 != null;
 	}
-	
+
 	public boolean is90() {
 		return isYZ90() || isXY90() || isXZ90();
 	}
@@ -292,28 +292,28 @@ public class StackableSurface {
 
 	public List<Surface> getXYSurfaces() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addXY(surfaces);
-		
+
 		return surfaces;
 	}
-	
+
 	public List<Surface> getXY0Surfaces() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addXY0(surfaces);
-		
+
 		return surfaces;
 	}
 
 	public List<Surface> getXY90Surfaces() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addXY90(surfaces);
-		
+
 		return surfaces;
 	}
-	
+
 	private void addXY(List<Surface> surfaces) {
 		addXY0(surfaces);
 		addXY90(surfaces);
@@ -327,7 +327,7 @@ public class StackableSurface {
 			surfaces.add(bottom0);
 		}
 	}
-	
+
 	private void addXY90(List<Surface> surfaces) {
 		if(top90 != null) {
 			surfaces.add(top90);
@@ -336,28 +336,28 @@ public class StackableSurface {
 			surfaces.add(bottom90);
 		}
 	}
-	
+
 	public List<Surface> getXZSurfaces() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addXZ(surfaces);
-		
+
 		return surfaces;
 	}
-	
+
 	public List<Surface> getXZ0Surfaces() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addXZ0(surfaces);
-		
+
 		return surfaces;
 	}
 
 	public List<Surface> getXZ90Surfaces() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addXZ90(surfaces);
-		
+
 		return surfaces;
 	}
 
@@ -386,109 +386,109 @@ public class StackableSurface {
 
 	public List<Surface> getYZAndXZSurfaces0() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addYZ0(surfaces);
 		addXZ0(surfaces);
-		
+
 		return surfaces;
 	}
-	
+
 	public List<Surface> getYZAndXZSurfaces90() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addYZ90(surfaces);
 		addXZ90(surfaces);
-		
+
 		return surfaces;
 	}
 
 	public List<Surface> getYZAndXZSurfaces() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addYZ(surfaces);
 		addXZ(surfaces);
-		
+
 		return surfaces;
 	}
 
 	public List<Surface> getXYAndXZSurfaces0() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addXY0(surfaces);
 		addXZ0(surfaces);
-		
+
 		return surfaces;
 	}
 
 	public List<Surface> getXYAndXZSurfaces90() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addXY90(surfaces);
 		addXZ90(surfaces);
-		
+
 		return surfaces;
 	}
 
 	public List<Surface> getXYAndXZSurfaces() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addXY(surfaces);
 		addXZ(surfaces);
-		
+
 		return surfaces;
 	}
 
 	public List<Surface> getXYAndYZSurfaces() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addXY(surfaces);
 		addYZ(surfaces);
-		
+
 		return surfaces;
 	}
-	
+
 	public List<Surface> getXYAndYZSurfaces0() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addXY0(surfaces);
 		addYZ0(surfaces);
-		
+
 		return surfaces;
 	}
-	
+
 	public List<Surface> getXYAndYZSurfaces90() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addXY90(surfaces);
 		addYZ90(surfaces);
-		
+
 		return surfaces;
 	}
 
 	public List<Surface> getYZSurfaces() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addYZ(surfaces);
-		
+
 		return surfaces;
 	}
-	
+
 	public List<Surface> getYZ0Surfaces() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addYZ0(surfaces);
-		
+
 		return surfaces;
 	}
 
 	public List<Surface> getYZ90Surfaces() {
 		List<Surface> surfaces = new ArrayList<>();
-		
+
 		addYZ90(surfaces);
-		
+
 		return surfaces;
 	}
-	
+
 	private void addYZ0(List<Surface> surfaces) {
 		if(left0 != null) {
 			surfaces.add(left0);

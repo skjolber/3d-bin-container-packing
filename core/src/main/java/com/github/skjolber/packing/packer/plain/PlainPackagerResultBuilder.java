@@ -15,7 +15,7 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 	private AbstractPlainPackager<?> packager;
 
 	private int checkpointsPerDeadlineCheck = 1;
-	
+
 	public PlainPackagerResultBuilder withPackager(AbstractPlainPackager<?> packager) {
 		this.packager = packager;
 		return this;
@@ -25,10 +25,10 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 		this.checkpointsPerDeadlineCheck = n;
 		return this;
 	}
-	
+
 	public PackagerResult build() {
 		long start = System.currentTimeMillis();
-		
+
 		BooleanSupplierBuilder booleanSupplierBuilder = BooleanSupplierBuilder.builder();
 		if(deadline != -1L) {
 			booleanSupplierBuilder.withDeadline(deadline, checkpointsPerDeadlineCheck);
@@ -36,9 +36,9 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 		if(interrupt != null) {
 			booleanSupplierBuilder.withInterrupt(interrupt);
 		}
-		
+
 		BooleanSupplier build = booleanSupplierBuilder.build();
-		
+
 		List<Container> packList;
 		if(maxResults > 1) {
 			packList = packager.packList(items, maxResults, build);
@@ -52,5 +52,5 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 		}
 		return new PackagerResult(packList, System.currentTimeMillis() - start);
 	}
-	
+
 }

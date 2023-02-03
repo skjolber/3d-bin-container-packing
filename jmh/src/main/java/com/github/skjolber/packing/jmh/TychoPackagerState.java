@@ -39,10 +39,10 @@ public class TychoPackagerState {
 
 	private final int threadPoolSize;
 	private final int nth;
-	
+
 	private ExecutorService pool1;
 	private ExecutorService pool2;
-	
+
 	private List<BenchmarkSet> parallelBruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> parallelBruteForcePackagerNth = new ArrayList<>();
 	private List<BenchmarkSet> bruteForcePackager = new ArrayList<>();
@@ -52,11 +52,10 @@ public class TychoPackagerState {
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 
 	private List<StackableItem> stackableItems3D;
-	
-	private	List<Container> containers = Arrays.asList(
-				Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build()
-	);
-	
+
+	private List<Container> containers = Arrays.asList(
+			Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build());
+
 	public TychoPackagerState() {
 		this(8, 20000);
 	}
@@ -68,11 +67,13 @@ public class TychoPackagerState {
 		this.pool1 = Executors.newFixedThreadPool(threadPoolSize, new DefaultThreadFactory());
 		this.pool2 = Executors.newFixedThreadPool(threadPoolSize, new DefaultThreadFactory());
 	}
-	
+
 	@Setup(Level.Trial)
 	public void init() {
-		ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16).withContainers(containers).build();
-		ParallelBruteForcePackager parallelPackagerNth = ParallelBruteForcePackager.newBuilder().withExecutorService(pool1).withParallelizationCount(threadPoolSize * 16).withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
+		ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16).withContainers(containers)
+				.build();
+		ParallelBruteForcePackager parallelPackagerNth = ParallelBruteForcePackager.newBuilder().withExecutorService(pool1).withParallelizationCount(threadPoolSize * 16)
+				.withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
 
 		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
 		BruteForcePackager packagerNth = BruteForcePackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
@@ -90,7 +91,7 @@ public class TychoPackagerState {
 		this.plainPackagerNth.add(new BenchmarkSet(plainPackagerNth, stackableItems3D));
 
 		this.fastBruteForcePackager.add(new BenchmarkSet(fastPackager, stackableItems3D));
-		
+
 		// multi-threaded
 		this.parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D));
 		this.parallelBruteForcePackagerNth.add(new BenchmarkSet(parallelPackagerNth, stackableItems3D));
@@ -100,28 +101,26 @@ public class TychoPackagerState {
 	public void shutdown() throws InterruptedException {
 		pool1.shutdown();
 		pool2.shutdown();
-		
+
 		try {
 			Thread.sleep(500);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			// ignore
 		}
 	}
-	
-	
-	
+
 	public List<BenchmarkSet> getBruteForcePackager() {
 		return bruteForcePackager;
 	}
-	
+
 	public List<BenchmarkSet> getBruteForcePackagerNth() {
 		return bruteForcePackagerNth;
 	}
-	
+
 	public List<BenchmarkSet> getParallelBruteForcePackager() {
 		return parallelBruteForcePackager;
 	}
-	
+
 	public List<BenchmarkSet> getParallelBruteForcePackagerNth() {
 		return parallelBruteForcePackagerNth;
 	}
@@ -129,11 +128,11 @@ public class TychoPackagerState {
 	public List<BenchmarkSet> getPlainPackager() {
 		return plainPackager;
 	}
-	
+
 	public List<BenchmarkSet> getPlainPackagerNth() {
 		return plainPackagerNth;
 	}
-	
+
 	public List<BenchmarkSet> getFastBruteForcePackager() {
 		return fastBruteForcePackager;
 	}

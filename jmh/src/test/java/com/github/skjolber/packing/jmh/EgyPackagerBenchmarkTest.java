@@ -12,40 +12,40 @@ import org.junit.jupiter.api.Test;
 public class EgyPackagerBenchmarkTest {
 
 	private EgyPackagerState state;
-	
-	@BeforeEach 
+
+	@BeforeEach
 	public void init() {
 		state = new EgyPackagerState();
 		state.init();
 	}
-	
+
 	@Test
 	@Disabled
-    public void parallelPackager() throws Exception {
-    	assertValid(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
-    }
+	public void parallelPackager() throws Exception {
+		assertValid(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
+	}
 
 	@Test
-    public void packager() throws Exception {
-    	assertValid(state.getBruteForcePackager(), Long.MAX_VALUE);
-    }
-    
-	@Test
-    public void fastPackager() throws Exception {
-    	assertValid(state.getFastBruteForcePackager(), Long.MAX_VALUE);
-    }
+	public void packager() throws Exception {
+		assertValid(state.getBruteForcePackager(), Long.MAX_VALUE);
+	}
 
-    public void assertValid(List<BenchmarkSet> sets, long deadline) {
-    	for(BenchmarkSet set : sets) {
-    		assertNotNull(set.getPackager().pack(set.getProducts(), deadline));
-    	}
-    }
-    
-    @AfterEach
-    public void shutdown() throws InterruptedException {
-    	if(state != null) {
-    		state.shutdown();
-    	}
-    }
+	@Test
+	public void fastPackager() throws Exception {
+		assertValid(state.getFastBruteForcePackager(), Long.MAX_VALUE);
+	}
+
+	public void assertValid(List<BenchmarkSet> sets, long deadline) {
+		for (BenchmarkSet set : sets) {
+			assertNotNull(set.getPackager().pack(set.getProducts(), deadline));
+		}
+	}
+
+	@AfterEach
+	public void shutdown() throws InterruptedException {
+		if(state != null) {
+			state.shutdown();
+		}
+	}
 
 }

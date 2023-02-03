@@ -21,11 +21,13 @@ import com.github.skjolber.packing.packer.Adapter;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 
 /**
- * Fit boxes into container, i.e. perform bin packing to a single container. 
+ * Fit boxes into container, i.e. perform bin packing to a single container.
  * This implementation tries all permutations, rotations and points.
- * <br><br>
+ * <br>
+ * <br>
  * Note: The brute force algorithm uses a recursive algorithm. It is not intended for more than 10 boxes.
- * <br><br>
+ * <br>
+ * <br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
@@ -36,7 +38,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	public static class BruteForcePackagerBuilder extends AbstractPackagerBuilder<BruteForcePackager, BruteForcePackagerBuilder> {
-		
+
 		public BruteForcePackager build() {
 			if(containers == null) {
 				throw new IllegalStateException("Expected containers");
@@ -45,9 +47,9 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 				packResultComparator = new DefaultPackResultComparator();
 			}
 			return new BruteForcePackager(containers, checkpointsPerDeadlineCheck, packResultComparator);
-		}	
+		}
 	}
-	
+
 	private class BruteForceAdapter implements Adapter<BruteForcePackagerResult> {
 
 		private final ContainerStackValue[] containerStackValue;
@@ -61,18 +63,18 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			this.containers = containers;
 			this.iterators = new DefaultPermutationRotationIterator[containers.size()];
 			this.containerStackValue = new ContainerStackValue[containers.size()];
-					
+
 			for (int i = 0; i < containers.size(); i++) {
 				Container container = containers.get(i);
-				
+
 				ContainerStackValue stackValue = container.getStackValues()[0];
-				
+
 				containerStackValue[i] = stackValue;
-				
+
 				StackConstraint constraint = stackValue.getConstraint();
 
 				Dimension dimension = new Dimension(stackValue.getLoadDx(), stackValue.getLoadDy(), stackValue.getLoadDz());
-				
+
 				iterators[i] = DefaultPermutationRotationIterator
 						.newBuilder()
 						.withLoadSize(dimension)
@@ -83,14 +85,14 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			}
 
 			this.interrupt = interrupt;
-			
+
 			int count = 0;
 			for (DefaultPermutationRotationIterator iterator : iterators) {
 				count = Math.max(count, iterator.length());
 			}
 
 			this.stackPlacements = getPlacements(count);
-			
+
 			this.extremePoints3D = new ExtremePoints3DStack(1, 1, 1, count + 1);
 		}
 
@@ -107,20 +109,20 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		public Container accept(BruteForcePackagerResult bruteForceResult) {
 			Container container = bruteForceResult.getContainer();
 			Stack stack = container.getStack();
-			
+
 			int size = stack.getSize();
-			if (stackPlacements.size() > size) {
+			if(stackPlacements.size() > size) {
 				// this result does not consume all placements
 				// remove consumed items from the iterators
-				
+
 				PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
-				
+
 				int[] permutations = state.getPermutations();
 				List<Integer> p = new ArrayList<>(size);
 				for (int i = 0; i < size; i++) {
 					p.add(permutations[i]);
 				}
-				
+
 				for (PermutationRotationIterator it : iterators) {
 					it.removePermutations(p);
 				}

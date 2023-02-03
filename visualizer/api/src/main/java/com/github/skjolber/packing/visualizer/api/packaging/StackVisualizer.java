@@ -10,14 +10,13 @@ public class StackVisualizer extends AbstractVisualizer {
 	public boolean add(StackPlacementVisualizer e) {
 		return placements.add(e);
 	}
-	
+
 	public List<StackPlacementVisualizer> getPlacements() {
 		return placements;
 	}
-	
+
 	public void setPlacements(List<StackPlacementVisualizer> stackable) {
 		this.placements = stackable;
 	}
 
-	
 }

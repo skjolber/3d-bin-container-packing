@@ -14,15 +14,15 @@ public class AbstractVisualizer {
 	public void setStep(int step) {
 		this.step = step;
 	}
-	
+
 	public int getStep() {
 		return step;
 	}
-	
+
 	public void setPlugins(List<VisualizerPlugin> plugins) {
 		this.plugins = plugins;
 	}
-	
+
 	public List<VisualizerPlugin> getPlugins() {
 		return plugins;
 	}

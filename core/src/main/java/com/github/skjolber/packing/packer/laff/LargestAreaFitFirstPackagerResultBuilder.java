@@ -15,7 +15,7 @@ public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuil
 	private AbstractLargestAreaFitFirstPackager<?> packager;
 
 	private int checkpointsPerDeadlineCheck = 1;
-	
+
 	public LargestAreaFitFirstPackagerResultBuilder withPackager(AbstractLargestAreaFitFirstPackager<?> packager) {
 		this.packager = packager;
 		return this;
@@ -25,10 +25,10 @@ public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuil
 		this.checkpointsPerDeadlineCheck = n;
 		return this;
 	}
-	
+
 	public PackagerResult build() {
 		long start = System.currentTimeMillis();
-		
+
 		BooleanSupplierBuilder booleanSupplierBuilder = BooleanSupplierBuilder.builder();
 		if(deadline != -1L) {
 			booleanSupplierBuilder.withDeadline(start, checkpointsPerDeadlineCheck);
@@ -36,15 +36,15 @@ public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuil
 		if(interrupt != null) {
 			booleanSupplierBuilder.withInterrupt(interrupt);
 		}
-		
+
 		BooleanSupplier build = booleanSupplierBuilder.build();
-		
+
 		List<Container> packList;
 		if(maxResults > 1) {
 			packList = packager.packList(items, maxResults, build);
 		} else {
 			Container result = packager.pack(items, build);
-			
+
 			if(result != null) {
 				packList = Arrays.asList(result);
 			} else {
@@ -53,5 +53,5 @@ public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuil
 		}
 		return new PackagerResult(packList, System.currentTimeMillis() - start);
 	}
-	
+
 }

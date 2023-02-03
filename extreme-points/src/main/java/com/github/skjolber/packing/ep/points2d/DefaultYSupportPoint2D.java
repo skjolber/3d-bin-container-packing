@@ -8,17 +8,17 @@ import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.YSupportPoint2D;
 
-public class DefaultYSupportPoint2D<P extends Placement2D & Serializable> extends Point2D<P> implements YSupportPoint2D  {
+public class DefaultYSupportPoint2D<P extends Placement2D & Serializable> extends Point2D<P> implements YSupportPoint2D {
 
 	private static final long serialVersionUID = 1L;
 	/** range constrained to current minX */
 	private final P ySupport;
-	
+
 	public DefaultYSupportPoint2D(int minX, int minY, int maxX, int maxY, P ySupport) {
 		super(minX, minY, maxX, maxY);
 		this.ySupport = ySupport;
 	}
-	
+
 	@Override
 	public boolean isYSupport(int y) {
 		return ySupport.getAbsoluteY() <= y && y <= ySupport.getAbsoluteEndY();
@@ -27,17 +27,17 @@ public class DefaultYSupportPoint2D<P extends Placement2D & Serializable> extend
 	public int getYSupportMinY() {
 		return ySupport.getAbsoluteY();
 	}
-	
+
 	public int getYSupportMaxY() {
 		return ySupport.getAbsoluteEndY();
 	}
 
 	@Override
 	public String toString() {
-		return "DefaultYSupportPoint2D [" + minX + "x" + minY + " " + maxX + "x" + maxY 
+		return "DefaultYSupportPoint2D [" + minX + "x" + minY + " " + maxX + "x" + maxY
 				+ ", ySupportMinY=" + getYSupportMinY() + ", ySupportMaxY=" + getYSupportMaxY() + "]";
 	}
-	
+
 	public Point2D<P> clone(int maxX, int maxY) {
 		return new DefaultYSupportPoint2D<>(minX, minY, maxX, maxY, ySupport);
 	}
@@ -53,7 +53,7 @@ public class DefaultYSupportPoint2D<P extends Placement2D & Serializable> extend
 		list.add(ySupport);
 		return list;
 	}
-	
+
 	@Override
 	public Point2D<P> moveY(int y, int maxX, int maxY) {
 		if(y <= ySupport.getAbsoluteEndY()) {
@@ -68,8 +68,8 @@ public class DefaultYSupportPoint2D<P extends Placement2D & Serializable> extend
 			return new DefaultXYSupportPoint2D<>(minX, y, maxX, maxY, xSupport, ySupport);
 		}
 		return new DefaultXSupportPoint2D<>(minX, y, maxX, maxY, xSupport);
-	}	
-	
+	}
+
 	@Override
 	public Point2D<P> moveX(int x, int maxX, int maxY, P ySupport) {
 		return new DefaultYSupportPoint2D<>(x, minY, maxX, maxY, ySupport);
@@ -79,7 +79,5 @@ public class DefaultYSupportPoint2D<P extends Placement2D & Serializable> extend
 	public Point2D<P> moveX(int x, int maxX, int maxY) {
 		return new DefaultPoint2D<>(x, minY, maxX, maxY);
 	}
-
-
 
 }

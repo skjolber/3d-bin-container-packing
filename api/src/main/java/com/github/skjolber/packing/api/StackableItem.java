@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 /**
  * A {@linkplain Stackable} repeated one or more times. Typically corresponding to an order-line, but
- * can also represent multiple products which share the same size. 
+ * can also represent multiple products which share the same size.
  * 
  */
 public class StackableItem implements Serializable {

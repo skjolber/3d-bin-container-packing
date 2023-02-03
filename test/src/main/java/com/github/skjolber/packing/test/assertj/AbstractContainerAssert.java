@@ -7,7 +7,7 @@ import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Stack;
 
 public abstract class AbstractContainerAssert<SELF extends AbstractContainerAssert<SELF, ACTUAL>, ACTUAL extends Container>
-extends AbstractObjectAssert<SELF, ACTUAL> {
+		extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	protected AbstractContainerAssert(ACTUAL actual, Class<?> selfType) {
 		super(actual, selfType);
@@ -20,9 +20,9 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 			failWithMessage("Expected stack");
 		} else {
 			isStackValue(stack.getContainerStackValue());
-			
+
 			StackAssert.assertThat(actual.getStack()).isWithinLoadContraints();
-		}		
+		}
 		return myself;
 	}
 
@@ -34,12 +34,12 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 			failWithMessage("Expected stack");
 		} else {
 			isStackValue(stack.getContainerStackValue());
-			
+
 			StackAssert.assertThat(actual.getStack()).isWithinLoadDimensions();
-		}		
+		}
 		return myself;
 	}
-	
+
 	public SELF isStackedWithinLoadWeight() {
 		isNotNull();
 
@@ -48,7 +48,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 			failWithMessage("Expected stack");
 		} else {
 			isStackValue(stack.getContainerStackValue());
-			
+
 			StackAssert.assertThat(stack).isWithinLoadWeight();
 		}
 

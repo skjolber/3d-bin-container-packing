@@ -9,7 +9,7 @@ public class DefaultPackResult implements PackResult {
 	private final Stack stack;
 	private final Container container;
 	private final boolean last;
-	
+
 	public DefaultPackResult(Container container, Stack stack, boolean last) {
 		this.stack = stack;
 		this.container = container;

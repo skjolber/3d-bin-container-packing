@@ -6,7 +6,7 @@ import com.github.skjolber.packing.api.StackPlacement;
 public class ValidatingStack extends DefaultStack {
 
 	public void add(StackPlacement e) {
-		for(StackPlacement stackPlacement : entries) {
+		for (StackPlacement stackPlacement : entries) {
 			if(stackPlacement.intersects(e)) {
 				throw new IllegalArgumentException(e + " intersects " + stackPlacement);
 			}
@@ -14,5 +14,4 @@ public class ValidatingStack extends DefaultStack {
 		super.add(e);
 	}
 
-	
 }

@@ -10,10 +10,12 @@ import com.github.skjolber.packing.api.Placement3D;
 public interface YZPlanePoint3D {
 
 	int getSupportedYZPlaneMinY();
+
 	int getSupportedYZPlaneMaxY();
 
 	int getSupportedYZPlaneMinZ();
+
 	int getSupportedYZPlaneMaxZ();
-	
+
 	Placement3D getYZPlane();
 }

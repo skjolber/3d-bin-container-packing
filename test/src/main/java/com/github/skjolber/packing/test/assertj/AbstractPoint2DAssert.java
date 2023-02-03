@@ -9,7 +9,7 @@ import com.github.skjolber.packing.api.ep.YSupportPoint2D;
 
 @SuppressWarnings("rawtypes")
 public abstract class AbstractPoint2DAssert<SELF extends AbstractPoint2DAssert<SELF, ACTUAL>, ACTUAL extends Point2D>
-extends AbstractObjectAssert<SELF, ACTUAL> {
+		extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	protected AbstractPoint2DAssert(ACTUAL actual, Class<?> selfType) {
 		super(actual, selfType);
@@ -17,7 +17,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	public SELF isMinX(int x) {
 		isNotNull();
-		if (actual.getMinX() != x) {
+		if(actual.getMinX() != x) {
 			failWithMessage("Expected x at " + x);
 		}
 		return myself;
@@ -25,7 +25,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	public SELF isMinY(int y) {
 		isNotNull();
-		if (actual.getMinY() != y) {
+		if(actual.getMinY() != y) {
 			failWithMessage("Expected y at " + y);
 		}
 		return myself;
@@ -33,29 +33,29 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	public SELF isMin(int x, int y) {
 		isNotNull();
-		if (actual.getMinX() != x) {
+		if(actual.getMinX() != x) {
 			failWithMessage("Expected x " + x + ", not " + actual.getMinX() + " (was " + getCoordinates() + ")");
 		}
-		if (actual.getMinY() != y) {
-			failWithMessage("Expected y " + y + ", not " + actual.getMinY()+ " (was " + getCoordinates() + ")");
+		if(actual.getMinY() != y) {
+			failWithMessage("Expected y " + y + ", not " + actual.getMinY() + " (was " + getCoordinates() + ")");
 		}
 		return myself;
 	}
-	
+
 	public SELF isMax(int x, int y) {
 		isNotNull();
-		if (actual.getMaxX() != x) {
+		if(actual.getMaxX() != x) {
 			failWithMessage("Expected x " + x + ", not " + actual.getMaxX() + " (was " + getCoordinates() + ")");
 		}
-		if (actual.getMaxY() != y) {
-			failWithMessage("Expected y " + y + ", not " + actual.getMaxY()+ " (was " + getCoordinates() + ")");
+		if(actual.getMaxY() != y) {
+			failWithMessage("Expected y " + y + ", not " + actual.getMaxY() + " (was " + getCoordinates() + ")");
 		}
 		return myself;
 	}
-	
+
 	public SELF isMaxX(int x) {
 		isNotNull();
-		if (actual.getMaxX() != x) {
+		if(actual.getMaxX() != x) {
 			failWithMessage("Expected x " + x + ", not " + actual.getMaxX() + " (was " + getCoordinates() + ")");
 		}
 		return myself;
@@ -63,19 +63,19 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	public SELF isMaxY(int y) {
 		isNotNull();
-		if (actual.getMaxY() != y) {
-			failWithMessage("Expected y " + y + ", not " + actual.getMaxY()+ " (was " + getCoordinates() + ")");
+		if(actual.getMaxY() != y) {
+			failWithMessage("Expected y " + y + ", not " + actual.getMaxY() + " (was " + getCoordinates() + ")");
 		}
 		return myself;
 	}
-	
+
 	public SELF isYSupport(int y) {
 		isNotNull();
 		if(!actual.isYSupport(y)) {
 			if(actual instanceof YSupportPoint2D) {
 				YSupportPoint2D ySupportPoint2D = (YSupportPoint2D)actual;
 				Placement2D support = ySupportPoint2D.getYSupport();
-				
+
 				failWithMessage("Expected y support at " + y + ", was " + support.getAbsoluteY() + " to " + support.getAbsoluteEndY());
 			} else {
 				failWithMessage("Expected y support at " + y + ", was none for " + actual);
@@ -83,14 +83,14 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		}
 		return myself;
 	}
-	
+
 	public SELF isNoYSupport(int y) {
 		isNotNull();
 		if(actual.isYSupport(y)) {
 			if(actual instanceof YSupportPoint2D) {
 				YSupportPoint2D ySupportPoint2D = (YSupportPoint2D)actual;
 				Placement2D support = ySupportPoint2D.getYSupport();
-				
+
 				failWithMessage("Expected no y support at " + y + ", was " + support.getAbsoluteY() + " to " + support.getAbsoluteEndY());
 			}
 		}
@@ -103,7 +103,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 			if(actual instanceof XSupportPoint2D) {
 				XSupportPoint2D ySupportPoint2D = (XSupportPoint2D)actual;
 				Placement2D support = ySupportPoint2D.getXSupport();
-				
+
 				failWithMessage("Expected x support at " + x + ", was " + support.getAbsoluteX() + " to " + support.getAbsoluteEndX());
 			} else {
 				failWithMessage("Expected x support at " + x + ", was none for " + actual);
@@ -118,7 +118,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 			if(actual instanceof XSupportPoint2D) {
 				XSupportPoint2D ySupportPoint2D = (XSupportPoint2D)actual;
 				Placement2D support = ySupportPoint2D.getXSupport();
-				
+
 				failWithMessage("Expected no x support at " + x + ", was " + support.getAbsoluteX() + " to " + support.getAbsoluteEndX());
 			}
 		}
@@ -144,7 +144,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		}
 		return myself;
 	}
-	
+
 	public SELF isNoYSupport() {
 		isNotNull();
 		if(actual instanceof YSupportPoint2D) {
@@ -165,7 +165,6 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		return myself;
 	}
 
-
 	public SELF isMaxXSupport(int x) {
 		isNotNull();
 		if(actual instanceof XSupportPoint2D) {
@@ -179,7 +178,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		}
 		return myself;
 	}
-			
+
 	private String getEndCoordinates() {
 		return actual.getMaxX() + "x" + actual.getMaxY();
 	}
@@ -191,18 +190,17 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 	private String getCoordinates() {
 		return getStartCoordinates() + " " + getEndCoordinates();
 	}
-	
-	
+
 	protected boolean isOverlapX(Point2D placement) {
-		
+
 		if(placement.getMinX() <= actual.getMinX() && actual.getMinX() <= placement.getMaxX()) {
 			return true;
 		}
-		
+
 		if(placement.getMinX() <= actual.getMaxX() && actual.getMaxX() <= placement.getMaxX()) {
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -210,115 +208,115 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		if(placement.getMinY() <= actual.getMinY() && actual.getMinY() <= placement.getMaxY()) {
 			return true;
 		}
-		
+
 		if(placement.getMinY() <= actual.getMaxY() && actual.getMaxY() <= placement.getMaxY()) {
 			return true;
 		}
-		
+
 		return false;
 	}
 
 	public SELF isAlongsideY(Point2D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithMessage("Not overlapping in x dimension");
 		}
-		if (actual.getMaxY() + 1 != other.getMinY() && other.getMaxY() + 1 != actual.getMinY()) {
+		if(actual.getMaxY() + 1 != other.getMinY() && other.getMaxY() + 1 != actual.getMinY()) {
 			failWithMessage("Expected start y at " + (other.getMaxY() + 1) + " or end y at " + (other.getMinY() - 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF isAlongsideX(Point2D other) {
 		isNotNull();
-		
+
 		if(!isOverlapY(other)) {
 			failWithMessage("Not overlapping in y dimension");
 		}
 
-		if (actual.getMaxX() + 1 != other.getMinX() && other.getMaxX() + 1 != actual.getMinX()) {
+		if(actual.getMaxX() + 1 != other.getMinX() && other.getMaxX() + 1 != actual.getMinX()) {
 			failWithMessage("Expected start x at " + (other.getMaxX() + 1) + " or end x at " + (other.getMinX() - 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF followsAlongsideX(Point2D other) {
 		isNotNull();
-		
+
 		if(!isOverlapY(other)) {
 			failWithMessage("Not overlapping in y dimension");
 		}
-		
-		if (other.getMaxX() + 1 != actual.getMinX()) {
+
+		if(other.getMaxX() + 1 != actual.getMinX()) {
 			failWithMessage("Expected start x at " + (other.getMaxX() + 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF followsAlongsideY(Point2D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithMessage("Not overlapping in x dimension");
 		}
-		
-		if (other.getMaxY() + 1 != actual.getMinY()) {
+
+		if(other.getMaxY() + 1 != actual.getMinY()) {
 			failWithMessage("Expected start y at " + (other.getMaxY() + 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF followsAlongsideZ(Point2D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithMessage("Not overlapping in x dimension");
 		}
 		if(!isOverlapY(other)) {
 			failWithMessage("Not overlapping in y dimension");
 		}
-		
+
 		return myself;
 	}
 
 	public SELF preceedsAlongsideY(Point2D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithMessage("Not overlapping in x dimension");
 		}
-		
-		if (actual.getMaxY() + 1 != other.getMinY()) {
+
+		if(actual.getMaxY() + 1 != other.getMinY()) {
 			failWithMessage("Expected end y at " + (other.getMinY() - 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF preceedsAlongsideX(Point2D other) {
 		isNotNull();
-		
+
 		if(!isOverlapY(other)) {
 			failWithMessage("Not overlapping in y dimension");
 		}
-		
-		if (actual.getMaxX() + 1 != other.getMinX() ) {
+
+		if(actual.getMaxX() + 1 != other.getMinX()) {
 			failWithMessage("Expected end x at " + (other.getMinX() - 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF preceedsAlongsideZ(Point2D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithMessage("Not overlapping in x dimension");
 		}
 		if(!isOverlapY(other)) {
 			failWithMessage("Not overlapping in y dimension");
 		}
-		
+
 		return myself;
 	}
-	
+
 }

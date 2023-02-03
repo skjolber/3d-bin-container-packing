@@ -15,17 +15,17 @@ import com.github.skjolber.packing.test.generator.egy.EgyItemGenerator;
 
 public class EgyGeneratorTool {
 
-    public static void main(String[] args) throws RunnerException, IOException {    	
+	public static void main(String[] args) throws RunnerException, IOException {
 		ItemGenerator<EgyItem> generator = new EgyItemGenerator(EgyItemGenerator.CLASS_1);
-		
+
 		List<EgyItem> items = generator.getItems(10);
-		for(Item item : items) {
+		for (Item item : items) {
 			System.out.println(item);
 		}
-		
-		Path path = Paths.get("src","main","resources", "egy.json");
-		
+
+		Path path = Paths.get("src", "main", "resources", "egy.json");
+
 		ItemIO.write(path, items);
-    }
-	
+	}
+
 }

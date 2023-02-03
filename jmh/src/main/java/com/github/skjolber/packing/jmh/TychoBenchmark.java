@@ -62,8 +62,7 @@ public class TychoBenchmark {
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(570, 570, 1840).withWeight(0).build(), 1),
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(1000, 1000, 1000).withWeight(0).build(), 1),
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(91, 500, 720).withWeight(0).build(), 1),
-			new StackableItem(Box.newBuilder().withRotate3D().withSize(215, 585, 355).withWeight(0).build(), 1)
-	);
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(215, 585, 355).withWeight(0).build(), 1));
 
 	private static List<StackableItem> products33 = Arrays.asList(
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(56, 1001, 1505).withWeight(0).build(), 1),
@@ -99,8 +98,7 @@ public class TychoBenchmark {
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(30, 66, 230).withWeight(0).build(), 1),
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(1000, 1000, 1000).withWeight(0).build(), 1),
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(90, 610, 210).withWeight(0).build(), 1),
-			new StackableItem(Box.newBuilder().withRotate3D().withSize(144, 630, 1530).withWeight(0).build(), 1)
-	);
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(144, 630, 1530).withWeight(0).build(), 1));
 
 	private static List<StackableItem> products93 = Arrays.asList(
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(1170, 510, 200).withWeight(0).build(), 1),
@@ -195,26 +193,25 @@ public class TychoBenchmark {
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(300, 200, 30).withWeight(0).build(), 1),
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(300, 200, 30).withWeight(0).build(), 1),
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(300, 200, 30).withWeight(0).build(), 1),
-			new StackableItem(Box.newBuilder().withRotate3D().withSize(47, 3010, 660).withWeight(0).build(), 1)
-	);
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(47, 3010, 660).withWeight(0).build(), 1));
 
-	@Param(value={"22","33","93"})
+	@Param(value = { "22", "33", "93" })
 	private String boxes;
 
 	private List<StackableItem> products;
 
 	@Setup
 	public void init() throws Exception {
-		switch(boxes) {
-		case "22" : {
+		switch (boxes) {
+		case "22": {
 			products = products22;
 			break;
 		}
-		case "33" : {
+		case "33": {
 			products = products33;
 			break;
 		}
-		case "93" : {
+		case "93": {
 			products = products93;
 			break;
 		}
@@ -227,7 +224,7 @@ public class TychoBenchmark {
 	public int parallelPackager(TychoPackagerState state) throws Exception {
 		return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
 	}
-
+	
 	// never finishes
 	@Benchmark
 	public int packager(TychoPackagerState state) throws Exception {
@@ -239,7 +236,7 @@ public class TychoBenchmark {
 	public int fastPackager(TychoPackagerState state) throws Exception {
 		return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
 	}
-	
+
 	@Benchmark
 	public int plainPackager(TychoPackagerState state) throws Exception {
 		return process(state.getPlainPackager(), Long.MAX_VALUE);
@@ -247,7 +244,7 @@ public class TychoBenchmark {
 
 	public int process(List<BenchmarkSet> sets, long deadline) {
 		int i = 0;
-		for(BenchmarkSet set : sets) {
+		for (BenchmarkSet set : sets) {
 			if(set.getPackager().pack(products, deadline) != null) {
 				i++;
 			}
@@ -255,20 +252,19 @@ public class TychoBenchmark {
 
 		return i;
 	}
-	
-    
-    public static void main(String[] args) throws RunnerException {
-        Options opt = new OptionsBuilder()
-                .include(TychoBenchmark.class.getSimpleName())
-                .mode(Mode.Throughput)
-                /*
-                .forks(1)
-                .measurementIterations(1)
-                .measurementTime(TimeValue.seconds(15))
-                .timeout(TimeValue.seconds(10))
-                */
-                .build();
 
-        new Runner(opt).run();
-    }
+	public static void main(String[] args) throws RunnerException {
+		Options opt = new OptionsBuilder()
+				.include(TychoBenchmark.class.getSimpleName())
+				.mode(Mode.Throughput)
+				/*
+				.forks(1)
+				.measurementIterations(1)
+				.measurementTime(TimeValue.seconds(15))
+				.timeout(TimeValue.seconds(10))
+				*/
+				.build();
+
+		new Runner(opt).run();
+	}
 }

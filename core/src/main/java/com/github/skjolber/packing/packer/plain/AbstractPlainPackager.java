@@ -19,7 +19,8 @@ import com.github.skjolber.packing.packer.DefaultPackResult;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
- * <br><br>
+ * <br>
+ * <br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> extends AbstractPackager<DefaultPackResult, PlainPackagerResultBuilder> {
@@ -27,7 +28,7 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 	public AbstractPlainPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
 		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
 	}
-	
+
 	public DefaultPackResult pack(List<Stackable> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck) {
 		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
@@ -36,7 +37,7 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
-	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer,  BooleanSupplier interrupt);
+	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt);
 
 	protected class PlainAdapter implements Adapter<DefaultPackResult> {
 
@@ -49,10 +50,10 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 
 			List<Stackable> boxClones = new LinkedList<>();
 
-			for(StackableItem item : boxItems) {
+			for (StackableItem item : boxItems) {
 				Stackable box = item.getStackable();
 				boxClones.add(box);
-				for(int i = 1; i < item.getCount(); i++) {
+				for (int i = 1; i < item.getCount(); i++) {
 					boxClones.add(box.clone());
 				}
 			}
@@ -65,16 +66,16 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 		public DefaultPackResult attempt(int index, DefaultPackResult best) {
 			return AbstractPlainPackager.this.pack(boxes, containers.get(index), interrupt);
 		}
-		
+
 		@Override
 		public Container accept(DefaultPackResult result) {
 			Container container = result.getContainer();
 			Stack stack = container.getStack();
 
 			List<Stackable> placed = stack.getPlacements().stream().map(p -> p.getStackable()).collect(Collectors.toList());
-			
+
 			boxes.removeAll(placed);
-			
+
 			return container;
 		}
 

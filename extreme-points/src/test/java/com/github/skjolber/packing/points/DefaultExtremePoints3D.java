@@ -19,21 +19,21 @@ public class DefaultExtremePoints3D extends ExtremePoints3D<DefaultPlacement3D> 
 	}
 
 	private void validate(DefaultPlacement3D target) {
-		
+
 		for (Placement3D p : placements) {
 			for (int i = 0; i < values.size(); i++) {
 				Point3D point = values.get(i);
-			
+
 				boolean x = point.getMinX() <= p.getAbsoluteEndX() && point.getMaxX() >= p.getAbsoluteX();
 				boolean y = point.getMinY() <= p.getAbsoluteEndY() && point.getMaxY() >= p.getAbsoluteY();
 				boolean z = point.getMinZ() <= p.getAbsoluteEndZ() && point.getMaxZ() >= p.getAbsoluteZ();
-				
+
 				if(x && y && z) {
 					throw new IllegalArgumentException();
 				}
 			}
 		}
-		
+
 	}
-	
+
 }

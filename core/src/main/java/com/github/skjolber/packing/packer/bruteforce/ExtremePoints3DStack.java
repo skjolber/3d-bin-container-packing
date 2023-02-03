@@ -9,7 +9,7 @@ import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
 
 public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
-	
+
 	protected static class StackItem {
 		protected Point3DFlagList<StackPlacement> values = new Point3DFlagList<>();
 		protected Point3DFlagList<StackPlacement> otherValues = new Point3DFlagList<>();
@@ -20,19 +20,19 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		protected long minAreaLimit;
 
 	}
-	
+
 	protected List<StackItem> stackItems = new ArrayList<>();
 	protected int stackIndex = 0;
-	
+
 	public ExtremePoints3DStack(int dx, int dy, int dz, int maxStackDepth) {
 		super(dx, dy, dz, true);
-		
-		for(int i = 0; i < maxStackDepth; i++) {
+
+		for (int i = 0; i < maxStackDepth; i++) {
 			stackItems.add(new StackItem());
 		}
-		
+
 		values.copyInto(stackItems.get(0).values);
-		
+
 		loadCurrent();
 	}
 
@@ -42,24 +42,24 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 
 		return super.add(index, placement);
 	}
-	
+
 	public StackPlacement push() {
 		StackItem stackItem = stackItems.get(stackIndex);
-		
+
 		stackIndex++;
-		
+
 		StackItem nextStackItem = stackItems.get(stackIndex);
 		nextStackItem.placements.addAll(stackItem.placements);
 		stackItem.values.copyInto(nextStackItem.values);
-		
+
 		stackItem.minAreaLimit = minAreaLimit;
 		stackItem.minVolumeLimit = minVolumeLimit;
-		
+
 		loadCurrent();
-		
+
 		return nextStackItem.stackPlacement;
 	}
-	
+
 	public void redo() {
 		// clear current level
 		placements.clear();
@@ -71,9 +71,9 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		StackItem previousStackItem = stackItems.get(stackIndex - 1);
 		minAreaLimit = previousStackItem.minAreaLimit;
 		minVolumeLimit = previousStackItem.minVolumeLimit;
-		
+
 		placements.addAll(previousStackItem.placements);
-		
+
 		previousStackItem.values.copyInto(values);
 	}
 
@@ -90,23 +90,23 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		stackIndex--;
 		loadCurrent();
 	}
-	
+
 	private void loadCurrent() {
 		StackItem stackItem = stackItems.get(stackIndex);
-		
+
 		this.values = stackItem.values;
-		
+
 		xxComparator.setValues(values);
 		yyComparator.setValues(values);
 		zzComparator.setValues(values);
-		
+
 		this.otherValues = stackItem.otherValues;
 		this.placements = stackItem.placements;
 		this.minAreaLimit = stackItem.minAreaLimit;
 		this.minVolumeLimit = stackItem.minVolumeLimit;
 
 	}
-	
+
 	public List<Point3D<StackPlacement>> getPoints() {
 		// item 0 is always empty
 		List<Point3D<StackPlacement>> list = new ArrayList<>(stackIndex + 1);
@@ -116,7 +116,7 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		}
 		return list;
 	}
-	
+
 	public List<StackPlacement> getStackPlacement() {
 		List<StackPlacement> list = new ArrayList<>(stackIndex);
 		for (StackItem stackItem : stackItems) {
@@ -124,14 +124,14 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		}
 		return list;
 	}
-	
+
 	public void reset(int dx, int dy, int dz) {
 		setSize(dx, dy, dz);
 
 		for (int i = 0; i < stackItems.size(); i++) {
 			StackItem stackItem = stackItems.get(i);
 			stackItem.point = null;
-			
+
 			stackItem.placements.clear();
 			stackItem.values.clear();
 		}
@@ -142,5 +142,5 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 
 		addFirstPoint();
 	}
-	
+
 }

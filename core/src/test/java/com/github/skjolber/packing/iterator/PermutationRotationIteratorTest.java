@@ -14,17 +14,16 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.StackableItem;
 
-
 class PermutationRotationIteratorTest {
 
 	@Test
 	void testCount() {
-		for(int i = 1; i <= 8; i++) {
+		for (int i = 1; i <= 8; i++) {
 			Dimension container = new Dimension(null, 3 * (i + 1), 1, 1);
 
 			List<StackableItem> products1 = new ArrayList<>();
 
-			for(int k = 0; k < i; k++) {
+			for (int k = 0; k < i; k++) {
 				Box box = Box.newBuilder().withSize(3, 1, 1).withRotate3D().withDescription(Integer.toString(k)).withWeight(1).build();
 
 				StackableItem item = new StackableItem(box);
@@ -44,7 +43,7 @@ class PermutationRotationIteratorTest {
 			int rotate = 0;
 			do {
 				rotate++;
-			} while(rotator.nextRotation() != -1);
+			} while (rotator.nextRotation() != -1);
 
 			assertEquals(count, rotate);
 		}
@@ -75,7 +74,7 @@ class PermutationRotationIteratorTest {
 
 		List<StackableItem> products = new ArrayList<>();
 
-		Box box = Box.newBuilder().withRotate3D().withSize( 1, 2, 3).withDescription("0").withWeight(1).build();
+		Box box = Box.newBuilder().withRotate3D().withSize(1, 2, 3).withDescription("0").withWeight(1).build();
 
 		products.add(new StackableItem(box));
 
@@ -155,7 +154,7 @@ class PermutationRotationIteratorTest {
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
-		
+
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
@@ -167,15 +166,15 @@ class PermutationRotationIteratorTest {
 
 		do {
 			// check order unchanged
-			for(int i = 0; i < products.size(); i++) {
+			for (int i = 0; i < products.size(); i++) {
 				assertEquals(Integer.toString(i), rotator.get(i).getStackable().getDescription());
 			}
 
 			// all rotations can fit
-			for(int i = 0; i < products.size(); i++) {
+			for (int i = 0; i < products.size(); i++) {
 				assertTrue(rotator.get(i).getValue().fitsInside3D(container));
 			}
-		} while(rotator.nextRotation() != -1);
+		} while (rotator.nextRotation() != -1);
 
 	}
 
@@ -197,13 +196,13 @@ class PermutationRotationIteratorTest {
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
-		
+
 		int count = 0;
 		do {
 			count++;
-		} while(rotator.nextPermutation() != -1);
+		} while (rotator.nextPermutation() != -1);
 
-		assertEquals( 5 * 4 * 3 * 2 * 1, count);
+		assertEquals(5 * 4 * 3 * 2 * 1, count);
 	}
 
 	@Test
@@ -228,11 +227,11 @@ class PermutationRotationIteratorTest {
 		int count = 0;
 		do {
 			count++;
-		} while(rotator.nextPermutation(rotator.length() - 1) != -1);
+		} while (rotator.nextPermutation(rotator.length() - 1) != -1);
 
-		assertEquals( 5 * 4 * 3 * 2 * 1, count);
+		assertEquals(5 * 4 * 3 * 2 * 1, count);
 	}
-	
+
 	@Test
 	void testPermutationsForMaxIndexInRightOrder() {
 		Dimension container = new Dimension(null, 9, 1, 1);
@@ -251,34 +250,33 @@ class PermutationRotationIteratorTest {
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
-		
+
 		DefaultPermutationRotationIterator rotator2 = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
-		
+
 		int count = 0;
 		do {
-			
+
 			int[] permutations1 = rotator1.getPermutations();
 			int[] permutations2 = rotator2.getPermutations();
 			assertArrayEquals(permutations1, permutations2);
-			
+
 			count++;
-		} while(rotator1.nextPermutation(rotator1.length() - 1) != -1 && rotator2.nextPermutation() != -1);
+		} while (rotator1.nextPermutation(rotator1.length() - 1) != -1 && rotator2.nextPermutation() != -1);
 
-		assertEquals( 5 * 4 * 3 * 2 * 1, count);
+		assertEquals(5 * 4 * 3 * 2 * 1, count);
 	}
-
 
 	@Test
 	void testPermutationCorrectIndexReturned() {
 		Dimension container = new Dimension(null, 9, 1, 1);
 
 		List<StackableItem> products = new ArrayList<>();
-		
+
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
@@ -304,13 +302,13 @@ class PermutationRotationIteratorTest {
 			}
 			assertThat(firstDiffIndex(permutations, rotator.getPermutations())).isEqualTo(length);
 
-		} while(true);
+		} while (true);
 
 		assertEquals(4 * 3 * 2 * 1, count);
 	}
 
 	public static int firstDiffIndex(int[] a, int[] b) {
-		for(int i = 0; i < a.length; i++) {
+		for (int i = 0; i < a.length; i++) {
 			if(a[i] != b[i]) {
 				return i;
 			}
@@ -332,7 +330,7 @@ class PermutationRotationIteratorTest {
 
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build(), 2));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build(), 4));
-		
+
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
@@ -343,9 +341,9 @@ class PermutationRotationIteratorTest {
 		int count = 0;
 		do {
 			count++;
-		} while(rotator.nextPermutation() != -1);
+		} while (rotator.nextPermutation() != -1);
 
-		assertEquals( (6 * 5 * 4 * 3 * 2 * 1) / ((4 * 3 * 2 * 1) * (2 * 1)), count);
+		assertEquals((6 * 5 * 4 * 3 * 2 * 1) / ((4 * 3 * 2 * 1) * (2 * 1)), count);
 	}
 
 	@Test
@@ -372,15 +370,14 @@ class PermutationRotationIteratorTest {
 
 	}
 
-
 	@Test
 	void testCountPermutations1() {
 		int n = 25;
-		
+
 		Dimension container = new Dimension(null, 5 * n, 10, 10);
 
 		List<StackableItem> products = new ArrayList<>();
-		for(int k = 0; k < n; k++) {
+		for (int k = 0; k < n; k++) {
 			products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(5, 10, 10).withWeight(1).build(), 1));
 		}
 
@@ -397,11 +394,11 @@ class PermutationRotationIteratorTest {
 	@Test
 	void testCountPermutations2() {
 		int n = 25;
-		
+
 		Dimension container = new Dimension(null, 5 * n, 10, 10);
 
 		List<StackableItem> products = new ArrayList<>();
-		for(int k = 0; k < n; k++) {
+		for (int k = 0; k < n; k++) {
 			products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(5, 10, 10).withWeight(1).build(), 1));
 		}
 		DefaultPermutationRotationIterator iterator = DefaultPermutationRotationIterator
@@ -425,7 +422,7 @@ class PermutationRotationIteratorTest {
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
-		
+
 		DefaultPermutationRotationIterator iterator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
@@ -440,10 +437,10 @@ class PermutationRotationIteratorTest {
 		assertEquals(permutations.length, 2);
 		assertEquals(3, permutations[0]);
 		assertEquals(4, permutations[1]);
-		
+
 		int nextPermutation = iterator.nextPermutation();
 		assertEquals(0, nextPermutation);
-		
+
 		// no more rotations
 		assertEquals(-1, iterator.nextPermutation());
 

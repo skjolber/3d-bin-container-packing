@@ -11,23 +11,23 @@ public enum Category {
 	K3(new BigDecimal("20.28"), new BigDecimal("32.42")),
 	K4(new BigDecimal("32.44"), new BigDecimal("54.08")),
 	K5(new BigDecimal("54.31"), new BigDecimal("100.21"));
-	
+
 	private final BigDecimal min;
 	private final BigDecimal max;
-	
+
 	private Category(BigDecimal min, BigDecimal max) {
 		this.min = min;
 		this.max = max;
 	}
-	
+
 	public BigDecimal getMax() {
 		return max;
 	}
-	
+
 	public BigDecimal getMin() {
 		return min;
 	}
-	
+
 	public double getVolume(RandomDataGenerator r) {
 		// https://stackoverflow.com/questions/3680637/generate-a-random-double-in-a-range/3680648
 		return r.nextUniform(min.doubleValue(), max.doubleValue());

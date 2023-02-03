@@ -73,7 +73,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		validate(fits);
 
 		List<StackPlacement> placements = fits.getStack().getPlacements();
-		
+
 		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
 		assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("B");
 		assertThat(placements.get(2)).isAt(1, 1, 0).hasStackableName("C");
@@ -213,9 +213,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		Container pack = packager.pack(
 				Arrays.asList(
-						new StackableItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 20)
-						)
-				);
+						new StackableItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 20)));
 
 		assertNotNull(pack);
 
@@ -234,22 +232,20 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				.withContainers(Arrays.asList(build))
 				.build();
 
-		for(int i = 1; i <= 10; i++) { 
+		for (int i = 1; i <= 10; i++) {
 			int boxCountPerStackableItem = i;
 
 			List<StackableItem> stackableItems = Arrays.asList(
-					createStackableItem("1",1200,750, 2280, 285, boxCountPerStackableItem),
-					createStackableItem("2",1200,450, 2280, 155, boxCountPerStackableItem),
-					createStackableItem("3",360,360, 570, 20, boxCountPerStackableItem),
-					createStackableItem("4",2250,1200, 2250, 900, boxCountPerStackableItem),
-					createStackableItem("5",1140,750, 1450, 395, boxCountPerStackableItem),
-					createStackableItem("6",1130,1500, 3100, 800, boxCountPerStackableItem),
-					createStackableItem("7",800,490, 1140, 156, boxCountPerStackableItem),
-					createStackableItem("8",800,2100, 1200, 135, boxCountPerStackableItem),
-					createStackableItem("9",1120,1700, 2120, 160, boxCountPerStackableItem),
-					createStackableItem("10",1200,1050, 2280, 390, boxCountPerStackableItem)
-					);
-
+					createStackableItem("1", 1200, 750, 2280, 285, boxCountPerStackableItem),
+					createStackableItem("2", 1200, 450, 2280, 155, boxCountPerStackableItem),
+					createStackableItem("3", 360, 360, 570, 20, boxCountPerStackableItem),
+					createStackableItem("4", 2250, 1200, 2250, 900, boxCountPerStackableItem),
+					createStackableItem("5", 1140, 750, 1450, 395, boxCountPerStackableItem),
+					createStackableItem("6", 1130, 1500, 3100, 800, boxCountPerStackableItem),
+					createStackableItem("7", 800, 490, 1140, 156, boxCountPerStackableItem),
+					createStackableItem("8", 800, 2100, 1200, 135, boxCountPerStackableItem),
+					createStackableItem("9", 1120, 1700, 2120, 160, boxCountPerStackableItem),
+					createStackableItem("10", 1200, 1050, 2280, 390, boxCountPerStackableItem));
 
 			List<Container> packList = packager.packList(stackableItems, i);
 
@@ -259,7 +255,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		}
 
 	}
-	
+
 	@Test
 	void testCorrectLevelZOffsetAdjustments() { // issue 450
 		DefaultContainer build = Container.newBuilder()
@@ -276,20 +272,19 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		int boxCountPerStackableItem = 1;
 
 		List<StackableItem> stackableItems = Arrays.asList(
-	            createStackableItem("1", 1200, 750, 2280, 285, boxCountPerStackableItem),
-	            createStackableItem("2", 1200, 450, 2280, 155, boxCountPerStackableItem),
-	            createStackableItem("3", 360, 360, 570, 20, boxCountPerStackableItem),
-	            createStackableItem("4", 2250, 1200, 2250, 900, boxCountPerStackableItem),
-	            createStackableItem("5", 1140, 750, 1450, 395, boxCountPerStackableItem),
-	            createStackableItem("6", 1130, 1500, 3100, 800, boxCountPerStackableItem),
-	            createStackableItem("7", 800, 490, 1140, 156, boxCountPerStackableItem)
-				);
+				createStackableItem("1", 1200, 750, 2280, 285, boxCountPerStackableItem),
+				createStackableItem("2", 1200, 450, 2280, 155, boxCountPerStackableItem),
+				createStackableItem("3", 360, 360, 570, 20, boxCountPerStackableItem),
+				createStackableItem("4", 2250, 1200, 2250, 900, boxCountPerStackableItem),
+				createStackableItem("5", 1140, 750, 1450, 395, boxCountPerStackableItem),
+				createStackableItem("6", 1130, 1500, 3100, 800, boxCountPerStackableItem),
+				createStackableItem("7", 800, 490, 1140, 156, boxCountPerStackableItem));
 
 		List<Container> packList = packager.packList(stackableItems, 1);
 		validate(packList);
 	}
 
-	private StackableItem createStackableItem(String id, int width, int height,int depth, int weight, int boxCountPerStackableItem) {
+	private StackableItem createStackableItem(String id, int width, int height, int depth, int weight, int boxCountPerStackableItem) {
 		Box box = Box.newBuilder()
 				.withId(id)
 				.withSize(width, height, depth)
@@ -300,7 +295,6 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		return new StackableItem(box, boxCountPerStackableItem);
 	}
 
-	
 	void validate(Container container) {
 		StackAssert.assertThat(container.getStack()).placementsDoNotIntersect();
 	}
@@ -310,12 +304,11 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			StackAssert.assertThat(container.getStack()).placementsDoNotIntersect();
 		}
 	}
-	
+
 	@Test
 	@Disabled
 	public void testAHugeProblemShouldRespectDeadline() {
 		assertDeadlineRespected(LargestAreaFitFirstPackager.newBuilder());
 	}
-
 
 }
