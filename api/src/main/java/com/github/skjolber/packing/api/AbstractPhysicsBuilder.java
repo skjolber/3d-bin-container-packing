@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.api;
 
-
 /**
  * Builder scaffold.
  * 
@@ -17,8 +16,8 @@ public class AbstractPhysicsBuilder<B extends AbstractPhysicsBuilder<B>> {
 
 	public B withSize(int dx, int dy, int dz) {
 		this.size = new Dimension(dx, dy, dz);
-		
-		return (B) this;
+
+		return (B)this;
 	}
 
 	public B withRotate2D() {
@@ -28,11 +27,11 @@ public class AbstractPhysicsBuilder<B extends AbstractPhysicsBuilder<B>> {
 	public B withRotate3D() {
 		return withStackableSurface(StackableSurface.THREE_D);
 	}
-	
+
 	public B withStackableSurface(StackableSurface stackableSurface) {
 		this.stackableSurface = stackableSurface;
-		
-		return (B) this;
+
+		return (B)this;
 	}
 
 	public B withConstraint(StackConstraint stackConstraint) {
@@ -40,5 +39,4 @@ public class AbstractPhysicsBuilder<B extends AbstractPhysicsBuilder<B>> {
 		return (B)this;
 	}
 
-	
 }

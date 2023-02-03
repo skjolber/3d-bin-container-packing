@@ -19,19 +19,21 @@ import com.github.skjolber.packing.packer.DefaultPackResult;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
- * <br><br>
+ * <br>
+ * <br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<StackPlacement>> extends AbstractPackager<DefaultPackResult, LargestAreaFitFirstPackagerResultBuilder> {
 
 	protected LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, ?> factory;
 
-	public AbstractLargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator, LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, ?> factory) {
+	public AbstractLargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator,
+			LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, ?> factory) {
 		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
-		
+
 		this.factory = factory;
 	}
-	
+
 	public DefaultPackResult pack(List<Stackable> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck) {
 		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
 	}
@@ -40,7 +42,7 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
 	}
 
-	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer,  BooleanSupplier interrupt);
+	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt);
 
 	protected class LAFFAdapter implements Adapter<DefaultPackResult> {
 
@@ -53,10 +55,10 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 
 			List<Stackable> boxClones = new ArrayList<>(boxItems.size() * 2);
 
-			for(StackableItem item : boxItems) {
+			for (StackableItem item : boxItems) {
 				Stackable box = item.getStackable();
 				boxClones.add(box);
-				for(int i = 1; i < item.getCount(); i++) {
+				for (int i = 1; i < item.getCount(); i++) {
 					boxClones.add(box.clone());
 				}
 			}
@@ -75,10 +77,10 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 			Container container = result.getContainer();
 			Stack stack = container.getStack();
 
-			List<Stackable> placed = stack.getPlacements().stream().map( p -> p.getStackable()).collect(Collectors.toList());
-			
+			List<Stackable> placed = stack.getPlacements().stream().map(p -> p.getStackable()).collect(Collectors.toList());
+
 			boxes.removeAll(placed);
-			
+
 			return container;
 		}
 

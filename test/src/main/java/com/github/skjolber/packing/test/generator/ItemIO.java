@@ -25,5 +25,5 @@ public class ItemIO {
 			return mapper.readValue(in, mapper.getTypeFactory().constructCollectionType(List.class, EgyItem.class));
 		}
 	}
-	
+
 }

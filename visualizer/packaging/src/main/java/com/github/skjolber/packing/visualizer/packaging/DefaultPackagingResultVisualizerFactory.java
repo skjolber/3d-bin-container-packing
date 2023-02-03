@@ -22,14 +22,14 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 	public PackagingResultVisualizer visualize(List<Container> inputContainers) {
 		int step = 0;
 		PackagingResultVisualizer visualization = new PackagingResultVisualizer();
-		for(Container inputContainer : inputContainers) {
+		for (Container inputContainer : inputContainers) {
 			ContainerVisualizer containerVisualization = new ContainerVisualizer();
 			containerVisualization.setStep(step++);
-			
+
 			ContainerStackValue[] stackValues = inputContainer.getStackValues();
-			
+
 			ContainerStackValue containerStackValue = stackValues[0];
-			
+
 			containerVisualization.setDx(containerStackValue.getDx());
 			containerVisualization.setDy(containerStackValue.getDy());
 			containerVisualization.setDz(containerStackValue.getDz());
@@ -44,11 +44,11 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			StackVisualizer stackVisualization = new StackVisualizer();
 			stackVisualization.setStep(step++);
 			containerVisualization.setStack(stackVisualization);
-			
+
 			Stack stack = inputContainer.getStack();
 
 			ExtremePoints3D<StackPlacement> extremePoints = new ExtremePoints3D<>(containerStackValue.getDx(), containerStackValue.getDy(), containerStackValue.getDz());
-			
+
 			for (StackPlacement placement : stack.getPlacements()) {
 				Stackable box = placement.getStackable();
 				BoxVisualizer boxVisualization = new BoxVisualizer();
@@ -57,41 +57,41 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 				boxVisualization.setStep(step);
 
 				StackValue stackValue = placement.getStackValue();
-				
+
 				boxVisualization.setDx(stackValue.getDx());
 				boxVisualization.setDy(stackValue.getDy());
 				boxVisualization.setDz(stackValue.getDz());
-				
+
 				StackPlacementVisualizer stackPlacement = new StackPlacementVisualizer();
 				stackPlacement.setX(placement.getAbsoluteX());
 				stackPlacement.setY(placement.getAbsoluteY());
 				stackPlacement.setZ(placement.getAbsoluteZ());
 				stackPlacement.setStackable(boxVisualization);
 				stackPlacement.setStep(step);
-				
+
 				int pointIndex = extremePoints.findPoint(placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ());
-				
+
 				extremePoints.add(pointIndex, placement);
-				
-				for(Point3D<StackPlacement> point : extremePoints.getValues()) {
+
+				for (Point3D<StackPlacement> point : extremePoints.getValues()) {
 					PointVisualizer p = new PointVisualizer();
-					
+
 					p.setX(point.getMinX());
 					p.setY(point.getMinY());
 					p.setZ(point.getMinZ());
-					
+
 					p.setDx(point.getMaxX() - point.getMinX() + 1);
 					p.setDy(point.getMaxY() - point.getMinY() + 1);
 					p.setDz(point.getMaxZ() - point.getMinZ() + 1);
-					
+
 					stackPlacement.add(p);
 				}
-				
+
 				stackVisualization.add(stackPlacement);
-				
+
 				step++;
 			}
-			
+
 			visualization.add(containerVisualization);
 		}
 		return visualization;

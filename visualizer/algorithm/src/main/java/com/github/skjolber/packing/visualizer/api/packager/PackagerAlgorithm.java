@@ -9,11 +9,10 @@ import com.github.skjolber.packing.api.Container;
 public class PackagerAlgorithm {
 
 	private List<Container> inputContainers = new ArrayList<>();
-	
+
 	private List<PackagerIteration> iterations = new ArrayList<>();
 
 	private List<Container> outputContainers = new ArrayList<>();
 	private List<Box> outputBoxes = new ArrayList<>();
 
-	
 }

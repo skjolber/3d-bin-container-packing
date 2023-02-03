@@ -25,109 +25,96 @@ import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 @RunWith(JUnitQuickcheck.class)
 public class AbstractPackagerProperties extends AbstractPackagerTest {
 
-	Function<Container, AbstractPackager<?, ?>> plainPackager =
-		container -> PlainPackager.newBuilder().withContainers(container).build();
-	Function<Container, AbstractPackager<?, ?>> bruteForcePackager =
-		container -> BruteForcePackager.newBuilder().withContainers(container).build();
-	Function<Container, AbstractPackager<?, ?>> fastBruteForcePackager =
-		container -> FastBruteForcePackager.newBuilder().withContainers(container).build();
-	Function<Container, AbstractPackager<?, ?>> parallelBruteForcePackager =
-		container -> ParallelBruteForcePackager.newBuilder().withContainers(container).build();
-	Function<Container, AbstractPackager<?, ?>> largestAreaFitFirstPackager =
-		container -> LargestAreaFitFirstPackager.newBuilder().withContainers(container).build();
-
+	Function<Container, AbstractPackager<?, ?>> plainPackager = container -> PlainPackager.newBuilder().withContainers(container).build();
+	Function<Container, AbstractPackager<?, ?>> bruteForcePackager = container -> BruteForcePackager.newBuilder().withContainers(container).build();
+	Function<Container, AbstractPackager<?, ?>> fastBruteForcePackager = container -> FastBruteForcePackager.newBuilder().withContainers(container).build();
+	Function<Container, AbstractPackager<?, ?>> parallelBruteForcePackager = container -> ParallelBruteForcePackager.newBuilder().withContainers(container).build();
+	Function<Container, AbstractPackager<?, ?>> largestAreaFitFirstPackager = container -> LargestAreaFitFirstPackager.newBuilder().withContainers(container).build();
 
 	@Property
-	public void eightBoxesTight2x2x2(@From(DimensionGenerator.class) Dimension boxSize
-	) {
+	public void eightBoxesTight2x2x2(@From(DimensionGenerator.class) Dimension boxSize) {
 		final int count = 8;
 		Dimension containerSize = Dimension.newInstance(
-			2 * boxSize.getDx(),
-			2 * boxSize.getDy(),
-			2 * boxSize.getDz());
+				2 * boxSize.getDx(),
+				2 * boxSize.getDy(),
+				2 * boxSize.getDz());
 
 		runTest(containerSize, boxSize, count,
-			bruteForcePackager,
-			fastBruteForcePackager,
-			parallelBruteForcePackager,
-			plainPackager
-		);
+				bruteForcePackager,
+				fastBruteForcePackager,
+				parallelBruteForcePackager,
+				plainPackager);
 	}
 
-
 	@Property
-	public void fiveBoxesTightRow(@From(DimensionGenerator.class) Dimension boxSize
-	) {
+	public void fiveBoxesTightRow(@From(DimensionGenerator.class) Dimension boxSize) {
 		final int count = 5;
 		Dimension containerSize = Dimension.newInstance(
-			5 * boxSize.getDx(),
-			boxSize.getDy(),
-			boxSize.getDz());
+				5 * boxSize.getDx(),
+				boxSize.getDy(),
+				boxSize.getDz());
 
 		runTest(containerSize, boxSize, count,
-			bruteForcePackager,
-			fastBruteForcePackager,
-			parallelBruteForcePackager);
+				bruteForcePackager,
+				fastBruteForcePackager,
+				parallelBruteForcePackager);
 	}
 
 	@Property
 	public void eightBoxesWithExtraSpace(@From(DimensionGenerator.class) Dimension boxSize,
-																			 @InRange(min = "0", max = "9") int xVariation,
-																			 @InRange(min = "0", max = "9") int yVariation,
-																			 @InRange(min = "0", max = "9") int zVariation
-	) {
+			@InRange(min = "0", max = "9") int xVariation,
+			@InRange(min = "0", max = "9") int yVariation,
+			@InRange(min = "0", max = "9") int zVariation) {
 		final int count = 8;
 		Dimension containerSize = Dimension.newInstance(
-			2 * boxSize.getDx() + xVariation,
-			2 * boxSize.getDy() + yVariation,
-			2 * boxSize.getDz() + zVariation);
+				2 * boxSize.getDx() + xVariation,
+				2 * boxSize.getDy() + yVariation,
+				2 * boxSize.getDz() + zVariation);
 
 		runTest(containerSize, boxSize, count,
-			bruteForcePackager,
-			fastBruteForcePackager,
-			parallelBruteForcePackager
-		);
+				bruteForcePackager,
+				fastBruteForcePackager,
+				parallelBruteForcePackager);
 	}
 
 	@Property
 	public void fourBoxes2x2x1(@From(DimensionGenerator.class) Dimension boxSize,
-														 @InRange(min = "0", max = "9") int xVariation,
-														 @InRange(min = "0", max = "9") int yVariation,
-														 @InRange(min = "0", max = "9") int zVariation) {
+			@InRange(min = "0", max = "9") int xVariation,
+			@InRange(min = "0", max = "9") int yVariation,
+			@InRange(min = "0", max = "9") int zVariation) {
 		final int count = 4;
 		Dimension containerSize = Dimension.newInstance(
-			boxSize.getDx() + xVariation,
-			2 * boxSize.getDy() + yVariation,
-			2 * boxSize.getDz() + zVariation);
+				boxSize.getDx() + xVariation,
+				2 * boxSize.getDy() + yVariation,
+				2 * boxSize.getDz() + zVariation);
 
 		runTest(containerSize, boxSize, count,
-			bruteForcePackager,
-			fastBruteForcePackager,
-			parallelBruteForcePackager
-		);
+				bruteForcePackager,
+				fastBruteForcePackager,
+				parallelBruteForcePackager);
 	}
 
 	private void runTest(final Dimension containerSize,
-											 final Dimension boxSize,
-											 final int count,
-											 Function<Container, AbstractPackager<?, ?>>... packagers) {
+			final Dimension boxSize,
+			final int count,
+			Function<Container, AbstractPackager<?, ?>>... packagers) {
 		for (final Function<Container, AbstractPackager<?, ?>> packagerBuilder : packagers) {
 			final Container container = Container.newBuilder()
-				.withDescription(containerSize.encode())
-				.withEmptyWeight(0)
-				.withSize(containerSize.getDx(), containerSize.getDy(), containerSize.getDz())
-				.withMaxLoadWeight(count)
-				.withStack(new ValidatingStack())
-				.build();
+					.withDescription(containerSize.encode())
+					.withEmptyWeight(0)
+					.withSize(containerSize.getDx(), containerSize.getDy(), containerSize.getDz())
+					.withMaxLoadWeight(count)
+					.withStack(new ValidatingStack())
+					.build();
 
 			final AbstractPackager<?, ?> packager = packagerBuilder.apply(container);
 
 			final Box box = Box.newBuilder()
-				.withDescription(boxSize.encode())
-				.withRotate3D()
-				.withSize(boxSize.getDx(), boxSize.getDy(), boxSize.getDz())
-				.withWeight(1)
-				.build();
+					.withDescription(boxSize.encode())
+					.withRotate3D()
+					.withSize(boxSize.getDx(), boxSize.getDy(), boxSize.getDz())
+					.withWeight(1)
+					.build();
 			Container fits = packager.pack(singletonList(new StackableItem(box, count)));
 			// identifies which packager has failed
 			Assert.assertNotNull(packager.getClass().getSimpleName() + " is expected to pack", fits);

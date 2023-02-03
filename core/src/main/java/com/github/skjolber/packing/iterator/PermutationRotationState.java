@@ -17,13 +17,13 @@ public class PermutationRotationState {
 		this.permutations = new int[permutations.length];
 		System.arraycopy(permutations, 0, this.permutations, 0, permutations.length);
 	}
+
 	public int[] getPermutations() {
 		return permutations;
 	}
+
 	public int[] getRotations() {
 		return rotations;
 	}
-	
-	
 
 }

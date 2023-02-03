@@ -16,55 +16,55 @@ import com.github.skjolber.packing.iterator.PermutationRotationState;
 public class BruteForcePackagerResult implements PackResult {
 
 	public static final BruteForcePackagerResult EMPTY = new BruteForcePackagerResult(null, null);
-	
+
 	static {
 		EMPTY.setState(Collections.emptyList(), null, Collections.emptyList());
 	}
-	
+
 	// work objects
 	private final Container container;
 	private final PermutationRotationIterator iterator;
-	
+
 	// state
 	private PermutationRotationState state;
 	private List<Point3D<StackPlacement>> points = Collections.emptyList();
 	private List<StackPlacement> placements;
-	
+
 	private boolean dirty = true;
-	
+
 	private long loadVolume;
 	private int loadWeight;
-	
+
 	public BruteForcePackagerResult(Container container, PermutationRotationIterator iterator) {
 		this.container = container;
 		this.iterator = iterator;
 	}
-	
+
 	private void calculateLoad() {
 		if(dirty) {
 			dirty = false;
 			long loadVolume = 0;
 			int loadWeight = 0;
-	
-			for(int i = 0; i < points.size(); i++) {
+
+			for (int i = 0; i < points.size(); i++) {
 				PermutationRotation permutationRotation = iterator.get(i);
 				Stackable stackable = permutationRotation.getStackable();
 				loadVolume += stackable.getVolume();
 				loadWeight += stackable.getWeight();
 			}
-	
+
 			this.loadVolume = loadVolume;
 			this.loadWeight = loadWeight;
 		}
 	}
-	
+
 	public Container getContainer() {
 		Stack stack = container.getStack();
 		stack.clear();
-		
+
 		List<PermutationRotation> list = iterator.get(state, points.size());
-		
-		for(int i = 0; i < points.size(); i++) {
+
+		for (int i = 0; i < points.size(); i++) {
 			StackPlacement stackPlacement = placements.get(i);
 
 			PermutationRotation permutationRotation = list.get(i);
@@ -75,25 +75,25 @@ public class BruteForcePackagerResult implements PackResult {
 			stackPlacement.setX(point3d.getMinX());
 			stackPlacement.setY(point3d.getMinY());
 			stackPlacement.setZ(point3d.getMinZ());
-			
-			stack.add(stackPlacement);			
+
+			stack.add(stackPlacement);
 		}
-		
+
 		return container;
 	}
 
 	public PermutationRotationState getPermutationRotationIteratorForState() {
 		return state;
 	}
-	
+
 	public void setState(List<Point3D<StackPlacement>> items, PermutationRotationState state, List<StackPlacement> placements) {
 		this.points = items;
 		this.state = state;
 		this.placements = placements;
-		
+
 		this.dirty = true;
 	}
-	
+
 	public void reset() {
 		this.points = Collections.emptyList();
 		this.state = null;

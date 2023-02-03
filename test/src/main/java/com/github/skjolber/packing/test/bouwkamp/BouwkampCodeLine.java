@@ -23,5 +23,5 @@ public class BouwkampCodeLine {
 	public String toString() {
 		return "BouwkampCodeLine [squares=" + squares + "]";
 	}
-	
+
 }

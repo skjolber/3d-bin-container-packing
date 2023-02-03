@@ -26,7 +26,7 @@ public class DefaultIteratorBenchmark {
 
 	@Benchmark
 	public long rotations(IteratorState state) throws Exception {
-		
+
 		DefaultPermutationRotationIterator iterator = state.getIterator();
 		java.util.concurrent.atomic.LongAdder counter = new LongAdder();
 		do {
@@ -42,7 +42,7 @@ public class DefaultIteratorBenchmark {
 
 	@Benchmark
 	public long permutations(IteratorState state) throws Exception {
-		
+
 		DefaultPermutationRotationIterator iterator = state.getIterator();
 		java.util.concurrent.atomic.LongAdder counter = new LongAdder();
 		do {

@@ -8,34 +8,34 @@ public class CategoryCounts {
 	public static Builder newBuilder() {
 		return new Builder();
 	}
-	
+
 	public static class Builder {
 		private String name;
-		
+
 		private final Map<Category, Integer> counts = new HashMap<>();
-		
+
 		public Builder withCategory(Category c, int count) {
 			counts.put(c, count);
 			return this;
 		}
-		
+
 		public Builder withName(String name) {
 			this.name = name;
 			return this;
 		}
-		
+
 		public CategoryCounts build() {
 			if(name == null) {
-				throw new IllegalStateException(); 
+				throw new IllegalStateException();
 			}
-			
+
 			return new CategoryCounts(name, counts);
 		}
 	}
-	
+
 	private final String name;
 	private final Map<Category, Integer> counts;
-	
+
 	public CategoryCounts(String name, Map<Category, Integer> counts) {
 		super();
 		this.name = name;
@@ -49,7 +49,7 @@ public class CategoryCounts {
 		}
 		return 0;
 	}
-	
+
 	public String getName() {
 		return name;
 	}

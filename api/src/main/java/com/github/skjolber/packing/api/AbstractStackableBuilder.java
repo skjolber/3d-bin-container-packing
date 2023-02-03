@@ -3,7 +3,6 @@ package com.github.skjolber.packing.api;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * {@linkplain Stackable} builder scaffold.
  * 
@@ -26,9 +25,9 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 		this.id = id;
 		return (B)this;
 	}
-	
+
 	protected <T> T[] getStackValues() {
-		
+
 		// z              y
 		// |             / 
 		// |            / 
@@ -37,7 +36,7 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 		// |       /       /  |    
 		// |      /  top  /t  /
 		// |     /   xy  /h  /  
-	    // |    /       /g z/ 
+		// |    /       /g z/ 
 		// |   /       /i y/
 		// |  |-------|r  /      
 		// |  |  xz   |  /
@@ -48,15 +47,14 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 		// |------------------ x
 		//
 
-		
 		List<BoxStackValue> list = new ArrayList<>();
 
 		int dx = size.getDx();
 		int dy = size.getDy();
 		int dz = size.getDz();
-		
-		 // dx, dy, dz
-		
+
+		// dx, dy, dz
+
 		if(dx == dy && dx == dz) { // square 3d
 			// all sides are equal
 
@@ -64,7 +62,7 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 			// |         / 
 			// |        / 
 			// |     /-------/|
-		    // |    / xy    / | 
+			// |    / xy    / | 
 			// |   /       /  |
 			// |  |-------|yz /      
 			// |  |       |  /
@@ -74,18 +72,17 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 			// |/       
 			// |------------------ x
 			//
-			
+
 			if(stackableSurface.is0() || stackableSurface.is90()) {
 				list.add(newStackValue(dx, dy, dz, constraint, stackableSurface.getSides()));
 			}
 		} else if(dx == dy) {
 
-
 			// z               y
 			// |              / 
 			// |             / 
 			// |     /-------/|
-		    // |    /  xy   / | 
+			// |    /  xy   / | 
 			// |   /       /  |
 			// |  |-------|   |      
 			// |  |       |   |
@@ -102,32 +99,31 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 			//
 
 			// add xz/yz and xy
-			
+
 			if(stackableSurface.isXY()) {
 				list.add(newStackValue(dx, dx, dz, constraint, stackableSurface.getXYSurfaces()));
 			}
 			if(stackableSurface.isXZ() || stackableSurface.isYZ()) {
-				
+
 				boolean zero = stackableSurface.isXZ0() || stackableSurface.isYZ0();
 				boolean ninety = stackableSurface.isXZ90() || stackableSurface.isYZ90();
-				
+
 				if(zero) {
 					list.add(newStackValue(dx, dz, dx, constraint, stackableSurface.getYZAndXZSurfaces0()));
-				}					
+				}
 				if(ninety) {
 					list.add(newStackValue(dz, dx, dx, constraint, stackableSurface.getYZAndXZSurfaces90()));
-					
+
 				}
-				
+
 			}
 		} else if(dz == dy) {
 
-			
 			// z           y
 			// |          / 
 			// |         / 
 			// |     /--------------------/|
-		    // |    /        xy          / | 
+			// |    /        xy          / | 
 			// |   /                    /  |
 			// |  |--------------------| yz/      
 			// |  |         xz         |  /
@@ -137,17 +133,17 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 			// |/       
 			// |----------------------------------- x
 			//
-			
+
 			// add xz/xy and yz
 
 			if(stackableSurface.isYZ()) {
 				list.add(newStackValue(dy, dy, dx, constraint, stackableSurface.getYZSurfaces()));
 			}
 			if(stackableSurface.isXY() || stackableSurface.isXZ()) {
-				
+
 				boolean zero = stackableSurface.isXY0() || stackableSurface.isXZ0();
 				boolean ninety = stackableSurface.isXY90() || stackableSurface.isXZ90();
-				
+
 				if(zero) {
 					list.add(newStackValue(dx, dz, dz, constraint, stackableSurface.getXYAndXZSurfaces0()));
 				}
@@ -155,9 +151,9 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 					list.add(newStackValue(dz, dx, dz, constraint, stackableSurface.getXYAndXZSurfaces90()));
 				}
 			}
-			
+
 		} else if(dx == dz) {
-			
+
 			// add xy/zy and xz
 
 			//  
@@ -169,7 +165,7 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 			// |       /       /  |    
 			// |      /  xy   /   /
 			// |     /       /   /  
-		    // |    /       / z / 
+			// |    /       / z / 
 			// |   /       / y /
 			// |  |-------|   /      
 			// |  |       |  /
@@ -196,7 +192,7 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 			}
 		} else {
 			// no equal length edges
-			
+
 			//
 			//              dx
 			// ---------------------------
@@ -264,24 +260,24 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 			// |              |
 			// ----------------
 			//			
-			
+
 			if(stackableSurface.isXY0()) {
 				list.add(newStackValue(dx, dy, dz, constraint, stackableSurface.getXY0Surfaces()));
-			}					
+			}
 			if(stackableSurface.isXY90()) {
 				list.add(newStackValue(dy, dx, dz, constraint, stackableSurface.getXY90Surfaces()));
 			}
 
 			if(stackableSurface.isXZ0()) {
 				list.add(newStackValue(dx, dz, dy, constraint, stackableSurface.getXZ0Surfaces()));
-			}					
+			}
 			if(stackableSurface.isXZ90()) {
 				list.add(newStackValue(dz, dx, dy, constraint, stackableSurface.getXZ90Surfaces()));
 			}
 
 			if(stackableSurface.isYZ0()) {
 				list.add(newStackValue(dz, dy, dx, constraint, stackableSurface.getYZ0Surfaces()));
-			}					
+			}
 			if(stackableSurface.isYZ90()) {
 				list.add(newStackValue(dy, dz, dx, constraint, stackableSurface.getYZ90Surfaces()));
 			}
@@ -293,9 +289,8 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 		return list.toArray(newStackValueArray(list.size()));
 	}
 
-	
 	protected abstract <T> T[] newStackValueArray(int size);
 
 	protected abstract BoxStackValue newStackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> surfaces);
-	
+
 }

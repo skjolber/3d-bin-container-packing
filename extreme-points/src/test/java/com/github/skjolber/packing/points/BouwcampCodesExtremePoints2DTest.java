@@ -17,10 +17,10 @@ public class BouwcampCodesExtremePoints2DTest {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
 		BouwkampConverter converter = new BouwkampConverter(true);
-		
+
 		List<BouwkampCodes> codesForCount = directory.getAll();
-		for(BouwkampCodes c : codesForCount) {
-			for(BouwkampCode bkpLine : c.getCodes()) {
+		for (BouwkampCodes c : codesForCount) {
+			for (BouwkampCode bkpLine : c.getCodes()) {
 				System.out.println(c.getSource() + " " + bkpLine.getName());
 				DefaultExtremePoints2D points = converter.convert2D(bkpLine, 1);
 				assertEquals(c.getSource() + " " + bkpLine.getName(), 0, points.getValueCount());

@@ -13,7 +13,7 @@ public abstract class AbstractPackagingResultVisualizerFactory<T> implements Pac
 
 	public void visualize(List<T> input, OutputStream out) throws Exception {
 		PackagingResultVisualizer project = visualize(input);
-		
+
 		out.write(project.toJson().getBytes(StandardCharsets.UTF_8));
 	}
 
@@ -25,7 +25,7 @@ public abstract class AbstractPackagingResultVisualizerFactory<T> implements Pac
 		}
 		FileOutputStream fout = new FileOutputStream(output);
 		try {
-			visualize(input,fout);
+			visualize(input, fout);
 		} finally {
 			fout.close();
 		}

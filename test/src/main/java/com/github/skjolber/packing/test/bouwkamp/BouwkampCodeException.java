@@ -23,5 +23,5 @@ public class BouwkampCodeException extends RuntimeException {
 	public BouwkampCodeException(Throwable cause) {
 		super(cause);
 	}
-	
+
 }

@@ -9,5 +9,6 @@ import com.github.skjolber.packing.api.PackResult;
 // 
 public interface Adapter<T extends PackResult> {
 	T attempt(int containerIndex, T best);
+
 	Container accept(T result);
 }

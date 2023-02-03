@@ -26,7 +26,8 @@ import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
- * <br><br>
+ * <br>
+ * <br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
@@ -44,7 +45,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			this.configurationBuilderFactory = configurationBuilder;
 			return this;
 		}
-		
+
 		public LargestAreaFitFirstPackager build() {
 			if(containers == null) {
 				throw new IllegalStateException("Expected containers");
@@ -56,56 +57,58 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				packResultComparator = new DefaultPackResultComparator();
 			}
 			return new LargestAreaFitFirstPackager(containers, checkpointsPerDeadlineCheck, packResultComparator, configurationBuilderFactory);
-		}	
+		}
 	}
 
-	public LargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator, LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D<StackPlacement>, ?> factory) {
+	public LargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator,
+			LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D<StackPlacement>, ?> factory) {
 		super(containers, checkpointsPerDeadlineCheck, packResultComparator, factory);
 	}
 
 	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt) {
 		List<Stackable> remainingStackables = new ArrayList<>(stackables);
-		
+
 		ContainerStackValue[] stackValues = targetContainer.getStackValues();
-		
+
 		ContainerStackValue containerStackValue = stackValues[0];
-		
+
 		StackConstraint constraint = containerStackValue.getConstraint();
-		
+
 		LevelStack stack = new LevelStack(containerStackValue);
 
 		List<Stackable> scopedStackables = stackables
 				.stream()
-				.filter( s -> s.getVolume() <= containerStackValue.getMaxLoadVolume() && s.getWeight() <= targetContainer.getMaxLoadWeight())
-				.filter( s -> constraint == null || constraint.canAccept(s))
+				.filter(s -> s.getVolume() <= containerStackValue.getMaxLoadVolume() && s.getWeight() <= targetContainer.getMaxLoadWeight())
+				.filter(s -> constraint == null || constraint.canAccept(s))
 				.collect(Collectors.toList());
 
 		ExtremePoints3D<StackPlacement> extremePoints3D = new ExtremePoints3D<>(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
 		extremePoints3D.setMinimumAreaAndVolumeLimit(getMinStackableArea(scopedStackables), getMinStackableVolume(scopedStackables));
-		
-		LargestAreaFitFirstPackagerConfiguration<Point3D<StackPlacement>> configuration = factory.newBuilder().withContainer(targetContainer).withExtremePoints(extremePoints3D).withStack(stack).build();
-		
+
+		LargestAreaFitFirstPackagerConfiguration<Point3D<StackPlacement>> configuration = factory.newBuilder().withContainer(targetContainer).withExtremePoints(extremePoints3D).withStack(stack)
+				.build();
+
 		StackableFilter firstFilter = configuration.getFirstStackableFilter();
 		StackValuePointFilter<Point3D<StackPlacement>> firstStackValuePointComparator = configuration.getFirstStackValuePointFilter();
 
 		int levelOffset = 0;
-		
-		while(!scopedStackables.isEmpty()) {
+
+		while (!scopedStackables.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
 				// fit2d below might have returned due to deadline
 
 				return null;
 			}
-			
+
 			int maxWeight = stack.getFreeWeightLoad();
 
 			// there is only point, spanning the free space in the level
 			Point3D<StackPlacement> firstPoint = extremePoints3D.getValue(0);
-			
+
 			int firstIndex = -1;
 			StackValue firstStackValue = null;
 			Stackable firstBox = null;
-			
+
 			// pick the box with the highest area
 			for (int i = 0; i < scopedStackables.size(); i++) {
 				Stackable box = scopedStackables.get(i);
@@ -125,7 +128,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 					if(firstStackValue != null && !firstStackValuePointComparator.accept(firstBox, firstPoint, firstStackValue, box, firstPoint, stackValue)) {
 						continue;
 					}
-					
+
 					if(constraint != null && !constraint.supports(stack, box, stackValue, 0, 0, levelOffset)) {
 						continue;
 					}
@@ -140,24 +143,24 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			}
 			Stackable stackable = scopedStackables.remove(firstIndex);
 			remainingStackables.remove(stackable);
-			
+
 			DefaultContainerStackValue levelStackValue = stack.getContainerStackValue(firstStackValue.getDz());
 			Stack levelStack = new DefaultStack();
 			stack.add(levelStack);
 
 			StackPlacement first = new StackPlacement(stackable, firstStackValue, 0, 0, 0, -1, -1);
 
-			levelStack.add(first); 
-			
+			levelStack.add(first);
+
 			int maxRemainingLevelWeight = levelStackValue.getMaxLoadWeight() - stackable.getWeight();
 
 			extremePoints3D.reset(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), firstStackValue.getDz());
 			extremePoints3D.add(0, first);
-			
+
 			StackableFilter nextFilter = configuration.getNextStackableFilter();
 			StackValuePointFilter<Point3D<StackPlacement>> nextStackValuePointComparator = configuration.getNextStackValuePointFilter();
-			
-			while(!extremePoints3D.isEmpty() && maxRemainingLevelWeight > 0 && !scopedStackables.isEmpty()) {
+
+			while (!extremePoints3D.isEmpty() && maxRemainingLevelWeight > 0 && !scopedStackables.isEmpty()) {
 				long maxPointVolume = extremePoints3D.getMaxVolume();
 				long maxPointArea = extremePoints3D.getMaxArea();
 
@@ -165,7 +168,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				int bestIndex = -1;
 				StackValue bestStackValue = null;
 				Stackable bestStackable = null;
-				
+
 				for (int i = 0; i < scopedStackables.size(); i++) {
 					Stackable box = scopedStackables.get(i);
 					if(box.getVolume() > maxPointVolume) {
@@ -188,9 +191,9 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 						if(firstStackValue.getDz() < stackValue.getDz()) {
 							continue;
 						}
-						
+
 						int currentPointsCount = extremePoints3D.getValueCount();
-						for(int k = 0; k < currentPointsCount; k++) {
+						for (int k = 0; k < currentPointsCount; k++) {
 							Point3D<StackPlacement> point3d = extremePoints3D.getValue(k);
 
 							if(!point3d.fits3D(stackValue)) {
@@ -209,11 +212,11 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 						}
 					}
 				}
-				
+
 				if(bestIndex == -1) {
 					break;
 				}
-				
+
 				Stackable remove = scopedStackables.remove(bestIndex);
 				remainingStackables.remove(remove);
 
@@ -232,25 +235,26 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				} else if(minVolume) {
 					extremePoints3D.setMinimumVolumeLimit(getMinStackableVolume(scopedStackables));
 				}
-				
+
 				maxRemainingLevelWeight -= remove.getWeight();
 			}
-			
+
 			// move boxes up
 			for (StackPlacement stackPlacement : levelStack.getPlacements()) {
 				stackPlacement.setZ(levelOffset + stackPlacement.getAbsoluteZ());
 			}
-			
+
 			levelOffset += firstStackValue.getDz();
-			
+
 			int remainingDz = containerStackValue.getLoadDz() - levelOffset;
 			if(remainingDz == 0) {
 				break;
 			}
 			extremePoints3D.reset(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), remainingDz);
 		}
-		
-		return new DefaultPackResult(new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack), stack, remainingStackables.isEmpty());
+
+		return new DefaultPackResult(new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack),
+				stack, remainingStackables.isEmpty());
 	}
 
 	@Override

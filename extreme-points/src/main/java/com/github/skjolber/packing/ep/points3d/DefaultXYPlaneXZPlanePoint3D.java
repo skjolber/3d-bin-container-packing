@@ -23,27 +23,26 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 			int minX, int minY, int minZ,
 			int maxX, int maxY, int maxZ,
 			P xzPlane,
-			P xyPlane
-			) {
+			P xyPlane) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 
 		this.xzPlane = xzPlane;
 		this.xyPlane = xyPlane;
 	}
-	
+
 	public int getSupportedXZPlaneMinX() {
 		return xzPlane.getAbsoluteX();
 	}
-	
+
 	public int getSupportedXZPlaneMaxX() {
 		return xzPlane.getAbsoluteEndX();
 	}
-	
+
 	@Override
 	public int getSupportedXZPlaneMaxZ() {
 		return xzPlane.getAbsoluteZ();
 	}
-	
+
 	@Override
 	public int getSupportedXZPlaneMinZ() {
 		return xzPlane.getAbsoluteEndZ();
@@ -52,25 +51,26 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 	public int getSupportedXYPlaneMinY() {
 		return xyPlane.getAbsoluteY();
 	}
-	
+
 	public int getSupportedXYPlaneMaxY() {
 		return xyPlane.getAbsoluteEndY();
 	}
+
 	@Override
 	public int getSupportedXYPlaneMinX() {
 		return xyPlane.getAbsoluteX();
 	}
-	
+
 	@Override
 	public int getSupportedXYPlaneMaxX() {
 		return xyPlane.getAbsoluteEndX();
 	}
-	
+
 	@Override
 	public boolean isSupportedXZPlane(int x, int z) {
 		return xzPlane.getAbsoluteX() <= x && x <= xzPlane.getAbsoluteEndX() && xzPlane.getAbsoluteZ() <= z && z <= xzPlane.getAbsoluteEndZ();
 	}
-	
+
 	public boolean isXZPlaneEdgeX(int x) {
 		return xzPlane.getAbsoluteX() == x - 1;
 	}
@@ -83,7 +83,7 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 	public boolean isSupportedXYPlane(int x, int y) {
 		return xyPlane.getAbsoluteX() <= x && x <= xyPlane.getAbsoluteEndX() && xyPlane.getAbsoluteY() <= y && y <= xyPlane.getAbsoluteEndY();
 	}
-	
+
 	public boolean isXYPlaneEdgeX(int x) {
 		return xyPlane.getAbsoluteEndX() == x - 1;
 	}
@@ -94,7 +94,7 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 
 	@Override
 	public Point3D<P> clone(int maxX, int maxY, int maxZ) {
-	
+
 		return new DefaultXYPlaneXZPlanePoint3D<>(
 				minX, minY, minZ,
 				maxX, maxY, maxZ,
@@ -105,12 +105,12 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 	public Placement3D getXZPlane() {
 		return xzPlane;
 	}
-	
+
 	@Override
 	public Placement3D getXYPlane() {
 		return xyPlane;
 	}
-	
+
 	@Override
 	public List<P> getPlacements3D() {
 		List<P> list = new ArrayList<>(2);
@@ -126,12 +126,12 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 		list.add(xzPlane);
 		return list;
 	}
-	
+
 	@Override
 	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ) {
 		boolean withinXYPlane = x <= xyPlane.getAbsoluteEndX();
 		boolean withinXZPlane = x <= xzPlane.getAbsoluteEndX();
-		
+
 		if(withinXYPlane && withinXZPlane) {
 			return new DefaultXYPlaneXZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, xzPlane, xyPlane);
 		} else if(withinXYPlane) {
@@ -139,7 +139,7 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 		} else if(withinXZPlane) {
 			return new DefaultXZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, xzPlane);
 		}
-		
+
 		return new DefaultPoint3D<>(x, minY, minZ, maxX, maxY, maxZ);
 	}
 
@@ -147,7 +147,7 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ, P yzSupport) {
 		boolean withinXYPlane = x <= xyPlane.getAbsoluteEndX();
 		boolean withinXZPlane = x <= xzPlane.getAbsoluteEndX();
-		
+
 		if(withinXYPlane && withinXZPlane) {
 			return new Default3DPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, yzSupport, xzPlane, xyPlane);
 		} else if(withinXYPlane) {
@@ -155,7 +155,7 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 		} else if(withinXZPlane) {
 			return new DefaultXZPlaneYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, xzPlane, yzSupport);
 		}
-		
+
 		return new DefaultYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, yzSupport);
 	}
 
@@ -197,18 +197,18 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 		// all previous support is lost
 		return new DefaultXYPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xySupport);
 	}
-	
+
 	/**
 	 * Rotate box, i.e. in 3D
 	 *
 	 * @return this instance
 	 */
-	
+
 	@Override
 	public Point3D<P> rotate() {
 		return new DefaultPoint3D<>(minY, minZ, minX, maxY, maxZ, maxX);
 	}
-	
+
 	@Override
 	public long calculateXYSupport(int dx, int dy) {
 		return Math.min(dx, xyPlane.getAbsoluteEndX() - minX + 1) * (long)Math.min(dy, xyPlane.getAbsoluteEndY() - minY + 1);

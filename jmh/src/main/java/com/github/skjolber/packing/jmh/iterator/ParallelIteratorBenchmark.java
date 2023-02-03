@@ -30,16 +30,16 @@ public class ParallelIteratorBenchmark {
 
 	@Benchmark
 	public long rotations(IteratorState state) throws Exception {
-		
+
 		ParallelPermutationRotationIterator[] iterators = state.getParallelIterator().getIterators();
-	
+
 		ExecutorCompletionService<Long> executorCompletionService = new ExecutorCompletionService<Long>(state.getPool());
 
 		long maxCountPerThread = MAX_COUNT / iterators.length;
-		
-		for(int i = 0; i < iterators.length; i++) {
+
+		for (int i = 0; i < iterators.length; i++) {
 			ParallelPermutationRotationIterator iterator = iterators[i];
-			
+
 			Callable<Long> callable = () -> {
 				java.util.concurrent.atomic.LongAdder counter = new LongAdder();
 				do {
@@ -52,12 +52,12 @@ public class ParallelIteratorBenchmark {
 					iterator.resetRotations();
 				} while (true);
 			};
-			
+
 			executorCompletionService.submit(callable);
 		}
-		
+
 		long count = 0;
-		for(int i = 0; i < iterators.length; i++) {
+		for (int i = 0; i < iterators.length; i++) {
 			Future<Long> future = executorCompletionService.take();
 			Long result = future.get();
 			if(result != null) {
@@ -73,16 +73,16 @@ public class ParallelIteratorBenchmark {
 
 	@Benchmark
 	public long parallelPermutations(IteratorState state) throws Exception {
-		
+
 		ParallelPermutationRotationIterator[] iterators = state.getParallelIterator().getIterators();
-	
+
 		ExecutorCompletionService<Long> executorCompletionService = new ExecutorCompletionService<Long>(state.getPool());
 
 		long maxCountPerThread = MAX_COUNT / iterators.length;
 
-		for(int i = 0; i < iterators.length; i++) {
+		for (int i = 0; i < iterators.length; i++) {
 			ParallelPermutationRotationIterator iterator = iterators[i];
-			
+
 			Callable<Long> callable = () -> {
 				java.util.concurrent.atomic.LongAdder counter = new LongAdder();
 				do {
@@ -91,15 +91,15 @@ public class ParallelIteratorBenchmark {
 						return counter.longValue();
 					}
 				} while (iterator.nextPermutation() != -1);
-				
+
 				throw new RuntimeException("Only got " + counter);
 			};
-			
+
 			executorCompletionService.submit(callable);
 		}
-		
+
 		long count = 0;
-		for(int i = 0; i < iterators.length; i++) {
+		for (int i = 0; i < iterators.length; i++) {
 			Future<Long> future = executorCompletionService.take();
 			Long result = future.get();
 			if(result != null) {

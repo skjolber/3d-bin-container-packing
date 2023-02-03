@@ -29,7 +29,7 @@ public class DrawPoints2D {
 	public static void show(DefaultExtremePoints2D p) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				
+
 				init(p.getValues(), p.getPlacements(), p.getWidth(), p.getDepth());
 			}
 		});
@@ -38,34 +38,34 @@ public class DrawPoints2D {
 	public static void show3D(List<? extends Point2D> points, List<? extends Placement2D> placements, int width, int depth) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				
+
 				init(points, placements, width, depth);
 			}
 		});
 	}
-	
+
 	public static void show(DefaultExtremePoints3D p) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				
+
 				List<Point3D<DefaultPlacement3D>> values = p.getValuesAsList();
-				
+
 				init(values, p.getPlacements(), p.getWidth(), p.getDepth());
 			}
 		});
 	}
-	
+
 	private static void init(List<? extends Point2D> points, List<? extends Placement2D> placements, int width, int depth) {
 		DrawingArea drawingArea = new DrawingArea(width, depth);
 
 		System.out.println("Show " + width + "x" + depth);
-		
+
 		for (Point2D extremePoint : points) {
-			if (extremePoint.getMaxX() != width || extremePoint.getMaxY() != depth) {
+			if(extremePoint.getMaxX() != width || extremePoint.getMaxY() != depth) {
 				Color c;
-				if (extremePoint.getMaxX() != width && extremePoint.getMaxY() != depth) {
+				if(extremePoint.getMaxX() != width && extremePoint.getMaxY() != depth) {
 					c = Color.red;
-				} else if (extremePoint.getMaxX() != width) {
+				} else if(extremePoint.getMaxX() != width) {
 					c = Color.blue;
 				} else {
 					c = Color.yellow;
@@ -78,7 +78,7 @@ public class DrawPoints2D {
 		}
 
 		for (Point2D extremePoint : points) {
-			if (extremePoint.getMaxX() == width && extremePoint.getMaxY() == depth) {
+			if(extremePoint.getMaxX() == width && extremePoint.getMaxY() == depth) {
 				System.out.println("Paint white " + extremePoint.getMinX() + "x" + extremePoint.getMinY() + " "
 						+ extremePoint.getMaxX() + "x" + extremePoint.getMaxY());
 				drawingArea.fillRect(extremePoint.getMinX(), extremePoint.getMinY(), extremePoint.getMaxX(),
@@ -91,7 +91,7 @@ public class DrawPoints2D {
 					extremePoint.getAbsoluteEndX(), extremePoint.getAbsoluteEndY(), Color.green);
 			drawingArea.addDashedLine(extremePoint.getAbsoluteX(), extremePoint.getAbsoluteY(),
 					extremePoint.getAbsoluteEndX(), extremePoint.getAbsoluteEndY(), Color.red);
-			
+
 			System.out.println(" " + extremePoint.getAbsoluteX() + "x" + extremePoint.getAbsoluteY());
 
 		}
@@ -127,7 +127,7 @@ public class DrawPoints2D {
 	private static class DrawingArea extends JPanel {
 
 		private static final long serialVersionUID = 1L;
-		
+
 		private int width;
 		private int depth;
 
@@ -155,7 +155,7 @@ public class DrawPoints2D {
 		}
 
 		public void fillRect(int x, int y, int xx, int yy, Color color) {
-			Graphics2D g2d = (Graphics2D) image.getGraphics();
+			Graphics2D g2d = (Graphics2D)image.getGraphics();
 			g2d.setColor(color);
 			g2d.fillRect(x, depth - yy, xx - x + 1, (yy - y + 1));
 			repaint();
@@ -172,13 +172,13 @@ public class DrawPoints2D {
 			super.paintComponent(g);
 
 			// Custom code to support painting from the BufferedImage
-			if (image != null) {
+			if(image != null) {
 				g.drawImage(image, 0, 0, null);
 			}
 
 			// Paint the Rectangle as the mouse is being dragged
-			if (shape != null) {
-				Graphics2D g2d = (Graphics2D) g;
+			if(shape != null) {
+				Graphics2D g2d = (Graphics2D)g;
 				g2d.draw(shape);
 			}
 		}
@@ -190,18 +190,18 @@ public class DrawPoints2D {
 		public void addRectangle(Rectangle rectangle, Color color) {
 			// Draw the Rectangle onto the BufferedImage
 
-			Graphics2D g2d = (Graphics2D) image.getGraphics();
+			Graphics2D g2d = (Graphics2D)image.getGraphics();
 			g2d.setColor(color);
 			g2d.draw(rectangle);
 			repaint();
 		}
 
 		public void addCircle(int x1, int y1, Color color, int index) {
-			Graphics2D g2d = (Graphics2D) image.getGraphics();
+			Graphics2D g2d = (Graphics2D)image.getGraphics();
 			g2d.setColor(color);
-			
+
 			int size = 10;
-			
+
 			g2d.drawOval(x1 - size / 2, depth - y1 - size / 2, size, size);
 			g2d.drawLine(x1, depth - y1, x1, depth - y1);
 			repaint();
@@ -210,7 +210,7 @@ public class DrawPoints2D {
 		public void addLine(int x1, int y1, int x2, int y2, Color color) {
 			// Draw the Rectangle onto the BufferedImage
 
-			Graphics2D g2d = (Graphics2D) image.getGraphics();
+			Graphics2D g2d = (Graphics2D)image.getGraphics();
 			g2d.setColor(color);
 			g2d.drawLine(x1, depth - y1, x2, depth - y2);
 			repaint();
@@ -219,7 +219,7 @@ public class DrawPoints2D {
 		public void addGuide(int x1, int y1, int x2, int y2, Color color) {
 			// Draw the Rectangle onto the BufferedImage
 
-			Graphics2D g2d = (Graphics2D) image.getGraphics();
+			Graphics2D g2d = (Graphics2D)image.getGraphics();
 			g2d.setColor(color);
 			drawDashed(g2d, x1, depth - y1, x2, depth - y2, 1, 9);
 			repaint();
@@ -228,7 +228,7 @@ public class DrawPoints2D {
 		public void addDashedLine(int x1, int y1, int x2, int y2, Color color) {
 			// Draw the Rectangle onto the BufferedImage
 
-			Graphics2D g2d = (Graphics2D) image.getGraphics();
+			Graphics2D g2d = (Graphics2D)image.getGraphics();
 			g2d.setColor(color);
 			drawDashed(g2d, x1, depth - y1, x2, depth - y2, 5, 5);
 			repaint();
@@ -253,7 +253,7 @@ public class DrawPoints2D {
 			}
 
 			public void mouseReleased(MouseEvent e) {
-				if (shape.width != 0 || shape.height != 0) {
+				if(shape.width != 0 || shape.height != 0) {
 					addRectangle(shape, e.getComponent().getForeground());
 				}
 
@@ -262,44 +262,44 @@ public class DrawPoints2D {
 		}
 
 		public static void drawDashed(Graphics g, int x1, int y1, int x2, int y2, int dashSize, int gapSize) {
-			if (x2 < x1) {
+			if(x2 < x1) {
 				int temp = x1;
 				x1 = x2;
 				x2 = temp;
 			}
-			if (y2 < y1) {
+			if(y2 < y1) {
 				int temp = y1;
 				y1 = y2;
 				y2 = temp;
 			}
 			int totalDash = dashSize + gapSize;
-			if (y1 == y2) {
+			if(y1 == y2) {
 				int virtualStartX = (x1 / totalDash) * totalDash;
 				for (int x = virtualStartX; x < x2; x += totalDash) {
 					int topX = x + dashSize;
-					if (topX > x2) {
+					if(topX > x2) {
 						topX = x2;
 					}
 					int firstX = x;
-					if (firstX < x1) {
+					if(firstX < x1) {
 						firstX = x1;
 					}
-					if (firstX < topX) {
+					if(firstX < topX) {
 						g.drawLine(firstX, y1, topX, y1);
 					}
 				}
-			} else if (x1 == x2) {
+			} else if(x1 == x2) {
 				int virtualStartY = (y1 / totalDash) * totalDash;
 				for (int y = virtualStartY; y < y2; y += totalDash) {
 					int topY = y + dashSize;
-					if (topY > y2) {
+					if(topY > y2) {
 						topY = y2;
 					}
 					int firstY = y;
-					if (firstY < y1) {
+					if(firstY < y1) {
 						firstY = y1;
 					}
-					if (firstY < topY) {
+					if(firstY < topY) {
 						g.drawLine(x1, firstY, x1, topY);
 					}
 				}

@@ -5,7 +5,7 @@ import org.assertj.core.api.AbstractObjectAssert;
 import com.github.skjolber.packing.api.Placement3D;
 
 public abstract class AbstractPlacement3DAssert<SELF extends AbstractPlacement3DAssert<SELF, ACTUAL>, ACTUAL extends Placement3D>
-extends AbstractObjectAssert<SELF, ACTUAL> {
+		extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	protected AbstractPlacement3DAssert(ACTUAL actual, Class<?> selfType) {
 		super(actual, selfType);
@@ -13,7 +13,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	public SELF isAtX(int x) {
 		isNotNull();
-		if (actual.getAbsoluteX() != x) {
+		if(actual.getAbsoluteX() != x) {
 			failWithExpectedXAt(x);
 		}
 		return myself;
@@ -25,7 +25,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	public SELF isAtY(int y) {
 		isNotNull();
-		if (actual.getAbsoluteY() != y) {
+		if(actual.getAbsoluteY() != y) {
 			failWithExpectedYAt(y);
 		}
 		return myself;
@@ -34,10 +34,10 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 	private void failWithExpectedYAt(int y) {
 		failWithMessage("Expected y at " + y);
 	}
-	
-	public SELF isAtZ(int z) {	
+
+	public SELF isAtZ(int z) {
 		isNotNull();
-		if (actual.getAbsoluteZ() != z) {
+		if(actual.getAbsoluteZ() != z) {
 			failWithExpectedZAt(z);
 		}
 		return myself;
@@ -49,38 +49,38 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	public SELF isAt(int x, int y, int z) {
 		isNotNull();
-		if (actual.getAbsoluteX() != x && actual.getAbsoluteY() != y  && actual.getAbsoluteZ() != z ) {
+		if(actual.getAbsoluteX() != x && actual.getAbsoluteY() != y && actual.getAbsoluteZ() != z) {
 			failWithMessage("Expected at " + x + "x" + y + "x" + z + ", not " + getStartCoordinates());
 		}
-		if (actual.getAbsoluteX() != x) {
+		if(actual.getAbsoluteX() != x) {
 			failWithMessage("Expected x " + x + ", not " + actual.getAbsoluteX() + " (was " + getCoordinates() + ")");
 		}
-		if (actual.getAbsoluteY() != y) {
-			failWithMessage("Expected y " + y + ", not " + actual.getAbsoluteY()+ " (was " + getCoordinates() + ")");
+		if(actual.getAbsoluteY() != y) {
+			failWithMessage("Expected y " + y + ", not " + actual.getAbsoluteY() + " (was " + getCoordinates() + ")");
 		}
-		if (actual.getAbsoluteZ() != z) {
-			failWithMessage("Expected z " + y + ", not " + actual.getAbsoluteZ()+ " (was " + getCoordinates() + ")");
+		if(actual.getAbsoluteZ() != z) {
+			failWithMessage("Expected z " + y + ", not " + actual.getAbsoluteZ() + " (was " + getCoordinates() + ")");
 		}
 		return myself;
 	}
-	
+
 	public SELF isEndAt(int x, int y, int z) {
 		isNotNull();
-		if (actual.getAbsoluteEndX() != x && actual.getAbsoluteEndY() != y && actual.getAbsoluteEndZ() != z ) {
+		if(actual.getAbsoluteEndX() != x && actual.getAbsoluteEndY() != y && actual.getAbsoluteEndZ() != z) {
 			failWithMessage("Expected at " + x + "x" + y + "x" + z + ", not " + getEndCoordinates());
 		}
-		if (actual.getAbsoluteEndX() != x) {
+		if(actual.getAbsoluteEndX() != x) {
 			failWithMessage("Expected x " + x + ", not " + actual.getAbsoluteEndX() + " (was " + getCoordinates() + ")");
 		}
-		if (actual.getAbsoluteEndY() != y) {
-			failWithMessage("Expected y " + y + ", not " + actual.getAbsoluteEndY()+ " (was " + getCoordinates() + ")");
+		if(actual.getAbsoluteEndY() != y) {
+			failWithMessage("Expected y " + y + ", not " + actual.getAbsoluteEndY() + " (was " + getCoordinates() + ")");
 		}
-		if (actual.getAbsoluteEndZ() != z) {
-			failWithMessage("Expected z " + y + ", not " + actual.getAbsoluteEndZ()+ " (was " + getCoordinates() + ")");
+		if(actual.getAbsoluteEndZ() != z) {
+			failWithMessage("Expected z " + y + ", not " + actual.getAbsoluteEndZ() + " (was " + getCoordinates() + ")");
 		}
 		return myself;
 	}
-	
+
 	private String getEndCoordinates() {
 		return actual.getAbsoluteEndX() + "x" + actual.getAbsoluteEndY() + "x" + actual.getAbsoluteEndZ();
 	}
@@ -92,18 +92,17 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 	private String getCoordinates() {
 		return getStartCoordinates() + " " + getEndCoordinates();
 	}
-	
-	
+
 	protected boolean isOverlapX(Placement3D placement) {
-		
+
 		if(placement.getAbsoluteX() <= actual.getAbsoluteX() && actual.getAbsoluteX() <= placement.getAbsoluteEndX()) {
 			return true;
 		}
-		
+
 		if(placement.getAbsoluteX() <= actual.getAbsoluteEndX() && actual.getAbsoluteEndX() <= placement.getAbsoluteEndX()) {
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -111,45 +110,45 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		if(placement.getAbsoluteY() <= actual.getAbsoluteY() && actual.getAbsoluteY() <= placement.getAbsoluteEndY()) {
 			return true;
 		}
-		
+
 		if(placement.getAbsoluteY() <= actual.getAbsoluteEndY() && actual.getAbsoluteEndY() <= placement.getAbsoluteEndY()) {
 			return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	protected boolean isOverlapZ(Placement3D placement) {
 		if(placement.getAbsoluteZ() <= actual.getAbsoluteZ() && actual.getAbsoluteZ() <= placement.getAbsoluteEndZ()) {
 			return true;
 		}
-		
+
 		if(placement.getAbsoluteZ() <= actual.getAbsoluteEndZ() && actual.getAbsoluteEndZ() <= placement.getAbsoluteEndZ()) {
 			return true;
 		}
-		
+
 		return false;
 	}
 
 	public SELF isAlongsideY(Placement3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithNotOverlappingInXDimension();
 		}
 		if(!isOverlapZ(other)) {
 			failWithNotOverlappingInZDimension();
 		}
-		
-		if (actual.getAbsoluteEndY() + 1 != other.getAbsoluteY() && other.getAbsoluteEndY() + 1 != actual.getAbsoluteY()) {
+
+		if(actual.getAbsoluteEndY() + 1 != other.getAbsoluteY() && other.getAbsoluteEndY() + 1 != actual.getAbsoluteY()) {
 			failWithMessage("Expected start y at " + (other.getAbsoluteEndY() + 1) + " or end y at " + (other.getAbsoluteY() - 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF isAlongsideX(Placement3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapY(other)) {
 			failWithNotOverlappingInYDimension();
 		}
@@ -157,71 +156,71 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 			failWithNotOverlappingInZDimension();
 		}
 
-		if (actual.getAbsoluteEndX() + 1 != other.getAbsoluteX() && other.getAbsoluteEndX() + 1 != actual.getAbsoluteX()) {
+		if(actual.getAbsoluteEndX() + 1 != other.getAbsoluteX() && other.getAbsoluteEndX() + 1 != actual.getAbsoluteX()) {
 			failWithMessage("Expected start x at " + (other.getAbsoluteEndX() + 1) + " or end x at " + (other.getAbsoluteX() - 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF isAlongsideZ(Placement3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithNotOverlappingInXDimension();
 		}
 		if(!isOverlapY(other)) {
 			failWithNotOverlappingInYDimension();
 		}
-		
-		if (actual.getAbsoluteEndZ() + 1 != other.getAbsoluteZ() && other.getAbsoluteEndZ() + 1 != actual.getAbsoluteZ()) {
+
+		if(actual.getAbsoluteEndZ() + 1 != other.getAbsoluteZ() && other.getAbsoluteEndZ() + 1 != actual.getAbsoluteZ()) {
 			failWithMessage("Expected start z at " + (other.getAbsoluteEndZ() + 1) + " or end z at " + (other.getAbsoluteZ() - 1));
 		}
 		return myself;
-	}	
-	
+	}
+
 	public SELF followsAlongsideX(Placement3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapY(other)) {
 			failWithNotOverlappingInYDimension();
 		}
 		if(!isOverlapZ(other)) {
 			failWithNotOverlappingInZDimension();
 		}
-		
-		if (other.getAbsoluteEndX() + 1 != actual.getAbsoluteX()) {
+
+		if(other.getAbsoluteEndX() + 1 != actual.getAbsoluteX()) {
 			failWithMessage("Expected start x at " + (other.getAbsoluteEndX() + 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF followsAlongsideY(Placement3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithNotOverlappingInXDimension();
 		}
 		if(!isOverlapZ(other)) {
 			failWithNotOverlappingInZDimension();
 		}
-		
-		if (other.getAbsoluteEndY() + 1 != actual.getAbsoluteY()) {
+
+		if(other.getAbsoluteEndY() + 1 != actual.getAbsoluteY()) {
 			failWithMessage("Expected start y at " + (other.getAbsoluteEndY() + 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF followsAlongsideZ(Placement3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithNotOverlappingInXDimension();
 		}
 		if(!isOverlapY(other)) {
 			failWithNotOverlappingInYDimension();
 		}
-		
-		if (other.getAbsoluteEndZ() + 1 != actual.getAbsoluteZ()) {
+
+		if(other.getAbsoluteEndZ() + 1 != actual.getAbsoluteZ()) {
 			failWithMessage("Expected start z at " + (other.getAbsoluteEndZ() + 1));
 		}
 		return myself;
@@ -229,52 +228,52 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	public SELF preceedsAlongsideY(Placement3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithNotOverlappingInXDimension();
 		}
 		if(!isOverlapZ(other)) {
 			failWithNotOverlappingInZDimension();
 		}
-		
-		if (actual.getAbsoluteEndY() + 1 != other.getAbsoluteY()) {
+
+		if(actual.getAbsoluteEndY() + 1 != other.getAbsoluteY()) {
 			failWithMessage("Expected end y at " + (other.getAbsoluteY() - 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF preceedsAlongsideX(Placement3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapY(other)) {
 			failWithNotOverlappingInYDimension();
 		}
 		if(!isOverlapZ(other)) {
 			failWithNotOverlappingInZDimension();
 		}
-		
-		if (actual.getAbsoluteEndX() + 1 != other.getAbsoluteX() ) {
+
+		if(actual.getAbsoluteEndX() + 1 != other.getAbsoluteX()) {
 			failWithMessage("Expected end x at " + (other.getAbsoluteX() - 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF preceedsAlongsideZ(Placement3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithNotOverlappingInXDimension();
 		}
 		if(!isOverlapY(other)) {
 			failWithNotOverlappingInYDimension();
 		}
-		
-		if (actual.getAbsoluteEndZ() + 1 != other.getAbsoluteZ()) {
+
+		if(actual.getAbsoluteEndZ() + 1 != other.getAbsoluteZ()) {
 			failWithMessage("Expected end z at " + (other.getAbsoluteZ() - 1));
 		}
 		return myself;
 	}
-	
+
 	private void failWithNotOverlappingInZDimension() {
 		failWithMessage("Not overlapping in z dimension");
 	}
@@ -286,7 +285,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 	private void failWithNotOverlappingInYDimension() {
 		failWithMessage("Not overlapping in y dimension");
 	}
-	
+
 	/*
 	public SELF isSupportedBy(Placement3D ... others) {
 		isNotNull();

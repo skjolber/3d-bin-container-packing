@@ -19,19 +19,19 @@ public class DefaultExtremePoints2D extends ExtremePoints2D<DefaultPlacement2D> 
 	}
 
 	private void validate(Placement2D target) {
-		
+
 		for (Placement2D p : placements) {
 			for (int i = 0; i < values.size(); i++) {
 				Point2D point = values.get(i);
-			
+
 				boolean x = point.getMinX() <= p.getAbsoluteEndX() && point.getMaxX() >= p.getAbsoluteX();
 				boolean y = point.getMinY() <= p.getAbsoluteEndY() && point.getMaxY() >= p.getAbsoluteY();
-				
+
 				if(x && y) {
 					throw new IllegalArgumentException();
 				}
 			}
 		}
-		
+
 	}
 }

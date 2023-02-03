@@ -21,51 +21,52 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 public class EgyPackagerBenchmark {
 
 	/*
-    @Benchmark
-    public int plainPackager(EgyPackagerState state) throws Exception {
-    	return process(state.getPlainPackager(), Long.MAX_VALUE);
-    }
-*/
-    @Benchmark
-    public int parallelPackager(EgyPackagerState state) throws Exception {
-    	return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
-    }
-/*    
-    @Benchmark
-    public int packager(EgyPackagerState state) throws Exception {
-    	return process(state.getBruteForcePackager(), Long.MAX_VALUE);
-    }
-    
-    @Benchmark
-    public int fastPackager(EgyPackagerState state) throws Exception {
-    	return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
-    }
-  */	  
-    public int process(List<BenchmarkSet> sets, long deadline) {
-    	int i = 0;
-    	for(BenchmarkSet set : sets) {
-    		if(set.getPackager().pack(set.getProducts(), deadline) != null) {
-    			i++;
-    		}
-    	}
-    	
-    	return i;
-    }
-    
-    public static void main(String[] args) throws RunnerException {
-    	System.setProperty("jmh.ignoreLock", "true ");
-        Options opt = new OptionsBuilder()
-                .include(EgyPackagerBenchmark.class.getSimpleName())
-                .mode(Mode.Throughput)
-                /*
-                .forks(1)
-                .measurementIterations(1)
-                .measurementTime(TimeValue.seconds(15))
-                .timeout(TimeValue.seconds(10))
-                */
-                .build();
+	@Benchmark
+	public int plainPackager(EgyPackagerState state) throws Exception {
+		return process(state.getPlainPackager(), Long.MAX_VALUE);
+	}
+	*/
+	@Benchmark
+	public int parallelPackager(EgyPackagerState state) throws Exception {
+		return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
+	}
 
-        new Runner(opt).run();
-    }    
+	/*    
+	@Benchmark
+	public int packager(EgyPackagerState state) throws Exception {
+		return process(state.getBruteForcePackager(), Long.MAX_VALUE);
+	}
+	
+	@Benchmark
+	public int fastPackager(EgyPackagerState state) throws Exception {
+		return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
+	}
+	  */
+	public int process(List<BenchmarkSet> sets, long deadline) {
+		int i = 0;
+		for (BenchmarkSet set : sets) {
+			if(set.getPackager().pack(set.getProducts(), deadline) != null) {
+				i++;
+			}
+		}
+
+		return i;
+	}
+
+	public static void main(String[] args) throws RunnerException {
+		System.setProperty("jmh.ignoreLock", "true ");
+		Options opt = new OptionsBuilder()
+				.include(EgyPackagerBenchmark.class.getSimpleName())
+				.mode(Mode.Throughput)
+				/*
+				.forks(1)
+				.measurementIterations(1)
+				.measurementTime(TimeValue.seconds(15))
+				.timeout(TimeValue.seconds(10))
+				*/
+				.build();
+
+		new Runner(opt).run();
+	}
 
 }

@@ -21,9 +21,10 @@ import com.github.skjolber.packing.packer.DefaultPackResult;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 
 /**
- * Fit boxes into container, i.e. perform bin packing to a single container. 
+ * Fit boxes into container, i.e. perform bin packing to a single container.
  * Selects the box with the highest volume first, then places it into the point with the lowest volume.
- * <br><br>
+ * <br>
+ * <br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
@@ -43,7 +44,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 				packResultComparator = new DefaultPackResultComparator();
 			}
 			return new PlainPackager(containers, checkpointsPerDeadlineCheck, packResultComparator);
-		}	
+		}
 	}
 
 	public PlainPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
@@ -52,19 +53,19 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 
 	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt) {
 		List<Stackable> remainingStackables = new ArrayList<>(stackables);
-		
+
 		ContainerStackValue[] stackValues = targetContainer.getStackValues();
-		
+
 		ContainerStackValue containerStackValue = stackValues[0];
-		
+
 		StackConstraint constraint = containerStackValue.getConstraint();
-		
+
 		DefaultStack stack = new DefaultStack(containerStackValue);
 
 		List<Stackable> scopedStackables = stackables
 				.stream()
-				.filter( s -> s.getVolume() <= containerStackValue.getMaxLoadVolume() && s.getWeight() <= targetContainer.getMaxLoadWeight())
-				.filter( s -> constraint == null || constraint.canAccept(s))
+				.filter(s -> s.getVolume() <= containerStackValue.getMaxLoadVolume() && s.getWeight() <= targetContainer.getMaxLoadWeight())
+				.filter(s -> constraint == null || constraint.canAccept(s))
 				.collect(Collectors.toList());
 
 		ExtremePoints3D<StackPlacement> extremePoints3D = new ExtremePoints3D<>(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
@@ -72,22 +73,22 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 
 		int maxRemainingWeight = containerStackValue.getMaxLoadWeight();
 
-		while(!extremePoints3D.isEmpty() && maxRemainingWeight > 0 && !scopedStackables.isEmpty()) {
+		while (!extremePoints3D.isEmpty() && maxRemainingWeight > 0 && !scopedStackables.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
 				// fit2d below might have returned due to deadline
 
 				return null;
 			}
-			
+
 			long maxPointVolume = extremePoints3D.getMaxVolume();
 			long maxPointArea = extremePoints3D.getMaxArea();
 
 			int bestPointIndex = -1;
 			int bestIndex = -1;
-			
+
 			StackValue bestStackValue = null;
 			Stackable bestStackable = null;
-			
+
 			for (int i = 0; i < scopedStackables.size(); i++) {
 				Stackable box = scopedStackables.get(i);
 				if(box.getVolume() > maxPointVolume) {
@@ -96,11 +97,11 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 				if(box.getWeight() > maxRemainingWeight) {
 					continue;
 				}
-				
+
 				if(bestStackable != null && !isBetter(bestStackable, box)) {
 					continue;
 				}
-				
+
 				if(constraint != null && !constraint.accepts(stack, box)) {
 					continue;
 				}
@@ -112,15 +113,15 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 					if(stackValue.getVolume() > maxPointVolume) {
 						continue;
 					}
-					
+
 					int currentPointsCount = extremePoints3D.getValueCount();
-					for(int k = 0; k < currentPointsCount; k++) {
+					for (int k = 0; k < currentPointsCount; k++) {
 						Point3D<StackPlacement> point3d = extremePoints3D.getValue(k);
-						
+
 						if(!point3d.fits3D(stackValue)) {
 							continue;
 						}
-						
+
 						if(bestIndex != -1) {
 							if(!isBetter(bestStackable, extremePoints3D.getValue(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
 								continue;
@@ -137,20 +138,20 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 					}
 				}
 			}
-			
+
 			if(bestIndex == -1) {
 				break;
 			}
-			
+
 			scopedStackables.remove(bestIndex);
 			remainingStackables.remove(bestStackable);
 
 			Point3D<StackPlacement> point = extremePoints3D.getValue(bestPointIndex);
-			
+
 			StackPlacement stackPlacement = new StackPlacement(bestStackable, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ(), -1, -1);
 			stack.add(stackPlacement);
 			extremePoints3D.add(bestPointIndex, stackPlacement);
-			
+
 			if(!scopedStackables.isEmpty()) {
 				boolean minArea = bestStackValue.getArea() == extremePoints3D.getMinAreaLimit();
 				boolean minVolume = extremePoints3D.getMinVolumeLimit() == bestStackable.getVolume();
@@ -162,35 +163,35 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 					extremePoints3D.setMinimumVolumeLimit(getMinStackableVolume(scopedStackables));
 				}
 			}
-			
+
 			maxRemainingWeight -= bestStackable.getWeight();
 		}
-		
-		return new DefaultPackResult(new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack), stack, remainingStackables.isEmpty());
+
+		return new DefaultPackResult(new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack),
+				stack, remainingStackables.isEmpty());
 	}
 
-	protected boolean isBetter(Stackable referenceStackable, Point3D<StackPlacement> referencePoint, StackValue referenceStackValue, Stackable candidateBox, Point3D<StackPlacement> candidatePoint, StackValue candidateStackValue) {
+	protected boolean isBetter(Stackable referenceStackable, Point3D<StackPlacement> referencePoint, StackValue referenceStackValue, Stackable candidateBox, Point3D<StackPlacement> candidatePoint,
+			StackValue candidateStackValue) {
 		// ********************************************
 		// * Prefer lowest point
 		// ********************************************
-		
+
 		// compare supported area
 		long referenceSupport = referencePoint.calculateXYSupport(referenceStackValue.getDx(), referenceStackValue.getDy());
 		long candidateSupport = candidatePoint.calculateXYSupport(candidateStackValue.getDx(), candidateStackValue.getDy());
 
 		if(candidateSupport == referenceSupport) {
-			
+
 			if(candidatePoint.getMinZ() == referencePoint.getMinZ()) {
-				
+
 				if(candidateStackValue.getArea() == referenceStackValue.getArea()) {
-					
+
 					// compare sideways support	
-					referenceSupport = 
-							referencePoint.calculateXZSupport(referenceStackValue.getDx(), referenceStackValue.getDz()) + 
+					referenceSupport = referencePoint.calculateXZSupport(referenceStackValue.getDx(), referenceStackValue.getDz()) +
 							referencePoint.calculateYZSupport(referenceStackValue.getDy(), referenceStackValue.getDz());
 
-					candidateSupport = 
-							candidatePoint.calculateXZSupport(candidateStackValue.getDx(), candidateStackValue.getDz()) + 
+					candidateSupport = candidatePoint.calculateXZSupport(candidateStackValue.getDx(), candidateStackValue.getDz()) +
 							candidatePoint.calculateYZSupport(candidateStackValue.getDy(), candidateStackValue.getDz());
 
 					if(candidateSupport == referenceSupport) {
@@ -200,7 +201,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 					return candidateSupport > referenceSupport;
 				}
 				return candidateStackValue.getArea() > referenceStackValue.getArea();
-				
+
 			}
 			return candidatePoint.getMinZ() < referencePoint.getMinZ();
 		}
@@ -211,7 +212,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 		// ****************************************
 		// * Prefer the highest volume
 		// ****************************************
-		
+
 		if(referenceStackable.getVolume() == potentiallyBetterStackable.getVolume()) {
 			return referenceStackable.getWeight() < potentiallyBetterStackable.getWeight();
 		}

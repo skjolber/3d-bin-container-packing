@@ -15,20 +15,20 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 public class DrawBouwkampPoints3D {
 
 	public static void main(String[] args) {
-		
+
 		BouwkampConverter converter = new BouwkampConverter(false);
-		
+
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
-		
+
 		List<BouwkampCodes> target = directory.getAll();
-		
-		for(BouwkampCodes codes : target) {
-			for(BouwkampCode c : codes.getCodes()) {
-				
+
+		for (BouwkampCodes codes : target) {
+			for (BouwkampCode c : codes.getCodes()) {
+
 				DefaultExtremePoints3D plane = converter.convert3DXYPlane(c, 1);
-				
+
 				List<Point3D<?>> list = new ArrayList<>();
-				
+
 				List<Point3D<DefaultPlacement3D>> values = plane.getValuesAsList();
 
 				List<DefaultPlacement3D> placements = plane.getPlacements();
@@ -43,17 +43,17 @@ public class DrawBouwkampPoints3D {
 						list.add(point3d);
 					}
 				}
-				
+
 				List<Placement3D> results = new ArrayList<>();
-				
-				for(Placement3D p : placements) {
+
+				for (Placement3D p : placements) {
 					if(rotate) {
 						results.add(rotate(p));
 					} else {
 						results.add(p);
 					}
 				}
-				
+
 				if(rotate) {
 					DrawPoints2D.show3D(list, results, plane.getDepth(), plane.getHeight());
 				} else {
@@ -66,9 +66,5 @@ public class DrawBouwkampPoints3D {
 	private static Placement3D rotate(Placement3D p) {
 		return new DefaultPlacement3D(p.getAbsoluteY(), p.getAbsoluteZ(), p.getAbsoluteX(), p.getAbsoluteEndY(), p.getAbsoluteEndZ(), p.getAbsoluteEndX());
 	}
-	
-	
-	
-	
-	
+
 }

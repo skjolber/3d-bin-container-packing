@@ -25,7 +25,7 @@ public class Dimension {
 	protected final int dx; // dx
 	protected final int dy; // dy
 	protected final int dz; // dz
-	
+
 	protected final long area;
 	protected final long volume;
 
@@ -41,7 +41,6 @@ public class Dimension {
 		this.volume = ((long)dy) * ((long)dx) * ((long)dz);
 		this.area = ((long)dy) * ((long)dx);
 	}
-
 
 	public Dimension(int dx, int dy, int dz) {
 		this(null, dx, dy, dz);
@@ -72,14 +71,13 @@ public class Dimension {
 	}
 
 	public boolean canHold3D(int w, int d, int h) {
-        return (w <= dx && h <= dz && d <= dy) ||
-               (h <= dx && d <= dz && w <= dy) ||
-               (d <= dx && w <= dz && h <= dy) ||
-               (h <= dx && w <= dz && d <= dy) ||
-               (d <= dx && h <= dz && w <= dy) ||
-               (w <= dx && d <= dz && h <= dy);
+		return (w <= dx && h <= dz && d <= dy) ||
+				(h <= dx && d <= dz && w <= dy) ||
+				(d <= dx && w <= dz && h <= dy) ||
+				(h <= dx && w <= dz && d <= dy) ||
+				(d <= dx && h <= dz && w <= dy) ||
+				(w <= dx && d <= dz && h <= dy);
 	}
-
 
 	/**
 	 *
@@ -126,8 +124,6 @@ public class Dimension {
 	public boolean fitsInside3D(int w, int d, int h) {
 		return w >= dx && h >= dz && d >= dy;
 	}
-
-
 
 	/**
 	 * Check whether this object can fit within a dimension, with 3D rotation.
@@ -181,35 +177,34 @@ public class Dimension {
 		result = prime * result + dy;
 		result = prime * result + dz;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + (int) (volume ^ (volume >>> 32));
+		result = prime * result + (int)(volume ^ (volume >>> 32));
 		result = prime * result + dx;
 		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if(this == obj)
 			return true;
-		if (obj == null)
+		if(obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if(getClass() != obj.getClass())
 			return false;
-		Dimension other = (Dimension) obj;
-		if (dy != other.dy)
+		Dimension other = (Dimension)obj;
+		if(dy != other.dy)
 			return false;
-		if (dz != other.dz)
+		if(dz != other.dz)
 			return false;
-		if (name == null) {
-			if (other.name != null)
+		if(name == null) {
+			if(other.name != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if(!name.equals(other.name))
 			return false;
-		if (volume != other.volume)
+		if(volume != other.volume)
 			return false;
-		if (dx != other.dx)
+		if(dx != other.dx)
 			return false;
 		return true;
 	}
-
 
 }

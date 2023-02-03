@@ -9,10 +9,12 @@ public interface LargestAreaFitFirstPackagerConfiguration<P extends Point2D<Stac
 
 	/** rough filter on whether to further compare stackables */
 	StackableFilter getFirstStackableFilter();
+
 	StackValuePointFilter<P> getFirstStackValuePointFilter();
-	
+
 	/** rough filter on whether to further compare stackables */
 	StackableFilter getNextStackableFilter();
+
 	StackValuePointFilter<P> getNextStackValuePointFilter();
-	
+
 }

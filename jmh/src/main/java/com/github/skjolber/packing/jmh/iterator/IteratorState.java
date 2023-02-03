@@ -40,7 +40,7 @@ public class IteratorState {
 
 	private ParallelPermutationRotationIteratorList parallelIterator;
 	private DefaultPermutationRotationIterator iterator;
-	
+
 	public IteratorState() {
 		this(16);
 	}
@@ -50,26 +50,26 @@ public class IteratorState {
 
 		this.pool1 = Executors.newFixedThreadPool(threadPoolSize, new DefaultThreadFactory());
 	}
-	
+
 	@Setup(Level.Trial)
 	public void init() throws IOException {
-	
-		Path path = Paths.get("src","main","resources", "iterate.json");
+
+		Path path = Paths.get("src", "main", "resources", "iterate.json");
 
 		if(!Files.exists(path)) {
-			path = Paths.get("jmh", "src","main","resources", "iterate.json");
+			path = Paths.get("jmh", "src", "main", "resources", "iterate.json");
 		}
-	
+
 		List<StackableItem> stackableItems3D = getStackableItems3D(ItemIO.read(path));
-	
+
 		int x = 0;
 		int y = 0;
 		int z = 0;
-		
+
 		int weight = 0;
 		for (StackableItem stackableItem : stackableItems3D) {
 			StackValue[] stackValues = stackableItem.getStackable().getStackValues();
-			for(StackValue stackValue : stackValues) {
+			for (StackValue stackValue : stackValues) {
 				if(x < stackValue.getDx()) {
 					x = stackValue.getDx();
 				}
@@ -82,14 +82,14 @@ public class IteratorState {
 			}
 			weight += stackableItem.getCount() * stackableItem.getStackable().getWeight();
 		}
-		
+
 		this.parallelIterator = new ParallelPermutationRotationIteratorListBuilder()
 				.withStackableItems(stackableItems3D)
 				.withLoadSize(new Dimension(x, y, z))
 				.withParallelizationCount(threadPoolSize)
 				.withMaxLoadWeight(weight)
 				.build();
-		
+
 		this.iterator = DefaultPermutationRotationIterator.newBuilder()
 				.withStackableItems(stackableItems3D)
 				.withLoadSize(new Dimension(x, y, z))
@@ -100,17 +100,17 @@ public class IteratorState {
 	@TearDown(Level.Trial)
 	public void shutdown() throws InterruptedException {
 		pool1.shutdown();
-		
+
 		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			// ignore
-		} catch(Exception e) {
+		} catch (Exception e) {
 			// ignore
 		}
 	}
-	
+
 	private static List<StackableItem> getStackableItems3D(List<Item> items) {
 		List<StackableItem> products = new ArrayList<>();
 		for (Item item : items) {
@@ -119,15 +119,15 @@ public class IteratorState {
 
 		return products;
 	}
-	
+
 	public ParallelPermutationRotationIteratorList getParallelIterator() {
 		return parallelIterator;
 	}
-	
+
 	public ExecutorService getPool() {
 		return pool1;
 	}
-	
+
 	public DefaultPermutationRotationIterator getIterator() {
 		return iterator;
 	}

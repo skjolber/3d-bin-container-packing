@@ -3,7 +3,6 @@ package com.github.skjolber.packing.ep.points3d;
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.Point3D;
 
-
 /**
  * 
  * Custom list array for working with points.
@@ -19,7 +18,7 @@ public class Point3DListArray<P extends Placement3D> {
 
 	public Point3DListArray() {
 		points = new Point3DList[16];
-		for(int i = 0; i < points.length;i++) {
+		for (int i = 0; i < points.length; i++) {
 			points[i] = new Point3DList<>(INITIAL_CAPACITY);
 		}
 	}
@@ -28,7 +27,7 @@ public class Point3DListArray<P extends Placement3D> {
 		if(points.length < size) {
 			Point3DList<P>[] nextPoints = new Point3DList[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.points.length);
-			for(int i = this.points.length; i < size; i++) {
+			for (int i = this.points.length; i < size; i++) {
 				nextPoints[i] = new Point3DList<>(INITIAL_CAPACITY);
 			}
 			this.points = nextPoints;
@@ -40,7 +39,7 @@ public class Point3DListArray<P extends Placement3D> {
 	}
 
 	public void reset() {
-		for(int i = 0; i < this.points.length; i++) {
+		for (int i = 0; i < this.points.length; i++) {
 			this.points[i].clear();
 		}
 	}

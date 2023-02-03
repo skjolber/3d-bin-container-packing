@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BouwkampCode {
-	
+
 	protected int width;
 	protected int depth;
 	protected String name;
-	
+
 	private List<BouwkampCodeLine> lines = new ArrayList<>();
 
 	public int getWidth() {
@@ -38,7 +38,7 @@ public class BouwkampCode {
 	public void addLine(BouwkampCodeLine line) {
 		this.lines.add(line);
 	}
-	
+
 	public List<BouwkampCodeLine> getLines() {
 		return lines;
 	}
@@ -54,10 +54,10 @@ public class BouwkampCode {
 		}
 		return order;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "BouwkampCode [name=" + name + ", width=" + width + ", depth=" + depth + ", square=" + lines + "]";
 	}
-	
+
 }

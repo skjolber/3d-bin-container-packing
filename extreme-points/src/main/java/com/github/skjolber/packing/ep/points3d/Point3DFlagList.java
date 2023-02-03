@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.ep.Point3D;
 
 /**
  * 
- * Custom list for working with to-be-removed points. 
+ * Custom list for working with to-be-removed points.
  * 
  */
 
@@ -19,15 +19,15 @@ import com.github.skjolber.packing.api.ep.Point3D;
 public class Point3DFlagList<P extends Placement3D> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private int size = 0;
 	private Point3D<P>[] points = new Point3D[16];
 	private boolean[] flag = new boolean[16];
-	
+
 	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
 	}
-	
+
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
 			Point3D<P>[] nextPoints = new Point3D[size];
@@ -40,7 +40,7 @@ public class Point3DFlagList<P extends Placement3D> implements Serializable {
 			this.flag = nextFlag;
 		}
 	}
-	
+
 	public void add(Point3D<P> point) {
 		points[size] = point;
 		size++;
@@ -54,15 +54,15 @@ public class Point3DFlagList<P extends Placement3D> implements Serializable {
 	public void sort(Comparator<Point3D<?>> comparator, int maxSize) {
 		Arrays.sort(points, 0, maxSize, comparator);
 	}
-	
+
 	public int size() {
 		return size;
 	}
-	
+
 	public Point3D<P> get(int i) {
 		return points[i];
 	}
-	
+
 	public void reset() {
 		Arrays.fill(this.points, 0, size, null);
 		Arrays.fill(this.flag, 0, size, false);
@@ -82,18 +82,18 @@ public class Point3DFlagList<P extends Placement3D> implements Serializable {
 	}
 
 	public void clear() {
-		for(int i = 0; i < size; i++) {
+		for (int i = 0; i < size; i++) {
 			if(flag[i]) {
 				flag[i] = false;
 			}
 		}
 		size = 0;
 	}
-	
+
 	public int removeFlagged() {
 		int offset = 0;
 		int index = 0;
-		while(index < size) {
+		while (index < size) {
 			if(flag[index]) {
 				flag[index] = false;
 			} else {
@@ -103,13 +103,13 @@ public class Point3DFlagList<P extends Placement3D> implements Serializable {
 			index++;
 		}
 		size = offset;
-		
+
 		return index - offset;
 	}
 
 	public List<Point3D<P>> toList() {
 		List<Point3D<P>> list = new ArrayList<>(size);
-		for(int i = 0; i < size; i++) {
+		for (int i = 0; i < size; i++) {
 			list.add(points[i]);
 		}
 		return list;
@@ -117,77 +117,77 @@ public class Point3DFlagList<P extends Placement3D> implements Serializable {
 
 	public void offset(int offset) {
 		move(offset);
-		for(int i = 0; i < offset; i++) {
+		for (int i = 0; i < offset; i++) {
 			flag[i] = true;
 		}
 	}
 
 	public void move(int offset) {
 		ensureCapacity(size + offset);
-		
+
 		System.arraycopy(points, 0, points, offset, size);
 		System.arraycopy(flag, 0, flag, offset, size);
 		this.size += offset;
-	}  
-	
+	}
+
 	public void copyInto(Point3DFlagList<P> destination) {
 		destination.ensureCapacity(size);
-		
+
 		System.arraycopy(points, 0, destination.points, 0, size);
 		System.arraycopy(flag, 0, destination.flag, 0, size);
 		destination.size = size;
-		
-		for(int i = size; i < destination.flag.length; i++) {
+
+		for (int i = size; i < destination.flag.length; i++) {
 			destination.flag[i] = false;
 			destination.points[i] = null;
 		}
 	}
-	
+
 	public Point3D<P>[] getPoints() {
 		return points;
 	}
-	
-	
-    /**
-     * Returns the hash code value for this list.
-     *
-     * <p>This implementation uses exactly the code that is used to define the
-     * list hash function in the documentation for the {@link List#hashCode}
-     * method.
-     *
-     * @return the hash code value for this list
-     */
-    public int hashCode() {
-        int hashCode = 1;
-		for(int i = 0; i < size; i++) {
-			hashCode = 31*hashCode + points[i].hashCode() + Boolean.hashCode(flag[i]);
-		}
-        return hashCode;
-    }
 
-    @Override
-    public boolean equals(Object obj) {
-    	if(obj instanceof Point3DFlagList) {
-    		Point3DFlagList<P> other = (Point3DFlagList<P>)obj;
-    		if(other.size() == size) {
-    			for(int i = 0; i < size; i++) {
-    	            if(!points[i].equals(other.get(i))) {
-    	            	return false;
-    	            }
-    	            if(flag[i] != other.flag[i]) {
-    	            	return false;
-    	            }
-    			}
-    		}
-    		return true;
-    	}
-    	return super.equals(obj);
-    }
+	/**
+	 * Returns the hash code value for this list.
+	 *
+	 * <p>
+	 * This implementation uses exactly the code that is used to define the
+	 * list hash function in the documentation for the {@link List#hashCode}
+	 * method.
+	 *
+	 * @return the hash code value for this list
+	 */
+	public int hashCode() {
+		int hashCode = 1;
+		for (int i = 0; i < size; i++) {
+			hashCode = 31 * hashCode + points[i].hashCode() + Boolean.hashCode(flag[i]);
+		}
+		return hashCode;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof Point3DFlagList) {
+			Point3DFlagList<P> other = (Point3DFlagList<P>)obj;
+			if(other.size() == size) {
+				for (int i = 0; i < size; i++) {
+					if(!points[i].equals(other.get(i))) {
+						return false;
+					}
+					if(flag[i] != other.flag[i]) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		return super.equals(obj);
+	}
 
 	public void setAll(Point3DList<P> add, int offset) {
 		System.arraycopy(add.getPoints(), 0, points, offset, add.size());
 		int limit = offset + add.size();
-		for(int i = offset; i < limit; i++) {
+		for (int i = offset; i < limit; i++) {
 			flag[i] = false;
 		}
 
@@ -201,5 +201,4 @@ public class Point3DFlagList<P extends Placement3D> implements Serializable {
 		points[i] = point;
 	}
 
-    
 }

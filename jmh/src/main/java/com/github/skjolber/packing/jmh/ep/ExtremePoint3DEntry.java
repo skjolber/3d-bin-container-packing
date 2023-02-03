@@ -16,7 +16,7 @@ public class ExtremePoint3DEntry {
 	public int getIndex() {
 		return index;
 	}
-	
+
 	public DefaultPlacement3D getPlacement() {
 		return placement;
 	}

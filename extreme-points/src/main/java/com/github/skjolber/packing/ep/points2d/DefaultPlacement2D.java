@@ -7,12 +7,12 @@ import com.github.skjolber.packing.api.Placement2D;
 public class DefaultPlacement2D implements Placement2D, Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	protected final int x;
 	protected final int y;
 	protected final int endX;
 	protected final int endY;
-	
+
 	public DefaultPlacement2D(int x, int y, int endX, int endY) {
 		this.x = x;
 		this.y = y;

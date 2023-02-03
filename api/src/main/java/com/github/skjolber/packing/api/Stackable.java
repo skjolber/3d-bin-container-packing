@@ -7,10 +7,10 @@ import java.util.List;
 public abstract class Stackable implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	protected final String id;
 	protected final String description;
-	
+
 	public Stackable(String id, String description) {
 		super();
 		this.id = id;
@@ -18,34 +18,34 @@ public abstract class Stackable implements Serializable {
 	}
 
 	public abstract long getVolume();
-	
+
 	public abstract int getWeight();
-	
+
 	public abstract StackValue[] getStackValues();
-	
+
 	public String getDescription() {
 		return description;
 	}
-	
+
 	public String getId() {
 		return id;
 	}
 
 	public List<StackValue> fitsInside(Dimension bound) {
 		List<StackValue> list = new ArrayList<>();
-		
+
 		for (StackValue stackValue : getStackValues()) {
 			if(stackValue.fitsInside3D(bound)) {
 				list.add(stackValue);
 			}
 		}
-		
+
 		return list;
 	}
 
 	@Override
 	public abstract Stackable clone();
-	
+
 	public List<StackValue> rotations(Dimension bound) {
 		// TODO optimize if max is above min bounds 
 		StackValue[] rotations = getStackValues();
@@ -54,9 +54,9 @@ public abstract class Stackable implements Serializable {
 			if(stackValue.fitsInside3D(bound)) {
 				List<StackValue> fitsInside = new ArrayList<>(rotations.length);
 				fitsInside.add(stackValue);
-				
+
 				i++;
-				while(i < rotations.length) {
+				while (i < rotations.length) {
 					if(rotations[i].fitsInside3D(bound)) {
 						fitsInside.add(rotations[i]);
 					}
@@ -91,6 +91,5 @@ public abstract class Stackable implements Serializable {
 		}
 		return maximumArea;
 	}
-
 
 }

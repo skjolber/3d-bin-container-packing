@@ -3,10 +3,10 @@ package com.github.skjolber.packing.test.bouwkamp;
 import java.util.List;
 
 public class BouwkampCodes {
-	
+
 	protected List<BouwkampCode> codes;
 	protected String source;
-	
+
 	public BouwkampCodes(List<BouwkampCode> codes, String source) {
 		super();
 		this.codes = codes;
@@ -16,7 +16,7 @@ public class BouwkampCodes {
 	public void setCodes(List<BouwkampCode> codes) {
 		this.codes = codes;
 	}
-	
+
 	public BouwkampCode findCode(String name) {
 		for (BouwkampCode bouwkampCode : codes) {
 			if(bouwkampCode.getName().equals(name)) {
@@ -25,11 +25,11 @@ public class BouwkampCodes {
 		}
 		return null;
 	}
-	
+
 	public List<BouwkampCode> getCodes() {
 		return codes;
 	}
-	
+
 	public String getSource() {
 		return source;
 	}

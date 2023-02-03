@@ -16,7 +16,7 @@ public class ExtremePoint2DEntry {
 	public int getIndex() {
 		return index;
 	}
-	
+
 	public DefaultPlacement2D getPlacement() {
 		return placement;
 	}

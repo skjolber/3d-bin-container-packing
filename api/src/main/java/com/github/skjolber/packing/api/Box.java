@@ -12,12 +12,12 @@ public class Box extends Stackable {
 	}
 
 	public static class Builder extends AbstractStackableBuilder<Builder> {
-		
+
 		protected Integer weight;
-		
+
 		public Builder withWeight(int weight) {
 			this.weight = weight;
-			
+
 			return this;
 		}
 
@@ -32,20 +32,20 @@ public class Box extends Stackable {
 			if(stackableSurface == null) {
 				stackableSurface = StackableSurface.TWO_D;
 			}
-			
+
 			return new Box(id, description, size.getVolume(), weight, getStackValues());
 		}
-		
+
 		@SuppressWarnings("unchecked")
 		protected <T> T[] newStackValueArray(int size) {
-			return (T[]) new BoxStackValue[size];
+			return (T[])new BoxStackValue[size];
 		}
 
 		protected BoxStackValue newStackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> surfaces) {
 			return new BoxStackValue(dx, dy, dz, constraint, surfaces);
 		}
 	}
-	
+
 	protected final int weight;
 	protected final BoxStackValue[] stackValues;
 	protected final long volume;
@@ -57,7 +57,7 @@ public class Box extends Stackable {
 		this.volume = volume;
 		this.weight = weight;
 		this.stackValues = stackValues;
-		
+
 		this.minimumArea = getMinimumArea(stackValues);
 		this.maximumArea = getMinimumArea(stackValues);
 	}
@@ -80,12 +80,12 @@ public class Box extends Stackable {
 	public Box clone() {
 		return new Box(id, description, volume, weight, stackValues);
 	}
-	
+
 	@Override
 	public long getMinimumArea() {
 		return minimumArea;
 	}
-	
+
 	@Override
 	public long getMaximumArea() {
 		return maximumArea;
@@ -95,7 +95,5 @@ public class Box extends Stackable {
 	public String toString() {
 		return "Box " + (description != null ? description : "") + "[weight=" + weight + ", rotations=" + Arrays.toString(stackValues) + ", volume=" + volume + "]";
 	}
-	
-	
-	
+
 }

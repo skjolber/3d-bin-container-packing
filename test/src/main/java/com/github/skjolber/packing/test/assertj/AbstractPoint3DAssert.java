@@ -9,7 +9,7 @@ import com.github.skjolber.packing.api.ep.YZPlanePoint3D;
 
 @SuppressWarnings("rawtypes")
 public abstract class AbstractPoint3DAssert<SELF extends AbstractPoint3DAssert<SELF, ACTUAL>, ACTUAL extends Point3D>
-extends AbstractObjectAssert<SELF, ACTUAL> {
+		extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	protected AbstractPoint3DAssert(ACTUAL actual, Class<?> selfType) {
 		super(actual, selfType);
@@ -17,7 +17,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	public SELF isMinX(int x) {
 		isNotNull();
-		if (actual.getMinX() != x) {
+		if(actual.getMinX() != x) {
 			failWithMessage("Expected x at " + x);
 		}
 		return myself;
@@ -25,15 +25,15 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	public SELF isMinY(int y) {
 		isNotNull();
-		if (actual.getMinY() != y) {
+		if(actual.getMinY() != y) {
 			failWithMessage("Expected y at " + y);
 		}
 		return myself;
 	}
-	
+
 	public SELF isMinZ(int z) {
 		isNotNull();
-		if (actual.getMinZ() != z) {
+		if(actual.getMinZ() != z) {
 			failWithMessage("Expected z at " + z);
 		}
 		return myself;
@@ -41,35 +41,35 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	public SELF isMin(int x, int y, int z) {
 		isNotNull();
-		if (actual.getMinX() != x) {
+		if(actual.getMinX() != x) {
 			failWithMessage("Expected x " + x + ", not " + actual.getMinX() + " (was " + getCoordinates() + ")");
 		}
-		if (actual.getMinY() != y) {
-			failWithMessage("Expected y " + y + ", not " + actual.getMinY()+ " (was " + getCoordinates() + ")");
+		if(actual.getMinY() != y) {
+			failWithMessage("Expected y " + y + ", not " + actual.getMinY() + " (was " + getCoordinates() + ")");
 		}
-		if (actual.getMinZ() != z) {
-			failWithMessage("Expected z " + z + ", not " + actual.getMinZ()+ " (was " + getCoordinates() + ")");
+		if(actual.getMinZ() != z) {
+			failWithMessage("Expected z " + z + ", not " + actual.getMinZ() + " (was " + getCoordinates() + ")");
 		}
 		return myself;
 	}
-	
+
 	public SELF isMax(int x, int y, int z) {
 		isNotNull();
-		if (actual.getMaxX() != x) {
+		if(actual.getMaxX() != x) {
 			failWithMessage("Expected x " + x + ", not " + actual.getMaxX() + " (was " + getCoordinates() + ")");
 		}
-		if (actual.getMaxY() != y) {
-			failWithMessage("Expected y " + y + ", not " + actual.getMaxY()+ " (was " + getCoordinates() + ")");
+		if(actual.getMaxY() != y) {
+			failWithMessage("Expected y " + y + ", not " + actual.getMaxY() + " (was " + getCoordinates() + ")");
 		}
-		if (actual.getMaxZ() != z) {
-			failWithMessage("Expected z " + y + ", not " + actual.getMaxZ()+ " (was " + getCoordinates() + ")");
+		if(actual.getMaxZ() != z) {
+			failWithMessage("Expected z " + y + ", not " + actual.getMaxZ() + " (was " + getCoordinates() + ")");
 		}
 		return myself;
 	}
-	
+
 	public SELF isMaxX(int x) {
 		isNotNull();
-		if (actual.getMaxX() != x) {
+		if(actual.getMaxX() != x) {
 			failWithMessage("Expected x " + x + ", not " + actual.getMaxX() + " (was " + getCoordinates() + ")");
 		}
 		return myself;
@@ -77,28 +77,28 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	public SELF isMaxY(int y) {
 		isNotNull();
-		if (actual.getMaxY() != y) {
-			failWithMessage("Expected y " + y + ", not " + actual.getMaxY()+ " (was " + getCoordinates() + ")");
+		if(actual.getMaxY() != y) {
+			failWithMessage("Expected y " + y + ", not " + actual.getMaxY() + " (was " + getCoordinates() + ")");
 		}
 		return myself;
 	}
-	
+
 	public SELF isMaxZ(int z) {
 		isNotNull();
-		if (actual.getMaxZ() != z) {
-			failWithMessage("Expected z " + z + ", not " + actual.getMaxZ()+ " (was " + getCoordinates() + ")");
+		if(actual.getMaxZ() != z) {
+			failWithMessage("Expected z " + z + ", not " + actual.getMaxZ() + " (was " + getCoordinates() + ")");
 		}
 		return myself;
 	}
-	
+
 	public SELF isXYSupportAt(int x, int y) {
 		isNotNull();
 		if(!actual.isSupportedXYPlane(x, y)) {
 			if(actual instanceof XYPlanePoint3D) {
 				XYPlanePoint3D support = (XYPlanePoint3D)actual;
-	
+
 				failWithMessage("Expected xy support at " + x + "x" + y + ", was " + support.getSupportedXYPlaneMaxX() + "x" + support.getSupportedXYPlaneMaxY() + " for " + actual);
-				
+
 			} else {
 				failWithMessage("Expected xy support at " + x + "x" + y + ", was none for " + actual);
 			}
@@ -111,7 +111,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		if(!actual.isSupportedXZPlane(x, z)) {
 			if(actual instanceof XZPlanePoint3D) {
 				XZPlanePoint3D support = (XZPlanePoint3D)actual;
-	
+
 				failWithMessage("Expected xz support at " + x + "x" + z + ", was " + support.getSupportedXZPlaneMaxX() + "x" + support.getSupportedXZPlaneMaxZ() + " for " + actual);
 			} else {
 				failWithMessage("Expected xz support at " + x + "x" + z + ", was none for " + actual);
@@ -125,23 +125,22 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		if(!actual.isSupportedYZPlane(y, z)) {
 			if(actual instanceof YZPlanePoint3D) {
 				YZPlanePoint3D support = (YZPlanePoint3D)actual;
-	
+
 				failWithMessage("Expected yz support at " + y + "x" + z + ", was " + support.getSupportedYZPlaneMaxY() + "x" + support.getSupportedYZPlaneMaxZ() + " for " + actual);
-				
+
 			} else {
 				failWithMessage("Expected yz support at " + y + "x" + z + ", was none for " + actual);
 			}
 		}
 		return myself;
 	}
-	
-	
+
 	public SELF isNoXYSupportAt(int x, int y) {
 		isNotNull();
 		if(actual.isSupportedXYPlane(x, y)) {
 			if(actual instanceof XYPlanePoint3D) {
 				XYPlanePoint3D support = (XYPlanePoint3D)actual;
-	
+
 				failWithMessage("Expected no xy support at " + x + "x" + y + ", was " + support.getSupportedXYPlaneMaxX() + "x" + support.getSupportedXYPlaneMaxY() + " for " + actual);
 			}
 		}
@@ -153,7 +152,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		if(actual.isSupportedXZPlane(x, z)) {
 			if(actual instanceof XZPlanePoint3D) {
 				XZPlanePoint3D support = (XZPlanePoint3D)actual;
-	
+
 				failWithMessage("Expected no xz support at " + x + "x" + z + ", was " + support.getSupportedXZPlaneMaxX() + "x" + support.getSupportedXZPlaneMaxZ() + " for " + actual);
 			}
 		}
@@ -165,14 +164,13 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		if(actual.isSupportedYZPlane(y, z)) {
 			if(actual instanceof YZPlanePoint3D) {
 				YZPlanePoint3D support = (YZPlanePoint3D)actual;
-	
+
 				failWithMessage("Expected no yz support at " + y + "x" + z + ", was " + support.getSupportedYZPlaneMaxY() + "x" + support.getSupportedYZPlaneMaxZ() + " for " + actual);
 			}
 		}
 		return myself;
 	}
-		
-	
+
 	public SELF isMaxXYSupport(int x, int y) {
 		isNotNull();
 		if(actual instanceof XYPlanePoint3D) {
@@ -181,7 +179,7 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 			if(support.getSupportedXYPlaneMaxX() != x || support.getSupportedXYPlaneMaxY() != y) {
 				failWithMessage("Expected xy support at " + x + "x" + y + ", was " + support.getSupportedXYPlaneMaxX() + "x" + support.getSupportedXYPlaneMaxY() + " for " + actual);
 			}
-			
+
 		} else {
 			failWithMessage("Expected xy support at " + x + "x" + y + ", was none for " + actual);
 		}
@@ -210,19 +208,18 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 			if(support.getSupportedYZPlaneMaxY() != y || support.getSupportedYZPlaneMaxZ() != z) {
 				failWithMessage("Expected yz support at " + y + "x" + z + ", was " + support.getSupportedYZPlaneMaxY() + "x" + support.getSupportedYZPlaneMaxZ() + " for " + actual);
 			}
-			
+
 		} else {
 			failWithMessage("Expected yz support at " + y + "x" + z + ", was none for " + actual);
 		}
 		return myself;
 	}
-	
-	
+
 	public SELF isNoXYSupport() {
 		isNotNull();
 		if(actual instanceof XYPlanePoint3D) {
 			XYPlanePoint3D support = (XYPlanePoint3D)actual;
-			
+
 			failWithMessage("Expected no xy support, was " + support.getSupportedXYPlaneMaxX() + "x" + support.getSupportedXYPlaneMaxY());
 		}
 		return myself;
@@ -232,22 +229,22 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		isNotNull();
 		if(actual instanceof XZPlanePoint3D) {
 			XZPlanePoint3D support = (XZPlanePoint3D)actual;
-			
+
 			failWithMessage("Expected no xz support, was " + support.getSupportedXZPlaneMaxX() + "x" + support.getSupportedXZPlaneMaxZ());
 		}
 		return myself;
 	}
-	
+
 	public SELF isNoYZSupport() {
 		isNotNull();
 		if(actual instanceof YZPlanePoint3D) {
 			YZPlanePoint3D support = (YZPlanePoint3D)actual;
-			
+
 			failWithMessage("Expected no yz support, was " + support.getSupportedYZPlaneMaxY() + "x" + support.getSupportedYZPlaneMaxZ());
 		}
 		return myself;
 	}
-			
+
 	private String getEndCoordinates() {
 		return actual.getMaxX() + "x" + actual.getMaxY() + "x" + actual.getMaxZ();
 	}
@@ -259,18 +256,17 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 	private String getCoordinates() {
 		return getStartCoordinates() + " " + getEndCoordinates();
 	}
-	
-	
+
 	protected boolean isOverlapX(Point3D placement) {
-		
+
 		if(placement.getMinX() <= actual.getMinX() && actual.getMinX() <= placement.getMaxX()) {
 			return true;
 		}
-		
+
 		if(placement.getMinX() <= actual.getMaxX() && actual.getMaxX() <= placement.getMaxX()) {
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -278,11 +274,11 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		if(placement.getMinY() <= actual.getMinY() && actual.getMinY() <= placement.getMaxY()) {
 			return true;
 		}
-		
+
 		if(placement.getMinY() <= actual.getMaxY() && actual.getMaxY() <= placement.getMaxY()) {
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -290,17 +286,17 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		if(placement.getMinZ() <= actual.getMinZ() && actual.getMinZ() <= placement.getMaxZ()) {
 			return true;
 		}
-		
+
 		if(placement.getMinZ() <= actual.getMaxZ() && actual.getMaxZ() <= placement.getMaxZ()) {
 			return true;
 		}
-		
+
 		return false;
 	}
 
 	public SELF isAlongsideY(Point3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithMessage("Not overlapping in x dimension");
 		}
@@ -308,15 +304,15 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 			failWithMessage("Not overlapping in z dimension");
 		}
 
-		if (actual.getMaxY() + 1 != other.getMinY() && other.getMaxY() + 1 != actual.getMinY()) {
+		if(actual.getMaxY() + 1 != other.getMinY() && other.getMaxY() + 1 != actual.getMinY()) {
 			failWithMessage("Expected start y at " + (other.getMaxY() + 1) + " or end y at " + (other.getMinY() - 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF isAlongsideX(Point3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapY(other)) {
 			failWithMessage("Not overlapping in y dimension");
 		}
@@ -324,15 +320,15 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 			failWithMessage("Not overlapping in z dimension");
 		}
 
-		if (actual.getMaxX() + 1 != other.getMinX() && other.getMaxX() + 1 != actual.getMinX()) {
+		if(actual.getMaxX() + 1 != other.getMinX() && other.getMaxX() + 1 != actual.getMinX()) {
 			failWithMessage("Expected start x at " + (other.getMaxX() + 1) + " or end x at " + (other.getMinX() - 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF followsAlongsideZ(Point3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithMessage("Not overlapping in x dimension");
 		}
@@ -340,32 +336,32 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 		if(!isOverlapY(other)) {
 			failWithMessage("Not overlapping in y dimension");
 		}
-		
-		if (other.getMaxZ() + 1 != actual.getMinZ()) {
+
+		if(other.getMaxZ() + 1 != actual.getMinZ()) {
 			failWithMessage("Expected start z at " + (other.getMaxZ() + 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF followsAlongsideY(Point3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithMessage("Not overlapping in x dimension");
 		}
 		if(!isOverlapZ(other)) {
 			failWithMessage("Not overlapping in z dimension");
 		}
-		
-		if (other.getMaxY() + 1 != actual.getMinY()) {
+
+		if(other.getMaxY() + 1 != actual.getMinY()) {
 			failWithMessage("Expected start y at " + (other.getMaxY() + 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF preceedsAlongsideY(Point3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithMessage("Not overlapping in x dimension");
 		}
@@ -373,15 +369,15 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 			failWithMessage("Not overlapping in z dimension");
 		}
 
-		if (actual.getMaxY() + 1 != other.getMinY()) {
+		if(actual.getMaxY() + 1 != other.getMinY()) {
 			failWithMessage("Expected end y at " + (other.getMinY() - 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF preceedsAlongsideX(Point3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapY(other)) {
 			failWithMessage("Not overlapping in y dimension");
 		}
@@ -389,26 +385,26 @@ extends AbstractObjectAssert<SELF, ACTUAL> {
 			failWithMessage("Not overlapping in z dimension");
 		}
 
-		if (actual.getMaxX() + 1 != other.getMinX() ) {
+		if(actual.getMaxX() + 1 != other.getMinX()) {
 			failWithMessage("Expected end x at " + (other.getMinX() - 1));
 		}
 		return myself;
 	}
-	
+
 	public SELF preceedsAlongsideZ(Point3D other) {
 		isNotNull();
-		
+
 		if(!isOverlapX(other)) {
 			failWithMessage("Not overlapping in x dimension");
 		}
 		if(!isOverlapY(other)) {
 			failWithMessage("Not overlapping in y dimension");
 		}
-		if (actual.getMaxZ() + 1 != other.getMinZ() ) {
+		if(actual.getMaxZ() + 1 != other.getMinZ()) {
 			failWithMessage("Expected end z at " + (other.getMinZ() - 1));
 		}
-		
+
 		return myself;
 	}
-	
+
 }

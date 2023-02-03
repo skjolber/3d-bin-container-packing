@@ -25,7 +25,7 @@ public class DefaultPoint3D<P extends Placement3D & Serializable> extends Point3
 	public Point2D<P> clone(int maxX, int maxY) {
 		return clone(maxX, maxY, this.maxZ);
 	}
-	
+
 	@Override
 	public List<P> getPlacements3D() {
 		return Collections.emptyList();
@@ -35,7 +35,6 @@ public class DefaultPoint3D<P extends Placement3D & Serializable> extends Point3
 	public List<P> getPlacements2D() {
 		return Collections.emptyList();
 	}
-
 
 	@Override
 	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ) {
@@ -72,7 +71,7 @@ public class DefaultPoint3D<P extends Placement3D & Serializable> extends Point3
 	 *
 	 * @return this instance
 	 */
-	
+
 	@Override
 	public Point3D<P> rotate() {
 		return new DefaultPoint3D<>(minY, minZ, minX, maxY, maxZ, maxX);
@@ -87,7 +86,7 @@ public class DefaultPoint3D<P extends Placement3D & Serializable> extends Point3
 	public long calculateXZSupport(int dx, int dz) {
 		return 0;
 	}
-	
+
 	@Override
 	public long calculateYZSupport(int dy, int dz) {
 		return 0;

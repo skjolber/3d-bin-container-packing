@@ -14,10 +14,10 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 	private static final long serialVersionUID = 1L;
 	private final P xSupport;
 	private final P ySupport;
-		
+
 	public DefaultXYSupportPoint2D(int minX, int minY, int maxX, int maxY, P xSupport, P ySupport) {
 		super(minX, minY, maxX, maxY);
-		
+
 		if(minX < 0) {
 			throw new RuntimeException();
 		}
@@ -30,7 +30,7 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 		if(maxY < 0) {
 			throw new RuntimeException();
 		}
-		
+
 		this.xSupport = xSupport;
 		this.ySupport = ySupport;
 	}
@@ -56,14 +56,14 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 	public int getYSupportMinY() {
 		return ySupport.getAbsoluteY();
 	}
-	
+
 	public int getYSupportMaxY() {
 		return ySupport.getAbsoluteEndY();
 	}
 
 	@Override
 	public String toString() {
-		return "DefaultXYSupportPoint2D [" + minX + "x" + minY + " " + maxX + "x" + maxY 
+		return "DefaultXYSupportPoint2D [" + minX + "x" + minY + " " + maxX + "x" + maxY
 				+ ", xSupportMinX=" + getXSupportMinX() + ", xSupportMaxX=" + getXSupportMaxX()
 				+ ", ySupportMinY=" + getYSupportMinY() + ", ySupportMaxY=" + getYSupportMaxY() + "]";
 	}
@@ -71,7 +71,7 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 	public Point2D<P> clone(int maxX, int maxY) {
 		return new DefaultXYSupportPoint2D<P>(minX, minY, maxX, maxY, xSupport, ySupport);
 	}
-	
+
 	@Override
 	public Placement2D getYSupport() {
 		return ySupport;
@@ -89,7 +89,7 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 		list.add(ySupport);
 		return list;
 	}
-	
+
 	@Override
 	public Point2D<P> moveY(int y, int maxX, int maxY) {
 		if(y <= ySupport.getAbsoluteEndY()) {
@@ -97,7 +97,7 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 		}
 		return new DefaultPoint2D<P>(minX, y, maxX, maxY);
 	}
-	
+
 	@Override
 	public Point2D<P> moveX(int x, int maxX, int maxY) {
 		if(x <= xSupport.getAbsoluteEndX()) {
@@ -121,6 +121,6 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 		}
 		return new DefaultXSupportPoint2D<P>(minX, y, maxX, maxY, xSupport);
 
-	}	
-	
+	}
+
 }

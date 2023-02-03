@@ -19,13 +19,13 @@ public class NthBooleanSupplier implements ClonableBooleanSupplier {
 	public boolean getAsBoolean() {
 		return --count % checkpointsPerDeadlineCheck == 0 && atomicBoolean.get();
 	}
-	
+
 	@Override
 	public ClonableBooleanSupplier clone() {
 		return new NthBooleanSupplier(atomicBoolean, checkpointsPerDeadlineCheck);
 	}
 
-	public long preventOptmisation(){
+	public long preventOptmisation() {
 		return t1 + t2 + t3 + t4 + t5 + t6 + t7 + t8 + t9 + t10 + t11 + t12 + t13 + t14 + t15 + t16;
 	}
 }

@@ -5,35 +5,35 @@ public class Item {
 	protected int dx;
 	protected int dy;
 	protected int dz;
-	
+
 	protected int count;
 	protected long volume;
-	
+
 	public Item() {
 	}
-	
+
 	public Item(int dx, int dy, int dz, int count) {
 		super();
 		this.dx = dx;
 		this.dy = dy;
 		this.dz = dz;
 		this.count = count;
-		
+
 		this.volume = (long)dx * (long)dy * (long)dz;
 	}
-	
+
 	public int getCount() {
 		return count;
 	}
-	
+
 	public int getDx() {
 		return dx;
 	}
-	
+
 	public int getDy() {
 		return dy;
 	}
-	
+
 	public int getDz() {
 		return dz;
 	}
@@ -65,6 +65,6 @@ public class Item {
 
 	public void setVolume(long volume) {
 		this.volume = volume;
-	}	
-	
+	}
+
 }
