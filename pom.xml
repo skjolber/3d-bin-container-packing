@@ -451,7 +451,7 @@
 					<configuration>
 						<java>
 							<eclipse>
-								<file>${project.basedir}/eclipse-formatter.xml</file> <!-- optional -->
+								<file>${maven.multiModuleProjectDirectory}/eclipse-formatter.xml</file> <!-- optional -->
 							</eclipse>							
 						</java>
 					</configuration>
