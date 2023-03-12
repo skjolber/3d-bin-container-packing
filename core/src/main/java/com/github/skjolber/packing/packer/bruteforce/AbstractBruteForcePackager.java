@@ -36,8 +36,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 	private static Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
 
-	public AbstractBruteForcePackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
+	public AbstractBruteForcePackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
+		super(checkpointsPerDeadlineCheck, packResultComparator);
 	}
 
 	@Override
@@ -55,15 +55,15 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		return placements;
 	}
 
-	public BruteForcePackagerResult pack(ExtremePoints3DStack extremePoints, List<StackPlacement> stackPlacements, Container targetContainer, ContainerStackValue stackValue,
+	public BruteForcePackagerResult pack(ExtremePoints3DStack extremePoints, List<StackPlacement> stackPlacements, Container targetContainer, int index, ContainerStackValue stackValue,
 			PermutationRotationIterator iterator, BooleanSupplier interrupt) {
 		DefaultStack stack = new DefaultStack(stackValue);
 		Container holder = new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(),
 				targetContainer.getStackValues(), stack);
 
-		BruteForcePackagerResult bestResult = new BruteForcePackagerResult(holder, iterator);
+		BruteForcePackagerResult bestResult = new BruteForcePackagerResult(holder, index, iterator);
 		// optimization: compare pack results by looking only at count within the same permutation 
-		BruteForcePackagerResult bestPermutationResult = new BruteForcePackagerResult(holder, iterator);
+		BruteForcePackagerResult bestPermutationResult = new BruteForcePackagerResult(holder, index, iterator);
 
 		// iterator over all permutations
 		do {

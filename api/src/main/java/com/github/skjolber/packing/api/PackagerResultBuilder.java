@@ -11,6 +11,7 @@ import java.util.function.BooleanSupplier;
 @SuppressWarnings("unchecked")
 public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> {
 
+	protected ContainerInventory containerInventory;
 	protected List<StackableItem> items;
 	protected long deadline = -1L;
 
@@ -19,6 +20,11 @@ public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> 
 	protected int maxResults = -1;
 
 	public B withItems(List<StackableItem> items) {
+		this.items = items;
+		return (B)this;
+	}
+
+	public B withContainerInventory(List<StackableItem> items) {
 		this.items = items;
 		return (B)this;
 	}

@@ -27,22 +27,14 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 
 	protected LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, ?> factory;
 
-	public AbstractLargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator,
+	public AbstractLargestAreaFitFirstPackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator,
 			LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, ?> factory) {
-		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
+		super(checkpointsPerDeadlineCheck, packResultComparator);
 
 		this.factory = factory;
 	}
 
-	public DefaultPackResult pack(List<Stackable> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck) {
-		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
-	}
-
-	public DefaultPackResult pack(List<Stackable> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck, BooleanSupplier interrupt) {
-		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
-	}
-
-	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt);
+	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, BooleanSupplier interrupt);
 
 	protected class LAFFAdapter implements Adapter<DefaultPackResult> {
 
@@ -69,7 +61,7 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 
 		@Override
 		public DefaultPackResult attempt(int index, DefaultPackResult best) {
-			return AbstractLargestAreaFitFirstPackager.this.pack(boxes, containers.get(index), interrupt);
+			return AbstractLargestAreaFitFirstPackager.this.pack(boxes, containers.get(index), index, interrupt);
 		}
 
 		@Override

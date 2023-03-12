@@ -15,7 +15,7 @@ import com.github.skjolber.packing.iterator.PermutationRotationState;
 
 public class BruteForcePackagerResult implements PackResult {
 
-	public static final BruteForcePackagerResult EMPTY = new BruteForcePackagerResult(null, null);
+	public static final BruteForcePackagerResult EMPTY = new BruteForcePackagerResult(null, -1, null);
 
 	static {
 		EMPTY.setState(Collections.emptyList(), null, Collections.emptyList());
@@ -24,6 +24,7 @@ public class BruteForcePackagerResult implements PackResult {
 	// work objects
 	private final Container container;
 	private final PermutationRotationIterator iterator;
+	private final int index;
 
 	// state
 	private PermutationRotationState state;
@@ -35,9 +36,10 @@ public class BruteForcePackagerResult implements PackResult {
 	private long loadVolume;
 	private int loadWeight;
 
-	public BruteForcePackagerResult(Container container, PermutationRotationIterator iterator) {
+	public BruteForcePackagerResult(Container container, int index, PermutationRotationIterator iterator) {
 		this.container = container;
 		this.iterator = iterator;
+		this.index = index;
 	}
 
 	private void calculateLoad() {
@@ -153,4 +155,8 @@ public class BruteForcePackagerResult implements PackResult {
 		this.dirty = true;
 	}
 
+	@Override
+	public int getIndex() {
+		return index;
+	}
 }

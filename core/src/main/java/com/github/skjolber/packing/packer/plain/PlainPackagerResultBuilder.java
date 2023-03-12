@@ -41,9 +41,9 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 
 		List<Container> packList;
 		if(maxResults > 1) {
-			packList = packager.packList(items, maxResults, build);
+			packList = packager.packList(items, containerInventory, maxResults, build);
 		} else {
-			Container result = packager.pack(items, build);
+			Container result = packager.pack(items, containerInventory, build);
 			if(result != null) {
 				packList = Arrays.asList(result);
 			} else {

@@ -25,19 +25,11 @@ import com.github.skjolber.packing.packer.DefaultPackResult;
  */
 public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> extends AbstractPackager<DefaultPackResult, PlainPackagerResultBuilder> {
 
-	public AbstractPlainPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
+	public AbstractPlainPackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
+		super(checkpointsPerDeadlineCheck, packResultComparator);
 	}
 
-	public DefaultPackResult pack(List<Stackable> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck) {
-		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
-	}
-
-	public DefaultPackResult pack(List<Stackable> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck, BooleanSupplier interrupt) {
-		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
-	}
-
-	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt);
+	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int containerIndex, BooleanSupplier interrupt);
 
 	protected class PlainAdapter implements Adapter<DefaultPackResult> {
 
@@ -64,7 +56,7 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 
 		@Override
 		public DefaultPackResult attempt(int index, DefaultPackResult best) {
-			return AbstractPlainPackager.this.pack(boxes, containers.get(index), interrupt);
+			return AbstractPlainPackager.this.pack(boxes, containers.get(index), index, interrupt);
 		}
 
 		@Override

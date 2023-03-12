@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerInventory;
+import com.github.skjolber.packing.api.ContainerInventoryItem;
 import com.github.skjolber.packing.api.PackResult;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Packager;
@@ -26,7 +28,6 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 
 	protected static final EmptyPackResult EMPTY_PACK_RESULT = EmptyPackResult.EMPTY;
 
-	protected final Container[] containers;
 	protected final PackResultComparator packResultComparator;
 
 	/** limit the number of calls to get System.currentTimeMillis() */
@@ -39,72 +40,9 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @param checkpointsPerDeadlineCheck number of deadline checks to skip, before checking again
 	 */
 
-	public AbstractPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		if(containers.isEmpty()) {
-			throw new IllegalArgumentException();
-		}
-		this.containers = containers.toArray(new Container[containers.size()]);
-		if(this.containers.length == 0) {
-			throw new RuntimeException();
-		}
+	public AbstractPackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
 		this.checkpointsPerDeadlineCheck = checkpointsPerDeadlineCheck;
 		this.packResultComparator = packResultComparator;
-
-		long maxVolume = Long.MIN_VALUE;
-		long maxWeight = Long.MIN_VALUE;
-
-		for (Container container : containers) {
-			// volume
-			long boxVolume = container.getVolume();
-			if(boxVolume > maxVolume) {
-				maxVolume = boxVolume;
-			}
-
-			// weight
-			long boxWeight = container.getWeight();
-			if(boxWeight > maxWeight) {
-				maxWeight = boxWeight;
-			}
-		}
-	}
-
-	/**
-	 * Return a container which holds all the boxes in the argument.
-	 *
-	 * @param boxes list of boxes to fit in a container
-	 * @return null if no match
-	 */
-	public Container pack(List<StackableItem> boxes) {
-		return pack(boxes, BooleanSupplierBuilder.NOOP);
-	}
-
-	/**
-	 * Return a container which holds all the boxes in the argument
-	 *
-	 * @param boxes    list of boxes to fit in a container
-	 * @param deadline the system time in millis at which the search should be aborted
-	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
-	 */
-
-	public Container pack(List<StackableItem> boxes, long deadline) {
-		return pack(boxes, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
-	}
-
-	public Container pack(List<StackableItem> boxes, BooleanSupplier interrupt) {
-		return packImpl(boxes, Arrays.asList(containers), interrupt);
-	}
-
-	/**
-	 * Return a container which holds all the boxes in the argument
-	 *
-	 * @param boxes     list of boxes to fit in a container
-	 * @param deadline  the system time in millis at which the search should be aborted
-	 * @param interrupt When true, the computation is interrupted as soon as possible.
-	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
-	 * 
-	 */
-	public Container pack(List<StackableItem> boxes, long deadline, BooleanSupplier interrupt) {
-		return pack(boxes, Arrays.asList(containers), deadline, interrupt);
 	}
 
 	/**
@@ -112,29 +50,22 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 *
 	 * @param boxes      list of boxes to fit in a container
 	 * @param containers list of containers
-	 * @param deadline   the system time in milliseconds at which the search should be aborted
-	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
-	 */
-	public Container pack(List<StackableItem> boxes, List<Container> containers, long deadline) {
-		return packImpl(boxes, containers, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
-	}
-
-	/**
-	 * Return a container which holds all the boxes in the argument
-	 *
-	 * @param boxes      list of boxes to fit in a container
-	 * @param containers list of containers
-	 * @param deadline   the system time in milliseconds at which the search should be aborted
 	 * @param interrupt  When true, the computation is interrupted as soon as possible.
 	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
 	 */
-	public Container pack(List<StackableItem> boxes, List<Container> containers, long deadline, BooleanSupplier interrupt) {
-		return packImpl(boxes, containers, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
-	}
 
-	protected Container packImpl(List<StackableItem> boxes, List<Container> candidateContainers, BooleanSupplier interrupt) {
-		List<Container> containers = filterByVolumeAndWeight(toBoxes(boxes, false), candidateContainers, 1);
+	public Container pack(List<StackableItem> boxes, ContainerInventory containerInventory, BooleanSupplier interrupt) {
+		
+		List<ContainerInventoryItem> containersItems = containerInventory.getItems(toBoxes(boxes, true), 1); 
+		if(containersItems.isEmpty()) {
+			return null;
+		}
 
+		List<Container> containers = new ArrayList<>();
+		for(ContainerInventoryItem item : containersItems) {
+			containers.add(item.getContainer());
+		}
+				
 		if(containers.isEmpty()) {
 			return null;
 		}
@@ -224,6 +155,10 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			// return the best, if any
 			for (final PackResult result : results) {
 				if(result != null) {
+					ContainerInventoryItem containerInventoryItem = containersItems.get(result.getIndex());
+					
+					containerInventory.accept(containerInventoryItem);
+					
 					return pack.accept((P)result);
 				}
 			}
@@ -234,46 +169,22 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	/**
 	 * Return a list of containers which holds all the boxes in the argument
 	 *
-	 * @param boxes    list of boxes to fit in a container
-	 * @param limit    maximum number of containers
-	 * @param deadline the system time in milliseconds at which the search should be aborted
-	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
-	 */
-	public List<Container> packList(List<StackableItem> boxes, int limit, long deadline) {
-		return packList(boxes, limit, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
-	}
-
-	/**
-	 * Return a list of containers which holds all the boxes in the argument
-	 *
-	 * @param boxes     list of boxes to fit in a container
-	 * @param limit     maximum number of containers
-	 * @param deadline  the system time in milliseconds at which the search should be aborted
-	 * @param interrupt When true, the computation is interrupted as soon as possible.
-	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
-	 */
-	public List<Container> packList(List<StackableItem> boxes, int limit, long deadline, BooleanSupplier interrupt) {
-		return packList(boxes, limit, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
-	}
-
-	public List<Container> packList(List<StackableItem> boxes, int limit) {
-		return packList(boxes, limit, BooleanSupplierBuilder.NOOP);
-	}
-
-	/**
-	 * Return a list of containers which holds all the boxes in the argument
-	 *
 	 * @param boxes     list of boxes to fit in a container
 	 * @param limit     maximum number of containers
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
 	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
 	 */
-	public List<Container> packList(List<StackableItem> boxes, int limit, BooleanSupplier interrupt) {
-		List<Container> containers = filterByVolumeAndWeight(toBoxes(boxes, true), Arrays.asList(this.containers), limit);
-		if(containers.isEmpty()) {
+	public List<Container> packList(List<StackableItem> boxes, ContainerInventory containerInventory, int limit, BooleanSupplier interrupt) {
+		List<ContainerInventoryItem> containersItems = containerInventory.getItems(toBoxes(boxes, true), limit); 
+		if(containersItems.isEmpty()) {
 			return null;
 		}
 
+		List<Container> containers = new ArrayList<>();
+		for(ContainerInventoryItem item : containersItems) {
+			containers.add(item.getContainer());
+		}
+		
 		Adapter<P> pack = adapter(boxes, containers, interrupt);
 
 		List<Container> containerPackResults = new ArrayList<>();
@@ -282,8 +193,12 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		// of criteria which could be trivially calculated, perhaps on volume.
 		do {
 			P best = null;
-			for (int i = 0; i < containers.size(); i++) {
-
+			for (int i = 0; i < containersItems.size(); i++) {
+				ContainerInventoryItem item = containersItems.get(i);
+				if(!item.isAvailable()) {
+					continue;
+				}
+				
 				if(interrupt.getAsBoolean()) {
 					return null;
 				}
@@ -314,120 +229,20 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			boolean end = best.containsLastStackable();
 
 			containerPackResults.add(pack.accept(best));
-
+			
+			containerInventory.accept(containersItems.get(best.getIndex()));
+			
 			if(end) {
 				// positive result
 				return containerPackResults;
 			}
 
+			// TODO recalculate the in-scope containers
 		} while (containerPackResults.size() < limit);
 
 		return null;
 	}
 
-	/**
-	 * Return a list of containers which can potentially hold the boxes within the provided count
-	 *
-	 * @param boxes      list of boxes
-	 * @param containers list of containers
-	 * @param count      maximum number of possible containers
-	 * @return list of containers
-	 */
-	private List<Container> filterByVolumeAndWeight(List<Stackable> boxes, List<Container> containers, int count) {
-		long volume = 0;
-
-		long weight = 0;
-
-		for (Stackable box : boxes) {
-			// volume
-			long boxVolume = box.getVolume();
-			volume += boxVolume;
-
-			// weight
-			long boxWeight = box.getWeight();
-			weight += boxWeight;
-		}
-
-		List<Container> list = new ArrayList<>(containers.size());
-
-		if(count == 1) {
-			containers: for (Container container : containers) {
-				if(container.getMaxLoadVolume() < volume) {
-					continue;
-				}
-				if(container.getMaxLoadWeight() < weight) {
-					continue;
-				}
-
-				for (Stackable box : boxes) {
-					if(!container.canLoad(box)) {
-						continue containers;
-					}
-				}
-				list.add(container);
-			}
-
-		} else {
-			long maxContainerLoadVolume = Long.MIN_VALUE;
-			long maxContainerLoadWeight = Long.MIN_VALUE;
-
-			for (Container container : containers) {
-				// volume
-				long boxVolume = container.getVolume();
-				if(boxVolume > maxContainerLoadVolume) {
-					maxContainerLoadVolume = boxVolume;
-				}
-
-				// weight
-				long boxWeight = container.getMaxLoadWeight();
-				if(boxWeight > maxContainerLoadWeight) {
-					maxContainerLoadWeight = boxWeight;
-				}
-			}
-
-			if(maxContainerLoadVolume * count < volume || maxContainerLoadWeight * count < weight) {
-				// no containers will work at current count
-				return Collections.emptyList();
-			}
-
-			long minVolume = Long.MAX_VALUE;
-			long minWeight = Long.MAX_VALUE;
-
-			for (Stackable box : boxes) {
-				// volume
-				long boxVolume = box.getVolume();
-				if(boxVolume < minVolume) {
-					minVolume = boxVolume;
-				}
-
-				// weight
-				long boxWeight = box.getWeight();
-				if(boxWeight < minWeight) {
-					minWeight = boxWeight;
-				}
-			}
-
-			for (Container container : containers) {
-				if(container.getMaxLoadVolume() < minVolume || container.getMaxLoadWeight() < minWeight) {
-					// this container cannot even fit a single box
-					continue;
-				}
-
-				if(container.getMaxLoadVolume() + maxContainerLoadVolume * (count - 1) < volume || container.getMaxLoadWeight() + maxContainerLoadWeight * (count - 1) < weight) {
-					// this container cannot be used even together with all biggest boxes
-					continue;
-				}
-
-				if(!canLoadAtLeastOne(container, boxes)) {
-					continue;
-				}
-
-				list.add(container);
-			}
-		}
-
-		return list;
-	}
 
 	private static List<Stackable> toBoxes(List<StackableItem> StackableItems, boolean clone) {
 		List<Stackable> boxClones = new ArrayList<>(StackableItems.size() * 2);
@@ -440,15 +255,6 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			}
 		}
 		return boxClones;
-	}
-
-	private boolean canLoadAtLeastOne(Container containerBox, List<Stackable> boxes) {
-		for (Stackable box : boxes) {
-			if(containerBox.canLoad(box)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	protected abstract Adapter<P> adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt);

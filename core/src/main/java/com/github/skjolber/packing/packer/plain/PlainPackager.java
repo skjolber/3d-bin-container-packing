@@ -37,21 +37,18 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 	public static class Builder extends AbstractPackagerBuilder<PlainPackager, Builder> {
 
 		public PlainPackager build() {
-			if(containers == null) {
-				throw new IllegalStateException("Expected containers");
-			}
 			if(packResultComparator == null) {
 				packResultComparator = new DefaultPackResultComparator();
 			}
-			return new PlainPackager(containers, checkpointsPerDeadlineCheck, packResultComparator);
+			return new PlainPackager(checkpointsPerDeadlineCheck, packResultComparator);
 		}
 	}
 
-	public PlainPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
+	public PlainPackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
+		super(checkpointsPerDeadlineCheck, packResultComparator);
 	}
 
-	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt) {
+	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, BooleanSupplier interrupt) {
 		List<Stackable> remainingStackables = new ArrayList<>(stackables);
 
 		ContainerStackValue[] stackValues = targetContainer.getStackValues();
@@ -168,7 +165,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 		}
 
 		return new DefaultPackResult(new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack),
-				stack, remainingStackables.isEmpty());
+				stack, remainingStackables.isEmpty(), index);
 	}
 
 	protected boolean isBetter(Stackable referenceStackable, Point3D<StackPlacement> referencePoint, StackValue referenceStackValue, Stackable candidateBox, Point3D<StackPlacement> candidatePoint,

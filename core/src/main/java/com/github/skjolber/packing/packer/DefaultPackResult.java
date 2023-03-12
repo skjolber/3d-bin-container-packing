@@ -9,11 +9,13 @@ public class DefaultPackResult implements PackResult {
 	private final Stack stack;
 	private final Container container;
 	private final boolean last;
+	private final int index;
 
-	public DefaultPackResult(Container container, Stack stack, boolean last) {
+	public DefaultPackResult(Container container, Stack stack, boolean last, int index) {
 		this.stack = stack;
 		this.container = container;
 		this.last = last;
+		this.index = index;
 	}
 
 	@Override
@@ -64,5 +66,9 @@ public class DefaultPackResult implements PackResult {
 	@Override
 	public Container getContainer() {
 		return container;
+	}
+	
+	public int getIndex() {
+		return index;
 	}
 }

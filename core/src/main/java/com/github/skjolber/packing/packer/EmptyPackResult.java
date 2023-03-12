@@ -64,5 +64,10 @@ public class EmptyPackResult implements PackResult {
 	public Container getContainer() {
 		return null;
 	}
+	
+	@Override
+	public int getIndex() {
+		return -1;
+	}
 
 }

@@ -19,6 +19,8 @@ public interface PackResult {
 	long getMaxLoadVolume();
 
 	Container getContainer();
+	
+	int getIndex();
 
 	boolean containsLastStackable();
 

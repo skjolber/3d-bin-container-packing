@@ -40,13 +40,10 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	public static class BruteForcePackagerBuilder extends AbstractPackagerBuilder<BruteForcePackager, BruteForcePackagerBuilder> {
 
 		public BruteForcePackager build() {
-			if(containers == null) {
-				throw new IllegalStateException("Expected containers");
-			}
 			if(packResultComparator == null) {
 				packResultComparator = new DefaultPackResultComparator();
 			}
-			return new BruteForcePackager(containers, checkpointsPerDeadlineCheck, packResultComparator);
+			return new BruteForcePackager(checkpointsPerDeadlineCheck, packResultComparator);
 		}
 	}
 
@@ -63,6 +60,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			this.containers = containers;
 			this.iterators = new DefaultPermutationRotationIterator[containers.size()];
 			this.containerStackValue = new ContainerStackValue[containers.size()];
+
+			int maxIteratorLength = 0;
 
 			for (int i = 0; i < containers.size(); i++) {
 				Container container = containers.get(i);
@@ -82,18 +81,15 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 						.withMaxLoadWeight(stackValue.getMaxLoadWeight())
 						.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
 						.build();
+				
+				maxIteratorLength = Math.max(maxIteratorLength, iterators[i].length());
 			}
 
 			this.interrupt = interrupt;
 
-			int count = 0;
-			for (DefaultPermutationRotationIterator iterator : iterators) {
-				count = Math.max(count, iterator.length());
-			}
+			this.stackPlacements = getPlacements(maxIteratorLength);
 
-			this.stackPlacements = getPlacements(count);
-
-			this.extremePoints3D = new ExtremePoints3DStack(1, 1, 1, count + 1);
+			this.extremePoints3D = new ExtremePoints3DStack(1, 1, 1, maxIteratorLength + 1);
 		}
 
 		@Override
@@ -102,7 +98,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 				return BruteForcePackagerResult.EMPTY;
 			}
 			// TODO break if this container cannot beat the existing best result
-			return BruteForcePackager.this.pack(extremePoints3D, stackPlacements, containers.get(i), containerStackValue[i], iterators[i], interrupt);
+			return BruteForcePackager.this.pack(extremePoints3D, stackPlacements, containers.get(i), i, containerStackValue[i], iterators[i], interrupt);
 		}
 
 		@Override
@@ -135,8 +131,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		}
 	}
 
-	public BruteForcePackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
+	public BruteForcePackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
+		super(checkpointsPerDeadlineCheck, packResultComparator);
 	}
 
 	@Override

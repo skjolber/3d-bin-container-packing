@@ -84,9 +84,6 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		public ParallelBruteForcePackager build() {
-			if(containers == null) {
-				throw new IllegalStateException("Expected containers");
-			}
 			if(packResultComparator == null) {
 				packResultComparator = new DefaultPackResultComparator();
 			}
@@ -115,7 +112,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				}
 			}
 
-			return new ParallelBruteForcePackager(containers, executorService, parallelizationCount, checkpointsPerDeadlineCheck, packResultComparator);
+			return new ParallelBruteForcePackager(executorService, parallelizationCount, checkpointsPerDeadlineCheck, packResultComparator);
 		}
 	}
 
@@ -123,9 +120,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	private final int parallelizationCount;
 	private final ExecutorService executorService;
 
-	public ParallelBruteForcePackager(List<Container> containers, ExecutorService executorService, int parallelizationCount, int checkpointsPerDeadlineCheck,
+	public ParallelBruteForcePackager(ExecutorService executorService, int parallelizationCount, int checkpointsPerDeadlineCheck,
 			PackResultComparator packResultComparator) {
-		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
+		super(checkpointsPerDeadlineCheck, packResultComparator);
 
 		this.parallelizationCount = parallelizationCount;
 		this.executorService = executorService;
@@ -140,6 +137,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		private List<StackPlacement> placements;
 		private ExtremePoints3DStack extremePoints3D;
 		private BooleanSupplier interrupt;
+		private int containerIndex;
 
 		public RunnableAdapter(int placementsCount, long minStackableItemVolume, long minStackableArea) {
 			this.placements = getPlacements(placementsCount);
@@ -165,7 +163,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 		@Override
 		public BruteForcePackagerResult call() {
-			return ParallelBruteForcePackager.this.pack(extremePoints3D, placements, container, containerStackValue, iterator, interrupt);
+			return ParallelBruteForcePackager.this.pack(extremePoints3D, placements, container, containerIndex, containerStackValue, iterator, interrupt);
 		}
 	}
 
@@ -303,7 +301,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			}
 			// no need to split this job
 			// run with linear approach
-			return ParallelBruteForcePackager.this.pack(runnables[0].extremePoints3D, runnables[0].placements, containers.get(i), containerStackValues[i], iterators[i], interrupts[i]);
+			return ParallelBruteForcePackager.this.pack(runnables[0].extremePoints3D, runnables[0].placements, containers.get(i), i, containerStackValues[i], iterators[i], interrupts[i]);
 		}
 
 		@Override
