@@ -16,7 +16,6 @@
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 			<artifactId>api</artifactId>
-			<version>2.1.5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
