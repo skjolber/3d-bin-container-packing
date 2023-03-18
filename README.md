@@ -94,7 +94,7 @@ PackagerResult result = packager
     .withStackables(products)
     .build();
 
-if(result.wasSuccess()) {
+if(result.isSuccess()) {
     Container match = result.get(0);
     
     // ...
@@ -209,7 +209,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
 
 # History
- * 3.0.0: Support max number of individual container types
+ * 3.0.0: Support max number of containers (i.e. per container type)
  * 2.1.4: Fix issue #574
  * 2.1.3: Fix nullpointer
  * 2.1.2: Tidy up, i.e. remove warnings, nuke some dependencies.

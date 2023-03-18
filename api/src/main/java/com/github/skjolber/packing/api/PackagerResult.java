@@ -41,7 +41,7 @@ public class PackagerResult {
 		return containers.size();
 	}
 	
-	public boolean wasSuccess() {
+	public boolean isSuccess() {
 		return !containers.isEmpty();
 	}
 
