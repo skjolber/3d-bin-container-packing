@@ -1,55 +1,23 @@
-package com.github.skjolber.packing.api;
+package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ContainerInventory {
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.PackResult;
+import com.github.skjolber.packing.api.Stackable;
+
+public abstract class AbstractAdapter<T extends PackResult> implements Adapter<T> {
 	
-	public static Builder newBuilder() {
-		return new Builder();
-	}
-	
-	public static class Builder {
-		
-		private List<ContainerInventoryItem> items = new ArrayList<>();
-
-		public Builder withUnlimited(Container ... containers) {
-			for(Container container : containers) {
-				items.add(new ContainerInventoryItem(container, Integer.MAX_VALUE, items.size()));
-			}
-			return this;
-		}
-		
-		public Builder withUnlimited(List<Container> containers) {
-			for(Container container : containers) {
-				items.add(new ContainerInventoryItem(container, Integer.MAX_VALUE, items.size()));
-			}
-			return this;
-		}
-		
-		public Builder withUnlimited(Container container) {
-			items.add(new ContainerInventoryItem(container, Integer.MAX_VALUE, items.size()));
-			return this;
-		}
-
-		public Builder withLimited(Container container, int limit) {
-			items.add(new ContainerInventoryItem(container, limit, items.size()));
-			return this;
-		}
-
-		public ContainerInventory build() {
-			return new ContainerInventory(items);
-		}
-	}
-
-	private final List<ContainerInventoryItem> items;
+	protected final List<ContainerItem> containerItems;
 
 	protected long maxContainerLoadVolume = Long.MIN_VALUE;
 	protected long maxContainerLoadWeight = Long.MIN_VALUE;
 
-	public ContainerInventory(List<ContainerInventoryItem> items) {
-		this.items = items;
+	public AbstractAdapter(List<ContainerItem> items) {
+		this.containerItems = items;
 		
 		calculateMaxLoadVolume();
 		calculateMaxLoadWeight();
@@ -58,7 +26,7 @@ public class ContainerInventory {
 	private void calculateMaxLoadVolume() {
 		maxContainerLoadVolume = Long.MIN_VALUE;
 
-		for (ContainerInventoryItem item : items) {
+		for (ContainerItem item : containerItems) {
 			if(!item.isAvailable()) {
 				continue;
 			}
@@ -74,7 +42,7 @@ public class ContainerInventory {
 	private void calculateMaxLoadWeight() {
 		maxContainerLoadWeight = Long.MIN_VALUE;
 
-		for (ContainerInventoryItem item : items) {
+		for (ContainerItem item : containerItems) {
 			if(!item.isAvailable()) {
 				continue;
 			}
@@ -87,20 +55,16 @@ public class ContainerInventory {
 		}
 	}
 
-	public List<ContainerInventoryItem> getItems() {
-		return items;
-	}
-	
 	/**
 	 * Return a list of containers which can potentially hold the boxes within the provided count
 	 *
 	 * @param boxes      list of boxes
-	 * @param containers list of containers
+	 * @param containerItems list of containers
 	 * @param maxCount      maximum number of possible containers
 	 * @return list of containers
 	 */
 	
-	public List<ContainerInventoryItem> getItems(List<Stackable> boxes, int maxCount) {
+	protected List<Integer> getContainers(List<Stackable> boxes, int maxCount) {
 		long volume = 0;
 		long weight = 0;
 
@@ -117,10 +81,13 @@ public class ContainerInventory {
 			return Collections.emptyList();
 		}
 
-		List<ContainerInventoryItem> list = new ArrayList<>(items.size());
+		List<Integer> list = new ArrayList<>(containerItems.size());
 
 		if(maxCount == 1) {
-			containers: for (ContainerInventoryItem item : items) {
+			
+			containers: 
+			for (int i = 0; i < containerItems.size(); i++) {
+				ContainerItem item = containerItems.get(i);
 				if(!item.isAvailable()) {
 					continue;
 				}
@@ -139,7 +106,7 @@ public class ContainerInventory {
 						continue containers;
 					}
 				}
-				list.add(item);
+				list.add(i);
 			}
 
 		} else {
@@ -160,7 +127,9 @@ public class ContainerInventory {
 				}
 			}
 
-			for (ContainerInventoryItem item : items) {
+			for (int i = 0; i < containerItems.size(); i++) {
+				ContainerItem item = containerItems.get(i);
+
 				if(!item.isAvailable()) {
 					continue;
 				}
@@ -180,10 +149,8 @@ public class ContainerInventory {
 				if(!canLoadAtLeastOne(container, boxes)) {
 					continue;
 				}
-
-				list.add(item);
+				list.add(i);
 			}			
-
 		}
 
 		return list;
@@ -198,9 +165,12 @@ public class ContainerInventory {
 		return false;
 	}
 
-	public void accept(ContainerInventoryItem item) {
+	public void accept(int index) {
+		ContainerItem item = containerItems.get(index);
+		
 		item.consume();
 		
+		// do we need to adjust limits?
 		if(!item.isAvailable()) {
 			Container container = item.getContainer();
 			

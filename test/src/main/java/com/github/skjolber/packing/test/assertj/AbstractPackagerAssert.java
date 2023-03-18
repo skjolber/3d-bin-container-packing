@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.assertj.core.api.AbstractObjectAssert;
 
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackableItem;
@@ -19,11 +20,11 @@ public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert
 	}
 
 	@SuppressWarnings("unchecked")
-	public SELF respectsDeadline(List<StackableItem> items, long maxTime) {
+	public SELF respectsDeadline(List<ContainerItem> containerItems, List<StackableItem> items, long maxTime) {
 		isNotNull();
 
 		long timestamp = System.currentTimeMillis();
-		PackagerResult result = actual.newResultBuilder().withDeadline(timestamp + maxTime).withItems(items).build();
+		PackagerResult result = actual.newResultBuilder().withDeadline(timestamp + maxTime).withStackables(items).withContainers(containerItems).build();
 		long packDuration = System.currentTimeMillis() - timestamp;
 
 		if(result.getContainers().isEmpty()) {
@@ -38,7 +39,7 @@ public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert
 		while (divider < 10) {
 			timestamp = System.currentTimeMillis();
 			long unrealisticDuration = packDuration / divider;
-			result = actual.newResultBuilder().withDeadline(timestamp + unrealisticDuration).withItems(items).build();
+			result = actual.newResultBuilder().withDeadline(timestamp + unrealisticDuration).withStackables(items).withContainers(containerItems).build();
 			if(!result.getContainers().isEmpty()) {
 				continue;
 			}

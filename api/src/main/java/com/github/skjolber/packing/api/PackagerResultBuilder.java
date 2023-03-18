@@ -11,7 +11,7 @@ import java.util.function.BooleanSupplier;
 @SuppressWarnings("unchecked")
 public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> {
 
-	protected ContainerInventory containerInventory;
+	protected List<ContainerItem> containers;
 	protected List<StackableItem> items;
 	protected long deadline = -1L;
 
@@ -19,13 +19,18 @@ public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> 
 
 	protected int maxResults = -1;
 
+	@Deprecated
 	public B withItems(List<StackableItem> items) {
+		return withStackables(items);
+	}
+
+	public B withStackables(List<StackableItem> items) {
 		this.items = items;
 		return (B)this;
 	}
 
-	public B withContainerInventory(List<StackableItem> items) {
-		this.items = items;
+	public B withContainers(List<ContainerItem> containers) {
+		this.containers = containers;
 		return (B)this;
 	}
 

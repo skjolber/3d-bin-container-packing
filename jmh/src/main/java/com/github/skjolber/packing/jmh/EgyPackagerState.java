@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BooleanSupplier;
 
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Scope;
@@ -17,9 +18,11 @@ import org.openjdk.jmh.annotations.TearDown;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.DefaultStack;
 import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
@@ -52,7 +55,7 @@ public class EgyPackagerState {
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 
 	private static List<StackableItem> stackableItems3D;
-	private static List<Container> containers;
+	private static List<ContainerItem> containers;
 
 	static {
 		Path path = Paths.get("src", "main", "resources", "egy.json");
@@ -64,9 +67,7 @@ public class EgyPackagerState {
 		try {
 			List<Item> items = ItemIO.read(path);
 
-			containers = new ArrayList<>();
-			Container container = getContainer(items);
-			containers.add(container);
+			containers = ContainerItem.newListBuilder().withUnlimited(getContainer(items)).build();
 
 			stackableItems3D = getStackableItems3D(items);
 		} catch (IOException e) {
@@ -88,31 +89,31 @@ public class EgyPackagerState {
 
 	@Setup(Level.Trial)
 	public void init() {
-		ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16).withContainers(containers)
+		ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16)
 				.build();
 		ParallelBruteForcePackager parallelPackagerNth = ParallelBruteForcePackager.newBuilder().withExecutorService(pool1).withParallelizationCount(threadPoolSize * 16)
-				.withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
+				.withCheckpointsPerDeadlineCheck(nth).build();
 
-		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
-		BruteForcePackager packagerNth = BruteForcePackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
+		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
+		BruteForcePackager packagerNth = BruteForcePackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).build();
 
-		PlainPackager plainPackager = PlainPackager.newBuilder().withContainers(containers).build();
-		PlainPackager plainPackagerNth = PlainPackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
+		PlainPackager plainPackager = PlainPackager.newBuilder().build();
+		PlainPackager plainPackagerNth = PlainPackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).build();
 
-		FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
+		FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().build();
 
 		// single-threaded
-		this.bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D));
-		this.bruteForcePackagerNth.add(new BenchmarkSet(packagerNth, stackableItems3D));
+		this.bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D, containers));
+		this.bruteForcePackagerNth.add(new BenchmarkSet(packagerNth, stackableItems3D, containers));
 
-		this.plainPackager.add(new BenchmarkSet(plainPackager, stackableItems3D));
-		this.plainPackagerNth.add(new BenchmarkSet(plainPackagerNth, stackableItems3D));
+		this.plainPackager.add(new BenchmarkSet(plainPackager, stackableItems3D, containers));
+		this.plainPackagerNth.add(new BenchmarkSet(plainPackagerNth, stackableItems3D, containers));
 
-		this.fastBruteForcePackager.add(new BenchmarkSet(fastPackager, stackableItems3D));
+		this.fastBruteForcePackager.add(new BenchmarkSet(fastPackager, stackableItems3D, containers));
 
 		// multi-threaded
-		this.parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D));
-		this.parallelBruteForcePackagerNth.add(new BenchmarkSet(parallelPackagerNth, stackableItems3D));
+		this.parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D, containers));
+		this.parallelBruteForcePackagerNth.add(new BenchmarkSet(parallelPackagerNth, stackableItems3D, containers));
 	}
 
 	public static Container getContainer(List<Item> items) {
@@ -133,20 +134,21 @@ public class EgyPackagerState {
 
 			int length = (int)side;
 
-			List<Container> containers = new ArrayList<>();
-			DefaultContainer container = Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(length, length, length).withMaxLoadWeight(length * length * length)
-					.withStack(new DefaultStack()).build();
-			containers.add(container);
+			List<ContainerItem> containers = ContainerItem.newListBuilder().withUnlimited(
+					Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(length, length, length).withMaxLoadWeight(length * length * length)
+					.withStack(new DefaultStack()).build()).build();
 
 			List<StackableItem> stackableItems3D = getStackableItems3D(items);
 
-			FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
+			FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().build();
 
-			Container pack = fastPackager.pack(stackableItems3D, System.currentTimeMillis() + 5000);
+			BooleanSupplier booleanSupplier = BooleanSupplierBuilder.builder().withDeadline(System.currentTimeMillis() + 5000, 1).build();
+			
+			Container pack = fastPackager.pack(stackableItems3D, containers, booleanSupplier);
 
 			if(pack != null) {
 				System.out.println("Go container " + volume + " from " + originalVolume);
-				return container;
+				return containers.get(0).getContainer();
 			}
 			multiplier += 0.05;
 			System.out.println("Try " + multiplier);

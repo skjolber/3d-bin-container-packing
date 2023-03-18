@@ -6,6 +6,7 @@ import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
@@ -13,6 +14,7 @@ import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
+import com.github.skjolber.packing.packer.AbstractAdapter;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.Adapter;
 import com.github.skjolber.packing.packer.DefaultPackResult;
@@ -36,14 +38,13 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 
 	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, BooleanSupplier interrupt);
 
-	protected class LAFFAdapter implements Adapter<DefaultPackResult> {
+	protected class LAFFAdapter extends AbstractAdapter<DefaultPackResult> {
 
 		private List<Stackable> boxes;
-		private List<Container> containers;
 		private final BooleanSupplier interrupt;
 
-		public LAFFAdapter(List<StackableItem> boxItems, List<Container> container, BooleanSupplier interrupt) {
-			this.containers = container;
+		public LAFFAdapter(List<StackableItem> boxItems, List<ContainerItem> containerItems, BooleanSupplier interrupt) {
+			super(containerItems);
 
 			List<Stackable> boxClones = new ArrayList<>(boxItems.size() * 2);
 
@@ -61,11 +62,13 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 
 		@Override
 		public DefaultPackResult attempt(int index, DefaultPackResult best) {
-			return AbstractLargestAreaFitFirstPackager.this.pack(boxes, containers.get(index), index, interrupt);
+			return AbstractLargestAreaFitFirstPackager.this.pack(boxes, containerItems.get(index).getContainer(), index, interrupt);
 		}
 
 		@Override
 		public Container accept(DefaultPackResult result) {
+			super.accept(result.getIndex());
+
 			Container container = result.getContainer();
 			Stack stack = container.getStack();
 
@@ -75,11 +78,17 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 
 			return container;
 		}
+		
+		
+		@Override
+		public List<Integer> getContainers(int maxCount) {
+			return getContainers(boxes, maxCount);
+		}
 
 	}
 
 	@Override
-	protected LAFFAdapter adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
+	protected LAFFAdapter adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt) {
 		return new LAFFAdapter(boxes, containers, interrupt);
 	}
 

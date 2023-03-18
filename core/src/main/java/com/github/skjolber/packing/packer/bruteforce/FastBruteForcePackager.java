@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.DefaultStack;
@@ -22,6 +23,7 @@ import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
+import com.github.skjolber.packing.packer.AbstractAdapter;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.Adapter;
@@ -51,22 +53,21 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		}
 	}
 
-	private class FastBruteForceAdapter implements Adapter<BruteForcePackagerResult> {
+	private class FastBruteForceAdapter extends AbstractAdapter<BruteForcePackagerResult> {
 
 		private final ContainerStackValue[] containerStackValue;
 		private final DefaultPermutationRotationIterator[] iterators;
-		private final List<Container> containers;
 		private final BooleanSupplier interrupt;
 		private final FastExtremePoints3DStack extremePoints3D;
 		private List<StackPlacement> stackPlacements;
 
-		public FastBruteForceAdapter(List<StackableItem> stackableItems, List<Container> containers, BooleanSupplier interrupt) {
-			this.containers = containers;
+		public FastBruteForceAdapter(List<StackableItem> stackableItems, List<ContainerItem> containers, BooleanSupplier interrupt) {
+			super(containers);
 			this.iterators = new DefaultPermutationRotationIterator[containers.size()];
 			this.containerStackValue = new ContainerStackValue[containers.size()];
 
 			for (int i = 0; i < containers.size(); i++) {
-				Container container = containers.get(i);
+				Container container = containers.get(i).getContainer();
 
 				ContainerStackValue stackValue = container.getStackValues()[0];
 
@@ -112,11 +113,13 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				return BruteForcePackagerResult.EMPTY;
 			}
 			// TODO break if this container cannot beat the existing best result
-			return FastBruteForcePackager.this.pack(extremePoints3D, stackPlacements, containers.get(i), containerStackValue[i], i, iterators[i], interrupt);
+			return FastBruteForcePackager.this.pack(extremePoints3D, stackPlacements, containerItems.get(i).getContainer(), containerStackValue[i], i, iterators[i], interrupt);
 		}
 
 		@Override
 		public Container accept(BruteForcePackagerResult bruteForceResult) {
+			super.accept(bruteForceResult.getIndex());
+			
 			Container container = bruteForceResult.getContainer();
 			Stack stack = container.getStack();
 
@@ -143,6 +146,20 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 			return container;
 		}
+		
+		@Override
+		public List<Integer> getContainers(int maxCount) {
+			DefaultPermutationRotationIterator defaultPermutationRotationIterator = iterators[0];
+			int length = defaultPermutationRotationIterator.length();
+			List<Stackable> boxes = new ArrayList<>(length);
+			for(int i = 0; i < length; i++) {
+				PermutationRotation permutationRotation = defaultPermutationRotationIterator.get(i);
+				
+				boxes.add(permutationRotation.getStackable());
+			}
+			
+			return getContainers(boxes, maxCount);
+		}		
 	}
 
 	public FastBruteForcePackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
@@ -155,7 +172,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 	}
 
 	@Override
-	protected Adapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
+	protected Adapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt) {
 		return new FastBruteForceAdapter(boxes, containers, interrupt);
 	}
 

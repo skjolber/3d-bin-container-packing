@@ -6,6 +6,7 @@ import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
@@ -13,6 +14,7 @@ import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
+import com.github.skjolber.packing.packer.AbstractAdapter;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.Adapter;
 import com.github.skjolber.packing.packer.DefaultPackResult;
@@ -31,14 +33,13 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 
 	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int containerIndex, BooleanSupplier interrupt);
 
-	protected class PlainAdapter implements Adapter<DefaultPackResult> {
+	protected class PlainAdapter extends AbstractAdapter<DefaultPackResult> {
 
 		private List<Stackable> boxes;
-		private List<Container> containers;
 		private final BooleanSupplier interrupt;
 
-		public PlainAdapter(List<StackableItem> boxItems, List<Container> container, BooleanSupplier interrupt) {
-			this.containers = container;
+		public PlainAdapter(List<StackableItem> boxItems, List<ContainerItem> containerItems, BooleanSupplier interrupt) {
+			super(containerItems);
 
 			List<Stackable> boxClones = new LinkedList<>();
 
@@ -56,11 +57,13 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 
 		@Override
 		public DefaultPackResult attempt(int index, DefaultPackResult best) {
-			return AbstractPlainPackager.this.pack(boxes, containers.get(index), index, interrupt);
+			return AbstractPlainPackager.this.pack(boxes, containerItems.get(index).getContainer(), index, interrupt);
 		}
 
 		@Override
 		public Container accept(DefaultPackResult result) {
+			super.accept(result.getIndex());
+			
 			Container container = result.getContainer();
 			Stack stack = container.getStack();
 
@@ -71,10 +74,15 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 			return container;
 		}
 
+		@Override
+		public List<Integer> getContainers(int maxCount) {
+			return getContainers(boxes, maxCount);
+		}
+
 	}
 
 	@Override
-	protected PlainAdapter adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
+	protected PlainAdapter adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt) {
 		return new PlainAdapter(boxes, containers, interrupt);
 	}
 

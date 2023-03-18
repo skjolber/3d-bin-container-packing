@@ -27,7 +27,7 @@ public class BruteForcePackagerResultBuilder extends PackagerResultBuilder<Brute
 	}
 
 	public PackagerResult build() {
-		if(containerInventory == null) {
+		if(containers == null) {
 			throw new IllegalStateException();
 		}
 		long start = System.currentTimeMillis();
@@ -44,9 +44,9 @@ public class BruteForcePackagerResultBuilder extends PackagerResultBuilder<Brute
 
 		List<Container> packList;
 		if(maxResults > 1) {
-			packList = packager.packList(items, containerInventory, maxResults, build);
+			packList = packager.packList(items, containers, maxResults, build);
 		} else {
-			Container result = packager.pack(items, containerInventory, build);
+			Container result = packager.pack(items, containers, build);
 
 			if(result != null) {
 				packList = Arrays.asList(result);

@@ -32,4 +32,12 @@ public class PackagerResult {
 	public long getDuration() {
 		return duration;
 	}
+	
+	public Container get(int index) {
+		return containers.get(index);
+	}
+	
+	public int size() {
+		return containers.size();
+	}
 }

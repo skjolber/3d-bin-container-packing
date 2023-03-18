@@ -12,20 +12,25 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.ClonableBooleanSupplier;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorListBuilder;
+import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
+import com.github.skjolber.packing.packer.AbstractAdapter;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.Adapter;
+import com.github.skjolber.packing.packer.DefaultPackResult;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 import com.github.skjolber.packing.packer.PackagerException;
 
@@ -167,19 +172,19 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		}
 	}
 
-	private class ParallelAdapter implements Adapter<BruteForcePackagerResult> {
+	private class ParallelAdapter extends AbstractAdapter<BruteForcePackagerResult> {
 
-		private final List<Container> containers;
 		private final DefaultPermutationRotationIterator[] iterators; // per container
 		private final ParallelPermutationRotationIteratorList[] parallelIterators; // per container
 		private final ContainerStackValue[] containerStackValues;
 		private final RunnableAdapter[] runnables; // per thread
 		private final BooleanSupplier[] interrupts;
 
-		protected ParallelAdapter(List<StackableItem> stackableItems, List<Container> containers, BooleanSupplier interrupt) {
-			this.containers = containers;
+		protected ParallelAdapter(List<StackableItem> stackableItems, List<ContainerItem> containerItems, BooleanSupplier interrupt) {
+			super(containerItems);
+			
 			this.interrupts = new BooleanSupplier[parallelizationCount];
-			this.containerStackValues = new ContainerStackValue[containers.size()];
+			this.containerStackValues = new ContainerStackValue[containerItems.size()];
 
 			// clone nth interrupts so that everything is not slowed down by sharing a single counter
 			if(interrupt instanceof ClonableBooleanSupplier) {
@@ -206,10 +211,10 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				runnables[i] = new RunnableAdapter(count, minStackableItemVolume, minStackableArea);
 			}
 
-			parallelIterators = new ParallelPermutationRotationIteratorList[containers.size()];
-			iterators = new DefaultPermutationRotationIterator[containers.size()];
-			for (int i = 0; i < containers.size(); i++) {
-				Container container = containers.get(i);
+			parallelIterators = new ParallelPermutationRotationIteratorList[containerItems.size()];
+			iterators = new DefaultPermutationRotationIterator[containerItems.size()];
+			for (int i = 0; i < containerItems.size(); i++) {
+				Container container = containerItems.get(i).getContainer();
 				ContainerStackValue stackValue = container.getStackValues()[0];
 
 				containerStackValues[i] = stackValue;
@@ -247,7 +252,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				List<Future<BruteForcePackagerResult>> futures = new ArrayList<>(runnables.length);
 				for (int j = 0; j < runnables.length; j++) {
 					RunnableAdapter runnableAdapter = runnables[j];
-					runnableAdapter.setContainer(containers.get(i));
+					runnableAdapter.setContainer(containerItems.get(i).getContainer());
 					runnableAdapter.setContainerStackValue(containerStackValues[i]);
 
 					runnableAdapter.setIterator(parallelIterators[i].getIterator(j));
@@ -301,11 +306,13 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			}
 			// no need to split this job
 			// run with linear approach
-			return ParallelBruteForcePackager.this.pack(runnables[0].extremePoints3D, runnables[0].placements, containers.get(i), i, containerStackValues[i], iterators[i], interrupts[i]);
+			return ParallelBruteForcePackager.this.pack(runnables[0].extremePoints3D, runnables[0].placements, containerItems.get(i).getContainer(), i, containerStackValues[i], iterators[i], interrupts[i]);
 		}
 
 		@Override
 		public Container accept(BruteForcePackagerResult bruteForceResult) {
+			super.accept(bruteForceResult.getIndex());
+			
 			Container container = bruteForceResult.getContainer();
 
 			if(!bruteForceResult.containsLastStackable()) {
@@ -341,6 +348,20 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			return container;
 		}
 
+		@Override
+		public List<Integer> getContainers(int maxCount) {
+			DefaultPermutationRotationIterator defaultPermutationRotationIterator = iterators[0];
+			int length = defaultPermutationRotationIterator.length();
+			List<Stackable> boxes = new ArrayList<>(length);
+			for(int i = 0; i < length; i++) {
+				PermutationRotation permutationRotation = defaultPermutationRotationIterator.get(i);
+				
+				boxes.add(permutationRotation.getStackable());
+			}
+			
+			return getContainers(boxes, maxCount);
+		}
+
 	}
 
 	public void shutdown() {
@@ -352,7 +373,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected Adapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
+	protected Adapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt) {
 		return new ParallelAdapter(boxes, containers, interrupt);
 	}
 

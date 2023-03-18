@@ -27,6 +27,9 @@ public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuil
 	}
 
 	public PackagerResult build() {
+		if(containers == null) {
+			throw new IllegalStateException();
+		}
 		long start = System.currentTimeMillis();
 
 		BooleanSupplierBuilder booleanSupplierBuilder = BooleanSupplierBuilder.builder();
@@ -41,9 +44,9 @@ public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuil
 
 		List<Container> packList;
 		if(maxResults > 1) {
-			packList = packager.packList(items, containerInventory, maxResults, build);
+			packList = packager.packList(items, containers, maxResults, build);
 		} else {
-			Container result = packager.pack(items, containerInventory, build);
+			Container result = packager.pack(items, containers, build);
 
 			if(result != null) {
 				packList = Arrays.asList(result);

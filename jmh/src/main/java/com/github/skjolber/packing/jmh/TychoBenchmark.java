@@ -3,6 +3,7 @@ package com.github.skjolber.packing.jmh;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -20,7 +21,9 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
 
 @State(Scope.Thread)
 @Fork(value = 1, warmups = 1, jvmArgsPrepend = "-XX:-RestrictContended")
@@ -243,9 +246,14 @@ public class TychoBenchmark {
 	}
 
 	public int process(List<BenchmarkSet> sets, long deadline) {
+		BooleanSupplier booleanSupplier = BooleanSupplierBuilder.builder().withDeadline(deadline, 1).build();
+
 		int i = 0;
 		for (BenchmarkSet set : sets) {
-			if(set.getPackager().pack(products, deadline) != null) {
+			 List<ContainerItem> containers = set.getContainers();
+			 List<StackableItem> products = set.getProducts();
+			 
+			if(set.getPackager().pack(products, containers, booleanSupplier) != null) {
 				i++;
 			}
 		}

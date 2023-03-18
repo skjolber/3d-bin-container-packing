@@ -6,6 +6,7 @@ import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.DefaultContainerStackValue;
@@ -17,6 +18,7 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableFilter;
+import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.StackValuePointFilter;
 import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
@@ -268,4 +270,6 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 	public LargestAreaFitFirstPackagerResultBuilder newResultBuilder() {
 		return new LargestAreaFitFirstPackagerResultBuilder().withCheckpointsPerDeadlineCheck(checkpointsPerDeadlineCheck).withPackager(this);
 	}
+
+
 }

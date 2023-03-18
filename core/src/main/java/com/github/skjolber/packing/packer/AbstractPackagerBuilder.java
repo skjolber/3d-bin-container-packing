@@ -1,10 +1,5 @@
 package com.github.skjolber.packing.packer;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.ContainerInventory;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Packager;
 

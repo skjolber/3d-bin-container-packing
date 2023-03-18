@@ -1,14 +1,11 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.ContainerInventory;
-import com.github.skjolber.packing.api.ContainerInventoryItem;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackResult;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Packager;
@@ -45,6 +42,10 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		this.packResultComparator = packResultComparator;
 	}
 
+	public Container pack(List<StackableItem> products, List<ContainerItem> containers) {
+		return pack(products, containers, BooleanSupplierBuilder.NOOP);
+	}
+	
 	/**
 	 * Return a container which holds all the boxes in the argument
 	 *
@@ -54,31 +55,24 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
 	 */
 
-	public Container pack(List<StackableItem> boxes, ContainerInventory containerInventory, BooleanSupplier interrupt) {
+	public Container pack(List<StackableItem> boxes, List<ContainerItem> containersItems, BooleanSupplier interrupt) {
 		
-		List<ContainerInventoryItem> containersItems = containerInventory.getItems(toBoxes(boxes, true), 1); 
-		if(containersItems.isEmpty()) {
+		Adapter<P> pack = adapter(boxes, containersItems, interrupt);
+		
+		List<Integer> containerIndexes = pack.getContainers(1);
+		if(containerIndexes.isEmpty()) {
 			return null;
 		}
-
-		List<Container> containers = new ArrayList<>();
-		for(ContainerInventoryItem item : containersItems) {
-			containers.add(item.getContainer());
-		}
-				
-		if(containers.isEmpty()) {
-			return null;
-		}
-
-		Adapter<P> pack = adapter(boxes, containers, interrupt);
-
-		if(containers.size() <= 2) {
-			for (int i = 0; i < containers.size(); i++) {
+		
+		if(containerIndexes.size() <= 2) {
+			for (int i = 0; i < containerIndexes.size(); i++) {
 				if(interrupt.getAsBoolean()) {
 					break;
 				}
 
-				P result = pack.attempt(i, null);
+				Integer index = containerIndexes.get(i);
+				
+				P result = pack.attempt(index, null);
 				if(result == null) {
 					return null; // timeout, no result
 				}
@@ -89,13 +83,8 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		} else {
 			// perform a binary search among the available containers
 			// the list is ranked from most desirable to least.
-			PackResult[] results = new PackResult[containers.size()];
+			PackResult[] results = new PackResult[containerIndexes.size()];
 			boolean[] checked = new boolean[results.length];
-
-			ArrayList<Integer> containerIndexes = new ArrayList<>(containers.size());
-			for (int i = 0; i < containers.size(); i++) {
-				containerIndexes.add(i);
-			}
 
 			BinarySearchIterator iterator = new BinarySearchIterator();
 
@@ -155,10 +144,6 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			// return the best, if any
 			for (final PackResult result : results) {
 				if(result != null) {
-					ContainerInventoryItem containerInventoryItem = containersItems.get(result.getIndex());
-					
-					containerInventory.accept(containerInventoryItem);
-					
 					return pack.accept((P)result);
 				}
 			}
@@ -174,27 +159,23 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
 	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
 	 */
-	public List<Container> packList(List<StackableItem> boxes, ContainerInventory containerInventory, int limit, BooleanSupplier interrupt) {
-		List<ContainerInventoryItem> containersItems = containerInventory.getItems(toBoxes(boxes, true), limit); 
-		if(containersItems.isEmpty()) {
-			return null;
-		}
-
-		List<Container> containers = new ArrayList<>();
-		for(ContainerInventoryItem item : containersItems) {
-			containers.add(item.getContainer());
-		}
-		
-		Adapter<P> pack = adapter(boxes, containers, interrupt);
+	public List<Container> packList(List<StackableItem> boxes, List<ContainerItem> containerItems, int limit, BooleanSupplier interrupt) {
+		Adapter<P> pack = adapter(boxes, containerItems, interrupt);
 
 		List<Container> containerPackResults = new ArrayList<>();
 
 		// TODO binary search: not as simple as in the single-container use-case; discarding containers would need some kind
 		// of criteria which could be trivially calculated, perhaps on volume.
 		do {
+			
+			List<Integer> containerIndexes = pack.getContainers(limit - containerPackResults.size());
+			if(containerIndexes.isEmpty()) {
+				return null;
+			}
+			
 			P best = null;
-			for (int i = 0; i < containersItems.size(); i++) {
-				ContainerInventoryItem item = containersItems.get(i);
+			for (int i = 0; i < containerItems.size(); i++) {
+				ContainerItem item = containerItems.get(i);
 				if(!item.isAvailable()) {
 					continue;
 				}
@@ -230,8 +211,6 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 
 			containerPackResults.add(pack.accept(best));
 			
-			containerInventory.accept(containersItems.get(best.getIndex()));
-			
 			if(end) {
 				// positive result
 				return containerPackResults;
@@ -243,21 +222,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		return null;
 	}
 
-
-	private static List<Stackable> toBoxes(List<StackableItem> StackableItems, boolean clone) {
-		List<Stackable> boxClones = new ArrayList<>(StackableItems.size() * 2);
-
-		for (StackableItem item : StackableItems) {
-			Stackable box = item.getStackable();
-			boxClones.add(box);
-			for (int i = 1; i < item.getCount(); i++) {
-				boxClones.add(clone ? box : box.clone());
-			}
-		}
-		return boxClones;
-	}
-
-	protected abstract Adapter<P> adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt);
+	protected abstract Adapter<P> adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt);
 
 	protected long getMinStackableItemVolume(List<StackableItem> stackables) {
 		long minVolume = Integer.MAX_VALUE;
