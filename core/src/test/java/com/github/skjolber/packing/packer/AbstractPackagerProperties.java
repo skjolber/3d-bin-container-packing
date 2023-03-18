@@ -117,7 +117,7 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 					.build();
 			
 			List<ContainerItem> containers = ContainerItem.newListBuilder()
-					.withLimited(container, 1)
+					.withContainer(container, 1)
 					.build();				
 			
 			PackagerResult build = packager

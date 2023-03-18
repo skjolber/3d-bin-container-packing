@@ -49,7 +49,7 @@ public class VisualizationTest {
 	public void testPackager() throws Exception {
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 1).withMaxLoadWeight(100).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 1).withMaxLoadWeight(100).build(), 1)
 				.build();
 		
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
@@ -71,7 +71,7 @@ public class VisualizationTest {
 		
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(5, 5, 1).withMaxLoadWeight(100).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(5, 5, 1).withMaxLoadWeight(100).build(), 1)
 				.build();
 		
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
@@ -97,7 +97,7 @@ public class VisualizationTest {
 		
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(5, 5, 1).withMaxLoadWeight(100).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(5, 5, 1).withMaxLoadWeight(100).build(), 1)
 				.build();
 
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
@@ -123,7 +123,7 @@ public class VisualizationTest {
 
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).build(), 5)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).build(), 5)
 				.build();
 		
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
@@ -134,7 +134,7 @@ public class VisualizationTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("B").withSize(1, 1, 1).withRotate3D().withWeight(1).build(), 2));
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withSize(1, 1, 1).withRotate3D().withWeight(1).build(), 2));
 
-		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxResults(5).build();
+		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(5).build();
 		assertFalse(result.getContainers().isEmpty());
 		
 		Container fits = result.get(0);
@@ -159,7 +159,7 @@ public class VisualizationTest {
 
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).build(), 5)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).build(), 5)
 				.build();
 		
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
@@ -170,7 +170,7 @@ public class VisualizationTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("B").withSize(1, 1, 1).withRotate3D().withWeight(1).build(), 2));
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withSize(1, 1, 1).withRotate3D().withWeight(1).build(), 2));
 
-		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxResults(5).build();
+		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(5).build();
 
 		List<Container> packList = result.getContainers();
 		assertThat(packList).hasSize(2);
@@ -195,7 +195,7 @@ public class VisualizationTest {
 
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(8, 8, 2).withMaxLoadWeight(100).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(8, 8, 2).withMaxLoadWeight(100).build(), 1)
 				.build();
 		
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
@@ -210,7 +210,7 @@ public class VisualizationTest {
 			products.add(new StackableItem(Box.newBuilder().withDescription("K").withSize(1, 1, 1).withRotate3D().withWeight(1).build(), 1)); // 16
 		}
 
-		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxResults(5).build();
+		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(5).build();
 
 		List<Container> packList = result.getContainers();
 		assertThat(packList).hasSize(2);
@@ -232,7 +232,7 @@ public class VisualizationTest {
 
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1)
 						.withMaxLoadWeight(bouwkampCode.getWidth() * bouwkampCode.getDepth()).build(), 1)
 				.build();
 
@@ -248,7 +248,7 @@ public class VisualizationTest {
 			}
 		}
 
-		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxResults(1).build();
+		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(1).build();
 		
 		Container fits = result.get(0);
 		assertNotNull(fits);
@@ -291,7 +291,7 @@ public class VisualizationTest {
 	protected void pack(BouwkampCode bouwkampCode) throws Exception {
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1)
 						.withMaxLoadWeight(bouwkampCode.getWidth() * bouwkampCode.getDepth()).build(), 1)
 				.build();
 		
@@ -316,7 +316,7 @@ public class VisualizationTest {
 		// shuffle
 		Collections.shuffle(products);
 
-		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxResults(1).build();
+		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(1).build();
 
 		Container fits = result.get(0);
 		assertNotNull(bouwkampCode.getName(), fits);
@@ -358,7 +358,7 @@ public class VisualizationTest {
 
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
-				.withUnlimited(container)
+				.withContainer(container)
 				.build();
 		
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager
@@ -368,7 +368,7 @@ public class VisualizationTest {
 		List<StackableItem> products = Arrays.asList(
 				new StackableItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 20));
 		
-		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxResults(1).build();
+		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(1).build();
 		Container pack = result.get(0);
 		
 		assertNotNull(pack);
@@ -426,7 +426,7 @@ public class VisualizationTest {
 	
 	List<ContainerItem> containers = ContainerItem
 			.newListBuilder()
-			.withUnlimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build())
+			.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build())
 			.build();
 
 	@Test

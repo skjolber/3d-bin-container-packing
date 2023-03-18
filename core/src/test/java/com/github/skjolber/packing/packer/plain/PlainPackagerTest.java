@@ -29,7 +29,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 		
 		PlainPackager packager = PlainPackager.newBuilder().build();
@@ -49,7 +49,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	void testStackingRectangles() {
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		PlainPackager packager = PlainPackager.newBuilder().build();
@@ -69,7 +69,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	void testStackingSquaresAndRectangle() {
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(6, 10, 10).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(6, 10, 10).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 		
 		PlainPackager packager = PlainPackager.newBuilder().build();
@@ -89,7 +89,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	void testStackingDecreasingRectangles() {
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(6, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(6, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		PlainPackager packager = PlainPackager.newBuilder().build();
@@ -110,7 +110,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 2).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 2).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		PlainPackager packager = PlainPackager.newBuilder().build();
@@ -131,7 +131,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		PlainPackager packager = PlainPackager.newBuilder().build();
@@ -150,7 +150,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				// capacity is 3*2*3 = 18
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		PlainPackager packager = PlainPackager.newBuilder().build();
@@ -174,7 +174,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(containers, 1)
+				.withContainers(containers, 1)
 				.build();
 		
 		PlainPackager packager = PlainPackager.newBuilder().build();
@@ -210,7 +210,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
 			List<ContainerItem> containerItems = ContainerItem
 					.newListBuilder()
-					.withLimited(build, i + 2)
+					.withContainer(build, i + 2)
 					.build();
 
 			List<StackableItem> stackableItems = Arrays.asList(

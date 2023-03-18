@@ -67,7 +67,7 @@ public class EgyPackagerState {
 		try {
 			List<Item> items = ItemIO.read(path);
 
-			containers = ContainerItem.newListBuilder().withUnlimited(getContainer(items)).build();
+			containers = ContainerItem.newListBuilder().withContainer(getContainer(items)).build();
 
 			stackableItems3D = getStackableItems3D(items);
 		} catch (IOException e) {
@@ -134,7 +134,7 @@ public class EgyPackagerState {
 
 			int length = (int)side;
 
-			List<ContainerItem> containers = ContainerItem.newListBuilder().withUnlimited(
+			List<ContainerItem> containers = ContainerItem.newListBuilder().withContainer(
 					Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(length, length, length).withMaxLoadWeight(length * length * length)
 					.withStack(new DefaultStack()).build()).build();
 

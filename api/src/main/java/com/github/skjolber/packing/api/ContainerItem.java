@@ -3,6 +3,12 @@ package com.github.skjolber.packing.api;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 
+ * A {@linkplain Container} repeated one or more times. 
+ * 
+ */
+
 public class ContainerItem {
 
 	public static Builder newListBuilder() {
@@ -20,24 +26,24 @@ public class ContainerItem {
 			return this;
 		}
 		
-		public Builder withUnlimited(List<Container> containers) {
+		public Builder withContainers(List<Container> containers) {
 			for(Container container : containers) {
 				items.add(new ContainerItem(container, Integer.MAX_VALUE));
 			}
 			return this;
 		}
 		
-		public Builder withUnlimited(Container container) {
+		public Builder withContainer(Container container) {
 			items.add(new ContainerItem(container, Integer.MAX_VALUE));
 			return this;
 		}
 
-		public Builder withLimited(Container container, int limit) {
+		public Builder withContainer(Container container, int limit) {
 			items.add(new ContainerItem(container, limit));
 			return this;
 		}
 		
-		public Builder withLimited(List<Container> containers, int limit) {
+		public Builder withContainers(List<Container> containers, int limit) {
 			for(Container container : containers) {
 				items.add(new ContainerItem(container, limit));
 			}

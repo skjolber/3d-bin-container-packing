@@ -32,7 +32,7 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withUnlimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build())
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build())
 				.build()
 				;
 
@@ -69,7 +69,7 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 5)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 5)
 				.build()
 				;
 		
@@ -81,7 +81,7 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 
-		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).withMaxResults(5).build();
+		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).withMaxContainerCount(5).build();
 		assertValid(build);
 		
 		List<Container> packList = build.getContainers();
@@ -137,7 +137,7 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 		
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(100)
+				.withContainer(Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(100)
 						.withStack(new ValidatingStack()).build(), 1)
 				.build()
 				;
@@ -181,7 +181,7 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1900, 1500, 4000)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1900, 1500, 4000)
 						.withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();	
 

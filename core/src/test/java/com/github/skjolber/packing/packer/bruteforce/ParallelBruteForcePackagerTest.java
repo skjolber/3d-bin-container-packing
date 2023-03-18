@@ -41,7 +41,7 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().build();
@@ -75,7 +75,7 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 5)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 5)
 				.build();
 
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().build();
@@ -86,7 +86,7 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 
-		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).withMaxResults(5).build();
+		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).withMaxContainerCount(5).build();
 		assertValid(build);
 		
 		List<Container> packList = build.getContainers();
@@ -111,7 +111,7 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(8, 8, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(8, 8, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 		
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().build();
@@ -134,7 +134,7 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 		
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(10, 10, 4).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(10, 10, 4).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().build();
@@ -159,7 +159,7 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 		
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(5, 5, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(5, 5, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 		
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().build();
@@ -212,7 +212,7 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 	protected void pack(BouwkampCode bouwkampCode) {
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withLimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(100)
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(100)
 						.withStack(new ValidatingStack()).build(), 1)
 				.build();
 		

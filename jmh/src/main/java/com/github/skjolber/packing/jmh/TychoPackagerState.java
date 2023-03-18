@@ -54,7 +54,7 @@ public class TychoPackagerState {
 
 	private List<StackableItem> stackableItems3D;
 
-	private List<ContainerItem> containers = ContainerItem.newListBuilder().withUnlimited(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build()).build();
+	private List<ContainerItem> containers = ContainerItem.newListBuilder().withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build()).build();
 
 	public TychoPackagerState() {
 		this(8, 20000);

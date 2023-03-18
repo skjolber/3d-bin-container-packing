@@ -73,7 +73,7 @@ public class BouwkampCodePackagerState {
 				*/
 				List<ContainerItem> containers = ContainerItem
 						.newListBuilder()
-						.withUnlimited(BouwkampConverter.getContainer3D(bkpLine))
+						.withContainer(BouwkampConverter.getContainer3D(bkpLine))
 						.build();
 
 				List<StackableItem> stackableItems3D = BouwkampConverter.getStackableItems3D(bkpLine);

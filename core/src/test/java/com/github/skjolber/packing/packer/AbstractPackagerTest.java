@@ -48,7 +48,7 @@ public abstract class AbstractPackagerTest {
 
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
-				.withLimited(container, 1)
+				.withContainer(container, 1)
 				.build();	
 		
 		Packager packager = builder.build();

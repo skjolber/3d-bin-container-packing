@@ -17,7 +17,7 @@ public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> 
 
 	protected BooleanSupplier interrupt;
 
-	protected int maxResults = -1;
+	protected int maxContainerCount = -1;
 
 	@Deprecated
 	public B withItems(List<StackableItem> items) {
@@ -44,8 +44,8 @@ public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> 
 		return (B)this;
 	}
 
-	public B withMaxResults(int maxResults) {
-		this.maxResults = maxResults;
+	public B withMaxContainerCount(int maxResults) {
+		this.maxContainerCount = maxResults;
 		return (B)this;
 	}
 
