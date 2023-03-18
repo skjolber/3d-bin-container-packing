@@ -48,13 +48,11 @@ public class ContainerItem {
 			return items;
 		}
 	}
-
 	
 	private int count;
 	private final Container container;
 
 	public ContainerItem(Container container, int count) {
-		super();
 		this.container = container;
 		this.count = count;
 	}

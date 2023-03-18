@@ -59,7 +59,6 @@ public abstract class AbstractAdapter<T extends PackResult> implements Adapter<T
 	 * Return a list of containers which can potentially hold the boxes within the provided count
 	 *
 	 * @param boxes      list of boxes
-	 * @param containerItems list of containers
 	 * @param maxCount      maximum number of possible containers
 	 * @return list of containers
 	 */

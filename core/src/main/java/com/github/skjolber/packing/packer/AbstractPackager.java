@@ -33,7 +33,6 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	/**
 	 * Constructor
 	 *
-	 * @param containers                  list of containers
 	 * @param checkpointsPerDeadlineCheck number of deadline checks to skip, before checking again
 	 */
 
@@ -50,7 +49,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * Return a container which holds all the boxes in the argument
 	 *
 	 * @param boxes      list of boxes to fit in a container
-	 * @param containers list of containers
+	 * @param containersItems list of containers
 	 * @param interrupt  When true, the computation is interrupted as soon as possible.
 	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
 	 */
