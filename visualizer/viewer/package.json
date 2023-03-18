@@ -14,7 +14,7 @@
     "react-scripts": "5.0.1",
     "simplex-noise": "4.0.1",
     "stats-js": "1.0.1",
-    "three": "^0.150.0"
+    "three": "^0.149.0"
   },
   "devDependencies": {
     "typescript": "4.9.5"
