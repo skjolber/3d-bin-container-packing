@@ -30,6 +30,9 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 		if(containers == null) {
 			throw new IllegalStateException();
 		}
+		if(items == null) {
+			throw new IllegalStateException();
+		}
 		long start = System.currentTimeMillis();
 
 		BooleanSupplierBuilder booleanSupplierBuilder = BooleanSupplierBuilder.builder();

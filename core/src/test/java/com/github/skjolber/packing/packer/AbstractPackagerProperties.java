@@ -123,7 +123,7 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 			PackagerResult build = packager
 					.newResultBuilder()
 					.withContainers(containers)
-					.withItems(singletonList(new StackableItem(box, count)))
+					.withStackables(singletonList(new StackableItem(box, count)))
 					.build();
 			
 			Container fits = build.get(0);
