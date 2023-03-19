@@ -14,6 +14,7 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.runner.options.TimeValue;
 
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
@@ -33,6 +34,7 @@ import com.github.skjolber.packing.packer.AbstractPackager;
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
 public class DeadlineBenchmark {
 
+	/*
 	@Benchmark
 	public Object parallelPackagerNoDeadline(BouwkampCodePackagerState state) throws Exception {
 		return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
@@ -47,7 +49,7 @@ public class DeadlineBenchmark {
 	public Object parallelPackagerDeadlineNth(BouwkampCodePackagerState state) throws Exception {
 		return process(state.getParallelBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
 	}
-
+*/
 	@Benchmark
 	public Object packagerNoDeadline(BouwkampCodePackagerState state) throws Exception {
 		return process(state.getBruteForcePackager(), Long.MAX_VALUE);
@@ -62,7 +64,7 @@ public class DeadlineBenchmark {
 	public Object packagerDeadlineNth(BouwkampCodePackagerState state) throws Exception {
 		return process(state.getBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
 	}
-
+	
 	public int process(List<BenchmarkSet> sets, long deadline) {
 		BooleanSupplier booleanSupplier = BooleanSupplierBuilder.builder().withDeadline(deadline, 1).build();
 
@@ -85,12 +87,12 @@ public class DeadlineBenchmark {
 		Options opt = new OptionsBuilder()
 				.include(DeadlineBenchmark.class.getSimpleName())
 				.mode(Mode.Throughput)
-				/*
+				
 				.forks(1)
 				.measurementIterations(1)
 				.measurementTime(TimeValue.seconds(15))
 				.timeout(TimeValue.seconds(10))
-				 */
+				 
 				.build();
 
 		new Runner(opt).run();

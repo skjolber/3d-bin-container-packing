@@ -48,10 +48,11 @@ public class BruteForcePackagerResultBuilder extends PackagerResultBuilder<Brute
 		BooleanSupplier build = booleanSupplierBuilder.build();
 
 		List<Container> packList = packager.pack(items, containers, maxContainerCount, build);
+		long duration = System.currentTimeMillis() - start;
 		if(packList == null) {
-			packList = Collections.emptyList();
+			return new PackagerResult(Collections.emptyList(), duration, true);
 		}
-		return new PackagerResult(packList, System.currentTimeMillis() - start);
+		return new PackagerResult(packList, duration, false);
 	}
 
 }
