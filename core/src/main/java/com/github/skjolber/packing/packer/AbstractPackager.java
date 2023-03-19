@@ -131,7 +131,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	}
 
 	public List<Container> packList(List<StackableItem> products, List<ContainerItem> containers, int limit) {
-		return packList(products, containers, limit, BooleanSupplierBuilder.NOOP);
+		return pack(products, containers, limit, BooleanSupplierBuilder.NOOP);
 	}
 
 	
@@ -144,7 +144,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @return list of containers, or null if the deadline was reached, or empty list if the packages could not be packaged within the available containers and/or limit.
 	 */
 	
-	public List<Container> packList(List<StackableItem> boxes, List<ContainerItem> containerItems, int limit, BooleanSupplier interrupt) {
+	public List<Container> pack(List<StackableItem> boxes, List<ContainerItem> containerItems, int limit, BooleanSupplier interrupt) {
 		PackagerAdapter<P> adapter = adapter(boxes, containerItems, interrupt);
 
 		List<Container> containerPackResults = new ArrayList<>();

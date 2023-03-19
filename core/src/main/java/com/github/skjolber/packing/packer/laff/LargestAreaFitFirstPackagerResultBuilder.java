@@ -47,7 +47,7 @@ public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuil
 
 		BooleanSupplier build = booleanSupplierBuilder.build();
 
-		List<Container> packList = packager.packList(items, containers, maxContainerCount, build);
+		List<Container> packList = packager.pack(items, containers, maxContainerCount, build);
 		if(packList == null) {
 			packList = Collections.emptyList();
 		}
