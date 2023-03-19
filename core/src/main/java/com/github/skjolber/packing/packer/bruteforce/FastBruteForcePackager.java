@@ -118,7 +118,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 		@Override
 		public Container accept(BruteForcePackagerResult bruteForceResult) {
-			super.accept(bruteForceResult.getIndex());
+			super.accept(bruteForceResult.getContainerItemIndex());
 
 			Container container = bruteForceResult.getContainer();
 			Stack stack = container.getStack();

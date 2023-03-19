@@ -68,7 +68,7 @@ public class DefaultPackResult implements PackResult {
 		return container;
 	}
 
-	public int getIndex() {
+	public int getContainerItemIndex() {
 		return index;
 	}
 }

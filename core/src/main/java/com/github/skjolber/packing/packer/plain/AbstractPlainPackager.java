@@ -60,7 +60,7 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 
 		@Override
 		public Container accept(DefaultPackResult result) {
-			super.accept(result.getIndex());
+			super.accept(result.getContainerItemIndex());
 
 			Container container = result.getContainer();
 			Stack stack = container.getStack();

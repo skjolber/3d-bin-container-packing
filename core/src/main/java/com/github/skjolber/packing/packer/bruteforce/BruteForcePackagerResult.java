@@ -156,7 +156,7 @@ public class BruteForcePackagerResult implements PackResult {
 	}
 
 	@Override
-	public int getIndex() {
+	public int getContainerItemIndex() {
 		return index;
 	}
 }
