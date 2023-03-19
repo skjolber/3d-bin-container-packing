@@ -52,7 +52,7 @@ public class VisualizationTest {
 			.newListBuilder()
 			.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build())
 			.build();
-	
+
 	@Test
 	public void testPackager() throws Exception {
 		List<ContainerItem> containers = ContainerItem

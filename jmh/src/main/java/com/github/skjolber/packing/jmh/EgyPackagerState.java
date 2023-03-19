@@ -149,7 +149,7 @@ public class EgyPackagerState {
 					.withDeadline(System.currentTimeMillis() + 5000)
 					.build();
 			if(build.isSuccess()) {
-				System.out.println("Go container " + volume + " from " + originalVolume);
+				System.out.println("Got container " + volume + " from " + originalVolume);
 				return containers.get(0).getContainer();
 			}
 			multiplier += 0.05;

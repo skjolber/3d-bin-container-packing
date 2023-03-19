@@ -220,8 +220,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		assertEquals(build.get(0).getVolume(), 7);
 		assertEquals(build.get(1).getVolume(), 3);
 	}
-	
-	
+
 	@Test
 	void issue440() {
 		DefaultContainer build = Container.newBuilder()

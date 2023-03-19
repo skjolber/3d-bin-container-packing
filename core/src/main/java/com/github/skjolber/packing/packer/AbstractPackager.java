@@ -134,7 +134,6 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		return pack(products, containers, limit, BooleanSupplierBuilder.NOOP);
 	}
 
-	
 	/**
 	 * Return a list of containers which holds all the boxes in the argument
 	 *
@@ -143,7 +142,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
 	 * @return list of containers, or null if the deadline was reached, or empty list if the packages could not be packaged within the available containers and/or limit.
 	 */
-	
+
 	public List<Container> pack(List<StackableItem> boxes, List<ContainerItem> containerItems, int limit, BooleanSupplier interrupt) {
 		PackagerAdapter<P> adapter = adapter(boxes, containerItems, interrupt);
 
@@ -154,7 +153,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			int maxContainers = limit - containerPackResults.size();
 			List<Integer> containerItemIndexes = adapter.getContainers(1);
 			if(!containerItemIndexes.isEmpty()) {
-				
+
 				P result = pack(containerItemIndexes, adapter, interrupt);
 				if(result != null) {
 					containerPackResults.add(adapter.accept(result));
@@ -163,13 +162,13 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 					return containerPackResults;
 				}
 			}
-			
+
 			// one or more containers
 			containerItemIndexes = adapter.getContainers(maxContainers);
 			if(containerItemIndexes.isEmpty()) {
 				return Collections.emptyList();
 			}
-			
+
 			// the best container is the one which can hold the most stackables
 			// assume larger boxes is at the end of list, so start there
 			P best = null;
@@ -179,12 +178,12 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 				}
 
 				Integer containerItemIndex = containerItemIndexes.get(i);
-				
+
 				// can this container hold more than the previously best result?
 				if(best != null) {
 					ContainerItem containerItem = containerItems.get(containerItemIndex);
 					Container container = containerItem.getContainer();
-					
+
 					long loadVolume = best.getLoadVolume();
 					if(loadVolume > container.getMaxLoadVolume()) {
 						continue;
@@ -194,19 +193,19 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 						continue;
 					}
 				}
-				
+
 				P result = adapter.attempt(containerItemIndex, best);
 				if(result == null) {
 					// timeout, unless already have a result ready
 					if(best != null && best.containsLastStackable()) {
 						containerPackResults.add(adapter.accept(best));
-						
+
 						return containerPackResults;
 					}
-					
-					return null; 
+
+					return null;
 				}
-				
+
 				if(!result.isEmpty()) {
 					if(best == null || packResultComparator.compare(best, result) != PackResultComparator.ARGUMENT_1_IS_BETTER) {
 						best = result;
