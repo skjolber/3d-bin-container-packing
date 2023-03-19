@@ -1,10 +1,7 @@
 package com.github.skjolber.packing.packer.plain;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -247,6 +244,31 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	@Test
 	public void testAHugeProblemShouldRespectDeadline() {
 		assertDeadlineRespected(PlainPackager.newBuilder());
+	}
+	
+	@Test
+	void testStackingSpecificMultipleContainers() {
+		// just all for one big container
+		List<ContainerItem> containerItems = ContainerItem
+				.newListBuilder()
+				.withContainer(Container.newBuilder().withDescription("big").withEmptyWeight(1).withSize(2, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withDescription("small").withEmptyWeight(1).withSize(1, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 4)
+				.build();
+		
+		PlainPackager packager = PlainPackager.newBuilder().build();
+
+		List<StackableItem> products = new ArrayList<>();
+
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 4));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+
+		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withMaxContainerCount(5).withStackables(products).build();
+		assertValid(build);
+		
+		assertEquals(build.get(0).getDescription(), "big");
+		assertEquals(build.get(1).getDescription(), "small");
+		assertEquals(build.get(2).getDescription(), "small");
 	}
 
 }
