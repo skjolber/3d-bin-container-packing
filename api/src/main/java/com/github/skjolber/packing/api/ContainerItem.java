@@ -19,7 +19,7 @@ public class ContainerItem {
 
 		private List<ContainerItem> items = new ArrayList<>();
 
-		public Builder withUnlimited(Container... containers) {
+		public Builder withContainers(Container... containers) {
 			for (Container container : containers) {
 				items.add(new ContainerItem(container, Integer.MAX_VALUE));
 			}
