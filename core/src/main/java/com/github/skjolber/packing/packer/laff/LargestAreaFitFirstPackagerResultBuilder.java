@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer.laff;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -27,6 +26,9 @@ public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuil
 	}
 
 	public PackagerResult build() {
+		if(maxContainerCount <= 0) {
+			throw new IllegalStateException();
+		}
 		if(containers == null) {
 			throw new IllegalStateException();
 		}
@@ -45,17 +47,9 @@ public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuil
 
 		BooleanSupplier build = booleanSupplierBuilder.build();
 
-		List<Container> packList;
-		if(maxContainerCount > 1) {
-			packList = packager.packList(items, containers, maxContainerCount, build);
-		} else {
-			Container result = packager.pack(items, containers, build);
-
-			if(result != null) {
-				packList = Arrays.asList(result);
-			} else {
-				packList = Collections.emptyList();
-			}
+		List<Container> packList = packager.packList(items, containers, maxContainerCount, build);
+		if(packList == null) {
+			packList = Collections.emptyList();
 		}
 		return new PackagerResult(packList, System.currentTimeMillis() - start);
 	}

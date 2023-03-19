@@ -13,10 +13,8 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.ep.Point2D;
-import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
-import com.github.skjolber.packing.packer.AbstractAdapter;
+import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackager;
-import com.github.skjolber.packing.packer.Adapter;
 import com.github.skjolber.packing.packer.DefaultPackResult;
 
 /**
@@ -33,7 +31,7 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 
 	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int containerIndex, BooleanSupplier interrupt);
 
-	protected class PlainAdapter extends AbstractAdapter<DefaultPackResult> {
+	protected class PlainAdapter extends AbstractPackagerAdapter<DefaultPackResult> {
 
 		private List<Stackable> boxes;
 		private final BooleanSupplier interrupt;

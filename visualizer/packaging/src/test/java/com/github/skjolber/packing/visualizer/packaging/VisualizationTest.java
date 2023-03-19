@@ -2,10 +2,12 @@ package com.github.skjolber.packing.visualizer.packaging;
 
 import static com.github.skjolber.packing.test.assertj.StackablePlacementAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,6 +31,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
@@ -45,6 +48,11 @@ public class VisualizationTest {
 
 	private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory());
 
+	private List<ContainerItem> containers = ContainerItem
+			.newListBuilder()
+			.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build())
+			.build();
+	
 	@Test
 	public void testPackager() throws Exception {
 		List<ContainerItem> containers = ContainerItem
@@ -60,10 +68,12 @@ public class VisualizationTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("B").withSize(2, 1, 1).withRotate3D().withWeight(1).build(), 1));
 		products.add(new StackableItem(Box.newBuilder().withDescription("C").withSize(2, 1, 1).withRotate3D().withWeight(1).build(), 1));
 
-		Container fits = packager.pack(products, containers);
-		assertNotNull(fits);
-
-		write(fits);
+		PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products).build();
+		if(build.isSuccess()) {
+			write(build.getContainers());
+		} else {
+			fail();
+		}
 	}
 
 	@Test
@@ -423,20 +433,17 @@ public class VisualizationTest {
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(90, 610, 210).withWeight(0).build(), 1),
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(144, 630, 1530).withWeight(0).build(), 1));
 
-	List<ContainerItem> containers = ContainerItem
-			.newListBuilder()
-			.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build())
-			.build();
-
 	@Test
 	public void testPlainPackager() throws Exception {
 		PlainPackager packager = PlainPackager.newBuilder().build();
 
-		Container fits = packager.pack(products33, containers);
-		assertNotNull(fits);
-		System.out.println(fits.getStack().getPlacements());
+		PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products33).build();
+		if(build.isSuccess()) {
+			write(build.getContainers());
+		} else {
+			fail();
+		}
 
-		write(fits);
 	}
 
 	@Test
@@ -444,11 +451,12 @@ public class VisualizationTest {
 	public void testLAFFPackager() throws Exception {
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
 
-		Container fits = packager.pack(products33, containers);
-		assertNotNull(fits);
-		System.out.println(fits.getStack().getPlacements());
-
-		write(fits);
+		PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products33).build();
+		if(build.isSuccess()) {
+			write(build.getContainers());
+		} else {
+			fail();
+		}
 	}
 
 }

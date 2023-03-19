@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
@@ -41,63 +42,42 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		this.packResultComparator = packResultComparator;
 	}
 
-	public Container pack(List<StackableItem> products, List<ContainerItem> containers) {
-		return pack(products, containers, BooleanSupplierBuilder.NOOP);
-	}
-
-	/**
-	 * Return a container which holds all the boxes in the argument
-	 *
-	 * @param boxes           list of boxes to fit in a container
-	 * @param containersItems list of containers
-	 * @param interrupt       When true, the computation is interrupted as soon as possible.
-	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
-	 */
-
-	public Container pack(List<StackableItem> boxes, List<ContainerItem> containersItems, BooleanSupplier interrupt) {
-
-		Adapter<P> pack = adapter(boxes, containersItems, interrupt);
-
-		List<Integer> containerIndexes = pack.getContainers(1);
-		if(containerIndexes.isEmpty()) {
-			return null;
-		}
-
-		if(containerIndexes.size() <= 2) {
-			for (int i = 0; i < containerIndexes.size(); i++) {
+	protected P pack(List<Integer> containerItemIndexes, PackagerAdapter<P> adapter, BooleanSupplier interrupt) {
+		if(containerItemIndexes.size() <= 2) {
+			for (int i = 0; i < containerItemIndexes.size(); i++) {
 				if(interrupt.getAsBoolean()) {
 					break;
 				}
 
-				Integer index = containerIndexes.get(i);
+				Integer containerItemIndex = containerItemIndexes.get(i);
 
-				P result = pack.attempt(index, null);
+				P result = adapter.attempt(containerItemIndex, null);
 				if(result == null) {
 					return null; // timeout, no result
 				}
 				if(result.containsLastStackable()) {
-					return pack.accept(result);
+					return result;
 				}
 			}
 		} else {
 			// perform a binary search among the available containers
 			// the list is ranked from most desirable to least.
-			PackResult[] results = new PackResult[containerIndexes.size()];
+			PackResult[] results = new PackResult[containerItemIndexes.size()];
 			boolean[] checked = new boolean[results.length];
 
 			BinarySearchIterator iterator = new BinarySearchIterator();
 
 			search: do {
-				iterator.reset(containerIndexes.size() - 1, 0);
+				iterator.reset(containerItemIndexes.size() - 1, 0);
 
 				P bestResult = null;
 				int bestIndex = Integer.MAX_VALUE;
 
 				do {
 					int next = iterator.next();
-					int mid = containerIndexes.get(next);
+					int mid = containerItemIndexes.get(next);
 
-					P result = pack.attempt(mid, bestResult);
+					P result = adapter.attempt(mid, bestResult);
 					if(result == null) {
 						// timeout 
 						// return best result so far, whatever it is
@@ -122,80 +102,113 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 				} while (iterator.hasNext());
 
 				// halt when we have a result, and checked all containers at the lower indexes
-				for (int i = 0; i < containerIndexes.size(); i++) {
-					Integer integer = containerIndexes.get(i);
+				for (int i = 0; i < containerItemIndexes.size(); i++) {
+					Integer integer = containerItemIndexes.get(i);
 					if(results[integer] != null) {
 						// remove end items; we already have a better match
-						while (containerIndexes.size() > i) {
-							containerIndexes.remove(containerIndexes.size() - 1);
+						while (containerItemIndexes.size() > i) {
+							containerItemIndexes.remove(containerItemIndexes.size() - 1);
 						}
 						break;
 					}
 
 					// remove item
 					if(checked[integer]) {
-						containerIndexes.remove(i);
+						containerItemIndexes.remove(i);
 						i--;
 					}
 				}
-			} while (!containerIndexes.isEmpty());
+			} while (!containerItemIndexes.isEmpty());
 
 			// return the best, if any
 			for (final PackResult result : results) {
 				if(result != null) {
-					return pack.accept((P)result);
+					return (P)result;
 				}
 			}
 		}
 		return null;
 	}
 
+	public List<Container> packList(List<StackableItem> products, List<ContainerItem> containers, int limit) {
+		return packList(products, containers, limit, BooleanSupplierBuilder.NOOP);
+	}
+
+	
 	/**
 	 * Return a list of containers which holds all the boxes in the argument
 	 *
 	 * @param boxes     list of boxes to fit in a container
 	 * @param limit     maximum number of containers
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
-	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
+	 * @return list of containers, or null if the deadline was reached, or empty list if the packages could not be packaged within the available containers and/or limit.
 	 */
+	
 	public List<Container> packList(List<StackableItem> boxes, List<ContainerItem> containerItems, int limit, BooleanSupplier interrupt) {
-		Adapter<P> pack = adapter(boxes, containerItems, interrupt);
+		PackagerAdapter<P> adapter = adapter(boxes, containerItems, interrupt);
 
 		List<Container> containerPackResults = new ArrayList<>();
 
-		// TODO binary search: not as simple as in the single-container use-case; discarding containers would need some kind
-		// of criteria which could be trivially calculated, perhaps on volume.
 		do {
+			// is it possible to fit the remaining boxes a single container?
+			int maxContainers = limit - containerPackResults.size();
+			List<Integer> containerItemIndexes = adapter.getContainers(1);
+			if(!containerItemIndexes.isEmpty()) {
+				
+				P result = pack(containerItemIndexes, adapter, interrupt);
+				if(result != null) {
+					containerPackResults.add(adapter.accept(result));
 
-			List<Integer> containerIndexes = pack.getContainers(limit - containerPackResults.size());
-			if(containerIndexes.isEmpty()) {
-				return null;
-			}
-
-			P best = null;
-			for (int i = 0; i < containerItems.size(); i++) {
-				ContainerItem item = containerItems.get(i);
-				if(!item.isAvailable()) {
-					continue;
+					// positive result
+					return containerPackResults;
 				}
-
+			}
+			
+			// one or more containers
+			containerItemIndexes = adapter.getContainers(maxContainers);
+			if(containerItemIndexes.isEmpty()) {
+				return Collections.emptyList();
+			}
+			
+			// the best container is the one which can hold the most stackables
+			// assume larger boxes is at the end of list, so start there
+			P best = null;
+			for (int i = containerItemIndexes.size() - 1; i >= 0; i--) {
 				if(interrupt.getAsBoolean()) {
 					return null;
 				}
 
-				P result = pack.attempt(i, best);
-				if(result == null) {
-					return null; // timeout
-				}
-				if(!result.isEmpty()) {
-					if(result.containsLastStackable()) {
-						// will not match any better than this
-						best = result;
-
-						break;
+				Integer containerItemIndex = containerItemIndexes.get(i);
+				
+				// can this container hold more than the previously best result?
+				if(best != null) {
+					ContainerItem containerItem = containerItems.get(containerItemIndex);
+					Container container = containerItem.getContainer();
+					
+					long loadVolume = best.getLoadVolume();
+					if(loadVolume > container.getMaxLoadVolume()) {
+						continue;
 					}
-
-					if(best == null || packResultComparator.compare(best, result) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
+					int loadWeight = best.getLoadWeight();
+					if(loadWeight > container.getMaxLoadWeight()) {
+						continue;
+					}
+				}
+				
+				P result = adapter.attempt(containerItemIndex, best);
+				if(result == null) {
+					// timeout, unless already have a result ready
+					if(best != null && best.containsLastStackable()) {
+						containerPackResults.add(adapter.accept(best));
+						
+						return containerPackResults;
+					}
+					
+					return null; 
+				}
+				
+				if(!result.isEmpty()) {
+					if(best == null || packResultComparator.compare(best, result) != PackResultComparator.ARGUMENT_1_IS_BETTER) {
 						best = result;
 					}
 				}
@@ -203,25 +216,16 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 
 			if(best == null) {
 				// negative result
-				return null;
+				return Collections.emptyList();
 			}
 
-			boolean end = best.containsLastStackable();
-
-			containerPackResults.add(pack.accept(best));
-
-			if(end) {
-				// positive result
-				return containerPackResults;
-			}
-
-			// TODO recalculate the in-scope containers
+			containerPackResults.add(adapter.accept(best));
 		} while (containerPackResults.size() < limit);
 
 		return null;
 	}
 
-	protected abstract Adapter<P> adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt);
+	protected abstract PackagerAdapter<P> adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt);
 
 	protected long getMinStackableItemVolume(List<StackableItem> stackables) {
 		long minVolume = Integer.MAX_VALUE;

@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.BooleanSupplier;
 
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Scope;
@@ -19,10 +18,9 @@ import org.openjdk.jmh.annotations.TearDown;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.DefaultStack;
+import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
@@ -143,11 +141,14 @@ public class EgyPackagerState {
 
 			FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().build();
 
-			BooleanSupplier booleanSupplier = BooleanSupplierBuilder.builder().withDeadline(System.currentTimeMillis() + 5000, 1).build();
-
-			Container pack = fastPackager.pack(stackableItems3D, containers, booleanSupplier);
-
-			if(pack != null) {
+			PackagerResult build = fastPackager
+					.newResultBuilder()
+					.withContainers(containers)
+					.withMaxContainerCount(1)
+					.withStackables(stackableItems3D)
+					.withDeadline(System.currentTimeMillis() + 5000)
+					.build();
+			if(build.isSuccess()) {
 				System.out.println("Go container " + volume + " from " + originalVolume);
 				return containers.get(0).getContainer();
 			}

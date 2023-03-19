@@ -19,9 +19,9 @@ import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.AbstractAdapter;
+import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
-import com.github.skjolber.packing.packer.Adapter;
+import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 
 /**
@@ -51,7 +51,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		}
 	}
 
-	private class BruteForceAdapter extends AbstractAdapter<BruteForcePackagerResult> {
+	private class BruteForceAdapter extends AbstractPackagerAdapter<BruteForcePackagerResult> {
 
 		private final ContainerStackValue[] containerStackValue;
 		private final DefaultPermutationRotationIterator[] iterators;
@@ -157,7 +157,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected Adapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt) {
+	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt) {
 		return new BruteForceAdapter(boxes, containers, interrupt);
 	}
 

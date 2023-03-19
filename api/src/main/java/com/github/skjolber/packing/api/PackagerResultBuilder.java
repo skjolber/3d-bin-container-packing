@@ -18,7 +18,7 @@ public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> 
 
 	protected BooleanSupplier interrupt;
 
-	protected int maxContainerCount = -1;
+	protected int maxContainerCount = 1;
 
 	public B withStackables(StackableItem... items) {
 		if(this.items == null) {

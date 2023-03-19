@@ -22,8 +22,10 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
+import com.github.skjolber.packing.packer.AbstractPackager;
 
 @State(Scope.Thread)
 @Fork(value = 1, warmups = 1, jvmArgsPrepend = "-XX:-RestrictContended")
@@ -250,10 +252,12 @@ public class TychoBenchmark {
 
 		int i = 0;
 		for (BenchmarkSet set : sets) {
+			AbstractPackager packager = set.getPackager();
 			List<ContainerItem> containers = set.getContainers();
 			List<StackableItem> products = set.getProducts();
 
-			if(set.getPackager().pack(products, containers, booleanSupplier) != null) {
+			PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products).withInterrupt(booleanSupplier).build();
+			if(build.isSuccess()) {
 				i++;
 			}
 		}

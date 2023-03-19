@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.jmh;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -10,7 +10,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
+import com.github.skjolber.packing.packer.AbstractPackager;
 
 public class EgyPackagerBenchmarkTest {
 
@@ -42,7 +46,12 @@ public class EgyPackagerBenchmarkTest {
 		BooleanSupplier booleanSupplier = BooleanSupplierBuilder.builder().withDeadline(deadline, 1).build();
 
 		for (BenchmarkSet set : sets) {
-			assertNotNull(set.getPackager().pack(set.getProducts(), set.getContainers(), booleanSupplier));
+			AbstractPackager packager = set.getPackager();
+			List<ContainerItem> containers = set.getContainers();
+			List<StackableItem> products = set.getProducts();
+
+			PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products).withInterrupt(booleanSupplier).build();
+			assertTrue(build.isSuccess());
 		}
 	}
 

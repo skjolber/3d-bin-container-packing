@@ -27,10 +27,9 @@ import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorL
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.AbstractAdapter;
+import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
-import com.github.skjolber.packing.packer.Adapter;
-import com.github.skjolber.packing.packer.DefaultPackResult;
+import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 import com.github.skjolber.packing.packer.PackagerException;
 
@@ -172,7 +171,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		}
 	}
 
-	private class ParallelAdapter extends AbstractAdapter<BruteForcePackagerResult> {
+	private class ParallelAdapter extends AbstractPackagerAdapter<BruteForcePackagerResult> {
 
 		private final DefaultPermutationRotationIterator[] iterators; // per container
 		private final ParallelPermutationRotationIteratorList[] parallelIterators; // per container
@@ -374,7 +373,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected Adapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt) {
+	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt) {
 		return new ParallelAdapter(boxes, containers, interrupt);
 	}
 

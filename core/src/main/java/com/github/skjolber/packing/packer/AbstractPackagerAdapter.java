@@ -9,14 +9,14 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackResult;
 import com.github.skjolber.packing.api.Stackable;
 
-public abstract class AbstractAdapter<T extends PackResult> implements Adapter<T> {
+public abstract class AbstractPackagerAdapter<T extends PackResult> implements PackagerAdapter<T> {
 
 	protected final List<ContainerItem> containerItems;
 
 	protected long maxContainerLoadVolume = Long.MIN_VALUE;
 	protected long maxContainerLoadWeight = Long.MIN_VALUE;
 
-	public AbstractAdapter(List<ContainerItem> items) {
+	public AbstractPackagerAdapter(List<ContainerItem> items) {
 		this.containerItems = items;
 
 		calculateMaxLoadVolume();

@@ -17,7 +17,6 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
-import com.github.skjolber.packing.test.assertj.PackagerAssert;
 
 public class PlainPackagerTest extends AbstractPackagerTest {
 
@@ -162,11 +161,11 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	void testStackingMultipleContainers() {
+	void testStackingMultipleContainersSingleContainerResult() {
 		List<Container> containers = new ArrayList<>();
 		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
 		containers.add(Container.newBuilder().withDescription("2").withEmptyWeight(1).withSize(1, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
-		containers.add(Container.newBuilder().withDescription("3").withEmptyWeight(1).withSize(2, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("3").withEmptyWeight(1).withSize(1, 3, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
 		containers.add(Container.newBuilder().withDescription("4").withEmptyWeight(1).withSize(2, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
 
 		List<ContainerItem> containerItems = ContainerItem
@@ -186,9 +185,43 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		assertValid(build);
 
 		Container fits = build.get(0);
-		assertEquals(fits.getVolume(), containers.get(3).getVolume());
+		assertEquals(fits.getVolume(), containers.get(2).getVolume());
 	}
 
+	@Test
+	void testStackingMultipleContainersMultiContainerResult() {
+		List<Container> containers = new ArrayList<>();
+		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("2").withEmptyWeight(1).withSize(1, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("3").withEmptyWeight(1).withSize(1, 3, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("4").withEmptyWeight(1).withSize(1, 4, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("5").withEmptyWeight(1).withSize(1, 5, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("6").withEmptyWeight(1).withSize(1, 6, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withDescription("7").withEmptyWeight(1).withSize(1, 7, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+
+		List<ContainerItem> containerItems = ContainerItem
+				.newListBuilder()
+				.withContainers(containers)
+				.build();
+
+		PlainPackager packager = PlainPackager.newBuilder().build();
+
+		List<StackableItem> products = new ArrayList<>();
+
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 3));
+		products.add(new StackableItem(Box.newBuilder().withDescription("D").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 4));
+
+		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withMaxContainerCount(5).withStackables(products).build();
+		assertValid(build);
+
+		assertEquals(build.size(), 2);
+		assertEquals(build.get(0).getVolume(), 7);
+		assertEquals(build.get(1).getVolume(), 3);
+	}
+	
+	
 	@Test
 	void issue440() {
 		DefaultContainer build = Container.newBuilder()
@@ -252,6 +285,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("big").withEmptyWeight(1).withSize(2, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.withContainer(Container.newBuilder().withDescription("small").withEmptyWeight(1).withSize(1, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 4)
+				.withContainer(Container.newBuilder().withDescription("other").withEmptyWeight(1).withSize(1, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		PlainPackager packager = PlainPackager.newBuilder().build();
