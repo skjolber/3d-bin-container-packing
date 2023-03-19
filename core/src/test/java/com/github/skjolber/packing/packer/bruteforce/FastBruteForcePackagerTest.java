@@ -33,8 +33,7 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build())
-				.build()
-				;
+				.build();
 
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
 
@@ -46,7 +45,7 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 
 		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
 		assertValid(build);
-		
+
 		Container fits = build.getContainers().get(0);
 
 		List<StackPlacement> placements = fits.getStack().getPlacements();
@@ -70,9 +69,8 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 5)
-				.build()
-				;
-		
+				.build();
+
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -83,9 +81,9 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 
 		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).withMaxContainerCount(5).build();
 		assertValid(build);
-		
+
 		List<Container> packList = build.getContainers();
-		
+
 		assertThat(packList).hasSize(2);
 
 		Container fits = packList.get(0);
@@ -134,13 +132,12 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 	}
 
 	protected void pack(BouwkampCode bouwkampCode) {
-		
+
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(100)
 						.withStack(new ValidatingStack()).build(), 1)
-				.build()
-				;
+				.build();
 
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
 
@@ -167,9 +164,9 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 				.newResultBuilder()
 				.withContainers(containerItems)
 				.withStackables(products).build();
-		
+
 		Container fits = build.get(0);
-		
+
 		assertNotNull(bouwkampCode.getName(), fits);
 		assertValid(fits);
 		assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), squares.size());
@@ -183,7 +180,7 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1900, 1500, 4000)
 						.withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
-				.build();	
+				.build();
 
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
 
@@ -216,7 +213,7 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 				.withContainers(containerItems)
 				.withStackables(products)
 				.build();
-		
+
 		// strangely when the timeout is set to now + 200ms it properly returns null
 		Container fits = build.get(0);
 		assertNull(fits);

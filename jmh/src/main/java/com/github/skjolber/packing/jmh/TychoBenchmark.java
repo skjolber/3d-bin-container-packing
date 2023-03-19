@@ -250,9 +250,9 @@ public class TychoBenchmark {
 
 		int i = 0;
 		for (BenchmarkSet set : sets) {
-			 List<ContainerItem> containers = set.getContainers();
-			 List<StackableItem> products = set.getProducts();
-			 
+			List<ContainerItem> containers = set.getContainers();
+			List<StackableItem> products = set.getProducts();
+
 			if(set.getPackager().pack(products, containers, booleanSupplier) != null) {
 				i++;
 			}

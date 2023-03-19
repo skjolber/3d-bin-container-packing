@@ -136,14 +136,15 @@ public class EgyPackagerState {
 
 			List<ContainerItem> containers = ContainerItem.newListBuilder().withContainer(
 					Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(length, length, length).withMaxLoadWeight(length * length * length)
-					.withStack(new DefaultStack()).build()).build();
+							.withStack(new DefaultStack()).build())
+					.build();
 
 			List<StackableItem> stackableItems3D = getStackableItems3D(items);
 
 			FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().build();
 
 			BooleanSupplier booleanSupplier = BooleanSupplierBuilder.builder().withDeadline(System.currentTimeMillis() + 5000, 1).build();
-			
+
 			Container pack = fastPackager.pack(stackableItems3D, containers, booleanSupplier);
 
 			if(pack != null) {

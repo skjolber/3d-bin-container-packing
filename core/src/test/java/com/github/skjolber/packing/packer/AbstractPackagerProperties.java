@@ -115,17 +115,17 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 					.withSize(boxSize.getDx(), boxSize.getDy(), boxSize.getDz())
 					.withWeight(1)
 					.build();
-			
+
 			List<ContainerItem> containers = ContainerItem.newListBuilder()
 					.withContainer(container, 1)
-					.build();				
-			
+					.build();
+
 			PackagerResult build = packager
 					.newResultBuilder()
 					.withContainers(containers)
 					.withStackables(singletonList(new StackableItem(box, count)))
 					.build();
-			
+
 			Container fits = build.get(0);
 			// identifies which packager has failed
 			Assert.assertNotNull(packager.getClass().getSimpleName() + " is expected to pack", fits);

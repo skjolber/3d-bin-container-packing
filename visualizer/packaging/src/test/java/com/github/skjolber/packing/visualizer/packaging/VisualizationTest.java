@@ -51,7 +51,7 @@ public class VisualizationTest {
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 1).withMaxLoadWeight(100).build(), 1)
 				.build();
-		
+
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -68,12 +68,12 @@ public class VisualizationTest {
 
 	@Test
 	public void testBruteForcePackager() throws Exception {
-		
+
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(5, 5, 1).withMaxLoadWeight(100).build(), 1)
 				.build();
-		
+
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -86,7 +86,7 @@ public class VisualizationTest {
 
 		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).build();
 		assertFalse(result.getContainers().isEmpty());
-		
+
 		Container fits = result.get(0);
 
 		write(fits);
@@ -94,7 +94,7 @@ public class VisualizationTest {
 
 	@Test
 	public void testFastBruteForcePackager() throws Exception {
-		
+
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(5, 5, 1).withMaxLoadWeight(100).build(), 1)
@@ -112,7 +112,7 @@ public class VisualizationTest {
 
 		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).build();
 		assertFalse(result.getContainers().isEmpty());
-		
+
 		Container fits = result.get(0);
 
 		write(fits);
@@ -125,7 +125,7 @@ public class VisualizationTest {
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).build(), 5)
 				.build();
-		
+
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -136,7 +136,7 @@ public class VisualizationTest {
 
 		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(5).build();
 		assertFalse(result.getContainers().isEmpty());
-		
+
 		Container fits = result.get(0);
 
 		List<StackPlacement> placements = fits.getStack().getPlacements();
@@ -161,7 +161,7 @@ public class VisualizationTest {
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).build(), 5)
 				.build();
-		
+
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -197,7 +197,7 @@ public class VisualizationTest {
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(8, 8, 2).withMaxLoadWeight(100).build(), 1)
 				.build();
-		
+
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -249,7 +249,7 @@ public class VisualizationTest {
 		}
 
 		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(1).build();
-		
+
 		Container fits = result.get(0);
 		assertNotNull(fits);
 		assertEquals(fits.getStack().getSize(), products.size());
@@ -294,7 +294,7 @@ public class VisualizationTest {
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1)
 						.withMaxLoadWeight(bouwkampCode.getWidth() * bouwkampCode.getDepth()).build(), 1)
 				.build();
-		
+
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(256).withCheckpointsPerDeadlineCheck(1024).build();
 
 		List<Integer> squares = new ArrayList<>();
@@ -334,7 +334,7 @@ public class VisualizationTest {
 	private void write(PackagerResult result) throws Exception {
 		write(result.getContainers());
 	}
-	
+
 	private void write(Container container) throws Exception {
 		write(Arrays.asList(container));
 	}
@@ -360,17 +360,17 @@ public class VisualizationTest {
 				.newListBuilder()
 				.withContainer(container)
 				.build();
-		
+
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager
 				.newBuilder()
 				.build();
 
 		List<StackableItem> products = Arrays.asList(
 				new StackableItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 20));
-		
+
 		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(1).build();
 		Container pack = result.get(0);
-		
+
 		assertNotNull(pack);
 
 		write(pack);
@@ -423,7 +423,6 @@ public class VisualizationTest {
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(90, 610, 210).withWeight(0).build(), 1),
 			new StackableItem(Box.newBuilder().withRotate3D().withSize(144, 630, 1530).withWeight(0).build(), 1));
 
-	
 	List<ContainerItem> containers = ContainerItem
 			.newListBuilder()
 			.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build())

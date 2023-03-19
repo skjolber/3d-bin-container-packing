@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * 
- * A {@linkplain Container} repeated one or more times. 
+ * A {@linkplain Container} repeated one or more times.
  * 
  */
 
@@ -14,25 +14,25 @@ public class ContainerItem {
 	public static Builder newListBuilder() {
 		return new Builder();
 	}
-	
+
 	public static class Builder {
-		
+
 		private List<ContainerItem> items = new ArrayList<>();
 
-		public Builder withUnlimited(Container ... containers) {
-			for(Container container : containers) {
+		public Builder withUnlimited(Container... containers) {
+			for (Container container : containers) {
 				items.add(new ContainerItem(container, Integer.MAX_VALUE));
 			}
 			return this;
 		}
-		
+
 		public Builder withContainers(List<Container> containers) {
-			for(Container container : containers) {
+			for (Container container : containers) {
 				items.add(new ContainerItem(container, Integer.MAX_VALUE));
 			}
 			return this;
 		}
-		
+
 		public Builder withContainer(Container container) {
 			items.add(new ContainerItem(container, Integer.MAX_VALUE));
 			return this;
@@ -42,9 +42,9 @@ public class ContainerItem {
 			items.add(new ContainerItem(container, limit));
 			return this;
 		}
-		
+
 		public Builder withContainers(List<Container> containers, int limit) {
-			for(Container container : containers) {
+			for (Container container : containers) {
 				items.add(new ContainerItem(container, limit));
 			}
 			return this;
@@ -54,7 +54,7 @@ public class ContainerItem {
 			return items;
 		}
 	}
-	
+
 	private int count;
 	private final Container container;
 
@@ -74,7 +74,7 @@ public class ContainerItem {
 	public Container getContainer() {
 		return container;
 	}
-	
+
 	public boolean isAvailable() {
 		return count > 0;
 	}
@@ -82,6 +82,5 @@ public class ContainerItem {
 	public void consume() {
 		count--;
 	}
-	
-	
+
 }

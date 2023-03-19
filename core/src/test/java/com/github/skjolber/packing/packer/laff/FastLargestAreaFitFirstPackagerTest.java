@@ -43,12 +43,12 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingRectangles() {
-		
+
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
-		
+
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -64,7 +64,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingSquaresAndRectangle() {
-		
+
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(6, 10, 10).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
@@ -106,12 +106,12 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingRectanglesTwoLevels() {
-		
+
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 2).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
-		
+
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -123,7 +123,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
 		List<Container> containers = build.getContainers();
 		assertValid(containers);
-		
+
 		Container fits = containers.get(0);
 
 		LevelStack levelStack = (LevelStack)fits.getStack();
@@ -132,7 +132,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingRectanglesThreeLevels() {
-		
+
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
@@ -147,7 +147,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
 		List<Container> containers = build.getContainers();
 		assertValid(containers);
-		
+
 		Container fits = containers.get(0);
 
 		LevelStack levelStack = (LevelStack)fits.getStack();
@@ -156,13 +156,13 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingNotPossible() {
-		
+
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				// capacity is 3*2*3 = 18
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
-		
+
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -184,7 +184,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				.withEmptyWeight(0)
 				.withMaxLoadWeight(100)
 				.build();
-		
+
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				// capacity is 3*2*3 = 18
@@ -201,9 +201,9 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				new StackableItem(Box.newBuilder().withId("3").withSize(34, 21, 24).withRotate3D().withWeight(0).build(), 1),
 				new StackableItem(Box.newBuilder().withId("4").withSize(30, 19, 23).withRotate3D().withWeight(0).build(), 1),
 				new StackableItem(Box.newBuilder().withId("5").withSize(30, 21, 25).withRotate3D().withWeight(0).build(), 1));
-		
+
 		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
-		
+
 		assertEquals(0, build.size());
 	}
 

@@ -19,11 +19,10 @@ import com.github.skjolber.packing.test.assertj.PackagerAssert;
 @SuppressWarnings("rawtypes")
 public abstract class AbstractPackagerTest {
 
-
 	protected void assertValid(PackagerResult build) {
 		assertValid(build.getContainers());
 	}
-	
+
 	protected static void assertValid(List<Container> containers) {
 		assertNotNull(containers);
 		assertFalse(containers.isEmpty());
@@ -49,8 +48,8 @@ public abstract class AbstractPackagerTest {
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
 				.withContainer(container, 1)
-				.build();	
-		
+				.build();
+
 		Packager packager = builder.build();
 
 		List<StackableItem> products = Arrays.asList(

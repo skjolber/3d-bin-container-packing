@@ -119,7 +119,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		@Override
 		public Container accept(BruteForcePackagerResult bruteForceResult) {
 			super.accept(bruteForceResult.getIndex());
-			
+
 			Container container = bruteForceResult.getContainer();
 			Stack stack = container.getStack();
 
@@ -146,20 +146,20 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 			return container;
 		}
-		
+
 		@Override
 		public List<Integer> getContainers(int maxCount) {
 			DefaultPermutationRotationIterator defaultPermutationRotationIterator = iterators[0];
 			int length = defaultPermutationRotationIterator.length();
 			List<Stackable> boxes = new ArrayList<>(length);
-			for(int i = 0; i < length; i++) {
+			for (int i = 0; i < length; i++) {
 				PermutationRotation permutationRotation = defaultPermutationRotationIterator.get(i);
-				
+
 				boxes.add(permutationRotation.getStackable());
 			}
-			
+
 			return getContainers(boxes, maxCount);
-		}		
+		}
 	}
 
 	public FastBruteForcePackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
@@ -176,7 +176,8 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		return new FastBruteForceAdapter(boxes, containers, interrupt);
 	}
 
-	public BruteForcePackagerResult pack(FastExtremePoints3DStack extremePoints, List<StackPlacement> stackPlacements, Container targetContainer, ContainerStackValue containerStackValue, int containerIndex,
+	public BruteForcePackagerResult pack(FastExtremePoints3DStack extremePoints, List<StackPlacement> stackPlacements, Container targetContainer, ContainerStackValue containerStackValue,
+			int containerIndex,
 			DefaultPermutationRotationIterator rotator, BooleanSupplier interrupt) {
 		Stack stack = new DefaultStack(containerStackValue);
 

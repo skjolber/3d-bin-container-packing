@@ -182,7 +182,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 		protected ParallelAdapter(List<StackableItem> stackableItems, List<ContainerItem> containerItems, BooleanSupplier interrupt) {
 			super(containerItems);
-			
+
 			this.interrupts = new BooleanSupplier[parallelizationCount];
 			this.containerStackValues = new ContainerStackValue[containerItems.size()];
 
@@ -306,13 +306,14 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			}
 			// no need to split this job
 			// run with linear approach
-			return ParallelBruteForcePackager.this.pack(runnables[0].extremePoints3D, runnables[0].placements, containerItems.get(i).getContainer(), i, containerStackValues[i], iterators[i], interrupts[i]);
+			return ParallelBruteForcePackager.this.pack(runnables[0].extremePoints3D, runnables[0].placements, containerItems.get(i).getContainer(), i, containerStackValues[i], iterators[i],
+					interrupts[i]);
 		}
 
 		@Override
 		public Container accept(BruteForcePackagerResult bruteForceResult) {
 			super.accept(bruteForceResult.getIndex());
-			
+
 			Container container = bruteForceResult.getContainer();
 
 			if(!bruteForceResult.containsLastStackable()) {
@@ -353,12 +354,12 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			DefaultPermutationRotationIterator defaultPermutationRotationIterator = iterators[0];
 			int length = defaultPermutationRotationIterator.length();
 			List<Stackable> boxes = new ArrayList<>(length);
-			for(int i = 0; i < length; i++) {
+			for (int i = 0; i < length; i++) {
 				PermutationRotation permutationRotation = defaultPermutationRotationIterator.get(i);
-				
+
 				boxes.add(permutationRotation.getStackable());
 			}
-			
+
 			return getContainers(boxes, maxCount);
 		}
 

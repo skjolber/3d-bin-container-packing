@@ -271,5 +271,4 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 		return new LargestAreaFitFirstPackagerResultBuilder().withCheckpointsPerDeadlineCheck(checkpointsPerDeadlineCheck).withPackager(this);
 	}
 
-
 }

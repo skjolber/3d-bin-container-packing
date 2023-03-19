@@ -19,27 +19,27 @@ public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> 
 	protected BooleanSupplier interrupt;
 
 	protected int maxContainerCount = -1;
-	
-	public B withStackables(StackableItem ... items) {
+
+	public B withStackables(StackableItem... items) {
 		if(this.items == null) {
 			this.items = new ArrayList<>();
 		}
-		for(StackableItem item : items) {
+		for (StackableItem item : items) {
 			this.items.add(item);
 		}
 		return (B)this;
 	}
-	
+
 	public B withStackables(List<StackableItem> items) {
 		this.items = items;
 		return (B)this;
 	}
 
-	public B withContainers(ContainerItem ... containers) {
+	public B withContainers(ContainerItem... containers) {
 		if(this.containers == null) {
 			this.containers = new ArrayList<>();
 		}
-		for(ContainerItem item : containers) {
+		for (ContainerItem item : containers) {
 			this.containers.add(item);
 		}
 		return (B)this;

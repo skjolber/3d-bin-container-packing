@@ -85,7 +85,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 						.withMaxLoadWeight(stackValue.getMaxLoadWeight())
 						.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
 						.build();
-				
+
 				maxIteratorLength = Math.max(maxIteratorLength, iterators[i].length());
 			}
 
@@ -135,21 +135,21 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 			return container;
 		}
-		
+
 		@Override
 		public List<Integer> getContainers(int maxCount) {
 			DefaultPermutationRotationIterator defaultPermutationRotationIterator = iterators[0];
 			int length = defaultPermutationRotationIterator.length();
 			List<Stackable> boxes = new ArrayList<>(length);
-			for(int i = 0; i < length; i++) {
+			for (int i = 0; i < length; i++) {
 				PermutationRotation permutationRotation = defaultPermutationRotationIterator.get(i);
-				
+
 				boxes.add(permutationRotation.getStackable());
 			}
-			
+
 			return getContainers(boxes, maxCount);
 		}
-		
+
 	}
 
 	public BruteForcePackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {

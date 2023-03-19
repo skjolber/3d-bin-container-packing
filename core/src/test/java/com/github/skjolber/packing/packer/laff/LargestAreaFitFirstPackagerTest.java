@@ -45,7 +45,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		PackagerResult result = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
 		Container fits = result.get(0);
-		
+
 		assertNotNull(fits);
 		validate(fits);
 
@@ -62,12 +62,12 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingRectangles() {
-		
+
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
-		
+
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -78,7 +78,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		PackagerResult result = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
 		Container fits = result.get(0);
-		
+
 		assertNotNull(fits);
 		validate(fits);
 
@@ -97,7 +97,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(6, 10, 10).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
-		
+
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -145,7 +145,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingRectanglesTwoLevels() {
-		
+
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 2).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
@@ -181,7 +181,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingRectanglesThreeLevels() {
-		
+
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
@@ -208,14 +208,13 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingNotPossible() {
-		
+
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				// capacity is 3*2*3 = 18
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
-		
 		List<Container> containers = new ArrayList<>();
 
 		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
@@ -240,11 +239,11 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				.withEmptyWeight(0)
 				.withMaxLoadWeight(100)
 				.build();
-		
+
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(container, 1)
-				.build();		
+				.build();
 
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager
 				.newBuilder()
@@ -252,7 +251,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		List<StackableItem> products = Arrays.asList(
 				new StackableItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 20));
-		
+
 		PackagerResult result = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
 		Container pack = result.get(0);
 		assertNotNull(pack);
@@ -271,9 +270,8 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(build)
-				.build();		
+				.build();
 
-		
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder()
 				.build();
 
@@ -314,8 +312,8 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(build)
-				.build();	
-		
+				.build();
+
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder()
 				.build();
 

@@ -70,7 +70,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 5)
 				.build();
-		
+
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -82,7 +82,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		PackagerResult build = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(5).build();
 
 		List<Container> packList = build.getContainers();
-		
+
 		assertValid(packList);
 		assertThat(packList).hasSize(2);
 
@@ -133,7 +133,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(10, 10, 4).withMaxLoadWeight(100).withStack(new ValidatingStack()).build())
 				.build();
-		
+
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -145,19 +145,18 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		products.add(new StackableItem(Box.newBuilder().withDescription("N").withRotate3D().withSize(5, 10, 1).withWeight(1).build(), 1));
 
 		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
-		
+
 		assertValid(build);
 	}
 
-
 	@Test
 	public void testStackingBox() {
-		
+
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(5, 5, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build())
 				.build();
-		
+
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -209,8 +208,8 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(100)
 						.withStack(new ValidatingStack()).build())
-				.build();		
-		
+				.build();
+
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
 
 		List<StackableItem> products = new ArrayList<>();
@@ -231,7 +230,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		}
 
 		PackagerResult build = packager.newResultBuilder().withContainers(containers).withStackables(products).build();
-		
+
 		Container fits = build.getContainers().get(0);
 		assertNotNull(bouwkampCode.getName(), fits);
 		assertValid(fits);
@@ -252,7 +251,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 				.newListBuilder()
 				.withContainer(container)
 				.build();
-		
+
 		FastBruteForcePackager packager = FastBruteForcePackager
 				.newBuilder()
 				.build();
@@ -268,7 +267,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 				new StackableItem(Box.newBuilder().withId("8").withSize(140, 10, 10).withRotate3D().withWeight(0).build(), 2),
 				new StackableItem(Box.newBuilder().withId("9").withSize(150, 4, 65).withRotate3D().withWeight(0).build(), 2),
 				new StackableItem(Box.newBuilder().withId("10").withSize(75, 17, 60).withRotate3D().withWeight(0).build(), 1));
-		
+
 		PackagerResult build = packager.newResultBuilder().withContainers(containers).withStackables(products).build();
 		assertValid(build);
 	}

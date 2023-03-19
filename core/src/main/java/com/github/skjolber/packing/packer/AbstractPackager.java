@@ -44,25 +44,25 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	public Container pack(List<StackableItem> products, List<ContainerItem> containers) {
 		return pack(products, containers, BooleanSupplierBuilder.NOOP);
 	}
-	
+
 	/**
 	 * Return a container which holds all the boxes in the argument
 	 *
-	 * @param boxes      list of boxes to fit in a container
+	 * @param boxes           list of boxes to fit in a container
 	 * @param containersItems list of containers
-	 * @param interrupt  When true, the computation is interrupted as soon as possible.
+	 * @param interrupt       When true, the computation is interrupted as soon as possible.
 	 * @return list of containers, or null if the deadline was reached / the packages could not be packaged within the available containers and/or limit
 	 */
 
 	public Container pack(List<StackableItem> boxes, List<ContainerItem> containersItems, BooleanSupplier interrupt) {
-		
+
 		Adapter<P> pack = adapter(boxes, containersItems, interrupt);
-		
+
 		List<Integer> containerIndexes = pack.getContainers(1);
 		if(containerIndexes.isEmpty()) {
 			return null;
 		}
-		
+
 		if(containerIndexes.size() <= 2) {
 			for (int i = 0; i < containerIndexes.size(); i++) {
 				if(interrupt.getAsBoolean()) {
@@ -70,7 +70,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 				}
 
 				Integer index = containerIndexes.get(i);
-				
+
 				P result = pack.attempt(index, null);
 				if(result == null) {
 					return null; // timeout, no result
@@ -166,19 +166,19 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		// TODO binary search: not as simple as in the single-container use-case; discarding containers would need some kind
 		// of criteria which could be trivially calculated, perhaps on volume.
 		do {
-			
+
 			List<Integer> containerIndexes = pack.getContainers(limit - containerPackResults.size());
 			if(containerIndexes.isEmpty()) {
 				return null;
 			}
-			
+
 			P best = null;
 			for (int i = 0; i < containerItems.size(); i++) {
 				ContainerItem item = containerItems.get(i);
 				if(!item.isAvailable()) {
 					continue;
 				}
-				
+
 				if(interrupt.getAsBoolean()) {
 					return null;
 				}
@@ -209,7 +209,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			boolean end = best.containsLastStackable();
 
 			containerPackResults.add(pack.accept(best));
-			
+
 			if(end) {
 				// positive result
 				return containerPackResults;

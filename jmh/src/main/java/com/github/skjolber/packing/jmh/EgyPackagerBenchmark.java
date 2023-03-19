@@ -41,7 +41,7 @@ public class EgyPackagerBenchmark {
 	public int packager(EgyPackagerState state) throws Exception {
 		return process(state.getBruteForcePackager(), Long.MAX_VALUE);
 	}
-
+	
 	@Benchmark
 	public int fastPackager(EgyPackagerState state) throws Exception {
 		return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
@@ -52,9 +52,9 @@ public class EgyPackagerBenchmark {
 
 		int i = 0;
 		for (BenchmarkSet set : sets) {
-			 List<ContainerItem> containers = set.getContainers();
-			 List<StackableItem> products = set.getProducts();
-			 
+			List<ContainerItem> containers = set.getContainers();
+			List<StackableItem> products = set.getProducts();
+
 			if(set.getPackager().pack(products, containers, booleanSupplier) != null) {
 				i++;
 			}

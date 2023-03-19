@@ -78,8 +78,7 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 
 			return container;
 		}
-		
-		
+
 		@Override
 		public List<Integer> getContainers(int maxCount) {
 			return getContainers(boxes, maxCount);

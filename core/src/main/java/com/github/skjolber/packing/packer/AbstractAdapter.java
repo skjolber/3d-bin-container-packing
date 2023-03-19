@@ -10,7 +10,7 @@ import com.github.skjolber.packing.api.PackResult;
 import com.github.skjolber.packing.api.Stackable;
 
 public abstract class AbstractAdapter<T extends PackResult> implements Adapter<T> {
-	
+
 	protected final List<ContainerItem> containerItems;
 
 	protected long maxContainerLoadVolume = Long.MIN_VALUE;
@@ -18,7 +18,7 @@ public abstract class AbstractAdapter<T extends PackResult> implements Adapter<T
 
 	public AbstractAdapter(List<ContainerItem> items) {
 		this.containerItems = items;
-		
+
 		calculateMaxLoadVolume();
 		calculateMaxLoadWeight();
 	}
@@ -58,11 +58,11 @@ public abstract class AbstractAdapter<T extends PackResult> implements Adapter<T
 	/**
 	 * Return a list of containers which can potentially hold the boxes within the provided count
 	 *
-	 * @param boxes      list of boxes
-	 * @param maxCount      maximum number of possible containers
+	 * @param boxes    list of boxes
+	 * @param maxCount maximum number of possible containers
 	 * @return list of containers
 	 */
-	
+
 	protected List<Integer> getContainers(List<Stackable> boxes, int maxCount) {
 		long volume = 0;
 		long weight = 0;
@@ -83,16 +83,15 @@ public abstract class AbstractAdapter<T extends PackResult> implements Adapter<T
 		List<Integer> list = new ArrayList<>(containerItems.size());
 
 		if(maxCount == 1) {
-			
-			containers: 
-			for (int i = 0; i < containerItems.size(); i++) {
+
+			containers: for (int i = 0; i < containerItems.size(); i++) {
 				ContainerItem item = containerItems.get(i);
 				if(!item.isAvailable()) {
 					continue;
 				}
-				
+
 				Container container = item.getContainer();
-				
+
 				if(container.getMaxLoadVolume() < volume) {
 					continue;
 				}
@@ -132,9 +131,9 @@ public abstract class AbstractAdapter<T extends PackResult> implements Adapter<T
 				if(!item.isAvailable()) {
 					continue;
 				}
-				
+
 				Container container = item.getContainer();
-				
+
 				if(container.getMaxLoadVolume() < minVolume || container.getMaxLoadWeight() < minWeight) {
 					// this container cannot even fit a single box
 					continue;
@@ -149,12 +148,12 @@ public abstract class AbstractAdapter<T extends PackResult> implements Adapter<T
 					continue;
 				}
 				list.add(i);
-			}			
+			}
 		}
 
 		return list;
 	}
-	
+
 	private boolean canLoadAtLeastOne(Container containerBox, List<Stackable> boxes) {
 		for (Stackable box : boxes) {
 			if(containerBox.canLoad(box)) {
@@ -166,13 +165,13 @@ public abstract class AbstractAdapter<T extends PackResult> implements Adapter<T
 
 	public void accept(int index) {
 		ContainerItem item = containerItems.get(index);
-		
+
 		item.consume();
-		
+
 		// do we need to adjust limits?
 		if(!item.isAvailable()) {
 			Container container = item.getContainer();
-			
+
 			if(container.getMaxLoadVolume() == maxContainerLoadVolume) {
 				calculateMaxLoadVolume();
 			}

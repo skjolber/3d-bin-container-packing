@@ -14,6 +14,6 @@ public interface Adapter<T extends PackResult> {
 	T attempt(int containerIndex, T best);
 
 	Container accept(T result);
-	
+
 	List<Integer> getContainers(int maxCount);
 }
