@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.packer.AbstractPackager;
 
 public class EgyPackagerBenchmarkTest {
@@ -43,14 +43,12 @@ public class EgyPackagerBenchmarkTest {
 	}
 
 	public void assertValid(List<BenchmarkSet> sets, long deadline) {
-		BooleanSupplier booleanSupplier = BooleanSupplierBuilder.builder().withDeadline(deadline, 1).build();
-
 		for (BenchmarkSet set : sets) {
 			AbstractPackager packager = set.getPackager();
 			List<ContainerItem> containers = set.getContainers();
 			List<StackableItem> products = set.getProducts();
 
-			PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products).withInterrupt(booleanSupplier).build();
+			PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products).withDeadline(deadline).build();
 			assertTrue(build.isSuccess());
 		}
 	}

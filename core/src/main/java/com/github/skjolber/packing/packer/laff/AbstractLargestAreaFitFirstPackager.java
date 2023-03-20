@@ -13,6 +13,7 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.DefaultPackResult;
@@ -34,14 +35,14 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 		this.factory = factory;
 	}
 
-	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, BooleanSupplier interrupt);
+	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt);
 
 	protected class LAFFAdapter extends AbstractPackagerAdapter<DefaultPackResult> {
 
 		private List<Stackable> boxes;
-		private final BooleanSupplier interrupt;
+		private final PackagerInterruptSupplier interrupt;
 
-		public LAFFAdapter(List<StackableItem> boxItems, List<ContainerItem> containerItems, BooleanSupplier interrupt) {
+		public LAFFAdapter(List<StackableItem> boxItems, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
 			super(containerItems);
 
 			List<Stackable> boxClones = new ArrayList<>(boxItems.size() * 2);
@@ -85,7 +86,7 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 	}
 
 	@Override
-	protected LAFFAdapter adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt) {
+	protected LAFFAdapter adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
 		return new LAFFAdapter(boxes, containers, interrupt);
 	}
 

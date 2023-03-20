@@ -19,7 +19,7 @@ import org.openjdk.jmh.runner.options.TimeValue;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.packer.AbstractPackager;
 
 /**
@@ -52,31 +52,31 @@ public class DeadlineBenchmark {
 */
 	@Benchmark
 	public Object packagerNoDeadline(BouwkampCodePackagerState state) throws Exception {
-		return process(state.getBruteForcePackager(), Long.MAX_VALUE);
+		return process(state.getBruteForcePackager(), -1L);
 	}
 
 	@Benchmark
 	public Object packagerDeadline(BouwkampCodePackagerState state) throws Exception {
-		return process(state.getBruteForcePackager(), System.currentTimeMillis() + 10000);
+		return process(state.getBruteForcePackager(), System.currentTimeMillis() + 30000);
 	}
 
 	@Benchmark
 	public Object packagerDeadlineNth(BouwkampCodePackagerState state) throws Exception {
-		return process(state.getBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
+		return process(state.getBruteForcePackagerNth(), System.currentTimeMillis() + 30000);
 	}
 	
 	public int process(List<BenchmarkSet> sets, long deadline) {
-		BooleanSupplier booleanSupplier = BooleanSupplierBuilder.builder().withDeadline(deadline, 1).build();
-
 		int i = 0;
 		for (BenchmarkSet set : sets) {
 			AbstractPackager packager = set.getPackager();
 			List<ContainerItem> containers = set.getContainers();
 			List<StackableItem> products = set.getProducts();
 
-			PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products).withInterrupt(booleanSupplier).build();
+			PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products).withDeadline(deadline).build();
 			if(build.isSuccess()) {
 				i++;
+			} else {
+				throw new RuntimeException();
 			}
 		}
 
@@ -90,8 +90,8 @@ public class DeadlineBenchmark {
 				
 				.forks(1)
 				.measurementIterations(1)
-				.measurementTime(TimeValue.seconds(15))
-				.timeout(TimeValue.seconds(10))
+				.measurementTime(TimeValue.seconds(90))
+				.timeout(TimeValue.seconds(60))
 				 
 				.build();
 

@@ -1,12 +1,10 @@
 package com.github.skjolber.packing.deadline;
 
-import java.util.function.BooleanSupplier;
-
-public class DeadlineCheckBooleanSupplier implements BooleanSupplier {
+public class DeadlineCheckPackagerInterruptSupplier implements PackagerInterruptSupplier {
 
 	protected final long deadline;
 
-	public DeadlineCheckBooleanSupplier(long deadline) {
+	public DeadlineCheckPackagerInterruptSupplier(long deadline) {
 		super();
 		this.deadline = deadline;
 	}

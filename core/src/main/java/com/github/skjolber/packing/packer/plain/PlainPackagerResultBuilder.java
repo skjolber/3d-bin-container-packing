@@ -7,7 +7,8 @@ import java.util.function.BooleanSupplier;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
-import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 
 public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPackagerResultBuilder> {
 
@@ -37,7 +38,7 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 		}
 		long start = System.currentTimeMillis();
 
-		BooleanSupplierBuilder booleanSupplierBuilder = BooleanSupplierBuilder.builder();
+		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
 		if(deadline != -1L) {
 			booleanSupplierBuilder.withDeadline(deadline, checkpointsPerDeadlineCheck);
 		}
@@ -45,7 +46,7 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 			booleanSupplierBuilder.withInterrupt(interrupt);
 		}
 
-		BooleanSupplier build = booleanSupplierBuilder.build();
+		PackagerInterruptSupplier build = booleanSupplierBuilder.build();
 		List<Container> packList = packager.pack(items, containers, maxContainerCount, build);
 		long duration = System.currentTimeMillis() - start;
 		if(packList == null) {

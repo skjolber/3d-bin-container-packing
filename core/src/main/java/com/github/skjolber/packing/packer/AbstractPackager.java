@@ -13,7 +13,8 @@ import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
 
 /**
@@ -42,7 +43,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		this.packResultComparator = packResultComparator;
 	}
 
-	protected P pack(List<Integer> containerItemIndexes, PackagerAdapter<P> adapter, BooleanSupplier interrupt) {
+	protected P pack(List<Integer> containerItemIndexes, PackagerAdapter<P> adapter, PackagerInterruptSupplier interrupt) {
 		if(containerItemIndexes.size() <= 2) {
 			for (int i = 0; i < containerItemIndexes.size(); i++) {
 				if(interrupt.getAsBoolean()) {
@@ -131,7 +132,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	}
 
 	public List<Container> packList(List<StackableItem> products, List<ContainerItem> containers, int limit) {
-		return pack(products, containers, limit, BooleanSupplierBuilder.NOOP);
+		return pack(products, containers, limit, PackagerInterruptSupplierBuilder.NOOP);
 	}
 
 	/**
@@ -143,7 +144,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @return list of containers, or null if the deadline was reached, or empty list if the packages could not be packaged within the available containers and/or limit.
 	 */
 
-	public List<Container> pack(List<StackableItem> boxes, List<ContainerItem> containerItems, int limit, BooleanSupplier interrupt) {
+	public List<Container> pack(List<StackableItem> boxes, List<ContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) {
 		PackagerAdapter<P> adapter = adapter(boxes, containerItems, interrupt);
 
 		List<Container> containerPackResults = new ArrayList<>();
@@ -224,7 +225,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		return null;
 	}
 
-	protected abstract PackagerAdapter<P> adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt);
+	protected abstract PackagerAdapter<P> adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt);
 
 	protected long getMinStackableItemVolume(List<StackableItem> stackables) {
 		long minVolume = Integer.MAX_VALUE;

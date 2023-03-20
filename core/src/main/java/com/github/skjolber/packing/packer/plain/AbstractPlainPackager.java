@@ -13,6 +13,7 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.DefaultPackResult;
@@ -29,14 +30,14 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 		super(checkpointsPerDeadlineCheck, packResultComparator);
 	}
 
-	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int containerIndex, BooleanSupplier interrupt);
+	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int containerIndex, PackagerInterruptSupplier interrupt);
 
 	protected class PlainAdapter extends AbstractPackagerAdapter<DefaultPackResult> {
 
 		private List<Stackable> boxes;
-		private final BooleanSupplier interrupt;
+		private final PackagerInterruptSupplier interrupt;
 
-		public PlainAdapter(List<StackableItem> boxItems, List<ContainerItem> containerItems, BooleanSupplier interrupt) {
+		public PlainAdapter(List<StackableItem> boxItems, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
 			super(containerItems);
 
 			List<Stackable> boxClones = new LinkedList<>();
@@ -80,7 +81,7 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 	}
 
 	@Override
-	protected PlainAdapter adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt) {
+	protected PlainAdapter adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
 		return new PlainAdapter(boxes, containers, interrupt);
 	}
 

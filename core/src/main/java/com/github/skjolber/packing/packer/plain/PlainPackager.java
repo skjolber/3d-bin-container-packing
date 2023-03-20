@@ -15,6 +15,7 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.DefaultPackResult;
@@ -48,7 +49,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 		super(checkpointsPerDeadlineCheck, packResultComparator);
 	}
 
-	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, BooleanSupplier interrupt) {
+	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt) {
 		List<Stackable> remainingStackables = new ArrayList<>(stackables);
 
 		ContainerStackValue[] stackValues = targetContainer.getStackValues();

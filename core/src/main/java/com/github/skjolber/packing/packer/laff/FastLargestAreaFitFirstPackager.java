@@ -19,6 +19,7 @@ import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableFilter;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.StackValuePointFilter;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.DefaultPackResult;
@@ -62,7 +63,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 		super(checkpointsPerDeadlineCheck, packResultComparator, factory);
 	}
 
-	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int containerIndex, BooleanSupplier interrupt) {
+	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int containerIndex, PackagerInterruptSupplier interrupt) {
 		List<Stackable> remainingStackables = new ArrayList<>(stackables);
 
 		ContainerStackValue[] stackValues = targetContainer.getStackValues();

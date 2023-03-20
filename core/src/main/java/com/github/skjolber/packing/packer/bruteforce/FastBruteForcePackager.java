@@ -19,6 +19,7 @@ import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
@@ -57,11 +58,11 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 		private final ContainerStackValue[] containerStackValue;
 		private final DefaultPermutationRotationIterator[] iterators;
-		private final BooleanSupplier interrupt;
+		private final PackagerInterruptSupplier interrupt;
 		private final FastExtremePoints3DStack extremePoints3D;
 		private List<StackPlacement> stackPlacements;
 
-		public FastBruteForceAdapter(List<StackableItem> stackableItems, List<ContainerItem> containers, BooleanSupplier interrupt) {
+		public FastBruteForceAdapter(List<StackableItem> stackableItems, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
 			super(containers);
 			this.iterators = new DefaultPermutationRotationIterator[containers.size()];
 			this.containerStackValue = new ContainerStackValue[containers.size()];
@@ -172,13 +173,13 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 	}
 
 	@Override
-	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<ContainerItem> containers, BooleanSupplier interrupt) {
+	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
 		return new FastBruteForceAdapter(boxes, containers, interrupt);
 	}
 
 	public BruteForcePackagerResult pack(FastExtremePoints3DStack extremePoints, List<StackPlacement> stackPlacements, Container targetContainer, ContainerStackValue containerStackValue,
 			int containerIndex,
-			DefaultPermutationRotationIterator rotator, BooleanSupplier interrupt) {
+			DefaultPermutationRotationIterator rotator, PackagerInterruptSupplier interrupt) {
 		Stack stack = new DefaultStack(containerStackValue);
 
 		Container holder = new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(),
@@ -277,7 +278,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 	}
 
 	public int packStackPlacement(FastExtremePoints3DStack extremePoints3D, List<StackPlacement> placements, PermutationRotationIterator iterator, Stack stack, int placementIndex,
-			BooleanSupplier interrupt, int minStackableAreaIndex, int minStackableVolumeIndex) {
+			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int minStackableVolumeIndex) {
 		// pack as many items as possible from placementIndex
 		ContainerStackValue containerStackValue = stack.getContainerStackValue();
 

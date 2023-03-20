@@ -17,6 +17,7 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackager;
@@ -56,7 +57,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 	}
 
 	public BruteForcePackagerResult pack(ExtremePoints3DStack extremePoints, List<StackPlacement> stackPlacements, Container targetContainer, int index, ContainerStackValue stackValue,
-			PermutationRotationIterator iterator, BooleanSupplier interrupt) {
+			PermutationRotationIterator iterator, PackagerInterruptSupplier interrupt) {
 		DefaultStack stack = new DefaultStack(stackValue);
 		Container holder = new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(),
 				targetContainer.getStackValues(), stack);
@@ -140,7 +141,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 	}
 
 	public List<Point3D<StackPlacement>> packStackPlacement(ExtremePoints3DStack extremePoints, List<StackPlacement> placements, PermutationRotationIterator iterator, Stack stack,
-			BooleanSupplier interrupt, int minStackableAreaIndex, int minStackableVolumeIndex) {
+			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int minStackableVolumeIndex) {
 		if(placements.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -163,7 +164,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 	}
 
 	private List<Point3D<StackPlacement>> packStackPlacement(ExtremePoints3DStack extremePointsStack, List<StackPlacement> placements, PermutationRotationIterator rotator, Stack stack,
-			int maxLoadWeight, int placementIndex, BooleanSupplier interrupt, StackConstraint constraint, int minStackableAreaIndex, int minStackableVolumeIndex) {
+			int maxLoadWeight, int placementIndex, PackagerInterruptSupplier interrupt, StackConstraint constraint, int minStackableAreaIndex, int minStackableVolumeIndex) {
 		if(interrupt.getAsBoolean()) {
 			// fit2d below might have returned due to deadline
 			return null;
