@@ -252,6 +252,9 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	public int nextPermutation(int maxIndex) {
 		while (maxIndex >= 0) {
 
+			int[] permutations = this.permutations;
+			int length = this.length;
+			
 			int current = permutations[maxIndex];
 
 			// find the lexicographically next item to the right of the max index
