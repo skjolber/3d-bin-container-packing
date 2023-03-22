@@ -43,15 +43,19 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 
 	public void setPermutations(int[] permutations) {
 		this.permutations = permutations;
-		
+	}
+
+	public void initMinStackableVolume() {
 		this.minStackableVolume = new long[permutations.length]; // i.e. with padding
+
+		calculateMinStackableVolume(0);
 	}
 
 	public void calculateMinStackableVolume(int offset) {
 		PermutationRotation last = matrix[permutations[permutations.length - 1]].getBoxes()[0];
-		
-		minStackableVolume[minStackableVolume.length - 1] = last.getValue().getVolume();
-		for(int i = minStackableVolume.length - 2; i >= offset + ParallelPermutationRotationIteratorList.PADDING; i--) {
+
+		minStackableVolume[permutations.length - 1] = last.getValue().getVolume();
+		for(int i = permutations.length - 2; i >= offset + ParallelPermutationRotationIteratorList.PADDING; i--) {
 			long volume = matrix[permutations[i]].getBoxes()[0].getValue().getVolume();
 			if(volume < minStackableVolume[i + 1]) {
 				minStackableVolume[i] = volume;
@@ -60,13 +64,13 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 			}
 		}
 	}
-	
+
 	public long getMinStackableVolume(int offset) {
 		return minStackableVolume[ParallelPermutationRotationIteratorList.PADDING + offset];
 	}
-	
+
 	public int[] getRotations() {
-		int[] result = new int[reset.length];
+		int[] result = new int[rotations.length - ParallelPermutationRotationIteratorList.PADDING];
 		System.arraycopy(rotations, ParallelPermutationRotationIteratorList.PADDING, result, 0, result.length);
 		return result;
 	}
@@ -93,7 +97,6 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 				break;
 			}
 		}
-
 	}
 
 	public int getLastPermutationMaxIndex() {
@@ -169,7 +172,11 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 
 		int resultIndex = nextPermutationImpl();
 
-		return returnPermuationWithinRangeOrMinusOne(resultIndex);
+		int result = returnPermuationWithinRangeOrMinusOne(resultIndex);
+		if(result != -1) {
+			calculateMinStackableVolume(resultIndex);
+		}
+		return result;
 	}
 
 	public int nextPermutation(int maxIndex) {
@@ -178,7 +185,11 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 
 		int resultIndex = nextWorkUnitPermutation(permutations, maxIndex);
 
-		return returnPermuationWithinRangeOrMinusOne(resultIndex);
+		int result = returnPermuationWithinRangeOrMinusOne(resultIndex);
+		if(result != -1) {
+			calculateMinStackableVolume(resultIndex);
+		}
+		return result;
 	}
 
 	private int returnPermuationWithinRangeOrMinusOne(int resultIndex) {
@@ -197,8 +208,6 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 				while (i < lastPermutation.length) {
 					int value = permutations[i + ParallelPermutationRotationIteratorList.PADDING];
 					if(value < lastPermutation[i]) {
-						calculateMinStackableVolume(resultIndex);
-
 						return resultIndex;
 					} else if(value > lastPermutation[i]) {
 						return -1;
@@ -210,9 +219,7 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 				return -1;
 			}
 		}
-		
-		calculateMinStackableVolume(resultIndex);
-		
+
 		return resultIndex;
 	}
 
@@ -251,7 +258,7 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 
 	@Override
 	public PermutationRotationState getState() {
-		return new PermutationRotationState(getRotations(), getPermutations());
+		return new PermutationRotationState(getRotations(), getPermutations(), permutations.length);
 	}
 
 	@Override
@@ -264,7 +271,12 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 	}
 
 	public void resetRotations() {
-		System.arraycopy(reset, 0, rotations, ParallelPermutationRotationIteratorList.PADDING, reset.length);
+		System.arraycopy(reset, 0, rotations, ParallelPermutationRotationIteratorList.PADDING, rotations.length - ParallelPermutationRotationIteratorList.PADDING);
 	}
 
+
+	@Override
+	public int length() {
+		return permutations.length - ParallelPermutationRotationIteratorList.PADDING;
+	}
 }

@@ -449,7 +449,6 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		// no more rotations
 		assertEquals(-1, iterator.nextPermutation());
-
 	}
 
 	@Test

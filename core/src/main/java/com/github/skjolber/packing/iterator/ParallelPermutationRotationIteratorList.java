@@ -76,7 +76,7 @@ public class ParallelPermutationRotationIteratorList {
 			workUnits[i].setPermutations(permutations);
 			workUnits[i].setRotations(new int[PADDING + reset.length]);
 			workUnits[i].setReset(reset);
-			workUnits[i].calculateMinStackableVolume(0);
+			workUnits[i].initMinStackableVolume();
 		}
 
 		for (int i = 0; i < workUnits.length - 1; i++) {

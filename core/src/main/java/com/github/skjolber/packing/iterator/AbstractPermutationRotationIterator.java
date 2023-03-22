@@ -82,8 +82,6 @@ public abstract class AbstractPermutationRotationIterator implements Permutation
 		return results;
 	}
 
-	public int length() {
-		return reset.length;
-	}
+	public abstract int length();
 
 }
