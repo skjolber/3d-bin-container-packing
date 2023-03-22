@@ -42,7 +42,7 @@ public class BouwkampCodeBruteForcePackagerBenchmark {
 	public int fastPackager(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
 	}
-	
+
 	public int process(List<BenchmarkSet> sets, long deadline) {
 		int i = 0;
 		for (BenchmarkSet set : sets) {

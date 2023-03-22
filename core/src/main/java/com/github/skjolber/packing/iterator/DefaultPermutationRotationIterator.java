@@ -306,7 +306,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 
 		// Let array[i - 1] be the pivot
 		// Find rightmost element that exceeds the pivot
-		int j = permutations.length - 1;
+		int j = length - 1;
 		while (permutations[j] <= permutations[i - 1])
 			j--;
 		// Now the value array[j] will become the new pivot
@@ -320,7 +320,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		permutations[j] = temp;
 
 		// Reverse the suffix
-		j = permutations.length - 1;
+		j = length - 1;
 		while (i < j) {
 			temp = permutations[i];
 			permutations[i] = permutations[j];

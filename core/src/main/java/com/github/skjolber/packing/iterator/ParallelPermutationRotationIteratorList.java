@@ -46,7 +46,7 @@ public class ParallelPermutationRotationIteratorList {
 	private void calculate() {
 		int count = getCount();
 
-		int[] reset = new int[count];
+		int[] reset = new int[PADDING + count];
 
 		long countPermutations;
 		int first = firstDuplicate(frequencies);
@@ -74,7 +74,7 @@ public class ParallelPermutationRotationIteratorList {
 				throw new IllegalStateException("Expected size >= " + PADDING + ", found " + permutations.length);
 			}
 			workUnits[i].setPermutations(permutations);
-			workUnits[i].setRotations(new int[PADDING + reset.length]);
+			workUnits[i].setRotations(new int[reset.length]);
 			workUnits[i].setReset(reset);
 			workUnits[i].initMinStackableVolume();
 		}

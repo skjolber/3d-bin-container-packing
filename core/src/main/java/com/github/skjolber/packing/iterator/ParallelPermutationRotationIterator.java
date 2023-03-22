@@ -258,7 +258,7 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 
 	@Override
 	public PermutationRotationState getState() {
-		return new PermutationRotationState(getRotations(), getPermutations(), permutations.length);
+		return new PermutationRotationState(getRotations(), getPermutations());
 	}
 
 	@Override
@@ -273,7 +273,6 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 	public void resetRotations() {
 		System.arraycopy(reset, 0, rotations, ParallelPermutationRotationIteratorList.PADDING, rotations.length - ParallelPermutationRotationIteratorList.PADDING);
 	}
-
 
 	@Override
 	public int length() {
