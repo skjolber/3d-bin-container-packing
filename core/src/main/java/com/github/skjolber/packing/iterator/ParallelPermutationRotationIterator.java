@@ -15,6 +15,9 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 	private int lastPermutationMaxIndex;
 	private boolean checkLastPermutation = false;
 
+	// minimum volume from index i and above
+	protected long[] minStackableVolume;
+
 	private ParallelPermutationRotationIteratorList iterator;
 
 	public ParallelPermutationRotationIterator(PermutationStackableValue[] matrix, ParallelPermutationRotationIteratorList iterator) {
@@ -40,8 +43,28 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 
 	public void setPermutations(int[] permutations) {
 		this.permutations = permutations;
+		
+		this.minStackableVolume = new long[permutations.length]; // i.e. with padding
 	}
 
+	public void calculateMinStackableVolume(int offset) {
+		PermutationRotation last = matrix[permutations[permutations.length - 1]].getBoxes()[0];
+		
+		minStackableVolume[minStackableVolume.length - 1] = last.getValue().getVolume();
+		for(int i = minStackableVolume.length - 2; i >= offset + ParallelPermutationRotationIteratorList.PADDING; i--) {
+			long volume = matrix[permutations[i]].getBoxes()[0].getValue().getVolume();
+			if(volume < minStackableVolume[i + 1]) {
+				minStackableVolume[i] = volume;
+			} else {
+				minStackableVolume[i] = minStackableVolume[i + 1];
+			}
+		}
+	}
+	
+	public long getMinStackableVolume(int offset) {
+		return minStackableVolume[ParallelPermutationRotationIteratorList.PADDING + offset];
+	}
+	
 	public int[] getRotations() {
 		int[] result = new int[reset.length];
 		System.arraycopy(rotations, ParallelPermutationRotationIteratorList.PADDING, result, 0, result.length);
@@ -174,6 +197,8 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 				while (i < lastPermutation.length) {
 					int value = permutations[i + ParallelPermutationRotationIteratorList.PADDING];
 					if(value < lastPermutation[i]) {
+						calculateMinStackableVolume(resultIndex);
+
 						return resultIndex;
 					} else if(value > lastPermutation[i]) {
 						return -1;
@@ -185,7 +210,9 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 				return -1;
 			}
 		}
-
+		
+		calculateMinStackableVolume(resultIndex);
+		
 		return resultIndex;
 	}
 

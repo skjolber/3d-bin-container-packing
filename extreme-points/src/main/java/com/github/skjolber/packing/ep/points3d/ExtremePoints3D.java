@@ -38,7 +38,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 	protected Point3DFlagList<P> values = new Point3DFlagList<>();
 	protected Point3DFlagList<P> otherValues = new Point3DFlagList<>();
 
-	protected List<P> placements = new ArrayList<>();
+	protected ArrayList<P> placements = new ArrayList<>();
 
 	// reuse working variables
 	protected final Point3DListArray<P> addXX = new Point3DListArray<>();
@@ -60,6 +60,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 	protected final boolean cloneOnConstrain;
 
 	protected P containerPlacement;
+	protected Default3DPlanePoint3D<P> firstPoint;
 
 	protected CustomIntXComparator xxComparator = new CustomIntXComparator();
 	protected CustomIntYComparator yyComparator = new CustomIntYComparator();
@@ -72,8 +73,9 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 	public ExtremePoints3D(int dx, int dy, int dz, boolean cloneOnConstrain) {
 		setSize(dx, dy, dz);
 		this.cloneOnConstrain = cloneOnConstrain;
-		addFirstPoint();
 
+		values.add(firstPoint);
+		
 		xxComparator.setValues(values);
 		yyComparator.setValues(values);
 		zzComparator.setValues(values);
@@ -85,20 +87,18 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		this.containerMaxZ = dz - 1;
 
 		this.containerPlacement = createContainerPlacement();
+		
+		this.firstPoint = new Default3DPlanePoint3D<>(
+				0, 0, 0,
+				containerMaxX, containerMaxY, containerMaxZ,
+				containerPlacement,
+				containerPlacement,
+				containerPlacement);
 	}
 
 	@SuppressWarnings("unchecked")
 	private P createContainerPlacement() {
 		return (P)new DefaultPlacement3D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ);
-	}
-
-	protected void addFirstPoint() {
-		values.add(new Default3DPlanePoint3D<>(
-				0, 0, 0,
-				containerMaxX, containerMaxY, containerMaxZ,
-				containerPlacement,
-				containerPlacement,
-				containerPlacement));
 	}
 
 	public boolean add(int index, P placement) {
@@ -489,18 +489,24 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				if(!isEclipsed(constrainXXPoint)) {
 					otherValues.add(constrainXXPoint);
 				}
+				// clean up here so we do not need to reset the array
+				constrainXX.clear(i);
 			}
 			Point3D<P> constrainYYPoint = constrainYY.get(i);
 			if(constrainYYPoint != null) {
 				if(!isEclipsed(constrainYYPoint)) {
 					otherValues.add(constrainYYPoint);
 				}
+				// clean up here so we do not need to reset the array
+				constrainYY.clear(i);
 			}
 			Point3D<P> constrainZZPoint = constrainZZ.get(i);
 			if(constrainZZPoint != null) {
 				if(!isEclipsed(constrainZZPoint)) {
 					otherValues.add(constrainZZPoint);
 				}
+				// clean up here so we do not need to reset the array
+				constrainZZ.clear(i);
 			}
 		}
 
@@ -578,10 +584,11 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		addedYY.clear();
 		addedZZ.clear();
 
-		constrainXX.reset();
-		constrainYY.reset();
-		constrainZZ.reset();
-
+		// already cleaned up: 
+		// constrainXX
+		// constrainYY 
+		// constrainZZ
+		
 		return !values.isEmpty();
 	}
 
@@ -1409,7 +1416,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		values.clear();
 		placements.clear();
 
-		addFirstPoint();
+		values.add(firstPoint);
 	}
 
 	@Override

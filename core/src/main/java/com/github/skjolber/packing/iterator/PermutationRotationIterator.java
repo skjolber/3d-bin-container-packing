@@ -119,9 +119,9 @@ public interface PermutationRotationIterator {
 
 	long getMinStackableVolume();
 
-	long getMinStackableArea();
+	long getMinStackableVolume(int index);
 
-	int getMinStackableVolumeIndex(int i);
+	long getMinStackableArea();
 
 	int getMinStackableAreaIndex(int i);
 }

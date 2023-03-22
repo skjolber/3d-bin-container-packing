@@ -13,7 +13,7 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 	protected static class StackItem {
 		protected Point3DFlagList<StackPlacement> values = new Point3DFlagList<>();
 		protected Point3DFlagList<StackPlacement> otherValues = new Point3DFlagList<>();
-		protected List<StackPlacement> placements = new ArrayList<>();
+		protected ArrayList<StackPlacement> placements = new ArrayList<>();
 		protected StackPlacement stackPlacement = new StackPlacement();
 		protected Point3D<StackPlacement> point;
 		protected long minVolumeLimit;
@@ -140,7 +140,7 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 
 		loadCurrent();
 
-		addFirstPoint();
+		values.add(firstPoint);
 	}
 
 }

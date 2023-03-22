@@ -32,6 +32,9 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	// permutations of boxes that fit inside this container
 	protected int[] permutations; // n!
 
+	// minimum volume from index i and above
+	protected long[] minStackableVolume;
+
 	public DefaultPermutationRotationIterator(PermutationStackableValue[] matrix) {
 		super(matrix);
 
@@ -56,6 +59,10 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		for (int i = 0; i < permutations.length; i++) {
 			permutations[i] = types.get(i);
 		}
+		
+		this.minStackableVolume = new long[permutations.length];
+		
+		calculateMinStackableVolume(0);
 	}
 
 	public void removePermutations(int count) {
@@ -70,6 +77,30 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		Arrays.sort(permutations); // ascending order to make the permutation logic work
 
 		this.permutations = permutations;
+
+		long[] minStackableVolume = new long[permutations.length];
+		System.arraycopy(this.minStackableVolume, count, minStackableVolume, 0, newLength);
+		this.minStackableVolume = minStackableVolume;
+	}
+
+	private void calculateMinStackableVolume(int offset) {
+		PermutationRotation last = get(minStackableVolume.length - 1);
+		
+		minStackableVolume[minStackableVolume.length - 1] = last.getValue().getVolume();
+		
+		for(int i = minStackableVolume.length - 2; i >= offset; i--) {
+			long volume = get(i).getValue().getVolume();
+			
+			if(volume < minStackableVolume[i + 1]) {
+				minStackableVolume[i] = volume;
+			} else {
+				minStackableVolume[i] = minStackableVolume[i + 1];
+			}
+		}
+	}
+	
+	public long getMinStackableVolume(int offset) {
+		return minStackableVolume[offset];
 	}
 
 	/**
@@ -105,6 +136,10 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 
 		this.rotations = new int[effectivePermutations.length];
 		this.reset = new int[effectivePermutations.length];
+		
+		this.minStackableVolume = new long[permutations.length];
+
+		calculateMinStackableVolume(0);
 	}
 
 	@Override
@@ -247,6 +282,8 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 
 			resetRotations();
 
+			calculateMinStackableVolume(maxIndex);
+
 			return maxIndex;
 		}
 		return -1;
@@ -291,6 +328,8 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 			i++;
 			j--;
 		}
+
+		calculateMinStackableVolume(head);
 
 		// Successfully computed the next permutation
 		return head;

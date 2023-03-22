@@ -12,7 +12,10 @@ import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
 public class FastExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 
 	private static class StackItem<P extends Placement3D> {
+		// value for extraction
 		protected Point3D<StackPlacement> point;
+		
+		// adding a point might affect any index in the values array
 		protected Point3DFlagList<P> values = new Point3DFlagList<>();
 
 		protected long minVolumeLimit;
@@ -33,6 +36,7 @@ public class FastExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 
 	@Override
 	public boolean add(int index, StackPlacement placement) {
+		// copy state before it is updated
 		Point3D<StackPlacement> point3d = values.get(index);
 
 		StackItem<StackPlacement> stackItem = stackItems.get(stackSize);
