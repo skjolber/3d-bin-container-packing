@@ -229,6 +229,8 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 			products.add(new StackableItem(Box.newBuilder().withDescription(Integer.toString(square)).withSize(square, square, 1).withRotate3D().withWeight(1).build(), count));
 		}
 
+		Collections.shuffle(products);
+
 		PackagerResult build = packager.newResultBuilder().withContainers(containers).withStackables(products).build();
 
 		Container fits = build.getContainers().get(0);
