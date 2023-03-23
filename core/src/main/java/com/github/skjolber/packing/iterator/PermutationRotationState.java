@@ -12,9 +12,6 @@ public class PermutationRotationState {
 
 	PermutationRotationState(int[] rotations, int[] permutations) {
 		super();
-		if(rotations.length != permutations.length) {
-			System.out.println(rotations.length + " " + permutations.length);
-		}
 		this.rotations = new int[rotations.length];
 		System.arraycopy(rotations, 0, this.rotations, 0, rotations.length);
 		this.permutations = new int[permutations.length];
