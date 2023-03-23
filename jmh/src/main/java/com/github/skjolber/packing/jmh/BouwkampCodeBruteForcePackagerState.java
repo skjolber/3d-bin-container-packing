@@ -29,7 +29,7 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
  */
 
 @State(Scope.Benchmark)
-public class BouwkampCodePackagerState {
+public class BouwkampCodeBruteForcePackagerState {
 
 	private final int threadPoolSize;
 	private final int nth;
@@ -45,11 +45,11 @@ public class BouwkampCodePackagerState {
 	private List<BenchmarkSet> plainPackagerNth = new ArrayList<>();
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 
-	public BouwkampCodePackagerState() {
+	public BouwkampCodeBruteForcePackagerState() {
 		this(8, 20000);
 	}
 
-	public BouwkampCodePackagerState(int threadPoolSize, int nth) {
+	public BouwkampCodeBruteForcePackagerState(int threadPoolSize, int nth) {
 		this.threadPoolSize = threadPoolSize;
 		this.nth = nth;
 

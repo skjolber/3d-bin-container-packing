@@ -50,7 +50,7 @@ public class DefaultIteratorBenchmark {
 			if(counter.longValue() >= MAX_COUNT) {
 				return counter.longValue();
 			}
-		} while (iterator.nextPermutation() != -1);
+		} while (iterator.nextPermutation(iterator.length() - 1) != -1);
 
 		return counter.longValue();
 	}

@@ -16,7 +16,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.StackableItem;
 
-public class ParallelPermutationRotationIteratorTest {
+public class ParallelPermutationRotationIteratorTest extends AbstractPermutationRotationIteratorTest {
 
 	@Test
 	void testPermutationsSingleWorkUnit() {
@@ -50,6 +50,9 @@ public class ParallelPermutationRotationIteratorTest {
 
 		int count = 0;
 		do {
+			assertMinStackableVolumeValid(iterator);
+			assertMinStackableVolumeValid(nthIterator);
+
 			assertThat(nthIterator.getPermutations()).isEqualTo(iterator.getPermutations());
 			count++;
 		} while (nthIterator.nextPermutation() != -1 && iterator.nextPermutation() != -1);
@@ -92,6 +95,9 @@ public class ParallelPermutationRotationIteratorTest {
 			long limit = rotator1.countPermutations() / l;
 			long count = 0;
 			do {
+				assertMinStackableVolumeValid(rotator1);
+				assertMinStackableVolumeValid(calculator.getIterator(0));
+
 				int[] permutations1 = rotator1.getPermutations();
 				int[] permutations2 = calculator.getIterator(0).getPermutations();
 
@@ -133,7 +139,10 @@ public class ParallelPermutationRotationIteratorTest {
 
 			int permutationIndex1;
 			do {
+				assertMinStackableVolumeValid(rotator1);
+				
 				permutationIndex1 = rotator1.nextPermutation();
+				
 			} while (permutationIndex1 > 2);
 
 			calculator.getIterator(0).nextPermutation(2);
@@ -233,6 +242,9 @@ public class ParallelPermutationRotationIteratorTest {
 
 		int count1 = 0;
 		do {
+			assertMinStackableVolumeValid(iterator1);
+			assertMinStackableVolumeValid(iterator);
+
 			assertThat(iterator1.getPermutations()).isEqualTo(iterator.getPermutations());
 			count1++;
 
@@ -284,6 +296,9 @@ public class ParallelPermutationRotationIteratorTest {
 
 		int count = 0;
 		do {
+			assertMinStackableVolumeValid(iterator1);
+			assertMinStackableVolumeValid(iterator);
+
 			assertThat(iterator1.getPermutations()).isEqualTo(iterator.getPermutations());
 			count++;
 
@@ -407,6 +422,9 @@ public class ParallelPermutationRotationIteratorTest {
 
 			int count0 = 0;
 			do {
+				assertMinStackableVolumeValid(iterator0);
+				assertMinStackableVolumeValid(iterator);
+
 				assertThat(iterator0.getPermutations()).isEqualTo(iterator.getPermutations());
 
 				count0++;

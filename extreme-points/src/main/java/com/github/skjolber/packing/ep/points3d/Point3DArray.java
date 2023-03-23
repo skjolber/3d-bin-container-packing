@@ -36,6 +36,11 @@ public class Point3DArray<P extends Placement3D> {
 		size++;
 	}
 
+	public void clear(int index) {
+		points[index] = null;
+		size--;
+	}
+
 	public int size() {
 		return size;
 	}

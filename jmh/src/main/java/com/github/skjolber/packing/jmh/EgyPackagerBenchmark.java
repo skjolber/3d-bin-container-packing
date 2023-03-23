@@ -18,7 +18,6 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.packer.AbstractPackager;
 
 @Fork(value = 1, warmups = 1, jvmArgsPrepend = "-XX:-RestrictContended")
@@ -27,18 +26,16 @@ import com.github.skjolber.packing.packer.AbstractPackager;
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
 public class EgyPackagerBenchmark {
 
-	/*
 	@Benchmark
 	public int plainPackager(EgyPackagerState state) throws Exception {
 		return process(state.getPlainPackager(), Long.MAX_VALUE);
 	}
-	 */
+
 	@Benchmark
 	public int parallelPackager(EgyPackagerState state) throws Exception {
 		return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
 	}
-
-	/*    
+ 
 	@Benchmark
 	public int packager(EgyPackagerState state) throws Exception {
 		return process(state.getBruteForcePackager(), Long.MAX_VALUE);
@@ -48,7 +45,7 @@ public class EgyPackagerBenchmark {
 	public int fastPackager(EgyPackagerState state) throws Exception {
 		return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
 	}
-	 */
+	
 	public int process(List<BenchmarkSet> sets, long deadline) {
 		int i = 0;
 		for (BenchmarkSet set : sets) {

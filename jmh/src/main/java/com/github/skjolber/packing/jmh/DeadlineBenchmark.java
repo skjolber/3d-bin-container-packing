@@ -34,34 +34,33 @@ import com.github.skjolber.packing.packer.AbstractPackager;
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
 public class DeadlineBenchmark {
 
-	/*
 	@Benchmark
-	public Object parallelPackagerNoDeadline(BouwkampCodePackagerState state) throws Exception {
+	public Object parallelPackagerNoDeadline(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
 	}
 
 	@Benchmark
-	public Object parallelPackagerDeadline(BouwkampCodePackagerState state) throws Exception {
+	public Object parallelPackagerDeadline(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getParallelBruteForcePackager(), System.currentTimeMillis() + 10000);
 	}
 
 	@Benchmark
-	public Object parallelPackagerDeadlineNth(BouwkampCodePackagerState state) throws Exception {
+	public Object parallelPackagerDeadlineNth(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getParallelBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
 	}
-*/
+
 	@Benchmark
-	public Object packagerNoDeadline(BouwkampCodePackagerState state) throws Exception {
+	public Object packagerNoDeadline(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getBruteForcePackager(), -1L);
 	}
 
 	@Benchmark
-	public Object packagerDeadline(BouwkampCodePackagerState state) throws Exception {
+	public Object packagerDeadline(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getBruteForcePackager(), System.currentTimeMillis() + 30000);
 	}
 
 	@Benchmark
-	public Object packagerDeadlineNth(BouwkampCodePackagerState state) throws Exception {
+	public Object packagerDeadlineNth(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getBruteForcePackagerNth(), System.currentTimeMillis() + 30000);
 	}
 	
