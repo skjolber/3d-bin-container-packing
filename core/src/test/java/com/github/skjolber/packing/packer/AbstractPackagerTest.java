@@ -1,27 +1,31 @@
 package com.github.skjolber.packing.packer;
 
 import static com.github.skjolber.packing.test.assertj.ContainerAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
-
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
+import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
-import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.assertj.PackagerAssert;
 
 @SuppressWarnings("rawtypes")
 public abstract class AbstractPackagerTest {
 
+	protected void assertValid(PackagerResult build) {
+		assertValid(build.getContainers());
+	}
+
 	protected static void assertValid(List<Container> containers) {
 		assertNotNull(containers);
+		assertFalse(containers.isEmpty());
 		for (Container container : containers) {
 			assertValid(container);
 		}
@@ -41,7 +45,10 @@ public abstract class AbstractPackagerTest {
 		Container container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1900, 1500, 4000)
 				.withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
 
-		builder.withContainers(container);
+		List<ContainerItem> containers = ContainerItem
+				.newListBuilder()
+				.withContainer(container, 1)
+				.build();
 
 		Packager packager = builder.build();
 
@@ -116,7 +123,8 @@ public abstract class AbstractPackagerTest {
 				box(90, 800, 2040, 1),
 				box(970, 790, 2200, 1));
 
-		PackagerAssert.assertThat(packager).respectsDeadline(products, 30 * 1000);
+		// XXXX
+		PackagerAssert.assertThat(packager).respectsDeadline(containers, products, 30 * 1000);
 	}
 
 }

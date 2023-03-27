@@ -6,15 +6,16 @@ import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.ep.Point2D;
-import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackager;
-import com.github.skjolber.packing.packer.Adapter;
 import com.github.skjolber.packing.packer.DefaultPackResult;
 
 /**
@@ -27,31 +28,22 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 
 	protected LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, ?> factory;
 
-	public AbstractLargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator,
+	public AbstractLargestAreaFitFirstPackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator,
 			LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, ?> factory) {
-		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
+		super(checkpointsPerDeadlineCheck, packResultComparator);
 
 		this.factory = factory;
 	}
 
-	public DefaultPackResult pack(List<Stackable> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck) {
-		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).build());
-	}
+	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt);
 
-	public DefaultPackResult pack(List<Stackable> containerProducts, Container targetContainer, long deadline, int checkpointsPerDeadlineCheck, BooleanSupplier interrupt) {
-		return pack(containerProducts, targetContainer, BooleanSupplierBuilder.builder().withDeadline(deadline, checkpointsPerDeadlineCheck).withInterrupt(interrupt).build());
-	}
-
-	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt);
-
-	protected class LAFFAdapter implements Adapter<DefaultPackResult> {
+	protected class LAFFAdapter extends AbstractPackagerAdapter<DefaultPackResult> {
 
 		private List<Stackable> boxes;
-		private List<Container> containers;
-		private final BooleanSupplier interrupt;
+		private final PackagerInterruptSupplier interrupt;
 
-		public LAFFAdapter(List<StackableItem> boxItems, List<Container> container, BooleanSupplier interrupt) {
-			this.containers = container;
+		public LAFFAdapter(List<StackableItem> boxItems, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
+			super(containerItems);
 
 			List<Stackable> boxClones = new ArrayList<>(boxItems.size() * 2);
 
@@ -69,11 +61,13 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 
 		@Override
 		public DefaultPackResult attempt(int index, DefaultPackResult best) {
-			return AbstractLargestAreaFitFirstPackager.this.pack(boxes, containers.get(index), interrupt);
+			return AbstractLargestAreaFitFirstPackager.this.pack(boxes, containerItems.get(index).getContainer(), index, interrupt);
 		}
 
 		@Override
 		public Container accept(DefaultPackResult result) {
+			super.accept(result.getContainerItemIndex());
+
 			Container container = result.getContainer();
 			Stack stack = container.getStack();
 
@@ -84,10 +78,15 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 			return container;
 		}
 
+		@Override
+		public List<Integer> getContainers(int maxCount) {
+			return getContainers(boxes, maxCount);
+		}
+
 	}
 
 	@Override
-	protected LAFFAdapter adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
+	protected LAFFAdapter adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
 		return new LAFFAdapter(boxes, containers, interrupt);
 	}
 

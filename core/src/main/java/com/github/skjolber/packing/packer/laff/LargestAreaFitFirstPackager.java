@@ -19,6 +19,7 @@ import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableFilter;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.api.ep.StackValuePointFilter;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.DefaultPackResult;
@@ -47,25 +48,22 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 		}
 
 		public LargestAreaFitFirstPackager build() {
-			if(containers == null) {
-				throw new IllegalStateException("Expected containers");
-			}
 			if(configurationBuilderFactory == null) {
 				configurationBuilderFactory = new DefaultLargestAreaFitFirstPackagerConfigurationBuilderFactory<>();
 			}
 			if(packResultComparator == null) {
 				packResultComparator = new DefaultPackResultComparator();
 			}
-			return new LargestAreaFitFirstPackager(containers, checkpointsPerDeadlineCheck, packResultComparator, configurationBuilderFactory);
+			return new LargestAreaFitFirstPackager(checkpointsPerDeadlineCheck, packResultComparator, configurationBuilderFactory);
 		}
 	}
 
-	public LargestAreaFitFirstPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator,
+	public LargestAreaFitFirstPackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator,
 			LargestAreaFitFirstPackagerConfigurationBuilderFactory<Point3D<StackPlacement>, ?> factory) {
-		super(containers, checkpointsPerDeadlineCheck, packResultComparator, factory);
+		super(checkpointsPerDeadlineCheck, packResultComparator, factory);
 	}
 
-	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt) {
+	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt) {
 		List<Stackable> remainingStackables = new ArrayList<>(stackables);
 
 		ContainerStackValue[] stackValues = targetContainer.getStackValues();
@@ -254,7 +252,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 		}
 
 		return new DefaultPackResult(new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack),
-				stack, remainingStackables.isEmpty());
+				stack, remainingStackables.isEmpty(), index);
 	}
 
 	@Override

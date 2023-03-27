@@ -1,10 +1,6 @@
 package com.github.skjolber.packing.jmh;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,18 +11,14 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
-import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.DefaultContainer;
-import com.github.skjolber.packing.api.DefaultStack;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.test.generator.Item;
-import com.github.skjolber.packing.test.generator.ItemIO;
 
 /**
  * 
@@ -53,8 +45,8 @@ public class TychoPackagerState {
 
 	private List<StackableItem> stackableItems3D;
 
-	private List<Container> containers = Arrays.asList(
-			Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build());
+	private List<ContainerItem> containers = ContainerItem.newListBuilder()
+			.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build()).build();
 
 	public TychoPackagerState() {
 		this(8, 20000);
@@ -70,31 +62,31 @@ public class TychoPackagerState {
 
 	@Setup(Level.Trial)
 	public void init() {
-		ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16).withContainers(containers)
+		ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16)
 				.build();
 		ParallelBruteForcePackager parallelPackagerNth = ParallelBruteForcePackager.newBuilder().withExecutorService(pool1).withParallelizationCount(threadPoolSize * 16)
-				.withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
+				.withCheckpointsPerDeadlineCheck(nth).build();
 
-		BruteForcePackager packager = BruteForcePackager.newBuilder().withContainers(containers).build();
-		BruteForcePackager packagerNth = BruteForcePackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
+		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
+		BruteForcePackager packagerNth = BruteForcePackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).build();
 
-		PlainPackager plainPackager = PlainPackager.newBuilder().withContainers(containers).build();
-		PlainPackager plainPackagerNth = PlainPackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).withContainers(containers).build();
+		PlainPackager plainPackager = PlainPackager.newBuilder().build();
+		PlainPackager plainPackagerNth = PlainPackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).build();
 
-		FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().withContainers(containers).build();
+		FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().build();
 
 		// single-threaded
-		this.bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D));
-		this.bruteForcePackagerNth.add(new BenchmarkSet(packagerNth, stackableItems3D));
+		this.bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D, containers));
+		this.bruteForcePackagerNth.add(new BenchmarkSet(packagerNth, stackableItems3D, containers));
 
-		this.plainPackager.add(new BenchmarkSet(plainPackager, stackableItems3D));
-		this.plainPackagerNth.add(new BenchmarkSet(plainPackagerNth, stackableItems3D));
+		this.plainPackager.add(new BenchmarkSet(plainPackager, stackableItems3D, containers));
+		this.plainPackagerNth.add(new BenchmarkSet(plainPackagerNth, stackableItems3D, containers));
 
-		this.fastBruteForcePackager.add(new BenchmarkSet(fastPackager, stackableItems3D));
+		this.fastBruteForcePackager.add(new BenchmarkSet(fastPackager, stackableItems3D, containers));
 
 		// multi-threaded
-		this.parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D));
-		this.parallelBruteForcePackagerNth.add(new BenchmarkSet(parallelPackagerNth, stackableItems3D));
+		this.parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D, containers));
+		this.parallelBruteForcePackagerNth.add(new BenchmarkSet(parallelPackagerNth, stackableItems3D, containers));
 	}
 
 	@TearDown(Level.Trial)

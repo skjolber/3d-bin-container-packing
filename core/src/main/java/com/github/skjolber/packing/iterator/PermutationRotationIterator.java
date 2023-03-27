@@ -18,16 +18,16 @@ import java.util.List;
  *
  * <pre>
  * {@code
-* do {
-* 	do {
-* 		for (int i = 0; i < n; i++) {
-* 			PermutationRotation box = instance.get(i);
-* 			// .. your code here
-* 		}
-* 	} while (instance.nextRotation() != -1);
-* } while (instance.nextPermutation() != -1);
-*
-* }
+ * do {
+ * 	do {
+ * 		for (int i = 0; i < n; i++) {
+ * 			PermutationRotation box = instance.get(i);
+ * 			// .. your code here
+ * 		}
+ * 	} while (instance.nextRotation() != -1);
+ * } while (instance.nextPermutation() != -1);
+ *
+ * }
  * </pre>
  *
  * @see <a href=
@@ -119,9 +119,9 @@ public interface PermutationRotationIterator {
 
 	long getMinStackableVolume();
 
-	long getMinStackableArea();
+	long getMinStackableVolume(int index);
 
-	int getMinStackableVolumeIndex(int i);
+	long getMinStackableArea();
 
 	int getMinStackableAreaIndex(int i);
 }

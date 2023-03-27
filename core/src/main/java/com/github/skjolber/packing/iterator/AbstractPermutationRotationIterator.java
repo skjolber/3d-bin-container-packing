@@ -34,18 +34,6 @@ public abstract class AbstractPermutationRotationIterator implements Permutation
 		return minVolume;
 	}
 
-	public long getMinStackableVolume(int offset) {
-		long minVolume = Long.MAX_VALUE;
-		for (int i = offset; i < length(); i++) {
-			PermutationRotation permutationRotation = get(i);
-			long volume = permutationRotation.getValue().getVolume();
-			if(volume < minVolume) {
-				minVolume = volume;
-			}
-		}
-		return minVolume;
-	}
-
 	public long getMinStackableArea() {
 		long minArea = Long.MAX_VALUE;
 		for (PermutationStackableValue permutationStackableValue : matrix) {
@@ -83,21 +71,6 @@ public abstract class AbstractPermutationRotationIterator implements Permutation
 		return index;
 	}
 
-	public int getMinStackableVolumeIndex(int offset) {
-		long minVolume = get(offset).getValue().getVolume();
-		int index = offset;
-
-		for (int i = offset + 1; i < length(); i++) {
-			PermutationRotation permutationRotation = get(i);
-			long volume = permutationRotation.getValue().getVolume();
-			if(volume < minVolume) {
-				minVolume = volume;
-				index = i;
-			}
-		}
-		return index;
-	}
-
 	public List<PermutationRotation> get(PermutationRotationState state, int length) {
 		int[] permutations = state.getPermutations();
 		int[] rotations = state.getRotations();
@@ -109,8 +82,6 @@ public abstract class AbstractPermutationRotationIterator implements Permutation
 		return results;
 	}
 
-	public int length() {
-		return reset.length;
-	}
+	public abstract int length();
 
 }

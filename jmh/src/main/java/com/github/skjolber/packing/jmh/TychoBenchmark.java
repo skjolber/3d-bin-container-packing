@@ -3,6 +3,7 @@ package com.github.skjolber.packing.jmh;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -20,7 +21,11 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
+import com.github.skjolber.packing.packer.AbstractPackager;
 
 @State(Scope.Thread)
 @Fork(value = 1, warmups = 1, jvmArgsPrepend = "-XX:-RestrictContended")
@@ -245,7 +250,12 @@ public class TychoBenchmark {
 	public int process(List<BenchmarkSet> sets, long deadline) {
 		int i = 0;
 		for (BenchmarkSet set : sets) {
-			if(set.getPackager().pack(products, deadline) != null) {
+			AbstractPackager packager = set.getPackager();
+			List<ContainerItem> containers = set.getContainers();
+			List<StackableItem> products = set.getProducts();
+
+			PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products).withDeadline(deadline).build();
+			if(build.isSuccess()) {
 				i++;
 			}
 		}

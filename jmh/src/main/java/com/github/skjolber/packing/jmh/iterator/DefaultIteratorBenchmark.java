@@ -1,8 +1,6 @@
 package com.github.skjolber.packing.jmh.iterator;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.LongAdder;
-
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -28,12 +26,14 @@ public class DefaultIteratorBenchmark {
 	public long rotations(IteratorState state) throws Exception {
 
 		DefaultPermutationRotationIterator iterator = state.getIterator();
-		java.util.concurrent.atomic.LongAdder counter = new LongAdder();
+		int index = iterator.length() / 2;
+
+		long count = 0;
 		do {
-			while (iterator.nextRotation() != -1) {
-				counter.add(1);
-				if(counter.longValue() >= MAX_COUNT) {
-					return counter.longValue();
+			while (iterator.nextRotation(index) != -1) {
+				count++;
+				if(count >= MAX_COUNT) {
+					return count;
 				}
 			}
 			iterator.resetRotations();
@@ -44,15 +44,20 @@ public class DefaultIteratorBenchmark {
 	public long permutations(IteratorState state) throws Exception {
 
 		DefaultPermutationRotationIterator iterator = state.getIterator();
-		java.util.concurrent.atomic.LongAdder counter = new LongAdder();
-		do {
-			counter.add(1);
-			if(counter.longValue() >= MAX_COUNT) {
-				return counter.longValue();
-			}
-		} while (iterator.nextPermutation() != -1);
+		
+		int index = iterator.length() / 2;
 
-		return counter.longValue();
+		long count = 0;
+		do {
+			count++;
+			if(count >= MAX_COUNT) {
+				return count;
+			}
+
+			if(iterator.nextPermutation(index) == -1) {
+				throw new RuntimeException();
+			}
+		} while(true);
 	}
 
 	public static void main(String[] args) throws RunnerException {

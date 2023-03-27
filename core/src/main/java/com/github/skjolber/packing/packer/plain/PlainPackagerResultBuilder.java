@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer.plain;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -8,7 +7,8 @@ import java.util.function.BooleanSupplier;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
-import com.github.skjolber.packing.deadline.BooleanSupplierBuilder;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 
 public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPackagerResultBuilder> {
 
@@ -27,9 +27,18 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 	}
 
 	public PackagerResult build() {
+		if(maxContainerCount <= 0) {
+			throw new IllegalStateException();
+		}
+		if(containers == null) {
+			throw new IllegalStateException();
+		}
+		if(items == null) {
+			throw new IllegalStateException();
+		}
 		long start = System.currentTimeMillis();
 
-		BooleanSupplierBuilder booleanSupplierBuilder = BooleanSupplierBuilder.builder();
+		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
 		if(deadline != -1L) {
 			booleanSupplierBuilder.withDeadline(deadline, checkpointsPerDeadlineCheck);
 		}
@@ -37,20 +46,13 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 			booleanSupplierBuilder.withInterrupt(interrupt);
 		}
 
-		BooleanSupplier build = booleanSupplierBuilder.build();
-
-		List<Container> packList;
-		if(maxResults > 1) {
-			packList = packager.packList(items, maxResults, build);
-		} else {
-			Container result = packager.pack(items, build);
-			if(result != null) {
-				packList = Arrays.asList(result);
-			} else {
-				packList = Collections.emptyList();
-			}
+		PackagerInterruptSupplier build = booleanSupplierBuilder.build();
+		List<Container> packList = packager.pack(items, containers, maxContainerCount, build);
+		long duration = System.currentTimeMillis() - start;
+		if(packList == null) {
+			return new PackagerResult(Collections.emptyList(), duration, true);
 		}
-		return new PackagerResult(packList, System.currentTimeMillis() - start);
+		return new PackagerResult(packList, duration, false);
 	}
 
 }
