@@ -29,7 +29,7 @@ public class BruteForcePackagerResult implements PackResult {
 
 	// state
 	private PermutationRotationState state;
-	private List<Point3D<StackPlacement>> points = new ArrayList<>();
+	private List<Point3D<StackPlacement>> points = Collections.emptyList();
 	private List<StackPlacement> placements;
 
 	private boolean dirty = true;

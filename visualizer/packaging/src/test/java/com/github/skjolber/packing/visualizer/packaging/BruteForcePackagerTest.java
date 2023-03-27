@@ -67,8 +67,6 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		write(fits);
 	}
 
-
-
 	@Test
 	void testStackMultipleContainers() throws Exception {
 
