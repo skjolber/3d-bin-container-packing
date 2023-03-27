@@ -25,7 +25,7 @@ public class BouwkampCodePackagerBenchmark {
 		return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
 	}
 
-	/*
+	
 	@Benchmark
 	public int packager(BouwkampCodePackagerState state) throws Exception {
 		return process(state.getBruteForcePackager(), Long.MAX_VALUE);
@@ -35,7 +35,7 @@ public class BouwkampCodePackagerBenchmark {
 	public int fastPackager(BouwkampCodePackagerState state) throws Exception {
 		return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
 	}
-	*/
+	
 	public int process(List<BenchmarkSet> sets, long deadline) {
 		int i = 0;
 		for (BenchmarkSet set : sets) {
