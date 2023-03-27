@@ -28,9 +28,11 @@ public class DefaultIteratorBenchmark {
 	public long rotations(IteratorState state) throws Exception {
 
 		DefaultPermutationRotationIterator iterator = state.getIterator();
+		int index = iterator.length() / 2;
+
 		long count = 0;
 		do {
-			while (iterator.nextRotation() != -1) {
+			while (iterator.nextRotation(index) != -1) {
 				count++;
 				if(count >= MAX_COUNT) {
 					return count;
@@ -44,15 +46,17 @@ public class DefaultIteratorBenchmark {
 	public long permutations(IteratorState state) throws Exception {
 
 		DefaultPermutationRotationIterator iterator = state.getIterator();
-		long count = 0;
+		
+		int index = iterator.length() / 2;
 
+		long count = 0;
 		do {
 			count++;
 			if(count >= MAX_COUNT) {
 				return count;
 			}
 
-			if(iterator.nextPermutation(iterator.length() / 2) == -1) {
+			if(iterator.nextPermutation(index) == -1) {
 				throw new RuntimeException();
 			}
 		} while(true);
