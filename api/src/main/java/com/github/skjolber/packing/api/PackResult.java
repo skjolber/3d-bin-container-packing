@@ -20,6 +20,8 @@ public interface PackResult {
 
 	Container getContainer();
 
+	int getContainerItemIndex();
+
 	boolean containsLastStackable();
 
 }

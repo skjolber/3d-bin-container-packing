@@ -20,7 +20,7 @@ The project is implemented in Java and built using [Maven]. The project is avail
 Add
  
 ```xml
-<3d-bin-container-packing.version>2.1.4</3d-bin-container-packing.version>
+<3d-bin-container-packing.version>3.0.0</3d-bin-container-packing.version>
 ```
 
 and
@@ -44,7 +44,7 @@ For
 
 ```groovy
 ext {
-  containerBinPackingVersion = '2.1.4'
+  containerBinPackingVersion = '3.0.0'
 }
 ```
 
@@ -61,26 +61,7 @@ Java 11+ projects please use module `com.github.skjolber.packing.core`.
 # Usage
 The units of measure is out-of-scope, be they cm, mm or inches.
 
-### Largest Area Fit First (LAFF) packager
-Obtain a `Packager` instance:
-
-```java
-Container container = Container.newBuilder()
-    .withDescription("1")
-    .withSize(10, 10, 3)
-    .withEmptyWeight(1)
-    .withMaxLoadWeight(100)
-    .build();
-    
-LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder()
-    .withContainers(Arrays.asList(container))
-    .build();
-```
-
-The `packager` instance is thread-safe.
-
-### Packing
-Then compose your item list and perform packing:
+Obtain a `Packager` instance, then then compose your container and product list:
 
 ```java
 List<StackableItem> products = new ArrayList<StackableItem>();
@@ -89,30 +70,76 @@ products.add(new StackableItem(Box.newBuilder().withId("Foot").withSize(6, 10, 2
 products.add(new StackableItem(Box.newBuilder().withId("Leg").withSize(4, 10, 1).withRotate3D().withWeight(25).build(), 1));
 products.add(new StackableItem(Box.newBuilder().withId("Arm").withSize(4, 10, 2).withRotate3D().withWeight(50).build(), 1));
 
-// match a single container
-Container match = packager.pack(products);
+// add a single container type
+Container container = Container.newBuilder()
+    .withDescription("1")
+    .withSize(10, 10, 3)
+    .withEmptyWeight(1)
+    .withMaxLoadWeight(100)
+    .build();
+    
+// with unlimited number of containers available
+List<ContainerItem> containerItems = ContainerItem
+    .newListBuilder()
+    .withContainer(container)
+    .build();
 ```
 
-The resulting `match` variable returning the resulting packaging details or null if no match. 
+Pack all in a single container:
 
-The above example would return a match (`Foot` and `Arm` would be packaged at the height 0, `Leg` at height 2). 
+```java
+PackagerResult result = packager
+    .newResultBuilder()
+    .withContainers(containerItems)
+    .withStackables(products)
+    .build();
 
-For matching against multiple containers use
+if(result.isSuccess()) {
+    Container match = result.get(0);
+    
+    // ...
+}
+```
+
+Pack all in a maximum number of containers:
 
 ```java
 int maxContainers = ...; // maximum number of containers which can be used
-long deadline = ...; // system time in milliseconds at which the search should be aborted
 
-// match multiple containers
-List<Container> fits = packager.packList(products, maxContainers, deadline);
+PackagerResult result = packager
+    .newResultBuilder()
+    .withContainers(containerItems)
+    .withStackables(products)
+    .withMaxContainerCount(maxContainers)
+    .build();
+```
+
+Note that all `packager` instances are thread-safe.
+
+### Plain packager
+A simple packager
+
+```java
+PlainPackager packager = PlainPackager
+    .newBuilder()
+    .build();
+```
+
+### Largest Area Fit First (LAFF) packager
+A packager using the LAFF algorithm
+
+```java
+LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager
+    .newBuilder()
+    .build();
 ```
 
 ### Brute-force packager
 For a low number of packages (like <= 6) the brute force packager might be a good fit. 
 
 ```java
-Packager packager = BruteForcePackager.newBuilder()
-    .withContainers(Arrays.asList(container)
+Packager packager = BruteForcePackager
+    .newBuilder()
     .build();
 ```
 
@@ -182,21 +209,12 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
 
 # History
+ * 3.0.0: Support max number of containers (i.e. per container type). Use builders from now on. Various optimizations.
  * 2.1.4: Fix issue #574
  * 2.1.3: Fix nullpointer
  * 2.1.2: Tidy up, i.e. remove warnings, nuke some dependencies.
  * 2.1.1: Improve free space calculation performance
  * 2.1.0: Improve brute force iterators, respect deadlines in brute for packagers.
- * 2.0.10: Fix volume calculation overflow
- * 2.0.9: Better abstractions for comparisons of pack result.
- * 2.0.8: Fix regression, improve testing.
- * 2.0.7: Fix issue #453, improve performance.
- * 2.0.6: Fix issue #450
- * 2.0.5: Fix issue #440 and #433
- * 2.0.4: Performance improvements, minor bug fixes.
- * 2.0.2: Fix bug with multiple containers.
- * 2.0.1: Performance improvements.
- * 2.0.0: Major refactoring and improvements. Note: __New Maven coordinates__
 
 [1]: 				https://en.wikipedia.org/wiki/Bin_packing_problem
 [2]: 				https://www.drupal.org/files/An%20Efficient%20Algorithm%20for%203D%20Rectangular%20Box%20Packing.pdf

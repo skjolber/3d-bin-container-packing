@@ -32,6 +32,9 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	// permutations of boxes that fit inside this container
 	protected int[] permutations; // n!
 
+	// minimum volume from index i and above
+	protected long[] minStackableVolume;
+
 	public DefaultPermutationRotationIterator(PermutationStackableValue[] matrix) {
 		super(matrix);
 
@@ -56,6 +59,10 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		for (int i = 0; i < permutations.length; i++) {
 			permutations[i] = types.get(i);
 		}
+		
+		this.minStackableVolume = new long[permutations.length];
+		
+		calculateMinStackableVolume(0);
 	}
 
 	public void removePermutations(int count) {
@@ -72,10 +79,29 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		this.permutations = permutations;
 	}
 
+	private void calculateMinStackableVolume(int offset) {
+		PermutationRotation last = get(permutations.length - 1);
+		
+		minStackableVolume[permutations.length - 1] = last.getValue().getVolume();
+		
+		for(int i = permutations.length - 2; i >= offset; i--) {
+			long volume = get(i).getValue().getVolume();
+			
+			if(volume < minStackableVolume[i + 1]) {
+				minStackableVolume[i] = volume;
+			} else {
+				minStackableVolume[i] = minStackableVolume[i + 1];
+			}
+		}
+	}
+	
+	public long getMinStackableVolume(int offset) {
+		return minStackableVolume[offset];
+	}
+
 	/**
 	 * Remove permutations, if present.
 	 */
-
 	@Override
 	public void removePermutations(List<Integer> removed) {
 		int left = permutations.length;
@@ -105,6 +131,8 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 
 		this.rotations = new int[effectivePermutations.length];
 		this.reset = new int[effectivePermutations.length];
+		
+		calculateMinStackableVolume(0);
 	}
 
 	@Override
@@ -220,6 +248,8 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	public int nextPermutation(int maxIndex) {
 		while (maxIndex >= 0) {
 
+			int[] permutations = this.permutations;
+			
 			int current = permutations[maxIndex];
 
 			// find the lexicographically next item to the right of the max index
@@ -247,6 +277,8 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 
 			resetRotations();
 
+			calculateMinStackableVolume(maxIndex);
+
 			return maxIndex;
 		}
 		return -1;
@@ -256,6 +288,8 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	public int nextPermutation() {
 		resetRotations();
 
+		int[] permutations = this.permutations;
+		
 		// Find longest non-increasing suffix
 		int i = permutations.length - 1;
 		while (i > 0 && permutations[i - 1] >= permutations[i])
@@ -291,6 +325,8 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 			i++;
 			j--;
 		}
+
+		calculateMinStackableVolume(head);
 
 		// Successfully computed the next permutation
 		return head;

@@ -15,6 +15,7 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.DefaultPackResult;
@@ -37,21 +38,18 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 	public static class Builder extends AbstractPackagerBuilder<PlainPackager, Builder> {
 
 		public PlainPackager build() {
-			if(containers == null) {
-				throw new IllegalStateException("Expected containers");
-			}
 			if(packResultComparator == null) {
 				packResultComparator = new DefaultPackResultComparator();
 			}
-			return new PlainPackager(containers, checkpointsPerDeadlineCheck, packResultComparator);
+			return new PlainPackager(checkpointsPerDeadlineCheck, packResultComparator);
 		}
 	}
 
-	public PlainPackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
+	public PlainPackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
+		super(checkpointsPerDeadlineCheck, packResultComparator);
 	}
 
-	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, BooleanSupplier interrupt) {
+	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt) {
 		List<Stackable> remainingStackables = new ArrayList<>(stackables);
 
 		ContainerStackValue[] stackValues = targetContainer.getStackValues();
@@ -168,7 +166,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 		}
 
 		return new DefaultPackResult(new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack),
-				stack, remainingStackables.isEmpty());
+				stack, remainingStackables.isEmpty(), index);
 	}
 
 	protected boolean isBetter(Stackable referenceStackable, Point3D<StackPlacement> referencePoint, StackValue referenceStackValue, Stackable candidateBox, Point3D<StackPlacement> candidatePoint,

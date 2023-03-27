@@ -2,12 +2,12 @@ package com.github.skjolber.packing.deadline;
 
 import java.util.function.BooleanSupplier;
 
-public class DelegateDeadlineCheckBooleanSupplier implements BooleanSupplier {
+public class DelegateDeadlineCheckPackagerInterruptSupplier implements PackagerInterruptSupplier {
 
 	protected final BooleanSupplier delegate;
 	protected final long deadline;
 
-	public DelegateDeadlineCheckBooleanSupplier(long deadline, BooleanSupplier delegate) {
+	public DelegateDeadlineCheckPackagerInterruptSupplier(long deadline, BooleanSupplier delegate) {
 		super();
 		this.deadline = deadline;
 		this.delegate = delegate;

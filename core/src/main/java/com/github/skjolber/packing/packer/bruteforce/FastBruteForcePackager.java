@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.DefaultStack;
@@ -18,13 +19,15 @@ import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
+import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
-import com.github.skjolber.packing.packer.Adapter;
+import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 
 /**
@@ -44,32 +47,28 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 	public static class FastBruteForcePackagerBuilder extends AbstractPackagerBuilder<FastBruteForcePackager, FastBruteForcePackagerBuilder> {
 
 		public FastBruteForcePackager build() {
-			if(containers == null) {
-				throw new IllegalStateException("Expected containers");
-			}
 			if(packResultComparator == null) {
 				packResultComparator = new DefaultPackResultComparator();
 			}
-			return new FastBruteForcePackager(containers, checkpointsPerDeadlineCheck, packResultComparator);
+			return new FastBruteForcePackager(checkpointsPerDeadlineCheck, packResultComparator);
 		}
 	}
 
-	private class FastBruteForceAdapter implements Adapter<BruteForcePackagerResult> {
+	private class FastBruteForceAdapter extends AbstractPackagerAdapter<BruteForcePackagerResult> {
 
 		private final ContainerStackValue[] containerStackValue;
 		private final DefaultPermutationRotationIterator[] iterators;
-		private final List<Container> containers;
-		private final BooleanSupplier interrupt;
+		private final PackagerInterruptSupplier interrupt;
 		private final FastExtremePoints3DStack extremePoints3D;
 		private List<StackPlacement> stackPlacements;
 
-		public FastBruteForceAdapter(List<StackableItem> stackableItems, List<Container> containers, BooleanSupplier interrupt) {
-			this.containers = containers;
+		public FastBruteForceAdapter(List<StackableItem> stackableItems, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
+			super(containers);
 			this.iterators = new DefaultPermutationRotationIterator[containers.size()];
 			this.containerStackValue = new ContainerStackValue[containers.size()];
 
 			for (int i = 0; i < containers.size(); i++) {
-				Container container = containers.get(i);
+				Container container = containers.get(i).getContainer();
 
 				ContainerStackValue stackValue = container.getStackValues()[0];
 
@@ -115,11 +114,13 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				return BruteForcePackagerResult.EMPTY;
 			}
 			// TODO break if this container cannot beat the existing best result
-			return FastBruteForcePackager.this.pack(extremePoints3D, stackPlacements, containers.get(i), containerStackValue[i], iterators[i], interrupt);
+			return FastBruteForcePackager.this.pack(extremePoints3D, stackPlacements, containerItems.get(i).getContainer(), containerStackValue[i], i, iterators[i], interrupt);
 		}
 
 		@Override
 		public Container accept(BruteForcePackagerResult bruteForceResult) {
+			super.accept(bruteForceResult.getContainerItemIndex());
+
 			Container container = bruteForceResult.getContainer();
 			Stack stack = container.getStack();
 
@@ -146,10 +147,24 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 			return container;
 		}
+
+		@Override
+		public List<Integer> getContainers(int maxCount) {
+			DefaultPermutationRotationIterator defaultPermutationRotationIterator = iterators[0];
+			int length = defaultPermutationRotationIterator.length();
+			List<Stackable> boxes = new ArrayList<>(length);
+			for (int i = 0; i < length; i++) {
+				PermutationRotation permutationRotation = defaultPermutationRotationIterator.get(i);
+
+				boxes.add(permutationRotation.getStackable());
+			}
+
+			return getContainers(boxes, maxCount);
+		}
 	}
 
-	public FastBruteForcePackager(List<Container> containers, int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		super(containers, checkpointsPerDeadlineCheck, packResultComparator);
+	public FastBruteForcePackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
+		super(checkpointsPerDeadlineCheck, packResultComparator);
 	}
 
 	@Override
@@ -158,20 +173,21 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 	}
 
 	@Override
-	protected Adapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<Container> containers, BooleanSupplier interrupt) {
+	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
 		return new FastBruteForceAdapter(boxes, containers, interrupt);
 	}
 
 	public BruteForcePackagerResult pack(FastExtremePoints3DStack extremePoints, List<StackPlacement> stackPlacements, Container targetContainer, ContainerStackValue containerStackValue,
-			DefaultPermutationRotationIterator rotator, BooleanSupplier interrupt) {
+			int containerIndex,
+			DefaultPermutationRotationIterator rotator, PackagerInterruptSupplier interrupt) {
 		Stack stack = new DefaultStack(containerStackValue);
 
 		Container holder = new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(),
 				targetContainer.getStackValues(), stack);
 
-		BruteForcePackagerResult bestResult = new BruteForcePackagerResult(holder, rotator);
+		BruteForcePackagerResult bestResult = new BruteForcePackagerResult(holder, containerIndex, rotator);
 		// optimization: compare pack results by looking only at count within the same permutation 
-		BruteForcePackagerResult bestPermutationResult = new BruteForcePackagerResult(holder, rotator);
+		BruteForcePackagerResult bestPermutationResult = new BruteForcePackagerResult(holder, containerIndex, rotator);
 
 		// iterator over all permutations
 		do {
@@ -186,17 +202,15 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 			int index = 0;
 
-			int firstMinStackableVolumeIndex = rotator.getMinStackableVolumeIndex(0);
-			int minStackableVolumeIndex = firstMinStackableVolumeIndex;
-
 			do {
 				// attempt to limit the number of points created
 				// by calculating the minimum point volume and area
 				int minStackableAreaIndex = rotator.getMinStackableAreaIndex(index);
+				long minStackableVolume = rotator.getMinStackableVolume(index);
 
-				extremePoints.setMinimumAreaAndVolumeLimit(rotator.get(minStackableAreaIndex).getValue().getArea(), rotator.get(minStackableVolumeIndex).getValue().getVolume());
+				extremePoints.setMinimumAreaAndVolumeLimit(rotator.get(minStackableAreaIndex).getValue().getArea(), minStackableVolume);
 
-				int count = packStackPlacement(extremePoints, stackPlacements, rotator, stack, index, interrupt, minStackableAreaIndex, minStackableVolumeIndex);
+				int count = packStackPlacement(extremePoints, stackPlacements, rotator, stack, index, interrupt, minStackableAreaIndex);
 				if(count == Integer.MIN_VALUE) {
 					return null; // timeout
 				}
@@ -222,7 +236,6 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 				if(rotationIndex == -1) {
 					// no more rotations, continue to next permutation
-					extremePoints.setStackSize(0);
 					stack.clear();
 					break;
 				}
@@ -231,13 +244,6 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				stack.setSize(rotationIndex);
 
 				index = rotationIndex;
-
-				if(index > minStackableVolumeIndex) {
-					// these could be cached?
-					minStackableVolumeIndex = rotator.getMinStackableVolumeIndex(index);
-				} else {
-					minStackableVolumeIndex = firstMinStackableVolumeIndex;
-				}
 			} while (true);
 
 			int permutationIndex = rotator.nextPermutation(bestPermutationResult.getSize());
@@ -261,8 +267,8 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		return bestResult;
 	}
 
-	public int packStackPlacement(FastExtremePoints3DStack extremePoints3D, List<StackPlacement> placements, PermutationRotationIterator iterator, Stack stack, int placementIndex,
-			BooleanSupplier interrupt, int minStackableAreaIndex, int minStackableVolumeIndex) {
+	public int packStackPlacement(FastExtremePoints3DStack extremePoints3D, List<StackPlacement> placements, DefaultPermutationRotationIterator iterator, Stack stack, int placementIndex,
+			PackagerInterruptSupplier interrupt, int minStackableAreaIndex) {
 		// pack as many items as possible from placementIndex
 		ContainerStackValue containerStackValue = stack.getContainerStackValue();
 
@@ -336,18 +342,12 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			if(placementIndex < iterator.length()) {
 				// check whether minimum point volume and area should be adjusted 
 				boolean minArea = placementIndex == minStackableAreaIndex;
-				boolean minVolume = placementIndex == minStackableVolumeIndex;
-				if(minArea && minVolume) {
-					minStackableVolumeIndex = iterator.getMinStackableVolumeIndex(placementIndex);
+				if(minArea) {
 					minStackableAreaIndex = iterator.getMinStackableAreaIndex(placementIndex);
 
-					extremePoints3D.setMinimumAreaAndVolumeLimit(iterator.get(minStackableAreaIndex).getValue().getArea(), iterator.get(minStackableVolumeIndex).getValue().getVolume());
-				} else if(minArea) {
-					minStackableAreaIndex = iterator.getMinStackableAreaIndex(placementIndex);
-					extremePoints3D.setMinimumAreaLimit(iterator.get(minStackableAreaIndex).getValue().getArea());
-				} else if(minVolume) {
-					minStackableVolumeIndex = iterator.getMinStackableVolumeIndex(placementIndex);
-					extremePoints3D.setMinimumVolumeLimit(iterator.get(minStackableVolumeIndex).getValue().getVolume());
+					extremePoints3D.setMinimumAreaAndVolumeLimit(iterator.get(minStackableAreaIndex).getValue().getArea(), iterator.getMinStackableVolume(placementIndex));
+				} else {
+					extremePoints3D.setMinimumVolumeLimit(iterator.getMinStackableVolume(placementIndex));
 				}
 			}
 		}

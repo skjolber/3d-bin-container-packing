@@ -12,11 +12,13 @@ public class PackagerResult {
 
 	protected final long duration;
 	protected final List<Container> containers;
-
-	public PackagerResult(List<Container> containers, long duration) {
+	protected final boolean timeout;
+	
+	public PackagerResult(List<Container> containers, long duration, boolean timeout) {
 		super();
 		this.containers = containers;
 		this.duration = duration;
+		this.timeout = timeout;
 	}
 
 	/**
@@ -32,4 +34,21 @@ public class PackagerResult {
 	public long getDuration() {
 		return duration;
 	}
+
+	public Container get(int index) {
+		return containers.get(index);
+	}
+
+	public int size() {
+		return containers.size();
+	}
+
+	public boolean isSuccess() {
+		return !containers.isEmpty();
+	}
+	
+	public boolean isTimeout() {
+		return timeout;
+	}
+
 }

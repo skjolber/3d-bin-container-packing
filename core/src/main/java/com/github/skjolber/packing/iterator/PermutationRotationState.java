@@ -17,6 +17,14 @@ public class PermutationRotationState {
 		this.permutations = new int[permutations.length];
 		System.arraycopy(permutations, 0, this.permutations, 0, permutations.length);
 	}
+	
+	PermutationRotationState(int[] rotations, int[] permutations, int length) {
+		super();
+		this.rotations = new int[length];
+		System.arraycopy(rotations, 0, this.rotations, 0, length);
+		this.permutations = new int[length];
+		System.arraycopy(permutations, 0, this.permutations, 0, length);
+	}
 
 	public int[] getPermutations() {
 		return permutations;

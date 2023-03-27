@@ -9,7 +9,6 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
-import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.ep.points2d.DefaultPlacement2D;
 import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
