@@ -28,12 +28,12 @@ public class DefaultIteratorBenchmark {
 	public long rotations(IteratorState state) throws Exception {
 
 		DefaultPermutationRotationIterator iterator = state.getIterator();
-		java.util.concurrent.atomic.LongAdder counter = new LongAdder();
+		long count = 0;
 		do {
 			while (iterator.nextRotation() != -1) {
-				counter.add(1);
-				if(counter.longValue() >= MAX_COUNT) {
-					return counter.longValue();
+				count++;
+				if(count >= MAX_COUNT) {
+					return count;
 				}
 			}
 			iterator.resetRotations();
@@ -44,15 +44,18 @@ public class DefaultIteratorBenchmark {
 	public long permutations(IteratorState state) throws Exception {
 
 		DefaultPermutationRotationIterator iterator = state.getIterator();
-		java.util.concurrent.atomic.LongAdder counter = new LongAdder();
-		do {
-			counter.add(1);
-			if(counter.longValue() >= MAX_COUNT) {
-				return counter.longValue();
-			}
-		} while (iterator.nextPermutation(iterator.length() - 1) != -1);
+		long count = 0;
 
-		return counter.longValue();
+		do {
+			count++;
+			if(count >= MAX_COUNT) {
+				return count;
+			}
+
+			if(iterator.nextPermutation(iterator.length() / 2) == -1) {
+				throw new RuntimeException();
+			}
+		} while(true);
 	}
 
 	public static void main(String[] args) throws RunnerException {
