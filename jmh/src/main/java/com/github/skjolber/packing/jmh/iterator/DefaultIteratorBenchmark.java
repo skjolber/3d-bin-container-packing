@@ -1,8 +1,6 @@
 package com.github.skjolber.packing.jmh.iterator;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.LongAdder;
-
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
