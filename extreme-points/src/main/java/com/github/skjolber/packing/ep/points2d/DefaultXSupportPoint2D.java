@@ -55,7 +55,7 @@ public class DefaultXSupportPoint2D<P extends Placement2D & Serializable> extend
 	}
 
 	@Override
-	public Point2D<P> moveX(int x, int maxX, int maxY) {
+	public Point2D<P> moveX(int x) {
 		if(x <= xSupport.getAbsoluteEndX()) {
 			return new DefaultXSupportPoint2D<>(x, minY, maxX, maxY, xSupport);
 		}
@@ -63,7 +63,7 @@ public class DefaultXSupportPoint2D<P extends Placement2D & Serializable> extend
 	}
 
 	@Override
-	public Point2D<P> moveX(int x, int maxX, int maxY, P ySupport) {
+	public Point2D<P> moveX(int x, P ySupport) {
 		if(x <= xSupport.getAbsoluteEndX()) {
 			return new DefaultXYSupportPoint2D<>(x, minY, maxX, maxY, xSupport, ySupport);
 		}
@@ -71,12 +71,12 @@ public class DefaultXSupportPoint2D<P extends Placement2D & Serializable> extend
 	}
 
 	@Override
-	public Point2D<P> moveY(int y, int maxX, int maxY) {
+	public Point2D<P> moveY(int y) {
 		return new DefaultPoint2D<>(minX, y, maxX, maxY);
 	}
 
 	@Override
-	public Point2D<P> moveY(int y, int maxX, int maxY, P xSupport) {
+	public Point2D<P> moveY(int y, P xSupport) {
 		return new DefaultXSupportPoint2D<>(minX, y, maxX, maxY, xSupport);
 	}
 }

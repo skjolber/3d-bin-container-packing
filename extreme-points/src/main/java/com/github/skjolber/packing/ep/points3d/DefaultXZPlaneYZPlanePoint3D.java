@@ -127,7 +127,7 @@ public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D & Serializable> 
 	}
 
 	@Override
-	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ) {
+	public Point3D<P> moveX(int x) {
 		// yzPlane support is lost
 		if(x <= xzPlane.getAbsoluteEndX()) {
 			return new DefaultXZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, xzPlane);
@@ -137,7 +137,7 @@ public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D & Serializable> 
 	}
 
 	@Override
-	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ, P yzSupport) {
+	public Point3D<P> moveX(int x, P yzSupport) {
 		if(x <= xzPlane.getAbsoluteEndX()) {
 			return new DefaultXZPlaneYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, xzPlane, yzSupport);
 		}
@@ -146,7 +146,7 @@ public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D & Serializable> 
 	}
 
 	@Override
-	public Point3D<P> moveY(int y, int maxX, int maxY, int maxZ) {
+	public Point3D<P> moveY(int y) {
 		if(y <= yzPlane.getAbsoluteEndY()) {
 			return new DefaultYZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, yzPlane);
 		}
@@ -155,7 +155,7 @@ public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D & Serializable> 
 	}
 
 	@Override
-	public Point3D<P> moveY(int y, int maxX, int maxY, int maxZ, P xzSupport) {
+	public Point3D<P> moveY(int y, P xzSupport) {
 		if(y <= yzPlane.getAbsoluteEndY()) {
 			return new DefaultXZPlaneYZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, xzSupport, yzPlane);
 		}
@@ -164,7 +164,7 @@ public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D & Serializable> 
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ) {
+	public Point3D<P> moveZ(int z) {
 		boolean withinXZPlane = z <= xzPlane.getAbsoluteEndZ();
 		boolean withinYZPlane = z <= yzPlane.getAbsoluteEndZ();
 
@@ -181,7 +181,7 @@ public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D & Serializable> 
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ, P xySupport) {
+	public Point3D<P> moveZ(int z, P xySupport) {
 		boolean withinXZPlane = z <= xzPlane.getAbsoluteEndZ();
 		boolean withinYZPlane = z <= yzPlane.getAbsoluteEndZ();
 

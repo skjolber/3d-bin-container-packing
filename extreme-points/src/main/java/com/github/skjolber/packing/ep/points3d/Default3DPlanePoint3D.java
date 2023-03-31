@@ -175,7 +175,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ) {
+	public Point3D<P> moveX(int x) {
 		boolean withinXYPlane = x <= xyPlane.getAbsoluteEndX();
 		boolean withinXZPlane = x <= xzPlane.getAbsoluteEndX();
 
@@ -192,7 +192,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ, P yzSupport) {
+	public Point3D<P> moveX(int x, P yzSupport) {
 		boolean withinXYPlane = x <= xyPlane.getAbsoluteEndX();
 		boolean withinXZPlane = x <= xzPlane.getAbsoluteEndX();
 
@@ -209,7 +209,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveY(int y, int maxX, int maxY, int maxZ) {
+	public Point3D<P> moveY(int y) {
 		boolean withinXYPlane = y <= xyPlane.getAbsoluteEndY();
 		boolean withinYZPlane = y <= yzPlane.getAbsoluteEndY();
 
@@ -226,7 +226,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveY(int y, int maxX, int maxY, int maxZ, P xzSupport) {
+	public Point3D<P> moveY(int y, P xzSupport) {
 		boolean withinXYPlane = y <= xyPlane.getAbsoluteEndY();
 		boolean withinYZPlane = y <= yzPlane.getAbsoluteEndY();
 
@@ -242,7 +242,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ) {
+	public Point3D<P> moveZ(int z) {
 		boolean withinXZPlane = z <= xzPlane.getAbsoluteEndZ();
 		boolean withinYZPlane = z <= yzPlane.getAbsoluteEndZ();
 
@@ -260,7 +260,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ, P xySupport) {
+	public Point3D<P> moveZ(int z, P xySupport) {
 		boolean withinXZPlane = z <= xzPlane.getAbsoluteEndZ();
 		boolean withinYZPlane = z <= yzPlane.getAbsoluteEndZ();
 

@@ -36,22 +36,22 @@ public class DefaultPoint2D<P extends Placement2D & Serializable> extends Point2
 	}
 
 	@Override
-	public Point2D<P> moveX(int x, int maxX, int maxY) {
+	public Point2D<P> moveX(int x) {
 		return new DefaultPoint2D<>(x, minY, maxX, maxY);
 	}
 
 	@Override
-	public Point2D<P> moveY(int y, int maxX, int maxY) {
+	public Point2D<P> moveY(int y) {
 		return new DefaultPoint2D<>(minX, y, maxX, maxY);
 	}
 
 	@Override
-	public Point2D<P> moveX(int x, int maxX, int maxY, P ySupport) {
+	public Point2D<P> moveX(int x, P ySupport) {
 		return new DefaultYSupportPoint2D<>(x, minY, maxY, maxY, ySupport);
 	}
 
 	@Override
-	public Point2D<P> moveY(int y, int maxX, int maxY, P xSupport) {
+	public Point2D<P> moveY(int y, P xSupport) {
 		return new DefaultXSupportPoint2D<>(minX, y, maxX, maxX, xSupport);
 	}
 

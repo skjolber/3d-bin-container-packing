@@ -128,7 +128,7 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 	}
 
 	@Override
-	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ) {
+	public Point3D<P> moveX(int x) {
 		boolean withinXYPlane = x <= xyPlane.getAbsoluteEndX();
 		boolean withinXZPlane = x <= xzPlane.getAbsoluteEndX();
 
@@ -144,7 +144,7 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 	}
 
 	@Override
-	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ, P yzSupport) {
+	public Point3D<P> moveX(int x, P yzSupport) {
 		boolean withinXYPlane = x <= xyPlane.getAbsoluteEndX();
 		boolean withinXZPlane = x <= xzPlane.getAbsoluteEndX();
 
@@ -160,7 +160,7 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 	}
 
 	@Override
-	public Point3D<P> moveY(int y, int maxX, int maxY, int maxZ) {
+	public Point3D<P> moveY(int y) {
 		// xz plane support is lost
 		if(y <= xyPlane.getAbsoluteEndY()) {
 			return new DefaultXYPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, xyPlane);
@@ -170,7 +170,7 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 	}
 
 	@Override
-	public Point3D<P> moveY(int y, int maxX, int maxY, int maxZ, P xzSupport) {
+	public Point3D<P> moveY(int y, P xzSupport) {
 		// xz plane support is lost
 		if(y <= xyPlane.getAbsoluteEndY()) {
 			return new DefaultXYPlaneXZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, xzSupport, xyPlane);
@@ -180,7 +180,7 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ) {
+	public Point3D<P> moveZ(int z) {
 		// xy plane support is lost
 		if(z <= xzPlane.getAbsoluteEndZ()) {
 			return new DefaultXZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xzPlane);
@@ -190,7 +190,7 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ, P xySupport) {
+	public Point3D<P> moveZ(int z, P xySupport) {
 		if(z <= xzPlane.getAbsoluteEndZ()) {
 			return new DefaultXYPlaneXZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xzPlane, xySupport);
 		}

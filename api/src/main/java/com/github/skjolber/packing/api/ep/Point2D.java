@@ -347,7 +347,7 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 	//       |---------x===================
 	//
 
-	public abstract Point2D<P> moveX(int x, int maxX, int maxY);
+	public abstract Point2D<P> moveX(int x);
 
 	//       |                  
 	//       |                  
@@ -368,7 +368,7 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 	//       |---------x===================
 	//
 
-	public abstract Point2D<P> moveX(int x, int maxX, int maxY, P ySupport);
+	public abstract Point2D<P> moveX(int x, P ySupport);
 
 	//
 	//       |   ║              
@@ -398,7 +398,7 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 	//       |                 
 	//       |---------------------------
 
-	public abstract Point2D<P> moveY(int y, int maxX, int maxY);
+	public abstract Point2D<P> moveY(int y);
 
 	//
 	//       |   ║              
@@ -428,7 +428,7 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 	//       |                 
 	//       |---------------------------
 
-	public abstract Point2D<P> moveY(int y, int maxX, int maxY, P xSupport);
+	public abstract Point2D<P> moveY(int y, P xSupport);
 
 	public boolean isInsideY(int yy) {
 		return minY <= yy && yy <= maxY;

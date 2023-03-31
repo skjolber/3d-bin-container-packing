@@ -436,7 +436,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |---------x===================
 	//
 
-	public abstract Point3D<P> moveX(int x, int maxX, int maxY, int maxZ);
+	public abstract Point3D<P> moveX(int x);
 
 	//       |                  
 	//       |                  
@@ -457,7 +457,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |---------x===================
 	//
 
-	public abstract Point3D<P> moveX(int x, int maxX, int maxY, int maxZ, P yzSupport);
+	public abstract Point3D<P> moveX(int x, P yzSupport);
 
 	//
 	//       |   ║              
@@ -487,7 +487,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |                 
 	//       |---------------------------
 
-	public abstract Point3D<P> moveY(int y, int maxX, int maxY, int maxZ);
+	public abstract Point3D<P> moveY(int y);
 
 	//
 	//       |   ║              
@@ -517,119 +517,11 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |                 
 	//       |---------------------------
 
-	public abstract Point3D<P> moveY(int y, int maxX, int maxY, int maxZ, P xzSupport);
+	public abstract Point3D<P> moveY(int y, P xzSupport);
 
-	public abstract Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ);
+	public abstract Point3D<P> moveZ(int z);
 
-	public abstract Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ, P xySupport);
-
-	//       |                  
-	//       |                  
-	//       |                  
-	//       |   |-------|      
-	//       |   |       |      
-	//       |   |       |      
-	//       |---x=========================
-	//
-	//       |                  
-	//       |                  
-	//       |         |-------|
-	//       |         |       |
-	//       |         |       |
-	//       |         |       |
-	//       |---------x===================
-	//
-
-	public Point3D<P> moveX(int x, int maxX, int maxY) {
-		return moveX(x, maxX, maxY, maxZ);
-	}
-
-	//       |                  
-	//       |                  
-	//       |                  
-	//       |   |-------|      
-	//       |   |       |      
-	//       |   |       |      
-	//       |---x=========================
-	//
-	//       |      added y support        
-	//       |         |         
-	//       |---------║         
-	//       |         ║         
-	//       |         ║-------|
-	//       |         ║       |
-	//       |         ║       |
-	//       |         ║       |
-	//       |---------x===================
-	//
-
-	public Point3D<P> moveX(int x, int maxX, int maxY, P ySupport) {
-		return moveX(x, maxX, maxY, maxZ, ySupport);
-	}
-
-	//
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║-------|      
-	//       |   ║       |      
-	//       |   ║       |      	
-	//       |---x-------|----------------
-	//
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║---------|      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   x---------|      
-	//       |                 
-	//       |                 
-	//       |                 
-	//       |                 
-	//       |---------------------------
-
-	public Point3D<P> moveY(int y, int maxX, int maxY) {
-		return moveY(y, maxX, maxY, maxZ);
-	}
-
-	//
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║-------|      
-	//       |   ║       |      
-	//       |   ║       |      
-	//       |---x-------|----------------
-	//
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║---------|      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   x===================  <-- added x support
-	//       |                 
-	//       |                 
-	//       |                 
-	//       |                 
-	//       |---------------------------
-
-	public Point3D<P> moveY(int y, int maxX, int maxY, P xSupport) {
-		return moveY(y, maxX, maxY, maxZ, xSupport);
-	}
+	public abstract Point3D<P> moveZ(int z, P xySupport);
 
 	public abstract Point3D<P> rotate();
 
