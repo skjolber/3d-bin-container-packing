@@ -297,7 +297,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 				}
 
 				// note: the new point might shadow one of the previous points
-				Point2D<P> moveX = p.moveX(xx, p.getMaxX(), p.getMaxY(), placement);
+				Point2D<P> moveX = p.moveX(xx, placement);
 				addXX.add(moveX);
 			}
 		}
@@ -317,7 +317,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 					}
 				}
 
-				Point2D<P> moveY = p.moveY(yy, p.getMaxX(), p.getMaxY(), placement);
+				Point2D<P> moveY = p.moveY(yy, placement);
 				addYY.add(moveY);
 			}
 		}

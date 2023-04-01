@@ -113,6 +113,11 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		// remove points which are eclipsed by others
 
 		// keep track of placement borders, where possible
+		
+		// copy intensively used items to local variables
+		Point3DFlagList<P> values = this.values;
+		Point3DFlagList<P> otherValues = this.otherValues;
+		
 		Point3D<P> source = values.get(index);
 		values.flag(index);
 
@@ -172,7 +177,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		if(supportedYZPlane) {
 			// b and c only
 
-			// already have index for point at absoluteX
+			// already have index for point at absoluteX, find the lowest value with the same x coordinate
 			pointIndex = index;
 			while (pointIndex > 0 && values.get(pointIndex - 1).getMinX() == placement.getAbsoluteX()) {
 				pointIndex--;
@@ -300,10 +305,11 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 			xxComparator.setXx(xx);
 			moveToXX.sortThis(xxComparator);
 
+			int moveToXXSize = moveToXX.size();
 			int targetIndex = endIndex;
-			addXX.ensureAdditionalCapacity(targetIndex, moveToXX.size());
+			addXX.ensureAdditionalCapacity(targetIndex, moveToXXSize);
 
-			add: for (int i = 0; i < moveToXX.size(); i++) {
+			add: for (int i = 0; i < moveToXXSize; i++) {
 				int currentIndex = moveToXX.get(i);
 				Point3D<P> p = values.get(currentIndex);
 				// add point on the other side
@@ -318,9 +324,10 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				Point3D<P> added;
 				if(p.getMinY() < placement.getAbsoluteY() || p.getMinZ() < placement.getAbsoluteZ()) {
 					// too low, no support
-					added = p.moveX(xx, p.getMaxX(), p.getMaxY(), p.getMaxZ());
+					added = p.moveX(xx);
 				} else {
-					added = p.moveX(xx, p.getMaxX(), p.getMaxY(), p.getMaxZ(), placement);
+					// moved point still has support
+					added = p.moveX(xx, placement);
 				}
 
 				// find right insertion point
@@ -328,12 +335,14 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				while (targetIndex < values.size() && Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
 
-					addXX.ensureAdditionalCapacity(targetIndex, moveToXX.size() - i);
+					addXX.ensureAdditionalCapacity(targetIndex, moveToXXSize - i);
 				}
 
 				addXX.add(added, targetIndex);
 				addedXX.add(added);
 			}
+			
+			moveToXX.clear();
 		}
 
 		if(!moveToYY.isEmpty()) {
@@ -357,9 +366,10 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				Point3D<P> added;
 				if(p.getMinX() < placement.getAbsoluteX() || p.getMinZ() < placement.getAbsoluteZ()) {
 					// too low, no support
-					added = p.moveY(yy, p.getMaxX(), p.getMaxY(), p.getMaxZ());
+					added = p.moveY(yy);
 				} else {
-					added = p.moveY(yy, p.getMaxX(), p.getMaxY(), p.getMaxZ(), placement);
+					// moved point still has support
+					added = p.moveY(yy, placement);
 				}
 
 				// find right insertion point
@@ -375,6 +385,8 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				addYY.add(added, targetIndex);
 				addedYY.add(added);
 			}
+			
+			moveToYY.clear();
 		}
 
 		if(!moveToZZ.isEmpty()) {
@@ -397,9 +409,10 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				Point3D<P> added;
 				if(p.getMinX() < placement.getAbsoluteX() || p.getMinY() < placement.getAbsoluteY()) {
 					// too low, no support
-					added = p.moveZ(zz, p.getMaxX(), p.getMaxY(), p.getMaxZ());
+					added = p.moveZ(zz);
 				} else {
-					added = p.moveZ(zz, p.getMaxX(), p.getMaxY(), p.getMaxZ(), placement);
+					// moved point still has support
+					added = p.moveZ(zz, placement);
 				}
 
 				// find right insertion point
@@ -414,6 +427,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				addZZ.add(added, targetIndex);
 				addedZZ.add(added);
 			}
+			moveToZZ.clear();
 		}
 
 		// Constrain max values to the new placement
@@ -441,6 +455,9 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 
 		placements.add(placement);
 
+		// Overview of the points we have accumulated above
+		// these must be placed in the right order into the resulting output
+		//
 		//                                                                    XX
 		//              | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13| 14| 15| 16| 17| 18| 19| 20| 21 
 		//  addXX       |   |   |   |   |   |   |   |   |   |   |   |   |   |   | a |   |   |   |   |   |   |   
@@ -575,10 +592,6 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 
 		otherValues.copyInto(values);
 		otherValues.reset();
-
-		moveToXX.clear();
-		moveToYY.clear();
-		moveToZZ.clear();
 
 		addedXX.clear();
 		addedYY.clear();

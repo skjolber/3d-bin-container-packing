@@ -37,32 +37,32 @@ public class DefaultPoint3D<P extends Placement3D & Serializable> extends Point3
 	}
 
 	@Override
-	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ) {
+	public Point3D<P> moveX(int x) {
 		return new DefaultPoint3D<>(x, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
-	public Point3D<P> moveX(int x, int maxX, int maxY, int maxZ, P yzSupport) {
+	public Point3D<P> moveX(int x, P yzSupport) {
 		return new DefaultYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, yzSupport);
 	}
 
 	@Override
-	public Point3D<P> moveY(int y, int maxX, int maxY, int maxZ) {
+	public Point3D<P> moveY(int y) {
 		return new DefaultPoint3D<>(minX, y, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
-	public Point3D<P> moveY(int y, int maxX, int maxY, int maxZ, P xzSupport) {
+	public Point3D<P> moveY(int y, P xzSupport) {
 		return new DefaultXZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, xzSupport);
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ) {
+	public Point3D<P> moveZ(int z) {
 		return new DefaultPoint3D<>(minX, minY, z, maxX, maxY, maxZ);
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z, int maxX, int maxY, int maxZ, P xySupport) {
+	public Point3D<P> moveZ(int z, P xySupport) {
 		return new DefaultXYPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xySupport);
 	}
 
