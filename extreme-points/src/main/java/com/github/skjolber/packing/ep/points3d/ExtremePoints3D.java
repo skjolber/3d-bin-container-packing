@@ -156,7 +156,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		//
 
 		// must be to the right of the current index, so set it as a minimum
-		int endIndex = binarySearchPlusMinX(index, placement.getAbsoluteEndX());
+		int endIndex = binarySearchPlusMinX(values, index, placement.getAbsoluteEndX());
 
 		moveToXX.ensureCapacity(endIndex);
 		moveToYY.ensureCapacity(endIndex);
@@ -590,12 +590,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 			addXXPoint3d.clear();
 		}
 
-		// Copy output to input + reset current input and set as next output.
-		// this saves a good bit of cleanup
-		this.values = otherValues;
-		
-		values.reset();
-		this.otherValues = values;
+		saveValues(values, otherValues);
 		
 		addedXX.clear();
 		addedYY.clear();
@@ -607,6 +602,15 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		// constrainZZ
 		
 		return !values.isEmpty();
+	}
+
+	protected void saveValues(Point3DFlagList<P> values, Point3DFlagList<P> otherValues) {
+		// Copy output to input + reset current input and set as next output.
+		// this saves a good bit of cleanup
+		this.values = otherValues;
+		
+		values.clear();
+		this.otherValues = values;
 	}
 
 	private boolean isEclipsed(Point3D<P> point) {
@@ -1487,7 +1491,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		return low;
 	}
 
-	public int binarySearchPlusMinX(int low, int key) {
+	public int binarySearchPlusMinX(Point3DFlagList<P> values, int low, int key) {
 		// return exclusive result
 
 		int high = values.size() - 1;
@@ -1503,7 +1507,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 
 			if(midVal < key) {
 				low = mid + 1;
-			} else if(midVal > key) {
+			} else if(midVal != key) {
 				high = mid - 1;
 			} else {
 				// key found

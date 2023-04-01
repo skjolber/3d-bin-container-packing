@@ -18,7 +18,6 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		protected Point3D<StackPlacement> point;
 		protected long minVolumeLimit;
 		protected long minAreaLimit;
-
 	}
 
 	protected List<StackItem> stackItems = new ArrayList<>();
@@ -44,49 +43,48 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 	}
 
 	public StackPlacement push() {
-		StackItem stackItem = stackItems.get(stackIndex);
+		StackItem currentStackItem = stackItems.get(stackIndex);
+		// save current state
+		currentStackItem.minAreaLimit = minAreaLimit;
+		currentStackItem.minVolumeLimit = minVolumeLimit;
 
 		stackIndex++;
 
 		StackItem nextStackItem = stackItems.get(stackIndex);
-		nextStackItem.placements.addAll(stackItem.placements);
-		stackItem.values.copyInto(nextStackItem.values);
 
-		stackItem.minAreaLimit = minAreaLimit;
-		stackItem.minVolumeLimit = minVolumeLimit;
-
-		loadCurrent();
-
+		// clone current state
+		// make sure to overwrite everything, no clear is performed
+		nextStackItem.point = null;
+		nextStackItem.placements.clear();
+		
+		nextStackItem.placements.addAll(currentStackItem.placements);
+		nextStackItem.values.copyFrom(currentStackItem.values);
+		nextStackItem.otherValues.copyFrom(currentStackItem.otherValues);
+		
+		// set the current stack item as working variables
+		this.values = nextStackItem.values;
+		this.otherValues = nextStackItem.otherValues;
+		this.placements = nextStackItem.placements;
+		
 		return nextStackItem.stackPlacement;
 	}
 
 	public void redo() {
-		// clear current level
-		placements.clear();
+		// i.e. copy values from the previous value into the current
+		StackItem currentStackItem = stackItems.get(stackIndex - 1);
 
-		StackItem stackItem = stackItems.get(stackIndex);
-		stackItem.point = null;
-
-		// copy from previous level
-		StackItem previousStackItem = stackItems.get(stackIndex - 1);
-		minAreaLimit = previousStackItem.minAreaLimit;
-		minVolumeLimit = previousStackItem.minVolumeLimit;
-
-		placements.addAll(previousStackItem.placements);
-
-		previousStackItem.values.copyInto(values);
+		StackItem nextStackItem = stackItems.get(stackIndex);
+		nextStackItem.point = null;
+		nextStackItem.placements.clear();
+		
+		nextStackItem.placements.addAll(currentStackItem.placements);
+		
+		nextStackItem.values.copyFrom(currentStackItem.values);
+		nextStackItem.otherValues.copyFrom(currentStackItem.otherValues);
 	}
 
 	public void pop() {
-		StackItem nextStackItem = stackItems.get(stackIndex);
-		nextStackItem.placements.clear();
-		nextStackItem.values.clear();
-
-		this.minAreaLimit = 0;
-		this.minVolumeLimit = 0;
-
-		nextStackItem.point = null;
-
+		// no clear of current stack level necessary, everything is overwritten on push
 		stackIndex--;
 		loadCurrent();
 	}
@@ -95,16 +93,10 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		StackItem stackItem = stackItems.get(stackIndex);
 
 		this.values = stackItem.values;
-
-		xxComparator.setValues(values);
-		yyComparator.setValues(values);
-		zzComparator.setValues(values);
-
 		this.otherValues = stackItem.otherValues;
 		this.placements = stackItem.placements;
 		this.minAreaLimit = stackItem.minAreaLimit;
 		this.minVolumeLimit = stackItem.minVolumeLimit;
-
 	}
 
 	public List<Point3D<StackPlacement>> getPoints() {
@@ -128,19 +120,28 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 	public void reset(int dx, int dy, int dz) {
 		setSize(dx, dy, dz);
 
-		for (int i = 0; i < stackItems.size(); i++) {
-			StackItem stackItem = stackItems.get(i);
-			stackItem.point = null;
-
-			stackItem.placements.clear();
-			stackItem.values.clear();
-		}
-
 		stackIndex = 0;
+		StackItem stackItem = stackItems.get(stackIndex);
+
+		stackItem.placements.clear();
+		stackItem.values.clear();
+		stackItem.otherValues.clear();
+		stackItem.point = null;
+
+		stackItem.values.add(firstPoint);
 
 		loadCurrent();
+	}
+	
+	@Override
+	protected void saveValues(Point3DFlagList<StackPlacement> values, Point3DFlagList<StackPlacement> otherValues) {
+		// override because of the way the stack works, 
+		super.saveValues(values, otherValues);
+		
+		StackItem stackItem = stackItems.get(stackIndex);
 
-		values.add(firstPoint);
+		stackItem.values = otherValues;
+		stackItem.otherValues = values;
 	}
 
 }
