@@ -2,8 +2,6 @@ package com.github.skjolber.packing.api;
 
 public interface StackConstraint {
 
-	boolean supports(int weight, long area);
-
-	boolean accepts(Stack stack);
-
+	boolean supports(Stack stack, int weight, long area);
+	
 }

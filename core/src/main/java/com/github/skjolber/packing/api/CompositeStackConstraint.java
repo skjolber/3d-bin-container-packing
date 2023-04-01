@@ -16,22 +16,13 @@ public class CompositeStackConstraint implements StackConstraint {
 	}
 	
 	@Override
-	public boolean supports(int weight, long area) {
+	public boolean supports(Stack stack, int weight, long area) {
 		for (StackConstraint constraint : constraints) {
-			if(!constraint.supports(weight, area)) {
+			if(!constraint.supports(stack, weight, area)) {
 				return false;
 			}
 		}
 		return true;
 	}
-
-	@Override
-	public boolean accepts(Stack stack) {
-		for (StackConstraint constraint : constraints) {
-			if(!constraint.accepts(stack)) {
-				return false;
-			}
-		}
-		return true;
-	}
+	
 }
