@@ -62,9 +62,9 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 	protected P containerPlacement;
 	protected Default3DPlanePoint3D<P> firstPoint;
 
-	protected CustomIntXComparator xxComparator = new CustomIntXComparator();
-	protected CustomIntYComparator yyComparator = new CustomIntYComparator();
-	protected CustomIntZComparator zzComparator = new CustomIntZComparator();
+	protected static CustomIntXComparator xxComparator = new CustomIntXComparator();
+	protected static CustomIntYComparator yyComparator = new CustomIntYComparator();
+	protected static CustomIntZComparator zzComparator = new CustomIntZComparator();
 
 	public ExtremePoints3D(int dx, int dy, int dz) {
 		this(dx, dy, dz, false);
@@ -177,7 +177,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		if(supportedYZPlane) {
 			// b and c only
 
-			// already have index for point at absoluteX
+			// already have index for point at absoluteX, find the lowest value with the same x coordinate
 			pointIndex = index;
 			while (pointIndex > 0 && values.get(pointIndex - 1).getMinX() == placement.getAbsoluteX()) {
 				pointIndex--;
@@ -326,6 +326,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 					// too low, no support
 					added = p.moveX(xx);
 				} else {
+					// moved point still has support
 					added = p.moveX(xx, placement);
 				}
 
@@ -367,6 +368,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 					// too low, no support
 					added = p.moveY(yy);
 				} else {
+					// moved point still has support
 					added = p.moveY(yy, placement);
 				}
 
@@ -409,6 +411,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 					// too low, no support
 					added = p.moveZ(zz);
 				} else {
+					// moved point still has support
 					added = p.moveZ(zz, placement);
 				}
 
@@ -452,6 +455,9 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 
 		placements.add(placement);
 
+		// Overview of the points we have accumulated above
+		// these must be placed in the right order into the resulting output
+		//
 		//                                                                    XX
 		//              | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13| 14| 15| 16| 17| 18| 19| 20| 21 
 		//  addXX       |   |   |   |   |   |   |   |   |   |   |   |   |   |   | a |   |   |   |   |   |   |   
