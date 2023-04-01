@@ -62,9 +62,9 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 	protected P containerPlacement;
 	protected Default3DPlanePoint3D<P> firstPoint;
 
-	protected static CustomIntXComparator xxComparator = new CustomIntXComparator();
-	protected static CustomIntYComparator yyComparator = new CustomIntYComparator();
-	protected static CustomIntZComparator zzComparator = new CustomIntZComparator();
+	protected CustomIntXComparator xxComparator = new CustomIntXComparator();
+	protected CustomIntYComparator yyComparator = new CustomIntYComparator();
+	protected CustomIntZComparator zzComparator = new CustomIntZComparator();
 
 	public ExtremePoints3D(int dx, int dy, int dz) {
 		this(dx, dy, dz, false);
