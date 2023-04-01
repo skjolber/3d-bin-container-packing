@@ -17,20 +17,22 @@ public class CustomIntZComparator implements IntComparator {
 		Point3D<?> o1 = values.get(value1);
 		Point3D<?> o2 = values.get(value2);
 
-		int x = Integer.compare(o1.getMinX(), o2.getMinX());
-
-		if(x == 0) {
-			x = Integer.compare(o1.getMinY(), o2.getMinY());
+		if(o1.getMinX() < o2.getMinX()) {
+			return -1;
+		} else if(o1.getMinX() != o2.getMinX()) {
+			return 1;
+		}
+		
+		if(o1.getMinY() < o2.getMinY()) {
+			return -1;
+		} else if(o1.getMinY() != o2.getMinY()) {
+			return 1;
 		}
 
-		if(x == 0) {
-			long volume1 = o1.getArea() * (o1.getMaxZ() - zz + 1);
-			long volume2 = o2.getArea() * (o2.getMaxZ() - zz + 1);
+		long volume1 = o1.getArea() * (o1.getMaxZ() - zz + 1);
+		long volume2 = o2.getArea() * (o2.getMaxZ() - zz + 1);
 
-			return -Long.compare(volume1, volume2);
-		}
-
-		return x;
+		return -Long.compare(volume1, volume2);
 	}
 
 	public void setZz(int zz) {

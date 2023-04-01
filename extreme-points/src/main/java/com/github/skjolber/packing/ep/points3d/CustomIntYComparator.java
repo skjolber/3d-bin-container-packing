@@ -17,20 +17,23 @@ public class CustomIntYComparator implements IntComparator {
 		Point3D<?> o1 = values.get(value1);
 		Point3D<?> o2 = values.get(value2);
 
-		int x = Integer.compare(o1.getMinZ(), o2.getMinZ());
-
-		if(x == 0) {
-			x = Integer.compare(o1.getMinX(), o2.getMinX());
+		
+		if(o1.getMinZ() < o2.getMinZ()) {
+			return -1;
+		} else if(o1.getMinZ() != o2.getMinZ()) {
+			return 1;
+		}
+		
+		if(o1.getMinX() < o2.getMinX()) {
+			return -1;
+		} else if(o1.getMinX() != o2.getMinX()) {
+			return 1;
 		}
 
-		if(x == 0) {
-			long volume1 = o1.getDx() * o1.getDz() * (o1.getMaxY() - yy + 1L);
-			long volume2 = o2.getDx() * o2.getDz() * (o2.getMaxY() - yy + 1L);
+		long volume1 = o1.getDx() * o1.getDz() * (o1.getMaxY() - yy + 1L);
+		long volume2 = o2.getDx() * o2.getDz() * (o2.getMaxY() - yy + 1L);
 
-			return -Long.compare(volume1, volume2);
-		}
-
-		return x;
+		return -Long.compare(volume1, volume2);
 	}
 
 	public void setYy(int yy) {
