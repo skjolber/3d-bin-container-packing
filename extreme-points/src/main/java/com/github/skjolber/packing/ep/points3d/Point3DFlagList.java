@@ -130,6 +130,10 @@ public class Point3DFlagList<P extends Placement3D> implements Serializable {
 		this.size += offset;
 	}
 
+	public void copyFrom(Point3DFlagList<P> source) {
+		source.copyInto(this);
+	}
+
 	public void copyInto(Point3DFlagList<P> destination) {
 		destination.ensureCapacity(size);
 

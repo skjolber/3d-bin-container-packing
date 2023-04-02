@@ -35,8 +35,8 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 	protected long minVolumeLimit = 0;
 	protected long minAreaLimit = 0;
 
-	protected Point3DFlagList<P> values = new Point3DFlagList<>();
-	protected Point3DFlagList<P> otherValues = new Point3DFlagList<>();
+	protected Point3DFlagList<P> values = new Point3DFlagList<>(); // i.e. current (input) values
+	protected Point3DFlagList<P> otherValues = new Point3DFlagList<>(); // i.e. next (output) values
 
 	protected ArrayList<P> placements = new ArrayList<>();
 
@@ -75,10 +75,6 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		this.cloneOnConstrain = cloneOnConstrain;
 
 		values.add(firstPoint);
-		
-		xxComparator.setValues(values);
-		yyComparator.setValues(values);
-		zzComparator.setValues(values);
 	}
 
 	protected void setSize(int dx, int dy, int dz) {
@@ -159,7 +155,8 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		// determine start and end index based on previous sort (in x direction)
 		//
 
-		int endIndex = binarySearchPlusMinX(placement.getAbsoluteEndX());
+		// must be to the right of the current index, so set it as a minimum
+		int endIndex = binarySearchPlusMinX(values, index, placement.getAbsoluteEndX());
 
 		moveToXX.ensureCapacity(endIndex);
 		moveToYY.ensureCapacity(endIndex);
@@ -302,6 +299,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		}
 
 		if(!moveToXX.isEmpty()) {
+			xxComparator.setValues(values);
 			xxComparator.setXx(xx);
 			moveToXX.sortThis(xxComparator);
 
@@ -346,6 +344,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		}
 
 		if(!moveToYY.isEmpty()) {
+			yyComparator.setValues(values);
 			yyComparator.setYy(yy);
 			moveToYY.sortThis(yyComparator);
 
@@ -390,6 +389,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		}
 
 		if(!moveToZZ.isEmpty()) {
+			zzComparator.setValues(values);
 			zzComparator.setZz(zz);
 			moveToZZ.sortThis(zzComparator);
 
@@ -590,9 +590,8 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 			addXXPoint3d.clear();
 		}
 
-		otherValues.copyInto(values);
-		otherValues.reset();
-
+		saveValues(values, otherValues);
+		
 		addedXX.clear();
 		addedYY.clear();
 		addedZZ.clear();
@@ -603,6 +602,15 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		// constrainZZ
 		
 		return !values.isEmpty();
+	}
+
+	protected void saveValues(Point3DFlagList<P> values, Point3DFlagList<P> otherValues) {
+		// Copy output to input + reset current input and set as next output.
+		// this saves a good bit of cleanup
+		this.values = otherValues;
+		
+		values.clear();
+		this.otherValues = values;
 	}
 
 	private boolean isEclipsed(Point3D<P> point) {
@@ -1483,10 +1491,9 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		return low;
 	}
 
-	public int binarySearchPlusMinX(int key) {
+	public int binarySearchPlusMinX(Point3DFlagList<P> values, int low, int key) {
 		// return exclusive result
 
-		int low = 0;
 		int high = values.size() - 1;
 
 		while (low <= high) {
@@ -1498,11 +1505,9 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 
 			int midVal = values.get(mid).getMinX();
 
-			int cmp = Integer.compare(midVal, key);
-
-			if(cmp < 0) {
+			if(midVal < key) {
 				low = mid + 1;
-			} else if(cmp > 0) {
+			} else if(midVal != key) {
 				high = mid - 1;
 			} else {
 				// key found

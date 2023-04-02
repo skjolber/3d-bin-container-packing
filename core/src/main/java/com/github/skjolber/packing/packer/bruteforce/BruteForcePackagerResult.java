@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,7 +29,7 @@ public class BruteForcePackagerResult implements PackResult {
 	// state
 	private PermutationRotationState state;
 	private List<Point3D<StackPlacement>> points = Collections.emptyList();
-	private List<StackPlacement> placements;
+	private List<StackPlacement> placements = Collections.emptyList();
 
 	private boolean dirty = true;
 
@@ -93,7 +92,6 @@ public class BruteForcePackagerResult implements PackResult {
 		this.points = items;
 		this.state = state;
 		this.placements = placements;
-
 		this.dirty = true;
 	}
 
