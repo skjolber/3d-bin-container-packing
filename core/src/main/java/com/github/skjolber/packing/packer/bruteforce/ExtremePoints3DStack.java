@@ -59,6 +59,10 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 
 		return nextStackItem.stackPlacement;
 	}
+	
+	public int getStackIndex() {
+		return stackIndex;
+	}
 
 	public void redo() {
 		// clear current level

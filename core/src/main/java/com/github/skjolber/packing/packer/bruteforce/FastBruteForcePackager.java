@@ -32,10 +32,11 @@ import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. This implementation tries all
- * permutations and rotations, for each selecting the perceived best placement. So it does not try all possible placements (as i not all extreme-points)-
+ * permutations and rotations, for each selecting the perceived best placement. 
+ * So it does not try all possible placements (as i not all extreme-points)-
  * <br>
  * <br>
- * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
+ * Thread-safe implementation. The input boxes and containers must however only be used in a single thread at a time.
  */
 
 public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerResult, FastBruteForcePackagerResultBuilder> {
