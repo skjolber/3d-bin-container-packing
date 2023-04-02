@@ -13,7 +13,7 @@ public class PackagerResult {
 	protected final long duration;
 	protected final List<Container> containers;
 	protected final boolean timeout;
-	
+
 	public PackagerResult(List<Container> containers, long duration, boolean timeout) {
 		super();
 		this.containers = containers;
@@ -46,7 +46,7 @@ public class PackagerResult {
 	public boolean isSuccess() {
 		return !containers.isEmpty();
 	}
-	
+
 	public boolean isTimeout() {
 		return timeout;
 	}

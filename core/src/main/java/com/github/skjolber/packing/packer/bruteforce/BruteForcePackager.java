@@ -3,7 +3,6 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
@@ -22,8 +21,8 @@ import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
-import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
+import com.github.skjolber.packing.packer.PackagerAdapter;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.

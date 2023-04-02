@@ -56,19 +56,19 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		// make sure to overwrite everything, no clear is performed
 		nextStackItem.point = null;
 		nextStackItem.placements.clear();
-		
+
 		nextStackItem.placements.addAll(currentStackItem.placements);
 		nextStackItem.values.copyFrom(currentStackItem.values);
 		nextStackItem.otherValues.copyFrom(currentStackItem.otherValues);
-		
+
 		// set the current stack item as working variables
 		this.values = nextStackItem.values;
 		this.otherValues = nextStackItem.otherValues;
 		this.placements = nextStackItem.placements;
-		
+
 		return nextStackItem.stackPlacement;
 	}
-	
+
 	public int getStackIndex() {
 		return stackIndex;
 	}
@@ -80,9 +80,9 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		StackItem nextStackItem = stackItems.get(stackIndex);
 		nextStackItem.point = null;
 		nextStackItem.placements.clear();
-		
+
 		nextStackItem.placements.addAll(currentStackItem.placements);
-		
+
 		nextStackItem.values.copyFrom(currentStackItem.values);
 		nextStackItem.otherValues.copyFrom(currentStackItem.otherValues);
 	}
@@ -136,12 +136,12 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 
 		loadCurrent();
 	}
-	
+
 	@Override
 	protected void saveValues(Point3DFlagList<StackPlacement> values, Point3DFlagList<StackPlacement> otherValues) {
 		// override because of the way the stack works, 
 		super.saveValues(values, otherValues);
-		
+
 		StackItem stackItem = stackItems.get(stackIndex);
 
 		stackItem.values = otherValues;

@@ -174,7 +174,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 			for (int i = 0; i < products.size(); i++) {
 				assertTrue(rotator.get(i).getValue().fitsInside3D(container));
 			}
-			
+
 			assertMinStackableVolumeValid(rotator);
 		} while (rotator.nextRotation() != -1);
 

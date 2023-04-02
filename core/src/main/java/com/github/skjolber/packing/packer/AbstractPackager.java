@@ -3,7 +3,6 @@ package com.github.skjolber.packing.packer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;

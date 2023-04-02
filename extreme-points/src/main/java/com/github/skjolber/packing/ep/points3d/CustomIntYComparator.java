@@ -17,13 +17,12 @@ public class CustomIntYComparator implements IntComparator {
 		Point3D<?> o1 = values.get(value1);
 		Point3D<?> o2 = values.get(value2);
 
-		
 		if(o1.getMinZ() < o2.getMinZ()) {
 			return -1;
 		} else if(o1.getMinZ() != o2.getMinZ()) {
 			return 1;
 		}
-		
+
 		if(o1.getMinX() < o2.getMinX()) {
 			return -1;
 		} else if(o1.getMinX() != o2.getMinX()) {

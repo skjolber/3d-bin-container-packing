@@ -18,8 +18,7 @@ import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 
-public class FastForcePackagerTest extends AbstractPackagerTest {
-
+public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 
 	@Test
 	public void testFastBruteForcePackager() throws Exception {

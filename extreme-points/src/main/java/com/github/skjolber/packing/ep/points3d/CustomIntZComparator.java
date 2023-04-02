@@ -22,7 +22,7 @@ public class CustomIntZComparator implements IntComparator {
 		} else if(o1.getMinX() != o2.getMinX()) {
 			return 1;
 		}
-		
+
 		if(o1.getMinY() < o2.getMinY()) {
 			return -1;
 		} else if(o1.getMinY() != o2.getMinY()) {

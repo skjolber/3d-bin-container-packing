@@ -14,7 +14,7 @@ public class FastExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 	private static class StackItem<P extends Placement3D> {
 		// value for extraction
 		protected Point3D<StackPlacement> point;
-		
+
 		// adding a point might affect any index in the values array
 		protected Point3DFlagList<P> values = new Point3DFlagList<>();
 

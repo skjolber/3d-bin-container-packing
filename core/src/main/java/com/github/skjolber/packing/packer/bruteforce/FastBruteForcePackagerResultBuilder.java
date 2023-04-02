@@ -2,7 +2,6 @@ package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.PackagerResult;

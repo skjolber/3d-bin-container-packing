@@ -2,7 +2,6 @@ package com.github.skjolber.packing.packer.plain;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import com.github.skjolber.packing.api.Container;
@@ -14,8 +13,8 @@ import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
-import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackager;
+import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.DefaultPackResult;
 
 /**

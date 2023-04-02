@@ -3,7 +3,6 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import java.util.logging.Logger;
 
 import com.github.skjolber.packing.api.Container;
@@ -153,7 +152,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 	}
 
 	private List<Point3D<StackPlacement>> packStackPlacement(ExtremePoints3DStack extremePointsStack, List<StackPlacement> placements, PermutationRotationIterator rotator, Stack stack,
-			int maxLoadWeight, int placementIndex, PackagerInterruptSupplier interrupt, StackConstraint constraint, int minStackableAreaIndex, 
+			int maxLoadWeight, int placementIndex, PackagerInterruptSupplier interrupt, StackConstraint constraint, int minStackableAreaIndex,
 			// optimize: pass best along so that we do not need to get points to known whether extracting the points is necessary
 			List<Point3D<StackPlacement>> best) {
 		if(interrupt.getAsBoolean()) {
@@ -183,7 +182,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		if(extremePointsStack.getStackIndex() > best.size()) {
 			best = extremePointsStack.getPoints();
 		}
-		
+
 		extremePointsStack.push();
 
 		int currentPointsCount = extremePointsStack.getValueCount();

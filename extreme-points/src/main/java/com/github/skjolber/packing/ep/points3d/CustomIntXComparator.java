@@ -27,7 +27,7 @@ public class CustomIntXComparator implements IntComparator {
 		} else if(o1.getMinZ() != o2.getMinZ()) {
 			return 1;
 		}
-		
+
 		long volume1 = o1.getDy() * o1.getDz() * (o1.getMaxX() - xx + 1L);
 		long volume2 = o2.getDy() * o2.getDz() * (o2.getMaxX() - xx + 1L);
 

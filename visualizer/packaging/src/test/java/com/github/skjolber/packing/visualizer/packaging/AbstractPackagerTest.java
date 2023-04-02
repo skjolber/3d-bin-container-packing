@@ -58,7 +58,7 @@ public class AbstractPackagerTest {
 			}
 		}
 	}
-	
+
 	protected void pack(BouwkampCode bouwkampCode, AbstractPackager packager) throws Exception {
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()

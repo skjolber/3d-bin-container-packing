@@ -2,7 +2,6 @@ package com.github.skjolber.packing.packer.laff;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import com.github.skjolber.packing.api.Container;

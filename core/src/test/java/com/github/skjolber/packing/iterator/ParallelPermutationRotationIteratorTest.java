@@ -140,9 +140,9 @@ public class ParallelPermutationRotationIteratorTest extends AbstractPermutation
 			int permutationIndex1;
 			do {
 				assertMinStackableVolumeValid(rotator1);
-				
+
 				permutationIndex1 = rotator1.nextPermutation();
-				
+
 			} while (permutationIndex1 > 2);
 
 			calculator.getIterator(0).nextPermutation(2);

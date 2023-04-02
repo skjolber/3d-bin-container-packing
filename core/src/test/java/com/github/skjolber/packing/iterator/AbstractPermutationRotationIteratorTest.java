@@ -8,7 +8,7 @@ public class AbstractPermutationRotationIteratorTest {
 		for (int i = 0; i < iterator.length(); i++) {
 			long calculatedMinStackableVolume = getMinStackableVolume(iterator, i);
 			long cachedMinStackableVolume = iterator.getMinStackableVolume(i);
-			
+
 			assertEquals(calculatedMinStackableVolume, cachedMinStackableVolume, "Calculated " + calculatedMinStackableVolume + ", got " + cachedMinStackableVolume);
 		}
 	}
@@ -24,5 +24,5 @@ public class AbstractPermutationRotationIteratorTest {
 		}
 		return minVolume;
 	}
-	
+
 }

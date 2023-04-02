@@ -44,7 +44,7 @@ public class DefaultIteratorBenchmark {
 	public long permutations(IteratorState state) throws Exception {
 
 		DefaultPermutationRotationIterator iterator = state.getIterator();
-		
+
 		int index = iterator.length() / 2;
 
 		long count = 0;
@@ -57,7 +57,7 @@ public class DefaultIteratorBenchmark {
 			if(iterator.nextPermutation(index) == -1) {
 				throw new RuntimeException();
 			}
-		} while(true);
+		} while (true);
 	}
 
 	public static void main(String[] args) throws RunnerException {

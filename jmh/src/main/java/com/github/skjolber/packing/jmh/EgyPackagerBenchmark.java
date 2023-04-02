@@ -35,17 +35,17 @@ public class EgyPackagerBenchmark {
 	public int parallelPackager(EgyPackagerState state) throws Exception {
 		return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
 	}
- 
+
 	@Benchmark
 	public int packager(EgyPackagerState state) throws Exception {
 		return process(state.getBruteForcePackager(), Long.MAX_VALUE);
 	}
-	
+
 	@Benchmark
 	public int fastPackager(EgyPackagerState state) throws Exception {
 		return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
 	}
-	
+
 	public int process(List<BenchmarkSet> sets, long deadline) {
 		int i = 0;
 		for (BenchmarkSet set : sets) {

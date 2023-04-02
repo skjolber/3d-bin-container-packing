@@ -83,7 +83,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		this.containerMaxZ = dz - 1;
 
 		this.containerPlacement = createContainerPlacement();
-		
+
 		this.firstPoint = new Default3DPlanePoint3D<>(
 				0, 0, 0,
 				containerMaxX, containerMaxY, containerMaxZ,
@@ -109,11 +109,11 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		// remove points which are eclipsed by others
 
 		// keep track of placement borders, where possible
-		
+
 		// copy intensively used items to local variables
 		Point3DFlagList<P> values = this.values;
 		Point3DFlagList<P> otherValues = this.otherValues;
-		
+
 		Point3D<P> source = values.get(index);
 		values.flag(index);
 
@@ -339,7 +339,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				addXX.add(added, targetIndex);
 				addedXX.add(added);
 			}
-			
+
 			moveToXX.clear();
 		}
 
@@ -384,7 +384,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				addYY.add(added, targetIndex);
 				addedYY.add(added);
 			}
-			
+
 			moveToYY.clear();
 		}
 
@@ -591,7 +591,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		}
 
 		saveValues(values, otherValues);
-		
+
 		addedXX.clear();
 		addedYY.clear();
 		addedZZ.clear();
@@ -600,7 +600,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		// constrainXX
 		// constrainYY 
 		// constrainZZ
-		
+
 		return !values.isEmpty();
 	}
 
@@ -608,7 +608,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		// Copy output to input + reset current input and set as next output.
 		// this saves a good bit of cleanup
 		this.values = otherValues;
-		
+
 		values.clear();
 		this.otherValues = values;
 	}

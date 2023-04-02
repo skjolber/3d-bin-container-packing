@@ -63,7 +63,7 @@ public class DeadlineBenchmark {
 	public Object packagerDeadlineNth(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getBruteForcePackagerNth(), System.currentTimeMillis() + 30000);
 	}
-	
+
 	public int process(List<BenchmarkSet> sets, long deadline) {
 		int i = 0;
 		for (BenchmarkSet set : sets) {
@@ -86,12 +86,12 @@ public class DeadlineBenchmark {
 		Options opt = new OptionsBuilder()
 				.include(DeadlineBenchmark.class.getSimpleName())
 				.mode(Mode.Throughput)
-				
+
 				.forks(1)
 				.measurementIterations(1)
 				.measurementTime(TimeValue.seconds(90))
 				.timeout(TimeValue.seconds(60))
-				 
+
 				.build();
 
 		new Runner(opt).run();

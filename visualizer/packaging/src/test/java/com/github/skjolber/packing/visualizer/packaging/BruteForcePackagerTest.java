@@ -22,7 +22,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 
 	@Test
 	public void testSimpleImperfectSquaredRectangles() throws Exception {
-		// if you do not have a lot of CPU cores, this will take quite some time
+		// this will take quite some time
 
 		BruteForcePackager packager = BruteForcePackager.newBuilder().withCheckpointsPerDeadlineCheck(1024).build();
 
@@ -102,5 +102,5 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 
 		write(packList);
 	}
-	
+
 }

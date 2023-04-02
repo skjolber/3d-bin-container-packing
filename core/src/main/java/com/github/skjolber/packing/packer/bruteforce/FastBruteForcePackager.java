@@ -3,7 +3,6 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
@@ -24,15 +23,15 @@ import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackager;
+import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
-import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
+import com.github.skjolber.packing.packer.PackagerAdapter;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. This implementation tries all
- * permutations and rotations, for each selecting the perceived best placement. 
+ * permutations and rotations, for each selecting the perceived best placement.
  * So it does not try all possible placements (as i not all extreme-points)-
  * <br>
  * <br>

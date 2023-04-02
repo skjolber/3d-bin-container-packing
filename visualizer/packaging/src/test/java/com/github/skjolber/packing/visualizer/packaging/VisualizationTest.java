@@ -51,7 +51,6 @@ public class VisualizationTest extends AbstractPackagerTest {
 		}
 	}
 
-
 	@Test
 	void testStackingBinary1() throws Exception {
 

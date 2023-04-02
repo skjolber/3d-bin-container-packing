@@ -45,7 +45,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			} else if(o1.minZ != o2.minZ) {
 				return 1;
 			}
-			
+
 			return Integer.compare(o2.maxZ, o1.maxZ);
 		}
 	};
@@ -54,13 +54,13 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
-			
+
 			if(o1.minX < o2.minX) {
 				return -1;
 			} else if(o1.minX != o2.minX) {
 				return 1;
 			}
-			
+
 			if(o1.minY < o2.minY) {
 				return -1;
 			} else if(o1.minY != o2.minY) {
@@ -78,7 +78,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			} else if(o1.maxX != o2.maxX) {
 				return 1;
 			}
-			
+
 			if(o1.maxY < o2.maxY) {
 				return -1;
 			} else if(o1.maxY != o2.maxY) {
@@ -98,7 +98,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			} else if(o1.minX != o2.minX) {
 				return 1;
 			}
-			
+
 			if(o1.minY < o2.minY) {
 				return -1;
 			} else if(o1.minY != o2.minY) {
@@ -118,31 +118,31 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			} else if(o1.minY != o2.minY) {
 				return 1;
 			}
-			
+
 			if(o1.minZ < o2.minZ) {
 				return -1;
 			} else if(o1.minZ != o2.minZ) {
 				return 1;
 			}
-			
+
 			if(o1.minX < o2.minX) {
 				return -1;
 			} else if(o1.minX != o2.minX) {
 				return 1;
 			}
-			
+
 			if(o1.maxY < o2.maxY) {
 				return -1;
 			} else if(o1.maxY != o2.maxY) {
 				return 1;
 			}
-			
+
 			if(o1.maxZ < o2.maxZ) {
 				return -1;
 			} else if(o1.maxZ != o2.maxZ) {
 				return 1;
 			}
-			
+
 			return Integer.compare(o1.maxX, o2.maxX);
 		}
 	};
@@ -162,7 +162,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			} else if(o1.minX != o2.minX) {
 				return 1;
 			}
-			
+
 			if(o1.minY < o2.minY) {
 				return -1;
 			} else if(o1.minY != o2.minY) {
@@ -174,13 +174,13 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 			} else if(o1.maxZ != o2.maxZ) {
 				return 1;
 			}
-			
+
 			if(o1.maxX < o2.maxX) {
 				return -1;
 			} else if(o1.maxX != o2.maxX) {
 				return 1;
 			}
-			
+
 			return Integer.compare(o1.maxY, o2.maxY);
 		}
 	};
@@ -191,12 +191,12 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
 			int compare = X_COMPARATOR.compare(o1, o2);
 			if(compare != 0) {
-				return  compare;
+				return compare;
 			}
-			
+
 			compare = Y_COMPARATOR.compare(o1, o2);
 			if(compare != 0) {
-				return  compare;
+				return compare;
 			}
 
 			return Z_COMPARATOR.compare(o1, o2);
