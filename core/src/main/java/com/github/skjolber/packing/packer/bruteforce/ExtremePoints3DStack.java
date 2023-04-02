@@ -68,6 +68,10 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		
 		return nextStackItem.stackPlacement;
 	}
+	
+	public int getStackIndex() {
+		return stackIndex;
+	}
 
 	public void redo() {
 		// i.e. copy values from the previous value into the current
