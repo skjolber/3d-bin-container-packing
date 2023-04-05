@@ -1,8 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
 
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.Point2D;
