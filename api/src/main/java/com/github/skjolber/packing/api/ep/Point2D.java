@@ -328,8 +328,6 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 		return !(stackValue.getDx() > dx || stackValue.getDy() > dy);
 	}
 
-	public abstract List<P> getPlacements2D();
-
 	//       |                  
 	//       |                  
 	//       |                  

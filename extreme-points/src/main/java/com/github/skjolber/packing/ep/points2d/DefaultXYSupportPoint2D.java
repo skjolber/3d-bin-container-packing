@@ -83,14 +83,6 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 	}
 
 	@Override
-	public List<P> getPlacements2D() {
-		List<P> list = new ArrayList<>();
-		list.add(xSupport);
-		list.add(ySupport);
-		return list;
-	}
-
-	@Override
 	public Point2D<P> moveY(int y) {
 		if(y <= ySupport.getAbsoluteEndY()) {
 			return new DefaultYSupportPoint2D<P>(minX, y, maxX, maxY, ySupport);

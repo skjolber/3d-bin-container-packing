@@ -70,20 +70,6 @@ public class DefaultXZPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public List<P> getPlacements3D() {
-		List<P> list = new ArrayList<>(2);
-		list.add(xzPlane);
-		return list;
-	}
-
-	@Override
-	public List<P> getPlacements2D() {
-		List<P> list = new ArrayList<>(2);
-		list.add(xzPlane);
-		return list;
-	}
-
-	@Override
 	public Point3D<P> moveX(int x) {
 		if(x <= xzPlane.getAbsoluteEndX()) {
 			return new DefaultXZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, xzPlane);

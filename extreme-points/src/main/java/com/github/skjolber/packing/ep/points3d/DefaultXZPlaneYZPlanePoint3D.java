@@ -111,22 +111,6 @@ public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D & Serializable> 
 	}
 
 	@Override
-	public List<P> getPlacements3D() {
-		List<P> list = new ArrayList<>(2);
-		list.add(xzPlane);
-		list.add(yzPlane);
-		return list;
-	}
-
-	@Override
-	public List<P> getPlacements2D() {
-		List<P> list = new ArrayList<>(2);
-		list.add(xzPlane);
-		list.add(yzPlane);
-		return list;
-	}
-
-	@Override
 	public Point3D<P> moveX(int x) {
 		// yzPlane support is lost
 		if(x <= xzPlane.getAbsoluteEndX()) {

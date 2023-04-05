@@ -456,10 +456,6 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 		return minZ <= z && point.getMaxZ() <= maxZ && eclipsesX(point) && eclipsesY(point);
 	}
 
-	public abstract List<P> getPlacements3D();
-
-	public abstract List<P> getPlacements2D();
-
 	//       |                  
 	//       |                  
 	//       |                  

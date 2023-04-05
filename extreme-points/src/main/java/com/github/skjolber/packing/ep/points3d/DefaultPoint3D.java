@@ -27,16 +27,6 @@ public class DefaultPoint3D<P extends Placement3D & Serializable> extends Point3
 	}
 
 	@Override
-	public List<P> getPlacements3D() {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public List<P> getPlacements2D() {
-		return Collections.emptyList();
-	}
-
-	@Override
 	public Point3D<P> moveX(int x) {
 		return new DefaultPoint3D<>(x, minY, minZ, maxX, maxY, maxZ);
 	}

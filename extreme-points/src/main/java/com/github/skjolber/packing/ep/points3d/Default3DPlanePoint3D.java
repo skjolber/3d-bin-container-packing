@@ -152,24 +152,6 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public List<P> getPlacements3D() {
-		List<P> list = new ArrayList<>(3);
-		list.add(xyPlane);
-		list.add(xzPlane);
-		list.add(yzPlane);
-		return list;
-	}
-
-	@Override
-	public List<P> getPlacements2D() {
-		List<P> list = new ArrayList<>(3);
-		list.add(xyPlane);
-		list.add(xzPlane);
-		list.add(yzPlane);
-		return list;
-	}
-
-	@Override
 	public Default3DPlanePoint3D<P> clone() {
 		return new Default3DPlanePoint3D<>(minX, minY, minZ, maxX, maxY, maxZ, yzPlane, xzPlane, xyPlane);
 	}
