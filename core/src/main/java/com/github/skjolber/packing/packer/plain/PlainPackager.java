@@ -9,11 +9,13 @@ import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.DefaultStack;
 import com.github.skjolber.packing.api.PackResultComparator;
+import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.XYPlanePoint3D;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
@@ -82,6 +84,8 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 
 			int bestPointIndex = -1;
 			int bestIndex = -1;
+			
+			long bestSupport = -1L;
 
 			StackValue bestStackValue = null;
 			Stackable bestStackable = null;
@@ -119,15 +123,19 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 							continue;
 						}
 
+						long pointSupport = calculateXYSupport(extremePoints3D, point3d, stackValue);
 						if(bestIndex != -1) {
-							if(!isBetter(bestStackable, extremePoints3D.getValue(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
+							Point3D<StackPlacement> bestPoint = extremePoints3D.getValue(bestPointIndex);
+							
+							if(!isBetter(bestStackable, bestPoint, bestStackValue, bestSupport, box, point3d, stackValue, pointSupport)) {
 								continue;
 							}
-
 						}
 						if(constraint != null && !constraint.supports(stack, box, stackValue, point3d.getMinX(), point3d.getMinY(), point3d.getMinZ())) {
 							continue;
 						}
+						
+						bestSupport = pointSupport;
 						bestPointIndex = k;
 						bestIndex = i;
 						bestStackValue = stackValue;
@@ -168,16 +176,13 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 				stack, remainingStackables.isEmpty(), index);
 	}
 
-	protected boolean isBetter(Stackable referenceStackable, Point3D<StackPlacement> referencePoint, StackValue referenceStackValue, Stackable candidateBox, Point3D<StackPlacement> candidatePoint,
-			StackValue candidateStackValue) {
+	protected boolean isBetter(Stackable referenceStackable, Point3D<StackPlacement> referencePoint, StackValue referenceStackValue, long referenceSupport, Stackable candidateBox, Point3D<StackPlacement> candidatePoint,
+			StackValue candidateStackValue, long candidateSupport) {
 		// ********************************************
 		// * Prefer lowest point
 		// ********************************************
 
 		// compare supported area
-		long referenceSupport = referencePoint.calculateXYSupport(referenceStackValue.getDx(), referenceStackValue.getDy());
-		long candidateSupport = candidatePoint.calculateXYSupport(candidateStackValue.getDx(), candidateStackValue.getDy());
-
 		if(candidateSupport == referenceSupport) {
 
 			if(candidatePoint.getMinZ() == referencePoint.getMinZ()) {
@@ -203,6 +208,89 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 			return candidatePoint.getMinZ() < referencePoint.getMinZ();
 		}
 		return candidateSupport > referenceSupport;
+	}
+	
+	protected long calculateXYSupport(ExtremePoints3D<StackPlacement> extremePoints3D, Point3D<StackPlacement> referencePoint, StackValue stackValue) {
+
+		Placement3D xyPlane = null;
+		
+		long sum = 0;
+		if(referencePoint instanceof XYPlanePoint3D) {
+			XYPlanePoint3D xyPlanePoint3D = (XYPlanePoint3D)referencePoint;
+
+			sum += referencePoint.calculateXYSupport(stackValue.getDx(), stackValue.getDy());
+			// discount the area covered 
+			
+			xyPlane = xyPlanePoint3D.getXYPlane();
+		}
+		
+		int minX = referencePoint.getMinX();
+		int minY = referencePoint.getMinY();
+		
+		int maxX = minX + stackValue.getDx() - 1; // inclusive
+		int maxY = minY + stackValue.getDy() - 1; // inclusive
+		
+		long max = (maxX - minX + 1) * (maxY - minY + 1);
+		
+		int z = referencePoint.getMinZ() - 1;
+		
+		List<StackPlacement> placements = extremePoints3D.getPlacements();
+		for(StackPlacement stackPlacement : placements) {
+			if(stackPlacement == xyPlane) {
+				continue;
+			}
+			if(stackPlacement.getAbsoluteEndZ() == z) {
+				
+				// calculate the common area
+				// check too far
+				if(stackPlacement.getAbsoluteX() > maxX) {
+					continue;
+				}
+				
+				if(stackPlacement.getAbsoluteY() > maxY) {
+					continue;
+				}
+				
+				if(stackPlacement.getAbsoluteEndX() < minX) {
+					continue;
+				}
+				
+				if(stackPlacement.getAbsoluteEndY() < minY) {
+					continue;
+				}
+				
+				// placement can support the stack value
+				
+				// |           
+				// |           |---------|
+				// |           |         | 
+				// |    |-----------|    |
+				// |    |      |xxxx|    |
+				// |    |      -----|----|
+				// |    |           |
+				// |    |-----------| 
+				// |
+				// --------------------------------
+				
+			    int x1 = Math.max(stackPlacement.getAbsoluteX(), minX);
+			    int y1 = Math.max(stackPlacement.getAbsoluteY(), minY);
+			 
+			    // gives top-right point
+			    // of intersection rectangle
+			    int x2 = Math.min(stackPlacement.getAbsoluteEndX(), maxX);
+			    int y2 = Math.min(stackPlacement.getAbsoluteEndY(), maxY);
+				
+			    long intersect = (x2 - x1 + 1) * (y2 - y1 + 1);
+			    
+			    sum += intersect;
+			    
+			    if(sum == max) {
+			    	break;
+			    }
+			}
+		}
+		
+		return sum;
 	}
 
 	protected boolean isBetter(Stackable referenceStackable, Stackable potentiallyBetterStackable) {
