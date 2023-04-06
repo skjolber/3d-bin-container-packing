@@ -85,11 +85,12 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 			int bestPointIndex = -1;
 			int bestIndex = -1;
 			
-			long bestSupport = -1L;
+			long bestPointSupportPercent = -1L;
 
 			StackValue bestStackValue = null;
 			Stackable bestStackable = null;
 
+			int currentPointsCount = extremePoints3D.getValueCount();
 			for (int i = 0; i < scopedStackables.size(); i++) {
 				Stackable box = scopedStackables.get(i);
 				if(box.getVolume() > maxPointVolume) {
@@ -115,7 +116,6 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 						continue;
 					}
 
-					int currentPointsCount = extremePoints3D.getValueCount();
 					for (int k = 0; k < currentPointsCount; k++) {
 						Point3D<StackPlacement> point3d = extremePoints3D.getValue(k);
 
@@ -123,7 +123,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 							continue;
 						}
 
-						long pointSupport = -1; // cache for costly measurement
+						long pointSupportPercent; // cache for costly measurement
 						if(bestIndex != -1) {
 							Point3D<StackPlacement> bestPoint = extremePoints3D.getValue(bestPointIndex);
 							
@@ -131,22 +131,26 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 								continue;
 							}
 							
-							pointSupport = calculateXYSupport(extremePoints3D, point3d, stackValue);
+							pointSupportPercent = calculateXYSupportPercent(extremePoints3D, point3d, stackValue);
 							
-							if(pointSupport < bestSupport) {
-								continue;
-							}
+							if(point3d.getMinZ() == bestPoint.getMinZ()) {
+								if(pointSupportPercent < bestPointSupportPercent) {
+									continue;
+								}
 							
-							if(stackValue.getArea() <= bestStackValue.getArea()) {
-								continue;
+								if(stackValue.getArea() <= bestStackValue.getArea()) {
+									continue;
+								}
 							}
+						} else {
+							pointSupportPercent = calculateXYSupportPercent(extremePoints3D, point3d, stackValue);
 						}
 						
 						if(constraint != null && !constraint.supports(stack, box, stackValue, point3d.getMinX(), point3d.getMinY(), point3d.getMinZ())) {
 							continue;
 						}
 						
-						bestSupport = pointSupport == -1 ? calculateXYSupport(extremePoints3D, point3d, stackValue) : pointSupport;
+						bestPointSupportPercent = pointSupportPercent;
 						bestPointIndex = k;
 						bestIndex = i;
 						bestStackValue = stackValue;
@@ -158,7 +162,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 			if(bestIndex == -1) {
 				break;
 			}
-
+			
 			scopedStackables.remove(bestIndex);
 			remainingStackables.remove(bestStackable);
 
@@ -187,7 +191,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 				stack, remainingStackables.isEmpty(), index);
 	}
 
-	protected long calculateXYSupport(ExtremePoints3D<StackPlacement> extremePoints3D, Point3D<StackPlacement> referencePoint, StackValue stackValue) {
+	protected long calculateXYSupportPercent(ExtremePoints3D<StackPlacement> extremePoints3D, Point3D<StackPlacement> referencePoint, StackValue stackValue) {
 		long sum = 0;
 
 		int minX = referencePoint.getMinX();
@@ -253,7 +257,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 			}
 		}
 		
-		return sum;
+		return (sum * 100) / stackValue.getArea();
 	}
 
 	protected boolean isBetter(Stackable referenceStackable, Stackable potentiallyBetterStackable) {
