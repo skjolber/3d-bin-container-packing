@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.points3d;
 
-import static com.github.skjolber.packing.test.assertj.Point3DAssert.assertThat;
+import static com.github.skjolber.packing.points3d.assertj.SimplePoint3DAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;

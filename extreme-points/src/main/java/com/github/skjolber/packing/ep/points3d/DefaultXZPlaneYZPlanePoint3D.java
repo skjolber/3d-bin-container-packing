@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.Point3D;
-import com.github.skjolber.packing.api.ep.XZPlanePoint3D;
-import com.github.skjolber.packing.api.ep.YZPlanePoint3D;
 
 public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D & Serializable> extends SimplePoint3D<P> implements XZPlanePoint3D, YZPlanePoint3D {
 

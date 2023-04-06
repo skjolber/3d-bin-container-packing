@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.Point2D;
-import com.github.skjolber.packing.api.ep.XSupportPoint2D;
 
 public class DefaultXSupportPoint2D<P extends Placement2D & Serializable> extends SimplePoint2D<P> implements XSupportPoint2D {
 
