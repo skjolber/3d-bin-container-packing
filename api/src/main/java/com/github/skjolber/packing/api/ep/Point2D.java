@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.api.ep;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.Placement2D;
@@ -14,17 +15,17 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 
 		@Override
 		public int compare(Point2D<?> o1, Point2D<?> o2) {
-			int x = Integer.compare(o1.minX, o2.minX);
+			int x = o1.minX.compareTo(o2.minX);
 
 			if(x == 0) {
-				x = Integer.compare(o1.minY, o2.minY);
+				x = o1.minY.compareTo(o2.minY);
 			}
 
 			if(x == 0) {
-				x = -Integer.compare(o1.maxX, o2.maxX);
+				x = o2.maxX.compareTo(o1.maxX);
 			}
 			if(x == 0) {
-				x = -Integer.compare(o1.maxY, o2.maxY);
+				x = o2.maxY.compareTo(o1.maxY);
 			}
 
 			return x;
@@ -35,14 +36,14 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 
 		@Override
 		public int compare(Point2D<?> o1, Point2D<?> o2) {
-			int x = Integer.compare(o1.minX, o2.minX);
+			int x = o1.minX.compareTo(o2.minX);
 
 			if(x == 0) {
-				x = -Integer.compare(o1.maxX, o2.maxX);
+				x = o2.maxX.compareTo(o1.maxX);
 			}
 
 			if(x == 0) {
-				x = -Integer.compare(o1.maxY, o2.maxY);
+				x = o2.maxY.compareTo(o1.maxY);
 			}
 
 			return x;
@@ -53,13 +54,13 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 
 		@Override
 		public int compare(Point2D<?> o1, Point2D<?> o2) {
-			int x = Integer.compare(o1.minY, o2.minY);
+			int x = o1.minY.compareTo(o2.minY);
 
 			if(x == 0) {
-				x = -Integer.compare(o1.maxY, o2.maxY);
+				x = o2.maxY.compareTo(o1.maxY);
 			}
 			if(x == 0) {
-				x = -Integer.compare(o1.maxX, o2.maxX);
+				x = o2.maxX.compareTo(o1.maxX);
 			}
 
 			return x;
@@ -70,9 +71,9 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 
 		@Override
 		public int compare(Point2D<?> o1, Point2D<?> o2) {
-			int compare = Integer.compare(o1.minX, o2.minX);
+			int compare = o1.minX.compareTo(o2.minX);
 			if(compare == 0) {
-				compare = Integer.compare(o2.maxX, o1.maxX);
+				compare = o2.maxX.compareTo(o1.maxX);
 				if(compare == 0) {
 					boolean o1XSupportPoint2D = o1 instanceof XSupportPoint2D;
 					boolean o2XSupportPoint2D = o2 instanceof XSupportPoint2D;
@@ -88,9 +89,9 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 
 		@Override
 		public int compare(Point2D<?> o1, Point2D<?> o2) {
-			int compare = Integer.compare(o1.minY, o2.minY);
+			int compare = o1.minY.compareTo(o2.minY);
 			if(compare == 0) {
-				compare = Integer.compare(o2.maxY, o1.maxY);
+				compare = o2.maxY.compareTo(o1.maxY);
 				if(compare == 0) {
 					boolean o1YSupportPoint2D = o1 instanceof YSupportPoint2D;
 					boolean o2YSupportPoint2D = o2 instanceof YSupportPoint2D;
@@ -102,19 +103,19 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 		}
 	};
 
-	protected final int minX;
-	protected final int minY;
+	protected final BigDecimal minX;
+	protected final BigDecimal minY;
 
-	protected int maxY;
-	protected int maxX;
+	protected BigDecimal maxY;
+	protected BigDecimal maxX;
 
-	protected int dx;
-	protected int dy;
+	protected BigDecimal dx;
+	protected BigDecimal dy;
 
-	protected long area;
-	protected long volume;
+	protected BigDecimal area;
+	protected BigDecimal volume;
 
-	public Point2D(int minX, int minY, int maxX, int maxY) {
+	public Point2D(BigDecimal minX, BigDecimal minY, BigDecimal maxX, BigDecimal maxY) {
 		super();
 
 		/*
@@ -132,14 +133,14 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 		this.maxY = maxY;
 		this.maxX = maxX;
 
-		this.dx = maxX - minX + 1;
-		this.dy = maxY - minY + 1;
+		this.dx = maxX.subtract(minX).add(BigDecimal.ONE);
+		this.dy = maxY.subtract(minY).add(BigDecimal.ONE);
 
 		calculateArea();
 	}
 
 	private void calculateArea() {
-		this.area = (long)dx * (long)dy;
+		this.area = dx.multiply(dy);
 	}
 
 	//
@@ -169,15 +170,15 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 	//       |--------------------------
 	//           minX             smaxX
 
-	public boolean isXSupport(int x) {
+	public boolean isXSupport(BigDecimal x) {
 		return false;
 	}
 
-	public int getMinX() {
+	public BigDecimal getMinX() {
 		return minX;
 	}
 
-	public int getMinY() {
+	public BigDecimal getMinY() {
 		return minY;
 	}
 
@@ -188,7 +189,7 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 	 * @return max y
 	 */
 
-	public int getMaxY() {
+	public BigDecimal getMaxY() {
 		return maxY;
 	}
 
@@ -199,94 +200,94 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 	 * @return max x
 	 */
 
-	public int getMaxX() {
+	public BigDecimal getMaxX() {
 		return maxX;
 	}
 
-	public void setMaxX(int maxX) {
-		if(maxX < 0) {
+	public void setMaxX(BigDecimal maxX) {
+		if(maxX.compareTo(BigDecimal.ZERO) < 0) {
 			throw new RuntimeException("Cannot set max x to " + maxX + " for " + minX + "x" + minY);
 		}
 		this.maxX = maxX;
 
-		this.dx = maxX - minX + 1;
+		this.dx = maxX.subtract(minX).add(BigDecimal.ONE);
 
 		calculateArea();
 	}
 
-	public void setMaxY(int maxY) {
-		if(maxY < 0) {
+	public void setMaxY(BigDecimal maxY) {
+		if(maxY.compareTo(BigDecimal.ZERO) < 0) {
 			throw new RuntimeException("Cannot set max y to " + maxY + " for " + minX + "x" + minY);
 		}
 		this.maxY = maxY;
 
-		this.dy = maxY - minY + 1;
+		this.dy = maxY.subtract(minY).add(BigDecimal.ONE);
 
 		calculateArea();
 	}
 
-	public int getDy() {
+	public BigDecimal getDy() {
 		return dy;
 	}
 
-	public int getDx() {
+	public BigDecimal getDx() {
 		return dx;
 	}
 
 	public boolean intersects(Point2D<P> point) {
-		return !(point.getMaxX() < minX || point.getMinX() > maxX || point.getMaxY() < minY || point.getMinY() > maxY);
+		return !(point.getMaxX().compareTo(minX) < 0 || point.getMinX().compareTo(maxX) > 0 || point.getMaxY().compareTo(minY) < 0 || point.getMinY().compareTo(maxY) > 0);
 	}
 
-	public boolean crossesX(int x) {
+	public boolean crossesX(BigDecimal x) {
 		// not including limits
-		return minX < x && maxX > x;
+		return minX.compareTo(x) < 0 && maxX.compareTo(x) > 0;
 	}
 
-	public boolean crossesY(int y) {
+	public boolean crossesY(BigDecimal y) {
 		// not including limits
-		return minY < y && y < maxY;
+		return minY.compareTo(y) < 0 && y.compareTo(maxY) < 0;
 	}
 
-	public boolean strictlyInsideX(int x1, int x2) {
+	public boolean strictlyInsideX(BigDecimal x1, BigDecimal x2) {
 		// not including limits
-		return x1 < minX && minX < x2;
+		return x1.compareTo(minX) < 0 && minX.compareTo(x2) < 0;
 	}
 
-	public boolean strictlyInsideY(int y1, int y2) {
+	public boolean strictlyInsideY(BigDecimal y1, BigDecimal y2) {
 		// not including limits
-		return y1 < minY && minY < y2;
+		return y1.compareTo(minY) < 0 && minY.compareTo(y2) < 0;
 	}
 
-	public boolean isShadowedByX(int min, int max) {
-		return minX < min && maxX > max;
+	public boolean isShadowedByX(BigDecimal min, BigDecimal max) {
+		return minX.compareTo(min) < 0 && maxX.compareTo(max) > 0;
 	}
 
-	public boolean isShadowedByY(int min, int max) {
-		return minY < min && maxY > max;
+	public boolean isShadowedByY(BigDecimal min, BigDecimal max) {
+		return minY.compareTo(min) < 0 && maxY.compareTo(max) > 0;
 	}
 
-	public boolean shadowsOrSwallowsX(int min, int max) {
-		return minX <= max && maxX >= min;
+	public boolean shadowsOrSwallowsX(BigDecimal min, BigDecimal max) {
+		return minX.compareTo(max) <= 0 && maxX.compareTo(min) >= 0;
 	}
 
-	public boolean isShadowedOrSwallowedByY(int min, int max) {
-		return minY < max && maxY > min;
+	public boolean isShadowedOrSwallowedByY(BigDecimal min, BigDecimal max) {
+		return minY.compareTo(max) < 0 && maxY.compareTo(min) > 0;
 	}
 
-	public boolean swallowsMinY(int min, int max) {
-		return min <= minY && minY <= max;
+	public boolean swallowsMinY(BigDecimal min, BigDecimal max) {
+		return min.compareTo(minY) <= 0 && minY.compareTo(max) <= 0;
 	}
 
-	public boolean swallowsMinX(int min, int max) {
-		return min <= minX && minX <= max;
+	public boolean swallowsMinX(BigDecimal min, BigDecimal max) {
+		return min.compareTo(minX) <= 0 && minX.compareTo(max) <= 0;
 	}
 
-	public boolean swallowsMaxY(int min, int max) {
-		return min <= maxY && maxY <= max;
+	public boolean swallowsMaxY(BigDecimal min, BigDecimal max) {
+		return min.compareTo(maxY) <= 0 && maxY.compareTo(max) <= 0;
 	}
 
-	public boolean swallowsMaxX(int min, int max) {
-		return min <= maxX && maxX <= max;
+	public boolean swallowsMaxX(BigDecimal min, BigDecimal max) {
+		return min.compareTo(maxX) <= 0 && maxX.compareTo(max) <= 0;
 	}
 
 	@Override
@@ -294,37 +295,37 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 		return "Point2D [" + minX + "x" + minY + " " + maxX + "x" + maxY + "]";
 	}
 
-	public abstract Point2D<P> clone(int maxX, int maxY);
+	public abstract Point2D<P> clone(BigDecimal maxX, BigDecimal maxY);
 
 	public boolean eclipses(Point2D<P> point) {
-		return minY <= point.getMinY() &&
-				minX <= point.getMinX() &&
-				point.getMaxX() <= maxX &&
-				point.getMaxY() <= maxY;
+		return minY.compareTo(point.getMinY()) <= 0 &&
+				minX.compareTo(point.getMinX()) <= 0 &&
+				point.getMaxX().compareTo(maxX) <= 0 &&
+				point.getMaxY().compareTo(maxY) <= 0;
 	}
 
-	public boolean eclipsesMovedX(Point2D<P> point, int x) {
-		return minX <= x && point.getMaxX() <= maxX && eclipsesY(point);
+	public boolean eclipsesMovedX(Point2D<P> point, BigDecimal x) {
+		return minX.compareTo(x) <= 0 && point.getMaxX().compareTo(maxX) <= 0 && eclipsesY(point);
 	}
 
-	public boolean eclipsesMovedY(Point2D<P> point, int y) {
-		return minY <= y && point.getMaxY() <= maxY && eclipsesX(point);
+	public boolean eclipsesMovedY(Point2D<P> point, BigDecimal y) {
+		return minY.compareTo(y) <= 0 && point.getMaxY().compareTo(maxY) <= 0 && eclipsesX(point);
 	}
 
 	public boolean eclipsesX(Point2D<P> point) {
-		return minX <= point.getMinX() && point.getMaxX() <= maxX;
+		return minX.compareTo(point.getMinX()) <= 0 && point.getMaxX().compareTo(maxX) <= 0;
 	}
 
 	public boolean eclipsesY(Point2D<P> point) {
-		return minY <= point.getMinY() && point.getMaxY() <= maxY;
+		return minY.compareTo(point.getMinY()) <= 0 && point.getMaxY().compareTo(maxY) <= 0;
 	}
 
-	public long getArea() {
+	public BigDecimal getArea() {
 		return area;
 	}
 
 	public boolean fits2D(StackValue stackValue) {
-		return !(stackValue.getDx() > dx || stackValue.getDy() > dy);
+		return !(stackValue.getDx().compareTo(dx) > 0 || stackValue.getDy().compareTo(dy) > 0);
 	}
 
 	//       |                  
@@ -344,7 +345,7 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 	//       |---------x===================
 	//
 
-	public abstract Point2D<P> moveX(int x);
+	public abstract Point2D<P> moveX(BigDecimal x);
 
 	//       |                  
 	//       |                  
@@ -365,7 +366,7 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 	//       |---------x===================
 	//
 
-	public abstract Point2D<P> moveX(int x, P ySupport);
+	public abstract Point2D<P> moveX(BigDecimal x, P ySupport);
 
 	//
 	//       |   ║              
@@ -395,7 +396,7 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 	//       |                 
 	//       |---------------------------
 
-	public abstract Point2D<P> moveY(int y);
+	public abstract Point2D<P> moveY(BigDecimal y);
 
 	//
 	//       |   ║              
@@ -425,30 +426,30 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 	//       |                 
 	//       |---------------------------
 
-	public abstract Point2D<P> moveY(int y, P xSupport);
+	public abstract Point2D<P> moveY(BigDecimal y, P xSupport);
 
-	public boolean isInsideY(int yy) {
-		return minY <= yy && yy <= maxY;
+	public boolean isInsideY(BigDecimal yy) {
+		return minY.compareTo(yy) <= 0 && yy.compareTo(maxY) <= 0;
 	}
 
-	public boolean isInsideX(int xx) {
-		return minX <= xx && xx <= maxX;
+	public boolean isInsideX(BigDecimal xx) {
+		return minX.compareTo(xx) <= 0 && xx.compareTo(maxX) <= 0;
 	}
 
-	public long getAreaAtX(int xx) {
-		return dy * (long)(maxX - xx + 1);
+	public BigDecimal getAreaAtX(BigDecimal xx) {
+		return dy.multiply(maxX.subtract(xx).add(BigDecimal.ONE));
 	}
 
-	public long getAreaAtY(int yy) {
-		return dx * (long)(maxY - yy + 1);
+	public BigDecimal getAreaAtY(BigDecimal yy) {
+		return dx.multiply(maxY.subtract(yy).add(BigDecimal.ONE)) ;
 	}
 
-	public long getAreaAtMaxX(int maxX) {
-		return dy * (long)(maxX - minX + 1);
+	public BigDecimal getAreaAtMaxX(BigDecimal maxX) {
+		return dy.multiply((maxX.subtract(minX).add(BigDecimal.ONE)));
 	}
 
-	public long getAreaAtMaxY(int maxY) {
-		return dx * (long)(maxY - minY + 1);
+	public BigDecimal getAreaAtMaxY(BigDecimal maxY) {
+		return dx.multiply(maxY.subtract(minY).add(BigDecimal.ONE));
 	}
 
 }

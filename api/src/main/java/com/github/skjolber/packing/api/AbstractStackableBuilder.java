@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,13 +50,13 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 
 		List<BoxStackValue> list = new ArrayList<>();
 
-		int dx = size.getDx();
-		int dy = size.getDy();
-		int dz = size.getDz();
+		BigDecimal dx = size.getDx();
+		BigDecimal dy = size.getDy();
+		BigDecimal dz = size.getDz();
 
 		// dx, dy, dz
 
-		if(dx == dy && dx == dz) { // square 3d
+		if(dx.compareTo(dy) == 0 && dx.compareTo(dz) == 0) { // square 3d
 			// all sides are equal
 
 			// z          y
@@ -76,7 +77,7 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 			if(stackableSurface.is0() || stackableSurface.is90()) {
 				list.add(newStackValue(dx, dy, dz, constraint, stackableSurface.getSides()));
 			}
-		} else if(dx == dy) {
+		} else if(dx.compareTo(dy) == 0) {
 
 			// z               y
 			// |              / 
@@ -117,7 +118,7 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 				}
 
 			}
-		} else if(dz == dy) {
+		} else if(dz.compareTo(dy) == 0) {
 
 			// z           y
 			// |          / 
@@ -152,7 +153,7 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 				}
 			}
 
-		} else if(dx == dz) {
+		} else if(dx.compareTo(dz) == 0) {
 
 			// add xy/zy and xz
 
@@ -291,6 +292,6 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 
 	protected abstract <T> T[] newStackValueArray(int size);
 
-	protected abstract BoxStackValue newStackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> surfaces);
+	protected abstract BoxStackValue newStackValue(BigDecimal dx, BigDecimal dy, BigDecimal dz, StackConstraint constraint, List<Surface> surfaces);
 
 }

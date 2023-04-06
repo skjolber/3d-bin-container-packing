@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -15,33 +16,33 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 	protected String id;
 	protected String description;
 
-	protected int dx = -1; // width
-	protected int dy = -1; // depth
-	protected int dz = -1; // height
+	protected BigDecimal dx = BigDecimal.valueOf(-1); // width
+	protected BigDecimal dy = BigDecimal.valueOf(-1); // depth
+	protected BigDecimal dz = BigDecimal.valueOf(-1); // height
 
-	protected int maxLoadWeight = -1;
+	protected BigDecimal maxLoadWeight = BigDecimal.valueOf(-1);
 
-	protected int loadDx = -1; // x
-	protected int loadDy = -1; // y
-	protected int loadDz = -1; // z
+	protected BigDecimal loadDx = BigDecimal.valueOf(-1); // x
+	protected BigDecimal loadDy = BigDecimal.valueOf(-1); // y
+	protected BigDecimal loadDz = BigDecimal.valueOf(-1); // z
 
 	protected StackConstraint stackConstraint;
 
 	protected List<Surface> surfaces;
 
-	public B withSize(int dx, int dy, int dz) {
+	public B withSize(BigDecimal dx, BigDecimal dy, BigDecimal dz) {
 		this.dx = dx;
 		this.dy = dy;
 		this.dz = dz;
 		return (B)this;
 	}
 
-	public B withMaxLoadWeight(int weight) {
+	public B withMaxLoadWeight(BigDecimal weight) {
 		this.maxLoadWeight = weight;
 		return (B)this;
 	}
 
-	public B withLoadSize(int dx, int dy, int dz) {
+	public B withLoadSize(BigDecimal dx, BigDecimal dy, BigDecimal dz) {
 		this.loadDx = dx;
 		this.loadDy = dy;
 		this.loadDz = dz;

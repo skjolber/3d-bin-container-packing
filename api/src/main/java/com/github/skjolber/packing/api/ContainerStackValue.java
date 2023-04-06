@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public abstract class ContainerStackValue extends StackValue {
@@ -7,55 +8,55 @@ public abstract class ContainerStackValue extends StackValue {
 	private static final long serialVersionUID = 1L;
 
 	public ContainerStackValue(
-			int dx, int dy, int dz,
+			BigDecimal dx, BigDecimal dy, BigDecimal dz,
 			StackConstraint constraint,
-			int loadDx, int loadDy, int loadDz, int maxLoadWeight, List<Surface> surfaces) {
+			BigDecimal loadDx, BigDecimal loadDy, BigDecimal loadDz, BigDecimal maxLoadWeight, List<Surface> surfaces) {
 		super(dx, dy, dz, constraint, surfaces);
 
 		this.loadDx = loadDx;
 		this.loadDy = loadDy;
 		this.loadDz = loadDz;
 
-		this.maxLoadVolume = (long)loadDx * (long)loadDy * (long)loadDz;
+		this.maxLoadVolume = loadDx.multiply(loadDy).multiply(loadDz);
 		this.maxLoadWeight = maxLoadWeight;
 	}
 
-	protected final int loadDx; // x
-	protected final int loadDy; // y
-	protected final int loadDz; // z
+	protected final BigDecimal loadDx; // x
+	protected final BigDecimal loadDy; // y
+	protected final BigDecimal loadDz; // z
 
-	protected final int maxLoadWeight;
-	protected final long maxLoadVolume;
+	protected final BigDecimal maxLoadWeight;
+	protected final BigDecimal maxLoadVolume;
 
-	public long getMaxLoadVolume() {
+	public BigDecimal getMaxLoadVolume() {
 		return maxLoadVolume;
 	}
 
-	public int getMaxLoadWeight() {
+	public BigDecimal getMaxLoadWeight() {
 		return maxLoadWeight;
 	}
 
-	public int getLoadDx() {
+	public BigDecimal getLoadDx() {
 		return loadDx;
 	}
 
-	public int getLoadDy() {
+	public BigDecimal getLoadDy() {
 		return loadDy;
 	}
 
-	public int getLoadDz() {
+	public BigDecimal getLoadDz() {
 		return loadDz;
 	}
 
 	protected boolean canLoad(Stackable stackable) {
-		if(stackable.getWeight() > maxLoadWeight) {
+		if(stackable.getWeight().compareTo(maxLoadWeight) > 0) {
 			return false;
 		}
 		for (StackValue stackValue : stackable.getStackValues()) {
 			if(
-				stackValue.getDx() <= loadDx &&
-						stackValue.getDy() <= loadDy &&
-						stackValue.getDz() <= loadDz
+				stackValue.getDx().compareTo(loadDx) <= 0 &&
+						stackValue.getDy().compareTo(loadDy) <= 0 &&
+						stackValue.getDz().compareTo(loadDz) <= 0
 			) {
 				return true;
 			}

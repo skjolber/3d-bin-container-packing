@@ -1,14 +1,16 @@
 package com.github.skjolber.packing.api;
 
+import java.math.BigDecimal;
+
 public interface Placement2D {
 
-	int getAbsoluteX();
+	BigDecimal getAbsoluteX();
 
-	int getAbsoluteY();
+	BigDecimal getAbsoluteY();
 
-	int getAbsoluteEndX();
+	BigDecimal getAbsoluteEndX();
 
-	int getAbsoluteEndY();
+	BigDecimal getAbsoluteEndY();
 
 	boolean intersects2D(Placement2D point);
 

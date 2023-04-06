@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -12,19 +13,19 @@ public class FixedContainerStackValue extends ContainerStackValue {
 
 	private static final long serialVersionUID = 1L;
 
-	protected final int weight;
+	protected final BigDecimal weight;
 
 	public FixedContainerStackValue(
-			int dx, int dy, int dz,
+			BigDecimal dx, BigDecimal dy, BigDecimal dz,
 			StackConstraint constraint,
-			int stackWeight, int emptyWeight,
-			int loadDx, int loadDy, int loadDz, int maxLoadWeight, List<Surface> surfaces) {
+			BigDecimal stackWeight, BigDecimal emptyWeight,
+			BigDecimal loadDx, BigDecimal loadDy, BigDecimal loadDz, BigDecimal maxLoadWeight, List<Surface> surfaces) {
 		super(dx, dy, dz, constraint, loadDx, loadDy, loadDz, maxLoadWeight, surfaces);
 
-		this.weight = stackWeight + emptyWeight;
+		this.weight = stackWeight.add(emptyWeight);
 	}
 
-	public int getWeight() {
+	public BigDecimal getWeight() {
 		return weight;
 	}
 

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.api;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 public class StackPlacement implements Placement3D, Serializable {
 
@@ -9,16 +10,16 @@ public class StackPlacement implements Placement3D, Serializable {
 	protected Stackable stackable;
 	protected StackValue value;
 
-	protected int x; // width coordinate
-	protected int y; // depth coordinate
-	protected int z; // height coordinate
+	protected BigDecimal x; // width coordinate
+	protected BigDecimal y; // depth coordinate
+	protected BigDecimal z; // height coordinate
 
 	// TODO weight constraint
-	protected int maxSupportedPressure; // i.e.  
-	protected int maxSupportedWeight;
+	protected BigDecimal maxSupportedPressure; // i.e.
+	protected BigDecimal maxSupportedWeight;
 
-	public StackPlacement(Stackable stackable, StackValue value, int x, int y, int z, int maxSupportedPressure,
-			int maxSupportedWeight) {
+	public StackPlacement(Stackable stackable, StackValue value, BigDecimal x, BigDecimal y, BigDecimal z, BigDecimal maxSupportedPressure,
+						  BigDecimal maxSupportedWeight) {
 		super();
 		this.stackable = stackable;
 		this.value = value;
@@ -53,77 +54,79 @@ public class StackPlacement implements Placement3D, Serializable {
 	}
 
 	public boolean intersectsY(StackPlacement placement) {
-		int startY = y;
-		int endY = startY + value.getDy() - 1;
+		BigDecimal startY = y;
+		BigDecimal endY = startY.add(value.getDy()).subtract(BigDecimal.ONE);
 
-		if(startY <= placement.getAbsoluteY() && placement.getAbsoluteY() <= endY) {
+		if(startY.compareTo(placement.getAbsoluteY()) <= 0 && placement.getAbsoluteY().compareTo(endY) <= 0) {
 			return true;
 		}
 
-		return startY <= placement.getAbsoluteY() + placement.getStackValue().getDy() - 1 &&
-				placement.getAbsoluteY() + placement.getStackValue().getDy() - 1 <= endY;
+		return startY.compareTo(placement.getAbsoluteY().add(placement.getStackValue().getDy()).subtract(BigDecimal.ONE)) <= 0 &&
+				placement.getAbsoluteY().add(placement.getStackValue().getDy()).subtract(BigDecimal.ONE).compareTo(endY) <= 0;
 	}
 
 	public boolean intersectsX(StackPlacement placement) {
-		int startX = x;
-		int endX = startX + value.getDx() - 1;
+		BigDecimal startX = x;
+		BigDecimal endX = startX.add(value.getDx()).subtract(BigDecimal.ONE);
 
-		if(startX <= placement.getAbsoluteX() && placement.getAbsoluteX() <= endX) {
+		if(startX.compareTo(placement.getAbsoluteX()) <= 0 && placement.getAbsoluteX().compareTo(endX) <= 0) {
 			return true;
 		}
 
-		return startX <= placement.getAbsoluteX() + placement.getStackValue().getDx() - 1 &&
-				placement.getAbsoluteX() + placement.getStackValue().getDx() - 1 <= endX;
+		return startX.compareTo(placement.getAbsoluteX().add(placement.getStackValue().getDx()).subtract(BigDecimal.ONE)) <= 0 &&
+				placement.getAbsoluteX().add(placement.getStackValue().getDx()).subtract(BigDecimal.ONE).compareTo(endX) <= 0;
 	}
 
 	public boolean intersectsZ(StackPlacement placement) {
-		int startZ = z;
-		int endZ = startZ + value.getDz() - 1;
+		BigDecimal startZ = z;
+		BigDecimal endZ = startZ.add(value.getDz()).subtract(BigDecimal.ONE);
 
-		if(startZ <= placement.getAbsoluteZ() && placement.getAbsoluteZ() <= endZ) {
+		if(startZ.compareTo(placement.getAbsoluteZ()) <= 0 && placement.getAbsoluteZ().compareTo(endZ) <= 0) {
 			return true;
 		}
 
-		return startZ <= placement.getAbsoluteZ() + placement.getStackValue().getDz() - 1 &&
-				placement.getAbsoluteZ() + placement.getStackValue().getDz() - 1 <= endZ;
+		return startZ.compareTo(placement.getAbsoluteZ().add(placement.getStackValue().getDz()).subtract(BigDecimal.ONE)) <= 0 &&
+				placement.getAbsoluteZ().add(placement.getStackValue().getDz()).subtract(BigDecimal.ONE).compareTo(endZ) <= 0;
 	}
 
-	public int getAbsoluteX() {
+	public BigDecimal getAbsoluteX() {
 		return x;
 	}
 
-	public int getAbsoluteY() {
+	public BigDecimal getAbsoluteY() {
 		return y;
 	}
 
-	public int getAbsoluteZ() {
+	public BigDecimal getAbsoluteZ() {
 		return z;
 	}
 
-	public int getAbsoluteEndX() {
-		return x + value.getDx() - 1;
+	public BigDecimal getAbsoluteEndX() {
+		return x.add(value.getDx()).subtract(BigDecimal.ONE);
 	}
 
-	public int getAbsoluteEndY() {
-		return y + value.getDy() - 1;
+	public BigDecimal getAbsoluteEndY() {
+		return y.add(value.getDy()).subtract(BigDecimal.ONE);
 	}
 
-	public int getAbsoluteEndZ() {
-		return z + value.getDz() - 1;
+	public BigDecimal getAbsoluteEndZ() {
+		return z.add(value.getDz()).subtract(BigDecimal.ONE);
 	}
 
-	public long getVolume() {
+	public BigDecimal getVolume() {
 		return stackable.getVolume();
 	}
 
 	public boolean intersects2D(Placement2D point) {
-		return !(point.getAbsoluteEndX() < x || point.getAbsoluteX() > getAbsoluteEndX() || point.getAbsoluteEndY() < y || point.getAbsoluteY() > getAbsoluteEndY());
+		return !(point.getAbsoluteEndX().compareTo(x) < 0 || point.getAbsoluteX().compareTo(getAbsoluteEndX()) > 0 ||
+				point.getAbsoluteEndY().compareTo(y) < 0 || point.getAbsoluteY().compareTo(getAbsoluteEndY()) > 0);
 	}
 
 	@Override
 	public boolean intersects3D(Placement3D point) {
-		return !(point.getAbsoluteEndX() < x || point.getAbsoluteX() > getAbsoluteEndX() || point.getAbsoluteEndY() < y || point.getAbsoluteY() > point.getAbsoluteEndY() || point.getAbsoluteEndZ() < z
-				|| point.getAbsoluteZ() > point.getAbsoluteEndZ());
+		return !(point.getAbsoluteEndX().compareTo(x) < 0 || point.getAbsoluteX().compareTo(getAbsoluteEndX()) > 0 ||
+				point.getAbsoluteEndY().compareTo(y) < 0 || point.getAbsoluteY().compareTo(point.getAbsoluteEndY()) > 0
+				|| point.getAbsoluteEndZ().compareTo(z) < 0 || point.getAbsoluteZ().compareTo(point.getAbsoluteEndZ()) > 0);
 	}
 
 	@Override
@@ -131,15 +134,15 @@ public class StackPlacement implements Placement3D, Serializable {
 		return stackable.getDescription() + "[" + x + "x" + y + "x" + z + " " + getAbsoluteEndX() + "x" + getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
 	}
 
-	public void setX(int x) {
+	public void setX(BigDecimal x) {
 		this.x = x;
 	}
 
-	public void setY(int y) {
+	public void setY(BigDecimal y) {
 		this.y = y;
 	}
 
-	public void setZ(int z) {
+	public void setZ(BigDecimal z) {
 		this.z = z;
 	}
 
@@ -147,15 +150,15 @@ public class StackPlacement implements Placement3D, Serializable {
 		this.value = value;
 	}
 
-	public void setMaxSupportedPressure(int maxSupportedPressure) {
+	public void setMaxSupportedPressure(BigDecimal maxSupportedPressure) {
 		this.maxSupportedPressure = maxSupportedPressure;
 	}
 
-	public void setMaxSupportedWeight(int maxSupportedWeight) {
+	public void setMaxSupportedWeight(BigDecimal maxSupportedWeight) {
 		this.maxSupportedWeight = maxSupportedWeight;
 	}
 
-	public int getWeight() {
+	public BigDecimal getWeight() {
 		return stackable.getWeight();
 	}
 

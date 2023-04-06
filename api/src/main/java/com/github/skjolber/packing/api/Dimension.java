@@ -1,60 +1,62 @@
 package com.github.skjolber.packing.api;
 
+import java.math.BigDecimal;
+
 public class Dimension {
 
-	public static final Dimension EMPTY = new Dimension(0, 0, 0);
+	public static final Dimension EMPTY = new Dimension(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 
 	public static Dimension decode(String size) {
 		String[] dimensions = size.split("x");
 
-		return newInstance(Integer.parseInt(dimensions[0]), Integer.parseInt(dimensions[1]), Integer.parseInt(dimensions[2]));
+		return newInstance(new BigDecimal(dimensions[0]), new BigDecimal(dimensions[1]), new BigDecimal(dimensions[2]));
 	}
 
 	public static String encode(Dimension dto) {
 		return encode(dto.getDx(), dto.getDy(), dto.getDz());
 	}
 
-	public static String encode(int width, int depth, int height) {
+	public static String encode(BigDecimal width, BigDecimal depth, BigDecimal height) {
 		return width + "x" + depth + "x" + height;
 	}
 
-	public static Dimension newInstance(int width, int depth, int height) {
+	public static Dimension newInstance(BigDecimal width, BigDecimal depth, BigDecimal height) {
 		return new Dimension(width, depth, height);
 	}
 
-	protected final int dx; // dx
-	protected final int dy; // dy
-	protected final int dz; // dz
+	protected final BigDecimal dx; // dx
+	protected final BigDecimal dy; // dy
+	protected final BigDecimal dz; // dz
 
-	protected final long area;
-	protected final long volume;
+	protected final BigDecimal area;
+	protected final BigDecimal volume;
 
 	protected final String name;
 
-	public Dimension(String name, int dx, int dy, int dz) {
+	public Dimension(String name, BigDecimal dx, BigDecimal dy, BigDecimal dz) {
 		this.name = name;
 
 		this.dx = dx;
 		this.dy = dy;
 		this.dz = dz;
 
-		this.volume = ((long)dy) * ((long)dx) * ((long)dz);
-		this.area = ((long)dy) * ((long)dx);
+		this.volume = dy.multiply(dx).multiply(dz);
+		this.area = dy.multiply(dx);
 	}
 
-	public Dimension(int dx, int dy, int dz) {
+	public Dimension(BigDecimal dx, BigDecimal dy, BigDecimal dz) {
 		this(null, dx, dy, dz);
 	}
 
-	public int getDx() {
+	public BigDecimal getDx() {
 		return dx;
 	}
 
-	public int getDz() {
+	public BigDecimal getDz() {
 		return dz;
 	}
 
-	public int getDy() {
+	public BigDecimal getDy() {
 		return dy;
 	}
 
@@ -70,13 +72,13 @@ public class Dimension {
 		return canHold3D(dimension.getDx(), dimension.getDy(), dimension.getDz());
 	}
 
-	public boolean canHold3D(int w, int d, int h) {
-		return (w <= dx && h <= dz && d <= dy) ||
-				(h <= dx && d <= dz && w <= dy) ||
-				(d <= dx && w <= dz && h <= dy) ||
-				(h <= dx && w <= dz && d <= dy) ||
-				(d <= dx && h <= dz && w <= dy) ||
-				(w <= dx && d <= dz && h <= dy);
+	public boolean canHold3D(BigDecimal w, BigDecimal d, BigDecimal h) {
+		return (w.compareTo(dx) <= 0 && h.compareTo(dz) <= 0 && d.compareTo(dy) <= 0) ||
+				(h.compareTo(dx) <= 0 && d.compareTo(dz) <= 0 && w.compareTo(dy) <= 0) ||
+				(d.compareTo(dx) <= 0 && w.compareTo(dz) <= 0 && h.compareTo(dy) <= 0) ||
+				(h.compareTo(dx) <= 0 && w.compareTo(dz) <= 0 && d.compareTo(dy) <= 0) ||
+				(d.compareTo(dx) <= 0 && h.compareTo(dz) <= 0 && w.compareTo(dy) <= 0) ||
+				(w.compareTo(dx) <= 0 && d.compareTo(dz) <= 0 && h.compareTo(dy) <= 0);
 	}
 
 	/**
@@ -91,23 +93,23 @@ public class Dimension {
 		return canHold2D(dimension.getDx(), dimension.getDy(), dimension.getDz());
 	}
 
-	public boolean canHold2D(int w, int d, int h) {
-		if(h > dz) {
+	public boolean canHold2D(BigDecimal w, BigDecimal d, BigDecimal h) {
+		if(h.compareTo(dz) > 0) {
 			return false;
 		}
-		return (w <= dx && d <= dy) || (d <= dx && w <= dy);
+		return (w.compareTo(dx) <= 0 && d.compareTo(dy) <= 0) || (d.compareTo(dx) <= 0 && w.compareTo(dy) <= 0);
 	}
 
-	public int getFootprint() {
-		return dx * dy;
+	public BigDecimal getFootprint() {
+		return dx.multiply(dy);
 	}
 
 	public boolean isSquare2D() {
-		return dx == dy;
+		return dx.compareTo(dy) == 0;
 	}
 
 	public boolean isSquare3D() {
-		return dx == dy && dx == dz;
+		return dx.compareTo(dy) == 0 && dx.compareTo(dz) == 0;
 	}
 
 	/**
@@ -121,8 +123,8 @@ public class Dimension {
 		return fitsInside3D(dimension.getDx(), dimension.getDy(), dimension.getDz());
 	}
 
-	public boolean fitsInside3D(int w, int d, int h) {
-		return w >= dx && h >= dz && d >= dy;
+	public boolean fitsInside3D(BigDecimal w, BigDecimal d, BigDecimal h) {
+		return w.compareTo(dx) >= 0 && h.compareTo(dz) >= 0 && d.compareTo(dy) >= 0;
 	}
 
 	/**
@@ -149,12 +151,12 @@ public class Dimension {
 		return dimension.canHold2D(this);
 	}
 
-	public long getVolume() {
+	public BigDecimal getVolume() {
 		return volume;
 	}
 
 	public boolean nonEmpty() {
-		return dx > 0 && dy > 0 && dz > 0;
+		return dx.compareTo(BigDecimal.ZERO) > 0 && dy.compareTo(BigDecimal.ZERO) > 0 && dz.compareTo(BigDecimal.ZERO) > 0;
 	}
 
 	@Override
@@ -174,11 +176,11 @@ public class Dimension {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + dy;
-		result = prime * result + dz;
+		result = prime * result + dy.intValue();
+		result = prime * result + dz.intValue();
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + (int)(volume ^ (volume >>> 32));
-		result = prime * result + dx;
+		result = prime * result + (volume.intValue() ^ (volume.intValue() >>> 32));
+		result = prime * result + dx.intValue();
 		return result;
 	}
 

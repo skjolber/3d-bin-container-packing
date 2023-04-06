@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,33 +34,33 @@ public class DefaultStack extends Stack {
 	}
 
 	@Override
-	public int getWeight() {
-		int weight = 0;
+	public BigDecimal getWeight() {
+		BigDecimal weight = BigDecimal.ZERO;
 
 		for (StackPlacement stackEntry : entries) {
-			weight += stackEntry.getStackable().getWeight();
+			weight = weight.add(stackEntry.getStackable().getWeight());
 		}
 
 		return weight;
 	}
 
 	@Override
-	public int getDz() {
-		int dz = 0;
+	public BigDecimal getDz() {
+		BigDecimal dz = BigDecimal.ZERO;
 
 		for (StackPlacement stackEntry : entries) {
-			dz = Math.max(dz, stackEntry.getAbsoluteEndZ());
+			dz = dz.max(stackEntry.getAbsoluteEndZ());
 		}
 
 		return dz;
 	}
 
 	@Override
-	public long getVolume() {
-		long volume = 0;
+	public BigDecimal getVolume() {
+		BigDecimal volume = BigDecimal.ZERO;
 
 		for (StackPlacement stackEntry : entries) {
-			volume += stackEntry.getStackable().getVolume();
+			volume = volume.add(stackEntry.getStackable().getVolume());
 		}
 
 		return volume;

@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.api;
 
+import java.math.BigDecimal;
+
 public abstract class Container extends Stackable {
 
 	private static final long serialVersionUID = 1L;
@@ -8,32 +10,32 @@ public abstract class Container extends Stackable {
 		return new Builder();
 	}
 
-	protected static int getMaxLoadWeight(ContainerStackValue[] values) {
-		int maxLoadWeight = -1;
+	protected static BigDecimal getMaxLoadWeight(ContainerStackValue[] values) {
+		BigDecimal maxLoadWeight = BigDecimal.valueOf(-1);
 
 		for (ContainerStackValue value : values) {
-			if(value.getMaxLoadWeight() > maxLoadWeight) {
+			if(value.getMaxLoadWeight().compareTo(maxLoadWeight) > 0) {
 				maxLoadWeight = value.getMaxLoadWeight();
 			}
 		}
 		return maxLoadWeight;
 	}
 
-	protected static long calculateMinimumArea(StackValue[] values) {
-		long minimumArea = Long.MAX_VALUE;
+	protected static BigDecimal calculateMinimumArea(StackValue[] values) {
+		BigDecimal minimumArea = BigDecimal.valueOf(Long.MAX_VALUE);
 		for (StackValue boxStackValue : values) {
-			if(minimumArea > boxStackValue.getArea()) {
+			if(minimumArea.compareTo(boxStackValue.getArea()) > 0) {
 				minimumArea = boxStackValue.getArea();
 			}
 		}
 		return minimumArea;
 	}
 
-	protected static long getMaxLoadVolume(ContainerStackValue[] values) {
-		long maxLoadVolume = -1;
+	protected static BigDecimal getMaxLoadVolume(ContainerStackValue[] values) {
+		BigDecimal maxLoadVolume = BigDecimal.valueOf(-1);
 
 		for (ContainerStackValue value : values) {
-			if(value.getMaxLoadVolume() > maxLoadVolume) {
+			if(value.getMaxLoadVolume().compareTo(maxLoadVolume) > 0) {
 				maxLoadVolume = value.getMaxLoadVolume();
 			}
 		}
@@ -42,7 +44,7 @@ public abstract class Container extends Stackable {
 
 	public static class Builder extends AbstractContainerBuilder<Builder> {
 
-		protected int emptyWeight = -1;
+		protected BigDecimal emptyWeight = BigDecimal.valueOf(-1);
 		protected Stack stack;
 		protected boolean fixed = false;
 
@@ -62,46 +64,46 @@ public abstract class Container extends Stackable {
 			return this;
 		}
 
-		public Builder withEmptyWeight(int emptyWeight) {
+		public Builder withEmptyWeight(BigDecimal emptyWeight) {
 			this.emptyWeight = emptyWeight;
 
 			return this;
 		}
 
 		public DefaultContainer build() {
-			if(dx == -1) {
+			if(dx.compareTo(BigDecimal.valueOf(-1)) == 0) {
 				throw new IllegalStateException("Expected size");
 			}
-			if(dy == -1) {
+			if(dy.compareTo(BigDecimal.valueOf(-1)) == 0) {
 				throw new IllegalStateException("Expected size");
 			}
-			if(dz == -1) {
+			if(dz.compareTo(BigDecimal.valueOf(-1)) == 0) {
 				throw new IllegalStateException("Expected size");
 			}
-			if(maxLoadWeight == -1) {
+			if(maxLoadWeight.compareTo(BigDecimal.valueOf(-1)) == 0) {
 				throw new IllegalStateException("Expected max weight");
 			}
-			if(loadDx == -1) {
+			if(loadDx.compareTo(BigDecimal.valueOf(-1)) == 0) {
 				loadDx = dx;
 			}
-			if(loadDy == -1) {
+			if(loadDy.compareTo(BigDecimal.valueOf(-1)) == 0) {
 				loadDy = dy;
 			}
-			if(loadDz == -1) {
+			if(loadDz.compareTo(BigDecimal.valueOf(-1)) == 0) {
 				loadDz = dz;
 			}
 			if(surfaces == null || surfaces.isEmpty()) {
 				surfaces = Surface.DEFAULT_SURFACE;
 			}
 
-			if(emptyWeight == -1) {
+			if(emptyWeight.compareTo(BigDecimal.valueOf(-1)) == 0) {
 				throw new IllegalStateException("Expected empty weight");
 			}
 			if(stack == null) {
 				stack = new DefaultStack();
 			}
 
-			long volume = (long)dx * (long)dy * (long)dz;
+			BigDecimal volume = dx.multiply(dy).multiply(dz);
 
 			return new DefaultContainer(id, description, volume, emptyWeight, getStackValues(), stack);
 		}
@@ -110,7 +112,7 @@ public abstract class Container extends Stackable {
 			if(fixed) {
 				FixedContainerStackValue[] stackValues = new FixedContainerStackValue[1];
 
-				int stackWeight = stack.getWeight();
+				BigDecimal stackWeight = stack.getWeight();
 
 				stackValues[0] = new FixedContainerStackValue(
 						dx, dy, dz,
@@ -137,17 +139,18 @@ public abstract class Container extends Stackable {
 
 	}
 
-	protected final int emptyWeight;
+	protected final BigDecimal emptyWeight;
 	/** i.e. best of the stack values */
-	protected final long maxLoadVolume;
+	protected final BigDecimal maxLoadVolume;
 	/** i.e. best of the stack values */
-	protected final int maxLoadWeight;
+	protected final BigDecimal maxLoadWeight;
 
-	protected final long volume;
-	protected final long minArea;
-	protected final long maxArea;
+	protected final BigDecimal volume;
+	protected final BigDecimal minArea;
+	protected final BigDecimal maxArea;
 
-	public Container(String id, String name, long volume, int emptyWeight, long maxLoadVolume, int maxLoadWeight, long minArea, long maxArea) {
+	public Container(String id, String name, BigDecimal volume, BigDecimal emptyWeight, BigDecimal maxLoadVolume,
+					 BigDecimal maxLoadWeight, BigDecimal minArea, BigDecimal maxArea) {
 		super(id, name);
 
 		this.emptyWeight = emptyWeight;
@@ -160,15 +163,15 @@ public abstract class Container extends Stackable {
 	}
 
 	@Override
-	public int getWeight() {
-		return emptyWeight + getStack().getWeight();
+	public BigDecimal getWeight() {
+		return emptyWeight.add(getStack().getWeight());
 	}
 
-	public long getMaxLoadVolume() {
+	public BigDecimal getMaxLoadVolume() {
 		return maxLoadVolume;
 	}
 
-	public int getMaxLoadWeight() {
+	public BigDecimal getMaxLoadWeight() {
 		return maxLoadWeight;
 	}
 
@@ -177,12 +180,12 @@ public abstract class Container extends Stackable {
 
 	public abstract Stack getStack();
 
-	public int getEmptyWeight() {
+	public BigDecimal getEmptyWeight() {
 		return emptyWeight;
 	}
 
-	public int getMaxWeight() {
-		return emptyWeight + maxLoadWeight;
+	public BigDecimal getMaxWeight() {
+		return emptyWeight.add(maxLoadWeight);
 	}
 
 	public abstract boolean canLoad(Stackable box);
@@ -190,26 +193,26 @@ public abstract class Container extends Stackable {
 	@Override
 	public abstract Container clone();
 
-	public int getLoadWeight() {
+	public BigDecimal getLoadWeight() {
 		return getStack().getWeight();
 	}
 
 	@Override
-	public long getVolume() {
+	public BigDecimal getVolume() {
 		return volume;
 	}
 
 	@Override
-	public long getMinimumArea() {
+	public BigDecimal getMinimumArea() {
 		return minArea;
 	}
 
 	@Override
-	public long getMaximumArea() {
+	public BigDecimal getMaximumArea() {
 		return maxArea;
 	}
 
-	public long getLoadVolume() {
+	public BigDecimal getLoadVolume() {
 		return getStack().getVolume();
 	}
 }

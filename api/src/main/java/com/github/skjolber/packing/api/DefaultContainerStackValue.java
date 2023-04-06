@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class DefaultContainerStackValue extends ContainerStackValue {
@@ -7,10 +8,10 @@ public class DefaultContainerStackValue extends ContainerStackValue {
 	private static final long serialVersionUID = 1L;
 
 	public DefaultContainerStackValue(
-			int dx, int dy, int dz,
+			BigDecimal dx, BigDecimal dy, BigDecimal dz,
 			StackConstraint constraint,
-			int loadDx, int loadDy, int loadDz,
-			int maxLoadWeight, List<Surface> sides) {
+			BigDecimal loadDx, BigDecimal loadDy, BigDecimal loadDz,
+			BigDecimal maxLoadWeight, List<Surface> sides) {
 		super(dx, dy, dz, constraint, loadDx, loadDy, loadDz, maxLoadWeight, sides);
 	}
 

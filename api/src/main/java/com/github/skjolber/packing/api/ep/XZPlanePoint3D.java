@@ -2,6 +2,8 @@ package com.github.skjolber.packing.api.ep;
 
 import com.github.skjolber.packing.api.Placement3D;
 
+import java.math.BigDecimal;
+
 /**
  * 
  * Y is fixed within an x-z plane
@@ -10,13 +12,13 @@ import com.github.skjolber.packing.api.Placement3D;
 
 public interface XZPlanePoint3D {
 
-	int getSupportedXZPlaneMinX();
+	BigDecimal getSupportedXZPlaneMinX();
 
-	int getSupportedXZPlaneMaxX();
+	BigDecimal getSupportedXZPlaneMaxX();
 
-	int getSupportedXZPlaneMinZ();
+	BigDecimal getSupportedXZPlaneMinZ();
 
-	int getSupportedXZPlaneMaxZ();
+	BigDecimal getSupportedXZPlaneMaxZ();
 
 	Placement3D getXZPlane();
 }

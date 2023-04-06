@@ -5,12 +5,14 @@ import static org.junit.Assert.fail;
 
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+
 public class BoxTest {
 
 	@Test
 	public void testBuilder1() {
 
-		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withWeight(1).build();
+		Box box = Box.newBuilder().withSize(BigDecimal.ONE, BigDecimal.valueOf(2), BigDecimal.valueOf(3)).withRotate3D().withWeight(BigDecimal.ONE).build();
 
 		BoxStackValue[] stackValues = box.getStackValues();
 
@@ -18,18 +20,18 @@ public class BoxTest {
 
 		assertUniqueValues(stackValues);
 
-		assertEquals(stackValues[0].getDx(), 1);
-		assertEquals(stackValues[0].getDy(), 2);
-		assertEquals(stackValues[0].getDz(), 3);
+		assertEquals(stackValues[0].getDx(), BigDecimal.ONE);
+		assertEquals(stackValues[0].getDy(), BigDecimal.valueOf(2));
+		assertEquals(stackValues[0].getDz(), BigDecimal.valueOf(3));
 
-		assertEquals(stackValues[1].getDx(), 2);
-		assertEquals(stackValues[1].getDy(), 1);
-		assertEquals(stackValues[1].getDz(), 3);
+		assertEquals(stackValues[1].getDx(), BigDecimal.valueOf(2));
+		assertEquals(stackValues[1].getDy(), BigDecimal.ONE);
+		assertEquals(stackValues[1].getDz(), BigDecimal.valueOf(3));
 	}
 
 	@Test
 	public void testBuilder2() {
-		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate2D().withWeight(1).build();
+		Box box = Box.newBuilder().withSize(BigDecimal.ONE, BigDecimal.valueOf(2), BigDecimal.valueOf(3)).withRotate2D().withWeight(BigDecimal.ONE).build();
 
 		BoxStackValue[] stackValues = box.getStackValues();
 		assertEquals(stackValues.length, 2);

@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.api;
 
+import java.math.BigDecimal;
+
 /**
  * Builder scaffold.
  * 
@@ -14,7 +16,7 @@ public class AbstractPhysicsBuilder<B extends AbstractPhysicsBuilder<B>> {
 	protected Dimension size;
 	protected StackableSurface stackableSurface;
 
-	public B withSize(int dx, int dy, int dz) {
+	public B withSize(BigDecimal dx, BigDecimal dy, BigDecimal dz) {
 		this.size = new Dimension(dx, dy, dz);
 
 		return (B)this;

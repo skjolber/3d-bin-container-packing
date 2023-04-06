@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.api;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,9 +18,9 @@ public abstract class Stackable implements Serializable {
 		this.description = description;
 	}
 
-	public abstract long getVolume();
+	public abstract BigDecimal getVolume();
 
-	public abstract int getWeight();
+	public abstract BigDecimal getWeight();
 
 	public abstract StackValue[] getStackValues();
 
@@ -68,24 +69,24 @@ public abstract class Stackable implements Serializable {
 		return null;
 	}
 
-	public abstract long getMinimumArea();
+	public abstract BigDecimal getMinimumArea();
 
-	public abstract long getMaximumArea();
+	public abstract BigDecimal getMaximumArea();
 
-	protected static long getMinimumArea(StackValue[] rotations) {
-		long minimumArea = Long.MAX_VALUE;
+	protected static BigDecimal getMinimumArea(StackValue[] rotations) {
+		BigDecimal minimumArea = BigDecimal.valueOf(Long.MAX_VALUE);
 		for (StackValue boxStackValue : rotations) {
-			if(minimumArea > boxStackValue.getArea()) {
+			if(minimumArea.compareTo(boxStackValue.getArea()) > 0) {
 				minimumArea = boxStackValue.getArea();
 			}
 		}
 		return minimumArea;
 	}
 
-	public static long getMaximumArea(StackValue[] rotations) {
-		long maximumArea = Long.MIN_VALUE;
+	public static BigDecimal getMaximumArea(StackValue[] rotations) {
+		BigDecimal maximumArea = BigDecimal.valueOf(Long.MIN_VALUE);
 		for (StackValue boxStackValue : rotations) {
-			if(maximumArea < boxStackValue.getArea()) {
+			if(maximumArea.compareTo(boxStackValue.getArea()) < 0) {
 				maximumArea = boxStackValue.getArea();
 			}
 		}

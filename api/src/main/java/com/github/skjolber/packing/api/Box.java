@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,9 +14,9 @@ public class Box extends Stackable {
 
 	public static class Builder extends AbstractStackableBuilder<Builder> {
 
-		protected Integer weight;
+		protected BigDecimal weight;
 
-		public Builder withWeight(int weight) {
+		public Builder withWeight(BigDecimal weight) {
 			this.weight = weight;
 
 			return this;
@@ -41,18 +42,18 @@ public class Box extends Stackable {
 			return (T[])new BoxStackValue[size];
 		}
 
-		protected BoxStackValue newStackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> surfaces) {
+		protected BoxStackValue newStackValue(BigDecimal dx, BigDecimal dy, BigDecimal dz, StackConstraint constraint, List<Surface> surfaces) {
 			return new BoxStackValue(dx, dy, dz, constraint, surfaces);
 		}
 	}
 
-	protected final int weight;
+	protected final BigDecimal weight;
 	protected final BoxStackValue[] stackValues;
-	protected final long volume;
-	protected final long minimumArea;
-	protected final long maximumArea;
+	protected final BigDecimal volume;
+	protected final BigDecimal minimumArea;
+	protected final BigDecimal maximumArea;
 
-	public Box(String id, String name, long volume, int weight, BoxStackValue[] stackValues) {
+	public Box(String id, String name, BigDecimal volume, BigDecimal weight, BoxStackValue[] stackValues) {
 		super(id, name);
 		this.volume = volume;
 		this.weight = weight;
@@ -63,7 +64,7 @@ public class Box extends Stackable {
 	}
 
 	@Override
-	public int getWeight() {
+	public BigDecimal getWeight() {
 		return weight;
 	}
 
@@ -72,7 +73,7 @@ public class Box extends Stackable {
 		return stackValues;
 	}
 
-	public long getVolume() {
+	public BigDecimal getVolume() {
 		return volume;
 	}
 
@@ -82,12 +83,12 @@ public class Box extends Stackable {
 	}
 
 	@Override
-	public long getMinimumArea() {
+	public BigDecimal getMinimumArea() {
 		return minimumArea;
 	}
 
 	@Override
-	public long getMaximumArea() {
+	public BigDecimal getMaximumArea() {
 		return maximumArea;
 	}
 

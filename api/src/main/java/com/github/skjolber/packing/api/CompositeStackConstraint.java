@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class CompositeStackConstraint implements StackConstraint {
@@ -16,7 +17,7 @@ public class CompositeStackConstraint implements StackConstraint {
 	}
 
 	@Override
-	public boolean supports(Stack stack, Stackable stackable, StackValue value, int x, int y, int z) {
+	public boolean supports(Stack stack, Stackable stackable, StackValue value, BigDecimal x, BigDecimal y, BigDecimal z) {
 		for (StackConstraint constraint : constraints) {
 			if(!constraint.supports(stack, stackable, value, x, y, z)) {
 				return false;

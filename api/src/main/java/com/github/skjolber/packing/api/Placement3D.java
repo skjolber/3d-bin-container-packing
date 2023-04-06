@@ -1,10 +1,12 @@
 package com.github.skjolber.packing.api;
 
+import java.math.BigDecimal;
+
 public interface Placement3D extends Placement2D {
 
-	int getAbsoluteZ();
+	BigDecimal getAbsoluteZ();
 
-	int getAbsoluteEndZ();
+	BigDecimal getAbsoluteEndZ();
 
 	boolean intersects3D(Placement3D point);
 

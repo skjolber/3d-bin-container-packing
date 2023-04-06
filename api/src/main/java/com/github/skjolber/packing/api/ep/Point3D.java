@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api.ep;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.Placement3D;
@@ -13,12 +14,12 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
-			if(o1.minX < o2.minX) {
+			if(o1.minX.compareTo(o2.minX) < 0) {
 				return -1;
 			} else if(o1.minX != o2.minX) {
 				return 1;
 			}
-			return Integer.compare(o2.maxX, o1.maxX);
+			return o2.maxX.compareTo(o1.maxX);
 		}
 	};
 
@@ -26,12 +27,12 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
-			if(o1.minY < o2.minY) {
+			if(o1.minY.compareTo(o2.minY) < 0) {
 				return -1;
 			} else if(o1.minY != o2.minY) {
 				return 1;
 			}
-			return Integer.compare(o2.maxY, o1.maxY);
+			return o2.maxY.compareTo(o1.maxY);
 		}
 	};
 
@@ -39,13 +40,13 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
-			if(o1.minZ < o2.minZ) {
+			if(o1.minZ.compareTo(o2.minZ) < 0) {
 				return -1;
 			} else if(o1.minZ != o2.minZ) {
 				return 1;
 			}
 
-			return Integer.compare(o2.maxZ, o1.maxZ);
+			return o2.maxZ.compareTo(o1.maxZ);
 		}
 	};
 
@@ -54,37 +55,37 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
 
-			if(o1.minX < o2.minX) {
+			if(o1.minX.compareTo(o2.minX) < 0) {
 				return -1;
 			} else if(o1.minX != o2.minX) {
 				return 1;
 			}
 
-			if(o1.minY < o2.minY) {
+			if(o1.minY.compareTo(o2.minY) < 0) {
 				return -1;
 			} else if(o1.minY != o2.minY) {
 				return 1;
 			}
 
-			if(o1.minZ < o2.minZ) {
+			if(o1.minZ.compareTo(o2.minZ) < 0) {
 				return -1;
 			} else if(o1.minZ != o2.minZ) {
 				return 1;
 			}
 
-			if(o1.maxX < o2.maxX) {
+			if(o1.maxX.compareTo(o2.maxX) < 0) {
 				return -1;
 			} else if(o1.maxX != o2.maxX) {
 				return 1;
 			}
 
-			if(o1.maxY < o2.maxY) {
+			if(o1.maxY.compareTo(o2.maxY) < 0) {
 				return -1;
 			} else if(o1.maxY != o2.maxY) {
 				return 1;
 			}
 
-			return Integer.compare(o1.maxZ, o2.maxZ);
+			return o1.maxZ.compareTo(o2.maxZ);
 		}
 	};
 
@@ -92,19 +93,19 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
-			if(o1.minX < o2.minX) {
+			if(o1.minX.compareTo(o2.minX) < 0) {
 				return -1;
 			} else if(o1.minX != o2.minX) {
 				return 1;
 			}
 
-			if(o1.minY < o2.minY) {
+			if(o1.minY.compareTo(o2.minY) < 0) {
 				return -1;
 			} else if(o1.minY != o2.minY) {
 				return 1;
 			}
 
-			return Long.compare(o1.volume, o2.volume);
+			return o1.volume.compareTo(o2.volume);
 		}
 	};
 
@@ -112,37 +113,37 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
-			if(o1.minY < o2.minY) {
+			if(o1.minY.compareTo(o2.minY) < 0) {
 				return -1;
 			} else if(o1.minY != o2.minY) {
 				return 1;
 			}
 
-			if(o1.minZ < o2.minZ) {
+			if(o1.minZ.compareTo(o2.minZ) < 0) {
 				return -1;
 			} else if(o1.minZ != o2.minZ) {
 				return 1;
 			}
 
-			if(o1.minX < o2.minX) {
+			if(o1.minX.compareTo(o2.minX) < 0) {
 				return -1;
 			} else if(o1.minX != o2.minX) {
 				return 1;
 			}
 
-			if(o1.maxY < o2.maxY) {
+			if(o1.maxY.compareTo(o2.maxY) < 0) {
 				return -1;
 			} else if(o1.maxY != o2.maxY) {
 				return 1;
 			}
 
-			if(o1.maxZ < o2.maxZ) {
+			if(o1.maxZ.compareTo(o2.maxZ) < 0) {
 				return -1;
 			} else if(o1.maxZ != o2.maxZ) {
 				return 1;
 			}
 
-			return Integer.compare(o1.maxX, o2.maxX);
+			return o1.maxX.compareTo(o2.maxX);
 		}
 	};
 
@@ -150,37 +151,37 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 
 		@Override
 		public int compare(Point3D<?> o1, Point3D<?> o2) {
-			if(o1.minZ < o2.minZ) {
+			if(o1.minZ.compareTo(o2.minZ) < 0) {
 				return -1;
 			} else if(o1.minZ != o2.minZ) {
 				return 1;
 			}
 
-			if(o1.minX < o2.minX) {
+			if(o1.minX.compareTo(o2.minX) < 0) {
 				return -1;
 			} else if(o1.minX != o2.minX) {
 				return 1;
 			}
 
-			if(o1.minY < o2.minY) {
+			if(o1.minY.compareTo(o2.minY) < 0) {
 				return -1;
 			} else if(o1.minY != o2.minY) {
 				return 1;
 			}
 
-			if(o1.maxZ < o2.maxZ) {
+			if(o1.maxZ.compareTo(o2.maxZ) < 0) {
 				return -1;
 			} else if(o1.maxZ != o2.maxZ) {
 				return 1;
 			}
 
-			if(o1.maxX < o2.maxX) {
+			if(o1.maxX.compareTo(o2.maxX) < 0) {
 				return -1;
 			} else if(o1.maxX != o2.maxX) {
 				return 1;
 			}
 
-			return Integer.compare(o1.maxY, o2.maxY);
+			return o1.maxY.compareTo(o2.maxY);
 		}
 	};
 
@@ -202,11 +203,11 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 		}
 	};
 
-	protected final int minZ;
-	protected int maxZ;
-	protected int dz;
+	protected final BigDecimal minZ;
+	protected BigDecimal maxZ;
+	protected BigDecimal dz;
 
-	public Point3D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+	public Point3D(BigDecimal minX, BigDecimal minY, BigDecimal minZ, BigDecimal maxX, BigDecimal maxY, BigDecimal maxZ) {
 		super(minX, minY, maxX, maxY);
 		/*
 		if(maxZ < minZ) {
@@ -215,138 +216,138 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 		*/
 		this.minZ = minZ;
 		this.maxZ = maxZ;
-		this.dz = maxZ - minZ + 1;
+		this.dz = maxZ.subtract(minZ).add(BigDecimal.ONE);
 
 		calculateVolume();
 	}
 
-	public boolean isSupportedXYPlane(int x, int y) { // i.e. z is fixed
+	public boolean isSupportedXYPlane(BigDecimal x, BigDecimal y) { // i.e. z is fixed
 		return false;
 	}
 
-	public boolean isSupportedYZPlane(int y, int z) { // i.e. x is fixed
+	public boolean isSupportedYZPlane(BigDecimal y, BigDecimal z) { // i.e. x is fixed
 		return false;
 	}
 
-	public boolean isSupportedXZPlane(int x, int z) { // i.e. y is fixed
+	public boolean isSupportedXZPlane(BigDecimal x, BigDecimal z) { // i.e. y is fixed
 		return false;
 	}
 
-	public void setMaxZ(int maxZ) {
-		if(maxX < 0) {
+	public void setMaxZ(BigDecimal maxZ) {
+		if(maxX.compareTo(BigDecimal.ZERO) < 0) {
 			throw new RuntimeException("Cannot set max z to " + maxZ + " for " + minZ + "x" + minY + "x" + minZ);
 		}
 		this.maxZ = maxZ;
 
-		this.dz = maxZ - minZ + 1;
+		this.dz = maxZ.subtract(minZ).add(BigDecimal.ONE);
 
 		calculateVolume();
 	}
 
 	@Override
-	public void setMaxX(int maxX) {
+	public void setMaxX(BigDecimal maxX) {
 		super.setMaxX(maxX);
 		calculateVolume();
 	}
 
 	@Override
-	public void setMaxY(int maxY) {
+	public void setMaxY(BigDecimal maxY) {
 		super.setMaxY(maxY);
 		calculateVolume();
 	}
 
 	private void calculateVolume() {
-		this.volume = (long)dz * (long)dy * (long)dx;
+		this.volume = dz.multiply(dy).multiply(dx);
 	}
 
-	public boolean isWithin(int dx, int dy, int dz) {
-		return dx <= this.dx && dy <= this.dy && dz <= this.dz;
+	public boolean isWithin(BigDecimal dx, BigDecimal dy, BigDecimal dz) {
+		return dx.compareTo(this.dx) <= 0 && dy.compareTo(this.dy) <= 0 && dz.compareTo(this.dz) <= 0;
 	}
 
-	public int getDz() {
+	public BigDecimal getDz() {
 		return dz;
 	}
 
-	public int getMaxZ() {
+	public BigDecimal getMaxZ() {
 		return maxZ;
 	}
 
-	public int getMinZ() {
+	public BigDecimal getMinZ() {
 		return minZ;
 	}
 
 	public boolean intersects(P p) {
-		return !(p.getAbsoluteEndX() < minX || p.getAbsoluteX() > maxX || p.getAbsoluteEndY() < minY || p.getAbsoluteY() > maxY || p.getAbsoluteEndZ() < minZ || p.getAbsoluteZ() > maxZ);
+		return !(p.getAbsoluteEndX().compareTo(minX) < 0 || p.getAbsoluteX().compareTo(maxX) > 0 || p.getAbsoluteEndY().compareTo(minY) < 0 || p.getAbsoluteY().compareTo(maxY) > 0 || p.getAbsoluteEndZ().compareTo(minZ) < 0 || p.getAbsoluteZ().compareTo(maxZ) > 0);
 	}
 
 	public boolean intersects(Point3D<?> point) {
-		return !(point.getMaxX() < minX || point.getMinX() > maxX || point.getMaxY() < minY || point.getMinY() > maxY || point.getMaxZ() < minZ || point.getMinZ() > maxZ);
+		return !(point.getMaxX().compareTo(minX) < 0 || point.getMinX().compareTo(maxX) > 0 || point.getMaxY().compareTo(minY) < 0 || point.getMinY().compareTo(maxY) > 0 || point.getMaxZ().compareTo(minZ) < 0 || point.getMinZ().compareTo(maxZ) > 0);
 	}
 
-	public boolean isYZPlaneEdgeZ(int z) {
+	public boolean isYZPlaneEdgeZ(BigDecimal z) {
 		return false;
 	}
 
-	public boolean isYZPlaneEdgeY(int z) {
+	public boolean isYZPlaneEdgeY(BigDecimal z) {
 		return false;
 	}
 
-	public boolean isXYPlaneEdgeX(int x) {
+	public boolean isXYPlaneEdgeX(BigDecimal x) {
 		return false;
 	}
 
-	public boolean isXYPlaneEdgeY(int y) {
+	public boolean isXYPlaneEdgeY(BigDecimal y) {
 		return false;
 	}
 
-	public boolean isXZPlaneEdgeX(int x) {
+	public boolean isXZPlaneEdgeX(BigDecimal x) {
 		return false;
 	}
 
-	public boolean isXZPlaneEdgeZ(int z) {
+	public boolean isXZPlaneEdgeZ(BigDecimal z) {
 		return false;
 	}
 
-	public boolean shadowedX(int min, int max) {
-		return minX < min && maxX > max;
+	public boolean shadowedX(BigDecimal min, BigDecimal max) {
+		return minX.compareTo(min) < 0 && maxX.compareTo(max) > 0;
 	}
 
-	public boolean shadowedY(int min, int max) {
-		return minY < min && maxY > max;
+	public boolean shadowedY(BigDecimal min, BigDecimal max) {
+		return minY.compareTo(min) < 0 && maxY.compareTo(max) > 0;
 	}
 
-	public boolean shadowedZ(int min, int max) {
-		return minZ < min && maxZ > max;
+	public boolean shadowedZ(BigDecimal min, BigDecimal max) {
+		return minZ.compareTo(min) < 0 && maxZ.compareTo(max) > 0;
 	}
 
-	public boolean shadowsOrSwallowsX(int min, int max) {
-		return minX < max && maxX > min;
+	public boolean shadowsOrSwallowsX(BigDecimal min, BigDecimal max) {
+		return minX.compareTo(max) < 0 && maxX.compareTo(min) > 0;
 	}
 
-	public boolean isShadowedOrSwallowedByY(int min, int max) {
-		return minY < max && maxY > min;
+	public boolean isShadowedOrSwallowedByY(BigDecimal min, BigDecimal max) {
+		return minY.compareTo(max) < 0 && maxY.compareTo(min) > 0;
 	}
 
-	public boolean isShadowedOrSwallowedZ(int min, int max) {
-		return minZ < max && maxZ > min;
+	public boolean isShadowedOrSwallowedZ(BigDecimal min, BigDecimal max) {
+		return minZ.compareTo(max) < 0 && maxZ.compareTo(min) > 0;
 	}
 
-	public boolean swallowsMinY(int min, int max) {
-		return min <= minY && minY <= max;
+	public boolean swallowsMinY(BigDecimal min, BigDecimal max) {
+		return min.compareTo(minY) <= 0 && minY.compareTo(max) <= 0;
 	}
 
-	public boolean swallowsMinX(int min, int max) {
-		return min <= minX && minX <= max;
+	public boolean swallowsMinX(BigDecimal min, BigDecimal max) {
+		return min.compareTo(minX) <= 0 && minX.compareTo(max) <= 0;
 	}
 
-	public boolean swallowsMinZ(int min, int max) {
-		return min <= minZ && minZ <= max;
+	public boolean swallowsMinZ(BigDecimal min, BigDecimal max) {
+		return min.compareTo(minZ) <= 0 && minZ.compareTo(max) <= 0;
 	}
 
-	public abstract Point3D<P> clone(int maxX, int maxY, int maxZ);
+	public abstract Point3D<P> clone(BigDecimal maxX, BigDecimal maxY, BigDecimal maxZ);
 
 	@Override
-	public Point2D<P> clone(int maxX, int maxY) {
+	public Point2D<P> clone(BigDecimal maxX, BigDecimal maxY) {
 		return clone(maxX, maxY, this.maxZ);
 	}
 
@@ -405,7 +406,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	}
 
 	public boolean fits3D(StackValue stackValue) {
-		return !(stackValue.getDx() > dx || stackValue.getDy() > dy || stackValue.getDz() > dz);
+		return !(stackValue.getDx().compareTo(dx) > 0 || stackValue.getDy().compareTo(dy) > 0 || stackValue.getDz().compareTo(dz) > 0);
 	}
 
 	public boolean isMax(Point3D<P> existing) {
@@ -418,41 +419,41 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 				+ "x" + maxZ + "]";
 	}
 
-	public long getVolume() {
+	public BigDecimal getVolume() {
 		return volume;
 	}
 
 	public boolean eclipses(Point3D<P> point) {
-		return minX <= point.getMinX() &&
-				minY <= point.getMinY() &&
-				minZ <= point.getMinZ() &&
-				point.getMaxX() <= maxX &&
-				point.getMaxY() <= maxY &&
-				point.getMaxZ() <= maxZ;
+		return minX.compareTo(point.getMinX()) <= 0 &&
+				minY.compareTo(point.getMinY()) <= 0 &&
+				minZ.compareTo(point.getMinZ()) <= 0 &&
+				point.getMaxX().compareTo(maxX) <= 0 &&
+				point.getMaxY().compareTo(maxY) <= 0 &&
+				point.getMaxZ().compareTo(maxZ) <= 0;
 	}
 
 	public boolean eclipsesX(Point2D<P> point) {
-		return minX <= point.getMinX() && point.getMaxX() <= maxX;
+		return minX.compareTo(point.getMinX()) <= 0 && point.getMaxX().compareTo(maxX) <= 0;
 	}
 
 	public boolean eclipsesY(Point2D<P> point) {
-		return minY <= point.getMinY() && point.getMaxY() <= maxY;
+		return minY.compareTo(point.getMinY()) <= 0 && point.getMaxY().compareTo(maxY) <= 0;
 	}
 
 	public boolean eclipsesZ(Point3D<P> point) {
-		return minZ <= point.getMinZ() && point.getMaxZ() <= maxZ;
+		return minZ.compareTo(point.getMinZ()) <= 0 && point.getMaxZ().compareTo(maxZ) <= 0;
 	}
 
-	public boolean eclipsesMovedX(Point3D<P> point, int x) {
-		return minX <= x && point.getMaxX() <= maxX && eclipsesY(point) && eclipsesZ(point);
+	public boolean eclipsesMovedX(Point3D<P> point, BigDecimal x) {
+		return minX.compareTo(x) <= 0 && point.getMaxX().compareTo(maxX) <= 0 && eclipsesY(point) && eclipsesZ(point);
 	}
 
-	public boolean eclipsesMovedY(Point3D<P> point, int y) {
-		return minY <= y && point.getMaxY() <= maxY && eclipsesX(point) && eclipsesZ(point);
+	public boolean eclipsesMovedY(Point3D<P> point, BigDecimal y) {
+		return minY.compareTo(y) <= 0 && point.getMaxY().compareTo(maxY) <= 0 && eclipsesX(point) && eclipsesZ(point);
 	}
 
-	public boolean eclipsesMovedZ(Point3D<P> point, int z) {
-		return minZ <= z && point.getMaxZ() <= maxZ && eclipsesX(point) && eclipsesY(point);
+	public boolean eclipsesMovedZ(Point3D<P> point, BigDecimal z) {
+		return minZ.compareTo(z) <= 0 && point.getMaxZ().compareTo(maxZ) <= 0 && eclipsesX(point) && eclipsesY(point);
 	}
 
 	//       |                  
@@ -472,7 +473,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |---------x===================
 	//
 
-	public abstract Point3D<P> moveX(int x);
+	public abstract Point3D<P> moveX(BigDecimal x);
 
 	//       |                  
 	//       |                  
@@ -493,7 +494,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |---------x===================
 	//
 
-	public abstract Point3D<P> moveX(int x, P yzSupport);
+	public abstract Point3D<P> moveX(BigDecimal x, P yzSupport);
 
 	//
 	//       |   ║              
@@ -523,7 +524,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |                 
 	//       |---------------------------
 
-	public abstract Point3D<P> moveY(int y);
+	public abstract Point3D<P> moveY(BigDecimal y);
 
 	//
 	//       |   ║              
@@ -553,26 +554,26 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 	//       |                 
 	//       |---------------------------
 
-	public abstract Point3D<P> moveY(int y, P xzSupport);
+	public abstract Point3D<P> moveY(BigDecimal y, P xzSupport);
 
-	public abstract Point3D<P> moveZ(int z);
+	public abstract Point3D<P> moveZ(BigDecimal z);
 
-	public abstract Point3D<P> moveZ(int z, P xySupport);
+	public abstract Point3D<P> moveZ(BigDecimal z, P xySupport);
 
 	public abstract Point3D<P> rotate();
 
-	public long getVolumeAtZ(int zz) {
-		return (long)dx * (long)dy * (maxZ - zz + 1);
+	public BigDecimal getVolumeAtZ(BigDecimal zz) {
+		return dx.multiply(dy).multiply(maxZ.subtract(zz).add(BigDecimal.ONE));
 	}
 
-	public long getVolumeAtMaxZ(int maxZ) {
-		return (long)dx * (long)dy * (maxZ - minZ + 1);
+	public BigDecimal getVolumeAtMaxZ(BigDecimal maxZ) {
+		return dx.multiply(dy).multiply(maxZ.subtract(minZ).add(BigDecimal.ONE));
 	}
 
-	public abstract long calculateXYSupport(int dx, int dy);
+	public abstract BigDecimal calculateXYSupport(BigDecimal dx, BigDecimal dy);
 
-	public abstract long calculateXZSupport(int dx, int dz);
+	public abstract BigDecimal calculateXZSupport(BigDecimal dx, BigDecimal dz);
 
-	public abstract long calculateYZSupport(int dy, int dz);
+	public abstract BigDecimal calculateYZSupport(BigDecimal dy, BigDecimal dz);
 
 }

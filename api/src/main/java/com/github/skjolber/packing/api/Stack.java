@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.api;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 public abstract class Stack implements Serializable {
@@ -27,19 +28,19 @@ public abstract class Stack implements Serializable {
 
 	public abstract void remove(StackPlacement e);
 
-	public long getFreeVolumeLoad() {
-		return containerStackValue.getMaxLoadVolume() - getVolume();
+	public BigDecimal getFreeVolumeLoad() {
+		return containerStackValue.getMaxLoadVolume().subtract(getVolume());
 	}
 
-	public int getFreeWeightLoad() {
-		return containerStackValue.getMaxLoadWeight() - getWeight();
+	public BigDecimal getFreeWeightLoad() {
+		return containerStackValue.getMaxLoadWeight().subtract(getWeight());
 	}
 
-	public abstract int getWeight();
+	public abstract BigDecimal getWeight();
 
-	public abstract int getDz();
+	public abstract BigDecimal getDz();
 
-	public abstract long getVolume();
+	public abstract BigDecimal getVolume();
 
 	public abstract void clear();
 

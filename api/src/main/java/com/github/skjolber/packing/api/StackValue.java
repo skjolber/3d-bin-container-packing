@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.api;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -14,37 +15,37 @@ public abstract class StackValue implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	protected final int dx; // width
-	protected final int dy; // depth
-	protected final int dz; // height
+	protected final BigDecimal dx; // width
+	protected final BigDecimal dy; // depth
+	protected final BigDecimal dz; // height
 
-	protected final long area;
+	protected final BigDecimal area;
 
 	protected final StackConstraint constraint;
 
 	protected final List<Surface> surfaces;
-	protected long volume;
+	protected BigDecimal volume;
 
-	public StackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> surfaces) {
+	public StackValue(BigDecimal dx, BigDecimal dy, BigDecimal dz, StackConstraint constraint, List<Surface> surfaces) {
 		this.dx = dx;
 		this.dy = dy;
 		this.dz = dz;
 		this.constraint = constraint;
 		this.surfaces = surfaces;
 
-		this.area = (long)dx * (long)dy;
-		this.volume = (long)dx * (long)dy * (long)dz;
+		this.area = dx.multiply(dy);
+		this.volume = dx.multiply(dy).multiply(dz);
 	}
 
-	public int getDx() {
+	public BigDecimal getDx() {
 		return dx;
 	}
 
-	public int getDy() {
+	public BigDecimal getDy() {
 		return dy;
 	}
 
-	public int getDz() {
+	public BigDecimal getDz() {
 		return dz;
 	}
 
@@ -59,19 +60,19 @@ public abstract class StackValue implements Serializable {
 		return fitsInside3D(dimension.getDx(), dimension.getDy(), dimension.getDz());
 	}
 
-	public boolean fitsInside3D(int dx, int dy, int dz) {
-		return dx >= this.dx && dy >= this.dy && dz >= this.dz;
+	public boolean fitsInside3D(BigDecimal dx, BigDecimal dy, BigDecimal dz) {
+		return dx.compareTo(this.dx) >= 0 && dy.compareTo(this.dy) >= 0 && dz.compareTo(this.dz) >= 0;
 	}
 
-	public boolean fitsInside2D(int dx, int dy) {
-		return dx >= this.dx && dy >= this.dy;
+	public boolean fitsInside2D(BigDecimal dx, BigDecimal dy) {
+		return dx.compareTo(this.dx) >= 0 && dy.compareTo(this.dy) >= 0;
 	}
 
-	public long getArea() {
+	public BigDecimal getArea() {
 		return area;
 	}
 
-	public long getVolume() {
+	public BigDecimal getVolume() {
 		return volume;
 	}
 

@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 
 public class DefaultContainer extends Container {
@@ -9,7 +10,7 @@ public class DefaultContainer extends Container {
 	protected final ContainerStackValue[] stackValues;
 	protected final Stack stack;
 
-	public DefaultContainer(String id, String description, long volume, int emptyWeight, ContainerStackValue[] stackValues, Stack stack) {
+	public DefaultContainer(String id, String description, BigDecimal volume, BigDecimal emptyWeight, ContainerStackValue[] stackValues, Stack stack) {
 		super(id, description, volume, emptyWeight, getMaxLoadVolume(stackValues), getMaxLoadWeight(stackValues), calculateMinimumArea(stackValues), getMaximumArea(stackValues));
 
 		this.stackValues = stackValues;
@@ -33,10 +34,10 @@ public class DefaultContainer extends Container {
 
 	@Override
 	public boolean canLoad(Stackable stackable) {
-		if(stackable.getVolume() > maxLoadVolume) {
+		if(stackable.getVolume().compareTo(maxLoadVolume) > 0) {
 			return false;
 		}
-		if(stackable.getWeight() > maxLoadWeight) {
+		if(stackable.getWeight().compareTo(maxLoadWeight) > 0) {
 			return false;
 		}
 		for (ContainerStackValue stackValue : stackValues) {
