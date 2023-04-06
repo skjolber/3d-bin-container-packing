@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-public class Issue extends AbstractPackagerTest {
+public class PlainPackagerTest extends AbstractPackagerTest {
 
     private static List<StackableItem> products = Arrays.asList(
             new StackableItem(Box.newBuilder().withDescription("1").withSize(395, 260, 185).withWeight(7).build(), 41),
