@@ -5,6 +5,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPlacement3D;
+import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.points.DefaultExtremePoints3D;
 
 public class DrawPoints3DTest {
@@ -57,7 +58,7 @@ public class DrawPoints3DTest {
 			System.out.println(" " + p.getMinX() + "x" + p.getMinY() + "x" + p.getMinZ() + " " + p.getMaxX() + "x" + p.getMaxY() + "x" + p.getMaxZ());
 		}
 
-		List<Point3D<DefaultPlacement3D>> values = extremePoints.getValuesAsList();
+		List<SimplePoint3D<DefaultPlacement3D>> values = extremePoints.getValuesAsList();
 		for (int i = 0; i < values.size(); i++) {
 			Point3D point3d = values.get(i);
 

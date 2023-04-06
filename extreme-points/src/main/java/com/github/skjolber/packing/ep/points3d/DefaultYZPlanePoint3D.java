@@ -6,7 +6,7 @@ import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.api.ep.YZPlanePoint3D;
 
-public class DefaultYZPlanePoint3D<P extends Placement3D & Serializable> extends Point3D<P> implements YZPlanePoint3D {
+public class DefaultYZPlanePoint3D<P extends Placement3D & Serializable> extends SimplePoint3D<P> implements YZPlanePoint3D {
 
 	private static final long serialVersionUID = 1L;
 
@@ -59,7 +59,7 @@ public class DefaultYZPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> clone(int maxX, int maxY, int maxZ) {
+	public DefaultYZPlanePoint3D<P> clone(int maxX, int maxY, int maxZ) {
 		return new DefaultYZPlanePoint3D<>(
 				minX, minY, minZ,
 				maxX, maxY, maxZ,
@@ -67,19 +67,19 @@ public class DefaultYZPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveX(int x) {
+	public SimplePoint3D<P> moveX(int x) {
 		// xzPlane support is lost
 		return new DefaultPoint3D<>(x, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
-	public Point3D<P> moveX(int x, P yzSupport) {
+	public SimplePoint3D<P> moveX(int x, P yzSupport) {
 		// xzPlane support is lost
 		return new DefaultYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, yzSupport);
 	}
 
 	@Override
-	public Point3D<P> moveY(int y) {
+	public SimplePoint3D<P> moveY(int y) {
 		// xzPlane support is lost
 		if(y <= yzPlane.getAbsoluteEndY()) {
 			return new DefaultYZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, yzPlane);
@@ -88,7 +88,7 @@ public class DefaultYZPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveY(int y, P xzSupport) {
+	public SimplePoint3D<P> moveY(int y, P xzSupport) {
 		// xzPlane support is lost
 		if(y <= yzPlane.getAbsoluteEndY()) {
 			return new DefaultXZPlaneYZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, xzSupport, yzPlane);
@@ -97,7 +97,7 @@ public class DefaultYZPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z) {
+	public SimplePoint3D<P> moveZ(int z) {
 		if(z <= yzPlane.getAbsoluteEndZ()) {
 			return new DefaultYZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, yzPlane);
 		}
@@ -106,7 +106,7 @@ public class DefaultYZPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z, P xySupport) {
+	public SimplePoint3D<P> moveZ(int z, P xySupport) {
 		if(z <= yzPlane.getAbsoluteEndZ()) {
 			return new DefaultXYPlaneYZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, yzPlane, xySupport);
 		}

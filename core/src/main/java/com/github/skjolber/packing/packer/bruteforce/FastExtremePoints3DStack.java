@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
 
 public class FastExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 
-	private static class StackItem<P extends Placement3D> {
+	private static class StackItem<P extends Placement3D & Serializable> {
 		// value for extraction
 		protected Point3D<StackPlacement> point;
 

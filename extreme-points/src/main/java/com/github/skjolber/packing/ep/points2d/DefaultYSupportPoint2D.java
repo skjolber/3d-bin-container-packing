@@ -6,7 +6,7 @@ import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.YSupportPoint2D;
 
-public class DefaultYSupportPoint2D<P extends Placement2D & Serializable> extends Point2D<P> implements YSupportPoint2D {
+public class DefaultYSupportPoint2D<P extends Placement2D & Serializable> extends SimplePoint2D<P> implements YSupportPoint2D {
 
 	private static final long serialVersionUID = 1L;
 	/** range constrained to current minX */
@@ -46,7 +46,7 @@ public class DefaultYSupportPoint2D<P extends Placement2D & Serializable> extend
 	}
 
 	@Override
-	public Point2D<P> moveY(int y) {
+	public SimplePoint2D<P> moveY(int y) {
 		if(y <= ySupport.getAbsoluteEndY()) {
 			return new DefaultYSupportPoint2D<P>(minX, y, maxX, maxY, ySupport);
 		}
@@ -54,7 +54,7 @@ public class DefaultYSupportPoint2D<P extends Placement2D & Serializable> extend
 	}
 
 	@Override
-	public Point2D<P> moveY(int y, P xSupport) {
+	public SimplePoint2D<P> moveY(int y, P xSupport) {
 		if(y <= ySupport.getAbsoluteEndY()) {
 			return new DefaultXYSupportPoint2D<>(minX, y, maxX, maxY, xSupport, ySupport);
 		}
@@ -62,12 +62,12 @@ public class DefaultYSupportPoint2D<P extends Placement2D & Serializable> extend
 	}
 
 	@Override
-	public Point2D<P> moveX(int x, P ySupport) {
+	public SimplePoint2D<P> moveX(int x, P ySupport) {
 		return new DefaultYSupportPoint2D<>(x, minY, maxX, maxY, ySupport);
 	}
 
 	@Override
-	public Point2D<P> moveX(int x) {
+	public SimplePoint2D<P> moveX(int x) {
 		return new DefaultPoint2D<>(x, minY, maxX, maxY);
 	}
 

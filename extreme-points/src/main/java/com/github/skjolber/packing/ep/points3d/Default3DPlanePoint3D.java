@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.ep.XYPlanePoint3D;
 import com.github.skjolber.packing.api.ep.XZPlanePoint3D;
 import com.github.skjolber.packing.api.ep.YZPlanePoint3D;
 
-public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends Point3D<P> implements XZPlanePoint3D, YZPlanePoint3D, XYPlanePoint3D {
+public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends SimplePoint3D<P> implements XZPlanePoint3D, YZPlanePoint3D, XYPlanePoint3D {
 
 	private static final long serialVersionUID = 1L;
 
@@ -128,7 +128,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> clone(int maxX, int maxY, int maxZ) {
+	public Default3DPlanePoint3D<P> clone(int maxX, int maxY, int maxZ) {
 		return new Default3DPlanePoint3D<>(minX, minY, minZ,
 				maxX, maxY, maxZ,
 				yzPlane, xzPlane, xyPlane);
@@ -155,7 +155,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveX(int x) {
+	public SimplePoint3D<P> moveX(int x) {
 		boolean withinXYPlane = x <= xyPlane.getAbsoluteEndX();
 		boolean withinXZPlane = x <= xzPlane.getAbsoluteEndX();
 
@@ -172,7 +172,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveX(int x, P yzSupport) {
+	public SimplePoint3D<P> moveX(int x, P yzSupport) {
 		boolean withinXYPlane = x <= xyPlane.getAbsoluteEndX();
 		boolean withinXZPlane = x <= xzPlane.getAbsoluteEndX();
 
@@ -189,7 +189,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveY(int y) {
+	public SimplePoint3D<P> moveY(int y) {
 		boolean withinXYPlane = y <= xyPlane.getAbsoluteEndY();
 		boolean withinYZPlane = y <= yzPlane.getAbsoluteEndY();
 
@@ -206,7 +206,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveY(int y, P xzSupport) {
+	public SimplePoint3D<P> moveY(int y, P xzSupport) {
 		boolean withinXYPlane = y <= xyPlane.getAbsoluteEndY();
 		boolean withinYZPlane = y <= yzPlane.getAbsoluteEndY();
 
@@ -222,7 +222,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z) {
+	public SimplePoint3D<P> moveZ(int z) {
 		boolean withinXZPlane = z <= xzPlane.getAbsoluteEndZ();
 		boolean withinYZPlane = z <= yzPlane.getAbsoluteEndZ();
 
@@ -240,7 +240,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z, P xySupport) {
+	public SimplePoint3D<P> moveZ(int z, P xySupport) {
 		boolean withinXZPlane = z <= xzPlane.getAbsoluteEndZ();
 		boolean withinYZPlane = z <= yzPlane.getAbsoluteEndZ();
 

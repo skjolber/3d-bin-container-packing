@@ -6,7 +6,7 @@ import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.Point3D;
 
-public class DefaultPoint3D<P extends Placement3D & Serializable> extends Point3D<P> {
+public class DefaultPoint3D<P extends Placement3D & Serializable> extends SimplePoint3D<P> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -15,7 +15,7 @@ public class DefaultPoint3D<P extends Placement3D & Serializable> extends Point3
 	}
 
 	@Override
-	public Point3D<P> clone(int maxX, int maxY, int maxZ) {
+	public DefaultPoint3D<P> clone(int maxX, int maxY, int maxZ) {
 		return new DefaultPoint3D<>(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
@@ -25,32 +25,32 @@ public class DefaultPoint3D<P extends Placement3D & Serializable> extends Point3
 	}
 
 	@Override
-	public Point3D<P> moveX(int x) {
+	public SimplePoint3D<P> moveX(int x) {
 		return new DefaultPoint3D<>(x, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
-	public Point3D<P> moveX(int x, P yzSupport) {
+	public SimplePoint3D<P> moveX(int x, P yzSupport) {
 		return new DefaultYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, yzSupport);
 	}
 
 	@Override
-	public Point3D<P> moveY(int y) {
+	public SimplePoint3D<P> moveY(int y) {
 		return new DefaultPoint3D<>(minX, y, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
-	public Point3D<P> moveY(int y, P xzSupport) {
+	public SimplePoint3D<P> moveY(int y, P xzSupport) {
 		return new DefaultXZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, xzSupport);
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z) {
+	public SimplePoint3D<P> moveZ(int z) {
 		return new DefaultPoint3D<>(minX, minY, z, maxX, maxY, maxZ);
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z, P xySupport) {
+	public SimplePoint3D<P> moveZ(int z, P xySupport) {
 		return new DefaultXYPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xySupport);
 	}
 
@@ -78,5 +78,18 @@ public class DefaultPoint3D<P extends Placement3D & Serializable> extends Point3
 	@Override
 	public long calculateYZSupport(int dy, int dz) {
 		return 0;
+	}
+	
+
+	public boolean isSupportedXYPlane(int x, int y) { // i.e. z is fixed
+		return false;
+	}
+
+	public boolean isSupportedYZPlane(int y, int z) { // i.e. x is fixed
+		return false;
+	}
+
+	public boolean isSupportedXZPlane(int x, int z) { // i.e. y is fixed
+		return false;
 	}
 }

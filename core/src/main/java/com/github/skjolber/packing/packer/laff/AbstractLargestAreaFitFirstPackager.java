@@ -10,8 +10,10 @@ import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.api.StackableFilter;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.ep.StackValuePointFilter;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
@@ -25,13 +27,50 @@ import com.github.skjolber.packing.packer.DefaultPackResult;
  */
 public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<StackPlacement>> extends AbstractPackager<DefaultPackResult, LargestAreaFitFirstPackagerResultBuilder> {
 
-	protected LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, ?> factory;
+	public static StackableFilter FIRST_STACKABLE_FILTER = (best, candidate) -> {
+		// return true if the candidate might be better than the current best
+		return candidate.getMaximumArea() >= best.getMinimumArea();
+	};
 
-	public AbstractLargestAreaFitFirstPackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator,
-			LargestAreaFitFirstPackagerConfigurationBuilderFactory<P, ?> factory) {
+	public static StackableFilter DEFAULT_STACKABLE_FILTER = (best, candidate) -> {
+		// return true if the candidate might be better than the current best
+		return candidate.getVolume() >= best.getVolume();
+	};
+
+	public static StackValuePointFilter DEFAULT_STACK_VALUE_POINT_FILTER = (stackable1, point1, stackValue1, stackable2, point2, stackValue2) -> {
+		if(stackable2.getVolume() == stackable1.getVolume()) {
+			if(stackValue1.getArea() == stackValue2.getArea()) {
+				// closest distance to a wall is better
+
+				int distance1 = Math.min(point1.getDx() - stackValue1.getDx(), point1.getDy() - stackValue1.getDy());
+				int distance2 = Math.min(point2.getDx() - stackValue2.getDx(), point2.getDy() - stackValue2.getDy());
+
+				return distance2 < distance1; // closest is better
+			}
+			return stackValue2.getArea() < stackValue1.getArea(); // smaller is better
+		}
+		return stackable2.getVolume() > stackable1.getVolume(); // larger volume is better 
+	};
+
+	public static StackValuePointFilter FIRST_STACK_VALUE_POINT_FILTER = (stackable1, point1, stackValue1, stackable2, point2, stackValue2) -> {
+		if(stackValue1.getArea() == stackValue2.getArea()) {
+			if(stackValue1.getVolume() == stackValue2.getVolume()) {
+				// closest distance to a wall is better
+
+				int distance1 = Math.min(point1.getDx() - stackValue1.getDx(), point1.getDy() - stackValue1.getDy());
+				int distance2 = Math.min(point2.getDx() - stackValue2.getDx(), point2.getDy() - stackValue2.getDy());
+
+				return distance2 < distance1; // closest is better
+			}
+			return stackValue1.getVolume() < stackValue2.getVolume(); // larger volume is better 
+
+		}
+		return stackValue1.getArea() < stackValue2.getArea(); // larger area is better
+	};
+	
+	
+	public AbstractLargestAreaFitFirstPackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
 		super(checkpointsPerDeadlineCheck, packResultComparator);
-
-		this.factory = factory;
 	}
 
 	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt);
