@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Placement3D;
 
-public class SupportPoint3D {
+public class SupportedXYPlane3D {
 
 	private Point3D point;
 
@@ -12,5 +12,11 @@ public class SupportPoint3D {
 	private int minY;
 	private int minZ;
 
-	private List<Placement3D> placements;
+	private int maxX;
+	private int maxY;
+	private int maxZ;
+
+	private List<Placement3D> supports;
+	
+	
 }
