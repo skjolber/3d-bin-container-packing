@@ -82,10 +82,13 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 
 			int bestPointIndex = -1;
 			int bestIndex = -1;
+			
+			long bestPointSupportPercent = -1L;
 
 			StackValue bestStackValue = null;
 			Stackable bestStackable = null;
 
+			int currentPointsCount = extremePoints3D.getValueCount();
 			for (int i = 0; i < scopedStackables.size(); i++) {
 				Stackable box = scopedStackables.get(i);
 				if(box.getVolume() > maxPointVolume) {
@@ -111,7 +114,6 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 						continue;
 					}
 
-					int currentPointsCount = extremePoints3D.getValueCount();
 					for (int k = 0; k < currentPointsCount; k++) {
 						Point3D<StackPlacement> point3d = extremePoints3D.getValue(k);
 
@@ -119,15 +121,34 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 							continue;
 						}
 
+						long pointSupportPercent; // cache for costly measurement
 						if(bestIndex != -1) {
-							if(!isBetter(bestStackable, extremePoints3D.getValue(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
+							Point3D<StackPlacement> bestPoint = extremePoints3D.getValue(bestPointIndex);
+							
+							if(point3d.getMinZ() > bestPoint.getMinZ()) {
 								continue;
 							}
-
+							
+							pointSupportPercent = calculateXYSupportPercent(extremePoints3D, point3d, stackValue);
+							
+							if(point3d.getMinZ() == bestPoint.getMinZ()) {
+								if(pointSupportPercent < bestPointSupportPercent) {
+									continue;
+								}
+							
+								if(stackValue.getArea() <= bestStackValue.getArea()) {
+									continue;
+								}
+							}
+						} else {
+							pointSupportPercent = calculateXYSupportPercent(extremePoints3D, point3d, stackValue);
 						}
+						
 						if(constraint != null && !constraint.supports(stack, box, stackValue, point3d.getMinX(), point3d.getMinY(), point3d.getMinZ())) {
 							continue;
 						}
+						
+						bestPointSupportPercent = pointSupportPercent;
 						bestPointIndex = k;
 						bestIndex = i;
 						bestStackValue = stackValue;
@@ -139,7 +160,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 			if(bestIndex == -1) {
 				break;
 			}
-
+			
 			scopedStackables.remove(bestIndex);
 			remainingStackables.remove(bestStackable);
 
@@ -168,41 +189,73 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 				stack, remainingStackables.isEmpty(), index);
 	}
 
-	protected boolean isBetter(Stackable referenceStackable, Point3D<StackPlacement> referencePoint, StackValue referenceStackValue, Stackable candidateBox, Point3D<StackPlacement> candidatePoint,
-			StackValue candidateStackValue) {
-		// ********************************************
-		// * Prefer lowest point
-		// ********************************************
+	protected long calculateXYSupportPercent(ExtremePoints3D<StackPlacement> extremePoints3D, Point3D<StackPlacement> referencePoint, StackValue stackValue) {
+		long sum = 0;
 
-		// compare supported area
-		long referenceSupport = referencePoint.calculateXYSupport(referenceStackValue.getDx(), referenceStackValue.getDy());
-		long candidateSupport = candidatePoint.calculateXYSupport(candidateStackValue.getDx(), candidateStackValue.getDy());
-
-		if(candidateSupport == referenceSupport) {
-
-			if(candidatePoint.getMinZ() == referencePoint.getMinZ()) {
-
-				if(candidateStackValue.getArea() == referenceStackValue.getArea()) {
-
-					// compare sideways support	
-					referenceSupport = referencePoint.calculateXZSupport(referenceStackValue.getDx(), referenceStackValue.getDz()) +
-							referencePoint.calculateYZSupport(referenceStackValue.getDy(), referenceStackValue.getDz());
-
-					candidateSupport = candidatePoint.calculateXZSupport(candidateStackValue.getDx(), candidateStackValue.getDz()) +
-							candidatePoint.calculateYZSupport(candidateStackValue.getDy(), candidateStackValue.getDz());
-
-					if(candidateSupport == referenceSupport) {
-						// if everything is equal, the point with the tightest fit 
-						return candidatePoint.getArea() < referencePoint.getArea();
-					}
-					return candidateSupport > referenceSupport;
+		int minX = referencePoint.getMinX();
+		int minY = referencePoint.getMinY();
+		
+		int maxX = minX + stackValue.getDx() - 1; // inclusive
+		int maxY = minY + stackValue.getDy() - 1; // inclusive
+		
+		long max = (maxX - minX + 1) * (maxY - minY + 1);
+		
+		int z = referencePoint.getMinZ() - 1;
+		
+		List<StackPlacement> placements = extremePoints3D.getPlacements();
+		for(StackPlacement stackPlacement : placements) {
+			if(stackPlacement.getAbsoluteEndZ() == z) {
+				
+				// calculate the common area
+				// check too far
+				if(stackPlacement.getAbsoluteX() > maxX) {
+					continue;
 				}
-				return candidateStackValue.getArea() > referenceStackValue.getArea();
-
+				
+				if(stackPlacement.getAbsoluteY() > maxY) {
+					continue;
+				}
+				
+				if(stackPlacement.getAbsoluteEndX() < minX) {
+					continue;
+				}
+				
+				if(stackPlacement.getAbsoluteEndY() < minY) {
+					continue;
+				}
+				
+				// placement can support the stack value
+				
+				// |           
+				// |           |---------|
+				// |           |         | 
+				// |    |-----------|    |
+				// |    |      |xxxx|    |
+				// |    |      -----|----|
+				// |    |           |
+				// |    |-----------| 
+				// |
+				// --------------------------------
+				
+			    int x1 = Math.max(stackPlacement.getAbsoluteX(), minX);
+			    int y1 = Math.max(stackPlacement.getAbsoluteY(), minY);
+			 
+			    // gives top-right point
+			    // of intersection rectangle
+			    int x2 = Math.min(stackPlacement.getAbsoluteEndX(), maxX);
+			    int y2 = Math.min(stackPlacement.getAbsoluteEndY(), maxY);
+				
+			    long intersect = (x2 - x1 + 1) * (y2 - y1 + 1);
+			    
+			    sum += intersect;
+			    
+			    if(sum == max) {
+			    	break;
+			    }
 			}
-			return candidatePoint.getMinZ() < referencePoint.getMinZ();
 		}
-		return candidateSupport > referenceSupport;
+		
+		return (sum * 100) / stackValue.getArea();
 	}
 
 	protected boolean isBetter(Stackable referenceStackable, Stackable potentiallyBetterStackable) {
