@@ -20,7 +20,7 @@ The project is implemented in Java and built using [Maven]. The project is avail
 Add
  
 ```xml
-<3d-bin-container-packing.version>3.0.1</3d-bin-container-packing.version>
+<3d-bin-container-packing.version>3.0.2</3d-bin-container-packing.version>
 ```
 
 and
@@ -44,7 +44,7 @@ For
 
 ```groovy
 ext {
-  containerBinPackingVersion = '3.0.1'
+  containerBinPackingVersion = '3.0.2'
 }
 ```
 
@@ -209,6 +209,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
 
 # History
+ * 3.0.2: Make Plain Packager prefer low z coordinate over supported area.
  * 3.0.1: Various performance improvements.
  * 3.0.0: Support max number of containers (i.e. per container type). Use builders from now on. Various optimizations.
  * 2.1.4: Fix issue #574
