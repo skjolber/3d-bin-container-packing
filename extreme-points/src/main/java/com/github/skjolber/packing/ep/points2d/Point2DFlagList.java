@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.ep.points2d;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -15,10 +16,10 @@ import com.github.skjolber.packing.api.ep.Point2D;
  */
 
 @SuppressWarnings("unchecked")
-public class Point2DFlagList<P extends Placement2D> {
+public class Point2DFlagList<P extends Placement2D & Serializable> {
 
 	private int size = 0;
-	private Point2D<P>[] points = new Point2D[16];
+	private SimplePoint2D<P>[] points = new SimplePoint2D[16];
 	private boolean[] flag = new boolean[16];
 
 	public void ensureAdditionalCapacity(int count) {
@@ -27,7 +28,7 @@ public class Point2DFlagList<P extends Placement2D> {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			Point2D<P>[] nextPoints = new Point2D[size];
+			SimplePoint2D<P>[] nextPoints = new SimplePoint2D[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 
 			boolean[] nextFlag = new boolean[size];
@@ -38,12 +39,12 @@ public class Point2DFlagList<P extends Placement2D> {
 		}
 	}
 
-	public void add(Point2D<P> point) {
+	public void add(SimplePoint2D<P> point) {
 		points[size] = point;
 		size++;
 	}
 
-	public void sort(Comparator<Point2D<?>> comparator) {
+	public void sort(Comparator<SimplePoint2D<?>> comparator) {
 		Arrays.sort(points, 0, size, comparator);
 	}
 
@@ -51,7 +52,7 @@ public class Point2DFlagList<P extends Placement2D> {
 		return size;
 	}
 
-	public Point2D<P> get(int i) {
+	public SimplePoint2D<P> get(int i) {
 		return points[i];
 	}
 
@@ -119,15 +120,15 @@ public class Point2DFlagList<P extends Placement2D> {
 		return index - offset;
 	}
 
-	public List<Point2D<P>> toList() {
-		List<Point2D<P>> list = new ArrayList<>();
+	public List<SimplePoint2D<P>> toList() {
+		List<SimplePoint2D<P>> list = new ArrayList<>();
 		for (int i = 0; i < size; i++) {
 			list.add(points[i]);
 		}
 		return list;
 	}
 
-	public Point2D<P>[] getPoints() {
+	public SimplePoint2D<P>[] getPoints() {
 		return points;
 	}
 

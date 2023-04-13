@@ -10,7 +10,6 @@ import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point3D;
-import com.github.skjolber.packing.api.ep.YZPlanePoint3D;
 
 /**
  * 
@@ -18,7 +17,7 @@ import com.github.skjolber.packing.api.ep.YZPlanePoint3D;
  *
  */
 
-public class ExtremePoints3D<P extends Placement3D & Serializable> implements ExtremePoints<P, Point3D<P>> {
+public class ExtremePoints3D<P extends Placement3D & Serializable> implements ExtremePoints<P, SimplePoint3D<P>> {
 	public static final Comparator<Point3D<?>> COMPARATOR_X = new Comparator<Point3D<?>>() {
 
 		@Override
@@ -53,9 +52,9 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 	protected final IntArrayList moveToYY = new IntArrayList();
 	protected final IntArrayList moveToZZ = new IntArrayList();
 
-	protected final List<Point3D<P>> addedXX = new ArrayList<>(128);
-	protected final List<Point3D<P>> addedYY = new ArrayList<>(128);
-	protected final List<Point3D<P>> addedZZ = new ArrayList<>(128);
+	protected final List<SimplePoint3D<P>> addedXX = new ArrayList<>(128);
+	protected final List<SimplePoint3D<P>> addedYY = new ArrayList<>(128);
+	protected final List<SimplePoint3D<P>> addedZZ = new ArrayList<>(128);
 
 	protected final boolean cloneOnConstrain;
 
@@ -114,7 +113,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		Point3DFlagList<P> values = this.values;
 		Point3DFlagList<P> otherValues = this.otherValues;
 
-		Point3D<P> source = values.get(index);
+		SimplePoint3D<P> source = values.get(index);
 		values.flag(index);
 
 		int xx = placement.getAbsoluteEndX() + 1;
@@ -309,7 +308,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 
 			add: for (int i = 0; i < moveToXXSize; i++) {
 				int currentIndex = moveToXX.get(i);
-				Point3D<P> p = values.get(currentIndex);
+				SimplePoint3D<P> p = values.get(currentIndex);
 				// add point on the other side
 				// with x support
 				for (int k = 0; k < addedXX.size(); k++) {
@@ -319,7 +318,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 					}
 				}
 
-				Point3D<P> added;
+				SimplePoint3D<P> added;
 				if(p.getMinY() < placement.getAbsoluteY() || p.getMinZ() < placement.getAbsoluteZ()) {
 					// too low, no support
 					added = p.moveX(xx);
@@ -351,7 +350,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 			add: for (int i = 0; i < moveToYY.size(); i++) {
 				int currentIndex = moveToYY.get(i);
 
-				Point3D<P> p = values.get(currentIndex);
+				SimplePoint3D<P> p = values.get(currentIndex);
 
 				// add point on the other side
 				// with x support
@@ -362,7 +361,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 					}
 				}
 
-				Point3D<P> added;
+				SimplePoint3D<P> added;
 				if(p.getMinX() < placement.getAbsoluteX() || p.getMinZ() < placement.getAbsoluteZ()) {
 					// too low, no support
 					added = p.moveY(yy);
@@ -396,7 +395,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 			add: for (int i = 0; i < moveToZZ.size(); i++) {
 				int currentIndex = moveToZZ.get(i);
 
-				Point3D<P> p = values.get(currentIndex);
+				SimplePoint3D<P> p = values.get(currentIndex);
 
 				// add point on the other side
 				for (int k = 0; k < addedZZ.size(); k++) {
@@ -406,7 +405,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 					}
 				}
 
-				Point3D<P> added;
+				SimplePoint3D<P> added;
 				if(p.getMinX() < placement.getAbsoluteX() || p.getMinY() < placement.getAbsoluteY()) {
 					// too low, no support
 					added = p.moveZ(zz);
@@ -478,7 +477,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 			Point3DList<P> addZZPoint3d = addZZ.get(i);
 			if(!addZZPoint3d.isEmpty()) {
 				for (int k = 0; k < addZZPoint3d.size(); k++) {
-					Point3D<P> p = addZZPoint3d.get(k);
+					SimplePoint3D<P> p = addZZPoint3d.get(k);
 					if(!isEclipsed(p)) {
 						otherValues.add(p);
 					}
@@ -489,7 +488,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 			Point3DList<P> addYYPoint3d = addYY.get(i);
 			if(!addYYPoint3d.isEmpty()) {
 				for (int k = 0; k < addYYPoint3d.size(); k++) {
-					Point3D<P> p = addYYPoint3d.get(k);
+					SimplePoint3D<P> p = addYYPoint3d.get(k);
 					if(!isEclipsed(p)) {
 						otherValues.add(p);
 					}
@@ -501,7 +500,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				otherValues.add(values.get(i));
 			}
 
-			Point3D<P> constrainXXPoint = constrainXX.get(i);
+			SimplePoint3D<P> constrainXXPoint = constrainXX.get(i);
 			if(constrainXXPoint != null) {
 				if(!isEclipsed(constrainXXPoint)) {
 					otherValues.add(constrainXXPoint);
@@ -509,7 +508,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				// clean up here so we do not need to reset the array
 				constrainXX.clear(i);
 			}
-			Point3D<P> constrainYYPoint = constrainYY.get(i);
+			SimplePoint3D<P> constrainYYPoint = constrainYY.get(i);
 			if(constrainYYPoint != null) {
 				if(!isEclipsed(constrainYYPoint)) {
 					otherValues.add(constrainYYPoint);
@@ -517,7 +516,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				// clean up here so we do not need to reset the array
 				constrainYY.clear(i);
 			}
-			Point3D<P> constrainZZPoint = constrainZZ.get(i);
+			SimplePoint3D<P> constrainZZPoint = constrainZZ.get(i);
 			if(constrainZZPoint != null) {
 				if(!isEclipsed(constrainZZPoint)) {
 					otherValues.add(constrainZZPoint);
@@ -530,7 +529,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		Point3DList<P> addZZPoint3d = addZZ.get(endIndex);
 		if(!addZZPoint3d.isEmpty()) {
 			for (int k = 0; k < addZZPoint3d.size(); k++) {
-				Point3D<P> p = addZZPoint3d.get(k);
+				SimplePoint3D<P> p = addZZPoint3d.get(k);
 				if(!isEclipsed(p)) {
 					otherValues.add(p);
 				}
@@ -541,7 +540,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		Point3DList<P> addYYPoint3d = addYY.get(endIndex);
 		if(!addYYPoint3d.isEmpty()) {
 			for (int k = 0; k < addYYPoint3d.size(); k++) {
-				Point3D<P> p = addYYPoint3d.get(k);
+				SimplePoint3D<P> p = addYYPoint3d.get(k);
 				if(!isEclipsed(p)) {
 					otherValues.add(p);
 				}
@@ -553,7 +552,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 			Point3DList<P> addXXPoint3d = addXX.get(i);
 			if(!addXXPoint3d.isEmpty()) {
 				for (int k = 0; k < addXXPoint3d.size(); k++) {
-					Point3D<P> p = addXXPoint3d.get(k);
+					SimplePoint3D<P> p = addXXPoint3d.get(k);
 					if(p instanceof YZPlanePoint3D) {
 						if(!isEclipsedAtXX(p, xx)) {
 							otherValues.add(p);
@@ -576,7 +575,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		Point3DList<P> addXXPoint3d = addXX.get(values.size());
 		if(!addXXPoint3d.isEmpty()) {
 			for (int k = 0; k < addXXPoint3d.size(); k++) {
-				Point3D<P> p = addXXPoint3d.get(k);
+				SimplePoint3D<P> p = addXXPoint3d.get(k);
 				if(p instanceof YZPlanePoint3D) {
 					if(!isEclipsedAtXX(p, xx)) {
 						otherValues.add(p);
@@ -655,7 +654,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				continue;
 			}
 
-			Point3D<P> point = values.get(i);
+			SimplePoint3D<P> point = values.get(i);
 			if(!withinX(point.getMinX(), placement)) {
 				if(withinZ(point.getMinZ(), placement) && withinY(point.getMinY(), placement)) {
 					if(point.getMinX() < placement.getAbsoluteX()) {
@@ -716,7 +715,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				continue;
 			}
 
-			Point3D<P> point = values.get(i);
+			SimplePoint3D<P> point = values.get(i);
 			if(!withinX(point.getMinX(), placement)) {
 				if(withinZ(point.getMinZ(), placement) && withinY(point.getMinY(), placement)) {
 					if(point.getMinX() < placement.getAbsoluteX()) {
@@ -725,7 +724,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 							long area = (placement.getAbsoluteX() - point.getMinX()) * (long)point.getDy();
 
 							if(area >= minAreaLimit) {
-								Point3D<P> clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+								SimplePoint3D<P> clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
 								constrainXX.set(clone, i);
 							}
 							values.flag(i);
@@ -739,7 +738,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 							long area = (placement.getAbsoluteY() - point.getMinY()) * (long)point.getDx();
 
 							if(area >= minAreaLimit) {
-								Point3D<P> clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+								SimplePoint3D<P> clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
 								constrainYY.set(clone, i);
 							}
 							values.flag(i);
@@ -748,7 +747,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				}
 			} else if(point.getMinZ() < placement.getAbsoluteZ()) { // i.e. if(!withinZ(point.getMinZ(), placement)) {
 				if(point.getMaxZ() >= placement.getAbsoluteZ()) {
-					Point3D<P> clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+					SimplePoint3D<P> clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
 					constrainZZ.set(clone, i);
 					values.flag(i);
 				}
@@ -886,7 +885,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		*/
 
 		for (int i = 0; i < limit; i++) {
-			Point3D<P> point = values.get(i);
+			SimplePoint3D<P> point = values.get(i);
 
 			if(
 				placement.getAbsoluteEndX() < point.getMinX() ||
@@ -968,14 +967,14 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 
 			addX: if(point.getMinX() < placement.getAbsoluteX()) {
 				if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
-					Point3D<P> clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+					SimplePoint3D<P> clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
 						if(values.isFlag(j)) {
 							continue;
 						}
-						Point3D<P> point3d = values.get(j);
+						SimplePoint3D<P> point3d = values.get(j);
 						if(point3d.getDx() > clone.getMinX()) {
 							break;
 						}
@@ -989,7 +988,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 
 					// is the point now eclipsed by new points?
 					for (int j = 0; j < addedXX.size(); j++) {
-						Point3D<P> point3d = addedXX.get(j);
+						SimplePoint3D<P> point3d = addedXX.get(j);
 
 						if(point3d.getVolume() >= clone.getVolume()) {
 							if(point3d.eclipses(clone)) {
@@ -1005,14 +1004,14 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 
 			addY: if(point.getMinY() < placement.getAbsoluteY()) {
 				if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
-					Point3D<P> clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+					SimplePoint3D<P> clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
 						if(values.isFlag(j)) {
 							continue;
 						}
-						Point3D<P> point3d = values.get(j);
+						SimplePoint3D<P> point3d = values.get(j);
 						if(point3d.getDx() > clone.getMinX()) {
 							break;
 						}
@@ -1026,7 +1025,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 
 					// is the point now eclipsed by new points?
 					for (int j = 0; j < addedYY.size(); j++) {
-						Point3D<P> point3d = addedYY.get(j);
+						SimplePoint3D<P> point3d = addedYY.get(j);
 
 						if(point3d.getVolume() >= clone.getVolume()) {
 							if(point3d.eclipses(clone)) {
@@ -1042,14 +1041,14 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 
 			addZ: if(point.getMinZ() < placement.getAbsoluteZ()) {
 				if(!isConstrainedAtMaxZ(point, placement.getAbsoluteZ() - 1)) {
-					Point3D<P> clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+					SimplePoint3D<P> clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
 						if(values.isFlag(j)) {
 							continue;
 						}
-						Point3D<P> point3d = values.get(j);
+						SimplePoint3D<P> point3d = values.get(j);
 						if(point3d.getDx() > clone.getMinX()) {
 							break;
 						}
@@ -1063,7 +1062,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 
 					// is the point now eclipsed by new points?
 					for (int j = 0; j < addedZZ.size(); j++) {
-						Point3D<P> point3d = addedZZ.get(j);
+						SimplePoint3D<P> point3d = addedZZ.get(j);
 
 						if(point3d.getVolume() >= clone.getVolume()) {
 							if(point3d.eclipses(clone)) {
@@ -1097,7 +1096,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		boolean splitZZ = false;
 
 		limitLoop: for (int i = 0; i < limit; i++) {
-			Point3D<P> point = values.get(i);
+			SimplePoint3D<P> point = values.get(i);
 
 			if(
 				placement.getAbsoluteEndZ() < point.getMinZ() ||
@@ -1298,20 +1297,20 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 			//    c         
 
 			if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
-				Point3D<P> clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+				SimplePoint3D<P> clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
 				constrainXX.set(clone, i);
 				addedXX.add(clone);
 				splitXX = true;
 			}
 			if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
-				Point3D<P> clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+				SimplePoint3D<P> clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
 				constrainYY.set(clone, i);
 				addedYY.add(clone);
 				splitYY = true;
 			}
 
 			if(!isConstrainedAtMaxZ(point, placement.getAbsoluteZ() - 1)) {
-				Point3D<P> clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+				SimplePoint3D<P> clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
 				constrainZZ.set(clone, i);
 				addedZZ.add(clone);
 				splitZZ = true;
@@ -1354,11 +1353,11 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		return placements;
 	}
 
-	public Point3D<P> getValue(int i) {
+	public SimplePoint3D<P> getValue(int i) {
 		return values.get(i);
 	}
 
-	public List<Point3D<P>> getValues() {
+	public List<SimplePoint3D<P>> getValues() {
 		return values.toList();
 	}
 
@@ -1367,7 +1366,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		return values.size();
 	}
 
-	public List<Point3D<P>> getValuesAsList() {
+	public List<SimplePoint3D<P>> getValuesAsList() {
 		return values.toList();
 	}
 

@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.ep.points3d;
 
+import java.io.Serializable;
+
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.Point3D;
 
@@ -10,7 +12,7 @@ import com.github.skjolber.packing.api.ep.Point3D;
  */
 
 @SuppressWarnings("unchecked")
-public class Point3DListArray<P extends Placement3D> {
+public class Point3DListArray<P extends Placement3D & Serializable> {
 
 	private static final int INITIAL_CAPACITY = 8;
 
@@ -34,7 +36,7 @@ public class Point3DListArray<P extends Placement3D> {
 		}
 	}
 
-	public void add(Point3D<P> point, int index) {
+	public void add(SimplePoint3D<P> point, int index) {
 		points[index].add(point);
 	}
 

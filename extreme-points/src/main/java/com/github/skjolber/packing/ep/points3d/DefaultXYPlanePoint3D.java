@@ -4,9 +4,8 @@ import java.io.Serializable;
 
 import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.Point3D;
-import com.github.skjolber.packing.api.ep.XYPlanePoint3D;
 
-public class DefaultXYPlanePoint3D<P extends Placement3D & Serializable> extends Point3D<P> implements XYPlanePoint3D {
+public class DefaultXYPlanePoint3D<P extends Placement3D & Serializable> extends SimplePoint3D<P> implements XYPlanePoint3D {
 
 	private static final long serialVersionUID = 1L;
 
@@ -58,7 +57,7 @@ public class DefaultXYPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> clone(int maxX, int maxY, int maxZ) {
+	public DefaultXYPlanePoint3D<P> clone(int maxX, int maxY, int maxZ) {
 		return new DefaultXYPlanePoint3D<>(
 				minX, minY, minZ,
 				maxX, maxY, maxZ,
@@ -66,7 +65,7 @@ public class DefaultXYPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveX(int x) {
+	public SimplePoint3D<P> moveX(int x) {
 		if(x <= xyPlane.getAbsoluteEndX()) {
 			return new DefaultXYPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, xyPlane);
 		}
@@ -75,7 +74,7 @@ public class DefaultXYPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveX(int x, P yzSupport) {
+	public SimplePoint3D<P> moveX(int x, P yzSupport) {
 		if(x <= xyPlane.getAbsoluteEndX()) {
 			return new DefaultXYPlaneYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, yzSupport, xyPlane);
 		}
@@ -84,7 +83,7 @@ public class DefaultXYPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveY(int y) {
+	public SimplePoint3D<P> moveY(int y) {
 		if(y <= xyPlane.getAbsoluteEndY()) {
 			return new DefaultXYPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, xyPlane);
 		}
@@ -93,7 +92,7 @@ public class DefaultXYPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveY(int y, P xzSupport) {
+	public SimplePoint3D<P> moveY(int y, P xzSupport) {
 		if(y <= xyPlane.getAbsoluteEndY()) {
 			return new DefaultXYPlaneXZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, xzSupport, xyPlane);
 		}
@@ -102,13 +101,13 @@ public class DefaultXYPlanePoint3D<P extends Placement3D & Serializable> extends
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z) {
+	public SimplePoint3D<P> moveZ(int z) {
 		// xyPlane support is lost
 		return new DefaultPoint3D<>(minX, minY, z, maxX, maxY, maxZ);
 	}
 
 	@Override
-	public Point3D<P> moveZ(int z, P xySupport) {
+	public SimplePoint3D<P> moveZ(int z, P xySupport) {
 		// xyPlane support is lost
 		return new DefaultXYPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xySupport);
 	}

@@ -1,7 +1,8 @@
-package com.github.skjolber.packing.api.ep;
+package com.github.skjolber.packing.packer.laff;
 
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.api.ep.Point2D;
 
 @SuppressWarnings("rawtypes")
 @FunctionalInterface

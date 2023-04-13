@@ -220,18 +220,6 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 		calculateVolume();
 	}
 
-	public boolean isSupportedXYPlane(int x, int y) { // i.e. z is fixed
-		return false;
-	}
-
-	public boolean isSupportedYZPlane(int y, int z) { // i.e. x is fixed
-		return false;
-	}
-
-	public boolean isSupportedXZPlane(int x, int z) { // i.e. y is fixed
-		return false;
-	}
-
 	public void setMaxZ(int maxZ) {
 		if(maxX < 0) {
 			throw new RuntimeException("Cannot set max z to " + maxZ + " for " + minZ + "x" + minY + "x" + minZ);
@@ -455,110 +443,6 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 		return minZ <= z && point.getMaxZ() <= maxZ && eclipsesX(point) && eclipsesY(point);
 	}
 
-	//       |                  
-	//       |                  
-	//       |                  
-	//       |   |-------|      
-	//       |   |       |      
-	//       |   |       |      
-	//       |---x=========================
-	//
-	//       |                  
-	//       |                  
-	//       |         |-------|
-	//       |         |       |
-	//       |         |       |
-	//       |         |       |
-	//       |---------x===================
-	//
-
-	public abstract Point3D<P> moveX(int x);
-
-	//       |                  
-	//       |                  
-	//       |                  
-	//       |   |-------|      
-	//       |   |       |      
-	//       |   |       |      
-	//       |---x=========================
-	//
-	//       |      added y support        
-	//       |         |         
-	//       |---------║         
-	//       |         ║         
-	//       |         ║-------|
-	//       |         ║       |
-	//       |         ║       |
-	//       |         ║       |
-	//       |---------x===================
-	//
-
-	public abstract Point3D<P> moveX(int x, P yzSupport);
-
-	//
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║-------|      
-	//       |   ║       |      
-	//       |   ║       |      
-	//       |---x-------|----------------
-	//
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║---------|      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   x---------|      
-	//       |                 
-	//       |                 
-	//       |                 
-	//       |                 
-	//       |---------------------------
-
-	public abstract Point3D<P> moveY(int y);
-
-	//
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║-------|      
-	//       |   ║       |      
-	//       |   ║       |      
-	//       |---x-------|----------------
-	//
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║---------|      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   x===================  <-- added xz support
-	//       |                 
-	//       |                 
-	//       |                 
-	//       |                 
-	//       |---------------------------
-
-	public abstract Point3D<P> moveY(int y, P xzSupport);
-
-	public abstract Point3D<P> moveZ(int z);
-
-	public abstract Point3D<P> moveZ(int z, P xySupport);
-
 	public abstract Point3D<P> rotate();
 
 	public long getVolumeAtZ(int zz) {
@@ -569,10 +453,5 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 		return (long)dx * (long)dy * (maxZ - minZ + 1);
 	}
 
-	public abstract long calculateXYSupport(int dx, int dy);
-
-	public abstract long calculateXZSupport(int dx, int dz);
-
-	public abstract long calculateYZSupport(int dy, int dz);
 
 }

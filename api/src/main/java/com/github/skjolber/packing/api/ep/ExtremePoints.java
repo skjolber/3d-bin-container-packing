@@ -1,10 +1,11 @@
 package com.github.skjolber.packing.api.ep;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement2D;
 
-public interface ExtremePoints<P extends Placement2D, Point extends Point2D<P>> {
+public interface ExtremePoints<P extends Placement2D & Serializable, Point extends Point2D<P>> {
 
 	boolean add(int index, P placement);
 

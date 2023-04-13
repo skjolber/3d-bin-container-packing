@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -14,17 +15,17 @@ import com.github.skjolber.packing.api.ep.Point3D;
  */
 
 @SuppressWarnings("unchecked")
-public class Point3DList<P extends Placement3D> {
+public class Point3DList<P extends Placement3D & Serializable> {
 
 	private int size = 0;
-	private Point3D<P>[] points;
+	private SimplePoint3D<P>[] points;
 
 	public Point3DList() {
 		this(16);
 	}
 
 	public Point3DList(int initialSize) {
-		points = new Point3D[initialSize];
+		points = new SimplePoint3D[initialSize];
 	}
 
 	public void ensureAdditionalCapacity(int count) {
@@ -33,13 +34,13 @@ public class Point3DList<P extends Placement3D> {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			Point3D<P>[] nextPoints = new Point3D[size];
+			SimplePoint3D<P>[] nextPoints = new SimplePoint3D[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 			this.points = nextPoints;
 		}
 	}
 
-	public void add(Point3D<P> point) {
+	public void add(SimplePoint3D<P> point) {
 		points[size] = point;
 		size++;
 	}
@@ -53,7 +54,7 @@ public class Point3DList<P extends Placement3D> {
 		size = 0;
 	}
 
-	public Point3D<P> get(int i) {
+	public SimplePoint3D<P> get(int i) {
 		return points[i];
 	}
 
@@ -99,7 +100,7 @@ public class Point3DList<P extends Placement3D> {
 		return super.equals(obj);
 	}
 
-	public Point3D<P>[] getPoints() {
+	public SimplePoint3D<P>[] getPoints() {
 		return points;
 	}
 

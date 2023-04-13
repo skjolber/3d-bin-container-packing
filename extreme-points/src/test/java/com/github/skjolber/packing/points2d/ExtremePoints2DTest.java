@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.points2d;
 
-import static com.github.skjolber.packing.test.assertj.Point2DAssert.assertThat;
+import static com.github.skjolber.packing.points2d.assertj.SimplePoint2DAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;

@@ -18,7 +18,7 @@ import com.github.skjolber.packing.api.ep.Point2D;
  *
  */
 
-public class ExtremePoints2D<P extends Placement2D & Serializable> implements ExtremePoints<P, Point2D<P>> {
+public class ExtremePoints2D<P extends Placement2D & Serializable> implements ExtremePoints<P, SimplePoint2D<P>> {
 
 	public static final Comparator<Point2D<?>> COMPARATOR_X = new Comparator<Point2D<?>>() {
 
@@ -286,7 +286,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 			moveToXX.sortThis(COMPARATOR_MOVE_TO_XX);
 
 			add: for (int i = 0; i < moveToXX.size(); i++) {
-				Point2D<P> p = values.get(moveToXX.get(i));
+				SimplePoint2D<P> p = values.get(moveToXX.get(i));
 				// add point on the other side
 				// with x support
 				for (int k = 0; k < addXX.size(); k++) {
@@ -297,7 +297,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 				}
 
 				// note: the new point might shadow one of the previous points
-				Point2D<P> moveX = p.moveX(xx, placement);
+				SimplePoint2D<P> moveX = p.moveX(xx, placement);
 				addXX.add(moveX);
 			}
 		}
@@ -306,7 +306,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 			moveToYY.sortThis(COMPARATOR_MOVE_TO_YY);
 
 			add: for (int i = 0; i < moveToYY.size(); i++) {
-				Point2D<P> p = values.get(moveToYY.get(i));
+				SimplePoint2D<P> p = values.get(moveToYY.get(i));
 
 				// add point on the other side
 				// with x support
@@ -317,7 +317,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 					}
 				}
 
-				Point2D<P> moveY = p.moveY(yy, placement);
+				SimplePoint2D<P> moveY = p.moveY(yy, placement);
 				addYY.add(moveY);
 			}
 		}
@@ -942,11 +942,11 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		return placements;
 	}
 
-	public Point2D<P> getValue(int i) {
+	public SimplePoint2D<P> getValue(int i) {
 		return values.get(i);
 	}
 
-	public List<Point2D<P>> getValues() {
+	public List<SimplePoint2D<P>> getValues() {
 		return values.toList();
 	}
 

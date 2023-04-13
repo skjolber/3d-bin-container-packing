@@ -11,6 +11,4 @@ public interface Placement2D {
 	int getAbsoluteEndY();
 
 	boolean intersects2D(Placement2D point);
-
-	// List<? extends Placement2D> getSupports2D();
 }

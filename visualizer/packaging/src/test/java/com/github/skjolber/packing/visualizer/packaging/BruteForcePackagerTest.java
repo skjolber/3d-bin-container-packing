@@ -102,5 +102,35 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 
 		write(packList);
 	}
+	
+	@Test
+	void testStackingBinary1() throws Exception {
+
+		List<ContainerItem> containers = ContainerItem
+				.newListBuilder()
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(8, 8, 1).withMaxLoadWeight(100).build(), 1)
+				.build();
+
+		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
+
+		List<StackableItem> products = new ArrayList<>();
+		products.add(new StackableItem(Box.newBuilder().withDescription("J").withSize(4, 4, 1).withRotate3D().withWeight(1).build(), 1)); // 16
+
+		for (int i = 0; i < 8; i++) {
+			products.add(new StackableItem(Box.newBuilder().withDescription("K").withSize(2, 2, 1).withRotate3D().withWeight(1).build(), 1)); // 4 * 8 = 32
+		}
+		for (int i = 0; i < 16; i++) {
+			products.add(new StackableItem(Box.newBuilder().withDescription("K").withSize(1, 1, 1).withRotate3D().withWeight(1).build(), 1)); // 16
+		}
+
+		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(5).build();
+
+		List<Container> packList = result.getContainers();
+		assertThat(packList).hasSize(1);
+
+		Container fits = packList.get(0);
+
+		write(fits);
+	}
 
 }

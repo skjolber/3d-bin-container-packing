@@ -21,6 +21,7 @@ import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPlacement3D;
+import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.points.DefaultExtremePoints2D;
 import com.github.skjolber.packing.points.DefaultExtremePoints3D;
 
@@ -48,7 +49,7 @@ public class DrawPoints2D {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 
-				List<Point3D<DefaultPlacement3D>> values = p.getValuesAsList();
+				List<SimplePoint3D<DefaultPlacement3D>> values = p.getValuesAsList();
 
 				init(values, p.getPlacements(), p.getWidth(), p.getDepth());
 			}

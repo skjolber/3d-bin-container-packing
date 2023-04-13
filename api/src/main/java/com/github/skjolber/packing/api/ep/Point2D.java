@@ -14,20 +14,25 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 
 		@Override
 		public int compare(Point2D<?> o1, Point2D<?> o2) {
-			int x = Integer.compare(o1.minX, o2.minX);
-
-			if(x == 0) {
-				x = Integer.compare(o1.minY, o2.minY);
+			if(o1.minX < o2.minX) {
+				return -1;
+			} else if(o1.minX != o2.minX) {
+				return 1;
 			}
 
-			if(x == 0) {
-				x = -Integer.compare(o1.maxX, o2.maxX);
+			if(o1.minY < o2.minY) {
+				return -1;
+			} else if(o1.minY != o2.minY) {
+				return 1;
 			}
-			if(x == 0) {
-				x = -Integer.compare(o1.maxY, o2.maxY);
+			
+			if(o1.maxX < o2.maxX) {
+				return 1;
+			} else if(o1.maxX != o2.maxX) {
+				return -1;
 			}
-
-			return x;
+			
+			return -Integer.compare(o1.maxY, o2.maxY);
 		}
 	};
 
@@ -35,17 +40,19 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 
 		@Override
 		public int compare(Point2D<?> o1, Point2D<?> o2) {
-			int x = Integer.compare(o1.minX, o2.minX);
-
-			if(x == 0) {
-				x = -Integer.compare(o1.maxX, o2.maxX);
+			if(o1.minX < o2.minX) {
+				return -1;
+			} else if(o1.minX != o2.minX) {
+				return 1;
 			}
 
-			if(x == 0) {
-				x = -Integer.compare(o1.maxY, o2.maxY);
+			if(o1.maxX < o2.maxX) {
+				return 1;
+			} else if(o1.maxX != o2.maxX) {
+				return -1;
 			}
-
-			return x;
+			
+			return -Integer.compare(o1.maxY, o2.maxY);
 		}
 	};
 
@@ -53,52 +60,19 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 
 		@Override
 		public int compare(Point2D<?> o1, Point2D<?> o2) {
-			int x = Integer.compare(o1.minY, o2.minY);
-
-			if(x == 0) {
-				x = -Integer.compare(o1.maxY, o2.maxY);
+			if(o1.minY < o2.minY) {
+				return -1;
+			} else if(o1.minY != o2.minY) {
+				return 1;
 			}
-			if(x == 0) {
-				x = -Integer.compare(o1.maxX, o2.maxX);
+			
+			if(o1.maxY < o2.maxY) {
+				return 1;
+			} else if(o1.maxY != o2.maxY) {
+				return -1;
 			}
 
-			return x;
-		}
-	};
-
-	public static final Comparator<Point2D<?>> X_COMPARATOR = new Comparator<Point2D<?>>() {
-
-		@Override
-		public int compare(Point2D<?> o1, Point2D<?> o2) {
-			int compare = Integer.compare(o1.minX, o2.minX);
-			if(compare == 0) {
-				compare = Integer.compare(o2.maxX, o1.maxX);
-				if(compare == 0) {
-					boolean o1XSupportPoint2D = o1 instanceof XSupportPoint2D;
-					boolean o2XSupportPoint2D = o2 instanceof XSupportPoint2D;
-
-					return Boolean.compare(o1XSupportPoint2D, o2XSupportPoint2D);
-				}
-			}
-			return compare;
-		}
-	};
-
-	public static final Comparator<Point2D<?>> Y_COMPARATOR = new Comparator<Point2D<?>>() {
-
-		@Override
-		public int compare(Point2D<?> o1, Point2D<?> o2) {
-			int compare = Integer.compare(o1.minY, o2.minY);
-			if(compare == 0) {
-				compare = Integer.compare(o2.maxY, o1.maxY);
-				if(compare == 0) {
-					boolean o1YSupportPoint2D = o1 instanceof YSupportPoint2D;
-					boolean o2YSupportPoint2D = o2 instanceof YSupportPoint2D;
-
-					return Boolean.compare(o1YSupportPoint2D, o2YSupportPoint2D);
-				}
-			}
-			return compare;
+			return -Integer.compare(o1.maxX, o2.maxX);
 		}
 	};
 
@@ -326,106 +300,6 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 	public boolean fits2D(StackValue stackValue) {
 		return !(stackValue.getDx() > dx || stackValue.getDy() > dy);
 	}
-
-	//       |                  
-	//       |                  
-	//       |                  
-	//       |   |-------|      
-	//       |   |       |      
-	//       |   |       |      
-	//       |---x=========================
-	//
-	//       |                  
-	//       |                  
-	//       |         |-------|
-	//       |         |       |
-	//       |         |       |
-	//       |         |       |
-	//       |---------x===================
-	//
-
-	public abstract Point2D<P> moveX(int x);
-
-	//       |                  
-	//       |                  
-	//       |                  
-	//       |   |-------|      
-	//       |   |       |      
-	//       |   |       |      
-	//       |---x=========================
-	//
-	//       |      added y support        
-	//       |         |         
-	//       |---------║         
-	//       |         ║         
-	//       |         ║-------|
-	//       |         ║       |
-	//       |         ║       |
-	//       |         ║       |
-	//       |---------x===================
-	//
-
-	public abstract Point2D<P> moveX(int x, P ySupport);
-
-	//
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║-------|      
-	//       |   ║       |      
-	//       |   ║       |      
-	//       |---x-------|----------------
-	//
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║---------|      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   x---------|      
-	//       |                 
-	//       |                 
-	//       |                 
-	//       |                 
-	//       |---------------------------
-
-	public abstract Point2D<P> moveY(int y);
-
-	//
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║-------|      
-	//       |   ║       |      
-	//       |   ║       |      
-	//       |---x-------|----------------
-	//
-	//       |   ║              
-	//       |   ║              
-	//       |   ║              
-	//       |   ║---------|      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   ║         |      
-	//       |   x===================  <-- added x support
-	//       |                 
-	//       |                 
-	//       |                 
-	//       |                 
-	//       |---------------------------
-
-	public abstract Point2D<P> moveY(int y, P xSupport);
 
 	public boolean isInsideY(int yy) {
 		return minY <= yy && yy <= maxY;

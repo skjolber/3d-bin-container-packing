@@ -4,10 +4,8 @@ import java.io.Serializable;
 
 import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.ep.Point2D;
-import com.github.skjolber.packing.api.ep.XSupportPoint2D;
-import com.github.skjolber.packing.api.ep.YSupportPoint2D;
 
-public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> extends Point2D<P> implements XSupportPoint2D, YSupportPoint2D {
+public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> extends SimplePoint2D<P> implements XSupportPoint2D, YSupportPoint2D {
 
 	private static final long serialVersionUID = 1L;
 	private final P xSupport;
@@ -66,7 +64,7 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 				+ ", ySupportMinY=" + getYSupportMinY() + ", ySupportMaxY=" + getYSupportMaxY() + "]";
 	}
 
-	public Point2D<P> clone(int maxX, int maxY) {
+	public SimplePoint2D<P> clone(int maxX, int maxY) {
 		return new DefaultXYSupportPoint2D<P>(minX, minY, maxX, maxY, xSupport, ySupport);
 	}
 
@@ -81,7 +79,7 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 	}
 
 	@Override
-	public Point2D<P> moveY(int y) {
+	public SimplePoint2D<P> moveY(int y) {
 		if(y <= ySupport.getAbsoluteEndY()) {
 			return new DefaultYSupportPoint2D<P>(minX, y, maxX, maxY, ySupport);
 		}
@@ -89,7 +87,7 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 	}
 
 	@Override
-	public Point2D<P> moveX(int x) {
+	public SimplePoint2D<P> moveX(int x) {
 		if(x <= xSupport.getAbsoluteEndX()) {
 			return new DefaultXSupportPoint2D<P>(x, minY, maxX, maxY, xSupport);
 		}
@@ -97,7 +95,7 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 	}
 
 	@Override
-	public Point2D<P> moveX(int x, P ySupport) {
+	public SimplePoint2D<P> moveX(int x, P ySupport) {
 		if(x <= xSupport.getAbsoluteEndX()) {
 			return new DefaultXYSupportPoint2D<P>(x, minY, maxX, maxY, xSupport, ySupport);
 		}
@@ -105,7 +103,7 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 	}
 
 	@Override
-	public Point2D<P> moveY(int y, P xSupport) {
+	public SimplePoint2D<P> moveY(int y, P xSupport) {
 		if(y <= ySupport.getAbsoluteEndY()) {
 			return new DefaultXYSupportPoint2D<P>(minX, y, maxX, maxY, xSupport, ySupport);
 		}

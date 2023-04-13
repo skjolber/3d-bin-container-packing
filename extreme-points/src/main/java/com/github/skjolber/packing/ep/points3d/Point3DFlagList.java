@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Placement3D;
+import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.Point3D;
 
 /**
@@ -16,12 +17,12 @@ import com.github.skjolber.packing.api.ep.Point3D;
  */
 
 @SuppressWarnings("unchecked")
-public class Point3DFlagList<P extends Placement3D> implements Serializable {
+public class Point3DFlagList<P extends Placement3D & Serializable> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	private int size = 0;
-	private Point3D<P>[] points = new Point3D[16];
+	private SimplePoint3D<P>[] points = new SimplePoint3D[16];
 	private boolean[] flag = new boolean[16];
 
 	public void ensureAdditionalCapacity(int count) {
@@ -30,7 +31,7 @@ public class Point3DFlagList<P extends Placement3D> implements Serializable {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			Point3D<P>[] nextPoints = new Point3D[size];
+			SimplePoint3D<P>[] nextPoints = new SimplePoint3D[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 
 			boolean[] nextFlag = new boolean[size];
@@ -41,12 +42,12 @@ public class Point3DFlagList<P extends Placement3D> implements Serializable {
 		}
 	}
 
-	public void add(Point3D<P> point) {
+	public void add(SimplePoint3D<P> point) {
 		points[size] = point;
 		size++;
 	}
 
-	public void add(Point3D<P> point, int index) {
+	public void add(SimplePoint3D<P> point, int index) {
 		points[index] = point;
 		flag[index] = false;
 	}
@@ -59,7 +60,7 @@ public class Point3DFlagList<P extends Placement3D> implements Serializable {
 		return size;
 	}
 
-	public Point3D<P> get(int i) {
+	public SimplePoint3D get(int i) {
 		return points[i];
 	}
 
@@ -107,8 +108,8 @@ public class Point3DFlagList<P extends Placement3D> implements Serializable {
 		return index - offset;
 	}
 
-	public List<Point3D<P>> toList() {
-		List<Point3D<P>> list = new ArrayList<>(size);
+	public List<SimplePoint3D<P>> toList() {
+		List<SimplePoint3D<P>> list = new ArrayList<>(size);
 		for (int i = 0; i < size; i++) {
 			list.add(points[i]);
 		}
@@ -201,7 +202,7 @@ public class Point3DFlagList<P extends Placement3D> implements Serializable {
 		flag[i] = false;
 	}
 
-	public void set(Point3D<P> point, int i) {
+	public void set(SimplePoint3D<P> point, int i) {
 		points[i] = point;
 	}
 
