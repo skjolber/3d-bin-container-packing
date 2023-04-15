@@ -80,3 +80,4 @@ Contact GitHub API Training Shop Blog About
 .jqwik-database
 
 node_modules
+*.releaseBackup

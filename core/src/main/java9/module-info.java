@@ -5,8 +5,8 @@ module com.github.skjolber.packing.core {
 	exports com.github.skjolber.packing.deadline;
 	exports com.github.skjolber.packing.iterator;
 	
-	exports com.github.skjolber.packing.packager;
-	exports com.github.skjolber.packing.packager.bruteforce;
-	exports com.github.skjolber.packing.packager.laff;
-	exports com.github.skjolber.packing.packager.plain;
+	exports com.github.skjolber.packing.packer;
+	exports com.github.skjolber.packing.packer.bruteforce;
+	exports com.github.skjolber.packing.packer.laff;
+	exports com.github.skjolber.packing.packer.plain;
 }
