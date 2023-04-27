@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -15,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.DefaultContainer;
+import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
@@ -224,5 +227,62 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 	public void testAHugeProblemShouldRespectDeadline() {
 		assertDeadlineRespected(FastBruteForcePackager.newBuilder());
 	}
+
+	@Test
+	public void testImpossible1() throws Exception {
+		DefaultContainer container = Container.newBuilder()
+			.withDescription("1")
+			.withSize(18, 12, 12)
+			.withMaxLoadWeight(100000)
+			.withEmptyWeight(0)
+			.build();
+
+		StackableItem b1 = new StackableItem(
+			Box.newBuilder()
+				.withId("b1")
+				.withDescription("b1")
+				.withSize(22, 5, 15)
+				.withWeight(5)
+				.withRotate3D()
+				.build(),
+			1
+		);
+
+		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
+
+		PackagerResult build = packager.newResultBuilder()
+			.withContainers(ContainerItem.newListBuilder()
+				.withContainer(container)
+				.build())
+			.withStackables(b1)
+			.withDeadline(60_000)
+			.build();
+		
+		assertFalse(build.isSuccess());
+	}
+	
+	@Test
+	public void testImpossible2() {
+		// could not pack NonEmptyList(3x7x35 1) (total volume 735) in GroupedContainers(List(too small),2,7,35) (490)
+		List<ContainerItem> containerItems = ContainerItem
+				.newListBuilder()
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2,7,35)
+						.withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.build();
+
+		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
+
+		List<StackableItem> products = Arrays.asList(
+				box(3,7,35,1));
+
+		PackagerResult build = packager
+				.newResultBuilder()
+				.withContainers(containerItems)
+				.withStackables(products)
+				.build();
+
+		assertFalse(build.isSuccess());
+	}
+
 
 }
