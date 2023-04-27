@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/skjolber/3d-bin-container-packing.svg)](https://travis-ci.org/skjolber/3d-bin-container-packing)
+Note: __3.x branch for bug fixes to the 3.x series__
 
 # 3d-bin-container-packing
 
