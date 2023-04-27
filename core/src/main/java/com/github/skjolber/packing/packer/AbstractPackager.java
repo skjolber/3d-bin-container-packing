@@ -155,7 +155,11 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			if(!containerItemIndexes.isEmpty()) {
 
 				P result = pack(containerItemIndexes, adapter, interrupt);
-				if(result != null) {
+				if(result == null) {
+					// timeout
+					return null;
+				}
+				if(!result.isEmpty()) {
 					containerPackResults.add(adapter.accept(result));
 
 					// positive result
