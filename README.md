@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/skjolber/3d-bin-container-packing.svg)](https://travis-ci.org/skjolber/3d-bin-container-packing)
-
 # 3d-bin-container-packing
 
 This library does 3D rectangular bin packing; it attempts to match a set of 3D items to one or more in a set of 3D containers. The result can be constrained to a maximum number of containers.
@@ -20,7 +18,7 @@ The project is implemented in Java and built using [Maven]. The project is avail
 Add
  
 ```xml
-<3d-bin-container-packing.version>3.0.3</3d-bin-container-packing.version>
+<3d-bin-container-packing.version>3.0.4</3d-bin-container-packing.version>
 ```
 
 and
@@ -44,7 +42,7 @@ For
 
 ```groovy
 ext {
-  containerBinPackingVersion = '3.0.3'
+  containerBinPackingVersion = '3.0.4'
 }
 ```
 
@@ -209,6 +207,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
 
 # History
+ * 3.0.4: Partially fix issue #689
  * 3.0.3: Fix module info
  * 3.0.2: Make Plain Packager prefer low z coordinate over supported area.
  * 3.0.1: Various performance improvements.
