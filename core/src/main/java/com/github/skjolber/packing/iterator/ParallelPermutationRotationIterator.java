@@ -47,8 +47,9 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 
 	public void initMinStackableVolume() {
 		this.minStackableVolume = new long[permutations.length]; // i.e. with padding
-
-		calculateMinStackableVolume(0);
+		if(permutations.length > ParallelPermutationRotationIteratorList.PADDING) {
+			calculateMinStackableVolume(0);
+		}
 	}
 
 	public void calculateMinStackableVolume(int offset) {

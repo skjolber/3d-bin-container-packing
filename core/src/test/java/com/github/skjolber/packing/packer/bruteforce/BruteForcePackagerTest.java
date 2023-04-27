@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.DefaultContainer;
+import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
@@ -278,6 +280,39 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	@Disabled
 	public void testAHugeProblemShouldRespectDeadline() {
 		assertDeadlineRespected(BruteForcePackager.newBuilder());
+	}
+	
+	@Test
+	public void testImpossible() throws Exception {
+		DefaultContainer container = Container.newBuilder()
+			.withDescription("1")
+			.withSize(18, 12, 12)
+			.withMaxLoadWeight(100000)
+			.withEmptyWeight(0)
+			.build();
+
+		StackableItem b1 = new StackableItem(
+			Box.newBuilder()
+				.withId("b1")
+				.withDescription("b1")
+				.withSize(22, 5, 15)
+				.withWeight(5)
+				.withRotate3D()
+				.build(),
+			1
+		);
+
+		Packager packager = BruteForcePackager.newBuilder()
+			.build();
+
+		packager.newResultBuilder()
+			.withContainers(ContainerItem.newListBuilder()
+				.withContainer(container)
+				.build())
+			.withStackables(b1)
+			.withDeadline(60_000)
+			.build()
+			.getContainers();
 	}
 
 }

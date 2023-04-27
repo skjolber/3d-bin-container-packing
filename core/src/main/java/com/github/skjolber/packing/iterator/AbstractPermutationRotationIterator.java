@@ -11,6 +11,15 @@ public abstract class AbstractPermutationRotationIterator implements Permutation
 	protected int[] reset;
 
 	public AbstractPermutationRotationIterator(PermutationStackableValue[] matrix) {
+		if(matrix == null) {
+			throw new IllegalStateException();
+		}
+		for (final PermutationStackableValue value : matrix) {
+			if(value == null) {
+				throw new IllegalStateException();
+			}
+		}
+
 		this.matrix = matrix;
 	}
 

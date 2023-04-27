@@ -4,6 +4,7 @@ import static com.github.skjolber.packing.test.assertj.StackablePlacementAssert.
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -252,4 +253,27 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 		assertDeadlineRespected(ParallelBruteForcePackager.newBuilder());
 	}
 
+	@Test
+	public void testImpossible() {
+		// could not pack NonEmptyList(3x7x35 1) (total volume 735) in GroupedContainers(List(too small),2,7,35) (490)
+		List<ContainerItem> containerItems = ContainerItem
+				.newListBuilder()
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2,7,35)
+						.withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.build();
+
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().build();
+
+		List<StackableItem> products = Arrays.asList(
+				box(3,7,35,1));
+
+		PackagerResult build = packager
+				.newResultBuilder()
+				.withContainers(containerItems)
+				.withStackables(products)
+				.build();
+
+		Container fits = build.get(0);
+		assertNull(fits);
+	}
 }

@@ -62,7 +62,9 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 
 		this.minStackableVolume = new long[permutations.length];
 
-		calculateMinStackableVolume(0);
+		if(permutations.length > 0) {
+			calculateMinStackableVolume(0);
+		}
 	}
 
 	public void removePermutations(int count) {
@@ -191,9 +193,9 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		// fit within the container volume
 
 		int maxCount = 0;
-		for (final PermutationStackableValue aMatrix1 : matrix) {
-			if(maxCount < aMatrix1.getCount()) {
-				maxCount = aMatrix1.getCount();
+		for (final PermutationStackableValue value : matrix) {
+			if(maxCount < value.getCount()) {
+				maxCount = value.getCount();
 			}
 		}
 

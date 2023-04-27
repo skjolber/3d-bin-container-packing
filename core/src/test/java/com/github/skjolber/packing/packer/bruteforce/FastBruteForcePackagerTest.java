@@ -224,5 +224,30 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 	public void testAHugeProblemShouldRespectDeadline() {
 		assertDeadlineRespected(FastBruteForcePackager.newBuilder());
 	}
+	
+	@Test
+	void testImpossible() {
+		// could not pack NonEmptyList(3x7x35 1) (total volume 735) in GroupedContainers(List(too small),2,7,35) (490)
+		List<ContainerItem> containerItems = ContainerItem
+				.newListBuilder()
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2,7,35)
+						.withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.build();
+
+		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
+
+		List<StackableItem> products = Arrays.asList(
+				box(3,7,35,1));
+
+		PackagerResult build = packager
+				.newResultBuilder()
+				.withContainers(containerItems)
+				.withStackables(products)
+				.build();
+
+		Container fits = build.get(0);
+		assertNull(fits);
+	}
+
 
 }
