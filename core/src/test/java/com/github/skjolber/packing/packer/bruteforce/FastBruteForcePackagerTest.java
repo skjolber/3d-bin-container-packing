@@ -283,6 +283,30 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 
 		assertFalse(build.isSuccess());
 	}
+	
+	@Test
+	public void testImpossible3() {
+		List<ContainerItem> containerItems = ContainerItem
+				.newListBuilder()
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2,7,35)
+						.withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.build();
+
+		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
+
+		List<StackableItem> products = Arrays.asList(
+				box(1,1,1,1), box(3,7,35,1));
+
+		PackagerResult build = packager
+				.newResultBuilder()
+				.withContainers(containerItems)
+				.withStackables(products)
+				.withMaxContainerCount(3)
+				.build();
+
+		assertFalse(build.isSuccess());
+	}
+
 
 
 }

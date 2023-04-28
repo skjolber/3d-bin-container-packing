@@ -89,12 +89,17 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 			this.interrupt = interrupt;
 
+			int stackableCount = 0;
+			for (StackableItem stackableItem : stackableItems) {
+				stackableCount += stackableItem.getCount();
+			}
+			
 			int count = 0;
 			for (DefaultPermutationRotationIterator iterator : iterators) {
 				count = Math.max(count, iterator.length());
 			}
 
-			this.stackPlacements = getPlacements(count);
+			this.stackPlacements = getPlacements(stackableCount);
 			this.extremePoints3D = new FastExtremePoints3DStack(1, 1, 1, count);
 		}
 

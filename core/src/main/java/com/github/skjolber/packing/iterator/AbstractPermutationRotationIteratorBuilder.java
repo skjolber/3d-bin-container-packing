@@ -81,4 +81,5 @@ public abstract class AbstractPermutationRotationIteratorBuilder<B extends Abstr
 		return results;
 	}
 
+
 }
