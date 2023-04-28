@@ -64,8 +64,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			this.iterators = new DefaultPermutationRotationIterator[containers.size()];
 			this.containerStackValue = new ContainerStackValue[containers.size()];
 
-			int maxIteratorLength = 0;
-
 			for (int i = 0; i < containers.size(); i++) {
 				ContainerItem containerItem = containers.get(i);
 				Container container = containerItem.getContainer();
@@ -85,13 +83,21 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 						.withMaxLoadWeight(stackValue.getMaxLoadWeight())
 						.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
 						.build();
-
-				maxIteratorLength = Math.max(maxIteratorLength, iterators[i].length());
 			}
 
 			this.interrupt = interrupt;
 
-			this.stackPlacements = getPlacements(maxIteratorLength);
+			int stackableCount = 0;
+			for (StackableItem stackableItem : stackableItems) {
+				stackableCount += stackableItem.getCount();
+			}
+			
+			int maxIteratorLength = 0;
+			for (DefaultPermutationRotationIterator iterator : iterators) {
+				maxIteratorLength = Math.max(maxIteratorLength, iterator.length());
+			}
+			
+			this.stackPlacements = getPlacements(stackableCount);
 
 			this.extremePoints3D = new ExtremePoints3DStack(1, 1, 1, maxIteratorLength + 1);
 		}

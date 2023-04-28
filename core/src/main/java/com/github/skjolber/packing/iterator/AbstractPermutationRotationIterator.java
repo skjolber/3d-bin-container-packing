@@ -14,6 +14,10 @@ public abstract class AbstractPermutationRotationIterator implements Permutation
 		this.matrix = matrix;
 	}
 
+	public PermutationStackableValue[] getMatrix() {
+		return matrix;
+	}
+	
 	/**
 	 * Get number of box items within the constraints.
 	 *
