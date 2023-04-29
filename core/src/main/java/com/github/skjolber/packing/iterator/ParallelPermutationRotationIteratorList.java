@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.iterator;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -37,7 +38,9 @@ public class ParallelPermutationRotationIteratorList {
 
 	public void removePermutations(List<Integer> removed) {
 		for (Integer integer : removed) {
-			frequencies[integer]--;
+			if(frequencies[integer] > 0) {
+				frequencies[integer]--;
+			}
 		}
 
 		calculate();
@@ -46,6 +49,10 @@ public class ParallelPermutationRotationIteratorList {
 	private void calculate() {
 		int count = getCount();
 
+		if(count == 0) {
+			return;
+		}
+		
 		int[] reset = new int[PADDING + count];
 
 		long countPermutations;
@@ -70,9 +77,7 @@ public class ParallelPermutationRotationIteratorList {
 			// which also handles zero frequencies
 			System.arraycopy(frequencies, 0, copyOfFrequencies, 0, frequencies.length);
 			int[] permutations = kthPermutation(copyOfFrequencies, count, countPermutations, rank);
-			if(permutations.length < PADDING) {
-				throw new IllegalStateException("Expected size >= " + PADDING + ", found " + permutations.length);
-			}
+
 			workUnits[i].setPermutations(permutations);
 			workUnits[i].setRotations(new int[reset.length]);
 			workUnits[i].setReset(reset);

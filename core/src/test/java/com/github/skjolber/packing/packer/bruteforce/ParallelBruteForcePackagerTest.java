@@ -6,7 +6,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -25,14 +24,13 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
-import com.github.skjolber.packing.packer.AbstractPackagerTest;
-import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
+import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
-public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
+public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 
 	private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory());
 
@@ -252,4 +250,8 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 		assertDeadlineRespected(ParallelBruteForcePackager.newBuilder());
 	}
 
+	@Override
+	protected AbstractPackager createPackager() {
+		return ParallelBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(256).withCheckpointsPerDeadlineCheck(1024).build();
+	}
 }

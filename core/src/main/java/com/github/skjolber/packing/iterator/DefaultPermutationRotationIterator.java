@@ -82,17 +82,19 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	}
 
 	private void calculateMinStackableVolume(int offset) {
-		PermutationRotation last = get(permutations.length - 1);
-
-		minStackableVolume[permutations.length - 1] = last.getValue().getVolume();
-
-		for (int i = permutations.length - 2; i >= offset; i--) {
-			long volume = get(i).getValue().getVolume();
-
-			if(volume < minStackableVolume[i + 1]) {
-				minStackableVolume[i] = volume;
-			} else {
-				minStackableVolume[i] = minStackableVolume[i + 1];
+		if(permutations.length > 0) {
+			PermutationRotation last = get(permutations.length - 1);
+	
+			minStackableVolume[permutations.length - 1] = last.getValue().getVolume();
+	
+			for (int i = permutations.length - 2; i >= offset; i--) {
+				long volume = get(i).getValue().getVolume();
+	
+				if(volume < minStackableVolume[i + 1]) {
+					minStackableVolume[i] = volume;
+				} else {
+					minStackableVolume[i] = minStackableVolume[i + 1];
+				}
 			}
 		}
 	}
@@ -170,12 +172,13 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 
 	public long countRotations() {
 		long n = 1;
-		for (final int rotation : rotations) {
-			if(Long.MAX_VALUE / matrix[rotation].getBoxes().length <= n) {
+		for (int i = 0; i < permutations.length; i++) {
+			PermutationStackableValue value = matrix[permutations[i]];
+			if(Long.MAX_VALUE / value.getBoxes().length <= n) {
 				return -1L;
 			}
 
-			n = n * matrix[rotation].getBoxes().length;
+			n = n * value.getBoxes().length;
 		}
 		return n;
 	}
@@ -193,18 +196,22 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		// fit within the container volume
 
 		int maxCount = 0;
-		for (final PermutationStackableValue value : matrix) {
-			if(maxCount < value.getCount()) {
-				maxCount = value.getCount();
+		for (PermutationStackableValue value : matrix) {
+			if(value != null) {
+				if(maxCount < value.getCount()) {
+					maxCount = value.getCount();
+				}
 			}
 		}
 
 		long n = 1;
 		if(maxCount > 1) {
 			int[] factors = new int[maxCount];
-			for (final PermutationStackableValue aMatrix : matrix) {
-				for (int k = 0; k < aMatrix.getCount(); k++) {
-					factors[k]++;
+			for (PermutationStackableValue value : matrix) {
+				if(value != null) {
+					for (int k = 0; k < value.getCount(); k++) {
+						factors[k]++;
+					}
 				}
 			}
 

@@ -17,17 +17,14 @@ import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.ClonablePackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorListBuilder;
-import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 import com.github.skjolber.packing.packer.PackagerAdapter;
@@ -143,10 +140,10 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		private PackagerInterruptSupplier interrupt;
 		private int containerIndex;
 
-		public RunnableAdapter(int placementsCount, long minStackableItemVolume, long minStackableArea) {
+		public RunnableAdapter(int placementsCount, int maxIteratorLength, long minStackableItemVolume, long minStackableArea) {
 			this.placements = getPlacements(placementsCount);
 
-			this.extremePoints3D = new ExtremePoints3DStack(1, 1, 1, placementsCount + 1);
+			this.extremePoints3D = new ExtremePoints3DStack(1, 1, 1, maxIteratorLength + 1);
 		}
 
 		public void setContainer(Container container) {
@@ -171,79 +168,39 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		}
 	}
 
-	private class ParallelAdapter extends AbstractPackagerAdapter<BruteForcePackagerResult> {
+	private class ParallelAdapter extends AbstractBruteForcePackagerAdapter {
 
-		private final DefaultPermutationRotationIterator[] iterators; // per container
-		private final ParallelPermutationRotationIteratorList[] parallelIterators; // per container
 		private final ContainerStackValue[] containerStackValues;
 		private final RunnableAdapter[] runnables; // per thread
+
+		private final ParallelPermutationRotationIteratorList[] parallelIterators; // per container
+		private final DefaultPermutationRotationIterator[] iterators; // per container
 		private final PackagerInterruptSupplier[] interrupts;
 
-		protected ParallelAdapter(List<StackableItem> stackableItems, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
-			super(containerItems);
+		protected ParallelAdapter(List<StackableItem> stackableItems, List<ContainerItem> containerItems, ContainerStackValue[] containerStackValues, RunnableAdapter[] runnables, DefaultPermutationRotationIterator[] iterators, ParallelPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
+			super(containerItems, stackableItems);
 
-			this.interrupts = new PackagerInterruptSupplier[parallelizationCount];
-			this.containerStackValues = new ContainerStackValue[containerItems.size()];
-
-			// clone nth interrupts so that everything is not slowed down by sharing a single counter
-			if(interrupt instanceof ClonablePackagerInterruptSupplier) {
-				ClonablePackagerInterruptSupplier c = (ClonablePackagerInterruptSupplier)interrupt;
-				for (int i = 0; i < parallelizationCount; i++) {
-					this.interrupts[i] = (PackagerInterruptSupplier)c.clone();
-				}
-			} else {
-				for (int i = 0; i < parallelizationCount; i++) {
-					this.interrupts[i] = interrupt;
-				}
-			}
-
-			int count = 0;
-			for (StackableItem stackable : stackableItems) {
-				count += stackable.getCount();
-			}
-
-			long minStackableItemVolume = getMinStackableItemVolume(stackableItems);
-			long minStackableArea = getMinStackableItemArea(stackableItems);
-
-			runnables = new RunnableAdapter[parallelizationCount];
-			for (int i = 0; i < parallelizationCount; i++) {
-				runnables[i] = new RunnableAdapter(count, minStackableItemVolume, minStackableArea);
-			}
-
-			parallelIterators = new ParallelPermutationRotationIteratorList[containerItems.size()];
-			iterators = new DefaultPermutationRotationIterator[containerItems.size()];
-			for (int i = 0; i < containerItems.size(); i++) {
-				Container container = containerItems.get(i).getContainer();
-				ContainerStackValue stackValue = container.getStackValues()[0];
-
-				containerStackValues[i] = stackValue;
-
-				StackConstraint constraint = stackValue.getConstraint();
-
-				Dimension dimension = new Dimension(stackValue.getLoadDx(), stackValue.getLoadDy(), stackValue.getLoadDz());
-
-				parallelIterators[i] = new ParallelPermutationRotationIteratorListBuilder()
-						.withLoadSize(dimension)
-						.withStackableItems(stackableItems)
-						.withMaxLoadWeight(stackValue.getMaxLoadWeight())
-						.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
-						.withParallelizationCount(parallelizationCount)
-						.build();
-
-				iterators[i] = DefaultPermutationRotationIterator
-						.newBuilder()
-						.withLoadSize(dimension)
-						.withStackableItems(stackableItems)
-						.withMaxLoadWeight(stackValue.getMaxLoadWeight())
-						.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
-						.build();
-			}
+			this.containerStackValues = containerStackValues;
+			this.runnables = runnables;
+			this.parallelIterators = parallelIterators;
+			this.iterators = iterators;
+			this.interrupts = interrupts;
 		}
 
 		@Override
 		public BruteForcePackagerResult attempt(int i, BruteForcePackagerResult currentBest) {
+			// is there enough work to do parallelization?
 			// run on single thread for a small amount of combinations
-			if(iterators[i].countPermutations() * iterators[i].countRotations() > parallelizationCount * 2) { // somewhat conservative, as the number of rotations is unknown
+
+			// the algorithm only splits on permutations
+			boolean multithreaded;
+			if(iterators[i].countPermutations() > parallelizationCount * 2) {
+				multithreaded = iterators[i].countRotations() > 1;
+			} else {
+				multithreaded = false;
+			}
+			
+			if(multithreaded) {
 
 				// interrupt needs not be accurate (i.e. atomic boolean)
 				Boolean[] localInterrupt = new Boolean[32]; // add padding to avoid false sharing
@@ -336,6 +293,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				for (DefaultPermutationRotationIterator it : iterators) {
 					it.removePermutations(p);
 				}
+				
+				// remove adapter inventory
+				removeInventory(p);
 
 				for (RunnableAdapter runner : runnables) {
 					runner.placements = runner.placements.subList(size, runner.placements.size());
@@ -346,20 +306,6 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				}
 			}
 			return container;
-		}
-
-		@Override
-		public List<Integer> getContainers(int maxCount) {
-			DefaultPermutationRotationIterator defaultPermutationRotationIterator = iterators[0];
-			int length = defaultPermutationRotationIterator.length();
-			List<Stackable> boxes = new ArrayList<>(length);
-			for (int i = 0; i < length; i++) {
-				PermutationRotation permutationRotation = defaultPermutationRotationIterator.get(i);
-
-				boxes.add(permutationRotation.getStackable());
-			}
-
-			return getContainers(boxes, maxCount);
 		}
 
 	}
@@ -373,8 +319,77 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
-		return new ParallelAdapter(boxes, containers, interrupt);
+	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<StackableItem> stackableItems, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
+		ContainerStackValue[] containerStackValues = new ContainerStackValue[containerItems.size()];
+
+		ParallelPermutationRotationIteratorList[] parallelIterators = new ParallelPermutationRotationIteratorList[containerItems.size()];
+		DefaultPermutationRotationIterator[] iterators = new DefaultPermutationRotationIterator[containerItems.size()];
+		for (int i = 0; i < containerItems.size(); i++) {
+			Container container = containerItems.get(i).getContainer();
+			ContainerStackValue stackValue = container.getStackValues()[0];
+
+			containerStackValues[i] = stackValue;
+
+			StackConstraint constraint = stackValue.getConstraint();
+
+			Dimension dimension = new Dimension(stackValue.getLoadDx(), stackValue.getLoadDy(), stackValue.getLoadDz());
+
+			parallelIterators[i] = new ParallelPermutationRotationIteratorListBuilder()
+					.withLoadSize(dimension)
+					.withStackableItems(stackableItems)
+					.withMaxLoadWeight(stackValue.getMaxLoadWeight())
+					.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
+					.withParallelizationCount(parallelizationCount)
+					.build();
+
+			iterators[i] = DefaultPermutationRotationIterator
+					.newBuilder()
+					.withLoadSize(dimension)
+					.withStackableItems(stackableItems)
+					.withMaxLoadWeight(stackValue.getMaxLoadWeight())
+					.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
+					.build();
+		}
+
+		// check that all boxes fit in one or more container(s)
+		// otherwise do not attempt packaging
+		if(!AbstractBruteForcePackagerAdapter.hasAtLeastOneContainerForEveryStackable(iterators, stackableItems.size())) {
+			return null;
+		}
+		
+		int maxIteratorLength = 0;
+		for (DefaultPermutationRotationIterator iterator : iterators) {
+			maxIteratorLength = Math.max(maxIteratorLength, iterator.length());
+		}
+		
+		int count = 0;
+		for (StackableItem stackable : stackableItems) {
+			count += stackable.getCount();
+		}
+
+		long minStackableItemVolume = getMinStackableItemVolume(stackableItems);
+		long minStackableArea = getMinStackableItemArea(stackableItems);
+
+		RunnableAdapter[] runnables = new RunnableAdapter[parallelizationCount];
+		for (int i = 0; i < parallelizationCount; i++) {
+			runnables[i] = new RunnableAdapter(count, maxIteratorLength, minStackableItemVolume, minStackableArea);
+		}
+		
+		PackagerInterruptSupplier[] interrupts = new PackagerInterruptSupplier[parallelizationCount];
+
+		// clone nth interrupts so that everything is not slowed down by sharing a single counter
+		if(interrupt instanceof ClonablePackagerInterruptSupplier) {
+			ClonablePackagerInterruptSupplier c = (ClonablePackagerInterruptSupplier)interrupt;
+			for (int i = 0; i < parallelizationCount; i++) {
+				interrupts[i] = (PackagerInterruptSupplier)c.clone();
+			}
+		} else {
+			for (int i = 0; i < parallelizationCount; i++) {
+				interrupts[i] = interrupt;
+			}
+		}
+		
+		return new ParallelAdapter(stackableItems, containerItems, containerStackValues, runnables, iterators, parallelIterators, interrupts);
 	}
 
 }

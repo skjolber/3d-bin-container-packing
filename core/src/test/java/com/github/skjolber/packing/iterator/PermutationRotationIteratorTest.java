@@ -89,6 +89,29 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 	}
 
 	@Test
+	void testNumberOfConstrainedRotationsWithOutOfScopeBox() {
+		Dimension container = new Dimension(null, 4, 4, 4);
+
+		List<StackableItem> products = new ArrayList<>();
+
+		Box box1 = Box.newBuilder().withRotate3D().withSize(1, 2, 3).withDescription("0").withWeight(1).build();
+		Box box2 = Box.newBuilder().withRotate3D().withSize(5, 2, 2).withDescription("0").withWeight(1).build();
+
+		products.add(new StackableItem(box1));
+		products.add(new StackableItem(box2));
+
+		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
+				.newBuilder()
+				.withLoadSize(container)
+				.withStackableItems(products)
+				.withMaxLoadWeight(products.size())
+				.build();
+
+		assertEquals(6, rotator.countRotations());
+	}
+
+	
+	@Test
 	void testNumberOfRotationsForSquare2D() {
 		Dimension container = new Dimension(null, 3, 3, 3);
 

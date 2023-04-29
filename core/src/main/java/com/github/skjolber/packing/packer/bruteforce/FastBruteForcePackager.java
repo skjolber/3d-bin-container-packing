@@ -54,7 +54,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		}
 	}
 
-	private class FastBruteForceAdapter extends AbstractPackagerAdapter<BruteForcePackagerResult> {
+	private class FastBruteForceAdapter extends AbstractBruteForcePackagerAdapter {
 
 		private final ContainerStackValue[] containerStackValue;
 		private final DefaultPermutationRotationIterator[] iterators;
@@ -62,43 +62,24 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		private final FastExtremePoints3DStack extremePoints3D;
 		private List<StackPlacement> stackPlacements;
 
-		public FastBruteForceAdapter(List<StackableItem> stackableItems, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
-			super(containers);
-			this.iterators = new DefaultPermutationRotationIterator[containers.size()];
-			this.containerStackValue = new ContainerStackValue[containers.size()];
-
-			for (int i = 0; i < containers.size(); i++) {
-				Container container = containers.get(i).getContainer();
-
-				ContainerStackValue stackValue = container.getStackValues()[0];
-
-				containerStackValue[i] = stackValue;
-
-				Dimension dimension = new Dimension(stackValue.getDx(), stackValue.getDy(), stackValue.getDz());
-
-				StackConstraint constraint = stackValue.getConstraint();
-
-				iterators[i] = DefaultPermutationRotationIterator
-						.newBuilder()
-						.withLoadSize(dimension)
-						.withStackableItems(stackableItems)
-						.withMaxLoadWeight(stackValue.getMaxLoadWeight())
-						.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
-						.build();
-			}
-
+		public FastBruteForceAdapter(List<ContainerItem> containers, ContainerStackValue[] containerStackValue, DefaultPermutationRotationIterator[] iterators, List<StackableItem> stackableItems, PackagerInterruptSupplier interrupt) {
+			super(containers, stackableItems);
+			
+			this.containerStackValue = containerStackValue;
+			this.iterators = iterators;
 			this.interrupt = interrupt;
 
-			int stackableCount = 0;
-			for (StackableItem stackableItem : stackableItems) {
-				stackableCount += stackableItem.getCount();
-			}
-			
 			int count = 0;
 			for (DefaultPermutationRotationIterator iterator : iterators) {
 				count = Math.max(count, iterator.length());
 			}
-
+			
+			int stackableCount = 0;
+			for(int i = 0; i < stackableItems.size(); i++) {
+				StackableItem stackableItem = stackableItems.get(i);
+				stackableCount += stackableItem.getCount();
+			}			
+			
 			this.stackPlacements = getPlacements(stackableCount);
 			this.extremePoints3D = new FastExtremePoints3DStack(1, 1, 1, count);
 		}
@@ -145,6 +126,10 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				for (PermutationRotationIterator it : iterators) {
 					it.removePermutations(p);
 				}
+				
+				// remove adapter inventory
+				removeInventory(p);
+				
 				stackPlacements = stackPlacements.subList(size, this.stackPlacements.size());
 			} else {
 				stackPlacements = Collections.emptyList();
@@ -153,19 +138,6 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			return container;
 		}
 
-		@Override
-		public List<Integer> getContainers(int maxCount) {
-			DefaultPermutationRotationIterator defaultPermutationRotationIterator = iterators[0];
-			int length = defaultPermutationRotationIterator.length();
-			List<Stackable> boxes = new ArrayList<>(length);
-			for (int i = 0; i < length; i++) {
-				PermutationRotation permutationRotation = defaultPermutationRotationIterator.get(i);
-
-				boxes.add(permutationRotation.getStackable());
-			}
-
-			return getContainers(boxes, maxCount);
-		}
 	}
 
 	public FastBruteForcePackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
@@ -178,8 +150,37 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 	}
 
 	@Override
-	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
-		return new FastBruteForceAdapter(boxes, containers, interrupt);
+	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<StackableItem> stackableItems, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
+		DefaultPermutationRotationIterator[] iterators = new DefaultPermutationRotationIterator[containers.size()];
+		ContainerStackValue[] containerStackValue = new ContainerStackValue[containers.size()];
+
+		for (int i = 0; i < containers.size(); i++) {
+			Container container = containers.get(i).getContainer();
+
+			ContainerStackValue stackValue = container.getStackValues()[0];
+
+			containerStackValue[i] = stackValue;
+
+			Dimension dimension = new Dimension(stackValue.getDx(), stackValue.getDy(), stackValue.getDz());
+
+			StackConstraint constraint = stackValue.getConstraint();
+
+			iterators[i] = DefaultPermutationRotationIterator
+					.newBuilder()
+					.withLoadSize(dimension)
+					.withStackableItems(stackableItems)
+					.withMaxLoadWeight(stackValue.getMaxLoadWeight())
+					.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
+					.build();
+		}
+		
+		// check that all boxes fit in one or more container(s)
+		// otherwise do not attempt packaging
+		if(!AbstractBruteForcePackagerAdapter.hasAtLeastOneContainerForEveryStackable(iterators, stackableItems.size())) {
+			return null;
+		}
+
+		return new FastBruteForceAdapter(containers, containerStackValue, iterators, stackableItems, interrupt);
 	}
 
 	public BruteForcePackagerResult pack(FastExtremePoints3DStack extremePoints, List<StackPlacement> stackPlacements, Container targetContainer, ContainerStackValue containerStackValue,
