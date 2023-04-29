@@ -16,7 +16,6 @@ import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
-import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
@@ -51,7 +50,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		}
 	}
 
-	private class BruteForceAdapter extends AbstractPackagerAdapter<BruteForcePackagerResult> {
+	private class BruteForceAdapter extends AbstractBruteForcePackagerAdapter {
 
 		private final ContainerStackValue[] containerStackValue;
 		private final DefaultPermutationRotationIterator[] iterators;
@@ -59,42 +58,22 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		private final ExtremePoints3DStack extremePoints3D;
 		private List<StackPlacement> stackPlacements;
 
-		public BruteForceAdapter(List<StackableItem> stackableItems, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
-			super(containers);
-			this.iterators = new DefaultPermutationRotationIterator[containers.size()];
-			this.containerStackValue = new ContainerStackValue[containers.size()];
-
-			for (int i = 0; i < containers.size(); i++) {
-				ContainerItem containerItem = containers.get(i);
-				Container container = containerItem.getContainer();
-
-				ContainerStackValue stackValue = container.getStackValues()[0];
-
-				containerStackValue[i] = stackValue;
-
-				StackConstraint constraint = stackValue.getConstraint();
-
-				Dimension dimension = new Dimension(stackValue.getLoadDx(), stackValue.getLoadDy(), stackValue.getLoadDz());
-
-				iterators[i] = DefaultPermutationRotationIterator
-						.newBuilder()
-						.withLoadSize(dimension)
-						.withStackableItems(stackableItems)
-						.withMaxLoadWeight(stackValue.getMaxLoadWeight())
-						.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
-						.build();
-			}
-
+		public BruteForceAdapter(List<ContainerItem> containers, ContainerStackValue[] containerStackValue, DefaultPermutationRotationIterator[] iterators, List<StackableItem> stackableItems, PackagerInterruptSupplier interrupt) {
+			super(containers, stackableItems);
+			
+			this.containerStackValue = containerStackValue;
+			this.iterators = iterators;
 			this.interrupt = interrupt;
-
-			int stackableCount = 0;
-			for (StackableItem stackableItem : stackableItems) {
-				stackableCount += stackableItem.getCount();
-			}
 			
 			int maxIteratorLength = 0;
 			for (DefaultPermutationRotationIterator iterator : iterators) {
 				maxIteratorLength = Math.max(maxIteratorLength, iterator.length());
+			}
+			
+			int stackableCount = 0;
+			for(int i = 0; i < stackableItems.size(); i++) {
+				StackableItem stackableItem = stackableItems.get(i);
+				stackableCount += stackableItem.getCount();
 			}
 			
 			this.stackPlacements = getPlacements(stackableCount);
@@ -134,26 +113,16 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 				for (PermutationRotationIterator it : iterators) {
 					it.removePermutations(p);
 				}
+				
+				// remove adapter inventory
+				removeInventory(p);
+				
 				stackPlacements = stackPlacements.subList(size, this.stackPlacements.size());
 			} else {
 				stackPlacements = Collections.emptyList();
 			}
 
 			return container;
-		}
-
-		@Override
-		public List<Integer> getContainers(int maxCount) {
-			DefaultPermutationRotationIterator defaultPermutationRotationIterator = iterators[0];
-			int length = defaultPermutationRotationIterator.length();
-			List<Stackable> boxes = new ArrayList<>(length);
-			for (int i = 0; i < length; i++) {
-				PermutationRotation permutationRotation = defaultPermutationRotationIterator.get(i);
-
-				boxes.add(permutationRotation.getStackable());
-			}
-
-			return getContainers(boxes, maxCount);
 		}
 
 	}
@@ -163,8 +132,38 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
-		return new BruteForceAdapter(boxes, containers, interrupt);
+	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<StackableItem> stackableItems, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
+		DefaultPermutationRotationIterator[] iterators = new DefaultPermutationRotationIterator[containers.size()];
+		ContainerStackValue[] containerStackValue = new ContainerStackValue[containers.size()];
+
+		for (int i = 0; i < containers.size(); i++) {
+			ContainerItem containerItem = containers.get(i);
+			Container container = containerItem.getContainer();
+
+			ContainerStackValue stackValue = container.getStackValues()[0];
+
+			containerStackValue[i] = stackValue;
+
+			StackConstraint constraint = stackValue.getConstraint();
+
+			Dimension dimension = new Dimension(stackValue.getLoadDx(), stackValue.getLoadDy(), stackValue.getLoadDz());
+
+			iterators[i] = DefaultPermutationRotationIterator
+					.newBuilder()
+					.withLoadSize(dimension)
+					.withStackableItems(stackableItems)
+					.withMaxLoadWeight(stackValue.getMaxLoadWeight())
+					.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
+					.build();
+		}
+		
+		// check that all boxes fit in one or more container(s)
+		// otherwise do not attempt packaging
+		if(!AbstractBruteForcePackagerAdapter.hasAtLeastOneContainerForEveryStackable(iterators, stackableItems.size())) {
+			return null;
+		}
+		
+		return new BruteForceAdapter(containers, containerStackValue, iterators, stackableItems, interrupt);
 	}
 
 }

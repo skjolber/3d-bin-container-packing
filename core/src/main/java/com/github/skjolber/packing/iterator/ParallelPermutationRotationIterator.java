@@ -52,15 +52,18 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 	}
 
 	public void calculateMinStackableVolume(int offset) {
-		PermutationRotation last = matrix[permutations[permutations.length - 1]].getBoxes()[0];
-
-		minStackableVolume[permutations.length - 1] = last.getValue().getVolume();
-		for (int i = permutations.length - 2; i >= offset + ParallelPermutationRotationIteratorList.PADDING; i--) {
-			long volume = matrix[permutations[i]].getBoxes()[0].getValue().getVolume();
-			if(volume < minStackableVolume[i + 1]) {
-				minStackableVolume[i] = volume;
-			} else {
-				minStackableVolume[i] = minStackableVolume[i + 1];
+		if(permutations.length > ParallelPermutationRotationIteratorList.PADDING) {
+			PermutationStackableValue value = matrix[permutations[permutations.length - 1]];
+			PermutationRotation last = value.getBoxes()[0];
+	
+			minStackableVolume[permutations.length - 1] = last.getValue().getVolume();
+			for (int i = permutations.length - 2; i >= offset + ParallelPermutationRotationIteratorList.PADDING; i--) {
+				long volume = matrix[permutations[i]].getBoxes()[0].getValue().getVolume();
+				if(volume < minStackableVolume[i + 1]) {
+					minStackableVolume[i] = volume;
+				} else {
+					minStackableVolume[i] = minStackableVolume[i + 1];
+				}
 			}
 		}
 	}

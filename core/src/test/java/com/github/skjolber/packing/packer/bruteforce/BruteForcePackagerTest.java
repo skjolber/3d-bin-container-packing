@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,13 +29,14 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
+import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
-public class BruteForcePackagerTest extends AbstractPackagerTest {
+public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 
 	@Test
 	void testStackingSquaresOnSquare() {
@@ -311,7 +313,6 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 				.withContainer(container)
 				.build())
 			.withStackables(b1)
-			.withDeadline(60_000)
 			.build();
 		
 		assertFalse(build.isSuccess());		
@@ -363,5 +364,123 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 		assertFalse(build.isSuccess());
 	}
 
+
+	@Test
+	public void testMutuallyExclusiveBoxesAndContainersForMultiContainerResult() throws Exception {
+		DefaultContainer thin = Container.newBuilder()
+			.withDescription("1")
+			.withSize(10, 10, 2)
+			.withMaxLoadWeight(100000)
+			.withEmptyWeight(0)
+			.build();
+
+		DefaultContainer thick = Container.newBuilder()
+				.withDescription("1")
+				.withSize(3, 3, 3)
+				.withMaxLoadWeight(100000)
+				.withEmptyWeight(0)
+				.build();
+
+		StackableItem thinBox = new StackableItem(
+			Box.newBuilder()
+				.withId("b1")
+				.withDescription("b1")
+				.withSize(10, 10, 1)
+				.withWeight(0)
+				.withRotate3D()
+				.build(),
+			2
+		);
+
+		StackableItem thickBox = new StackableItem(
+				Box.newBuilder()
+					.withId("b2")
+					.withDescription("b2")
+					.withSize(3, 3, 3)
+					.withWeight(0)
+					.withRotate3D()
+					.build(),
+				1
+			);
+
+		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
+
+		PackagerResult build = packager.newResultBuilder()
+			.withContainers(ContainerItem.newListBuilder()
+				.withContainers(thin, thick)
+				.build())
+			.withStackables(thinBox, thickBox)
+			.withMaxContainerCount(2)
+			.build();
+		
+		assertTrue(build.isSuccess());		
+	}
+	
+	@Test
+	public void testMutuallyExclusiveBoxesAndContainersForMultiContainerResult2() throws Exception {
+		DefaultContainer thin = Container.newBuilder()
+			.withDescription("1")
+			.withSize(10, 10, 2)
+			.withMaxLoadWeight(100000)
+			.withEmptyWeight(0)
+			.build();
+
+		DefaultContainer thick = Container.newBuilder()
+				.withDescription("1")
+				.withSize(3, 3, 3)
+				.withMaxLoadWeight(100000)
+				.withEmptyWeight(0)
+				.build();
+
+		StackableItem thinBox1 = new StackableItem(
+			Box.newBuilder()
+				.withId("b1")
+				.withDescription("b1")
+				.withSize(10, 10, 1)
+				.withWeight(0)
+				.withRotate3D()
+				.build(),
+			1
+		);
+		
+		StackableItem thinBox2 = new StackableItem(
+				Box.newBuilder()
+					.withId("b1")
+					.withDescription("b1")
+					.withSize(10, 10, 1)
+					.withWeight(0)
+					.withRotate3D()
+					.build(),
+				1
+			);
+
+		StackableItem thickBox = new StackableItem(
+				Box.newBuilder()
+					.withId("b2")
+					.withDescription("b2")
+					.withSize(3, 3, 3)
+					.withWeight(0)
+					.withRotate3D()
+					.build(),
+				1
+			);
+
+		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
+
+		PackagerResult build = packager.newResultBuilder()
+			.withContainers(ContainerItem.newListBuilder()
+				.withContainers(thin, thick)
+				.build())
+			.withStackables(thinBox1, thickBox, thinBox2)
+			.withMaxContainerCount(2)
+			.build();
+		
+		assertTrue(build.isSuccess());		
+	}
+
+	@Override
+	protected AbstractPackager createPackager() {
+		return BruteForcePackager.newBuilder().build();
+	}
 
 }

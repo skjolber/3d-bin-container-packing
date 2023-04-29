@@ -16,4 +16,5 @@ public interface PackagerAdapter<T extends PackResult> {
 	Container accept(T result);
 
 	List<Integer> getContainers(int maxCount);
+	
 }

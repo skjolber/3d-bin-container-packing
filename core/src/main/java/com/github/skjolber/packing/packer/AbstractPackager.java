@@ -42,7 +42,8 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		this.packResultComparator = packResultComparator;
 	}
 
-	protected P pack(List<Integer> containerItemIndexes, PackagerAdapter<P> adapter, PackagerInterruptSupplier interrupt) {
+	// pack in single container
+	protected P packSingle(List<Integer> containerItemIndexes, PackagerAdapter<P> adapter, PackagerInterruptSupplier interrupt) {
 		if(containerItemIndexes.size() <= 2) {
 			for (int i = 0; i < containerItemIndexes.size(); i++) {
 				if(interrupt.getAsBoolean()) {
@@ -127,7 +128,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 				}
 			}
 		}
-		return null;
+		return (P) EMPTY_PACK_RESULT;
 	}
 
 	public List<Container> packList(List<StackableItem> products, List<ContainerItem> containers, int limit) {
@@ -146,6 +147,10 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	public List<Container> pack(List<StackableItem> boxes, List<ContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) {
 		PackagerAdapter<P> adapter = adapter(boxes, containerItems, interrupt);
 
+		if(adapter == null) {
+			return Collections.emptyList();
+		}
+		
 		List<Container> containerPackResults = new ArrayList<>();
 
 		do {
@@ -154,7 +159,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			List<Integer> containerItemIndexes = adapter.getContainers(1);
 			if(!containerItemIndexes.isEmpty()) {
 
-				P result = pack(containerItemIndexes, adapter, interrupt);
+				P result = packSingle(containerItemIndexes, adapter, interrupt);
 				if(result == null) {
 					// timeout
 					return null;
@@ -165,6 +170,8 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 					// positive result
 					return containerPackResults;
 				}
+				
+				// TODO any way to reuse partial results as the current best result?
 			}
 
 			// one or more containers
@@ -199,6 +206,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 				}
 
 				P result = adapter.attempt(containerItemIndex, best);
+
 				if(result == null) {
 					// timeout, unless already have a result ready
 					if(best != null && best.containsLastStackable()) {
