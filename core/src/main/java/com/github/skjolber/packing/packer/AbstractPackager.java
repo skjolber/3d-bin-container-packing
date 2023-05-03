@@ -63,8 +63,10 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		} else {
 			// perform a binary search among the available containers
 			// the list is ranked from most desirable to least.
-			PackResult[] results = new PackResult[containerItemIndexes.size()];
-			boolean[] checked = new boolean[results.length];
+			// while the search finds a baseline, we really need to check all the containers
+			// at a lower index before the optional container is located.
+			
+			PackResult[] results = new PackResult[containerItemIndexes.get(containerItemIndexes.size() - 1) + 1];
 
 			BinarySearchIterator iterator = new BinarySearchIterator();
 
@@ -75,18 +77,17 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 				int bestIndex = Integer.MAX_VALUE;
 
 				do {
-					int next = iterator.next();
-					int mid = containerItemIndexes.get(next);
+					int mid = iterator.next();
+					int nextContainerItemIndex = containerItemIndexes.get(mid);
 
-					P result = adapter.attempt(mid, bestResult);
+					P result = adapter.attempt(nextContainerItemIndex, bestResult);
 					if(result == null) {
 						// timeout 
 						// return best result so far, whatever it is
 						break search;
 					}
-					checked[mid] = true;
 					if(result.containsLastStackable()) {
-						results[mid] = result;
+						results[nextContainerItemIndex] = result;
 
 						iterator.lower();
 
@@ -95,35 +96,38 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 							bestResult = result;
 						}
 					} else {
+						// count as empty
+						results[nextContainerItemIndex] = EMPTY_PACK_RESULT;
+								
 						iterator.higher();
 					}
 					if(interrupt.getAsBoolean()) {
 						break search;
 					}
 				} while (iterator.hasNext());
-
-				// halt when we have a result, and checked all containers at the lower indexes
+				
 				for (int i = 0; i < containerItemIndexes.size(); i++) {
-					Integer integer = containerItemIndexes.get(i);
-					if(results[integer] != null) {
-						// remove end items; we already have a better match
-						while (containerItemIndexes.size() > i) {
-							containerItemIndexes.remove(containerItemIndexes.size() - 1);
+					Integer nextContainerItemIndex = containerItemIndexes.get(i);
+					if(results[nextContainerItemIndex] != null) {
+						if(!results[nextContainerItemIndex].isEmpty()) {
+							// remove containers at lower indexes; we already have a better match
+							while (containerItemIndexes.size() > i) {
+								containerItemIndexes.remove(containerItemIndexes.size() - 1);
+							}
+							break;
 						}
-						break;
-					}
-
-					// remove item
-					if(checked[integer]) {
+						
+						// remove container which could not fit all the items
 						containerItemIndexes.remove(i);
 						i--;
 					}
 				}
+				// halt when not more containers to check
 			} while (!containerItemIndexes.isEmpty());
 
 			// return the best, if any
 			for (final PackResult result : results) {
-				if(result != null) {
+				if(result != null && !result.isEmpty()) {
 					return (P)result;
 				}
 			}

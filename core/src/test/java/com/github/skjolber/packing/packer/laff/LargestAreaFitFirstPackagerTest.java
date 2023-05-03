@@ -8,7 +8,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -359,5 +361,101 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	public void testAHugeProblemShouldRespectDeadline() {
 		assertDeadlineRespected(LargestAreaFitFirstPackager.newBuilder());
 	}
+	
+	@Test
+	public void testIssue698() {
+		Container container1 = Container.newBuilder()
+				.withId("1")
+				.withDescription("Test container 1")
+				.withSize(145, 220, 35)
+				.withEmptyWeight(0)
+				.withMaxLoadWeight(5000)
+				.build();
+
+		Container container2 = Container.newBuilder()
+				.withId("2")
+				.withDescription("Test container 2")
+				.withSize(160, 220, 77)
+				.withEmptyWeight(0)
+				.withMaxLoadWeight(5000)
+				.build();
+
+		Container container3 = Container.newBuilder()
+				.withId("3")
+				.withDescription("Test container 3")
+				.withSize(225, 310, 102)
+				.withEmptyWeight(0)
+				.withMaxLoadWeight(5000)
+				.build();
+
+		Container container4 = Container.newBuilder()
+				.withId("4")
+				.withDescription("Test container 4")
+				.withSize(200, 250, 150)
+				.withEmptyWeight(0)
+				.withMaxLoadWeight(5000)
+				.build();
+
+		Container container5 = Container.newBuilder()
+				.withId("5")
+				.withDescription("Test container 5")
+				.withSize(230, 230, 230)
+				.withEmptyWeight(0)
+				.withMaxLoadWeight(5000)
+				.build();
+
+		Container container6 = Container.newBuilder()
+				.withId("6")
+				.withDescription("Test container 6")
+				.withSize(215, 305, 250)
+				.withEmptyWeight(0)
+				.withMaxLoadWeight(5000)
+				.build();
+
+		Container container7 = Container.newBuilder()
+				.withId("7")
+				.withDescription("Test container 7")
+				.withSize(305, 305, 305)
+				.withEmptyWeight(0)
+				.withMaxLoadWeight(5000)
+				.build();
+
+		Container container8 = Container.newBuilder()
+				.withId("8")
+				.withDescription("Test container 8")
+				.withSize(375, 375, 300)
+				.withEmptyWeight(0)
+				.withMaxLoadWeight(5000)
+				.build();
+
+		List<Container> containers = Arrays.asList(container1, container2, container3, container4, container5,
+				container6, container7, container8).stream().sorted(Comparator.comparing(Container::getVolume))
+				.collect(Collectors.toList());
+
+		List<ContainerItem> containerItems = ContainerItem.newListBuilder()
+				.withContainers(containers)
+				.build();
+
+		Box box = Box.newBuilder()
+				.withId("test item")
+				.withSize(15, 130, 130)
+				.withRotate3D()
+				.withWeight(3)
+				.build();
+
+		StackableItem stackableItems = new StackableItem(box, 20);
+		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager
+				.newBuilder()
+				.build();
+		PackagerResult result = packager
+				.newResultBuilder()
+				.withMaxContainerCount(20)
+				.withContainers(containerItems)
+				.withStackables(stackableItems)
+				.build();
+
+		assertEquals(true, result.isSuccess());
+	}
+	
 
 }
