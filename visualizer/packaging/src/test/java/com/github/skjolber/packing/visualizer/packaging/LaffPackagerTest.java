@@ -1,0 +1,144 @@
+package com.github.skjolber.packing.visualizer.packaging;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
+import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
+
+public class LaffPackagerTest extends AbstractPackagerTest {
+
+	private List<ContainerItem> containers = ContainerItem
+			.newListBuilder()
+			.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build())
+			.build();
+
+	@Test
+	public void testPackager() throws Exception {
+		List<ContainerItem> containers = ContainerItem
+				.newListBuilder()
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 1).withMaxLoadWeight(100).build(), 1)
+				.build();
+
+		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
+
+		List<StackableItem> products = new ArrayList<>();
+
+		products.add(new StackableItem(Box.newBuilder().withDescription("A").withSize(2, 1, 1).withRotate3D().withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("B").withSize(2, 1, 1).withRotate3D().withWeight(1).build(), 1));
+		products.add(new StackableItem(Box.newBuilder().withDescription("C").withSize(2, 1, 1).withRotate3D().withWeight(1).build(), 1));
+
+		PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products).build();
+		if(build.isSuccess()) {
+			write(build.getContainers());
+		} else {
+			fail();
+		}
+	}
+
+	@Test
+	void issue433() throws Exception {
+		Container container = Container
+				.newBuilder()
+				.withDescription("1")
+				.withSize(14, 195, 74)
+				.withEmptyWeight(0)
+				.withMaxLoadWeight(100)
+				.build();
+
+		List<ContainerItem> containers = ContainerItem
+				.newListBuilder()
+				.withContainer(container)
+				.build();
+
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager
+				.newBuilder()
+				.build();
+
+		List<StackableItem> products = Arrays.asList(
+				new StackableItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 20));
+
+		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(1).build();
+		Container pack = result.get(0);
+
+		assertNotNull(pack);
+
+		write(pack);
+	}
+
+
+	private static List<StackableItem> products33 = Arrays.asList(
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(56, 1001, 1505).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(360, 1100, 120).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(210, 210, 250).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(210, 210, 250).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(70, 70, 120).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(50, 80, 80).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(20, 20, 500).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(50, 230, 50).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(40, 40, 50).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(50, 50, 60).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(1000, 32, 32).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(2000, 40, 40).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(40, 40, 60).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(60, 90, 40).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(56, 40, 20).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(100, 280, 380).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(2500, 600, 80).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(125, 125, 85).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(80, 180, 360).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(25, 140, 140).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(115, 150, 170).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(76, 76, 222).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(326, 326, 249).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(70, 130, 240).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(330, 120, 490).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(9, 23, 2500).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(2000, 20, 20).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(50, 50, 235).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(1000, 1000, 1000).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(30, 66, 230).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(30, 66, 230).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(1000, 1000, 1000).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(90, 610, 210).withWeight(0).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(144, 630, 1530).withWeight(0).build(), 1));
+
+	@Test
+	@Disabled
+	public void testLAFFPackager() throws Exception {
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
+
+		PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products33).build();
+		if(build.isSuccess()) {
+			write(build.getContainers());
+		} else {
+			fail();
+		}
+	}
+
+	protected void write(PackagerResult result) throws Exception {
+		write(result, false);
+	}
+
+	protected void write(Container container) throws Exception {
+		write(container, false);
+	}
+
+	protected void write(List<Container> packList) throws Exception {
+		write(packList, false);
+	}
+	
+}

@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.ContainerVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
@@ -19,6 +20,12 @@ import com.github.skjolber.packing.visualizer.api.packaging.StackVisualizer;
 
 public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingResultVisualizerFactory<Container> {
 
+	protected final boolean calculatePoints;
+	
+	public DefaultPackagingResultVisualizerFactory(boolean calculatePoints) {
+		this.calculatePoints = calculatePoints;
+	}
+	
 	public PackagingResultVisualizer visualize(List<Container> inputContainers) {
 		int step = 0;
 		PackagingResultVisualizer visualization = new PackagingResultVisualizer();
@@ -69,24 +76,26 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 				stackPlacement.setStackable(boxVisualization);
 				stackPlacement.setStep(step);
 
-				int pointIndex = extremePoints.findPoint(placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ());
-
-				extremePoints.add(pointIndex, placement);
-
-				for (Point3D<StackPlacement> point : extremePoints.getValues()) {
-					PointVisualizer p = new PointVisualizer();
-
-					p.setX(point.getMinX());
-					p.setY(point.getMinY());
-					p.setZ(point.getMinZ());
-
-					p.setDx(point.getMaxX() - point.getMinX() + 1);
-					p.setDy(point.getMaxY() - point.getMinY() + 1);
-					p.setDz(point.getMaxZ() - point.getMinZ() + 1);
-
-					stackPlacement.add(p);
+				if(calculatePoints) {
+					int pointIndex = extremePoints.findPoint(placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ());
+	
+					extremePoints.add(pointIndex, placement);
+	
+					for (SimplePoint3D<StackPlacement> point : extremePoints.getValues()) {
+						PointVisualizer p = new PointVisualizer();
+	
+						p.setX(point.getMinX());
+						p.setY(point.getMinY());
+						p.setZ(point.getMinZ());
+	
+						p.setDx(point.getMaxX() - point.getMinX() + 1);
+						p.setDy(point.getMaxY() - point.getMinY() + 1);
+						p.setDz(point.getMaxZ() - point.getMinZ() + 1);
+	
+						stackPlacement.add(p);
+					}
 				}
-
+				
 				stackVisualization.add(stackPlacement);
 
 				step++;

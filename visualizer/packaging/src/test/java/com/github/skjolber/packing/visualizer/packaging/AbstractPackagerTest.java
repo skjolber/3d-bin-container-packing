@@ -33,15 +33,27 @@ public class AbstractPackagerTest {
 	protected ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory());
 
 	protected void write(PackagerResult result) throws Exception {
-		write(result.getContainers());
+		write(result, true);
+	}
+
+	protected void write(PackagerResult result, boolean calculatePoints) throws Exception {
+		write(result.getContainers(), calculatePoints);
 	}
 
 	protected void write(Container container) throws Exception {
-		write(Arrays.asList(container));
+		write(container, true);
+	}
+
+	protected void write(Container container, boolean calculatePoints) throws Exception {
+		write(Arrays.asList(container), calculatePoints);
 	}
 
 	protected void write(List<Container> packList) throws Exception {
-		DefaultPackagingResultVisualizerFactory p = new DefaultPackagingResultVisualizerFactory();
+		write(packList, true);
+	}
+
+	protected void write(List<Container> packList, boolean calculatePoints) throws Exception {
+		DefaultPackagingResultVisualizerFactory p = new DefaultPackagingResultVisualizerFactory(calculatePoints);
 
 		File file = new File("../viewer/public/assets/containers.json");
 		p.visualize(packList, file);
