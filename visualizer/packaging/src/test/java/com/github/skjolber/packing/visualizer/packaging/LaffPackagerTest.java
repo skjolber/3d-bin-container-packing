@@ -130,15 +130,15 @@ public class LaffPackagerTest extends AbstractPackagerTest {
 	}
 
 	protected void write(PackagerResult result) throws Exception {
-		write(result, false);
+		write(result, true);
 	}
 
 	protected void write(Container container) throws Exception {
-		write(container, false);
+		write(container, true);
 	}
 
 	protected void write(List<Container> packList) throws Exception {
-		write(packList, false);
+		write(packList, true);
 	}
 	
 }

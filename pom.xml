@@ -66,11 +66,6 @@
 		<url>https://github.com/skjolber/3d-bin-container-packing/issues</url>
 	</issueManagement>
 
-	<ciManagement>
-		<system>Travis CI</system>
-		<url>https://travis-ci.org/skjolber/3d-bin-container-packing</url>
-	</ciManagement>
-
 	<developers>
 		<developer>
 			<name>Thomas Skjølberg</name>
