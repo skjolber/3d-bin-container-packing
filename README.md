@@ -20,7 +20,7 @@ The project is implemented in Java and built using [Maven]. The project is avail
 Add
  
 ```xml
-<3d-bin-container-packing.version>3.0.2</3d-bin-container-packing.version>
+<3d-bin-container-packing.version>3.0.8</3d-bin-container-packing.version>
 ```
 
 and
@@ -44,7 +44,7 @@ For
 
 ```groovy
 ext {
-  containerBinPackingVersion = '3.0.2'
+  containerBinPackingVersion = '3.0.8'
 }
 ```
 
