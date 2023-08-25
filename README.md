@@ -18,7 +18,7 @@ The project is implemented in Java and built using [Maven]. The project is avail
 Add
  
 ```xml
-<3d-bin-container-packing.version>3.0.7</3d-bin-container-packing.version>
+<3d-bin-container-packing.version>3.0.8</3d-bin-container-packing.version>
 ```
 
 and
@@ -42,7 +42,7 @@ For
 
 ```groovy
 ext {
-  containerBinPackingVersion = '3.0.7'
+  containerBinPackingVersion = '3.0.8'
 }
 ```
 
@@ -207,6 +207,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
 
 # History
+ * 3.0.8: Visualization fix
  * 3.0.4-3.0.6: Fix issue #689
  * 3.0.3: Fix module info
  * 3.0.2: Make Plain Packager prefer low z coordinate over supported area.
