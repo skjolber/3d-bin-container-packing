@@ -364,6 +364,35 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 		assertFalse(build.isSuccess());
 	}
 
+	@Test
+	public void testImpossible4() {
+		List<ContainerItem> containerItems = ContainerItem
+				.newListBuilder()
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(32300, 10000, 6000)
+					.withMaxLoadWeight(50000).withStack(new ValidatingStack()).build(), 1)
+				.build();
+
+		Packager packager = BruteForcePackager.newBuilder().build();
+
+		List<StackableItem> products = Arrays.asList(
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(3350, 510, 3350).withWeight(250).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(2600, 20500, 3600).withWeight(1200).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(2600, 25600, 4200).withWeight(1520).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(2600, 25600, 4200).withWeight(1900).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(2600, 25600, 4200).withWeight(1500).build(), 1),
+			new StackableItem(Box.newBuilder().withRotate3D().withSize(2600, 25600, 4200).withWeight(1420).build(), 1)
+		);
+
+		PackagerResult build = packager
+				.newResultBuilder()
+				.withContainers(containerItems)
+				.withStackables(products)
+				.withMaxContainerCount(1)
+				.build();
+
+		assertFalse(build.isSuccess());
+	}
+
 
 	@Test
 	public void testMutuallyExclusiveBoxesAndContainersForMultiContainerResult() throws Exception {
