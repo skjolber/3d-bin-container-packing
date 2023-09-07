@@ -304,7 +304,7 @@ export class StackableRenderer {
 	      }
 	}
 	
-	addPoints(container: Object3D, colorScheme : ColorScheme, stepNumber: number) {
+	addPoints(container: Object3D, colorScheme : ColorScheme, stepNumber: number, pointNumber: number) {
 		
 		var children = container.children;
 	      for(var j = 0; j < children.length; j++) {
@@ -320,25 +320,31 @@ export class StackableRenderer {
 					var containerLoadChildUserData = child.userData;
 					
 	    		    if(containerLoadChildUserData.type == "box" && containerLoadChildUserData.step == stepNumber - 1) {
-			            for (let p of containerLoadChildUserData.source.points) {
-			                var color = colorScheme.getPoint(p);
-			                
-			                var pointMaterial = new THREE.LineBasicMaterial({ color: color});
-			                pointMaterial.color.convertSRGBToLinear();
-			                var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(p.dy, p.dz, p.dx));
-			                var pp = new THREE.LineSegments(containerGeometry, pointMaterial);
-			
-			                pp.position.x = p.y + p.dy / 2 + userData.offsetX;
-			                pp.position.y = p.z + p.dz / 2 + userData.offsetY;
-			                pp.position.z = p.x + p.dx / 2 + userData.offsetZ;
-			
-			                pp.userData = {
-			                    type: "point"
-			                };
-			                
-			                pp.visible = true;
-			    
-			                containerLoad.add(pp)
+
+
+                        for (var k = 0; k < containerLoadChildUserData.source.points.length; k++) {
+                            var p = containerLoadChildUserData.source.points[k]
+                            if(pointNumber == -1 || pointNumber == k) {
+                                
+                                var color = colorScheme.getPoint(p);
+                                
+                                var pointMaterial = new THREE.LineBasicMaterial({ color: color});
+                                pointMaterial.color.convertSRGBToLinear();
+                                var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(p.dy, p.dz, p.dx));
+                                var pp = new THREE.LineSegments(containerGeometry, pointMaterial);
+                
+                                pp.position.x = p.y + p.dy / 2 + userData.offsetX;
+                                pp.position.y = p.z + p.dz / 2 + userData.offsetY;
+                                pp.position.z = p.x + p.dx / 2 + userData.offsetZ;
+                
+                                pp.userData = {
+                                    type: "point"
+                                };
+                                
+                                pp.visible = true;
+                    
+                                containerLoad.add(pp)
+                            }
 			            }
 						break;
 					}

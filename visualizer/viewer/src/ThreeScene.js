@@ -32,7 +32,10 @@ const pointer = new THREE.Vector2();
 var raycaster;
 var INTERSECTED;
 var stepNumber = -1;
+var pointNumber = -1;
 
+
+var maxPointNumbers;
 var maxStepNumber = 0;
 var minStepNumber = 0;
 
@@ -134,7 +137,7 @@ class ThreeScene extends Component {
 		// so add for a single step at a time 
         stackableRenderer.removePoints(visibleContainer);
         if(points) {
-        	stackableRenderer.addPoints(visibleContainer, memoryScheme, stepNumber);
+        	stackableRenderer.addPoints(visibleContainer, memoryScheme, stepNumber, pointNumber);
         }
         
         for(var k = 0; k < visibleContainers[i].children.length; k++) {
@@ -189,6 +192,8 @@ class ThreeScene extends Component {
       var maxX = 0;
       var maxY = 0;
       var maxZ = 0;
+
+      maxPointNumbers = new Array();
   
       for(var i = 0; i < packaging.containers.length; i++) {
         var containerJson = packaging.containers[i];
@@ -223,6 +228,11 @@ class ThreeScene extends Component {
                 points.push(new Point(point.x, point.y, point.z, point.dx, point.dy, point.dz));
           }
 
+          if(maxPointNumbers[stackable.step] == null || maxPointNumbers[stackable.step] < points.length) {
+            maxPointNumbers[stackable.step] = points.length;
+          }
+
+
           if(stackable.type == "box") {
             var box = new Box(stackable.name, stackable.id, stackable.step, stackable.dx, stackable.dy, stackable.dz);
             
@@ -232,9 +242,11 @@ class ThreeScene extends Component {
           }
         }
 
+        console.log(maxPointNumbers)
+
         maxStepNumber = maxStep + 1;
         minStepNumber = minStep;
-        
+        pointNumber = -1;
         stepNumber = maxStepNumber;
 
         // TODO return controls instead
@@ -330,12 +342,12 @@ class ThreeScene extends Component {
     shouldAnimate = false;
     var keyCode = event.which;
     switch (keyCode) {
-      case 87: {
+      case 49: {
         // shaderMesh1.rotation.x += ROTATION_ANGLE; //W
         mainGroup.rotation.y += 0.1;
         break;
       }
-      case 83: {
+      case 50: {
         // shaderMesh1.rotation.x -= ROTATION_ANGLE; //S
         mainGroup.rotation.y -= 0.1;
         break;
@@ -345,8 +357,10 @@ class ThreeScene extends Component {
         if(stepNumber > maxStepNumber) {
           stepNumber = 0;
         }
-        
+        console.log("Shop step number " + stepNumber);
         this.handleStepNumber();
+
+        pointNumber = -1;
         
         break;
       }
@@ -355,12 +369,14 @@ class ThreeScene extends Component {
         if(stepNumber < minStepNumber) {
           stepNumber = maxStepNumber;
         }
+        console.log("Shop step number " + stepNumber);
         this.handleStepNumber();
         
         break;
       }
       case 80: {
         points = !points;
+        this.pointNumber = -1;
         if(points) {
           console.log("Show points");
         } else {
@@ -372,6 +388,28 @@ class ThreeScene extends Component {
 
         break;
       }
+      case 87: {
+        // 
+        pointNumber++;
+        if(pointNumber >= maxPointNumbers[stepNumber - 1]) {
+          pointNumber = 0;
+        }        
+        console.log("Shop point number " + pointNumber + " of " + maxPointNumbers[stepNumber-1]);
+        this.handleStepNumber();
+        break;
+      }
+      case 83: {
+        // 
+        pointNumber--;
+        if(pointNumber < 0) {
+          pointNumber = maxPointNumbers[stepNumber - 1]-1;
+        }
+        console.log("Shop point number " + pointNumber + " of " + maxPointNumbers[stepNumber-1]);
+        this.handleStepNumber();
+
+        break;
+      }
+      
       default: {
         break;
       }
