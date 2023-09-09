@@ -151,7 +151,7 @@ public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D & Serializable> 
 		boolean withinYZPlane = z <= yzPlane.getAbsoluteEndZ();
 
 		if(withinXZPlane && withinYZPlane) {
-			return new DefaultXZPlaneYZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, yzPlane, xzPlane);
+			return new DefaultXZPlaneYZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xzPlane, yzPlane);
 		} else if(withinXZPlane) {
 			return new DefaultXZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xzPlane);
 		} else if(withinYZPlane) {
@@ -205,4 +205,9 @@ public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D & Serializable> 
 		return Math.min(dx, xzPlane.getAbsoluteEndX() - minX + 1) * (long)Math.min(dz, xzPlane.getAbsoluteEndZ() - minZ + 1);
 	}
 
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + " [" + minX + "x" + minY + "x" + minZ + " " + maxX + "x" + maxY
+				+ "x" + maxZ + " " + "(" + dx + "x" + dy + "x" + dz + ") xz=" + xzPlane + " yz=" + yzPlane + "]";
+	}
 }

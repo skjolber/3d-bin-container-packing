@@ -53,7 +53,7 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 
 			Stack stack = inputContainer.getStack();
 
-			ExtremePoints3D<StackPlacement> extremePoints = new ExtremePoints3D<>(containerStackValue.getDx(), containerStackValue.getDy(), containerStackValue.getDz());
+			ExtremePoints3D<StackPlacement> extremePoints = new ExtremePoints3D<>(containerStackValue.getDx(), containerStackValue.getDy(), containerStackValue.getDz(), true);
 
 			for (StackPlacement placement : stack.getPlacements()) {
 				Stackable box = placement.getStackable();
