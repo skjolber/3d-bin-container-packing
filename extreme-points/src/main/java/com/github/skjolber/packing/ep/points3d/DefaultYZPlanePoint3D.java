@@ -59,10 +59,7 @@ public class DefaultYZPlanePoint3D<P extends Placement3D & Serializable> extends
 
 	@Override
 	public DefaultYZPlanePoint3D<P> clone(int maxX, int maxY, int maxZ) {
-		return new DefaultYZPlanePoint3D<>(
-				minX, minY, minZ,
-				maxX, maxY, maxZ,
-				yzPlane);
+		return new DefaultYZPlanePoint3D<>(minX, minY, minZ, maxX, maxY, maxZ, yzPlane);
 	}
 
 	@Override

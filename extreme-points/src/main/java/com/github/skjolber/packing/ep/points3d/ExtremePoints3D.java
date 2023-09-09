@@ -1094,7 +1094,104 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		boolean splitXX = false;
 		boolean splitYY = false;
 		boolean splitZZ = false;
+		
 
+		// before add
+		//    
+		//    |
+		//    |--------|
+		//    |        |
+		//    |--------| 
+		//    |
+		//    |
+		//    |
+		// a  *        *      |---------|
+		//    |               |         |
+		//    |               |         |
+		//    *--------*------|---------|-----
+		//    c        b
+
+		//  after add
+		//             
+		//    |        |---------|
+		//    |--------|         | 
+		//    |        |         |
+		//    |--------|         |
+		//    |        |         |
+		//    |        |         |
+		// a  *        |------|--|------|
+		//    |               |         |
+		//    |               |         |
+		//    *--------*------|---------|-----
+		//    c        b
+
+		//
+		// Point c is split in three, each of which eclipse a or b
+		//
+		// So that we end up with
+		//             
+		//    |        |---------|
+		//    |--------|         | 
+		//    |        |         |
+		//    |--------|         |
+		//    |        |         |
+		//    |        |         |
+		//    |        |------|--|------|
+		//    |               |         |
+		//    |               |         |
+		//    *---------------|---------|-----
+		//    c         
+
+		// i.e. with c
+		//             
+		//    |--------|         
+		//    |        |         
+		//    |        |         
+		//    |        |
+		//    |        |          
+		//    |        |                
+		//    *--------|----------------------
+		//
+		// and
+		//
+		//    |         
+		//    |                 
+		//    |                 
+		//    |---------------|
+		//    |               |         
+		//    |               |         
+		//    *---------------|--------------
+		//
+		// and
+		//
+		//    |         
+		//    |                 
+		//    |                 
+		//    |--------|
+		//    |        |         
+		//    |        |         
+		//    *--------|---------------------
+		//             
+		//
+		// so points which are contained within two coordinates (i.e. directly below, directly to the left or directly behind)
+		// the placement,  
+		//
+		//    |        |---------|
+		//    |--------|         | 
+		//    |        |         |
+		//    |--------|         |
+		//    |   *    |         |
+		//    | *    * |         |
+		// a  |    *   |------|--|------|
+		//    |          *    |         |
+		//    |             * |         |
+		//    |-----------*---|---------|-----
+		//    c        b
+		// 
+		// do not require splits, so constraining the max limit is sufficient. 
+		// This is faster than creating another point.
+		// 
+		
 		limitLoop: for (int i = 0; i < limit; i++) {
 			SimplePoint3D<P> point = values.get(i);
 
@@ -1248,53 +1345,6 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 			}
 
 			// fall through: must add multiple points
-
-			// Points eclipsed by others:
-			// before add
-			//    
-			//    |
-			//    |--------|
-			//    |        |
-			//    |--------| 
-			//    |
-			//    |
-			//    |
-			// a  *        *      |---------|
-			//    |               |         |
-			//    |               |         |
-			//    *--------*------|---------|-----
-			//    c        b
-
-			//  after add
-			//             
-			//    |        |---------|
-			//    |--------|         | 
-			//    |        |         |
-			//    |--------|         |
-			//    |        |         |
-			//    |        |         |
-			// a  *        |------|--|------|
-			//    |               |         |
-			//    |               |         |
-			//    *--------*------|---------|-----
-			//    c        b
-
-			//
-			// Point c is split in two, each of which eclipse a or b
-			//
-			// So that we end up with
-			//             
-			//    |        |---------|
-			//    |--------|         | 
-			//    |        |         |
-			//    |--------|         |
-			//    |        |         |
-			//    |        |         |
-			//    |        |------|--|------|
-			//    |               |         |
-			//    |               |         |
-			//    *---------------|---------|-----
-			//    c         
 
 			if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
 				SimplePoint3D<P> clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
