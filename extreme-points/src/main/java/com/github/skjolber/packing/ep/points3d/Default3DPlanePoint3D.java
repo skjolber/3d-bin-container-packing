@@ -179,7 +179,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 		} else if(withinXYPlane) {
 			return new DefaultXYPlaneYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, yzSupport, xyPlane);
 		} else if(withinXZPlane) {
-			return new DefaultXZPlaneYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, yzSupport, xzPlane);
+			return new DefaultXZPlaneYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, xzPlane, yzSupport);
 		}
 
 		return new DefaultYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, yzSupport);
@@ -225,7 +225,7 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 
 		// xy plane support lost
 		if(withinXZPlane && withinYZPlane) {
-			return new DefaultXZPlaneYZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, yzPlane, xzPlane);
+			return new DefaultXZPlaneYZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xzPlane, yzPlane);
 		} else if(withinXZPlane) {
 			return new DefaultXZPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xzPlane);
 		} else if(withinYZPlane) {
