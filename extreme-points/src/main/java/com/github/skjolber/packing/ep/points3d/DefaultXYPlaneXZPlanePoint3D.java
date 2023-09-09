@@ -91,12 +91,8 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 	}
 
 	@Override
-	public Point3D<P> clone(int maxX, int maxY, int maxZ) {
-
-		return new DefaultXYPlaneXZPlanePoint3D<>(
-				minX, minY, minZ,
-				maxX, maxY, maxZ,
-				xzPlane, xyPlane);
+	public DefaultXYPlaneXZPlanePoint3D<P> clone(int maxX, int maxY, int maxZ) {
+		return new DefaultXYPlaneXZPlanePoint3D<>(minX, minY, minZ, maxX, maxY, maxZ, xzPlane, xyPlane);
 	}
 
 	@Override
@@ -206,4 +202,9 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 		return Math.min(dx, xzPlane.getAbsoluteEndX() - minX + 1) * (long)Math.min(dz, xzPlane.getAbsoluteEndZ() - minZ + 1);
 	}
 
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + " [" + minX + "x" + minY + "x" + minZ + " " + maxX + "x" + maxY
+				+ "x" + maxZ + " " + "(" + dx + "x" + dy + "x" + dz + ") xy=" + xyPlane + " xz=" + xzPlane + "]";
+	}
 }

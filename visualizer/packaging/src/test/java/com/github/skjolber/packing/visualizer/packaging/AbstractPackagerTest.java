@@ -50,6 +50,7 @@ public class AbstractPackagerTest {
 	protected void pack(List<BouwkampCodes> codes, AbstractPackager packager) throws Exception {
 		for (BouwkampCodes bouwkampCodes : codes) {
 			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
+				System.out.println("Package " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder());
 				long timestamp = System.currentTimeMillis();
 				pack(bouwkampCode, packager);
 				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.currentTimeMillis() - timestamp));
