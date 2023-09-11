@@ -217,8 +217,8 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 			// ---------------------------
 			//
 
-			if(point.getMinX() >= source.getMinX() && point.getMinY() >= source.getMinY() && point.getMinZ() >= source.getMinZ()) {
-
+			boolean swallowed = point.getMinX() >= source.getMinX() && point.getMinY() >= source.getMinY() && point.getMinZ() >= source.getMinZ();
+			if(swallowed ) {
 				// 
 				// |
 				// |
@@ -232,55 +232,44 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 				// |                       
 				// ---------------------------
 				//
-
-				if(canMoveX(point, xx)) {
-					moveToXX.add(i);
-				}
-				if(canMoveY(point, yy)) {
-					moveToYY.add(i);
-				}
-				if(canMoveZ(point, zz)) {
-					moveToZZ.add(i);
-				}
-
+				
 				values.flag(i);
+			} else {
+				if(supported) {
+					// 
+					// |
+					// |          ║
+					// |          ║
+					// |   *      ║------|
+					// |          ║      |
+					// |          ║══════════
+					// |                       
+					// |   *         *    
+					// |                       
+					// ---------------------------
+					// 
 
-				continue;
+					continue;
+				} else {
+					
+					// Points within (xx, yy, zz), excluding the placement itself
+					// 
+					// |
+					// |
+					// |          
+					// | *  *     |------|
+					// |          |      |
+					// |   *      |------|
+					// |              *        
+					// |     *   *       *
+					// | *         *            
+					// ---------------------------
+					//
+				}
+				
 			}
 
-			if(supported) {
-
-				// 
-				// |
-				// |          ║
-				// |          ║
-				// |          ║------|
-				// |          ║      |
-				// |          ║══════════
-				// |                       
-				// |                  
-				// |                       
-				// ---------------------------
-				// 
-
-				continue;
-			}
-
-			// Points within (xx, yy, zz), excluding the placement itself
-			// 
-			// |
-			// |
-			// |          
-			// | *  *     |------|
-			// |          |      |
-			// |   *      |------|
-			// |              *        
-			// |     *   *       *
-			// | *         *            
-			// ---------------------------
-			//
-
-			// does any point intersect the xx, yy or zz planes?
+			// move xx
 			if(canMoveX(point, xx)) {
 				// yz plane
 				moveToXX.add(i);
