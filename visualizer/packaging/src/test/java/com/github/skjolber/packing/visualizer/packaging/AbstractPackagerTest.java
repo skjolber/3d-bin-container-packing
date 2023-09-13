@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -62,6 +63,12 @@ public class AbstractPackagerTest {
 	protected void pack(List<BouwkampCodes> codes, AbstractPackager packager) throws Exception {
 		for (BouwkampCodes bouwkampCodes : codes) {
 			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
+				
+				/*
+				if(!bouwkampCode.getName().equals("65x47A")) {
+					continue;
+				}
+				*/
 				System.out.println("Package " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder());
 				long timestamp = System.currentTimeMillis();
 				pack(bouwkampCode, packager);
@@ -85,7 +92,7 @@ public class AbstractPackagerTest {
 		}
 
 		// map similar items to the same stack item - this actually helps a lot
-		Map<Integer, Integer> frequencyMap = new HashMap<>();
+		Map<Integer, Integer> frequencyMap = new TreeMap<>();
 		squares.forEach(word -> frequencyMap.merge(word, 1, (v, newV) -> v + newV));
 
 		List<StackableItem> products = new ArrayList<>();
@@ -96,7 +103,7 @@ public class AbstractPackagerTest {
 		}
 
 		// shuffle
-		Collections.shuffle(products);
+		//Collections.shuffle(products);
 
 		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(1).build();
 

@@ -285,4 +285,16 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 		return (long)Math.min(dy, yzPlane.getAbsoluteEndY() - minY + 1) * Math.min(dz, yzPlane.getAbsoluteEndZ() - minZ + 1);
 	}
 
+	public boolean isSupportedYZPlane() {
+		return true;
+	}
+
+	public boolean isSupportedXZPlane() { // i.e. y is fixed
+		return true;
+	}
+	
+	public boolean isSupportedXYPlane() { // i.e. z is fixed
+		return true;
+	}
+
 }

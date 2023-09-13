@@ -138,4 +138,8 @@ public class DefaultXYPlanePoint3D<P extends Placement3D & Serializable> extends
 		return 0;
 	}
 
+	public boolean isSupportedXYPlane() { // i.e. z is fixed
+		return true;
+	}
+
 }

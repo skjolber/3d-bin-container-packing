@@ -542,7 +542,7 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 			if(!addXXPoint3d.isEmpty()) {
 				for (int k = 0; k < addXXPoint3d.size(); k++) {
 					SimplePoint3D<P> p = addXXPoint3d.get(k);
-					if(p instanceof YZPlanePoint3D) {
+					if(p.isSupportedYZPlane()) {
 						if(!isEclipsedAtXX(p, xx)) {
 							otherValues.add(p);
 						}
@@ -565,7 +565,8 @@ public class ExtremePoints3D<P extends Placement3D & Serializable> implements Ex
 		if(!addXXPoint3d.isEmpty()) {
 			for (int k = 0; k < addXXPoint3d.size(); k++) {
 				SimplePoint3D<P> p = addXXPoint3d.get(k);
-				if(p instanceof YZPlanePoint3D) {
+				
+				if(p.isSupportedYZPlane()) {
 					if(!isEclipsedAtXX(p, xx)) {
 						otherValues.add(p);
 					}

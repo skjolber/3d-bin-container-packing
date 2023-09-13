@@ -139,5 +139,9 @@ public class DefaultXZPlanePoint3D<P extends Placement3D & Serializable> extends
 	public long calculateXZSupport(int dx, int dz) {
 		return Math.min(dx, xzPlane.getAbsoluteEndX() - minX + 1) * (long)Math.min(dz, xzPlane.getAbsoluteEndZ() - minZ + 1);
 	}
+	
+	public boolean isSupportedXZPlane() { // i.e. y is fixed
+		return true;
+	}
 
 }

@@ -200,5 +200,13 @@ public class DefaultXYPlaneYZPlanePoint3D<P extends Placement3D & Serializable> 
 	public long calculateYZSupport(int dy, int dz) {
 		return (long)Math.min(dy, yzPlane.getAbsoluteEndY() - minY + 1) * Math.min(dz, yzPlane.getAbsoluteEndZ() - minZ + 1);
 	}
+	
+	public boolean isSupportedYZPlane() {
+		return true;
+	}
+
+	public boolean isSupportedXYPlane() { // i.e. z is fixed
+		return true;
+	}
 
 }

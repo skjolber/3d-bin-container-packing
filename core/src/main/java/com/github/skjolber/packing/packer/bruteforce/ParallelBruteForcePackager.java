@@ -191,17 +191,15 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		public BruteForcePackagerResult attempt(int i, BruteForcePackagerResult currentBest) {
 			// is there enough work to do parallelization?
 			// run on single thread for a small amount of combinations
-
 			// the algorithm only splits on permutations
 			boolean multithreaded;
 			if(iterators[i].countPermutations() > parallelizationCount * 2) {
-				multithreaded = iterators[i].countRotations() > 1;
+				multithreaded = true;
 			} else {
 				multithreaded = false;
 			}
 			
 			if(multithreaded) {
-
 				// interrupt needs not be accurate (i.e. atomic boolean)
 				Boolean[] localInterrupt = new Boolean[32]; // add padding to avoid false sharing
 

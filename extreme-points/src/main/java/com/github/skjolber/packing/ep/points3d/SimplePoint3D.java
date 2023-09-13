@@ -25,6 +25,18 @@ public abstract class SimplePoint3D<P extends Placement3D & Serializable> extend
 		return false;
 	}
 	
+	public boolean isSupportedXYPlane() { // i.e. z is fixed
+		return false;
+	}
+
+	public boolean isSupportedYZPlane() { // i.e. x is fixed
+		return false;
+	}
+
+	public boolean isSupportedXZPlane() { // i.e. y is fixed
+		return false;
+	}
+	
 
 	//       |                  
 	//       |                  

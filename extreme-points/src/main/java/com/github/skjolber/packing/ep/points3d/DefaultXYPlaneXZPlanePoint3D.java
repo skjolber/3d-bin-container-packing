@@ -205,4 +205,13 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 		return getClass().getSimpleName() + " [" + minX + "x" + minY + "x" + minZ + " " + maxX + "x" + maxY
 				+ "x" + maxZ + " " + "(" + dx + "x" + dy + "x" + dz + ") xy=" + xyPlane + " xz=" + xzPlane + "]";
 	}
+	
+	public boolean isSupportedXZPlane() { // i.e. y is fixed
+		return true;
+	}
+	
+	public boolean isSupportedXYPlane() { // i.e. z is fixed
+		return true;
+	}
+
 }

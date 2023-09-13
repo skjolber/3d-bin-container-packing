@@ -26,6 +26,14 @@ public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D & Serializable> 
 		this.yzPlane = yzPlane;
 	}
 
+	public boolean isSupportedYZPlane() {
+		return true;
+	}
+	
+	public boolean isSupportedXZPlane() { // i.e. y is fixed
+		return true;
+	}
+	
 	public int getSupportedXZPlaneMinX() {
 		return xzPlane.getAbsoluteX();
 	}
