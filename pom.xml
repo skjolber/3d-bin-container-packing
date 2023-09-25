@@ -41,7 +41,7 @@
 		<jqwik.version>1.8.0</jqwik.version>
 		<assertj.version>3.24.2</assertj.version>
 		<owasp-dependency-check.version>5.3.2</owasp-dependency-check.version>
-		<pitest.version>1.14.4</pitest.version>
+		<pitest.version>1.15.0</pitest.version>
 		<jackson.version>2.15.2</jackson.version>
 		<spotless.version>2.39.0</spotless.version>
 	</properties>
