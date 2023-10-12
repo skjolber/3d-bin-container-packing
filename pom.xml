@@ -23,7 +23,7 @@
 		<junit-quicktest.version>1.0</junit-quicktest.version>
 		<junit.version>5.10.0</junit.version>
 		<jmh.version>1.37</jmh.version>
-		<commons-io.version>2.13.0</commons-io.version>
+		<commons-io.version>2.14.0</commons-io.version>
 
 		<!-- plugins -->
 		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
@@ -31,19 +31,19 @@
 		<nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
 		<maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
 		<maven-source-plugin.version>3.3.0</maven-source-plugin.version>
-		<maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
+		<maven-javadoc-plugin.version>3.6.0</maven-javadoc-plugin.version>
 		<maven-release-plugin.version>2.5.3</maven-release-plugin.version>
 		<maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
 		<maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
 		<jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
 		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
 		<maven-shade-plugin.version>3.5.0</maven-shade-plugin.version>
-		<jqwik.version>1.7.4</jqwik.version>
+		<jqwik.version>1.8.0</jqwik.version>
 		<assertj.version>3.24.2</assertj.version>
 		<owasp-dependency-check.version>5.3.2</owasp-dependency-check.version>
 		<pitest.version>1.14.4</pitest.version>
 		<jackson.version>2.15.2</jackson.version>
-		<spotless.version>2.39.0</spotless.version>
+		<spotless.version>2.40.0</spotless.version>
 	</properties>
 
 	<licenses>
@@ -374,7 +374,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.4.0</version>
+					<version>3.4.1</version>
 					<executions>
 						<execution>
 							<id>enforce-versions</id>
@@ -427,7 +427,7 @@
 				<plugin>
 					<groupId>org.sonarsource.scanner.maven</groupId>
 					<artifactId>sonar-maven-plugin</artifactId>
-					<version>3.9.1.2184</version>
+					<version>3.10.0.2594</version>
 				</plugin>
 				<plugin>
 					<groupId>org.pitest</groupId>
