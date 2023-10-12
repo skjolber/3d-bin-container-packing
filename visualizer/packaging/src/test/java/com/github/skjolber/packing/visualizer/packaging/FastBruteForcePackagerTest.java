@@ -81,5 +81,39 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 
 		write(result.getContainers());
 	}
+	
+	@Test
+	public void issue() throws Exception {
+		Container container = Container.newBuilder()
+				.withDescription("box")
+				.withSize(500, 500, 500)
+				.withEmptyWeight(0)
+				.withMaxLoadWeight(1)
+				.build();
+		
+		List<ContainerItem> containerItems = ContainerItem
+				.newListBuilder()
+				.withContainer(container)
+				.build();
+
+		List<StackableItem> products = new ArrayList<>();
+		products.add(new StackableItem(Box.newBuilder().withId("goods1").withSize(295, 190, 160).withRotate3D().withWeight(0).build(), 5));
+		products.add(new StackableItem(Box.newBuilder().withId("goods2").withSize(245, 190, 160).withRotate3D().withWeight(0).build(), 9));
+		
+		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
+		PackagerResult result = packager
+			.newResultBuilder()
+			.withContainers(containerItems)
+			.withStackables(products)
+			.build();
+		
+		if(result.isSuccess()) {
+			System.out.println("SUCCESS");
+		} else {
+			System.out.println("FAILURE");
+		}
+		
+		write(result);
+	}
 
 }
