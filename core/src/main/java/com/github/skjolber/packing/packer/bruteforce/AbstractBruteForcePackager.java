@@ -104,11 +104,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				}
 			} while (true);
 
-			// search for the next permutation which actually 
-			// has a chance of affecting the result.
-
-			int permutationIndex = iterator.nextPermutation(bestPermutationResult.getSize());
-
 			if(!bestPermutationResult.isEmpty()) {
 				// compare against other permutation's result
 
@@ -119,6 +114,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 					bestPermutationResult = tmp;
 				}
 			}
+			
+			// search for the next permutation which actually 
+			// has a chance of affecting the result.
+
+			int permutationIndex = iterator.nextPermutation(bestPermutationResult.getSize());
+			
+			// TODO can bounds on weight or volume be used to determine whether it is even possible to beat the best result?
 
 			if(permutationIndex == -1) {
 				break;

@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.iterator;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**

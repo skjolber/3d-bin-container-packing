@@ -23,8 +23,8 @@ import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
+import com.github.skjolber.packing.iterator.PermutationStackableValue;
 import com.github.skjolber.packing.packer.AbstractPackager;
-import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
 import com.github.skjolber.packing.packer.PackagerAdapter;
@@ -195,9 +195,11 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		// optimization: compare pack results by looking only at count within the same permutation 
 		BruteForcePackagerResult bestPermutationResult = new BruteForcePackagerResult(holder, containerIndex, rotator);
 
+		long[] freeLoadWeights = calculateFreeLoadWeights(containerStackValue, rotator);
+		
 		// iterator over all permutations
+		permutations: 
 		do {
-
 			if(interrupt.getAsBoolean()) {
 				return null;
 			}
@@ -216,7 +218,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 				extremePoints.setMinimumAreaAndVolumeLimit(rotator.get(minStackableAreaIndex).getValue().getArea(), minStackableVolume);
 
-				int count = packStackPlacement(extremePoints, stackPlacements, rotator, stack, index, interrupt, minStackableAreaIndex);
+				int count = packStackPlacement(extremePoints, stackPlacements, rotator, stack, index, interrupt, minStackableAreaIndex, freeLoadWeights[index]);
 				if(count == Integer.MIN_VALUE) {
 					return null; // timeout
 				}
@@ -252,8 +254,6 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				index = rotationIndex;
 			} while (true);
 
-			int permutationIndex = rotator.nextPermutation(bestPermutationResult.getSize());
-
 			if(!bestPermutationResult.isEmpty()) {
 				// compare against other permutation's result
 
@@ -265,26 +265,64 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				}
 			}
 
-			if(permutationIndex == -1) {
-				break;
-			}
+			// get the next permutation
+			// make sure there is actually free weight available
+			// at the next index
+			int size = bestPermutationResult.getSize();
+			do {
+				int permutationIndex = rotator.nextPermutation(size);
+	
+				if(permutationIndex == -1) {
+					break permutations;
+				}
+				
+				calculateFreeLoadWeights(rotator, freeLoadWeights, permutationIndex);
+				
+				if(freeLoadWeights[permutationIndex] > 0) {
+					break;
+				}
+				size--;
+			} while(true);
+			
+			
 		} while (true);
 
 		return bestResult;
 	}
 
+	private void calculateFreeLoadWeights(DefaultPermutationRotationIterator rotator, long[] freeLoadWeights, int permutationIndex) {
+		long nextFreeLoadWeight = freeLoadWeights[permutationIndex] - rotator.getPermutation(permutationIndex).getStackable().getWeight();
+		for(int i = permutationIndex + 1; i < freeLoadWeights.length; i++) {
+			 freeLoadWeights[i] = nextFreeLoadWeight;
+			 
+			 PermutationStackableValue value = rotator.getPermutation(i);
+			 nextFreeLoadWeight -= value.getStackable().getWeight();
+		}
+	}
+
+	private long[] calculateFreeLoadWeights(ContainerStackValue containerStackValue, DefaultPermutationRotationIterator rotator) {
+		// precalculate load weights per permutations
+		long[] freeLoadWeights = new long[rotator.length()];
+		long freeLoadWeight = containerStackValue.getMaxLoadWeight();
+		for(int i = 0; i < freeLoadWeights.length; i++) {
+			 freeLoadWeights[i] = freeLoadWeight;
+			 
+			 PermutationStackableValue value = rotator.getPermutation(i);
+			 freeLoadWeight -= value.getStackable().getWeight();
+		}
+		return freeLoadWeights;
+	}
+
 	public int packStackPlacement(FastExtremePoints3DStack extremePoints3D, List<StackPlacement> placements, DefaultPermutationRotationIterator iterator, Stack stack, int placementIndex,
-			PackagerInterruptSupplier interrupt, int minStackableAreaIndex) {
+			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad) {
 		// pack as many items as possible from placementIndex
 		ContainerStackValue containerStackValue = stack.getContainerStackValue();
 
 		StackConstraint constraint = containerStackValue.getConstraint();
 
-		int freeWeightLoad = stack.getFreeWeightLoad();
-
 		while (placementIndex < iterator.length()) {
 			if(interrupt.getAsBoolean()) {
-				// fit2d below might have returned due to deadline
+				// might have returned due to deadline
 				return Integer.MIN_VALUE;
 			}
 			PermutationRotation permutationRotation = iterator.get(placementIndex);
