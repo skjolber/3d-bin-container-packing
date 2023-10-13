@@ -82,19 +82,17 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	}
 
 	private void calculateMinStackableVolume(int offset) {
-		if(permutations.length > 0) {
-			PermutationRotation last = get(permutations.length - 1);
-	
-			minStackableVolume[permutations.length - 1] = last.getValue().getVolume();
-	
-			for (int i = permutations.length - 2; i >= offset; i--) {
-				long volume = get(i).getValue().getVolume();
-	
-				if(volume < minStackableVolume[i + 1]) {
-					minStackableVolume[i] = volume;
-				} else {
-					minStackableVolume[i] = minStackableVolume[i + 1];
-				}
+		PermutationRotation last = get(permutations.length - 1);
+
+		minStackableVolume[permutations.length - 1] = last.getValue().getVolume();
+
+		for (int i = permutations.length - 2; i >= offset; i--) {
+			long volume = get(i).getValue().getVolume();
+
+			if(volume < minStackableVolume[i + 1]) {
+				minStackableVolume[i] = volume;
+			} else {
+				minStackableVolume[i] = minStackableVolume[i + 1];
 			}
 		}
 	}
@@ -136,7 +134,9 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		this.rotations = new int[effectivePermutations.length];
 		this.reset = new int[effectivePermutations.length];
 
-		calculateMinStackableVolume(0);
+		if(permutations.length > 0) {
+			calculateMinStackableVolume(0);
+		}
 	}
 
 	@Override
@@ -349,6 +349,10 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	@Override
 	public PermutationRotationState getState() {
 		return new PermutationRotationState(rotations, permutations);
+	}
+
+	public PermutationStackableValue getPermutation(int index) {
+		return matrix[permutations[index]];
 	}
 
 }
