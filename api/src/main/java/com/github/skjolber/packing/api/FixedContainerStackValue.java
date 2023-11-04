@@ -24,8 +24,20 @@ public class FixedContainerStackValue extends ContainerStackValue {
 		this.weight = stackWeight + emptyWeight;
 	}
 
+	protected FixedContainerStackValue(FixedContainerStackValue other) {
+		super(other);
+		
+		weight = other.weight;
+	}
+
 	public int getWeight() {
 		return weight;
 	}
+
+	@Override
+	public FixedContainerStackValue clone() {
+		return new FixedContainerStackValue(this);
+	}
+
 
 }

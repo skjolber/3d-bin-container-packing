@@ -14,4 +14,13 @@ public class DefaultContainerStackValue extends ContainerStackValue {
 		super(dx, dy, dz, constraint, loadDx, loadDy, loadDz, maxLoadWeight, sides);
 	}
 
+	protected DefaultContainerStackValue(DefaultContainerStackValue other) {
+		super(other);
+	}
+
+	@Override
+	public DefaultContainerStackValue clone() {
+		return new DefaultContainerStackValue(this);
+	}
+
 }

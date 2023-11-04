@@ -41,6 +41,22 @@ public class PermutationStackableValue {
 		this.minAreaLimit = minAreaLimit;
 		this.minVolumeLimit = minVolumeLimit;
 	}
+	
+	public PermutationStackableValue(PermutationStackableValue clone) {
+		// clone working object in order to improve performance
+		this.index = clone.index;
+		this.count = clone.count;
+		this.values = new PermutationRotation[clone.values.length];
+		this.stackable = clone.stackable.clone();
+		for (int i = 0; i < values.length; i++) {
+			PermutationRotation permutationRotation = clone.values[i];
+			values[i] = new PermutationRotation(permutationRotation.getStackable().clone(), permutationRotation.getValue().clone());
+			
+		}
+		this.minAreaLimit = clone.minAreaLimit;
+		this.minVolumeLimit = clone.minVolumeLimit;
+
+	}
 
 	public PermutationRotation[] getBoxes() {
 		return values;
@@ -64,5 +80,9 @@ public class PermutationStackableValue {
 
 	public Stackable getStackable() {
 		return stackable;
+	}
+	
+	public PermutationStackableValue clone() {
+		return new PermutationStackableValue(this);
 	}
 }

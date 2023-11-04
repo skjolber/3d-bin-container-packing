@@ -26,13 +26,29 @@ public class ParallelPermutationRotationIteratorList {
 
 		workUnits = new ParallelPermutationRotationIterator[parallelizationCount];
 		for (int i = 0; i < parallelizationCount; i++) {
-			workUnits[i] = new ParallelPermutationRotationIterator(matrix, this);
+			
+			// clone working variables so threads are less of the same
+			// memory area as one another
+			PermutationStackableValue[] clone = clone(matrix);
+			
+			workUnits[i] = new ParallelPermutationRotationIterator(clone, this);
 			if(workUnits[i].preventOptmisation() != -1L) {
 				throw new RuntimeException();
 			}
 		}
 
 		calculate();
+	}
+
+	private PermutationStackableValue[] clone(PermutationStackableValue[] matrix) {
+		PermutationStackableValue[] clone = new PermutationStackableValue[matrix.length];
+		for(int i = 0; i < clone.length; i++) {
+			PermutationStackableValue permutationStackableValue = matrix[i];
+			if(permutationStackableValue != null) {
+				clone[i] = permutationStackableValue.clone();
+			}
+		}
+		return clone;
 	}
 
 	public void removePermutations(List<Integer> removed) {

@@ -18,6 +18,7 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 	// minimum volume from index i and above
 	protected long[] minStackableVolume;
 
+	// parent iterator
 	private ParallelPermutationRotationIteratorList iterator;
 
 	public ParallelPermutationRotationIterator(PermutationStackableValue[] matrix, ParallelPermutationRotationIteratorList iterator) {

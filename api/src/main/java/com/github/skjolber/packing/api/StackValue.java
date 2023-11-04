@@ -35,7 +35,18 @@ public abstract class StackValue implements Serializable {
 		this.area = (long)dx * (long)dy;
 		this.volume = (long)dx * (long)dy * (long)dz;
 	}
+	
+	protected StackValue(StackValue other) {
+		this.dx = other.dx;
+		this.dy = other.dy;
+		this.dz = other.dz;
+		this.constraint = other.constraint;
+		this.surfaces = other.surfaces;
 
+		this.area = other.area;
+		this.volume = other.volume;
+	}
+	
 	public int getDx() {
 		return dx;
 	}
@@ -87,5 +98,8 @@ public abstract class StackValue implements Serializable {
 	public String toString() {
 		return "StackValue[" + surfaces + " " + dx + "x" + dy + "x" + dz + "]";
 	}
+	
+	@Override
+	public abstract StackValue clone();
 
 }

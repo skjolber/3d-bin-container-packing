@@ -27,6 +27,17 @@ public abstract class ContainerStackValue extends StackValue {
 	protected final int maxLoadWeight;
 	protected final long maxLoadVolume;
 
+	protected ContainerStackValue(ContainerStackValue other) {
+		super(other);
+		
+		this.loadDx = other.loadDx;
+		this.loadDy = other.loadDy;
+		this.loadDz = other.loadDz;
+
+		this.maxLoadVolume = other.maxLoadVolume;
+		this.maxLoadWeight = other.maxLoadWeight;
+	}
+	
 	public long getMaxLoadVolume() {
 		return maxLoadVolume;
 	}
