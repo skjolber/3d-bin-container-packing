@@ -126,7 +126,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			Stack levelStack = new DefaultStack();
 			stack.add(levelStack);
 
-			StackPlacement first = new StackPlacement(stackable, firstStackValue, 0, 0, 0, -1, -1);
+			StackPlacement first = new StackPlacement(stackable, firstStackValue, 0, 0, 0);
 
 			levelStack.add(first);
 
@@ -197,7 +197,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 				Point3D<StackPlacement> point = extremePoints3D.getValue(bestPointIndex);
 
-				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ(), -1, -1);
+				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ());
 				levelStack.add(stackPlacement);
 				extremePoints3D.add(bestPointIndex, stackPlacement);
 

@@ -55,7 +55,6 @@ public class DefaultXYPlaneYZPlanePoint3D<P extends Placement3D & Serializable> 
 		return yzPlane.getAbsoluteEndY() == y - 1;
 	}
 
-	@Override
 	public Placement3D getYZPlane() {
 		return yzPlane;
 	}
@@ -91,7 +90,6 @@ public class DefaultXYPlaneYZPlanePoint3D<P extends Placement3D & Serializable> 
 		return xyPlane.getAbsoluteEndY() == y - 1;
 	}
 
-	@Override
 	public Placement3D getXYPlane() {
 		return xyPlane;
 	}

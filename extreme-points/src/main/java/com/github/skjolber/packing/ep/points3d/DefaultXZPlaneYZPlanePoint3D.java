@@ -104,12 +104,10 @@ public class DefaultXZPlaneYZPlanePoint3D<P extends Placement3D & Serializable> 
 				xzPlane, yzPlane);
 	}
 
-	@Override
 	public Placement3D getXZPlane() {
 		return xzPlane;
 	}
 
-	@Override
 	public Placement3D getYZPlane() {
 		return yzPlane;
 	}

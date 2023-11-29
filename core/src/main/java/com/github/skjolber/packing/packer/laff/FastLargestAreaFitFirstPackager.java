@@ -130,7 +130,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			Stack levelStack = new DefaultStack();
 			stack.add(levelStack);
 
-			StackPlacement first = new StackPlacement(stackable, bestFirstStackValue, 0, 0, 0, -1, -1);
+			StackPlacement first = new StackPlacement(stackable, bestFirstStackValue, 0, 0, 0);
 
 			levelStack.add(first);
 
@@ -216,7 +216,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 
 				Point2D<StackPlacement> point = extremePoints2D.getValue(bestPointIndex);
 
-				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), 0, -1, -1);
+				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), 0);
 				levelStack.add(stackPlacement);
 				extremePoints2D.add(bestPointIndex, stackPlacement);
 

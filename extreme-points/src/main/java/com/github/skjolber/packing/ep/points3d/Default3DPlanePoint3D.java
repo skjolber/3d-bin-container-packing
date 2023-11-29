@@ -131,17 +131,14 @@ public class Default3DPlanePoint3D<P extends Placement3D & Serializable> extends
 				yzPlane, xzPlane, xyPlane);
 	}
 
-	@Override
 	public Placement3D getXZPlane() {
 		return xzPlane;
 	}
 
-	@Override
 	public Placement3D getYZPlane() {
 		return yzPlane;
 	}
 
-	@Override
 	public Placement3D getXYPlane() {
 		return xyPlane;
 	}

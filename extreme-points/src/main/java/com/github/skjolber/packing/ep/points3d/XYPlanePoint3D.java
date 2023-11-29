@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import com.github.skjolber.packing.api.Placement3D;
-
 /**
  * 
  * Z is fixed within a X-Y plane.
@@ -18,5 +16,4 @@ public interface XYPlanePoint3D {
 
 	int getSupportedXYPlaneMaxY();
 
-	Placement3D getXYPlane();
 }

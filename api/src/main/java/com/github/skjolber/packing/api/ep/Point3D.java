@@ -271,30 +271,6 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 		return !(point.getMaxX() < minX || point.getMinX() > maxX || point.getMaxY() < minY || point.getMinY() > maxY || point.getMaxZ() < minZ || point.getMinZ() > maxZ);
 	}
 
-	public boolean isYZPlaneEdgeZ(int z) {
-		return false;
-	}
-
-	public boolean isYZPlaneEdgeY(int z) {
-		return false;
-	}
-
-	public boolean isXYPlaneEdgeX(int x) {
-		return false;
-	}
-
-	public boolean isXYPlaneEdgeY(int y) {
-		return false;
-	}
-
-	public boolean isXZPlaneEdgeX(int x) {
-		return false;
-	}
-
-	public boolean isXZPlaneEdgeZ(int z) {
-		return false;
-	}
-
 	public boolean shadowedX(int min, int max) {
 		return minX < min && maxX > max;
 	}
