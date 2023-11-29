@@ -32,6 +32,7 @@ public abstract class Point3D<P extends Placement3D> extends Point2D<P> {
 				return 1;
 			}
 			return Integer.compare(o2.maxY, o1.maxY);
+		
 		}
 	};
 
