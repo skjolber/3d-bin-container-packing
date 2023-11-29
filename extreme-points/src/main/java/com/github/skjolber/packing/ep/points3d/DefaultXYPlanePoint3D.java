@@ -50,8 +50,7 @@ public class DefaultXYPlanePoint3D<P extends Placement3D & Serializable> extends
 	public boolean isXYPlaneEdgeY(int y) {
 		return xyPlane.getAbsoluteEndY() == y - 1;
 	}
-
-	@Override
+	
 	public Placement3D getXYPlane() {
 		return xyPlane;
 	}

@@ -40,10 +40,15 @@ public class DefaultXSupportPoint2D<P extends Placement2D & Serializable> extend
 	}
 
 	@Override
-	public Placement2D getXSupport() {
-		return xSupport;
+	public int getSupportedMaxX() {
+		return xSupport.getAbsoluteEndX();
 	}
-
+	
+	@Override
+	public int getSupportedMinX() {
+		return xSupport.getAbsoluteX();
+	}
+	
 	@Override
 	public SimplePoint2D<P> moveX(int x) {
 		if(x <= xSupport.getAbsoluteEndX()) {

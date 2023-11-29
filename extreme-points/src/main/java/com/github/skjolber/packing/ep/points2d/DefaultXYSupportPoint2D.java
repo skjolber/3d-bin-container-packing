@@ -69,13 +69,23 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 	}
 
 	@Override
-	public Placement2D getYSupport() {
-		return ySupport;
+	public int getSupportedMaxY() {
+		return ySupport.getAbsoluteEndY();
+	}
+	
+	@Override
+	public int getSupportedMinY() {
+		return ySupport.getAbsoluteY();
 	}
 
 	@Override
-	public Placement2D getXSupport() {
-		return xSupport;
+	public int getSupportedMaxX() {
+		return xSupport.getAbsoluteEndX();
+	}
+	
+	@Override
+	public int getSupportedMinX() {
+		return xSupport.getAbsoluteX();
 	}
 
 	@Override

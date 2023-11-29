@@ -17,14 +17,14 @@ public abstract class AbstractSimplePoint2DAssert<SELF extends AbstractSimplePoi
 		super(actual, selfType);
 	}
 
+
 	public SELF isYSupport(int y) {
 		isNotNull();
 		if(!actual.isYSupport(y)) {
 			if(actual instanceof YSupportPoint2D) {
 				YSupportPoint2D ySupportPoint2D = (YSupportPoint2D)actual;
-				Placement2D support = ySupportPoint2D.getYSupport();
 
-				failWithMessage("Expected y support at " + y + ", was " + support.getAbsoluteY() + " to " + support.getAbsoluteEndY());
+				failWithMessage("Expected y support at " + y + ", was " + ySupportPoint2D.getSupportedMinY() + " to " + ySupportPoint2D.getSupportedMaxY());
 			} else {
 				failWithMessage("Expected y support at " + y + ", was none for " + actual);
 			}
@@ -37,9 +37,8 @@ public abstract class AbstractSimplePoint2DAssert<SELF extends AbstractSimplePoi
 		if(actual.isYSupport(y)) {
 			if(actual instanceof YSupportPoint2D) {
 				YSupportPoint2D ySupportPoint2D = (YSupportPoint2D)actual;
-				Placement2D support = ySupportPoint2D.getYSupport();
 
-				failWithMessage("Expected no y support at " + y + ", was " + support.getAbsoluteY() + " to " + support.getAbsoluteEndY());
+				failWithMessage("Expected no y support at " + y + ", was " + ySupportPoint2D.getSupportedMinY() + " to " + ySupportPoint2D.getSupportedMaxY());
 			}
 		}
 		return myself;
@@ -49,10 +48,9 @@ public abstract class AbstractSimplePoint2DAssert<SELF extends AbstractSimplePoi
 		isNotNull();
 		if(!actual.isXSupport(x)) {
 			if(actual instanceof XSupportPoint2D) {
-				XSupportPoint2D ySupportPoint2D = (XSupportPoint2D)actual;
-				Placement2D support = ySupportPoint2D.getXSupport();
+				XSupportPoint2D xSupport = (XSupportPoint2D)actual;
 
-				failWithMessage("Expected x support at " + x + ", was " + support.getAbsoluteX() + " to " + support.getAbsoluteEndX());
+				failWithMessage("Expected x support at " + x + ", was " + xSupport.getSupportedMinX() + " to " + xSupport.getSupportedMaxX());
 			} else {
 				failWithMessage("Expected x support at " + x + ", was none for " + actual);
 			}
@@ -64,10 +62,9 @@ public abstract class AbstractSimplePoint2DAssert<SELF extends AbstractSimplePoi
 		isNotNull();
 		if(actual.isXSupport(x)) {
 			if(actual instanceof XSupportPoint2D) {
-				XSupportPoint2D ySupportPoint2D = (XSupportPoint2D)actual;
-				Placement2D support = ySupportPoint2D.getXSupport();
+				XSupportPoint2D xSupport = (XSupportPoint2D)actual;
 
-				failWithMessage("Expected no x support at " + x + ", was " + support.getAbsoluteX() + " to " + support.getAbsoluteEndX());
+				failWithMessage("Expected no x support at " + x + ", was " + xSupport.getSupportedMinX() + " to " + xSupport.getSupportedMaxX());
 			}
 		}
 		return myself;
@@ -83,9 +80,8 @@ public abstract class AbstractSimplePoint2DAssert<SELF extends AbstractSimplePoi
 		isNotNull();
 		if(actual instanceof YSupportPoint2D) {
 			YSupportPoint2D ySupportPoint2D = (YSupportPoint2D)actual;
-			Placement2D ySupport = ySupportPoint2D.getYSupport();
-			if(ySupport.getAbsoluteEndY() != y) {
-				failWithMessage("Expected y support limit " + y + ", was " + ySupport.getAbsoluteEndY());
+			if(ySupportPoint2D.getSupportedMaxY() != y) {
+				failWithMessage("Expected y support limit " + y + ", was " + ySupportPoint2D.getSupportedMaxY());
 			}
 		} else {
 			failWithMessage("No y support, expected " + y + ", was none for " + actual);
@@ -97,8 +93,7 @@ public abstract class AbstractSimplePoint2DAssert<SELF extends AbstractSimplePoi
 		isNotNull();
 		if(actual instanceof YSupportPoint2D) {
 			YSupportPoint2D ySupportPoint2D = (YSupportPoint2D)actual;
-			Placement2D support = ySupportPoint2D.getYSupport();
-			failWithMessage("Expected no y support, was " + support.getAbsoluteEndY());
+			failWithMessage("Expected no y support, was " + ySupportPoint2D.getSupportedMaxY());
 		}
 		return myself;
 	}
@@ -107,8 +102,7 @@ public abstract class AbstractSimplePoint2DAssert<SELF extends AbstractSimplePoi
 		isNotNull();
 		if(actual instanceof XSupportPoint2D) {
 			XSupportPoint2D xSupportPoint2D = (XSupportPoint2D)actual;
-			Placement2D support = xSupportPoint2D.getXSupport();
-			failWithMessage("Expected no x support, was " + support.getAbsoluteEndX());
+			failWithMessage("Expected no x support, was " +  xSupportPoint2D.getSupportedMaxX());
 		}
 		return myself;
 	}
@@ -117,14 +111,12 @@ public abstract class AbstractSimplePoint2DAssert<SELF extends AbstractSimplePoi
 		isNotNull();
 		if(actual instanceof XSupportPoint2D) {
 			XSupportPoint2D xSupportPoint2D = (XSupportPoint2D)actual;
-			Placement2D ySupport = xSupportPoint2D.getXSupport();
-			if(ySupport.getAbsoluteEndX() != x) {
-				failWithMessage("Expected x support limit " + x + ", was " + ySupport.getAbsoluteEndX());
+			if(xSupportPoint2D.getSupportedMaxX() != x) {
+				failWithMessage("Expected x support limit " + x + ", was " + xSupportPoint2D.getSupportedMaxX());
 			}
 		} else {
 			failWithMessage("No x support, expected " + x);
 		}
 		return myself;
 	}
-
 }

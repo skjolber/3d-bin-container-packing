@@ -13,7 +13,6 @@ public class CustomIntYComparator implements IntComparator {
 
 	@Override
 	public int compare(int value1, int value2) {
-
 		Point3D<?> o1 = values.get(value1);
 		Point3D<?> o2 = values.get(value2);
 

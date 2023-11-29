@@ -93,12 +93,10 @@ public class DefaultXYPlaneXZPlanePoint3D<P extends Placement3D & Serializable> 
 		return new DefaultXYPlaneXZPlanePoint3D<>(minX, minY, minZ, maxX, maxY, maxZ, xzPlane, xyPlane);
 	}
 
-	@Override
 	public Placement3D getXZPlane() {
 		return xzPlane;
 	}
 
-	@Override
 	public Placement3D getXYPlane() {
 		return xyPlane;
 	}

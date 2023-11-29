@@ -61,7 +61,6 @@ public class DefaultXZPlanePoint3D<P extends Placement3D & Serializable> extends
 				xzPlane);
 	}
 
-	@Override
 	public Placement3D getXZPlane() {
 		return xzPlane;
 	}

@@ -13,20 +13,13 @@ public class StackPlacement implements Placement3D, Serializable {
 	protected int y; // depth coordinate
 	protected int z; // height coordinate
 
-	// TODO weight constraint
-	protected int maxSupportedPressure; // i.e.  
-	protected int maxSupportedWeight;
-
-	public StackPlacement(Stackable stackable, StackValue value, int x, int y, int z, int maxSupportedPressure,
-			int maxSupportedWeight) {
+	public StackPlacement(Stackable stackable, StackValue value, int x, int y, int z) {
 		super();
 		this.stackable = stackable;
 		this.value = value;
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		this.maxSupportedPressure = maxSupportedPressure;
-		this.maxSupportedWeight = maxSupportedWeight;
 	}
 
 	public StackPlacement() {
@@ -145,14 +138,6 @@ public class StackPlacement implements Placement3D, Serializable {
 
 	public void setValue(StackValue value) {
 		this.value = value;
-	}
-
-	public void setMaxSupportedPressure(int maxSupportedPressure) {
-		this.maxSupportedPressure = maxSupportedPressure;
-	}
-
-	public void setMaxSupportedWeight(int maxSupportedWeight) {
-		this.maxSupportedWeight = maxSupportedWeight;
 	}
 
 	public int getWeight() {

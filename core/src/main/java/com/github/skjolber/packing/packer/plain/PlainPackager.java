@@ -166,7 +166,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 
 			Point3D<StackPlacement> point = extremePoints3D.getValue(bestPointIndex);
 
-			StackPlacement stackPlacement = new StackPlacement(bestStackable, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ(), -1, -1);
+			StackPlacement stackPlacement = new StackPlacement(bestStackable, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ());
 			stack.add(stackPlacement);
 			extremePoints3D.add(bestPointIndex, stackPlacement);
 
