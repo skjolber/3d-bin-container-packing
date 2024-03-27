@@ -36,7 +36,7 @@
 		<maven-gpg-plugin.version>3.2.2</maven-gpg-plugin.version>
 		<maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
 		<jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
-		<maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
 		<maven-shade-plugin.version>3.5.2</maven-shade-plugin.version>
 		<jqwik.version>1.8.2</jqwik.version>
 		<assertj.version>3.25.3</assertj.version>
