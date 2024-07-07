@@ -200,9 +200,9 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 	protected void pack(List<BouwkampCodes> codes) {
 		for (BouwkampCodes bouwkampCodes : codes) {
 			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
-				long timestamp = System.currentTimeMillis();
+				long timestamp = System.nanoTime();
 				pack(bouwkampCode);
-				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.currentTimeMillis() - timestamp));
+				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.nanoTime() - timestamp) / 1000000L);
 			}
 		}
 	}

@@ -35,7 +35,7 @@ public class BruteForcePackagerResultBuilder extends PackagerResultBuilder<Brute
 		if(items == null) {
 			throw new IllegalStateException();
 		}
-		long start = System.currentTimeMillis();
+		long start = System.nanoTime();
 
 		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
 		if(deadline != -1L) {
@@ -47,7 +47,7 @@ public class BruteForcePackagerResultBuilder extends PackagerResultBuilder<Brute
 
 		PackagerInterruptSupplier build = booleanSupplierBuilder.build();
 		List<Container> packList = packager.pack(items, containers, maxContainerCount, build);
-		long duration = System.currentTimeMillis() - start;
+		long duration = (System.nanoTime() - start) / 1000000L;
 		if(packList == null) {
 			return new PackagerResult(Collections.emptyList(), duration, true);
 		}

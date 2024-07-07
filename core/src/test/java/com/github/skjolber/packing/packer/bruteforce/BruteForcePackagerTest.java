@@ -201,10 +201,10 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	protected void pack(List<BouwkampCodes> codes) {
 		for (BouwkampCodes bouwkampCodes : codes) {
 			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
-				long timestamp = System.currentTimeMillis();
+				long timestamp = System.nanoTime();
 				System.out.println("Package " + bouwkampCode.getName() + " " + bouwkampCodes.getSource());
 				pack(bouwkampCode);
-				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.currentTimeMillis() - timestamp));
+				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.nanoTime() - timestamp) / 1000000L);
 			}
 		}
 	}

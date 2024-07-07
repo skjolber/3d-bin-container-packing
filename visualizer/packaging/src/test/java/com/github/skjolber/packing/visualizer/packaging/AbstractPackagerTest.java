@@ -70,9 +70,9 @@ public class AbstractPackagerTest {
 				}
 				*/
 				System.out.println("Package " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder());
-				long timestamp = System.currentTimeMillis();
+				long timestamp = System.nanoTime();
 				pack(bouwkampCode, packager);
-				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.currentTimeMillis() - timestamp));
+				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.nanoTime() - timestamp) / 1000000L);
 
 				Thread.sleep(5000);
 			}

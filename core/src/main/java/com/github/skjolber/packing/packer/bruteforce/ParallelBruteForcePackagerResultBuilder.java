@@ -8,11 +8,11 @@ public class ParallelBruteForcePackagerResultBuilder extends BruteForcePackagerR
 
 	@Override
 	public PackagerResult build() {
-		long timestamp = System.currentTimeMillis();
+		long timestamp = System.nanoTime();
 		try {
 			return super.build();
 		} catch (ParallelBruteForcePackagerException e) {
-			return new PackagerResult(Collections.emptyList(), System.currentTimeMillis() - timestamp, false);
+			return new PackagerResult(Collections.emptyList(), (System.nanoTime() - timestamp) / 1000000L , false);
 		}
 	}
 }
