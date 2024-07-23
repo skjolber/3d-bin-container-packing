@@ -39,17 +39,13 @@ import com.github.skjolber.packing.test.generator.ItemIO;
 public class EgyPackagerState {
 
 	private final int threadPoolSize;
-	private final int nth;
 
 	private ExecutorService pool1;
 	private ExecutorService pool2;
 
 	private List<BenchmarkSet> parallelBruteForcePackager = new ArrayList<>();
-	private List<BenchmarkSet> parallelBruteForcePackagerNth = new ArrayList<>();
 	private List<BenchmarkSet> bruteForcePackager = new ArrayList<>();
-	private List<BenchmarkSet> bruteForcePackagerNth = new ArrayList<>();
 	private List<BenchmarkSet> plainPackager = new ArrayList<>();
-	private List<BenchmarkSet> plainPackagerNth = new ArrayList<>();
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 
 	private static List<StackableItem> stackableItems3D;
@@ -74,12 +70,11 @@ public class EgyPackagerState {
 	}
 
 	public EgyPackagerState() {
-		this(8, 20000);
+		this(8);
 	}
 
-	public EgyPackagerState(int threadPoolSize, int nth) {
+	public EgyPackagerState(int threadPoolSize) {
 		this.threadPoolSize = threadPoolSize;
-		this.nth = nth;
 
 		this.pool1 = Executors.newFixedThreadPool(threadPoolSize, new DefaultThreadFactory());
 		this.pool2 = Executors.newFixedThreadPool(threadPoolSize, new DefaultThreadFactory());
@@ -89,29 +84,22 @@ public class EgyPackagerState {
 	public void init() {
 		ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16)
 				.build();
-		ParallelBruteForcePackager parallelPackagerNth = ParallelBruteForcePackager.newBuilder().withExecutorService(pool1).withParallelizationCount(threadPoolSize * 16)
-				.withCheckpointsPerDeadlineCheck(nth).build();
 
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
-		BruteForcePackager packagerNth = BruteForcePackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).build();
 
 		PlainPackager plainPackager = PlainPackager.newBuilder().build();
-		PlainPackager plainPackagerNth = PlainPackager.newBuilder().withCheckpointsPerDeadlineCheck(nth).build();
 
 		FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().build();
 
 		// single-threaded
 		this.bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D, containers));
-		this.bruteForcePackagerNth.add(new BenchmarkSet(packagerNth, stackableItems3D, containers));
 
 		this.plainPackager.add(new BenchmarkSet(plainPackager, stackableItems3D, containers));
-		this.plainPackagerNth.add(new BenchmarkSet(plainPackagerNth, stackableItems3D, containers));
 
 		this.fastBruteForcePackager.add(new BenchmarkSet(fastPackager, stackableItems3D, containers));
 
 		// multi-threaded
 		this.parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D, containers));
-		this.parallelBruteForcePackagerNth.add(new BenchmarkSet(parallelPackagerNth, stackableItems3D, containers));
 	}
 
 	public static Container getContainer(List<Item> items) {
@@ -171,6 +159,19 @@ public class EgyPackagerState {
 		pool1.shutdown();
 		pool2.shutdown();
 
+		for (BenchmarkSet benchmarkSet : parallelBruteForcePackager) {
+			benchmarkSet.getPackager().close();
+		}
+		for (BenchmarkSet benchmarkSet : bruteForcePackager) {
+			benchmarkSet.getPackager().close();
+		}
+		for (BenchmarkSet benchmarkSet : plainPackager) {
+			benchmarkSet.getPackager().close();
+		}
+		for (BenchmarkSet benchmarkSet : fastBruteForcePackager) {
+			benchmarkSet.getPackager().close();
+		}
+
 		try {
 			Thread.sleep(500);
 		} catch (Exception e) {
@@ -182,24 +183,12 @@ public class EgyPackagerState {
 		return bruteForcePackager;
 	}
 
-	public List<BenchmarkSet> getBruteForcePackagerNth() {
-		return bruteForcePackagerNth;
-	}
-
 	public List<BenchmarkSet> getParallelBruteForcePackager() {
 		return parallelBruteForcePackager;
 	}
 
-	public List<BenchmarkSet> getParallelBruteForcePackagerNth() {
-		return parallelBruteForcePackagerNth;
-	}
-
 	public List<BenchmarkSet> getPlainPackager() {
 		return plainPackager;
-	}
-
-	public List<BenchmarkSet> getPlainPackagerNth() {
-		return plainPackagerNth;
 	}
 
 	public List<BenchmarkSet> getFastBruteForcePackager() {

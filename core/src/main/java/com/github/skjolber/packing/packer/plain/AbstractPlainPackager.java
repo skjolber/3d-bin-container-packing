@@ -2,6 +2,7 @@ package com.github.skjolber.packing.packer.plain;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import com.github.skjolber.packing.api.Container;
@@ -25,8 +26,8 @@ import com.github.skjolber.packing.packer.DefaultPackResult;
  */
 public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> extends AbstractPackager<DefaultPackResult, PlainPackagerResultBuilder> {
 
-	public AbstractPlainPackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		super(checkpointsPerDeadlineCheck, packResultComparator);
+	public AbstractPlainPackager(PackResultComparator packResultComparator) {
+		super(packResultComparator);
 	}
 
 	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int containerIndex, PackagerInterruptSupplier interrupt);
@@ -82,6 +83,10 @@ public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> e
 	@Override
 	protected PlainAdapter adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
 		return new PlainAdapter(boxes, containers, interrupt);
+	}
+
+	protected ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
+		return scheduledThreadPoolExecutor;
 	}
 
 }

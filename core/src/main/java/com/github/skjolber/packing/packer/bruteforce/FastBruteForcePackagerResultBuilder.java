@@ -13,15 +13,8 @@ public class FastBruteForcePackagerResultBuilder extends PackagerResultBuilder<F
 
 	private FastBruteForcePackager packager;
 
-	private int checkpointsPerDeadlineCheck = 1;
-
 	public FastBruteForcePackagerResultBuilder withPackager(FastBruteForcePackager packager) {
 		this.packager = packager;
-		return this;
-	}
-
-	public FastBruteForcePackagerResultBuilder withCheckpointsPerDeadlineCheck(int n) {
-		this.checkpointsPerDeadlineCheck = n;
 		return this;
 	}
 
@@ -39,20 +32,26 @@ public class FastBruteForcePackagerResultBuilder extends PackagerResultBuilder<F
 
 		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
 		if(deadline != -1L) {
-			booleanSupplierBuilder.withDeadline(deadline, checkpointsPerDeadlineCheck);
+			booleanSupplierBuilder.withDeadline(deadline);
 		}
 		if(interrupt != null) {
 			booleanSupplierBuilder.withInterrupt(interrupt);
 		}
+		
+		booleanSupplierBuilder.withScheduledThreadPoolExecutor(packager.getScheduledThreadPoolExecutor());
 
 		PackagerInterruptSupplier build = booleanSupplierBuilder.build();
-
-		List<Container> packList = packager.pack(items, containers, maxContainerCount, build);
-		long duration = System.currentTimeMillis() - start;
-		if(packList == null) {
-			return new PackagerResult(Collections.emptyList(), duration, true);
+		try {
+			List<Container> packList = packager.pack(items, containers, maxContainerCount, build);
+			long duration = System.currentTimeMillis() - start;
+			if(packList == null) {
+				return new PackagerResult(Collections.emptyList(), duration, true);
+			}
+			return new PackagerResult(packList, duration, false);
+		} finally {
+			build.close();
 		}
-		return new PackagerResult(packList, duration, false);
 	}
-
+	
+	
 }

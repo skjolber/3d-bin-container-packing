@@ -40,7 +40,7 @@ public interface PermutationRotationIterator {
 	/**
 	 * Get current permutations
 	 * 
-	 * @return
+	 * @return current permutations array
 	 */
 
 	int[] getPermutations();
@@ -49,7 +49,7 @@ public interface PermutationRotationIterator {
 	 * 
 	 * Get current length
 	 * 
-	 * @return
+	 * @return current length of permutations array
 	 */
 
 	int length();
@@ -112,7 +112,7 @@ public interface PermutationRotationIterator {
 	 * 
 	 * @param state  previously saved state
 	 * @param length number of items
-	 * @return
+	 * @return current permutations + rotations
 	 */
 
 	List<PermutationRotation> get(PermutationRotationState state, int length);

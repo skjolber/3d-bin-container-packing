@@ -13,15 +13,8 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 
 	private AbstractPlainPackager<?> packager;
 
-	private int checkpointsPerDeadlineCheck = 1;
-
 	public PlainPackagerResultBuilder withPackager(AbstractPlainPackager<?> packager) {
 		this.packager = packager;
-		return this;
-	}
-
-	public PlainPackagerResultBuilder withCheckpointsPerDeadlineCheck(int n) {
-		this.checkpointsPerDeadlineCheck = n;
 		return this;
 	}
 
@@ -39,19 +32,25 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 
 		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
 		if(deadline != -1L) {
-			booleanSupplierBuilder.withDeadline(deadline, checkpointsPerDeadlineCheck);
+			booleanSupplierBuilder.withDeadline(deadline);
 		}
 		if(interrupt != null) {
 			booleanSupplierBuilder.withInterrupt(interrupt);
 		}
 
+		booleanSupplierBuilder.withScheduledThreadPoolExecutor(packager.getScheduledThreadPoolExecutor());
+
 		PackagerInterruptSupplier build = booleanSupplierBuilder.build();
-		List<Container> packList = packager.pack(items, containers, maxContainerCount, build);
-		long duration = System.currentTimeMillis() - start;
-		if(packList == null) {
-			return new PackagerResult(Collections.emptyList(), duration, true);
+		try {
+			List<Container> packList = packager.pack(items, containers, maxContainerCount, build);
+			long duration = System.currentTimeMillis() - start;
+			if(packList == null) {
+				return new PackagerResult(Collections.emptyList(), duration, true);
+			}
+			return new PackagerResult(packList, duration, false);
+		} finally {
+			build.close();
 		}
-		return new PackagerResult(packList, duration, false);
 	}
 
 }

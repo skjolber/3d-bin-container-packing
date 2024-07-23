@@ -41,12 +41,12 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			if(packResultComparator == null) {
 				packResultComparator = new DefaultPackResultComparator();
 			}
-			return new LargestAreaFitFirstPackager(checkpointsPerDeadlineCheck, packResultComparator);
+			return new LargestAreaFitFirstPackager(packResultComparator);
 		}
 	}
 
-	public LargestAreaFitFirstPackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		super(checkpointsPerDeadlineCheck, packResultComparator);
+	public LargestAreaFitFirstPackager(PackResultComparator packResultComparator) {
+		super(packResultComparator);
 	}
 
 	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt) {
@@ -234,6 +234,6 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 	@Override
 	public LargestAreaFitFirstPackagerResultBuilder newResultBuilder() {
-		return new LargestAreaFitFirstPackagerResultBuilder().withCheckpointsPerDeadlineCheck(checkpointsPerDeadlineCheck).withPackager(this);
+		return new LargestAreaFitFirstPackagerResultBuilder().withPackager(this);
 	}
 }

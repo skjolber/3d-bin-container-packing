@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Logger;
 
 import com.github.skjolber.packing.api.Container;
@@ -36,13 +37,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 	private static Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
 
-	public AbstractBruteForcePackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		super(checkpointsPerDeadlineCheck, packResultComparator);
+	public AbstractBruteForcePackager(PackResultComparator packResultComparator) {
+		super(packResultComparator);
 	}
 
 	@Override
 	public BruteForcePackagerResultBuilder newResultBuilder() {
-		return new BruteForcePackagerResultBuilder().withCheckpointsPerDeadlineCheck(checkpointsPerDeadlineCheck).withPackager(this);
+		return new BruteForcePackagerResultBuilder().withPackager(this);
 	}
 
 	static List<StackPlacement> getPlacements(int size) {
@@ -248,6 +249,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		extremePointsStack.pop();
 
 		return best;
+	}
+
+	protected ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
+		return scheduledThreadPoolExecutor;
 	}
 
 }

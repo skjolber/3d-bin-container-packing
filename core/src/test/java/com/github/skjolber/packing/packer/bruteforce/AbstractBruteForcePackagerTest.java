@@ -41,15 +41,18 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 		);
 
 		AbstractPackager packager = createPackager();
-
-		PackagerResult build = packager.newResultBuilder()
-			.withContainers(ContainerItem.newListBuilder()
-				.withContainer(container)
-				.build())
-			.withStackables(b1)
-			.build();
-		
-		assertFalse(build.isSuccess());
+		try {
+			PackagerResult build = packager.newResultBuilder()
+				.withContainers(ContainerItem.newListBuilder()
+					.withContainer(container)
+					.build())
+				.withStackables(b1)
+				.build();
+			
+			assertFalse(build.isSuccess());
+		} finally {
+			packager.close();
+		}
 	}
 	
 	@Test
@@ -62,17 +65,20 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 				.build();
 
 		AbstractPackager packager = createPackager();
-
-		List<StackableItem> products = Arrays.asList(
-				box(3,7,35,1));
-
-		PackagerResult build = packager
-				.newResultBuilder()
-				.withContainers(containerItems)
-				.withStackables(products)
-				.build();
-
-		assertFalse(build.isSuccess());
+		try {
+			List<StackableItem> products = Arrays.asList(
+					box(3,7,35,1));
+	
+			PackagerResult build = packager
+					.newResultBuilder()
+					.withContainers(containerItems)
+					.withStackables(products)
+					.build();
+	
+			assertFalse(build.isSuccess());
+		} finally {
+			packager.close();
+		}
 	}
 	
 	@Test
@@ -84,18 +90,21 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 				.build();
 
 		AbstractPackager packager = createPackager();
-
-		List<StackableItem> products = Arrays.asList(
-				box(1,1,1,1), box(3,7,35,1));
-
-		PackagerResult build = packager
-				.newResultBuilder()
-				.withContainers(containerItems)
-				.withStackables(products)
-				.withMaxContainerCount(3)
-				.build();
-
-		assertFalse(build.isSuccess());
+		try {
+			List<StackableItem> products = Arrays.asList(
+					box(1,1,1,1), box(3,7,35,1));
+	
+			PackagerResult build = packager
+					.newResultBuilder()
+					.withContainers(containerItems)
+					.withStackables(products)
+					.withMaxContainerCount(3)
+					.build();
+	
+			assertFalse(build.isSuccess());
+		} finally {
+			packager.close();
+		}
 	}
 
 
@@ -138,16 +147,19 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 			);
 
 		AbstractPackager packager = createPackager();
-
-		PackagerResult build = packager.newResultBuilder()
-			.withContainers(ContainerItem.newListBuilder()
-				.withContainers(thin, thick)
-				.build())
-			.withStackables(thinBox, thickBox)
-			.withMaxContainerCount(2)
-			.build();
-		
-		assertTrue(build.isSuccess());		
+		try {
+			PackagerResult build = packager.newResultBuilder()
+				.withContainers(ContainerItem.newListBuilder()
+					.withContainers(thin, thick)
+					.build())
+				.withStackables(thinBox, thickBox)
+				.withMaxContainerCount(2)
+				.build();
+			
+			assertTrue(build.isSuccess());		
+		} finally {
+			packager.close();
+		}
 	}
 
 	protected abstract AbstractPackager createPackager();
