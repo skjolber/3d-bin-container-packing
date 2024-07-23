@@ -135,7 +135,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	}
 
 	public List<Container> packList(List<StackableItem> products, List<ContainerItem> containers, int limit) {
-		return pack(products, containers, limit, PackagerInterruptSupplierBuilder.NOOP);
+		return pack(products, containers, limit, PackagerInterruptSupplierBuilder.NEGATIVE);
 	}
 
 	/**

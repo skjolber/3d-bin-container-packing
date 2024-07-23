@@ -7,7 +7,8 @@ import java.util.function.BooleanSupplier;
 
 public class PackagerInterruptSupplierBuilder {
 
-	public static final NegativePackagerInterruptSupplier NOOP = new NegativePackagerInterruptSupplier();
+	public static final NegativePackagerInterruptSupplier NEGATIVE = new NegativePackagerInterruptSupplier();
+	public static final PositivePackagerInterruptSupplier POSITIVE = new PositivePackagerInterruptSupplier();
 
 	private long deadline = Long.MAX_VALUE;
 	private BooleanSupplier interrupt = null;
@@ -33,27 +34,33 @@ public class PackagerInterruptSupplierBuilder {
 	}
 
 	public PackagerInterruptSupplier build() {
+		
 		if(deadline == Long.MAX_VALUE || deadline == -1L) {
 			// no deadline
 			if(interrupt != null) {
 				return new DefaultPackagerInterrupt(interrupt);
 			}
-			return NOOP;
+			return NEGATIVE;
 		}
-		
+
+		long delay = deadline - System.currentTimeMillis();
+		if(delay <= 0) {
+			return POSITIVE; // i.e. time is already up
+		}
+
 		if(scheduledThreadPoolExecutor == null) {
 			throw new IllegalStateException("Expected scheduler");
 		}
-		
+				
 		if(interrupt == null) {
 			DeadlineCheckPackagerInterruptSupplier supplier = new DeadlineCheckPackagerInterruptSupplier();
-			ScheduledFuture<?> schedule = scheduledThreadPoolExecutor.schedule(supplier, deadline - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+			ScheduledFuture<?> schedule = scheduledThreadPoolExecutor.schedule(supplier, delay, TimeUnit.MILLISECONDS);
 			supplier.setFuture(schedule);
 			return supplier;
 		}
 		
 		DelegateDeadlineCheckPackagerInterruptSupplier supplier = new DelegateDeadlineCheckPackagerInterruptSupplier(interrupt);
-		ScheduledFuture<?> schedule = scheduledThreadPoolExecutor.schedule(supplier, deadline - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+		ScheduledFuture<?> schedule = scheduledThreadPoolExecutor.schedule(supplier, delay, TimeUnit.MILLISECONDS);
 		supplier.setFuture(schedule);
 		return supplier;
 	}
