@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
@@ -50,7 +51,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			if(packResultComparator == null) {
 				packResultComparator = new DefaultPackResultComparator();
 			}
-			return new FastBruteForcePackager(checkpointsPerDeadlineCheck, packResultComparator);
+			return new FastBruteForcePackager(packResultComparator);
 		}
 	}
 
@@ -140,13 +141,13 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 	}
 
-	public FastBruteForcePackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		super(checkpointsPerDeadlineCheck, packResultComparator);
+	public FastBruteForcePackager(PackResultComparator packResultComparator) {
+		super(packResultComparator);
 	}
 
 	@Override
 	public FastBruteForcePackagerResultBuilder newResultBuilder() {
-		return new FastBruteForcePackagerResultBuilder().withCheckpointsPerDeadlineCheck(checkpointsPerDeadlineCheck).withPackager(this);
+		return new FastBruteForcePackagerResultBuilder().withPackager(this);
 	}
 
 	@Override
@@ -397,6 +398,10 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		}
 
 		return placementIndex;
+	}
+	
+	protected ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
+		return scheduledThreadPoolExecutor;
 	}
 
 }

@@ -113,7 +113,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				}
 			}
 
-			return new ParallelBruteForcePackager(executorService, parallelizationCount, checkpointsPerDeadlineCheck, packResultComparator);
+			return new ParallelBruteForcePackager(executorService, parallelizationCount, packResultComparator);
 		}
 	}
 
@@ -121,9 +121,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	private final int parallelizationCount;
 	private final ExecutorService executorService;
 
-	public ParallelBruteForcePackager(ExecutorService executorService, int parallelizationCount, int checkpointsPerDeadlineCheck,
+	public ParallelBruteForcePackager(ExecutorService executorService, int parallelizationCount, 
 			PackResultComparator packResultComparator) {
-		super(checkpointsPerDeadlineCheck, packResultComparator);
+		super(packResultComparator);
 
 		this.parallelizationCount = parallelizationCount;
 		this.executorService = executorService;

@@ -24,7 +24,7 @@ public class BruteForcePackagerTest extends AbstractPackagerTest {
 	public void testSimpleImperfectSquaredRectangles() throws Exception {
 		// this will take quite some time
 
-		BruteForcePackager packager = BruteForcePackager.newBuilder().withCheckpointsPerDeadlineCheck(1024).build();
+		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
 
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 

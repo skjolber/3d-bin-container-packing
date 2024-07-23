@@ -40,12 +40,12 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 			if(packResultComparator == null) {
 				packResultComparator = new DefaultPackResultComparator();
 			}
-			return new PlainPackager(checkpointsPerDeadlineCheck, packResultComparator);
+			return new PlainPackager(packResultComparator);
 		}
 	}
 
-	public PlainPackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		super(checkpointsPerDeadlineCheck, packResultComparator);
+	public PlainPackager(PackResultComparator packResultComparator) {
+		super(packResultComparator);
 	}
 
 	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt) {
@@ -271,6 +271,6 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 
 	@Override
 	public PlainPackagerResultBuilder newResultBuilder() {
-		return new PlainPackagerResultBuilder().withCheckpointsPerDeadlineCheck(checkpointsPerDeadlineCheck).withPackager(this);
+		return new PlainPackagerResultBuilder().withPackager(this);
 	}
 }

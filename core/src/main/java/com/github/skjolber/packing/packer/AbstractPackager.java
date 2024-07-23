@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
@@ -27,18 +28,16 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	protected static final EmptyPackResult EMPTY_PACK_RESULT = EmptyPackResult.EMPTY;
 
 	protected final PackResultComparator packResultComparator;
-
-	/** limit the number of calls to get System.currentTimeMillis() */
-	protected final int checkpointsPerDeadlineCheck;
+	
+	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Integer.MAX_VALUE);
 
 	/**
 	 * Constructor
 	 *
-	 * @param checkpointsPerDeadlineCheck number of deadline checks to skip, before checking again
+	 * @param packResultComparator result comparator
 	 */
 
-	public AbstractPackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		this.checkpointsPerDeadlineCheck = checkpointsPerDeadlineCheck;
+	public AbstractPackager(PackResultComparator packResultComparator) {
 		this.packResultComparator = packResultComparator;
 	}
 
@@ -136,13 +135,14 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	}
 
 	public List<Container> packList(List<StackableItem> products, List<ContainerItem> containers, int limit) {
-		return pack(products, containers, limit, PackagerInterruptSupplierBuilder.NOOP);
+		return pack(products, containers, limit, PackagerInterruptSupplierBuilder.NEGATIVE);
 	}
 
 	/**
 	 * Return a list of containers which holds all the boxes in the argument
 	 *
 	 * @param boxes     list of boxes to fit in a container
+	 * @param containerItems list of containers available for use in this operation
 	 * @param limit     maximum number of containers
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
 	 * @return list of containers, or null if the deadline was reached, or empty list if the packages could not be packaged within the available containers and/or limit.
@@ -283,5 +283,9 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		}
 		return minArea;
 	}
-
+	
+	public void close() {
+		scheduledThreadPoolExecutor.shutdownNow();
+	}
+	
 }
