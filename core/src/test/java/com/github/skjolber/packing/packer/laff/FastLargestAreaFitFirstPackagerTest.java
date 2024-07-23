@@ -29,16 +29,19 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				.build();
 
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
-
-		List<StackableItem> products = new ArrayList<>();
-
-		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-
-		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
-		List<Container> containers = build.getContainers();
-		assertValid(containers);
+		try {
+			List<StackableItem> products = new ArrayList<>();
+	
+			products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+	
+			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+			List<Container> containers = build.getContainers();
+			assertValid(containers);
+		} finally {
+			packager.close();
+		}
 	}
 
 	@Test
@@ -50,16 +53,19 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				.build();
 
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
-
-		List<StackableItem> products = new ArrayList<>();
-
-		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
-
-		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
-		List<Container> containers = build.getContainers();
-		assertValid(containers);
+		try {
+			List<StackableItem> products = new ArrayList<>();
+	
+			products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
+			products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
+			products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
+	
+			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+			List<Container> containers = build.getContainers();
+			assertValid(containers);
+		} finally {
+			packager.close();
+		}
 	}
 
 	@Test
@@ -71,16 +77,19 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				.build();
 
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
-
-		List<StackableItem> products = new ArrayList<>();
-
-		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(5, 10, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
-
-		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
-		List<Container> containers = build.getContainers();
-		assertValid(containers);
+		try {
+			List<StackableItem> products = new ArrayList<>();
+	
+			products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(5, 10, 1).withWeight(1).build(), 1));
+			products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
+			products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
+	
+			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+			List<Container> containers = build.getContainers();
+			assertValid(containers);
+		} finally {
+			packager.close();
+		}
 	}
 
 	@Test
@@ -92,16 +101,19 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				.build();
 
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
-
-		List<StackableItem> products = new ArrayList<>();
-
-		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(3, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-
-		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
-		List<Container> containers = build.getContainers();
-		assertValid(containers);
+		try {
+			List<StackableItem> products = new ArrayList<>();
+	
+			products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(3, 1, 1).withWeight(1).build(), 1));
+			products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
+			products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+	
+			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+			List<Container> containers = build.getContainers();
+			assertValid(containers);
+		} finally {
+			packager.close();
+		}
 	}
 
 	@Test
@@ -113,21 +125,24 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				.build();
 
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
-
-		List<StackableItem> products = new ArrayList<>();
-
-		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
-		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
-		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
-
-		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
-		List<Container> containers = build.getContainers();
-		assertValid(containers);
-
-		Container fits = containers.get(0);
-
-		LevelStack levelStack = (LevelStack)fits.getStack();
-		assertEquals(2, levelStack.getLevels().size());
+		try {
+			List<StackableItem> products = new ArrayList<>();
+	
+			products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+			products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+			products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+	
+			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+			List<Container> containers = build.getContainers();
+			assertValid(containers);
+	
+			Container fits = containers.get(0);
+	
+			LevelStack levelStack = (LevelStack)fits.getStack();
+			assertEquals(2, levelStack.getLevels().size());
+		} finally {
+			packager.close();
+		}
 	}
 
 	@Test
@@ -139,19 +154,22 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				.build();
 
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
-
-		List<StackableItem> products = new ArrayList<>();
-
-		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 3));
-
-		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
-		List<Container> containers = build.getContainers();
-		assertValid(containers);
-
-		Container fits = containers.get(0);
-
-		LevelStack levelStack = (LevelStack)fits.getStack();
-		assertEquals(3, levelStack.getLevels().size());
+		try {
+			List<StackableItem> products = new ArrayList<>();
+	
+			products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 3));
+	
+			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+			List<Container> containers = build.getContainers();
+			assertValid(containers);
+	
+			Container fits = containers.get(0);
+	
+			LevelStack levelStack = (LevelStack)fits.getStack();
+			assertEquals(3, levelStack.getLevels().size());
+		} finally {
+			packager.close();
+		}
 	}
 
 	@Test
@@ -164,15 +182,18 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				.build();
 
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
-
-		List<StackableItem> products = new ArrayList<>();
-
-		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 18)); // 12
-		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1)); // 1
-
-		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
-		List<Container> containers = build.getContainers();
-		assertThat(containers).isEmpty();
+		try {
+			List<StackableItem> products = new ArrayList<>();
+	
+			products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 18)); // 12
+			products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1)); // 1
+	
+			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+			List<Container> containers = build.getContainers();
+			assertThat(containers).isEmpty();
+		} finally {
+			packager.close();
+		}
 	}
 
 	@Test
@@ -194,17 +215,20 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager
 				.newBuilder()
 				.build();
-
-		List<StackableItem> products = Arrays.asList(
-				new StackableItem(Box.newBuilder().withId("1").withSize(32, 19, 24).withRotate3D().withWeight(0).build(), 1),
-				new StackableItem(Box.newBuilder().withId("2").withSize(32, 21, 27).withRotate3D().withWeight(0).build(), 1),
-				new StackableItem(Box.newBuilder().withId("3").withSize(34, 21, 24).withRotate3D().withWeight(0).build(), 1),
-				new StackableItem(Box.newBuilder().withId("4").withSize(30, 19, 23).withRotate3D().withWeight(0).build(), 1),
-				new StackableItem(Box.newBuilder().withId("5").withSize(30, 21, 25).withRotate3D().withWeight(0).build(), 1));
-
-		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
-
-		assertEquals(0, build.size());
+		try {
+			List<StackableItem> products = Arrays.asList(
+					new StackableItem(Box.newBuilder().withId("1").withSize(32, 19, 24).withRotate3D().withWeight(0).build(), 1),
+					new StackableItem(Box.newBuilder().withId("2").withSize(32, 21, 27).withRotate3D().withWeight(0).build(), 1),
+					new StackableItem(Box.newBuilder().withId("3").withSize(34, 21, 24).withRotate3D().withWeight(0).build(), 1),
+					new StackableItem(Box.newBuilder().withId("4").withSize(30, 19, 23).withRotate3D().withWeight(0).build(), 1),
+					new StackableItem(Box.newBuilder().withId("5").withSize(30, 21, 25).withRotate3D().withWeight(0).build(), 1));
+	
+			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+	
+			assertEquals(0, build.size());
+		} finally {
+			packager.close();
+		}
 	}
 
 	@Test

@@ -26,7 +26,7 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 	public void testSimpleImperfectSquaredRectangles() throws Exception {
 		// if you do not have a lot of CPU cores, this will take quite some time
 
-		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(256).withCheckpointsPerDeadlineCheck(1024).build();
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(256).build();
 
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 

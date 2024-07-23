@@ -44,7 +44,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(packResultComparator == null) {
 				packResultComparator = new DefaultPackResultComparator();
 			}
-			return new BruteForcePackager(checkpointsPerDeadlineCheck, packResultComparator);
+			return new BruteForcePackager(packResultComparator);
 		}
 	}
 
@@ -125,8 +125,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 	}
 
-	public BruteForcePackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		super(checkpointsPerDeadlineCheck, packResultComparator);
+	public BruteForcePackager(PackResultComparator packResultComparator) {
+		super(packResultComparator);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.github.skjolber.packing.packer.laff;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import com.github.skjolber.packing.api.Container;
@@ -68,8 +69,8 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 	};
 	
 	
-	public AbstractLargestAreaFitFirstPackager(int checkpointsPerDeadlineCheck, PackResultComparator packResultComparator) {
-		super(checkpointsPerDeadlineCheck, packResultComparator);
+	public AbstractLargestAreaFitFirstPackager(PackResultComparator packResultComparator) {
+		super(packResultComparator);
 	}
 
 	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt);
@@ -125,6 +126,10 @@ public abstract class AbstractLargestAreaFitFirstPackager<P extends Point2D<Stac
 	@Override
 	protected LAFFAdapter adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
 		return new LAFFAdapter(boxes, containers, interrupt);
+	}
+
+	protected ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
+		return scheduledThreadPoolExecutor;
 	}
 
 }

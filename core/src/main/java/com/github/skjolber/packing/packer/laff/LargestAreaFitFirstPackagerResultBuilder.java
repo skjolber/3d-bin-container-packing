@@ -13,15 +13,8 @@ public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuil
 
 	private AbstractLargestAreaFitFirstPackager<?> packager;
 
-	private int checkpointsPerDeadlineCheck = 1;
-
 	public LargestAreaFitFirstPackagerResultBuilder withPackager(AbstractLargestAreaFitFirstPackager<?> packager) {
 		this.packager = packager;
-		return this;
-	}
-
-	public LargestAreaFitFirstPackagerResultBuilder withCheckpointsPerDeadlineCheck(int n) {
-		this.checkpointsPerDeadlineCheck = n;
 		return this;
 	}
 
@@ -39,20 +32,25 @@ public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuil
 
 		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
 		if(deadline != -1L) {
-			booleanSupplierBuilder.withDeadline(deadline, checkpointsPerDeadlineCheck);
+			booleanSupplierBuilder.withDeadline(deadline);
 		}
 		if(interrupt != null) {
 			booleanSupplierBuilder.withInterrupt(interrupt);
 		}
 
-		PackagerInterruptSupplier build = booleanSupplierBuilder.build();
+		booleanSupplierBuilder.withScheduledThreadPoolExecutor(packager.getScheduledThreadPoolExecutor());
 
-		List<Container> packList = packager.pack(items, containers, maxContainerCount, build);
-		long duration = System.currentTimeMillis() - start;
-		if(packList == null) {
-			return new PackagerResult(Collections.emptyList(), duration, true);
+		PackagerInterruptSupplier build = booleanSupplierBuilder.build();
+		try {
+			List<Container> packList = packager.pack(items, containers, maxContainerCount, build);
+			long duration = System.currentTimeMillis() - start;
+			if(packList == null) {
+				return new PackagerResult(Collections.emptyList(), duration, true);
+			}
+			return new PackagerResult(packList, duration, false);
+		} finally {
+			build.close();
 		}
-		return new PackagerResult(packList, duration, false);
 	}
 
 }

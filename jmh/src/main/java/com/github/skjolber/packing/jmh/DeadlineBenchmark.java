@@ -45,11 +45,6 @@ public class DeadlineBenchmark {
 	}
 
 	@Benchmark
-	public Object parallelPackagerDeadlineNth(BouwkampCodeBruteForcePackagerState state) throws Exception {
-		return process(state.getParallelBruteForcePackagerNth(), System.currentTimeMillis() + 10000);
-	}
-
-	@Benchmark
 	public Object packagerNoDeadline(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getBruteForcePackager(), -1L);
 	}
@@ -57,11 +52,6 @@ public class DeadlineBenchmark {
 	@Benchmark
 	public Object packagerDeadline(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getBruteForcePackager(), System.currentTimeMillis() + 30000);
-	}
-
-	@Benchmark
-	public Object packagerDeadlineNth(BouwkampCodeBruteForcePackagerState state) throws Exception {
-		return process(state.getBruteForcePackagerNth(), System.currentTimeMillis() + 30000);
 	}
 
 	public int process(List<BenchmarkSet> sets, long deadline) {

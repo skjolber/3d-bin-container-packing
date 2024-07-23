@@ -1,17 +1,34 @@
 package com.github.skjolber.packing.deadline;
 
-public class DeadlineCheckPackagerInterruptSupplier implements PackagerInterruptSupplier {
+import java.io.Closeable;
+import java.util.concurrent.ScheduledFuture;
 
-	protected final long deadline;
+public class DeadlineCheckPackagerInterruptSupplier implements PackagerInterruptSupplier, Runnable, Closeable {
 
-	public DeadlineCheckPackagerInterruptSupplier(long deadline) {
-		super();
-		this.deadline = deadline;
+	// this is not entirely accurate for multi-threading, but close enough
+	// (should have been volatile)
+	protected boolean expired = false;
+	protected ScheduledFuture<?> future;
+	
+	public DeadlineCheckPackagerInterruptSupplier() {
 	}
 
 	@Override
 	public boolean getAsBoolean() {
-		return System.currentTimeMillis() > deadline;
+		return expired;
+	}
+
+	@Override
+	public void run() {
+		this.expired = true;
+	}
+	
+	public void close() {
+		future.cancel(true);
+	}
+	
+	public void setFuture(ScheduledFuture<?> future) {
+		this.future = future;
 	}
 
 }

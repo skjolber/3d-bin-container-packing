@@ -41,27 +41,30 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 				.build();
 
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
-
-		List<StackableItem> products = new ArrayList<>();
-
-		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-
-		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
-		assertValid(build);
-
-		Container fits = build.getContainers().get(0);
-
-		List<StackPlacement> placements = fits.getStack().getPlacements();
-
-		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
-		assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("B");
-		assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("C");
-
-		assertThat(placements.get(0)).isAlongsideX(placements.get(1));
-		assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
-		assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
+		try {
+			List<StackableItem> products = new ArrayList<>();
+	
+			products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+	
+			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+			assertValid(build);
+	
+			Container fits = build.getContainers().get(0);
+	
+			List<StackPlacement> placements = fits.getStack().getPlacements();
+	
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
+			assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("B");
+			assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("C");
+	
+			assertThat(placements.get(0)).isAlongsideX(placements.get(1));
+			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
+			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
+		} finally {
+			packager.close();
+		}
 	}
 
 	@Test
@@ -77,31 +80,34 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 				.build();
 
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
-
-		List<StackableItem> products = new ArrayList<>();
-
-		products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
-		products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
-		products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
-
-		PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).withMaxContainerCount(5).build();
-		assertValid(build);
-
-		List<Container> packList = build.getContainers();
-
-		assertThat(packList).hasSize(2);
-
-		Container fits = packList.get(0);
-
-		List<StackPlacement> placements = fits.getStack().getPlacements();
-
-		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
-		assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("A");
-		assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("B");
-
-		assertThat(placements.get(0)).isAlongsideX(placements.get(1));
-		assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
-		assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
+		try {
+			List<StackableItem> products = new ArrayList<>();
+	
+			products.add(new StackableItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
+			products.add(new StackableItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
+			products.add(new StackableItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
+	
+			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).withMaxContainerCount(5).build();
+			assertValid(build);
+	
+			List<Container> packList = build.getContainers();
+	
+			assertThat(packList).hasSize(2);
+	
+			Container fits = packList.get(0);
+	
+			List<StackPlacement> placements = fits.getStack().getPlacements();
+	
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
+			assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("A");
+			assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("B");
+	
+			assertThat(placements.get(0)).isAlongsideX(placements.get(1));
+			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
+			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
+		} finally {
+			packager.close();
+		}
 	}
 
 	@Test
@@ -145,36 +151,39 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 				.build();
 
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
-
-		List<StackableItem> products = new ArrayList<>();
-
-		List<Integer> squares = new ArrayList<>();
-		for (BouwkampCodeLine bouwkampCodeLine : bouwkampCode.getLines()) {
-			squares.addAll(bouwkampCodeLine.getSquares());
+		try {
+			List<StackableItem> products = new ArrayList<>();
+	
+			List<Integer> squares = new ArrayList<>();
+			for (BouwkampCodeLine bouwkampCodeLine : bouwkampCode.getLines()) {
+				squares.addAll(bouwkampCodeLine.getSquares());
+			}
+	
+			// map similar items to the same stack item - this actually helps a lot
+			Map<Integer, Integer> frequencyMap = new HashMap<>();
+			squares.forEach(word -> frequencyMap.merge(word, 1, (v, newV) -> v + newV));
+	
+			for (Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
+				int square = entry.getKey();
+				int count = entry.getValue();
+				products.add(new StackableItem(Box.newBuilder().withDescription(Integer.toString(square)).withSize(square, square, 1).withRotate3D().withWeight(1).build(), count));
+			}
+	
+			Collections.shuffle(products);
+	
+			PackagerResult build = packager
+					.newResultBuilder()
+					.withContainers(containerItems)
+					.withStackables(products).build();
+	
+			Container fits = build.get(0);
+	
+			assertNotNull(bouwkampCode.getName(), fits);
+			assertValid(fits);
+			assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), squares.size());
+		} finally {
+			packager.close();
 		}
-
-		// map similar items to the same stack item - this actually helps a lot
-		Map<Integer, Integer> frequencyMap = new HashMap<>();
-		squares.forEach(word -> frequencyMap.merge(word, 1, (v, newV) -> v + newV));
-
-		for (Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
-			int square = entry.getKey();
-			int count = entry.getValue();
-			products.add(new StackableItem(Box.newBuilder().withDescription(Integer.toString(square)).withSize(square, square, 1).withRotate3D().withWeight(1).build(), count));
-		}
-
-		Collections.shuffle(products);
-
-		PackagerResult build = packager
-				.newResultBuilder()
-				.withContainers(containerItems)
-				.withStackables(products).build();
-
-		Container fits = build.get(0);
-
-		assertNotNull(bouwkampCode.getName(), fits);
-		assertValid(fits);
-		assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), squares.size());
 	}
 
 	@Test
@@ -189,39 +198,44 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
 
-		List<StackableItem> products = Arrays.asList(
-				box(1000, 1000, 1000, 1),
-				box(1000, 1000, 1000, 4),
-				box(100, 1050, 750, 1),
-				box(100, 650, 750, 1),
-				box(16, 2500, 11, 1),
-				box(250, 150, 80, 1),
-				box(280, 800, 480, 1),
-				box(30, 620, 10, 1),
-				box(40, 1000, 1000, 1),
-				box(40, 100, 165, 1),
-				box(44, 575, 534, 1),
-				box(475, 530, 150, 1),
-				box(47, 3160, 660, 1),
-				box(530, 120, 570, 1),
-				box(55, 500, 745, 1),
-				box(670, 25, 15, 1),
-				box(700, 300, 30, 1),
-				box(700, 400, 30, 1),
-				box(75, 400, 720, 1),
-				box(77, 360, 750, 1),
-				box(80, 450, 760, 1),
-				box(90, 210, 680, 1));
-
-		PackagerResult build = packager
-				.newResultBuilder()
-				.withContainers(containerItems)
-				.withStackables(products)
-				.build();
-
-		// strangely when the timeout is set to now + 200ms it properly returns null
-		Container fits = build.get(0);
-		assertNull(fits);
+			try {
+			List<StackableItem> products = Arrays.asList(
+					box(1000, 1000, 1000, 1),
+					box(1000, 1000, 1000, 4),
+					box(100, 1050, 750, 1),
+					box(100, 650, 750, 1),
+					box(16, 2500, 11, 1),
+					box(250, 150, 80, 1),
+					box(280, 800, 480, 1),
+					box(30, 620, 10, 1),
+					box(40, 1000, 1000, 1),
+					box(40, 100, 165, 1),
+					box(44, 575, 534, 1),
+					box(475, 530, 150, 1),
+					box(47, 3160, 660, 1),
+					box(530, 120, 570, 1),
+					box(55, 500, 745, 1),
+					box(670, 25, 15, 1),
+					box(700, 300, 30, 1),
+					box(700, 400, 30, 1),
+					box(75, 400, 720, 1),
+					box(77, 360, 750, 1),
+					box(80, 450, 760, 1),
+					box(90, 210, 680, 1));
+	
+			PackagerResult build = packager
+					.newResultBuilder()
+					.withContainers(containerItems)
+					.withStackables(products)
+					.build();
+	
+			// strangely when the timeout is set to now + 200ms it properly returns null
+			Container fits = build.get(0);
+			assertNull(fits);
+		} finally {
+			packager.close();
+		}
+			
 	}
 
 	@Test
