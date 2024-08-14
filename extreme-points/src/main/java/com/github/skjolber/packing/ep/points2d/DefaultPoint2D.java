@@ -2,10 +2,9 @@ package com.github.skjolber.packing.ep.points2d;
 
 import java.io.Serializable;
 
-import com.github.skjolber.packing.api.Placement2D;
-import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.StackPlacement;
 
-public class DefaultPoint2D<P extends Placement2D & Serializable> extends SimplePoint2D<P> {
+public class DefaultPoint2D extends SimplePoint2D {
 
 	private static final long serialVersionUID = 1L;
 
@@ -23,28 +22,28 @@ public class DefaultPoint2D<P extends Placement2D & Serializable> extends Simple
 		return false;
 	}
 
-	public SimplePoint2D<P> clone(int maxX, int maxY) {
-		return new DefaultPoint2D<>(minX, minY, maxX, maxY);
+	public SimplePoint2D clone(int maxX, int maxY) {
+		return new DefaultPoint2D(minX, minY, maxX, maxY);
 	}
 
 	@Override
-	public SimplePoint2D<P> moveX(int x) {
-		return new DefaultPoint2D<>(x, minY, maxX, maxY);
+	public SimplePoint2D moveX(int x) {
+		return new DefaultPoint2D(x, minY, maxX, maxY);
 	}
 
 	@Override
-	public SimplePoint2D<P> moveY(int y) {
-		return new DefaultPoint2D<>(minX, y, maxX, maxY);
+	public SimplePoint2D moveY(int y) {
+		return new DefaultPoint2D(minX, y, maxX, maxY);
 	}
 
 	@Override
-	public SimplePoint2D<P> moveX(int x, P ySupport) {
-		return new DefaultYSupportPoint2D<>(x, minY, maxY, maxY, ySupport);
+	public SimplePoint2D moveX(int x, StackPlacement ySupport) {
+		return new DefaultYSupportPoint2D(x, minY, maxY, maxY, ySupport);
 	}
 
 	@Override
-	public SimplePoint2D<P> moveY(int y, P xSupport) {
-		return new DefaultXSupportPoint2D<>(minX, y, maxX, maxX, xSupport);
+	public SimplePoint2D moveY(int y, StackPlacement xSupport) {
+		return new DefaultXSupportPoint2D(minX, y, maxX, maxX, xSupport);
 	}
 
 }

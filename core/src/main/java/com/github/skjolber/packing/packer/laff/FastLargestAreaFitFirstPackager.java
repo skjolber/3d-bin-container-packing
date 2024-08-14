@@ -15,9 +15,11 @@ import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
+import com.github.skjolber.packing.ep.points2d.Point2D;
+import com.github.skjolber.packing.ep.points2d.SimplePoint2D;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.DefaultPackResult;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
@@ -29,8 +31,40 @@ import com.github.skjolber.packing.packer.DefaultPackResultComparator;
  * Thread-safe implementation. The input boxes must however only be used in a single thread at a time.
  */
 
-public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPackager<Point2D<StackPlacement>> {
+public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPackager {
 
+	public static boolean betterAsFirst(Stackable stackable1, Point2D point1, StackValue stackValue1, Stackable stackable2, Point2D point2, StackValue stackValue2) {
+		if(stackValue1.getArea() == stackValue2.getArea()) {
+			if(stackValue1.getVolume() == stackValue2.getVolume()) {
+				// closest distance to a wall is better
+
+				int distance1 = Math.min(point1.getDx() - stackValue1.getDx(), point1.getDy() - stackValue1.getDy());
+				int distance2 = Math.min(point2.getDx() - stackValue2.getDx(), point2.getDy() - stackValue2.getDy());
+
+				return distance2 < distance1; // closest is better
+			}
+			return stackValue1.getVolume() < stackValue2.getVolume(); // larger volume is better 
+
+		}
+		return stackValue1.getArea() < stackValue2.getArea(); // larger area is better
+	};
+
+	public static boolean betterAsNext(Stackable stackable1, Point2D point1, StackValue stackValue1, Stackable stackable2, Point2D point2, StackValue stackValue2) {
+		if(stackable2.getVolume() == stackable1.getVolume()) {
+			if(stackValue1.getArea() == stackValue2.getArea()) {
+				// closest distance to a wall is better
+
+				int distance1 = Math.min(point1.getDx() - stackValue1.getDx(), point1.getDy() - stackValue1.getDy());
+				int distance2 = Math.min(point2.getDx() - stackValue2.getDx(), point2.getDy() - stackValue2.getDy());
+
+				return distance2 < distance1; // closest is better
+			}
+			return stackValue2.getArea() < stackValue1.getArea(); // smaller is better
+		}
+		return stackable2.getVolume() > stackable1.getVolume(); // larger volume is better 
+	};
+
+	
 	public static LargestAreaFitFirstPackagerBuilder newBuilder() {
 		return new LargestAreaFitFirstPackagerBuilder();
 	}
@@ -66,7 +100,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 				.filter(s -> constraint == null || constraint.canAccept(s))
 				.collect(Collectors.toList());
 
-		ExtremePoints2D<StackPlacement> extremePoints2D = new ExtremePoints2D<>(containerStackValue.getLoadDx(), containerStackValue.getLoadDy());
+		ExtremePoints2D extremePoints2D = new ExtremePoints2D(containerStackValue.getLoadDx(), containerStackValue.getLoadDy());
 
 		extremePoints2D.setMinArea(getMinStackableArea(scopedStackables));
 
@@ -83,7 +117,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			int maxHeight = containerStackValue.getLoadDz() - levelOffset;
 
 			// there is only point, spanning the free space in the level
-			Point2D<StackPlacement> firstPoint = extremePoints2D.getValue(0);
+			SimplePoint2D firstPoint = extremePoints2D.getValue(0);
 
 			int bestFirstIndex = -1;
 			StackValue bestFirstStackValue = null;
@@ -111,7 +145,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 					if(constraint != null && !constraint.supports(stack, box, stackValue, 0, 0, levelOffset)) {
 						continue;
 					}
-					if(bestFirstStackValue != null && !FIRST_STACK_VALUE_POINT_FILTER.accept(bestFirstBox, firstPoint, bestFirstStackValue, box, firstPoint, stackValue)) {
+					if(bestFirstStackValue != null && !betterAsFirst(bestFirstBox, firstPoint, bestFirstStackValue, box, firstPoint, stackValue)) {
 						continue;
 					}
 					bestFirstIndex = i;
@@ -183,7 +217,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 						// pick the best point / stackable combination
 						int pointCount = extremePoints2D.getValueCount();
 						for (int k = 0; k < pointCount; k++) {
-							Point2D<StackPlacement> point2d = extremePoints2D.getValue(k);
+							SimplePoint2D point2d = extremePoints2D.getValue(k);
 							if(point2d.getArea() < stackValue.getArea()) {
 								continue;
 							}
@@ -192,7 +226,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 								continue;
 							}
 
-							if(bestIndex != -1 && !DEFAULT_STACK_VALUE_POINT_FILTER.accept(bestStackable, extremePoints2D.getValue(bestPointIndex), bestStackValue, box, point2d, stackValue)) {
+							if(bestIndex != -1 && !betterAsNext(bestStackable, extremePoints2D.getValue(bestPointIndex), bestStackValue, box, point2d, stackValue)) {
 								continue;
 							}
 							if(constraint != null && !constraint.supports(stack, box, stackValue, point2d.getMinX(), point2d.getMinY(), levelOffset)) {
@@ -214,7 +248,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 				Stackable remove = scopedStackables.remove(bestIndex);
 				remainingStackables.remove(remove);
 
-				Point2D<StackPlacement> point = extremePoints2D.getValue(bestPointIndex);
+				SimplePoint2D point = extremePoints2D.getValue(bestPointIndex);
 
 				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), 0);
 				levelStack.add(stackPlacement);

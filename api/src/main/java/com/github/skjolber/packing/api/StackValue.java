@@ -24,7 +24,7 @@ public abstract class StackValue implements Serializable {
 
 	protected final List<Surface> surfaces;
 	protected long volume;
-
+	
 	public StackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> surfaces) {
 		this.dx = dx;
 		this.dy = dy;
@@ -101,5 +101,7 @@ public abstract class StackValue implements Serializable {
 	
 	@Override
 	public abstract StackValue clone();
+	
+	public abstract Stackable getStackable();
 
 }

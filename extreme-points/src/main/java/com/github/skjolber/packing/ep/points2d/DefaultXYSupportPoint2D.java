@@ -2,16 +2,15 @@ package com.github.skjolber.packing.ep.points2d;
 
 import java.io.Serializable;
 
-import com.github.skjolber.packing.api.Placement2D;
-import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.StackPlacement;
 
-public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> extends SimplePoint2D<P> implements XSupportPoint2D, YSupportPoint2D {
+public class DefaultXYSupportPoint2D extends SimplePoint2D implements XSupportPoint2D, YSupportPoint2D {
 
 	private static final long serialVersionUID = 1L;
-	private final P xSupport;
-	private final P ySupport;
+	private final StackPlacement xSupport;
+	private final StackPlacement ySupport;
 
-	public DefaultXYSupportPoint2D(int minX, int minY, int maxX, int maxY, P xSupport, P ySupport) {
+	public DefaultXYSupportPoint2D(int minX, int minY, int maxX, int maxY, StackPlacement xSupport, StackPlacement ySupport) {
 		super(minX, minY, maxX, maxY);
 
 		if(minX < 0) {
@@ -64,8 +63,8 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 				+ ", ySupportMinY=" + getYSupportMinY() + ", ySupportMaxY=" + getYSupportMaxY() + "]";
 	}
 
-	public SimplePoint2D<P> clone(int maxX, int maxY) {
-		return new DefaultXYSupportPoint2D<P>(minX, minY, maxX, maxY, xSupport, ySupport);
+	public SimplePoint2D clone(int maxX, int maxY) {
+		return new DefaultXYSupportPoint2D(minX, minY, maxX, maxY, xSupport, ySupport);
 	}
 
 	@Override
@@ -89,35 +88,35 @@ public class DefaultXYSupportPoint2D<P extends Placement2D & Serializable> exten
 	}
 
 	@Override
-	public SimplePoint2D<P> moveY(int y) {
+	public SimplePoint2D moveY(int y) {
 		if(y <= ySupport.getAbsoluteEndY()) {
-			return new DefaultYSupportPoint2D<P>(minX, y, maxX, maxY, ySupport);
+			return new DefaultYSupportPoint2D(minX, y, maxX, maxY, ySupport);
 		}
-		return new DefaultPoint2D<P>(minX, y, maxX, maxY);
+		return new DefaultPoint2D(minX, y, maxX, maxY);
 	}
 
 	@Override
-	public SimplePoint2D<P> moveX(int x) {
+	public SimplePoint2D moveX(int x) {
 		if(x <= xSupport.getAbsoluteEndX()) {
-			return new DefaultXSupportPoint2D<P>(x, minY, maxX, maxY, xSupport);
+			return new DefaultXSupportPoint2D(x, minY, maxX, maxY, xSupport);
 		}
-		return new DefaultPoint2D<>(x, minY, maxX, maxY);
+		return new DefaultPoint2D(x, minY, maxX, maxY);
 	}
 
 	@Override
-	public SimplePoint2D<P> moveX(int x, P ySupport) {
+	public SimplePoint2D moveX(int x, StackPlacement ySupport) {
 		if(x <= xSupport.getAbsoluteEndX()) {
-			return new DefaultXYSupportPoint2D<P>(x, minY, maxX, maxY, xSupport, ySupport);
+			return new DefaultXYSupportPoint2D(x, minY, maxX, maxY, xSupport, ySupport);
 		}
-		return new DefaultYSupportPoint2D<P>(x, minY, maxX, maxY, ySupport);
+		return new DefaultYSupportPoint2D(x, minY, maxX, maxY, ySupport);
 	}
 
 	@Override
-	public SimplePoint2D<P> moveY(int y, P xSupport) {
+	public SimplePoint2D moveY(int y, StackPlacement xSupport) {
 		if(y <= ySupport.getAbsoluteEndY()) {
-			return new DefaultXYSupportPoint2D<P>(minX, y, maxX, maxY, xSupport, ySupport);
+			return new DefaultXYSupportPoint2D(minX, y, maxX, maxY, xSupport, ySupport);
 		}
-		return new DefaultXSupportPoint2D<P>(minX, y, maxX, maxY, xSupport);
+		return new DefaultXSupportPoint2D(minX, y, maxX, maxY, xSupport);
 
 	}
 

@@ -14,6 +14,10 @@ public class DefaultContainer extends Container {
 
 		this.stackValues = stackValues;
 		this.stack = stack;
+		
+		for (ContainerStackValue stackValue : stackValues) {
+			stackValue.setStackable(this);
+		}
 	}
 
 	@Override
@@ -28,6 +32,10 @@ public class DefaultContainer extends Container {
 
 	@Override
 	public DefaultContainer clone() {
+		ContainerStackValue[] stackValues = new ContainerStackValue[this.stackValues.length];
+		for(int i = 0; i < stackValues.length; i++) {
+			stackValues[i] = this.stackValues[i].clone();
+		}
 		return new DefaultContainer(id, description, volume, emptyWeight, stackValues, new DefaultStack());
 	}
 

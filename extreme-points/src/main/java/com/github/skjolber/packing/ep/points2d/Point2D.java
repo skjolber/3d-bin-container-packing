@@ -1,19 +1,18 @@
-package com.github.skjolber.packing.api.ep;
+package com.github.skjolber.packing.ep.points2d;
 
 import java.io.Serializable;
 import java.util.Comparator;
 
-import com.github.skjolber.packing.api.Placement2D;
 import com.github.skjolber.packing.api.StackValue;
 
-public abstract class Point2D<P extends Placement2D> implements Serializable {
+public abstract class Point2D implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	public static final Comparator<Point2D<?>> COMPARATOR_X_THEN_Y = new Comparator<Point2D<?>>() {
+	public static final Comparator<Point2D> COMPARATOR_X_THEN_Y = new Comparator<Point2D>() {
 
 		@Override
-		public int compare(Point2D<?> o1, Point2D<?> o2) {
+		public int compare(Point2D o1, Point2D o2) {
 			if(o1.minX < o2.minX) {
 				return -1;
 			} else if(o1.minX != o2.minX) {
@@ -36,10 +35,10 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 		}
 	};
 
-	public static final Comparator<Point2D<?>> COMPARATOR_MOVE_YY = new Comparator<Point2D<?>>() {
+	public static final Comparator<Point2D> COMPARATOR_MOVE_YY = new Comparator<Point2D>() {
 
 		@Override
-		public int compare(Point2D<?> o1, Point2D<?> o2) {
+		public int compare(Point2D o1, Point2D o2) {
 			if(o1.minX < o2.minX) {
 				return -1;
 			} else if(o1.minX != o2.minX) {
@@ -56,10 +55,10 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 		}
 	};
 
-	public static final Comparator<Point2D<?>> COMPARATOR_MOVE_XX = new Comparator<Point2D<?>>() {
+	public static final Comparator<Point2D> COMPARATOR_MOVE_XX = new Comparator<Point2D>() {
 
 		@Override
-		public int compare(Point2D<?> o1, Point2D<?> o2) {
+		public int compare(Point2D o1, Point2D o2) {
 			if(o1.minY < o2.minY) {
 				return -1;
 			} else if(o1.minY != o2.minY) {
@@ -207,7 +206,7 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 		return dx;
 	}
 
-	public boolean intersects(Point2D<P> point) {
+	public boolean intersects(Point2D point) {
 		return !(point.getMaxX() < minX || point.getMinX() > maxX || point.getMaxY() < minY || point.getMinY() > maxY);
 	}
 
@@ -268,28 +267,28 @@ public abstract class Point2D<P extends Placement2D> implements Serializable {
 		return "Point2D [" + minX + "x" + minY + " " + maxX + "x" + maxY + "]";
 	}
 
-	public abstract Point2D<P> clone(int maxX, int maxY);
+	public abstract Point2D clone(int maxX, int maxY);
 
-	public boolean eclipses(Point2D<P> point) {
+	public boolean eclipses(Point2D point) {
 		return minY <= point.getMinY() &&
 				minX <= point.getMinX() &&
 				point.getMaxX() <= maxX &&
 				point.getMaxY() <= maxY;
 	}
 
-	public boolean eclipsesMovedX(Point2D<P> point, int x) {
+	public boolean eclipsesMovedX(Point2D point, int x) {
 		return minX <= x && point.getMaxX() <= maxX && eclipsesY(point);
 	}
 
-	public boolean eclipsesMovedY(Point2D<P> point, int y) {
+	public boolean eclipsesMovedY(Point2D point, int y) {
 		return minY <= y && point.getMaxY() <= maxY && eclipsesX(point);
 	}
 
-	public boolean eclipsesX(Point2D<P> point) {
+	public boolean eclipsesX(Point2D point) {
 		return minX <= point.getMinX() && point.getMaxX() <= maxX;
 	}
 
-	public boolean eclipsesY(Point2D<P> point) {
+	public boolean eclipsesY(Point2D point) {
 		return minY <= point.getMinY() && point.getMaxY() <= maxY;
 	}
 

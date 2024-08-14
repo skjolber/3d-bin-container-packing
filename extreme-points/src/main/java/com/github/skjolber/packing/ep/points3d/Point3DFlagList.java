@@ -6,8 +6,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import com.github.skjolber.packing.api.Placement3D;
-import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.api.ep.Point3D;
 
 /**
@@ -17,12 +15,12 @@ import com.github.skjolber.packing.api.ep.Point3D;
  */
 
 @SuppressWarnings("unchecked")
-public class Point3DFlagList<P extends Placement3D & Serializable> implements Serializable {
+public class Point3DFlagList implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	private int size = 0;
-	private SimplePoint3D<P>[] points = new SimplePoint3D[16];
+	private SimplePoint3D[] points = new SimplePoint3D[16];
 	private boolean[] flag = new boolean[16];
 
 	public void ensureAdditionalCapacity(int count) {
@@ -31,7 +29,7 @@ public class Point3DFlagList<P extends Placement3D & Serializable> implements Se
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			SimplePoint3D<P>[] nextPoints = new SimplePoint3D[size];
+			SimplePoint3D[] nextPoints = new SimplePoint3D[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 
 			boolean[] nextFlag = new boolean[size];
@@ -42,17 +40,17 @@ public class Point3DFlagList<P extends Placement3D & Serializable> implements Se
 		}
 	}
 
-	public void add(SimplePoint3D<P> point) {
+	public void add(SimplePoint3D point) {
 		points[size] = point;
 		size++;
 	}
 
-	public void add(SimplePoint3D<P> point, int index) {
+	public void add(SimplePoint3D point, int index) {
 		points[index] = point;
 		flag[index] = false;
 	}
 
-	public void sort(Comparator<Point3D<?>> comparator, int maxSize) {
+	public void sort(Comparator<Point3D> comparator, int maxSize) {
 		Arrays.sort(points, 0, maxSize, comparator);
 	}
 
@@ -108,8 +106,8 @@ public class Point3DFlagList<P extends Placement3D & Serializable> implements Se
 		return index - offset;
 	}
 
-	public List<SimplePoint3D<P>> toList() {
-		List<SimplePoint3D<P>> list = new ArrayList<>(size);
+	public List<Point3D> toList() {
+		List<Point3D> list = new ArrayList<>(size);
 		for (int i = 0; i < size; i++) {
 			list.add(points[i]);
 		}
@@ -131,11 +129,11 @@ public class Point3DFlagList<P extends Placement3D & Serializable> implements Se
 		this.size += offset;
 	}
 
-	public void copyFrom(Point3DFlagList<P> source) {
+	public void copyFrom(Point3DFlagList source) {
 		source.copyInto(this);
 	}
 
-	public void copyInto(Point3DFlagList<P> destination) {
+	public void copyInto(Point3DFlagList destination) {
 		destination.ensureCapacity(size);
 
 		System.arraycopy(points, 0, destination.points, 0, size);
@@ -148,14 +146,14 @@ public class Point3DFlagList<P extends Placement3D & Serializable> implements Se
 		}
 	}
 
-	public Point3D<P>[] getPoints() {
+	public Point3D[] getPoints() {
 		return points;
 	}
 
 	/**
 	 * Returns the hash code value for this list.
 	 *
-	 * <p>
+	 * 
 	 * This implementation uses exactly the code that is used to define the
 	 * list hash function in the documentation for the {@link List#hashCode}
 	 * method.
@@ -173,7 +171,7 @@ public class Point3DFlagList<P extends Placement3D & Serializable> implements Se
 	@Override
 	public boolean equals(Object obj) {
 		if(obj instanceof Point3DFlagList) {
-			Point3DFlagList<P> other = (Point3DFlagList<P>)obj;
+			Point3DFlagList other = (Point3DFlagList)obj;
 			if(other.size() == size) {
 				for (int i = 0; i < size; i++) {
 					if(!points[i].equals(other.get(i))) {
@@ -189,7 +187,7 @@ public class Point3DFlagList<P extends Placement3D & Serializable> implements Se
 		return super.equals(obj);
 	}
 
-	public void setAll(Point3DList<P> add, int offset) {
+	public void setAll(Point3DList add, int offset) {
 		System.arraycopy(add.getPoints(), 0, points, offset, add.size());
 		int limit = offset + add.size();
 		for (int i = offset; i < limit; i++) {
@@ -202,7 +200,7 @@ public class Point3DFlagList<P extends Placement3D & Serializable> implements Se
 		flag[i] = false;
 	}
 
-	public void set(SimplePoint3D<P> point, int i) {
+	public void set(SimplePoint3D point, int i) {
 		points[i] = point;
 	}
 

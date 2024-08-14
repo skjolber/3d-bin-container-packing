@@ -28,7 +28,7 @@ import com.github.skjolber.packing.packer.DefaultPackResultComparator;
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
-public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>> {
+public class PlainPackager extends AbstractPlainPackager {
 
 	public static Builder newBuilder() {
 		return new Builder();
@@ -65,7 +65,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 				.filter(s -> constraint == null || constraint.canAccept(s))
 				.collect(Collectors.toList());
 
-		ExtremePoints3D<StackPlacement> extremePoints3D = new ExtremePoints3D<>(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
+		ExtremePoints3D extremePoints3D = new ExtremePoints3D(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
 		extremePoints3D.setMinimumAreaAndVolumeLimit(getMinStackableArea(scopedStackables), getMinStackableVolume(scopedStackables));
 
 		int maxRemainingWeight = containerStackValue.getMaxLoadWeight();
@@ -115,7 +115,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 					}
 
 					for (int k = 0; k < currentPointsCount; k++) {
-						Point3D<StackPlacement> point3d = extremePoints3D.getValue(k);
+						Point3D point3d = extremePoints3D.getValue(k);
 
 						if(!point3d.fits3D(stackValue)) {
 							continue;
@@ -123,7 +123,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 
 						long pointSupportPercent; // cache for costly measurement
 						if(bestIndex != -1) {
-							Point3D<StackPlacement> bestPoint = extremePoints3D.getValue(bestPointIndex);
+							Point3D bestPoint = extremePoints3D.getValue(bestPointIndex);
 							
 							if(point3d.getMinZ() > bestPoint.getMinZ()) {
 								continue;
@@ -164,7 +164,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 			scopedStackables.remove(bestIndex);
 			remainingStackables.remove(bestStackable);
 
-			Point3D<StackPlacement> point = extremePoints3D.getValue(bestPointIndex);
+			Point3D point = extremePoints3D.getValue(bestPointIndex);
 
 			StackPlacement stackPlacement = new StackPlacement(bestStackable, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ());
 			stack.add(stackPlacement);
@@ -189,7 +189,7 @@ public class PlainPackager extends AbstractPlainPackager<Point3D<StackPlacement>
 				stack, remainingStackables.isEmpty(), index);
 	}
 
-	protected long calculateXYSupportPercent(ExtremePoints3D<StackPlacement> extremePoints3D, Point3D<StackPlacement> referencePoint, StackValue stackValue) {
+	protected long calculateXYSupportPercent(ExtremePoints3D extremePoints3D, Point3D referencePoint, StackValue stackValue) {
 		long sum = 0;
 
 		int minX = referencePoint.getMinX();

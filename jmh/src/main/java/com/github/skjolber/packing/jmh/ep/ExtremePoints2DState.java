@@ -9,9 +9,10 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
-import com.github.skjolber.packing.api.ep.Point2D;
-import com.github.skjolber.packing.ep.points2d.DefaultPlacement2D;
+import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
+import com.github.skjolber.packing.ep.points2d.Point2D;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
@@ -22,6 +23,12 @@ public class ExtremePoints2DState {
 
 	private List<ExtremePoints2DEntries> entries = new ArrayList<>();
 
+	private StackPlacement createStackPlacement(int x, int y, int dx, int dy) {
+		BoxStackValue stackValue = new BoxStackValue(dx, dy, 0, null, null);
+		
+		return new StackPlacement(null, stackValue, x, y, 0);
+	}
+	
 	@Setup(Level.Trial)
 	public void init() {
 		// these does not really result in successful stacking, but still should run as expected
@@ -36,7 +43,7 @@ public class ExtremePoints2DState {
 	}
 
 	private void add(BouwkampCode bkpLine) {
-		ExtremePoints2D<DefaultPlacement2D> points = new ExtremePoints2D<>(bkpLine.getWidth(), bkpLine.getDepth());
+		ExtremePoints2D points = new ExtremePoints2D(bkpLine.getWidth(), bkpLine.getDepth());
 
 		ExtremePoints2DEntries extremePointsEntries = new ExtremePoints2DEntries(points);
 
@@ -61,7 +68,7 @@ public class ExtremePoints2DState {
 
 				int factoredSquare = square;
 
-				DefaultPlacement2D placement = new DefaultPlacement2D(offset, value.getMinY(), offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1);
+				StackPlacement placement = createStackPlacement(offset, value.getMinY(), offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1);
 				extremePointsEntries.add(new ExtremePoint2DEntry(nextY, placement));
 				points.add(nextY, placement);
 

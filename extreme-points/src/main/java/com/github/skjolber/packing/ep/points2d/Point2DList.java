@@ -2,9 +2,6 @@ package com.github.skjolber.packing.ep.points2d;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.Placement2D;
-import com.github.skjolber.packing.api.ep.Point2D;
-
 /**
  * 
  * Custom list for working with points.
@@ -12,10 +9,10 @@ import com.github.skjolber.packing.api.ep.Point2D;
  */
 
 @SuppressWarnings("unchecked")
-public class Point2DList<P extends Placement2D, Point extends Point2D<P>> {
+public class Point2DList {
 
 	private int size = 0;
-	private Point2D<P>[] points = new Point2D[16];
+	private Point2D[] points = new Point2D[16];
 
 	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
@@ -23,13 +20,13 @@ public class Point2DList<P extends Placement2D, Point extends Point2D<P>> {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			Point2D<P>[] nextPoints = new Point2D[size];
+			Point2D[] nextPoints = new Point2D[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 			this.points = nextPoints;
 		}
 	}
 
-	public void add(Point point) {
+	public void add(Point2D point) {
 		points[size] = point;
 		size++;
 	}
@@ -45,8 +42,8 @@ public class Point2DList<P extends Placement2D, Point extends Point2D<P>> {
 		size = 0;
 	}
 
-	public Point get(int i) {
-		return (Point)points[i];
+	public Point2D get(int i) {
+		return points[i];
 	}
 
 	public boolean isEmpty() {
@@ -60,7 +57,7 @@ public class Point2DList<P extends Placement2D, Point extends Point2D<P>> {
 	/**
 	 * Returns the hash code value for this list.
 	 *
-	 * <p>
+	 * 
 	 * This implementation uses exactly the code that is used to define the
 	 * list hash function in the documentation for the {@link List#hashCode}
 	 * method.
@@ -78,7 +75,7 @@ public class Point2DList<P extends Placement2D, Point extends Point2D<P>> {
 	@Override
 	public boolean equals(Object obj) {
 		if(obj instanceof Point2DList) {
-			Point2DList<P, Point> other = (Point2DList<P, Point>)obj;
+			Point2DList other = (Point2DList)obj;
 			if(other.size() == size) {
 				for (int i = 0; i < size; i++) {
 					if(!points[i].equals(other.get(i))) {
@@ -91,7 +88,7 @@ public class Point2DList<P extends Placement2D, Point extends Point2D<P>> {
 		return super.equals(obj);
 	}
 
-	public Point2D<P>[] getPoints() {
+	public Point2D[] getPoints() {
 		return points;
 	}
 

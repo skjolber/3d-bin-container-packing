@@ -5,7 +5,7 @@ import java.util.List;
 public class DefaultContainerStackValue extends ContainerStackValue {
 
 	private static final long serialVersionUID = 1L;
-
+	
 	public DefaultContainerStackValue(
 			int dx, int dy, int dz,
 			StackConstraint constraint,

@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.ep.points2d;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -8,9 +7,8 @@ import java.util.List;
 import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
 import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 
-import com.github.skjolber.packing.api.Placement2D;
-import com.github.skjolber.packing.api.ep.ExtremePoints;
-import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.StackPlacement;
 
 /**
  * 
@@ -18,12 +16,12 @@ import com.github.skjolber.packing.api.ep.Point2D;
  *
  */
 
-public class ExtremePoints2D<P extends Placement2D & Serializable> implements ExtremePoints<P, SimplePoint2D<P>> {
+public class ExtremePoints2D {
 
-	public static final Comparator<Point2D<?>> COMPARATOR_X = new Comparator<Point2D<?>>() {
+	public static final Comparator<Point2D> COMPARATOR_X = new Comparator<Point2D>() {
 
 		@Override
-		public int compare(Point2D<?> o1, Point2D<?> o2) {
+		public int compare(Point2D o1, Point2D o2) {
 			return Integer.compare(o1.getMinX(), o2.getMinX());
 		}
 	};
@@ -31,17 +29,17 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 	protected int containerMaxX;
 	protected int containerMaxY;
 
-	protected final Point2DFlagList<P> values = new Point2DFlagList<>();
-	protected final List<P> placements = new ArrayList<>();
+	protected final Point2DFlagList values = new Point2DFlagList();
+	protected final List<StackPlacement> placements = new ArrayList<>();
 
 	// reuse working variables
-	protected final Point2DList<P, Point2D<P>> addXX = new Point2DList<>();
-	protected final Point2DList<P, Point2D<P>> addYY = new Point2DList<>();
+	protected final Point2DList addXX = new Point2DList();
+	protected final Point2DList addYY = new Point2DList();
 
 	protected final IntArrayList moveToYY = new IntArrayList();
 	protected final IntArrayList moveToXX = new IntArrayList();
 
-	protected P containerPlacement;
+	protected StackPlacement containerPlacement;
 
 	protected long minAreaLimit = 0;
 
@@ -70,14 +68,16 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		this.containerMaxX = dx - 1;
 		this.containerMaxY = dy - 1;
 
-		this.containerPlacement = (P)new DefaultPlacement2D(0, 0, containerMaxX, containerMaxY);
+		BoxStackValue stackValue = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, 0, null, null);
+		
+		this.containerPlacement = new StackPlacement(null, stackValue, 0, 0, 0);
 	}
 
 	private void addFirstPoint() {
-		values.add(new DefaultXYSupportPoint2D<P>(0, 0, containerMaxX, containerMaxY, containerPlacement, containerPlacement));
+		values.add(new DefaultXYSupportPoint2D(0, 0, containerMaxX, containerMaxY, containerPlacement, containerPlacement));
 	}
 
-	public boolean add(int index, P placement) {
+	public boolean add(int index, StackPlacement placement) {
 		// overall approach:
 		// Do not iterate over placements to find point max / mins, rather
 		// project existing points. 
@@ -88,7 +88,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		// remove points which are eclipsed by others
 
 		// keep track of placement borders, where possible
-		Point2D<P> source = values.get(index);
+		Point2D source = values.get(index);
 
 		boolean xSupport = source.isXSupport(source.getMinX());
 		boolean ySupport = source.isYSupport(source.getMinY());
@@ -177,7 +177,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		addYY.ensureAdditionalCapacity(values.size());
 
 		for (int i = pointIndex; i < endIndex; i++) {
-			Point2D<P> point = values.get(i);
+			Point2D point = values.get(i);
 
 			if(point.getMinY() > placement.getAbsoluteEndY()) {
 				// 
@@ -286,18 +286,18 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 			moveToXX.sortThis(COMPARATOR_MOVE_TO_XX);
 
 			add: for (int i = 0; i < moveToXX.size(); i++) {
-				SimplePoint2D<P> p = values.get(moveToXX.get(i));
+				SimplePoint2D p = values.get(moveToXX.get(i));
 				// add point on the other side
 				// with x support
 				for (int k = 0; k < addXX.size(); k++) {
-					Point2D<P> add = addXX.get(k);
+					Point2D add = addXX.get(k);
 					if(add.eclipsesMovedX(p, xx)) {
 						continue add;
 					}
 				}
 
 				// note: the new point might shadow one of the previous points
-				SimplePoint2D<P> moveX = p.moveX(xx, placement);
+				SimplePoint2D moveX = p.moveX(xx, placement);
 				addXX.add(moveX);
 			}
 		}
@@ -306,18 +306,18 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 			moveToYY.sortThis(COMPARATOR_MOVE_TO_YY);
 
 			add: for (int i = 0; i < moveToYY.size(); i++) {
-				SimplePoint2D<P> p = values.get(moveToYY.get(i));
+				SimplePoint2D p = values.get(moveToYY.get(i));
 
 				// add point on the other side
 				// with x support
 				for (int k = 0; k < addYY.size(); k++) {
-					Point2D<P> add = addYY.get(k);
+					Point2D add = addYY.get(k);
 					if(add.eclipsesMovedY(p, yy)) {
 						continue add;
 					}
 				}
 
-				SimplePoint2D<P> moveY = p.moveY(yy, placement);
+				SimplePoint2D moveY = p.moveY(yy, placement);
 				addYY.add(moveY);
 			}
 		}
@@ -421,18 +421,18 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		return !values.isEmpty();
 	}
 
-	private void constrainMaxXWithClone(P placement, int pointIndex, int endIndex) {
+	private void constrainMaxXWithClone(StackPlacement placement, int pointIndex, int endIndex) {
 		for (int i = pointIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
 			}
 
-			Point2D<P> point = values.get(i);
+			Point2D point = values.get(i);
 			if(point.getMinX() < placement.getAbsoluteX() && withinY(point.getMinY(), placement)) {
 				if(point.getMaxX() >= placement.getAbsoluteX()) {
 					int limitX = placement.getAbsoluteX() - 1;
 					if(!isConstrainedAtMaxX(point, limitX)) {
-						Point2D<P> clone = point.clone(limitX, point.getMaxY());
+						Point2D clone = point.clone(limitX, point.getMaxY());
 
 						addXX.add(clone);
 					}
@@ -443,18 +443,18 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		}
 	}
 
-	private void constrainMaxYWithClone(P placement, int pointIndex, int endIndex) {
+	private void constrainMaxYWithClone(StackPlacement placement, int pointIndex, int endIndex) {
 		for (int i = pointIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
 			}
 
-			Point2D<P> point = values.get(i);
+			Point2D point = values.get(i);
 			if(point.getMinY() < placement.getAbsoluteY() && withinX(point.getMinX(), placement)) {
 				if(point.getMaxY() >= placement.getAbsoluteY()) {
 					int limitY = placement.getAbsoluteY() - 1;
 					if(!isConstrainedAtMaxY(point, limitY)) {
-						Point2D<P> clone = point.clone(point.getMaxX(), limitY);
+						Point2D clone = point.clone(point.getMaxX(), limitY);
 
 						addXX.add(clone);
 					}
@@ -464,13 +464,13 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		}
 	}
 
-	private void constrainMaxX(P placement, int pointIndex, int endIndex) {
+	private void constrainMaxX(StackPlacement placement, int pointIndex, int endIndex) {
 		for (int i = pointIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
 			}
 
-			Point2D<P> point = values.get(i);
+			Point2D point = values.get(i);
 			if(point.getMinX() < placement.getAbsoluteX() && withinY(point.getMinY(), placement)) {
 				if(point.getMaxX() >= placement.getAbsoluteX()) {
 					point.setMaxX(placement.getAbsoluteX() - 1);
@@ -482,13 +482,13 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		}
 	}
 
-	private void constrainMaxY(P placement, int pointIndex, int endIndex) {
+	private void constrainMaxY(StackPlacement placement, int pointIndex, int endIndex) {
 		for (int i = pointIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
 			}
 
-			Point2D<P> point = values.get(i);
+			Point2D point = values.get(i);
 			if(point.getMinY() < placement.getAbsoluteY() && withinX(point.getMinX(), placement)) {
 				if(point.getMaxY() >= placement.getAbsoluteY()) {
 					point.setMaxY(placement.getAbsoluteY() - 1);
@@ -506,7 +506,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		// |   new    |   existing / current |
 		// |----------|----------------------|--> x
 
-		Point2DFlagList<P> values = this.values;
+		Point2DFlagList values = this.values;
 
 		int size = values.size();
 
@@ -514,13 +514,13 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 			if(values.isFlag(i)) {
 				continue;
 			}
-			Point2D<P> unsorted = values.get(i);
+			Point2D unsorted = values.get(i);
 
 			for (int index = limit; index < size; index++) {
 				if(values.isFlag(index)) {
 					continue;
 				}
-				Point2D<P> sorted = values.get(index);
+				Point2D sorted = values.get(index);
 				if(sorted.getMinX() > unsorted.getMinX()) {
 					// so sorted cannot contain unsorted
 					// at this index or later
@@ -541,11 +541,11 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		}
 	}
 
-	protected void constrainFloatingMaxWithClone(P placement, int limit) {
+	protected void constrainFloatingMaxWithClone(StackPlacement placement, int limit) {
 
-		Point2DFlagList<P> values = this.values;
-		Point2DList<P, Point2D<P>> addXX = this.addXX;
-		Point2DList<P, Point2D<P>> addYY = this.addYY;
+		Point2DFlagList values = this.values;
+		Point2DList addXX = this.addXX;
+		Point2DList addYY = this.addYY;
 
 		addXX.ensureAdditionalCapacity(limit);
 		addYY.ensureAdditionalCapacity(limit);
@@ -555,7 +555,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 				continue;
 			}
 
-			Point2D<P> point = values.get(i);
+			Point2D point = values.get(i);
 
 			if(
 				placement.getAbsoluteEndY() < point.getMinY() ||
@@ -616,14 +616,14 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 			addX: if(point.getMinX() < placement.getAbsoluteX()) {
 				int limitX = placement.getAbsoluteX() - 1;
 				if(!isConstrainedAtMaxX(point, limitX)) {
-					Point2D<P> clone = point.clone(limitX, point.getMaxY());
+					Point2D clone = point.clone(limitX, point.getMaxY());
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
 						if(values.isFlag(j)) {
 							continue;
 						}
-						Point2D<P> point3d = values.get(j);
+						Point2D point3d = values.get(j);
 						if(point3d.getMinX() > clone.getMinX()) {
 							break;
 						}
@@ -637,7 +637,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 
 					// is the point now eclipsed by new points?
 					for (int j = 0; j < addXX.size(); j++) {
-						Point2D<P> point3d = addXX.get(j);
+						Point2D point3d = addXX.get(j);
 
 						if(point3d.getArea() >= clone.getArea()) {
 							if(point3d.eclipses(clone)) {
@@ -653,14 +653,14 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 			addY: if(point.getMinY() < placement.getAbsoluteY()) {
 				int limitY = placement.getAbsoluteY() - 1;
 				if(!isConstrainedAtMaxY(point, limitY)) {
-					Point2D<P> clone = point.clone(point.getMaxX(), limitY);
+					Point2D clone = point.clone(point.getMaxX(), limitY);
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
 						if(values.isFlag(j)) {
 							continue;
 						}
-						Point2D<P> point3d = values.get(j);
+						Point2D point3d = values.get(j);
 						if(point3d.getMinX() > clone.getMinX()) {
 							break;
 						}
@@ -674,7 +674,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 
 					// is the point now eclipsed by new points?
 					for (int j = 0; j < addYY.size(); j++) {
-						Point2D<P> point3d = addYY.get(j);
+						Point2D point3d = addYY.get(j);
 
 						if(point3d.getArea() >= clone.getArea()) {
 							if(point3d.eclipses(clone)) {
@@ -691,11 +691,11 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		}
 	}
 
-	protected void constrainFloatingMax(P placement, int limit) {
+	protected void constrainFloatingMax(StackPlacement placement, int limit) {
 
-		Point2DFlagList<P> values = this.values;
-		Point2DList<P, Point2D<P>> addXX = this.addXX;
-		Point2DList<P, Point2D<P>> addYY = this.addYY;
+		Point2DFlagList values = this.values;
+		Point2DList addXX = this.addXX;
+		Point2DList addYY = this.addYY;
 		long minAreaLimit = this.minAreaLimit;
 
 		addXX.ensureAdditionalCapacity(limit);
@@ -712,7 +712,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 				continue;
 			}
 
-			Point2D<P> point = values.get(i);
+			Point2D point = values.get(i);
 
 			if(
 				placement.getAbsoluteEndY() < point.getMinY() ||
@@ -739,7 +739,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 						if(values.isFlag(j)) {
 							continue;
 						}
-						Point2D<P> point3d = values.get(j);
+						Point2D point3d = values.get(j);
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
@@ -756,7 +756,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 					if(splitXX) {
 						// is the point now eclipsed by new points?
 						for (int j = startAddXX; j < addXX.size(); j++) {
-							Point2D<P> point3d = addXX.get(j);
+							Point2D point3d = addXX.get(j);
 
 							if(point3d.getArea() >= point.getArea()) {
 								if(point3d.eclipses(point)) {
@@ -790,7 +790,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 						if(values.isFlag(j)) {
 							continue;
 						}
-						Point2D<P> point3d = values.get(j);
+						Point2D point3d = values.get(j);
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
@@ -807,7 +807,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 					if(splitYY) {
 						// is the point now eclipsed by new points?
 						for (int j = startAddYY; j < addYY.size(); j++) {
-							Point2D<P> point3d = addYY.get(j);
+							Point2D point3d = addYY.get(j);
 
 							if(point3d.getArea() >= point.getArea()) {
 								if(point3d.eclipses(point)) {
@@ -893,13 +893,13 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 			//             
 
 			if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
-				Point2D<P> clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY());
+				Point2D clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY());
 				addXX.add(clone);
 
 				splitXX = true;
 			}
 			if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
-				Point2D<P> clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1);
+				Point2D clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1);
 				addYY.add(clone);
 
 				splitYY = true;
@@ -909,19 +909,19 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		}
 	}
 
-	private boolean isConstrainedAtMaxX(Point2D<P> p, int maxX) {
+	private boolean isConstrainedAtMaxX(Point2D p, int maxX) {
 		return p.getAreaAtMaxX(maxX) < minAreaLimit;
 	}
 
-	private boolean isConstrainedAtMaxY(Point2D<P> p, int maxY) {
+	private boolean isConstrainedAtMaxY(Point2D p, int maxY) {
 		return p.getAreaAtMaxY(maxY) < minAreaLimit;
 	}
 
-	protected boolean withinX(int x, P placement) {
+	protected boolean withinX(int x, StackPlacement placement) {
 		return placement.getAbsoluteX() <= x && x <= placement.getAbsoluteEndX();
 	}
 
-	protected boolean withinY(int y, P placement) {
+	protected boolean withinY(int y, StackPlacement placement) {
 		return placement.getAbsoluteY() <= y && y <= placement.getAbsoluteEndY();
 	}
 
@@ -938,19 +938,18 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		return "ExtremePoints2D [" + containerMaxX + "x" + containerMaxY + ": " + values + "]";
 	}
 
-	public List<P> getPlacements() {
+	public List<StackPlacement> getPlacements() {
 		return placements;
 	}
 
-	public SimplePoint2D<P> getValue(int i) {
+	public SimplePoint2D getValue(int i) {
 		return values.get(i);
 	}
 
-	public List<SimplePoint2D<P>> getValues() {
+	public List<SimplePoint2D> getValues() {
 		return values.toList();
 	}
 
-	@Override
 	public int getValueCount() {
 		return values.size();
 	}
@@ -958,7 +957,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 	public int getMinY() {
 		int min = 0;
 		for (int i = 1; i < values.size(); i++) {
-			Point2D<P> point = values.get(i);
+			Point2D point = values.get(i);
 
 			if(point.getMinY() < values.get(min).getMinY()) {
 				min = i;
@@ -970,7 +969,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 	public int getMinX() {
 		int min = 0;
 		for (int i = 1; i < values.size(); i++) {
-			Point2D<P> point = values.get(i);
+			Point2D point = values.get(i);
 
 			if(point.getMinX() < values.get(min).getMinX()) {
 				min = i;
@@ -986,7 +985,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 	public long getMaxArea() {
 		long maxPointArea = -1L;
 		for (int i = 0; i < values.size(); i++) {
-			Point2D<P> point = values.get(i);
+			Point2D point = values.get(i);
 			if(maxPointArea < point.getArea()) {
 				maxPointArea = point.getArea();
 			}
@@ -1001,7 +1000,6 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		addFirstPoint();
 	}
 
-	@Override
 	public void reset(int dx, int dy, int dz) {
 		setSize(dx, dy);
 
@@ -1010,7 +1008,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 
 	public int findPoint(int x, int y) {
 		for (int i = 0; i < values.size(); i++) {
-			Point2D<P> point2d = values.get(i);
+			Point2D point2d = values.get(i);
 			if(point2d.getMinX() == x && point2d.getMinY() == y) {
 				return i;
 			}
@@ -1097,7 +1095,7 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 
 	private void filterMinimums() {
 		for (int i = 0; i < values.size(); i++) {
-			Point2D<P> p = values.get(i);
+			Point2D p = values.get(i);
 
 			if(p.getArea() < minAreaLimit) {
 				values.flag(i);
@@ -1106,14 +1104,14 @@ public class ExtremePoints2D<P extends Placement2D & Serializable> implements Ex
 		values.removeFlagged();
 	}
 
-	private boolean canMoveX(Point2D<P> p, int xx) {
+	private boolean canMoveX(Point2D p, int xx) {
 		if(p.getMaxX() < xx) {
 			return false;
 		}
 		return p.getAreaAtX(xx) >= minAreaLimit;
 	}
 
-	private boolean canMoveY(Point2D<P> p, int yy) {
+	private boolean canMoveY(Point2D p, int yy) {
 		if(p.getMaxY() < yy) {
 			return false;
 		}

@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.packer.laff;
 
-import static com.github.skjolber.packing.test.assertj.StackablePlacementAssert.assertThat;
+import static com.github.skjolber.packing.test.assertj.StackPlacementAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;

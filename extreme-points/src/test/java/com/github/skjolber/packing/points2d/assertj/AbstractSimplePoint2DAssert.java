@@ -2,12 +2,10 @@ package com.github.skjolber.packing.points2d.assertj;
 
 import org.assertj.core.api.AbstractObjectAssert;
 
-import com.github.skjolber.packing.api.Placement2D;
-import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.ep.points2d.Point2D;
 import com.github.skjolber.packing.ep.points2d.SimplePoint2D;
 import com.github.skjolber.packing.ep.points2d.XSupportPoint2D;
 import com.github.skjolber.packing.ep.points2d.YSupportPoint2D;
-import com.github.skjolber.packing.test.assertj.AbstractPoint2DAssert;
 
 @SuppressWarnings("rawtypes")
 public abstract class AbstractSimplePoint2DAssert<SELF extends AbstractSimplePoint2DAssert<SELF, ACTUAL>, ACTUAL extends SimplePoint2D>

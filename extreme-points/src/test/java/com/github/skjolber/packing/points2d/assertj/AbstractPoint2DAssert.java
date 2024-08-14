@@ -1,8 +1,9 @@
-package com.github.skjolber.packing.test.assertj;
+package com.github.skjolber.packing.points2d.assertj;
+
 
 import org.assertj.core.api.AbstractObjectAssert;
 
-import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.ep.points2d.Point2D;
 
 @SuppressWarnings("rawtypes")
 public abstract class AbstractPoint2DAssert<SELF extends AbstractPoint2DAssert<SELF, ACTUAL>, ACTUAL extends Point2D>

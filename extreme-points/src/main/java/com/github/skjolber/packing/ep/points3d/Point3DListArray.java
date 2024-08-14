@@ -1,10 +1,5 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import java.io.Serializable;
-
-import com.github.skjolber.packing.api.Placement3D;
-import com.github.skjolber.packing.api.ep.Point3D;
-
 /**
  * 
  * Custom list array for working with points.
@@ -12,31 +7,31 @@ import com.github.skjolber.packing.api.ep.Point3D;
  */
 
 @SuppressWarnings("unchecked")
-public class Point3DListArray<P extends Placement3D & Serializable> {
+public class Point3DListArray {
 
 	private static final int INITIAL_CAPACITY = 8;
 
-	private Point3DList<P>[] points = new Point3DList[16];
+	private Point3DList[] points = new Point3DList[16];
 
 	public Point3DListArray() {
 		points = new Point3DList[16];
 		for (int i = 0; i < points.length; i++) {
-			points[i] = new Point3DList<>(INITIAL_CAPACITY);
+			points[i] = new Point3DList(INITIAL_CAPACITY);
 		}
 	}
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			Point3DList<P>[] nextPoints = new Point3DList[size];
+			Point3DList[] nextPoints = new Point3DList[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.points.length);
 			for (int i = this.points.length; i < size; i++) {
-				nextPoints[i] = new Point3DList<>(INITIAL_CAPACITY);
+				nextPoints[i] = new Point3DList(INITIAL_CAPACITY);
 			}
 			this.points = nextPoints;
 		}
 	}
 
-	public void add(SimplePoint3D<P> point, int index) {
+	public void add(SimplePoint3D point, int index) {
 		points[index].add(point);
 	}
 
@@ -50,7 +45,7 @@ public class Point3DListArray<P extends Placement3D & Serializable> {
 		return points[index].isEmpty();
 	}
 
-	public Point3DList<P> get(int i) {
+	public Point3DList get(int i) {
 		return points[i];
 	}
 
