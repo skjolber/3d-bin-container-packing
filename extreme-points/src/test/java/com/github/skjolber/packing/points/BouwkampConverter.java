@@ -2,10 +2,11 @@ package com.github.skjolber.packing.points;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point3D;
-import com.github.skjolber.packing.ep.points2d.DefaultPlacement2D;
-import com.github.skjolber.packing.ep.points3d.DefaultPlacement3D;
+import com.github.skjolber.packing.ep.points2d.Point2D;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 
@@ -16,6 +17,18 @@ public class BouwkampConverter {
 
 	public BouwkampConverter(boolean throwException) {
 		this.throwException = throwException;
+	}
+	
+	private StackPlacement createStackPlacement(int x, int y, int endX, int endY) {
+		return createStackPlacement(x, y, 0, endX, endY, 0);
+	}
+	
+	private StackPlacement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
+		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, null);
+		
+		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(0).build();
+		
+		return new StackPlacement(box, stackValue, x, y, z);
 	}
 
 	public DefaultExtremePoints2D convert2D(BouwkampCode bkpLine, int factor) {
@@ -41,7 +54,7 @@ public class BouwkampConverter {
 
 				int factoredSquare = factor * square;
 
-				points.add(nextY, new DefaultPlacement2D(offset, value.getMinY(), offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1));
+				points.add(nextY, createStackPlacement(offset, value.getMinY(), offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1));
 
 				offset += factoredSquare;
 
@@ -97,7 +110,7 @@ public class BouwkampConverter {
 				Integer square = squares.get(i);
 				int factoredSquare = factor * square;
 
-				points.add(nextY, new DefaultPlacement3D(offset, value.getMinY(), 0, offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, factor - 1));
+				points.add(nextY, createStackPlacement(offset, value.getMinY(), 0, offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, factor - 1));
 
 				offset += factoredSquare;
 
@@ -152,7 +165,7 @@ public class BouwkampConverter {
 				Integer square = squares.get(i);
 				int factoredSquare = factor * square;
 
-				points.add(nextZ, new DefaultPlacement3D(offset, 0, value.getMinZ(), offset + factoredSquare - 1, factor - 1, value.getMinZ() + factoredSquare - 1));
+				points.add(nextZ, createStackPlacement(offset, 0, value.getMinZ(), offset + factoredSquare - 1, factor - 1, value.getMinZ() + factoredSquare - 1));
 
 				offset += factoredSquare;
 
@@ -206,7 +219,7 @@ public class BouwkampConverter {
 				Integer square = squares.get(i);
 				int factoredSquare = factor * square;
 
-				points.add(nextZ, new DefaultPlacement3D(0, offset, value.getMinZ(), factor - 1, offset + factoredSquare - 1, value.getMinZ() + factoredSquare - 1));
+				points.add(nextZ, createStackPlacement(0, offset, value.getMinZ(), factor - 1, offset + factoredSquare - 1, value.getMinZ() + factoredSquare - 1));
 
 				offset += factoredSquare;
 

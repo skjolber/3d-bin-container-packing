@@ -9,10 +9,8 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.api.ep.Point2D;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
@@ -24,7 +22,7 @@ import com.github.skjolber.packing.packer.DefaultPackResult;
  * <br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
-public abstract class AbstractPlainPackager<P extends Point2D<StackPlacement>> extends AbstractPackager<DefaultPackResult, PlainPackagerResultBuilder> {
+public abstract class AbstractPlainPackager extends AbstractPackager<DefaultPackResult, PlainPackagerResultBuilder> {
 
 	public AbstractPlainPackager(PackResultComparator packResultComparator) {
 		super(packResultComparator);

@@ -11,9 +11,9 @@ import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 
 public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPackagerResultBuilder> {
 
-	private AbstractPlainPackager<?> packager;
+	private AbstractPlainPackager packager;
 
-	public PlainPackagerResultBuilder withPackager(AbstractPlainPackager<?> packager) {
+	public PlainPackagerResultBuilder withPackager(AbstractPlainPackager packager) {
 		this.packager = packager;
 		return this;
 	}

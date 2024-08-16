@@ -1,11 +1,9 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import java.io.Serializable;
-
-import com.github.skjolber.packing.api.Placement3D;
+import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point3D;
 
-public abstract class SimplePoint3D<P extends Placement3D & Serializable> extends Point3D<P> {
+public abstract class SimplePoint3D extends Point3D {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -55,7 +53,7 @@ public abstract class SimplePoint3D<P extends Placement3D & Serializable> extend
 	//       |---------x===================
 	//
 
-	public abstract SimplePoint3D<P> moveX(int x);
+	public abstract SimplePoint3D moveX(int x);
 
 	//       |                  
 	//       |                  
@@ -76,7 +74,7 @@ public abstract class SimplePoint3D<P extends Placement3D & Serializable> extend
 	//       |---------x===================
 	//
 
-	public abstract SimplePoint3D<P> moveX(int x, P yzSupport);
+	public abstract SimplePoint3D moveX(int x, StackPlacement yzSupport);
 
 	//
 	//       |   ║              
@@ -106,7 +104,7 @@ public abstract class SimplePoint3D<P extends Placement3D & Serializable> extend
 	//       |                 
 	//       |---------------------------
 
-	public abstract SimplePoint3D<P> moveY(int y);
+	public abstract SimplePoint3D moveY(int y);
 
 	//
 	//       |   ║              
@@ -136,13 +134,13 @@ public abstract class SimplePoint3D<P extends Placement3D & Serializable> extend
 	//       |                 
 	//       |---------------------------
 
-	public abstract SimplePoint3D<P> moveY(int y, P xzSupport);
+	public abstract SimplePoint3D moveY(int y, StackPlacement xzSupport);
 
-	public abstract SimplePoint3D<P> moveZ(int z);
+	public abstract SimplePoint3D moveZ(int z);
 
-	public abstract SimplePoint3D<P> moveZ(int z, P xySupport);
+	public abstract SimplePoint3D moveZ(int z, StackPlacement xySupport);
 	
-	public abstract SimplePoint3D<P> clone(int maxX, int maxY, int maxZ);
+	public abstract SimplePoint3D clone(int maxX, int maxY, int maxZ);
 
 	public abstract long calculateXYSupport(int dx, int dy);
 

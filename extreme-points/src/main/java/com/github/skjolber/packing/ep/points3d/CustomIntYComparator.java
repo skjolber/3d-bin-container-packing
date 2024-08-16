@@ -8,13 +8,13 @@ public class CustomIntYComparator implements IntComparator {
 
 	private static final long serialVersionUID = 1L;
 
-	private Point3DFlagList<?> values;
+	private Point3DFlagList values;
 	private int yy;
 
 	@Override
 	public int compare(int value1, int value2) {
-		Point3D<?> o1 = values.get(value1);
-		Point3D<?> o2 = values.get(value2);
+		Point3D o1 = values.get(value1);
+		Point3D o2 = values.get(value2);
 
 		if(o1.getMinZ() < o2.getMinZ()) {
 			return -1;
@@ -38,7 +38,7 @@ public class CustomIntYComparator implements IntComparator {
 		this.yy = yy;
 	}
 
-	public void setValues(Point3DFlagList<?> values) {
+	public void setValues(Point3DFlagList values) {
 		this.values = values;
 	}
 }

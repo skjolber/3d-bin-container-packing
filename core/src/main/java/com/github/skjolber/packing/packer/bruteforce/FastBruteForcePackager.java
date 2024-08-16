@@ -345,7 +345,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 			int bestPointIndex = -1;
 			for (int k = 0; k < pointCount; k++) {
-				Point3D<StackPlacement> point3d = extremePoints3D.getValue(k);
+				Point3D point3d = extremePoints3D.getValue(k);
 				if(!point3d.fits3D(stackValue)) {
 					continue;
 				}
@@ -354,7 +354,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				}
 
 				if(bestPointIndex != -1) {
-					Point3D<StackPlacement> bestPoint = extremePoints3D.getValue(bestPointIndex);
+					Point3D bestPoint = extremePoints3D.getValue(bestPointIndex);
 					if(bestPoint.getArea() < point3d.getArea()) {
 						continue;
 					} else if(bestPoint.getArea() == point3d.getArea() && bestPoint.getVolume() < point3d.getVolume()) {
@@ -368,7 +368,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				break;
 			}
 
-			Point3D<StackPlacement> point3d = extremePoints3D.getValue(bestPointIndex);
+			Point3D point3d = extremePoints3D.getValue(bestPointIndex);
 
 			placement.setStackable(stackable);
 			placement.setStackValue(stackValue);

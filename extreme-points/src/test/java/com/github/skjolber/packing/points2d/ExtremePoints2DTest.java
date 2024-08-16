@@ -7,18 +7,32 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.github.skjolber.packing.api.ep.Point2D;
-import com.github.skjolber.packing.ep.points2d.DefaultPlacement2D;
+import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.ep.points2d.DefaultXYSupportPoint2D;
 import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
+import com.github.skjolber.packing.ep.points2d.Point2D;
 import com.github.skjolber.packing.points.DefaultExtremePoints2D;
 
 public class ExtremePoints2DTest {
 
+	private StackPlacement createStackPlacement(int x, int y, int endX, int endY) {
+		return createStackPlacement(x, y, 0, endX, endY, 0);
+	}
+	
+	private StackPlacement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
+		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, 1, null, null);
+		
+		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, 1).withWeight(0).build();
+		
+		return new StackPlacement(box, stackValue, x, y, z);
+	}
+	
 	@Test
 	public void testSinglePoint() {
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 10, 10));
+		ExtremePoints2D ep = new ExtremePoints2D(100, 100);
+		ep.add(0, createStackPlacement(0, 0, 10, 10));
 		assertThat(ep.getValues()).hasSize(2);
 
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
@@ -36,8 +50,8 @@ public class ExtremePoints2DTest {
 
 	@Test
 	public void testSinglePointCornerCase() {
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 0, 0));
+		ExtremePoints2D ep = new ExtremePoints2D(100, 100);
+		ep.add(0, createStackPlacement(0, 0, 0, 0));
 		assertThat(ep.getValues()).hasSize(2);
 
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
@@ -55,8 +69,8 @@ public class ExtremePoints2DTest {
 
 	@Test
 	public void testSinglePointCoveringAllX() {
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 99, 10));
+		ExtremePoints2D ep = new ExtremePoints2D(100, 100);
+		ep.add(0, createStackPlacement(0, 0, 99, 10));
 		assertThat(ep.getValues()).hasSize(1);
 
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
@@ -65,8 +79,8 @@ public class ExtremePoints2DTest {
 
 	@Test
 	public void testSinglePointCoveringAllY() {
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 10, 99));
+		ExtremePoints2D ep = new ExtremePoints2D(100, 100);
+		ep.add(0, createStackPlacement(0, 0, 10, 99));
 		assertThat(ep.getValues()).hasSize(1);
 
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(11);
@@ -75,15 +89,15 @@ public class ExtremePoints2DTest {
 
 	@Test
 	public void testSinglePointCoveringWholeContainer() {
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 99, 99));
+		ExtremePoints2D ep = new ExtremePoints2D(100, 100);
+		ep.add(0, createStackPlacement(0, 0, 99, 99));
 		assertThat(ep.getValues()).hasSize(0);
 	}
 
 	@Test
 	public void testStackInXDirection() {
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 9, 49));
+		ExtremePoints2D ep = new ExtremePoints2D(100, 100);
+		ep.add(0, createStackPlacement(0, 0, 9, 49));
 
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(50);
@@ -91,7 +105,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(10);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
 
-		ep.add(1, new DefaultPlacement2D(10, 0, 19, 24));
+		ep.add(1, createStackPlacement(10, 0, 19, 24));
 
 		assertThat(ep.getValues()).hasSize(3);
 
@@ -130,8 +144,8 @@ public class ExtremePoints2DTest {
 		//      ------------
 		//         4  9   
 
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 9, 49));
+		ExtremePoints2D ep = new ExtremePoints2D(100, 100);
+		ep.add(0, createStackPlacement(0, 0, 9, 49));
 
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(50);
@@ -139,7 +153,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(10);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
 
-		ep.add(0, new DefaultPlacement2D(0, 50, 4, 74));
+		ep.add(0, createStackPlacement(0, 50, 4, 74));
 
 		assertThat(ep.getValues()).hasSize(3);
 
@@ -170,7 +184,7 @@ public class ExtremePoints2DTest {
 		//          9   19
 
 		DefaultExtremePoints2D ep = new DefaultExtremePoints2D(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 9, 9));
+		ep.add(0, createStackPlacement(0, 0, 9, 9));
 
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(10);
@@ -179,7 +193,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
 		assertThat(ep.getValues()).hasSize(2);
 
-		ep.add(1, new DefaultPlacement2D(10, 0, 19, 9));
+		ep.add(1, createStackPlacement(10, 0, 19, 9));
 
 		assertThat(ep.getValues()).hasSize(2);
 
@@ -212,8 +226,8 @@ public class ExtremePoints2DTest {
 		//      ----------
 		//          9 
 
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 9, 9));
+		ExtremePoints2D ep = new ExtremePoints2D(100, 100);
+		ep.add(0, createStackPlacement(0, 0, 9, 9));
 
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(10);
@@ -221,7 +235,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(10);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
 
-		ep.add(0, new DefaultPlacement2D(0, 10, 9, 19));
+		ep.add(0, createStackPlacement(0, 10, 9, 19));
 
 		assertThat(ep.getValues()).hasSize(2);
 
@@ -253,7 +267,7 @@ public class ExtremePoints2DTest {
 		//          9   19
 
 		DefaultExtremePoints2D ep = new DefaultExtremePoints2D(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 9, 9));
+		ep.add(0, createStackPlacement(0, 0, 9, 9));
 
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(10);
@@ -261,7 +275,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(1).getMinX()).isEqualTo(10);
 		assertThat(ep.getValue(1).getMinY()).isEqualTo(0);
 
-		ep.add(1, new DefaultPlacement2D(10, 0, 19, 19));
+		ep.add(1, createStackPlacement(10, 0, 19, 19));
 
 		assertThat(ep.getValues()).hasSize(3);
 
@@ -299,8 +313,8 @@ public class ExtremePoints2DTest {
 		//      -------------
 		//          9   19
 
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 9, 9));
+		ExtremePoints2D ep = new ExtremePoints2D(100, 100);
+		ep.add(0, createStackPlacement(0, 0, 9, 9));
 
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(0);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(10);
@@ -310,7 +324,7 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValues()).hasSize(2);
 
-		ep.add(0, new DefaultPlacement2D(0, 10, 19, 19));
+		ep.add(0, createStackPlacement(0, 10, 19, 19));
 
 		assertThat(ep.getValues()).hasSize(3);
 
@@ -337,8 +351,8 @@ public class ExtremePoints2DTest {
 	@Test
 	public void testSwallowedInXDirection1() throws InterruptedException {
 		DefaultExtremePoints2D ep = new DefaultExtremePoints2D(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 9, 9));
-		ep.add(1, new DefaultPlacement2D(10, 0, 19, 19));
+		ep.add(0, createStackPlacement(0, 0, 9, 9));
+		ep.add(1, createStackPlacement(10, 0, 19, 19));
 
 		//    |
 		//    |
@@ -353,7 +367,7 @@ public class ExtremePoints2DTest {
 		//              10       20 
 		assertThat(ep.getValues()).hasSize(3);
 
-		ep.add(0, new DefaultPlacement2D(0, 10, 4, 24));
+		ep.add(0, createStackPlacement(0, 10, 4, 24));
 
 		//    |
 		// 25 x---|
@@ -393,8 +407,8 @@ public class ExtremePoints2DTest {
 	@Test
 	public void testSwallowedInXDirection2() throws InterruptedException {
 		DefaultExtremePoints2D ep = new DefaultExtremePoints2D(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 9, 9));
-		ep.add(1, new DefaultPlacement2D(10, 0, 19, 19));
+		ep.add(0, createStackPlacement(0, 0, 9, 9));
+		ep.add(1, createStackPlacement(10, 0, 19, 19));
 
 		//    |
 		//    |
@@ -414,7 +428,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(1)).isMin(0, 20);
 		assertThat(ep.getValue(2)).isMin(20, 0);
 
-		ep.add(2, new DefaultPlacement2D(20, 0, 24, 24));
+		ep.add(2, createStackPlacement(20, 0, 24, 24));
 
 		//    |
 		//    |
@@ -454,7 +468,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(3).getMinY()).isEqualTo(0);
 		assertThat(ep.getValue(3)).isMax(99, 99);
 
-		ep.add(0, new DefaultPlacement2D(0, 10, 4, 29));
+		ep.add(0, createStackPlacement(0, 10, 4, 29));
 
 		//    |
 		//    |
@@ -502,9 +516,9 @@ public class ExtremePoints2DTest {
 
 	@Test
 	public void testSwallowedInYDirection1() throws InterruptedException {
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 9, 9));
-		ep.add(0, new DefaultPlacement2D(0, 10, 19, 19));
+		ExtremePoints2D ep = new ExtremePoints2D(100, 100);
+		ep.add(0, createStackPlacement(0, 0, 9, 9));
+		ep.add(0, createStackPlacement(0, 10, 19, 19));
 
 		//    |
 		// 20 x------------------|
@@ -534,7 +548,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(2)).isNoYSupport(0);
 		assertThat(ep.getValue(2)).isYSupport(19);
 
-		ep.add(1, new DefaultPlacement2D(10, 0, 24, 4));
+		ep.add(1, createStackPlacement(10, 0, 24, 4));
 
 		//    |
 		// 20 x------------------|
@@ -577,9 +591,9 @@ public class ExtremePoints2DTest {
 
 	@Test
 	public void testSwallowedInYDirection2() throws InterruptedException {
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(100, 100);
-		ep.add(0, new DefaultPlacement2D(0, 0, 9, 9));
-		ep.add(0, new DefaultPlacement2D(0, 10, 19, 19));
+		ExtremePoints2D ep = new ExtremePoints2D(100, 100);
+		ep.add(0, createStackPlacement(0, 0, 9, 9));
+		ep.add(0, createStackPlacement(0, 10, 19, 19));
 
 		//    |
 		// 20 x------------------|
@@ -603,7 +617,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(2).getMinX()).isEqualTo(20);
 		assertThat(ep.getValue(2).getMinY()).isEqualTo(0);
 
-		ep.add(0, new DefaultPlacement2D(0, 20, 24, 24));
+		ep.add(0, createStackPlacement(0, 20, 24, 24));
 
 		//    |
 		//    x-----------------------|
@@ -642,7 +656,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(3)).isNoYSupport(0);
 		assertThat(ep.getValue(3)).isYSupport(24);
 
-		ep.add(1, new DefaultPlacement2D(10, 0, 29, 4));
+		ep.add(1, createStackPlacement(10, 0, 29, 4));
 
 		//    |
 		//    x-----------------------|
@@ -675,22 +689,22 @@ public class ExtremePoints2DTest {
 
 	@Test
 	public void testStacking() {
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(3, 2);
-		ep.add(0, new DefaultPlacement2D(0, 0, 0, 1));
+		ExtremePoints2D ep = new ExtremePoints2D(3, 2);
+		ep.add(0, createStackPlacement(0, 0, 0, 1));
 
 		assertThat(ep.getValues()).hasSize(1);
 
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(1);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(0);
 
-		ep.add(0, new DefaultPlacement2D(1, 0, 1, 1));
+		ep.add(0, createStackPlacement(1, 0, 1, 1));
 
 		assertThat(ep.getValues()).hasSize(1);
 
 		assertThat(ep.getValue(0).getMinX()).isEqualTo(2);
 		assertThat(ep.getValue(0).getMinY()).isEqualTo(0);
 
-		ep.add(0, new DefaultPlacement2D(2, 0, 2, 1));
+		ep.add(0, createStackPlacement(2, 0, 2, 1));
 
 		assertThat(ep.getValues()).hasSize(0);
 	}
@@ -698,11 +712,11 @@ public class ExtremePoints2DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
 	public void testFloatingX(boolean b) {
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(1000, 1000, b);
-		ep.add(0, new DefaultPlacement2D(0, 0, 49, 99));
+		ExtremePoints2D ep = new ExtremePoints2D(1000, 1000, b);
+		ep.add(0, createStackPlacement(0, 0, 49, 99));
 		assertThat(ep.getValue(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
-		ep.add(1, new DefaultPlacement2D(50, 0, 99, 49));
+		ep.add(1, createStackPlacement(50, 0, 99, 49));
 		assertThat(ep.getValue(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		assertThat(ep.getValue(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
@@ -722,7 +736,7 @@ public class ExtremePoints2DTest {
 			assertThat(point.getMaxY()).isEqualTo(999);
 		}
 
-		ep.add(1, new DefaultPlacement2D(50, 50, 149, 149));
+		ep.add(1, createStackPlacement(50, 50, 149, 149));
 
 		//    |           
 		//    |           
@@ -763,7 +777,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(3).getMinY()).isEqualTo(0);
 		assertThat(ep.getValue(3)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
-		ep.add(3, new DefaultPlacement2D(150, 0, 169, 19));
+		ep.add(3, createStackPlacement(150, 0, 169, 19));
 
 		//    |           
 		//    |           
@@ -821,7 +835,7 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValues()).hasSize(6);
 
-		ep.add(5, new DefaultPlacement2D(170, 0, 189, 29));
+		ep.add(5, createStackPlacement(170, 0, 189, 29));
 
 		//    |           
 		//    |           
@@ -882,7 +896,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(7)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		assertThat(ep.getValue(7)).isMax(999, 999);
 
-		ep.add(6, new DefaultPlacement2D(150, 30, 189, 69));
+		ep.add(6, createStackPlacement(150, 30, 189, 69));
 
 		//    |           
 		//    |           
@@ -927,7 +941,7 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValues()).hasSize(6);
 
-		ep.add(3, new DefaultPlacement2D(100, 20, 139, 24));
+		ep.add(3, createStackPlacement(100, 20, 139, 24));
 
 		//    |           
 		//    |           
@@ -997,11 +1011,11 @@ public class ExtremePoints2DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
 	public void testFloatingY(boolean b) {
-		ExtremePoints2D<DefaultPlacement2D> ep = new ExtremePoints2D<>(1000, 1000, b);
-		ep.add(0, new DefaultPlacement2D(0, 0, 49, 99));
+		ExtremePoints2D ep = new ExtremePoints2D(1000, 1000, b);
+		ep.add(0, createStackPlacement(0, 0, 49, 99));
 		assertThat(ep.getValue(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
-		ep.add(1, new DefaultPlacement2D(50, 0, 99, 49));
+		ep.add(1, createStackPlacement(50, 0, 99, 49));
 		assertThat(ep.getValue(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
 		assertThat(ep.getValue(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
@@ -1021,7 +1035,7 @@ public class ExtremePoints2DTest {
 			assertThat(point.getMaxY()).isEqualTo(999);
 		}
 
-		ep.add(1, new DefaultPlacement2D(50, 50, 149, 149));
+		ep.add(1, createStackPlacement(50, 50, 149, 149));
 
 		//    |           
 		//    |           
@@ -1062,7 +1076,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(3).getMinY()).isEqualTo(0);
 		assertThat(ep.getValue(3)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
-		ep.add(1, new DefaultPlacement2D(0, 150, 19, 169));
+		ep.add(1, createStackPlacement(0, 150, 19, 169));
 
 		//    |           
 		//    |           
@@ -1114,7 +1128,7 @@ public class ExtremePoints2DTest {
 
 		assertThat(ep.getValues()).hasSize(6);
 
-		ep.add(1, new DefaultPlacement2D(0, 170, 29, 189));
+		ep.add(1, createStackPlacement(0, 170, 29, 189));
 
 		//    |           
 		//    |           
@@ -1176,7 +1190,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(7).getMinY()).isEqualTo(0);
 		assertThat(ep.getValue(7)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
-		ep.add(5, new DefaultPlacement2D(30, 150, 69, 189));
+		ep.add(5, createStackPlacement(30, 150, 69, 189));
 
 		//    |           
 		//    |           
@@ -1229,7 +1243,7 @@ public class ExtremePoints2DTest {
 		assertThat(ep.getValue(5).getMinY()).isEqualTo(0);
 		assertThat(ep.getValue(5)).isInstanceOf(DefaultXYSupportPoint2D.class);
 
-		ep.add(2, new DefaultPlacement2D(20, 100, 24, 139));
+		ep.add(2, createStackPlacement(20, 100, 24, 139));
 
 		//    |           
 		//    |           

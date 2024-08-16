@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.points2d.assertj;
 
-import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.ep.points2d.Point2D;
 import com.github.skjolber.packing.ep.points2d.SimplePoint2D;
 
 @SuppressWarnings("rawtypes")

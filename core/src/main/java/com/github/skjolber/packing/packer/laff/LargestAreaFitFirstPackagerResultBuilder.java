@@ -11,9 +11,9 @@ import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 
 public class LargestAreaFitFirstPackagerResultBuilder extends PackagerResultBuilder<LargestAreaFitFirstPackagerResultBuilder> {
 
-	private AbstractLargestAreaFitFirstPackager<?> packager;
+	private AbstractLargestAreaFitFirstPackager packager;
 
-	public LargestAreaFitFirstPackagerResultBuilder withPackager(AbstractLargestAreaFitFirstPackager<?> packager) {
+	public LargestAreaFitFirstPackagerResultBuilder withPackager(AbstractLargestAreaFitFirstPackager packager) {
 		this.packager = packager;
 		return this;
 	}

@@ -60,6 +60,10 @@ public class Box extends Stackable {
 
 		this.minimumArea = getMinimumArea(stackValues);
 		this.maximumArea = getMinimumArea(stackValues);
+		
+		for (BoxStackValue boxStackValue : stackValues) {
+			boxStackValue.setStackable(this);
+		}
 	}
 
 	@Override
@@ -78,6 +82,10 @@ public class Box extends Stackable {
 
 	@Override
 	public Box clone() {
+		BoxStackValue[] stackValues = new BoxStackValue[this.stackValues.length];
+		for(int i = 0; i < stackValues.length; i++) {
+			stackValues[i] = this.stackValues[i].clone();
+		}
 		return new Box(id, description, volume, weight, stackValues);
 	}
 

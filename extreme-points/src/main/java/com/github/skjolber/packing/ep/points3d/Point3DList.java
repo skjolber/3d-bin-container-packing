@@ -1,11 +1,9 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import com.github.skjolber.packing.api.Placement3D;
 import com.github.skjolber.packing.api.ep.Point3D;
 
 /**
@@ -15,10 +13,10 @@ import com.github.skjolber.packing.api.ep.Point3D;
  */
 
 @SuppressWarnings("unchecked")
-public class Point3DList<P extends Placement3D & Serializable> {
+public class Point3DList {
 
 	private int size = 0;
-	private SimplePoint3D<P>[] points;
+	private SimplePoint3D[] points;
 
 	public Point3DList() {
 		this(16);
@@ -34,13 +32,13 @@ public class Point3DList<P extends Placement3D & Serializable> {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			SimplePoint3D<P>[] nextPoints = new SimplePoint3D[size];
+			SimplePoint3D[] nextPoints = new SimplePoint3D[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 			this.points = nextPoints;
 		}
 	}
 
-	public void add(SimplePoint3D<P> point) {
+	public void add(SimplePoint3D point) {
 		points[size] = point;
 		size++;
 	}
@@ -54,7 +52,7 @@ public class Point3DList<P extends Placement3D & Serializable> {
 		size = 0;
 	}
 
-	public SimplePoint3D<P> get(int i) {
+	public SimplePoint3D get(int i) {
 		return points[i];
 	}
 
@@ -69,7 +67,7 @@ public class Point3DList<P extends Placement3D & Serializable> {
 	/**
 	 * Returns the hash code value for this list.
 	 *
-	 * <p>
+	 * 
 	 * This implementation uses exactly the code that is used to define the
 	 * list hash function in the documentation for the {@link List#hashCode}
 	 * method.
@@ -87,7 +85,7 @@ public class Point3DList<P extends Placement3D & Serializable> {
 	@Override
 	public boolean equals(Object obj) {
 		if(obj instanceof Point3DList) {
-			Point3DList<P> other = (Point3DList<P>)obj;
+			Point3DList other = (Point3DList)obj;
 			if(other.size() == size) {
 				for (int i = 0; i < size; i++) {
 					if(!points[i].equals(other.get(i))) {
@@ -100,11 +98,11 @@ public class Point3DList<P extends Placement3D & Serializable> {
 		return super.equals(obj);
 	}
 
-	public SimplePoint3D<P>[] getPoints() {
+	public SimplePoint3D[] getPoints() {
 		return points;
 	}
 
-	public void sort(Comparator<Point3D<?>> comparator) {
+	public void sort(Comparator<Point3D> comparator) {
 		Arrays.sort(points, 0, size, comparator);
 	}
 

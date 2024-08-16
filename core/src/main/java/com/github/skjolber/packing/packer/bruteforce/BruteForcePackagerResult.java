@@ -28,7 +28,7 @@ public class BruteForcePackagerResult implements PackResult {
 
 	// state
 	private PermutationRotationState state;
-	private List<Point3D<StackPlacement>> points = Collections.emptyList();
+	private List<Point3D> points = Collections.emptyList();
 	private List<StackPlacement> placements = Collections.emptyList();
 
 	private boolean dirty = true;
@@ -73,7 +73,7 @@ public class BruteForcePackagerResult implements PackResult {
 			stackPlacement.setValue(permutationRotation.getValue());
 			stackPlacement.setStackable(permutationRotation.getStackable());
 
-			Point3D<StackPlacement> point3d = points.get(i);
+			Point3D point3d = points.get(i);
 			stackPlacement.setX(point3d.getMinX());
 			stackPlacement.setY(point3d.getMinY());
 			stackPlacement.setZ(point3d.getMinZ());
@@ -88,7 +88,7 @@ public class BruteForcePackagerResult implements PackResult {
 		return state;
 	}
 
-	public void setState(List<Point3D<StackPlacement>> items, PermutationRotationState state, List<StackPlacement> placements) {
+	public void setState(List<Point3D> items, PermutationRotationState state, List<StackPlacement> placements) {
 		this.points = items;
 		this.state = state;
 		this.placements = placements;

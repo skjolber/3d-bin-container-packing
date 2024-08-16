@@ -6,6 +6,15 @@ public abstract class ContainerStackValue extends StackValue {
 
 	private static final long serialVersionUID = 1L;
 
+	private Container stackable;
+
+	protected final int loadDx; // x
+	protected final int loadDy; // y
+	protected final int loadDz; // z
+
+	protected final int maxLoadWeight;
+	protected final long maxLoadVolume;
+
 	public ContainerStackValue(
 			int dx, int dy, int dz,
 			StackConstraint constraint,
@@ -19,14 +28,7 @@ public abstract class ContainerStackValue extends StackValue {
 		this.maxLoadVolume = (long)loadDx * (long)loadDy * (long)loadDz;
 		this.maxLoadWeight = maxLoadWeight;
 	}
-
-	protected final int loadDx; // x
-	protected final int loadDy; // y
-	protected final int loadDz; // z
-
-	protected final int maxLoadWeight;
-	protected final long maxLoadVolume;
-
+	
 	protected ContainerStackValue(ContainerStackValue other) {
 		super(other);
 		
@@ -36,6 +38,8 @@ public abstract class ContainerStackValue extends StackValue {
 
 		this.maxLoadVolume = other.maxLoadVolume;
 		this.maxLoadWeight = other.maxLoadWeight;
+		
+		this.stackable = other.stackable;
 	}
 	
 	public long getMaxLoadVolume() {
@@ -78,5 +82,17 @@ public abstract class ContainerStackValue extends StackValue {
 	public String toString() {
 		return "ContainerStackValue [" + dx + "x" + dy + "x" + dz + " " + loadDx + "x" + loadDy + "x" + loadDz + "]";
 	}
+	
+	public void setStackable(Container stackable) {
+		this.stackable = stackable;
+	}
+	
+	@Override
+	public Container getStackable() {
+		return stackable;
+	}
+	
+	@Override
+	public abstract ContainerStackValue clone();
 
 }

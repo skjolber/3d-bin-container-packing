@@ -1,4 +1,6 @@
-package com.github.skjolber.packing.api;
+package com.github.skjolber.packing.packer.laff;
+
+import com.github.skjolber.packing.api.Stackable;
 
 @FunctionalInterface
 public interface StackableFilter {

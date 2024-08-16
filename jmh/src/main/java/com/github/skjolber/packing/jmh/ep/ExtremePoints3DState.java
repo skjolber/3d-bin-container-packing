@@ -9,8 +9,9 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
+import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point3D;
-import com.github.skjolber.packing.ep.points3d.DefaultPlacement3D;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
@@ -22,6 +23,12 @@ public class ExtremePoints3DState {
 
 	private List<ExtremePoints3DEntries> entries = new ArrayList<>();
 
+	private StackPlacement createStackPlacement(int x, int y, int z, int dx, int dy, int dz) {
+		BoxStackValue stackValue = new BoxStackValue(dx, dy, dz, null, null);
+		
+		return new StackPlacement(null, stackValue, x, y, z);
+	}
+	
 	@Setup(Level.Trial)
 	public void init() {
 		// these does not really result in successful stacking, but still should run as expected
@@ -36,7 +43,7 @@ public class ExtremePoints3DState {
 	}
 
 	private void add(BouwkampCode bkpLine) {
-		ExtremePoints3D<DefaultPlacement3D> points = new ExtremePoints3D<>(bkpLine.getWidth(), bkpLine.getDepth(), 1);
+		ExtremePoints3D points = new ExtremePoints3D(bkpLine.getWidth(), bkpLine.getDepth(), 1);
 
 		ExtremePoints3DEntries extremePointsEntries = new ExtremePoints3DEntries(points);
 
@@ -58,7 +65,7 @@ public class ExtremePoints3DState {
 				Integer square = squares.get(i);
 				int factoredSquare = square;
 
-				DefaultPlacement3D defaultPlacement3D = new DefaultPlacement3D(offset, value.getMinY(), 0, offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, 0);
+				StackPlacement defaultPlacement3D = createStackPlacement(offset, value.getMinY(), 0, offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, 0);
 				extremePointsEntries.add(new ExtremePoint3DEntry(nextY, defaultPlacement3D));
 				points.add(nextY, defaultPlacement3D);
 

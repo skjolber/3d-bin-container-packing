@@ -2,7 +2,7 @@ package com.github.skjolber.packing.api;
 
 import java.io.Serializable;
 
-public class StackPlacement implements Placement3D, Serializable {
+public class StackPlacement implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -109,19 +109,18 @@ public class StackPlacement implements Placement3D, Serializable {
 		return stackable.getVolume();
 	}
 
-	public boolean intersects2D(Placement2D point) {
+	public boolean intersects2D(StackPlacement point) {
 		return !(point.getAbsoluteEndX() < x || point.getAbsoluteX() > getAbsoluteEndX() || point.getAbsoluteEndY() < y || point.getAbsoluteY() > getAbsoluteEndY());
 	}
 
-	@Override
-	public boolean intersects3D(Placement3D point) {
+	public boolean intersects3D(StackPlacement point) {
 		return !(point.getAbsoluteEndX() < x || point.getAbsoluteX() > getAbsoluteEndX() || point.getAbsoluteEndY() < y || point.getAbsoluteY() > point.getAbsoluteEndY() || point.getAbsoluteEndZ() < z
 				|| point.getAbsoluteZ() > point.getAbsoluteEndZ());
 	}
 
 	@Override
 	public String toString() {
-		return stackable.getDescription() + "[" + x + "x" + y + "x" + z + " " + getAbsoluteEndX() + "x" + getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
+		return (stackable != null ? stackable.getDescription() : "") + "[" + x + "x" + y + "x" + z + " " + getAbsoluteEndX() + "x" + getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
 	}
 
 	public void setX(int x) {

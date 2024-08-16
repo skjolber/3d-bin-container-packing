@@ -1,13 +1,9 @@
 package com.github.skjolber.packing.ep.points2d;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-
-import com.github.skjolber.packing.api.Placement2D;
-import com.github.skjolber.packing.api.ep.Point2D;
 
 /**
  * 
@@ -16,10 +12,10 @@ import com.github.skjolber.packing.api.ep.Point2D;
  */
 
 @SuppressWarnings("unchecked")
-public class Point2DFlagList<P extends Placement2D & Serializable> {
+public class Point2DFlagList {
 
 	private int size = 0;
-	private SimplePoint2D<P>[] points = new SimplePoint2D[16];
+	private SimplePoint2D[] points = new SimplePoint2D[16];
 	private boolean[] flag = new boolean[16];
 
 	public void ensureAdditionalCapacity(int count) {
@@ -28,7 +24,7 @@ public class Point2DFlagList<P extends Placement2D & Serializable> {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			SimplePoint2D<P>[] nextPoints = new SimplePoint2D[size];
+			SimplePoint2D[] nextPoints = new SimplePoint2D[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 
 			boolean[] nextFlag = new boolean[size];
@@ -39,12 +35,12 @@ public class Point2DFlagList<P extends Placement2D & Serializable> {
 		}
 	}
 
-	public void add(SimplePoint2D<P> point) {
+	public void add(SimplePoint2D point) {
 		points[size] = point;
 		size++;
 	}
 
-	public void sort(Comparator<SimplePoint2D<?>> comparator) {
+	public void sort(Comparator<SimplePoint2D> comparator) {
 		Arrays.sort(points, 0, size, comparator);
 	}
 
@@ -52,7 +48,7 @@ public class Point2DFlagList<P extends Placement2D & Serializable> {
 		return size;
 	}
 
-	public SimplePoint2D<P> get(int i) {
+	public SimplePoint2D get(int i) {
 		return points[i];
 	}
 
@@ -95,7 +91,7 @@ public class Point2DFlagList<P extends Placement2D & Serializable> {
 		this.size += offset;
 	}
 
-	public void copyInto(Point2DFlagList<P> destination) {
+	public void copyInto(Point2DFlagList destination) {
 		destination.ensureCapacity(size);
 
 		System.arraycopy(points, 0, destination.points, 0, size);
@@ -120,22 +116,22 @@ public class Point2DFlagList<P extends Placement2D & Serializable> {
 		return index - offset;
 	}
 
-	public List<SimplePoint2D<P>> toList() {
-		List<SimplePoint2D<P>> list = new ArrayList<>();
+	public List<SimplePoint2D> toList() {
+		List<SimplePoint2D> list = new ArrayList<>();
 		for (int i = 0; i < size; i++) {
 			list.add(points[i]);
 		}
 		return list;
 	}
 
-	public SimplePoint2D<P>[] getPoints() {
+	public SimplePoint2D[] getPoints() {
 		return points;
 	}
 
 	/**
 	 * Returns the hash code value for this list.
 	 *
-	 * <p>
+	 * 
 	 * This implementation uses exactly the code that is used to define the
 	 * list hash function in the documentation for the {@link List#hashCode}
 	 * method.
@@ -155,7 +151,7 @@ public class Point2DFlagList<P extends Placement2D & Serializable> {
 	@Override
 	public boolean equals(Object obj) {
 		if(obj instanceof Point2DFlagList) {
-			Point2DFlagList<P> other = (Point2DFlagList<P>)obj;
+			Point2DFlagList other = (Point2DFlagList)obj;
 			if(other.size() == size) {
 				for (int i = 0; i < size; i++) {
 					if(!points[i].equals(other.get(i))) {
@@ -171,7 +167,7 @@ public class Point2DFlagList<P extends Placement2D & Serializable> {
 		return super.equals(obj);
 	}
 
-	public void setAll(Point2DList<P, Point2D<P>> add, int offset) {
+	public void setAll(Point2DList add, int offset) {
 		System.arraycopy(add.getPoints(), 0, points, offset, add.size());
 		int limit = offset + add.size();
 		for (int i = offset; i < limit; i++) {
@@ -180,7 +176,7 @@ public class Point2DFlagList<P extends Placement2D & Serializable> {
 
 	}
 
-	public void sort(Comparator<Point2D<?>> comparator, int maxSize) {
+	public void sort(Comparator<Point2D> comparator, int maxSize) {
 		Arrays.sort(points, 0, maxSize, comparator);
 	}
 

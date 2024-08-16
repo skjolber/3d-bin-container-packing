@@ -1,12 +1,9 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import java.io.Serializable;
-
-import com.github.skjolber.packing.api.Placement3D;
-import com.github.skjolber.packing.api.ep.Point2D;
+import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point3D;
 
-public class DefaultPoint3D<P extends Placement3D & Serializable> extends SimplePoint3D<P> {
+public class DefaultPoint3D extends SimplePoint3D {
 
 	private static final long serialVersionUID = 1L;
 
@@ -15,43 +12,38 @@ public class DefaultPoint3D<P extends Placement3D & Serializable> extends Simple
 	}
 
 	@Override
-	public DefaultPoint3D<P> clone(int maxX, int maxY, int maxZ) {
-		return new DefaultPoint3D<>(minX, minY, minZ, maxX, maxY, maxZ);
+	public DefaultPoint3D clone(int maxX, int maxY, int maxZ) {
+		return new DefaultPoint3D(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
-	public Point2D<P> clone(int maxX, int maxY) {
-		return clone(maxX, maxY, this.maxZ);
+	public SimplePoint3D moveX(int x) {
+		return new DefaultPoint3D(x, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
-	public SimplePoint3D<P> moveX(int x) {
-		return new DefaultPoint3D<>(x, minY, minZ, maxX, maxY, maxZ);
+	public SimplePoint3D moveX(int x, StackPlacement yzSupport) {
+		return new DefaultYZPlanePoint3D(x, minY, minZ, maxX, maxY, maxZ, yzSupport);
 	}
 
 	@Override
-	public SimplePoint3D<P> moveX(int x, P yzSupport) {
-		return new DefaultYZPlanePoint3D<>(x, minY, minZ, maxX, maxY, maxZ, yzSupport);
+	public SimplePoint3D moveY(int y) {
+		return new DefaultPoint3D(minX, y, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
-	public SimplePoint3D<P> moveY(int y) {
-		return new DefaultPoint3D<>(minX, y, minZ, maxX, maxY, maxZ);
+	public SimplePoint3D moveY(int y, StackPlacement xzSupport) {
+		return new DefaultXZPlanePoint3D(minX, y, minZ, maxX, maxY, maxZ, xzSupport);
 	}
 
 	@Override
-	public SimplePoint3D<P> moveY(int y, P xzSupport) {
-		return new DefaultXZPlanePoint3D<>(minX, y, minZ, maxX, maxY, maxZ, xzSupport);
+	public SimplePoint3D moveZ(int z) {
+		return new DefaultPoint3D(minX, minY, z, maxX, maxY, maxZ);
 	}
 
 	@Override
-	public SimplePoint3D<P> moveZ(int z) {
-		return new DefaultPoint3D<>(minX, minY, z, maxX, maxY, maxZ);
-	}
-
-	@Override
-	public SimplePoint3D<P> moveZ(int z, P xySupport) {
-		return new DefaultXYPlanePoint3D<>(minX, minY, z, maxX, maxY, maxZ, xySupport);
+	public SimplePoint3D moveZ(int z, StackPlacement xySupport) {
+		return new DefaultXYPlanePoint3D(minX, minY, z, maxX, maxY, maxZ, xySupport);
 	}
 
 	/**
@@ -61,8 +53,8 @@ public class DefaultPoint3D<P extends Placement3D & Serializable> extends Simple
 	 */
 
 	@Override
-	public Point3D<P> rotate() {
-		return new DefaultPoint3D<>(minY, minZ, minX, maxY, maxZ, maxX);
+	public Point3D rotate() {
+		return new DefaultPoint3D(minY, minZ, minX, maxY, maxZ, maxX);
 	}
 
 	@Override

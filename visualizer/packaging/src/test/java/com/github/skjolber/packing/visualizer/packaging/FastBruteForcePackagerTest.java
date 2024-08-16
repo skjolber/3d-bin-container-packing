@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.visualizer.packaging;
 
-import static com.github.skjolber.packing.test.assertj.StackablePlacementAssert.assertThat;
+import static com.github.skjolber.packing.test.assertj.StackPlacementAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 
 import java.util.ArrayList;

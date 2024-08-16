@@ -8,14 +8,14 @@ import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
 
-public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
+public class ExtremePoints3DStack extends ExtremePoints3D {
 
 	protected static class StackItem {
-		protected Point3DFlagList<StackPlacement> values = new Point3DFlagList<>();
-		protected Point3DFlagList<StackPlacement> otherValues = new Point3DFlagList<>();
+		protected Point3DFlagList values = new Point3DFlagList();
+		protected Point3DFlagList otherValues = new Point3DFlagList();
 		protected ArrayList<StackPlacement> placements = new ArrayList<>();
 		protected StackPlacement stackPlacement = new StackPlacement();
-		protected Point3D<StackPlacement> point;
+		protected Point3D point;
 		protected long minVolumeLimit;
 		protected long minAreaLimit;
 	}
@@ -103,9 +103,9 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 		this.minVolumeLimit = stackItem.minVolumeLimit;
 	}
 
-	public List<Point3D<StackPlacement>> getPoints() {
+	public List<Point3D> getPoints() {
 		// item 0 is always empty
-		List<Point3D<StackPlacement>> list = new ArrayList<>(stackIndex + 1);
+		List<Point3D> list = new ArrayList<>(stackIndex + 1);
 		for (int i = 1; i < stackIndex + 1; i++) {
 			StackItem stackItem = stackItems.get(i);
 			list.add(stackItem.point);
@@ -138,7 +138,7 @@ public class ExtremePoints3DStack extends ExtremePoints3D<StackPlacement> {
 	}
 
 	@Override
-	protected void saveValues(Point3DFlagList<StackPlacement> values, Point3DFlagList<StackPlacement> otherValues) {
+	protected void saveValues(Point3DFlagList values, Point3DFlagList otherValues) {
 		// override because of the way the stack works, 
 		super.saveValues(values, otherValues);
 
