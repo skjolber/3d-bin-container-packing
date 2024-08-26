@@ -1,9 +1,12 @@
-package com.github.skjolber.packing.api;
+package com.github.skjolber.packing.api.packager;
 
 import java.util.Comparator;
 
+import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.Stackable;
+
 @FunctionalInterface
-public interface PlacementComparator<L> {
+public interface LoadComparator<L> {
 
 	/**
 	 * See {@linkplain Comparator#compare(Object, Object)}.<br>
