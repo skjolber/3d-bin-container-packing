@@ -8,16 +8,16 @@ import java.util.List;
  * 
  */
 
-public interface LoadableItemScope {
+public interface LoadableItemFilter {
 
 	List<LoadableItem> getLoadableItems();
 
 	/**
 	 * 
-	 * Notify item was loaded
+	 * Notify stackable from item was loaded
 	 * 
 	 * @param index
-	 * @return true if some loadable item was excluded due to this
+	 * @return true if some loadable item was excluded due to this loaded item
 	 */
 	
 	boolean loaded(int index);

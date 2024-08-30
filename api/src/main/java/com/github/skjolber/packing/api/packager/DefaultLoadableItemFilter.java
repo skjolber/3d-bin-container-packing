@@ -1,11 +1,11 @@
 package com.github.skjolber.packing.api.packager;
 import java.util.List;
 
-public class DefaultLoadableItemScope implements LoadableItemScope {
+public class DefaultLoadableItemFilter implements LoadableItemFilter {
 
 	protected final List<LoadableItem> loadableItems;
 
-	public DefaultLoadableItemScope(List<LoadableItem> loadableItems) {
+	public DefaultLoadableItemFilter(List<LoadableItem> loadableItems) {
 		this.loadableItems = loadableItems;
 	}
 

@@ -1,10 +1,5 @@
 package com.github.skjolber.packing.api.packager;
 
-import java.util.List;
-
-import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.Stackable;
-
 /**
  * 
  * Stackable item which fit within certain bounds, i.e. load dimensions of a container.
@@ -13,54 +8,22 @@ import com.github.skjolber.packing.api.Stackable;
 
 public class LoadableItem {
 
-	protected final List<StackValue> values;
-	protected final Stackable stackable;
-
-	private int count;
+	protected Loadable loadable;
+	protected int count;
 	
-	protected final long minVolumeLimit;
-	protected final long minAreaLimit;
-
-	public LoadableItem(Stackable stackable, List<StackValue> stackValues, int count) {
-		this.values = stackValues;
-		this.stackable = stackable;
+	public LoadableItem(Loadable loadable, int count) {
+		this.loadable = loadable;
 		this.count = count;
-		
-		long minVolumeLimit = Long.MAX_VALUE;
-		long minAreaLimit = Long.MAX_VALUE;
-
-		for (int i = 0; i < values.size(); i++) {
-			StackValue stackValue = values.get(i);
-
-			if(minVolumeLimit > stackValue.getVolume()) {
-				minVolumeLimit = stackValue.getVolume();
-			}
-
-			if(minAreaLimit > stackValue.getArea()) {
-				minAreaLimit = stackValue.getArea();
-			}
-		}
-
-		this.minAreaLimit = minAreaLimit;
-		this.minVolumeLimit = minVolumeLimit;
 	}
 	
-	public List<StackValue> getValues() {
-		return values;
+	public Loadable getLoadable() {
+		return loadable;
 	}
-
-	public long getMinAreaLimit() {
-		return minAreaLimit;
+	
+	public void setLoadable(Loadable loadable) {
+		this.loadable = loadable;
 	}
-
-	public long getMinVolumeLimit() {
-		return minVolumeLimit;
-	}
-
-	public Stackable getStackable() {
-		return stackable;
-	}
-
+	
 	public int getCount() {
 		return count;
 	}
