@@ -10,10 +10,12 @@ public class LoadableItem {
 
 	protected Loadable loadable;
 	protected int count;
+	protected int index;
 	
-	public LoadableItem(Loadable loadable, int count) {
+	public LoadableItem(Loadable loadable, int count, int index) {
 		this.loadable = loadable;
 		this.count = count;
+		this.index = index;
 	}
 	
 	public Loadable getLoadable() {

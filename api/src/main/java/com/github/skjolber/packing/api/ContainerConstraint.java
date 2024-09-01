@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.api;
 
-import com.github.skjolber.packing.api.packager.LoadableFilterBuilder;
+import com.github.skjolber.packing.api.packager.LoadableItemFilterBuilder;
 
 /**
  * 
@@ -10,6 +10,6 @@ import com.github.skjolber.packing.api.packager.LoadableFilterBuilder;
 
 public interface ContainerConstraint {
 
-	LoadableFilterBuilder<?> newLoadableFilterBuilder();
+	LoadableItemFilterBuilder<?> newLoadableFilterBuilder();
 
 }
