@@ -29,4 +29,12 @@ public class StackableItemGroup {
 	public void setItems(List<StackableItem> items) {
 		this.items = items;
 	}
+
+	public int size() {
+		return items.size();
+	}
+
+	public StackableItem get(int i) {
+		return items.get(i);
+	}
 }

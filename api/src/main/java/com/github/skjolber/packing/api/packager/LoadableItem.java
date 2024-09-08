@@ -37,4 +37,12 @@ public class LoadableItem {
 	public boolean isEmpty() {
 		return count == 0;
 	}
+	
+	public int getIndex() {
+		return index;
+	}
+
+	public void decrement(int value) {
+		this.count = this.count - value;
+	}
 }

@@ -19,7 +19,7 @@ public class Loadable {
 	protected final long minVolumeLimit;
 	protected final long minAreaLimit;
 
-	public Loadable(Stackable stackable, List<StackValue> stackValues, int count) {
+	public Loadable(Stackable stackable, List<StackValue> stackValues) {
 		this.values = stackValues;
 		this.stackable = stackable;
 		
@@ -56,5 +56,9 @@ public class Loadable {
 
 	public Stackable getStackable() {
 		return stackable;
+	}
+
+	public StackValue getStackValue(int index) {
+		return values.get(index);
 	}
 }

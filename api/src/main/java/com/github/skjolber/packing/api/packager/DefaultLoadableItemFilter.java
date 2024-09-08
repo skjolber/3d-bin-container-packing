@@ -10,11 +10,7 @@ public class DefaultLoadableItemFilter implements LoadableItemFilter {
 
 	@Override
 	public void loaded(int index) {
-		LoadableItem loadableItem = loadableItems.get(index);
-		loadableItem.decrement();
-		if(loadableItem.isEmpty()) {
-			loadableItems.remove(index);
-		}
+		// do nothing
 	}
 
 }
