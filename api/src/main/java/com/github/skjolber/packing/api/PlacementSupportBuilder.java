@@ -1,8 +1,4 @@
-package com.github.skjolber.packing.api.packager;
-
-import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.ContainerStackValue;
-import com.github.skjolber.packing.api.Stack;
+package com.github.skjolber.packing.api;
 
 /**
  * Builder scaffold.
@@ -12,18 +8,13 @@ import com.github.skjolber.packing.api.Stack;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class LoadableItemFilterBuilder<B extends LoadableItemFilterBuilder<B>> {
+public abstract class PlacementSupportBuilder<B extends PlacementSupportBuilder<B>> {
 
-	protected Stack stack;
 	protected Container container;
 	protected ContainerStackValue stackValue;
-	protected LoadableItems loadableItems;
+	protected Stack stack;
+	protected StackPlacement stackPlacement;
 
-	public B withLoadableItems(LoadableItems loadableItems) {
-		this.loadableItems = loadableItems;
-		return (B)this;
-	}
-	
 	public B withContainer(Container container) {
 		this.container = container;
 		return (B)this;
@@ -39,7 +30,7 @@ public abstract class LoadableItemFilterBuilder<B extends LoadableItemFilterBuil
 		return (B)this;
 	}
 	
-	public abstract LoadableItemFilter build();
+	public abstract GravitySupport build();
 	
 	
 
