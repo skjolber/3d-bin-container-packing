@@ -6,11 +6,11 @@ package com.github.skjolber.packing.api.packager;
  * 
  */
 
-public interface LoadableItemFilter {
+public interface StackableItemsFilter {
 
 	/**
 	 * 
-	 * Notify loadable was loaded
+	 * Notify stackable was loaded
 	 * 
 	 * @param index
 	 * @return true if some loadable item was excluded due to this loaded item

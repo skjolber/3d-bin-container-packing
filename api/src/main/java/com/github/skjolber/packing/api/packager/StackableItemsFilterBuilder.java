@@ -12,14 +12,14 @@ import com.github.skjolber.packing.api.Stack;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class LoadableItemFilterBuilder<B extends LoadableItemFilterBuilder<B>> {
+public abstract class StackableItemsFilterBuilder<B extends StackableItemsFilterBuilder<B>> {
 
 	protected Stack stack;
 	protected Container container;
 	protected ContainerStackValue stackValue;
-	protected LoadableItems loadableItems;
+	protected StackableItems loadableItems;
 
-	public B withLoadableItems(LoadableItems loadableItems) {
+	public B withLoadableItems(StackableItems loadableItems) {
 		this.loadableItems = loadableItems;
 		return (B)this;
 	}
@@ -39,7 +39,7 @@ public abstract class LoadableItemFilterBuilder<B extends LoadableItemFilterBuil
 		return (B)this;
 	}
 	
-	public abstract LoadableItemFilter build();
+	public abstract StackableItemsFilter build();
 	
 	
 

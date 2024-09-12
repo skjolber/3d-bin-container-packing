@@ -52,8 +52,13 @@ public class Box extends Stackable {
 	protected final long minimumArea;
 	protected final long maximumArea;
 
-	public Box(String id, String name, long volume, int weight, BoxStackValue[] stackValues) {
-		super(id, name);
+	protected final String id;
+	protected final String description;
+	
+	public Box(String id, String description, long volume, int weight, BoxStackValue[] stackValues) {
+		this.id = id;
+		this.description = description;
+		
 		this.volume = volume;
 		this.weight = weight;
 		this.stackValues = stackValues;
@@ -64,6 +69,16 @@ public class Box extends Stackable {
 		for (BoxStackValue boxStackValue : stackValues) {
 			boxStackValue.setStackable(this);
 		}
+	}
+	
+	@Override
+	public String getDescription() {
+		return description;
+	}
+
+	@Override
+	public String getId() {
+		return id;
 	}
 
 	@Override

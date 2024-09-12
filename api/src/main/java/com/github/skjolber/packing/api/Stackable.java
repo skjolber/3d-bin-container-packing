@@ -8,28 +8,15 @@ public abstract class Stackable implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	protected final String id;
-	protected final String description;
-
-	public Stackable(String id, String description) {
-		super();
-		this.id = id;
-		this.description = description;
-	}
-
 	public abstract long getVolume();
 
 	public abstract int getWeight();
 
 	public abstract StackValue[] getStackValues();
 
-	public String getDescription() {
-		return description;
-	}
+	public abstract String getDescription();
 
-	public String getId() {
-		return id;
-	}
+	public abstract String getId();
 
 	public List<StackValue> fitsInside(Dimension bound) {
 		List<StackValue> list = new ArrayList<>();

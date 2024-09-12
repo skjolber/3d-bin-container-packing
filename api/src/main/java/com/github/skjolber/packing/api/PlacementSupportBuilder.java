@@ -13,7 +13,6 @@ public abstract class PlacementSupportBuilder<B extends PlacementSupportBuilder<
 	protected Container container;
 	protected ContainerStackValue stackValue;
 	protected Stack stack;
-	protected StackPlacement stackPlacement;
 
 	public B withContainer(Container container) {
 		this.container = container;

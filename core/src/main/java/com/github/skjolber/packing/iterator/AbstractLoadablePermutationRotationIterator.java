@@ -5,18 +5,18 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.api.packager.LoadableItem;
+import com.github.skjolber.packing.api.packager.BoundedStackableItem;
 
 public abstract class AbstractLoadablePermutationRotationIterator implements LoadableItemPermutationRotationIterator {
 
-	protected final LoadableItem[] loadableItems; // by index
+	protected final BoundedStackableItem[] loadableItems; // by index
 	protected int[] reset;
 	
-	public AbstractLoadablePermutationRotationIterator(LoadableItem[] matrix) {
+	public AbstractLoadablePermutationRotationIterator(BoundedStackableItem[] matrix) {
 		this.loadableItems = matrix;
 	}
 
-	public LoadableItem[] getMatrix() {
+	public BoundedStackableItem[] getMatrix() {
 		return loadableItems;
 	}
 	
