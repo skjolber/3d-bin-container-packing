@@ -29,6 +29,10 @@ public class DefaultContainer extends Container {
 	public Stack getStack() {
 		return stack;
 	}
+	
+	public ContainerStackValue getStackValue(int index) {
+		return stackValues[index];
+	}
 
 	@Override
 	public DefaultContainer clone() {

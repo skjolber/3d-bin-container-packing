@@ -11,8 +11,8 @@ public class StackableItem implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private final int count;
-	private final Stackable stackable;
+	protected int count;
+	protected final Stackable stackable;
 
 	public StackableItem(Stackable box) {
 		this(box, 1);
@@ -36,5 +36,18 @@ public class StackableItem implements Serializable {
 	public String toString() {
 		return String.format("%dx%s", count, stackable);
 	}
+	
+	public void decrement() {
+		count--;
+	}
+
+	public boolean isEmpty() {
+		return count == 0;
+	}
+	
+	public void decrement(int value) {
+		this.count = this.count - value;
+	}
+
 
 }

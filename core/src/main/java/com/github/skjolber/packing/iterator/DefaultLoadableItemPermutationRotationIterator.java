@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.packager.BoundedStackableItem;
 
 public class DefaultLoadableItemPermutationRotationIterator extends AbstractLoadablePermutationRotationIterator {
 	
@@ -22,7 +21,7 @@ public class DefaultLoadableItemPermutationRotationIterator extends AbstractLoad
 				throw new IllegalStateException();
 			}
 
-			BoundedStackableItem[] matrix = toMatrix();
+			IndexedStackableItem[] matrix = toMatrix();
 
 			return new DefaultLoadableItemPermutationRotationIterator(matrix);
 		}
@@ -37,12 +36,12 @@ public class DefaultLoadableItemPermutationRotationIterator extends AbstractLoad
 	// minimum volume from index i and above
 	protected long[] minStackableVolume;
 
-	public DefaultLoadableItemPermutationRotationIterator(BoundedStackableItem[] matrix) {
+	public DefaultLoadableItemPermutationRotationIterator(IndexedStackableItem[] matrix) {
 		super(matrix);
 		
 		int count = 0;
 		
-		for (BoundedStackableItem loadableItem : matrix) {
+		for (IndexedStackableItem loadableItem : matrix) {
 			if(loadableItem != null) {
 				count += loadableItem.getCount();
 			}
@@ -54,13 +53,13 @@ public class DefaultLoadableItemPermutationRotationIterator extends AbstractLoad
 	}
 	
 	public StackValue getStackValue(int index) {
-		return loadableItems[permutations[index]].getLoadable().getStackValue(rotations[index]);
+		return loadableItems[permutations[index]].getStackable().getStackValue(rotations[index]);
 	}
 
 	public void removePermutations(int count) {
 		// discard a number of items from the front
 		for(int i = 0; i < count; i++) {
-			BoundedStackableItem loadableItem = loadableItems[permutations[i]];
+			IndexedStackableItem loadableItem = loadableItems[permutations[i]];
 			
 			loadableItem.decrement();
 			
@@ -81,7 +80,7 @@ public class DefaultLoadableItemPermutationRotationIterator extends AbstractLoad
 		
 		int offset = 0;
 		for (int j = 0; j < loadableItems.length; j++) {
-			BoundedStackableItem value = loadableItems[j];
+			IndexedStackableItem value = loadableItems[j];
 			if(value != null && !value.isEmpty()) {
 				for (int k = 0; k < value.getCount(); k++) {
 					permutations[offset] = j;
@@ -98,12 +97,12 @@ public class DefaultLoadableItemPermutationRotationIterator extends AbstractLoad
 	}
 
 	protected void calculateMinStackableVolume(int offset) {
-		StackValue last = loadableItems[permutations[permutations.length - 1]].getLoadable().getStackValue(rotations[permutations.length - 1]);
+		StackValue last = loadableItems[permutations[permutations.length - 1]].getStackable().getStackValue(rotations[permutations.length - 1]);
 
 		minStackableVolume[permutations.length - 1] = last.getVolume();
 
 		for (int i = permutations.length - 2; i >= offset; i--) {
-			long volume = loadableItems[permutations[i]].getLoadable().getStackValue(rotations[i]).getVolume();
+			long volume = loadableItems[permutations[i]].getStackable().getStackValue(rotations[i]).getVolume();
 
 			if(volume < minStackableVolume[i + 1]) {
 				minStackableVolume[i] = volume;
@@ -129,7 +128,7 @@ public class DefaultLoadableItemPermutationRotationIterator extends AbstractLoad
 	public void removePermutations(List<Integer> removed) {
 		
 		 for (Integer i : removed) {
-			BoundedStackableItem loadableItem = loadableItems[i];
+			IndexedStackableItem loadableItem = loadableItems[i];
 			
 			loadableItem.decrement();
 			
@@ -150,7 +149,7 @@ public class DefaultLoadableItemPermutationRotationIterator extends AbstractLoad
 	public int nextRotation(int maxIndex) {
 		// next rotation
 		for (int i = maxIndex; i >= 0; i--) {
-			if(rotations[i] < loadableItems[permutations[i]].getLoadable().getValues().size() - 1) {
+			if(rotations[i] < loadableItems[permutations[i]].getStackable().getStackValues().length - 1) {
 				rotations[i]++;
 
 				System.arraycopy(reset, 0, rotations, i + 1, rotations.length - (i + 1));
@@ -174,12 +173,12 @@ public class DefaultLoadableItemPermutationRotationIterator extends AbstractLoad
 	public long countRotations() {
 		long n = 1;
 		for (int i = 0; i < permutations.length; i++) {
-			BoundedStackableItem value = loadableItems[permutations[i]];
-			if(Long.MAX_VALUE / value.getLoadable().getValues().size() <= n) {
+			IndexedStackableItem value = loadableItems[permutations[i]];
+			if(Long.MAX_VALUE / value.getStackable().getStackValues().length <= n) {
 				return -1L;
 			}
 
-			n = n * value.getLoadable().getValues().size();
+			n = n * value.getStackable().getStackValues().length;
 		}
 		return n;
 	}
@@ -197,7 +196,7 @@ public class DefaultLoadableItemPermutationRotationIterator extends AbstractLoad
 		// fit within the container volume
 
 		int maxCount = 0;
-		for (BoundedStackableItem value : loadableItems) {
+		for (IndexedStackableItem value : loadableItems) {
 			if(value != null) {
 				if(maxCount < value.getCount()) {
 					maxCount = value.getCount();
@@ -208,7 +207,7 @@ public class DefaultLoadableItemPermutationRotationIterator extends AbstractLoad
 		long n = 1;
 		if(maxCount > 1) {
 			int[] factors = new int[maxCount];
-			for (BoundedStackableItem value : loadableItems) {
+			for (IndexedStackableItem value : loadableItems) {
 				if(value != null) {
 					for (int k = 0; k < value.getCount(); k++) {
 						factors[k]++;
@@ -345,7 +344,7 @@ public class DefaultLoadableItemPermutationRotationIterator extends AbstractLoad
 		return new PermutationRotationState(rotations, permutations);
 	}
 
-	public BoundedStackableItem getPermutation(int index) {
+	public IndexedStackableItem getPermutation(int index) {
 		return loadableItems[permutations[index]];
 	}
 	

@@ -8,7 +8,6 @@ import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.packager.BoundedStackable;
-import com.github.skjolber.packing.api.packager.BoundedStackableItem;
 import com.github.skjolber.packing.api.packager.StackableItems;
 
 /**
@@ -55,8 +54,8 @@ public abstract class AbstractLoadableIteratorBuilder<B extends AbstractLoadable
 		return (B)this;
 	}
 
-	protected BoundedStackableItem[] toMatrix() {
-		BoundedStackableItem[] results = new BoundedStackableItem[stackableItems.size()];
+	protected IndexedStackableItem[] toMatrix() {
+		IndexedStackableItem[] results = new IndexedStackableItem[stackableItems.size()];
 
 		for (int i = 0; i < stackableItems.size(); i++) {
 			StackableItem item = stackableItems.get(i);
@@ -85,7 +84,7 @@ public abstract class AbstractLoadableIteratorBuilder<B extends AbstractLoadable
 						
 			BoundedStackable loadable = new BoundedStackable(stackable, boundRotations);
 
-			results[i] = new BoundedStackableItem(loadable, item.getCount(), i);
+			results[i] = new IndexedStackableItem(loadable, item.getCount(), i);
 		}
 		return results;
 	}

@@ -14,6 +14,12 @@ public class StackableItemGroup {
 
 	private List<StackableItem> items;
 
+	public StackableItemGroup(String id, List<StackableItem> items) {
+		super();
+		this.id = id;
+		this.items = items;
+	}
+
 	public String getId() {
 		return id;
 	}
@@ -36,5 +42,34 @@ public class StackableItemGroup {
 
 	public StackableItem get(int i) {
 		return items.get(i);
+	}
+	
+	public int loadableItemsCount() {
+		int count = 0;
+		for (StackableItem loadableItem : items) {
+			count += loadableItem.getCount();
+		}
+		return count;
+	}
+
+	public boolean isEmpty() {
+		for (StackableItem loadableItem : items) {
+			if(!loadableItem.isEmpty()) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	public void removeEmpty() {
+		for (int j = 0; j < items.size(); j++) {
+			StackableItem loadableItem = items.get(j);
+			
+			if(loadableItem.isEmpty()) {
+				items.remove(j);
+				j--;
+			}
+		}
 	}
 }

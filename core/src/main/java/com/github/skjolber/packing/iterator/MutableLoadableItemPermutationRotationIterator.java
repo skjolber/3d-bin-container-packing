@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.packager.BoundedStackableItem;
+import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.packager.StackableItems;
 
  /**
@@ -32,7 +32,7 @@ public class MutableLoadableItemPermutationRotationIterator implements Stackable
 				throw new IllegalStateException();
 			}
 
-			BoundedStackableItem[] matrix = toMatrix();
+			IndexedStackableItem[] matrix = toMatrix();
 
 			return new MutableLoadableItemPermutationRotationIterator(matrix);
 		}
@@ -50,9 +50,9 @@ public class MutableLoadableItemPermutationRotationIterator implements Stackable
 	
 	protected final DefaultLoadableItemPermutationRotationIterator iterator;
 	
-	protected final BoundedStackableItem[] loadableItems; // by index
+	protected final IndexedStackableItem[] loadableItems; // by index
 	
-	public MutableLoadableItemPermutationRotationIterator(BoundedStackableItem[] loadableItems) {
+	public MutableLoadableItemPermutationRotationIterator(IndexedStackableItem[] loadableItems) {
 		iterator = new DefaultLoadableItemPermutationRotationIterator(loadableItems);
 		
 		this.loadableItems = loadableItems; 
@@ -65,7 +65,7 @@ public class MutableLoadableItemPermutationRotationIterator implements Stackable
 	
 		mutableLoadableItems = new ArrayList<>();
 		for (int i = 0; i < loadableItems.length; i++) {
-			BoundedStackableItem loadableItem = loadableItems[i];
+			IndexedStackableItem loadableItem = loadableItems[i];
 			if(loadableItem != null && !loadableItem.isEmpty()) {
 				mutableLoadableItems.add(new MutableLoadableItem(loadableItem));
 			}
@@ -80,13 +80,13 @@ public class MutableLoadableItemPermutationRotationIterator implements Stackable
 	}
 	
 	
-	public BoundedStackableItem get(int index) {
+	public IndexedStackableItem get(int index) {
 		return mutableLoadableItems.get(index);
 	}
 	
 	@Override
 	public StackValue getStackValue(int index) {
-		return loadableItems[mutablePermutations[index]].getLoadable().getStackValue(mutableRotations[index]);
+		return loadableItems[mutablePermutations[index]].getStackable().getStackValue(mutableRotations[index]);
 	}
 
 	@Override
@@ -119,7 +119,7 @@ public class MutableLoadableItemPermutationRotationIterator implements Stackable
 	
 	@Override
 	public void remove(int index, int count) {
-		BoundedStackableItem loadableItem = mutableLoadableItems.get(index);
+		IndexedStackableItem loadableItem = mutableLoadableItems.get(index);
 		loadableItem.decrement(count);
 		
 		if(loadableItem.isEmpty()) {
@@ -249,12 +249,12 @@ public class MutableLoadableItemPermutationRotationIterator implements Stackable
 	public long countMutableRotations() {
 		long n = 1;
 		for (int i = 0; i < mutablePermutations.length; i++) {
-			BoundedStackableItem value = loadableItems[mutablePermutations[i]];
-			if(Long.MAX_VALUE / value.getLoadable().getValues().size() <= n) {
+			IndexedStackableItem value = loadableItems[mutablePermutations[i]];
+			if(Long.MAX_VALUE / value.getStackable().getStackValues().length <= n) {
 				return -1L;
 			}
 
-			n = n * value.getLoadable().getValues().size();
+			n = n * value.getStackable().getStackValues().length;
 		}
 		return n;
 	}
@@ -271,7 +271,7 @@ public class MutableLoadableItemPermutationRotationIterator implements Stackable
 		// fit within the container volume
 
 		int maxCount = 0;
-		for (BoundedStackableItem value : loadableItems) {
+		for (IndexedStackableItem value : loadableItems) {
 			if(value != null) {
 				if(maxCount < value.getCount()) {
 					maxCount = value.getCount();
@@ -282,7 +282,7 @@ public class MutableLoadableItemPermutationRotationIterator implements Stackable
 		long n = 1;
 		if(maxCount > 1) {
 			int[] factors = new int[maxCount];
-			for (BoundedStackableItem value : loadableItems) {
+			for (IndexedStackableItem value : loadableItems) {
 				if(value != null) {
 					for (int k = 0; k < value.getCount(); k++) {
 						factors[k]++;

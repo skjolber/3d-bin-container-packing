@@ -10,8 +10,6 @@ import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.StackableItemGroup;
 import com.github.skjolber.packing.api.packager.BoundedStackable;
-import com.github.skjolber.packing.api.packager.BoundedStackableItem;
-import com.github.skjolber.packing.api.packager.BoundedStackableItemGroup;
 
 /**
  * Builder scaffold.
@@ -57,8 +55,8 @@ public abstract class AbstractLoadableItemGroupIteratorBuilder<B extends Abstrac
 		return (B)this;
 	}
 
-	protected List<BoundedStackableItemGroup> toMatrix() {
-		List<BoundedStackableItemGroup> results = new ArrayList<>(stackableItemGroups.size());
+	protected List<StackableItemGroup> toMatrix() {
+		List<StackableItemGroup> results = new ArrayList<>(stackableItemGroups.size());
 
 		int offset = 0;
 		
@@ -66,7 +64,7 @@ public abstract class AbstractLoadableItemGroupIteratorBuilder<B extends Abstrac
 			
 			StackableItemGroup group = stackableItemGroups.get(i);
 			
-			List<BoundedStackableItem> loadableItems = new ArrayList<>(group.size());
+			List<StackableItem> loadableItems = new ArrayList<>(group.size());
 			for (int k = 0; k < group.size(); k++) {
 				StackableItem item = group.get(k);
 	
@@ -94,12 +92,12 @@ public abstract class AbstractLoadableItemGroupIteratorBuilder<B extends Abstrac
 							
 				BoundedStackable loadable = new BoundedStackable(stackable, boundRotations);
 	
-				loadableItems.add(new BoundedStackableItem(loadable, item.getCount(), offset));
+				loadableItems.add(new IndexedStackableItem(loadable, item.getCount(), offset));
 				
 				offset++;
 			}
 			if(!loadableItems.isEmpty()) {
-				results.add(new BoundedStackableItemGroup(group.getId(), loadableItems));
+				results.add(new StackableItemGroup(group.getId(), loadableItems));
 			}
 		}
 		return results;

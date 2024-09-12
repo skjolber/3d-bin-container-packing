@@ -103,6 +103,10 @@ public class Box extends Stackable {
 		}
 		return new Box(id, description, volume, weight, stackValues);
 	}
+	
+	public StackValue getStackValue(int index) {
+		return stackValues[index];
+	}
 
 	@Override
 	public long getMinimumArea() {

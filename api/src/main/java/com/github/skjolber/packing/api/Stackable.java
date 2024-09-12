@@ -29,6 +29,8 @@ public abstract class Stackable implements Serializable {
 
 		return list;
 	}
+	
+	public abstract StackValue getStackValue(int index);
 
 	@Override
 	public abstract Stackable clone();

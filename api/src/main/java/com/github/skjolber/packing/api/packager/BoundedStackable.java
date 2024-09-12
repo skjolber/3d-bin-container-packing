@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.api.packager;
 
+import java.util.List;
+
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 
@@ -25,6 +27,10 @@ public class BoundedStackable extends Stackable {
 
 		this.minimumArea = getMinimumArea(stackValues);
 		this.maximumArea = getMinimumArea(stackValues);
+	}
+
+	public BoundedStackable(Stackable stackable, List<StackValue> stackValues) {
+		this(stackable, stackValues.toArray(new StackValue[stackValues.size()]));
 	}
 
 	public Stackable getStackable() {
