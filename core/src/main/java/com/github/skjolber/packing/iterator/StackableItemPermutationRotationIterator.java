@@ -37,7 +37,7 @@ import com.github.skjolber.packing.api.StackValue;
  *      target="_top">next-lexicographical-permutation-algorithm</a>
  */
 
-public interface LoadableItemPermutationRotationIterator {
+public interface StackableItemPermutationRotationIterator {
 
 	/**
 	 * 

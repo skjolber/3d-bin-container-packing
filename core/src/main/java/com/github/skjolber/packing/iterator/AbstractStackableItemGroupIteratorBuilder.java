@@ -18,7 +18,7 @@ import com.github.skjolber.packing.api.packager.BoundedStackable;
  *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
  */
 
-public abstract class AbstractLoadableItemGroupIteratorBuilder<B extends AbstractLoadableItemGroupIteratorBuilder<B>> {
+public abstract class AbstractStackableItemGroupIteratorBuilder<B extends AbstractStackableItemGroupIteratorBuilder<B>> {
 
 	protected int maxLoadWeight = -1;
 	protected Predicate<Stackable> filter;
@@ -103,6 +103,6 @@ public abstract class AbstractLoadableItemGroupIteratorBuilder<B extends Abstrac
 		return results;
 	}
 
-	public abstract LoadableItemPermutationRotationIterator build();
+	public abstract StackableItemPermutationRotationIterator build();
 
 }

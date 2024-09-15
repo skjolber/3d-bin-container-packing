@@ -8,15 +8,15 @@ import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.StackableItemGroup;
 
-public class DefaultLoadableItemGroupPermutationRotationIterator extends AbstractLoadablePermutationRotationIterator {
+public class DefaultStackableItemGroupPermutationRotationIterator extends AbstractStackableItemGroupPermutationRotationIterator {
 	
 	public static Builder newBuilder() {
 		return new Builder();
 	}
 
-	public static class Builder extends AbstractLoadableItemGroupIteratorBuilder<Builder> {
+	public static class Builder extends AbstractStackableItemGroupIteratorBuilder<Builder> {
 
-		public DefaultLoadableItemGroupPermutationRotationIterator build() {
+		public DefaultStackableItemGroupPermutationRotationIterator build() {
 			if(maxLoadWeight == -1) {
 				throw new IllegalStateException();
 			}
@@ -31,7 +31,7 @@ public class DefaultLoadableItemGroupPermutationRotationIterator extends Abstrac
 				matrix.addAll(loadableItemGroup.getItems());
 			}
 			
-			return new DefaultLoadableItemGroupPermutationRotationIterator(groups, matrix.toArray(new IndexedStackableItem[matrix.size()]));
+			return new DefaultStackableItemGroupPermutationRotationIterator(groups, matrix.toArray(new IndexedStackableItem[matrix.size()]));
 		}
 
 	}
@@ -44,12 +44,8 @@ public class DefaultLoadableItemGroupPermutationRotationIterator extends Abstrac
 	// minimum volume from index i and above
 	protected long[] minStackableVolume;
 	
-	protected List<StackableItemGroup> groups;
-
-	public DefaultLoadableItemGroupPermutationRotationIterator(List<StackableItemGroup> groups, IndexedStackableItem[] matrix) {
-		super(matrix);
-		
-		this.groups = groups;
+	public DefaultStackableItemGroupPermutationRotationIterator(List<StackableItemGroup> groups, IndexedStackableItem[] matrix) {
+		super(matrix, groups);
 		
 		int count = 0;
 		
@@ -65,18 +61,18 @@ public class DefaultLoadableItemGroupPermutationRotationIterator extends Abstrac
 	}
 	
 	public StackValue getStackValue(int index) {
-		return loadableItems[permutations[index]].getStackable().getStackValue(rotations[index]);
+		return stackableItems[permutations[index]].getStackable().getStackValue(rotations[index]);
 	}
 
 	public void removePermutations(int count) {
 		// discard a number of items from the front
 		for(int i = 0; i < count; i++) {
-			IndexedStackableItem loadableItem = loadableItems[permutations[i]];
+			IndexedStackableItem item = stackableItems[permutations[i]];
 			
-			loadableItem.decrement();
+			item.decrement();
 			
-			if(loadableItem.isEmpty()) {
-				loadableItems[i] = null;
+			if(item.isEmpty()) {
+				stackableItems[i] = null;
 			}
 		}
 		
@@ -104,8 +100,8 @@ public class DefaultLoadableItemGroupPermutationRotationIterator extends Abstrac
 		int[] permutations = new int[rotations.length];
 		
 		int offset = 0;
-		for (int j = 0; j < loadableItems.length; j++) {
-			IndexedStackableItem value = loadableItems[j];
+		for (int j = 0; j < stackableItems.length; j++) {
+			IndexedStackableItem value = stackableItems[j];
 			if(value != null && !value.isEmpty()) {
 				for (int k = 0; k < value.getCount(); k++) {
 					permutations[offset] = j;
@@ -122,12 +118,12 @@ public class DefaultLoadableItemGroupPermutationRotationIterator extends Abstrac
 	}
 
 	protected void calculateMinStackableVolume(int offset) {
-		StackValue last = loadableItems[permutations[permutations.length - 1]].getStackable().getStackValue(rotations[permutations.length - 1]);
+		IndexedStackableItem value = stackableItems[permutations[permutations.length - 1]];
 
-		minStackableVolume[permutations.length - 1] = last.getVolume();
+		minStackableVolume[permutations.length - 1] = value.getStackable().getVolume();
 
 		for (int i = permutations.length - 2; i >= offset; i--) {
-			long volume = loadableItems[permutations[i]].getStackable().getStackValue(rotations[i]).getVolume();
+			long volume = stackableItems[permutations[i]].getStackable().getStackValue(rotations[i]).getVolume();
 
 			if(volume < minStackableVolume[i + 1]) {
 				minStackableVolume[i] = volume;
@@ -152,27 +148,8 @@ public class DefaultLoadableItemGroupPermutationRotationIterator extends Abstrac
 	
 	public void removePermutations(List<Integer> removed) {
 		
-		 for (Integer i : removed) {
-			IndexedStackableItem loadableItem = loadableItems[i];
-			
-			loadableItem.decrement();
-			
-			if(loadableItem.isEmpty()) {
-				loadableItems[i] = null;
-			}
-		}
-		 
-		// go through all groups and clean up
-		for(int i = 0; i < groups.size(); i++) {
-			StackableItemGroup group = groups.get(i);
-			
-			group.removeEmpty();
-			if(group.isEmpty()) {
-				groups.remove(i);
-				i--;
-			}
-		}
-
+		super.removePermutations(removed);
+		
 		initiatePermutation(rotations.length - removed.size());
 	}
 
@@ -185,7 +162,7 @@ public class DefaultLoadableItemGroupPermutationRotationIterator extends Abstrac
 	public int nextRotation(int maxIndex) {
 		// next rotation
 		for (int i = maxIndex; i >= 0; i--) {
-			if(rotations[i] < loadableItems[permutations[i]].getStackable().getStackValues().length - 1) {
+			if(rotations[i] < stackableItems[permutations[i]].getStackable().getStackValues().length - 1) {
 				rotations[i]++;
 
 				System.arraycopy(reset, 0, rotations, i + 1, rotations.length - (i + 1));
@@ -209,7 +186,7 @@ public class DefaultLoadableItemGroupPermutationRotationIterator extends Abstrac
 	public long countRotations() {
 		long n = 1;
 		for (int i = 0; i < permutations.length; i++) {
-			IndexedStackableItem value = loadableItems[permutations[i]];
+			IndexedStackableItem value = stackableItems[permutations[i]];
 			if(Long.MAX_VALUE / value.getStackable().getStackValues().length <= n) {
 				return -1L;
 			}
@@ -219,93 +196,19 @@ public class DefaultLoadableItemGroupPermutationRotationIterator extends Abstrac
 		return n;
 	}
 
-	/**
-	 * Return number of permutations for boxes which fit within this container.
-	 * 
-	 * @return permutation count
-	 */
-
-	public long countPermutations() {
-		// reduce permutations for boxes which are duplicated
-
-		// could be further bounded by looking at how many boxes (i.e. n x the smallest) which actually
-		// fit within the container volume
-		long n = 1;
-
-		for (StackableItemGroup loadableItemGroup : groups) {
-
-			List<StackableItem> items = loadableItemGroup.getItems();
-			
-			int count = loadableItemGroup.loadableItemsCount();
-			
-			int maxCount = 0;
-			for (StackableItem value : items) {
-				if(value != null) {
-					if(maxCount < value.getCount()) {
-						maxCount = value.getCount();
-					}
-				}
-			}
-	
-			if(maxCount > 1) {
-				int[] factors = new int[maxCount];
-				for (StackableItem value : items) {
-					if(value != null) {
-						for (int k = 0; k < value.getCount(); k++) {
-							factors[k]++;
-						}
-					}
-				}
-	
-				for (long i = 0; i < count; i++) {
-					if(Long.MAX_VALUE / (i + 1) <= n) {
-						return -1L;
-					}
-	
-					n = n * (i + 1);
-	
-					for (int k = 1; k < maxCount; k++) {
-						while (factors[k] > 0 && n % (k + 1) == 0) {
-							n = n / (k + 1);
-	
-							factors[k]--;
-						}
-					}
-				}
-	
-				for (int k = 1; k < maxCount; k++) {
-					while (factors[k] > 0) {
-						n = n / (k + 1);
-	
-						factors[k]--;
-					}
-				}
-			} else {
-				for (long i = 0; i < count; i++) {
-					if(Long.MAX_VALUE / (i + 1) <= n) {
-						return -1L;
-					}
-					n = n * (i + 1);
-				}
-			}
-		}
-		return n;
-	}
-
 	public int nextPermutation(int maxIndex) {
-		
+		int[] permutations = this.permutations;
+
 		int limit = permutations.length;
 
 		for(int g = groups.size() - 1; g >= 0; g--) {
 			StackableItemGroup loadableItemGroup = groups.get(g);
 
 			// Find longest non-increasing suffix
-			int startIndex = limit - loadableItemGroup.loadableItemsCount();
+			int startIndex = limit - loadableItemGroup.stackableItemsCount();
 
 			if(startIndex <= maxIndex && maxIndex < limit) {
 				while (maxIndex >= startIndex) {
-
-					int[] permutations = this.permutations;
 
 					int current = permutations[maxIndex];
 
@@ -355,26 +258,23 @@ public class DefaultLoadableItemGroupPermutationRotationIterator extends Abstrac
 			// skip to next group
 			limit = startIndex;
 		}
-
 		
 		return -1;
 	}
 
-	
 	public int nextPermutation() {
 		resetRotations();
+
+		int[] permutations = this.permutations;
 
 		int endIndex = permutations.length - 1;
 
 		for(int g = groups.size() - 1; g >= 0; g--) {
-		
 			StackableItemGroup loadableItemGroup = groups.get(g);
-
-			int[] permutations = this.permutations;
 
 			// Find longest non-increasing suffix
 			int i = endIndex;
-			int startIndex = endIndex - loadableItemGroup.loadableItemsCount() + 1;
+			int startIndex = endIndex - loadableItemGroup.stackableItemsCount() + 1;
 
 			while (i > startIndex && permutations[i - 1] >= permutations[i])
 				i--;
@@ -425,8 +325,6 @@ public class DefaultLoadableItemGroupPermutationRotationIterator extends Abstrac
 				i++;
 				j--;
 			}
-
-			g++;
 			
 			calculateMinStackableVolume(head);
 
@@ -446,10 +344,15 @@ public class DefaultLoadableItemGroupPermutationRotationIterator extends Abstrac
 	}
 
 	public IndexedStackableItem getPermutation(int index) {
-		return loadableItems[permutations[index]];
+		return stackableItems[permutations[index]];
 	}
 	
 	protected int[] getRotations() {
 		return rotations;
 	}
+	
+	public List<StackableItemGroup> getGroups() {
+		return groups;
+	}
+
 }

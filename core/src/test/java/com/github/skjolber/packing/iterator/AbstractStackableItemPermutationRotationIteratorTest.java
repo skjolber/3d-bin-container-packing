@@ -15,9 +15,9 @@ import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.StackableItem;
 
-public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends AbstractLoadableIteratorBuilder> {
+public abstract class AbstractStackableItemPermutationRotationIteratorTest<T extends AbstractStackableItemIteratorBuilder> {
 
-	protected static void assertMinStackableVolumeValid(LoadableItemPermutationRotationIterator iterator) {
+	protected static void assertMinStackableVolumeValid(StackableItemPermutationRotationIterator iterator) {
 		for (int i = 0; i < iterator.length(); i++) {
 			long calculatedMinStackableVolume = getMinStackableVolume(iterator, i);
 			long cachedMinStackableVolume = iterator.getMinStackableVolume(i);
@@ -26,7 +26,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		}
 	}
 
-	protected static long getMinStackableVolume(LoadableItemPermutationRotationIterator iterator, int offset) {
+	protected static long getMinStackableVolume(StackableItemPermutationRotationIterator iterator, int offset) {
 		long minVolume = Long.MAX_VALUE;
 		for (int i = offset; i < iterator.length(); i++) {
 			StackValue stackValue = iterator.getStackValue(i);
@@ -55,7 +55,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 				products1.add(item);
 			}
 
-			LoadableItemPermutationRotationIterator rotator = 
+			StackableItemPermutationRotationIterator rotator = 
 					newBuilder()
 					.withLoadSize(container)
 					.withStackableItems(products1)
@@ -82,7 +82,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withDescription("0").withWeight(1).build();
 		products.add(new StackableItem(box));
 
-		LoadableItemPermutationRotationIterator rotator = newBuilder()
+		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -101,7 +101,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 
 		products.add(new StackableItem(box));
 
-		LoadableItemPermutationRotationIterator rotator = newBuilder()
+		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -122,7 +122,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		products.add(new StackableItem(box1));
 		products.add(new StackableItem(box2));
 
-		LoadableItemPermutationRotationIterator rotator = newBuilder()
+		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -141,7 +141,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		Box box = Box.newBuilder().withSize(3, 1, 1).withRotate2D().withDescription("0").withWeight(1).build();
 		products.add(new StackableItem(box));
 
-		LoadableItemPermutationRotationIterator rotator = newBuilder()
+		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -159,7 +159,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		Box box = Box.newBuilder().withSize(3, 1, 1).withRotate2D().withDescription("0").withWeight(1).build();
 		products.add(new StackableItem(box));
 
-		LoadableItemPermutationRotationIterator rotator = newBuilder()
+		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -177,7 +177,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		Box box = Box.newBuilder().withRotate3D().withSize(1, 1, 1).withDescription("0").withWeight(1).build();
 		products.add(new StackableItem(box));
 
-		LoadableItemPermutationRotationIterator rotator = newBuilder()
+		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -196,7 +196,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
 
-		LoadableItemPermutationRotationIterator rotator = newBuilder()
+		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -232,7 +232,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 
-		LoadableItemPermutationRotationIterator rotator = newBuilder()
+		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -260,7 +260,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 
-		LoadableItemPermutationRotationIterator rotator = newBuilder()
+		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -286,13 +286,13 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 6).withDescription("3").withWeight(1).build()));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 7).withDescription("4").withWeight(1).build()));
 
-		LoadableItemPermutationRotationIterator rotator1 = newBuilder()
+		StackableItemPermutationRotationIterator rotator1 = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
-		LoadableItemPermutationRotationIterator rotator2 = newBuilder()
+		StackableItemPermutationRotationIterator rotator2 = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -324,7 +324,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 5).withDescription("2").withWeight(1).build()));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 6).withDescription("3").withWeight(1).build()));
 
-		LoadableItemPermutationRotationIterator rotator = newBuilder()
+		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -372,7 +372,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build(), 2));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build(), 4));
 
-		LoadableItemPermutationRotationIterator rotator = newBuilder()
+		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -397,7 +397,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 
 		Dimension container = new Dimension(null, 5 * n, 10, 10);
 
-		LoadableItemPermutationRotationIterator rotator = newBuilder()
+		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -420,7 +420,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 			products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(5, 10, 10).withWeight(1).build(), 1));
 		}
 
-		LoadableItemPermutationRotationIterator iterator = newBuilder()
+		StackableItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -439,7 +439,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		for (int k = 0; k < n; k++) {
 			products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(5, 10, 10).withWeight(1).build(), 1));
 		}
-		LoadableItemPermutationRotationIterator iterator = newBuilder()
+		StackableItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -460,7 +460,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 
-		LoadableItemPermutationRotationIterator iterator = newBuilder()
+		StackableItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())
@@ -493,7 +493,7 @@ public abstract class AbstractLoadablePermutationRotationIteratorTest<T extends 
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 
-		LoadableItemPermutationRotationIterator iterator = newBuilder()
+		StackableItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())

@@ -2,7 +2,6 @@ package com.github.skjolber.packing.iterator;
 
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.api.packager.BoundedStackable;
 
 /**
  * 
@@ -12,10 +11,12 @@ import com.github.skjolber.packing.api.packager.BoundedStackable;
 
 public class IndexedStackableItem extends StackableItem {
 
+	private static final long serialVersionUID = 1L;
+	
 	protected int index;
 	
-	public IndexedStackableItem(Stackable loadable, int count, int index) {
-		super(loadable, count);
+	public IndexedStackableItem(Stackable stackable, int count, int index) {
+		super(stackable, count);
 		this.index = index;
 	}
 
@@ -25,6 +26,11 @@ public class IndexedStackableItem extends StackableItem {
 	
 	public int getIndex() {
 		return index;
+	}
+	
+	@Override
+	public IndexedStackableItem clone() {
+		return new IndexedStackableItem(stackable, count, index);
 	}
 
 }

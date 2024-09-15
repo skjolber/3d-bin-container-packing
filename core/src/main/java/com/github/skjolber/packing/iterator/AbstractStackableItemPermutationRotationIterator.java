@@ -6,17 +6,17 @@ import java.util.List;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.StackableItem;
 
-public abstract class AbstractLoadablePermutationRotationIterator implements LoadableItemPermutationRotationIterator {
+public abstract class AbstractStackableItemPermutationRotationIterator implements StackableItemPermutationRotationIterator {
 
-	protected final IndexedStackableItem[] loadableItems; // by index
+	protected final IndexedStackableItem[] stackableItems; // by index
 	protected int[] reset;
 	
-	public AbstractLoadablePermutationRotationIterator(IndexedStackableItem[] matrix) {
-		this.loadableItems = matrix;
+	public AbstractStackableItemPermutationRotationIterator(IndexedStackableItem[] matrix) {
+		this.stackableItems = matrix;
 	}
 
 	public IndexedStackableItem[] getMatrix() {
-		return loadableItems;
+		return stackableItems;
 	}
 	
 	/**
@@ -26,7 +26,7 @@ public abstract class AbstractLoadablePermutationRotationIterator implements Loa
 	 */
 
 	public int boxItemLength() {
-		return loadableItems.length;
+		return stackableItems.length;
 	}
 
 	public long getMinStackableArea(int offset) {
@@ -62,7 +62,7 @@ public abstract class AbstractLoadablePermutationRotationIterator implements Loa
 
 		List<StackValue> results = new ArrayList<StackValue>(length);
 		for (int i = 0; i < length; i++) {
-			results.add(loadableItems[permutations[i]].getStackable().getStackValue(rotations[i]));
+			results.add(stackableItems[permutations[i]].getStackable().getStackValue(rotations[i]));
 		}
 		return results;
 	}
@@ -70,4 +70,17 @@ public abstract class AbstractLoadablePermutationRotationIterator implements Loa
 	public abstract int length();
 
 	public abstract StackValue getStackValue(int index);
+	
+
+	protected int[] getFrequencies() {
+		int[] frequencies = new int[stackableItems.length];
+		
+		for (int i = 0; i < stackableItems.length; i++) {
+			if(stackableItems[i] != null) {
+				frequencies[i] = stackableItems[i].getCount();
+			}
+		}
+		return frequencies;
+	}
+	
 }

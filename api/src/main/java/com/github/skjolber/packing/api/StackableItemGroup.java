@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,7 +45,8 @@ public class StackableItemGroup {
 		return items.get(i);
 	}
 	
-	public int loadableItemsCount() {
+	
+	public int stackableItemsCount() {
 		int count = 0;
 		for (StackableItem loadableItem : items) {
 			count += loadableItem.getCount();
@@ -72,4 +74,15 @@ public class StackableItemGroup {
 			}
 		}
 	}
+	
+	public StackableItemGroup clone() {
+		List<StackableItem> items = new ArrayList<>();
+
+		for (StackableItem stackableItem : this.items) {
+			items.add(stackableItem.clone());
+		}
+		
+		return new StackableItemGroup(id, items);
+	}
+	
 }

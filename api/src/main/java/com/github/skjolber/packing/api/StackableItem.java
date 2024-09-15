@@ -49,5 +49,8 @@ public class StackableItem implements Serializable {
 		this.count = this.count - value;
 	}
 
+	public StackableItem clone() {
+		return new StackableItem(stackable, count);
+	}
 
 }
