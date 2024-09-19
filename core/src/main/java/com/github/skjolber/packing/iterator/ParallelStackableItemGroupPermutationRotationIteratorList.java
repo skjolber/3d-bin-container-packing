@@ -61,13 +61,7 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList extends A
 	public ParallelStackableItemGroupPermutationRotationIteratorList(IndexedStackableItem[] matrix, List<IndexedStackableItemGroup> groups, int parallelizationCount) {
 		super(matrix, groups);
 		
-		this.frequencies = new int[matrix.length];
-		for (int i = 0; i < matrix.length; i++) {
-			if(matrix[i] != null) {
-				frequencies[i] = matrix[i].getCount();
-			}
-		}
-		
+		this.frequencies = calculateFrequencies();
 
 		workUnits = new ParallelStackableItemGroupPermutationRotationIterator[parallelizationCount];
 		for (int i = 0; i < parallelizationCount; i++) {
@@ -144,122 +138,6 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList extends A
 		}
 	}
 
-	private int getCount() {
-		int count = 0;
-		for (int f : frequencies) {
-			count += f;
-		}
-		return count;
-	}
-
-	public long countPermutations() {
-		int first = firstDuplicate(frequencies);
-		if(first == -1) {
-			return getPermutationCount();
-		} else {
-			return getPermutationCountWithRepeatedItems();
-		}
-	}
-
-	private long getPermutationCount() {
-		long n = 1;
-		
-		for (IndexedStackableItemGroup loadableItemGroup : groups) {
-			int count = loadableItemGroup.stackableItemsCount();
-			
-			for (long i = 0; i < count; i++) {
-				if(Long.MAX_VALUE / (i + 1) <= n) {
-					return -1L;
-				}
-				n = n * (i + 1);
-			}
-		}
-		return n;
-	}
-
-	/**
-	 * Return number of permutations for boxes which fit within this container.
-	 * 
-	 * @return permutation count
-	 */
-
-	public long getPermutationCountWithRepeatedItems() {
-		// reduce permutations for boxes which are duplicated
-
-		// could be further bounded by looking at how many boxes (i.e. n x the smallest) which actually
-		// fit within the container volume
-		long n = 1;
-
-		for (IndexedStackableItemGroup loadableItemGroup : groups) {
-
-			List<IndexedStackableItem> items = loadableItemGroup.getItems();
-			
-			int count = loadableItemGroup.stackableItemsCount();
-			
-			int maxCount = 0;
-			for (StackableItem value : items) {
-				if(value != null) {
-					if(maxCount < value.getCount()) {
-						maxCount = value.getCount();
-					}
-				}
-			}
-	
-			if(maxCount > 1) {
-				int[] factors = new int[maxCount];
-				for (StackableItem value : items) {
-					if(value != null) {
-						for (int k = 0; k < value.getCount(); k++) {
-							factors[k]++;
-						}
-					}
-				}
-	
-				for (long i = 0; i < count; i++) {
-					if(Long.MAX_VALUE / (i + 1) <= n) {
-						return -1L;
-					}
-	
-					n = n * (i + 1);
-	
-					// reduce n if possible
-					for (int k = 1; k < maxCount; k++) {
-						while (factors[k] > 0 && n % (k + 1) == 0) {
-							n = n / (k + 1);
-	
-							factors[k]--;
-						}
-					}
-				}
-	
-				for (int k = 1; k < maxCount; k++) {
-					while (factors[k] > 0) {
-						n = n / (k + 1);
-	
-						factors[k]--;
-					}
-				}
-			} else {
-				for (long i = 0; i < count; i++) {
-					if(Long.MAX_VALUE / (i + 1) <= n) {
-						return -1L;
-					}
-					n = n * (i + 1);
-				}
-			}
-		}
-		return n;
-	}
-	
-	private static int firstDuplicate(int[] frequencies) {
-		for (int i = 0; i < frequencies.length; i++) {
-			if(frequencies[i] > 1) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
 	protected static int[] unrank(int[] frequencies, int elementCount, long permutationCount, long rank, List<IndexedStackableItemGroup> groups) {
 	    int[] result = new int[PADDING + elementCount];
 	    
@@ -304,10 +182,6 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList extends A
 
 	public ParallelStackableItemGroupPermutationRotationIterator getIterator(int i) {
 		return workUnits[i];
-	}
-	
-	public int[] getFrequencies() {
-		return frequencies;
 	}
 
 	public int length() {

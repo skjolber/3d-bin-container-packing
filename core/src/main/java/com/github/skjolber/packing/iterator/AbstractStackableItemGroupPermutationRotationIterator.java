@@ -13,6 +13,14 @@ public abstract class AbstractStackableItemGroupPermutationRotationIterator exte
 		this.groups = groups;
 	}
 	
+	protected int getCount() {
+		int index = 0;
+		for (IndexedStackableItemGroup loadableItemGroup : groups) {
+			index += loadableItemGroup.stackableItemsCount();
+		}
+		return index;
+	}
+	
 	/**
 	 * Return number of permutations for boxes which fit within this container.
 	 * 
@@ -31,6 +39,9 @@ public abstract class AbstractStackableItemGroupPermutationRotationIterator exte
 			List<IndexedStackableItem> items = loadableItemGroup.getItems();
 			
 			int count = loadableItemGroup.stackableItemsCount();
+			if(count == 0) {
+				continue;
+			}
 			
 			int maxCount = 0;
 			for (StackableItem value : items) {

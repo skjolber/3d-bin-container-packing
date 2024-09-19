@@ -173,7 +173,6 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 
 		return -1;
 	}
-
 	
 	@Override
 	public int[] getPermutations() {
@@ -184,19 +183,6 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 
 	protected void resetRotations() {
 		System.arraycopy(reset, 0, rotations, 0, rotations.length);
-	}
-
-	public long countRotations() {
-		long n = 1;
-		for (int i = 0; i < permutations.length; i++) {
-			IndexedStackableItem value = stackableItems[permutations[i]];
-			if(Long.MAX_VALUE / value.getStackable().getStackValues().length <= n) {
-				return -1L;
-			}
-
-			n = n * value.getStackable().getStackValues().length;
-		}
-		return n;
 	}
 
 	public int nextPermutation(int maxIndex) {

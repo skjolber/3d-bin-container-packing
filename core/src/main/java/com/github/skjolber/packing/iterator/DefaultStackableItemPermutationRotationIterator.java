@@ -173,19 +173,6 @@ public class DefaultStackableItemPermutationRotationIterator extends AbstractSta
 		System.arraycopy(reset, 0, rotations, 0, rotations.length);
 	}
 
-	public long countRotations() {
-		long n = 1;
-		for (int i = 0; i < permutations.length; i++) {
-			IndexedStackableItem value = stackableItems[permutations[i]];
-			if(Long.MAX_VALUE / value.getStackable().getStackValues().length <= n) {
-				return -1L;
-			}
-
-			n = n * value.getStackable().getStackValues().length;
-		}
-		return n;
-	}
-
 	/**
 	 * Return number of permutations for boxes which fit within this container.
 	 * 

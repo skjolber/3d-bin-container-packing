@@ -71,7 +71,7 @@ public abstract class AbstractStackableItemPermutationRotationIterator implement
 	public abstract StackValue getStackValue(int index);
 	
 
-	protected int[] getFrequencies() {
+	protected int[] calculateFrequencies() {
 		int[] frequencies = new int[stackableItems.length];
 		
 		for (int i = 0; i < stackableItems.length; i++) {
@@ -81,5 +81,22 @@ public abstract class AbstractStackableItemPermutationRotationIterator implement
 		}
 		return frequencies;
 	}
+	
+
+	public long countRotations() {
+		int[] permutations = getPermutations();
+		
+		long n = 1;
+		for (int i = 0; i < permutations.length; i++) {
+			IndexedStackableItem value = stackableItems[permutations[i]];
+			if(Long.MAX_VALUE / value.getStackable().getStackValues().length <= n) {
+				return -1L;
+			}
+
+			n = n * value.getStackable().getStackValues().length;
+		}
+		return n;
+	}
+
 	
 }
