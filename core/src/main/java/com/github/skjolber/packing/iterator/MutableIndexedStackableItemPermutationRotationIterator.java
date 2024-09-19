@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.packager.StackableItems;
 
  /**
  *
- * An iterator which also acts as Loadable items. 
+ * An iterator which also acts as {@linkplain StackableItemsS}. 
  *
  * State is restored on each remove, next rotation or next permutation.
  *
@@ -52,7 +53,7 @@ public class MutableIndexedStackableItemPermutationRotationIterator implements S
 	protected final IndexedStackableItem[] stackableItems; // by index
 	
 	public MutableIndexedStackableItemPermutationRotationIterator(IndexedStackableItem[] stackableItems) {
-		iterator = new DefaultStackableItemPermutationRotationIterator(stackableItems);
+		this.iterator = new DefaultStackableItemPermutationRotationIterator(stackableItems);
 		
 		this.stackableItems = stackableItems; 
 		
@@ -173,7 +174,9 @@ public class MutableIndexedStackableItemPermutationRotationIterator implements S
 	
 	@Override
 	public int[] getPermutations() {
-		return mutablePermutations;
+		int[] permutations = new int[mutablePermutations.length];
+		System.arraycopy(mutablePermutations, 0, permutations, 0, permutations.length);
+		return permutations;
 	}
 
 	public List<StackValue> get(PermutationRotationState state, int length) {
@@ -270,7 +273,7 @@ public class MutableIndexedStackableItemPermutationRotationIterator implements S
 		// fit within the container volume
 
 		int maxCount = 0;
-		for (IndexedStackableItem value : stackableItems) {
+		for (StackableItem value : stackableItems) {
 			if(value != null) {
 				if(maxCount < value.getCount()) {
 					maxCount = value.getCount();
@@ -281,7 +284,7 @@ public class MutableIndexedStackableItemPermutationRotationIterator implements S
 		long n = 1;
 		if(maxCount > 1) {
 			int[] factors = new int[maxCount];
-			for (IndexedStackableItem value : stackableItems) {
+			for (StackableItem value : stackableItems) {
 				if(value != null) {
 					for (int k = 0; k < value.getCount(); k++) {
 						factors[k]++;

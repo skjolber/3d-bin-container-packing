@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.api.StackableItemGroup;
 
 public class DefaultStackableItemGroupPermutationRotationIterator extends AbstractStackableItemGroupPermutationRotationIterator {
 	
@@ -24,10 +23,10 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 				throw new IllegalStateException();
 			}
 
-			List<StackableItemGroup> groups = toMatrix();
+			List<IndexedStackableItemGroup> groups = toMatrix();
 			
 			List<StackableItem> matrix = new ArrayList<>();
-			for (StackableItemGroup loadableItemGroup : groups) {
+			for (IndexedStackableItemGroup loadableItemGroup : groups) {
 				matrix.addAll(loadableItemGroup.getItems());
 			}
 			
@@ -37,6 +36,7 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 	}
 
 	protected int[] rotations; // 2^n or 6^n
+	protected int[] reset;
 
 	// permutations of boxes that fit inside this container
 	protected int[] permutations; // n!
@@ -44,7 +44,7 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 	// minimum volume from index i and above
 	protected long[] minStackableVolume;
 	
-	public DefaultStackableItemGroupPermutationRotationIterator(List<StackableItemGroup> groups, IndexedStackableItem[] matrix) {
+	public DefaultStackableItemGroupPermutationRotationIterator(List<IndexedStackableItemGroup> groups, IndexedStackableItem[] matrix) {
 		super(matrix, groups);
 		
 		int count = 0;
@@ -77,7 +77,7 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 		}
 		
 		for(int i = 0; i < groups.size(); i++) {
-			StackableItemGroup group = groups.get(i);
+			IndexedStackableItemGroup group = groups.get(i);
 			
 			group.removeEmpty();
 			
@@ -175,7 +175,10 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 	}
 
 	
+	@Override
 	public int[] getPermutations() {
+		int[] permutations = new int[this.permutations.length];
+		System.arraycopy(this.permutations, 0, permutations, 0, permutations.length);
 		return permutations;
 	}
 
@@ -202,7 +205,7 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 		int limit = permutations.length;
 
 		for(int g = groups.size() - 1; g >= 0; g--) {
-			StackableItemGroup loadableItemGroup = groups.get(g);
+			IndexedStackableItemGroup loadableItemGroup = groups.get(g);
 
 			// Find longest non-increasing suffix
 			int startIndex = limit - loadableItemGroup.stackableItemsCount();
@@ -233,6 +236,7 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 					permutations[maxIndex] = permutations[minIndex];
 					permutations[minIndex] = current;
 
+					// TODO: better to recreate?
 					Arrays.sort(permutations, maxIndex + 1, limit);
 
 					resetRotations();
@@ -270,7 +274,7 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 		int endIndex = permutations.length - 1;
 
 		for(int g = groups.size() - 1; g >= 0; g--) {
-			StackableItemGroup loadableItemGroup = groups.get(g);
+			IndexedStackableItemGroup loadableItemGroup = groups.get(g);
 
 			// Find longest non-increasing suffix
 			int i = endIndex;
@@ -351,7 +355,7 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 		return rotations;
 	}
 	
-	public List<StackableItemGroup> getGroups() {
+	public List<IndexedStackableItemGroup> getGroups() {
 		return groups;
 	}
 

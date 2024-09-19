@@ -28,6 +28,7 @@ public class DefaultStackableItemPermutationRotationIterator extends AbstractSta
 	}
 
 	protected int[] rotations; // 2^n or 6^n
+	protected int[] reset;
 
 	// permutations of boxes that fit inside this container
 	protected int[] permutations; // n!
@@ -161,7 +162,10 @@ public class DefaultStackableItemPermutationRotationIterator extends AbstractSta
 	}
 
 	
+	@Override
 	public int[] getPermutations() {
+		int[] permutations = new int[this.permutations.length];
+		System.arraycopy(this.permutations, 0, permutations, 0, permutations.length);
 		return permutations;
 	}
 

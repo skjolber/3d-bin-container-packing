@@ -9,7 +9,6 @@ import com.github.skjolber.packing.api.StackableItem;
 public abstract class AbstractStackableItemPermutationRotationIterator implements StackableItemPermutationRotationIterator {
 
 	protected final IndexedStackableItem[] stackableItems; // by index
-	protected int[] reset;
 	
 	public AbstractStackableItemPermutationRotationIterator(IndexedStackableItem[] matrix) {
 		this.stackableItems = matrix;

@@ -55,8 +55,8 @@ public abstract class AbstractStackableItemGroupIteratorBuilder<B extends Abstra
 		return (B)this;
 	}
 
-	protected List<StackableItemGroup> toMatrix() {
-		List<StackableItemGroup> results = new ArrayList<>(stackableItemGroups.size());
+	protected List<IndexedStackableItemGroup> toMatrix() {
+		List<IndexedStackableItemGroup> results = new ArrayList<>(stackableItemGroups.size());
 
 		int offset = 0;
 		
@@ -64,7 +64,7 @@ public abstract class AbstractStackableItemGroupIteratorBuilder<B extends Abstra
 			
 			StackableItemGroup group = stackableItemGroups.get(i);
 			
-			List<StackableItem> loadableItems = new ArrayList<>(group.size());
+			List<IndexedStackableItem> loadableItems = new ArrayList<>(group.size());
 			for (int k = 0; k < group.size(); k++) {
 				StackableItem item = group.get(k);
 	
@@ -97,7 +97,7 @@ public abstract class AbstractStackableItemGroupIteratorBuilder<B extends Abstra
 				offset++;
 			}
 			if(!loadableItems.isEmpty()) {
-				results.add(new StackableItemGroup(group.getId(), loadableItems));
+				results.add(new IndexedStackableItemGroup(group.getId(), loadableItems));
 			}
 		}
 		return results;

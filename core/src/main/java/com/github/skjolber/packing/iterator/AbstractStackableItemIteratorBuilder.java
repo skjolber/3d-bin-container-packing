@@ -8,7 +8,6 @@ import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.packager.BoundedStackable;
-import com.github.skjolber.packing.api.packager.StackableItems;
 
 /**
  * Builder scaffold.

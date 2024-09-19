@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.api.StackableItemGroup;
 
 public class ParallelStackableItemGroupPermutationRotationIterator extends AbstractStackableItemGroupPermutationRotationIterator {
 	
@@ -24,10 +23,10 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 				throw new IllegalStateException();
 			}
 
-			List<StackableItemGroup> groups = toMatrix();
+			List<IndexedStackableItemGroup> groups = toMatrix();
 			
-			List<StackableItem> matrix = new ArrayList<>();
-			for (StackableItemGroup loadableItemGroup : groups) {
+			List<IndexedStackableItem> matrix = new ArrayList<>();
+			for (IndexedStackableItemGroup loadableItemGroup : groups) {
 				matrix.addAll(loadableItemGroup.getItems());
 			}
 			
@@ -44,15 +43,16 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 
 	private int[] permutations;
 	private int[] rotations;
+	protected int[] reset;
 
 	private int[] lastPermutation;
 	private int lastPermutationMaxIndex = -1;
-	private boolean checkLastPermutation = false;
+	private boolean seenLastPermutationMaxIndex = false;
 
 	// minimum volume from index i and above
 	protected long[] minStackableVolume;
 
-	public ParallelStackableItemGroupPermutationRotationIterator(IndexedStackableItem[] matrix, List<StackableItemGroup> groups) {
+	public ParallelStackableItemGroupPermutationRotationIterator(IndexedStackableItem[] matrix, List<IndexedStackableItemGroup> groups) {
 		super(matrix, groups);
 	}
 
@@ -65,13 +65,12 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 	}
 
 	public int[] getPermutations() {
-		// TODO reuse object
 		int[] result = new int[permutations.length - ParallelPermutationRotationIteratorList.PADDING];
 		System.arraycopy(permutations, ParallelPermutationRotationIteratorList.PADDING, result, 0, result.length);
 		return result;
 	}
 	
-	public void setGroups(List<StackableItemGroup> groups) {
+	public void setGroups(List<IndexedStackableItemGroup> groups) {
 		this.groups = groups;
 	}
 
@@ -115,14 +114,10 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 		this.rotations = rotations;
 	}
 
-	public int[] getLastPermutation() {
-		return lastPermutation;
-	}
-
 	public void setLastPermutation(int[] lastPermutation) { // array without padding
 		this.lastPermutation = lastPermutation;
 
-		this.checkLastPermutation = false;
+		this.seenLastPermutationMaxIndex = false;
 
 		// find the first item that differs, so that we do not have to
 		// compare items for each iteration (to detect whether we have done enough work)
@@ -168,7 +163,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 
 		for(int g = groups.size() - 1; g >= 0; g--) {
 		
-			StackableItemGroup loadableItemGroup = groups.get(g);
+			IndexedStackableItemGroup loadableItemGroup = groups.get(g);
 			
 			// Find longest non-increasing suffix
 	
@@ -263,14 +258,16 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 		if(lastPermutation != null) {
 			if(resultIndex <= lastPermutationMaxIndex) {
 				// TODO initial check for bounds here
-				checkLastPermutation = true;
+				seenLastPermutationMaxIndex = true;
 			}
 
-			if(checkLastPermutation) {
+			if(seenLastPermutationMaxIndex) {
 				// are we still within our designated range?
 				// the next permutation must be lexicographically less than the first permutation
 				// in the next block
 
+				// TODO is there a faster way to do this? 
+				
 				int i = ParallelPermutationRotationIteratorList.PADDING;
 				while (i < lastPermutation.length) {
 					int value = permutations[i];
@@ -294,14 +291,14 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 		int limit = permutations.length;
 
 		for(int g = groups.size() - 1; g >= 0; g--) {
-			StackableItemGroup loadableItemGroup = groups.get(g);
+			IndexedStackableItemGroup loadableItemGroup = groups.get(g);
 
 			// Find longest non-increasing suffix
 			int startIndex = limit - loadableItemGroup.stackableItemsCount();
 
-			if(startIndex <= maxIndex && maxIndex < limit) {
+			if(startIndex <= ParallelPermutationRotationIteratorList.PADDING + maxIndex && ParallelPermutationRotationIteratorList.PADDING + maxIndex < limit) {
 				
-				while (maxIndex >= startIndex) {
+				while (ParallelPermutationRotationIteratorList.PADDING  + maxIndex >= startIndex) {
 		
 					int current = permutations[ParallelPermutationRotationIteratorList.PADDING + maxIndex];
 		
@@ -317,7 +314,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 		
 						continue;
 					}
-		
+
 					// swap indexes
 					permutations[ParallelPermutationRotationIteratorList.PADDING + maxIndex] = permutations[minIndex];
 					permutations[minIndex] = current;
@@ -397,7 +394,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 		 
 		// go through all groups and clean up
 		for(int i = 0; i < groups.size(); i++) {
-			StackableItemGroup group = groups.get(i);
+			IndexedStackableItemGroup group = groups.get(i);
 			
 			group.removeEmpty();
 			if(group.isEmpty()) {
@@ -405,35 +402,19 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 				i--;
 			}
 		}
+		
+		
 	}
 	
 	@Override
 	public void removePermutations(int count) {
-
-		// discard a number of items from the front
+		List<Integer> removed = new ArrayList<>(permutations.length);
+		
 		for(int i = 0; i < count; i++) {
-			IndexedStackableItem item = stackableItems[permutations[i]];
-			
-			item.decrement();
-			
-			if(item.isEmpty()) {
-				stackableItems[i] = null;
-			}
+			removed.add(permutations[ParallelPermutationRotationIteratorList.PADDING + i]);
 		}
 		
-		// go through all groups and clean up
-		for(int i = 0; i < groups.size(); i++) {
-			StackableItemGroup group = groups.get(i);
-			
-			group.removeEmpty();
-			
-			if(group.isEmpty()) {
-				groups.remove(i);
-				i--;
-			} else {
-				break;
-			}
-		}
+		removePermutations(removed);
 	}
 
 	@Override
@@ -470,7 +451,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 		
 		count = 0;
 		for(int g = 0; g < groups.size(); g++) {
-			StackableItemGroup group = groups.get(g);
+			IndexedStackableItemGroup group = groups.get(g);
 			
 			int stackableItemsCount = group.stackableItemsCount();
 			
@@ -495,7 +476,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 			initMinStackableVolume();
 		}
 		
-		checkLastPermutation = true;
+		seenLastPermutationMaxIndex = true;
 	}
 
 

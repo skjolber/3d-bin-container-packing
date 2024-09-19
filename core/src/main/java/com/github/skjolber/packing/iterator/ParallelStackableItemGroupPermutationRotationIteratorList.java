@@ -1,13 +1,10 @@
 package com.github.skjolber.packing.iterator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.api.StackableItemGroup;
-import com.github.skjolber.packing.iterator.DefaultStackableItemGroupPermutationRotationIterator.Builder;
 
 /**
  * 
@@ -15,7 +12,7 @@ import com.github.skjolber.packing.iterator.DefaultStackableItemGroupPermutation
  * 
  */
 
-public class ParallelStackableItemGroupPermutationRotationIteratorList implements StackableItemPermutationRotationIterator {
+public class ParallelStackableItemGroupPermutationRotationIteratorList extends AbstractStackableItemGroupPermutationRotationIterator {
 
 	protected final static int PADDING = 16;
 
@@ -44,10 +41,10 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 				throw new IllegalStateException();
 			}
 
-			List<StackableItemGroup> groups = toMatrix();
+			List<IndexedStackableItemGroup> groups = toMatrix();
 			
 			List<StackableItem> matrix = new ArrayList<>();
-			for (StackableItemGroup loadableItemGroup : groups) {
+			for (IndexedStackableItemGroup loadableItemGroup : groups) {
 				matrix.addAll(loadableItemGroup.getItems());
 			}
 			
@@ -59,20 +56,18 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 	protected final int[] frequencies;
 	protected ParallelStackableItemGroupPermutationRotationIterator[] workUnits;
 
-	protected List<StackableItemGroup> groups;
-	
 	protected int workUnitIndex = 0;
 	
-	public ParallelStackableItemGroupPermutationRotationIteratorList(IndexedStackableItem[] matrix, List<StackableItemGroup> groups, int parallelizationCount) {
-		this.frequencies = new int[matrix.length];
+	public ParallelStackableItemGroupPermutationRotationIteratorList(IndexedStackableItem[] matrix, List<IndexedStackableItemGroup> groups, int parallelizationCount) {
+		super(matrix, groups);
 		
+		this.frequencies = new int[matrix.length];
 		for (int i = 0; i < matrix.length; i++) {
 			if(matrix[i] != null) {
 				frequencies[i] = matrix[i].getCount();
 			}
 		}
 		
-		this.groups = groups;
 
 		workUnits = new ParallelStackableItemGroupPermutationRotationIterator[parallelizationCount];
 		for (int i = 0; i < parallelizationCount; i++) {
@@ -90,9 +85,9 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 		calculate();
 	}
 	
-	private List<StackableItemGroup> clone(List<StackableItemGroup> groups) {
-		List<StackableItemGroup> result = new ArrayList<>();
-		for (StackableItemGroup stackableItemGroup : groups) {
+	private List<IndexedStackableItemGroup> clone(List<IndexedStackableItemGroup> groups) {
+		List<IndexedStackableItemGroup> result = new ArrayList<>();
+		for (IndexedStackableItemGroup stackableItemGroup : groups) {
 			result.add(stackableItemGroup.clone());
 		}
 		return result;
@@ -132,7 +127,7 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 
 			System.arraycopy(frequencies, 0, copyOfFrequencies, 0, frequencies.length);
 			int[] permutations = unrank(copyOfFrequencies, count, permutationCount, permutationNumber, groups);
-
+			
 			workUnits[i].setPermutations(permutations);
 			workUnits[i].setRotations(new int[reset.length]);
 			workUnits[i].setReset(reset);
@@ -169,7 +164,7 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 	private long getPermutationCount() {
 		long n = 1;
 		
-		for (StackableItemGroup loadableItemGroup : groups) {
+		for (IndexedStackableItemGroup loadableItemGroup : groups) {
 			int count = loadableItemGroup.stackableItemsCount();
 			
 			for (long i = 0; i < count; i++) {
@@ -195,9 +190,9 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 		// fit within the container volume
 		long n = 1;
 
-		for (StackableItemGroup loadableItemGroup : groups) {
+		for (IndexedStackableItemGroup loadableItemGroup : groups) {
 
-			List<StackableItem> items = loadableItemGroup.getItems();
+			List<IndexedStackableItem> items = loadableItemGroup.getItems();
 			
 			int count = loadableItemGroup.stackableItemsCount();
 			
@@ -265,36 +260,38 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 		return -1;
 	}
 
-	protected static int[] unrank(int[] frequencies, int elementCount, long permutationCount, long rank, List<StackableItemGroup> groups) {
+	protected static int[] unrank(int[] frequencies, int elementCount, long permutationCount, long rank, List<IndexedStackableItemGroup> groups) {
 	    int[] result = new int[PADDING + elementCount];
 	    
 	    int resultOffset = 0;
-	    int frequenciesOffset = 0;
 	    for (int j = 0; j < groups.size(); j++) {
-			StackableItemGroup group = groups.get(j);
+	    	IndexedStackableItemGroup group = groups.get(j);
 			
 	    	int stackableItemsCount = group.stackableItemsCount();
 	    	
 		    for(int i = 0; i < stackableItemsCount; i++) {
 		        for(int k = 0; k < group.size(); k++) {
-		            if(frequencies[frequenciesOffset + k] == 0) {
+		        	IndexedStackableItem item = (IndexedStackableItem)group.get(k);
+		        	
+		        	int index = item.getIndex();
+		        	
+		            if(frequencies[index] == 0) {
 		                continue;
 		            }
 		            // suffixcount is the number of distinct perms that begin with x
-		            long suffixcount = permutationCount * frequencies[frequenciesOffset + k] / (stackableItemsCount - i);
+		            long suffixcount = permutationCount * frequencies[index] / (stackableItemsCount - i);
 		            if (rank <= suffixcount) {
-		                result[PADDING + resultOffset + i] = frequenciesOffset + k;
+		                result[PADDING + resultOffset + i] = index;
 	
 		                permutationCount = suffixcount;
 	
-		                frequencies[frequenciesOffset + k]--;
+		                frequencies[index]--;
 		                break;
 		            }
 		            rank -= suffixcount;
 		        }
 		    }
 		    
-		    frequenciesOffset += group.size();
 		    resultOffset += stackableItemsCount;
 	    }
 	    return result;
@@ -437,29 +434,19 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 	}
 	
 	public void removePermutations(List<Integer> removed) {
+		super.removePermutations(removed);
+		
 		for (Integer integer : removed) {
 			if(frequencies[integer] > 0) {
 				frequencies[integer]--;
 			}
 		}
-		
-		// go through all groups and clean up
-		for(int i = 0; i < groups.size(); i++) {
-			StackableItemGroup group = groups.get(i);
-			
-			group.removeEmpty();
-			if(group.isEmpty()) {
-				groups.remove(i);
-				i--;
-			}
-		}
-		
+
 		for (ParallelStackableItemGroupPermutationRotationIterator unit : workUnits) {
 			unit.removePermutations(removed);
 		}
 		
 		calculate();
 	}
-
 
 }

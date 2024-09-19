@@ -3,13 +3,12 @@ package com.github.skjolber.packing.iterator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.api.StackableItemGroup;
 
 public abstract class AbstractStackableItemGroupPermutationRotationIterator extends AbstractStackableItemPermutationRotationIterator {
 
-	protected List<StackableItemGroup> groups;
+	protected List<IndexedStackableItemGroup> groups;
 	
-	public AbstractStackableItemGroupPermutationRotationIterator(IndexedStackableItem[] matrix, List<StackableItemGroup> groups) {
+	public AbstractStackableItemGroupPermutationRotationIterator(IndexedStackableItem[] matrix, List<IndexedStackableItemGroup> groups) {
 		super(matrix);
 		this.groups = groups;
 	}
@@ -27,9 +26,9 @@ public abstract class AbstractStackableItemGroupPermutationRotationIterator exte
 		// fit within the container volume
 		long n = 1;
 
-		for (StackableItemGroup loadableItemGroup : groups) {
+		for (IndexedStackableItemGroup loadableItemGroup : groups) {
 
-			List<StackableItem> items = loadableItemGroup.getItems();
+			List<IndexedStackableItem> items = loadableItemGroup.getItems();
 			
 			int count = loadableItemGroup.stackableItemsCount();
 			
@@ -90,7 +89,6 @@ public abstract class AbstractStackableItemGroupPermutationRotationIterator exte
 
 	@Override
 	public void removePermutations(List<Integer> removed) {
-		
 		 for (Integer i : removed) {
 			IndexedStackableItem loadableItem = stackableItems[i];
 			
@@ -103,7 +101,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIterator exte
 		 
 		// go through all groups and clean up
 		for(int i = 0; i < groups.size(); i++) {
-			StackableItemGroup group = groups.get(i);
+			IndexedStackableItemGroup group = groups.get(i);
 			
 			group.removeEmpty();
 			if(group.isEmpty()) {
