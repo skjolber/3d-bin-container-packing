@@ -41,16 +41,9 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 	// try to avoid false sharing by using padding
 	public long t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15 = -1L;
 
-	private int[] permutations;
-	private int[] rotations;
-	protected int[] reset;
-
 	private int[] lastPermutation;
 	private int lastPermutationMaxIndex = -1;
 	private boolean seenLastPermutationMaxIndex = false;
-
-	// minimum volume from index i and above
-	protected long[] minStackableVolume;
 
 	public ParallelStackableItemGroupPermutationRotationIterator(IndexedStackableItem[] matrix, List<IndexedStackableItemGroup> groups) {
 		super(matrix, groups);
@@ -85,23 +78,11 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 	}
 
 	public void calculateMinStackableVolume(int offset) {
-		if(permutations.length > ParallelPermutationRotationIteratorList.PADDING) {
-			IndexedStackableItem value = stackableItems[permutations[permutations.length - 1]];
-	
-			minStackableVolume[permutations.length - 1] = value.getStackable().getVolume();
-			for (int i = permutations.length - 2; i >= offset + ParallelPermutationRotationIteratorList.PADDING; i--) {
-				long volume = stackableItems[permutations[i]].getStackable().getVolume();
-				if(volume < minStackableVolume[i + 1]) {
-					minStackableVolume[i] = volume;
-				} else {
-					minStackableVolume[i] = minStackableVolume[i + 1];
-				}
-			}
-		}
+		super.calculateMinStackableVolume(offset + ParallelPermutationRotationIteratorList.PADDING);
 	}
 
 	public long getMinStackableVolume(int offset) {
-		return minStackableVolume[ParallelPermutationRotationIteratorList.PADDING + offset];
+		return super.getMinStackableVolume(ParallelPermutationRotationIteratorList.PADDING + offset);
 	}
 
 	public int[] getRotations() {
@@ -368,13 +349,12 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 	
 	@Override
 	public void removePermutations(List<Integer> removed) {
-		
 		 for (Integer i : removed) {
-			IndexedStackableItem loadableItem = stackableItems[i];
+			IndexedStackableItem item = stackableItems[i];
 			
-			loadableItem.decrement();
+			item.decrement();
 			
-			if(loadableItem.isEmpty()) {
+			if(item.isEmpty()) {
 				stackableItems[i] = null;
 			}
 		}
@@ -389,8 +369,6 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 				i--;
 			}
 		}
-		
-		
 	}
 	
 	@Override
@@ -406,7 +384,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 
 	@Override
 	public StackValue getStackValue(int index) {
-		return stackableItems[permutations[ParallelPermutationRotationIteratorList.PADDING + index]].getStackable().getStackValue(rotations[ParallelPermutationRotationIteratorList.PADDING + index]);
+		return super.getStackValue(ParallelPermutationRotationIteratorList.PADDING + index);
 	}
 
 	protected void initiatePermutations() {
@@ -466,5 +444,8 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 		seenLastPermutationMaxIndex = true;
 	}
 
+	public List<IndexedStackableItemGroup> getGroups() {
+		return groups;
+	}
 
 }

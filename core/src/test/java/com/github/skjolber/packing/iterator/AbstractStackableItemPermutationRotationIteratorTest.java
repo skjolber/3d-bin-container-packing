@@ -69,7 +69,7 @@ public abstract class AbstractStackableItemPermutationRotationIteratorTest<T ext
 				rotate++;
 			} while (rotator.nextRotation() != -1);
 
-			assertEquals(count, rotate);
+			assertEquals(count, rotate, "Rotations for  " + i);
 		}
 	}
 

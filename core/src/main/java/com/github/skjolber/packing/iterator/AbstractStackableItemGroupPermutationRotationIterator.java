@@ -39,6 +39,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIterator exte
 			List<IndexedStackableItem> items = loadableItemGroup.getItems();
 			
 			int count = loadableItemGroup.stackableItemsCount();
+			
 			if(count == 0) {
 				continue;
 			}
@@ -109,7 +110,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIterator exte
 				stackableItems[i] = null;
 			}
 		}
-		 
+
 		// go through all groups and clean up
 		for(int i = 0; i < groups.size(); i++) {
 			IndexedStackableItemGroup group = groups.get(i);

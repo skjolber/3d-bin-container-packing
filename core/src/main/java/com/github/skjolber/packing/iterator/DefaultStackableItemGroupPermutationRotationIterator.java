@@ -34,26 +34,11 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 		}
 
 	}
-
-	protected int[] rotations; // 2^n or 6^n
-	protected int[] reset;
-
-	// permutations of boxes that fit inside this container
-	protected int[] permutations; // n!
-
-	// minimum volume from index i and above
-	protected long[] minStackableVolume;
 	
 	public DefaultStackableItemGroupPermutationRotationIterator(List<IndexedStackableItemGroup> groups, IndexedStackableItem[] matrix) {
 		super(matrix, groups);
 		
-		int count = 0;
-		
-		for (IndexedStackableItem loadableItem : matrix) {
-			if(loadableItem != null) {
-				count += loadableItem.getCount();
-			}
-		}
+		int count = getCount();
 		
 		this.minStackableVolume = new long[count];
 
@@ -117,30 +102,9 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 		}
 	}
 
-	protected void calculateMinStackableVolume(int offset) {
-		IndexedStackableItem value = stackableItems[permutations[permutations.length - 1]];
-
-		minStackableVolume[permutations.length - 1] = value.getStackable().getVolume();
-
-		for (int i = permutations.length - 2; i >= offset; i--) {
-			long volume = stackableItems[permutations[i]].getStackable().getStackValue(rotations[i]).getVolume();
-
-			if(volume < minStackableVolume[i + 1]) {
-				minStackableVolume[i] = volume;
-			} else {
-				minStackableVolume[i] = minStackableVolume[i + 1];
-			}
-		}
-	}
-
 	public long getMinStackableVolume(int offset) {
 		return minStackableVolume[offset];
 	}
-	
-	protected long[] getMinStackableVolume() {
-		return minStackableVolume;
-	}
-	
 
 	/**
 	 * Remove permutations, if present.

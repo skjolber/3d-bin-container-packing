@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,7 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractStackableIt
 
 	@Override
 	public MutableIndexedStackableItemPermutationRotationIterator.Builder newBuilder() {
-		return MutableIndexedStackableItemPermutationRotationIterator.newMutableBuilder();
+		return MutableIndexedStackableItemPermutationRotationIterator.newMutableBuilder().withBuilder(DefaultStackableItemPermutationRotationIterator.newBuilder());
 	}
 	
 	@Test
@@ -45,9 +46,9 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractStackableIt
 			
 			StackableItems items = rotator;
 
-			long unmodifiedRotationsCount = rotator.countRotations();
+			long unmodifiedRotationsCount = rotator.getIterator().countRotations();
 			
-			long modifiedRotationsCount = rotator.countMutableRotations();
+			long modifiedRotationsCount = rotator.countRotations();
 
 			assertTrue(unmodifiedRotationsCount >= modifiedRotationsCount);
 			
@@ -58,8 +59,8 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractStackableIt
 				
 				items.remove(0, 1);
 				for(int k = 0; k < items.size(); k++) {
-					StackableItem loadableItem = items.get(k);
-					assertFalse(loadableItem.getStackable().getId().equals("0"));
+					StackableItem item = items.get(k);
+					assertFalse(item.getStackable().getId().equals("0"));
 				}
 				
 				rotate++;
@@ -103,7 +104,6 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractStackableIt
 		assertEquals((6 * 5 * 4 * 3 * 2 * 1) / ((4 * 3 * 2 * 1) * (2 * 1)), count);
 	}
 
-
 	@Test
 	void testLoadableItems() {
 		Dimension container = new Dimension(null, 9, 1, 1);
@@ -119,7 +119,6 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractStackableIt
 				.withMaxLoadWeight(products.size())
 				.build();
 
-		// removing one item do not affect the number of permutations
 		rotator.remove(0, 1);
 		
 		// still two types of loadable items
