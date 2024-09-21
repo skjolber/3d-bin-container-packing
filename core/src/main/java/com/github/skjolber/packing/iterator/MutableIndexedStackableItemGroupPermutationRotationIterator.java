@@ -15,39 +15,39 @@ import com.github.skjolber.packing.api.packager.StackableItems;
  */
 
 
-public class MutableIndexedStackableItemPermutationRotationIterator extends AbstractStackableItemPermutationRotationIterator implements StackableItems, StackableItemPermutationRotationIterator {
+public class MutableIndexedStackableItemGroupPermutationRotationIterator extends AbstractStackableItemGroupPermutationRotationIterator implements StackableItems, StackableItemPermutationRotationIterator {
 
 	public static Builder newBuilder() {
 		return new Builder();
 	}
-	
-	public static DelegateBuilder newBuilder(AbstractStackableItemIteratorBuilder<?> builder) {
+
+	public static DelegateBuilder newBuilder(AbstractStackableItemGroupIteratorBuilder<?> builder) {
 		return new DelegateBuilder(builder);
 	}
 	
 	public static class Builder {
 
-		private StackableItemPermutationRotationIterator iterator;
+		private StackableItemGroupPermutationRotationIterator iterator;
 
-		public Builder withIterator(StackableItemPermutationRotationIterator iterator) {
+		public Builder withIterator(StackableItemGroupPermutationRotationIterator iterator) {
 			this.iterator = iterator;
 			return this;
 		}
 		
-		public MutableIndexedStackableItemPermutationRotationIterator build() {
-			return new MutableIndexedStackableItemPermutationRotationIterator(iterator);
+		public MutableIndexedStackableItemGroupPermutationRotationIterator build() {
+			return new MutableIndexedStackableItemGroupPermutationRotationIterator(iterator);
 		}
 	}
 	
-	public static class DelegateBuilder extends AbstractStackableItemIteratorBuilder<DelegateBuilder> {
+	public static class DelegateBuilder extends AbstractStackableItemGroupIteratorBuilder<DelegateBuilder> {
 
-		private final AbstractStackableItemIteratorBuilder<?> builder;
+		private final AbstractStackableItemGroupIteratorBuilder<?> builder;
 
-		public DelegateBuilder(AbstractStackableItemIteratorBuilder<?> builder) {
+		public DelegateBuilder(AbstractStackableItemGroupIteratorBuilder<?> builder) {
 			this.builder = builder;
 		}
 		
-		public MutableIndexedStackableItemPermutationRotationIterator build() {
+		public MutableIndexedStackableItemGroupPermutationRotationIterator build() {
 			if(maxLoadWeight == -1) {
 				throw new IllegalStateException();
 			}
@@ -58,23 +58,23 @@ public class MutableIndexedStackableItemPermutationRotationIterator extends Abst
 				throw new IllegalStateException();
 			}
 
-			AbstractStackableItemPermutationRotationIterator iterator = builder
+			StackableItemGroupPermutationRotationIterator iterator = builder
 																	.withLoadSize(size)
 																	.withMaxLoadWeight(maxLoadWeight)
-																	.withStackableItems(stackableItems)
+																	.withStackableItemGroups(stackableItemGroups)
 																	.withFilter(filter)
 																	.build();
 			
-			return new MutableIndexedStackableItemPermutationRotationIterator(iterator);
+			return new MutableIndexedStackableItemGroupPermutationRotationIterator(iterator);
 		}
 	}
-
+	
 	protected List<MutableIndexedStackableItem> mutableStackableItems;
 	
-	protected final StackableItemPermutationRotationIterator iterator;
+	protected final StackableItemGroupPermutationRotationIterator iterator;
 	
-	public MutableIndexedStackableItemPermutationRotationIterator(StackableItemPermutationRotationIterator iterator) {
-		super(iterator.getStackableItems());
+	public MutableIndexedStackableItemGroupPermutationRotationIterator(StackableItemGroupPermutationRotationIterator iterator) {
+		super(iterator.getStackableItems(), iterator.getGroups());
 		
 		permutations = new int[0]; // n!
 		
@@ -97,6 +97,7 @@ public class MutableIndexedStackableItemPermutationRotationIterator extends Abst
 		this.permutations = new int[permutations.length];
 		this.rotations = new int[permutations.length];
 		this.minStackableVolume = new long[permutations.length];
+		this.groups = iterator.getGroups();
 		
 		System.arraycopy(permutations, 0, this.permutations, 0, permutations.length);
 		System.arraycopy(iterator.getMinStackableVolume(), 0, minStackableVolume, 0, permutations.length);

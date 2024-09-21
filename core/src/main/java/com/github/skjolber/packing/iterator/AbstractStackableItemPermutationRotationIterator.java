@@ -168,7 +168,7 @@ public abstract class AbstractStackableItemPermutationRotationIterator implement
 		return n;
 	}
 	
-	protected IndexedStackableItem[] getStackableItems() {
+	public IndexedStackableItem[] getStackableItems() {
 		return stackableItems;
 	}
 	public long getMinStackableVolume(int offset) {

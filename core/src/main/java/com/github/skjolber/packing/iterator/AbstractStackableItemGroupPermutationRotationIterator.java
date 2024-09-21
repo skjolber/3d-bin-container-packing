@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.StackableItem;
 
-public abstract class AbstractStackableItemGroupPermutationRotationIterator extends AbstractStackableItemPermutationRotationIterator {
+public abstract class AbstractStackableItemGroupPermutationRotationIterator extends AbstractStackableItemPermutationRotationIterator implements StackableItemGroupPermutationRotationIterator {
 
 	protected List<IndexedStackableItemGroup> groups;
 	
@@ -122,7 +122,9 @@ public abstract class AbstractStackableItemGroupPermutationRotationIterator exte
 			}
 		}
 	}
-
 	
+	public List<IndexedStackableItemGroup> getGroups() {
+		return groups;
+	}
 	
 }

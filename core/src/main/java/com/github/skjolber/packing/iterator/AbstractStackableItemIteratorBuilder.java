@@ -88,6 +88,6 @@ public abstract class AbstractStackableItemIteratorBuilder<B extends AbstractSta
 		return results;
 	}
 
-	public abstract StackableItemPermutationRotationIterator build();
+	public abstract <I extends AbstractStackableItemPermutationRotationIterator> I build();
 
 }

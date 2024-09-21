@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.StackableItem;
 
 /**
  * 
@@ -12,7 +11,7 @@ import com.github.skjolber.packing.api.StackableItem;
  * 
  */
 
-public class ParallelStackableItemGroupPermutationRotationIteratorList implements StackableItemPermutationRotationIterator {
+public class ParallelStackableItemGroupPermutationRotationIteratorList implements StackableItemGroupPermutationRotationIterator {
 
 	protected final static int PADDING = 16;
 
@@ -45,7 +44,6 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 			
 			return new ParallelStackableItemGroupPermutationRotationIteratorList(groups, parallelizationCount);
 		}
-
 	}
 	
 	protected final int[] frequencies;
@@ -314,6 +312,21 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 	@Override
 	public long countPermutations() {
 		return workUnits[0].countPermutations();
+	}
+
+	@Override
+	public long[] getMinStackableVolume() {
+		return workUnits[workUnitIndex].getMinStackableVolume();
+	}
+
+	@Override
+	public IndexedStackableItem[] getStackableItems() {
+		return workUnits[workUnitIndex].getStackableItems();
+	}
+
+	@Override
+	public List<IndexedStackableItemGroup> getGroups() {
+		return workUnits[workUnitIndex].getGroups();
 	}
 
 }

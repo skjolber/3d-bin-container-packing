@@ -13,21 +13,24 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.StackableItemGroup;
 import com.github.skjolber.packing.api.packager.StackableItems;
 import com.github.skjolber.packing.iterator.MutableIndexedStackableItemPermutationRotationIterator.Builder;
 import com.github.skjolber.packing.iterator.MutableIndexedStackableItemPermutationRotationIterator.DelegateBuilder;
 
-class MutableLoadablePermutationRotationIteratorTest extends AbstractStackableItemPermutationRotationIteratorTest<DelegateBuilder> {
+class MutableIndexedStackableItemGroupPermutationRotationIteratorTest extends AbstractStackableItemGroupPermutationRotationIteratorTest<MutableIndexedStackableItemGroupPermutationRotationIterator.DelegateBuilder> {
 
 	@Override
-	public DelegateBuilder newBuilder() {
-		return new DelegateBuilder(DefaultStackableItemPermutationRotationIterator.newBuilder());
+	public MutableIndexedStackableItemGroupPermutationRotationIterator.DelegateBuilder newBuilder() {
+		return new MutableIndexedStackableItemGroupPermutationRotationIterator.DelegateBuilder(DefaultStackableItemGroupPermutationRotationIterator.newBuilder());
 	}
 	
 	@Test
 	void testMutableRotationCount() {
 		for (int i = 1; i <= 8; i++) {
 			Dimension container = new Dimension(null, 3 * (i + 1), 3, 1);
+
+			List<StackableItemGroup> groups = new ArrayList<>();
 
 			List<StackableItem> products1 = new ArrayList<>();
 
@@ -38,11 +41,13 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractStackableIt
 
 				products1.add(item);
 			}
+			
+			groups.add(new StackableItemGroup("1", products1));
 
-			MutableIndexedStackableItemPermutationRotationIterator rotator = 
+			MutableIndexedStackableItemGroupPermutationRotationIterator rotator = 
 					newBuilder()
 					.withLoadSize(container)
-					.withStackableItems(products1)
+					.withStackableItemGroups(groups)
 					.withMaxLoadWeight(products1.size())
 					.build();
 			
@@ -81,9 +86,12 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractStackableIt
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4));
 
-		MutableIndexedStackableItemPermutationRotationIterator rotator = newBuilder()
+		List<StackableItemGroup> groups = new ArrayList<>();
+		groups.add(new StackableItemGroup("1", products));
+		
+		MutableIndexedStackableItemGroupPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withStackableItemGroups(groups)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -113,9 +121,12 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractStackableIt
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2));
 		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4));
 
-		MutableIndexedStackableItemPermutationRotationIterator rotator = newBuilder()
+		List<StackableItemGroup> groups = new ArrayList<>();
+		groups.add(new StackableItemGroup("1", products));
+
+		MutableIndexedStackableItemGroupPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withStackableItemGroups(groups)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -150,7 +161,7 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractStackableIt
 		assertEquals(rotator.size(), 0);
 	}
 	
-	public int[] toFrequency(MutableIndexedStackableItemPermutationRotationIterator rotator, int size) {
+	public int[] toFrequency(MutableIndexedStackableItemGroupPermutationRotationIterator rotator, int size) {
 		int[] counts = new int[size];
 		for (int i : rotator.getPermutations()) {
 			counts[i]++;

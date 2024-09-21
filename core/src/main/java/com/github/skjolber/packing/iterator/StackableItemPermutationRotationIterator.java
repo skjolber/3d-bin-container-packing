@@ -71,6 +71,8 @@ public interface StackableItemPermutationRotationIterator {
 
 	long getMinStackableVolume(int index);
 
+	long[] getMinStackableVolume();
+
 	int getMinStackableAreaIndex(int i);
 	
 	/**
@@ -132,5 +134,7 @@ public interface StackableItemPermutationRotationIterator {
 	void removePermutations(List<Integer> removed);
 	
 	void removePermutations(int count);
+
+	IndexedStackableItem[] getStackableItems();
 	
 }
