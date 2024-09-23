@@ -23,7 +23,7 @@
 		<junit-quicktest.version>1.0</junit-quicktest.version>
 		<junit.version>5.11.0</junit.version>
 		<jmh.version>1.37</jmh.version>
-		<commons-io.version>2.16.1</commons-io.version>
+		<commons-io.version>2.17.0</commons-io.version>
 
 		<!-- plugins -->
 		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
