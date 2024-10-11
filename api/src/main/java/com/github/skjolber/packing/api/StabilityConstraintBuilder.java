@@ -8,7 +8,7 @@ package com.github.skjolber.packing.api;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class PlacementSupportBuilder<B extends PlacementSupportBuilder<B>> {
+public abstract class StabilityConstraintBuilder<B extends StabilityConstraintBuilder<B>> {
 
 	protected Container container;
 	protected ContainerStackValue stackValue;
@@ -29,8 +29,6 @@ public abstract class PlacementSupportBuilder<B extends PlacementSupportBuilder<
 		return (B)this;
 	}
 	
-	public abstract GravitySupport build();
-	
-	
+	public abstract StabilityConstraint build();
 
 }

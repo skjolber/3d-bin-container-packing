@@ -161,7 +161,7 @@ class MutableIndexedStackableItemGroupPermutationRotationIteratorTest extends Ab
 		assertEquals(rotator.size(), 0);
 	}
 	
-	public int[] toFrequency(MutableIndexedStackableItemGroupPermutationRotationIterator rotator, int size) {
+	public int[] toFrequency(StackableItemGroupPermutationRotationIterator rotator, int size) {
 		int[] counts = new int[size];
 		for (int i : rotator.getPermutations()) {
 			counts[i]++;

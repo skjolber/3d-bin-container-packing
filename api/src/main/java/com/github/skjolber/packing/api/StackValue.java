@@ -20,12 +20,12 @@ public abstract class StackValue implements Serializable {
 
 	protected final long area;
 
-	protected final StackConstraint constraint;
+	protected final StackValueConstraint constraint;
 
 	protected final List<Surface> surfaces;
 	protected long volume;
 	
-	public StackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> surfaces) {
+	public StackValue(int dx, int dy, int dz, StackValueConstraint constraint, List<Surface> surfaces) {
 		this.dx = dx;
 		this.dy = dy;
 		this.dz = dz;
@@ -86,7 +86,7 @@ public abstract class StackValue implements Serializable {
 		return volume;
 	}
 
-	public StackConstraint getConstraint() {
+	public StackValueConstraint getConstraint() {
 		return constraint;
 	}
 

@@ -83,7 +83,7 @@ public class MutableIndexedStackableItemGroupPermutationRotationIterator extends
 		resetFromIterator();
 	}
 	
-	protected void resetFromIterator() {
+	public void resetFromIterator() {
 		mutableStackableItems = new ArrayList<>();
 		for (int i = 0; i < stackableItems.length; i++) {
 			IndexedStackableItem loadableItem = stackableItems[i];

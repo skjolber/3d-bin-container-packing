@@ -16,6 +16,7 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.StackValueConstraint;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.api.ep.Point3D;
@@ -164,7 +165,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 			Dimension dimension = new Dimension(stackValue.getDx(), stackValue.getDy(), stackValue.getDz());
 
-			StackConstraint constraint = stackValue.getConstraint();
+			StackValueConstraint constraint = stackValue.getConstraint();
 
 			iterators[i] = DefaultPermutationRotationIterator
 					.newBuilder()
@@ -319,7 +320,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		// pack as many items as possible from placementIndex
 		ContainerStackValue containerStackValue = stack.getContainerStackValue();
 
-		StackConstraint constraint = containerStackValue.getConstraint();
+		StackValueConstraint constraint = containerStackValue.getConstraint();
 
 		while (placementIndex < iterator.length()) {
 			if(interrupt.getAsBoolean()) {

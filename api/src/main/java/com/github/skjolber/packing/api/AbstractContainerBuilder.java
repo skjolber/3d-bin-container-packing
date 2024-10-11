@@ -25,7 +25,7 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 	protected int loadDy = -1; // y
 	protected int loadDz = -1; // z
 
-	protected StackConstraint stackConstraint;
+	protected StackValueConstraint stackConstraint;
 
 	protected List<Surface> surfaces;
 
@@ -48,7 +48,7 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 		return (B)this;
 	}
 
-	public B withStackConstraint(StackConstraint stackConstraint) {
+	public B withStackConstraint(StackValueConstraint stackConstraint) {
 		this.stackConstraint = stackConstraint;
 		return (B)this;
 	}

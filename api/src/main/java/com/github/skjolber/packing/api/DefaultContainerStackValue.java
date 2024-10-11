@@ -8,7 +8,7 @@ public class DefaultContainerStackValue extends ContainerStackValue {
 	
 	public DefaultContainerStackValue(
 			int dx, int dy, int dz,
-			StackConstraint constraint,
+			StackValueConstraint constraint,
 			int loadDx, int loadDy, int loadDz,
 			int maxLoadWeight, List<Surface> sides) {
 		super(dx, dy, dz, constraint, loadDx, loadDy, loadDz, maxLoadWeight, sides);

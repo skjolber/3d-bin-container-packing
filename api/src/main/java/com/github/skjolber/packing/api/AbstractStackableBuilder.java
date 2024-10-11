@@ -291,6 +291,6 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 
 	protected abstract <T> T[] newStackValueArray(int size);
 
-	protected abstract BoxStackValue newStackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> surfaces);
+	protected abstract BoxStackValue newStackValue(int dx, int dy, int dz, StackValueConstraint constraint, List<Surface> surfaces);
 
 }

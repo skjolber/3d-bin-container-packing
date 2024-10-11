@@ -17,7 +17,7 @@ public abstract class ContainerStackValue extends StackValue {
 
 	public ContainerStackValue(
 			int dx, int dy, int dz,
-			StackConstraint constraint,
+			StackValueConstraint constraint,
 			int loadDx, int loadDy, int loadDz, int maxLoadWeight, List<Surface> surfaces) {
 		super(dx, dy, dz, constraint, surfaces);
 

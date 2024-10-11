@@ -8,7 +8,7 @@ public class BoxStackValue extends StackValue {
 	
 	private Box stackable;
 
-	public BoxStackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> surfaces) {
+	public BoxStackValue(int dx, int dy, int dz, StackValueConstraint constraint, List<Surface> surfaces) {
 		super(dx, dy, dz, constraint, surfaces);
 	}
 	

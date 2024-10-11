@@ -8,7 +8,7 @@ package com.github.skjolber.packing.api;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class GravitySupportBuilder<B extends GravitySupportBuilder<B>> {
+public abstract class LoadBearingConstraintBuilder<B extends LoadBearingConstraintBuilder<B>> {
 
 	protected Container container;
 	protected ContainerStackValue stackValue;
@@ -30,7 +30,7 @@ public abstract class GravitySupportBuilder<B extends GravitySupportBuilder<B>> 
 		return (B)this;
 	}
 	
-	public abstract GravitySupport build();
+	public abstract LoadBearingConstraint build();
 	
 	
 

@@ -41,7 +41,7 @@ public class Box extends Stackable {
 			return (T[])new BoxStackValue[size];
 		}
 
-		protected BoxStackValue newStackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> surfaces) {
+		protected BoxStackValue newStackValue(int dx, int dy, int dz, StackValueConstraint constraint, List<Surface> surfaces) {
 			return new BoxStackValue(dx, dy, dz, constraint, surfaces);
 		}
 	}

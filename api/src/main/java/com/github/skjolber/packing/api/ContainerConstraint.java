@@ -10,6 +10,6 @@ import com.github.skjolber.packing.api.packager.StackableItemsFilterBuilder;
 
 public interface ContainerConstraint {
 
-	StackableItemsFilterBuilder<?> newLoadableFilterBuilder();
+	StackableItemsFilterBuilder<?> newStackableItemsFilterBuilder();
 
 }
