@@ -15,6 +15,7 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.StackValueConstraint;
 import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -162,7 +163,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			int maxLoadWeight, 
 			int placementIndex, 
 			PackagerInterruptSupplier interrupt, 
-			StackConstraint constraint, 
+			StackValueConstraint constraint, 
 			int minStackableAreaIndex,
 			// optimize: pass best along so that we do not need to get points to known whether extracting the points is necessary
 			List<Point3D> best
