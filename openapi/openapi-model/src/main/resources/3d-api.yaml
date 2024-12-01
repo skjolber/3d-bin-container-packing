@@ -1,0 +1,183 @@
+---
+openapi: 3.0.0
+info:
+  title: Pack API reference
+  description: |
+    Pack boxes into containers
+  version: 1.0.0
+paths:
+  /pack:
+    post:
+      summary: Pack an order
+      description: |
+        Pack an order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PackRequest"
+      responses:
+        "200":
+          description: Pack response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PackResponse"
+
+components:
+  schemas:
+    StackValue:
+      type: object
+      discriminator:
+        propertyName: stackableValueType
+        mapping:
+          box: "#/components/schemas/BoxStackValue"
+          container: "#/components/schemas/ContainerStackValue"      
+      properties:
+        dx:
+          type: integer
+        dy:
+          type: integer
+        dz:
+          type: integer
+    Stackable:
+      type: object
+      discriminator:
+        propertyName: stackableType
+        mapping:
+          box: "#/components/schemas/Box"
+          container: "#/components/schemas/Container"
+      properties:
+        id:
+          type: string
+        description:
+          type: string
+    ContainerStackValue:
+      allOf:
+        - $ref: "#/components/schemas/StackValue"
+        - type: object    
+          properties:
+            minLoadWeight:
+              type: integer
+            maxLoadWeight:
+              type: integer
+            loadDx:
+              type: integer
+            loadDy:
+              type: integer
+            loadDz:
+              type: integer
+    Container:
+      allOf:
+        - $ref: "#/components/schemas/Stackable"
+        - type: object    
+          properties:
+            emptyWeight:
+              type: integer
+            stackValues:
+              type: array
+              items:
+                $ref: '#/components/schemas/ContainerStackValue'        
+            cost:
+              type: integer
+
+    ContainerItem:
+      allOf:
+        - $ref: "#/components/schemas/StackableItem"
+        - type: object    
+          properties:
+            container:
+              $ref: '#/components/schemas/Container'        
+
+    BoxStackValue:
+       allOf: # Combines the BasicErrorModel and the inline model
+        - $ref: "#/components/schemas/StackValue"
+        
+    Box:
+      allOf:
+        - $ref: "#/components/schemas/Stackable"
+        - type: object    
+          properties:
+            weight:
+              type: integer
+            stackValues:
+              type: array
+              items:
+                $ref: '#/components/schemas/BoxStackValue'
+                
+    StackableItem:
+      type: object
+      discriminator:
+        propertyName: stackableType
+        mapping:
+          box: "#/components/schemas/BoxItem"
+          container: "#/components/schemas/ContainerItem"      
+      properties:
+        count:
+          type: integer
+          
+    BoxItem:
+      allOf:
+        - $ref: "#/components/schemas/StackableItem"
+        - type: object    
+          properties:
+            box:
+              $ref: '#/components/schemas/Box'        
+
+    Stack:
+      type: object
+      properties:
+        placements:
+          type: array
+          items:
+            $ref: '#/components/schemas/StackPlacement'        
+
+    StackPlacement:
+      type: object
+      properties:
+        stackable:
+          $ref: '#/components/schemas/Box'
+        stackValue:
+          $ref: '#/components/schemas/BoxStackValue'
+        x:
+          type: integer
+        y:
+          type: integer
+        z:
+          type: integer            
+    Packager:
+      type: object
+      properties:
+        id:
+          type: string
+    PackResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+        stacks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Stack'
+    PackRequest:
+      type: object
+      properties:
+        deadline:
+          type: integer
+        maxContainers:
+          type: integer
+        maxDuration:
+          type: integer
+        containerItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContainerItem'
+        boxItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoxItem'
+        packagers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Packager'

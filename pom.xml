@@ -42,7 +42,7 @@
 		<assertj.version>3.26.3</assertj.version>
 		<owasp-dependency-check.version>5.3.2</owasp-dependency-check.version>
 		<pitest.version>1.16.1</pitest.version>
-		<jackson.version>2.17.2</jackson.version>
+		<jackson.version>2.18.2</jackson.version>
 		<spotless.version>2.43.0</spotless.version>
 	</properties>
 
@@ -93,6 +93,26 @@
 			<dependency>
 				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 				<artifactId>test</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>openapi-model</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>openapi-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>openapi-server</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>openapi-test</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -198,10 +218,12 @@
 				<version>${commons-io.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-databind</artifactId>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
 				<version>${jackson.version}</version>
-			</dependency>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency> 
 		</dependencies>
 	</dependencyManagement>
 	<modules>
@@ -210,6 +232,7 @@
 		<module>extreme-points</module>
 		<module>core</module>
 		<module>jmh</module>
+		<module>openapi</module>
 		<module>visualizer/api</module>
 		<module>visualizer/algorithm</module>
 		<module>visualizer/packaging</module>

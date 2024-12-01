@@ -1,0 +1,91 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<parent>
+		<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+		<artifactId>parent</artifactId>
+		<version>4.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>	
+	
+	<artifactId>openapi-parent</artifactId>
+	<packaging>pom</packaging>
+	<properties>
+		<swagger-annotations-version>1.6.12</swagger-annotations-version>
+	    <http-client5.version>5.4.1</http-client5.version>
+	    <spring.version>6.2.0</spring.version>
+	    <commons-pool2.version>2.12.0</commons-pool2.version>
+		<httpclient5.version>5.4.1</httpclient5.version>
+		<openapi-generator-version>7.10.0</openapi-generator-version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.openapitools</groupId>
+				<artifactId>jackson-databind-nullable</artifactId>
+				<version>0.2.6</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>3.12.0</version>
+			</dependency>
+			<dependency>
+			    <groupId>org.apache.commons</groupId>
+			    <artifactId>commons-pool2</artifactId>
+			    <version>${commons-pool2.version}</version>
+			</dependency>			
+			<dependency>
+				<groupId>io.swagger</groupId>
+				<artifactId>swagger-annotations</artifactId>
+				<version>${swagger-annotations-version}</version>
+			</dependency>			
+			<dependency>
+			    <groupId>org.apache.httpcomponents.client5</groupId>
+			    <artifactId>httpclient5</artifactId>
+			    <version>${http-client5.version}</version>
+			</dependency>
+			<dependency>
+			    <groupId>jakarta.annotation</groupId>
+			    <artifactId>jakarta.annotation-api</artifactId>
+			    <version>3.0.0</version>
+			</dependency>
+			<dependency>
+			    <groupId>jakarta.validation</groupId>
+			    <artifactId>jakarta.validation-api</artifactId>
+			    <version>3.1.0</version>
+			</dependency>
+			<dependency>
+			    <groupId>org.springframework</groupId>
+			    <artifactId>spring-web</artifactId>
+			    <version>${spring.version}</version>
+			</dependency>
+			<dependency>
+			    <groupId>org.springframework</groupId>
+			    <artifactId>spring-context</artifactId>
+			    <version>${spring.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+
+    <build>
+    	<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.openapitools</groupId>
+					<artifactId>openapi-generator-maven-plugin</artifactId>
+					<version>${openapi-generator-version}</version>
+				</plugin>			
+			</plugins>
+    	</pluginManagement>
+    </build>
+    
+	<modules>
+		<module>openapi-model</module>
+		<module>openapi-server</module>
+		<module>openapi-client</module>
+		<module>openapi-test</module>
+	</modules>
+</project>
