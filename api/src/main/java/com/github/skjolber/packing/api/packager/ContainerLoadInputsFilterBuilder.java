@@ -3,6 +3,7 @@ package com.github.skjolber.packing.api.packager;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.StackableItem;
 
 /**
  * Builder scaffold.
@@ -12,15 +13,15 @@ import com.github.skjolber.packing.api.Stack;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class StackableItemsFilterBuilder<B extends StackableItemsFilterBuilder<B>> {
+public abstract class ContainerLoadInputsFilterBuilder<S extends StackableItem, B extends ContainerLoadInputsFilterBuilder<S, B>> {
 
 	protected Stack stack;
 	protected Container container;
 	protected ContainerStackValue stackValue;
-	protected StackableItems loadableItems;
+	protected ContainerLoadInputs<S> stackableItemCollection;
 
-	public B withLoadableItems(StackableItems loadableItems) {
-		this.loadableItems = loadableItems;
+	public B withStackableItems(ContainerLoadInputs<S> stackableItemCollection) {
+		this.stackableItemCollection = stackableItemCollection;
 		return (B)this;
 	}
 	
@@ -39,7 +40,7 @@ public abstract class StackableItemsFilterBuilder<B extends StackableItemsFilter
 		return (B)this;
 	}
 	
-	public abstract StackableItemsFilter build();
+	public abstract ContainerLoadInputsFilter build();
 	
 	
 

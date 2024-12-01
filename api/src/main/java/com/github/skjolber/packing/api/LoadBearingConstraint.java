@@ -1,12 +1,25 @@
 package com.github.skjolber.packing.api;
 
-import com.github.skjolber.packing.api.ep.Point3D;
+import java.util.List;
+
+import com.github.skjolber.packing.api.packager.BoundedStackable;
+
+/**
+ * 
+ * Constraint for load (weight) on a {@linkplain StackValue};
+ * 
+ */
 
 public interface LoadBearingConstraint {
 
-	List<LoadBearingStackableConstraintType> getTypes();
+	List<BoundedStackable> filter(List<BoundedStackable> stackables);
 	
-	void loaded(StackPlacement stackPlacement);
-	
-	boolean canLoad(StackValue stackValue, Point3D point);
+	boolean canAdd(StackValue value, int x, int y, int z, int weight);
+
+	void add(StackPlacement stackPlacement, int weight);
+
+	void append(StackValue value, int weight);
+
+	void canAppend(StackValue value, int weight);
+
 }

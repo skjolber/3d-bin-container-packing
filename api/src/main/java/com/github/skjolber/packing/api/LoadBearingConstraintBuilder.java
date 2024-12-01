@@ -1,10 +1,9 @@
 package com.github.skjolber.packing.api;
 
 /**
- * Builder scaffold.
  * 
- * @see <a href=
- *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
+ * Load bearing constraint for a stacked {@linkplain Stackable}.
+ * 
  */
 
 @SuppressWarnings("unchecked")
@@ -27,6 +26,11 @@ public abstract class LoadBearingConstraintBuilder<B extends LoadBearingConstrai
 	
 	public B withStackValue(ContainerStackValue stackValue) {
 		this.stackValue = stackValue;
+		return (B)this;
+	}
+	
+	public B withStackPlacement(StackPlacement stackPlacement) {
+		this.stackPlacement = stackPlacement;
 		return (B)this;
 	}
 	

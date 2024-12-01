@@ -5,15 +5,20 @@ import java.util.List;
 import com.github.skjolber.packing.api.ep.Point3D;
 
 /**
- * Builder scaffold.
  * 
- * @see <a href=
- *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
+ * Interface for determining stacking stability (both below and sideways). 
+ *  
  */
 
 @SuppressWarnings("unchecked")
 public interface StabilityConstraint {
 	
-	boolean supportsPlacement(Point3D point, List<StackPlacement> supports);
+	boolean isXyPlane();
+
+	boolean isXzPlane();
+
+	boolean isYzPlane();
 	
+	boolean accepts(Point3D point, List<StackPlacement> xyPlane, List<StackPlacement> xzPlane, List<StackPlacement> yzPlane);
+
 }

@@ -1,15 +1,15 @@
 package com.github.skjolber.packing.api;
 
-import com.github.skjolber.packing.api.packager.StackableItemsFilterBuilder;
+import com.github.skjolber.packing.api.packager.ContainerLoadInputsFilterBuilder;
 
 /**
  * 
- * Interface for handling which Stackables, or combinations of Stackables go into a Container.
+ * Interface for handling which {@linkplain StackableItem}, or combinations of {@linkplain StackableItem} go into a Container.
  * 
  */
 
 public interface ContainerConstraint {
 
-	StackableItemsFilterBuilder<?> newStackableItemsFilterBuilder();
+	ContainerLoadInputsFilterBuilder<?> newStackableItemsFilterBuilder();
 
 }

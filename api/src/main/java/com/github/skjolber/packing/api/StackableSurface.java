@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.github.skjolber.packing.api.Surface.Label;
-
 public class StackableSurface {
 
 	public static final StackableSurface THREE_D = newBuilder().withBottom().withLeft().withRear().build();
@@ -39,75 +37,75 @@ public class StackableSurface {
 		protected List<SurfaceRotate> sides = new ArrayList<>();
 
 		public Builder withFront() {
-			return withSide(new SurfaceRotate(new Surface(Label.FRONT), false)).withSide(new SurfaceRotate(new Surface(Label.FRONT), true));
+			return withSide(new SurfaceRotate(Surface.FRONT, false)).withSide(new SurfaceRotate(Surface.FRONT, true));
 		}
 
 		public Builder withFrontAtZeroDegrees() {
-			return withSide(new SurfaceRotate(new Surface(Label.FRONT), false));
+			return withSide(new SurfaceRotate(Surface.FRONT, false));
 		}
 
 		public Builder withFrontAtNinetyDegrees() {
-			return withSide(new SurfaceRotate(new Surface(Label.FRONT), true));
+			return withSide(new SurfaceRotate(Surface.FRONT, true));
 		}
 
 		public Builder withRear() {
-			return withSide(new SurfaceRotate(new Surface(Label.REAR), false)).withSide(new SurfaceRotate(new Surface(Label.REAR), true));
+			return withSide(new SurfaceRotate(Surface.REAR, false)).withSide(new SurfaceRotate(Surface.REAR, true));
 		}
 
 		public Builder withRearAtZeroDegrees() {
-			return withSide(new SurfaceRotate(new Surface(Label.REAR), false));
+			return withSide(new SurfaceRotate(Surface.REAR, false));
 		}
 
 		public Builder withBackAtNinetyDegrees() {
-			return withSide(new SurfaceRotate(new Surface(Label.REAR), true));
+			return withSide(new SurfaceRotate(Surface.REAR, true));
 		}
 
 		public Builder withLeft() {
-			return withSide(new SurfaceRotate(new Surface(Label.LEFT), false)).withSide(new SurfaceRotate(new Surface(Label.LEFT), true));
+			return withSide(new SurfaceRotate(Surface.LEFT, false)).withSide(new SurfaceRotate(Surface.LEFT, true));
 		}
 
 		public Builder withLeftAtZeroDegrees() {
-			return withSide(new SurfaceRotate(new Surface(Label.LEFT), false));
+			return withSide(new SurfaceRotate(Surface.LEFT, false));
 		}
 
 		public Builder withLeftAtNinetyDegrees() {
-			return withSide(new SurfaceRotate(new Surface(Label.LEFT), true));
+			return withSide(new SurfaceRotate(Surface.LEFT, true));
 		}
 
 		public Builder withRight() {
-			return withSide(new SurfaceRotate(new Surface(Label.RIGHT), false)).withSide(new SurfaceRotate(new Surface(Label.RIGHT), true));
+			return withSide(new SurfaceRotate(Surface.RIGHT, false)).withSide(new SurfaceRotate(Surface.RIGHT, true));
 		}
 
 		public Builder withRightAtZeroDegrees() {
-			return withSide(new SurfaceRotate(new Surface(Label.RIGHT), false));
+			return withSide(new SurfaceRotate(Surface.RIGHT, false));
 		}
 
 		public Builder withRightAtNinetyDegrees() {
-			return withSide(new SurfaceRotate(new Surface(Label.RIGHT), false));
+			return withSide(new SurfaceRotate(Surface.RIGHT, false));
 		}
 
 		public Builder withTop() {
-			return withSide(new SurfaceRotate(new Surface(Label.TOP), false)).withSide(new SurfaceRotate(new Surface(Label.TOP), true));
+			return withSide(new SurfaceRotate(Surface.TOP, false)).withSide(new SurfaceRotate(Surface.TOP, true));
 		}
 
 		public Builder withTopAtZeroDegrees() {
-			return withSide(new SurfaceRotate(new Surface(Label.TOP), false));
+			return withSide(new SurfaceRotate(Surface.TOP, false));
 		}
 
 		public Builder withTopAtNinetyDegrees() {
-			return withSide(new SurfaceRotate(new Surface(Label.TOP), true));
+			return withSide(new SurfaceRotate(Surface.TOP, true));
 		}
 
 		public Builder withBottom() {
-			return withSide(new SurfaceRotate(new Surface(Label.BOTTOM), false)).withSide(new SurfaceRotate(new Surface(Label.BOTTOM), true));
+			return withSide(new SurfaceRotate(Surface.BOTTOM, false)).withSide(new SurfaceRotate(Surface.BOTTOM, true));
 		}
 
 		public Builder withBottomAtZeroDegrees() {
-			return withSide(new SurfaceRotate(new Surface(Label.BOTTOM), false));
+			return withSide(new SurfaceRotate(Surface.BOTTOM, false));
 		}
 
 		public Builder withBottomAtNinetyDegrees() {
-			return withSide(new SurfaceRotate(new Surface(Label.BOTTOM), true));
+			return withSide(new SurfaceRotate(Surface.BOTTOM, true));
 		}
 
 		public Builder withSide(Surface side, boolean rotate) {

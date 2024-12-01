@@ -2,6 +2,6 @@ package com.github.skjolber.packing.api;
 
 public enum LoadBearingStackableConstraintType {
 
-	ALL, // no restrications
+	ALL, // no restrictions
 	SET, // set of stackable
 }

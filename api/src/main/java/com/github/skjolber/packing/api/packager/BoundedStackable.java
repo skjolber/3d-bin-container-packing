@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.api.packager;
 
-import java.util.List;
-
+import com.github.skjolber.packing.api.LoadBearingConstraint;
+import com.github.skjolber.packing.api.StabilityConstraint;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
 
@@ -11,26 +11,22 @@ import com.github.skjolber.packing.api.Stackable;
  * 
  */
 
-public class BoundedStackable extends Stackable {
+public class BoundedStackable {
 
 	private static final long serialVersionUID = 1L;
-	
-	protected final StackValue[] values;
+
 	protected final Stackable stackable;
+	protected final BoundedStackValue[] values;
 	
 	protected final long minimumArea;
 	protected final long maximumArea;
 
-	public BoundedStackable(Stackable stackable, StackValue[] stackValues) {
+	public BoundedStackable(Stackable stackable, BoundedStackValue[] stackValues) {
 		this.values = stackValues;
 		this.stackable = stackable;
-
-		this.minimumArea = getMinimumArea(stackValues);
-		this.maximumArea = getMinimumArea(stackValues);
-	}
-
-	public BoundedStackable(Stackable stackable, List<StackValue> stackValues) {
-		this(stackable, stackValues.toArray(new StackValue[stackValues.size()]));
+		
+		this.minimumArea = Stackable.getMinimumArea(stackValues);
+		this.maximumArea = Stackable.getMinimumArea(stackValues);
 	}
 
 	public Stackable getStackable() {
@@ -41,43 +37,4 @@ public class BoundedStackable extends Stackable {
 		return values[index];
 	}
 
-	@Override
-	public long getVolume() {
-		return stackable.getVolume();
-	}
-
-	@Override
-	public int getWeight() {
-		return stackable.getWeight();
-	}
-
-	@Override
-	public StackValue[] getStackValues() {
-		return values;
-	}
-
-	@Override
-	public String getDescription() {
-		return stackable.getDescription();
-	}
-
-	@Override
-	public String getId() {
-		return stackable.getId();
-	}
-
-	@Override
-	public Stackable clone() {
-		return new BoundedStackable(stackable.clone(), values);
-	}
-
-	@Override
-	public long getMinimumArea() {
-		return minimumArea;
-	}
-
-	@Override
-	public long getMaximumArea() {
-		return maximumArea;
-	}
 }

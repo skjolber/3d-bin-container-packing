@@ -8,11 +8,11 @@ import com.github.skjolber.packing.api.StackableItem;
  * 
  */
 
-public interface StackableItems {
+public interface ContainerLoadInputs<S extends StackableItem> {
 	
 	int size();
 	
-	StackableItem get(int index);
+	S get(int index);
 
 	void remove(int index, int count);
  

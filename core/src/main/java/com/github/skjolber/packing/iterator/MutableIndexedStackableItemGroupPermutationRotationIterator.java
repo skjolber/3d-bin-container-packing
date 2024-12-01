@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.packager.StackableItems;
+import com.github.skjolber.packing.api.packager.ContainerLoadInputs;
 
  /**
  *
@@ -15,7 +15,7 @@ import com.github.skjolber.packing.api.packager.StackableItems;
  */
 
 
-public class MutableIndexedStackableItemGroupPermutationRotationIterator extends AbstractStackableItemGroupPermutationRotationIterator implements StackableItems, StackableItemPermutationRotationIterator {
+public class MutableIndexedStackableItemGroupPermutationRotationIterator extends AbstractStackableItemGroupPermutationRotationIterator implements ContainerLoadInputs, StackableItemPermutationRotationIterator {
 
 	public static Builder newBuilder() {
 		return new Builder();
