@@ -97,6 +97,31 @@
 			</dependency>
 			<dependency>
 				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>open-api-model</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>open-api-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>open-api-server</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>open-api-test</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>open-api-parent</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 				<artifactId>visualizer-packaging</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -198,14 +223,17 @@
 				<version>${commons-io.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-databind</artifactId>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
 				<version>${jackson.version}</version>
-			</dependency>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency> 
 		</dependencies>
 	</dependencyManagement>
 	<modules>
 		<module>api</module>
+		<module>open-api</module>
 		<module>test</module>
 		<module>extreme-points</module>
 		<module>core</module>
