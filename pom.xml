@@ -16,33 +16,33 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 
 		<commons-math3.version>3.6.1</commons-math3.version>
-		<mockito.version>5.12.0</mockito.version>
+		<mockito.version>5.14.2</mockito.version>
 
 		<eclipse-collections.version>11.1.0</eclipse-collections.version>
-		<google-truth.version>1.4.3</google-truth.version>
+		<google-truth.version>1.4.4</google-truth.version>
 		<junit-quicktest.version>1.0</junit-quicktest.version>
 		<junit.version>5.11.0</junit.version>
 		<jmh.version>1.37</jmh.version>
-		<commons-io.version>2.16.1</commons-io.version>
+		<commons-io.version>2.18.0</commons-io.version>
 
 		<!-- plugins -->
 		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
 		<jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
 		<nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
-		<maven-surefire-plugin.version>3.3.1</maven-surefire-plugin.version>
+		<maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
 		<maven-source-plugin.version>3.3.1</maven-source-plugin.version>
-		<maven-javadoc-plugin.version>3.7.0</maven-javadoc-plugin.version>
+		<maven-javadoc-plugin.version>3.11.1</maven-javadoc-plugin.version>
 		<maven-release-plugin.version>2.5.3</maven-release-plugin.version>
-		<maven-gpg-plugin.version>3.2.2</maven-gpg-plugin.version>
+		<maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
 		<maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
 		<jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
 		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
 		<maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
-		<jqwik.version>1.9.0</jqwik.version>
+		<jqwik.version>1.9.1</jqwik.version>
 		<assertj.version>3.26.3</assertj.version>
 		<owasp-dependency-check.version>5.3.2</owasp-dependency-check.version>
-		<pitest.version>1.16.1</pitest.version>
-		<jackson.version>2.17.2</jackson.version>
+		<pitest.version>1.17.2</pitest.version>
+		<jackson.version>2.18.2</jackson.version>
 		<spotless.version>2.43.0</spotless.version>
 	</properties>
 
@@ -93,6 +93,31 @@
 			<dependency>
 				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 				<artifactId>test</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>open-api-model</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>open-api-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>open-api-server</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>open-api-test</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>open-api-parent</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -198,14 +223,17 @@
 				<version>${commons-io.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-databind</artifactId>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
 				<version>${jackson.version}</version>
-			</dependency>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency> 
 		</dependencies>
 	</dependencyManagement>
 	<modules>
 		<module>api</module>
+		<module>open-api</module>
 		<module>test</module>
 		<module>extreme-points</module>
 		<module>core</module>
