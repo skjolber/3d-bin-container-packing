@@ -11,12 +11,14 @@
 	<artifactId>open-api-parent</artifactId>
 	<packaging>pom</packaging>
 	<properties>
-		<swagger-annotations-version>1.6.12</swagger-annotations-version>
+		<swagger-annotations.version>2.2.26</swagger-annotations.version>
 	    <http-client5.version>5.4.1</http-client5.version>
 	    <spring.version>6.2.0</spring.version>
-	    <commons-pool2.version>2.12.0</commons-pool2.version>
 		<httpclient5.version>5.4.1</httpclient5.version>
 		<open-api-generator.version>7.10.0</open-api-generator.version>
+		<jakarta.validation-api.version>3.1.0</jakarta.validation-api.version>
+		<jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
+		<jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
 	</properties>
 
 	<dependencyManagement>
@@ -24,23 +26,13 @@
 			<dependency>
 				<groupId>org.openapitools</groupId>
 				<artifactId>jackson-databind-nullable</artifactId>
-				<version>0.2.6</version>
+				<version>${jackson-databind-nullable.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-lang3</artifactId>
-				<version>3.12.0</version>
+			    <groupId>io.swagger.core.v3</groupId>
+			    <artifactId>swagger-annotations</artifactId>
+   				<version>${swagger-annotations.version}</version>
 			</dependency>
-			<dependency>
-			    <groupId>org.apache.commons</groupId>
-			    <artifactId>commons-pool2</artifactId>
-			    <version>${commons-pool2.version}</version>
-			</dependency>			
-			<dependency>
-				<groupId>io.swagger</groupId>
-				<artifactId>swagger-annotations</artifactId>
-				<version>${swagger-annotations-version}</version>
-			</dependency>			
 			<dependency>
 			    <groupId>org.apache.httpcomponents.client5</groupId>
 			    <artifactId>httpclient5</artifactId>
@@ -49,12 +41,12 @@
 			<dependency>
 			    <groupId>jakarta.annotation</groupId>
 			    <artifactId>jakarta.annotation-api</artifactId>
-			    <version>3.0.0</version>
+			    <version>${jakarta.annotation-api.version}</version>
 			</dependency>
 			<dependency>
 			    <groupId>jakarta.validation</groupId>
 			    <artifactId>jakarta.validation-api</artifactId>
-			    <version>3.1.0</version>
+			    <version>${jakarta.validation-api.version}</version>
 			</dependency>
 			<dependency>
 			    <groupId>org.springframework</groupId>
@@ -68,7 +60,6 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
 
     <build>
     	<pluginManagement>
