@@ -8,23 +8,30 @@ on:
     branches: [ '**' ]
 
 jobs:
-  build-with-maven-cache-github-action:
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ 17, 21]
+    name: Java ${{ matrix.java }} build
     steps:
-    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-    - name: Set up JDK 11
+    - uses: actions/checkout@v4
+    - name: Set up Java
       uses: actions/setup-java@v4
       with:
-        java-version: 11
-        distribution: 'temurin'
+        java-version: ${{ matrix.java }}
+        distribution: liberica
     - name: Restore cache
-      uses: skjolber/maven-cache-github-action@v1
+      uses: skjolber/maven-cache-github-action@v3.1.1
       with:
         step: restore
+    - name: Adjust memory use for Maven
+      run: echo "MAVEN_OPTS='-Xmx2g'" >> ~/.mavenrc
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
-    - name: Save cache
-      uses: skjolber/maven-cache-github-action@v1
+      run: mvn verify
+    - name: Restore cache
+      uses: skjolber/maven-cache-github-action@v3.1.1
       with:
-        step: save
+        step: restore
+
 
