@@ -97,22 +97,27 @@
 			</dependency>
 			<dependency>
 				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-				<artifactId>openapi-model</artifactId>
+				<artifactId>open-api-model</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-				<artifactId>openapi-client</artifactId>
+				<artifactId>open-api-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-				<artifactId>openapi-server</artifactId>
+				<artifactId>open-api-server</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-				<artifactId>openapi-test</artifactId>
+				<artifactId>open-api-test</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>open-api-parent</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -228,11 +233,11 @@
 	</dependencyManagement>
 	<modules>
 		<module>api</module>
+		<module>open-api</module>
 		<module>test</module>
 		<module>extreme-points</module>
 		<module>core</module>
 		<module>jmh</module>
-		<module>openapi</module>
 		<module>visualizer/api</module>
 		<module>visualizer/algorithm</module>
 		<module>visualizer/packaging</module>

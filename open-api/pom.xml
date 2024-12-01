@@ -8,7 +8,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>	
 	
-	<artifactId>openapi-parent</artifactId>
+	<artifactId>open-api-parent</artifactId>
 	<packaging>pom</packaging>
 	<properties>
 		<swagger-annotations-version>1.6.12</swagger-annotations-version>
@@ -16,7 +16,7 @@
 	    <spring.version>6.2.0</spring.version>
 	    <commons-pool2.version>2.12.0</commons-pool2.version>
 		<httpclient5.version>5.4.1</httpclient5.version>
-		<openapi-generator-version>7.10.0</openapi-generator-version>
+		<open-api-generator.version>7.10.0</open-api-generator.version>
 	</properties>
 
 	<dependencyManagement>
@@ -76,16 +76,16 @@
 				<plugin>
 					<groupId>org.openapitools</groupId>
 					<artifactId>openapi-generator-maven-plugin</artifactId>
-					<version>${openapi-generator-version}</version>
+					<version>${open-api-generator.version}</version>
 				</plugin>			
 			</plugins>
     	</pluginManagement>
     </build>
     
 	<modules>
-		<module>openapi-model</module>
-		<module>openapi-server</module>
-		<module>openapi-client</module>
-		<module>openapi-test</module>
+		<module>open-api-model</module>
+		<module>open-api-server</module>
+		<module>open-api-client</module>
+		<module>open-api-test</module>
 	</modules>
 </project>

@@ -2,15 +2,23 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-		<artifactId>openapi-parent</artifactId>
+		<artifactId>open-api-parent</artifactId>
 		<version>4.0.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
-	</parent>	
-	<artifactId>openapi-server</artifactId>
+	</parent>
+	<artifactId>open-api-client</artifactId>
 	<dependencies>
 		<dependency>
 			<groupId>io.swagger</groupId>
 			<artifactId>swagger-annotations</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -21,14 +29,6 @@
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>jakarta.annotation</groupId>
-			<artifactId>jakarta.annotation-api</artifactId>
-		</dependency>
-		<dependency>
-		    <groupId>jakarta.validation</groupId>
-		    <artifactId>jakarta.validation-api</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.openapitools</groupId>
 			<artifactId>jackson-databind-nullable</artifactId>
 		</dependency>
@@ -37,17 +37,34 @@
 			<artifactId>jackson-datatype-jsr310</artifactId>
 		</dependency>
 		<dependency>
-		    <groupId>org.springframework</groupId>
-		    <artifactId>spring-web</artifactId>
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>open-api-model</artifactId>
 		</dependency>
 		<dependency>
-		    <groupId>org.springframework</groupId>
-		    <artifactId>spring-context</artifactId>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>com.google.truth.extensions</groupId>
+		    <artifactId>truth-java8-extension</artifactId>
+			<scope>test</scope>
+		</dependency>			
+		<dependency>
+		    <groupId>com.google.truth</groupId>
+		    <artifactId>truth</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-			<artifactId>openapi-model</artifactId>
-		</dependency>		
+			<artifactId>open-api-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>open-api-server</artifactId>
+		    <scope>test</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -64,26 +81,27 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<inputSpec>${project.basedir}/../openapi-model/src/main/resources/3d-api.yaml</inputSpec>
-							<generatorName>spring</generatorName>
+							<inputSpec>${maven.multiModuleProjectDirectory}/open-api/open-api-model/src/main/resources/3d-api.yaml</inputSpec>
+							<generatorName>java</generatorName>
 							<configOptions>
 								<sourceFolder>src/gen/java/main</sourceFolder>
 								<useJakartaEe>true</useJakartaEe>
-								<useSpringBoot3>true</useSpringBoot3>
-								<documentationProvider>none</documentationProvider>
-								<useTags>true</useTags>
-								<interfaceOnly>true</interfaceOnly>
+								<serializationLibrary>jackson</serializationLibrary>
+								<open-apiNullable>false</open-apiNullable>
+								
+							    <additionalModelTypeAnnotations>
+								 @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+							    </additionalModelTypeAnnotations>								
 							</configOptions>
-							<!-- https://openapi-generator.tech/docs/generators/spring/ -->
-							<library>spring-boot</library>
-							<generateApiDocumentation>false</generateApiDocumentation>
-							<skipOperationExample>true</skipOperationExample>
-
+							<!-- https://open-api-generator.tech/docs/generators/java/ -->
+							<library>apache-httpclient</library>
+							<additionalProperties>supportUrlQuery=false</additionalProperties>
+						
 							<generateApis>true</generateApis>
 							<generateModels>false</generateModels>
-							<generateSupportingFiles>false</generateSupportingFiles>
+							<generateSupportingFiles>true</generateSupportingFiles>
 												
-                            <apiPackage>com.github.skjolber.packing.openapi.server.api</apiPackage>
+                            <apiPackage>com.github.skjolber.packing.openapi.client.api</apiPackage>
                             <modelPackage>com.github.skjolber.packing.openapi.model</modelPackage>
                             <invokerPackage>com.github.skjolber.packing.openapi.invoker</invokerPackage>
 						</configuration>
@@ -97,7 +115,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-			</plugin>							
+			</plugin>				
 		</plugins>
 	</build>
 </project>
