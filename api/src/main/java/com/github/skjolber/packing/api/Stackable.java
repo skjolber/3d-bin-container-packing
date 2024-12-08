@@ -8,28 +8,15 @@ public abstract class Stackable implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	protected final String id;
-	protected final String description;
-
-	public Stackable(String id, String description) {
-		super();
-		this.id = id;
-		this.description = description;
-	}
-
 	public abstract long getVolume();
 
 	public abstract int getWeight();
 
 	public abstract StackValue[] getStackValues();
 
-	public String getDescription() {
-		return description;
-	}
+	public abstract String getDescription();
 
-	public String getId() {
-		return id;
-	}
+	public abstract String getId();
 
 	public List<StackValue> fitsInside(Dimension bound) {
 		List<StackValue> list = new ArrayList<>();
@@ -42,22 +29,28 @@ public abstract class Stackable implements Serializable {
 
 		return list;
 	}
+	
+	public abstract StackValue getStackValue(int index);
 
 	@Override
 	public abstract Stackable clone();
 
 	public List<StackValue> rotations(Dimension bound) {
+		return rotations(bound.getDx(), bound.getDy(), bound.getDz());
+	}
+
+	public List<StackValue> rotations(int dx, int dy, int dz) {
 		// TODO optimize if max is above min bounds 
 		StackValue[] rotations = getStackValues();
 		for (int i = 0; i < rotations.length; i++) {
 			StackValue stackValue = rotations[i];
-			if(stackValue.fitsInside3D(bound)) {
+			if(stackValue.fitsInside3D(dx, dy, dz)) {
 				List<StackValue> fitsInside = new ArrayList<>(rotations.length);
 				fitsInside.add(stackValue);
 
 				i++;
 				while (i < rotations.length) {
-					if(rotations[i].fitsInside3D(bound)) {
+					if(rotations[i].fitsInside3D(dx, dy, dz)) {
 						fitsInside.add(rotations[i]);
 					}
 					i++;
@@ -72,7 +65,7 @@ public abstract class Stackable implements Serializable {
 
 	public abstract long getMaximumArea();
 
-	protected static long getMinimumArea(StackValue[] rotations) {
+	public static long getMinimumArea(StackValue[] rotations) {
 		long minimumArea = Long.MAX_VALUE;
 		for (StackValue boxStackValue : rotations) {
 			if(minimumArea > boxStackValue.getArea()) {

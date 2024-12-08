@@ -81,23 +81,24 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 			// z               y
 			// |              / 
 			// |             / 
-			// |     /-------/|
-			// |    /  xy   / | 
-			// |   /       /  |
-			// |  |-------|   |      
-			// |  |       |   |
-			// |  |       | y |
-			// |  |  xz   | z |
-			// |  |       |   |
-			// |  |       |   |
-			// |  |       |  /
-			// |  |       | /
-			// |  |-------|/      
+			// |     /---------/|
+			// |    /   xy    / | 
+			// |   /         /  |
+			// |  |---------|   |      
+			// |  |         |   |
+			// |  |         | y |
+			// |  |    xz   | z |
+			// |  |         |   |
+			// |  |         |   |
+			// |  |         |  /
+			// |  |         | /
+			// |  |---------|/      
 			// | /      
 			// |/       
 			// |------------------ x
 			//
 
+			// two square sides, the other 4 sides are equal (but can be rotated)
 			// add xz/yz and xy
 
 			if(stackableSurface.isXY()) {
@@ -134,6 +135,7 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 			// |----------------------------------- x
 			//
 
+			// two square sides, the other 4 sides are equal (but can be rotated)
 			// add xz/xy and yz
 
 			if(stackableSurface.isYZ()) {
@@ -154,8 +156,6 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 
 		} else if(dx == dz) {
 
-			// add xy/zy and xz
-
 			//  
 			// z               y
 			// |              / 
@@ -175,6 +175,8 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 			// |/       
 			// |------------------ x
 			//
+			// two square sides, the other 4 sides are equal (but can be rotated)
+			// add xy/zy and xz
 
 			if(stackableSurface.isXZ()) {
 				list.add(newStackValue(dx, dx, dy, constraint, stackableSurface.getXZSurfaces()));
@@ -291,6 +293,6 @@ public abstract class AbstractStackableBuilder<B extends AbstractStackableBuilde
 
 	protected abstract <T> T[] newStackValueArray(int size);
 
-	protected abstract BoxStackValue newStackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> surfaces);
+	protected abstract BoxStackValue newStackValue(int dx, int dy, int dz, StackValueConstraint constraint, List<Surface> surfaces);
 
 }
