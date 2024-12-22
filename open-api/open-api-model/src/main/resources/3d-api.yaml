@@ -75,10 +75,8 @@ components:
           properties:
             emptyWeight:
               type: integer
-            stackValues:
-              type: array
-              items:
-                $ref: '#/components/schemas/ContainerStackValue'        
+            stackableSize:
+              $ref: '#/components/schemas/ContainerStackableSize'
             cost:
               type: integer
 
@@ -101,11 +99,9 @@ components:
           properties:
             weight:
               type: integer
-            stackValues:
-              type: array
-              items:
-                $ref: '#/components/schemas/BoxStackValue'
-                
+            size:
+              $ref: '#/components/schemas/BoxStackableSize'
+
     StackableItem:
       type: object
       discriminator:
@@ -116,22 +112,76 @@ components:
       properties:
         count:
           type: integer
-          
+
     BoxItem:
       allOf:
         - $ref: "#/components/schemas/StackableItem"
         - type: object    
           properties:
             box:
-              $ref: '#/components/schemas/Box'        
+              $ref: '#/components/schemas/Box'
 
-    Stack:
+    Surface:
+      type: string
+      enum:
+        - front
+        - frontAtZeroDegrees
+        - frontAtNinetyDegrees
+        - rear
+        - rearAtZeroDegrees
+        - backAtNinetyDegrees
+        - left
+        - leftAtZeroDegrees
+        - leftAtNinetyDegrees
+        - right
+        - rightAtZeroDegrees
+        - rightAtNinetyDegrees
+        - top
+        - topAtZeroDegrees
+        - topAtNinetyDegrees
+        - bottom
+        - bottomAtZeroDegrees
+        - bottomAtNinetyDegrees
+        - all
+
+    StackableSize:
       type: object
+      discriminator:
+        propertyName: stackableSizeType
+        mapping:
+          box: "#/components/schemas/BoxStackableSize"
+          container: "#/components/schemas/ContainerStackableSize"      
       properties:
-        placements:
+        dx:
+          type: integer
+        dy:
+          type: integer
+        dz:
+          type: integer
+        surfaces:
           type: array
-          items:
-            $ref: '#/components/schemas/StackPlacement'        
+          items: 
+            $ref: '#/components/schemas/Surface'
+
+    BoxStackableSize:
+       allOf:
+        - $ref: "#/components/schemas/StackableSize"
+
+    ContainerStackableSize:
+       allOf:
+        - $ref: "#/components/schemas/StackableSize"
+        - type: object    
+          properties:
+            loadDx:
+              type: integer
+            loadDy:
+              type: integer
+            loadDz:
+              type: integer
+            minLoadWeight:
+              type: integer
+            maxLoadWeight:
+              type: integer
 
     StackPlacement:
       type: object
@@ -151,20 +201,42 @@ components:
       properties:
         id:
           type: string
+        maxDuration:
+          type: integer
+    Stack:
+      type: object
+      properties:
+        placements:
+          type: array
+          items:
+            $ref: '#/components/schemas/StackPlacement'
+
+    PackResult:
+      type: object
+      properties:
+        id:
+          type: string
+        stack:
+          $ref: '#/components/schemas/Stack'
+        stackValue:
+          $ref: '#/components/schemas/ContainerStackValue'
+
     PackResponse:
       type: object
       properties:
         status:
           type: integer
-        stacks:
+        results:
           type: array
           items:
-            $ref: '#/components/schemas/Stack'
+            $ref: '#/components/schemas/PackResult'
+            
     PackRequest:
       type: object
       properties:
         deadline:
           type: integer
+          format: int64
         maxContainers:
           type: integer
         maxDuration:
