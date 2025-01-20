@@ -13,7 +13,7 @@
 	<properties>
 		<swagger-annotations.version>2.2.27</swagger-annotations.version>
 	    <http-client5.version>5.4.1</http-client5.version>
-	    <spring.version>6.2.0</spring.version>
+	    <spring.version>6.2.2</spring.version>
 		<httpclient5.version>5.4.1</httpclient5.version>
 		<open-api-generator.version>7.10.0</open-api-generator.version>
 		<jakarta.validation-api.version>3.1.0</jakarta.validation-api.version>
