@@ -36,7 +36,7 @@ components:
         - frontAtNinetyDegrees
         - rear
         - rearAtZeroDegrees
-        - backAtNinetyDegrees
+        - rearAtNinetyDegrees
         - left
         - leftAtZeroDegrees
         - leftAtNinetyDegrees
@@ -56,12 +56,6 @@ components:
       properties:
         id:
           type: string
-        dx:
-          type: integer
-        dy:
-          type: integer
-        dz:
-          type: integer
         weight:
           type: integer
 
@@ -76,22 +70,11 @@ components:
           type: integer
         z:
           type: integer
-        dx:
-          type: integer
-        dy:
-          type: integer
-        dz:
-          type: integer
-        weight:
-          type: integer
+        surface:
+          $ref: '#/components/schemas/Surface'
 
-    Stackable:
+    Box:
       type: object
-      discriminator:
-        propertyName: stackableSizeType
-        mapping:
-          box: "#/components/schemas/Box"
-          container: "#/components/schemas/Container"      
       properties:
         id:
           type: string
@@ -108,32 +91,30 @@ components:
           items: 
             $ref: '#/components/schemas/Surface'
 
-    Box:
-       allOf:
-        - $ref: "#/components/schemas/Stackable"
-        - type: object    
-          properties:
-            weight:
-              type: integer
-
     Container:
-       allOf:
-        - $ref: "#/components/schemas/Stackable"
-        - type: object    
-          properties:
-            loadDx:
-              type: integer
-            loadDy:
-              type: integer
-            loadDz:
-              type: integer
-            minLoadWeight:
-              type: integer
-            maxLoadWeight:
-              type: integer
-            emptyWeight:
-              type: integer
-              
+      type: object
+      properties:
+        id:
+          type: string
+        dx:
+          type: integer
+        dy:
+          type: integer
+        dz:
+          type: integer
+        loadDx:
+          type: integer
+        loadDy:
+          type: integer
+        loadDz:
+          type: integer
+        minLoadWeight:
+          type: integer
+        maxLoadWeight:
+          type: integer
+        emptyWeight:
+          type: integer
+
     StackableItem:
       type: object
       discriminator:
