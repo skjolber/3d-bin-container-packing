@@ -27,85 +27,94 @@ paths:
 
 components:
   schemas:
-    StackValue:
+
+    Surface:
+      type: string
+      enum:
+        - front
+        - frontAtZeroDegrees
+        - frontAtNinetyDegrees
+        - rear
+        - rearAtZeroDegrees
+        - rearAtNinetyDegrees
+        - left
+        - leftAtZeroDegrees
+        - leftAtNinetyDegrees
+        - right
+        - rightAtZeroDegrees
+        - rightAtNinetyDegrees
+        - top
+        - topAtZeroDegrees
+        - topAtNinetyDegrees
+        - bottom
+        - bottomAtZeroDegrees
+        - bottomAtNinetyDegrees
+        - all
+
+    PackedContainer:
       type: object
-      discriminator:
-        propertyName: stackableValueType
-        mapping:
-          box: "#/components/schemas/BoxStackValue"
-          container: "#/components/schemas/ContainerStackValue"      
       properties:
+        id:
+          type: string
+        weight:
+          type: integer
+
+    PackedBox:
+      type: object
+      properties:
+        id:
+          type: string
+        x:
+          type: integer
+        y:
+          type: integer
+        z:
+          type: integer
+        surface:
+          $ref: '#/components/schemas/Surface'
+
+    Box:
+      type: object
+      properties:
+        id:
+          type: string
+        description:
+          type: string
         dx:
           type: integer
         dy:
           type: integer
         dz:
           type: integer
-    Stackable:
+        surfaces:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Surface'
+
+    Container:
       type: object
-      discriminator:
-        propertyName: stackableType
-        mapping:
-          box: "#/components/schemas/Box"
-          container: "#/components/schemas/Container"
       properties:
         id:
           type: string
-        description:
-          type: string
-    ContainerStackValue:
-      allOf:
-        - $ref: "#/components/schemas/StackValue"
-        - type: object    
-          properties:
-            minLoadWeight:
-              type: integer
-            maxLoadWeight:
-              type: integer
-            loadDx:
-              type: integer
-            loadDy:
-              type: integer
-            loadDz:
-              type: integer
-    Container:
-      allOf:
-        - $ref: "#/components/schemas/Stackable"
-        - type: object    
-          properties:
-            emptyWeight:
-              type: integer
-            stackValues:
-              type: array
-              items:
-                $ref: '#/components/schemas/ContainerStackValue'        
-            cost:
-              type: integer
+        dx:
+          type: integer
+        dy:
+          type: integer
+        dz:
+          type: integer
+        loadDx:
+          type: integer
+        loadDy:
+          type: integer
+        loadDz:
+          type: integer
+        minLoadWeight:
+          type: integer
+        maxLoadWeight:
+          type: integer
+        emptyWeight:
+          type: integer
 
-    ContainerItem:
-      allOf:
-        - $ref: "#/components/schemas/StackableItem"
-        - type: object    
-          properties:
-            container:
-              $ref: '#/components/schemas/Container'        
-
-    BoxStackValue:
-       allOf: # Combines the BasicErrorModel and the inline model
-        - $ref: "#/components/schemas/StackValue"
-        
-    Box:
-      allOf:
-        - $ref: "#/components/schemas/Stackable"
-        - type: object    
-          properties:
-            weight:
-              type: integer
-            stackValues:
-              type: array
-              items:
-                $ref: '#/components/schemas/BoxStackValue'
-                
     StackableItem:
       type: object
       discriminator:
@@ -116,55 +125,57 @@ components:
       properties:
         count:
           type: integer
-          
+
+    ContainerItem:
+      allOf:
+        - $ref: "#/components/schemas/StackableItem"
+        - type: object    
+          properties:
+            container:
+              $ref: '#/components/schemas/Container'    
+
     BoxItem:
       allOf:
         - $ref: "#/components/schemas/StackableItem"
         - type: object    
           properties:
             box:
-              $ref: '#/components/schemas/Box'        
+              $ref: '#/components/schemas/Box'
 
-    Stack:
-      type: object
-      properties:
-        placements:
-          type: array
-          items:
-            $ref: '#/components/schemas/StackPlacement'        
-
-    StackPlacement:
-      type: object
-      properties:
-        stackable:
-          $ref: '#/components/schemas/Box'
-        stackValue:
-          $ref: '#/components/schemas/BoxStackValue'
-        x:
-          type: integer
-        y:
-          type: integer
-        z:
-          type: integer            
     Packager:
       type: object
       properties:
         id:
           type: string
+        maxDurationInPercent:
+          type: integer
+          
+    PackResult:
+      type: object
+      properties:
+        container:
+          $ref: '#/components/schemas/PackedContainer'
+        boxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackedBox'
+
     PackResponse:
       type: object
       properties:
         status:
           type: integer
-        stacks:
+        results:
           type: array
           items:
-            $ref: '#/components/schemas/Stack'
+            $ref: '#/components/schemas/PackResult'
+            
     PackRequest:
       type: object
       properties:
         deadline:
           type: integer
+          format: int64
         maxContainers:
           type: integer
         maxDuration:

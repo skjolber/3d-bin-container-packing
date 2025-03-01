@@ -16,12 +16,12 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 
 		<commons-math3.version>3.6.1</commons-math3.version>
-		<mockito.version>5.14.2</mockito.version>
+		<mockito.version>5.15.2</mockito.version>
 
 		<eclipse-collections.version>11.1.0</eclipse-collections.version>
 		<google-truth.version>1.4.4</google-truth.version>
 		<junit-quicktest.version>1.0</junit-quicktest.version>
-		<junit.version>5.11.0</junit.version>
+		<junit.version>5.11.4</junit.version>
 		<jmh.version>1.37</jmh.version>
 		<commons-io.version>2.18.0</commons-io.version>
 
@@ -31,7 +31,7 @@
 		<nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
 		<maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
 		<maven-source-plugin.version>3.3.1</maven-source-plugin.version>
-		<maven-javadoc-plugin.version>3.11.1</maven-javadoc-plugin.version>
+		<maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
 		<maven-release-plugin.version>2.5.3</maven-release-plugin.version>
 		<maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
 		<maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
@@ -39,11 +39,11 @@
 		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
 		<maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
 		<jqwik.version>1.9.1</jqwik.version>
-		<assertj.version>3.26.3</assertj.version>
+		<assertj.version>3.27.3</assertj.version>
 		<owasp-dependency-check.version>5.3.2</owasp-dependency-check.version>
-		<pitest.version>1.17.2</pitest.version>
+		<pitest.version>1.18.1</pitest.version>
 		<jackson.version>2.18.2</jackson.version>
-		<spotless.version>2.43.0</spotless.version>
+		<spotless.version>2.44.2</spotless.version>
 	</properties>
 
 	<licenses>

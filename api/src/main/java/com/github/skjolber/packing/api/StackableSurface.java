@@ -56,8 +56,8 @@ public class StackableSurface {
 			return withSide(new SurfaceRotate(Surface.REAR, false));
 		}
 
-		public Builder withBackAtNinetyDegrees() {
-			return withSide(new SurfaceRotate(Surface.REAR, true));
+		public Builder withRearAtNinetyDegrees() {
+			return withSide(new SurfaceRotate(new Surface(Label.REAR), true));
 		}
 
 		public Builder withLeft() {
