@@ -185,6 +185,7 @@ public class ParallelPermutationRotationIteratorList {
 		return -1;
 	}
 
+	// https://stemhash.com/efficient-permutations-in-lexicographic-order/
 	static int[] kthPermutation(int[] frequencies, int elementCount, long permutationCount, long rank) {
 		int[] result = new int[PADDING + elementCount];
 

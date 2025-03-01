@@ -12,6 +12,7 @@ import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.StackValueConstraint;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
@@ -142,7 +143,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 			containerStackValue[i] = stackValue;
 
-			StackConstraint constraint = stackValue.getConstraint();
+			StackValueConstraint constraint = stackValue.getConstraint();
 
 			Dimension dimension = new Dimension(stackValue.getLoadDx(), stackValue.getLoadDy(), stackValue.getLoadDz());
 

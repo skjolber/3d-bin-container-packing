@@ -17,6 +17,7 @@ import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.StackValueConstraint;
 import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.ClonablePackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -328,7 +329,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 			containerStackValues[i] = stackValue;
 
-			StackConstraint constraint = stackValue.getConstraint();
+			StackValueConstraint constraint = stackValue.getConstraint();
 
 			Dimension dimension = new Dimension(stackValue.getLoadDx(), stackValue.getLoadDy(), stackValue.getLoadDz());
 
