@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.iterator.DefaultStackableItemPermutationRotationIterator.Builder;
 
 class StackableItemPermutationRotationIteratorTest extends AbstractStackableItemPermutationRotationIteratorTest<DefaultStackableItemPermutationRotationIterator.Builder> {
@@ -22,11 +22,11 @@ class StackableItemPermutationRotationIteratorTest extends AbstractStackableItem
 	public void testPermutations() {
 		Dimension container = new Dimension(null, 9, 1, 1);
 
-		List<StackableItem> products = new ArrayList<>();
+		List<BoxItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
 
 		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)

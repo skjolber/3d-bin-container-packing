@@ -9,13 +9,13 @@ import java.util.List;
  * 
  */
 
-public class StackableItemGroup {
+public class BoxItemGroup {
 
 	private String id;
 
-	private List<StackableItem> items;
+	private List<BoxItem> items;
 
-	public StackableItemGroup(String id, List<StackableItem> items) {
+	public BoxItemGroup(String id, List<BoxItem> items) {
 		super();
 		this.id = id;
 		this.items = items;
@@ -25,7 +25,7 @@ public class StackableItemGroup {
 		return id;
 	}
 
-	public List<StackableItem> getItems() {
+	public List<BoxItem> getItems() {
 		return items;
 	}
 
@@ -33,7 +33,7 @@ public class StackableItemGroup {
 		this.id = id;
 	}
 
-	public void setItems(List<StackableItem> items) {
+	public void setItems(List<BoxItem> items) {
 		this.items = items;
 	}
 
@@ -41,21 +41,21 @@ public class StackableItemGroup {
 		return items.size();
 	}
 
-	public StackableItem get(int i) {
+	public BoxItem get(int i) {
 		return items.get(i);
 	}
 	
 	
 	public int stackableItemsCount() {
 		int count = 0;
-		for (StackableItem loadableItem : items) {
+		for (BoxItem loadableItem : items) {
 			count += loadableItem.getCount();
 		}
 		return count;
 	}
 
 	public boolean isEmpty() {
-		for (StackableItem loadableItem : items) {
+		for (BoxItem loadableItem : items) {
 			if(!loadableItem.isEmpty()) {
 				return false;
 			}
@@ -66,7 +66,7 @@ public class StackableItemGroup {
 	
 	public void removeEmpty() {
 		for (int j = 0; j < items.size(); j++) {
-			StackableItem loadableItem = items.get(j);
+			BoxItem loadableItem = items.get(j);
 			
 			if(loadableItem.isEmpty()) {
 				items.remove(j);
@@ -75,14 +75,14 @@ public class StackableItemGroup {
 		}
 	}
 	
-	public StackableItemGroup clone() {
-		List<StackableItem> items = new ArrayList<>();
+	public BoxItemGroup clone() {
+		List<BoxItem> items = new ArrayList<>();
 
-		for (StackableItem stackableItem : this.items) {
+		for (BoxItem stackableItem : this.items) {
 			items.add(stackableItem.clone());
 		}
 		
-		return new StackableItemGroup(id, items);
+		return new BoxItemGroup(id, items);
 	}
 	
 }

@@ -17,7 +17,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.packer.AbstractPackager;
@@ -48,7 +48,7 @@ public class BouwkampCodeBruteForcePackagerBenchmark {
 		for (BenchmarkSet set : sets) {
 			AbstractPackager packager = set.getPackager();
 			List<ContainerItem> containers = set.getContainers();
-			List<StackableItem> products = set.getProducts();
+			List<BoxItem> products = set.getProducts();
 
 			PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products).withDeadline(deadline).build();
 			if(build.isSuccess()) {

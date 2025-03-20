@@ -7,7 +7,7 @@ import org.assertj.core.api.AbstractObjectAssert;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 @SuppressWarnings("rawtypes")
 public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert<SELF, ACTUAL>, ACTUAL extends Packager>
@@ -20,7 +20,7 @@ public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert
 	}
 
 	@SuppressWarnings("unchecked")
-	public SELF respectsDeadline(List<ContainerItem> containerItems, List<StackableItem> items, long maxTime) {
+	public SELF respectsDeadline(List<ContainerItem> containerItems, List<BoxItem> items, long maxTime) {
 		isNotNull();
 
 		long timestamp = System.currentTimeMillis();

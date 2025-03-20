@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 /**
  * 
@@ -22,7 +22,7 @@ public class DefaultStackableItemInput implements StackableItemInput {
 	
 	public static class Builder {
 		
-		protected StackableItem stackableItem;
+		protected BoxItem stackableItem;
 		
 		protected int count = -1;
 		protected int index = -1;
@@ -34,7 +34,7 @@ public class DefaultStackableItemInput implements StackableItemInput {
 		protected int maxWeight = -1;
 		protected long maxVolume = -1L;
 		
-		public Builder withStackableItem(StackableItem stackableItem) {
+		public Builder withStackableItem(BoxItem stackableItem) {
 			this.stackableItem = stackableItem;
 			return this;
 		}
@@ -129,7 +129,7 @@ public class DefaultStackableItemInput implements StackableItemInput {
 
 	}
 
-	protected final StackableItem stackableItem;
+	protected final BoxItem stackableItem;
 	protected final StackValue[] values;
 	
 	protected final long minimumArea;
@@ -138,7 +138,7 @@ public class DefaultStackableItemInput implements StackableItemInput {
 	protected int count;
 	protected final int index;
 
-	public DefaultStackableItemInput(int index, StackableItem stackableItem, StackValue[] values) {
+	public DefaultStackableItemInput(int index, BoxItem stackableItem, StackValue[] values) {
 		this.index = index;
 		this.values = values;
 		this.stackableItem = stackableItem;
@@ -164,7 +164,7 @@ public class DefaultStackableItemInput implements StackableItemInput {
 	}
 
 	@Override
-	public StackableItem getStackableItem() {
+	public BoxItem getStackableItem() {
 		return stackableItem;
 	}
 	

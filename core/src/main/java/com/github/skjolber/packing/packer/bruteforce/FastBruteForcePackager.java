@@ -18,7 +18,7 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.StackValueConstraint;
 import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
@@ -64,7 +64,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		private final FastExtremePoints3DStack extremePoints3D;
 		private List<StackPlacement> stackPlacements;
 
-		public FastBruteForceAdapter(List<ContainerItem> containers, ContainerStackValue[] containerStackValue, DefaultPermutationRotationIterator[] iterators, List<StackableItem> stackableItems, PackagerInterruptSupplier interrupt) {
+		public FastBruteForceAdapter(List<ContainerItem> containers, ContainerStackValue[] containerStackValue, DefaultPermutationRotationIterator[] iterators, List<BoxItem> stackableItems, PackagerInterruptSupplier interrupt) {
 			super(containers, stackableItems);
 			
 			this.containerStackValue = containerStackValue;
@@ -78,7 +78,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			
 			int stackableCount = 0;
 			for(int i = 0; i < stackableItems.size(); i++) {
-				StackableItem stackableItem = stackableItems.get(i);
+				BoxItem stackableItem = stackableItems.get(i);
 				stackableCount += stackableItem.getCount();
 			}			
 			
@@ -152,7 +152,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 	}
 
 	@Override
-	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<StackableItem> stackableItems, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
+	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<BoxItem> stackableItems, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
 		DefaultPermutationRotationIterator[] iterators = new DefaultPermutationRotationIterator[containers.size()];
 		ContainerStackValue[] containerStackValue = new ContainerStackValue[containers.size()];
 

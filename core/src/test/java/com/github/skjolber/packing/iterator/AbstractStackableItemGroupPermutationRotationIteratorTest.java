@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
-import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.api.StackableItemGroup;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 
 @SuppressWarnings("unchecked")
 public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<T extends AbstractStackableItemGroupIteratorBuilder>{
@@ -24,19 +24,19 @@ public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<
 	void testPermutations() {
 		Dimension container = new Dimension(null, 9, 1, 1);
 
-		List<StackableItemGroup> groups = new ArrayList<>();
+		List<BoxItemGroup> groups = new ArrayList<>();
 
-		List<StackableItem> products1 = new ArrayList<>();
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
-		groups.add(new StackableItemGroup("1", products1));
+		List<BoxItem> products1 = new ArrayList<>();
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
+		groups.add(new BoxItemGroup("1", products1));
 
-		List<StackableItem> products2 = new ArrayList<>();
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
-		groups.add(new StackableItemGroup("2", products2));
+		List<BoxItem> products2 = new ArrayList<>();
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
+		groups.add(new BoxItemGroup("2", products2));
 		
 		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
@@ -59,21 +59,21 @@ public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<
 	void testPermutationsRepeatedItems() {
 		Dimension container = new Dimension(null, 9, 1, 1);
 
-		List<StackableItemGroup> groups = new ArrayList<>();
+		List<BoxItemGroup> groups = new ArrayList<>();
 
-		List<StackableItem> products1 = new ArrayList<>();
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
-		groups.add(new StackableItemGroup("1", products1));
+		List<BoxItem> products1 = new ArrayList<>();
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
+		groups.add(new BoxItemGroup("1", products1));
 
 		
-		List<StackableItem> products2 = new ArrayList<>();
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("6").withWeight(1).build(), 2));
-		groups.add(new StackableItemGroup("2", products2));
+		List<BoxItem> products2 = new ArrayList<>();
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("6").withWeight(1).build(), 2));
+		groups.add(new BoxItemGroup("2", products2));
 		
 		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
@@ -96,20 +96,20 @@ public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<
 	void testRemovePermutations() {
 		Dimension container = new Dimension(null, 9, 1, 1);
 
-		List<StackableItemGroup> groups = new ArrayList<>();
+		List<BoxItemGroup> groups = new ArrayList<>();
 
-		List<StackableItem> products1 = new ArrayList<>();
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
-		groups.add(new StackableItemGroup("1", products1));
+		List<BoxItem> products1 = new ArrayList<>();
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
+		groups.add(new BoxItemGroup("1", products1));
 
 		
-		List<StackableItem> products2 = new ArrayList<>();
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
-		groups.add(new StackableItemGroup("2", products2));
+		List<BoxItem> products2 = new ArrayList<>();
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
+		groups.add(new BoxItemGroup("2", products2));
 		
 		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
@@ -134,20 +134,20 @@ public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<
 	void testRemoveWholeGroup() {
 		Dimension container = new Dimension(null, 9, 1, 1);
 
-		List<StackableItemGroup> groups = new ArrayList<>();
+		List<BoxItemGroup> groups = new ArrayList<>();
 
-		List<StackableItem> products1 = new ArrayList<>();
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
-		groups.add(new StackableItemGroup("1", products1));
+		List<BoxItem> products1 = new ArrayList<>();
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
+		groups.add(new BoxItemGroup("1", products1));
 
 		
-		List<StackableItem> products2 = new ArrayList<>();
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
-		groups.add(new StackableItemGroup("2", products2));
+		List<BoxItem> products2 = new ArrayList<>();
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
+		groups.add(new BoxItemGroup("2", products2));
 		
 		StackableItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
@@ -173,22 +173,22 @@ public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<
 	void testNextPermutationMaxIndexGroup1() {
 		Dimension container = new Dimension(null, 9, 1, 1);
 
-		List<StackableItemGroup> groups = new ArrayList<>();
+		List<BoxItemGroup> groups = new ArrayList<>();
 
-		List<StackableItem> products1 = new ArrayList<>();
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
-		groups.add(new StackableItemGroup("1", products1));
+		List<BoxItem> products1 = new ArrayList<>();
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
+		groups.add(new BoxItemGroup("1", products1));
 		
-		List<StackableItem> products2 = new ArrayList<>();
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("6").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("7").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("8").withWeight(1).build()));
-		groups.add(new StackableItemGroup("2", products2));
+		List<BoxItem> products2 = new ArrayList<>();
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("6").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("7").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("8").withWeight(1).build()));
+		groups.add(new BoxItemGroup("2", products2));
 		
 		StackableItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container)
@@ -223,22 +223,22 @@ public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<
 	void testNextPermutationMaxIndexGroup2() {
 		Dimension container = new Dimension(null, 9, 1, 1);
 
-		List<StackableItemGroup> groups = new ArrayList<>();
+		List<BoxItemGroup> groups = new ArrayList<>();
 
-		List<StackableItem> products1 = new ArrayList<>();
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
-		groups.add(new StackableItemGroup("1", products1));
+		List<BoxItem> products1 = new ArrayList<>();
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
+		groups.add(new BoxItemGroup("1", products1));
 		
-		List<StackableItem> products2 = new ArrayList<>();
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("6").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("7").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("8").withWeight(1).build()));
-		groups.add(new StackableItemGroup("2", products2));
+		List<BoxItem> products2 = new ArrayList<>();
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("6").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("7").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("8").withWeight(1).build()));
+		groups.add(new BoxItemGroup("2", products2));
 		
 		StackableItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container)
@@ -274,23 +274,23 @@ public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<
 	void testNextPermutationMaxIndexTransitionGroup() {
 		Dimension container = new Dimension(null, 9, 1, 1);
 
-		List<StackableItemGroup> groups = new ArrayList<>();
+		List<BoxItemGroup> groups = new ArrayList<>();
 
-		List<StackableItem> products1 = new ArrayList<>();
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
-		products1.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
-		groups.add(new StackableItemGroup("1", products1));
+		List<BoxItem> products1 = new ArrayList<>();
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
+		groups.add(new BoxItemGroup("1", products1));
 
 		
-		List<StackableItem> products2 = new ArrayList<>();
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("6").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("7").withWeight(1).build()));
-		products2.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("8").withWeight(1).build()));
-		groups.add(new StackableItemGroup("2", products2));
+		List<BoxItem> products2 = new ArrayList<>();
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("6").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("7").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("8").withWeight(1).build()));
+		groups.add(new BoxItemGroup("2", products2));
 		
 		StackableItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container)

@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 /**
  * 
@@ -12,13 +12,13 @@ import com.github.skjolber.packing.api.StackableItem;
  * 
  */
 
-public class MutableStackableItem extends StackableItem {
+public class MutableStackableItem extends BoxItem {
 
 	private static final long serialVersionUID = 1L;
 	
 	protected final BoundedStackValue[] values;
 	protected final boolean[] enabled;
-	protected final StackableItem stackableItem;
+	protected final BoxItem stackableItem;
 	protected final Stackable stackable;
 	
 	protected final long minimumArea;
@@ -26,7 +26,7 @@ public class MutableStackableItem extends StackableItem {
 	
 	protected int constrainedCount;
 
-	public MutableStackableItem(StackableItem stackableItem, StackValue[] stackValues) {
+	public MutableStackableItem(BoxItem stackableItem, BoundedStackValue[] stackValues) {
 		super(stackableItem.getStackable(), stackableItem.getCount());
 		
 		this.values = stackValues;
@@ -38,23 +38,23 @@ public class MutableStackableItem extends StackableItem {
 		}
 		constrainedCount = stackableItem.getCount();
 		
-		this.minimumArea = Stackable.getMinimumArea(stackValues);
-		this.maximumArea = Stackable.getMinimumArea(stackValues);
+		this.minimumArea = BoundedStackable.getMinimumArea(stackValues);
+		this.maximumArea = BoundedStackable.getMinimumArea(stackValues);
 	}
 
-	public MutableStackableItem(StackableItem stackableItem, List<StackValue> stackValues) {
-		this(stackableItem, stackValues.toArray(new StackValue[stackValues.size()]));
+	public MutableStackableItem(BoxItem stackableItem, List<BoundedStackValue> stackValues) {
+		this(stackableItem, stackValues.toArray(new BoundedStackValue[stackValues.size()]));
 	}
 
 	public Stackable getStackable() {
 		return stackable;
 	}
 
-	public StackValue getStackValue(int index) {
+	public BoundedStackValue getStackValue(int index) {
 		return values[index];
 	}
 
-	public StackValue[] getStackValues() {
+	public BoundedStackValue[] getStackValues() {
 		return values;
 	}
 	

@@ -1,8 +1,14 @@
 package com.github.skjolber.packing.api.packager;
 
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
-public class DefaultContainerLoadInputsFilter<S extends StackableItem> implements ContainerLoadInputsFilter {
+/**
+ * All items can be loaded and no dependencies across stackable items exist.
+ * 
+ * @param <S>
+ */
+
+public class DefaultContainerLoadInputsFilter<S extends BoxItem> implements ContainerLoadInputsFilter {
 
 	protected final ContainerLoadInputs<S> loadableItems;
 

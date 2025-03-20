@@ -7,20 +7,20 @@ import java.io.Serializable;
  * can also represent multiple products which share the same size.
  * 
  */
-public class StackableItem implements Serializable {
+public class BoxItem implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	protected int count;
-	protected final Stackable stackable;
+	protected final Box box;
 
-	public StackableItem(Stackable box) {
+	public BoxItem(Box box) {
 		this(box, 1);
 	}
 
-	public StackableItem(Stackable stackable, int count) {
+	public BoxItem(Box stackable, int count) {
 		super();
-		this.stackable = stackable;
+		this.box = stackable;
 		this.count = count;
 	}
 
@@ -29,12 +29,12 @@ public class StackableItem implements Serializable {
 	}
 
 	public Stackable getStackable() {
-		return stackable;
+		return box;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("%dx%s", count, stackable);
+		return String.format("%dx%s", count, box);
 	}
 	
 	public void decrement() {
@@ -49,8 +49,8 @@ public class StackableItem implements Serializable {
 		this.count = this.count - value;
 	}
 
-	public StackableItem clone() {
-		return new StackableItem(stackable, count);
+	public BoxItem clone() {
+		return new BoxItem(box, count);
 	}
 
 }

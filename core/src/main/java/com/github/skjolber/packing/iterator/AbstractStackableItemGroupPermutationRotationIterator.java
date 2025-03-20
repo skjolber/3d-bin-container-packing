@@ -2,7 +2,7 @@ package com.github.skjolber.packing.iterator;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 public abstract class AbstractStackableItemGroupPermutationRotationIterator extends AbstractStackableItemPermutationRotationIterator implements StackableItemGroupPermutationRotationIterator {
 
@@ -45,7 +45,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIterator exte
 			}
 			
 			int maxCount = 0;
-			for (StackableItem value : items) {
+			for (BoxItem value : items) {
 				if(value != null) {
 					if(maxCount < value.getCount()) {
 						maxCount = value.getCount();
@@ -55,7 +55,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIterator exte
 	
 			if(maxCount > 1) {
 				int[] factors = new int[maxCount];
-				for (StackableItem value : items) {
+				for (BoxItem value : items) {
 					if(value != null) {
 						for (int k = 0; k < value.getCount(); k++) {
 							factors[k]++;

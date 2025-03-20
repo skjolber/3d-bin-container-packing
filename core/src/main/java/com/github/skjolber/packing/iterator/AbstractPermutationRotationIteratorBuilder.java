@@ -6,7 +6,7 @@ import java.util.function.Predicate;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 /**
  * Builder scaffold.
@@ -20,7 +20,7 @@ public abstract class AbstractPermutationRotationIteratorBuilder<B extends Abstr
 	protected int maxLoadWeight = -1;
 	protected Predicate<Stackable> filter;
 	protected Dimension size;
-	protected List<StackableItem> stackableItems;
+	protected List<BoxItem> stackableItems;
 
 	public B withSize(int dx, int dy, int dz) {
 		this.size = new Dimension(dx, dy, dz);
@@ -46,7 +46,7 @@ public abstract class AbstractPermutationRotationIteratorBuilder<B extends Abstr
 		return (B)this;
 	}
 
-	public B withStackableItems(List<StackableItem> stackableItems) {
+	public B withStackableItems(List<BoxItem> stackableItems) {
 		this.stackableItems = stackableItems;
 
 		return (B)this;
@@ -56,7 +56,7 @@ public abstract class AbstractPermutationRotationIteratorBuilder<B extends Abstr
 		PermutationStackableValue[] results = new PermutationStackableValue[stackableItems.size()];
 
 		for (int i = 0; i < stackableItems.size(); i++) {
-			StackableItem item = stackableItems.get(i);
+			BoxItem item = stackableItems.get(i);
 
 			Stackable stackable = item.getStackable();
 			if(stackable.getWeight() > maxLoadWeight) {

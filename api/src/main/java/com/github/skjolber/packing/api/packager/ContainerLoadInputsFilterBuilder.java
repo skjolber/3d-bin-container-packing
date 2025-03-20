@@ -3,7 +3,7 @@ package com.github.skjolber.packing.api.packager;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 /**
  * Builder scaffold.
@@ -13,7 +13,7 @@ import com.github.skjolber.packing.api.StackableItem;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class ContainerLoadInputsFilterBuilder<S extends StackableItem, B extends ContainerLoadInputsFilterBuilder<S, B>> {
+public abstract class ContainerLoadInputsFilterBuilder<S extends BoxItem, B extends ContainerLoadInputsFilterBuilder<S, B>> {
 
 	protected Stack stack;
 	protected Container container;

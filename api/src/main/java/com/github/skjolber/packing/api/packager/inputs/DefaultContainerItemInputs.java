@@ -6,7 +6,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.ContainerStackValue;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 public class DefaultContainerItemInputs implements ContainerItemInput {
 
@@ -17,12 +17,12 @@ public class DefaultContainerItemInputs implements ContainerItemInput {
 	public static class Builder {
 		
 		protected ContainerItem containerItem;
-		protected List<StackableItem> stackableItems;
+		protected List<BoxItem> stackableItems;
 		
 		protected int count = -1;
 		protected int index = -1;
 		
-		public Builder withStackableItems(List<StackableItem> stackableItems) {
+		public Builder withStackableItems(List<BoxItem> stackableItems) {
 			this.stackableItems = stackableItems;
 			return this;
 		}
@@ -69,7 +69,7 @@ public class DefaultContainerItemInputs implements ContainerItemInput {
 			StackableItemInput[] indexedValues = new StackableItemInput[stackableItems.size()];
 			
 			for (int i = 0; i < stackableItems.size(); i++) {
-				StackableItem stackableItem = stackableItems.get(i);
+				BoxItem stackableItem = stackableItems.get(i);
 				
 				DefaultStackableItemInput input = DefaultStackableItemInput.newBuilder()
 					.withCount(stackableItem.getCount())

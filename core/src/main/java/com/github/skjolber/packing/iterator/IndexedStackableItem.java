@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.iterator;
 
 import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 /**
  * 
@@ -9,7 +9,7 @@ import com.github.skjolber.packing.api.StackableItem;
  * 
  */
 
-public class IndexedStackableItem extends StackableItem {
+public class IndexedStackableItem extends BoxItem {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -30,7 +30,7 @@ public class IndexedStackableItem extends StackableItem {
 	
 	@Override
 	public IndexedStackableItem clone() {
-		return new IndexedStackableItem(stackable, count, index);
+		return new IndexedStackableItem(box, count, index);
 	}
 
 }

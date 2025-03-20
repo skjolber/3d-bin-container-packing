@@ -18,7 +18,7 @@ import org.openjdk.jmh.annotations.TearDown;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorListBuilder;
@@ -60,14 +60,14 @@ public class IteratorState {
 			path = Paths.get("jmh", "src", "main", "resources", "iterate.json");
 		}
 
-		List<StackableItem> stackableItems3D = getStackableItems3D(ItemIO.read(path));
+		List<BoxItem> stackableItems3D = getStackableItems3D(ItemIO.read(path));
 
 		int x = 0;
 		int y = 0;
 		int z = 0;
 
 		int weight = 0;
-		for (StackableItem stackableItem : stackableItems3D) {
+		for (BoxItem stackableItem : stackableItems3D) {
 			StackValue[] stackValues = stackableItem.getStackable().getStackValues();
 			for (StackValue stackValue : stackValues) {
 				if(x < stackValue.getDx()) {
@@ -111,10 +111,10 @@ public class IteratorState {
 		}
 	}
 
-	private static List<StackableItem> getStackableItems3D(List<Item> items) {
-		List<StackableItem> products = new ArrayList<>();
+	private static List<BoxItem> getStackableItems3D(List<Item> items) {
+		List<BoxItem> products = new ArrayList<>();
 		for (Item item : items) {
-			products.add(new StackableItem(Box.newBuilder().withDescription(item.toString()).withSize(item.getDx(), item.getDy(), item.getDz()).withRotate3D().withWeight(1).build(), item.getCount()));
+			products.add(new BoxItem(Box.newBuilder().withDescription(item.toString()).withSize(item.getDx(), item.getDy(), item.getDz()).withRotate3D().withWeight(1).build(), item.getCount()));
 		}
 
 		return products;

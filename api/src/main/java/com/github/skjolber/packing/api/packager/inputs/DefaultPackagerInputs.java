@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 public class DefaultPackagerInputs implements PackagerInputs {
 
@@ -15,14 +15,14 @@ public class DefaultPackagerInputs implements PackagerInputs {
 	public static class Builder {
 		
 		protected List<ContainerItem> containerItems;
-		protected List<StackableItem> stackableItems;		
+		protected List<BoxItem> stackableItems;		
 		
 		public Builder withContainerItems(List<ContainerItem> containerItems) {
 			this.containerItems = containerItems;
 			return this;
 		}
 		
-		public Builder withStackableItems(List<StackableItem> stackableItems) {
+		public Builder withStackableItems(List<BoxItem> stackableItems) {
 			this.stackableItems = stackableItems;
 			return this;
 		}

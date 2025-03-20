@@ -10,7 +10,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
@@ -45,12 +45,12 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractPackag
 		private List<Stackable> boxes;
 		private final PackagerInterruptSupplier interrupt;
 
-		public LAFFAdapter(List<StackableItem> boxItems, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
+		public LAFFAdapter(List<BoxItem> boxItems, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
 			super(containerItems);
 
 			List<Stackable> boxClones = new ArrayList<>(boxItems.size() * 2);
 
-			for (StackableItem item : boxItems) {
+			for (BoxItem item : boxItems) {
 				Stackable box = item.getStackable();
 				boxClones.add(box);
 				for (int i = 1; i < item.getCount(); i++) {
@@ -89,7 +89,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractPackag
 	}
 
 	@Override
-	protected LAFFAdapter adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
+	protected LAFFAdapter adapter(List<BoxItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
 		return new LAFFAdapter(boxes, containers, interrupt);
 	}
 

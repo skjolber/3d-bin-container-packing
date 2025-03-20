@@ -3,7 +3,7 @@ package com.github.skjolber.packing.iterator;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 /**
  * 
@@ -59,14 +59,14 @@ public class IndexedStackableItemGroup {
 
 	public int stackableItemsCount() {
 		int count = 0;
-		for (StackableItem loadableItem : items) {
+		for (BoxItem loadableItem : items) {
 			count += loadableItem.getCount();
 		}
 		return count;
 	}
 
 	public boolean isEmpty() {
-		for (StackableItem loadableItem : items) {
+		for (BoxItem loadableItem : items) {
 			if(!loadableItem.isEmpty()) {
 				return false;
 			}
@@ -77,7 +77,7 @@ public class IndexedStackableItemGroup {
 	
 	public void removeEmpty() {
 		for (int j = 0; j < items.size(); j++) {
-			StackableItem loadableItem = items.get(j);
+			BoxItem loadableItem = items.get(j);
 			
 			if(loadableItem.isEmpty()) {
 				items.remove(j);

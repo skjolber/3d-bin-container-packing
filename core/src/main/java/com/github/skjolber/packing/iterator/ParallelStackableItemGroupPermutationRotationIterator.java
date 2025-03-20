@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 public class ParallelStackableItemGroupPermutationRotationIterator extends AbstractStackableItemGroupPermutationRotationIterator {
 	
@@ -162,7 +162,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 				// TODO system arraycopy?
 				i = startIndex;
 				
-				for (StackableItem loadableItem : loadableItemGroup.getItems()) {
+				for (BoxItem loadableItem : loadableItemGroup.getItems()) {
 					IndexedStackableItem indexedStackableItem = (IndexedStackableItem)loadableItem;
 					for(int k = 0; k < indexedStackableItem.getCount(); k++) {
 						permutations[i] = indexedStackableItem.getIndex();
@@ -309,7 +309,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 			// TODO system arraycopy?
 			int i = startIndex;
 			
-			for (StackableItem loadableItem : loadableItemGroup.getItems()) {
+			for (BoxItem loadableItem : loadableItemGroup.getItems()) {
 				IndexedStackableItem indexedStackableItem = (IndexedStackableItem)loadableItem;
 				for(int k = 0; k < indexedStackableItem.getCount(); k++) {
 					permutations[i] = indexedStackableItem.getIndex();

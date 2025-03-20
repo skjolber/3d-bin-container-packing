@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.api.packager;
 
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 /**
  * 
@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.StackableItem;
  * 
  */
 
-public interface ContainerLoadInputs<S extends StackableItem> {
+public interface ContainerLoadInputs<S extends BoxItem> {
 	
 	int size();
 	

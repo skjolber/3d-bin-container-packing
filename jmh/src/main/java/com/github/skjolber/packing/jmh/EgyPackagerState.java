@@ -20,7 +20,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.DefaultStack;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
@@ -48,7 +48,7 @@ public class EgyPackagerState {
 	private List<BenchmarkSet> plainPackager = new ArrayList<>();
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 
-	private static List<StackableItem> stackableItems3D;
+	private static List<BoxItem> stackableItems3D;
 	private static List<ContainerItem> containers;
 
 	static {
@@ -125,7 +125,7 @@ public class EgyPackagerState {
 							.withStack(new DefaultStack()).build())
 					.build();
 
-			List<StackableItem> stackableItems3D = getStackableItems3D(items);
+			List<BoxItem> stackableItems3D = getStackableItems3D(items);
 
 			FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().build();
 
@@ -145,10 +145,10 @@ public class EgyPackagerState {
 		}
 	}
 
-	private static List<StackableItem> getStackableItems3D(List<Item> items) {
-		List<StackableItem> products = new ArrayList<>();
+	private static List<BoxItem> getStackableItems3D(List<Item> items) {
+		List<BoxItem> products = new ArrayList<>();
 		for (Item item : items) {
-			products.add(new StackableItem(Box.newBuilder().withDescription(item.toString()).withSize(item.getDx(), item.getDy(), item.getDz()).withRotate3D().withWeight(1).build(), item.getCount()));
+			products.add(new BoxItem(Box.newBuilder().withDescription(item.toString()).withSize(item.getDx(), item.getDy(), item.getDz()).withRotate3D().withWeight(1).build(), item.getCount()));
 		}
 
 		return products;

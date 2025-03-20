@@ -64,25 +64,39 @@ public abstract class Stackable implements Serializable {
 	public abstract long getMinimumArea();
 
 	public abstract long getMaximumArea();
+	
+	public abstract long getMinimumPressure();
 
-	public static long getMinimumArea(StackValue[] rotations) {
-		long minimumArea = Long.MAX_VALUE;
+	public abstract long getMaximumPressure();
+
+	public static StackValue getMinimumArea(StackValue[] rotations) {
+		StackValue minimumArea = null;
 		for (StackValue boxStackValue : rotations) {
-			if(minimumArea > boxStackValue.getArea()) {
-				minimumArea = boxStackValue.getArea();
+			if(minimumArea == null || boxStackValue.getArea() < minimumArea.getArea()) {
+				minimumArea = boxStackValue;
+			}
+		}
+		return minimumArea;
+	}
+	
+	public static StackValue getMinimumPressure(StackValue[] rotations) {
+		StackValue minimumArea = null;
+		for (StackValue boxStackValue : rotations) {
+			if(minimumArea == null || boxStackValue.getArea() < minimumArea.getArea()) {
+				minimumArea = boxStackValue;
 			}
 		}
 		return minimumArea;
 	}
 
-	public static long getMaximumArea(StackValue[] rotations) {
-		long maximumArea = Long.MIN_VALUE;
+	public static StackValue getMaximumArea(StackValue[] rotations) {
+		StackValue minimumArea = null;
 		for (StackValue boxStackValue : rotations) {
-			if(maximumArea < boxStackValue.getArea()) {
-				maximumArea = boxStackValue.getArea();
+			if(minimumArea == null || boxStackValue.getArea() > minimumArea.getArea()) {
+				minimumArea = boxStackValue;
 			}
 		}
-		return maximumArea;
+		return minimumArea;
 	}
 
 }

@@ -49,8 +49,11 @@ public class Box extends Stackable {
 	protected final int weight;
 	protected final BoxStackValue[] stackValues;
 	protected final long volume;
-	protected final long minimumArea;
-	protected final long maximumArea;
+	
+	protected final StackValue minimumArea;
+	protected final StackValue maximumArea;
+	protected long minimumPressure;
+	protected long maximumPressure;
 
 	protected final String id;
 	protected final String description;
@@ -65,6 +68,9 @@ public class Box extends Stackable {
 
 		this.minimumArea = getMinimumArea(stackValues);
 		this.maximumArea = getMinimumArea(stackValues);
+		
+		this.minimumPressure = (weight * 1000L) / maximumArea.getArea();
+		this.maximumPressure = (weight * 1000L) / minimumArea.getArea();
 		
 		for (BoxStackValue boxStackValue : stackValues) {
 			boxStackValue.setStackable(this);
@@ -110,17 +116,27 @@ public class Box extends Stackable {
 
 	@Override
 	public long getMinimumArea() {
-		return minimumArea;
+		return minimumArea.getArea();
 	}
 
 	@Override
 	public long getMaximumArea() {
-		return maximumArea;
+		return maximumArea.getArea();
 	}
 
 	@Override
 	public String toString() {
 		return "Box " + (description != null ? description : "") + "[weight=" + weight + ", rotations=" + Arrays.toString(stackValues) + ", volume=" + volume + "]";
+	}
+
+	@Override
+	public long getMinimumPressure() {
+		return minimumPressure;
+	}
+	
+	@Override
+	public long getMaximumPressure() {
+		return maximumPressure;
 	}
 
 }

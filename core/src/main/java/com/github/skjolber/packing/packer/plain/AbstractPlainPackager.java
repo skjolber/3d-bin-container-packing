@@ -10,7 +10,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
@@ -35,12 +35,12 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultPack
 		private List<Stackable> boxes;
 		private final PackagerInterruptSupplier interrupt;
 
-		public PlainAdapter(List<StackableItem> boxItems, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
+		public PlainAdapter(List<BoxItem> boxItems, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
 			super(containerItems);
 
 			List<Stackable> boxClones = new LinkedList<>();
 
-			for (StackableItem item : boxItems) {
+			for (BoxItem item : boxItems) {
 				Stackable box = item.getStackable();
 				boxClones.add(box);
 				for (int i = 1; i < item.getCount(); i++) {
@@ -79,7 +79,7 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultPack
 	}
 
 	@Override
-	protected PlainAdapter adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
+	protected PlainAdapter adapter(List<BoxItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
 		return new PlainAdapter(boxes, containers, interrupt);
 	}
 

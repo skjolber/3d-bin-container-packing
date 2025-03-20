@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.api;
 
-public abstract class Container extends Stackable {
+public class Container extends Stackable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -44,16 +44,9 @@ public abstract class Container extends Stackable {
 
 		protected int emptyWeight = -1;
 		protected Stack stack;
-		protected boolean fixed = false;
-
-		public Builder withFixed(boolean fixed) {
-			this.fixed = fixed;
-			return this;
-		}
 
 		public Builder withFixedStack(Stack stack) {
 			this.stack = stack;
-			this.fixed = true;
 			return this;
 		}
 
@@ -68,7 +61,7 @@ public abstract class Container extends Stackable {
 			return this;
 		}
 
-		public DefaultContainer build() {
+		public Container build() {
 			if(dx == -1) {
 				throw new IllegalStateException("Expected size");
 			}
@@ -103,39 +96,25 @@ public abstract class Container extends Stackable {
 
 			long volume = (long)dx * (long)dy * (long)dz;
 
-			return new DefaultContainer(id, description, volume, emptyWeight, getStackValues(), stack);
+			return new Container(id, description, volume, emptyWeight, getStackValues(), stack);
 		}
 
 		protected ContainerStackValue[] getStackValues() {
-			if(fixed) {
-				FixedContainerStackValue[] stackValues = new FixedContainerStackValue[1];
+			ContainerStackValue[] stackValues = new ContainerStackValue[1];
 
-				int stackWeight = stack.getWeight();
+			stackValues[0] = new ContainerStackValue(
+					dx, dy, dz,
+					stackConstraint,
+					loadDx, loadDy, loadDz,
+					maxLoadWeight,
+					surfaces);
 
-				stackValues[0] = new FixedContainerStackValue(
-						dx, dy, dz,
-						stackConstraint,
-						stackWeight, emptyWeight,
-						loadDx, loadDy, loadDz,
-						maxLoadWeight,
-						surfaces);
-
-				return stackValues;
-			} else {
-				DefaultContainerStackValue[] stackValues = new DefaultContainerStackValue[1];
-
-				stackValues[0] = new DefaultContainerStackValue(
-						dx, dy, dz,
-						stackConstraint,
-						loadDx, loadDy, loadDz,
-						maxLoadWeight,
-						surfaces);
-
-				return stackValues;
-			}
+			return stackValues;
 		}
 
 	}
+
+	protected final long volume;
 
 	protected final int emptyWeight;
 	/** i.e. best of the stack values */
@@ -143,24 +122,38 @@ public abstract class Container extends Stackable {
 	/** i.e. best of the stack values */
 	protected final int maxLoadWeight;
 
-	protected final long volume;
-	protected final long minArea;
-	protected final long maxArea;
+	protected final ContainerStackValue minimumArea;
+	protected final ContainerStackValue maximumArea;
+	
+	protected long minimumPressure;
+	protected long maximumPressure;
 
 	protected final String id;
 	protected final String description;
 
-	public Container(String id, String description, long volume, int emptyWeight, long maxLoadVolume, int maxLoadWeight, long minArea, long maxArea) {
+	protected final ContainerStackValue[] stackValues;
+	protected final Stack stack;
+
+	public Container(String id, String description, long volume, int emptyWeight, ContainerStackValue[] stackValues, Stack stack) {
 		this.id = id;
 		this.description = description;
 		
 		this.emptyWeight = emptyWeight;
-		this.maxLoadVolume = maxLoadVolume;
-		this.maxLoadWeight = maxLoadWeight;
+		
+		this.stackValues = stackValues;
+
+		this.maxLoadVolume = getMaxLoadVolume(stackValues);
+		this.maxLoadWeight = getMaxLoadWeight(stackValues);
+		
+		this.minimumArea = (ContainerStackValue) getMinimumArea(stackValues);
+		this.maximumArea = (ContainerStackValue) getMinimumArea(stackValues);
+		
+		this.minimumPressure = ( (emptyWeight + maxLoadWeight) * 1000L) / maximumArea.getArea();
+		this.maximumPressure = ( (emptyWeight + maxLoadWeight) * 1000L) / minimumArea.getArea();
 
 		this.volume = volume;
-		this.minArea = minArea;
-		this.maxArea = maxArea;
+		
+		this.stack = stack;
 	}
 
 	@Override
@@ -175,7 +168,7 @@ public abstract class Container extends Stackable {
 
 	@Override
 	public int getWeight() {
-		return emptyWeight + getStack().getWeight();
+		return emptyWeight + stack.getWeight();
 	}
 
 	public long getMaxLoadVolume() {
@@ -186,11 +179,6 @@ public abstract class Container extends Stackable {
 		return maxLoadWeight;
 	}
 
-	@Override
-	public abstract ContainerStackValue[] getStackValues();
-
-	public abstract Stack getStack();
-
 	public int getEmptyWeight() {
 		return emptyWeight;
 	}
@@ -199,13 +187,8 @@ public abstract class Container extends Stackable {
 		return emptyWeight + maxLoadWeight;
 	}
 
-	public abstract boolean canLoad(Stackable box);
-
-	@Override
-	public abstract Container clone();
-
 	public int getLoadWeight() {
-		return getStack().getWeight();
+		return stack.getWeight();
 	}
 
 	@Override
@@ -215,15 +198,59 @@ public abstract class Container extends Stackable {
 
 	@Override
 	public long getMinimumArea() {
-		return minArea;
+		return minimumArea.getArea();
 	}
 
 	@Override
 	public long getMaximumArea() {
-		return maxArea;
+		return maximumArea.getArea();
 	}
 
 	public long getLoadVolume() {
-		return getStack().getVolume();
+		return stack.getVolume();
+	}
+
+	@Override
+	public ContainerStackValue[] getStackValues() {
+		return stackValues;
+	}
+
+	public ContainerStackValue getStackValue(int index) {
+		return stackValues[index];
+	}
+
+	public boolean canLoad(Stackable stackable) {
+		if(stackable.getVolume() > maxLoadVolume) {
+			return false;
+		}
+		if(stackable.getWeight() > maxLoadWeight) {
+			return false;
+		}
+		for (ContainerStackValue stackValue : stackValues) {
+			if(stackValue.canLoad(stackable)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	@Override
+	public Container clone() {
+		ContainerStackValue[] stackValues = new ContainerStackValue[this.stackValues.length];
+		for(int i = 0; i < stackValues.length; i++) {
+			stackValues[i] = this.stackValues[i].clone();
+		}
+		return new Container(id, description, volume, emptyWeight, stackValues, new DefaultStack());
+	}
+
+	@Override
+	public long getMinimumPressure() {
+		return minimumPressure;
+	}
+	
+	@Override
+	public long getMaximumPressure() {
+		return maximumPressure;
 	}
 }

@@ -13,7 +13,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
@@ -29,7 +29,7 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 			.withEmptyWeight(0)
 			.build();
 
-		StackableItem b1 = new StackableItem(
+		BoxItem b1 = new BoxItem(
 			Box.newBuilder()
 				.withId("b1")
 				.withDescription("b1")
@@ -66,7 +66,7 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 
 		AbstractPackager packager = createPackager();
 		try {
-			List<StackableItem> products = Arrays.asList(
+			List<BoxItem> products = Arrays.asList(
 					box(3,7,35,1));
 	
 			PackagerResult build = packager
@@ -91,7 +91,7 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 
 		AbstractPackager packager = createPackager();
 		try {
-			List<StackableItem> products = Arrays.asList(
+			List<BoxItem> products = Arrays.asList(
 					box(1,1,1,1), box(3,7,35,1));
 	
 			PackagerResult build = packager
@@ -124,7 +124,7 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 					.withEmptyWeight(0)
 					.build();
 
-			StackableItem thinBox = new StackableItem(
+			BoxItem thinBox = new BoxItem(
 				Box.newBuilder()
 					.withId("b1")
 					.withDescription("b1")
@@ -135,7 +135,7 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 				2
 			);
 
-		StackableItem thickBox = new StackableItem(
+		BoxItem thickBox = new BoxItem(
 				Box.newBuilder()
 					.withId("b1")
 					.withDescription("b1")

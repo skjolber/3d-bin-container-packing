@@ -12,7 +12,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
@@ -123,7 +123,7 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 			PackagerResult build = packager
 					.newResultBuilder()
 					.withContainers(containers)
-					.withStackables(singletonList(new StackableItem(box, count)))
+					.withStackables(singletonList(new BoxItem(box, count)))
 					.build();
 
 			Container fits = build.get(0);

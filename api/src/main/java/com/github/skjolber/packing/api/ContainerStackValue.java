@@ -2,7 +2,7 @@ package com.github.skjolber.packing.api;
 
 import java.util.List;
 
-public abstract class ContainerStackValue extends StackValue {
+public class ContainerStackValue extends StackValue {
 
 	private static final long serialVersionUID = 1L;
 
@@ -93,6 +93,9 @@ public abstract class ContainerStackValue extends StackValue {
 	}
 	
 	@Override
-	public abstract ContainerStackValue clone();
+	public ContainerStackValue clone() {
+		return new ContainerStackValue(this);
+	}
+
 
 }

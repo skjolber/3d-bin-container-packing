@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
-import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.api.StackableItemGroup;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.packager.ContainerLoadInputs;
 import com.github.skjolber.packing.iterator.MutableIndexedStackableItemPermutationRotationIterator.Builder;
 import com.github.skjolber.packing.iterator.MutableIndexedStackableItemPermutationRotationIterator.DelegateBuilder;
@@ -30,19 +30,19 @@ class MutableIndexedStackableItemGroupPermutationRotationIteratorTest extends Ab
 		for (int i = 1; i <= 8; i++) {
 			Dimension container = new Dimension(null, 3 * (i + 1), 3, 1);
 
-			List<StackableItemGroup> groups = new ArrayList<>();
+			List<BoxItemGroup> groups = new ArrayList<>();
 
-			List<StackableItem> products1 = new ArrayList<>();
+			List<BoxItem> products1 = new ArrayList<>();
 
 			for (int k = 0; k < i; k++) {
 				Box box = Box.newBuilder().withSize(3, 1, 1).withRotate3D().withId(Integer.toString(k)).withWeight(1).build();
 
-				StackableItem item = new StackableItem(box);
+				BoxItem item = new BoxItem(box);
 
 				products1.add(item);
 			}
 			
-			groups.add(new StackableItemGroup("1", products1));
+			groups.add(new BoxItemGroup("1", products1));
 
 			MutableIndexedStackableItemGroupPermutationRotationIterator rotator = 
 					newBuilder()
@@ -66,7 +66,7 @@ class MutableIndexedStackableItemGroupPermutationRotationIteratorTest extends Ab
 				
 				items.remove(0, 1);
 				for(int k = 0; k < items.size(); k++) {
-					StackableItem item = items.get(k);
+					BoxItem item = items.get(k);
 					assertFalse(item.getStackable().getId().equals("0"));
 				}
 				
@@ -81,13 +81,13 @@ class MutableIndexedStackableItemGroupPermutationRotationIteratorTest extends Ab
 	void testMutablePermutationsWithMultipleBoxes() {
 		Dimension container = new Dimension(null, 9, 1, 1);
 
-		List<StackableItem> products = new ArrayList<>();
+		List<BoxItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4));
 
-		List<StackableItemGroup> groups = new ArrayList<>();
-		groups.add(new StackableItemGroup("1", products));
+		List<BoxItemGroup> groups = new ArrayList<>();
+		groups.add(new BoxItemGroup("1", products));
 		
 		MutableIndexedStackableItemGroupPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
@@ -116,13 +116,13 @@ class MutableIndexedStackableItemGroupPermutationRotationIteratorTest extends Ab
 	void testLoadableItems() {
 		Dimension container = new Dimension(null, 9, 1, 1);
 
-		List<StackableItem> products = new ArrayList<>();
+		List<BoxItem> products = new ArrayList<>();
 
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2));
-		products.add(new StackableItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4));
 
-		List<StackableItemGroup> groups = new ArrayList<>();
-		groups.add(new StackableItemGroup("1", products));
+		List<BoxItemGroup> groups = new ArrayList<>();
+		groups.add(new BoxItemGroup("1", products));
 
 		MutableIndexedStackableItemGroupPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)

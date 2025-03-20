@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.api.packager;
 
 import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 public interface StackValueCollection {
 

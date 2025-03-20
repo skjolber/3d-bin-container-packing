@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.StackableItem;
-import com.github.skjolber.packing.api.StackableItemGroup;
-import com.github.skjolber.packing.api.packager.BoundedStackable;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 
 /**
  * Builder scaffold.
@@ -23,7 +23,7 @@ public abstract class AbstractStackableItemGroupIteratorBuilder<B extends Abstra
 	protected int maxLoadWeight = -1;
 	protected Predicate<Stackable> filter;
 	protected Dimension size;
-	protected List<StackableItemGroup> stackableItemGroups;
+	protected List<BoxItemGroup> stackableItemGroups;
 
 	public B withSize(int dx, int dy, int dz) {
 		this.size = new Dimension(dx, dy, dz);
@@ -49,7 +49,7 @@ public abstract class AbstractStackableItemGroupIteratorBuilder<B extends Abstra
 		return (B)this;
 	}
 
-	public B withStackableItemGroups(List<StackableItemGroup> stackableItems) {
+	public B withStackableItemGroups(List<BoxItemGroup> stackableItems) {
 		this.stackableItemGroups = stackableItems;
 
 		return (B)this;
@@ -62,11 +62,11 @@ public abstract class AbstractStackableItemGroupIteratorBuilder<B extends Abstra
 		
 		for (int i = 0; i < stackableItemGroups.size(); i++) {
 			
-			StackableItemGroup group = stackableItemGroups.get(i);
+			BoxItemGroup group = stackableItemGroups.get(i);
 			
 			List<IndexedStackableItem> loadableItems = new ArrayList<>(group.size());
 			for (int k = 0; k < group.size(); k++) {
-				StackableItem item = group.get(k);
+				BoxItem item = group.get(k);
 	
 				if(item.getCount() == 0) {
 					continue;
@@ -90,7 +90,7 @@ public abstract class AbstractStackableItemGroupIteratorBuilder<B extends Abstra
 					continue;
 				}
 							
-				BoundedStackable loadable = new BoundedStackable(stackable, boundRotations);
+				Box loadable = new Box(stackable, boundRotations);
 	
 				loadableItems.add(new IndexedStackableItem(loadable, item.getCount(), offset));
 				

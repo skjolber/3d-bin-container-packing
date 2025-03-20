@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 public abstract class AbstractStackableItemPermutationRotationIterator implements StackableItemPermutationRotationIterator {
 
@@ -26,7 +26,7 @@ public abstract class AbstractStackableItemPermutationRotationIterator implement
 	/**
 	 * Get number of box items within the constraints.
 	 *
-	 * @return number between 0 and number of {@linkplain StackableItem}s used in the constructor.
+	 * @return number between 0 and number of {@linkplain BoxItem}s used in the constructor.
 	 */
 
 	public int boxItemLength() {

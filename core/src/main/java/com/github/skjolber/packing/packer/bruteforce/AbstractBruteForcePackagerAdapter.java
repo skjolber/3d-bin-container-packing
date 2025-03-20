@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 
@@ -15,14 +15,14 @@ public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackager
 	protected Stackable[] stackables;
 	protected int[] stackablesRemaining;
 	
-	public AbstractBruteForcePackagerAdapter(List<ContainerItem> items, List<StackableItem> stackableItems) {
+	public AbstractBruteForcePackagerAdapter(List<ContainerItem> items, List<BoxItem> stackableItems) {
 		super(items);
 		
 		stackables = new Stackable[stackableItems.size()];
 		stackablesRemaining = new int[stackableItems.size()];
 		
 		for(int i = 0; i < stackableItems.size(); i++) {
-			StackableItem stackableItem = stackableItems.get(i);
+			BoxItem stackableItem = stackableItems.get(i);
 			
 			stackables[i] = stackableItem.getStackable();
 			stackablesRemaining[i] = stackableItem.getCount();

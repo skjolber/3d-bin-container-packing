@@ -12,7 +12,7 @@ import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
@@ -134,7 +134,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		return (P) EMPTY_PACK_RESULT;
 	}
 
-	public List<Container> packList(List<StackableItem> products, List<ContainerItem> containers, int limit) {
+	public List<Container> packList(List<BoxItem> products, List<ContainerItem> containers, int limit) {
 		return pack(products, containers, limit, PackagerInterruptSupplierBuilder.NEGATIVE);
 	}
 
@@ -148,7 +148,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @return list of containers, or null if the deadline was reached, or empty list if the packages could not be packaged within the available containers and/or limit.
 	 */
 
-	public List<Container> pack(List<StackableItem> boxes, List<ContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) {
+	public List<Container> pack(List<BoxItem> boxes, List<ContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) {
 		PackagerAdapter<P> adapter = adapter(boxes, containerItems, interrupt);
 
 		if(adapter == null) {
@@ -240,11 +240,11 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		return null;
 	}
 
-	protected abstract PackagerAdapter<P> adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt);
+	protected abstract PackagerAdapter<P> adapter(List<BoxItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt);
 
-	protected long getMinStackableItemVolume(List<StackableItem> stackables) {
+	protected long getMinStackableItemVolume(List<BoxItem> stackables) {
 		long minVolume = Integer.MAX_VALUE;
-		for (StackableItem stackableItem : stackables) {
+		for (BoxItem stackableItem : stackables) {
 			Stackable stackable = stackableItem.getStackable();
 			if(stackable.getVolume() < minVolume) {
 				minVolume = stackable.getVolume();
@@ -253,9 +253,9 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		return minVolume;
 	}
 
-	protected long getMinStackableItemArea(List<StackableItem> stackables) {
+	protected long getMinStackableItemArea(List<BoxItem> stackables) {
 		long minArea = Integer.MAX_VALUE;
-		for (StackableItem stackableItem : stackables) {
+		for (BoxItem stackableItem : stackables) {
 			Stackable stackable = stackableItem.getStackable();
 			if(stackable.getMinimumArea() < minArea) {
 				minArea = stackable.getMinimumArea();

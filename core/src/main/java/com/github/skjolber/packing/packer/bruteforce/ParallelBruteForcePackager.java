@@ -18,7 +18,7 @@ import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.StackValueConstraint;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.deadline.ClonablePackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
@@ -178,7 +178,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		private final DefaultPermutationRotationIterator[] iterators; // per container
 		private final PackagerInterruptSupplier[] interrupts;
 
-		protected ParallelAdapter(List<StackableItem> stackableItems, List<ContainerItem> containerItems, ContainerStackValue[] containerStackValues, RunnableAdapter[] runnables, DefaultPermutationRotationIterator[] iterators, ParallelPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
+		protected ParallelAdapter(List<BoxItem> stackableItems, List<ContainerItem> containerItems, ContainerStackValue[] containerStackValues, RunnableAdapter[] runnables, DefaultPermutationRotationIterator[] iterators, ParallelPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
 			super(containerItems, stackableItems);
 
 			this.containerStackValues = containerStackValues;
@@ -318,7 +318,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<StackableItem> stackableItems, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
+	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<BoxItem> stackableItems, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
 		ContainerStackValue[] containerStackValues = new ContainerStackValue[containerItems.size()];
 
 		ParallelPermutationRotationIteratorList[] parallelIterators = new ParallelPermutationRotationIteratorList[containerItems.size()];
@@ -362,7 +362,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		}
 		
 		int count = 0;
-		for (StackableItem stackable : stackableItems) {
+		for (BoxItem stackable : stackableItems) {
 			count += stackable.getCount();
 		}
 

@@ -13,24 +13,24 @@ import java.util.function.BooleanSupplier;
 public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> {
 
 	protected List<ContainerItem> containers;
-	protected List<StackableItem> items;
+	protected List<BoxItem> items;
 	protected long deadline = -1L;
 
 	protected BooleanSupplier interrupt;
 
 	protected int maxContainerCount = 1;
 
-	public B withStackables(StackableItem... items) {
+	public B withStackables(BoxItem... items) {
 		if(this.items == null) {
 			this.items = new ArrayList<>();
 		}
-		for (StackableItem item : items) {
+		for (BoxItem item : items) {
 			this.items.add(item);
 		}
 		return (B)this;
 	}
 
-	public B withStackables(List<StackableItem> items) {
+	public B withStackables(List<BoxItem> items) {
 		this.items = items;
 		return (B)this;
 	}

@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.api.packager;
 
-import com.github.skjolber.packing.api.LoadBearingConstraint;
-import com.github.skjolber.packing.api.StabilityConstraint;
 import com.github.skjolber.packing.api.StackValue;
 
 public class BoundedStackValue {

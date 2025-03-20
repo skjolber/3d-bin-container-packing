@@ -12,7 +12,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
@@ -61,13 +61,13 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 
 		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().build();
 
-		List<StackableItem> products = new ArrayList<>();
+		List<BoxItem> products = new ArrayList<>();
 
 		for (BouwkampCodeLine bouwkampCodeLine : bouwkampCode.getLines()) {
 			List<Integer> squares = bouwkampCodeLine.getSquares();
 
 			for (Integer square : squares) {
-				products.add(new StackableItem(Box.newBuilder().withDescription(Integer.toString(square)).withSize(square, square, 1).withRotate3D().withWeight(1).build(), 1));
+				products.add(new BoxItem(Box.newBuilder().withDescription(Integer.toString(square)).withSize(square, square, 1).withRotate3D().withWeight(1).build(), 1));
 			}
 		}
 
