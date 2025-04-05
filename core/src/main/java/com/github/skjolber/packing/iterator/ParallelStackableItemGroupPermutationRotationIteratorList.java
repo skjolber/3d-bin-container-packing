@@ -3,7 +3,7 @@ package com.github.skjolber.packing.iterator;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.BoxStackValue;
 
 /**
  * 
@@ -177,7 +177,7 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 	}
 	
 	@Override
-	public StackValue getStackValue(int index) {
+	public BoxStackValue getStackValue(int index) {
 		return workUnits[workUnitIndex].getStackValue(index);
 	}
 
@@ -187,7 +187,7 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 	}
 
 	@Override
-	public List<StackValue> get(PermutationRotationState state, int length) {
+	public List<BoxStackValue> get(PermutationRotationState state, int length) {
 		return workUnits[workUnitIndex].get(state, length);
 	}
 

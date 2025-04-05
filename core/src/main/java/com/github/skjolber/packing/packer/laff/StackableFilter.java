@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.packer.laff;
 
-import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.api.Box;
 
 @FunctionalInterface
 public interface StackableFilter {
@@ -11,6 +11,6 @@ public interface StackableFilter {
 	 * @return true if 2 is superior to 1
 	 */
 
-	boolean filter(Stackable s1, Stackable s2);
+	boolean filter(Box s1, Box s2);
 
 }

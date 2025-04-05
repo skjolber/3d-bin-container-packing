@@ -9,7 +9,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.packer.AbstractPackager;
@@ -38,20 +38,20 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractPackag
 		super(packResultComparator);
 	}
 
-	public abstract DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt);
+	public abstract DefaultPackResult pack(List<Box> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt);
 
 	protected class LAFFAdapter extends AbstractPackagerAdapter<DefaultPackResult> {
 
-		private List<Stackable> boxes;
+		private List<Box> boxes;
 		private final PackagerInterruptSupplier interrupt;
 
 		public LAFFAdapter(List<BoxItem> boxItems, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
 			super(containerItems);
 
-			List<Stackable> boxClones = new ArrayList<>(boxItems.size() * 2);
+			List<Box> boxClones = new ArrayList<>(boxItems.size() * 2);
 
 			for (BoxItem item : boxItems) {
-				Stackable box = item.getStackable();
+				Box box = item.getStackable();
 				boxClones.add(box);
 				for (int i = 1; i < item.getCount(); i++) {
 					boxClones.add(box.clone());
@@ -74,7 +74,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractPackag
 			Container container = result.getContainer();
 			Stack stack = container.getStack();
 
-			List<Stackable> placed = stack.getPlacements().stream().map(p -> p.getStackable()).collect(Collectors.toList());
+			List<Box> placed = stack.getPlacements().stream().map(p -> p.getStackable()).collect(Collectors.toList());
 
 			boxes.removeAll(placed);
 

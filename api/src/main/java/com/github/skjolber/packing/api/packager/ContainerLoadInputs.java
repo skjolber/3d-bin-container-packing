@@ -8,11 +8,11 @@ import com.github.skjolber.packing.api.BoxItem;
  * 
  */
 
-public interface ContainerLoadInputs<S extends BoxItem> {
+public interface ContainerLoadInputs {
 	
 	int size();
 	
-	S get(int index);
+	BoxItem get(int index);
 
 	void remove(int index, int count);
  

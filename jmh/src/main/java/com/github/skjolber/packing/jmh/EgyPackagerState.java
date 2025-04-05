@@ -18,8 +18,8 @@ import org.openjdk.jmh.annotations.TearDown;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.DefaultStack;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
@@ -122,7 +122,7 @@ public class EgyPackagerState {
 
 			List<ContainerItem> containers = ContainerItem.newListBuilder().withContainer(
 					Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(length, length, length).withMaxLoadWeight(length * length * length)
-							.withStack(new DefaultStack()).build())
+							.withStack(new Stack()).build())
 					.build();
 
 			List<BoxItem> stackableItems3D = getStackableItems3D(items);

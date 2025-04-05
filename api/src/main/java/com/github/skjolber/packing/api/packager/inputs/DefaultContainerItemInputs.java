@@ -3,9 +3,7 @@ package com.github.skjolber.packing.api.packager.inputs;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.BoxItem;
 
 public class DefaultContainerItemInputs implements ContainerItemInput {
@@ -17,13 +15,13 @@ public class DefaultContainerItemInputs implements ContainerItemInput {
 	public static class Builder {
 		
 		protected ContainerItem containerItem;
-		protected List<BoxItem> stackableItems;
+		protected List<BoxItem> boxItems;
 		
 		protected int count = -1;
 		protected int index = -1;
 		
-		public Builder withStackableItems(List<BoxItem> stackableItems) {
-			this.stackableItems = stackableItems;
+		public Builder withBoxItems(List<BoxItem> stackableItems) {
+			this.boxItems = stackableItems;
 			return this;
 		}
 		
@@ -46,7 +44,7 @@ public class DefaultContainerItemInputs implements ContainerItemInput {
 			if(containerItem == null) {
 				throw new IllegalStateException();
 			}
-			if(stackableItems == null) {
+			if(boxItems == null) {
 				throw new IllegalStateException();
 			}
 			if(count == -1) {
@@ -56,29 +54,14 @@ public class DefaultContainerItemInputs implements ContainerItemInput {
 				throw new IllegalStateException();
 			}
 
-			Container container = containerItem.getContainer();
+			List<BoxItem> values = new ArrayList<>(boxItems.size());
+			BoxItem[] indexedValues = new BoxItem[boxItems.size()];
 			
-			ContainerStackValue[] stackValues = container.getStackValues();
-			if(stackValues.length != -1) {
-				throw new IllegalStateException();
-			}
-			
-			ContainerStackValue containerStackValue = stackValues[0];
-			
-			List<StackableItemInput> values = new ArrayList<>(stackableItems.size());
-			StackableItemInput[] indexedValues = new StackableItemInput[stackableItems.size()];
-			
-			for (int i = 0; i < stackableItems.size(); i++) {
-				BoxItem stackableItem = stackableItems.get(i);
-				
-				DefaultStackableItemInput input = DefaultStackableItemInput.newBuilder()
-					.withCount(stackableItem.getCount())
-					.withStackableItem(stackableItem)
-					.withIndex(i)
-					.withDimensions(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz())
-					.withMaxVolume(containerStackValue.getVolume())
-					.withMaxWeight(containerStackValue.getMaxLoadWeight())
-					.build();
+			for (int i = 0; i < boxItems.size(); i++) {
+				BoxItem input = boxItems.get(i);
+
+				BoxItem clone = input.clone();
+				clone.setIndex(i);
 				
 				if(input != null) {
 					values.add(input);
@@ -93,18 +76,17 @@ public class DefaultContainerItemInputs implements ContainerItemInput {
 			
 			return new DefaultContainerItemInputs(index, containerItem, values, indexedValues);
 		}
-
 	}
 	
 	protected final ContainerItem containerItem;
-	protected final List<StackableItemInput> values;
-	protected final StackableItemInput[] indexedValues;
+	protected final List<BoxItem> values;
+	protected final BoxItem[] indexedValues;
 	
 	protected final int index;
 
 	protected int count;
 	
-	public DefaultContainerItemInputs(int index, ContainerItem containerItem, List<StackableItemInput> values, StackableItemInput[] indexedValues) {
+	public DefaultContainerItemInputs(int index, ContainerItem containerItem, List<BoxItem> values, BoxItem[] indexedValues) {
 		this.index = index;
 		this.values = values;
 		this.containerItem = containerItem;
@@ -123,20 +105,20 @@ public class DefaultContainerItemInputs implements ContainerItemInput {
 	}
 
 	@Override
-	public StackableItemInput get(int index) {
+	public BoxItem get(int index) {
 		return values.get(index);
 	}
 
 	@Override
-	public boolean remove(StackableItemInput input, int count) {
-		StackableItemInput stackableItemInput = indexedValues[input.getIndex()];
+	public boolean remove(BoxItem input, int count) {
+		BoxItem stackableItemInput = indexedValues[input.getIndex()];
 		
 		if(stackableItemInput != null) {
-			if(!stackableItemInput.decrementCount(count)) {
+			if(!stackableItemInput.decrement(count)) {
 				indexedValues[input.getIndex()] = null;
 				
 				for (int i = 0; i < values.size(); i++) {
-					StackableItemInput s = values.get(i);
+					BoxItem s = values.get(i);
 					
 					if(s.getIndex() == index) {
 						values.remove(i);

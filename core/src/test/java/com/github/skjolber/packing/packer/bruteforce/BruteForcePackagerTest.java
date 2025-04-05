@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackPlacement;
@@ -310,7 +309,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 	@Test
 	public void testImpossible1() throws Exception {
-		DefaultContainer container = Container.newBuilder()
+		Container container = Container.newBuilder()
 			.withDescription("1")
 			.withSize(18, 12, 12)
 			.withMaxLoadWeight(100000)
@@ -398,14 +397,14 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 
 	@Test
 	public void testMutuallyExclusiveBoxesAndContainersForMultiContainerResult() throws Exception {
-		DefaultContainer thin = Container.newBuilder()
+		Container thin = Container.newBuilder()
 			.withDescription("1")
 			.withSize(10, 10, 2)
 			.withMaxLoadWeight(100000)
 			.withEmptyWeight(0)
 			.build();
 
-		DefaultContainer thick = Container.newBuilder()
+		Container thick = Container.newBuilder()
 				.withDescription("1")
 				.withSize(3, 3, 3)
 				.withMaxLoadWeight(100000)
@@ -452,14 +451,14 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 	@Test
 	public void testMutuallyExclusiveBoxesAndContainersForMultiContainerResult2() throws Exception {
-		DefaultContainer thin = Container.newBuilder()
+		Container thin = Container.newBuilder()
 			.withDescription("1")
 			.withSize(10, 10, 2)
 			.withMaxLoadWeight(100000)
 			.withEmptyWeight(0)
 			.build();
 
-		DefaultContainer thick = Container.newBuilder()
+		Container thick = Container.newBuilder()
 				.withDescription("1")
 				.withSize(3, 3, 3)
 				.withMaxLoadWeight(100000)

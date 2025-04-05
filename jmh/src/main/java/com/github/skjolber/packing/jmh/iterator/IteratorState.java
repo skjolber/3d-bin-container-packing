@@ -17,8 +17,8 @@ import org.openjdk.jmh.annotations.TearDown;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
-import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorListBuilder;
@@ -68,8 +68,8 @@ public class IteratorState {
 
 		int weight = 0;
 		for (BoxItem stackableItem : stackableItems3D) {
-			StackValue[] stackValues = stackableItem.getStackable().getStackValues();
-			for (StackValue stackValue : stackValues) {
+			BoxStackValue[] stackValues = stackableItem.getStackable().getStackValues();
+			for (BoxStackValue stackValue : stackValues) {
 				if(x < stackValue.getDx()) {
 					x = stackValue.getDx();
 				}

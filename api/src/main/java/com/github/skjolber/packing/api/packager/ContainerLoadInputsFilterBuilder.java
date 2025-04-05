@@ -1,9 +1,7 @@
 package com.github.skjolber.packing.api.packager;
 
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.BoxItem;
 
 /**
  * Builder scaffold.
@@ -13,14 +11,13 @@ import com.github.skjolber.packing.api.BoxItem;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class ContainerLoadInputsFilterBuilder<S extends BoxItem, B extends ContainerLoadInputsFilterBuilder<S, B>> {
+public abstract class ContainerLoadInputsFilterBuilder<B extends ContainerLoadInputsFilterBuilder<B>> {
 
 	protected Stack stack;
 	protected Container container;
-	protected ContainerStackValue stackValue;
-	protected ContainerLoadInputs<S> stackableItemCollection;
+	protected ContainerLoadInputs stackableItemCollection;
 
-	public B withStackableItems(ContainerLoadInputs<S> stackableItemCollection) {
+	public B withStackableItems(ContainerLoadInputs stackableItemCollection) {
 		this.stackableItemCollection = stackableItemCollection;
 		return (B)this;
 	}
@@ -34,12 +31,7 @@ public abstract class ContainerLoadInputsFilterBuilder<S extends BoxItem, B exte
 		this.stack = stack;
 		return (B)this;
 	}
-	
-	public B withStackValue(ContainerStackValue stackValue) {
-		this.stackValue = stackValue;
-		return (B)this;
-	}
-	
+
 	public abstract ContainerLoadInputsFilter build();
 	
 	

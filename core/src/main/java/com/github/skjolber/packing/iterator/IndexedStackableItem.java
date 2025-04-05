@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.iterator;
 
-import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 
 /**
@@ -15,7 +15,7 @@ public class IndexedStackableItem extends BoxItem {
 	
 	protected int index;
 	
-	public IndexedStackableItem(Stackable stackable, int count, int index) {
+	public IndexedStackableItem(Box stackable, int count, int index) {
 		super(stackable, count);
 		this.index = index;
 	}

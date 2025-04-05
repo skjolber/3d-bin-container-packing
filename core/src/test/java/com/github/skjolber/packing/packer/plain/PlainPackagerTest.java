@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.DefaultContainer;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
@@ -249,7 +248,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void issue440() {
-		DefaultContainer build = Container.newBuilder()
+		Container build = Container.newBuilder()
 				.withDescription("1")
 				.withSize(2352, 2394, 12031)
 				.withEmptyWeight(4000)

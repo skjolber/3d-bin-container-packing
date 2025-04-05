@@ -6,14 +6,14 @@ public class StackPlacement implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	protected Stackable stackable;
-	protected StackValue value;
+	protected Box stackable;
+	protected BoxStackValue value;
 
 	protected int x; // width coordinate
 	protected int y; // depth coordinate
 	protected int z; // height coordinate
 
-	public StackPlacement(Stackable stackable, StackValue value, int x, int y, int z) {
+	public StackPlacement(Box stackable, BoxStackValue value, int x, int y, int z) {
 		super();
 		this.stackable = stackable;
 		this.value = value;
@@ -25,19 +25,19 @@ public class StackPlacement implements Serializable {
 	public StackPlacement() {
 	}
 
-	public Stackable getStackable() {
+	public Box getStackable() {
 		return stackable;
 	}
 
-	public void setStackable(Stackable stackable) {
+	public void setStackable(Box stackable) {
 		this.stackable = stackable;
 	}
 
-	public StackValue getStackValue() {
+	public BoxStackValue getStackValue() {
 		return value;
 	}
 
-	public void setStackValue(StackValue stackValue) {
+	public void setStackValue(BoxStackValue stackValue) {
 		this.value = stackValue;
 	}
 
@@ -135,7 +135,7 @@ public class StackPlacement implements Serializable {
 		this.z = z;
 	}
 
-	public void setValue(StackValue value) {
+	public void setValue(BoxStackValue value) {
 		this.value = value;
 	}
 

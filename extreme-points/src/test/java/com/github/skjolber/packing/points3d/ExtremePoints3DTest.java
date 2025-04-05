@@ -9,13 +9,12 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 
 public class ExtremePoints3DTest {
 	
 	private StackPlacement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
-		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, null);
+		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, null, -1);
 		
 		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(0).build();
 		

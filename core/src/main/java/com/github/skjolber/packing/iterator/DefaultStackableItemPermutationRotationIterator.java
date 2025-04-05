@@ -3,7 +3,7 @@ package com.github.skjolber.packing.iterator;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.BoxStackValue;
 
 public class DefaultStackableItemPermutationRotationIterator extends AbstractStackableItemPermutationRotationIterator {
 	
@@ -43,7 +43,7 @@ public class DefaultStackableItemPermutationRotationIterator extends AbstractSta
 		initiatePermutation(count);
 	}
 	
-	public StackValue getStackValue(int index) {
+	public BoxStackValue getStackValue(int index) {
 		return stackableItems[permutations[index]].getStackable().getStackValue(rotations[index]);
 	}
 

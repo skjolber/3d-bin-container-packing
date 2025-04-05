@@ -2,20 +2,20 @@ package com.github.skjolber.packing.iterator;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxStackValue;
 
 public class PermutationStackableValue {
 
 	protected final int index;
 	protected final int count;
 	protected final PermutationRotation[] values;
-	protected final Stackable stackable;
+	protected final Box stackable;
 
 	protected final long minVolumeLimit;
 	protected final long minAreaLimit;
 
-	public PermutationStackableValue(int index, int count, Stackable stackable, List<StackValue> stackValues) {
+	public PermutationStackableValue(int index, int count, Box stackable, List<BoxStackValue> stackValues) {
 		this.index = index;
 		this.count = count;
 		this.values = new PermutationRotation[stackValues.size()];
@@ -25,7 +25,7 @@ public class PermutationStackableValue {
 		long minAreaLimit = Long.MAX_VALUE;
 
 		for (int i = 0; i < values.length; i++) {
-			StackValue stackValue = stackValues.get(i);
+			BoxStackValue stackValue = stackValues.get(i);
 
 			values[i] = new PermutationRotation(stackable, stackValue);
 
@@ -78,7 +78,7 @@ public class PermutationStackableValue {
 		return index;
 	}
 
-	public Stackable getStackable() {
+	public Box getStackable() {
 		return stackable;
 	}
 	

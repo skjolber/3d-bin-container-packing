@@ -3,11 +3,11 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.Collections;
 import java.util.List;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.PackResult;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.Stackable;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
@@ -50,7 +50,7 @@ public class BruteForcePackagerResult implements PackResult {
 
 			for (int i = 0; i < points.size(); i++) {
 				PermutationRotation permutationRotation = iterator.get(i);
-				Stackable stackable = permutationRotation.getStackable();
+				Box stackable = permutationRotation.getStackable();
 				loadVolume += stackable.getVolume();
 				loadWeight += stackable.getWeight();
 			}
@@ -131,7 +131,7 @@ public class BruteForcePackagerResult implements PackResult {
 
 	@Override
 	public int getMaxLoadWeight() {
-		return container.getStack().getContainerStackValue().getMaxLoadWeight();
+		return container.getMaxLoadWeight();
 	}
 
 	@Override
@@ -147,7 +147,7 @@ public class BruteForcePackagerResult implements PackResult {
 
 	@Override
 	public long getMaxLoadVolume() {
-		return container.getStack().getContainerStackValue().getMaxLoadVolume();
+		return container.getMaxLoadVolume();
 	}
 
 	public void markDirty() {

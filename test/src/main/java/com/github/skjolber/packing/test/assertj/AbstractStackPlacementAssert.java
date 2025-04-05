@@ -4,8 +4,7 @@ import java.util.Objects;
 
 import org.assertj.core.api.AbstractObjectAssert;
 
-import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.StackPlacement;
 
 public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPlacementAssert<SELF, ACTUAL>, ACTUAL extends StackPlacement>
@@ -323,7 +322,7 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		return myself;
 	}
 
-	public SELF hasStackValue(StackValue stackValue) {
+	public SELF hasStackValue(BoxStackValue stackValue) {
 		isNotNull();
 		if(!Objects.equals(stackValue, actual.getStackValue())) {
 			failWithMessage("Expected stack value " + stackValue + ", not " + actual.getStackValue());

@@ -15,15 +15,15 @@ public class DefaultPackagerInputs implements PackagerInputs {
 	public static class Builder {
 		
 		protected List<ContainerItem> containerItems;
-		protected List<BoxItem> stackableItems;		
+		protected List<BoxItem> boxItems;		
 		
 		public Builder withContainerItems(List<ContainerItem> containerItems) {
 			this.containerItems = containerItems;
 			return this;
 		}
 		
-		public Builder withStackableItems(List<BoxItem> stackableItems) {
-			this.stackableItems = stackableItems;
+		public Builder withStackableItems(List<BoxItem> boxItems) {
+			this.boxItems = boxItems;
 			return this;
 		}
 
@@ -31,12 +31,12 @@ public class DefaultPackagerInputs implements PackagerInputs {
 			if(containerItems == null) {
 				throw new IllegalStateException();
 			}
-			if(stackableItems == null) {
+			if(boxItems == null) {
 				throw new IllegalStateException();
 			}
 			
-			boolean[] coveredStackableItems = new boolean[stackableItems.size()];
-			ContainerItemInput[] indexedValues = new ContainerItemInput[stackableItems.size()];
+			boolean[] coveredStackableItems = new boolean[boxItems.size()];
+			ContainerItemInput[] indexedValues = new ContainerItemInput[boxItems.size()];
 			
 			List<ContainerItemInput> values = new ArrayList<>(containerItems.size());
 			for (int j = 0; j < containerItems.size(); j++) {
@@ -44,7 +44,7 @@ public class DefaultPackagerInputs implements PackagerInputs {
 				
 				DefaultContainerItemInputs input = DefaultContainerItemInputs.newBuilder()
 					.withContainerItem(containerItem)
-					.withStackableItems(stackableItems)
+					.withBoxItems(boxItems)
 					.withCount(containerItem.getCount())
 					.withIndex(j)
 					.build();
@@ -55,7 +55,7 @@ public class DefaultPackagerInputs implements PackagerInputs {
 					indexedValues[j] = input;
 					
 					for(int i = 0; i < input.size(); i++) {
-						StackableItemInput stackableItemInput = input.get(i);
+						BoxItem stackableItemInput = input.get(i);
 						coveredStackableItems[stackableItemInput.getIndex()] = true;
 					}
 				}
@@ -85,7 +85,7 @@ public class DefaultPackagerInputs implements PackagerInputs {
 	}
 	
 	@Override
-	public int ContainerItemInputSize() {
+	public int getContainerItemInputSize() {
 		return values.size();
 	}
 
@@ -116,7 +116,7 @@ public class DefaultPackagerInputs implements PackagerInputs {
 	}
 
 	@Override
-	public boolean removeStackableItem(StackableItemInput input, int count) {
+	public boolean removeBoxItem(BoxItem input, int count) {
 		for (int i = 0; i < values.size(); i++) {
 			ContainerItemInput containerItemInput = values.get(i);
 			

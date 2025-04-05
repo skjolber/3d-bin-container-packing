@@ -3,8 +3,7 @@ package com.github.skjolber.packing.packer.laff;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.ContainerStackValue;
-import com.github.skjolber.packing.api.DefaultContainerStackValue;
+import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 
@@ -14,9 +13,11 @@ public class LevelStack extends Stack {
 	protected int dz = 0; // not including current level
 
 	protected List<Stack> levels = new ArrayList<>();
-
-	public LevelStack(ContainerStackValue containerStackValue) {
-		super(containerStackValue);
+	
+	protected Container container;
+	
+	public LevelStack(Container container) {
+		this.container = container;
 	}
 
 	public List<StackPlacement> getPlacements() {
@@ -52,7 +53,7 @@ public class LevelStack extends Stack {
 	}
 
 	public long getFreeVolumeLoad() {
-		long volume = containerStackValue.getMaxLoadVolume();
+		long volume = container.getMaxLoadVolume();
 
 		for (Stack level : levels) {
 			volume -= level.getVolume();
@@ -61,7 +62,7 @@ public class LevelStack extends Stack {
 	}
 
 	public int getFreeWeightLoad() {
-		return containerStackValue.getMaxLoadWeight() - getWeight();
+		return container.getMaxLoadWeight() - getWeight();
 	}
 
 	public void clear() {
@@ -101,11 +102,11 @@ public class LevelStack extends Stack {
 		return volume;
 	}
 
-	public ContainerStackValue getFreeContainerStackValue() {
+	public Container getFreeContainerStackValue() {
 		if(levels.isEmpty()) {
-			return containerStackValue;
+			return container;
 		}
-		int remainder = containerStackValue.getLoadDz() - getDz();
+		int remainder = container.getLoadDz() - getDz();
 		if(remainder < 0) {
 			throw new IllegalArgumentException("Remaining free space is negative at " + remainder + " for " + this);
 		}
@@ -114,28 +115,30 @@ public class LevelStack extends Stack {
 
 		int freeWeight = getFreeWeightLoad();
 
-		return new DefaultContainerStackValue(
-				containerStackValue.getDx(), containerStackValue.getDy(), containerStackValue.getDz() - dz,
-				null,
-				containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz() - dz,
+		return new Container(
+				container.getId(), container.getDescription(),
+				container.getDx(), container.getDy(), container.getDz() - dz,
+				container.getEmptyWeight(),
+				container.getLoadDx(), container.getLoadDy(), container.getLoadDz() - dz,
 				freeWeight,
-				containerStackValue.getSurfaces());
+				new Stack(), container.getConstraint());
 	}
 
 	public int getFreeLoadDz() {
-		return containerStackValue.getDz() - getDz();
+		return container.getLoadDz() - getDz();
 	}
 
-	public DefaultContainerStackValue getContainerStackValue(int dz) {
+	public Container getContainerStackValue(int dz) {
 
 		int freeWeight = getFreeWeightLoad();
 
-		return new DefaultContainerStackValue(
-				containerStackValue.getDx(), containerStackValue.getDy(), dz,
-				null,
-				containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), dz,
+		return new Container(
+				container.getId(), container.getDescription(),
+				container.getDx(), container.getDy(), dz,
+				container.getEmptyWeight(),
+				container.getLoadDx(), container.getLoadDy(), dz,
 				freeWeight,
-				containerStackValue.getSurfaces());
+				new Stack(), container.getConstraint());
 	}
 
 	public int getSupportedCount() {
@@ -164,9 +167,9 @@ public class LevelStack extends Stack {
 			// if so there must be no free space in it
 			Stack level = levels.get(i);
 
-			long volume = containerStackValue.getMaxLoadVolume();
+			long volume = container.getMaxLoadVolume();
 
-			long v = (volume / containerStackValue.getLoadDz()) * level.getDz();
+			long v = (volume / container.getLoadDz()) * level.getDz();
 
 			for (StackPlacement stackEntry : level.getPlacements()) {
 				v -= stackEntry.getStackable().getVolume();

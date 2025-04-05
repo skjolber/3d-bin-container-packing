@@ -1,33 +1,14 @@
 package com.github.skjolber.packing.api.packager;
 
-import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.BoxStackValue;
 
-public class BoundedStackValue {
+public class BoundedStackValue extends BoxStackValue {
 
-	protected final StackValue values;
-	protected final StabilityConstraint stabilityConstraints;
-	protected final LoadBearingConstraint loadBearingConstraint;
 	protected final int index;
 	
-	public BoundedStackValue(StackValue values, StabilityConstraint stabilityConstraints,
-			LoadBearingConstraint loadBearingConstraint, int index) {
-		super();
-		this.values = values;
-		this.stabilityConstraints = stabilityConstraints;
-		this.loadBearingConstraint = loadBearingConstraint;
+	public BoundedStackValue(BoxStackValue values, int index) {
+		super(values);
 		this.index = index;
-	}
-
-	public StackValue getValues() {
-		return values;
-	}
-
-	public StabilityConstraint getStabilityConstraints() {
-		return stabilityConstraints;
-	}
-
-	public LoadBearingConstraint getLoadBearingConstraint() {
-		return loadBearingConstraint;
 	}
 
 	public int getIndex() {

@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.PackResult;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
-import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
@@ -245,7 +245,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	protected long getMinStackableItemVolume(List<BoxItem> stackables) {
 		long minVolume = Integer.MAX_VALUE;
 		for (BoxItem stackableItem : stackables) {
-			Stackable stackable = stackableItem.getStackable();
+			Box stackable = stackableItem.getStackable();
 			if(stackable.getVolume() < minVolume) {
 				minVolume = stackable.getVolume();
 			}
@@ -256,7 +256,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	protected long getMinStackableItemArea(List<BoxItem> stackables) {
 		long minArea = Integer.MAX_VALUE;
 		for (BoxItem stackableItem : stackables) {
-			Stackable stackable = stackableItem.getStackable();
+			Box stackable = stackableItem.getStackable();
 			if(stackable.getMinimumArea() < minArea) {
 				minArea = stackable.getMinimumArea();
 			}
@@ -264,9 +264,9 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		return minArea;
 	}
 
-	protected long getMinStackableVolume(List<Stackable> stackables) {
+	protected long getMinStackableVolume(List<Box> stackables) {
 		long minVolume = Integer.MAX_VALUE;
-		for (Stackable stackable : stackables) {
+		for (Box stackable : stackables) {
 			if(stackable.getVolume() < minVolume) {
 				minVolume = stackable.getVolume();
 			}
@@ -274,9 +274,9 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		return minVolume;
 	}
 
-	protected long getMinStackableArea(List<Stackable> stackables) {
+	protected long getMinStackableArea(List<Box> stackables) {
 		long minArea = Integer.MAX_VALUE;
-		for (Stackable stackable : stackables) {
+		for (Box stackable : stackables) {
 			if(stackable.getMinimumArea() < minArea) {
 				minArea = stackable.getMinimumArea();
 			}

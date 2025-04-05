@@ -2,9 +2,9 @@ package com.github.skjolber.packing.api.packager;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxStackValue;
 
 /**
  * 
@@ -19,10 +19,10 @@ public class MutableStackableItem extends BoxItem {
 	protected final BoundedStackValue[] values;
 	protected final boolean[] enabled;
 	protected final BoxItem stackableItem;
-	protected final Stackable stackable;
+	protected final Box stackable;
 	
-	protected final long minimumArea;
-	protected final long maximumArea;
+	protected final BoxStackValue minimumArea;
+	protected final BoxStackValue maximumArea;
 	
 	protected int constrainedCount;
 
@@ -38,15 +38,15 @@ public class MutableStackableItem extends BoxItem {
 		}
 		constrainedCount = stackableItem.getCount();
 		
-		this.minimumArea = BoundedStackable.getMinimumArea(stackValues);
-		this.maximumArea = BoundedStackable.getMinimumArea(stackValues);
+		this.minimumArea = Box.getMinimumArea(stackValues);
+		this.maximumArea = Box.getMinimumArea(stackValues);
 	}
 
 	public MutableStackableItem(BoxItem stackableItem, List<BoundedStackValue> stackValues) {
 		this(stackableItem, stackValues.toArray(new BoundedStackValue[stackValues.size()]));
 	}
 
-	public Stackable getStackable() {
+	public Box getStackable() {
 		return stackable;
 	}
 

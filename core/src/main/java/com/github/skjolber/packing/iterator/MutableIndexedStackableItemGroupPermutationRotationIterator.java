@@ -3,19 +3,19 @@ package com.github.skjolber.packing.iterator;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.packager.ContainerLoadInputs;
 
  /**
  *
- * An iterator which also acts as {@linkplain StackableItemsS}. 
+ * An iterator which also acts as {@linkplain ContainerLoadInputs}. 
  *
- * State is restored on each remove, next rotation or next permutation.
+ * Modifications done via {@linkplain ContainerLoadInputs} is restored on each remove, next rotation or next permutation.
  *
  */
 
 
-public class MutableIndexedStackableItemGroupPermutationRotationIterator extends AbstractStackableItemGroupPermutationRotationIterator implements ContainerLoadInputs, StackableItemPermutationRotationIterator {
+public class MutableIndexedStackableItemGroupPermutationRotationIterator extends AbstractStackableItemGroupPermutationRotationIterator implements ContainerLoadInputs, BoxItemPermutationRotationIterator {
 
 	public static Builder newBuilder() {
 		return new Builder();
@@ -181,7 +181,7 @@ public class MutableIndexedStackableItemGroupPermutationRotationIterator extends
 		return permutations;
 	}
 
-	public List<StackValue> get(PermutationRotationState state, int length) {
+	public List<BoxStackValue> get(PermutationRotationState state, int length) {
 		return iterator.get(state, length);
 	}
 
@@ -216,7 +216,7 @@ public class MutableIndexedStackableItemGroupPermutationRotationIterator extends
 		resetFromIterator();
 	}
 	
-	protected StackableItemPermutationRotationIterator getIterator() {
+	protected BoxItemPermutationRotationIterator getIterator() {
 		return iterator;
 	}
 

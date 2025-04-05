@@ -2,8 +2,8 @@ package com.github.skjolber.packing.api.ep;
 
 import java.util.Comparator;
 
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.StackValue;
 
 public abstract class Point3D {
 
@@ -411,7 +411,7 @@ public abstract class Point3D {
 		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowsMinY(point.getAbsoluteY(), point.getAbsoluteEndY());
 	}
 
-	public boolean fits3D(StackValue stackValue) {
+	public boolean fits3D(BoxStackValue stackValue) {
 		return !(stackValue.getDx() > dx || stackValue.getDy() > dy || stackValue.getDz() > dz);
 	}
 

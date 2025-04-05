@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import com.github.skjolber.packing.api.Dimension;
-import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxStackValue;
 
 /**
  * Builder scaffold.
@@ -18,7 +18,7 @@ import com.github.skjolber.packing.api.BoxItem;
 public abstract class AbstractPermutationRotationIteratorBuilder<B extends AbstractPermutationRotationIteratorBuilder<B>> {
 
 	protected int maxLoadWeight = -1;
-	protected Predicate<Stackable> filter;
+	protected Predicate<Box> filter;
 	protected Dimension size;
 	protected List<BoxItem> stackableItems;
 
@@ -34,7 +34,7 @@ public abstract class AbstractPermutationRotationIteratorBuilder<B extends Abstr
 		return (B)this;
 	}
 
-	public B withFilter(Predicate<Stackable> filter) {
+	public B withFilter(Predicate<Box> filter) {
 		this.filter = filter;
 
 		return (B)this;
@@ -58,7 +58,7 @@ public abstract class AbstractPermutationRotationIteratorBuilder<B extends Abstr
 		for (int i = 0; i < stackableItems.size(); i++) {
 			BoxItem item = stackableItems.get(i);
 
-			Stackable stackable = item.getStackable();
+			Box stackable = item.getStackable();
 			if(stackable.getWeight() > maxLoadWeight) {
 				continue;
 			}
@@ -67,7 +67,7 @@ public abstract class AbstractPermutationRotationIteratorBuilder<B extends Abstr
 				continue;
 			}
 
-			List<StackValue> boundRotations = stackable.rotations(size);
+			List<BoxStackValue> boundRotations = stackable.rotations(size);
 			if(boundRotations == null || boundRotations.isEmpty()) {
 				continue;
 			}

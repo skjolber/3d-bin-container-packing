@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.iterator.DefaultStackableItemPermutationRotationIterator.Builder;
 
-class StackableItemPermutationRotationIteratorTest extends AbstractStackableItemPermutationRotationIteratorTest<DefaultStackableItemPermutationRotationIterator.Builder> {
+class BoxItemPermutationRotationIteratorTest extends AbstractStackableItemPermutationRotationIteratorTest<DefaultStackableItemPermutationRotationIterator.Builder> {
 
 	@Override
 	public Builder newBuilder() {
@@ -28,7 +28,7 @@ class StackableItemPermutationRotationIteratorTest extends AbstractStackableItem
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
 
-		StackableItemPermutationRotationIterator rotator = newBuilder()
+		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItems(products)
 				.withMaxLoadWeight(products.size())

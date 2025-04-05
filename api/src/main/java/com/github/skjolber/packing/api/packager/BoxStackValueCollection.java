@@ -1,13 +1,12 @@
 package com.github.skjolber.packing.api.packager;
 
-import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxStackValue;
 
-public interface StackValueCollection {
+public interface BoxStackValueCollection {
 
 	int size();
 	
-	StackValue get(int index);
+	BoxStackValue get(int index);
 
 	void remove(int index, int count);
 }

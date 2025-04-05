@@ -57,10 +57,19 @@ public class ContainerItem {
 
 	private int count;
 	private final Container container;
+	private int index = -1;
 
 	public ContainerItem(Container container, int count) {
 		this.container = container;
 		this.count = count;
+	}
+	
+	public void setIndex(int index) {
+		this.index = index;
+	}
+	
+	public int getIndex() {
+		return index;
 	}
 
 	public int getCount() {

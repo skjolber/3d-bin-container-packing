@@ -3,7 +3,7 @@ package com.github.skjolber.packing.ep.points2d;
 import java.io.Serializable;
 import java.util.Comparator;
 
-import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.BoxStackValue;
 
 public abstract class Point2D implements Serializable {
 
@@ -296,7 +296,7 @@ public abstract class Point2D implements Serializable {
 		return area;
 	}
 
-	public boolean fits2D(StackValue stackValue) {
+	public boolean fits2D(BoxStackValue stackValue) {
 		return !(stackValue.getDx() > dx || stackValue.getDy() > dy);
 	}
 

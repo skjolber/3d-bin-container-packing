@@ -40,7 +40,7 @@ public class DefaultPackResult implements PackResult {
 
 	@Override
 	public int getMaxLoadWeight() {
-		return stack.getContainerStackValue().getMaxLoadWeight();
+		return container.getMaxLoadWeight();
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class DefaultPackResult implements PackResult {
 
 	@Override
 	public long getMaxLoadVolume() {
-		return stack.getContainerStackValue().getMaxLoadVolume();
+		return container.getMaxLoadVolume();
 	}
 
 	@Override

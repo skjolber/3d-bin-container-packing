@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.api.packager;
 
-import com.github.skjolber.packing.api.BoxItem;
-
 /**
  * 
  * The items which are available for load into some particular container.

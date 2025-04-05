@@ -10,17 +10,17 @@ public class DefaultStackValueConstraint implements StackConstraint {
 	}
 
 	@Override
-	public boolean supports(Stack stack, Stackable stackable, StackValue value, int x, int y, int z) {
+	public boolean supports(Stack stack, Box stackable, BoxStackValue value, int x, int y, int z) {
 		return accepts(stack, stackable);
 	}
 
 	@Override
-	public boolean accepts(Stack stack, Stackable stackable) {
+	public boolean accepts(Stack stack, Box stackable) {
 		return stack.getWeight() + stackable.getWeight() <= maxSupportedWeight;
 	}
 
 	@Override
-	public boolean canAccept(Stackable stackable) {
+	public boolean canAccept(Box stackable) {
 		return stackable.getWeight() <= maxSupportedWeight;
 	}
 }

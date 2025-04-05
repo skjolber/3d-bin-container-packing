@@ -10,9 +10,9 @@ import com.github.skjolber.packing.api.BoxItem;
 
 public class DefaultContainerLoadInputsFilter<S extends BoxItem> implements ContainerLoadInputsFilter {
 
-	protected final ContainerLoadInputs<S> loadableItems;
+	protected final ContainerLoadInputs loadableItems;
 
-	public DefaultContainerLoadInputsFilter(ContainerLoadInputs<S> loadableItems) {
+	public DefaultContainerLoadInputsFilter(ContainerLoadInputs loadableItems) {
 		this.loadableItems = loadableItems;
 	}
 

@@ -24,7 +24,7 @@ public class ExtremePoints3DState {
 	private List<ExtremePoints3DEntries> entries = new ArrayList<>();
 
 	private StackPlacement createStackPlacement(int x, int y, int z, int dx, int dy, int dz) {
-		BoxStackValue stackValue = new BoxStackValue(dx, dy, dz, null, null);
+		BoxStackValue stackValue = new BoxStackValue(dx, dy, dz, null, null, -1);
 		
 		return new StackPlacement(null, stackValue, x, y, z);
 	}

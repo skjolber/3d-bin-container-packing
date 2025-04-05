@@ -12,7 +12,7 @@ public interface ContainerLoadInputsFilter {
 
 	/**
 	 * 
-	 * Notify stackable was loaded
+	 * Notify box was loaded
 	 * 
 	 * @param index
 	 */

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxStackValue;
 
 public class DefaultStackableItemGroupPermutationRotationIterator extends AbstractStackableItemGroupPermutationRotationIterator {
 	
@@ -45,7 +45,7 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 		initiatePermutation(count);
 	}
 	
-	public StackValue getStackValue(int index) {
+	public BoxStackValue getStackValue(int index) {
 		return stackableItems[permutations[index]].getStackable().getStackValue(rotations[index]);
 	}
 

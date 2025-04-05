@@ -2,7 +2,7 @@ package com.github.skjolber.packing.iterator;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.BoxStackValue;
 
 /**
  *
@@ -37,7 +37,7 @@ import com.github.skjolber.packing.api.StackValue;
  *      target="_top">next-lexicographical-permutation-algorithm</a>
  */
 
-public interface StackableItemPermutationRotationIterator {
+public interface BoxItemPermutationRotationIterator {
 
 	/**
 	 * 
@@ -48,7 +48,7 @@ public interface StackableItemPermutationRotationIterator {
 
 	int length();
 
-	StackValue getStackValue(int index);
+	BoxStackValue getStackValue(int index);
 
 	/**
 	 * Get current state
@@ -67,7 +67,7 @@ public interface StackableItemPermutationRotationIterator {
 	 * @return current permutations + rotations
 	 */
 
-	List<StackValue> get(PermutationRotationState state, int length);
+	List<BoxStackValue> get(PermutationRotationState state, int length);
 
 	long getMinStackableVolume(int index);
 

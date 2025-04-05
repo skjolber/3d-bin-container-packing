@@ -3,7 +3,7 @@ package com.github.skjolber.packing.iterator;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.packager.ContainerLoadInputs;
 
  /**
@@ -15,7 +15,7 @@ import com.github.skjolber.packing.api.packager.ContainerLoadInputs;
  */
 
 
-public class MutableIndexedStackableItemPermutationRotationIterator extends AbstractStackableItemPermutationRotationIterator implements ContainerLoadInputs, StackableItemPermutationRotationIterator {
+public class MutableIndexedStackableItemPermutationRotationIterator extends AbstractStackableItemPermutationRotationIterator implements ContainerLoadInputs, BoxItemPermutationRotationIterator {
 
 	public static Builder newBuilder() {
 		return new Builder();
@@ -27,9 +27,9 @@ public class MutableIndexedStackableItemPermutationRotationIterator extends Abst
 	
 	public static class Builder {
 
-		private StackableItemPermutationRotationIterator iterator;
+		private BoxItemPermutationRotationIterator iterator;
 
-		public Builder withIterator(StackableItemPermutationRotationIterator iterator) {
+		public Builder withIterator(BoxItemPermutationRotationIterator iterator) {
 			this.iterator = iterator;
 			return this;
 		}
@@ -71,9 +71,9 @@ public class MutableIndexedStackableItemPermutationRotationIterator extends Abst
 
 	protected List<MutableIndexedStackableItem> mutableStackableItems;
 	
-	protected final StackableItemPermutationRotationIterator iterator;
+	protected final BoxItemPermutationRotationIterator iterator;
 	
-	public MutableIndexedStackableItemPermutationRotationIterator(StackableItemPermutationRotationIterator iterator) {
+	public MutableIndexedStackableItemPermutationRotationIterator(BoxItemPermutationRotationIterator iterator) {
 		super(iterator.getStackableItems());
 		
 		permutations = new int[0]; // n!
@@ -180,7 +180,7 @@ public class MutableIndexedStackableItemPermutationRotationIterator extends Abst
 		return permutations;
 	}
 
-	public List<StackValue> get(PermutationRotationState state, int length) {
+	public List<BoxStackValue> get(PermutationRotationState state, int length) {
 		return iterator.get(state, length);
 	}
 
@@ -215,7 +215,7 @@ public class MutableIndexedStackableItemPermutationRotationIterator extends Abst
 		resetFromIterator();
 	}
 	
-	protected StackableItemPermutationRotationIterator getIterator() {
+	protected BoxItemPermutationRotationIterator getIterator() {
 		return iterator;
 	}
 

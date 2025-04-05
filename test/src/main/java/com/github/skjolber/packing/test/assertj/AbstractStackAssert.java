@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.assertj.core.api.AbstractObjectAssert;
 
-import com.github.skjolber.packing.api.ContainerStackValue;
+import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 
@@ -15,10 +15,10 @@ public abstract class AbstractStackAssert<SELF extends AbstractStackAssert<SELF,
 		super(actual, selfType);
 	}
 
-	public SELF isWithinLoadContraints() {
+	public SELF isWithinLoadContraints(Container container) {
 		isNotNull();
-		isWithinLoadDimensions();
-		isWithinLoadWeight();
+		isWithinLoadDimensions(container);
+		isWithinLoadWeight(container);
 		placementsDoNotIntersect();
 		return myself;
 	}
@@ -40,14 +40,12 @@ public abstract class AbstractStackAssert<SELF extends AbstractStackAssert<SELF,
 		return myself;
 	}
 
-	public SELF isWithinLoadDimensions() {
+	public SELF isWithinLoadDimensions(Container container) {
 		isNotNull();
 
-		ContainerStackValue containerStackValue = actual.getContainerStackValue();
-
-		int loadDx = containerStackValue.getLoadDx();
-		int loadDy = containerStackValue.getLoadDy();
-		int loadDz = containerStackValue.getLoadDz();
+		int loadDx = container.getLoadDx();
+		int loadDy = container.getLoadDy();
+		int loadDz = container.getLoadDz();
 
 		for (StackPlacement stackPlacement : actual.getPlacements()) {
 
@@ -75,14 +73,14 @@ public abstract class AbstractStackAssert<SELF extends AbstractStackAssert<SELF,
 		return myself;
 	}
 
-	public SELF isWithinLoadWeight() {
+	public SELF isWithinLoadWeight(Container container) {
 		isNotNull();
 
 		int loadWeight = 0;
 		for (StackPlacement stackPlacement : actual.getPlacements()) {
 			loadWeight += stackPlacement.getStackable().getWeight();
 		}
-		int maxLoadWeight = actual.getContainerStackValue().getMaxLoadWeight();
+		int maxLoadWeight = container.getMaxLoadWeight();
 
 		if(loadWeight > maxLoadWeight) {
 			failWithMessage("Expected stacked load weight <= " + maxLoadWeight + ", got " + loadWeight);

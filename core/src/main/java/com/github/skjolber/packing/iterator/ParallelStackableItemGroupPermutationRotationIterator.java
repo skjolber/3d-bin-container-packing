@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxStackValue;
 
 public class ParallelStackableItemGroupPermutationRotationIterator extends AbstractStackableItemGroupPermutationRotationIterator {
 	
@@ -325,7 +325,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 		return -1;			
 	}
 
-	public StackValue get(int permutationIndex) {
+	public BoxStackValue get(int permutationIndex) {
 		return stackableItems[permutations[ParallelPermutationRotationIteratorList.PADDING + permutationIndex]].getStackable().getStackValue(rotations[ParallelPermutationRotationIteratorList.PADDING + permutationIndex]);
 	}
 
@@ -383,7 +383,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 	}
 
 	@Override
-	public StackValue getStackValue(int index) {
+	public BoxStackValue getStackValue(int index) {
 		return super.getStackValue(ParallelPermutationRotationIteratorList.PADDING + index);
 	}
 

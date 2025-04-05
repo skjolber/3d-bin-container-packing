@@ -3,10 +3,10 @@ package com.github.skjolber.packing.iterator;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.StackValue;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxStackValue;
 
-public abstract class AbstractStackableItemPermutationRotationIterator implements StackableItemPermutationRotationIterator {
+public abstract class AbstractStackableItemPermutationRotationIterator implements BoxItemPermutationRotationIterator {
 
 	protected final IndexedStackableItem[] stackableItems; // by index
 	
@@ -36,7 +36,7 @@ public abstract class AbstractStackableItemPermutationRotationIterator implement
 	public long getMinStackableArea(int offset) {
 		long minArea = Long.MAX_VALUE;
 		for (int i = offset; i < length(); i++) {
-			StackValue permutationRotation = getStackValue(i);
+			BoxStackValue permutationRotation = getStackValue(i);
 			long area = permutationRotation.getArea();
 			if(area < minArea) {
 				minArea = area;
@@ -50,7 +50,7 @@ public abstract class AbstractStackableItemPermutationRotationIterator implement
 		int index = offset;
 
 		for (int i = offset + 1; i < length(); i++) {
-			StackValue permutationRotation = getStackValue(i);
+			BoxStackValue permutationRotation = getStackValue(i);
 			long area = permutationRotation.getArea();
 			if(area < minArea) {
 				minArea = area;
@@ -60,11 +60,11 @@ public abstract class AbstractStackableItemPermutationRotationIterator implement
 		return index;
 	}
 
-	public List<StackValue> get(PermutationRotationState state, int length) {
+	public List<BoxStackValue> get(PermutationRotationState state, int length) {
 		int[] permutations = state.getPermutations();
 		int[] rotations = state.getRotations();
 
-		List<StackValue> results = new ArrayList<StackValue>(length);
+		List<BoxStackValue> results = new ArrayList<>(length);
 		for (int i = 0; i < length; i++) {
 			results.add(stackableItems[permutations[i]].getStackable().getStackValue(rotations[i]));
 		}
@@ -180,7 +180,7 @@ public abstract class AbstractStackableItemPermutationRotationIterator implement
 	}
 	
 	protected void calculateMinStackableVolume(int offset) {
-		StackValue last = stackableItems[permutations[permutations.length - 1]].getStackable().getStackValue(rotations[permutations.length - 1]);
+		BoxStackValue last = stackableItems[permutations[permutations.length - 1]].getStackable().getStackValue(rotations[permutations.length - 1]);
 
 		minStackableVolume[permutations.length - 1] = last.getVolume();
 
@@ -196,7 +196,7 @@ public abstract class AbstractStackableItemPermutationRotationIterator implement
 	}
 	
 	@Override
-	public StackValue getStackValue(int index) {
+	public BoxStackValue getStackValue(int index) {
 		return stackableItems[permutations[index]].getStackable().getStackValue(rotations[index]);
 	}
 

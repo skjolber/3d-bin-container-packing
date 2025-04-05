@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackResult;
-import com.github.skjolber.packing.api.Stackable;
 
 public abstract class AbstractPackagerAdapter<T extends PackResult> implements PackagerAdapter<T> {
 
@@ -63,11 +63,11 @@ public abstract class AbstractPackagerAdapter<T extends PackResult> implements P
 	 * @return list of containers
 	 */
 
-	protected List<Integer> getContainers(List<Stackable> boxes, int maxCount) {
+	protected List<Integer> getContainers(List<Box> boxes, int maxCount) {
 		long volume = 0;
 		long weight = 0;
 
-		for (Stackable box : boxes) {
+		for (Box box : boxes) {
 			// volume
 			volume += box.getVolume();
 
@@ -99,7 +99,7 @@ public abstract class AbstractPackagerAdapter<T extends PackResult> implements P
 					continue;
 				}
 
-				for (Stackable box : boxes) {
+				for (Box box : boxes) {
 					if(!container.canLoad(box)) {
 						continue containers;
 					}
@@ -111,7 +111,7 @@ public abstract class AbstractPackagerAdapter<T extends PackResult> implements P
 			long minVolume = Long.MAX_VALUE;
 			long minWeight = Long.MAX_VALUE;
 
-			for (Stackable box : boxes) {
+			for (Box box : boxes) {
 				// volume
 				long boxVolume = box.getVolume();
 				if(boxVolume < minVolume) {
@@ -154,8 +154,8 @@ public abstract class AbstractPackagerAdapter<T extends PackResult> implements P
 		return list;
 	}
 
-	private boolean canLoadAtLeastOne(Container containerBox, List<Stackable> boxes) {
-		for (Stackable box : boxes) {
+	private boolean canLoadAtLeastOne(Container containerBox, List<Box> boxes) {
+		for (Box box : boxes) {
 			if(containerBox.canLoad(box)) {
 				return true;
 			}

@@ -1,9 +1,10 @@
 package com.github.skjolber.packing.api;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Box extends Stackable {
+public class Box {
 
 	private static final long serialVersionUID = 1L;
 
@@ -11,10 +12,288 @@ public class Box extends Stackable {
 		return new Builder();
 	}
 
-	public static class Builder extends AbstractStackableBuilder<Builder> {
+	public static class Builder extends AbstractPhysicsBuilder<Builder> {
 
 		protected Integer weight;
 
+		protected String id;
+		protected String description;
+
+		public Builder withDescription(String description) {
+			this.description = description;
+			return (Builder)this;
+		}
+
+		public Builder withId(String id) {
+			this.id = id;
+			return (Builder)this;
+		}
+
+		protected <T> T[] getStackValues() {
+
+			// z              y
+			// |             / 
+			// |            / 
+			// |         /-------/|
+			// |        /       / |
+			// |       /       /  |    
+			// |      /  top  /t  /
+			// |     /   xy  /h  /  
+			// |    /       /g z/ 
+			// |   /       /i y/
+			// |  |-------|r  /      
+			// |  |  xz   |  /
+			// |  | front | /
+			// |  |-------|/      
+			// | /      
+			// |/       
+			// |------------------ x
+			//
+
+			List<BoxStackValue> list = new ArrayList<>();
+
+			int dx = size.getDx();
+			int dy = size.getDy();
+			int dz = size.getDz();
+
+			// dx, dy, dz
+
+			if(dx == dy && dx == dz) { // square 3d
+				// all sides are equal
+
+				// z          y
+				// |         / 
+				// |        / 
+				// |     /-------/|
+				// |    / xy    / | 
+				// |   /       /  |
+				// |  |-------|yz /      
+				// |  |       |  /
+				// |  |   xz  | /
+				// |  |-------|/      
+				// | /      
+				// |/       
+				// |------------------ x
+				//
+
+				if(stackableSurface.is0() || stackableSurface.is90()) {
+					list.add(newStackValue(dx, dy, dz, constraint, stackableSurface.getSides(), list.size()));
+				}
+			} else if(dx == dy) {
+
+				// z               y
+				// |              / 
+				// |             / 
+				// |     /---------/|
+				// |    /   xy    / | 
+				// |   /         /  |
+				// |  |---------|   |      
+				// |  |         |   |
+				// |  |         | y |
+				// |  |    xz   | z |
+				// |  |         |   |
+				// |  |         |   |
+				// |  |         |  /
+				// |  |         | /
+				// |  |---------|/      
+				// | /      
+				// |/       
+				// |------------------ x
+				//
+
+				// two square sides, the other 4 sides are equal (but can be rotated)
+				// add xz/yz and xy
+
+				if(stackableSurface.isXY()) {
+					list.add(newStackValue(dx, dx, dz, constraint, stackableSurface.getXYSurfaces(), list.size()));
+				}
+				if(stackableSurface.isXZ() || stackableSurface.isYZ()) {
+
+					boolean zero = stackableSurface.isXZ0() || stackableSurface.isYZ0();
+					boolean ninety = stackableSurface.isXZ90() || stackableSurface.isYZ90();
+
+					if(zero) {
+						list.add(newStackValue(dx, dz, dx, constraint, stackableSurface.getYZAndXZSurfaces0(), list.size()));
+					}
+					if(ninety) {
+						list.add(newStackValue(dz, dx, dx, constraint, stackableSurface.getYZAndXZSurfaces90(), list.size()));
+
+					}
+
+				}
+			} else if(dz == dy) {
+
+				// z           y
+				// |          / 
+				// |         / 
+				// |     /--------------------/|
+				// |    /        xy          / | 
+				// |   /                    /  |
+				// |  |--------------------| yz/      
+				// |  |         xz         |  /
+				// |  |                    | /
+				// |  |--------------------|/      
+				// | /      
+				// |/       
+				// |----------------------------------- x
+				//
+
+				// two square sides, the other 4 sides are equal (but can be rotated)
+				// add xz/xy and yz
+
+				if(stackableSurface.isYZ()) {
+					list.add(newStackValue(dy, dy, dx, constraint, stackableSurface.getYZSurfaces(), list.size()));
+				}
+				if(stackableSurface.isXY() || stackableSurface.isXZ()) {
+
+					boolean zero = stackableSurface.isXY0() || stackableSurface.isXZ0();
+					boolean ninety = stackableSurface.isXY90() || stackableSurface.isXZ90();
+
+					if(zero) {
+						list.add(newStackValue(dx, dz, dz, constraint, stackableSurface.getXYAndXZSurfaces0(), list.size()));
+					}
+					if(ninety) {
+						list.add(newStackValue(dz, dx, dz, constraint, stackableSurface.getXYAndXZSurfaces90(), list.size()));
+					}
+				}
+
+			} else if(dx == dz) {
+
+				//  
+				// z               y
+				// |              / 
+				// |             / 
+				// |         /-------/|
+				// |        /       / |
+				// |       /       /  |    
+				// |      /  xy   /   /
+				// |     /       /   /  
+				// |    /       / z / 
+				// |   /       / y /
+				// |  |-------|   /      
+				// |  |       |  /
+				// |  |  xz   | /
+				// |  |-------|/      
+				// | /      
+				// |/       
+				// |------------------ x
+				//
+				// two square sides, the other 4 sides are equal (but can be rotated)
+				// add xy/zy and xz
+
+				if(stackableSurface.isXZ()) {
+					list.add(newStackValue(dx, dx, dy, constraint, stackableSurface.getXZSurfaces(), list.size()));
+				}
+				if(stackableSurface.isXY() || stackableSurface.isYZ()) {
+					boolean zero = stackableSurface.isXY0() || stackableSurface.isYZ0();
+					boolean ninety = stackableSurface.isXY90() || stackableSurface.isYZ90();
+
+					if(zero) {
+						list.add(newStackValue(dx, dy, dx, constraint, stackableSurface.getXYAndYZSurfaces0(), list.size()));
+					}
+					if(ninety) {
+						list.add(newStackValue(dy, dx, dx, constraint, stackableSurface.getXYAndYZSurfaces90(), list.size()));
+					}
+				}
+			} else {
+				// no equal length edges
+
+				//
+				//              dx
+				// ---------------------------
+				// |                         |
+				// |                         | dy
+				// |                         |
+				// ---------------------------
+				//
+				//    dy
+				// --------
+				// |      |
+				// |      |
+				// |      |
+				// |      |
+				// |      |
+				// |      | dz
+				// |      |
+				// |      |
+				// |      |
+				// |      |
+				// |      |
+				// --------
+				//			
+				//              dx
+				// ---------------------------
+				// |                         |
+				// |                         |
+				// |                         |
+				// |                         | dz
+				// |                         |
+				// |                         |
+				// --------------------------- 
+				//
+				//
+				//    dy
+				// ----------------
+				// |              |
+				// |              |
+				// |              |
+				// |              |
+				// |              |
+				// |              | dx
+				// |              |
+				// |              |
+				// |              |
+				// |              |
+				// |              |
+				// ----------------
+				//			
+				//			
+				//    dy
+				// --------
+				// |      |
+				// |      |
+				// |      |
+				// |      | dz
+				// |      |
+				// |      |
+				// --------
+				//
+				//        dy
+				// ----------------
+				// |              |
+				// |              | dz
+				// |              |
+				// ----------------
+				//			
+
+				if(stackableSurface.isXY0()) {
+					list.add(newStackValue(dx, dy, dz, constraint, stackableSurface.getXY0Surfaces(), list.size()));
+				}
+				if(stackableSurface.isXY90()) {
+					list.add(newStackValue(dy, dx, dz, constraint, stackableSurface.getXY90Surfaces(), list.size()));
+				}
+
+				if(stackableSurface.isXZ0()) {
+					list.add(newStackValue(dx, dz, dy, constraint, stackableSurface.getXZ0Surfaces(), list.size()));
+				}
+				if(stackableSurface.isXZ90()) {
+					list.add(newStackValue(dz, dx, dy, constraint, stackableSurface.getXZ90Surfaces(), list.size()));
+				}
+
+				if(stackableSurface.isYZ0()) {
+					list.add(newStackValue(dz, dy, dx, constraint, stackableSurface.getYZ0Surfaces(), list.size()));
+				}
+				if(stackableSurface.isYZ90()) {
+					list.add(newStackValue(dy, dz, dx, constraint, stackableSurface.getYZ90Surfaces(), list.size()));
+				}
+			}
+
+			if(list.isEmpty()) {
+				throw new IllegalStateException("Expected at least one stackable surface");
+			}
+			return list.toArray(newStackValueArray(list.size()));
+		}		
+		
 		public Builder withWeight(int weight) {
 			this.weight = weight;
 
@@ -41,8 +320,8 @@ public class Box extends Stackable {
 			return (T[])new BoxStackValue[size];
 		}
 
-		protected BoxStackValue newStackValue(int dx, int dy, int dz, StackValueConstraint constraint, List<Surface> surfaces) {
-			return new BoxStackValue(dx, dy, dz, constraint, surfaces);
+		protected BoxStackValue newStackValue(int dx, int dy, int dz, StackValueConstraint constraint, List<Surface> surfaces, int index) {
+			return new BoxStackValue(dx, dy, dz, constraint, surfaces, index);
 		}
 	}
 
@@ -50,8 +329,8 @@ public class Box extends Stackable {
 	protected final BoxStackValue[] stackValues;
 	protected final long volume;
 	
-	protected final StackValue minimumArea;
-	protected final StackValue maximumArea;
+	protected final BoxStackValue minimumArea;
+	protected final BoxStackValue maximumArea;
 	protected long minimumPressure;
 	protected long maximumPressure;
 
@@ -73,26 +352,26 @@ public class Box extends Stackable {
 		this.maximumPressure = (weight * 1000L) / minimumArea.getArea();
 		
 		for (BoxStackValue boxStackValue : stackValues) {
-			boxStackValue.setStackable(this);
+			boxStackValue.setBox(this);
 		}
 	}
 	
-	@Override
+	public Box(Box box, List<BoxStackValue> stackValues) {
+		this(box.id, box.description, box.volume, box.weight, stackValues.toArray(new BoxStackValue[stackValues.size()]));
+	}
+
 	public String getDescription() {
 		return description;
 	}
 
-	@Override
 	public String getId() {
 		return id;
 	}
 
-	@Override
 	public int getWeight() {
 		return weight;
 	}
 
-	@Override
 	public BoxStackValue[] getStackValues() {
 		return stackValues;
 	}
@@ -110,33 +389,97 @@ public class Box extends Stackable {
 		return new Box(id, description, volume, weight, stackValues);
 	}
 	
-	public StackValue getStackValue(int index) {
+	public BoxStackValue getStackValue(int index) {
 		return stackValues[index];
 	}
 
-	@Override
 	public long getMinimumArea() {
 		return minimumArea.getArea();
 	}
 
-	@Override
 	public long getMaximumArea() {
 		return maximumArea.getArea();
 	}
 
-	@Override
 	public String toString() {
 		return "Box " + (description != null ? description : "") + "[weight=" + weight + ", rotations=" + Arrays.toString(stackValues) + ", volume=" + volume + "]";
 	}
 
-	@Override
 	public long getMinimumPressure() {
 		return minimumPressure;
 	}
 	
-	@Override
 	public long getMaximumPressure() {
 		return maximumPressure;
 	}
+	
+	public List<BoxStackValue> fitsInside(Dimension bound) {
+		List<BoxStackValue> list = new ArrayList<>();
+
+		for (BoxStackValue stackValue : getStackValues()) {
+			if(stackValue.fitsInside3D(bound)) {
+				list.add(stackValue);
+			}
+		}
+
+		return list;
+	}
+	
+	public List<BoxStackValue> rotations(Dimension bound) {
+		return rotations(bound.getDx(), bound.getDy(), bound.getDz());
+	}
+
+	public List<BoxStackValue> rotations(int dx, int dy, int dz) {
+		// TODO optimize if max is above min bounds 
+		BoxStackValue[] rotations = getStackValues();
+		for (int i = 0; i < rotations.length; i++) {
+			BoxStackValue stackValue = rotations[i];
+			if(stackValue.fitsInside3D(dx, dy, dz)) {
+				List<BoxStackValue> fitsInside = new ArrayList<>(rotations.length);
+				fitsInside.add(stackValue);
+
+				i++;
+				while (i < rotations.length) {
+					if(rotations[i].fitsInside3D(dx, dy, dz)) {
+						fitsInside.add(rotations[i]);
+					}
+					i++;
+				}
+				return fitsInside;
+			}
+		}
+		return null;
+	}
+	
+	public static BoxStackValue getMinimumArea(BoxStackValue[] rotations) {
+		BoxStackValue minimumArea = null;
+		for (BoxStackValue boxStackValue : rotations) {
+			if(minimumArea == null || boxStackValue.getArea() < minimumArea.getArea()) {
+				minimumArea = boxStackValue;
+			}
+		}
+		return minimumArea;
+	}
+	
+	public static BoxStackValue getMinimumPressure(BoxStackValue[] rotations) {
+		BoxStackValue minimumArea = null;
+		for (BoxStackValue boxStackValue : rotations) {
+			if(minimumArea == null || boxStackValue.getArea() < minimumArea.getArea()) {
+				minimumArea = boxStackValue;
+			}
+		}
+		return minimumArea;
+	}
+
+	public static BoxStackValue getMaximumArea(BoxStackValue[] rotations) {
+		BoxStackValue minimumArea = null;
+		for (BoxStackValue boxStackValue : rotations) {
+			if(minimumArea == null || boxStackValue.getArea() > minimumArea.getArea()) {
+				minimumArea = boxStackValue;
+			}
+		}
+		return minimumArea;
+	}
+
 
 }

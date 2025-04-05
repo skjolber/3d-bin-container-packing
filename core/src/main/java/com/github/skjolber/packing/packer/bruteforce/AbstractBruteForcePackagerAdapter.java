@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
@@ -12,13 +12,13 @@ import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackagerAdapter<BruteForcePackagerResult> {
 
 	// keep inventory over all of the iterators here
-	protected Stackable[] stackables;
+	protected Box[] stackables;
 	protected int[] stackablesRemaining;
 	
 	public AbstractBruteForcePackagerAdapter(List<ContainerItem> items, List<BoxItem> stackableItems) {
 		super(items);
 		
-		stackables = new Stackable[stackableItems.size()];
+		stackables = new Box[stackableItems.size()];
 		stackablesRemaining = new int[stackableItems.size()];
 		
 		for(int i = 0; i < stackableItems.size(); i++) {
@@ -38,7 +38,7 @@ public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackager
 	
 	@Override
 	public List<Integer> getContainers(int maxCount) {
-		List<Stackable> boxes = new ArrayList<>();
+		List<Box> boxes = new ArrayList<>();
 		
 		for (int i = 0; i < stackables.length; i++) {
 			for(int k = 0; k < stackablesRemaining[i]; k++) {

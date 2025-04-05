@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.iterator;
 
-import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxStackValue;
 
 /**
  * 
@@ -11,20 +11,20 @@ import com.github.skjolber.packing.api.Stackable;
 
 public class PermutationRotation {
 
-	private final Stackable stackable;
-	private final StackValue value;
+	private final Box stackable;
+	private final BoxStackValue value;
 
-	public PermutationRotation(Stackable stackable, StackValue value) {
+	public PermutationRotation(Box stackable, BoxStackValue value) {
 		super();
 		this.stackable = stackable;
 		this.value = value;
 	}
 
-	public Stackable getStackable() {
+	public Box getStackable() {
 		return stackable;
 	}
 
-	public StackValue getValue() {
+	public BoxStackValue getValue() {
 		return value;
 	}
 

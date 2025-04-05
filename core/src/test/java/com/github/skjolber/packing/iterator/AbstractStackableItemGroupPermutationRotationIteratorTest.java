@@ -38,7 +38,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
 		
-		StackableItemPermutationRotationIterator rotator = newBuilder()
+		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
@@ -75,7 +75,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("6").withWeight(1).build(), 2));
 		groups.add(new BoxItemGroup("2", products2));
 		
-		StackableItemPermutationRotationIterator rotator = newBuilder()
+		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
@@ -111,7 +111,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
 		
-		StackableItemPermutationRotationIterator rotator = newBuilder()
+		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
@@ -149,7 +149,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
 		
-		StackableItemPermutationRotationIterator rotator = newBuilder()
+		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
@@ -190,7 +190,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("8").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
 		
-		StackableItemPermutationRotationIterator iterator = newBuilder()
+		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
@@ -240,7 +240,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("8").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
 		
-		StackableItemPermutationRotationIterator iterator = newBuilder()
+		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
@@ -292,7 +292,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIteratorTest<
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("8").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
 		
-		StackableItemPermutationRotationIterator iterator = newBuilder()
+		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItemGroups(groups)
 				.withMaxLoadWeight(products2.size())

@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.api.packager.inputs;
 
+import com.github.skjolber.packing.api.BoxItem;
+
 /**
  * 
  * Top-level packager inputs for packaging into one or more containers
@@ -8,10 +10,10 @@ package com.github.skjolber.packing.api.packager.inputs;
 
 public interface PackagerInputs {
 
-	int ContainerItemInputSize();
+	int getContainerItemInputSize();
 	ContainerItemInput getContainerItemInput(int index);
 	
 	boolean removeContainerItem(ContainerItemInput input, int count);
-	boolean removeStackableItem(StackableItemInput input, int count);
+	boolean removeBoxItem(BoxItem input, int count);
 
 }

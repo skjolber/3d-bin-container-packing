@@ -13,6 +13,7 @@ public class BoxItem implements Serializable {
 
 	protected int count;
 	protected final Box box;
+	protected int index = -1;
 
 	public BoxItem(Box box) {
 		this(box, 1);
@@ -23,12 +24,19 @@ public class BoxItem implements Serializable {
 		this.box = stackable;
 		this.count = count;
 	}
+	
+	protected BoxItem(Box stackable, int count, int index) {
+		super();
+		this.box = stackable;
+		this.count = count;
+		this.index = index;
+	}
 
 	public int getCount() {
 		return count;
 	}
 
-	public Stackable getStackable() {
+	public Box getStackable() {
 		return box;
 	}
 
@@ -45,12 +53,21 @@ public class BoxItem implements Serializable {
 		return count == 0;
 	}
 	
-	public void decrement(int value) {
+	public boolean decrement(int value) {
 		this.count = this.count - value;
+		return count > 0;
 	}
 
 	public BoxItem clone() {
-		return new BoxItem(box, count);
+		return new BoxItem(box, count, index);
+	}
+	
+	public void setIndex(int index) {
+		this.index = index;
+	}
+	
+	public int getIndex() {
+		return index;
 	}
 
 }

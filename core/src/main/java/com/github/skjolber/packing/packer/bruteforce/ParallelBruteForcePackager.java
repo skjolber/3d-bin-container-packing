@@ -12,12 +12,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.StackValueConstraint;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.deadline.ClonablePackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -134,7 +132,6 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	private class RunnableAdapter implements Callable<BruteForcePackagerResult> {
 
 		private Container container;
-		private ContainerStackValue containerStackValue;
 		private PermutationRotationIterator iterator;
 		private List<StackPlacement> placements;
 		private ExtremePoints3DStack extremePoints3D;
@@ -155,33 +152,27 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			this.iterator = iterator;
 		}
 
-		public void setContainerStackValue(ContainerStackValue containerStackValue) {
-			this.containerStackValue = containerStackValue;
-		}
-
 		public void setInterrupt(PackagerInterruptSupplier interrupt) {
 			this.interrupt = interrupt;
 		}
 
 		@Override
 		public BruteForcePackagerResult call() {
-			return ParallelBruteForcePackager.this.pack(extremePoints3D, placements, container, containerIndex, containerStackValue, iterator, interrupt);
+			return ParallelBruteForcePackager.this.pack(extremePoints3D, placements, container, containerIndex, iterator, interrupt);
 		}
 	}
 
 	private class ParallelAdapter extends AbstractBruteForcePackagerAdapter {
 
-		private final ContainerStackValue[] containerStackValues;
 		private final RunnableAdapter[] runnables; // per thread
 
 		private final ParallelPermutationRotationIteratorList[] parallelIterators; // per container
 		private final DefaultPermutationRotationIterator[] iterators; // per container
 		private final PackagerInterruptSupplier[] interrupts;
 
-		protected ParallelAdapter(List<BoxItem> stackableItems, List<ContainerItem> containerItems, ContainerStackValue[] containerStackValues, RunnableAdapter[] runnables, DefaultPermutationRotationIterator[] iterators, ParallelPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
+		protected ParallelAdapter(List<BoxItem> stackableItems, List<ContainerItem> containerItems, RunnableAdapter[] runnables, DefaultPermutationRotationIterator[] iterators, ParallelPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
 			super(containerItems, stackableItems);
 
-			this.containerStackValues = containerStackValues;
 			this.runnables = runnables;
 			this.parallelIterators = parallelIterators;
 			this.iterators = iterators;
@@ -208,7 +199,6 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				for (int j = 0; j < runnables.length; j++) {
 					RunnableAdapter runnableAdapter = runnables[j];
 					runnableAdapter.setContainer(containerItems.get(i).getContainer());
-					runnableAdapter.setContainerStackValue(containerStackValues[i]);
 
 					runnableAdapter.setIterator(parallelIterators[i].getIterator(j));
 
@@ -261,7 +251,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			}
 			// no need to split this job
 			// run with linear approach
-			return ParallelBruteForcePackager.this.pack(runnables[0].extremePoints3D, runnables[0].placements, containerItems.get(i).getContainer(), i, containerStackValues[i], iterators[i],
+			return ParallelBruteForcePackager.this.pack(runnables[0].extremePoints3D, runnables[0].placements, containerItems.get(i).getContainer(), i, iterators[i],
 					interrupts[i]);
 		}
 
@@ -319,24 +309,19 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 	@Override
 	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<BoxItem> stackableItems, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
-		ContainerStackValue[] containerStackValues = new ContainerStackValue[containerItems.size()];
-
 		ParallelPermutationRotationIteratorList[] parallelIterators = new ParallelPermutationRotationIteratorList[containerItems.size()];
 		DefaultPermutationRotationIterator[] iterators = new DefaultPermutationRotationIterator[containerItems.size()];
 		for (int i = 0; i < containerItems.size(); i++) {
 			Container container = containerItems.get(i).getContainer();
-			ContainerStackValue stackValue = container.getStackValues()[0];
 
-			containerStackValues[i] = stackValue;
+			StackConstraint constraint = container.getConstraint();
 
-			StackValueConstraint constraint = stackValue.getConstraint();
-
-			Dimension dimension = new Dimension(stackValue.getLoadDx(), stackValue.getLoadDy(), stackValue.getLoadDz());
+			Dimension dimension = new Dimension(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 
 			parallelIterators[i] = new ParallelPermutationRotationIteratorListBuilder()
 					.withLoadSize(dimension)
 					.withStackableItems(stackableItems)
-					.withMaxLoadWeight(stackValue.getMaxLoadWeight())
+					.withMaxLoadWeight(container.getMaxLoadWeight())
 					.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
 					.withParallelizationCount(parallelizationCount)
 					.build();
@@ -345,7 +330,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 					.newBuilder()
 					.withLoadSize(dimension)
 					.withStackableItems(stackableItems)
-					.withMaxLoadWeight(stackValue.getMaxLoadWeight())
+					.withMaxLoadWeight(container.getMaxLoadWeight())
 					.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
 					.build();
 		}
@@ -388,7 +373,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			}
 		}
 		
-		return new ParallelAdapter(stackableItems, containerItems, containerStackValues, runnables, iterators, parallelIterators, interrupts);
+		return new ParallelAdapter(stackableItems, containerItems, runnables, iterators, parallelIterators, interrupts);
 	}
 
 }
