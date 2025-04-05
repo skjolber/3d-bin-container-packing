@@ -7,7 +7,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.PackResult;
+import com.github.skjolber.packing.api.packager.PackResult;
 
 public abstract class AbstractPackagerAdapter<T extends PackResult> implements PackagerAdapter<T> {
 

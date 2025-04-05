@@ -11,14 +11,14 @@ import com.github.skjolber.packing.api.Stack;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class LoaderInputsFilterBuilder<B extends LoaderInputsFilterBuilder<B>> {
+public abstract class PackInputFilterBuilder<B extends PackInputFilterBuilder<B>> {
 
 	protected Stack stack;
 	protected Container container;
-	protected LoaderInputs loaderInputs;
+	protected PackInput input;
 
-	public B withLoaderInputs(LoaderInputs containerLoadInputs) {
-		this.loaderInputs = containerLoadInputs;
+	public B withLoaderInputs(PackInput input) {
+		this.input = input;
 		return (B)this;
 	}
 	
@@ -32,7 +32,7 @@ public abstract class LoaderInputsFilterBuilder<B extends LoaderInputsFilterBuil
 		return (B)this;
 	}
 
-	public abstract LoaderInputsFilter build();
+	public abstract PackInputFilter build();
 	
 	
 

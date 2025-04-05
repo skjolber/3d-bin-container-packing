@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.BoxItem;
  * 
  */
 
-public interface PackagerInputs {
+public interface PackagerInput {
 
 	int getContainerItemInputSize();
 	ContainerItemInput getContainerItemInput(int index);

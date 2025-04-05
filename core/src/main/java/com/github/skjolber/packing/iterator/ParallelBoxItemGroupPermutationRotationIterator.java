@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
 
-public class ParallelStackableItemGroupPermutationRotationIterator extends AbstractBoxItemGroupPermutationRotationIterator {
+public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBoxItemGroupPermutationRotationIterator {
 	
 	public static Builder newBuilder() {
 		return new Builder();
@@ -16,7 +16,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 	
 	public static class Builder extends AbstractBoxItemGroupIteratorBuilder<Builder> {
 
-		public ParallelStackableItemGroupPermutationRotationIterator build() {
+		public ParallelBoxItemGroupPermutationRotationIterator build() {
 			if(maxLoadWeight == -1) {
 				throw new IllegalStateException();
 			}
@@ -31,7 +31,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 				matrix.addAll(loadableItemGroup.getItems());
 			}
 			
-			ParallelStackableItemGroupPermutationRotationIterator result = new ParallelStackableItemGroupPermutationRotationIterator(matrix.toArray(new BoxItem[matrix.size()]), groups);
+			ParallelBoxItemGroupPermutationRotationIterator result = new ParallelBoxItemGroupPermutationRotationIterator(matrix.toArray(new BoxItem[matrix.size()]), groups);
 			
 			result.initiatePermutations();
 			
@@ -46,7 +46,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 	private int lastPermutationMaxIndex = -1;
 	private boolean seenLastPermutationMaxIndex = false;
 
-	public ParallelStackableItemGroupPermutationRotationIterator(BoxItem[] matrix, List<BoxItemGroup> groups) {
+	public ParallelBoxItemGroupPermutationRotationIterator(BoxItem[] matrix, List<BoxItemGroup> groups) {
 		super(matrix, groups);
 	}
 

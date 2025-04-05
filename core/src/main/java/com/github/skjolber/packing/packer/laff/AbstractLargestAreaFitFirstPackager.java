@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -24,12 +24,12 @@ import com.github.skjolber.packing.packer.DefaultPackResult;
  */
 public abstract class AbstractLargestAreaFitFirstPackager extends AbstractPackager<DefaultPackResult, LargestAreaFitFirstPackagerResultBuilder> {
 
-	public static StackableFilter FIRST_STACKABLE_FILTER = (best, candidate) -> {
+	public static BoxFilter FIRST_STACKABLE_FILTER = (best, candidate) -> {
 		// return true if the candidate might be better than the current best
 		return candidate.getMaximumArea() >= best.getMinimumArea();
 	};
 
-	public static StackableFilter DEFAULT_STACKABLE_FILTER = (best, candidate) -> {
+	public static BoxFilter DEFAULT_STACKABLE_FILTER = (best, candidate) -> {
 		// return true if the candidate might be better than the current best
 		return candidate.getVolume() >= best.getVolume();
 	};	

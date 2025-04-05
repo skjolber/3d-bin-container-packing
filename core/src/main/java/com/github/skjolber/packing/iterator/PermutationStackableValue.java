@@ -10,16 +10,16 @@ public class PermutationStackableValue {
 	protected final int index;
 	protected final int count;
 	protected final PermutationRotation[] values;
-	protected final Box stackable;
+	protected final Box box;
 
 	protected final long minVolumeLimit;
 	protected final long minAreaLimit;
 
-	public PermutationStackableValue(int index, int count, Box stackable, List<BoxStackValue> stackValues) {
+	public PermutationStackableValue(int index, int count, Box box, List<BoxStackValue> stackValues) {
 		this.index = index;
 		this.count = count;
 		this.values = new PermutationRotation[stackValues.size()];
-		this.stackable = stackable;
+		this.box = box;
 
 		long minVolumeLimit = Long.MAX_VALUE;
 		long minAreaLimit = Long.MAX_VALUE;
@@ -27,7 +27,7 @@ public class PermutationStackableValue {
 		for (int i = 0; i < values.length; i++) {
 			BoxStackValue stackValue = stackValues.get(i);
 
-			values[i] = new PermutationRotation(stackable, stackValue);
+			values[i] = new PermutationRotation(box, stackValue);
 
 			if(minVolumeLimit > stackValue.getVolume()) {
 				minVolumeLimit = stackValue.getVolume();
@@ -47,7 +47,7 @@ public class PermutationStackableValue {
 		this.index = clone.index;
 		this.count = clone.count;
 		this.values = new PermutationRotation[clone.values.length];
-		this.stackable = clone.stackable.clone();
+		this.box = clone.box.clone();
 		for (int i = 0; i < values.length; i++) {
 			PermutationRotation permutationRotation = clone.values[i];
 			values[i] = new PermutationRotation(permutationRotation.getBox().clone(), permutationRotation.getBoxStackValue().clone());
@@ -79,7 +79,7 @@ public class PermutationStackableValue {
 	}
 
 	public Box getStackable() {
-		return stackable;
+		return box;
 	}
 	
 	public PermutationStackableValue clone() {

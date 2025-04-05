@@ -6,7 +6,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 
-public class DefaultStackableItemPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator {
+public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator {
 	
 	public static Builder newBuilder() {
 		return new Builder();
@@ -14,7 +14,7 @@ public class DefaultStackableItemPermutationRotationIterator extends AbstractBox
 
 	public static class Builder extends AbstractBoxItemIteratorBuilder<Builder> {
 
-		public DefaultStackableItemPermutationRotationIterator build() {
+		public DefaultBoxItemPermutationRotationIterator build() {
 			if(maxLoadWeight == -1) {
 				throw new IllegalStateException();
 			}
@@ -24,11 +24,11 @@ public class DefaultStackableItemPermutationRotationIterator extends AbstractBox
 
 			BoxItem[] matrix = toMatrix();
 
-			return new DefaultStackableItemPermutationRotationIterator(matrix);
+			return new DefaultBoxItemPermutationRotationIterator(matrix);
 		}
 	}
 
-	public DefaultStackableItemPermutationRotationIterator(BoxItem[] matrix) {
+	public DefaultBoxItemPermutationRotationIterator(BoxItem[] matrix) {
 		super(matrix);
 		
 		int count = 0;

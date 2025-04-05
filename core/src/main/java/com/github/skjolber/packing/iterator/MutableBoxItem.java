@@ -2,11 +2,13 @@ package com.github.skjolber.packing.iterator;
 
 import com.github.skjolber.packing.api.BoxItem;
 
-public class MutableIndexedStackableItem extends BoxItem {
+public class MutableBoxItem extends BoxItem {
 
+	private static final long serialVersionUID = 1L;
+	
 	public final BoxItem source; 
 
-	public MutableIndexedStackableItem(BoxItem loadableItem) {
+	public MutableBoxItem(BoxItem loadableItem) {
 		super(loadableItem.getStackable(), loadableItem.getCount(), loadableItem.getIndex());
 		
 		this.source = loadableItem;

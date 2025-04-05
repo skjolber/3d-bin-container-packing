@@ -3,7 +3,7 @@ package com.github.skjolber.packing.packer;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.PackResult;
+import com.github.skjolber.packing.api.packager.PackResult;
 
 /**
  * Logical packager for wrapping preprocessing / optimizations.

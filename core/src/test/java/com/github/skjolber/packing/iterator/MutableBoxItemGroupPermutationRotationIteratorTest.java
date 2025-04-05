@@ -14,15 +14,15 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.packager.LoaderInputs;
-import com.github.skjolber.packing.iterator.MutableIndexedStackableItemPermutationRotationIterator.Builder;
-import com.github.skjolber.packing.iterator.MutableIndexedStackableItemPermutationRotationIterator.DelegateBuilder;
+import com.github.skjolber.packing.api.packager.PackInput;
+import com.github.skjolber.packing.iterator.MutableBoxItemPermutationRotationIterator.Builder;
+import com.github.skjolber.packing.iterator.MutableBoxItemPermutationRotationIterator.DelegateBuilder;
 
-class MutableIndexedStackableItemGroupPermutationRotationIteratorTest extends AbstractBoxItemGroupPermutationRotationIteratorTest<MutableIndexedStackableItemGroupPermutationRotationIterator.DelegateBuilder> {
+class MutableBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxItemGroupPermutationRotationIteratorTest<MutableBoxItemGroupPermutationRotationIterator.DelegateBuilder> {
 
 	@Override
-	public MutableIndexedStackableItemGroupPermutationRotationIterator.DelegateBuilder newBuilder() {
-		return new MutableIndexedStackableItemGroupPermutationRotationIterator.DelegateBuilder(DefaultStackableItemGroupPermutationRotationIterator.newBuilder());
+	public MutableBoxItemGroupPermutationRotationIterator.DelegateBuilder newBuilder() {
+		return new MutableBoxItemGroupPermutationRotationIterator.DelegateBuilder(DefaultBoxItemGroupPermutationRotationIterator.newBuilder());
 	}
 	
 	@Test
@@ -44,14 +44,14 @@ class MutableIndexedStackableItemGroupPermutationRotationIteratorTest extends Ab
 			
 			groups.add(new BoxItemGroup("1", products1));
 
-			MutableIndexedStackableItemGroupPermutationRotationIterator rotator = 
+			MutableBoxItemGroupPermutationRotationIterator rotator = 
 					newBuilder()
 					.withLoadSize(container)
 					.withStackableItemGroups(groups)
 					.withMaxLoadWeight(products1.size())
 					.build();
 			
-			LoaderInputs items = rotator;
+			PackInput items = rotator;
 
 			long unmodifiedRotationsCount = rotator.getIterator().countRotations();
 			
@@ -89,7 +89,7 @@ class MutableIndexedStackableItemGroupPermutationRotationIteratorTest extends Ab
 		List<BoxItemGroup> groups = new ArrayList<>();
 		groups.add(new BoxItemGroup("1", products));
 		
-		MutableIndexedStackableItemGroupPermutationRotationIterator rotator = newBuilder()
+		MutableBoxItemGroupPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItemGroups(groups)
 				.withMaxLoadWeight(products.size())
@@ -124,7 +124,7 @@ class MutableIndexedStackableItemGroupPermutationRotationIteratorTest extends Ab
 		List<BoxItemGroup> groups = new ArrayList<>();
 		groups.add(new BoxItemGroup("1", products));
 
-		MutableIndexedStackableItemGroupPermutationRotationIterator rotator = newBuilder()
+		MutableBoxItemGroupPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
 				.withStackableItemGroups(groups)
 				.withMaxLoadWeight(products.size())

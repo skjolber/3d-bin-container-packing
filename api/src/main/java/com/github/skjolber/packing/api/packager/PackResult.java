@@ -1,4 +1,6 @@
-package com.github.skjolber.packing.api;
+package com.github.skjolber.packing.api.packager;
+
+import com.github.skjolber.packing.api.Container;
 
 public interface PackResult {
 

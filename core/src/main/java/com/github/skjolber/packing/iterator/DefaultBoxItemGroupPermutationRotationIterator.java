@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
 
-public class DefaultStackableItemGroupPermutationRotationIterator extends AbstractBoxItemGroupPermutationRotationIterator {
+public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxItemGroupPermutationRotationIterator {
 	
 	public static Builder newBuilder() {
 		return new Builder();
@@ -16,7 +16,7 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 
 	public static class Builder extends AbstractBoxItemGroupIteratorBuilder<Builder> {
 
-		public DefaultStackableItemGroupPermutationRotationIterator build() {
+		public DefaultBoxItemGroupPermutationRotationIterator build() {
 			if(maxLoadWeight == -1) {
 				throw new IllegalStateException();
 			}
@@ -31,12 +31,12 @@ public class DefaultStackableItemGroupPermutationRotationIterator extends Abstra
 				matrix.addAll(loadableItemGroup.getItems());
 			}
 			
-			return new DefaultStackableItemGroupPermutationRotationIterator(groups, matrix.toArray(new BoxItem[matrix.size()]));
+			return new DefaultBoxItemGroupPermutationRotationIterator(groups, matrix.toArray(new BoxItem[matrix.size()]));
 		}
 
 	}
 	
-	public DefaultStackableItemGroupPermutationRotationIterator(List<BoxItemGroup> groups, BoxItem[] matrix) {
+	public DefaultBoxItemGroupPermutationRotationIterator(List<BoxItemGroup> groups, BoxItem[] matrix) {
 		super(matrix, groups);
 		
 		int count = getCount();

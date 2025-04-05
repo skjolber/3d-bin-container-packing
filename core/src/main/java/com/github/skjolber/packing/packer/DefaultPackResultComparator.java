@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.packer;
 
-import com.github.skjolber.packing.api.PackResult;
-import com.github.skjolber.packing.api.PackResultComparator;
+import com.github.skjolber.packing.api.packager.PackResult;
+import com.github.skjolber.packing.api.packager.PackResultComparator;
 
 public class DefaultPackResultComparator implements PackResultComparator {
 

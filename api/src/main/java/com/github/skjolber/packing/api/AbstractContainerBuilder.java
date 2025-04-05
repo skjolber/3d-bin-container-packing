@@ -2,13 +2,6 @@ package com.github.skjolber.packing.api;
 
 import java.util.List;
 
-/**
- * {@linkplain Stackable} builder scaffold.
- * 
- * @see <a href=
- *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
- */
-
 @SuppressWarnings("unchecked")
 public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 

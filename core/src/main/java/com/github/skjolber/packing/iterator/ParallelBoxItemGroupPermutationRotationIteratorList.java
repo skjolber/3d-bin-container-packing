@@ -13,7 +13,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
  * 
  */
 
-public class ParallelStackableItemGroupPermutationRotationIteratorList implements BoxItemGroupPermutationRotationIterator {
+public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxItemGroupPermutationRotationIterator {
 
 	protected final static int PADDING = 16;
 
@@ -31,7 +31,7 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 			return this;
 		}
 		
-		public ParallelStackableItemGroupPermutationRotationIteratorList build() {
+		public ParallelBoxItemGroupPermutationRotationIteratorList build() {
 			if(parallelizationCount == -1) {
 				throw new IllegalStateException();
 			}
@@ -44,18 +44,18 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 
 			List<BoxItemGroup> groups = toMatrix();
 			
-			return new ParallelStackableItemGroupPermutationRotationIteratorList(groups, parallelizationCount);
+			return new ParallelBoxItemGroupPermutationRotationIteratorList(groups, parallelizationCount);
 		}
 	}
 	
 	protected final int[] frequencies;
-	protected ParallelStackableItemGroupPermutationRotationIterator[] workUnits;
+	protected ParallelBoxItemGroupPermutationRotationIterator[] workUnits;
 
 	protected int workUnitIndex = 0;
 	
-	public ParallelStackableItemGroupPermutationRotationIteratorList(List<BoxItemGroup> groups, int parallelizationCount) {
+	public ParallelBoxItemGroupPermutationRotationIteratorList(List<BoxItemGroup> groups, int parallelizationCount) {
 
-		workUnits = new ParallelStackableItemGroupPermutationRotationIterator[parallelizationCount];
+		workUnits = new ParallelBoxItemGroupPermutationRotationIterator[parallelizationCount];
 		for (int i = 0; i < parallelizationCount; i++) {
 
 			// clone working variables so threads are less of the same
@@ -68,7 +68,7 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 				matrix.addAll(loadableItemGroup.getItems());
 			}
 			
-			workUnits[i] = new ParallelStackableItemGroupPermutationRotationIterator(matrix.toArray(new BoxItem[matrix.size()]), clones);
+			workUnits[i] = new ParallelBoxItemGroupPermutationRotationIterator(matrix.toArray(new BoxItem[matrix.size()]), clones);
 			if(workUnits[i].preventOptmisation() != -1L) {
 				throw new RuntimeException();
 			}
@@ -166,11 +166,11 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 	}
 
 
-	public ParallelStackableItemGroupPermutationRotationIterator[] getIterators() {
+	public ParallelBoxItemGroupPermutationRotationIterator[] getIterators() {
 		return workUnits;
 	}
 
-	public ParallelStackableItemGroupPermutationRotationIterator getIterator(int i) {
+	public ParallelBoxItemGroupPermutationRotationIterator getIterator(int i) {
 		return workUnits[i];
 	}
 
@@ -304,7 +304,7 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 			}
 		}
 
-		for (ParallelStackableItemGroupPermutationRotationIterator unit : workUnits) {
+		for (ParallelBoxItemGroupPermutationRotationIterator unit : workUnits) {
 			unit.removePermutations(removed);
 		}
 		

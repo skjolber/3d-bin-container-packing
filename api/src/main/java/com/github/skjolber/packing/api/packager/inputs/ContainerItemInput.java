@@ -24,4 +24,5 @@ public interface ContainerItemInput {
 
 	int getCount();
 	boolean decrementCount(int amount);
+	
 }

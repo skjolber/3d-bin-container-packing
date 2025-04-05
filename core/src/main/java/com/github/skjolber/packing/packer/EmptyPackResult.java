@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.PackResult;
+import com.github.skjolber.packing.api.packager.PackResult;
 
 public class EmptyPackResult implements PackResult {
 

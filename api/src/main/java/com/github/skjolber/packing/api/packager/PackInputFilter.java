@@ -4,11 +4,11 @@ package com.github.skjolber.packing.api.packager;
  * 
  * Filter for items which are available for load into some particular container.
  * 
- * The filter is expected to maintain a underlying {@linkplain LoaderInputs} instance.
+ * The filter is expected to maintain a underlying {@linkplain PackInput} instance.
  * 
  */
 
-public interface LoaderInputsFilter {
+public interface PackInputFilter {
 
 	/**
 	 * 

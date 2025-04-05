@@ -6,7 +6,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.BoxItem;
 
-public class DefaultPackagerInputs implements PackagerInputs {
+public class DefaultPackagerInput implements PackagerInput {
 
 	public static Builder newBuilder() {
 		return new Builder();
@@ -27,7 +27,7 @@ public class DefaultPackagerInputs implements PackagerInputs {
 			return this;
 		}
 
-		public DefaultPackagerInputs build() {
+		public DefaultPackagerInput build() {
 			if(containerItems == null) {
 				throw new IllegalStateException();
 			}
@@ -71,7 +71,7 @@ public class DefaultPackagerInputs implements PackagerInputs {
 				}
 			}
 			
-			return new DefaultPackagerInputs(values, indexedValues);
+			return new DefaultPackagerInput(values, indexedValues);
 		}
 
 	}
@@ -79,7 +79,7 @@ public class DefaultPackagerInputs implements PackagerInputs {
 	protected final List<ContainerItemInput> values;
 	protected final ContainerItemInput[] indexedValues;
 
-	public DefaultPackagerInputs(List<ContainerItemInput> values, ContainerItemInput[] indexedValues) {
+	public DefaultPackagerInput(List<ContainerItemInput> values, ContainerItemInput[] indexedValues) {
 		this.values = values;
 		this.indexedValues = indexedValues;
 	}

@@ -9,13 +9,13 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.iterator.DefaultStackableItemPermutationRotationIterator.Builder;
+import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator.Builder;
 
-class BoxItemPermutationRotationIteratorTest extends AbstractBoxItemPermutationRotationIteratorTest<DefaultStackableItemPermutationRotationIterator.Builder> {
+class BoxItemPermutationRotationIteratorTest extends AbstractBoxItemPermutationRotationIteratorTest<DefaultBoxItemPermutationRotationIterator.Builder> {
 
 	@Override
 	public Builder newBuilder() {
-		return DefaultStackableItemPermutationRotationIterator.newBuilder();
+		return DefaultBoxItemPermutationRotationIterator.newBuilder();
 	}
 
 	@Test

@@ -3,7 +3,7 @@ package com.github.skjolber.packing.packer.laff;
 import com.github.skjolber.packing.api.Box;
 
 @FunctionalInterface
-public interface StackableFilter {
+public interface BoxFilter {
 
 	/**
 	 * @param s1 stackable 1
