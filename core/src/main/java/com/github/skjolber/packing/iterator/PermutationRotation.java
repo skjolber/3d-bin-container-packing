@@ -5,26 +5,26 @@ import com.github.skjolber.packing.api.BoxStackValue;
 
 /**
  * 
- * A {@linkplain Stackable} in a specific {@linkplain StackValue}.
+ * A {@linkplain Box} in a specific {@linkplain BoxStackValue}.
  *
  */
 
 public class PermutationRotation {
 
-	private final Box stackable;
+	private final Box box;
 	private final BoxStackValue value;
 
 	public PermutationRotation(Box stackable, BoxStackValue value) {
 		super();
-		this.stackable = stackable;
+		this.box = stackable;
 		this.value = value;
 	}
 
-	public Box getStackable() {
-		return stackable;
+	public Box getBox() {
+		return box;
 	}
 
-	public BoxStackValue getValue() {
+	public BoxStackValue getBoxStackValue() {
 		return value;
 	}
 

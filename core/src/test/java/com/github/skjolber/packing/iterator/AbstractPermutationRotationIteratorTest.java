@@ -17,7 +17,7 @@ public class AbstractPermutationRotationIteratorTest {
 		long minVolume = Long.MAX_VALUE;
 		for (int i = offset; i < iterator.length(); i++) {
 			PermutationRotation permutationRotation = iterator.get(i);
-			long volume = permutationRotation.getValue().getVolume();
+			long volume = permutationRotation.getBoxStackValue().getVolume();
 			if(volume < minVolume) {
 				minVolume = volume;
 			}

@@ -57,9 +57,9 @@ public class ParallelPermutationRotationIterator extends AbstractPermutationRota
 			PermutationStackableValue value = matrix[permutations[permutations.length - 1]];
 			PermutationRotation last = value.getBoxes()[0];
 	
-			minStackableVolume[permutations.length - 1] = last.getValue().getVolume();
+			minStackableVolume[permutations.length - 1] = last.getBoxStackValue().getVolume();
 			for (int i = permutations.length - 2; i >= offset + ParallelPermutationRotationIteratorList.PADDING; i--) {
-				long volume = matrix[permutations[i]].getBoxes()[0].getValue().getVolume();
+				long volume = matrix[permutations[i]].getBoxes()[0].getBoxStackValue().getVolume();
 				if(volume < minStackableVolume[i + 1]) {
 					minStackableVolume[i] = volume;
 				} else {

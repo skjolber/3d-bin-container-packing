@@ -15,7 +15,7 @@ import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.BoxItem;
 
-public abstract class AbstractStackableItemPermutationRotationIteratorTest<T extends AbstractStackableItemIteratorBuilder> {
+public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends AbstractBoxItemIteratorBuilder> {
 
 	protected static void assertMinStackableVolumeValid(BoxItemPermutationRotationIterator iterator) {
 		for (int i = 0; i < iterator.length(); i++) {

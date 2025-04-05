@@ -3,15 +3,16 @@ package com.github.skjolber.packing.iterator;
 import java.util.Arrays;
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 
-public class DefaultStackableItemPermutationRotationIterator extends AbstractStackableItemPermutationRotationIterator {
+public class DefaultStackableItemPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator {
 	
 	public static Builder newBuilder() {
 		return new Builder();
 	}
 
-	public static class Builder extends AbstractStackableItemIteratorBuilder<Builder> {
+	public static class Builder extends AbstractBoxItemIteratorBuilder<Builder> {
 
 		public DefaultStackableItemPermutationRotationIterator build() {
 			if(maxLoadWeight == -1) {
@@ -21,18 +22,18 @@ public class DefaultStackableItemPermutationRotationIterator extends AbstractSta
 				throw new IllegalStateException();
 			}
 
-			IndexedStackableItem[] matrix = toMatrix();
+			BoxItem[] matrix = toMatrix();
 
 			return new DefaultStackableItemPermutationRotationIterator(matrix);
 		}
 	}
 
-	public DefaultStackableItemPermutationRotationIterator(IndexedStackableItem[] matrix) {
+	public DefaultStackableItemPermutationRotationIterator(BoxItem[] matrix) {
 		super(matrix);
 		
 		int count = 0;
 		
-		for (IndexedStackableItem loadableItem : matrix) {
+		for (BoxItem loadableItem : matrix) {
 			if(loadableItem != null) {
 				count += loadableItem.getCount();
 			}
@@ -50,7 +51,7 @@ public class DefaultStackableItemPermutationRotationIterator extends AbstractSta
 	public void removePermutations(int count) {
 		// discard a number of items from the front
 		for(int i = 0; i < count; i++) {
-			IndexedStackableItem loadableItem = stackableItems[permutations[i]];
+			BoxItem loadableItem = stackableItems[permutations[i]];
 			
 			loadableItem.decrement();
 			
@@ -71,7 +72,7 @@ public class DefaultStackableItemPermutationRotationIterator extends AbstractSta
 		
 		int offset = 0;
 		for (int j = 0; j < stackableItems.length; j++) {
-			IndexedStackableItem value = stackableItems[j];
+			BoxItem value = stackableItems[j];
 			if(value != null && !value.isEmpty()) {
 				for (int k = 0; k < value.getCount(); k++) {
 					permutations[offset] = j;
@@ -98,7 +99,7 @@ public class DefaultStackableItemPermutationRotationIterator extends AbstractSta
 	public void removePermutations(List<Integer> removed) {
 		
 		 for (Integer i : removed) {
-			IndexedStackableItem loadableItem = stackableItems[i];
+			BoxItem loadableItem = stackableItems[i];
 			
 			loadableItem.decrement();
 			
@@ -238,7 +239,7 @@ public class DefaultStackableItemPermutationRotationIterator extends AbstractSta
 		return new PermutationRotationState(rotations, permutations);
 	}
 
-	public IndexedStackableItem getPermutation(int index) {
+	public BoxItem getPermutation(int index) {
 		return stackableItems[permutations[index]];
 	}
 	

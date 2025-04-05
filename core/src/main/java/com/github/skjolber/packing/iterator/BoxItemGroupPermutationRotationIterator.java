@@ -2,6 +2,8 @@ package com.github.skjolber.packing.iterator;
 
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItemGroup;
+
 /**
  *
  * Rotation and permutations built into the same interface. Minimizes the number of
@@ -35,8 +37,8 @@ import java.util.List;
  *      target="_top">next-lexicographical-permutation-algorithm</a>
  */
 
-public interface StackableItemGroupPermutationRotationIterator extends BoxItemPermutationRotationIterator {
+public interface BoxItemGroupPermutationRotationIterator extends BoxItemPermutationRotationIterator {
 	
-	List<IndexedStackableItemGroup> getGroups();
+	List<BoxItemGroup> getGroups();
 	
 }

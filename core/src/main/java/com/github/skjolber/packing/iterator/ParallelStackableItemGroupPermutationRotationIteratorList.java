@@ -3,6 +3,8 @@ package com.github.skjolber.packing.iterator;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
 
 /**
@@ -11,7 +13,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
  * 
  */
 
-public class ParallelStackableItemGroupPermutationRotationIteratorList implements StackableItemGroupPermutationRotationIterator {
+public class ParallelStackableItemGroupPermutationRotationIteratorList implements BoxItemGroupPermutationRotationIterator {
 
 	protected final static int PADDING = 16;
 
@@ -19,7 +21,7 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 		return new Builder();
 	}
 	
-	public static class Builder extends AbstractStackableItemGroupIteratorBuilder<Builder> {
+	public static class Builder extends AbstractBoxItemGroupIteratorBuilder<Builder> {
 
 		private int parallelizationCount = -1;
 
@@ -40,7 +42,7 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 				throw new IllegalStateException();
 			}
 
-			List<IndexedStackableItemGroup> groups = toMatrix();
+			List<BoxItemGroup> groups = toMatrix();
 			
 			return new ParallelStackableItemGroupPermutationRotationIteratorList(groups, parallelizationCount);
 		}
@@ -51,7 +53,7 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 
 	protected int workUnitIndex = 0;
 	
-	public ParallelStackableItemGroupPermutationRotationIteratorList(List<IndexedStackableItemGroup> groups, int parallelizationCount) {
+	public ParallelStackableItemGroupPermutationRotationIteratorList(List<BoxItemGroup> groups, int parallelizationCount) {
 
 		workUnits = new ParallelStackableItemGroupPermutationRotationIterator[parallelizationCount];
 		for (int i = 0; i < parallelizationCount; i++) {
@@ -59,14 +61,14 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 			// clone working variables so threads are less of the same
 			// memory area as one another
 
-			List<IndexedStackableItemGroup> clones = clone(groups);
+			List<BoxItemGroup> clones = clone(groups);
 			
-			List<IndexedStackableItem> matrix = new ArrayList<>();
-			for (IndexedStackableItemGroup loadableItemGroup : clones) {
+			List<BoxItem> matrix = new ArrayList<>();
+			for (BoxItemGroup loadableItemGroup : clones) {
 				matrix.addAll(loadableItemGroup.getItems());
 			}
 			
-			workUnits[i] = new ParallelStackableItemGroupPermutationRotationIterator(matrix.toArray(new IndexedStackableItem[matrix.size()]), clones);
+			workUnits[i] = new ParallelStackableItemGroupPermutationRotationIterator(matrix.toArray(new BoxItem[matrix.size()]), clones);
 			if(workUnits[i].preventOptmisation() != -1L) {
 				throw new RuntimeException();
 			}
@@ -77,9 +79,9 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 		calculate();
 	}
 	
-	private List<IndexedStackableItemGroup> clone(List<IndexedStackableItemGroup> groups) {
-		List<IndexedStackableItemGroup> result = new ArrayList<>();
-		for (IndexedStackableItemGroup stackableItemGroup : groups) {
+	private List<BoxItemGroup> clone(List<BoxItemGroup> groups) {
+		List<BoxItemGroup> result = new ArrayList<>(groups.size());
+		for (BoxItemGroup stackableItemGroup : groups) {
 			result.add(stackableItemGroup.clone());
 		}
 		return result;
@@ -87,7 +89,7 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 
 	private void calculate() {
 		int count = workUnits[0].getCount();
-		List<IndexedStackableItemGroup> groups = workUnits[0].getGroups();
+		List<BoxItemGroup> groups = workUnits[0].getGroups();
 
 		if(count == 0) {
 			return;
@@ -126,18 +128,18 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 		}
 	}
 
-	protected static int[] unrank(int[] frequencies, int elementCount, long permutationCount, long rank, List<IndexedStackableItemGroup> groups) {
+	protected static int[] unrank(int[] frequencies, int elementCount, long permutationCount, long rank, List<BoxItemGroup> groups) {
 	    int[] result = new int[PADDING + elementCount];
 	    
 	    int resultOffset = 0;
 	    for (int j = 0; j < groups.size(); j++) {
-	    	IndexedStackableItemGroup group = groups.get(j);
+	    	BoxItemGroup group = groups.get(j);
 			
 	    	int stackableItemsCount = group.stackableItemsCount();
 	    	
 		    for(int i = 0; i < stackableItemsCount; i++) {
 		        for(int k = 0; k < group.size(); k++) {
-		        	IndexedStackableItem item = (IndexedStackableItem)group.get(k);
+		        	BoxItem item = (BoxItem)group.get(k);
 		        	
 		        	int index = item.getIndex();
 		        	
@@ -320,12 +322,12 @@ public class ParallelStackableItemGroupPermutationRotationIteratorList implement
 	}
 
 	@Override
-	public IndexedStackableItem[] getStackableItems() {
+	public BoxItem[] getStackableItems() {
 		return workUnits[workUnitIndex].getStackableItems();
 	}
 
 	@Override
-	public List<IndexedStackableItemGroup> getGroups() {
+	public List<BoxItemGroup> getGroups() {
 		return workUnits[workUnitIndex].getGroups();
 	}
 

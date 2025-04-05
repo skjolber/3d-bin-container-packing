@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.iterator.DefaultStackableItemPermutationRotationIterator.Builder;
 
-class BoxItemPermutationRotationIteratorTest extends AbstractStackableItemPermutationRotationIteratorTest<DefaultStackableItemPermutationRotationIterator.Builder> {
+class BoxItemPermutationRotationIteratorTest extends AbstractBoxItemPermutationRotationIteratorTest<DefaultStackableItemPermutationRotationIterator.Builder> {
 
 	@Override
 	public Builder newBuilder() {

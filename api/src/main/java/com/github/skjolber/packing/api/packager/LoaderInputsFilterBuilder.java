@@ -11,14 +11,14 @@ import com.github.skjolber.packing.api.Stack;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class ContainerLoadInputsFilterBuilder<B extends ContainerLoadInputsFilterBuilder<B>> {
+public abstract class LoaderInputsFilterBuilder<B extends LoaderInputsFilterBuilder<B>> {
 
 	protected Stack stack;
 	protected Container container;
-	protected ContainerLoadInputs stackableItemCollection;
+	protected LoaderInputs loaderInputs;
 
-	public B withStackableItems(ContainerLoadInputs stackableItemCollection) {
-		this.stackableItemCollection = stackableItemCollection;
+	public B withLoaderInputs(LoaderInputs containerLoadInputs) {
+		this.loaderInputs = containerLoadInputs;
 		return (B)this;
 	}
 	
@@ -32,7 +32,7 @@ public abstract class ContainerLoadInputsFilterBuilder<B extends ContainerLoadIn
 		return (B)this;
 	}
 
-	public abstract ContainerLoadInputsFilter build();
+	public abstract LoaderInputsFilter build();
 	
 	
 

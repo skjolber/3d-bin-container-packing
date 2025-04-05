@@ -17,7 +17,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
  *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
  */
 
-public abstract class AbstractStackableItemGroupIteratorBuilder<B extends AbstractStackableItemGroupIteratorBuilder<B>>  {
+public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxItemGroupIteratorBuilder<B>>  {
 
 	protected int maxLoadWeight = -1;
 	protected Predicate<Box> filter;
@@ -54,8 +54,8 @@ public abstract class AbstractStackableItemGroupIteratorBuilder<B extends Abstra
 		return (B)this;
 	}
 
-	protected List<IndexedStackableItemGroup> toMatrix() {
-		List<IndexedStackableItemGroup> results = new ArrayList<>(stackableItemGroups.size());
+	protected List<BoxItemGroup> toMatrix() {
+		List<BoxItemGroup> results = new ArrayList<>(stackableItemGroups.size());
 
 		int offset = 0;
 		
@@ -63,7 +63,7 @@ public abstract class AbstractStackableItemGroupIteratorBuilder<B extends Abstra
 			
 			BoxItemGroup group = stackableItemGroups.get(i);
 			
-			List<IndexedStackableItem> loadableItems = new ArrayList<>(group.size());
+			List<BoxItem> loadableItems = new ArrayList<>(group.size());
 			for (int k = 0; k < group.size(); k++) {
 				BoxItem item = group.get(k);
 	
@@ -91,17 +91,17 @@ public abstract class AbstractStackableItemGroupIteratorBuilder<B extends Abstra
 							
 				Box loadable = new Box(stackable, boundRotations);
 	
-				loadableItems.add(new IndexedStackableItem(loadable, item.getCount(), offset));
+				loadableItems.add(new BoxItem(loadable, item.getCount(), offset));
 				
 				offset++;
 			}
 			if(!loadableItems.isEmpty()) {
-				results.add(new IndexedStackableItemGroup(group.getId(), loadableItems));
+				results.add(new BoxItemGroup(group.getId(), loadableItems));
 			}
 		}
 		return results;
 	}
 
-	public abstract StackableItemGroupPermutationRotationIterator build();
+	public abstract BoxItemGroupPermutationRotationIterator build();
 
 }

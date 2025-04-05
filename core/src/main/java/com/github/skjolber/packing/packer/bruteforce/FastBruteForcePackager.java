@@ -206,7 +206,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				int minStackableAreaIndex = rotator.getMinStackableAreaIndex(index);
 				long minStackableVolume = rotator.getMinStackableVolume(index);
 
-				extremePoints.setMinimumAreaAndVolumeLimit(rotator.get(minStackableAreaIndex).getValue().getArea(), minStackableVolume);
+				extremePoints.setMinimumAreaAndVolumeLimit(rotator.get(minStackableAreaIndex).getBoxStackValue().getArea(), minStackableVolume);
 
 				int count = packStackPlacement(extremePoints, stackPlacements, rotator, stack, holder, index, interrupt, minStackableAreaIndex, freeLoadWeights[index]);
 				if(count == Integer.MIN_VALUE) {
@@ -315,7 +315,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			}
 			PermutationRotation permutationRotation = iterator.get(placementIndex);
 
-			Box stackable = permutationRotation.getStackable();
+			Box stackable = permutationRotation.getBox();
 			if(stackable.getWeight() > freeWeightLoad) {
 				break;
 			}
@@ -326,7 +326,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 			StackPlacement placement = placements.get(placementIndex);
 
-			BoxStackValue stackValue = permutationRotation.getValue();
+			BoxStackValue stackValue = permutationRotation.getBoxStackValue();
 
 			int pointCount = extremePoints3D.getValueCount();
 
@@ -377,7 +377,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				if(minArea) {
 					minStackableAreaIndex = iterator.getMinStackableAreaIndex(placementIndex);
 
-					extremePoints3D.setMinimumAreaAndVolumeLimit(iterator.get(minStackableAreaIndex).getValue().getArea(), iterator.getMinStackableVolume(placementIndex));
+					extremePoints3D.setMinimumAreaAndVolumeLimit(iterator.get(minStackableAreaIndex).getBoxStackValue().getArea(), iterator.getMinStackableVolume(placementIndex));
 				} else {
 					extremePoints3D.setMinimumVolumeLimit(iterator.getMinStackableVolume(placementIndex));
 				}

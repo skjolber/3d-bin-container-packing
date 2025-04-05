@@ -52,7 +52,7 @@ public abstract class AbstractPermutationRotationIterator implements Permutation
 		long minArea = Long.MAX_VALUE;
 		for (int i = offset; i < length(); i++) {
 			PermutationRotation permutationRotation = get(i);
-			long area = permutationRotation.getValue().getArea();
+			long area = permutationRotation.getBoxStackValue().getArea();
 			if(area < minArea) {
 				minArea = area;
 			}
@@ -61,12 +61,12 @@ public abstract class AbstractPermutationRotationIterator implements Permutation
 	}
 
 	public int getMinStackableAreaIndex(int offset) {
-		long minArea = get(offset).getValue().getArea();
+		long minArea = get(offset).getBoxStackValue().getArea();
 		int index = offset;
 
 		for (int i = offset + 1; i < length(); i++) {
 			PermutationRotation permutationRotation = get(i);
-			long area = permutationRotation.getValue().getArea();
+			long area = permutationRotation.getBoxStackValue().getArea();
 			if(area < minArea) {
 				minArea = area;
 				index = i;

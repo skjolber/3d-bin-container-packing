@@ -5,15 +5,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
 
-public class ParallelStackableItemGroupPermutationRotationIterator extends AbstractStackableItemGroupPermutationRotationIterator {
+public class ParallelStackableItemGroupPermutationRotationIterator extends AbstractBoxItemGroupPermutationRotationIterator {
 	
 	public static Builder newBuilder() {
 		return new Builder();
 	}
 	
-	public static class Builder extends AbstractStackableItemGroupIteratorBuilder<Builder> {
+	public static class Builder extends AbstractBoxItemGroupIteratorBuilder<Builder> {
 
 		public ParallelStackableItemGroupPermutationRotationIterator build() {
 			if(maxLoadWeight == -1) {
@@ -23,14 +24,14 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 				throw new IllegalStateException();
 			}
 
-			List<IndexedStackableItemGroup> groups = toMatrix();
+			List<BoxItemGroup> groups = toMatrix();
 			
-			List<IndexedStackableItem> matrix = new ArrayList<>();
-			for (IndexedStackableItemGroup loadableItemGroup : groups) {
+			List<BoxItem> matrix = new ArrayList<>();
+			for (BoxItemGroup loadableItemGroup : groups) {
 				matrix.addAll(loadableItemGroup.getItems());
 			}
 			
-			ParallelStackableItemGroupPermutationRotationIterator result = new ParallelStackableItemGroupPermutationRotationIterator(matrix.toArray(new IndexedStackableItem[matrix.size()]), groups);
+			ParallelStackableItemGroupPermutationRotationIterator result = new ParallelStackableItemGroupPermutationRotationIterator(matrix.toArray(new BoxItem[matrix.size()]), groups);
 			
 			result.initiatePermutations();
 			
@@ -45,7 +46,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 	private int lastPermutationMaxIndex = -1;
 	private boolean seenLastPermutationMaxIndex = false;
 
-	public ParallelStackableItemGroupPermutationRotationIterator(IndexedStackableItem[] matrix, List<IndexedStackableItemGroup> groups) {
+	public ParallelStackableItemGroupPermutationRotationIterator(BoxItem[] matrix, List<BoxItemGroup> groups) {
 		super(matrix, groups);
 	}
 
@@ -63,7 +64,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 		return result;
 	}
 	
-	public void setGroups(List<IndexedStackableItemGroup> groups) {
+	public void setGroups(List<BoxItemGroup> groups) {
 		this.groups = groups;
 	}
 
@@ -144,7 +145,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 
 		for(int g = groups.size() - 1; g >= 0; g--) {
 		
-			IndexedStackableItemGroup loadableItemGroup = groups.get(g);
+			BoxItemGroup loadableItemGroup = groups.get(g);
 			
 			// Find longest non-increasing suffix
 	
@@ -163,7 +164,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 				i = startIndex;
 				
 				for (BoxItem loadableItem : loadableItemGroup.getItems()) {
-					IndexedStackableItem indexedStackableItem = (IndexedStackableItem)loadableItem;
+					BoxItem indexedStackableItem = (BoxItem)loadableItem;
 					for(int k = 0; k < indexedStackableItem.getCount(); k++) {
 						permutations[i] = indexedStackableItem.getIndex();
 								
@@ -272,7 +273,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 		int limit = permutations.length;
 
 		for(int g = groups.size() - 1; g >= 0; g--) {
-			IndexedStackableItemGroup loadableItemGroup = groups.get(g);
+			BoxItemGroup loadableItemGroup = groups.get(g);
 
 			// Find longest non-increasing suffix
 			int startIndex = limit - loadableItemGroup.stackableItemsCount();
@@ -310,7 +311,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 			int i = startIndex;
 			
 			for (BoxItem loadableItem : loadableItemGroup.getItems()) {
-				IndexedStackableItem indexedStackableItem = (IndexedStackableItem)loadableItem;
+				BoxItem indexedStackableItem = (BoxItem)loadableItem;
 				for(int k = 0; k < indexedStackableItem.getCount(); k++) {
 					permutations[i] = indexedStackableItem.getIndex();
 							
@@ -350,7 +351,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 	@Override
 	public void removePermutations(List<Integer> removed) {
 		 for (Integer i : removed) {
-			IndexedStackableItem item = stackableItems[i];
+			BoxItem item = stackableItems[i];
 			
 			item.decrement();
 			
@@ -361,7 +362,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 		 
 		// go through all groups and clean up
 		for(int i = 0; i < groups.size(); i++) {
-			IndexedStackableItemGroup group = groups.get(i);
+			BoxItemGroup group = groups.get(i);
 			
 			group.removeEmpty();
 			if(group.isEmpty()) {
@@ -390,7 +391,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 	protected void initiatePermutations() {
 		int count = 0;
 		for (int j = 0; j < stackableItems.length; j++) {
-			IndexedStackableItem value = stackableItems[j];
+			BoxItem value = stackableItems[j];
 			if(value != null && !value.isEmpty()) {
 				count += value.getCount();
 			}
@@ -401,7 +402,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 		
 		int offset = 0;
 		for (int j = 0; j < stackableItems.length; j++) {
-			IndexedStackableItem value = stackableItems[j];
+			BoxItem value = stackableItems[j];
 			if(value != null && !value.isEmpty()) {
 				for (int k = 0; k < value.getCount(); k++) {
 					permutations[ParallelPermutationRotationIteratorList.PADDING + offset] = j;
@@ -416,7 +417,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 		
 		count = 0;
 		for(int g = 0; g < groups.size(); g++) {
-			IndexedStackableItemGroup group = groups.get(g);
+			BoxItemGroup group = groups.get(g);
 			
 			int stackableItemsCount = group.stackableItemsCount();
 			
@@ -444,7 +445,7 @@ public class ParallelStackableItemGroupPermutationRotationIterator extends Abstr
 		seenLastPermutationMaxIndex = true;
 	}
 
-	public List<IndexedStackableItemGroup> getGroups() {
+	public List<BoxItemGroup> getGroups() {
 		return groups;
 	}
 

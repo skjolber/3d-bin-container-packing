@@ -13,11 +13,11 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.packager.ContainerLoadInputs;
+import com.github.skjolber.packing.api.packager.LoaderInputs;
 import com.github.skjolber.packing.iterator.MutableIndexedStackableItemPermutationRotationIterator.Builder;
 import com.github.skjolber.packing.iterator.MutableIndexedStackableItemPermutationRotationIterator.DelegateBuilder;
 
-class MutableLoadablePermutationRotationIteratorTest extends AbstractStackableItemPermutationRotationIteratorTest<DelegateBuilder> {
+class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPermutationRotationIteratorTest<DelegateBuilder> {
 
 	@Override
 	public DelegateBuilder newBuilder() {
@@ -46,7 +46,7 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractStackableIt
 					.withMaxLoadWeight(products1.size())
 					.build();
 			
-			ContainerLoadInputs items = rotator;
+			LoaderInputs items = rotator;
 
 			long unmodifiedRotationsCount = rotator.getIterator().countRotations();
 			

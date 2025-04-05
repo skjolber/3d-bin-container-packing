@@ -50,7 +50,7 @@ public class BruteForcePackagerResult implements PackResult {
 
 			for (int i = 0; i < points.size(); i++) {
 				PermutationRotation permutationRotation = iterator.get(i);
-				Box stackable = permutationRotation.getStackable();
+				Box stackable = permutationRotation.getBox();
 				loadVolume += stackable.getVolume();
 				loadWeight += stackable.getWeight();
 			}
@@ -70,8 +70,8 @@ public class BruteForcePackagerResult implements PackResult {
 			StackPlacement stackPlacement = placements.get(i);
 
 			PermutationRotation permutationRotation = list.get(i);
-			stackPlacement.setValue(permutationRotation.getValue());
-			stackPlacement.setStackable(permutationRotation.getStackable());
+			stackPlacement.setValue(permutationRotation.getBoxStackValue());
+			stackPlacement.setStackable(permutationRotation.getBox());
 
 			Point3D point3d = points.get(i);
 			stackPlacement.setX(point3d.getMinX());

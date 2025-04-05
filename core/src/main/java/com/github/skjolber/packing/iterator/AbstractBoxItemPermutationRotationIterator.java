@@ -6,9 +6,9 @@ import java.util.List;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 
-public abstract class AbstractStackableItemPermutationRotationIterator implements BoxItemPermutationRotationIterator {
+public abstract class AbstractBoxItemPermutationRotationIterator implements BoxItemPermutationRotationIterator {
 
-	protected final IndexedStackableItem[] stackableItems; // by index
+	protected final BoxItem[] stackableItems; // by index
 	
 	protected int[] rotations; // 2^n or 6^n
 	protected int[] reset;
@@ -19,7 +19,7 @@ public abstract class AbstractStackableItemPermutationRotationIterator implement
 	// minimum volume from index i and above
 	protected long[] minStackableVolume;
 	
-	public AbstractStackableItemPermutationRotationIterator(IndexedStackableItem[] matrix) {
+	public AbstractBoxItemPermutationRotationIterator(BoxItem[] matrix) {
 		this.stackableItems = matrix;
 	}
 	
@@ -90,7 +90,7 @@ public abstract class AbstractStackableItemPermutationRotationIterator implement
 		
 		long n = 1;
 		for (int i = 0; i < permutations.length; i++) {
-			IndexedStackableItem value = stackableItems[permutations[i]];
+			BoxItem value = stackableItems[permutations[i]];
 			if(Long.MAX_VALUE / value.getStackable().getStackValues().length <= n) {
 				return -1L;
 			}
@@ -115,7 +115,7 @@ public abstract class AbstractStackableItemPermutationRotationIterator implement
 		int[] permutations = getPermutations();
 		
 		int maxCount = 0;
-		for (IndexedStackableItem value : stackableItems) {
+		for (BoxItem value : stackableItems) {
 			if(value != null) {
 				if(maxCount < value.getCount()) {
 					maxCount = value.getCount();
@@ -126,7 +126,7 @@ public abstract class AbstractStackableItemPermutationRotationIterator implement
 		long n = 1;
 		if(maxCount > 1) {
 			int[] factors = new int[maxCount];
-			for (IndexedStackableItem value : stackableItems) {
+			for (BoxItem value : stackableItems) {
 				if(value != null) {
 					for (int k = 0; k < value.getCount(); k++) {
 						factors[k]++;
@@ -168,7 +168,7 @@ public abstract class AbstractStackableItemPermutationRotationIterator implement
 		return n;
 	}
 	
-	public IndexedStackableItem[] getStackableItems() {
+	public BoxItem[] getStackableItems() {
 		return stackableItems;
 	}
 	public long getMinStackableVolume(int offset) {

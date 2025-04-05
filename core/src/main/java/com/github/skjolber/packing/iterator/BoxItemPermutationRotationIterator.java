@@ -2,6 +2,7 @@ package com.github.skjolber.packing.iterator;
 
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 
 /**
@@ -135,6 +136,6 @@ public interface BoxItemPermutationRotationIterator {
 	
 	void removePermutations(int count);
 
-	IndexedStackableItem[] getStackableItems();
+	BoxItem[] getStackableItems();
 	
 }

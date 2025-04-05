@@ -14,11 +14,11 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.packager.ContainerLoadInputs;
+import com.github.skjolber.packing.api.packager.LoaderInputs;
 import com.github.skjolber.packing.iterator.MutableIndexedStackableItemPermutationRotationIterator.Builder;
 import com.github.skjolber.packing.iterator.MutableIndexedStackableItemPermutationRotationIterator.DelegateBuilder;
 
-class MutableIndexedStackableItemGroupPermutationRotationIteratorTest extends AbstractStackableItemGroupPermutationRotationIteratorTest<MutableIndexedStackableItemGroupPermutationRotationIterator.DelegateBuilder> {
+class MutableIndexedStackableItemGroupPermutationRotationIteratorTest extends AbstractBoxItemGroupPermutationRotationIteratorTest<MutableIndexedStackableItemGroupPermutationRotationIterator.DelegateBuilder> {
 
 	@Override
 	public MutableIndexedStackableItemGroupPermutationRotationIterator.DelegateBuilder newBuilder() {
@@ -51,7 +51,7 @@ class MutableIndexedStackableItemGroupPermutationRotationIteratorTest extends Ab
 					.withMaxLoadWeight(products1.size())
 					.build();
 			
-			ContainerLoadInputs items = rotator;
+			LoaderInputs items = rotator;
 
 			long unmodifiedRotationsCount = rotator.getIterator().countRotations();
 			
@@ -161,7 +161,7 @@ class MutableIndexedStackableItemGroupPermutationRotationIteratorTest extends Ab
 		assertEquals(rotator.size(), 0);
 	}
 	
-	public int[] toFrequency(StackableItemGroupPermutationRotationIterator rotator, int size) {
+	public int[] toFrequency(BoxItemGroupPermutationRotationIterator rotator, int size) {
 		int[] counts = new int[size];
 		for (int i : rotator.getPermutations()) {
 			counts[i]++;

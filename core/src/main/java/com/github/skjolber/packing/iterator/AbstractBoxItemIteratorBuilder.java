@@ -15,7 +15,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
  *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
  */
 
-public abstract class AbstractStackableItemIteratorBuilder<B extends AbstractStackableItemIteratorBuilder<B>> {
+public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIteratorBuilder<B>> {
 
 	protected int maxLoadWeight = -1;
 	protected Predicate<Box> filter;
@@ -52,8 +52,8 @@ public abstract class AbstractStackableItemIteratorBuilder<B extends AbstractSta
 		return (B)this;
 	}
 
-	protected IndexedStackableItem[] toMatrix() {
-		IndexedStackableItem[] results = new IndexedStackableItem[stackableItems.size()];
+	protected BoxItem[] toMatrix() {
+		BoxItem[] results = new BoxItem[stackableItems.size()];
 
 		for (int i = 0; i < stackableItems.size(); i++) {
 			BoxItem item = stackableItems.get(i);
@@ -82,11 +82,11 @@ public abstract class AbstractStackableItemIteratorBuilder<B extends AbstractSta
 						
 			Box loadable = new Box(stackable, boundRotations);
 
-			results[i] = new IndexedStackableItem(loadable, item.getCount(), i);
+			results[i] = new BoxItem(loadable, item.getCount(), i);
 		}
 		return results;
 	}
 
-	public abstract <I extends AbstractStackableItemPermutationRotationIterator> I build();
+	public abstract <I extends AbstractBoxItemPermutationRotationIterator> I build();
 
 }

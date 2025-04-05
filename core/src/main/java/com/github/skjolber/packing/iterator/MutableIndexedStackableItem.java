@@ -1,10 +1,12 @@
 package com.github.skjolber.packing.iterator;
 
-public class MutableIndexedStackableItem extends IndexedStackableItem {
+import com.github.skjolber.packing.api.BoxItem;
 
-	public final IndexedStackableItem source; 
+public class MutableIndexedStackableItem extends BoxItem {
 
-	public MutableIndexedStackableItem(IndexedStackableItem loadableItem) {
+	public final BoxItem source; 
+
+	public MutableIndexedStackableItem(BoxItem loadableItem) {
 		super(loadableItem.getStackable(), loadableItem.getCount(), loadableItem.getIndex());
 		
 		this.source = loadableItem;

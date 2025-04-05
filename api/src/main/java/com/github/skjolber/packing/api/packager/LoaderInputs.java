@@ -4,11 +4,11 @@ import com.github.skjolber.packing.api.BoxItem;
 
 /**
  * 
- * The items which are available for load into some particular container.
+ * The items which are available for a loading session.
  * 
  */
 
-public interface ContainerLoadInputs {
+public interface LoaderInputs {
 	
 	int size();
 	

@@ -84,10 +84,10 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	private void calculateMinStackableVolume(int offset) {
 		PermutationRotation last = get(permutations.length - 1);
 
-		minStackableVolume[permutations.length - 1] = last.getValue().getVolume();
+		minStackableVolume[permutations.length - 1] = last.getBoxStackValue().getVolume();
 
 		for (int i = permutations.length - 2; i >= offset; i--) {
-			long volume = get(i).getValue().getVolume();
+			long volume = get(i).getBoxStackValue().getVolume();
 
 			if(volume < minStackableVolume[i + 1]) {
 				minStackableVolume[i] = volume;

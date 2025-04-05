@@ -3,19 +3,20 @@ package com.github.skjolber.packing.iterator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 
-public abstract class AbstractStackableItemGroupPermutationRotationIterator extends AbstractStackableItemPermutationRotationIterator implements StackableItemGroupPermutationRotationIterator {
+public abstract class AbstractBoxItemGroupPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator implements BoxItemGroupPermutationRotationIterator {
 
-	protected List<IndexedStackableItemGroup> groups;
+	protected List<BoxItemGroup> groups;
 	
-	public AbstractStackableItemGroupPermutationRotationIterator(IndexedStackableItem[] matrix, List<IndexedStackableItemGroup> groups) {
+	public AbstractBoxItemGroupPermutationRotationIterator(BoxItem[] matrix, List<BoxItemGroup> groups) {
 		super(matrix);
 		this.groups = groups;
 	}
 	
 	protected int getCount() {
 		int index = 0;
-		for (IndexedStackableItemGroup loadableItemGroup : groups) {
+		for (BoxItemGroup loadableItemGroup : groups) {
 			index += loadableItemGroup.stackableItemsCount();
 		}
 		return index;
@@ -34,9 +35,9 @@ public abstract class AbstractStackableItemGroupPermutationRotationIterator exte
 		// fit within the container volume
 		long n = 1;
 
-		for (IndexedStackableItemGroup loadableItemGroup : groups) {
+		for (BoxItemGroup loadableItemGroup : groups) {
 
-			List<IndexedStackableItem> items = loadableItemGroup.getItems();
+			List<BoxItem> items = loadableItemGroup.getItems();
 			
 			int count = loadableItemGroup.stackableItemsCount();
 			
@@ -102,7 +103,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIterator exte
 	@Override
 	public void removePermutations(List<Integer> removed) {
 		 for (Integer i : removed) {
-			IndexedStackableItem loadableItem = stackableItems[i];
+			BoxItem loadableItem = stackableItems[i];
 			
 			loadableItem.decrement();
 			
@@ -113,7 +114,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIterator exte
 
 		// go through all groups and clean up
 		for(int i = 0; i < groups.size(); i++) {
-			IndexedStackableItemGroup group = groups.get(i);
+			BoxItemGroup group = groups.get(i);
 			
 			group.removeEmpty();
 			if(group.isEmpty()) {
@@ -123,7 +124,7 @@ public abstract class AbstractStackableItemGroupPermutationRotationIterator exte
 		}
 	}
 	
-	public List<IndexedStackableItemGroup> getGroups() {
+	public List<BoxItemGroup> getGroups() {
 		return groups;
 	}
 	

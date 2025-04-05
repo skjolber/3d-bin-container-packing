@@ -50,7 +50,7 @@ public class PermutationStackableValue {
 		this.stackable = clone.stackable.clone();
 		for (int i = 0; i < values.length; i++) {
 			PermutationRotation permutationRotation = clone.values[i];
-			values[i] = new PermutationRotation(permutationRotation.getStackable().clone(), permutationRotation.getValue().clone());
+			values[i] = new PermutationRotation(permutationRotation.getBox().clone(), permutationRotation.getBoxStackValue().clone());
 			
 		}
 		this.minAreaLimit = clone.minAreaLimit;

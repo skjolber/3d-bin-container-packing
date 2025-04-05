@@ -25,7 +25,7 @@ public class BoxItem implements Serializable {
 		this.count = count;
 	}
 	
-	protected BoxItem(Box stackable, int count, int index) {
+	public BoxItem(Box stackable, int count, int index) {
 		super();
 		this.box = stackable;
 		this.count = count;

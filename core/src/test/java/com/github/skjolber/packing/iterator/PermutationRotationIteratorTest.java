@@ -190,12 +190,12 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		do {
 			// check order unchanged
 			for (int i = 0; i < products.size(); i++) {
-				assertEquals(Integer.toString(i), rotator.get(i).getStackable().getDescription());
+				assertEquals(Integer.toString(i), rotator.get(i).getBox().getDescription());
 			}
 
 			// all rotations can fit
 			for (int i = 0; i < products.size(); i++) {
-				assertTrue(rotator.get(i).getValue().fitsInside3D(container));
+				assertTrue(rotator.get(i).getBoxStackValue().fitsInside3D(container));
 			}
 
 			assertMinStackableVolumeValid(rotator);

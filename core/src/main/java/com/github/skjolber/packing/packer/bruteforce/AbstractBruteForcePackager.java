@@ -141,7 +141,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		int maxLoadWeight = container.getMaxLoadWeight();
 
 		extremePoints.reset(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		extremePoints.setMinimumAreaAndVolumeLimit(iterator.get(minStackableAreaIndex).getValue().getArea(), iterator.getMinStackableVolume(0));
+		extremePoints.setMinimumAreaAndVolumeLimit(iterator.get(minStackableAreaIndex).getBoxStackValue().getArea(), iterator.getMinStackableVolume(0));
 
 		try {
 			// note: currently implemented as a recursive algorithm
@@ -172,7 +172,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 		PermutationRotation permutationRotation = rotator.get(placementIndex);
 
-		Box stackable = permutationRotation.getStackable();
+		Box stackable = permutationRotation.getBox();
 		if(stackable.getWeight() > maxLoadWeight) {
 			return null;
 		}
@@ -182,7 +182,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		}
 
 		StackPlacement placement = placements.get(placementIndex);
-		BoxStackValue stackValue = permutationRotation.getValue();
+		BoxStackValue stackValue = permutationRotation.getBoxStackValue();
 
 		placement.setStackable(stackable);
 		placement.setStackValue(stackValue);
@@ -228,7 +228,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			if(minArea) {
 				nextMinStackableAreaIndex = rotator.getMinStackableAreaIndex(placementIndex + 1);
 
-				extremePointsStack.setMinimumAreaAndVolumeLimit(rotator.get(nextMinStackableAreaIndex).getValue().getArea(), rotator.getMinStackableVolume(placementIndex + 1));
+				extremePointsStack.setMinimumAreaAndVolumeLimit(rotator.get(nextMinStackableAreaIndex).getBoxStackValue().getArea(), rotator.getMinStackableVolume(placementIndex + 1));
 			} else {
 				extremePointsStack.setMinimumVolumeLimit(rotator.getMinStackableVolume(placementIndex + 1));
 

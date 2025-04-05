@@ -3,33 +3,34 @@ package com.github.skjolber.packing.iterator;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.packager.ContainerLoadInputs;
+import com.github.skjolber.packing.api.packager.LoaderInputs;
 
  /**
  *
- * An iterator which also acts as {@linkplain ContainerLoadInputs}. 
+ * An iterator which also acts as {@linkplain LoaderInputs}. 
  *
- * Modifications done via {@linkplain ContainerLoadInputs} is restored on each remove, next rotation or next permutation.
+ * Modifications done via {@linkplain LoaderInputs} is restored on each remove, next rotation or next permutation.
  *
  */
 
 
-public class MutableIndexedStackableItemGroupPermutationRotationIterator extends AbstractStackableItemGroupPermutationRotationIterator implements ContainerLoadInputs, BoxItemPermutationRotationIterator {
+public class MutableIndexedStackableItemGroupPermutationRotationIterator extends AbstractBoxItemGroupPermutationRotationIterator implements LoaderInputs, BoxItemPermutationRotationIterator {
 
 	public static Builder newBuilder() {
 		return new Builder();
 	}
 
-	public static DelegateBuilder newBuilder(AbstractStackableItemGroupIteratorBuilder<?> builder) {
+	public static DelegateBuilder newBuilder(AbstractBoxItemGroupIteratorBuilder<?> builder) {
 		return new DelegateBuilder(builder);
 	}
 	
 	public static class Builder {
 
-		private StackableItemGroupPermutationRotationIterator iterator;
+		private BoxItemGroupPermutationRotationIterator iterator;
 
-		public Builder withIterator(StackableItemGroupPermutationRotationIterator iterator) {
+		public Builder withIterator(BoxItemGroupPermutationRotationIterator iterator) {
 			this.iterator = iterator;
 			return this;
 		}
@@ -39,11 +40,11 @@ public class MutableIndexedStackableItemGroupPermutationRotationIterator extends
 		}
 	}
 	
-	public static class DelegateBuilder extends AbstractStackableItemGroupIteratorBuilder<DelegateBuilder> {
+	public static class DelegateBuilder extends AbstractBoxItemGroupIteratorBuilder<DelegateBuilder> {
 
-		private final AbstractStackableItemGroupIteratorBuilder<?> builder;
+		private final AbstractBoxItemGroupIteratorBuilder<?> builder;
 
-		public DelegateBuilder(AbstractStackableItemGroupIteratorBuilder<?> builder) {
+		public DelegateBuilder(AbstractBoxItemGroupIteratorBuilder<?> builder) {
 			this.builder = builder;
 		}
 		
@@ -58,7 +59,7 @@ public class MutableIndexedStackableItemGroupPermutationRotationIterator extends
 				throw new IllegalStateException();
 			}
 
-			StackableItemGroupPermutationRotationIterator iterator = builder
+			BoxItemGroupPermutationRotationIterator iterator = builder
 																	.withLoadSize(size)
 																	.withMaxLoadWeight(maxLoadWeight)
 																	.withStackableItemGroups(stackableItemGroups)
@@ -71,9 +72,9 @@ public class MutableIndexedStackableItemGroupPermutationRotationIterator extends
 	
 	protected List<MutableIndexedStackableItem> mutableStackableItems;
 	
-	protected final StackableItemGroupPermutationRotationIterator iterator;
+	protected final BoxItemGroupPermutationRotationIterator iterator;
 	
-	public MutableIndexedStackableItemGroupPermutationRotationIterator(StackableItemGroupPermutationRotationIterator iterator) {
+	public MutableIndexedStackableItemGroupPermutationRotationIterator(BoxItemGroupPermutationRotationIterator iterator) {
 		super(iterator.getStackableItems(), iterator.getGroups());
 		
 		permutations = new int[0]; // n!
@@ -86,7 +87,7 @@ public class MutableIndexedStackableItemGroupPermutationRotationIterator extends
 	public void resetFromIterator() {
 		mutableStackableItems = new ArrayList<>();
 		for (int i = 0; i < stackableItems.length; i++) {
-			IndexedStackableItem loadableItem = stackableItems[i];
+			BoxItem loadableItem = stackableItems[i];
 			if(loadableItem != null && !loadableItem.isEmpty()) {
 				mutableStackableItems.add(new MutableIndexedStackableItem(loadableItem));
 			}
@@ -103,7 +104,7 @@ public class MutableIndexedStackableItemGroupPermutationRotationIterator extends
 		System.arraycopy(iterator.getMinStackableVolume(), 0, minStackableVolume, 0, permutations.length);
 	}
 	
-	public IndexedStackableItem get(int index) {
+	public BoxItem get(int index) {
 		return mutableStackableItems.get(index);
 	}
 
@@ -137,7 +138,7 @@ public class MutableIndexedStackableItemGroupPermutationRotationIterator extends
 	
 	@Override
 	public void remove(int index, int count) {
-		IndexedStackableItem loadableItem = mutableStackableItems.get(index);
+		BoxItem loadableItem = mutableStackableItems.get(index);
 		loadableItem.decrement(count);
 		
 		if(loadableItem.isEmpty()) {

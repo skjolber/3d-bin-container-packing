@@ -3,8 +3,9 @@ package com.github.skjolber.packing.iterator;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.packager.ContainerLoadInputs;
+import com.github.skjolber.packing.api.packager.LoaderInputs;
 
  /**
  *
@@ -15,13 +16,13 @@ import com.github.skjolber.packing.api.packager.ContainerLoadInputs;
  */
 
 
-public class MutableIndexedStackableItemPermutationRotationIterator extends AbstractStackableItemPermutationRotationIterator implements ContainerLoadInputs, BoxItemPermutationRotationIterator {
+public class MutableIndexedStackableItemPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator implements LoaderInputs, BoxItemPermutationRotationIterator {
 
 	public static Builder newBuilder() {
 		return new Builder();
 	}
 	
-	public static DelegateBuilder newBuilder(AbstractStackableItemIteratorBuilder<?> builder) {
+	public static DelegateBuilder newBuilder(AbstractBoxItemIteratorBuilder<?> builder) {
 		return new DelegateBuilder(builder);
 	}
 	
@@ -39,11 +40,11 @@ public class MutableIndexedStackableItemPermutationRotationIterator extends Abst
 		}
 	}
 	
-	public static class DelegateBuilder extends AbstractStackableItemIteratorBuilder<DelegateBuilder> {
+	public static class DelegateBuilder extends AbstractBoxItemIteratorBuilder<DelegateBuilder> {
 
-		private final AbstractStackableItemIteratorBuilder<?> builder;
+		private final AbstractBoxItemIteratorBuilder<?> builder;
 
-		public DelegateBuilder(AbstractStackableItemIteratorBuilder<?> builder) {
+		public DelegateBuilder(AbstractBoxItemIteratorBuilder<?> builder) {
 			this.builder = builder;
 		}
 		
@@ -58,7 +59,7 @@ public class MutableIndexedStackableItemPermutationRotationIterator extends Abst
 				throw new IllegalStateException();
 			}
 
-			AbstractStackableItemPermutationRotationIterator iterator = builder
+			AbstractBoxItemPermutationRotationIterator iterator = builder
 																	.withLoadSize(size)
 																	.withMaxLoadWeight(maxLoadWeight)
 																	.withStackableItems(stackableItems)
@@ -86,7 +87,7 @@ public class MutableIndexedStackableItemPermutationRotationIterator extends Abst
 	protected void resetFromIterator() {
 		mutableStackableItems = new ArrayList<>();
 		for (int i = 0; i < stackableItems.length; i++) {
-			IndexedStackableItem loadableItem = stackableItems[i];
+			BoxItem loadableItem = stackableItems[i];
 			if(loadableItem != null && !loadableItem.isEmpty()) {
 				mutableStackableItems.add(new MutableIndexedStackableItem(loadableItem));
 			}
@@ -102,7 +103,7 @@ public class MutableIndexedStackableItemPermutationRotationIterator extends Abst
 		System.arraycopy(iterator.getMinStackableVolume(), 0, minStackableVolume, 0, permutations.length);
 	}
 	
-	public IndexedStackableItem get(int index) {
+	public BoxItem get(int index) {
 		return mutableStackableItems.get(index);
 	}
 
@@ -136,7 +137,7 @@ public class MutableIndexedStackableItemPermutationRotationIterator extends Abst
 	
 	@Override
 	public void remove(int index, int count) {
-		IndexedStackableItem loadableItem = mutableStackableItems.get(index);
+		BoxItem loadableItem = mutableStackableItems.get(index);
 		loadableItem.decrement(count);
 		
 		if(loadableItem.isEmpty()) {
