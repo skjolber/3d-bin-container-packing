@@ -5,18 +5,18 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.packager.PackInput;
+import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
  /**
  *
- * An iterator which also acts as {@linkplain PackInput}. 
+ * An iterator which also acts as {@linkplain FilteredBoxItems}. 
  *
- * Modifications done via {@linkplain PackInput} is restored on each remove, next rotation or next permutation.
+ * Modifications done via {@linkplain FilteredBoxItems} is restored on each remove, next rotation or next permutation.
  *
  */
 
 
-public class MutableBoxItemGroupPermutationRotationIterator extends AbstractBoxItemGroupPermutationRotationIterator implements PackInput, BoxItemPermutationRotationIterator {
+public class MutableBoxItemGroupPermutationRotationIterator extends AbstractBoxItemGroupPermutationRotationIterator implements FilteredBoxItems, BoxItemPermutationRotationIterator {
 
 	public static Builder newBuilder() {
 		return new Builder();
@@ -62,7 +62,7 @@ public class MutableBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			BoxItemGroupPermutationRotationIterator iterator = builder
 																	.withLoadSize(size)
 																	.withMaxLoadWeight(maxLoadWeight)
-																	.withStackableItemGroups(stackableItemGroups)
+																	.withBoxItemGroups(boxItemGroups)
 																	.withFilter(filter)
 																	.build();
 			
@@ -70,7 +70,7 @@ public class MutableBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 		}
 	}
 	
-	protected List<MutableBoxItem> mutableStackableItems;
+	protected List<MutableBoxItem> mutableBoxItems;
 	
 	protected final BoxItemGroupPermutationRotationIterator iterator;
 	
@@ -85,11 +85,11 @@ public class MutableBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	}
 	
 	public void resetFromIterator() {
-		mutableStackableItems = new ArrayList<>();
+		mutableBoxItems = new ArrayList<>();
 		for (int i = 0; i < stackableItems.length; i++) {
 			BoxItem loadableItem = stackableItems[i];
 			if(loadableItem != null && !loadableItem.isEmpty()) {
-				mutableStackableItems.add(new MutableBoxItem(loadableItem));
+				mutableBoxItems.add(new MutableBoxItem(loadableItem));
 			}
 		}
 
@@ -105,12 +105,12 @@ public class MutableBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	}
 	
 	public BoxItem get(int index) {
-		return mutableStackableItems.get(index);
+		return mutableBoxItems.get(index);
 	}
 
 	@Override
 	public int size() {
-		return mutableStackableItems.size();
+		return mutableBoxItems.size();
 	}
 	
 	@Override
@@ -138,11 +138,12 @@ public class MutableBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	
 	@Override
 	public void remove(int index, int count) {
-		BoxItem loadableItem = mutableStackableItems.get(index);
-		loadableItem.decrement(count);
+		MutableBoxItem mutableBoxItem = mutableBoxItems.get(index);
 		
-		if(loadableItem.isEmpty()) {
-			mutableStackableItems.remove(index);
+		mutableBoxItem.decrement(count);
+		
+		if(mutableBoxItem.isEmpty()) {
+			mutableBoxItems.remove(index);
 		}
 		
 		int remainingCount = permutations.length - count;
@@ -153,7 +154,7 @@ public class MutableBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 		
 		int offset = 0;
 		for(int i = 0; i < this.permutations.length; i++) {
-			if(this.permutations[i] == loadableItem.getIndex() && count > 0) {
+			if(this.permutations[i] == mutableBoxItem.getIndex() && count > 0) {
 				count--;
 			} else {
 				permutations[offset] = this.permutations[i];

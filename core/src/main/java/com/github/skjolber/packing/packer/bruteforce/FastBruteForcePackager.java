@@ -9,7 +9,6 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -154,14 +153,11 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 			Dimension dimension = new Dimension(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 
-			StackConstraint constraint = container.getConstraint();
-
 			iterators[i] = DefaultPermutationRotationIterator
 					.newBuilder()
 					.withLoadSize(dimension)
 					.withStackableItems(stackableItems)
 					.withMaxLoadWeight(container.getMaxLoadWeight())
-					.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
 					.build();
 		}
 		
@@ -306,7 +302,6 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 	public int packStackPlacement(FastExtremePoints3DStack extremePoints3D, List<StackPlacement> placements, DefaultPermutationRotationIterator iterator, Stack stack, Container container, int placementIndex,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad) {
 		// pack as many items as possible from placementIndex
-		StackConstraint constraint = container.getConstraint();
 
 		while (placementIndex < iterator.length()) {
 			if(interrupt.getAsBoolean()) {
@@ -320,10 +315,6 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				break;
 			}
 
-			if(constraint != null && !constraint.accepts(stack, stackable)) {
-				break;
-			}
-
 			StackPlacement placement = placements.get(placementIndex);
 
 			BoxStackValue stackValue = permutationRotation.getBoxStackValue();
@@ -334,9 +325,6 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			for (int k = 0; k < pointCount; k++) {
 				Point3D point3d = extremePoints3D.getValue(k);
 				if(!point3d.fits3D(stackValue)) {
-					continue;
-				}
-				if(constraint != null && !constraint.supports(stack, stackable, stackValue, point3d.getMinX(), point3d.getMinY(), point3d.getMinZ())) {
 					continue;
 				}
 

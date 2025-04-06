@@ -1,5 +1,9 @@
 package com.github.skjolber.packing.api;
 
+import java.util.function.Supplier;
+
+import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder;
+
 public class Container {
 
 	private static final long serialVersionUID = 1L;
@@ -62,7 +66,7 @@ public class Container {
 				stack = new Stack();
 			}
 
-			return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack, stackConstraint);
+			return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack, boxItemListenerBuilderSupplier);
 		}
 
 	}
@@ -91,9 +95,9 @@ public class Container {
 
 	protected final Stack stack;
 	
-	protected final StackConstraint constraint;
+	protected final Supplier<BoxItemListenerBuilder<?>> boxItemListenerBuilderSupplier;
 
-	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy, int loadDz, int maxLoadWeight, Stack stack, StackConstraint constraint) {
+	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy, int loadDz, int maxLoadWeight, Stack stack, Supplier<BoxItemListenerBuilder<?>> boxItemListenerBuilderSupplier) {
 		this.id = id;
 		this.description = description;
 
@@ -116,8 +120,7 @@ public class Container {
 		this.volume = (long)dx * (long)dy * (long)dz;
 		
 		this.stack = stack;
-		
-		this.constraint = constraint;
+		this.boxItemListenerBuilderSupplier = boxItemListenerBuilderSupplier;
 	}
 
 	public String getDescription() {
@@ -185,7 +188,7 @@ public class Container {
 
 	@Override
 	public Container clone() {
-		return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, new Stack(), constraint);
+		return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, new Stack(), boxItemListenerBuilderSupplier);
 	}
 	
 	public int getLoadDx() {
@@ -215,8 +218,16 @@ public class Container {
 	public int getDz() {
 		return dz;
 	}
+	
+	public boolean hasBoxItemListenerBuilder() {
+		return boxItemListenerBuilderSupplier != null;
+	}
 
-	public StackConstraint getConstraint() {
-		return constraint;
+	public BoxItemListenerBuilder<?> newBoxItemListenerBuilder() {
+		return boxItemListenerBuilderSupplier.get().withContainer(this).withStack(stack);
+	}
+	
+	public Supplier<BoxItemListenerBuilder<?>> getBoxItemListenerBuilderSupplier() {
+		return boxItemListenerBuilderSupplier;
 	}
 }

@@ -8,7 +8,6 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
@@ -79,14 +78,11 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 	public DefaultPackResult pack(List<Box> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt) {
 		List<Box> remainingStackables = new ArrayList<>(stackables);
 
-		StackConstraint constraint = targetContainer.getConstraint();
-
 		LevelStack stack = new LevelStack(targetContainer);
 
 		List<Box> scopedStackables = stackables
 				.stream()
 				.filter(s -> s.getVolume() <= targetContainer.getMaxLoadVolume() && s.getWeight() <= targetContainer.getMaxLoadWeight())
-				.filter(s -> constraint == null || constraint.canAccept(s))
 				.collect(Collectors.toList());
 
 		ExtremePoints3D extremePoints3D = new ExtremePoints3D(targetContainer.getLoadDx(), targetContainer.getLoadDy(), targetContainer.getLoadDz());
@@ -116,9 +112,6 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				if(box.getWeight() > maxWeight) {
 					continue;
 				}
-				if(constraint != null && !constraint.accepts(stack, box)) {
-					continue;
-				}
 				if(firstBox != null && !FIRST_STACKABLE_FILTER.filter(firstBox, box)) {
 					continue;
 				}
@@ -130,9 +123,6 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 						continue;
 					}
 
-					if(constraint != null && !constraint.supports(stack, box, stackValue, 0, 0, levelOffset)) {
-						continue;
-					}
 					firstIndex = i;
 					firstStackValue = stackValue;
 					firstBox = box;
@@ -175,9 +165,6 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 					if(box.getWeight() > maxRemainingLevelWeight) {
 						continue;
 					}
-					if(constraint != null && !constraint.accepts(stack, box)) {
-						continue;
-					}
 
 					if(bestStackValue != null && !DEFAULT_STACKABLE_FILTER.filter(bestStackable, box)) {
 						continue;
@@ -198,9 +185,6 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 								continue;
 							}
 							if(bestIndex != -1 && !betterAsNext(bestStackable, extremePoints3D.getValue(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
-								continue;
-							}
-							if(constraint != null && !constraint.supports(stack, box, stackValue, point3d.getMinX(), point3d.getMinY(), levelOffset + point3d.getMinZ())) {
 								continue;
 							}
 							bestPointIndex = k;
@@ -258,7 +242,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 				targetContainer.getLoadDx(), targetContainer.getLoadDy(), targetContainer.getLoadDz(),
 				targetContainer.getMaxLoadWeight(),
-				stack, targetContainer.getConstraint()),
+				stack, targetContainer.getBoxItemListenerBuilderSupplier()),
 				
 				stack, remainingStackables.isEmpty(), index);
 	}

@@ -37,14 +37,14 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.withParallelizationCount(5)
 				.build();
 
 		ParallelBoxItemGroupPermutationRotationIterator rotator2 = ParallelBoxItemGroupPermutationRotationIterator.newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.build();
 		
@@ -81,7 +81,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.withParallelizationCount(2)
 				.build();
@@ -118,7 +118,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.withParallelizationCount(2)
 				.build();
@@ -157,7 +157,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.withParallelizationCount(2)
 				.build();
@@ -193,7 +193,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 
 		ParallelBoxItemGroupPermutationRotationIteratorList iterator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products1.size())
 				.withParallelizationCount(1)
 				.build();
@@ -244,7 +244,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList iterator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.withParallelizationCount(2)
 				.build();
@@ -297,7 +297,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList iterator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.withParallelizationCount(2)
 				.build();

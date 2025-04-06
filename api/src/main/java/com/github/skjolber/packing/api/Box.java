@@ -77,7 +77,7 @@ public class Box {
 				//
 
 				if(stackableSurface.is0() || stackableSurface.is90()) {
-					list.add(newStackValue(dx, dy, dz, constraint, stackableSurface.getSides(), list.size()));
+					list.add(newStackValue(dx, dy, dz, stackableSurface.getSides(), list.size()));
 				}
 			} else if(dx == dy) {
 
@@ -105,7 +105,7 @@ public class Box {
 				// add xz/yz and xy
 
 				if(stackableSurface.isXY()) {
-					list.add(newStackValue(dx, dx, dz, constraint, stackableSurface.getXYSurfaces(), list.size()));
+					list.add(newStackValue(dx, dx, dz, stackableSurface.getXYSurfaces(), list.size()));
 				}
 				if(stackableSurface.isXZ() || stackableSurface.isYZ()) {
 
@@ -113,10 +113,10 @@ public class Box {
 					boolean ninety = stackableSurface.isXZ90() || stackableSurface.isYZ90();
 
 					if(zero) {
-						list.add(newStackValue(dx, dz, dx, constraint, stackableSurface.getYZAndXZSurfaces0(), list.size()));
+						list.add(newStackValue(dx, dz, dx, stackableSurface.getYZAndXZSurfaces0(), list.size()));
 					}
 					if(ninety) {
-						list.add(newStackValue(dz, dx, dx, constraint, stackableSurface.getYZAndXZSurfaces90(), list.size()));
+						list.add(newStackValue(dz, dx, dx, stackableSurface.getYZAndXZSurfaces90(), list.size()));
 
 					}
 
@@ -142,7 +142,7 @@ public class Box {
 				// add xz/xy and yz
 
 				if(stackableSurface.isYZ()) {
-					list.add(newStackValue(dy, dy, dx, constraint, stackableSurface.getYZSurfaces(), list.size()));
+					list.add(newStackValue(dy, dy, dx, stackableSurface.getYZSurfaces(), list.size()));
 				}
 				if(stackableSurface.isXY() || stackableSurface.isXZ()) {
 
@@ -150,10 +150,10 @@ public class Box {
 					boolean ninety = stackableSurface.isXY90() || stackableSurface.isXZ90();
 
 					if(zero) {
-						list.add(newStackValue(dx, dz, dz, constraint, stackableSurface.getXYAndXZSurfaces0(), list.size()));
+						list.add(newStackValue(dx, dz, dz, stackableSurface.getXYAndXZSurfaces0(), list.size()));
 					}
 					if(ninety) {
-						list.add(newStackValue(dz, dx, dz, constraint, stackableSurface.getXYAndXZSurfaces90(), list.size()));
+						list.add(newStackValue(dz, dx, dz, stackableSurface.getXYAndXZSurfaces90(), list.size()));
 					}
 				}
 
@@ -182,17 +182,17 @@ public class Box {
 				// add xy/zy and xz
 
 				if(stackableSurface.isXZ()) {
-					list.add(newStackValue(dx, dx, dy, constraint, stackableSurface.getXZSurfaces(), list.size()));
+					list.add(newStackValue(dx, dx, dy, stackableSurface.getXZSurfaces(), list.size()));
 				}
 				if(stackableSurface.isXY() || stackableSurface.isYZ()) {
 					boolean zero = stackableSurface.isXY0() || stackableSurface.isYZ0();
 					boolean ninety = stackableSurface.isXY90() || stackableSurface.isYZ90();
 
 					if(zero) {
-						list.add(newStackValue(dx, dy, dx, constraint, stackableSurface.getXYAndYZSurfaces0(), list.size()));
+						list.add(newStackValue(dx, dy, dx, stackableSurface.getXYAndYZSurfaces0(), list.size()));
 					}
 					if(ninety) {
-						list.add(newStackValue(dy, dx, dx, constraint, stackableSurface.getXYAndYZSurfaces90(), list.size()));
+						list.add(newStackValue(dy, dx, dx, stackableSurface.getXYAndYZSurfaces90(), list.size()));
 					}
 				}
 			} else {
@@ -267,24 +267,24 @@ public class Box {
 				//			
 
 				if(stackableSurface.isXY0()) {
-					list.add(newStackValue(dx, dy, dz, constraint, stackableSurface.getXY0Surfaces(), list.size()));
+					list.add(newStackValue(dx, dy, dz, stackableSurface.getXY0Surfaces(), list.size()));
 				}
 				if(stackableSurface.isXY90()) {
-					list.add(newStackValue(dy, dx, dz, constraint, stackableSurface.getXY90Surfaces(), list.size()));
+					list.add(newStackValue(dy, dx, dz,  stackableSurface.getXY90Surfaces(), list.size()));
 				}
 
 				if(stackableSurface.isXZ0()) {
-					list.add(newStackValue(dx, dz, dy, constraint, stackableSurface.getXZ0Surfaces(), list.size()));
+					list.add(newStackValue(dx, dz, dy, stackableSurface.getXZ0Surfaces(), list.size()));
 				}
 				if(stackableSurface.isXZ90()) {
-					list.add(newStackValue(dz, dx, dy, constraint, stackableSurface.getXZ90Surfaces(), list.size()));
+					list.add(newStackValue(dz, dx, dy, stackableSurface.getXZ90Surfaces(), list.size()));
 				}
 
 				if(stackableSurface.isYZ0()) {
-					list.add(newStackValue(dz, dy, dx, constraint, stackableSurface.getYZ0Surfaces(), list.size()));
+					list.add(newStackValue(dz, dy, dx, stackableSurface.getYZ0Surfaces(), list.size()));
 				}
 				if(stackableSurface.isYZ90()) {
-					list.add(newStackValue(dy, dz, dx, constraint, stackableSurface.getYZ90Surfaces(), list.size()));
+					list.add(newStackValue(dy, dz, dx, stackableSurface.getYZ90Surfaces(), list.size()));
 				}
 			}
 
@@ -320,8 +320,8 @@ public class Box {
 			return (T[])new BoxStackValue[size];
 		}
 
-		protected BoxStackValue newStackValue(int dx, int dy, int dz, StackValueConstraint constraint, List<Surface> surfaces, int index) {
-			return new BoxStackValue(dx, dy, dz, constraint, surfaces, index);
+		protected BoxStackValue newStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index) {
+			return new BoxStackValue(dx, dy, dz, surfaces, index);
 		}
 	}
 

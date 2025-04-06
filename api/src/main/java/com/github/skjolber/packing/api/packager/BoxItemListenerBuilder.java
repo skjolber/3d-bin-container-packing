@@ -6,18 +6,17 @@ import com.github.skjolber.packing.api.Stack;
 /**
  * Builder scaffold.
  * 
- * @see <a href=
- *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
+ * This covers initial filtering of box items and possibly in-flight filtering.
  */
 
 @SuppressWarnings("unchecked")
-public abstract class PackInputFilterBuilder<B extends PackInputFilterBuilder<B>> {
+public abstract class BoxItemListenerBuilder<B extends BoxItemListenerBuilder<B>> {
 
 	protected Stack stack;
 	protected Container container;
-	protected PackInput input;
+	protected FilteredBoxItems input;
 
-	public B withLoaderInputs(PackInput input) {
+	public B withLoaderInputs(FilteredBoxItems input) {
 		this.input = input;
 		return (B)this;
 	}
@@ -31,8 +30,8 @@ public abstract class PackInputFilterBuilder<B extends PackInputFilterBuilder<B>
 		this.stack = stack;
 		return (B)this;
 	}
-
-	public abstract PackInputFilter build();
+	
+	public abstract BoxItemListener build();
 	
 	
 

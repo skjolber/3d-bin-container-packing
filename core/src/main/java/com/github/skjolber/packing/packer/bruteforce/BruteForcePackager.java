@@ -8,9 +8,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.StackValueConstraint;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -135,8 +133,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			ContainerItem containerItem = containers.get(i);
 			Container container = containerItem.getContainer();
 
-			StackConstraint constraint = container.getConstraint();
-
 			Dimension dimension = new Dimension(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 
 			iterators[i] = DefaultPermutationRotationIterator
@@ -144,7 +140,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 					.withLoadSize(dimension)
 					.withStackableItems(stackableItems)
 					.withMaxLoadWeight(container.getMaxLoadWeight())
-					.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
 					.build();
 		}
 		

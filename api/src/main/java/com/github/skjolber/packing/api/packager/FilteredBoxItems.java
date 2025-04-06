@@ -4,11 +4,11 @@ import com.github.skjolber.packing.api.BoxItem;
 
 /**
  * 
- * The items for a specific container stacking session.
+ * List of box item which have been filtered.
  * 
  */
 
-public interface PackInput {
+public interface FilteredBoxItems {
 	
 	int size();
 	

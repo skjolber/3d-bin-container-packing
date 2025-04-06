@@ -14,7 +14,7 @@ import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 public class ExtremePoints3DTest {
 	
 	private StackPlacement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
-		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, null, -1);
+		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, -1);
 		
 		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(0).build();
 		

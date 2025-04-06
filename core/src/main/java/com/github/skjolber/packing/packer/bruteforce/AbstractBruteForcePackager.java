@@ -10,9 +10,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.StackValueConstraint;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -145,7 +143,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 		try {
 			// note: currently implemented as a recursive algorithm
-			return packStackPlacement(extremePoints, placements, iterator, stack, maxLoadWeight, 0, interrupt, container.getConstraint(), minStackableAreaIndex, Collections.emptyList());
+			return packStackPlacement(extremePoints, placements, iterator, stack, maxLoadWeight, 0, interrupt, minStackableAreaIndex, Collections.emptyList());
 		} catch (StackOverflowError e) {
 			LOGGER.warning("Stack overflow occoured for " + placements.size() + " boxes. Limit number of boxes or increase thread stack");
 			return null;
@@ -160,7 +158,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			int maxLoadWeight, 
 			int placementIndex, 
 			PackagerInterruptSupplier interrupt, 
-			StackConstraint constraint, 
 			int minStackableAreaIndex,
 			// optimize: pass best along so that we do not need to get points to known whether extracting the points is necessary
 			List<Point3D> best
@@ -175,10 +172,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		Box stackable = permutationRotation.getBox();
 		if(stackable.getWeight() > maxLoadWeight) {
 			return null;
-		}
-
-		if(constraint != null && !constraint.accepts(stack, stackable)) {
-			return extremePointsStack.getPoints();
 		}
 
 		StackPlacement placement = placements.get(placementIndex);
@@ -201,9 +194,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			Point3D point3d = extremePointsStack.getValue(k);
 
 			if(!point3d.fits3D(stackValue)) {
-				continue;
-			}
-			if(constraint != null && !constraint.supports(stack, stackable, stackValue, point3d.getMinX(), point3d.getMinY(), point3d.getMinZ())) {
 				continue;
 			}
 
@@ -235,7 +225,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				nextMinStackableAreaIndex = minStackableAreaIndex;
 			}
 
-			List<Point3D> points = packStackPlacement(extremePointsStack, placements, rotator, stack, maxLoadWeight, placementIndex + 1, interrupt, constraint,
+			List<Point3D> points = packStackPlacement(extremePointsStack, placements, rotator, stack, maxLoadWeight, placementIndex + 1, interrupt, 
 					nextMinStackableAreaIndex, best);
 
 			stack.remove(placement);

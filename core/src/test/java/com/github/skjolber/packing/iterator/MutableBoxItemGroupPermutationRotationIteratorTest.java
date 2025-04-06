@@ -14,7 +14,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.packager.PackInput;
+import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 import com.github.skjolber.packing.iterator.MutableBoxItemPermutationRotationIterator.Builder;
 import com.github.skjolber.packing.iterator.MutableBoxItemPermutationRotationIterator.DelegateBuilder;
 
@@ -37,7 +37,7 @@ class MutableBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxItem
 			for (int k = 0; k < i; k++) {
 				Box box = Box.newBuilder().withSize(3, 1, 1).withRotate3D().withId(Integer.toString(k)).withWeight(1).build();
 
-				BoxItem item = new BoxItem(box);
+				BoxItem item = new BoxItem(box, 1, k);
 
 				products1.add(item);
 			}
@@ -47,11 +47,11 @@ class MutableBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxItem
 			MutableBoxItemGroupPermutationRotationIterator rotator = 
 					newBuilder()
 					.withLoadSize(container)
-					.withStackableItemGroups(groups)
+					.withBoxItemGroups(groups)
 					.withMaxLoadWeight(products1.size())
 					.build();
 			
-			PackInput items = rotator;
+			FilteredBoxItems items = rotator;
 
 			long unmodifiedRotationsCount = rotator.getIterator().countRotations();
 			
@@ -83,18 +83,17 @@ class MutableBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxItem
 
 		List<BoxItem> products = new ArrayList<>();
 
-		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2));
-		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2, 0));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4, 1));
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 		groups.add(new BoxItemGroup("1", products));
 		
 		MutableBoxItemGroupPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products.size())
 				.build();
-
 		
 		int count = 0;
 		do {
@@ -118,15 +117,15 @@ class MutableBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxItem
 
 		List<BoxItem> products = new ArrayList<>();
 
-		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2));
-		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2, 0));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4, 1));
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 		groups.add(new BoxItemGroup("1", products));
 
 		MutableBoxItemGroupPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products.size())
 				.build();
 

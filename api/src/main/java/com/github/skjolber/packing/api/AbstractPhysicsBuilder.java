@@ -10,7 +10,6 @@ package com.github.skjolber.packing.api;
 @SuppressWarnings("unchecked")
 public class AbstractPhysicsBuilder<B extends AbstractPhysicsBuilder<B>> {
 
-	protected StackValueConstraint constraint;
 	protected Dimension size;
 	protected StackableSurface stackableSurface;
 
@@ -31,11 +30,6 @@ public class AbstractPhysicsBuilder<B extends AbstractPhysicsBuilder<B>> {
 	public B withStackableSurface(StackableSurface stackableSurface) {
 		this.stackableSurface = stackableSurface;
 
-		return (B)this;
-	}
-
-	public B withConstraint(StackValueConstraint stackConstraint) {
-		this.constraint = stackConstraint;
 		return (B)this;
 	}
 

@@ -1,6 +1,9 @@
 package com.github.skjolber.packing.api;
 
 import java.util.List;
+import java.util.function.Supplier;
+
+import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder;
 
 @SuppressWarnings("unchecked")
 public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
@@ -18,7 +21,7 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 	protected int loadDy = -1; // y
 	protected int loadDz = -1; // z
 
-	protected StackConstraint stackConstraint;
+	protected Supplier<BoxItemListenerBuilder<?>> boxItemListenerBuilderSupplier;
 
 	protected List<Surface> surfaces;
 
@@ -38,11 +41,6 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 		this.loadDx = dx;
 		this.loadDy = dy;
 		this.loadDz = dz;
-		return (B)this;
-	}
-
-	public B withStackConstraint(StackConstraint stackConstraint) {
-		this.stackConstraint = stackConstraint;
 		return (B)this;
 	}
 

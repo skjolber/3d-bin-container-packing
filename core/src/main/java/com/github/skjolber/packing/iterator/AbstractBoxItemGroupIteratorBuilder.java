@@ -22,7 +22,7 @@ public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxI
 	protected int maxLoadWeight = -1;
 	protected Predicate<Box> filter;
 	protected Dimension size;
-	protected List<BoxItemGroup> stackableItemGroups;
+	protected List<BoxItemGroup> boxItemGroups;
 
 	public B withSize(int dx, int dy, int dz) {
 		this.size = new Dimension(dx, dy, dz);
@@ -48,20 +48,20 @@ public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxI
 		return (B)this;
 	}
 
-	public B withStackableItemGroups(List<BoxItemGroup> stackableItems) {
-		this.stackableItemGroups = stackableItems;
+	public B withBoxItemGroups(List<BoxItemGroup> stackableItems) {
+		this.boxItemGroups = stackableItems;
 
 		return (B)this;
 	}
 
 	protected List<BoxItemGroup> toMatrix() {
-		List<BoxItemGroup> results = new ArrayList<>(stackableItemGroups.size());
+		List<BoxItemGroup> results = new ArrayList<>(boxItemGroups.size());
 
 		int offset = 0;
 		
-		for (int i = 0; i < stackableItemGroups.size(); i++) {
+		for (int i = 0; i < boxItemGroups.size(); i++) {
 			
-			BoxItemGroup group = stackableItemGroups.get(i);
+			BoxItemGroup group = boxItemGroups.get(i);
 			
 			List<BoxItem> loadableItems = new ArrayList<>(group.size());
 			for (int k = 0; k < group.size(); k++) {

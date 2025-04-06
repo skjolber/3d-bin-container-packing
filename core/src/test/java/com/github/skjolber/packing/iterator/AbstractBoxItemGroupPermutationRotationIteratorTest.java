@@ -40,7 +40,7 @@ public abstract class AbstractBoxItemGroupPermutationRotationIteratorTest<T exte
 		
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.build();
 
@@ -77,7 +77,7 @@ public abstract class AbstractBoxItemGroupPermutationRotationIteratorTest<T exte
 		
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.build();
 
@@ -113,7 +113,7 @@ public abstract class AbstractBoxItemGroupPermutationRotationIteratorTest<T exte
 		
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.build();
 		
@@ -151,7 +151,7 @@ public abstract class AbstractBoxItemGroupPermutationRotationIteratorTest<T exte
 		
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.build();
 		
@@ -192,7 +192,7 @@ public abstract class AbstractBoxItemGroupPermutationRotationIteratorTest<T exte
 		
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.build();
 		
@@ -242,7 +242,7 @@ public abstract class AbstractBoxItemGroupPermutationRotationIteratorTest<T exte
 		
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.build();
 
@@ -294,7 +294,7 @@ public abstract class AbstractBoxItemGroupPermutationRotationIteratorTest<T exte
 		
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container)
-				.withStackableItemGroups(groups)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.build();
 

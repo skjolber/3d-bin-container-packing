@@ -8,7 +8,6 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point3D;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
@@ -49,14 +48,11 @@ public class PlainPackager extends AbstractPlainPackager {
 	public DefaultPackResult pack(List<Box> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt) {
 		List<Box> remainingStackables = new ArrayList<>(stackables);
 
-		StackConstraint constraint = targetContainer.getConstraint();
-
 		Stack stack = new Stack();
 
 		List<Box> scopedStackables = stackables
 				.stream()
 				.filter(s -> s.getVolume() <= targetContainer.getMaxLoadVolume() && s.getWeight() <= targetContainer.getMaxLoadWeight())
-				.filter(s -> constraint == null || constraint.canAccept(s))
 				.collect(Collectors.toList());
 
 		ExtremePoints3D extremePoints3D = new ExtremePoints3D(targetContainer.getLoadDx(), targetContainer.getLoadDy(), targetContainer.getLoadDz());
@@ -96,10 +92,6 @@ public class PlainPackager extends AbstractPlainPackager {
 					continue;
 				}
 
-				if(constraint != null && !constraint.accepts(stack, box)) {
-					continue;
-				}
-
 				for (BoxStackValue stackValue : box.getStackValues()) {
 					if(stackValue.getArea() > maxPointArea) {
 						continue;
@@ -136,10 +128,6 @@ public class PlainPackager extends AbstractPlainPackager {
 							}
 						} else {
 							pointSupportPercent = calculateXYSupportPercent(extremePoints3D, point3d, stackValue);
-						}
-						
-						if(constraint != null && !constraint.supports(stack, box, stackValue, point3d.getMinX(), point3d.getMinY(), point3d.getMinZ())) {
-							continue;
 						}
 						
 						bestPointSupportPercent = pointSupportPercent;
@@ -186,7 +174,7 @@ public class PlainPackager extends AbstractPlainPackager {
 
 				targetContainer.getLoadDx(), targetContainer.getLoadDy(), targetContainer.getLoadDz(),
 				targetContainer.getMaxLoadWeight(),
-				stack, targetContainer.getConstraint()),
+				stack, targetContainer.getBoxItemListenerBuilderSupplier()),
 				
 				stack, remainingStackables.isEmpty(), index);		
 	}

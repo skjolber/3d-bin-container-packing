@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.packager.PackInput;
+import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 import com.github.skjolber.packing.iterator.MutableBoxItemPermutationRotationIterator.Builder;
 import com.github.skjolber.packing.iterator.MutableBoxItemPermutationRotationIterator.DelegateBuilder;
 
@@ -34,7 +34,7 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPerm
 			for (int k = 0; k < i; k++) {
 				Box box = Box.newBuilder().withSize(3, 1, 1).withRotate3D().withId(Integer.toString(k)).withWeight(1).build();
 
-				BoxItem item = new BoxItem(box);
+				BoxItem item = new BoxItem(box, 1, k);
 
 				products1.add(item);
 			}
@@ -42,11 +42,11 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPerm
 			MutableBoxItemPermutationRotationIterator rotator = 
 					newBuilder()
 					.withLoadSize(container)
-					.withStackableItems(products1)
+					.withBoxItems(products1)
 					.withMaxLoadWeight(products1.size())
 					.build();
 			
-			PackInput items = rotator;
+			FilteredBoxItems items = rotator;
 
 			long unmodifiedRotationsCount = rotator.getIterator().countRotations();
 			
@@ -78,12 +78,12 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPerm
 
 		List<BoxItem> products = new ArrayList<>();
 
-		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2));
-		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2, 0));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4, 1));
 
 		MutableBoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -110,12 +110,12 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPerm
 
 		List<BoxItem> products = new ArrayList<>();
 
-		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2));
-		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2, 0));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4, 1));
 
 		MutableBoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 

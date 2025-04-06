@@ -13,7 +13,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Dimension;
-import com.github.skjolber.packing.api.StackConstraint;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.api.BoxItem;
@@ -314,15 +313,12 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		for (int i = 0; i < containerItems.size(); i++) {
 			Container container = containerItems.get(i).getContainer();
 
-			StackConstraint constraint = container.getConstraint();
-
 			Dimension dimension = new Dimension(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 
 			parallelIterators[i] = new ParallelPermutationRotationIteratorListBuilder()
 					.withLoadSize(dimension)
 					.withStackableItems(stackableItems)
 					.withMaxLoadWeight(container.getMaxLoadWeight())
-					.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
 					.withParallelizationCount(parallelizationCount)
 					.build();
 
@@ -331,7 +327,6 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 					.withLoadSize(dimension)
 					.withStackableItems(stackableItems)
 					.withMaxLoadWeight(container.getMaxLoadWeight())
-					.withFilter(stackable -> constraint == null || constraint.canAccept(stackable))
 					.build();
 		}
 

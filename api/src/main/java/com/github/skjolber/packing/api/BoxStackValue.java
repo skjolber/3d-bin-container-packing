@@ -14,18 +14,15 @@ public class BoxStackValue {
 
 	protected final long area;
 
-	protected final StackValueConstraint constraint;
-
 	protected final List<Surface> surfaces;
 	protected long volume;
 	
 	protected final int index;
 
-	public BoxStackValue(int dx, int dy, int dz, StackValueConstraint constraint, List<Surface> surfaces, int index) {
+	public BoxStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index) {
 		this.dx = dx;
 		this.dy = dy;
 		this.dz = dz;
-		this.constraint = constraint;
 		this.surfaces = surfaces;
 
 		this.area = (long)dx * (long)dy;
@@ -38,7 +35,6 @@ public class BoxStackValue {
 		this.dx = other.dx;
 		this.dy = other.dy;
 		this.dz = other.dz;
-		this.constraint = other.constraint;
 		this.surfaces = other.surfaces;
 
 		this.area = other.area;
@@ -85,10 +81,6 @@ public class BoxStackValue {
 
 	public long getVolume() {
 		return volume;
-	}
-
-	public StackValueConstraint getConstraint() {
-		return constraint;
 	}
 
 	public List<Surface> getSurfaces() {

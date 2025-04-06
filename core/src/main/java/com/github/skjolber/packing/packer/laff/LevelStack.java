@@ -121,7 +121,7 @@ public class LevelStack extends Stack {
 				container.getEmptyWeight(),
 				container.getLoadDx(), container.getLoadDy(), container.getLoadDz() - dz,
 				freeWeight,
-				new Stack(), container.getConstraint());
+				new Stack(), container.getBoxItemListenerBuilderSupplier());
 	}
 
 	public int getFreeLoadDz() {
@@ -138,7 +138,8 @@ public class LevelStack extends Stack {
 				container.getEmptyWeight(),
 				container.getLoadDx(), container.getLoadDy(), dz,
 				freeWeight,
-				new Stack(), container.getConstraint());
+				new Stack(),
+				container.getBoxItemListenerBuilderSupplier());
 	}
 
 	public int getSupportedCount() {

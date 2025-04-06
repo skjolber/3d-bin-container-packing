@@ -94,7 +94,7 @@ public class ExtremePoints3D implements ExtremePoints {
 	@SuppressWarnings("unchecked")
 	private StackPlacement createContainerPlacement() {
 		
-		BoxStackValue value = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, containerMaxY + 1, null, null, -1);
+		BoxStackValue value = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, containerMaxY + 1, null, -1);
 		
 		return new StackPlacement(null, value, 0, 0, 0);
 	}

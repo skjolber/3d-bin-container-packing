@@ -30,7 +30,7 @@ class BoxItemPermutationRotationIteratorTest extends AbstractBoxItemPermutationR
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
