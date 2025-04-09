@@ -5,16 +5,16 @@ package com.github.skjolber.packing.api.packager;
  * 
  */
 
-public class DefaultBoxItemListener implements BoxItemListener {
+public class NoopBoxItemListener implements BoxItemListener {
 
 	protected final FilteredBoxItems input;
 
-	public DefaultBoxItemListener(FilteredBoxItems input) {
+	public NoopBoxItemListener(FilteredBoxItems input) {
 		this.input = input;
 	}
 
 	@Override
-	public void packed(int index) {
+	public void packedBoxItem(int index) {
 		// do nothing
 	}
 

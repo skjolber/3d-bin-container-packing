@@ -17,6 +17,6 @@ public interface BoxItemListener {
 	 * @param index index as in {@linkplain FilteredBoxItems}
 	 */
 	
-	void packed(int index);
+	void packedBoxItem(int index);
 	
 }
