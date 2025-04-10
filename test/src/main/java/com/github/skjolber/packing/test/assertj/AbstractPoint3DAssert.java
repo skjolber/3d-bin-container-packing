@@ -2,10 +2,10 @@ package com.github.skjolber.packing.test.assertj;
 
 import org.assertj.core.api.AbstractObjectAssert;
 
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 
 @SuppressWarnings("rawtypes")
-public abstract class AbstractPoint3DAssert<SELF extends AbstractPoint3DAssert<SELF, ACTUAL>, ACTUAL extends Point3D>
+public abstract class AbstractPoint3DAssert<SELF extends AbstractPoint3DAssert<SELF, ACTUAL>, ACTUAL extends Point>
 		extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	protected AbstractPoint3DAssert(ACTUAL actual, Class<?> selfType) {
@@ -100,7 +100,7 @@ public abstract class AbstractPoint3DAssert<SELF extends AbstractPoint3DAssert<S
 		return getStartCoordinates() + " " + getEndCoordinates();
 	}
 
-	protected boolean isOverlapX(Point3D placement) {
+	protected boolean isOverlapX(Point placement) {
 
 		if(placement.getMinX() <= actual.getMinX() && actual.getMinX() <= placement.getMaxX()) {
 			return true;
@@ -113,7 +113,7 @@ public abstract class AbstractPoint3DAssert<SELF extends AbstractPoint3DAssert<S
 		return false;
 	}
 
-	protected boolean isOverlapY(Point3D placement) {
+	protected boolean isOverlapY(Point placement) {
 		if(placement.getMinY() <= actual.getMinY() && actual.getMinY() <= placement.getMaxY()) {
 			return true;
 		}
@@ -125,7 +125,7 @@ public abstract class AbstractPoint3DAssert<SELF extends AbstractPoint3DAssert<S
 		return false;
 	}
 
-	protected boolean isOverlapZ(Point3D placement) {
+	protected boolean isOverlapZ(Point placement) {
 		if(placement.getMinZ() <= actual.getMinZ() && actual.getMinZ() <= placement.getMaxZ()) {
 			return true;
 		}
@@ -137,7 +137,7 @@ public abstract class AbstractPoint3DAssert<SELF extends AbstractPoint3DAssert<S
 		return false;
 	}
 
-	public SELF isAlongsideY(Point3D other) {
+	public SELF isAlongsideY(Point other) {
 		isNotNull();
 
 		if(!isOverlapX(other)) {
@@ -153,7 +153,7 @@ public abstract class AbstractPoint3DAssert<SELF extends AbstractPoint3DAssert<S
 		return myself;
 	}
 
-	public SELF isAlongsideX(Point3D other) {
+	public SELF isAlongsideX(Point other) {
 		isNotNull();
 
 		if(!isOverlapY(other)) {
@@ -169,7 +169,7 @@ public abstract class AbstractPoint3DAssert<SELF extends AbstractPoint3DAssert<S
 		return myself;
 	}
 
-	public SELF followsAlongsideZ(Point3D other) {
+	public SELF followsAlongsideZ(Point other) {
 		isNotNull();
 
 		if(!isOverlapX(other)) {
@@ -186,7 +186,7 @@ public abstract class AbstractPoint3DAssert<SELF extends AbstractPoint3DAssert<S
 		return myself;
 	}
 
-	public SELF followsAlongsideY(Point3D other) {
+	public SELF followsAlongsideY(Point other) {
 		isNotNull();
 
 		if(!isOverlapX(other)) {
@@ -202,7 +202,7 @@ public abstract class AbstractPoint3DAssert<SELF extends AbstractPoint3DAssert<S
 		return myself;
 	}
 
-	public SELF preceedsAlongsideY(Point3D other) {
+	public SELF preceedsAlongsideY(Point other) {
 		isNotNull();
 
 		if(!isOverlapX(other)) {
@@ -218,7 +218,7 @@ public abstract class AbstractPoint3DAssert<SELF extends AbstractPoint3DAssert<S
 		return myself;
 	}
 
-	public SELF preceedsAlongsideX(Point3D other) {
+	public SELF preceedsAlongsideX(Point other) {
 		isNotNull();
 
 		if(!isOverlapY(other)) {
@@ -234,7 +234,7 @@ public abstract class AbstractPoint3DAssert<SELF extends AbstractPoint3DAssert<S
 		return myself;
 	}
 
-	public SELF preceedsAlongsideZ(Point3D other) {
+	public SELF preceedsAlongsideZ(Point other) {
 		isNotNull();
 
 		if(!isOverlapX(other)) {

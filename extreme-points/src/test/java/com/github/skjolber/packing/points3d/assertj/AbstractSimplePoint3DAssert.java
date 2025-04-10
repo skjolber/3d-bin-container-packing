@@ -2,7 +2,7 @@ package com.github.skjolber.packing.points3d.assertj;
 
 import org.assertj.core.api.AbstractObjectAssert;
 
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.ep.points3d.XYPlanePoint3D;
 import com.github.skjolber.packing.ep.points3d.XZPlanePoint3D;

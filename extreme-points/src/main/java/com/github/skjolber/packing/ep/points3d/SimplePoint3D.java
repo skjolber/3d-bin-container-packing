@@ -1,9 +1,9 @@
 package com.github.skjolber.packing.ep.points3d;
 
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 
-public abstract class SimplePoint3D extends Point3D {
+public abstract class SimplePoint3D extends Point {
 	
 	private static final long serialVersionUID = 1L;
 

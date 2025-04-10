@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 
 /**
  * 
@@ -50,7 +50,7 @@ public class Point3DFlagList implements Serializable {
 		flag[index] = false;
 	}
 
-	public void sort(Comparator<Point3D> comparator, int maxSize) {
+	public void sort(Comparator<Point> comparator, int maxSize) {
 		Arrays.sort(points, 0, maxSize, comparator);
 	}
 
@@ -106,8 +106,8 @@ public class Point3DFlagList implements Serializable {
 		return index - offset;
 	}
 
-	public List<Point3D> toList() {
-		List<Point3D> list = new ArrayList<>(size);
+	public List<Point> toList() {
+		List<Point> list = new ArrayList<>(size);
 		for (int i = 0; i < size; i++) {
 			list.add(points[i]);
 		}
@@ -146,7 +146,7 @@ public class Point3DFlagList implements Serializable {
 		}
 	}
 
-	public Point3D[] getPoints() {
+	public Point[] getPoints() {
 		return points;
 	}
 

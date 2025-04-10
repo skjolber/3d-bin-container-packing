@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 
 /**
  * 
@@ -95,11 +95,11 @@ public class Point3DArray {
 		return super.equals(obj);
 	}
 
-	public Point3D[] getPoints() {
+	public Point[] getPoints() {
 		return points;
 	}
 
-	public void sort(Comparator<Point3D> comparator) {
+	public void sort(Comparator<Point> comparator) {
 		Arrays.sort(points, 0, size, comparator);
 	}
 

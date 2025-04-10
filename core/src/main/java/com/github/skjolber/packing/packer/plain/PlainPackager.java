@@ -9,7 +9,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
@@ -101,7 +101,7 @@ public class PlainPackager extends AbstractPlainPackager {
 					}
 
 					for (int k = 0; k < currentPointsCount; k++) {
-						Point3D point3d = extremePoints3D.getValue(k);
+						Point point3d = extremePoints3D.getValue(k);
 
 						if(!point3d.fits3D(stackValue)) {
 							continue;
@@ -109,7 +109,7 @@ public class PlainPackager extends AbstractPlainPackager {
 
 						long pointSupportPercent; // cache for costly measurement
 						if(bestIndex != -1) {
-							Point3D bestPoint = extremePoints3D.getValue(bestPointIndex);
+							Point bestPoint = extremePoints3D.getValue(bestPointIndex);
 							
 							if(point3d.getMinZ() > bestPoint.getMinZ()) {
 								continue;
@@ -146,7 +146,7 @@ public class PlainPackager extends AbstractPlainPackager {
 			scopedStackables.remove(bestIndex);
 			remainingStackables.remove(bestStackable);
 
-			Point3D point = extremePoints3D.getValue(bestPointIndex);
+			Point point = extremePoints3D.getValue(bestPointIndex);
 
 			StackPlacement stackPlacement = new StackPlacement(bestStackable, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ());
 			stack.add(stackPlacement);
@@ -179,7 +179,7 @@ public class PlainPackager extends AbstractPlainPackager {
 				stack, remainingStackables.isEmpty(), index);		
 	}
 
-	protected long calculateXYSupportPercent(ExtremePoints3D extremePoints3D, Point3D referencePoint, BoxStackValue stackValue) {
+	protected long calculateXYSupportPercent(ExtremePoints3D extremePoints3D, Point referencePoint, BoxStackValue stackValue) {
 		long sum = 0;
 
 		int minX = referencePoint.getMinX();

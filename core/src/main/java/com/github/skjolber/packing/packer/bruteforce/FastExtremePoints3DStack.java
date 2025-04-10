@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
 
@@ -13,7 +13,7 @@ public class FastExtremePoints3DStack extends ExtremePoints3D {
 
 	private static class StackItem  {
 		// value for extraction
-		protected Point3D point;
+		protected Point point;
 
 		// adding a point might affect any index in the values array
 		protected Point3DFlagList values = new Point3DFlagList();
@@ -37,7 +37,7 @@ public class FastExtremePoints3DStack extends ExtremePoints3D {
 	@Override
 	public boolean add(int index, StackPlacement placement) {
 		// copy state before it is updated
-		Point3D point3d = values.get(index);
+		Point point3d = values.get(index);
 
 		StackItem stackItem = stackItems.get(stackSize);
 		stackItem.point = point3d;
@@ -50,8 +50,8 @@ public class FastExtremePoints3DStack extends ExtremePoints3D {
 		return super.add(index, placement);
 	}
 
-	public List<Point3D> getPoints() {
-		List<Point3D> results = new ArrayList<Point3D>(stackSize);
+	public List<Point> getPoints() {
+		List<Point> results = new ArrayList<Point>(stackSize);
 		for (int i = 0; i < stackSize; i++) {
 			results.add(stackItems.get(i).point);
 		}

@@ -4,7 +4,7 @@ import java.util.Comparator;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 
 @FunctionalInterface
 public interface PlacementComparator {
@@ -26,6 +26,6 @@ public interface PlacementComparator {
 	 *                              being compared by this comparator.
 	 */
 
-	int compare(Box s1, BoxStackValue sv1, Point3D l1, Box s2, BoxStackValue sv2, Point3D l2);
+	int compare(Box s1, BoxStackValue sv1, Point l1, Box s2, BoxStackValue sv2, Point l2);
 
 }

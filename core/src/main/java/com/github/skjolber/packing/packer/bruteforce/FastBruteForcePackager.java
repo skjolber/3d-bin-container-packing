@@ -13,7 +13,7 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
@@ -323,13 +323,13 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 			int bestPointIndex = -1;
 			for (int k = 0; k < pointCount; k++) {
-				Point3D point3d = extremePoints3D.getValue(k);
+				Point point3d = extremePoints3D.getValue(k);
 				if(!point3d.fits3D(stackValue)) {
 					continue;
 				}
 
 				if(bestPointIndex != -1) {
-					Point3D bestPoint = extremePoints3D.getValue(bestPointIndex);
+					Point bestPoint = extremePoints3D.getValue(bestPointIndex);
 					if(bestPoint.getArea() < point3d.getArea()) {
 						continue;
 					} else if(bestPoint.getArea() == point3d.getArea() && bestPoint.getVolume() < point3d.getVolume()) {
@@ -343,7 +343,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				break;
 			}
 
-			Point3D point3d = extremePoints3D.getValue(bestPointIndex);
+			Point point3d = extremePoints3D.getValue(bestPointIndex);
 
 			placement.setStackable(stackable);
 			placement.setStackValue(stackValue);

@@ -5,7 +5,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.ep.points2d.Point2D;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
@@ -100,7 +100,7 @@ public class BouwkampConverter {
 			List<Integer> squares = line.getSquares();
 			int minY = points.getMinY();
 
-			Point3D value = points.getValue(minY);
+			Point value = points.getValue(minY);
 
 			int offset = value.getMinX();
 
@@ -155,7 +155,7 @@ public class BouwkampConverter {
 			List<Integer> squares = line.getSquares();
 			int minZ = points.getMinZ();
 
-			Point3D value = points.getValue(minZ);
+			Point value = points.getValue(minZ);
 
 			int offset = value.getMinX();
 
@@ -209,7 +209,7 @@ public class BouwkampConverter {
 			List<Integer> squares = line.getSquares();
 			int minZ = points.getMinZ();
 
-			Point3D value = points.getValue(minZ);
+			Point value = points.getValue(minZ);
 
 			int offset = value.getMinY();
 

@@ -2,7 +2,6 @@ package com.github.skjolber.packing.api.ep;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
 /**
  * Builder scaffold.
@@ -11,19 +10,13 @@ import com.github.skjolber.packing.api.packager.FilteredBoxItems;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class FilteredPoint3DsBuilder<B extends FilteredPoint3DsBuilder<B>> {
+public abstract class PointListenerBuilder<B extends PointListenerBuilder<B>> {
 
 	protected Stack stack;
 	protected Container container;
-	protected FilteredBoxItems input;
-	protected ExtremePoints extremePoints;
+	protected FilteredPoints input;
 
-	public B withExtremePoints(ExtremePoints extremePoints) {
-		this.extremePoints = extremePoints; 
-		return (B) this;
-	}
-	
-	public B withLoaderInputs(FilteredBoxItems input) {
+	public B withFilteredPoint3Ds(FilteredPoints input) {
 		this.input = input;
 		return (B)this;
 	}
@@ -38,6 +31,8 @@ public abstract class FilteredPoint3DsBuilder<B extends FilteredPoint3DsBuilder<
 		return (B)this;
 	}
 	
-	public abstract FilteredPoint3Ds build();
+	public abstract PointListener build();
+	
+	
 
 }

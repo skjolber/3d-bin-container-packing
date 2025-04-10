@@ -8,9 +8,9 @@ public interface ExtremePoints {
 
 	boolean add(int index, StackPlacement placement);
 
-	Point3D getValue(int i);
+	Point getValue(int i);
 
-	List<Point3D> getValues();
+	List<Point> getValues();
 
 	int getValueCount();
 

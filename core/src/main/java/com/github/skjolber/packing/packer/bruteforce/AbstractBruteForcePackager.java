@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.PermutationRotation;
@@ -74,7 +74,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			do {
 				int minStackableAreaIndex = iterator.getMinStackableAreaIndex(0);
 
-				List<Point3D> points = packStackPlacement(extremePoints, stackPlacements, iterator, stack, holder, interrupt, minStackableAreaIndex);
+				List<Point> points = packStackPlacement(extremePoints, stackPlacements, iterator, stack, holder, interrupt, minStackableAreaIndex);
 				if(points == null) {
 					return null; // timeout
 				}
@@ -128,7 +128,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		return bestResult;
 	}
 
-	public List<Point3D> packStackPlacement(ExtremePoints3DStack extremePoints, List<StackPlacement> placements, PermutationRotationIterator iterator, Stack stack,
+	public List<Point> packStackPlacement(ExtremePoints3DStack extremePoints, List<StackPlacement> placements, PermutationRotationIterator iterator, Stack stack,
 			Container container,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex) {
 		if(placements.isEmpty()) {
@@ -150,7 +150,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		}
 	}
 
-	private List<Point3D> packStackPlacement(
+	private List<Point> packStackPlacement(
 			ExtremePoints3DStack extremePointsStack, 
 			List<StackPlacement> placements, 
 			PermutationRotationIterator rotator, 
@@ -160,7 +160,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			PackagerInterruptSupplier interrupt, 
 			int minStackableAreaIndex,
 			// optimize: pass best along so that we do not need to get points to known whether extracting the points is necessary
-			List<Point3D> best
+			List<Point> best
 		) {
 		if(interrupt.getAsBoolean()) {
 			// fit2d below might have returned due to deadline
@@ -191,7 +191,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		int currentPointsCount = extremePointsStack.getValueCount();
 
 		for (int k = 0; k < currentPointsCount; k++) {
-			Point3D point3d = extremePointsStack.getValue(k);
+			Point point3d = extremePointsStack.getValue(k);
 
 			if(!point3d.fits3D(stackValue)) {
 				continue;
@@ -225,7 +225,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				nextMinStackableAreaIndex = minStackableAreaIndex;
 			}
 
-			List<Point3D> points = packStackPlacement(extremePointsStack, placements, rotator, stack, maxLoadWeight, placementIndex + 1, interrupt, 
+			List<Point> points = packStackPlacement(extremePointsStack, placements, rotator, stack, maxLoadWeight, placementIndex + 1, interrupt, 
 					nextMinStackableAreaIndex, best);
 
 			stack.remove(placement);

@@ -5,14 +5,14 @@ import java.util.Comparator;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.StackPlacement;
 
-public abstract class Point3D {
+public abstract class Point {
 
 	private static final long serialVersionUID = 1L;
 
-	public static final Comparator<Point3D> X_COMPARATOR = new Comparator<Point3D>() {
+	public static final Comparator<Point> X_COMPARATOR = new Comparator<Point>() {
 
 		@Override
-		public int compare(Point3D o1, Point3D o2) {
+		public int compare(Point o1, Point o2) {
 			if(o1.minX < o2.minX) {
 				return -1;
 			} else if(o1.minX != o2.minX) {
@@ -22,10 +22,10 @@ public abstract class Point3D {
 		}
 	};
 
-	public static final Comparator<Point3D> Y_COMPARATOR = new Comparator<Point3D>() {
+	public static final Comparator<Point> Y_COMPARATOR = new Comparator<Point>() {
 
 		@Override
-		public int compare(Point3D o1, Point3D o2) {
+		public int compare(Point o1, Point o2) {
 			if(o1.minY < o2.minY) {
 				return -1;
 			} else if(o1.minY != o2.minY) {
@@ -36,10 +36,10 @@ public abstract class Point3D {
 		}
 	};
 
-	public static final Comparator<Point3D> Z_COMPARATOR = new Comparator<Point3D>() {
+	public static final Comparator<Point> Z_COMPARATOR = new Comparator<Point>() {
 
 		@Override
-		public int compare(Point3D o1, Point3D o2) {
+		public int compare(Point o1, Point o2) {
 			if(o1.minZ < o2.minZ) {
 				return -1;
 			} else if(o1.minZ != o2.minZ) {
@@ -50,10 +50,10 @@ public abstract class Point3D {
 		}
 	};
 
-	public static final Comparator<Point3D> COMPARATOR_X_THEN_Y_THEN_Z = new Comparator<Point3D>() {
+	public static final Comparator<Point> COMPARATOR_X_THEN_Y_THEN_Z = new Comparator<Point>() {
 
 		@Override
-		public int compare(Point3D o1, Point3D o2) {
+		public int compare(Point o1, Point o2) {
 
 			if(o1.minX < o2.minX) {
 				return -1;
@@ -89,10 +89,10 @@ public abstract class Point3D {
 		}
 	};
 
-	public static final Comparator<Point3D> COMPARATOR_X_THEN_Y = new Comparator<Point3D>() {
+	public static final Comparator<Point> COMPARATOR_X_THEN_Y = new Comparator<Point>() {
 
 		@Override
-		public int compare(Point3D o1, Point3D o2) {
+		public int compare(Point o1, Point o2) {
 			if(o1.minX < o2.minX) {
 				return -1;
 			} else if(o1.minX != o2.minX) {
@@ -109,10 +109,10 @@ public abstract class Point3D {
 		}
 	};
 
-	public static final Comparator<Point3D> COMPARATOR_Y_THEN_Z_THEN_X = new Comparator<Point3D>() {
+	public static final Comparator<Point> COMPARATOR_Y_THEN_Z_THEN_X = new Comparator<Point>() {
 
 		@Override
-		public int compare(Point3D o1, Point3D o2) {
+		public int compare(Point o1, Point o2) {
 			if(o1.minY < o2.minY) {
 				return -1;
 			} else if(o1.minY != o2.minY) {
@@ -147,10 +147,10 @@ public abstract class Point3D {
 		}
 	};
 
-	public static final Comparator<Point3D> COMPARATOR_Z_THEN_X_THEN_Y = new Comparator<Point3D>() {
+	public static final Comparator<Point> COMPARATOR_Z_THEN_X_THEN_Y = new Comparator<Point>() {
 
 		@Override
-		public int compare(Point3D o1, Point3D o2) {
+		public int compare(Point o1, Point o2) {
 			if(o1.minZ < o2.minZ) {
 				return -1;
 			} else if(o1.minZ != o2.minZ) {
@@ -185,10 +185,10 @@ public abstract class Point3D {
 		}
 	};
 
-	public static final Comparator<Point3D> COMPARATOR = new Comparator<Point3D>() {
+	public static final Comparator<Point> COMPARATOR = new Comparator<Point>() {
 
 		@Override
-		public int compare(Point3D o1, Point3D o2) {
+		public int compare(Point o1, Point o2) {
 			int compare = X_COMPARATOR.compare(o1, o2);
 			if(compare != 0) {
 				return compare;
@@ -219,7 +219,7 @@ public abstract class Point3D {
 	protected int maxZ;
 	protected int dz;
 
-	public Point3D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+	public Point(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		
 		this.minX = minX;
 		this.minY = minY;
@@ -310,7 +310,7 @@ public abstract class Point3D {
 		return !(p.getAbsoluteEndX() < minX || p.getAbsoluteX() > maxX || p.getAbsoluteEndY() < minY || p.getAbsoluteY() > maxY || p.getAbsoluteEndZ() < minZ || p.getAbsoluteZ() > maxZ);
 	}
 
-	public boolean intersects(Point3D point) {
+	public boolean intersects(Point point) {
 		return !(point.getMaxX() < minX || point.getMinX() > maxX || point.getMaxY() < minY || point.getMinY() > maxY || point.getMaxZ() < minZ || point.getMinZ() > maxZ);
 	}
 
@@ -355,23 +355,23 @@ public abstract class Point3D {
 	}
 
 	
-	public abstract Point3D clone(int maxX, int maxY, int maxZ);
+	public abstract Point clone(int maxX, int maxY, int maxZ);
 
-	public boolean containsInYZPlane(Point3D point) {
+	public boolean containsInYZPlane(Point point) {
 		if(point.getMinX() == minX) {
 			return point.swallowsMinY(minY, maxY) && point.swallowsMinZ(minZ, maxZ);
 		}
 		return false;
 	}
 
-	public boolean containsInXYPlane(Point3D point) {
+	public boolean containsInXYPlane(Point point) {
 		if(point.getMinZ() == minZ) {
 			return point.swallowsMinY(minY, maxY) && point.swallowsMinX(minX, maxX);
 		}
 		return false;
 	}
 
-	public boolean containsInXZPlane(Point3D point) {
+	public boolean containsInXZPlane(Point point) {
 		if(point.getMinY() == minY) {
 			return point.swallowsMinZ(minZ, maxZ) && point.swallowsMinX(minX, maxX);
 		}
@@ -415,7 +415,7 @@ public abstract class Point3D {
 		return !(stackValue.getDx() > dx || stackValue.getDy() > dy || stackValue.getDz() > dz);
 	}
 
-	public boolean isMax(Point3D existing) {
+	public boolean isMax(Point existing) {
 		return maxY == existing.getMaxY() && maxX == existing.getMaxX() && maxZ == existing.getMaxZ();
 	}
 
@@ -429,7 +429,7 @@ public abstract class Point3D {
 		return volume;
 	}
 
-	public boolean eclipses(Point3D point) {
+	public boolean eclipses(Point point) {
 		return minX <= point.getMinX() &&
 				minY <= point.getMinY() &&
 				minZ <= point.getMinZ() &&
@@ -438,31 +438,31 @@ public abstract class Point3D {
 				point.getMaxZ() <= maxZ;
 	}
 
-	public boolean eclipsesX(Point3D point) {
+	public boolean eclipsesX(Point point) {
 		return minX <= point.getMinX() && point.getMaxX() <= maxX;
 	}
 
-	public boolean eclipsesY(Point3D point) {
+	public boolean eclipsesY(Point point) {
 		return minY <= point.getMinY() && point.getMaxY() <= maxY;
 	}
 
-	public boolean eclipsesZ(Point3D point) {
+	public boolean eclipsesZ(Point point) {
 		return minZ <= point.getMinZ() && point.getMaxZ() <= maxZ;
 	}
 
-	public boolean eclipsesMovedX(Point3D point, int x) {
+	public boolean eclipsesMovedX(Point point, int x) {
 		return minX <= x && point.getMaxX() <= maxX && eclipsesY(point) && eclipsesZ(point);
 	}
 
-	public boolean eclipsesMovedY(Point3D point, int y) {
+	public boolean eclipsesMovedY(Point point, int y) {
 		return minY <= y && point.getMaxY() <= maxY && eclipsesX(point) && eclipsesZ(point);
 	}
 
-	public boolean eclipsesMovedZ(Point3D point, int z) {
+	public boolean eclipsesMovedZ(Point point, int z) {
 		return minZ <= z && point.getMaxZ() <= maxZ && eclipsesX(point) && eclipsesY(point);
 	}
 
-	public abstract Point3D rotate();
+	public abstract Point rotate();
 
 	public long getVolumeAtZ(int zz) {
 		return (long)dx * (long)dy * (maxZ - zz + 1);

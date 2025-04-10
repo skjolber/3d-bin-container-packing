@@ -2,7 +2,7 @@ package com.github.skjolber.packing.ep.points3d;
 
 import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
 
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 
 public class CustomIntXComparator implements IntComparator {
 
@@ -13,8 +13,8 @@ public class CustomIntXComparator implements IntComparator {
 
 	@Override
 	public int compare(int value1, int value2) {
-		Point3D o1 = values.get(value1);
-		Point3D o2 = values.get(value2);
+		Point o1 = values.get(value1);
+		Point o2 = values.get(value2);
 
 		if(o1.getMinY() < o2.getMinY()) {
 			return -1;

@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.ep.points3d;
 
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 
 public class DefaultXYPlaneXZPlanePoint3D extends SimplePoint3D implements XYPlanePoint3D, XZPlanePoint3D {
 
@@ -177,7 +177,7 @@ public class DefaultXYPlaneXZPlanePoint3D extends SimplePoint3D implements XYPla
 	 */
 
 	@Override
-	public Point3D rotate() {
+	public Point rotate() {
 		return new DefaultPoint3D(minY, minZ, minX, maxY, maxZ, maxX);
 	}
 

@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.points;
 
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 
 public class DefaultExtremePoints3D extends ExtremePoints3D {
@@ -21,7 +21,7 @@ public class DefaultExtremePoints3D extends ExtremePoints3D {
 
 		for (StackPlacement p : placements) {
 			for (int i = 0; i < values.size(); i++) {
-				Point3D point = values.get(i);
+				Point point = values.get(i);
 
 				boolean x = point.getMinX() <= p.getAbsoluteEndX() && point.getMaxX() >= p.getAbsoluteX();
 				boolean y = point.getMinY() <= p.getAbsoluteEndY() && point.getMaxY() >= p.getAbsoluteY();

@@ -6,11 +6,11 @@ package com.github.skjolber.packing.api.ep;
  * 
  */
 
-public interface FilteredPoint3Ds {
+public interface FilteredPoints {
 
 	int size();
 	
-	Point3D get(int index);
+	Point get(int index);
 
 	void remove(int index);
 

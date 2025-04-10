@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
 
@@ -15,7 +15,7 @@ public class ExtremePoints3DStack extends ExtremePoints3D {
 		protected Point3DFlagList otherValues = new Point3DFlagList();
 		protected ArrayList<StackPlacement> placements = new ArrayList<>();
 		protected StackPlacement stackPlacement = new StackPlacement();
-		protected Point3D point;
+		protected Point point;
 		protected long minVolumeLimit;
 		protected long minAreaLimit;
 	}
@@ -103,9 +103,9 @@ public class ExtremePoints3DStack extends ExtremePoints3D {
 		this.minVolumeLimit = stackItem.minVolumeLimit;
 	}
 
-	public List<Point3D> getPoints() {
+	public List<Point> getPoints() {
 		// item 0 is always empty
-		List<Point3D> list = new ArrayList<>(stackIndex + 1);
+		List<Point> list = new ArrayList<>(stackIndex + 1);
 		for (int i = 1; i < stackIndex + 1; i++) {
 			StackItem stackItem = stackItems.get(i);
 			list.add(stackItem.point);

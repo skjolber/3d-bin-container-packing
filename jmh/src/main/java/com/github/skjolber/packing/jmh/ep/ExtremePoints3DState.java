@@ -11,7 +11,7 @@ import org.openjdk.jmh.annotations.TearDown;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
@@ -55,7 +55,7 @@ public class ExtremePoints3DState {
 			List<Integer> squares = line.getSquares();
 			int minY = points.getMinY();
 
-			Point3D value = points.getValue(minY);
+			Point value = points.getValue(minY);
 
 			int offset = value.getMinX();
 

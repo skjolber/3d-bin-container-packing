@@ -9,7 +9,7 @@ import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ep.Point;
 
 /**
  * 
@@ -18,10 +18,10 @@ import com.github.skjolber.packing.api.ep.Point3D;
  */
 
 public class ExtremePoints3D implements ExtremePoints {
-	public static final Comparator<Point3D> COMPARATOR_X = new Comparator<Point3D>() {
+	public static final Comparator<Point> COMPARATOR_X = new Comparator<Point>() {
 
 		@Override
-		public int compare(Point3D o1, Point3D o2) {
+		public int compare(Point o1, Point o2) {
 			return Integer.compare(o1.getMinX(), o2.getMinX());
 		}
 	};
@@ -186,7 +186,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		}
 
 		for (int i = pointIndex; i < endIndex; i++) {
-			Point3D point = values.get(i);
+			Point point = values.get(i);
 
 			if(point.getMinY() > placement.getAbsoluteEndY() || point.getMinZ() > placement.getAbsoluteEndZ()) {
 				// 
@@ -304,7 +304,7 @@ public class ExtremePoints3D implements ExtremePoints {
 				// add point on the other side
 				// with x support
 				for (int k = 0; k < addedXX.size(); k++) {
-					Point3D add = addedXX.get(k);
+					Point add = addedXX.get(k);
 					if(add.eclipsesMovedX(p, xx)) {
 						continue add;
 					}
@@ -321,7 +321,7 @@ public class ExtremePoints3D implements ExtremePoints {
 
 				// find right insertion point
 				// TODO skip x
-				while (targetIndex < values.size() && Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
+				while (targetIndex < values.size() && Point.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
 
 					addXX.ensureAdditionalCapacity(targetIndex, moveToXXSize - i);
@@ -347,7 +347,7 @@ public class ExtremePoints3D implements ExtremePoints {
 				// add point on the other side
 				// with x support
 				for (int k = 0; k < addedYY.size(); k++) {
-					Point3D add = addedYY.get(k);
+					Point add = addedYY.get(k);
 					if(add.eclipsesMovedY(p, yy)) {
 						continue add;
 					}
@@ -366,7 +366,7 @@ public class ExtremePoints3D implements ExtremePoints {
 				int targetIndex = currentIndex + 1;
 
 				// TODO skip y
-				while (targetIndex < values.size() && Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
+				while (targetIndex < values.size() && Point.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
 				}
 
@@ -391,7 +391,7 @@ public class ExtremePoints3D implements ExtremePoints {
 
 				// add point on the other side
 				for (int k = 0; k < addedZZ.size(); k++) {
-					Point3D add = addedZZ.get(k);
+					Point add = addedZZ.get(k);
 					if(add.eclipsesMovedZ(p, zz)) {
 						continue add;
 					}
@@ -409,7 +409,7 @@ public class ExtremePoints3D implements ExtremePoints {
 				// find right insertion point
 				int targetIndex = currentIndex + 1;
 				// TODO skip z
-				while (targetIndex < values.size() && Point3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
+				while (targetIndex < values.size() && Point.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
 				}
 
@@ -605,10 +605,10 @@ public class ExtremePoints3D implements ExtremePoints {
 		this.otherValues = values;
 	}
 
-	private boolean isEclipsed(Point3D point) {
+	private boolean isEclipsed(Point point) {
 		// check if one of the existing values contains the new value
 		for (int index = 0; index < otherValues.size(); index++) {
-			Point3D otherValue = otherValues.get(index);
+			Point otherValue = otherValues.get(index);
 
 			if(point.getVolume() <= otherValue.getVolume() && point.getArea() <= otherValue.getArea()) {
 				if(otherValue.eclipses(point)) {
@@ -620,10 +620,10 @@ public class ExtremePoints3D implements ExtremePoints {
 		return false;
 	}
 
-	private boolean isEclipsedAtXX(Point3D point, int xx) {
+	private boolean isEclipsedAtXX(Point point, int xx) {
 		// check if one of the existing values contains the new value
 		for (int index = otherValues.size() - 1; index >= 0; index--) {
-			Point3D otherValue = otherValues.get(index);
+			Point otherValue = otherValues.get(index);
 			if(otherValue.getMinX() < xx) {
 				return false;
 			}
@@ -748,25 +748,25 @@ public class ExtremePoints3D implements ExtremePoints {
 		}
 	}
 
-	private boolean canMoveZ(Point3D p, int zz) {
+	private boolean canMoveZ(Point p, int zz) {
 		if(p.getMaxZ() < zz) {
 			return false;
 		}
 		return !isConstrainedAtZ(p, zz);
 	}
 
-	private boolean isConstrainedAtZ(Point3D p, int zz) {
+	private boolean isConstrainedAtZ(Point p, int zz) {
 		return p.getVolumeAtZ(zz) < minVolumeLimit;
 	}
 
-	private boolean canMoveX(Point3D p, int xx) {
+	private boolean canMoveX(Point p, int xx) {
 		if(p.getMaxX() < xx) {
 			return false;
 		}
 		return !isConstrainedAtX(p, xx);
 	}
 
-	private boolean isConstrainedAtX(Point3D p, int xx) {
+	private boolean isConstrainedAtX(Point p, int xx) {
 		long areaAtX = p.getAreaAtX(xx);
 		if(areaAtX >= minAreaLimit) {
 			return false;
@@ -774,7 +774,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		return areaAtX * p.getDz() < minVolumeLimit;
 	}
 
-	private boolean isConstrainedAtMaxX(Point3D p, int maxX) {
+	private boolean isConstrainedAtMaxX(Point p, int maxX) {
 		long areaAtMaxX = p.getAreaAtMaxX(maxX);
 		if(areaAtMaxX >= minAreaLimit) {
 			return false;
@@ -782,7 +782,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		return areaAtMaxX * p.getDz() < minVolumeLimit;
 	}
 
-	private boolean isConstrainedAtMaxY(Point3D p, int maxY) {
+	private boolean isConstrainedAtMaxY(Point p, int maxY) {
 		long areaAtMaxY = p.getAreaAtMaxY(maxY);
 		if(areaAtMaxY >= minAreaLimit) {
 			return false;
@@ -790,18 +790,18 @@ public class ExtremePoints3D implements ExtremePoints {
 		return areaAtMaxY * p.getDz() < minVolumeLimit;
 	}
 
-	private boolean isConstrainedAtMaxZ(Point3D p, int maxZ) {
+	private boolean isConstrainedAtMaxZ(Point p, int maxZ) {
 		return p.getVolumeAtMaxZ(maxZ) < minVolumeLimit;
 	}
 
-	private boolean canMoveY(Point3D p, int yy) {
+	private boolean canMoveY(Point p, int yy) {
 		if(p.getMaxY() < yy) {
 			return false;
 		}
 		return !isConstraintedAtY(p, yy);
 	}
 
-	private boolean isConstraintedAtY(Point3D p, int yy) {
+	private boolean isConstraintedAtY(Point p, int yy) {
 		long areaAtY = p.getAreaAtY(yy);
 		if(areaAtY >= minAreaLimit) {
 			return false;
@@ -812,7 +812,7 @@ public class ExtremePoints3D implements ExtremePoints {
 	private void filterMinimums() {
 		boolean flagged = false;
 		for (int i = 0; i < values.size(); i++) {
-			Point3D p = values.get(i);
+			Point p = values.get(i);
 
 			if(p.getVolume() < minVolumeLimit || p.getArea() < minAreaLimit) {
 				values.flag(i);
@@ -839,7 +839,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		int size = values.size();
 
 		added: for (int i = 0; i < limit; i++) {
-			Point3D unsorted = values.get(i);
+			Point unsorted = values.get(i);
 
 			// check if one of the existing values contains the new value
 			for (int index = limit; index < size; index++) {
@@ -847,7 +847,7 @@ public class ExtremePoints3D implements ExtremePoints {
 					continue;
 				}
 
-				Point3D sorted = values.get(index);
+				Point sorted = values.get(index);
 				if(sorted.getMinX() > unsorted.getMinX()) {
 					// so sorted cannot contain unsorted
 					// at this index or later
@@ -1212,7 +1212,7 @@ public class ExtremePoints3D implements ExtremePoints {
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
-						Point3D point3d = values.get(j);
+						Point point3d = values.get(j);
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
@@ -1228,7 +1228,7 @@ public class ExtremePoints3D implements ExtremePoints {
 					if(splitXX) {
 						// is the point now eclipsed by new points?
 						for (int j = startAddXX; j < addedXX.size(); j++) {
-							Point3D point3d = addedXX.get(j);
+							Point point3d = addedXX.get(j);
 
 							if(point3d.getVolume() >= point.getVolume()) {
 								if(point3d.eclipses(point)) {
@@ -1257,7 +1257,7 @@ public class ExtremePoints3D implements ExtremePoints {
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
-						Point3D point3d = values.get(j);
+						Point point3d = values.get(j);
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
@@ -1273,7 +1273,7 @@ public class ExtremePoints3D implements ExtremePoints {
 					if(splitYY) {
 						// is the point now eclipsed by new points?
 						for (int j = startAddYY; j < addedYY.size(); j++) {
-							Point3D point3d = addedYY.get(j);
+							Point point3d = addedYY.get(j);
 
 							if(point3d.getVolume() >= point.getVolume()) {
 								if(point3d.eclipses(point)) {
@@ -1303,7 +1303,7 @@ public class ExtremePoints3D implements ExtremePoints {
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
-						Point3D point3d = values.get(j);
+						Point point3d = values.get(j);
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
@@ -1319,7 +1319,7 @@ public class ExtremePoints3D implements ExtremePoints {
 					if(splitZZ) {
 						// is the point now eclipsed by new points?
 						for (int j = startAddZZ; j < addedZZ.size(); j++) {
-							Point3D point3d = addedZZ.get(j);
+							Point point3d = addedZZ.get(j);
 
 							if(point3d.getVolume() >= point.getVolume()) {
 								if(point3d.eclipses(point)) {
@@ -1400,7 +1400,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		return values.get(i);
 	}
 
-	public List<Point3D> getValues() {
+	public List<Point> getValues() {
 		return values.toList();
 	}
 
@@ -1409,14 +1409,14 @@ public class ExtremePoints3D implements ExtremePoints {
 		return values.size();
 	}
 
-	public List<Point3D> getValuesAsList() {
+	public List<Point> getValuesAsList() {
 		return values.toList();
 	}
 
 	public int getMinY() {
 		int min = 0;
 		for (int i = 1; i < values.size(); i++) {
-			Point3D point = values.get(i);
+			Point point = values.get(i);
 
 			if(point.getMinY() < values.get(min).getMinY()) {
 				min = i;
@@ -1428,7 +1428,7 @@ public class ExtremePoints3D implements ExtremePoints {
 	public int getMinX() {
 		int min = 0;
 		for (int i = 1; i < values.size(); i++) {
-			Point3D point = values.get(i);
+			Point point = values.get(i);
 
 			if(point.getMinX() < values.get(min).getMinX()) {
 				min = i;
@@ -1440,7 +1440,7 @@ public class ExtremePoints3D implements ExtremePoints {
 	public int getMinZ() {
 		int min = 0;
 		for (int i = 1; i < values.size(); i++) {
-			Point3D point2d = values.get(i);
+			Point point2d = values.get(i);
 
 			if(point2d.getMinZ() < values.get(min).getMinZ()) {
 				min = i;
@@ -1451,7 +1451,7 @@ public class ExtremePoints3D implements ExtremePoints {
 
 	public int get(int x, int y, int z) {
 		for (int i = 0; i < values.size(); i++) {
-			Point3D point2d = values.get(i);
+			Point point2d = values.get(i);
 
 			if(point2d.getMinY() == y && point2d.getMinX() == x && point2d.getMinZ() == z) {
 				return i;
@@ -1467,7 +1467,7 @@ public class ExtremePoints3D implements ExtremePoints {
 	public long getMaxArea() {
 		long maxPointArea = -1L;
 		for (int i = 0; i < values.size(); i++) {
-			Point3D point = values.get(i);
+			Point point = values.get(i);
 			if(maxPointArea < point.getArea()) {
 				maxPointArea = point.getArea();
 			}
@@ -1491,7 +1491,7 @@ public class ExtremePoints3D implements ExtremePoints {
 
 	public int findPoint(int x, int y, int z) {
 		for (int i = 0; i < values.size(); i++) {
-			Point3D point = values.get(i);
+			Point point = values.get(i);
 			if(point.getMinX() == x && point.getMinY() == y && point.getMinZ() == z) {
 				return i;
 			}
@@ -1601,7 +1601,7 @@ public class ExtremePoints3D implements ExtremePoints {
 	public long getMaxVolume() {
 		long maxPointVolume = -1L;
 		for (int i = 0; i < values.size(); i++) {
-			Point3D point = values.get(i);
+			Point point = values.get(i);
 			if(maxPointVolume < point.getVolume()) {
 				maxPointVolume = point.getVolume();
 			}
