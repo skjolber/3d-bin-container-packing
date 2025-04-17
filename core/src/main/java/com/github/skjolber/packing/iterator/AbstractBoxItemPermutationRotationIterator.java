@@ -66,7 +66,7 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 
 		List<BoxStackValue> results = new ArrayList<>(length);
 		for (int i = 0; i < length; i++) {
-			results.add(stackableItems[permutations[i]].getStackable().getStackValue(rotations[i]));
+			results.add(stackableItems[permutations[i]].getBox().getStackValue(rotations[i]));
 		}
 		return results;
 	}
@@ -91,11 +91,11 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 		long n = 1;
 		for (int i = 0; i < permutations.length; i++) {
 			BoxItem value = stackableItems[permutations[i]];
-			if(Long.MAX_VALUE / value.getStackable().getStackValues().length <= n) {
+			if(Long.MAX_VALUE / value.getBox().getStackValues().length <= n) {
 				return -1L;
 			}
 
-			n = n * value.getStackable().getStackValues().length;
+			n = n * value.getBox().getStackValues().length;
 		}
 		return n;
 	}
@@ -180,12 +180,12 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 	}
 	
 	protected void calculateMinStackableVolume(int offset) {
-		BoxStackValue last = stackableItems[permutations[permutations.length - 1]].getStackable().getStackValue(rotations[permutations.length - 1]);
+		BoxStackValue last = stackableItems[permutations[permutations.length - 1]].getBox().getStackValue(rotations[permutations.length - 1]);
 
 		minStackableVolume[permutations.length - 1] = last.getVolume();
 
 		for (int i = permutations.length - 2; i >= offset; i--) {
-			long volume = stackableItems[permutations[i]].getStackable().getStackValue(rotations[i]).getVolume();
+			long volume = stackableItems[permutations[i]].getBox().getStackValue(rotations[i]).getVolume();
 
 			if(volume < minStackableVolume[i + 1]) {
 				minStackableVolume[i] = volume;
@@ -197,7 +197,7 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 	
 	@Override
 	public BoxStackValue getStackValue(int index) {
-		return stackableItems[permutations[index]].getStackable().getStackValue(rotations[index]);
+		return stackableItems[permutations[index]].getBox().getStackValue(rotations[index]);
 	}
 
 

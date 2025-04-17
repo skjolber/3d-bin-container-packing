@@ -33,7 +33,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
                 .withContainer(container)
                 .build();
 
-        PackagerResult result = laff_packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+        PackagerResult result = laff_packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
         if (result.isSuccess()) {
             write(result.get(0));
         } else {

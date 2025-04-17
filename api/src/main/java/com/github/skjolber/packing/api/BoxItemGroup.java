@@ -11,10 +11,12 @@ import java.util.List;
 
 public class BoxItemGroup {
 
-	private String id;
+	protected String id;
 
-	private List<BoxItem> items;
-
+	protected List<BoxItem> items;
+	
+	protected int index = -1;
+	
 	public BoxItemGroup(String id, List<BoxItem> items) {
 		super();
 		this.id = id;
@@ -45,18 +47,26 @@ public class BoxItemGroup {
 		return items.get(i);
 	}
 	
+	public boolean decrement(int index) {
+		BoxItem boxItem = items.get(index);
+		if(!boxItem.decrement()) {
+			items.remove(index);
+		}
+		
+		return !items.isEmpty();
+	}
 	
-	public int stackableItemsCount() {
+	public int getBoxCount() {
 		int count = 0;
-		for (BoxItem loadableItem : items) {
-			count += loadableItem.getCount();
+		for (BoxItem boxItem : items) {
+			count += boxItem.getCount();
 		}
 		return count;
 	}
 
 	public boolean isEmpty() {
-		for (BoxItem loadableItem : items) {
-			if(!loadableItem.isEmpty()) {
+		for (BoxItem boxItem : items) {
+			if(!boxItem.isEmpty()) {
 				return false;
 			}
 		}
@@ -66,9 +76,9 @@ public class BoxItemGroup {
 	
 	public void removeEmpty() {
 		for (int j = 0; j < items.size(); j++) {
-			BoxItem loadableItem = items.get(j);
+			BoxItem boxItem = items.get(j);
 			
-			if(loadableItem.isEmpty()) {
+			if(boxItem.isEmpty()) {
 				items.remove(j);
 				j--;
 			}
@@ -78,11 +88,39 @@ public class BoxItemGroup {
 	public BoxItemGroup clone() {
 		List<BoxItem> items = new ArrayList<>();
 
-		for (BoxItem stackableItem : this.items) {
-			items.add(stackableItem.clone());
+		for (BoxItem boxItem : this.items) {
+			items.add(boxItem.clone());
 		}
 		
 		return new BoxItemGroup(id, items);
 	}
 	
+	public long getVolume() {
+		long volume = 0;
+		for (BoxItem boxItem : items) {
+			volume += boxItem.getVolume();
+		}
+		return volume;
+	}
+
+	public long getWeight() {
+		long weight = 0;
+		for (BoxItem boxItem : items) {
+			weight += boxItem.getWeight();
+		}
+		return weight;
+	}
+
+	public void remove(int index) {
+		items.remove(index);
+	}
+	
+	public void setIndex(int index) {
+		this.index = index;
+	}
+	
+	public int getIndex() {
+		return index;
+	}
+
 }

@@ -6,17 +6,19 @@ public class StackPlacement implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	protected Box stackable;
-	protected BoxStackValue value;
+	protected BoxItemGroup boxItemGroup;
+	protected BoxItem boxItem;
+	protected BoxStackValue stackValue;
 
 	protected int x; // width coordinate
 	protected int y; // depth coordinate
 	protected int z; // height coordinate
 
-	public StackPlacement(Box stackable, BoxStackValue value, int x, int y, int z) {
+	public StackPlacement(BoxItemGroup boxItemGroup, BoxItem boxItem, BoxStackValue stackValue, int x, int y, int z) {
 		super();
-		this.stackable = stackable;
-		this.value = value;
+		this.boxItemGroup = boxItemGroup;
+		this.boxItem = boxItem;
+		this.stackValue = stackValue;
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -25,20 +27,12 @@ public class StackPlacement implements Serializable {
 	public StackPlacement() {
 	}
 
-	public Box getStackable() {
-		return stackable;
-	}
-
-	public void setStackable(Box stackable) {
-		this.stackable = stackable;
-	}
-
 	public BoxStackValue getStackValue() {
-		return value;
+		return stackValue;
 	}
 
 	public void setStackValue(BoxStackValue stackValue) {
-		this.value = stackValue;
+		this.stackValue = stackValue;
 	}
 
 	public boolean intersects(StackPlacement placement) {
@@ -47,7 +41,7 @@ public class StackPlacement implements Serializable {
 
 	public boolean intersectsY(StackPlacement placement) {
 		int startY = y;
-		int endY = startY + value.getDy() - 1;
+		int endY = startY + stackValue.getDy() - 1;
 
 		if(startY <= placement.getAbsoluteY() && placement.getAbsoluteY() <= endY) {
 			return true;
@@ -59,7 +53,7 @@ public class StackPlacement implements Serializable {
 
 	public boolean intersectsX(StackPlacement placement) {
 		int startX = x;
-		int endX = startX + value.getDx() - 1;
+		int endX = startX + stackValue.getDx() - 1;
 
 		if(startX <= placement.getAbsoluteX() && placement.getAbsoluteX() <= endX) {
 			return true;
@@ -71,7 +65,7 @@ public class StackPlacement implements Serializable {
 
 	public boolean intersectsZ(StackPlacement placement) {
 		int startZ = z;
-		int endZ = startZ + value.getDz() - 1;
+		int endZ = startZ + stackValue.getDz() - 1;
 
 		if(startZ <= placement.getAbsoluteZ() && placement.getAbsoluteZ() <= endZ) {
 			return true;
@@ -94,19 +88,19 @@ public class StackPlacement implements Serializable {
 	}
 
 	public int getAbsoluteEndX() {
-		return x + value.getDx() - 1;
+		return x + stackValue.getDx() - 1;
 	}
 
 	public int getAbsoluteEndY() {
-		return y + value.getDy() - 1;
+		return y + stackValue.getDy() - 1;
 	}
 
 	public int getAbsoluteEndZ() {
-		return z + value.getDz() - 1;
+		return z + stackValue.getDz() - 1;
 	}
 
 	public long getVolume() {
-		return stackable.getVolume();
+		return boxItem.getBox().getVolume();
 	}
 
 	public boolean intersects2D(StackPlacement point) {
@@ -120,7 +114,7 @@ public class StackPlacement implements Serializable {
 
 	@Override
 	public String toString() {
-		return (stackable != null ? stackable.getDescription() : "") + "[" + x + "x" + y + "x" + z + " " + getAbsoluteEndX() + "x" + getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
+		return (boxItem != null ? boxItem.getBox().getDescription() : "") + "[" + x + "x" + y + "x" + z + " " + getAbsoluteEndX() + "x" + getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
 	}
 
 	public void setX(int x) {
@@ -135,12 +129,16 @@ public class StackPlacement implements Serializable {
 		this.z = z;
 	}
 
-	public void setValue(BoxStackValue value) {
-		this.value = value;
-	}
-
 	public int getWeight() {
-		return stackable.getWeight();
+		return boxItem.getBox().getWeight();
+	}
+	
+	public BoxItem getBoxItem() {
+		return boxItem;
+	}
+	
+	public BoxItemGroup getBoxItemGroup() {
+		return boxItemGroup;
 	}
 
 }

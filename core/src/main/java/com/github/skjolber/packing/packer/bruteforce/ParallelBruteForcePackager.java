@@ -83,8 +83,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		public ParallelBruteForcePackager build() {
-			if(packResultComparator == null) {
-				packResultComparator = new DefaultPackResultComparator();
+			if(comparator == null) {
+				comparator = new DefaultPackResultComparator();
 			}
 			if(executorService == null) {
 				if(threads == -1) {
@@ -111,7 +111,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				}
 			}
 
-			return new ParallelBruteForcePackager(executorService, parallelizationCount, packResultComparator);
+			return new ParallelBruteForcePackager(executorService, parallelizationCount, comparator);
 		}
 	}
 
@@ -256,7 +256,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 		@Override
 		public Container accept(BruteForcePackagerResult bruteForceResult) {
-			super.accept(bruteForceResult.getContainerItemIndex());
+			super.toContainer(bruteForceResult.getContainerItemIndex());
 
 			Container container = bruteForceResult.getContainer();
 

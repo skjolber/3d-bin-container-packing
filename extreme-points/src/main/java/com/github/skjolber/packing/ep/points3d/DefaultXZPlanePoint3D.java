@@ -58,6 +58,14 @@ public class DefaultXZPlanePoint3D extends SimplePoint3D implements XZPlanePoint
 				maxX, maxY, maxZ,
 				xzPlane);
 	}
+	
+	@Override
+	public DefaultXZPlanePoint3D clone() {
+		return new DefaultXZPlanePoint3D(
+				minX, minY, minZ,
+				maxX, maxY, maxZ,
+				xzPlane);
+	}
 
 	public StackPlacement getXZPlane() {
 		return xzPlane;

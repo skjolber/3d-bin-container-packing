@@ -58,7 +58,7 @@ public abstract class AbstractPermutationRotationIteratorBuilder<B extends Abstr
 		for (int i = 0; i < stackableItems.size(); i++) {
 			BoxItem item = stackableItems.get(i);
 
-			Box stackable = item.getStackable();
+			Box stackable = item.getBox();
 			if(stackable.getWeight() > maxLoadWeight) {
 				continue;
 			}

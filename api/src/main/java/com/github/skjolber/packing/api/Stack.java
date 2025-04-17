@@ -39,7 +39,7 @@ public class Stack implements Serializable {
 		int weight = 0;
 
 		for (StackPlacement stackEntry : entries) {
-			weight += stackEntry.getStackable().getWeight();
+			weight += stackEntry.getBoxItem().getBox().getWeight();
 		}
 
 		return weight;
@@ -59,7 +59,7 @@ public class Stack implements Serializable {
 		long volume = 0;
 
 		for (StackPlacement stackEntry : entries) {
-			volume += stackEntry.getStackable().getVolume();
+			volume += stackEntry.getBoxItem().getBox().getVolume();
 		}
 
 		return volume;

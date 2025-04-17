@@ -24,7 +24,7 @@ public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert
 		isNotNull();
 
 		long timestamp = System.currentTimeMillis();
-		PackagerResult result = actual.newResultBuilder().withDeadline(timestamp + maxTime).withStackables(items).withContainers(containerItems).build();
+		PackagerResult result = actual.newResultBuilder().withDeadline(timestamp + maxTime).withBoxItems(items).withContainerItems(containerItems).build();
 		long packDuration = System.currentTimeMillis() - timestamp;
 
 		if(result.getContainers().isEmpty()) {
@@ -39,7 +39,7 @@ public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert
 		while (divider < 10) {
 			timestamp = System.currentTimeMillis();
 			long unrealisticDuration = packDuration / divider;
-			result = actual.newResultBuilder().withDeadline(timestamp + unrealisticDuration).withStackables(items).withContainers(containerItems).build();
+			result = actual.newResultBuilder().withDeadline(timestamp + unrealisticDuration).withBoxItems(items).withContainerItems(containerItems).build();
 			if(!result.getContainers().isEmpty()) {
 				continue;
 			}

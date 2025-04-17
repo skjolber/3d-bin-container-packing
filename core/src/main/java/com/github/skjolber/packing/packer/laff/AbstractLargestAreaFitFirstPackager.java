@@ -51,7 +51,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractPackag
 			List<Box> boxClones = new ArrayList<>(boxItems.size() * 2);
 
 			for (BoxItem item : boxItems) {
-				Box box = item.getStackable();
+				Box box = item.getBox();
 				boxClones.add(box);
 				for (int i = 1; i < item.getCount(); i++) {
 					boxClones.add(box.clone());
@@ -69,12 +69,12 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractPackag
 
 		@Override
 		public Container accept(DefaultPackResult result) {
-			super.accept(result.getContainerItemIndex());
+			super.toContainer(result.getContainerItemIndex());
 
 			Container container = result.getContainer();
 			Stack stack = container.getStack();
 
-			List<Box> placed = stack.getPlacements().stream().map(p -> p.getStackable()).collect(Collectors.toList());
+			List<Box> placed = stack.getPlacements().stream().map(p -> p.getBox()).collect(Collectors.toList());
 
 			boxes.removeAll(placed);
 

@@ -7,12 +7,16 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
+import com.github.skjolber.packing.api.packager.CompositeContainerItem;
+import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 import com.github.skjolber.packing.api.packager.PackResult;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
@@ -23,11 +27,11 @@ import com.github.skjolber.packing.iterator.BinarySearchIterator;
  * Thread-safe implementation.
  */
 
-public abstract class AbstractPackager<P extends PackResult, B extends PackagerResultBuilder<B>> implements Packager<B> {
+public abstract class AbstractPackager<P extends IntermediatePackagerResult, B extends PackagerResultBuilder<B>> implements Packager<B> {
 
-	protected static final EmptyPackResult EMPTY_PACK_RESULT = EmptyPackResult.EMPTY;
+	protected static final EmptyPackagerResultAdapter EMPTY_PACK_RESULT = EmptyPackagerResultAdapter.EMPTY;
 
-	protected final PackResultComparator packResultComparator;
+	protected final IntermediatePackagerResultComparator packResultComparator;
 	
 	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Integer.MAX_VALUE);
 
@@ -37,7 +41,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @param packResultComparator result comparator
 	 */
 
-	public AbstractPackager(PackResultComparator packResultComparator) {
+	public AbstractPackager(IntermediatePackagerResultComparator packResultComparator) {
 		this.packResultComparator = packResultComparator;
 	}
 
@@ -65,7 +69,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			// while the search finds a baseline, we really need to check all the containers
 			// at a lower index before the optional container is located.
 			
-			PackResult[] results = new PackResult[containerItemIndexes.get(containerItemIndexes.size() - 1) + 1];
+			IntermediatePackagerResult[] results = new IntermediatePackagerResult[containerItemIndexes.get(containerItemIndexes.size() - 1) + 1];
 
 			BinarySearchIterator iterator = new BinarySearchIterator();
 
@@ -125,7 +129,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			} while (!containerItemIndexes.isEmpty());
 
 			// return the best, if any
-			for (final PackResult result : results) {
+			for (final IntermediatePackagerResult result : results) {
 				if(result != null && !result.isEmpty()) {
 					return (P)result;
 				}
@@ -134,8 +138,12 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		return (P) EMPTY_PACK_RESULT;
 	}
 
-	public List<Container> packList(List<BoxItem> products, List<ContainerItem> containers, int limit) {
-		return pack(products, containers, limit, PackagerInterruptSupplierBuilder.NEGATIVE);
+	public List<Container> packList(List<BoxItemGroup> boxes, Order itemGroupOrder, List<CompositeContainerItem> containers, int limit) {
+		return pack(boxes, itemGroupOrder, containers, limit, PackagerInterruptSupplierBuilder.NEGATIVE);
+	}
+
+	public List<Container> pack(List<BoxItem> boxes, List<CompositeContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) {
+		throw new IllegalStateException();
 	}
 
 	/**
@@ -148,8 +156,8 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	 * @return list of containers, or null if the deadline was reached, or empty list if the packages could not be packaged within the available containers and/or limit.
 	 */
 
-	public List<Container> pack(List<BoxItem> boxes, List<ContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) {
-		PackagerAdapter<P> adapter = adapter(boxes, containerItems, interrupt);
+	public List<Container> pack(List<BoxItemGroup> boxes, Order itemGroupOrder, List<CompositeContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) {
+		PackagerAdapter<P> adapter = adapter(boxes, containerItems, itemGroupOrder, interrupt);
 
 		if(adapter == null) {
 			return Collections.emptyList();
@@ -184,7 +192,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 				return Collections.emptyList();
 			}
 
-			// the best container is the one which can hold the most stackables
+			// the best container is the one which can hold the most box groups
 			// assume larger boxes is at the end of list, so start there
 			P best = null;
 			for (int i = containerItemIndexes.size() - 1; i >= 0; i--) {
@@ -196,14 +204,14 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 
 				// can this container hold more than the previously best result?
 				if(best != null) {
-					ContainerItem containerItem = containerItems.get(containerItemIndex);
+					ContainerItem containerItem = adapter.getContainerItem(containerItemIndex);
 					Container container = containerItem.getContainer();
 
-					long loadVolume = best.getLoadVolume();
+					long loadVolume = container.getLoadVolume();
 					if(loadVolume > container.getMaxLoadVolume()) {
 						continue;
 					}
-					int loadWeight = best.getLoadWeight();
+					int loadWeight = container.getLoadWeight();
 					if(loadWeight > container.getMaxLoadWeight()) {
 						continue;
 					}
@@ -240,12 +248,14 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		return null;
 	}
 
-	protected abstract PackagerAdapter<P> adapter(List<BoxItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt);
+	protected abstract PackagerAdapter<P> adapter(List<BoxItemGroup> boxes, List<CompositeContainerItem> containers, Order itemGroupOrder, PackagerInterruptSupplier interrupt);
+
+	protected abstract PackagerAdapter<P> adapter(List<BoxItem> boxItems, List<CompositeContainerItem> containers, PackagerInterruptSupplier interrupt);
 
 	protected long getMinStackableItemVolume(List<BoxItem> stackables) {
 		long minVolume = Integer.MAX_VALUE;
 		for (BoxItem stackableItem : stackables) {
-			Box stackable = stackableItem.getStackable();
+			Box stackable = stackableItem.getBox();
 			if(stackable.getVolume() < minVolume) {
 				minVolume = stackable.getVolume();
 			}
@@ -256,7 +266,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 	protected long getMinStackableItemArea(List<BoxItem> stackables) {
 		long minArea = Integer.MAX_VALUE;
 		for (BoxItem stackableItem : stackables) {
-			Box stackable = stackableItem.getStackable();
+			Box stackable = stackableItem.getBox();
 			if(stackable.getMinimumArea() < minArea) {
 				minArea = stackable.getMinimumArea();
 			}
@@ -273,6 +283,18 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		}
 		return minVolume;
 	}
+	
+	protected long getMinBoxItemVolume(List<? extends BoxItem> stackables) {
+		long minVolume = Integer.MAX_VALUE;
+		for (BoxItem boxItem : stackables) {
+			Box box = boxItem.getBox();
+			if(box.getVolume() < minVolume) {
+				minVolume = box.getVolume();
+			}
+		}
+		return minVolume;
+	}
+
 
 	protected long getMinStackableArea(List<Box> stackables) {
 		long minArea = Integer.MAX_VALUE;
@@ -284,8 +306,88 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 		return minArea;
 	}
 	
+	protected long getMinBoxItemArea(List<? extends BoxItem> stackables) {
+		long minArea = Integer.MAX_VALUE;
+		for (BoxItem boxItem: stackables) {
+			Box box = boxItem.getBox();
+			if(box.getMinimumArea() < minArea) {
+				minArea = box.getMinimumArea();
+			}
+		}
+		return minArea;
+	}
+	
+	protected long getMinBoxItemVolume(FilteredBoxItems items) {
+		long minVolume = Integer.MAX_VALUE;
+		for(int i = 0; i < items.size(); i++) {
+			BoxItem boxItem = items.get(i);
+			
+			Box box = boxItem.getBox();
+			if(box.getVolume() < minVolume) {
+				minVolume = box.getVolume();
+			}
+		}
+		return minVolume;
+	}
+	
+	protected long getMinBoxItemArea(FilteredBoxItems items) {
+		long minArea = Integer.MAX_VALUE;
+		for(int i = 0; i < items.size(); i++) {
+			BoxItem boxItem = items.get(i);
+			
+			Box box = boxItem.getBox();
+			if(box.getMinimumArea() < minArea) {
+				minArea = box.getMinimumArea();
+			}
+		}
+		return minArea;
+	}
+	
+	protected long getMinBoxItemGroupVolume(List<MutableBoxItemGroup> groups) {
+		long minVolume = Integer.MAX_VALUE;
+		for (MutableBoxItemGroup boxItemGroup : groups) {
+			for (BoxItem boxItem : boxItemGroup.getItems()) {
+				if(boxItem.getBox().getVolume() < minVolume) {
+					minVolume = boxItem.getBox().getVolume();
+				}
+			}
+		}
+		return minVolume;
+	}
+	
+	protected long getMinBoxItemGroupArea(List<MutableBoxItemGroup> groups) {
+		long minArea = Integer.MAX_VALUE;
+		for (BoxItemGroup boxItemGroup : groups) {
+			for (BoxItem boxItem : boxItemGroup.getItems()) {
+				if(boxItem.getBox().getMinimumArea() < minArea) {
+					minArea = boxItem.getBox().getMinimumArea();
+				}
+			}
+		}
+		return minArea;
+	}
+	
 	public void close() {
 		scheduledThreadPoolExecutor.shutdownNow();
 	}
 	
+	protected List<MutableBoxItemGroup> getFitsInside(List<MutableBoxItemGroup> inputs, Container container) {
+		List<MutableBoxItemGroup> result = new ArrayList<>(inputs.size());
+		for (MutableBoxItemGroup boxItemGroup : inputs) {
+			if(container.fitsInside(boxItemGroup)) {
+				result.add(boxItemGroup);
+			}
+		}
+		return result;
+	}
+	
+	protected List<BoxItem> getBoxItemsFitsInside(List<BoxItem> inputs, Container container) {
+		List<BoxItem> result = new ArrayList<>(inputs.size());
+		for (BoxItem boxItem : inputs) {
+			if(container.fitsInside(boxItem)) {
+				result.add(boxItem);
+			}
+		}
+		return result;
+	}
 }

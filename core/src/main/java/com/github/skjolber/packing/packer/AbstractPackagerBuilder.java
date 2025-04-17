@@ -11,10 +11,10 @@ import com.github.skjolber.packing.api.packager.PackResultComparator;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class AbstractPackagerBuilder<P extends Packager, B extends AbstractPackagerBuilder<P, B>> {
 
-	protected PackResultComparator packResultComparator;
+	protected IntermediatePackagerResultComparator comparator;
 
-	public B withPackResultComparator(PackResultComparator packResultComparator) {
-		this.packResultComparator = packResultComparator;
+	public B withPackResultComparator(IntermediatePackagerResultComparator comparator) {
+		this.comparator = comparator;
 
 		return (B)this;
 	}

@@ -19,13 +19,9 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 	}
 
 	public PackagerResult build() {
-		if(maxContainerCount <= 0) {
-			throw new IllegalStateException();
-		}
-		if(containers == null) {
-			throw new IllegalStateException();
-		}
-		if(items == null) {
+		validate();
+		
+		if(items == null || items.isEmpty()) {
 			throw new IllegalStateException();
 		}
 		long start = System.currentTimeMillis();
@@ -42,7 +38,12 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 
 		PackagerInterruptSupplier build = booleanSupplierBuilder.build();
 		try {
-			List<Container> packList = packager.pack(items, containers, maxContainerCount, build);
+			List<Container> packList;
+			if(items != null) {
+				packList = packager.pack(items, containers, maxContainerCount, build);
+			} else {
+				packList = packager.pack(itemGroups, itemGroupOrder, containers, maxContainerCount, build);
+			}
 			long duration = System.currentTimeMillis() - start;
 			if(packList == null) {
 				return new PackagerResult(Collections.emptyList(), duration, true);

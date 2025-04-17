@@ -91,6 +91,11 @@ public class DefaultXYPlaneXZPlanePoint3D extends SimplePoint3D implements XYPla
 		return new DefaultXYPlaneXZPlanePoint3D(minX, minY, minZ, maxX, maxY, maxZ, xzPlane, xyPlane);
 	}
 
+	@Override
+	public DefaultXYPlaneXZPlanePoint3D clone() {
+		return new DefaultXYPlaneXZPlanePoint3D(minX, minY, minZ, maxX, maxY, maxZ, xzPlane, xyPlane);
+	}
+	
 	public StackPlacement getXZPlane() {
 		return xzPlane;
 	}

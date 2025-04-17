@@ -58,6 +58,11 @@ public class DefaultYZPlanePoint3D extends SimplePoint3D implements YZPlanePoint
 	public DefaultYZPlanePoint3D clone(int maxX, int maxY, int maxZ) {
 		return new DefaultYZPlanePoint3D(minX, minY, minZ, maxX, maxY, maxZ, yzPlane);
 	}
+	
+	@Override
+	public DefaultYZPlanePoint3D clone() {
+		return new DefaultYZPlanePoint3D(minX, minY, minZ, maxX, maxY, maxZ, yzPlane);
+	}
 
 	@Override
 	public SimplePoint3D moveX(int x) {

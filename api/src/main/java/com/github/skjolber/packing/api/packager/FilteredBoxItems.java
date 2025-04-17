@@ -11,9 +11,14 @@ import com.github.skjolber.packing.api.BoxItem;
 public interface FilteredBoxItems {
 	
 	int size();
-	
+
+	boolean isEmpty();
+
 	BoxItem get(int index);
 
-	void remove(int index, int count);
+	BoxItem decrement(int index, int count);
  
+	BoxItem remove(int index);
+
+	void clearEmpty();
 }

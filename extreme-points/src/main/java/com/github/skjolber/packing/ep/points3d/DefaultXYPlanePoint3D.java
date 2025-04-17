@@ -60,6 +60,15 @@ public class DefaultXYPlanePoint3D extends SimplePoint3D implements XYPlanePoint
 				maxX, maxY, maxZ,
 				xyPlane);
 	}
+	
+
+	@Override
+	public DefaultXYPlanePoint3D clone() {
+		return new DefaultXYPlanePoint3D(
+				minX, minY, minZ,
+				maxX, maxY, maxZ,
+				xyPlane);
+	}	
 
 	@Override
 	public SimplePoint3D moveX(int x) {

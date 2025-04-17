@@ -24,7 +24,7 @@ public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackager
 		for(int i = 0; i < stackableItems.size(); i++) {
 			BoxItem stackableItem = stackableItems.get(i);
 			
-			stackables[i] = stackableItem.getStackable();
+			stackables[i] = stackableItem.getBox();
 			stackablesRemaining[i] = stackableItem.getCount();
 		}
 	} 

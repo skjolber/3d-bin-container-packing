@@ -50,7 +50,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
-			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			assertValid(build);
 	
 			Container fits = build.get(0);
@@ -87,7 +87,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 	
-			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).withMaxContainerCount(5).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).withMaxContainerCount(5).build();
 			assertValid(build);
 	
 			List<Container> packList = build.getContainers();
@@ -126,7 +126,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 			products.add(new BoxItem(Box.newBuilder().withDescription("K").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 4));
 			products.add(new BoxItem(Box.newBuilder().withDescription("K").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 16));
 	
-			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			assertValid(build);
 	
 			Container fits = build.get(0);
@@ -155,7 +155,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 			products.add(new BoxItem(Box.newBuilder().withDescription("M").withRotate3D().withSize(5, 10, 1).withWeight(1).build(), 1));
 			products.add(new BoxItem(Box.newBuilder().withDescription("N").withRotate3D().withSize(5, 10, 1).withWeight(1).build(), 1));
 	
-			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			assertValid(build);
 	
 			Container fits = build.get(0);
@@ -182,7 +182,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(3, 2, 1).withWeight(1).build(), 1));
 			products.add(new BoxItem(Box.newBuilder().withDescription("D").withRotate3D().withSize(3, 2, 1).withWeight(1).build(), 1));
 	
-			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			assertValid(build);
 			Container fits = build.get(0);
 	
@@ -252,7 +252,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 	
 			Collections.shuffle(products);
 	
-			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			assertValid(build);
 			Container fits = build.get(0);
 	

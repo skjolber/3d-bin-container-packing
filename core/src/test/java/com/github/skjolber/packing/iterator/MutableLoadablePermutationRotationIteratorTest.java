@@ -59,10 +59,10 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPerm
 				// removing items do not affect the number of rotations
 				assertEquals(items.size(), products1.size());
 				
-				items.remove(0, 1);
+				items.decrement(0, 1);
 				for(int k = 0; k < items.size(); k++) {
 					BoxItem item = items.get(k);
-					assertFalse(item.getStackable().getId().equals("0"));
+					assertFalse(item.getBox().getId().equals("0"));
 				}
 				
 				rotate++;
@@ -93,7 +93,7 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPerm
 			assertEquals(rotator.size(), products.size());
 
 			// removing items do not affect the number of permutations
-			rotator.remove(0, 1);
+			rotator.decrement(0, 1);
 			
 			// still two types of loadable items
 			assertEquals(rotator.size(), 2);
@@ -119,7 +119,7 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPerm
 				.withMaxLoadWeight(products.size())
 				.build();
 
-		rotator.remove(0, 1);
+		rotator.decrement(0, 1);
 		
 		// still two types of loadable items
 		assertEquals(rotator.size(), 2);
@@ -130,14 +130,14 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPerm
 		assertEquals(4, frequencies[1]);
 
 		// still two types of loadable items
-		rotator.remove(1, 2);
+		rotator.decrement(1, 2);
 		assertEquals(rotator.size(), 2);
 
 		frequencies = toFrequency(rotator, 2);
 		assertEquals(1, frequencies[0]);
 		assertEquals(2, frequencies[1]);
 
-		rotator.remove(0, 1);
+		rotator.decrement(0, 1);
 		// 0 exhausted
 		assertEquals(rotator.size(), 1);
 
@@ -145,7 +145,7 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPerm
 		assertEquals(0, frequencies[0]);
 		assertEquals(2, frequencies[1]);
 
-		rotator.remove(0, 2);
+		rotator.decrement(0, 2);
 		// 1 exhausted
 		assertEquals(rotator.size(), 0);
 	}

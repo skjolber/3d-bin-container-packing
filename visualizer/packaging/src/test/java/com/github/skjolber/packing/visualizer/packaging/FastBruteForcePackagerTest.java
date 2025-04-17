@@ -38,7 +38,7 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 		products.add(new BoxItem(Box.newBuilder().withDescription("D").withSize(3, 2, 1).withRotate3D().withWeight(1).build(), 1));
 		products.add(new BoxItem(Box.newBuilder().withDescription("E").withSize(1, 1, 1).withRotate3D().withWeight(1).build(), 1));
 
-		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).build();
+		PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(products).build();
 		assertFalse(result.getContainers().isEmpty());
 
 		Container fits = result.get(0);
@@ -62,7 +62,7 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 		products.add(new BoxItem(Box.newBuilder().withDescription("B").withSize(1, 1, 1).withRotate3D().withWeight(1).build(), 2));
 		products.add(new BoxItem(Box.newBuilder().withDescription("C").withSize(1, 1, 1).withRotate3D().withWeight(1).build(), 2));
 
-		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(5).build();
+		PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(products).withMaxContainerCount(5).build();
 		assertFalse(result.getContainers().isEmpty());
 
 		Container fits = result.get(0);

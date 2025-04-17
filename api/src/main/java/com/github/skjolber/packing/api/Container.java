@@ -1,7 +1,9 @@
 package com.github.skjolber.packing.api;
 
+import java.util.List;
 import java.util.function.Supplier;
 
+import com.github.skjolber.packing.api.ep.PlacementFilterBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder;
 
 public class Container {
@@ -66,7 +68,7 @@ public class Container {
 				stack = new Stack();
 			}
 
-			return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack, boxItemListenerBuilderSupplier);
+			return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack);
 		}
 
 	}
@@ -95,9 +97,7 @@ public class Container {
 
 	protected final Stack stack;
 	
-	protected final Supplier<BoxItemListenerBuilder<?>> boxItemListenerBuilderSupplier;
-
-	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy, int loadDz, int maxLoadWeight, Stack stack, Supplier<BoxItemListenerBuilder<?>> boxItemListenerBuilderSupplier) {
+	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy, int loadDz, int maxLoadWeight, Stack stack) {
 		this.id = id;
 		this.description = description;
 
@@ -120,7 +120,6 @@ public class Container {
 		this.volume = (long)dx * (long)dy * (long)dz;
 		
 		this.stack = stack;
-		this.boxItemListenerBuilderSupplier = boxItemListenerBuilderSupplier;
 	}
 
 	public String getDescription() {
@@ -174,21 +173,80 @@ public class Container {
 		if(box.getWeight() > maxLoadWeight) {
 			return false;
 		}
+		// at least one stack value must fit within the container load 
 		for (BoxStackValue stackValue : box.getStackValues()) {
-			if(
-				stackValue.getDx() <= loadDx &&
-						stackValue.getDy() <= loadDy &&
-						stackValue.getDz() <= loadDz
-			) {
+			if(canLoad(stackValue)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean canLoad(BoxItem boxItem) {
+		if(boxItem.getVolume() > maxLoadVolume) {
+			return false;
+		}
+		if(boxItem.getWeight() > maxLoadWeight) {
+			return false;
+		}
+		Box box = boxItem.getBox();
+		for (BoxStackValue stackValue : box.getStackValues()) {
+			if(canLoad(stackValue)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
+	public boolean canLoad(BoxStackValue stackValue) {
+		return stackValue.getDx() <= loadDx &&
+				stackValue.getDy() <= loadDy &&
+				stackValue.getDz() <= loadDz;
+	}
+
+	public boolean canLoad(BoxItemGroup group) {
+		if(group.getVolume() > maxLoadVolume) {
+			return false;
+		}
+		if(group.getWeight() > maxLoadWeight) {
+			return false;
+		}
+		
+		// all boxes must fit within the container load 
+		for (BoxItem boxItem : group.getItems()) {
+			Box box = boxItem.getBox();
+			if(!canLoad(box)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public boolean canLoadAtLeastOneBox(List<BoxItem> boxes) {
+		
+		for (BoxItem boxItem : boxes) {
+			Box box = boxItem.getBox();
+			if(canLoad(box)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean canLoadAtLeastOneGroup(List<BoxItemGroup> boxes) {
+		
+		for (BoxItemGroup group : boxes) {
+			if(canLoad(group)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	
 	@Override
 	public Container clone() {
-		return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, new Stack(), boxItemListenerBuilderSupplier);
+		return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, new Stack());
 	}
 	
 	public int getLoadDx() {
@@ -218,16 +276,13 @@ public class Container {
 	public int getDz() {
 		return dz;
 	}
-	
-	public boolean hasBoxItemListenerBuilder() {
-		return boxItemListenerBuilderSupplier != null;
-	}
 
-	public BoxItemListenerBuilder<?> newBoxItemListenerBuilder() {
-		return boxItemListenerBuilderSupplier.get().withContainer(this).withStack(stack);
+	public boolean fitsInside(BoxItemGroup boxItemGroup) {
+		return boxItemGroup.getVolume() <= getMaxLoadVolume() && boxItemGroup.getWeight() <= getMaxLoadWeight();
 	}
 	
-	public Supplier<BoxItemListenerBuilder<?>> getBoxItemListenerBuilderSupplier() {
-		return boxItemListenerBuilderSupplier;
+	public boolean fitsInside(BoxItem boxItem) {
+		return boxItem.getVolume() <= getMaxLoadVolume() && boxItem.getWeight() <= getMaxLoadWeight();
 	}
+	
 }

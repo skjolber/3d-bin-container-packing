@@ -105,7 +105,7 @@ public class AbstractPackagerTest {
 		// shuffle
 		//Collections.shuffle(products);
 
-		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(1).build();
+		PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(products).withMaxContainerCount(1).build();
 
 		Container fits = result.get(0);
 		assertNotNull(bouwkampCode.getName(), fits);

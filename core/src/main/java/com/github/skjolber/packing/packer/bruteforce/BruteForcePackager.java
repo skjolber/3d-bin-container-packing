@@ -39,10 +39,10 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	public static class BruteForcePackagerBuilder extends AbstractPackagerBuilder<BruteForcePackager, BruteForcePackagerBuilder> {
 
 		public BruteForcePackager build() {
-			if(packResultComparator == null) {
-				packResultComparator = new DefaultPackResultComparator();
+			if(comparator == null) {
+				comparator = new DefaultPackResultComparator();
 			}
-			return new BruteForcePackager(packResultComparator);
+			return new BruteForcePackager(comparator);
 		}
 	}
 
@@ -86,7 +86,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 		@Override
 		public Container accept(BruteForcePackagerResult bruteForceResult) {
-			super.accept(bruteForceResult.getContainerItemIndex());
+			super.toContainer(bruteForceResult.getContainerItemIndex());
 
 			Container container = bruteForceResult.getContainer();
 			Stack stack = container.getStack();

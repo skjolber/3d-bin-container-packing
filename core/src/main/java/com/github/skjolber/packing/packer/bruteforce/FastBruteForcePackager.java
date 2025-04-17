@@ -44,10 +44,10 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 	public static class FastBruteForcePackagerBuilder extends AbstractPackagerBuilder<FastBruteForcePackager, FastBruteForcePackagerBuilder> {
 
 		public FastBruteForcePackager build() {
-			if(packResultComparator == null) {
-				packResultComparator = new DefaultPackResultComparator();
+			if(comparator == null) {
+				comparator = new DefaultPackResultComparator();
 			}
-			return new FastBruteForcePackager(packResultComparator);
+			return new FastBruteForcePackager(comparator);
 		}
 	}
 
@@ -100,7 +100,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 		@Override
 		public Container accept(BruteForcePackagerResult bruteForceResult) {
-			super.accept(bruteForceResult.getContainerItemIndex());
+			super.toContainer(bruteForceResult.getContainerItemIndex());
 
 			Container container = bruteForceResult.getContainer();
 			Stack stack = container.getStack();
@@ -345,7 +345,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 			Point point3d = extremePoints3D.getValue(bestPointIndex);
 
-			placement.setStackable(stackable);
+			placement.setBox(stackable);
 			placement.setStackValue(stackValue);
 			placement.setX(point3d.getMinX());
 			placement.setY(point3d.getMinY());

@@ -64,10 +64,10 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 	public static class LargestAreaFitFirstPackagerBuilder extends AbstractPackagerBuilder<LargestAreaFitFirstPackager, LargestAreaFitFirstPackagerBuilder> {
 
 		public LargestAreaFitFirstPackager build() {
-			if(packResultComparator == null) {
-				packResultComparator = new DefaultPackResultComparator();
+			if(comparator == null) {
+				comparator = new DefaultPackResultComparator();
 			}
-			return new LargestAreaFitFirstPackager(packResultComparator);
+			return new LargestAreaFitFirstPackager(comparator);
 		}
 	}
 
@@ -242,7 +242,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 				targetContainer.getLoadDx(), targetContainer.getLoadDy(), targetContainer.getLoadDz(),
 				targetContainer.getMaxLoadWeight(),
-				stack, targetContainer.getBoxItemListenerBuilderSupplier()),
+				stack, targetContainer.getBoxItemListenerBuilderSupplier(), targetContainer.getPlacementFilterBuilderSupplier()),
 				
 				stack, remainingStackables.isEmpty(), index);
 	}

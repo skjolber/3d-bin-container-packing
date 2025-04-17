@@ -8,6 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.ep.points2d.DefaultXYSupportPoint2D;
@@ -26,7 +27,7 @@ public class ExtremePoints2DTest {
 		
 		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, 1).withWeight(0).build();
 		
-		return new StackPlacement(box, stackValue, x, y, z);
+		return new StackPlacement(null, new BoxItem(box, 1), stackValue, x, y, z);
 	}
 	
 	@Test

@@ -6,6 +6,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.packer.MutableBoxItem;
 
  /**
  *
@@ -137,7 +138,7 @@ public class MutableBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	}	
 	
 	@Override
-	public void remove(int index, int count) {
+	public void decrement(int index, int count) {
 		MutableBoxItem mutableBoxItem = mutableBoxItems.get(index);
 		
 		mutableBoxItem.decrement(count);

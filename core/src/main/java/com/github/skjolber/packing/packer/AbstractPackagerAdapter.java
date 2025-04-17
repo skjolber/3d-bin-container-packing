@@ -5,18 +5,22 @@ import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 import com.github.skjolber.packing.api.packager.PackResult;
 
-public abstract class AbstractPackagerAdapter<T extends PackResult> implements PackagerAdapter<T> {
+public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResult> implements PackagerAdapter<T> {
 
-	protected final List<ContainerItem> containerItems;
+	protected final List<CompositeContainerItem> containerItems;
 
 	protected long maxContainerLoadVolume = Long.MIN_VALUE;
 	protected long maxContainerLoadWeight = Long.MIN_VALUE;
 
-	public AbstractPackagerAdapter(List<ContainerItem> items) {
+	public AbstractPackagerAdapter(List<CompositeContainerItem> items) {
 		this.containerItems = items;
 
 		calculateMaxLoadVolume();
@@ -26,7 +30,9 @@ public abstract class AbstractPackagerAdapter<T extends PackResult> implements P
 	private void calculateMaxLoadVolume() {
 		maxContainerLoadVolume = Long.MIN_VALUE;
 
-		for (ContainerItem item : containerItems) {
+		for (CompositeContainerItem packContainerItem: containerItems) {
+			
+			ContainerItem item = packContainerItem.getContainerItem();
 			if(!item.isAvailable()) {
 				continue;
 			}
@@ -42,7 +48,8 @@ public abstract class AbstractPackagerAdapter<T extends PackResult> implements P
 	private void calculateMaxLoadWeight() {
 		maxContainerLoadWeight = Long.MIN_VALUE;
 
-		for (ContainerItem item : containerItems) {
+		for (CompositeContainerItem packContainerItem: containerItems) {
+			ContainerItem item = packContainerItem.getContainerItem();
 			if(!item.isAvailable()) {
 				continue;
 			}
@@ -62,20 +69,20 @@ public abstract class AbstractPackagerAdapter<T extends PackResult> implements P
 	 * @param maxCount maximum number of possible containers
 	 * @return list of containers
 	 */
+	
+	protected List<Integer> getContainers(List<MutableBoxItem> boxes, int maxCount) {
+		long totalVolume = 0;
+		long totalWeight = 0;
 
-	protected List<Integer> getContainers(List<Box> boxes, int maxCount) {
-		long volume = 0;
-		long weight = 0;
-
-		for (Box box : boxes) {
+		for (BoxItem box : boxes) {
 			// volume
-			volume += box.getVolume();
+			totalVolume += box.getVolume();
 
 			// weight
-			weight += box.getWeight();
+			totalWeight += box.getWeight();
 		}
 
-		if(maxContainerLoadVolume * maxCount < volume || maxContainerLoadWeight * maxCount < weight) {
+		if(maxContainerLoadVolume * maxCount < totalVolume || maxContainerLoadWeight * maxCount < totalWeight) {
 			// no containers will work at current count
 			return Collections.emptyList();
 		}
@@ -84,23 +91,24 @@ public abstract class AbstractPackagerAdapter<T extends PackResult> implements P
 
 		if(maxCount == 1) {
 
-			containers: for (int i = 0; i < containerItems.size(); i++) {
-				ContainerItem item = containerItems.get(i);
+			containers: 
+			for (int i = 0; i < containerItems.size(); i++) {
+				ContainerItem item = containerItems.get(i).getContainerItem();
 				if(!item.isAvailable()) {
 					continue;
 				}
 
 				Container container = item.getContainer();
 
-				if(container.getMaxLoadVolume() < volume) {
+				if(container.getMaxLoadVolume() < totalVolume) {
 					continue;
 				}
-				if(container.getMaxLoadWeight() < weight) {
+				if(container.getMaxLoadWeight() < totalWeight) {
 					continue;
 				}
 
-				for (Box box : boxes) {
-					if(!container.canLoad(box)) {
+				for (BoxItem box : boxes) {
+					if(!container.canLoad(box.getBox())) {
 						continue containers;
 					}
 				}
@@ -111,7 +119,7 @@ public abstract class AbstractPackagerAdapter<T extends PackResult> implements P
 			long minVolume = Long.MAX_VALUE;
 			long minWeight = Long.MAX_VALUE;
 
-			for (Box box : boxes) {
+			for (BoxItem box : boxes) {
 				// volume
 				long boxVolume = box.getVolume();
 				if(boxVolume < minVolume) {
@@ -126,7 +134,7 @@ public abstract class AbstractPackagerAdapter<T extends PackResult> implements P
 			}
 
 			for (int i = 0; i < containerItems.size(); i++) {
-				ContainerItem item = containerItems.get(i);
+				ContainerItem item = containerItems.get(i).getContainerItem();
 
 				if(!item.isAvailable()) {
 					continue;
@@ -139,12 +147,12 @@ public abstract class AbstractPackagerAdapter<T extends PackResult> implements P
 					continue;
 				}
 
-				if(container.getMaxLoadVolume() + maxContainerLoadVolume * (maxCount - 1) < volume || container.getMaxLoadWeight() + maxContainerLoadWeight * (maxCount - 1) < weight) {
+				if(container.getMaxLoadVolume() + maxContainerLoadVolume * (maxCount - 1) < totalVolume || container.getMaxLoadWeight() + maxContainerLoadWeight * (maxCount - 1) < totalWeight) {
 					// this container cannot be used even together with all biggest boxes
 					continue;
 				}
 
-				if(!canLoadAtLeastOne(container, boxes)) {
+				if(!canLoadAtLeastOneBox(container, boxes)) {
 					continue;
 				}
 				list.add(i);
@@ -153,19 +161,138 @@ public abstract class AbstractPackagerAdapter<T extends PackResult> implements P
 
 		return list;
 	}
+	
 
-	private boolean canLoadAtLeastOne(Container containerBox, List<Box> boxes) {
-		for (Box box : boxes) {
+	protected List<Integer> getGroupContainers(List<MutableBoxItemGroup> boxes, int maxCount) {
+		long totalBoxVolume = 0;
+		long totalBoxWeight = 0;
+
+		long maxGroupVolume = 0;
+		long maxGroupWeight = 0;
+
+		long minGroupVolume = Long.MAX_VALUE;
+		long minGroupWeight = Long.MAX_VALUE;
+
+		for (BoxItemGroup group : boxes) {
+			// volume
+			for (BoxItem boxItem : group.getItems()) {
+
+				long volume = boxItem.getVolume();
+				if(maxGroupVolume < volume) {
+					maxGroupVolume = volume;
+				}
+				if(minGroupVolume > volume) {
+					minGroupVolume = volume;
+				}
+				long weight = boxItem.getWeight();
+				if(maxGroupWeight < weight) {
+					maxGroupWeight = weight;
+				}
+				if(minGroupWeight > weight) {
+					minGroupWeight = weight;
+				}
+				
+				totalBoxVolume += volume;
+
+				// weight
+				totalBoxWeight += weight;
+
+			}
+		}
+
+		if(maxContainerLoadVolume * maxCount < totalBoxVolume || maxContainerLoadWeight * maxCount < totalBoxWeight) {
+			// no containers will work at current count
+			return Collections.emptyList();
+		}
+
+		List<Integer> list = new ArrayList<>(containerItems.size());
+
+		if(maxCount == 1) {
+
+			// check if everything can fit in the same container
+			
+			containers: 
+			for (int i = 0; i < containerItems.size(); i++) {
+				CompositeContainerItem packContainerItem = containerItems.get(i);
+				
+				ContainerItem item = packContainerItem.getContainerItem();
+				if(!item.isAvailable()) {
+					continue;
+				}
+				
+				Container c = item.getContainer();
+				if(c.getMaxLoadVolume() < totalBoxVolume) {
+					continue;
+				}
+				if(c.getMaxLoadWeight() < totalBoxWeight) {
+					continue;
+				}
+				
+				for (BoxItemGroup group : boxes) {
+					if(!c.canLoad(group)) {
+						continue containers;
+					}
+				}
+				list.add(i);
+			}
+
+		} else {
+			for (int i = 0; i < containerItems.size(); i++) {
+				CompositeContainerItem packContainerItem = containerItems.get(i);
+
+				ContainerItem item = packContainerItem.getContainerItem();
+				
+				if(!item.isAvailable()) {
+					continue;
+				}
+
+				Container container = item.getContainer();
+
+				if(container.getMaxLoadVolume() < minGroupVolume || container.getMaxLoadWeight() < minGroupWeight) {
+					// this container cannot even fit a single group
+					continue;
+				}
+
+				if(container.getMaxLoadVolume() + maxContainerLoadVolume * (maxCount - 1) < totalBoxVolume || container.getMaxLoadWeight() + maxContainerLoadWeight * (maxCount - 1) < totalBoxWeight) {
+					// this container cannot be used even together with all biggest boxes
+					continue;
+				}
+
+				if(!canLoadAtLeastOneGroup(container, boxes)) {
+					continue;
+				}
+				list.add(i);
+			}
+		}
+
+		return list;
+	}
+	
+	protected boolean canLoadAtLeastOneBox(Container containerBox, List<MutableBoxItem> boxes) {
+		
+		for (BoxItem boxItem : boxes) {
+			Box box = boxItem.getBox();
 			if(containerBox.canLoad(box)) {
 				return true;
 			}
 		}
 		return false;
 	}
+	
+	protected boolean canLoadAtLeastOneGroup(Container containerBox, List<MutableBoxItemGroup> boxes) {
+		
+		for (BoxItemGroup group : boxes) {
+			for (BoxItem boxItem : group.getItems()) {
+				Box box = boxItem.getBox();
+				if(containerBox.canLoad(box)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
-	public void accept(int index) {
-		ContainerItem item = containerItems.get(index);
-
+	public Container toContainer(ContainerItem item, Stack stack) {
 		item.consume();
 
 		// do we need to adjust limits?
@@ -179,6 +306,22 @@ public abstract class AbstractPackagerAdapter<T extends PackResult> implements P
 				calculateMaxLoadWeight();
 			}
 		}
+		
+		Container container = item.getContainer();
+		
+		return new Container(container.getId(), container.getDescription(), 
+				container.getDx(), container.getDy(), container.getDz(), 
+				
+				container.getEmptyWeight(), 
+				
+				container.getLoadDx(), container.getLoadDy(), container.getLoadDz(), 
+				
+				container.getMaxLoadWeight(), stack);
+	}
+	
+	@Override
+	public ContainerItem getContainerItem(int index) {
+		return containerItems.get(index).getContainerItem();
 	}
 
 }

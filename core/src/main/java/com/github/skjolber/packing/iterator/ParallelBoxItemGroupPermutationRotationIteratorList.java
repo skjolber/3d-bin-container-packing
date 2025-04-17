@@ -135,7 +135,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	    for (int j = 0; j < groups.size(); j++) {
 	    	BoxItemGroup group = groups.get(j);
 			
-	    	int stackableItemsCount = group.stackableItemsCount();
+	    	int stackableItemsCount = group.getBoxCount();
 	    	
 		    for(int i = 0; i < stackableItemsCount; i++) {
 		        for(int k = 0; k < group.size(); k++) {

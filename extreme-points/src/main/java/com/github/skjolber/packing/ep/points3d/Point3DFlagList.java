@@ -20,9 +20,18 @@ public class Point3DFlagList implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private int size = 0;
-	private SimplePoint3D[] points = new SimplePoint3D[16];
-	private boolean[] flag = new boolean[16];
+	private SimplePoint3D[] points;
+	private boolean[] flag;
 
+	public Point3DFlagList() {
+		this(16);
+	}
+
+	public Point3DFlagList(int capacity) {
+		points = new SimplePoint3D[capacity];
+		flag = new boolean[capacity];
+	}
+	
 	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
 	}
@@ -202,6 +211,23 @@ public class Point3DFlagList implements Serializable {
 
 	public void set(SimplePoint3D point, int i) {
 		points[i] = point;
+	}
+	
+	public Point3DFlagList clone(boolean clonePoints) {
+		Point3DFlagList clone = new Point3DFlagList(points.length);
+
+		clone.size = size;
+
+		System.arraycopy(flag, 0, clone.flag, 0, flag.length);
+		if(clonePoints) {
+			for(int i = 0; i < size; i++) {
+				clone.points[i] = points[i].clone();
+			}
+		} else {
+			System.arraycopy(points, 0, clone.points, 0, points.length);
+		}
+		
+		return clone;
 	}
 
 }

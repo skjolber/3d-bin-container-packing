@@ -36,7 +36,7 @@ public class BoxItem implements Serializable {
 		return count;
 	}
 
-	public Box getStackable() {
+	public Box getBox() {
 		return box;
 	}
 
@@ -45,8 +45,9 @@ public class BoxItem implements Serializable {
 		return String.format("%dx%s", count, box);
 	}
 	
-	public void decrement() {
+	public boolean decrement() {
 		count--;
+		return count > 0;
 	}
 
 	public boolean isEmpty() {
@@ -69,5 +70,19 @@ public class BoxItem implements Serializable {
 	public int getIndex() {
 		return index;
 	}
+	
+	public long getVolume() {
+		return count * box.getVolume();
+	}
+
+	public long getWeight() {
+		return count * box.getWeight();
+	}
+
+	public void setCount(int count) {
+		this.count = count;
+	}
+	
+	
 
 }

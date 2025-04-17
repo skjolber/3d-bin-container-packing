@@ -177,7 +177,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		StackPlacement placement = placements.get(placementIndex);
 		BoxStackValue stackValue = permutationRotation.getBoxStackValue();
 
-		placement.setStackable(stackable);
+		placement.setBox(stackable);
 		placement.setStackValue(stackValue);
 
 		maxLoadWeight -= stackable.getWeight();

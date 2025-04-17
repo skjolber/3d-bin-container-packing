@@ -71,7 +71,7 @@ public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxI
 					continue;
 				}
 	
-				Box stackable = item.getStackable();
+				Box stackable = item.getBox();
 				if(stackable.getWeight() > maxLoadWeight) {
 					continue;
 				}

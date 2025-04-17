@@ -78,7 +78,7 @@ public abstract class AbstractStackAssert<SELF extends AbstractStackAssert<SELF,
 
 		int loadWeight = 0;
 		for (StackPlacement stackPlacement : actual.getPlacements()) {
-			loadWeight += stackPlacement.getStackable().getWeight();
+			loadWeight += stackPlacement.getBox().getWeight();
 		}
 		int maxLoadWeight = container.getMaxLoadWeight();
 

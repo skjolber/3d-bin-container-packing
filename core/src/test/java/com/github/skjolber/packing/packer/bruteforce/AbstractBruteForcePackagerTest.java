@@ -42,10 +42,10 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 		AbstractPackager packager = createPackager();
 		try {
 			PackagerResult build = packager.newResultBuilder()
-				.withContainers(ContainerItem.newListBuilder()
+				.withContainerItems(ContainerItem.newListBuilder()
 					.withContainer(container)
 					.build())
-				.withStackables(b1)
+				.withBoxItems(b1)
 				.build();
 			
 			assertFalse(build.isSuccess());
@@ -70,8 +70,8 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 	
 			PackagerResult build = packager
 					.newResultBuilder()
-					.withContainers(containerItems)
-					.withStackables(products)
+					.withContainerItems(containerItems)
+					.withBoxItems(products)
 					.build();
 	
 			assertFalse(build.isSuccess());
@@ -95,8 +95,8 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 	
 			PackagerResult build = packager
 					.newResultBuilder()
-					.withContainers(containerItems)
-					.withStackables(products)
+					.withContainerItems(containerItems)
+					.withBoxItems(products)
 					.withMaxContainerCount(3)
 					.build();
 	
@@ -148,10 +148,10 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 		AbstractPackager packager = createPackager();
 		try {
 			PackagerResult build = packager.newResultBuilder()
-				.withContainers(ContainerItem.newListBuilder()
+				.withContainerItems(ContainerItem.newListBuilder()
 					.withContainers(thin, thick)
 					.build())
-				.withStackables(thinBox, thickBox)
+				.withBoxItems(thinBox, thickBox)
 				.withMaxContainerCount(2)
 				.build();
 			

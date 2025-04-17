@@ -68,7 +68,7 @@ public class IteratorState {
 
 		int weight = 0;
 		for (BoxItem stackableItem : stackableItems3D) {
-			BoxStackValue[] stackValues = stackableItem.getStackable().getStackValues();
+			BoxStackValue[] stackValues = stackableItem.getBox().getStackValues();
 			for (BoxStackValue stackValue : stackValues) {
 				if(x < stackValue.getDx()) {
 					x = stackValue.getDx();
@@ -80,7 +80,7 @@ public class IteratorState {
 					z = stackValue.getDz();
 				}
 			}
-			weight += stackableItem.getCount() * stackableItem.getStackable().getWeight();
+			weight += stackableItem.getCount() * stackableItem.getBox().getWeight();
 		}
 
 		this.parallelIterator = new ParallelPermutationRotationIteratorListBuilder()

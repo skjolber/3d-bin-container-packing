@@ -13,5 +13,4 @@ public interface FilteredPoints {
 	Point get(int index);
 
 	void remove(int index);
-
 }

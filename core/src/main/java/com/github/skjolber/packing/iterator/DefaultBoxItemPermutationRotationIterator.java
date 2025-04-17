@@ -45,7 +45,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	}
 	
 	public BoxStackValue getStackValue(int index) {
-		return stackableItems[permutations[index]].getStackable().getStackValue(rotations[index]);
+		return stackableItems[permutations[index]].getBox().getStackValue(rotations[index]);
 	}
 
 	public void removePermutations(int count) {
@@ -120,7 +120,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	public int nextRotation(int maxIndex) {
 		// next rotation
 		for (int i = maxIndex; i >= 0; i--) {
-			if(rotations[i] < stackableItems[permutations[i]].getStackable().getStackValues().length - 1) {
+			if(rotations[i] < stackableItems[permutations[i]].getBox().getStackValues().length - 1) {
 				rotations[i]++;
 
 				System.arraycopy(reset, 0, rotations, i + 1, rotations.length - (i + 1));

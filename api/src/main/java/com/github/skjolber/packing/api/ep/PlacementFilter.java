@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.api.ep;
 
+import com.github.skjolber.packing.api.BoxItem;
+
 /**
  * 
  * Filter for points which are available for placing boxes.
@@ -8,15 +10,8 @@ package com.github.skjolber.packing.api.ep;
  * 
  */
 
-public interface PointListener {
-
-	/**
-	 * 
-	 * Notify point was loaded
-	 * 
-	 * @param index index as in {@linkplain FilteredPoints}
-	 */
+public interface PlacementFilter {
 	
-	void packedPoint3D(int index);
+	boolean accepts(BoxItem boxItem, Point point);
 	
 }

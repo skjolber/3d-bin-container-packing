@@ -48,7 +48,7 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
-			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			assertValid(build);
 	
 			Container fits = build.getContainers().get(0);
@@ -87,7 +87,7 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 	
-			PackagerResult build = packager.newResultBuilder().withContainers(containerItems).withStackables(products).withMaxContainerCount(5).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).withMaxContainerCount(5).build();
 			assertValid(build);
 	
 			List<Container> packList = build.getContainers();
@@ -173,8 +173,8 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 			PackagerResult build = packager
 					.newResultBuilder()
-					.withContainers(containerItems)
-					.withStackables(products).build();
+					.withContainerItems(containerItems)
+					.withBoxItems(products).build();
 	
 			Container fits = build.get(0);
 	
@@ -225,8 +225,8 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 			PackagerResult build = packager
 					.newResultBuilder()
-					.withContainers(containerItems)
-					.withStackables(products)
+					.withContainerItems(containerItems)
+					.withBoxItems(products)
 					.build();
 	
 			// strangely when the timeout is set to now + 200ms it properly returns null

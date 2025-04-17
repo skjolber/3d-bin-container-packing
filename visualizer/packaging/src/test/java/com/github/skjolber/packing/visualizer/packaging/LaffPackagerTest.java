@@ -41,7 +41,7 @@ public class LaffPackagerTest extends AbstractPackagerTest {
 		products.add(new BoxItem(Box.newBuilder().withDescription("B").withSize(2, 1, 1).withRotate3D().withWeight(1).build(), 1));
 		products.add(new BoxItem(Box.newBuilder().withDescription("C").withSize(2, 1, 1).withRotate3D().withWeight(1).build(), 1));
 
-		PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products).build();
+		PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).build();
 		if(build.isSuccess()) {
 			write(build.getContainers());
 		} else {
@@ -71,7 +71,7 @@ public class LaffPackagerTest extends AbstractPackagerTest {
 		List<BoxItem> products = Arrays.asList(
 				new BoxItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 20));
 
-		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(1).build();
+		PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(products).withMaxContainerCount(1).build();
 		Container pack = result.get(0);
 
 		assertNotNull(pack);
@@ -121,7 +121,7 @@ public class LaffPackagerTest extends AbstractPackagerTest {
 	public void testLAFFPackager() throws Exception {
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
 
-		PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products33).build();
+		PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products33).build();
 		if(build.isSuccess()) {
 			write(build.getContainers());
 		} else {

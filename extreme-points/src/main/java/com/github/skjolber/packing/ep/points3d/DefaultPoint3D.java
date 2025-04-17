@@ -15,6 +15,11 @@ public class DefaultPoint3D extends SimplePoint3D {
 	public DefaultPoint3D clone(int maxX, int maxY, int maxZ) {
 		return new DefaultPoint3D(minX, minY, minZ, maxX, maxY, maxZ);
 	}
+	
+	@Override
+	public DefaultPoint3D clone() {
+		return new DefaultPoint3D(minX, minY, minZ, maxX, maxY, maxZ);
+	}
 
 	@Override
 	public SimplePoint3D moveX(int x) {
@@ -71,7 +76,6 @@ public class DefaultPoint3D extends SimplePoint3D {
 	public long calculateYZSupport(int dy, int dz) {
 		return 0;
 	}
-	
 
 	public boolean isSupportedXYPlane(int x, int y) { // i.e. z is fixed
 		return false;

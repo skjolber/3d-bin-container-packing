@@ -70,7 +70,7 @@ public class ExtremePoints2D {
 
 		BoxStackValue stackValue = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, 0, null, -1);
 		
-		this.containerPlacement = new StackPlacement(null, stackValue, 0, 0, 0);
+		this.containerPlacement = new StackPlacement(null, null, stackValue, 0, 0, 0);
 	}
 
 	private void addFirstPoint() {

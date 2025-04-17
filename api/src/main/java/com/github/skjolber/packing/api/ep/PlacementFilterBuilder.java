@@ -10,13 +10,13 @@ import com.github.skjolber.packing.api.Stack;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class PointListenerBuilder<B extends PointListenerBuilder<B>> {
+public abstract class PlacementFilterBuilder<B extends PlacementFilterBuilder<B>> {
 
 	protected Stack stack;
 	protected Container container;
-	protected FilteredPoints input;
+	protected ExtremePoints input;
 
-	public B withFilteredPoint3Ds(FilteredPoints input) {
+	public B withExtremePoints(ExtremePoints input) {
 		this.input = input;
 		return (B)this;
 	}
@@ -31,7 +31,7 @@ public abstract class PointListenerBuilder<B extends PointListenerBuilder<B>> {
 		return (B)this;
 	}
 	
-	public abstract PointListener build();
+	public abstract PlacementFilter build();
 	
 	
 

@@ -131,9 +131,9 @@ public class EgyPackagerState {
 
 			PackagerResult build = fastPackager
 					.newResultBuilder()
-					.withContainers(containers)
+					.withContainerItems(containers)
 					.withMaxContainerCount(1)
-					.withStackables(stackableItems3D)
+					.withBoxItems(stackableItems3D)
 					.withDeadline(System.currentTimeMillis() + 5000)
 					.build();
 			if(build.isSuccess()) {

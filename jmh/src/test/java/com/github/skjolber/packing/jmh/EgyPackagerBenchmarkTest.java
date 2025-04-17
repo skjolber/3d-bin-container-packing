@@ -48,7 +48,7 @@ public class EgyPackagerBenchmarkTest {
 			List<ContainerItem> containers = set.getContainers();
 			List<BoxItem> products = set.getProducts();
 
-			PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products).withDeadline(deadline).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withDeadline(deadline).build();
 			assertTrue(build.isSuccess());
 		}
 	}

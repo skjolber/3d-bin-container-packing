@@ -316,8 +316,8 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 	
 	public SELF hasStackableName(String name) {
 		isNotNull();
-		if(!Objects.equals(name, actual.getStackable().getDescription())) {
-			failWithMessage("Expected stackable name " + name + ", not " + actual.getStackable().getDescription());
+		if(!Objects.equals(name, actual.getBox().getDescription())) {
+			failWithMessage("Expected stackable name " + name + ", not " + actual.getBox().getDescription());
 		}
 		return myself;
 	}

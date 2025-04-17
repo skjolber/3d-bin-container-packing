@@ -17,7 +17,7 @@ public abstract class AbstractBoxItemGroupPermutationRotationIterator extends Ab
 	protected int getCount() {
 		int index = 0;
 		for (BoxItemGroup loadableItemGroup : groups) {
-			index += loadableItemGroup.stackableItemsCount();
+			index += loadableItemGroup.getBoxCount();
 		}
 		return index;
 	}
@@ -39,7 +39,7 @@ public abstract class AbstractBoxItemGroupPermutationRotationIterator extends Ab
 
 			List<BoxItem> items = loadableItemGroup.getItems();
 			
-			int count = loadableItemGroup.stackableItemsCount();
+			int count = loadableItemGroup.getBoxCount();
 			
 			if(count == 0) {
 				continue;

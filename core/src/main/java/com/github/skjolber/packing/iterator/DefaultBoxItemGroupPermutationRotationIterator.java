@@ -47,7 +47,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	}
 	
 	public BoxStackValue getStackValue(int index) {
-		return stackableItems[permutations[index]].getStackable().getStackValue(rotations[index]);
+		return stackableItems[permutations[index]].getBox().getStackValue(rotations[index]);
 	}
 
 	public void removePermutations(int count) {
@@ -127,7 +127,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	public int nextRotation(int maxIndex) {
 		// next rotation
 		for (int i = maxIndex; i >= 0; i--) {
-			if(rotations[i] < stackableItems[permutations[i]].getStackable().getStackValues().length - 1) {
+			if(rotations[i] < stackableItems[permutations[i]].getBox().getStackValues().length - 1) {
 				rotations[i]++;
 
 				System.arraycopy(reset, 0, rotations, i + 1, rotations.length - (i + 1));
@@ -159,7 +159,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			BoxItemGroup loadableItemGroup = groups.get(g);
 
 			// Find longest non-increasing suffix
-			int startIndex = limit - loadableItemGroup.stackableItemsCount();
+			int startIndex = limit - loadableItemGroup.getBoxCount();
 
 			if(startIndex <= maxIndex && maxIndex < limit) {
 				while (maxIndex >= startIndex) {
@@ -229,7 +229,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 
 			// Find longest non-increasing suffix
 			int i = endIndex;
-			int startIndex = endIndex - loadableItemGroup.stackableItemsCount() + 1;
+			int startIndex = endIndex - loadableItemGroup.getBoxCount() + 1;
 
 			while (i > startIndex && permutations[i - 1] >= permutations[i])
 				i--;

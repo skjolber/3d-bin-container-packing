@@ -56,7 +56,7 @@ public class ExtremePoints3D implements ExtremePoints {
 	protected final List<SimplePoint3D> addedYY = new ArrayList<>(128);
 	protected final List<SimplePoint3D> addedZZ = new ArrayList<>(128);
 
-	protected final boolean cloneOnConstrain;
+	protected final boolean immutablePoints;
 
 	protected StackPlacement containerPlacement;
 	protected Default3DPlanePoint3D firstPoint;
@@ -69,9 +69,9 @@ public class ExtremePoints3D implements ExtremePoints {
 		this(dx, dy, dz, false);
 	}
 
-	public ExtremePoints3D(int dx, int dy, int dz, boolean cloneOnConstrain) {
+	public ExtremePoints3D(int dx, int dy, int dz, boolean immutablePoints) {
 		setSize(dx, dy, dz);
-		this.cloneOnConstrain = cloneOnConstrain;
+		this.immutablePoints = immutablePoints;
 
 		values.add(firstPoint);
 	}
@@ -96,7 +96,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		
 		BoxStackValue value = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, containerMaxY + 1, null, -1);
 		
-		return new StackPlacement(null, value, 0, 0, 0);
+		return new StackPlacement(null, null, value, 0, 0, 0);
 	}
 
 	public boolean add(int index, StackPlacement placement) {
@@ -430,14 +430,14 @@ public class ExtremePoints3D implements ExtremePoints {
 					(supportedXYPlane && supportedYZPlane) ||
 					(supportedXZPlane && supportedYZPlane)
 		) {
-			if(cloneOnConstrain) {
+			if(immutablePoints) {
 				constrainMaxWithClone(placement, endIndex);
 			} else {
 				constrainMax(placement, endIndex);
 			}
 		} else {
 			// Constrain max values to the new placement
-			if(cloneOnConstrain) {
+			if(immutablePoints) {
 				constrainFloatingMaxWithClone(placement, endIndex);
 			} else {
 				constrainFloatingMax(placement, endIndex);
@@ -1637,5 +1637,21 @@ public class ExtremePoints3D implements ExtremePoints {
 
 	public long getMinVolumeLimit() {
 		return minVolumeLimit;
+	}
+
+	public long getUsedVolume() {
+		long used = 0;
+		for (StackPlacement stackPlacement : placements) {
+			used += stackPlacement.getBoxItem().getBox().getVolume();
+		}
+		return used;
+	}
+	
+	public long getUsedWeight() {
+		long used = 0;
+		for (StackPlacement stackPlacement : placements) {
+			used += stackPlacement.getBoxItem().getBox().getWeight();
+		}
+		return used;
 	}
 }
