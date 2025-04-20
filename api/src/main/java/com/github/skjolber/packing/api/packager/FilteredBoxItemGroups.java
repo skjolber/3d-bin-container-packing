@@ -8,13 +8,13 @@ import com.github.skjolber.packing.api.BoxItemGroup;
  * 
  */
 
-public interface FilteredBoxItemGroups<T extends BoxItemGroup> {
+public interface FilteredBoxItemGroups {
 	
 	int size();
 	
-	T get(int index);
+	BoxItemGroup get(int index);
 
-	T remove(int index);
+	BoxItemGroup remove(int index);
  
 	boolean isEmpty();
 

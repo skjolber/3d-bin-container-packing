@@ -22,13 +22,13 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupList
 	}
 	
 	protected final Container container;
-	protected final FilteredBoxItemGroups<?> groups;
+	protected final FilteredBoxItemGroups groups;
 	protected final Stack stack;
 	
 	protected boolean matches = false;
 	protected boolean petrol = false;
 
-	public NoMatchesWithPetrolBoxItemGroupListener(Container container, FilteredBoxItemGroups<?> groups, Stack stack) {
+	public NoMatchesWithPetrolBoxItemGroupListener(Container container, FilteredBoxItemGroups groups, Stack stack) {
 		this.container = container;
 		this.groups = groups;
 		this.stack = stack;
@@ -38,11 +38,8 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupList
 	public void accepted(BoxItemGroup group) {
 		// do nothing
 		
-		BoxItemGroup removed = groups.remove(group);
-		
-
 		if(!matches) {
-			matches = isMatches(removed);
+			matches = isMatches(group);
 			
 			if(matches) {
 				// remove groups which contain petrol
@@ -50,7 +47,7 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupList
 			}
 		}
 		if(!petrol) {
-			petrol = isPetrol(removed);
+			petrol = isPetrol(group);
 			
 			if(petrol) {
 				// remove groups which contain matches

@@ -200,7 +200,7 @@ public class Container {
 				stackValue.getDz() <= loadDz;
 	}
 
-	public <T extends BoxItem> boolean canLoad(BoxItemGroup<T> group) {
+	public boolean canLoad(BoxItemGroup group) {
 		if(group.getVolume() > maxLoadVolume) {
 			return false;
 		}
@@ -209,7 +209,7 @@ public class Container {
 		}
 		
 		// all boxes must fit within the container load 
-		for (T boxItem : group.getItems()) {
+		for (BoxItem boxItem : group.getItems()) {
 			Box box = boxItem.getBox();
 			if(!canLoad(box)) {
 				return false;

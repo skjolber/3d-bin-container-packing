@@ -145,7 +145,13 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 	}
 
 	public List<Container> pack(List<BoxItem> boxes, List<CompositeContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) {
-		throw new IllegalStateException();
+		PackagerAdapter<P> adapter = adapter(boxes, containerItems, interrupt);
+
+		if(adapter == null) {
+			return Collections.emptyList();
+		}
+		
+		return packAdapter(limit, interrupt, adapter);
 	}
 
 	/**
@@ -165,6 +171,10 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 			return Collections.emptyList();
 		}
 		
+		return packAdapter(limit, interrupt, adapter);
+	}
+
+	private List<Container> packAdapter(int limit, PackagerInterruptSupplier interrupt, PackagerAdapter<P> adapter) {
 		List<Container> containerPackResults = new ArrayList<>();
 
 		do {
@@ -286,7 +296,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		return minVolume;
 	}
 	
-	protected long getMinBoxItemVolume(List<? extends BoxItem> stackables) {
+	protected long getMinBoxItemVolume(List<BoxItem> stackables) {
 		long minVolume = Integer.MAX_VALUE;
 		for (BoxItem boxItem : stackables) {
 			Box box = boxItem.getBox();
@@ -308,7 +318,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		return minArea;
 	}
 	
-	protected long getMinBoxItemArea(List<? extends BoxItem> stackables) {
+	protected long getMinBoxItemArea(List<BoxItem> stackables) {
 		long minArea = Integer.MAX_VALUE;
 		for (BoxItem boxItem: stackables) {
 			Box box = boxItem.getBox();
@@ -345,9 +355,9 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		return minArea;
 	}
 	
-	protected long getMinBoxItemGroupVolume(List<MutableBoxItemGroup> groups) {
+	protected long getMinBoxItemGroupVolume(List<BoxItemGroup> groups) {
 		long minVolume = Integer.MAX_VALUE;
-		for (MutableBoxItemGroup boxItemGroup : groups) {
+		for (BoxItemGroup boxItemGroup : groups) {
 			for (BoxItem boxItem : boxItemGroup.getItems()) {
 				if(boxItem.getBox().getVolume() < minVolume) {
 					minVolume = boxItem.getBox().getVolume();
@@ -357,9 +367,9 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		return minVolume;
 	}
 	
-	protected long getMinBoxItemGroupArea(List<MutableBoxItemGroup> groups) {
+	protected long getMinBoxItemGroupArea(List<BoxItemGroup> groups) {
 		long minArea = Integer.MAX_VALUE;
-		for (BoxItemGroup<?> boxItemGroup : groups) {
+		for (BoxItemGroup boxItemGroup : groups) {
 			for (BoxItem boxItem : boxItemGroup.getItems()) {
 				if(boxItem.getBox().getMinimumArea() < minArea) {
 					minArea = boxItem.getBox().getMinimumArea();
@@ -369,10 +379,10 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		return minArea;
 	}
 
-	protected long getMinBoxItemGroupArea(FilteredBoxItemGroups<?> filteredBoxItemGroups) {
+	protected long getMinBoxItemGroupArea(FilteredBoxItemGroups filteredBoxItemGroups) {
 		long minArea = Integer.MAX_VALUE;
 		for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
-			BoxItemGroup<?> boxItemGroup = filteredBoxItemGroups.get(i);
+			BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(i);
 			for (BoxItem boxItem : boxItemGroup.getItems()) {
 				if(boxItem.getBox().getMinimumArea() < minArea) {
 					minArea = boxItem.getBox().getMinimumArea();
@@ -386,9 +396,9 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		scheduledThreadPoolExecutor.shutdownNow();
 	}
 	
-	protected List<MutableBoxItemGroup> getFitsInside(List<MutableBoxItemGroup> inputs, Container container) {
-		List<MutableBoxItemGroup> result = new ArrayList<>(inputs.size());
-		for (MutableBoxItemGroup boxItemGroup : inputs) {
+	protected List<BoxItemGroup> getFitsInside(List<BoxItemGroup> inputs, Container container) {
+		List<BoxItemGroup> result = new ArrayList<>(inputs.size());
+		for (BoxItemGroup boxItemGroup : inputs) {
 			if(container.fitsInside(boxItemGroup)) {
 				result.add(boxItemGroup);
 			}

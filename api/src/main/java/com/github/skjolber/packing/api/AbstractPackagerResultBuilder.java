@@ -144,6 +144,9 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 	public B withContainerItem(Consumer<ExtendedContainerItemBuilder> consumer) {
 		ExtendedContainerItemBuilder builder = new ExtendedContainerItemBuilder();
 		consumer.accept(builder);
+		if(this.containers == null) {
+			this.containers = new ArrayList<>();
+		}
 		this.containers.add(builder.build());
 		return (B)this;
 	}
@@ -151,12 +154,17 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 	public B withContainer(Consumer<ExtendedContainerBuilder> consumer) {
 		ExtendedContainerBuilder builder = new ExtendedContainerBuilder();
 		consumer.accept(builder);
+		if(this.containers == null) {
+			this.containers = new ArrayList<>();
+		}
 		this.containers.add(builder.build());
 		return (B)this;
 	}
 
 	public B withContainerItems(List<ContainerItem> containers) {
-		this.containers = new ArrayList<>();
+		if(this.containers == null) {
+			this.containers = new ArrayList<>();
+		}
 		for (ContainerItem item : containers) {
 			this.containers.add(new CompositeContainerItem(item));
 		}
@@ -179,7 +187,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 	}
 	
 	protected void validate() {
-		if(items != null && itemGroups != null) {
+		if(items != null && !items.isEmpty() && itemGroups != null && !itemGroups.isEmpty()) {
 			throw new IllegalStateException("Expected either box items or groups of box items, not both");
 		}
 		if(maxContainerCount <= 0) {

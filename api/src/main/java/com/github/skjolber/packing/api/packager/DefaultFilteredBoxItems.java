@@ -4,11 +4,11 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 
-public class DefaultFilteredBoxItems<T extends BoxItem> implements FilteredBoxItems<T> {
+public class DefaultFilteredBoxItems implements FilteredBoxItems {
 
-	private List<T> values;
+	private List<BoxItem> values;
 	
-	public DefaultFilteredBoxItems(List<T> values) {
+	public DefaultFilteredBoxItems(List<BoxItem> values) {
 		super();
 		this.values = values;
 	}
@@ -19,13 +19,13 @@ public class DefaultFilteredBoxItems<T extends BoxItem> implements FilteredBoxIt
 	}
 
 	@Override
-	public T get(int index) {
+	public BoxItem get(int index) {
 		return values.get(index);
 	}
 
 	@Override
-	public T decrement(int index, int count) {
-		T boxItem = values.get(index);
+	public BoxItem decrement(int index, int count) {
+		BoxItem boxItem = values.get(index);
 		if(!boxItem.decrement(count)) {
 			values.remove(index);
 		}
@@ -33,11 +33,11 @@ public class DefaultFilteredBoxItems<T extends BoxItem> implements FilteredBoxIt
 	}
 	
 	@Override
-	public T remove(int index) {
+	public BoxItem remove(int index) {
 		return values.remove(index);
 	}
 
-	public void setValues(List<T> values) {
+	public void setValues(List<BoxItem> values) {
 		this.values = values;
 	}
 	

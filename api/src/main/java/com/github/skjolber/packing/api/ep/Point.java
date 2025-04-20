@@ -218,6 +218,8 @@ public abstract class Point {
 	protected final int minZ;
 	protected int maxZ;
 	protected int dz;
+	
+	protected int index = -1;
 
 	public Point(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		
@@ -520,5 +522,13 @@ public abstract class Point {
 
 	public long getAreaAtMaxY(int maxY) {
 		return dx * (long)(maxY - minY + 1);
+	}
+	
+	public void setIndex(int index) {
+		this.index = index;
+	}
+	
+	public int getIndex() {
+		return index;
 	}
 }

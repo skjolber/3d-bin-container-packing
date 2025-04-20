@@ -45,7 +45,6 @@ public class MaxFireHazardBoxItemPerContainerBoxItemListener implements BoxItemL
 	public void accepted(BoxItem boxItem) {
 		// do nothing
 		
-		BoxItem boxItem = items.decrement(boxItem, 1);
 		if(isFireHazard(boxItem)) {
 			count++;
 			

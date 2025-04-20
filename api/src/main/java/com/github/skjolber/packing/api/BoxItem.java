@@ -14,6 +14,8 @@ public class BoxItem implements Serializable {
 	protected int count;
 	protected final Box box;
 	protected int index = -1;
+	
+	public int resetCount; 
 
 	public BoxItem(Box box) {
 		this(box, 1);
@@ -23,6 +25,8 @@ public class BoxItem implements Serializable {
 		super();
 		this.box = stackable;
 		this.count = count;
+		
+		this.resetCount = count;
 	}
 	
 	public BoxItem(Box stackable, int count, int index) {
@@ -30,6 +34,8 @@ public class BoxItem implements Serializable {
 		this.box = stackable;
 		this.count = count;
 		this.index = index;
+		
+		this.resetCount = count;
 	}
 
 	public int getCount() {
@@ -83,6 +89,20 @@ public class BoxItem implements Serializable {
 		this.count = count;
 	}
 	
+	public void reset() {
+		this.count = resetCount;
+	}
 	
+	public void setResetCount(int resetCount) {
+		this.resetCount = resetCount;
+	}
+
+	public void decrementResetCount() {
+		this.resetCount--;
+	}
+	
+	public void mark() {
+		this.resetCount = count;
+	}
 
 }

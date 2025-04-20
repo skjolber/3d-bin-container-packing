@@ -4,11 +4,11 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItemGroup;
 
-public class DefaultFilteredBoxItemGroups<T extends BoxItemGroup> implements FilteredBoxItemGroups<T> {
+public class DefaultFilteredBoxItemGroups implements FilteredBoxItemGroups {
 
-	private List<T> values;
+	private List<BoxItemGroup> values;
 	
-	public DefaultFilteredBoxItemGroups(List<T> values) {
+	public DefaultFilteredBoxItemGroups(List<BoxItemGroup> values) {
 		super();
 		this.values = values;
 	}
@@ -19,12 +19,12 @@ public class DefaultFilteredBoxItemGroups<T extends BoxItemGroup> implements Fil
 	}
 
 	@Override
-	public T get(int index) {
+	public BoxItemGroup get(int index) {
 		return values.get(index);
 	}
 
 	@Override
-	public T remove(int index) {
+	public BoxItemGroup remove(int index) {
 		return values.remove(index);
 	}
 
@@ -41,6 +41,5 @@ public class DefaultFilteredBoxItemGroups<T extends BoxItemGroup> implements Fil
 			}
 		}
 	}
-
 
 }

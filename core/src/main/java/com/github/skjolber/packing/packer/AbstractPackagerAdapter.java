@@ -70,7 +70,7 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 	 * @return list of containers
 	 */
 	
-	protected List<Integer> getContainers(List<MutableBoxItem> boxes, int maxCount) {
+	protected List<Integer> getContainers(List<BoxItem> boxes, int maxCount) {
 		long totalVolume = 0;
 		long totalWeight = 0;
 
@@ -163,7 +163,7 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 	}
 	
 
-	protected List<Integer> getGroupContainers(List<MutableBoxItemGroup> boxes, int maxCount) {
+	protected List<Integer> getGroupContainers(List<BoxItemGroup> boxes, int maxCount) {
 		long totalBoxVolume = 0;
 		long totalBoxWeight = 0;
 
@@ -173,7 +173,7 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 		long minGroupVolume = Long.MAX_VALUE;
 		long minGroupWeight = Long.MAX_VALUE;
 
-		for (MutableBoxItemGroup group : boxes) {
+		for (BoxItemGroup group : boxes) {
 			// volume
 			for (BoxItem boxItem : group.getItems()) {
 
@@ -268,7 +268,7 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 		return list;
 	}
 	
-	protected boolean canLoadAtLeastOneBox(Container containerBox, List<MutableBoxItem> boxes) {
+	protected boolean canLoadAtLeastOneBox(Container containerBox, List<BoxItem> boxes) {
 		
 		for (BoxItem boxItem : boxes) {
 			Box box = boxItem.getBox();
@@ -279,9 +279,9 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 		return false;
 	}
 	
-	protected boolean canLoadAtLeastOneGroup(Container containerBox, List<MutableBoxItemGroup> boxes) {
+	protected boolean canLoadAtLeastOneGroup(Container containerBox, List<BoxItemGroup> boxes) {
 		
-		for (MutableBoxItemGroup group : boxes) {
+		for (BoxItemGroup group : boxes) {
 			for (BoxItem boxItem : group.getItems()) {
 				Box box = boxItem.getBox();
 				if(containerBox.canLoad(box)) {

@@ -9,25 +9,31 @@ import java.util.List;
  * 
  */
 
-public class BoxItemGroup<T extends BoxItem> {
+public class BoxItemGroup {
 
 	protected String id;
 
-	protected List<T> items;
+	protected List<BoxItem> items;
 	
 	protected int index = -1;
 	
-	public BoxItemGroup(String id, List<T> items) {
+	public BoxItemGroup(String id, List<BoxItem> items) {
 		super();
 		this.id = id;
 		this.items = items;
+	}
+
+	public BoxItemGroup(BoxItemGroup clone) {
+		this.id = clone.id;
+		this.items = new ArrayList<>(clone.items);
+		this.index = clone.index;
 	}
 
 	public String getId() {
 		return id;
 	}
 
-	public List<T> getItems() {
+	public List<BoxItem> getItems() {
 		return items;
 	}
 
@@ -35,7 +41,7 @@ public class BoxItemGroup<T extends BoxItem> {
 		this.id = id;
 	}
 
-	public void setItems(List<T> items) {
+	public void setItems(List<BoxItem> items) {
 		this.items = items;
 	}
 
@@ -48,7 +54,7 @@ public class BoxItemGroup<T extends BoxItem> {
 	}
 	
 	public boolean decrement(int index) {
-		T boxItem = items.get(index);
+		BoxItem boxItem = items.get(index);
 		if(!boxItem.decrement()) {
 			items.remove(index);
 		}
@@ -65,7 +71,7 @@ public class BoxItemGroup<T extends BoxItem> {
 	}
 
 	public boolean isEmpty() {
-		for (T boxItem : items) {
+		for (BoxItem boxItem : items) {
 			if(!boxItem.isEmpty()) {
 				return false;
 			}
@@ -76,7 +82,7 @@ public class BoxItemGroup<T extends BoxItem> {
 	
 	public void removeEmpty() {
 		for (int j = 0; j < items.size(); j++) {
-			T boxItem = items.get(j);
+			BoxItem boxItem = items.get(j);
 			
 			if(boxItem.isEmpty()) {
 				items.remove(j);
@@ -85,14 +91,14 @@ public class BoxItemGroup<T extends BoxItem> {
 		}
 	}
 	
-	public BoxItemGroup<T> clone() {
-		List<T> items = new ArrayList<>();
+	public BoxItemGroup clone() {
+		List<BoxItem> items = new ArrayList<>();
 
-		for (T boxItem : this.items) {
-			items.add((T) boxItem.clone());
+		for (BoxItem boxItem : this.items) {
+			items.add(boxItem.clone());
 		}
 		
-		return new BoxItemGroup<>(id, items);
+		return new BoxItemGroup(id, items);
 	}
 	
 	public long getVolume() {
@@ -123,4 +129,15 @@ public class BoxItemGroup<T extends BoxItem> {
 		return index;
 	}
 
+	public void reset() {
+		for (BoxItem boxItem : items) {
+			boxItem.reset();
+		}
+	}
+	
+	public void mark() {
+		for (BoxItem boxItem : items) {
+			boxItem.mark();
+		}
+	}
 }

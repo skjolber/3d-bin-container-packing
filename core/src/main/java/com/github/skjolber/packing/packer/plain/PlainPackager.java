@@ -29,8 +29,6 @@ import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.packer.IntermediatePackagerResultComparator;
-import com.github.skjolber.packing.packer.MutableBoxItem;
-import com.github.skjolber.packing.packer.MutableBoxItemGroup;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -46,8 +44,8 @@ public class PlainPackager extends AbstractPlainPackager {
 
 		protected long bestPointSupportPercent = -1;
 
-		public PlainPlacementResult(BoxItem boxItem, int boxItemIndex, BoxStackValue stackValue, int pointIndex, Point point, long bestPointSupportPercent) {
-			super(boxItem, boxItemIndex, stackValue, pointIndex, point);
+		public PlainPlacementResult(BoxItem boxItem, BoxStackValue stackValue, Point point, long bestPointSupportPercent) {
+			super(boxItem, stackValue, point);
 			
 			this.bestPointSupportPercent = bestPointSupportPercent;
 		}
@@ -72,15 +70,15 @@ public class PlainPackager extends AbstractPlainPackager {
 	}
 	
 	@Override
-	public DefaultIntermediatePackagerResult pack(List<MutableBoxItem> boxes, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt) {
+	public DefaultIntermediatePackagerResult pack(List<BoxItem> boxes, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt) {
 		Stack stack = new Stack();
 
 		ContainerItem containerItem = compositeContainerItem.getContainerItem();
 		Container container = containerItem.getContainer();
 
-		List<MutableBoxItem> scopedBoxItems = boxes.stream().filter(s -> container.fitsInside(s)).collect(Collectors.toList());
+		List<BoxItem> scopedBoxItems = boxes.stream().filter(s -> container.fitsInside(s)).collect(Collectors.toList());
 
-		DefaultFilteredBoxItems<MutableBoxItem> filteredBoxItems = new DefaultFilteredBoxItems<>(scopedBoxItems);
+		DefaultFilteredBoxItems filteredBoxItems = new DefaultFilteredBoxItems(scopedBoxItems);
 
 		ExtremePoints3D extremePoints3D = new ExtremePoints3D(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		extremePoints3D.setMinimumAreaAndVolumeLimit(getMinBoxItemArea(filteredBoxItems), getMinBoxItemVolume(filteredBoxItems));
@@ -106,7 +104,7 @@ public class PlainPackager extends AbstractPlainPackager {
 			
 			StackPlacement stackPlacement = new StackPlacement(null, result.boxItem, result.stackValue, point.getMinX(), point.getMinY(), point.getMinZ());
 			stack.add(stackPlacement);
-			extremePoints3D.add(result.pointIndex, stackPlacement);
+			extremePoints3D.add(result.point.getIndex(), stackPlacement);
 
 			result.boxItem.decrement();
 
@@ -133,15 +131,15 @@ public class PlainPackager extends AbstractPlainPackager {
 		return new DefaultIntermediatePackagerResult(compositeContainerItem.getContainerItem(), stack, canContainLastBox && filteredBoxItems.isEmpty());
 	}
 	
-	public DefaultIntermediatePackagerResult pack(List<MutableBoxItemGroup> boxItemGroups, Order itemGroupOrder, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt) {
+	public DefaultIntermediatePackagerResult pack(List<BoxItemGroup> boxItemGroups, Order itemGroupOrder, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt) {
 		ContainerItem containerItem = compositeContainerItem.getContainerItem();
 		Container targetContainer = containerItem.getContainer();
 		
-		List<MutableBoxItemGroup> scopedBoxItemGroups = getFitsInside(boxItemGroups, targetContainer);
+		List<BoxItemGroup> scopedBoxItemGroups = getFitsInside(boxItemGroups, targetContainer);
 
 		boolean canContainLastBox = scopedBoxItemGroups.size() == boxItemGroups.size();
 		
-		DefaultFilteredBoxItemGroups<MutableBoxItemGroup> filteredBoxItemGroups = new DefaultFilteredBoxItemGroups<>(scopedBoxItemGroups);
+		DefaultFilteredBoxItemGroups filteredBoxItemGroups = new DefaultFilteredBoxItemGroups(scopedBoxItemGroups);
 
 		Stack stack = new Stack();
 
@@ -157,13 +155,13 @@ public class PlainPackager extends AbstractPlainPackager {
 				break;
 			}
 
-			MutableBoxItemGroup boxItemGroup = filteredBoxItemGroups.remove(bestBoxItemGroupIndex);
+			BoxItemGroup boxItemGroup = filteredBoxItemGroups.remove(bestBoxItemGroupIndex);
 
 			extremePoints3D.mark();
 			
 			while(!boxItemGroup.isEmpty()) {
 				
-				DefaultFilteredBoxItems<MutableBoxItem> items = new DefaultFilteredBoxItems<>(boxItemGroup.getItems()); 
+				DefaultFilteredBoxItems items = new DefaultFilteredBoxItems(boxItemGroup.getItems()); 
 				
 				PlacementResult bestPoint = findBestPoint(items, extremePoints3D, compositeContainerItem.getFilteredPointsBuilderSupplier(), targetContainer, stack);
 				if(bestPoint == null) {
@@ -177,7 +175,7 @@ public class PlainPackager extends AbstractPlainPackager {
 
 				StackPlacement stackPlacement = new StackPlacement(boxItemGroup, bestPoint.boxItem, bestPoint.stackValue, bestPoint.point.getMinX(), bestPoint.point.getMinY(), bestPoint.point.getMinZ());
 				stack.add(stackPlacement);
-				extremePoints3D.add(bestPoint.pointIndex, stackPlacement);
+				extremePoints3D.add(bestPoint.point, stackPlacement);
 
 				if(!boxItemGroup.isEmpty()) {
 					boolean minArea = bestPoint.stackValue.getArea() == extremePoints3D.getMinAreaLimit();
@@ -301,7 +299,7 @@ public class PlainPackager extends AbstractPlainPackager {
 		return new PlainPackagerResultBuilder().withPackager(this);
 	}
 
-	public PlacementResult findBestPoint(FilteredBoxItems<?> boxItems, ExtremePoints3D extremePoints3D, Supplier<FilteredPointsBuilder<?>> filteredPointsBuilderSupplier, Container container, Stack stack) {
+	public PlacementResult findBestPoint(FilteredBoxItems boxItems, ExtremePoints3D extremePoints3D, Supplier<FilteredPointsBuilder<?>> filteredPointsBuilderSupplier, Container container, Stack stack) {
 		PlainPlacementResult result = null;
 		
 		long maxPointArea = extremePoints3D.getMaxArea();		
@@ -367,7 +365,7 @@ public class PlainPackager extends AbstractPlainPackager {
 						pointSupportPercent = calculateXYSupportPercent(extremePoints3D, point3d, stackValue);
 					}
 					
-					result = new PlainPlacementResult(boxItem, i, stackValue, k, point3d, pointSupportPercent);
+					result = new PlainPlacementResult(boxItem, stackValue, point3d, pointSupportPercent);
 				}
 			}
 
@@ -376,7 +374,7 @@ public class PlainPackager extends AbstractPlainPackager {
 	}
 	
 
-	public int getBestBoxItemGroup(Container container, List<MutableBoxItemGroup> boxItemGroups, Order itemGroupOrder, ExtremePoints3D extremePoints3D) {
+	public int getBestBoxItemGroup(Container container, List<BoxItemGroup> boxItemGroups, Order itemGroupOrder, ExtremePoints3D extremePoints3D) {
 		long maxPointVolume = extremePoints3D.getMaxVolume();
 		long maxPointArea = extremePoints3D.getMaxArea();
 

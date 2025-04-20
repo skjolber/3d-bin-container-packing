@@ -89,6 +89,8 @@ public class ExtremePoints3D implements ExtremePoints {
 				containerPlacement,
 				containerPlacement,
 				containerPlacement);
+		
+		this.firstPoint.setIndex(0);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -97,6 +99,31 @@ public class ExtremePoints3D implements ExtremePoints {
 		BoxStackValue value = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, containerMaxY + 1, null, -1);
 		
 		return new StackPlacement(null, null, value, 0, 0, 0);
+	}
+	
+	public boolean add(Point point, StackPlacement placement) {
+		if(point.getIndex() == -1) {
+			return add(binarySearch(point, 0), placement);
+		} 
+		return add(point.getIndex(), placement);
+	}
+	
+	public boolean add(Point point, StackPlacement placement, int filteredIndex, int filteredSize) {
+		if(point.getIndex() == -1) {
+			if(filteredSize == size()) {
+				// i.e. no filtering was performed
+				return add(filteredIndex, placement);
+			}
+			if(point == values.get(filteredIndex)) {
+				// i.e. filtering only after index
+				return add(filteredIndex, placement);
+			}
+			
+			// TODO point index is probably close to filtered index if no too many items have been filtered
+			
+			return add(binarySearch(point, filteredIndex), placement);
+		} 
+		return add(point.getIndex(), placement);
 	}
 
 	public boolean add(int index, StackPlacement placement) {
@@ -593,7 +620,18 @@ public class ExtremePoints3D implements ExtremePoints {
 		// constrainYY 
 		// constrainZZ
 
+		updateIndexes();
+		
 		return !values.isEmpty();
+	}
+
+	protected void updateIndexes() {
+		for(int i = 0; i < values.size(); i++) {
+			SimplePoint3D simplePoint3D = values.get(i);
+			if(simplePoint3D.getIndex() != i) {
+				simplePoint3D.setIndex(i);
+			}
+		}
 	}
 
 	protected void saveValues(Point3DFlagList values, Point3DFlagList otherValues) {
@@ -1596,6 +1634,69 @@ public class ExtremePoints3D implements ExtremePoints {
 				}
 
 				return mid;
+			}
+		}
+		// key not found
+		return low;
+	}
+	
+	public int binarySearch(Point point, int low) {
+		// return inclusive result
+		
+		int key = point.getMinX();
+
+		int high = values.size() - 1;
+
+		while (low <= high) {
+			int mid = (low + high) >>> 1;
+
+			// 0 if x == y
+			// -1 if x < y
+			// 1 if x > y
+
+			int midVal = values.get(mid).getMinX();
+
+			int cmp = Integer.compare(midVal, key);
+
+			if(cmp < 0) {
+				low = mid + 1;
+			} else if(cmp > 0) {
+				high = mid - 1;
+			} else {
+				// key found
+				SimplePoint3D simplePoint3D = values.get(mid);
+				if(simplePoint3D == point) {
+					return mid;
+				}
+				
+				int compare = Point.COMPARATOR_X_THEN_Y_THEN_Z.compare(point, simplePoint3D);
+				if(compare <= 0) {
+					// check below
+					do {
+						mid--;
+						if(mid < 0) {
+							throw new IllegalStateException("Cannot locate point " + point);
+						}
+						if(values.get(mid) == point) {
+							return mid;
+						}
+					} while(true);
+				}  
+					
+				if(compare >= 0) {
+					// check above
+					do {
+						mid++;
+						if(mid == values.size()) {
+							throw new IllegalStateException("Cannot locate point " + point);
+						}
+						if(values.get(mid) == point) {
+							return mid;
+						}
+					} while(true);
+				}
+				
+				throw new IllegalStateException("Cannot locate point " + point);
 			}
 		}
 		// key not found

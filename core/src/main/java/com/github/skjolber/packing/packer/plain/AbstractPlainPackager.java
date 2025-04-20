@@ -19,8 +19,6 @@ import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.IntermediatePackagerResultComparator;
-import com.github.skjolber.packing.packer.MutableBoxItem;
-import com.github.skjolber.packing.packer.MutableBoxItemGroup;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 
 /**
@@ -33,18 +31,14 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 
 	public static class PlacementResult {
 		
-		public PlacementResult(BoxItem boxItem, int boxItemIndex, BoxStackValue stackValue, int pointIndex, Point point) {
+		public PlacementResult(BoxItem boxItem, BoxStackValue stackValue, Point point) {
 			super();
 			this.boxItem = boxItem;
-			this.boxItemIndex = boxItemIndex;
 			this.stackValue = stackValue;
-			this.pointIndex = pointIndex;
 			this.point = point;
 		}
 		protected BoxItem boxItem; 
-		protected int boxItemIndex; 
 		protected BoxStackValue stackValue;
-		protected int pointIndex;
 		protected Point point;
 	}
 	
@@ -54,18 +48,17 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 
 	protected class PlainBoxItemAdapter extends AbstractPackagerAdapter<DefaultIntermediatePackagerResult> {
 
-		private List<MutableBoxItem> remainingBoxItems;
+		private List<BoxItem> remainingBoxItems;
 		private final PackagerInterruptSupplier interrupt;
 
 		public PlainBoxItemAdapter(List<BoxItem> boxItems, List<CompositeContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
 			super(containerItems);
 
-			List<MutableBoxItem> boxClones = new LinkedList<>();
+			List<BoxItem> boxClones = new LinkedList<>();
 			for (BoxItem item : boxItems) {
 				BoxItem clone = item.clone();
-				MutableBoxItem mutableBoxItem = new MutableBoxItem(clone);
-				mutableBoxItem.setIndex(boxClones.size());
-				boxClones.add(mutableBoxItem);
+				clone.setIndex(boxClones.size());
+				boxClones.add(clone);
 			}
 			this.remainingBoxItems = boxClones;
 			this.interrupt = interrupt;
@@ -76,7 +69,7 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 			try {
 				return AbstractPlainPackager.this.pack(remainingBoxItems, containerItems.get(index), interrupt);
 			} finally {
-				for(MutableBoxItem boxItem : remainingBoxItems) {
+				for(BoxItem boxItem : remainingBoxItems) {
 					boxItem.reset();
 				}
 			}				
@@ -89,14 +82,14 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 			Stack stack = container.getStack();
 
 			for (StackPlacement stackPlacement : stack.getPlacements()) {
-				MutableBoxItem boxItem = (MutableBoxItem) stackPlacement.getBoxItem();
+				BoxItem boxItem = (BoxItem) stackPlacement.getBoxItem();
 				
 				boxItem.decrementResetCount();
 				boxItem.reset();
 			}
 			
-			List<MutableBoxItem> remainingBoxItems = new ArrayList<>(this.remainingBoxItems.size());
-			for (MutableBoxItem boxItem : this.remainingBoxItems) {
+			List<BoxItem> remainingBoxItems = new ArrayList<>(this.remainingBoxItems.size());
+			for (BoxItem boxItem : this.remainingBoxItems) {
 				if(!boxItem.isEmpty()) {
 					remainingBoxItems.add(boxItem);
 				}
@@ -115,19 +108,18 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 	
 	protected class PlainBoxItemGroupAdapter extends AbstractPackagerAdapter<DefaultIntermediatePackagerResult> {
 
-		private List<MutableBoxItemGroup> remainingBoxItemGroups;
+		private List<BoxItemGroup> remainingBoxItemGroups;
 		private final PackagerInterruptSupplier interrupt;
 		private final Order itemGroupOrder;
 
 		public PlainBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, List<CompositeContainerItem> containerItems, Order itemGroupOrder, PackagerInterruptSupplier interrupt) {
 			super(containerItems);
 
-			List<MutableBoxItemGroup> groupClones = new LinkedList<>();
+			List<BoxItemGroup> groupClones = new LinkedList<>();
 			for (BoxItemGroup boxItemGroup : boxItemGroups) {
 				BoxItemGroup clone = boxItemGroup.clone();
-				MutableBoxItemGroup mutableBoxItem = new MutableBoxItemGroup(clone);
-				mutableBoxItem.setIndex(groupClones.size());
-				groupClones.add(mutableBoxItem);
+				clone.setIndex(groupClones.size());
+				groupClones.add(clone);
 			}
 
 			this.remainingBoxItemGroups = groupClones;
@@ -140,7 +132,7 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 			try {
 				return AbstractPlainPackager.this.pack(remainingBoxItemGroups, itemGroupOrder, containerItems.get(index), interrupt);
 			} finally {
-				for(MutableBoxItemGroup group : remainingBoxItemGroups) {
+				for(BoxItemGroup group : remainingBoxItemGroups) {
 					group.reset();
 				}
 			}				
@@ -153,14 +145,14 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 			Stack stack = container.getStack();
 
 			for (StackPlacement stackPlacement : stack.getPlacements()) {
-				MutableBoxItem boxItem = (MutableBoxItem) stackPlacement.getBoxItem();
+				BoxItem boxItem = (BoxItem) stackPlacement.getBoxItem();
 				
 				boxItem.decrementResetCount();
 				boxItem.reset();
 			}
 
-			List<MutableBoxItemGroup> remainingBoxItems = new ArrayList<>(this.remainingBoxItemGroups.size());
-			for (MutableBoxItemGroup boxItem : this.remainingBoxItemGroups) {
+			List<BoxItemGroup> remainingBoxItems = new ArrayList<>(this.remainingBoxItemGroups.size());
+			for (BoxItemGroup boxItem : this.remainingBoxItemGroups) {
 				if(!boxItem.isEmpty()) {
 					remainingBoxItems.add(boxItem);
 				}
@@ -191,8 +183,8 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 		return scheduledThreadPoolExecutor;
 	}
 
-	public abstract DefaultIntermediatePackagerResult pack(List<MutableBoxItem> boxes, CompositeContainerItem targetContainer, PackagerInterruptSupplier interrupt);
+	public abstract DefaultIntermediatePackagerResult pack(List<BoxItem> boxes, CompositeContainerItem targetContainer, PackagerInterruptSupplier interrupt);
 
-	public abstract DefaultIntermediatePackagerResult pack(List<MutableBoxItemGroup> boxes, Order itemGroupOrder, CompositeContainerItem targetContainer, PackagerInterruptSupplier interrupt);
+	public abstract DefaultIntermediatePackagerResult pack(List<BoxItemGroup> boxes, Order itemGroupOrder, CompositeContainerItem targetContainer, PackagerInterruptSupplier interrupt);
 	
 }

@@ -46,8 +46,7 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 	public void accepted(BoxItemGroup group) {
 		// do nothing
 		
-		BoxItemGroup removed = groups.remove(group);
-		if(isFireHazard(removed)) {
+		if(isFireHazard(group)) {
 			count++;
 			
 			if(count >= maxCount) {
