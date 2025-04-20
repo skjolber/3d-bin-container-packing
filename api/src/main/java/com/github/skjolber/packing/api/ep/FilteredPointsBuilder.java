@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api.ep;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
@@ -15,16 +16,22 @@ public abstract class FilteredPointsBuilder<B extends FilteredPointsBuilder<B>> 
 
 	protected Stack stack;
 	protected Container container;
-	protected FilteredBoxItems input;
-	protected ExtremePoints extremePoints;
+	protected FilteredBoxItems items;
+	protected FilteredPoints points;
+	protected BoxItem boxItems;
 
-	public B withExtremePoints(ExtremePoints extremePoints) {
-		this.extremePoints = extremePoints; 
+	public B withBoxItems(BoxItem boxItems) {
+		this.boxItems = boxItems;
 		return (B) this;
 	}
 	
-	public B withLoaderInputs(FilteredBoxItems input) {
-		this.input = input;
+	public B withPoints(FilteredPoints points) {
+		this.points = points; 
+		return (B) this;
+	}
+	
+	public B withItems(FilteredBoxItems input) {
+		this.items = input;
 		return (B)this;
 	}
 	

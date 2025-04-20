@@ -100,7 +100,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			int maxWeight = stack.getFreeWeightLoad();
 
 			// there is only point, spanning the free space in the level
-			Point firstPoint = extremePoints3D.getValue(0);
+			Point firstPoint = extremePoints3D.get(0);
 
 			int firstIndex = -1;
 			BoxStackValue firstStackValue = null;
@@ -177,14 +177,14 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 							continue;
 						}
 
-						int currentPointsCount = extremePoints3D.getValueCount();
+						int currentPointsCount = extremePoints3D.size();
 						for (int k = 0; k < currentPointsCount; k++) {
-							Point point3d = extremePoints3D.getValue(k);
+							Point point3d = extremePoints3D.get(k);
 
 							if(!point3d.fits3D(stackValue)) {
 								continue;
 							}
-							if(bestIndex != -1 && !betterAsNext(bestStackable, extremePoints3D.getValue(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
+							if(bestIndex != -1 && !betterAsNext(bestStackable, extremePoints3D.get(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
 								continue;
 							}
 							bestPointIndex = k;
@@ -202,7 +202,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				Box remove = scopedStackables.remove(bestIndex);
 				remainingStackables.remove(remove);
 
-				Point point = extremePoints3D.getValue(bestPointIndex);
+				Point point = extremePoints3D.get(bestPointIndex);
 
 				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ());
 				levelStack.add(stackPlacement);
@@ -242,7 +242,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 				targetContainer.getLoadDx(), targetContainer.getLoadDy(), targetContainer.getLoadDz(),
 				targetContainer.getMaxLoadWeight(),
-				stack, targetContainer.getBoxItemListenerBuilderSupplier(), targetContainer.getPlacementFilterBuilderSupplier()),
+				stack, targetContainer.getBoxItemListenerBuilderSupplier(), targetContainer.getFilteredPointsBuilderSupplier()),
 				
 				stack, remainingStackables.isEmpty(), index);
 	}

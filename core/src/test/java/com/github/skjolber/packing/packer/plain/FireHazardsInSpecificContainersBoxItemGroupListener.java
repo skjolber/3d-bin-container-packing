@@ -52,7 +52,7 @@ public class FireHazardsInSpecificContainersBoxItemGroupListener implements BoxI
 	}
 
 	@Override
-	public void packedBoxItemGroup(int index) {
+	public void accepted(BoxItemGroup group) {
 		// do nothing
 	}
 

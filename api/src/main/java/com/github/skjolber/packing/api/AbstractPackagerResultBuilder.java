@@ -6,7 +6,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import com.github.skjolber.packing.api.ep.PlacementFilterBuilder;
+import com.github.skjolber.packing.api.ep.FilteredPointsBuilder;
+import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 
@@ -22,18 +23,23 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		
 		protected ContainerItem containerItem;
 		protected Supplier<BoxItemListenerBuilder<?>> boxItemListenerBuilderSupplier;
-		protected Supplier<PlacementFilterBuilder<?>> pointListenerBuilderSupplier;
+		protected Supplier<FilteredPointsBuilder<?>> filteredPointsBuilderSupplier;
+		protected Supplier<BoxItemGroupListenerBuilder<?>> boxItemGroupListenerBuilderSupplier;
+		
+		public ExtendedContainerItemBuilder withBoxItemGroupListenerBuilderSupplier(Supplier<BoxItemGroupListenerBuilder<?>> boxItemGroupListenerBuilderSupplier) {
+			this.boxItemGroupListenerBuilderSupplier = boxItemGroupListenerBuilderSupplier;
+			return this;
+		}
+		
+		public ExtendedContainerItemBuilder withFilteredPointsBuilderSupplier(Supplier<FilteredPointsBuilder<?>> supplier) {
+			this.filteredPointsBuilderSupplier = supplier;
+			return this;
+		}
 		
 		public ExtendedContainerItemBuilder withBoxItemListenerBuilderSupplier(Supplier<BoxItemListenerBuilder<?>> supplier) {
 			this.boxItemListenerBuilderSupplier = supplier;
 			return this;
 		}
-		
-		public ExtendedContainerItemBuilder withPointListenerBuilderSupplier(Supplier<PlacementFilterBuilder<?>> supplier) {
-			this.pointListenerBuilderSupplier = supplier;
-			return this;
-		}
-		
 		public ExtendedContainerItemBuilder withContainerItem(ContainerItem containerItem) {
 			this.containerItem = containerItem;
 			return this;
@@ -45,7 +51,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			}
 			CompositeContainerItem packContainerItem = new CompositeContainerItem(containerItem);
 			packContainerItem.setBoxItemListenerBuilderSupplier(boxItemListenerBuilderSupplier);
-			packContainerItem.setPlacementFilterBuilderSupplier(pointListenerBuilderSupplier);
+			packContainerItem.setBoxItemGroupListenerBuilderSupplier(boxItemGroupListenerBuilderSupplier);
+			packContainerItem.setFilteredPointsBuilderSupplier(filteredPointsBuilderSupplier);
 			return packContainerItem;
 		}
 	}
@@ -55,15 +62,17 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		protected Container container;
 		protected int count = -1;
 		protected Supplier<BoxItemListenerBuilder<?>> boxItemListenerBuilderSupplier;
-		protected Supplier<PlacementFilterBuilder<?>> pointListenerBuilderSupplier;
+		protected Supplier<FilteredPointsBuilder<?>> filteredPointsBuilderSupplier;
 		
-		public ExtendedContainerBuilder withBoxItemListenerBuilderSupplier(Supplier<BoxItemListenerBuilder<?>> supplier) {
-			this.boxItemListenerBuilderSupplier = supplier;
+		protected Supplier<BoxItemGroupListenerBuilder<?>> boxItemGroupListenerBuilderSupplier;
+		
+		public ExtendedContainerBuilder withBoxItemGroupListenerBuilderSupplier(Supplier<BoxItemGroupListenerBuilder<?>> boxItemGroupListenerBuilderSupplier) {
+			this.boxItemGroupListenerBuilderSupplier = boxItemGroupListenerBuilderSupplier;
 			return this;
 		}
-		
-		public ExtendedContainerBuilder withPointListenerBuilderSupplier(Supplier<PlacementFilterBuilder<?>> supplier) {
-			this.pointListenerBuilderSupplier = supplier;
+
+		public ExtendedContainerBuilder withFilteredPointsBuilderSupplier(Supplier<FilteredPointsBuilder<?>> supplier) {
+			this.filteredPointsBuilderSupplier = supplier;
 			return this;
 		}
 		
@@ -82,7 +91,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			ContainerItem containerItem = new ContainerItem(container, count);
 			CompositeContainerItem packContainerItem = new CompositeContainerItem(containerItem);
 			packContainerItem.setBoxItemListenerBuilderSupplier(boxItemListenerBuilderSupplier);
-			packContainerItem.setPlacementFilterBuilderSupplier(pointListenerBuilderSupplier);
+			packContainerItem.setBoxItemGroupListenerBuilderSupplier(boxItemGroupListenerBuilderSupplier);
+			packContainerItem.setFilteredPointsBuilderSupplier(filteredPointsBuilderSupplier);
 			return packContainerItem;
 		}
 	}
@@ -97,8 +107,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 	protected Order itemGroupOrder = Order.FIXED;
 	
 	protected Supplier<BoxItemListenerBuilder<?>> boxItemListenerBuilderSupplier;
-	protected Supplier<PlacementFilterBuilder<?>> pointListenerBuilderSupplier;
-
+	protected Supplier<FilteredPointsBuilder<?>> filteredPointsBuilderSupplier;
+	
 	protected List<BoxItemGroup> itemGroups = new ArrayList<>();
 
 	protected List<BoxItem> items = new ArrayList<>();

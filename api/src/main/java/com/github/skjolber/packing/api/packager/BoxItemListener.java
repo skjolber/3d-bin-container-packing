@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.api.packager;
 
+import com.github.skjolber.packing.api.BoxItem;
+
 /**
  * 
  * Filter for items which are available for load into some particular container.
@@ -14,9 +16,9 @@ public interface BoxItemListener {
 	 * 
 	 * Notify group was loaded
 	 * 
-	 * @param index index as in {@linkplain FilteredBoxItemGroups}
+	 * @param boxItem index as in {@linkplain FilteredBoxItemGroups}
 	 */
 	
-	void packedBoxItem(int index);
+	void accepted(BoxItem boxItem);
 	
 }

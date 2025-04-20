@@ -25,13 +25,13 @@ public class BouwcampCodesExtremePoints3DTest {
 			for (BouwkampCode bkpLine : c.getCodes()) {
 				for (int i = 1; i < 3; i++) {
 					DefaultExtremePoints3D xyPoints = converter.convert3DXYPlane(bkpLine, i);
-					assertEquals(c.getSource() + " " + bkpLine.getName(), 0, xyPoints.getValueCount());
+					assertEquals(c.getSource() + " " + bkpLine.getName(), 0, xyPoints.size());
 
 					DefaultExtremePoints3D xzPoints = converter.convert3DXZPlane(bkpLine, i);
-					assertEquals(c.getSource() + " " + bkpLine.getName(), 0, xzPoints.getValueCount());
+					assertEquals(c.getSource() + " " + bkpLine.getName(), 0, xzPoints.size());
 
 					DefaultExtremePoints3D yzPoints = converter.convert3DYZPlane(bkpLine, i);
-					assertEquals(c.getSource() + " " + bkpLine.getName(), 0, yzPoints.getValueCount());
+					assertEquals(c.getSource() + " " + bkpLine.getName(), 0, yzPoints.size());
 				}
 			}
 		}

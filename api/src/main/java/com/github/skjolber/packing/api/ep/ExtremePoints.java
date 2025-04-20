@@ -4,15 +4,11 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.StackPlacement;
 
-public interface ExtremePoints {
+public interface ExtremePoints extends FilteredPoints {
 
 	boolean add(int index, StackPlacement placement);
 
-	Point getValue(int i);
-
 	List<Point> getValues();
-
-	int getValueCount();
 
 	void reset(int dx, int dy, int dz);
 

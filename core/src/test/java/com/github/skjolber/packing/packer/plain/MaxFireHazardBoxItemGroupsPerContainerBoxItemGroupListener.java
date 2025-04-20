@@ -43,10 +43,10 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 	}
 
 	@Override
-	public void packedBoxItemGroup(int index) {
+	public void accepted(BoxItemGroup group) {
 		// do nothing
 		
-		BoxItemGroup removed = groups.remove(index);
+		BoxItemGroup removed = groups.remove(group);
 		if(isFireHazard(removed)) {
 			count++;
 			

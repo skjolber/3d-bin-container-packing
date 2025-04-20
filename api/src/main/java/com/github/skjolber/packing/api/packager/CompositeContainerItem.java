@@ -7,9 +7,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
-import com.github.skjolber.packing.api.ep.NoopPlacementFilter;
-import com.github.skjolber.packing.api.ep.PlacementFilter;
-import com.github.skjolber.packing.api.ep.PlacementFilterBuilder;
+import com.github.skjolber.packing.api.ep.FilteredPointsBuilder;
 
 /**
  * 
@@ -22,7 +20,7 @@ public class CompositeContainerItem {
 	protected final ContainerItem containerItem;
 	protected Supplier<BoxItemGroupListenerBuilder<?>> boxItemGroupListenerBuilderSupplier;
 	protected Supplier<BoxItemListenerBuilder<?>> boxItemListenerBuilderSupplier;
-	protected Supplier<PlacementFilterBuilder<?>> placementFilterBuilderSupplier;
+	protected Supplier<FilteredPointsBuilder<?>> filteredPointsBuilderSupplier;
 
 	public CompositeContainerItem(ContainerItem containerItem) {
 		this.containerItem = containerItem;
@@ -33,8 +31,8 @@ public class CompositeContainerItem {
 		this.boxItemListenerBuilderSupplier = boxItemListenerBuilderSupplier;
 	}
 	
-	public void setPlacementFilterBuilderSupplier(Supplier<PlacementFilterBuilder<?>> pointListenerBuilderSupplier) {
-		this.placementFilterBuilderSupplier = pointListenerBuilderSupplier;
+	public void setFilteredPointsBuilderSupplier(Supplier<FilteredPointsBuilder<?>> supplier) {
+		this.filteredPointsBuilderSupplier = supplier;
 	}
 
 	public Supplier<BoxItemListenerBuilder<?>> getBoxItemListenerBuilderSupplier() {
@@ -45,8 +43,8 @@ public class CompositeContainerItem {
 		return containerItem;
 	}
 	
-	public Supplier<PlacementFilterBuilder<?>> getPlacementFilterBuilderSupplier() {
-		return placementFilterBuilderSupplier;
+	public Supplier<FilteredPointsBuilder<?>> getFilteredPointsBuilderSupplier() {
+		return filteredPointsBuilderSupplier;
 	}
 
 	public void setBoxItemGroupListenerBuilderSupplier(
@@ -58,17 +56,38 @@ public class CompositeContainerItem {
 		return boxItemGroupListenerBuilderSupplier;
 	}
 
-	public BoxItemListener createBoxItemListener(Container container, Stack stack, FilteredBoxItems filteredBoxItems) {
+	public BoxItemGroupListener createBoxItemGroupListener(Container container, Stack stack, FilteredBoxItemGroups groups, FilteredPoints points) {
+		if(boxItemGroupListenerBuilderSupplier == null) {
+			return NoopBoxItemGroupListener.getInstance();
+		}
+		return boxItemGroupListenerBuilderSupplier.get()
+				.withContainer(container)
+				.withStack(stack)
+				.withFilteredBoxItemGroups(groups)
+				.withPoints(points)
+				.build();
+	}
+
+	public BoxItemListener createBoxItemListener(Container container, Stack stack, FilteredBoxItems filteredBoxItems, FilteredPoints points) {
 		if(boxItemListenerBuilderSupplier == null) {
 			return NoopBoxItemListener.getInstance();
 		}
-		return boxItemListenerBuilderSupplier.get().withContainer(container).withStack(stack).withFilteredBoxItems(filteredBoxItems).build();
+		return boxItemListenerBuilderSupplier.get()
+				.withContainer(container)
+				.withStack(stack)
+				.withFilteredBoxItems(filteredBoxItems)
+				.withPoints(points)
+				.build();
 	}
 	
-	public PlacementFilter createPlacementFilter(Container container, Stack stack, ExtremePoints extremePoints) {
-		if(placementFilterBuilderSupplier == null) {
-			return NoopPlacementFilter.getInstance();
+	public FilteredPoints createFilteredPoints(Container container, Stack stack, FilteredPoints points) {
+		if(filteredPointsBuilderSupplier == null) {
+			return points;
 		}
-		return placementFilterBuilderSupplier.get().withContainer(container).withStack(stack).withExtremePoints(extremePoints).build();
+		return filteredPointsBuilderSupplier.get()
+				.withContainer(container)
+				.withStack(stack)
+				.withPoints(points)
+				.build();
 	}
 }

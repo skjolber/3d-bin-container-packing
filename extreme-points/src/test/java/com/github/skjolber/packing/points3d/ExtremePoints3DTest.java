@@ -47,23 +47,23 @@ public class ExtremePoints3DTest {
 		// |-----|---- x
 		//
 
-		assertThat(ep.getValue(0)).isMin(0, 0, 10);
-		assertThat(ep.getValue(0)).isMax(99, 99, 99);
-		assertThat(ep.getValue(0)).isXYSupportAt(9, 9);
-		assertThat(ep.getValue(0)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(0)).isXZSupportAt(99, 99);
+		assertThat(ep.get(0)).isMin(0, 0, 10);
+		assertThat(ep.get(0)).isMax(99, 99, 99);
+		assertThat(ep.get(0)).isXYSupportAt(9, 9);
+		assertThat(ep.get(0)).isYZSupportAt(99, 99);
+		assertThat(ep.get(0)).isXZSupportAt(99, 99);
 
-		assertThat(ep.getValue(1)).isMin(0, 10, 0);
-		assertThat(ep.getValue(1)).isMax(99, 99, 99);
-		assertThat(ep.getValue(1)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isXZSupportAt(9, 9);
+		assertThat(ep.get(1)).isMin(0, 10, 0);
+		assertThat(ep.get(1)).isMax(99, 99, 99);
+		assertThat(ep.get(1)).isXYSupportAt(99, 99);
+		assertThat(ep.get(1)).isYZSupportAt(99, 99);
+		assertThat(ep.get(1)).isXZSupportAt(9, 9);
 
-		assertThat(ep.getValue(2)).isMin(10, 0, 0);
-		assertThat(ep.getValue(2)).isMax(99, 99, 99);
-		assertThat(ep.getValue(2)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(2)).isYZSupportAt(9, 9);
-		assertThat(ep.getValue(2)).isXZSupportAt(99, 99);
+		assertThat(ep.get(2)).isMin(10, 0, 0);
+		assertThat(ep.get(2)).isMax(99, 99, 99);
+		assertThat(ep.get(2)).isXYSupportAt(99, 99);
+		assertThat(ep.get(2)).isYZSupportAt(9, 9);
+		assertThat(ep.get(2)).isXZSupportAt(99, 99);
 	}
 
 	@ParameterizedTest
@@ -73,9 +73,9 @@ public class ExtremePoints3DTest {
 		ep.add(0, createStackPlacement(0, 0, 0, 0, 0, 0));
 		assertThat(ep.getValues()).hasSize(3);
 
-		assertThat(ep.getValue(0)).isMin(0, 0, 1);
-		assertThat(ep.getValue(1)).isMin(0, 1, 0);
-		assertThat(ep.getValue(2)).isMin(1, 0, 0);
+		assertThat(ep.get(0)).isMin(0, 0, 1);
+		assertThat(ep.get(1)).isMin(0, 1, 0);
+		assertThat(ep.get(2)).isMin(1, 0, 0);
 	}
 
 	@ParameterizedTest
@@ -86,15 +86,15 @@ public class ExtremePoints3DTest {
 
 		assertThat(ep.getValues()).hasSize(2);
 
-		assertThat(ep.getValue(0)).isMin(0, 0, 10);
-		assertThat(ep.getValue(0)).isXYSupportAt(99, 9);
-		assertThat(ep.getValue(0)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(0)).isXZSupportAt(99, 99);
+		assertThat(ep.get(0)).isMin(0, 0, 10);
+		assertThat(ep.get(0)).isXYSupportAt(99, 9);
+		assertThat(ep.get(0)).isYZSupportAt(99, 99);
+		assertThat(ep.get(0)).isXZSupportAt(99, 99);
 
-		assertThat(ep.getValue(1)).isMin(0, 10, 0);
-		assertThat(ep.getValue(1)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isXZSupportAt(99, 9);
+		assertThat(ep.get(1)).isMin(0, 10, 0);
+		assertThat(ep.get(1)).isXYSupportAt(99, 99);
+		assertThat(ep.get(1)).isYZSupportAt(99, 99);
+		assertThat(ep.get(1)).isXZSupportAt(99, 9);
 	}
 
 	@ParameterizedTest
@@ -105,15 +105,15 @@ public class ExtremePoints3DTest {
 
 		assertThat(ep.getValues()).hasSize(2);
 
-		assertThat(ep.getValue(0)).isMin(0, 0, 10);
-		assertThat(ep.getValue(0)).isXYSupportAt(9, 99);
-		assertThat(ep.getValue(0)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(0)).isXZSupportAt(99, 99);
+		assertThat(ep.get(0)).isMin(0, 0, 10);
+		assertThat(ep.get(0)).isXYSupportAt(9, 99);
+		assertThat(ep.get(0)).isYZSupportAt(99, 99);
+		assertThat(ep.get(0)).isXZSupportAt(99, 99);
 
-		assertThat(ep.getValue(1)).isMin(10, 0, 0);
-		assertThat(ep.getValue(1)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isYZSupportAt(99, 9);
-		assertThat(ep.getValue(1)).isXZSupportAt(99, 99);
+		assertThat(ep.get(1)).isMin(10, 0, 0);
+		assertThat(ep.get(1)).isXYSupportAt(99, 99);
+		assertThat(ep.get(1)).isYZSupportAt(99, 9);
+		assertThat(ep.get(1)).isXZSupportAt(99, 99);
 	}
 
 	@ParameterizedTest
@@ -123,15 +123,15 @@ public class ExtremePoints3DTest {
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 99));
 		assertThat(ep.getValues()).hasSize(2);
 
-		assertThat(ep.getValue(0)).isMin(0, 10, 0);
-		assertThat(ep.getValue(0)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(0)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(0)).isXZSupportAt(9, 99);
+		assertThat(ep.get(0)).isMin(0, 10, 0);
+		assertThat(ep.get(0)).isXYSupportAt(99, 99);
+		assertThat(ep.get(0)).isYZSupportAt(99, 99);
+		assertThat(ep.get(0)).isXZSupportAt(9, 99);
 
-		assertThat(ep.getValue(1)).isMin(10, 0, 0);
-		assertThat(ep.getValue(1)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isYZSupportAt(9, 99);
-		assertThat(ep.getValue(1)).isXZSupportAt(99, 99);
+		assertThat(ep.get(1)).isMin(10, 0, 0);
+		assertThat(ep.get(1)).isXYSupportAt(99, 99);
+		assertThat(ep.get(1)).isYZSupportAt(9, 99);
+		assertThat(ep.get(1)).isXZSupportAt(99, 99);
 	}
 
 	@ParameterizedTest
@@ -150,9 +150,9 @@ public class ExtremePoints3DTest {
 
 		assertThat(ep.getValues()).hasSize(3);
 
-		assertThat(ep.getValue(0)).isMin(0, 0, 10);
-		assertThat(ep.getValue(1)).isMin(0, 10, 0);
-		assertThat(ep.getValue(2)).isMin(10, 0, 0);
+		assertThat(ep.get(0)).isMin(0, 0, 10);
+		assertThat(ep.get(1)).isMin(0, 10, 0);
+		assertThat(ep.get(2)).isMin(10, 0, 0);
 
 		ep.add(2, createStackPlacement(10, 0, 0, 19, 4, 4));
 
@@ -190,30 +190,30 @@ public class ExtremePoints3DTest {
 
 		assertThat(ep.getValues()).hasSize(5);
 
-		assertThat(ep.getValue(0)).isMin(0, 0, 10);
-		assertThat(ep.getValue(0)).isXYSupportAt(9, 9);
-		assertThat(ep.getValue(0)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(0)).isXZSupportAt(99, 99);
+		assertThat(ep.get(0)).isMin(0, 0, 10);
+		assertThat(ep.get(0)).isXYSupportAt(9, 9);
+		assertThat(ep.get(0)).isYZSupportAt(99, 99);
+		assertThat(ep.get(0)).isXZSupportAt(99, 99);
 
-		assertThat(ep.getValue(1)).isMin(0, 10, 0);
-		assertThat(ep.getValue(1)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isXZSupportAt(9, 9);
+		assertThat(ep.get(1)).isMin(0, 10, 0);
+		assertThat(ep.get(1)).isXYSupportAt(99, 99);
+		assertThat(ep.get(1)).isYZSupportAt(99, 99);
+		assertThat(ep.get(1)).isXZSupportAt(9, 9);
 
-		assertThat(ep.getValue(2)).isMin(10, 0, 5);
-		assertThat(ep.getValue(2)).isXYSupportAt(19, 4);
-		assertThat(ep.getValue(2)).isYZSupportAt(9, 9);
-		assertThat(ep.getValue(2)).isXZSupportAt(99, 99);
+		assertThat(ep.get(2)).isMin(10, 0, 5);
+		assertThat(ep.get(2)).isXYSupportAt(19, 4);
+		assertThat(ep.get(2)).isYZSupportAt(9, 9);
+		assertThat(ep.get(2)).isXZSupportAt(99, 99);
 
-		assertThat(ep.getValue(3)).isMin(10, 5, 0);
-		assertThat(ep.getValue(3)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(3)).isYZSupportAt(9, 9);
-		assertThat(ep.getValue(3)).isXZSupportAt(19, 4);
+		assertThat(ep.get(3)).isMin(10, 5, 0);
+		assertThat(ep.get(3)).isXYSupportAt(99, 99);
+		assertThat(ep.get(3)).isYZSupportAt(9, 9);
+		assertThat(ep.get(3)).isXZSupportAt(19, 4);
 
-		assertThat(ep.getValue(4)).isMin(20, 0, 0);
-		assertThat(ep.getValue(4)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(4)).isYZSupportAt(4, 4);
-		assertThat(ep.getValue(4)).isXZSupportAt(99, 99);
+		assertThat(ep.get(4)).isMin(20, 0, 0);
+		assertThat(ep.get(4)).isXYSupportAt(99, 99);
+		assertThat(ep.get(4)).isYZSupportAt(4, 4);
+		assertThat(ep.get(4)).isXZSupportAt(99, 99);
 	}
 
 	@ParameterizedTest
@@ -239,9 +239,9 @@ public class ExtremePoints3DTest {
 
 		assertThat(ep.getValues()).hasSize(3);
 
-		assertThat(ep.getValue(0)).isMin(0, 0, 10);
-		assertThat(ep.getValue(1)).isMin(0, 10, 0);
-		assertThat(ep.getValue(2)).isMin(10, 0, 0);
+		assertThat(ep.get(0)).isMin(0, 0, 10);
+		assertThat(ep.get(1)).isMin(0, 10, 0);
+		assertThat(ep.get(2)).isMin(10, 0, 0);
 
 		ep.add(0, createStackPlacement(0, 0, 10, 4, 4, 19));
 
@@ -288,30 +288,30 @@ public class ExtremePoints3DTest {
 
 		assertThat(ep.getValues()).hasSize(5);
 
-		assertThat(ep.getValue(0)).isMin(0, 0, 20);
-		assertThat(ep.getValue(0)).isXYSupportAt(4, 4);
-		assertThat(ep.getValue(0)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(0)).isXZSupportAt(99, 99);
+		assertThat(ep.get(0)).isMin(0, 0, 20);
+		assertThat(ep.get(0)).isXYSupportAt(4, 4);
+		assertThat(ep.get(0)).isYZSupportAt(99, 99);
+		assertThat(ep.get(0)).isXZSupportAt(99, 99);
 
-		assertThat(ep.getValue(1)).isMin(0, 5, 10);
-		assertThat(ep.getValue(1)).isXYSupportAt(9, 9);
-		assertThat(ep.getValue(1)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isXZSupportAt(4, 19);
+		assertThat(ep.get(1)).isMin(0, 5, 10);
+		assertThat(ep.get(1)).isXYSupportAt(9, 9);
+		assertThat(ep.get(1)).isYZSupportAt(99, 99);
+		assertThat(ep.get(1)).isXZSupportAt(4, 19);
 
-		assertThat(ep.getValue(2)).isMin(0, 10, 0);
-		assertThat(ep.getValue(2)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(2)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(2)).isXZSupportAt(9, 9);
+		assertThat(ep.get(2)).isMin(0, 10, 0);
+		assertThat(ep.get(2)).isXYSupportAt(99, 99);
+		assertThat(ep.get(2)).isYZSupportAt(99, 99);
+		assertThat(ep.get(2)).isXZSupportAt(9, 9);
 
-		assertThat(ep.getValue(3)).isMin(5, 0, 10);
-		assertThat(ep.getValue(3)).isXYSupportAt(9, 9);
-		assertThat(ep.getValue(3)).isYZSupportAt(4, 19);
-		assertThat(ep.getValue(3)).isXZSupportAt(99, 99);
+		assertThat(ep.get(3)).isMin(5, 0, 10);
+		assertThat(ep.get(3)).isXYSupportAt(9, 9);
+		assertThat(ep.get(3)).isYZSupportAt(4, 19);
+		assertThat(ep.get(3)).isXZSupportAt(99, 99);
 
-		assertThat(ep.getValue(4)).isMin(10, 0, 0);
-		assertThat(ep.getValue(4)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(4)).isYZSupportAt(9, 9);
-		assertThat(ep.getValue(4)).isXZSupportAt(99, 99);
+		assertThat(ep.get(4)).isMin(10, 0, 0);
+		assertThat(ep.get(4)).isXYSupportAt(99, 99);
+		assertThat(ep.get(4)).isYZSupportAt(9, 9);
+		assertThat(ep.get(4)).isXZSupportAt(99, 99);
 	}
 
 	@ParameterizedTest
@@ -326,11 +326,11 @@ public class ExtremePoints3DTest {
 
 		assertThat(ep.getValues()).hasSize(5);
 
-		assertThat(ep.getValue(0)).isMin(0, 0, 10);
-		assertThat(ep.getValue(1)).isMin(0, 10, 5);
-		assertThat(ep.getValue(2)).isMin(0, 20, 0);
-		assertThat(ep.getValue(3)).isMin(5, 10, 0);
-		assertThat(ep.getValue(4)).isMin(10, 0, 0);
+		assertThat(ep.get(0)).isMin(0, 0, 10);
+		assertThat(ep.get(1)).isMin(0, 10, 5);
+		assertThat(ep.get(2)).isMin(0, 20, 0);
+		assertThat(ep.get(3)).isMin(5, 10, 0);
+		assertThat(ep.get(4)).isMin(10, 0, 0);
 	}
 
 	@ParameterizedTest
@@ -339,13 +339,13 @@ public class ExtremePoints3DTest {
 		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
-		assertThat(ep.getValue(0)).isMin(0, 0, 10);
-		assertThat(ep.getValue(0)).isXYSupportAt(9, 9);
-		assertThat(ep.getValue(0)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(0)).isXZSupportAt(99, 99);
+		assertThat(ep.get(0)).isMin(0, 0, 10);
+		assertThat(ep.get(0)).isXYSupportAt(9, 9);
+		assertThat(ep.get(0)).isYZSupportAt(99, 99);
+		assertThat(ep.get(0)).isXZSupportAt(99, 99);
 
-		assertThat(ep.getValue(1)).isMin(0, 10, 0);
-		assertThat(ep.getValue(2)).isMin(10, 0, 0);
+		assertThat(ep.get(1)).isMin(0, 10, 0);
+		assertThat(ep.get(2)).isMin(10, 0, 0);
 
 		// y
 		// |
@@ -387,20 +387,20 @@ public class ExtremePoints3DTest {
 
 		assertThat(ep.getValues()).hasSize(3);
 
-		assertThat(ep.getValue(0)).isMin(0, 0, 10);
-		assertThat(ep.getValue(0)).isXYSupportAt(9, 9);
-		assertThat(ep.getValue(0)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(0)).isXZSupportAt(99, 99);
+		assertThat(ep.get(0)).isMin(0, 0, 10);
+		assertThat(ep.get(0)).isXYSupportAt(9, 9);
+		assertThat(ep.get(0)).isYZSupportAt(99, 99);
+		assertThat(ep.get(0)).isXZSupportAt(99, 99);
 
-		assertThat(ep.getValue(1)).isMin(0, 10, 0);
-		assertThat(ep.getValue(1)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isXZSupportAt(9, 9);
+		assertThat(ep.get(1)).isMin(0, 10, 0);
+		assertThat(ep.get(1)).isXYSupportAt(99, 99);
+		assertThat(ep.get(1)).isYZSupportAt(99, 99);
+		assertThat(ep.get(1)).isXZSupportAt(9, 9);
 
-		assertThat(ep.getValue(2)).isMin(20, 0, 0);
-		assertThat(ep.getValue(2)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(2)).isYZSupportAt(9, 9);
-		assertThat(ep.getValue(2)).isXZSupportAt(99, 99);
+		assertThat(ep.get(2)).isMin(20, 0, 0);
+		assertThat(ep.get(2)).isXYSupportAt(99, 99);
+		assertThat(ep.get(2)).isYZSupportAt(9, 9);
+		assertThat(ep.get(2)).isXZSupportAt(99, 99);
 
 	}
 
@@ -453,20 +453,20 @@ public class ExtremePoints3DTest {
 
 		assertThat(ep.getValues()).hasSize(3);
 
-		assertThat(ep.getValue(0)).isMin(0, 0, 10);
-		assertThat(ep.getValue(0)).isXYSupportAt(9, 9);
-		assertThat(ep.getValue(0)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(0)).isXZSupportAt(99, 99);
+		assertThat(ep.get(0)).isMin(0, 0, 10);
+		assertThat(ep.get(0)).isXYSupportAt(9, 9);
+		assertThat(ep.get(0)).isYZSupportAt(99, 99);
+		assertThat(ep.get(0)).isXZSupportAt(99, 99);
 
-		assertThat(ep.getValue(1)).isMin(0, 20, 0);
-		assertThat(ep.getValue(1)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isXZSupportAt(9, 9);
+		assertThat(ep.get(1)).isMin(0, 20, 0);
+		assertThat(ep.get(1)).isXYSupportAt(99, 99);
+		assertThat(ep.get(1)).isYZSupportAt(99, 99);
+		assertThat(ep.get(1)).isXZSupportAt(9, 9);
 
-		assertThat(ep.getValue(2)).isMin(10, 0, 0);
-		assertThat(ep.getValue(2)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(2)).isYZSupportAt(9, 9);
-		assertThat(ep.getValue(2)).isXZSupportAt(99, 99);
+		assertThat(ep.get(2)).isMin(10, 0, 0);
+		assertThat(ep.get(2)).isXYSupportAt(99, 99);
+		assertThat(ep.get(2)).isYZSupportAt(9, 9);
+		assertThat(ep.get(2)).isXZSupportAt(99, 99);
 	}
 
 	@ParameterizedTest
@@ -502,20 +502,20 @@ public class ExtremePoints3DTest {
 
 		assertThat(ep.getValues()).hasSize(3);
 
-		assertThat(ep.getValue(0)).isMin(0, 0, 20);
-		assertThat(ep.getValue(0)).isXYSupportAt(9, 9);
-		assertThat(ep.getValue(0)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(0)).isXZSupportAt(99, 99);
+		assertThat(ep.get(0)).isMin(0, 0, 20);
+		assertThat(ep.get(0)).isXYSupportAt(9, 9);
+		assertThat(ep.get(0)).isYZSupportAt(99, 99);
+		assertThat(ep.get(0)).isXZSupportAt(99, 99);
 
-		assertThat(ep.getValue(1)).isMin(0, 10, 0);
-		assertThat(ep.getValue(1)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isYZSupportAt(99, 99);
-		assertThat(ep.getValue(1)).isXZSupportAt(9, 9);
+		assertThat(ep.get(1)).isMin(0, 10, 0);
+		assertThat(ep.get(1)).isXYSupportAt(99, 99);
+		assertThat(ep.get(1)).isYZSupportAt(99, 99);
+		assertThat(ep.get(1)).isXZSupportAt(9, 9);
 
-		assertThat(ep.getValue(2)).isMin(10, 0, 0);
-		assertThat(ep.getValue(2)).isXYSupportAt(99, 99);
-		assertThat(ep.getValue(2)).isYZSupportAt(9, 9);
-		assertThat(ep.getValue(2)).isXZSupportAt(99, 99);
+		assertThat(ep.get(2)).isMin(10, 0, 0);
+		assertThat(ep.get(2)).isXYSupportAt(99, 99);
+		assertThat(ep.get(2)).isYZSupportAt(9, 9);
+		assertThat(ep.get(2)).isXZSupportAt(99, 99);
 	}
 
 	@ParameterizedTest
@@ -569,12 +569,12 @@ public class ExtremePoints3DTest {
 		//    |-----|-----|-- y
 		//          10   19    
 
-		assertThat(ep.getValue(0)).isMin(0, 0, 10);
-		assertThat(ep.getValue(1)).isMin(0, 0, 20);
-		assertThat(ep.getValue(2)).isMin(0, 10, 0);
-		assertThat(ep.getValue(3)).isMin(0, 20, 0);
+		assertThat(ep.get(0)).isMin(0, 0, 10);
+		assertThat(ep.get(1)).isMin(0, 0, 20);
+		assertThat(ep.get(2)).isMin(0, 10, 0);
+		assertThat(ep.get(3)).isMin(0, 20, 0);
 
-		assertThat(ep.getValue(4)).isMin(20, 0, 0);
+		assertThat(ep.get(4)).isMin(20, 0, 0);
 	}
 
 	@ParameterizedTest

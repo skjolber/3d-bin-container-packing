@@ -9,15 +9,15 @@ import java.util.List;
  * 
  */
 
-public class BoxItemGroup {
+public class BoxItemGroup<T extends BoxItem> {
 
 	protected String id;
 
-	protected List<BoxItem> items;
+	protected List<T> items;
 	
 	protected int index = -1;
 	
-	public BoxItemGroup(String id, List<BoxItem> items) {
+	public BoxItemGroup(String id, List<T> items) {
 		super();
 		this.id = id;
 		this.items = items;
@@ -27,7 +27,7 @@ public class BoxItemGroup {
 		return id;
 	}
 
-	public List<BoxItem> getItems() {
+	public List<T> getItems() {
 		return items;
 	}
 
@@ -35,7 +35,7 @@ public class BoxItemGroup {
 		this.id = id;
 	}
 
-	public void setItems(List<BoxItem> items) {
+	public void setItems(List<T> items) {
 		this.items = items;
 	}
 
@@ -48,7 +48,7 @@ public class BoxItemGroup {
 	}
 	
 	public boolean decrement(int index) {
-		BoxItem boxItem = items.get(index);
+		T boxItem = items.get(index);
 		if(!boxItem.decrement()) {
 			items.remove(index);
 		}
@@ -65,7 +65,7 @@ public class BoxItemGroup {
 	}
 
 	public boolean isEmpty() {
-		for (BoxItem boxItem : items) {
+		for (T boxItem : items) {
 			if(!boxItem.isEmpty()) {
 				return false;
 			}
@@ -76,7 +76,7 @@ public class BoxItemGroup {
 	
 	public void removeEmpty() {
 		for (int j = 0; j < items.size(); j++) {
-			BoxItem boxItem = items.get(j);
+			T boxItem = items.get(j);
 			
 			if(boxItem.isEmpty()) {
 				items.remove(j);
@@ -85,14 +85,14 @@ public class BoxItemGroup {
 		}
 	}
 	
-	public BoxItemGroup clone() {
-		List<BoxItem> items = new ArrayList<>();
+	public BoxItemGroup<T> clone() {
+		List<T> items = new ArrayList<>();
 
-		for (BoxItem boxItem : this.items) {
-			items.add(boxItem.clone());
+		for (T boxItem : this.items) {
+			items.add((T) boxItem.clone());
 		}
 		
-		return new BoxItemGroup(id, items);
+		return new BoxItemGroup<>(id, items);
 	}
 	
 	public long getVolume() {

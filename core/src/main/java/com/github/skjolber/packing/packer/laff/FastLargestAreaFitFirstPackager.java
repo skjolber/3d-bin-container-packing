@@ -257,7 +257,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 
 				targetContainer.getLoadDx(), targetContainer.getLoadDy(), targetContainer.getLoadDz(),
 				targetContainer.getMaxLoadWeight(),
-				stack, targetContainer.getBoxItemListenerBuilderSupplier(), targetContainer.getPlacementFilterBuilderSupplier()),
+				stack, targetContainer.getBoxItemListenerBuilderSupplier(), targetContainer.getFilteredPointsBuilderSupplier()),
 				
 				stack, remainingStackables.isEmpty(), containerIndex);
 	}

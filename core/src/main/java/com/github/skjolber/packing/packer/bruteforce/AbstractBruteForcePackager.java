@@ -188,10 +188,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 		extremePointsStack.push();
 
-		int currentPointsCount = extremePointsStack.getValueCount();
+		int currentPointsCount = extremePointsStack.size();
 
 		for (int k = 0; k < currentPointsCount; k++) {
-			Point point3d = extremePointsStack.getValue(k);
+			Point point3d = extremePointsStack.get(k);
 
 			if(!point3d.fits3D(stackValue)) {
 				continue;

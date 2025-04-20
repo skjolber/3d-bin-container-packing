@@ -6,21 +6,24 @@ public class MutableBoxItem extends BoxItem {
 
 	private static final long serialVersionUID = 1L;
 	
-	public final BoxItem source; 
+	public int resetCount; 
 
 	public MutableBoxItem(BoxItem loadableItem) {
 		super(loadableItem.getBox(), loadableItem.getCount(), loadableItem.getIndex());
 		
-		this.source = loadableItem;
+		this.resetCount = loadableItem.getCount();
 	}
 	
 	public void reset() {
-		this.count = source.getCount();
+		this.count = resetCount;
 	}
 	
-	public BoxItem getSource() {
-		return source;
+	public void setResetCount(int resetCount) {
+		this.resetCount = resetCount;
 	}
 
+	public void decrementResetCount() {
+		this.resetCount--;
+	}
 	
 }

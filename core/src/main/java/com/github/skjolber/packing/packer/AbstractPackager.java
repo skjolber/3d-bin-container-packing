@@ -11,6 +11,8 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
+import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItemGroups;
+import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 import com.github.skjolber.packing.api.packager.PackResult;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
@@ -357,7 +359,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 	
 	protected long getMinBoxItemGroupArea(List<MutableBoxItemGroup> groups) {
 		long minArea = Integer.MAX_VALUE;
-		for (BoxItemGroup boxItemGroup : groups) {
+		for (BoxItemGroup<?> boxItemGroup : groups) {
 			for (BoxItem boxItem : boxItemGroup.getItems()) {
 				if(boxItem.getBox().getMinimumArea() < minArea) {
 					minArea = boxItem.getBox().getMinimumArea();
@@ -366,7 +368,20 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		}
 		return minArea;
 	}
-	
+
+	protected long getMinBoxItemGroupArea(FilteredBoxItemGroups<?> filteredBoxItemGroups) {
+		long minArea = Integer.MAX_VALUE;
+		for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
+			BoxItemGroup<?> boxItemGroup = filteredBoxItemGroups.get(i);
+			for (BoxItem boxItem : boxItemGroup.getItems()) {
+				if(boxItem.getBox().getMinimumArea() < minArea) {
+					minArea = boxItem.getBox().getMinimumArea();
+				}
+			}
+		}
+		return minArea;
+	}
+
 	public void close() {
 		scheduledThreadPoolExecutor.shutdownNow();
 	}

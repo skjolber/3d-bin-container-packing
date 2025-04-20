@@ -1,10 +1,6 @@
 package com.github.skjolber.packing.api;
 
 import java.util.List;
-import java.util.function.Supplier;
-
-import com.github.skjolber.packing.api.ep.PlacementFilterBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder;
 
 @SuppressWarnings("unchecked")
 public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {

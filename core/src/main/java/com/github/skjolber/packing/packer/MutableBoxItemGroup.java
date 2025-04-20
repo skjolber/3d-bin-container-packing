@@ -5,8 +5,9 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
 
-public class MutableBoxItemGroup extends BoxItemGroup {
+public class MutableBoxItemGroup extends BoxItemGroup<MutableBoxItem> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -22,7 +23,8 @@ public class MutableBoxItemGroup extends BoxItemGroup {
 		return list;
 	}
 	
-	public final BoxItemGroup source; 
+	protected final BoxItemGroup source; 
+	protected DefaultFilteredBoxItems<BoxItem> filtered;
 
 	public MutableBoxItemGroup(BoxItemGroup group) {
 		super(group.getId(), toMutable(group.getItems()));

@@ -173,7 +173,7 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 		long minGroupVolume = Long.MAX_VALUE;
 		long minGroupWeight = Long.MAX_VALUE;
 
-		for (BoxItemGroup group : boxes) {
+		for (MutableBoxItemGroup group : boxes) {
 			// volume
 			for (BoxItem boxItem : group.getItems()) {
 
@@ -281,7 +281,7 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 	
 	protected boolean canLoadAtLeastOneGroup(Container containerBox, List<MutableBoxItemGroup> boxes) {
 		
-		for (BoxItemGroup group : boxes) {
+		for (MutableBoxItemGroup group : boxes) {
 			for (BoxItem boxItem : group.getItems()) {
 				Box box = boxItem.getBox();
 				if(containerBox.canLoad(box)) {

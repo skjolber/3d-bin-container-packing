@@ -8,17 +8,17 @@ import com.github.skjolber.packing.api.BoxItem;
  * 
  */
 
-public interface FilteredBoxItems {
+public interface FilteredBoxItems<T extends BoxItem> {
 	
 	int size();
 
 	boolean isEmpty();
 
-	BoxItem get(int index);
+	T get(int index);
 
-	BoxItem decrement(int index, int count);
+	T decrement(int index, int count);
  
-	BoxItem remove(int index);
+	T remove(int index);
 
 	void clearEmpty();
 }

@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.api.packager;
 
+import com.github.skjolber.packing.api.BoxItemGroup;
+
 public class NoopBoxItemGroupListener implements BoxItemGroupListener {
 
 	private static final NoopBoxItemGroupListener INSTANCE = new NoopBoxItemGroupListener(); 
@@ -9,7 +11,7 @@ public class NoopBoxItemGroupListener implements BoxItemGroupListener {
 	}
 	
 	@Override
-	public void packedBoxItemGroup(int index) {
+	public void accepted(BoxItemGroup group) {
 	}
 
 }

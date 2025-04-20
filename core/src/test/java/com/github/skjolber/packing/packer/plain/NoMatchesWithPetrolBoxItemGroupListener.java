@@ -22,23 +22,23 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupList
 	}
 	
 	protected final Container container;
-	protected final FilteredBoxItemGroups groups;
+	protected final FilteredBoxItemGroups<?> groups;
 	protected final Stack stack;
 	
 	protected boolean matches = false;
 	protected boolean petrol = false;
 
-	public NoMatchesWithPetrolBoxItemGroupListener(Container container, FilteredBoxItemGroups groups, Stack stack) {
+	public NoMatchesWithPetrolBoxItemGroupListener(Container container, FilteredBoxItemGroups<?> groups, Stack stack) {
 		this.container = container;
 		this.groups = groups;
 		this.stack = stack;
 	}
 
 	@Override
-	public void packedBoxItemGroup(int index) {
+	public void accepted(BoxItemGroup group) {
 		// do nothing
 		
-		BoxItemGroup removed = groups.remove(index);
+		BoxItemGroup removed = groups.remove(group);
 		
 
 		if(!matches) {

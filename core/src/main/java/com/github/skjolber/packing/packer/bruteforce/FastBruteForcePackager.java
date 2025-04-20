@@ -319,17 +319,17 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 
 			BoxStackValue stackValue = permutationRotation.getBoxStackValue();
 
-			int pointCount = extremePoints3D.getValueCount();
+			int pointCount = extremePoints3D.size();
 
 			int bestPointIndex = -1;
 			for (int k = 0; k < pointCount; k++) {
-				Point point3d = extremePoints3D.getValue(k);
+				Point point3d = extremePoints3D.get(k);
 				if(!point3d.fits3D(stackValue)) {
 					continue;
 				}
 
 				if(bestPointIndex != -1) {
-					Point bestPoint = extremePoints3D.getValue(bestPointIndex);
+					Point bestPoint = extremePoints3D.get(bestPointIndex);
 					if(bestPoint.getArea() < point3d.getArea()) {
 						continue;
 					} else if(bestPoint.getArea() == point3d.getArea() && bestPoint.getVolume() < point3d.getVolume()) {
@@ -343,7 +343,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 				break;
 			}
 
-			Point point3d = extremePoints3D.getValue(bestPointIndex);
+			Point point3d = extremePoints3D.get(bestPointIndex);
 
 			placement.setBox(stackable);
 			placement.setStackValue(stackValue);

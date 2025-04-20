@@ -343,8 +343,12 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	void testStackingSquaresOnSquareWithConstraints() {
 
 		// use-case:
-		// - max number of batteries per container
-		// - batteries in special containers
+		// - max number of fire hazard per container
+		// - fire hazard in special containers
+		// - fire hazard + highly flammable not in the same container
+		// - heavy items on the ground level
+		// - place heavy items first
+		
 		
 		Container container = Container.newBuilder()
 				.withId("safeForBatteries")

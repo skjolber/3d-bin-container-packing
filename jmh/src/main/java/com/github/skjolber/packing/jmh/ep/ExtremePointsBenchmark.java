@@ -54,7 +54,7 @@ public class ExtremePointsBenchmark {
 			for (ExtremePoint3DEntry extremePointEntry : e.getEntries()) {
 				extremePoints3D.add(extremePointEntry.getIndex(), extremePointEntry.getPlacement());
 			}
-			size += extremePoints3D.getValueCount();
+			size += extremePoints3D.size();
 
 			extremePoints3D.redo();
 		}

@@ -42,10 +42,10 @@ public class MaxFireHazardBoxItemPerContainerBoxItemListener implements BoxItemL
 	}
 
 	@Override
-	public void packedBoxItem(int index) {
+	public void accepted(BoxItem boxItem) {
 		// do nothing
 		
-		BoxItem boxItem = items.decrement(index, 1);
+		BoxItem boxItem = items.decrement(boxItem, 1);
 		if(isFireHazard(boxItem)) {
 			count++;
 			

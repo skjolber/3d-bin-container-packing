@@ -91,13 +91,13 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 			for (StackPlacement stackPlacement : stack.getPlacements()) {
 				MutableBoxItem boxItem = (MutableBoxItem) stackPlacement.getBoxItem();
 				
-				boxItem.getSource().decrement();
+				boxItem.decrementResetCount();
 				boxItem.reset();
 			}
 			
 			List<MutableBoxItem> remainingBoxItems = new ArrayList<>(this.remainingBoxItems.size());
 			for (MutableBoxItem boxItem : this.remainingBoxItems) {
-				if(!boxItem.getSource().isEmpty()) {
+				if(!boxItem.isEmpty()) {
 					remainingBoxItems.add(boxItem);
 				}
 			}
@@ -155,7 +155,7 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 			for (StackPlacement stackPlacement : stack.getPlacements()) {
 				MutableBoxItem boxItem = (MutableBoxItem) stackPlacement.getBoxItem();
 				
-				boxItem.getSource().decrement();
+				boxItem.decrementResetCount();
 				boxItem.reset();
 			}
 

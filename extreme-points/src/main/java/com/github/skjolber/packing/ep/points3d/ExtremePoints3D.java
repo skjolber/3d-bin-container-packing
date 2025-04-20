@@ -825,6 +825,11 @@ public class ExtremePoints3D implements ExtremePoints {
 		}
 	}
 
+	public void remove(int index) {
+		values.flag(index);
+		values.removeFlagged();
+	}
+	
 	protected void removeEclipsed(int limit) {
 
 		// implementation note:
@@ -1396,7 +1401,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		return placements;
 	}
 
-	public SimplePoint3D getValue(int i) {
+	public SimplePoint3D get(int i) {
 		return values.get(i);
 	}
 
@@ -1404,8 +1409,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		return values.toList();
 	}
 
-	@Override
-	public int getValueCount() {
+	public int size() {
 		return values.size();
 	}
 
@@ -1596,17 +1600,6 @@ public class ExtremePoints3D implements ExtremePoints {
 		}
 		// key not found
 		return low;
-	}
-
-	public long getMaxVolume() {
-		long maxPointVolume = -1L;
-		for (int i = 0; i < values.size(); i++) {
-			Point point = values.get(i);
-			if(maxPointVolume < point.getVolume()) {
-				maxPointVolume = point.getVolume();
-			}
-		}
-		return maxPointVolume;
 	}
 
 	public void setMinimumAreaAndVolumeLimit(long area, long volume) {

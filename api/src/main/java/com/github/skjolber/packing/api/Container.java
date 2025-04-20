@@ -1,10 +1,6 @@
 package com.github.skjolber.packing.api;
 
 import java.util.List;
-import java.util.function.Supplier;
-
-import com.github.skjolber.packing.api.ep.PlacementFilterBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder;
 
 public class Container {
 
@@ -204,7 +200,7 @@ public class Container {
 				stackValue.getDz() <= loadDz;
 	}
 
-	public boolean canLoad(BoxItemGroup group) {
+	public <T extends BoxItem> boolean canLoad(BoxItemGroup<T> group) {
 		if(group.getVolume() > maxLoadVolume) {
 			return false;
 		}
@@ -213,7 +209,7 @@ public class Container {
 		}
 		
 		// all boxes must fit within the container load 
-		for (BoxItem boxItem : group.getItems()) {
+		for (T boxItem : group.getItems()) {
 			Box box = boxItem.getBox();
 			if(!canLoad(box)) {
 				return false;
