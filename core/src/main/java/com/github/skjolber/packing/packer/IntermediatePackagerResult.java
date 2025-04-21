@@ -9,8 +9,6 @@ public interface IntermediatePackagerResult {
 	
 	Stack getStack();
 	
-	boolean containsLastStackable();
-	
 	boolean isEmpty();
 	
 }

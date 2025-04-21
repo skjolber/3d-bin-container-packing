@@ -1493,9 +1493,9 @@ public class ExtremePoints3D implements ExtremePoints {
 
 	public int get(int x, int y, int z) {
 		for (int i = 0; i < values.size(); i++) {
-			Point point2d = values.get(i);
+			Point point = values.get(i);
 
-			if(point2d.getMinY() == y && point2d.getMinX() == x && point2d.getMinZ() == z) {
+			if(point.getMinX() == x && point.getMinY() == y && point.getMinZ() == z) {
 				return i;
 			}
 		}

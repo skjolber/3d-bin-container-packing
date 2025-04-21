@@ -13,21 +13,24 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
-import com.github.skjolber.packing.iterator.MutableBoxItemPermutationRotationIterator.Builder;
-import com.github.skjolber.packing.iterator.MutableBoxItemPermutationRotationIterator.DelegateBuilder;
+import com.github.skjolber.packing.iterator.FilteredBoxItemPermutationRotationIterator.Builder;
+import com.github.skjolber.packing.iterator.FilteredBoxItemPermutationRotationIterator.DelegateBuilder;
 
-class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPermutationRotationIteratorTest<DelegateBuilder> {
+class FilteredBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxItemGroupPermutationRotationIteratorTest<FilteredBoxItemGroupPermutationRotationIterator.DelegateBuilder> {
 
 	@Override
-	public DelegateBuilder newBuilder() {
-		return new DelegateBuilder(DefaultBoxItemPermutationRotationIterator.newBuilder());
+	public FilteredBoxItemGroupPermutationRotationIterator.DelegateBuilder newBuilder() {
+		return new FilteredBoxItemGroupPermutationRotationIterator.DelegateBuilder(DefaultBoxItemGroupPermutationRotationIterator.newBuilder());
 	}
 	
 	@Test
 	void testMutableRotationCount() {
 		for (int i = 1; i <= 8; i++) {
 			Dimension container = new Dimension(null, 3 * (i + 1), 3, 1);
+
+			List<BoxItemGroup> groups = new ArrayList<>();
 
 			List<BoxItem> products1 = new ArrayList<>();
 
@@ -38,11 +41,13 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPerm
 
 				products1.add(item);
 			}
+			
+			groups.add(new BoxItemGroup("1", products1));
 
-			MutableBoxItemPermutationRotationIterator rotator = 
+			FilteredBoxItemGroupPermutationRotationIterator rotator = 
 					newBuilder()
 					.withLoadSize(container)
-					.withBoxItems(products1)
+					.withBoxItemGroups(groups)
 					.withMaxLoadWeight(products1.size())
 					.build();
 			
@@ -81,12 +86,14 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPerm
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2, 0));
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4, 1));
 
-		MutableBoxItemPermutationRotationIterator rotator = newBuilder()
+		List<BoxItemGroup> groups = new ArrayList<>();
+		groups.add(new BoxItemGroup("1", products));
+		
+		FilteredBoxItemGroupPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withBoxItems(products)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products.size())
 				.build();
-
 		
 		int count = 0;
 		do {
@@ -113,9 +120,12 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPerm
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2, 0));
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4, 1));
 
-		MutableBoxItemPermutationRotationIterator rotator = newBuilder()
+		List<BoxItemGroup> groups = new ArrayList<>();
+		groups.add(new BoxItemGroup("1", products));
+
+		FilteredBoxItemGroupPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withBoxItems(products)
+				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -150,7 +160,7 @@ class MutableLoadablePermutationRotationIteratorTest extends AbstractBoxItemPerm
 		assertEquals(rotator.size(), 0);
 	}
 	
-	public int[] toFrequency(MutableBoxItemPermutationRotationIterator rotator, int size) {
+	public int[] toFrequency(BoxItemGroupPermutationRotationIterator rotator, int size) {
 		int[] counts = new int[size];
 		for (int i : rotator.getPermutations()) {
 			counts[i]++;

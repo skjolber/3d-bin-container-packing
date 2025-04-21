@@ -1,14 +1,18 @@
 package com.github.skjolber.packing.packer.plain;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemListener;
 import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder;
+import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder.BoxItemListenerBuilderSupplier;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
 public class MaxFireHazardBoxItemPerContainerBoxItemListener implements BoxItemListener {
 
+	public static final String KEY = "fireHazard";
+	
 	public static class Builder extends BoxItemListenerBuilder<Builder> {
 
 		private int maxCount = -1;
@@ -23,10 +27,19 @@ public class MaxFireHazardBoxItemPerContainerBoxItemListener implements BoxItemL
 			if(maxCount == -1) {
 				throw new IllegalStateException("Expected max count");
 			}
-			return new MaxFireHazardBoxItemPerContainerBoxItemListener(container, input, stack, maxCount);
+			return new MaxFireHazardBoxItemPerContainerBoxItemListener(container, items, stack, maxCount);
 		}
 
 	}
+	
+	public static final Builder newBuilder() {
+		return new Builder();
+	}
+	
+	public static final BoxItemListenerBuilderSupplier newSupplier(int maxCount) {
+		return () -> new Builder().withMaxCount(maxCount);
+	}
+	
 	
 	protected final Container container;
 	protected final FilteredBoxItems items;
@@ -64,6 +77,9 @@ public class MaxFireHazardBoxItemPerContainerBoxItemListener implements BoxItemL
 	}
 
 	private boolean isFireHazard(BoxItem item) {
-		return item.getBox().getId().startsWith("fire-");
+		Box box = item.getBox();
+		
+		Boolean b = box.getProperty(KEY);
+		return b != null && b;
 	}
 }

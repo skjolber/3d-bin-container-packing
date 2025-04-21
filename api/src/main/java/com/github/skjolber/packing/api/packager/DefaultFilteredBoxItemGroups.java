@@ -29,7 +29,7 @@ public class DefaultFilteredBoxItemGroups implements FilteredBoxItemGroups {
 	}
 
 	public boolean isEmpty() {
-		return !values.isEmpty();
+		return values.isEmpty();
 	}
 	
 	@Override

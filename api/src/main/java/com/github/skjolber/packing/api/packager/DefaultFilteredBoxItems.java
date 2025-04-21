@@ -46,7 +46,7 @@ public class DefaultFilteredBoxItems implements FilteredBoxItems {
 	}
 
 	@Override
-	public void clearEmpty() {
+	public void removeEmpty() {
 		for(int i = 0; i < values.size(); i++) {
 			if(values.get(i).isEmpty()) {
 				values.remove(i);

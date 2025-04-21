@@ -61,7 +61,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 				if(result == null) {
 					return null; // timeout, no result
 				}
-				if(result.containsLastStackable()) {
+				if(result.getStack().getSize() == adapter.countRemainingBoxes()) {
 					return result;
 				}
 			}
@@ -91,7 +91,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 						// return best result so far, whatever it is
 						break search;
 					}
-					if(result.containsLastStackable()) {
+					if(result.getStack().getSize() == adapter.countRemainingBoxes()) {
 						results[nextContainerItemIndex] = result;
 
 						iterator.lower();
@@ -233,7 +233,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 
 				if(result == null) {
 					// timeout, unless already have a result ready
-					if(best != null && best.containsLastStackable()) {
+					if(best != null && best.getStack().getSize() == adapter.countRemainingBoxes()) {
 						containerPackResults.add(adapter.accept(best));
 
 						return containerPackResults;
@@ -411,6 +411,16 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		for (BoxItem boxItem : inputs) {
 			if(container.fitsInside(boxItem)) {
 				result.add(boxItem);
+			}
+		}
+		return result;
+	}
+	
+	public List<BoxItem> removeEmpty(List<BoxItem> values) {
+		List<BoxItem> result = new ArrayList<>(values.size());
+		for(int i = 0; i < values.size(); i++) {
+			if(!values.get(i).isEmpty()) {
+				result.add(values.get(i));
 			}
 		}
 		return result;

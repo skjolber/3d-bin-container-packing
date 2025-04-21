@@ -7,13 +7,11 @@ public class DefaultIntermediatePackagerResult implements IntermediatePackagerRe
 
 	protected ContainerItem containerItem;
 	protected Stack stack;
-	protected boolean containsLastStackable;
 	
-	public DefaultIntermediatePackagerResult(ContainerItem containerItem, Stack stack, boolean containsLastStackable) {
+	public DefaultIntermediatePackagerResult(ContainerItem containerItem, Stack stack) {
 		super();
 		this.containerItem = containerItem;
 		this.stack = stack;
-		this.containsLastStackable = containsLastStackable;
 	}
 
 	@Override
@@ -26,11 +24,6 @@ public class DefaultIntermediatePackagerResult implements IntermediatePackagerRe
 		return stack;
 	}
 
-	@Override
-	public boolean containsLastStackable() {
-		return containsLastStackable;
-	}
-	
 	@Override
 	public boolean isEmpty() {
 		return stack.isEmpty();

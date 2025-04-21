@@ -20,5 +20,5 @@ public interface FilteredBoxItems {
  
 	BoxItem remove(int index);
 
-	void clearEmpty();
+	void removeEmpty();
 }

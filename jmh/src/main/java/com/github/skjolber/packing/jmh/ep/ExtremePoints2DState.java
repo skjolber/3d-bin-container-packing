@@ -26,7 +26,7 @@ public class ExtremePoints2DState {
 	private StackPlacement createStackPlacement(int x, int y, int dx, int dy) {
 		BoxStackValue stackValue = new BoxStackValue(dx, dy, 0, null, -1);
 		
-		return new StackPlacement(null, stackValue, x, y, 0);
+		return new StackPlacement(null, null, stackValue, x, y, 0);
 	}
 	
 	@Setup(Level.Trial)

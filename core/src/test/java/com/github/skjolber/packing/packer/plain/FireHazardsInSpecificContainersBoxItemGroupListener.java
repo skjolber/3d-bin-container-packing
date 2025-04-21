@@ -41,6 +41,10 @@ public class FireHazardsInSpecificContainersBoxItemGroupListener implements BoxI
 		}
 	}
 	
+	public static final Builder newBuilder() {
+		return new Builder();
+	}
+	
 	protected final Container container;
 	protected final FilteredBoxItemGroups groups;
 	protected final Stack stack;

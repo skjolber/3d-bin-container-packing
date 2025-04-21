@@ -9,6 +9,8 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
+import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point;
@@ -23,10 +25,12 @@ public class ExtremePoints3DState {
 
 	private List<ExtremePoints3DEntries> entries = new ArrayList<>();
 
-	private StackPlacement createStackPlacement(int x, int y, int z, int dx, int dy, int dz) {
-		BoxStackValue stackValue = new BoxStackValue(dx, dy, dz, null, -1);
+	private StackPlacement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
+		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, -1);
 		
-		return new StackPlacement(null, stackValue, x, y, z);
+		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(0).build();
+		
+		return new StackPlacement(null, new BoxItem(box, 1), stackValue, x, y, z);
 	}
 	
 	@Setup(Level.Trial)
@@ -37,12 +41,13 @@ public class ExtremePoints3DState {
 		List<BouwkampCodes> codesForCount = directory.getAll();
 		for (BouwkampCodes c : codesForCount) {
 			for (BouwkampCode bkpLine : c.getCodes()) {
-				add(bkpLine);
+				//add(bkpLine);
+				convert3DXYPlane(bkpLine);
 			}
 		}
 	}
 
-	private void add(BouwkampCode bkpLine) {
+	public void convert3DXYPlane(BouwkampCode bkpLine) {
 		ExtremePoints3D points = new ExtremePoints3D(bkpLine.getWidth(), bkpLine.getDepth(), 1);
 
 		ExtremePoints3DEntries extremePointsEntries = new ExtremePoints3DEntries(points);
@@ -65,9 +70,11 @@ public class ExtremePoints3DState {
 				Integer square = squares.get(i);
 				int factoredSquare = square;
 
-				StackPlacement defaultPlacement3D = createStackPlacement(offset, value.getMinY(), 0, offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, 0);
-				extremePointsEntries.add(new ExtremePoint3DEntry(nextY, defaultPlacement3D));
-				points.add(nextY, defaultPlacement3D);
+				StackPlacement stackPlacement = createStackPlacement(offset, value.getMinY(), 0, offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, 1);
+				
+				extremePointsEntries.add(new ExtremePoint3DEntry(nextY, stackPlacement));
+				
+				points.add(nextY, stackPlacement);
 
 				offset += factoredSquare;
 
@@ -76,7 +83,7 @@ public class ExtremePoints3DState {
 				count++;
 
 				if(nextY == -1 && i + 1 < squares.size()) {
-					throw new IllegalStateException("No next y at " + offset + "x" + value.getMinY() + "x0 with " + (squares.size() - 1 - i) + " remaining");
+					throw new IllegalStateException("No next y at " + offset + "x" + value.getMinY() + "x0 with " + (squares.size() - 1 - i) + " remaining for " + bkpLine + " and " + points.size() + " points");
 				}
 
 			}

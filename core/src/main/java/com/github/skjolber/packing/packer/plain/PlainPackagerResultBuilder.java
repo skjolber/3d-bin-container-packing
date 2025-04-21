@@ -21,7 +21,7 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 	public PackagerResult build() {
 		validate();
 		
-		if(items == null || items.isEmpty()) {
+		if( (items == null || items.isEmpty()) && (itemGroups == null || itemGroups.isEmpty())) {
 			throw new IllegalStateException();
 		}
 		long start = System.currentTimeMillis();
@@ -36,13 +36,13 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 
 		booleanSupplierBuilder.withScheduledThreadPoolExecutor(packager.getScheduledThreadPoolExecutor());
 
-		PackagerInterruptSupplier build = booleanSupplierBuilder.build();
+		PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 		try {
 			List<Container> packList;
-			if(items != null) {
-				packList = packager.pack(items, containers, maxContainerCount, build);
+			if(items != null && !items.isEmpty()) {
+				packList = packager.pack(items, containers, maxContainerCount, interrupt);
 			} else {
-				packList = packager.pack(itemGroups, itemGroupOrder, containers, maxContainerCount, build);
+				packList = packager.pack(itemGroups, itemGroupOrder, containers, maxContainerCount, interrupt);
 			}
 			long duration = System.currentTimeMillis() - start;
 			if(packList == null) {
@@ -50,7 +50,7 @@ public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPacka
 			}
 			return new PackagerResult(packList, duration, false);
 		} finally {
-			build.close();
+			interrupt.close();
 		}
 	}
 

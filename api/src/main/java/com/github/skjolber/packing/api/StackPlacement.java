@@ -114,7 +114,7 @@ public class StackPlacement implements Serializable {
 
 	@Override
 	public String toString() {
-		return (boxItem != null ? boxItem.getBox().getDescription() : "") + "[" + x + "x" + y + "x" + z + " " + getAbsoluteEndX() + "x" + getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
+		return (boxItem != null ? boxItem.getBox().getId() : "") + "[" + x + "x" + y + "x" + z + " " + getAbsoluteEndX() + "x" + getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
 	}
 
 	public void setX(int x) {

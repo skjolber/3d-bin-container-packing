@@ -8,6 +8,9 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
 import com.github.skjolber.packing.api.ep.FilteredPointsBuilder;
+import com.github.skjolber.packing.api.ep.FilteredPointsBuilderSupplier;
+import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder.BoxItemGroupListenerBuilderSupplier;
+import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder.BoxItemListenerBuilderSupplier;
 
 /**
  * 
@@ -18,24 +21,24 @@ import com.github.skjolber.packing.api.ep.FilteredPointsBuilder;
 public class CompositeContainerItem {
 
 	protected final ContainerItem containerItem;
-	protected Supplier<BoxItemGroupListenerBuilder<?>> boxItemGroupListenerBuilderSupplier;
-	protected Supplier<BoxItemListenerBuilder<?>> boxItemListenerBuilderSupplier;
-	protected Supplier<FilteredPointsBuilder<?>> filteredPointsBuilderSupplier;
+	protected BoxItemGroupListenerBuilderSupplier<?> boxItemGroupListenerBuilderSupplier;
+	protected BoxItemListenerBuilderSupplier<?> boxItemListenerBuilderSupplier;
+	protected FilteredPointsBuilderSupplier<?> filteredPointsBuilderSupplier;
 
 	public CompositeContainerItem(ContainerItem containerItem) {
 		this.containerItem = containerItem;
 	}
 	
 	public void setBoxItemListenerBuilderSupplier(
-			Supplier<BoxItemListenerBuilder<?>> boxItemListenerBuilderSupplier) {
+			BoxItemListenerBuilderSupplier<?> boxItemListenerBuilderSupplier) {
 		this.boxItemListenerBuilderSupplier = boxItemListenerBuilderSupplier;
 	}
 	
-	public void setFilteredPointsBuilderSupplier(Supplier<FilteredPointsBuilder<?>> supplier) {
+	public void setFilteredPointsBuilderSupplier(FilteredPointsBuilderSupplier<?> supplier) {
 		this.filteredPointsBuilderSupplier = supplier;
 	}
 
-	public Supplier<BoxItemListenerBuilder<?>> getBoxItemListenerBuilderSupplier() {
+	public BoxItemListenerBuilderSupplier<?> getBoxItemListenerBuilderSupplier() {
 		return boxItemListenerBuilderSupplier;
 	}
 	
@@ -43,16 +46,16 @@ public class CompositeContainerItem {
 		return containerItem;
 	}
 	
-	public Supplier<FilteredPointsBuilder<?>> getFilteredPointsBuilderSupplier() {
+	public FilteredPointsBuilderSupplier<?> getFilteredPointsBuilderSupplier() {
 		return filteredPointsBuilderSupplier;
 	}
 
 	public void setBoxItemGroupListenerBuilderSupplier(
-			Supplier<BoxItemGroupListenerBuilder<?>> boxItemGroupListenerBuilderSupplier) {
+			BoxItemGroupListenerBuilderSupplier<?> boxItemGroupListenerBuilderSupplier) {
 		this.boxItemGroupListenerBuilderSupplier = boxItemGroupListenerBuilderSupplier;
 	}
 	
-	public Supplier<BoxItemGroupListenerBuilder<?>> getBoxItemGroupListenerBuilderSupplier() {
+	public BoxItemGroupListenerBuilderSupplier<?> getBoxItemGroupListenerBuilderSupplier() {
 		return boxItemGroupListenerBuilderSupplier;
 	}
 

@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class Container {
@@ -280,5 +281,13 @@ public class Container {
 	public boolean fitsInside(BoxItem boxItem) {
 		return boxItem.getVolume() <= getMaxLoadVolume() && boxItem.getWeight() <= getMaxLoadWeight();
 	}
+	
+	public String toString() {
+		if(dx != loadDx || dy != loadDy || dz != loadDz) {
+			return "Container[" + (id != null ? id : "") + "[" + dx + "x" + dy + "x" + dz + " (" + loadDx + "x" + loadDy + "x" + loadDz + ")]";
+		}
+		return "Container[" + (id != null ? id : "") + "[" + dx + "x" + dy + "x" + dz+ "]";
+	}
+
 	
 }

@@ -1,7 +1,9 @@
 package com.github.skjolber.packing.packer.plain;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,10 +12,12 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
 
@@ -374,7 +378,201 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		} finally {
 			packager.close();
 		}
-
 	}
+
+	@Test
+	void testDoNotStackMatchesWithPetrol() {
+		Container container = Container.newBuilder()
+				.withId("my-container")
+				.withEmptyWeight(1)
+				.withSize(2, 2, 1)
+				.withMaxLoadWeight(100)
+				.withStack(new ValidatingStack())
+				.build();
+
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+	
+			products.add(new BoxItem(Box.newBuilder().withId("petrol-1").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("matches-2").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 1));
+	
+			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
+				b.withContainerItem(new ContainerItem(container, 5));
+				b.withBoxItemListenerBuilderSupplier(NoMatchesWithPetrolBoxItemListener.newSupplier());
+			})
+					.withMaxContainerCount(5)
+					.withBoxItems(products)
+					.build();
+			
+			List<Container> containers = build.getContainers();
+			assertEquals(containers.size(), 2);
+			
+			for(Container c : containers) {
+				assertEquals(c.getStack().getSize(), 1);
+			}
+			
+			assertEquals(containers.get(0).getStack().getPlacements().get(0).getBoxItem().getBox().getId(), "matches-2");
+			assertEquals(containers.get(1).getStack().getPlacements().get(0).getBoxItem().getBox().getId(), "petrol-1");
+			
+			assertValid(build);
+		} finally {
+			packager.close();
+		}
+	}
+
+	@Test
+	void testDoNotStackMatchesWithPetrolForGroups() {
+		Container container = Container.newBuilder()
+				.withId("my-container")
+				.withEmptyWeight(1)
+				.withSize(2, 2, 1)
+				.withMaxLoadWeight(100)
+				.withStack(new ValidatingStack())
+				.build();
+
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			BoxItem boxItem1 = new BoxItem(Box.newBuilder().withId("petrol-1").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1);
+			BoxItem boxItem2 = new BoxItem(Box.newBuilder().withId("matches-2").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 1);
+	
+			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", Arrays.asList(boxItem1));
+			BoxItemGroup boxItemGroup2 = new BoxItemGroup("b", Arrays.asList(boxItem2));
+			
+			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
+				b.withContainerItem(new ContainerItem(container, 5));
+				b.withBoxItemGroupListenerBuilderSupplier(NoMatchesWithPetrolBoxItemGroupListener.newSupplier());
+			})
+					.withMaxContainerCount(5)
+					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2))
+					.build();
+			
+			List<Container> containers = build.getContainers();
+			assertEquals(containers.size(), 2);
+			
+			for(Container c : containers) {
+				assertEquals(c.getStack().getSize(), 1);
+			}
+			
+			assertEquals(containers.get(0).getStack().getPlacements().get(0).getBoxItem().getBox().getId(), "petrol-1");
+			assertEquals(containers.get(1).getStack().getPlacements().get(0).getBoxItem().getBox().getId(), "matches-2");
+			
+			assertValid(build);
+		} finally {
+			packager.close();
+		}
+	}
+
+	@Test
+	void testMaxFireHazardsPerContainer() {
+		Container container = Container.newBuilder()
+				.withId("my-container")
+				.withEmptyWeight(1)
+				.withSize(2, 2, 1)
+				.withMaxLoadWeight(100)
+				.withStack(new ValidatingStack())
+				.build();
+
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			BoxItem boxItem1 = new BoxItem(Box.newBuilder()
+					.withRotate3D()
+					.withSize(1, 1, 1)
+					.withWeight(1)
+					.build(), 1);
+			
+			BoxItem boxItem2 = new BoxItem(Box.newBuilder()
+					.withId("firehazard")
+					.withRotate3D()
+					.withSize(1, 1, 1)
+					.withWeight(1)
+					.withProperty(MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.KEY, Boolean.TRUE)
+					.build(), 2);
+	
+			List<BoxItem> products = new ArrayList<>();
+			products.add(boxItem1);
+			products.add(boxItem2);
+	
+			PackagerResult build = packager.newResultBuilder()
+				.withContainerItem( b -> {
+					b.withContainerItem(new ContainerItem(container, 5));
+					b.withBoxItemListenerBuilderSupplier(MaxFireHazardBoxItemPerContainerBoxItemListener.newSupplier(1));
+				})
+				.withMaxContainerCount(5)
+				.withBoxItems(products)
+				.build();
+
+			
+			List<Container> containers = build.getContainers();
+			assertEquals(containers.size(), 2);
+
+			for(Container c : containers) {
+				System.out.println(c);
+				
+				for(StackPlacement s : c.getStack().getPlacements()) {
+					System.out.println(" " + s);
+				}
+			}
+			
+			assertValid(build);
+		} finally {
+			packager.close();
+		}
+	}	
+
+	@Test
+	void testMaxFireHazardsPerContainerGroups() {
+		Container container = Container.newBuilder()
+				.withId("my-container")
+				.withEmptyWeight(1)
+				.withSize(2, 2, 1)
+				.withMaxLoadWeight(100)
+				.withStack(new ValidatingStack())
+				.build();
+
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			BoxItem boxItem1 = new BoxItem(Box.newBuilder()
+					.withRotate3D()
+					.withSize(1, 1, 1)
+					.withWeight(1)
+					.build(), 1);
+			
+			BoxItem boxItem2 = new BoxItem(Box.newBuilder()
+					.withId("firehazard")
+					.withRotate3D()
+					.withSize(1, 1, 1)
+					.withWeight(1)
+					.withProperty(MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.KEY, Boolean.TRUE)
+					.build(), 2);
+	
+			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", Arrays.asList(boxItem1));
+			BoxItemGroup boxItemGroup2 = new BoxItemGroup("b", Arrays.asList(boxItem2));
+			
+			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
+				b.withContainerItem(new ContainerItem(container, 5));
+				b.withBoxItemGroupListenerBuilderSupplier(MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.newSupplier(1));
+			})
+					.withMaxContainerCount(5)
+					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2))
+					.build();
+			
+			List<Container> containers = build.getContainers();
+			assertEquals(containers.size(), 2);
+
+			for(Container c : containers) {
+				System.out.println(c);
+				
+				for(StackPlacement s : c.getStack().getPlacements()) {
+					System.out.println(" " + s);
+				}
+			}
+			
+			assertValid(build);
+		} finally {
+			packager.close();
+		}
+
+	}	
 
 }

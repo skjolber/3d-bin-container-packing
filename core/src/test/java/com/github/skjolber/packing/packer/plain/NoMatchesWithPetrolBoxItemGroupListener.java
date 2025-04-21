@@ -8,6 +8,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemGroupListener;
 import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder;
+import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder.BoxItemGroupListenerBuilderSupplier;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 
 public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupListener {
@@ -19,6 +20,14 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupList
 			return new NoMatchesWithPetrolBoxItemGroupListener(container, groups, stack);
 		}
 
+	}
+	
+	public static final Builder newBuilder() {
+		return new Builder();
+	}
+	
+	public static final BoxItemGroupListenerBuilderSupplier newSupplier() {
+		return () -> NoMatchesWithPetrolBoxItemGroupListener.newBuilder();
 	}
 	
 	protected final Container container;

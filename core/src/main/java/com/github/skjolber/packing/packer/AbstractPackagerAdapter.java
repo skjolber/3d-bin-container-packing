@@ -17,8 +17,8 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 
 	protected final List<CompositeContainerItem> containerItems;
 
-	protected long maxContainerLoadVolume = Long.MIN_VALUE;
-	protected long maxContainerLoadWeight = Long.MIN_VALUE;
+	protected long maxContainerLoadVolume = 0;
+	protected long maxContainerLoadWeight = 0;
 
 	public AbstractPackagerAdapter(List<CompositeContainerItem> items) {
 		this.containerItems = items;
@@ -28,7 +28,7 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 	}
 
 	private void calculateMaxLoadVolume() {
-		maxContainerLoadVolume = Long.MIN_VALUE;
+		maxContainerLoadVolume = 0;
 
 		for (CompositeContainerItem packContainerItem: containerItems) {
 			
@@ -46,7 +46,7 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 	}
 
 	private void calculateMaxLoadWeight() {
-		maxContainerLoadWeight = Long.MIN_VALUE;
+		maxContainerLoadWeight = 0;
 
 		for (CompositeContainerItem packContainerItem: containerItems) {
 			ContainerItem item = packContainerItem.getContainerItem();

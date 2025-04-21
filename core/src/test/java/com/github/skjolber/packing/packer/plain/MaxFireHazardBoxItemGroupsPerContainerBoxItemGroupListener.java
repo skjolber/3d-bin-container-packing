@@ -1,14 +1,18 @@
 package com.github.skjolber.packing.packer.plain;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemGroupListener;
 import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder;
+import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder.BoxItemGroupListenerBuilderSupplier;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 
 public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implements BoxItemGroupListener {
+
+	public static final String KEY = "fireHazard";
 
 	public static class Builder extends BoxItemGroupListenerBuilder<Builder> {
 
@@ -27,6 +31,14 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 			return new MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener(container, groups, stack, maxCount);
 		}
 
+	}
+	
+	public static final Builder newBuilder() {
+		return new Builder();
+	}
+	
+	public static final BoxItemGroupListenerBuilderSupplier newSupplier(int maxCount) {
+		return () -> MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.newBuilder().withMaxCount(maxCount);
 	}
 	
 	protected final Container container;
@@ -74,6 +86,9 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 	}
 
 	private boolean isFireHazard(BoxItem item) {
-		return item.getBox().getId().startsWith("fire-");
+		Box box = item.getBox();
+		
+		Boolean b = box.getProperty(KEY);
+		return b != null && b;
 	}
 }

@@ -104,6 +104,15 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 			return getContainers(remainingBoxItems, maxCount);
 		}
 
+		@Override
+		public int countRemainingBoxes() {
+			int count = 0;
+			for(BoxItem boxItem : remainingBoxItems) {
+				count += boxItem.getCount();
+			}
+			return count;
+		}
+
 	}
 	
 	protected class PlainBoxItemGroupAdapter extends AbstractPackagerAdapter<DefaultIntermediatePackagerResult> {
@@ -165,6 +174,15 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 		@Override
 		public List<Integer> getContainers(int maxCount) {
 			return getGroupContainers(remainingBoxItemGroups, maxCount);
+		}
+		
+		@Override
+		public int countRemainingBoxes() {
+			int count = 0;
+			for(BoxItemGroup group : remainingBoxItemGroups) {
+				count += group.getBoxCount();
+			}
+			return count;
 		}
 
 	}

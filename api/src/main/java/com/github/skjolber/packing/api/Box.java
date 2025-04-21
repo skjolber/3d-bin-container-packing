@@ -2,7 +2,10 @@ package com.github.skjolber.packing.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Box {
 
@@ -19,8 +22,26 @@ public class Box {
 		protected String id;
 		protected String description;
 
+		protected Map<String, Object> properties;
+		
 		public Builder withDescription(String description) {
 			this.description = description;
+			return (Builder)this;
+		}
+		
+		public Builder withProperty(String id, Object object) {
+			if(properties == null) {
+				properties = new HashMap<>();
+			}
+			properties.put(id, object);
+			return (Builder)this;
+		}
+		
+		public Builder withProperties(Map<String, Object> properties) {
+			if(this.properties == null) {
+				this.properties = new HashMap<>();
+			}
+			this.properties.putAll(properties);
 			return (Builder)this;
 		}
 
@@ -311,8 +332,12 @@ public class Box {
 			if(stackableSurface == null) {
 				stackableSurface = StackableSurface.TWO_D;
 			}
+			
+			if(properties == null) {
+				properties = Collections.emptyMap();
+			}
 
-			return new Box(id, description, size.getVolume(), weight, getStackValues());
+			return new Box(id, description, size.getVolume(), weight, getStackValues(), properties);
 		}
 
 		@SuppressWarnings("unchecked")
@@ -337,7 +362,9 @@ public class Box {
 	protected final String id;
 	protected final String description;
 	
-	public Box(String id, String description, long volume, int weight, BoxStackValue[] stackValues) {
+	protected final Map<String, Object> properties;
+	
+	public Box(String id, String description, long volume, int weight, BoxStackValue[] stackValues, Map<String, Object> properties) {
 		this.id = id;
 		this.description = description;
 		
@@ -354,10 +381,12 @@ public class Box {
 		for (BoxStackValue boxStackValue : stackValues) {
 			boxStackValue.setBox(this);
 		}
+		
+		this.properties = properties;
 	}
 	
 	public Box(Box box, List<BoxStackValue> stackValues) {
-		this(box.id, box.description, box.volume, box.weight, stackValues.toArray(new BoxStackValue[stackValues.size()]));
+		this(box.id, box.description, box.volume, box.weight, stackValues.toArray(new BoxStackValue[stackValues.size()]), box.properties);
 	}
 
 	public String getDescription() {
@@ -386,7 +415,7 @@ public class Box {
 		for(int i = 0; i < stackValues.length; i++) {
 			stackValues[i] = this.stackValues[i].clone();
 		}
-		return new Box(id, description, volume, weight, stackValues);
+		return new Box(id, description, volume, weight, stackValues, properties);
 	}
 	
 	public BoxStackValue getStackValue(int index) {
@@ -402,7 +431,7 @@ public class Box {
 	}
 
 	public String toString() {
-		return "Box " + (description != null ? description : "") + "[weight=" + weight + ", rotations=" + Arrays.toString(stackValues) + ", volume=" + volume + "]";
+		return "Box " + (id != null ? id : "") + "[weight=" + weight + ", rotations=" + Arrays.toString(stackValues) + ", volume=" + volume + "]";
 	}
 
 	public long getMinimumPressure() {
@@ -480,6 +509,9 @@ public class Box {
 		}
 		return minimumArea;
 	}
-
+	
+	public <T> T getProperty(String key) {
+		return (T) properties.get(key);
+	}
 
 }

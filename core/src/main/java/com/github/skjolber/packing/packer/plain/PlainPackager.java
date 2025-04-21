@@ -15,6 +15,7 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
 import com.github.skjolber.packing.api.ep.FilteredPointsBuilder;
+import com.github.skjolber.packing.api.ep.FilteredPointsBuilderSupplier;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.BoxItemGroupListener;
 import com.github.skjolber.packing.api.packager.BoxItemListener;
@@ -85,8 +86,6 @@ public class PlainPackager extends AbstractPlainPackager {
 
 		BoxItemListener listener = compositeContainerItem.createBoxItemListener(container, stack, filteredBoxItems, extremePoints3D);
 
-		boolean canContainLastBox = filteredBoxItems.size() == boxes.size();
-
 		int remainingLoadWeight = container.getMaxLoadWeight();
 
 		while (!extremePoints3D.isEmpty() && remainingLoadWeight > 0 && !filteredBoxItems.isEmpty()) {
@@ -110,7 +109,7 @@ public class PlainPackager extends AbstractPlainPackager {
 
 			listener.accepted(result.boxItem);
 			
-			filteredBoxItems.clearEmpty();
+			filteredBoxItems.removeEmpty();
 	
 			if(!filteredBoxItems.isEmpty()) {
 				// check if we need to recalculate minimums
@@ -128,7 +127,7 @@ public class PlainPackager extends AbstractPlainPackager {
 			remainingLoadWeight -= result.boxItem.getBox().getWeight();
 		}
 		
-		return new DefaultIntermediatePackagerResult(compositeContainerItem.getContainerItem(), stack, canContainLastBox && filteredBoxItems.isEmpty());
+		return new DefaultIntermediatePackagerResult(compositeContainerItem.getContainerItem(), stack);
 	}
 	
 	public DefaultIntermediatePackagerResult pack(List<BoxItemGroup> boxItemGroups, Order itemGroupOrder, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt) {
@@ -137,8 +136,6 @@ public class PlainPackager extends AbstractPlainPackager {
 		
 		List<BoxItemGroup> scopedBoxItemGroups = getFitsInside(boxItemGroups, targetContainer);
 
-		boolean canContainLastBox = scopedBoxItemGroups.size() == boxItemGroups.size();
-		
 		DefaultFilteredBoxItemGroups filteredBoxItemGroups = new DefaultFilteredBoxItemGroups(scopedBoxItemGroups);
 
 		Stack stack = new Stack();
@@ -171,7 +168,7 @@ public class PlainPackager extends AbstractPlainPackager {
 					continue groups;
 				}
 				
-				boxItemGroup.decrement(bestPoint.boxItem.getIndex());
+				bestPoint.boxItem.decrement();
 
 				StackPlacement stackPlacement = new StackPlacement(boxItemGroup, bestPoint.boxItem, bestPoint.stackValue, bestPoint.point.getMinX(), bestPoint.point.getMinY(), bestPoint.point.getMinZ());
 				stack.add(stackPlacement);
@@ -201,7 +198,7 @@ public class PlainPackager extends AbstractPlainPackager {
 
 		}
 		
-		return new DefaultIntermediatePackagerResult(null, stack, canContainLastBox && scopedBoxItemGroups.isEmpty());
+		return new DefaultIntermediatePackagerResult(containerItem, stack);
 	}
 
 	private boolean isBetter(BoxItemGroup bestBoxItemGroup, BoxItemGroup group, Container targetContainer) {
@@ -299,7 +296,7 @@ public class PlainPackager extends AbstractPlainPackager {
 		return new PlainPackagerResultBuilder().withPackager(this);
 	}
 
-	public PlacementResult findBestPoint(FilteredBoxItems boxItems, ExtremePoints3D extremePoints3D, Supplier<FilteredPointsBuilder<?>> filteredPointsBuilderSupplier, Container container, Stack stack) {
+	public PlacementResult findBestPoint(FilteredBoxItems boxItems, ExtremePoints3D extremePoints3D, FilteredPointsBuilderSupplier<?> filteredPointsBuilderSupplier, Container container, Stack stack) {
 		PlainPlacementResult result = null;
 		
 		long maxPointArea = extremePoints3D.getMaxArea();		
@@ -378,7 +375,7 @@ public class PlainPackager extends AbstractPlainPackager {
 		long maxPointVolume = extremePoints3D.getMaxVolume();
 		long maxPointArea = extremePoints3D.getMaxArea();
 
-		long maxTotalPointVolume = container.getLoadVolume() -  extremePoints3D.getUsedVolume();
+		long maxTotalPointVolume = container.getMaxLoadVolume() -  extremePoints3D.getUsedVolume();
 		
 		long maxTotalWeight = container.getMaxLoadWeight() -  extremePoints3D.getUsedWeight();
 
