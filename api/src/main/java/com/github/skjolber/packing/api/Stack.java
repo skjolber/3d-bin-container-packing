@@ -2,9 +2,10 @@ package com.github.skjolber.packing.api;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-public class Stack implements Serializable {
+public class Stack implements Serializable, Iterable<StackPlacement> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -77,6 +78,11 @@ public class Stack implements Serializable {
 		while (size < entries.size()) {
 			entries.remove(entries.size() - 1);
 		}
+	}
+
+	@Override
+	public Iterator<StackPlacement> iterator() {
+		return entries.listIterator();
 	}
 
 

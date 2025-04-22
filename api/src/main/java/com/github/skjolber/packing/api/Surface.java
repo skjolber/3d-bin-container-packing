@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import com.github.skjolber.packing.api.Surface.Label;
-
 public class Surface {
 	
 	public static final Surface FRONT = new Surface(Label.FRONT);

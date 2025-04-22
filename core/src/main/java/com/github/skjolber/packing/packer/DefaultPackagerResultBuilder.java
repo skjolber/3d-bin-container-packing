@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.plain;
+package com.github.skjolber.packing.packer;
 
 import java.util.Collections;
 import java.util.List;
@@ -9,11 +9,11 @@ import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 
-public class PlainPackagerResultBuilder extends PackagerResultBuilder<PlainPackagerResultBuilder> {
+public class DefaultPackagerResultBuilder extends PackagerResultBuilder<DefaultPackagerResultBuilder> {
 
-	private AbstractPlainPackager packager;
+	private AbstractPackager<?, ?> packager;
 
-	public PlainPackagerResultBuilder withPackager(AbstractPlainPackager packager) {
+	public DefaultPackagerResultBuilder withPackager(AbstractPackager<?, ?> packager) {
 		this.packager = packager;
 		return this;
 	}

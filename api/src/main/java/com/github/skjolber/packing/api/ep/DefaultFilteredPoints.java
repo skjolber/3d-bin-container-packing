@@ -1,10 +1,11 @@
 package com.github.skjolber.packing.api.ep;
 
+import java.util.Iterator;
 import java.util.List;
 
 public class DefaultFilteredPoints implements FilteredPoints {
 
-	private List<Point> values;
+	protected List<Point> values;
 	
 	public void setValues(List<Point> values) {
 		this.values = values;
@@ -23,6 +24,11 @@ public class DefaultFilteredPoints implements FilteredPoints {
 	@Override
 	public void remove(int index) {
 		values.remove(index);
+	}
+
+	@Override
+	public Iterator<Point> iterator() {
+		return values.listIterator();
 	}
 
 }

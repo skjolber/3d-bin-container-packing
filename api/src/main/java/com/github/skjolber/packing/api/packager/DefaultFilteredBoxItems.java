@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api.packager;
 
+import java.util.Iterator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
@@ -53,6 +54,11 @@ public class DefaultFilteredBoxItems implements FilteredBoxItems {
 				i--;
 			}
 		}
+	}
+
+	@Override
+	public Iterator<BoxItem> iterator() {
+		return values.listIterator();
 	}
 
 }

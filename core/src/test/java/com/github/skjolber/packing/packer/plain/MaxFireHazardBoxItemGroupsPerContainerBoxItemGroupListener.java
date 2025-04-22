@@ -5,16 +5,17 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.AbstractBoxItemGroupListenerBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemGroupListener;
 import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder.BoxItemGroupListenerBuilderSupplier;
+import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilderSupplier;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 
 public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implements BoxItemGroupListener {
 
 	public static final String KEY = "fireHazard";
 
-	public static class Builder extends BoxItemGroupListenerBuilder<Builder> {
+	public static class Builder extends AbstractBoxItemGroupListenerBuilder<Builder> {
 
 		private int maxCount = -1;
 		
@@ -38,7 +39,7 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 	}
 	
 	public static final BoxItemGroupListenerBuilderSupplier newSupplier(int maxCount) {
-		return () -> MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.newBuilder().withMaxCount(maxCount);
+		return () -> newBuilder().withMaxCount(maxCount);
 	}
 	
 	protected final Container container;

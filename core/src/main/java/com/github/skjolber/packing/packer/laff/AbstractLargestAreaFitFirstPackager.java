@@ -1,20 +1,7 @@
 package com.github.skjolber.packing.packer.laff;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.stream.Collectors;
-
-import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.PackResultComparator;
-import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
-import com.github.skjolber.packing.packer.AbstractPackager;
-import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
-import com.github.skjolber.packing.packer.DefaultPackResult;
+import com.github.skjolber.packing.packer.AbstractSimplePackager;
+import com.github.skjolber.packing.packer.IntermediatePackagerResultComparator;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -22,7 +9,7 @@ import com.github.skjolber.packing.packer.DefaultPackResult;
  * <br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
-public abstract class AbstractLargestAreaFitFirstPackager extends AbstractPackager<DefaultPackResult, LargestAreaFitFirstPackagerResultBuilder> {
+public abstract class AbstractLargestAreaFitFirstPackager extends AbstractSimplePackager {
 
 	public static BoxFilter FIRST_STACKABLE_FILTER = (best, candidate) -> {
 		// return true if the candidate might be better than the current best
@@ -34,67 +21,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractPackag
 		return candidate.getVolume() >= best.getVolume();
 	};	
 	
-	public AbstractLargestAreaFitFirstPackager(PackResultComparator packResultComparator) {
+	public AbstractLargestAreaFitFirstPackager(IntermediatePackagerResultComparator packResultComparator) {
 		super(packResultComparator);
-	}
-
-	public abstract DefaultPackResult pack(List<Box> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt);
-
-	protected class LAFFAdapter extends AbstractPackagerAdapter<DefaultPackResult> {
-
-		private List<Box> boxes;
-		private final PackagerInterruptSupplier interrupt;
-
-		public LAFFAdapter(List<BoxItem> boxItems, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
-			super(containerItems);
-
-			List<Box> boxClones = new ArrayList<>(boxItems.size() * 2);
-
-			for (BoxItem item : boxItems) {
-				Box box = item.getBox();
-				boxClones.add(box);
-				for (int i = 1; i < item.getCount(); i++) {
-					boxClones.add(box.clone());
-				}
-			}
-
-			this.boxes = boxClones;
-			this.interrupt = interrupt;
-		}
-
-		@Override
-		public DefaultPackResult attempt(int index, DefaultPackResult best) {
-			return AbstractLargestAreaFitFirstPackager.this.pack(boxes, containerItems.get(index).getContainer(), index, interrupt);
-		}
-
-		@Override
-		public Container accept(DefaultPackResult result) {
-			super.toContainer(result.getContainerItemIndex());
-
-			Container container = result.getContainer();
-			Stack stack = container.getStack();
-
-			List<Box> placed = stack.getPlacements().stream().map(p -> p.getBox()).collect(Collectors.toList());
-
-			boxes.removeAll(placed);
-
-			return container;
-		}
-
-		@Override
-		public List<Integer> getContainers(int maxCount) {
-			return getContainers(boxes, maxCount);
-		}
-
-	}
-
-	@Override
-	protected LAFFAdapter adapter(List<BoxItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
-		return new LAFFAdapter(boxes, containers, interrupt);
-	}
-
-	protected ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
-		return scheduledThreadPoolExecutor;
 	}
 
 }

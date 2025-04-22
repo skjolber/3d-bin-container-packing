@@ -2,6 +2,7 @@ package com.github.skjolber.packing.ep.points3d;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
@@ -1747,5 +1748,10 @@ public class ExtremePoints3D implements ExtremePoints {
 			used += stackPlacement.getBoxItem().getBox().getWeight();
 		}
 		return used;
+	}
+
+	@Override
+	public Iterator<Point> iterator() {
+		return values.iterator();
 	}
 }

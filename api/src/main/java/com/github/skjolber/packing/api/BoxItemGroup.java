@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.api;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -9,7 +10,7 @@ import java.util.List;
  * 
  */
 
-public class BoxItemGroup {
+public class BoxItemGroup implements Iterable<BoxItem>{
 
 	protected String id;
 
@@ -139,5 +140,10 @@ public class BoxItemGroup {
 		for (BoxItem boxItem : items) {
 			boxItem.mark();
 		}
+	}
+
+	@Override
+	public Iterator<BoxItem> iterator() {
+		return items.listIterator();
 	}
 }

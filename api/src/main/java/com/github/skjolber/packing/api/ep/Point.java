@@ -232,12 +232,7 @@ public abstract class Point {
 		this.dy = maxY - minY + 1;
 
 		calculateArea();
-		
-		/*
-		if(maxZ < minZ) {
-			throw new IllegalArgumentException("Z: "+ maxZ + " < " + minZ);
-		}
-		*/
+
 		this.minZ = minZ;
 		this.maxZ = maxZ;
 		this.dz = maxZ - minZ + 1;
@@ -355,7 +350,6 @@ public abstract class Point {
 	private void calculateArea() {
 		this.area = (long)dx * (long)dy;
 	}
-
 	
 	public abstract Point clone(int maxX, int maxY, int maxZ);
 

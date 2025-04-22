@@ -344,43 +344,6 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	}
 
 	@Test
-	void testStackingSquaresOnSquareWithConstraints() {
-
-		// use-case:
-		// - max number of fire hazard per container
-		// - fire hazard in special containers
-		// - fire hazard + highly flammable not in the same container
-		// - heavy items on the ground level
-		// - place heavy items first
-		
-		
-		Container container = Container.newBuilder()
-				.withId("safeForBatteries")
-				.withDescription("1")
-				.withEmptyWeight(1)
-				.withSize(2, 2, 1)
-				.withMaxLoadWeight(100)
-				.withStack(new ValidatingStack())
-				.build();
-
-		PlainPackager packager = PlainPackager.newBuilder().build();
-		try {
-			List<BoxItem> products = new ArrayList<>();
-	
-			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-	
-			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
-				b.withContainerItem(new ContainerItem(container, 1));
-			}).withBoxItems(products).build();
-			assertValid(build);
-		} finally {
-			packager.close();
-		}
-	}
-
-	@Test
 	void testDoNotStackMatchesWithPetrol() {
 		Container container = Container.newBuilder()
 				.withId("my-container")
@@ -575,4 +538,44 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
 	}	
 
+	@Test
+	void testStackingSquaresOnSquareWithPointConstraints() {
+
+		Container container = Container.newBuilder()
+				.withDescription("1")
+				.withEmptyWeight(1)
+				.withSize(2, 1, 3)
+				.withMaxLoadWeight(100)
+				.withStack(new ValidatingStack())
+				.build();
+
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+	
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(1, 1, 1).withWeight(3).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 1));
+
+			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
+				b.withContainerItem(new ContainerItem(container, 1));
+				b.withFilteredPointsBuilderSupplier(HeavyItemsOnGroundLevel.newSupplier(2));
+			}).withBoxItems(products).build();
+			
+			List<Container> containers = build.getContainers();
+			for(Container c : containers) {
+				System.out.println(c);
+				
+				for(StackPlacement s : c.getStack().getPlacements()) {
+					System.out.println(" " + s);
+				}
+			}
+			
+			assertEquals("A", containers.get(0).getStack().getPlacements().get(0).getBoxItem().getBox().getId());
+			
+			assertValid(build);
+		} finally {
+			packager.close();
+		}
+	}
 }

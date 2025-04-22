@@ -1,16 +1,10 @@
 package com.github.skjolber.packing.api.packager;
 
-import java.util.function.Supplier;
-
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
-import com.github.skjolber.packing.api.ep.FilteredPointsBuilder;
 import com.github.skjolber.packing.api.ep.FilteredPointsBuilderSupplier;
-import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder.BoxItemGroupListenerBuilderSupplier;
-import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder.BoxItemListenerBuilderSupplier;
 
 /**
  * 
@@ -21,24 +15,24 @@ import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder.BoxItemLi
 public class CompositeContainerItem {
 
 	protected final ContainerItem containerItem;
-	protected BoxItemGroupListenerBuilderSupplier<?> boxItemGroupListenerBuilderSupplier;
-	protected BoxItemListenerBuilderSupplier<?> boxItemListenerBuilderSupplier;
-	protected FilteredPointsBuilderSupplier<?> filteredPointsBuilderSupplier;
+	protected BoxItemGroupListenerBuilderSupplier boxItemGroupListenerBuilderSupplier;
+	protected BoxItemListenerBuilderSupplier boxItemListenerBuilderSupplier;
+	protected FilteredPointsBuilderSupplier filteredPointsBuilderSupplier;
 
 	public CompositeContainerItem(ContainerItem containerItem) {
 		this.containerItem = containerItem;
 	}
 	
 	public void setBoxItemListenerBuilderSupplier(
-			BoxItemListenerBuilderSupplier<?> boxItemListenerBuilderSupplier) {
+			BoxItemListenerBuilderSupplier boxItemListenerBuilderSupplier) {
 		this.boxItemListenerBuilderSupplier = boxItemListenerBuilderSupplier;
 	}
 	
-	public void setFilteredPointsBuilderSupplier(FilteredPointsBuilderSupplier<?> supplier) {
+	public void setFilteredPointsBuilderSupplier(FilteredPointsBuilderSupplier supplier) {
 		this.filteredPointsBuilderSupplier = supplier;
 	}
 
-	public BoxItemListenerBuilderSupplier<?> getBoxItemListenerBuilderSupplier() {
+	public BoxItemListenerBuilderSupplier getBoxItemListenerBuilderSupplier() {
 		return boxItemListenerBuilderSupplier;
 	}
 	
@@ -46,16 +40,16 @@ public class CompositeContainerItem {
 		return containerItem;
 	}
 	
-	public FilteredPointsBuilderSupplier<?> getFilteredPointsBuilderSupplier() {
+	public FilteredPointsBuilderSupplier getFilteredPointsBuilderSupplier() {
 		return filteredPointsBuilderSupplier;
 	}
 
 	public void setBoxItemGroupListenerBuilderSupplier(
-			BoxItemGroupListenerBuilderSupplier<?> boxItemGroupListenerBuilderSupplier) {
+			BoxItemGroupListenerBuilderSupplier boxItemGroupListenerBuilderSupplier) {
 		this.boxItemGroupListenerBuilderSupplier = boxItemGroupListenerBuilderSupplier;
 	}
 	
-	public BoxItemGroupListenerBuilderSupplier<?> getBoxItemGroupListenerBuilderSupplier() {
+	public BoxItemGroupListenerBuilderSupplier getBoxItemGroupListenerBuilderSupplier() {
 		return boxItemGroupListenerBuilderSupplier;
 	}
 
@@ -63,7 +57,7 @@ public class CompositeContainerItem {
 		if(boxItemGroupListenerBuilderSupplier == null) {
 			return NoopBoxItemGroupListener.getInstance();
 		}
-		return boxItemGroupListenerBuilderSupplier.get()
+		return boxItemGroupListenerBuilderSupplier.getBoxItemGroupListenerBuilder()
 				.withContainer(container)
 				.withStack(stack)
 				.withFilteredBoxItemGroups(groups)
@@ -75,7 +69,7 @@ public class CompositeContainerItem {
 		if(boxItemListenerBuilderSupplier == null) {
 			return NoopBoxItemListener.getInstance();
 		}
-		return boxItemListenerBuilderSupplier.get()
+		return boxItemListenerBuilderSupplier.getBoxItemListenerBuilder()
 				.withContainer(container)
 				.withStack(stack)
 				.withFilteredBoxItems(filteredBoxItems)
@@ -87,7 +81,7 @@ public class CompositeContainerItem {
 		if(filteredPointsBuilderSupplier == null) {
 			return points;
 		}
-		return filteredPointsBuilderSupplier.get()
+		return filteredPointsBuilderSupplier.getFilteredPointsBuilder()
 				.withContainer(container)
 				.withStack(stack)
 				.withPoints(points)

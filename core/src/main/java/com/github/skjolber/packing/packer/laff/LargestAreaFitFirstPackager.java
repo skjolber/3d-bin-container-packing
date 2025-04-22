@@ -14,8 +14,10 @@ import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
+import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.packer.DefaultPackResult;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
+import com.github.skjolber.packing.packer.IntermediatePackagerResultComparator;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -65,13 +67,13 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 		public LargestAreaFitFirstPackager build() {
 			if(comparator == null) {
-				comparator = new DefaultPackResultComparator();
+				comparator = new DefaultIntermediatePackagerResultComparator();
 			}
 			return new LargestAreaFitFirstPackager(comparator);
 		}
 	}
 
-	public LargestAreaFitFirstPackager(PackResultComparator packResultComparator) {
+	public LargestAreaFitFirstPackager(IntermediatePackagerResultComparator packResultComparator) {
 		super(packResultComparator);
 	}
 
@@ -242,13 +244,10 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 				targetContainer.getLoadDx(), targetContainer.getLoadDy(), targetContainer.getLoadDz(),
 				targetContainer.getMaxLoadWeight(),
-				stack, targetContainer.getBoxItemListenerBuilderSupplier(), targetContainer.getFilteredPointsBuilderSupplier()),
+				stack),
 				
 				stack, remainingStackables.isEmpty(), index);
 	}
 
-	@Override
-	public LargestAreaFitFirstPackagerResultBuilder newResultBuilder() {
-		return new LargestAreaFitFirstPackagerResultBuilder().withPackager(this);
-	}
+
 }

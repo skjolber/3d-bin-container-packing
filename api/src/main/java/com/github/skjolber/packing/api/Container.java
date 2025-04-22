@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.api;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class Container {

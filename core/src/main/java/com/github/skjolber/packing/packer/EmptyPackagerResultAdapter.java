@@ -18,11 +18,6 @@ public class EmptyPackagerResultAdapter implements IntermediatePackagerResult {
 	}
 
 	@Override
-	public boolean containsLastStackable() {
-		return false;
-	}
-
-	@Override
 	public boolean isEmpty() {
 		return true;
 	}

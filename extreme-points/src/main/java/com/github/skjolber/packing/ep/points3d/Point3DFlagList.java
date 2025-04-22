@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.ep.Point;
@@ -15,14 +16,40 @@ import com.github.skjolber.packing.api.ep.Point;
  */
 
 @SuppressWarnings("unchecked")
-public class Point3DFlagList implements Serializable {
+public class Point3DFlagList implements Serializable, Iterable<Point> {
 
 	private static final long serialVersionUID = 1L;
+	
+	private static class PointIterator implements Iterator<Point> {
+
+		private int size;
+		private SimplePoint3D[] points;
+		private int index = 0;
+
+		public void set(int size, SimplePoint3D[] points) {
+			this.size = size;
+			this.points = points;
+			this.index = 0;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return index < size;
+		}
+
+		@Override
+		public Point next() {
+			SimplePoint3D p = points[index];
+			index++;
+			return p;
+		}
+		
+	}
 
 	private int size = 0;
 	private SimplePoint3D[] points;
 	private boolean[] flag;
-
+	
 	public Point3DFlagList() {
 		this(16);
 	}
@@ -228,6 +255,13 @@ public class Point3DFlagList implements Serializable {
 		}
 		
 		return clone;
+	}
+
+	@Override
+	public Iterator<Point> iterator() {
+		PointIterator iterator = new PointIterator();
+		iterator.set(size, points);
+		return iterator;
 	}
 
 }

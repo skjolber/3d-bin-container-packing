@@ -4,13 +4,14 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.AbstractBoxItemGroupListenerBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemGroupListener;
 import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 
 public class FireHazardsInSpecificContainersBoxItemGroupListener implements BoxItemGroupListener {
 
-	public static class Builder extends BoxItemGroupListenerBuilder<Builder> {
+	public static class Builder extends AbstractBoxItemGroupListenerBuilder<Builder> {
 
 		@Override
 		public BoxItemGroupListener build() {

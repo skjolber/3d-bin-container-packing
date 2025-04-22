@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.iterator;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
@@ -280,6 +281,11 @@ public class FilteredBoxItemGroupPermutationRotationIterator extends AbstractBox
 		if(remainingCount > 0) {
 			calculateMinStackableVolume(0);
 		}
+	}
+
+	@Override
+	public Iterator<BoxItem> iterator() {
+		return boxItems.listIterator();
 	}
 
 }

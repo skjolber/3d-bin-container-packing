@@ -1,25 +1,17 @@
-package com.github.skjolber.packing.packer.plain;
+package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
-import com.github.skjolber.packing.packer.AbstractPackager;
-import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
-import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
-import com.github.skjolber.packing.packer.IntermediatePackagerResultComparator;
-import com.github.skjolber.packing.packer.PackagerAdapter;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -27,22 +19,9 @@ import com.github.skjolber.packing.packer.PackagerAdapter;
  * <br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
-public abstract class AbstractPlainPackager extends AbstractPackager<DefaultIntermediatePackagerResult, PlainPackagerResultBuilder> {
+public abstract class AbstractSimplePackager extends AbstractPackager<DefaultIntermediatePackagerResult, DefaultPackagerResultBuilder> {
 
-	public static class PlacementResult {
-		
-		public PlacementResult(BoxItem boxItem, BoxStackValue stackValue, Point point) {
-			super();
-			this.boxItem = boxItem;
-			this.stackValue = stackValue;
-			this.point = point;
-		}
-		protected BoxItem boxItem; 
-		protected BoxStackValue stackValue;
-		protected Point point;
-	}
-	
-	public AbstractPlainPackager(IntermediatePackagerResultComparator comparator) {
+	public AbstractSimplePackager(IntermediatePackagerResultComparator comparator) {
 		super(comparator);
 	}
 
@@ -67,7 +46,7 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 		@Override
 		public DefaultIntermediatePackagerResult attempt(int index, DefaultIntermediatePackagerResult best) {
 			try {
-				return AbstractPlainPackager.this.pack(remainingBoxItems, containerItems.get(index), interrupt);
+				return AbstractSimplePackager.this.pack(remainingBoxItems, containerItems.get(index), interrupt);
 			} finally {
 				for(BoxItem boxItem : remainingBoxItems) {
 					boxItem.reset();
@@ -139,7 +118,7 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 		@Override
 		public DefaultIntermediatePackagerResult attempt(int index, DefaultIntermediatePackagerResult best) {
 			try {
-				return AbstractPlainPackager.this.pack(remainingBoxItemGroups, itemGroupOrder, containerItems.get(index), interrupt);
+				return AbstractSimplePackager.this.pack(remainingBoxItemGroups, itemGroupOrder, containerItems.get(index), interrupt);
 			} finally {
 				for(BoxItemGroup group : remainingBoxItemGroups) {
 					group.reset();
@@ -197,10 +176,11 @@ public abstract class AbstractPlainPackager extends AbstractPackager<DefaultInte
 		return new PlainBoxItemGroupAdapter(boxes, containers, itemGroupOrder, interrupt);
 	}
 
-	protected ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
-		return scheduledThreadPoolExecutor;
+	@Override
+	public DefaultPackagerResultBuilder newResultBuilder() {
+		return new DefaultPackagerResultBuilder().withPackager(this);
 	}
-
+	
 	public abstract DefaultIntermediatePackagerResult pack(List<BoxItem> boxes, CompositeContainerItem targetContainer, PackagerInterruptSupplier interrupt);
 
 	public abstract DefaultIntermediatePackagerResult pack(List<BoxItemGroup> boxes, Order itemGroupOrder, CompositeContainerItem targetContainer, PackagerInterruptSupplier interrupt);

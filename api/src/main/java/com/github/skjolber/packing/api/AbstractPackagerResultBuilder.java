@@ -8,11 +8,10 @@ import java.util.function.Supplier;
 
 import com.github.skjolber.packing.api.ep.FilteredPointsBuilder;
 import com.github.skjolber.packing.api.ep.FilteredPointsBuilderSupplier;
-import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder;
+import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilderSupplier;
 import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder;
+import com.github.skjolber.packing.api.packager.BoxItemListenerBuilderSupplier;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
-import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder.BoxItemGroupListenerBuilderSupplier;
-import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder.BoxItemListenerBuilderSupplier;
 
 /**
  * {@linkplain PackagerResult} builder scaffold.

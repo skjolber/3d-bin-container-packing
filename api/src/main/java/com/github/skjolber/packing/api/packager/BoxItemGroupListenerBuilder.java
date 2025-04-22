@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.api.packager;
 
-import java.util.function.Supplier;
-
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
@@ -13,40 +11,16 @@ import com.github.skjolber.packing.api.ep.FilteredPoints;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class BoxItemGroupListenerBuilder<B extends BoxItemGroupListenerBuilder<B>> {
-	
-	@FunctionalInterface
-	public static interface BoxItemGroupListenerBuilderSupplier<B extends BoxItemGroupListenerBuilder<B>> {
-		
-		BoxItemGroupListenerBuilder<B> get();
-		
-	}
+public interface BoxItemGroupListenerBuilder<B extends BoxItemGroupListenerBuilder<B>> {
 
-	protected Stack stack;
-	protected Container container;
-	protected FilteredBoxItemGroups groups;
-	protected FilteredPoints points;
-
-	public B withPoints(FilteredPoints points) {
-		this.points = points;
-		return (B)this;
-	}
+	B withPoints(FilteredPoints points);
 	
-	public B withFilteredBoxItemGroups(FilteredBoxItemGroups input) {
-		this.groups = input;
-		return (B)this;
-	}
+	B withFilteredBoxItemGroups(FilteredBoxItemGroups input);
 	
-	public B withContainer(Container container) {
-		this.container = container;
-		return (B)this;
-	}
+	B withContainer(Container container);
 	
-	public B withStack(Stack stack) {
-		this.stack = stack;
-		return (B)this;
-	}
+	B withStack(Stack stack);
 	
-	public abstract BoxItemGroupListener build();
+	BoxItemGroupListener build();
 
 }

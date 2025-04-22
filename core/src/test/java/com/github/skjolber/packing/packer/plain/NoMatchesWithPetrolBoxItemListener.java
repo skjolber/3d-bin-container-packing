@@ -5,14 +5,15 @@ import java.util.function.Predicate;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.AbstractBoxItemListenerBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemListener;
 import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder.BoxItemListenerBuilderSupplier;
+import com.github.skjolber.packing.api.packager.BoxItemListenerBuilderSupplier;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
 public class NoMatchesWithPetrolBoxItemListener implements BoxItemListener {
 
-	public static class Builder extends BoxItemListenerBuilder<Builder> {
+	public static class Builder extends AbstractBoxItemListenerBuilder<Builder> {
 
 		@Override
 		public BoxItemListener build() {

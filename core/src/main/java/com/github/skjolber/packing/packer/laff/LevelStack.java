@@ -121,7 +121,7 @@ public class LevelStack extends Stack {
 				container.getEmptyWeight(),
 				container.getLoadDx(), container.getLoadDy(), container.getLoadDz() - dz,
 				freeWeight,
-				new Stack(), container.getBoxItemListenerBuilderSupplier(), container.getFilteredPointsBuilderSupplier());
+				new Stack());
 	}
 
 	public int getFreeLoadDz() {
@@ -138,8 +138,7 @@ public class LevelStack extends Stack {
 				container.getEmptyWeight(),
 				container.getLoadDx(), container.getLoadDy(), dz,
 				freeWeight,
-				new Stack(),
-				container.getBoxItemListenerBuilderSupplier(), container.getFilteredPointsBuilderSupplier());
+				new Stack());
 	}
 
 	public int getSupportedCount() {
@@ -173,7 +172,7 @@ public class LevelStack extends Stack {
 			long v = (volume / container.getLoadDz()) * level.getDz();
 
 			for (StackPlacement stackEntry : level.getPlacements()) {
-				v -= stackEntry.getBox().getVolume();
+				v -= stackEntry.getBoxItem().getBox().getVolume();
 			}
 
 			if(v == 0) {

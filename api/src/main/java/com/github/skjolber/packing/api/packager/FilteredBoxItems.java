@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.BoxItem;
  * 
  */
 
-public interface FilteredBoxItems {
+public interface FilteredBoxItems extends Iterable<BoxItem> {
 	
 	int size();
 

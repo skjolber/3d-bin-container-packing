@@ -12,39 +12,18 @@ import com.github.skjolber.packing.api.packager.FilteredBoxItems;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class FilteredPointsBuilder<B extends FilteredPointsBuilder<B>> {
+public interface FilteredPointsBuilder<B extends FilteredPointsBuilder<B>> {
 
-	protected Stack stack;
-	protected Container container;
-	protected FilteredBoxItems items;
-	protected FilteredPoints points;
-	protected BoxItem boxItems;
-
-	public B withBoxItems(BoxItem boxItems) {
-		this.boxItems = boxItems;
-		return (B) this;
-	}
+	B withBoxItem(BoxItem boxItems);
 	
-	public B withPoints(FilteredPoints points) {
-		this.points = points; 
-		return (B) this;
-	}
+	B withPoints(FilteredPoints points);
 	
-	public B withItems(FilteredBoxItems input) {
-		this.items = input;
-		return (B)this;
-	}
+	B withItems(FilteredBoxItems input);
 	
-	public B withContainer(Container container) {
-		this.container = container;
-		return (B)this;
-	}
+	B withContainer(Container container);
 	
-	public B withStack(Stack stack) {
-		this.stack = stack;
-		return (B)this;
-	}
+	B withStack(Stack stack);
 	
-	public abstract FilteredPoints build();
+	FilteredPoints build();
 
 }

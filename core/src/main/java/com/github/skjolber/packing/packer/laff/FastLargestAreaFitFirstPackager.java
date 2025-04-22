@@ -15,8 +15,10 @@ import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
 import com.github.skjolber.packing.ep.points2d.Point2D;
 import com.github.skjolber.packing.ep.points2d.SimplePoint2D;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
+import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.packer.DefaultPackResult;
 import com.github.skjolber.packing.packer.DefaultPackResultComparator;
+import com.github.skjolber.packing.packer.IntermediatePackagerResultComparator;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. Only places boxes along the floor of each level.
@@ -67,14 +69,14 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 
 		public FastLargestAreaFitFirstPackager build() {
 			if(comparator == null) {
-				comparator = new DefaultPackResultComparator();
+				comparator = new DefaultIntermediatePackagerResultComparator();
 			}
 			return new FastLargestAreaFitFirstPackager(comparator);
 		}
 	}
 
-	public FastLargestAreaFitFirstPackager(PackResultComparator packResultComparator) {
-		super(packResultComparator);
+	public FastLargestAreaFitFirstPackager(IntermediatePackagerResultComparator comparator) {
+		super(comparator);
 	}
 
 	public DefaultPackResult pack(List<Box> stackables, Container targetContainer, int containerIndex, PackagerInterruptSupplier interrupt) {
@@ -257,14 +259,9 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 
 				targetContainer.getLoadDx(), targetContainer.getLoadDy(), targetContainer.getLoadDz(),
 				targetContainer.getMaxLoadWeight(),
-				stack, targetContainer.getBoxItemListenerBuilderSupplier(), targetContainer.getFilteredPointsBuilderSupplier()),
+				stack),
 				
 				stack, remainingStackables.isEmpty(), containerIndex);
-	}
-
-	@Override
-	public LargestAreaFitFirstPackagerResultBuilder newResultBuilder() {
-		return new LargestAreaFitFirstPackagerResultBuilder().withPackager(this);
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api.packager;
 
+import java.util.Iterator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItemGroup;
@@ -40,6 +41,11 @@ public class DefaultFilteredBoxItemGroups implements FilteredBoxItemGroups {
 				i--;
 			}
 		}
+	}
+
+	@Override
+	public Iterator<BoxItemGroup> iterator() {
+		return values.listIterator();
 	}
 
 }

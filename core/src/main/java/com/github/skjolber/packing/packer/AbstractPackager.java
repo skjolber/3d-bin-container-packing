@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
+import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
@@ -19,6 +20,7 @@ import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
@@ -31,6 +33,19 @@ import com.github.skjolber.packing.iterator.BinarySearchIterator;
 
 public abstract class AbstractPackager<P extends IntermediatePackagerResult, B extends PackagerResultBuilder<B>> implements Packager<B> {
 
+	public static class PlacementResult {
+		
+		public PlacementResult(BoxItem boxItem, BoxStackValue stackValue, Point point) {
+			super();
+			this.boxItem = boxItem;
+			this.stackValue = stackValue;
+			this.point = point;
+		}
+		public BoxItem boxItem; 
+		public BoxStackValue stackValue;
+		public Point point;
+	}
+	
 	protected static final EmptyPackagerResultAdapter EMPTY_PACK_RESULT = EmptyPackagerResultAdapter.EMPTY;
 
 	protected final IntermediatePackagerResultComparator packResultComparator;
@@ -424,5 +439,9 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 			}
 		}
 		return result;
+	}
+	
+	protected ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
+		return scheduledThreadPoolExecutor;
 	}
 }
