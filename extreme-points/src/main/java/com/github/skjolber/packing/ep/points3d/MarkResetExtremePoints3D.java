@@ -37,7 +37,7 @@ public class MarkResetExtremePoints3D extends ExtremePoints3D {
 		this.values = markValues;
 		this.placements = markPlacements;
 		
-		updateIndexes();
+		updateIndexes(markValues);
 	}
 
 }

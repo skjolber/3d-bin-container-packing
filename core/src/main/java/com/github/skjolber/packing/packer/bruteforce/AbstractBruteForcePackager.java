@@ -248,8 +248,4 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		return best;
 	}
 
-	protected ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
-		return scheduledThreadPoolExecutor;
-	}
-
 }

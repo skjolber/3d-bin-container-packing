@@ -11,6 +11,8 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
+import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
 /**
  * 
@@ -621,12 +623,12 @@ public class ExtremePoints3D implements ExtremePoints {
 		// constrainYY 
 		// constrainZZ
 
-		updateIndexes();
+		updateIndexes(otherValues);
 		
 		return !values.isEmpty();
 	}
 
-	protected void updateIndexes() {
+	protected void updateIndexes(Point3DFlagList values) {
 		for(int i = 0; i < values.size(); i++) {
 			SimplePoint3D simplePoint3D = values.get(i);
 			if(simplePoint3D.getIndex() != i) {
@@ -861,6 +863,8 @@ public class ExtremePoints3D implements ExtremePoints {
 		}
 		if(flagged) {
 			values.removeFlagged();
+			
+			updateIndexes(values);
 		}
 	}
 
@@ -1752,6 +1756,35 @@ public class ExtremePoints3D implements ExtremePoints {
 
 	@Override
 	public Iterator<Point> iterator() {
+		for (Point point : values) {
+			if(point.getIndex() == -1) {
+				throw new RuntimeException(point.toString());
+			}
+		}
 		return values.iterator();
+	}
+	
+	public void updateMinimums(BoxStackValue stackValue, FilteredBoxItems filteredBoxItems) {
+		boolean minArea = stackValue.getArea() == minAreaLimit;
+		boolean minVolume = stackValue.getVolume() == minVolumeLimit;
+		if(minArea && minVolume) {
+			setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());
+		} else if(minArea) {
+			setMinimumAreaLimit(filteredBoxItems.getMinArea());
+		} else if(minVolume) {
+			setMinimumVolumeLimit(filteredBoxItems.getMinVolume());
+		}
+	}
+	
+	public void updateMinimums(BoxStackValue stackValue, FilteredBoxItemGroups filteredBoxItemGroups) {
+		boolean minArea = stackValue.getArea() == minAreaLimit;
+		boolean minVolume = stackValue.getVolume() == minVolumeLimit;
+		if(minArea && minVolume) {
+			setMinimumAreaAndVolumeLimit(filteredBoxItemGroups.getMinArea(), filteredBoxItemGroups.getMinVolume());
+		} else if(minArea) {
+			setMinimumAreaLimit(filteredBoxItemGroups.getMinArea());
+		} else if(minVolume) {
+			setMinimumVolumeLimit(filteredBoxItemGroups.getMinVolume());
+		}
 	}
 }

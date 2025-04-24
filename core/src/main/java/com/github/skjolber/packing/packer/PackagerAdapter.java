@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 // 
 public interface PackagerAdapter<T extends IntermediatePackagerResult> {
 
-	T attempt(int containerIndex, T best);
+	T attempt(int containerIndex, T best) throws PackagerInterruptedException;
 
 	Container accept(T result);
 

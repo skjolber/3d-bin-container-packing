@@ -121,13 +121,13 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 
 			for (BoxItem box : boxes) {
 				// volume
-				long boxVolume = box.getVolume();
+				long boxVolume = box.getBox().getVolume();
 				if(boxVolume < minVolume) {
 					minVolume = boxVolume;
 				}
 
 				// weight
-				long boxWeight = box.getWeight();
+				long boxWeight = box.getBox().getWeight();
 				if(boxWeight < minWeight) {
 					minWeight = boxWeight;
 				}

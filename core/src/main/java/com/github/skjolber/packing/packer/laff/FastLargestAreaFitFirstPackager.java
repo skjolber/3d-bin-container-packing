@@ -79,7 +79,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 		super(comparator);
 	}
 
-	public DefaultPackResult pack(List<Box> stackables, Container targetContainer, int containerIndex, PackagerInterruptSupplier interrupt) {
+	public DefaultPackResult pack2(List<Box> stackables, Container targetContainer, int containerIndex, PackagerInterruptSupplier interrupt) {
 		List<Box> remainingStackables = new ArrayList<>(stackables);
 
 		LevelStack stack = new LevelStack(targetContainer);

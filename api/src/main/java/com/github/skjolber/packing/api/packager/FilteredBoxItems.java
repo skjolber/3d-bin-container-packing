@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api.packager;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 
 /**
@@ -21,4 +22,27 @@ public interface FilteredBoxItems extends Iterable<BoxItem> {
 	BoxItem remove(int index);
 
 	void removeEmpty();
+
+	default long getMinVolume() {
+		long minVolume = Integer.MAX_VALUE;
+		for(BoxItem boxItem : this) {
+			Box box = boxItem.getBox();
+			if(box.getVolume() < minVolume) {
+				minVolume = box.getVolume();
+			}
+		}
+		return minVolume;
+	}
+	
+	default long getMinArea() {
+		long minArea = Integer.MAX_VALUE;
+		for(BoxItem boxItem : this) {
+			Box box = boxItem.getBox();
+			if(box.getMinimumArea() < minArea) {
+				minArea = box.getMinimumArea();
+			}
+		}
+		return minArea;
+	}
+	
 }

@@ -15,7 +15,6 @@ public class PackagerResult {
 	protected final boolean timeout;
 
 	public PackagerResult(List<Container> containers, long duration, boolean timeout) {
-		super();
 		this.containers = containers;
 		this.duration = duration;
 		this.timeout = timeout;

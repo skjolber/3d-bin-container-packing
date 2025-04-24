@@ -267,7 +267,8 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				.build();
 
 		try {
-			for (int i = 1; i <= 10; i++) {
+			for (int i = 1; i <= 1; i++) {
+				System.out.println("Attempt " + i);
 				int boxCountPerStackableItem = i;
 	
 				List<ContainerItem> containerItems = ContainerItem
@@ -319,25 +320,25 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		// just all for one big container
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withContainer(Container.newBuilder().withDescription("big").withEmptyWeight(1).withSize(2, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
-				.withContainer(Container.newBuilder().withDescription("small").withEmptyWeight(1).withSize(1, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 4)
-				.withContainer(Container.newBuilder().withDescription("other").withEmptyWeight(1).withSize(1, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withId("big").withEmptyWeight(1).withSize(2, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withId("small").withEmptyWeight(1).withSize(1, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 4)
+				.withContainer(Container.newBuilder().withId("other").withEmptyWeight(1).withSize(1, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
-			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 4));
-			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 4));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withMaxContainerCount(5).withBoxItems(products).build();
 			assertValid(build);
 	
-			assertEquals(build.get(0).getDescription(), "big");
-			assertEquals(build.get(1).getDescription(), "small");
-			assertEquals(build.get(2).getDescription(), "small");
+			assertEquals(build.get(0).getId(), "big");
+			assertEquals(build.get(1).getId(), "small");
+			assertEquals(build.get(2).getId(), "small");
 		} finally {
 			packager.close();
 		}

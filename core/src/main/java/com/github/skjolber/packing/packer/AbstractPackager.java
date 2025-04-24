@@ -10,7 +10,6 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
-import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
@@ -20,7 +19,6 @@ import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
@@ -33,19 +31,6 @@ import com.github.skjolber.packing.iterator.BinarySearchIterator;
 
 public abstract class AbstractPackager<P extends IntermediatePackagerResult, B extends PackagerResultBuilder<B>> implements Packager<B> {
 
-	public static class PlacementResult {
-		
-		public PlacementResult(BoxItem boxItem, BoxStackValue stackValue, Point point) {
-			super();
-			this.boxItem = boxItem;
-			this.stackValue = stackValue;
-			this.point = point;
-		}
-		public BoxItem boxItem; 
-		public BoxStackValue stackValue;
-		public Point point;
-	}
-	
 	protected static final EmptyPackagerResultAdapter EMPTY_PACK_RESULT = EmptyPackagerResultAdapter.EMPTY;
 
 	protected final IntermediatePackagerResultComparator packResultComparator;
@@ -63,11 +48,11 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 	}
 
 	// pack in single container
-	protected P packSingle(List<Integer> containerItemIndexes, PackagerAdapter<P> adapter, PackagerInterruptSupplier interrupt) {
+	protected P packSingle(List<Integer> containerItemIndexes, PackagerAdapter<P> adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 		if(containerItemIndexes.size() <= 2) {
 			for (int i = 0; i < containerItemIndexes.size(); i++) {
 				if(interrupt.getAsBoolean()) {
-					break;
+					throw new PackagerInterruptedException();
 				}
 
 				Integer containerItemIndex = containerItemIndexes.get(i);
@@ -155,11 +140,11 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		return (P) EMPTY_PACK_RESULT;
 	}
 
-	public List<Container> packList(List<BoxItemGroup> boxes, Order itemGroupOrder, List<CompositeContainerItem> containers, int limit) {
+	public List<Container> packList(List<BoxItemGroup> boxes, Order itemGroupOrder, List<CompositeContainerItem> containers, int limit) throws PackagerInterruptedException {
 		return pack(boxes, itemGroupOrder, containers, limit, PackagerInterruptSupplierBuilder.NEGATIVE);
 	}
 
-	public List<Container> pack(List<BoxItem> boxes, List<CompositeContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) {
+	public List<Container> pack(List<BoxItem> boxes, List<CompositeContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 		PackagerAdapter<P> adapter = adapter(boxes, containerItems, interrupt);
 
 		if(adapter == null) {
@@ -177,9 +162,10 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 	 * @param limit     maximum number of containers
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
 	 * @return list of containers, or null if the deadline was reached, or empty list if the packages could not be packaged within the available containers and/or limit.
+	 * @throws PackagerInterruptedException 
 	 */
 
-	public List<Container> pack(List<BoxItemGroup> boxes, Order itemGroupOrder, List<CompositeContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) {
+	public List<Container> pack(List<BoxItemGroup> boxes, Order itemGroupOrder, List<CompositeContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 		PackagerAdapter<P> adapter = adapter(boxes, containerItems, itemGroupOrder, interrupt);
 
 		if(adapter == null) {
@@ -189,7 +175,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		return packAdapter(limit, interrupt, adapter);
 	}
 
-	private List<Container> packAdapter(int limit, PackagerInterruptSupplier interrupt, PackagerAdapter<P> adapter) {
+	private List<Container> packAdapter(int limit, PackagerInterruptSupplier interrupt, PackagerAdapter<P> adapter) throws PackagerInterruptedException {
 		List<Container> containerPackResults = new ArrayList<>();
 
 		do {
@@ -224,7 +210,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 			P best = null;
 			for (int i = containerItemIndexes.size() - 1; i >= 0; i--) {
 				if(interrupt.getAsBoolean()) {
-					return null;
+					throw new PackagerInterruptedException();
 				}
 
 				Integer containerItemIndex = containerItemIndexes.get(i);
@@ -321,7 +307,6 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		}
 		return minVolume;
 	}
-
 
 	protected long getMinStackableArea(List<Box> stackables) {
 		long minArea = Integer.MAX_VALUE;

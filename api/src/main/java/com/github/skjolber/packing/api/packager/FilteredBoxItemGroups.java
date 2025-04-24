@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api.packager;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 
 /**
@@ -19,4 +20,28 @@ public interface FilteredBoxItemGroups extends Iterable<BoxItemGroup>{
 	boolean isEmpty();
 
 	void clearEmpty();
+
+	default long getMinVolume() {
+		long minVolume = Integer.MAX_VALUE;
+		for(BoxItemGroup boxItemGroup: this) {
+			for (BoxItem boxItem : boxItemGroup.getItems()) {
+				if(boxItem.getBox().getVolume() < minVolume) {
+					minVolume = boxItem.getBox().getVolume();
+				}
+			}
+		}
+		return minVolume;
+	}
+
+	default long getMinArea() {
+		long minArea = Integer.MAX_VALUE;
+		for(BoxItemGroup boxItemGroup: this) {
+			for (BoxItem boxItem : boxItemGroup.getItems()) {
+				if(boxItem.getBox().getMinimumArea() < minArea) {
+					minArea = boxItem.getBox().getMinimumArea();
+				}
+			}
+		}
+		return minArea;
+	}
 }

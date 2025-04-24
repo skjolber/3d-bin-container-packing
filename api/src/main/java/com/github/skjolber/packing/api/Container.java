@@ -281,6 +281,10 @@ public class Container {
 		return boxItem.getVolume() <= getMaxLoadVolume() && boxItem.getWeight() <= getMaxLoadWeight();
 	}
 	
+	public boolean fitsInside(Box box) {
+		return box.getVolume() <= getMaxLoadVolume() && box.getWeight() <= getMaxLoadWeight();
+	}
+	
 	public String toString() {
 		if(dx != loadDx || dy != loadDy || dz != loadDz) {
 			return "Container[" + (id != null ? id : "") + "[" + dx + "x" + dy + "x" + dz + " (" + loadDx + "x" + loadDy + "x" + loadDz + ")]";

@@ -45,10 +45,10 @@ public class DefaultPackagerResultBuilder extends PackagerResultBuilder<DefaultP
 				packList = packager.pack(itemGroups, itemGroupOrder, containers, maxContainerCount, interrupt);
 			}
 			long duration = System.currentTimeMillis() - start;
-			if(packList == null) {
-				return new PackagerResult(Collections.emptyList(), duration, true);
-			}
 			return new PackagerResult(packList, duration, false);
+		} catch (PackagerInterruptedException e) {
+			long duration = System.currentTimeMillis() - start;
+			return new PackagerResult(Collections.emptyList(), duration, true);
 		} finally {
 			interrupt.close();
 		}

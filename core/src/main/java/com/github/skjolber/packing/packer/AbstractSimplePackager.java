@@ -44,7 +44,7 @@ public abstract class AbstractSimplePackager extends AbstractPackager<DefaultInt
 		}
 
 		@Override
-		public DefaultIntermediatePackagerResult attempt(int index, DefaultIntermediatePackagerResult best) {
+		public DefaultIntermediatePackagerResult attempt(int index, DefaultIntermediatePackagerResult best) throws PackagerInterruptedException {
 			try {
 				return AbstractSimplePackager.this.pack(remainingBoxItems, containerItems.get(index), interrupt);
 			} finally {
@@ -116,7 +116,7 @@ public abstract class AbstractSimplePackager extends AbstractPackager<DefaultInt
 		}
 
 		@Override
-		public DefaultIntermediatePackagerResult attempt(int index, DefaultIntermediatePackagerResult best) {
+		public DefaultIntermediatePackagerResult attempt(int index, DefaultIntermediatePackagerResult best) throws PackagerInterruptedException {
 			try {
 				return AbstractSimplePackager.this.pack(remainingBoxItemGroups, itemGroupOrder, containerItems.get(index), interrupt);
 			} finally {
@@ -181,8 +181,8 @@ public abstract class AbstractSimplePackager extends AbstractPackager<DefaultInt
 		return new DefaultPackagerResultBuilder().withPackager(this);
 	}
 	
-	public abstract DefaultIntermediatePackagerResult pack(List<BoxItem> boxes, CompositeContainerItem targetContainer, PackagerInterruptSupplier interrupt);
+	public abstract DefaultIntermediatePackagerResult pack(List<BoxItem> boxes, CompositeContainerItem targetContainer, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException;
 
-	public abstract DefaultIntermediatePackagerResult pack(List<BoxItemGroup> boxes, Order itemGroupOrder, CompositeContainerItem targetContainer, PackagerInterruptSupplier interrupt);
+	public abstract DefaultIntermediatePackagerResult pack(List<BoxItemGroup> boxes, Order itemGroupOrder, CompositeContainerItem targetContainer, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException;
 	
 }
