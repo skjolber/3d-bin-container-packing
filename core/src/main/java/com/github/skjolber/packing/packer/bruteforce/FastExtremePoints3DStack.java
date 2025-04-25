@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 

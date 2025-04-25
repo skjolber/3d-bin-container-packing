@@ -1,9 +1,8 @@
-package com.github.skjolber.packing.packer;
+package com.github.skjolber.packing.comparator;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.PackResult;
-import com.github.skjolber.packing.api.packager.PackResultComparator;
+import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public class DefaultIntermediatePackagerResultComparator implements IntermediatePackagerResultComparator {
 

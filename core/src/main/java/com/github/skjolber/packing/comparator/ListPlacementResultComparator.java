@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer;
+package com.github.skjolber.packing.comparator;
 
 import java.util.Comparator;
 import java.util.List;

@@ -5,20 +5,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
-import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItemGroups;
-import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
-import com.github.skjolber.packing.api.packager.PackResult;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
-import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
@@ -264,133 +260,6 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 	protected abstract PackagerAdapter<P> adapter(List<BoxItemGroup> boxes, List<CompositeContainerItem> containers, Order itemGroupOrder, PackagerInterruptSupplier interrupt);
 
 	protected abstract PackagerAdapter<P> adapter(List<BoxItem> boxItems, List<CompositeContainerItem> containers, PackagerInterruptSupplier interrupt);
-
-	protected long getMinStackableItemVolume(List<BoxItem> stackables) {
-		long minVolume = Integer.MAX_VALUE;
-		for (BoxItem stackableItem : stackables) {
-			Box stackable = stackableItem.getBox();
-			if(stackable.getVolume() < minVolume) {
-				minVolume = stackable.getVolume();
-			}
-		}
-		return minVolume;
-	}
-
-	protected long getMinStackableItemArea(List<BoxItem> stackables) {
-		long minArea = Integer.MAX_VALUE;
-		for (BoxItem stackableItem : stackables) {
-			Box stackable = stackableItem.getBox();
-			if(stackable.getMinimumArea() < minArea) {
-				minArea = stackable.getMinimumArea();
-			}
-		}
-		return minArea;
-	}
-
-	protected long getMinStackableVolume(List<Box> stackables) {
-		long minVolume = Integer.MAX_VALUE;
-		for (Box stackable : stackables) {
-			if(stackable.getVolume() < minVolume) {
-				minVolume = stackable.getVolume();
-			}
-		}
-		return minVolume;
-	}
-	
-	protected long getMinBoxItemVolume(List<BoxItem> stackables) {
-		long minVolume = Integer.MAX_VALUE;
-		for (BoxItem boxItem : stackables) {
-			Box box = boxItem.getBox();
-			if(box.getVolume() < minVolume) {
-				minVolume = box.getVolume();
-			}
-		}
-		return minVolume;
-	}
-
-	protected long getMinStackableArea(List<Box> stackables) {
-		long minArea = Integer.MAX_VALUE;
-		for (Box stackable : stackables) {
-			if(stackable.getMinimumArea() < minArea) {
-				minArea = stackable.getMinimumArea();
-			}
-		}
-		return minArea;
-	}
-	
-	protected long getMinBoxItemArea(List<BoxItem> stackables) {
-		long minArea = Integer.MAX_VALUE;
-		for (BoxItem boxItem: stackables) {
-			Box box = boxItem.getBox();
-			if(box.getMinimumArea() < minArea) {
-				minArea = box.getMinimumArea();
-			}
-		}
-		return minArea;
-	}
-	
-	protected long getMinBoxItemVolume(FilteredBoxItems items) {
-		long minVolume = Integer.MAX_VALUE;
-		for(int i = 0; i < items.size(); i++) {
-			BoxItem boxItem = items.get(i);
-			
-			Box box = boxItem.getBox();
-			if(box.getVolume() < minVolume) {
-				minVolume = box.getVolume();
-			}
-		}
-		return minVolume;
-	}
-	
-	protected long getMinBoxItemArea(FilteredBoxItems items) {
-		long minArea = Integer.MAX_VALUE;
-		for(int i = 0; i < items.size(); i++) {
-			BoxItem boxItem = items.get(i);
-			
-			Box box = boxItem.getBox();
-			if(box.getMinimumArea() < minArea) {
-				minArea = box.getMinimumArea();
-			}
-		}
-		return minArea;
-	}
-	
-	protected long getMinBoxItemGroupVolume(List<BoxItemGroup> groups) {
-		long minVolume = Integer.MAX_VALUE;
-		for (BoxItemGroup boxItemGroup : groups) {
-			for (BoxItem boxItem : boxItemGroup.getItems()) {
-				if(boxItem.getBox().getVolume() < minVolume) {
-					minVolume = boxItem.getBox().getVolume();
-				}
-			}
-		}
-		return minVolume;
-	}
-	
-	protected long getMinBoxItemGroupArea(List<BoxItemGroup> groups) {
-		long minArea = Integer.MAX_VALUE;
-		for (BoxItemGroup boxItemGroup : groups) {
-			for (BoxItem boxItem : boxItemGroup.getItems()) {
-				if(boxItem.getBox().getMinimumArea() < minArea) {
-					minArea = boxItem.getBox().getMinimumArea();
-				}
-			}
-		}
-		return minArea;
-	}
-
-	protected long getMinBoxItemGroupArea(FilteredBoxItemGroups filteredBoxItemGroups) {
-		long minArea = Integer.MAX_VALUE;
-		for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
-			BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(i);
-			for (BoxItem boxItem : boxItemGroup.getItems()) {
-				if(boxItem.getBox().getMinimumArea() < minArea) {
-					minArea = boxItem.getBox().getMinimumArea();
-				}
-			}
-		}
-		return minArea;
-	}
 
 	public void close() {
 		scheduledThreadPoolExecutor.shutdownNow();

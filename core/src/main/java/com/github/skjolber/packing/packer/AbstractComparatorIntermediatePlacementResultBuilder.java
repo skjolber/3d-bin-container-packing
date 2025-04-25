@@ -5,16 +5,10 @@ import java.util.Comparator;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
-import com.github.skjolber.packing.api.ep.FilteredPointsBuilderSupplier;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.AbstractIntermediatePlacementResultBuilder;
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 import com.github.skjolber.packing.api.packager.IntermediatePlacementResult;
-import com.github.skjolber.packing.api.packager.IntermediatePlacementResultBuilder;
 
 public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T extends IntermediatePlacementResult, B extends AbstractComparatorIntermediatePlacementResultBuilder<T, B>> extends AbstractIntermediatePlacementResultBuilder<T, B> {
 
@@ -57,10 +51,10 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 			}
 
 			FilteredPoints points;
-			if(filteredPointsBuilderSupplier == null) {
+			if(filteredPointsBuilderFactory == null) {
 				points = extremePoints;
 			} else {
-				points = filteredPointsBuilderSupplier.getFilteredPointsBuilder()
+				points = filteredPointsBuilderFactory.createFilteredPointsBuilder()
 					.withBoxItem(boxItem)
 					.withContainer(container)
 					.withPoints(extremePoints)

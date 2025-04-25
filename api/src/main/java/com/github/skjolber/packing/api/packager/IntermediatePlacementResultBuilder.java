@@ -3,7 +3,7 @@ package com.github.skjolber.packing.api.packager;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
-import com.github.skjolber.packing.api.ep.FilteredPointsBuilderSupplier;
+import com.github.skjolber.packing.api.ep.FilteredPointsBuilderFactory;
 
 public interface IntermediatePlacementResultBuilder<R extends IntermediatePlacementResult, B extends IntermediatePlacementResultBuilder<R, B>> {
 
@@ -13,7 +13,7 @@ public interface IntermediatePlacementResultBuilder<R extends IntermediatePlacem
 
 	B withFilteredBoxItems(FilteredBoxItems boxItems);
 	
-	B withFilteredPointsBuilderSupplier(FilteredPointsBuilderSupplier filteredPointsBuilderSupplier);
+	B withFilteredPointsBuilderFactory(FilteredPointsBuilderFactory filteredPointsBuilderSupplier);
 	
 	B withStack(Stack stack);
 

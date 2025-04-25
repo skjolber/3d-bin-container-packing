@@ -7,7 +7,7 @@ import com.github.skjolber.packing.api.ep.AbstractFilteredPointsBuilder;
 import com.github.skjolber.packing.api.ep.DefaultFilteredPoints;
 import com.github.skjolber.packing.api.ep.EmptyFilteredPoints;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
-import com.github.skjolber.packing.api.ep.FilteredPointsBuilderSupplier;
+import com.github.skjolber.packing.api.ep.FilteredPointsBuilderFactory;
 import com.github.skjolber.packing.api.ep.Point;
 
 public class HeavyItemsOnGroundLevel extends DefaultFilteredPoints {
@@ -63,7 +63,7 @@ public class HeavyItemsOnGroundLevel extends DefaultFilteredPoints {
 		return new Builder();
 	}
 	
-	public static final FilteredPointsBuilderSupplier newSupplier(int maxWeight) {
+	public static final FilteredPointsBuilderFactory newFactory(int maxWeight) {
 		return () -> HeavyItemsOnGroundLevel.newBuilder().withMaxWeight(maxWeight);
 	}
 

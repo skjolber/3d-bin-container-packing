@@ -15,4 +15,8 @@ public interface ExtremePoints extends FilteredPoints {
 	void redo();
 	
 	List<StackPlacement> getPlacements();
+
+	long getUsedVolume();
+
+	long getUsedWeight();
 }

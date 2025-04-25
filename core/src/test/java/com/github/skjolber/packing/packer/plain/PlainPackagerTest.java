@@ -363,7 +363,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
-				b.withBoxItemListenerBuilderSupplier(NoMatchesWithPetrolBoxItemListener.newSupplier());
+				b.withBoxItemListenerBuilderSupplier(NoMatchesWithPetrolBoxItemListener.newFactory());
 			})
 					.withMaxContainerCount(5)
 					.withBoxItems(products)
@@ -405,7 +405,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
-				b.withBoxItemGroupListenerBuilderSupplier(NoMatchesWithPetrolBoxItemGroupListener.newSupplier());
+				b.withBoxItemGroupListenerBuilderSupplier(NoMatchesWithPetrolBoxItemGroupListener.newFactory());
 			})
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2))
@@ -460,7 +460,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			PackagerResult build = packager.newResultBuilder()
 				.withContainerItem( b -> {
 					b.withContainerItem(new ContainerItem(container, 5));
-					b.withBoxItemListenerBuilderSupplier(MaxFireHazardBoxItemPerContainerBoxItemListener.newSupplier(1));
+					b.withBoxItemListenerBuilderSupplier(MaxFireHazardBoxItemPerContainerBoxItemListener.newFactory(1));
 				})
 				.withMaxContainerCount(5)
 				.withBoxItems(products)
@@ -515,7 +515,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
-				b.withBoxItemGroupListenerBuilderSupplier(MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.newSupplier(1));
+				b.withBoxItemGroupListenerBuilderSupplier(MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.newFactory(1));
 			})
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2))
@@ -560,7 +560,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 1));
-				b.withFilteredPointsBuilderSupplier(HeavyItemsOnGroundLevel.newSupplier(2));
+				b.withFilteredPointsBuilderSupplier(HeavyItemsOnGroundLevel.newFactory(2));
 			}).withBoxItems(products).build();
 			
 			List<Container> containers = build.getContainers();

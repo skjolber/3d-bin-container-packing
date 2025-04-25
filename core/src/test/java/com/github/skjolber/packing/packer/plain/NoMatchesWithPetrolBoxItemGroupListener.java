@@ -9,7 +9,7 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.AbstractBoxItemGroupListenerBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemGroupListener;
 import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilderSupplier;
+import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilderFactory;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 
 public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupListener {
@@ -27,7 +27,7 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupList
 		return new Builder();
 	}
 	
-	public static final BoxItemGroupListenerBuilderSupplier newSupplier() {
+	public static final BoxItemGroupListenerBuilderFactory newFactory() {
 		return () -> NoMatchesWithPetrolBoxItemGroupListener.newBuilder();
 	}
 	

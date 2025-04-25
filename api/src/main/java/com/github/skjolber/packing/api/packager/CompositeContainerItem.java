@@ -4,7 +4,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
-import com.github.skjolber.packing.api.ep.FilteredPointsBuilderSupplier;
+import com.github.skjolber.packing.api.ep.FilteredPointsBuilderFactory;
 
 /**
  * 
@@ -15,49 +15,49 @@ import com.github.skjolber.packing.api.ep.FilteredPointsBuilderSupplier;
 public class CompositeContainerItem {
 
 	protected final ContainerItem containerItem;
-	protected BoxItemGroupListenerBuilderSupplier boxItemGroupListenerBuilderSupplier;
-	protected BoxItemListenerBuilderSupplier boxItemListenerBuilderSupplier;
-	protected FilteredPointsBuilderSupplier filteredPointsBuilderSupplier;
+	protected BoxItemGroupListenerBuilderFactory boxItemGroupListenerBuilderFactory;
+	protected BoxItemListenerBuilderFactory boxItemListenerBuilderFactory;
+	protected FilteredPointsBuilderFactory filteredPointsBuilderFactory;
 
 	public CompositeContainerItem(ContainerItem containerItem) {
 		this.containerItem = containerItem;
 	}
 	
-	public void setBoxItemListenerBuilderSupplier(
-			BoxItemListenerBuilderSupplier boxItemListenerBuilderSupplier) {
-		this.boxItemListenerBuilderSupplier = boxItemListenerBuilderSupplier;
+	public void setBoxItemListenerBuilderFactory(
+			BoxItemListenerBuilderFactory boxItemListenerBuilderSupplier) {
+		this.boxItemListenerBuilderFactory = boxItemListenerBuilderSupplier;
 	}
 	
-	public void setFilteredPointsBuilderSupplier(FilteredPointsBuilderSupplier supplier) {
-		this.filteredPointsBuilderSupplier = supplier;
+	public void setFilteredPointsBuilderFactory(FilteredPointsBuilderFactory supplier) {
+		this.filteredPointsBuilderFactory = supplier;
 	}
 
-	public BoxItemListenerBuilderSupplier getBoxItemListenerBuilderSupplier() {
-		return boxItemListenerBuilderSupplier;
+	public BoxItemListenerBuilderFactory getBoxItemListenerBuilderFactory() {
+		return boxItemListenerBuilderFactory;
 	}
 	
 	public ContainerItem getContainerItem() {
 		return containerItem;
 	}
 	
-	public FilteredPointsBuilderSupplier getFilteredPointsBuilderSupplier() {
-		return filteredPointsBuilderSupplier;
+	public FilteredPointsBuilderFactory getFilteredPointsBuilderFactory() {
+		return filteredPointsBuilderFactory;
 	}
 
 	public void setBoxItemGroupListenerBuilderSupplier(
-			BoxItemGroupListenerBuilderSupplier boxItemGroupListenerBuilderSupplier) {
-		this.boxItemGroupListenerBuilderSupplier = boxItemGroupListenerBuilderSupplier;
+			BoxItemGroupListenerBuilderFactory factory) {
+		this.boxItemGroupListenerBuilderFactory = factory;
 	}
 	
-	public BoxItemGroupListenerBuilderSupplier getBoxItemGroupListenerBuilderSupplier() {
-		return boxItemGroupListenerBuilderSupplier;
+	public BoxItemGroupListenerBuilderFactory getBoxItemGroupListenerBuilderSupplier() {
+		return boxItemGroupListenerBuilderFactory;
 	}
 
 	public BoxItemGroupListener createBoxItemGroupListener(Container container, Stack stack, FilteredBoxItemGroups groups, FilteredPoints points) {
-		if(boxItemGroupListenerBuilderSupplier == null) {
+		if(boxItemGroupListenerBuilderFactory == null) {
 			return NoopBoxItemGroupListener.getInstance();
 		}
-		return boxItemGroupListenerBuilderSupplier.getBoxItemGroupListenerBuilder()
+		return boxItemGroupListenerBuilderFactory.createBoxItemGroupListenerBuilder()
 				.withContainer(container)
 				.withStack(stack)
 				.withFilteredBoxItemGroups(groups)
@@ -66,10 +66,10 @@ public class CompositeContainerItem {
 	}
 
 	public BoxItemListener createBoxItemListener(Container container, Stack stack, FilteredBoxItems filteredBoxItems, FilteredPoints points) {
-		if(boxItemListenerBuilderSupplier == null) {
+		if(boxItemListenerBuilderFactory == null) {
 			return NoopBoxItemListener.getInstance();
 		}
-		return boxItemListenerBuilderSupplier.getBoxItemListenerBuilder()
+		return boxItemListenerBuilderFactory.createBoxItemListenerBuilder()
 				.withContainer(container)
 				.withStack(stack)
 				.withFilteredBoxItems(filteredBoxItems)
@@ -78,10 +78,10 @@ public class CompositeContainerItem {
 	}
 	
 	public FilteredPoints createFilteredPoints(Container container, Stack stack, FilteredPoints points) {
-		if(filteredPointsBuilderSupplier == null) {
+		if(filteredPointsBuilderFactory == null) {
 			return points;
 		}
-		return filteredPointsBuilderSupplier.getFilteredPointsBuilder()
+		return filteredPointsBuilderFactory.createFilteredPointsBuilder()
 				.withContainer(container)
 				.withStack(stack)
 				.withPoints(points)

@@ -1,6 +1,8 @@
-package com.github.skjolber.packing.packer;
+package com.github.skjolber.packing.comparator;
 
 import java.util.Comparator;
+
+import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public interface IntermediatePackagerResultComparator extends Comparator<IntermediatePackagerResult> {
 

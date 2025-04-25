@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer;
+package com.github.skjolber.packing.comparator;
 
 import com.github.skjolber.packing.api.packager.PackResult;
 import com.github.skjolber.packing.api.packager.PackResultComparator;

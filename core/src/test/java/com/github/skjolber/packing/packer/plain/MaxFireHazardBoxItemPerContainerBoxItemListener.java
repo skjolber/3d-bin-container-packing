@@ -7,7 +7,7 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.AbstractBoxItemListenerBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemListener;
 import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemListenerBuilderSupplier;
+import com.github.skjolber.packing.api.packager.BoxItemListenerBuilderFactory;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
 public class MaxFireHazardBoxItemPerContainerBoxItemListener implements BoxItemListener {
@@ -37,7 +37,7 @@ public class MaxFireHazardBoxItemPerContainerBoxItemListener implements BoxItemL
 		return new Builder();
 	}
 	
-	public static final BoxItemListenerBuilderSupplier newSupplier(int maxCount) {
+	public static final BoxItemListenerBuilderFactory newFactory(int maxCount) {
 		return () -> new Builder().withMaxCount(maxCount);
 	}
 	

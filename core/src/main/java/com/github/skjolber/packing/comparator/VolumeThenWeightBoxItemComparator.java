@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.plain;
+package com.github.skjolber.packing.comparator;
 
 import java.util.Comparator;
 
@@ -6,6 +6,12 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 
 public class VolumeThenWeightBoxItemComparator implements Comparator<BoxItem> {
+
+	protected static final VolumeThenWeightBoxItemComparator INSTANCE = new VolumeThenWeightBoxItemComparator();
+	
+	public static VolumeThenWeightBoxItemComparator getInstance() {
+		return INSTANCE;
+	}
 
 	@Override
 	public int compare(BoxItem referenceBoxItem, BoxItem potentiallyBetterBoxItem) {

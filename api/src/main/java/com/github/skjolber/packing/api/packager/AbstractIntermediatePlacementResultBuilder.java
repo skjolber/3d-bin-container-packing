@@ -3,14 +3,14 @@ package com.github.skjolber.packing.api.packager;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
-import com.github.skjolber.packing.api.ep.FilteredPointsBuilderSupplier;
+import com.github.skjolber.packing.api.ep.FilteredPointsBuilderFactory;
 
 public abstract class AbstractIntermediatePlacementResultBuilder<R extends IntermediatePlacementResult, B extends AbstractIntermediatePlacementResultBuilder<R, B>> implements IntermediatePlacementResultBuilder<R, B> {
 
 	protected Container container;
 	protected ExtremePoints extremePoints;
 	protected FilteredBoxItems boxItems;
-	protected FilteredPointsBuilderSupplier filteredPointsBuilderSupplier;
+	protected FilteredPointsBuilderFactory filteredPointsBuilderFactory;
 	protected Stack stack;
 
 	@Override
@@ -30,8 +30,8 @@ public abstract class AbstractIntermediatePlacementResultBuilder<R extends Inter
 		return (B)this;
 	}
 
-	public B withFilteredPointsBuilderSupplier(FilteredPointsBuilderSupplier filteredPointsBuilderSupplier) {
-		this.filteredPointsBuilderSupplier = filteredPointsBuilderSupplier;
+	public B withFilteredPointsBuilderFactory(FilteredPointsBuilderFactory factory) {
+		this.filteredPointsBuilderFactory = factory;
 		return (B)this;
 	}
 
