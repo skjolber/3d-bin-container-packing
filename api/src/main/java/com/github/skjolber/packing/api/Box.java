@@ -431,7 +431,27 @@ public class Box {
 	}
 
 	public String toString() {
-		return "Box " + (id != null ? id : "") + "[weight=" + weight + ", rotations=" + Arrays.toString(stackValues) + ", volume=" + volume + "]";
+		StringBuilder builder = new StringBuilder(256);
+		builder.append("Box");
+		if(id != null && !id.isEmpty()) {
+			builder.append(' ');
+			builder.append(id);
+		}
+		if(description != null && !description.isEmpty()) {
+			builder.append(" (");
+			builder.append(description);
+			builder.append(")");
+		}
+
+		builder.append("[weight=");
+		builder.append(weight);
+		builder.append(", rotations=");
+		builder.append(Arrays.toString(stackValues));
+		builder.append(", volume=");
+		builder.append(volume);
+		builder.append(']');
+		
+		return builder.toString();
 	}
 
 	public long getMinimumPressure() {

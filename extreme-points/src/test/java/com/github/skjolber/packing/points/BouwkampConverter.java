@@ -91,7 +91,8 @@ public class BouwkampConverter {
 
 	public DefaultExtremePoints3D convert3DXYPlane(BouwkampCode bkpLine, int factor) {
 
-		DefaultExtremePoints3D points = new DefaultExtremePoints3D(bkpLine.getWidth() * factor, bkpLine.getDepth() * factor, factor);
+		DefaultExtremePoints3D points = new DefaultExtremePoints3D();
+		points.clearToSize(bkpLine.getWidth() * factor, bkpLine.getDepth() * factor, factor);
 
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
 
@@ -146,7 +147,8 @@ public class BouwkampConverter {
 
 	public DefaultExtremePoints3D convert3DXZPlane(BouwkampCode bkpLine, int factor) {
 
-		DefaultExtremePoints3D points = new DefaultExtremePoints3D(bkpLine.getWidth() * factor, factor, bkpLine.getDepth() * factor);
+		DefaultExtremePoints3D points = new DefaultExtremePoints3D();
+		points.clearToSize(bkpLine.getWidth() * factor, factor, bkpLine.getDepth() * factor);
 
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
 
@@ -200,7 +202,8 @@ public class BouwkampConverter {
 
 	public DefaultExtremePoints3D convert3DYZPlane(BouwkampCode bkpLine, int factor) {
 
-		DefaultExtremePoints3D points = new DefaultExtremePoints3D(factor, bkpLine.getWidth() * factor, bkpLine.getDepth() * factor);
+		DefaultExtremePoints3D points = new DefaultExtremePoints3D();
+		points.clearToSize(factor, bkpLine.getWidth() * factor, bkpLine.getDepth() * factor);
 
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
 

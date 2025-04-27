@@ -207,7 +207,8 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 
 		DefaultFilteredBoxItems filteredBoxItems = new DefaultFilteredBoxItems(scopedBoxItems);
 
-		ExtremePoints3D extremePoints3D = new ExtremePoints3D(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
+		ExtremePoints3D extremePoints3D = new ExtremePoints3D();
+		extremePoints3D.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		extremePoints3D.setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());
 
 		BoxItemListener listener = compositeContainerItem.createBoxItemListener(container, stack, filteredBoxItems, extremePoints3D);
@@ -257,7 +258,8 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 
 		Stack stack = new Stack();
 
-		MarkResetExtremePoints3D extremePoints3D = new MarkResetExtremePoints3D(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
+		MarkResetExtremePoints3D extremePoints3D = new MarkResetExtremePoints3D();
+		extremePoints3D.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		extremePoints3D.setMinimumAreaAndVolumeLimit(filteredBoxItemGroups.getMinArea(), filteredBoxItemGroups.getMinVolume());
 
 		BoxItemGroupListener listener = compositeContainerItem.createBoxItemGroupListener(container, stack, filteredBoxItemGroups, extremePoints3D);
@@ -272,6 +274,8 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 
 			extremePoints3D.mark();
 			
+			int markStackSize = stack.size();
+			
 			while(!boxItemGroup.isEmpty()) {
 				
 				DefaultFilteredBoxItems items = new DefaultFilteredBoxItems(boxItemGroup.getItems()); 
@@ -283,6 +287,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 					}
 					// discard the whole group
 					extremePoints3D.reset();
+					stack.setSize(markStackSize);
 					
 					continue groups;
 				}

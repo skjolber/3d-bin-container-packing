@@ -24,8 +24,8 @@ public class FastExtremePoints3DStack extends ExtremePoints3D {
 	private int stackSize = 0;
 	private List<StackItem> stackItems;
 
-	public FastExtremePoints3DStack(int dx, int dy, int dz, int capacity) {
-		super(dx, dy, dz, true);
+	public FastExtremePoints3DStack(int capacity) {
+		super(true);
 
 		stackItems = new ArrayList<StackItem>(capacity);
 		for (int i = 0; i < capacity; i++) {
@@ -61,7 +61,7 @@ public class FastExtremePoints3DStack extends ExtremePoints3D {
 	public void reset(int dx, int dy, int dz) {
 		stackSize = 0;
 
-		super.reset(dx, dy, dz);
+		super.clearToSize(dx, dy, dz);
 	}
 
 	public void setStackSize(int size) {

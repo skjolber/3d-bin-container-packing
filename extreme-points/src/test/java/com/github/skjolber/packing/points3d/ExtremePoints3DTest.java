@@ -3,6 +3,8 @@ package com.github.skjolber.packing.points3d;
 import static com.github.skjolber.packing.points3d.assertj.SimplePoint3DAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -10,6 +12,8 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 
 public class ExtremePoints3DTest {
@@ -25,7 +29,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testSinglePoint(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 		assertThat(ep.getValues()).hasSize(3);
 
@@ -69,7 +74,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testSinglePointCornercase(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 0, 0, 0));
 		assertThat(ep.getValues()).hasSize(3);
 
@@ -81,7 +87,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testSinglePointCoveringAllX(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 99, 9, 9));
 
 		assertThat(ep.getValues()).hasSize(2);
@@ -100,7 +107,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testSinglePointCoveringAllY(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 99, 9));
 
 		assertThat(ep.getValues()).hasSize(2);
@@ -119,7 +127,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testSinglePointCoveringAllZ(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 99));
 		assertThat(ep.getValues()).hasSize(2);
 
@@ -137,7 +146,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testSinglePointCoveringWholeContainer(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 99, 99, 99));
 		assertThat(ep.getValues()).hasSize(0);
 	}
@@ -145,7 +155,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackInXDirection(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
 		assertThat(ep.getValues()).hasSize(3);
@@ -219,7 +230,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackInXDirectionWithIntermediate(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 0));
 
 		assertThat(ep.getValues()).hasSize(3);
@@ -234,7 +246,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackInZDirection(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
 		assertThat(ep.getValues()).hasSize(3);
@@ -317,7 +330,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackInYDirection(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
 		assertThat(ep.getValues()).hasSize(3);
@@ -336,7 +350,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackEqualItemsInXDirection(boolean clone) throws InterruptedException {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
 		assertThat(ep.get(0)).isMin(0, 0, 10);
@@ -407,7 +422,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackEqualItemsInYDirection(boolean clone) throws InterruptedException {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
 		// y
@@ -472,7 +488,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackEqualItemsInZDirection(boolean clone) throws InterruptedException {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
 		ep.add(0, createStackPlacement(0, 0, 10, 9, 9, 19));
@@ -521,7 +538,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackHigherItemsInXDirection(boolean clone) throws InterruptedException {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
 		assertThat(ep.getValues()).hasSize(3);
@@ -580,7 +598,8 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackHigherItemsInYDirection(boolean clone) throws InterruptedException {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
 		assertThat(ep.getValues()).hasSize(3);
@@ -633,12 +652,67 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackHigherItemsInZDirection(boolean clone) throws InterruptedException {
-		ExtremePoints3D ep = new ExtremePoints3D(100, 100, 100, clone);
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
 		assertThat(ep.getValues()).hasSize(3);
 
 		ep.add(0, createStackPlacement(0, 0, 10, 19, 19, 19));
+	}
+	
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testInitialPointOneLevelUp(boolean clone) {
+		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		ep.setSize(100, 100, 100);
+		
+		Point levelPoint = new DefaultPoint3D(0, 0, 20, 99, 99, 99);
+		ep.setInitialPoints(Arrays.asList(levelPoint));
+		ep.clear();
+		
+		ep.add(0, createStackPlacement(0, 0, 20, 9, 9, 29));
+		assertThat(ep.getValues()).hasSize(3);
+
+		// y
+		// |
+		// |
+		// |-----|
+		// |     |
+		// |     |
+		// |-----|---- x
+		//
+
+		// z
+		// |
+		// |
+		// |-----|
+		// |     |
+		// |     |
+		// |-----|
+		// |
+		// |
+		// |
+		// |--------- x
+		//
+
+		assertThat(ep.get(0)).isMin(0, 0, 10 + 20);
+		assertThat(ep.get(0)).isMax(99, 99, 99);
+		assertThat(ep.get(0)).isXYSupportAt(9, 9);
+		assertThat(ep.get(0)).isYZSupportAt(99, 99);
+		assertThat(ep.get(0)).isXZSupportAt(99, 99);
+
+		// no xy support
+		assertThat(ep.get(1)).isMin(0, 10, 20);
+		assertThat(ep.get(1)).isMax(99, 99, 99);
+		assertThat(ep.get(1)).isYZSupportAt(99, 99);
+		assertThat(ep.get(1)).isXZSupportAt(9, 29);
+
+		// no xy support
+		assertThat(ep.get(2)).isMin(10, 0, 20);
+		assertThat(ep.get(2)).isMax(99, 99, 99);
+		assertThat(ep.get(2)).isYZSupportAt(9, 29);
+		assertThat(ep.get(2)).isXZSupportAt(99, 99);
 	}
 
 }

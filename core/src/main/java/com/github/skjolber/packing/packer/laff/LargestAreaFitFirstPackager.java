@@ -1,21 +1,47 @@
 package com.github.skjolber.packing.packer.laff;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.ep.ExtremePoints;
+import com.github.skjolber.packing.api.ep.FilteredPointsBuilderFactory;
 import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.api.packager.BoxItemGroupListener;
+import com.github.skjolber.packing.api.packager.BoxItemListener;
+import com.github.skjolber.packing.api.packager.CompositeContainerItem;
+import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItemGroups;
+import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
+import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
+import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.api.packager.IntermediatePlacementResult;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
+import com.github.skjolber.packing.comparator.LargestAreaBoxItemComparator;
+import com.github.skjolber.packing.comparator.LargestAreaBoxItemGroupComparator;
+import com.github.skjolber.packing.comparator.LargestAreaIntermediatePlacementResultComparator;
+import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
+import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
+import com.github.skjolber.packing.comparator.VolumeWeightAreaPointIntermediatePlacementResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.ep.points3d.MarkResetExtremePoints3D;
+import com.github.skjolber.packing.iterator.AnyOrderBoxItemGroupIterator;
+import com.github.skjolber.packing.iterator.BoxItemGroupIterator;
+import com.github.skjolber.packing.iterator.FixedOrderBoxItemGroupIterator;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
-import com.github.skjolber.packing.packer.DefaultPackResult;
+import com.github.skjolber.packing.packer.ComparatorIntermediatePlacementResultBuilderFactory;
+import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
+import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -26,226 +52,292 @@ import com.github.skjolber.packing.packer.DefaultPackResult;
 
 public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPackager {
 	
-	public static boolean betterAsFirst(Box stackable1, Point point1, BoxStackValue stackValue1, Box stackable2, Point point2, BoxStackValue stackValue2) {
-		if(stackValue1.getArea() == stackValue2.getArea()) {
-			if(stackValue1.getVolume() == stackValue2.getVolume()) {
-				// closest distance to a wall is better
+	public static Builder newBuilder() {
+		return new Builder();
+	}
 
-				int distance1 = Math.min(point1.getDx() - stackValue1.getDx(), point1.getDy() - stackValue1.getDy());
-				int distance2 = Math.min(point2.getDx() - stackValue2.getDx(), point2.getDy() - stackValue2.getDy());
+	public static class Builder extends AbstractPackagerBuilder<LargestAreaFitFirstPackager, Builder> {
 
-				return distance2 < distance1; // closest is better
-			}
-			return stackValue1.getVolume() < stackValue2.getVolume(); // larger volume is better 
+		protected Comparator<IntermediatePlacementResult> intermediatePlacementResultComparator;
+		protected IntermediatePackagerResultComparator intermediatePackagerResultComparator;
+		protected Comparator<BoxItemGroup> boxItemGroupComparator;
+		protected Comparator<BoxItem> boxItemComparator;
+		
+		protected Comparator<IntermediatePlacementResult> firstIntermediatePlacementResultComparator;
+		protected Comparator<BoxItemGroup> firstBoxItemGroupComparator;
+		protected Comparator<BoxItem> firstBoxItemComparator;
 
+		public Builder withFirstBoxItemGroupComparator(Comparator<BoxItemGroup> boxItemGroupComparator) {
+			this.firstBoxItemGroupComparator = boxItemGroupComparator;
+			return this;
 		}
-		return stackValue1.getArea() < stackValue2.getArea(); // larger area is better
-	};
 
-	public static boolean betterAsNext(Box stackable1, Point point1, BoxStackValue stackValue1, Box stackable2, Point point2, BoxStackValue stackValue2) {
-		if(stackable2.getVolume() == stackable1.getVolume()) {
-			if(stackValue1.getArea() == stackValue2.getArea()) {
-				// closest distance to a wall is better
-
-				int distance1 = Math.min(point1.getDx() - stackValue1.getDx(), point1.getDy() - stackValue1.getDy());
-				int distance2 = Math.min(point2.getDx() - stackValue2.getDx(), point2.getDy() - stackValue2.getDy());
-
-				return distance2 < distance1; // closest is better
-			}
-			return stackValue2.getArea() < stackValue1.getArea(); // smaller is better
+		public Builder withFirstBoxItemComparator(Comparator<BoxItem> boxItemComparator) {
+			this.firstBoxItemComparator = boxItemComparator;
+			return this;
 		}
-		return stackable2.getVolume() > stackable1.getVolume(); // larger volume is better 
-	};
+
+		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> boxItemGroupComparator) {
+			this.boxItemGroupComparator = boxItemGroupComparator;
+			return this;
+		}
+		
+		public Builder withBoxItemComparator(Comparator<BoxItem> boxItemComparator) {
+			this.boxItemComparator = boxItemComparator;
+			return this;
+		}
+		
+		public Builder withFirstIntermediatePlacementResultComparator(Comparator<IntermediatePlacementResult> c) {
+			this.firstIntermediatePlacementResultComparator = c;
+			return this;
+		}
 	
-	public static LargestAreaFitFirstPackagerBuilder newBuilder() {
-		return new LargestAreaFitFirstPackagerBuilder();
-	}
-
-	public static class LargestAreaFitFirstPackagerBuilder extends AbstractPackagerBuilder<LargestAreaFitFirstPackager, LargestAreaFitFirstPackagerBuilder> {
-
+		public Builder withIntermediatePlacementResultComparator(
+				Comparator<IntermediatePlacementResult> intermediatePlacementResultComparator) {
+			this.intermediatePlacementResultComparator = intermediatePlacementResultComparator;
+			return this;
+		}
+		
 		public LargestAreaFitFirstPackager build() {
-			if(comparator == null) {
-				comparator = new DefaultIntermediatePackagerResultComparator();
+			if(intermediatePlacementResultComparator == null) {
+				intermediatePlacementResultComparator = new VolumeWeightAreaPointIntermediatePlacementResultComparator();
 			}
-			return new LargestAreaFitFirstPackager(comparator);
+			if(intermediatePackagerResultComparator == null) {
+				intermediatePackagerResultComparator = new DefaultIntermediatePackagerResultComparator();
+			}
+			if(boxItemComparator == null) {
+				boxItemComparator = VolumeThenWeightBoxItemComparator.getInstance();
+			}
+			if(boxItemGroupComparator == null) {
+				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
+			}
+			if(firstBoxItemGroupComparator == null) {
+				firstBoxItemGroupComparator = new LargestAreaBoxItemGroupComparator();
+			}
+			if(firstBoxItemComparator == null) {
+				firstBoxItemComparator = new LargestAreaBoxItemComparator();
+			}
+			if(firstIntermediatePlacementResultComparator == null) {
+				firstIntermediatePlacementResultComparator = new LargestAreaIntermediatePlacementResultComparator();
+			}
+			return new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, intermediatePlacementResultComparator, boxItemComparator, boxItemGroupComparator, firstBoxItemGroupComparator, firstBoxItemComparator, firstIntermediatePlacementResultComparator);
 		}
 	}
 
-	public LargestAreaFitFirstPackager(IntermediatePackagerResultComparator packResultComparator) {
-		super(packResultComparator);
+	protected ComparatorIntermediatePlacementResultBuilderFactory intermediatePlacementResultBuilderFactory = new ComparatorIntermediatePlacementResultBuilderFactory();
+	protected Comparator<IntermediatePlacementResult> intermediatePlacementResultComparator;
+	protected Comparator<BoxItem> boxItemComparator;
+	protected Comparator<BoxItemGroup> boxItemGroupComparator;
+	
+	protected Comparator<BoxItemGroup> firstBoxItemGroupComparator;
+	protected Comparator<BoxItem> firstBoxItemComparator;
+	protected Comparator<IntermediatePlacementResult> firstIntermediatePlacementResultComparator;
+	
+	public LargestAreaFitFirstPackager(IntermediatePackagerResultComparator comparator, Comparator<IntermediatePlacementResult> intermediatePlacementResultComparator, Comparator<BoxItem> boxItemComparator, Comparator<BoxItemGroup> boxItemGroupComparator, Comparator<BoxItemGroup> firstBoxItemGroupComparator, Comparator<BoxItem> firstBoxItemComparator, Comparator<IntermediatePlacementResult> firstIntermediatePlacementResultComparator) {
+		super(comparator);
+		
+		this.intermediatePlacementResultComparator = intermediatePlacementResultComparator;
+		this.boxItemComparator = boxItemComparator;
+		this.boxItemGroupComparator = boxItemGroupComparator;
+		
+		this.firstBoxItemGroupComparator = firstBoxItemGroupComparator;
+		this.firstBoxItemComparator = firstBoxItemComparator;
+		this.firstIntermediatePlacementResultComparator = firstIntermediatePlacementResultComparator;
 	}
 
-	public DefaultPackResult pack(List<Box> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt) {
-		List<Box> remainingStackables = new ArrayList<>(stackables);
 
-		LevelStack stack = new LevelStack(targetContainer);
+	public DefaultIntermediatePackagerResult pack(List<BoxItem> boxes, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+		ContainerItem containerItem = compositeContainerItem.getContainerItem();
+		Container container = containerItem.getContainer();
 
-		List<Box> scopedStackables = stackables
-				.stream()
-				.filter(s -> s.getVolume() <= targetContainer.getMaxLoadVolume() && s.getWeight() <= targetContainer.getMaxLoadWeight())
-				.collect(Collectors.toList());
+		LevelStack stack = new LevelStack(container);
 
-		ExtremePoints3D extremePoints3D = new ExtremePoints3D(targetContainer.getLoadDx(), targetContainer.getLoadDy(), targetContainer.getLoadDz());
-		extremePoints3D.setMinimumAreaAndVolumeLimit(getMinStackableArea(scopedStackables), getMinStackableVolume(scopedStackables));
+		List<BoxItem> scopedBoxItems = boxes.stream().filter(s -> container.fitsInside(s.getBox())).collect(Collectors.toList());
+		if(scopedBoxItems.isEmpty()) {
+			return new DefaultIntermediatePackagerResult(containerItem, stack);
+		}
+		
+		DefaultFilteredBoxItems filteredBoxItems = new DefaultFilteredBoxItems(scopedBoxItems);
+
+		ExtremePoints3D extremePoints3D = new ExtremePoints3D();
+		extremePoints3D.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
+		extremePoints3D.setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());
+
+		BoxItemListener listener = compositeContainerItem.createBoxItemListener(container, stack, filteredBoxItems, extremePoints3D);
+
+		int remainingLoadWeight = container.getMaxLoadWeight();
 
 		int levelOffset = 0;
 
-		while (!scopedStackables.isEmpty()) {
+		Stack levelStack = null;
+		boolean newLevel = true;
+
+		while (remainingLoadWeight > 0 && !filteredBoxItems.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
 				// fit2d below might have returned due to deadline
-
-				return null;
+				throw new PackagerInterruptedException();
 			}
-
-			int maxWeight = stack.getFreeWeightLoad();
-
-			// there is only point, spanning the free space in the level
-			Point firstPoint = extremePoints3D.get(0);
-
-			int firstIndex = -1;
-			BoxStackValue firstStackValue = null;
-			Box firstBox = null;
-
-			// pick the box with the highest area
-			for (int i = 0; i < scopedStackables.size(); i++) {
-				Box box = scopedStackables.get(i);
-				if(box.getWeight() > maxWeight) {
-					continue;
-				}
-				if(firstBox != null && !FIRST_STACKABLE_FILTER.filter(firstBox, box)) {
-					continue;
-				}
-				for (BoxStackValue stackValue : box.getStackValues()) {
-					if(!firstPoint.fits3D(stackValue)) {
-						continue;
-					}
-					if(firstStackValue != null && !betterAsFirst(firstBox, firstPoint, firstStackValue, box, firstPoint, stackValue)) {
-						continue;
-					}
-
-					firstIndex = i;
-					firstStackValue = stackValue;
-					firstBox = box;
-				}
-			}
-
-			if(firstIndex == -1) {
-				break;
-			}
-			Box stackable = scopedStackables.remove(firstIndex);
-			remainingStackables.remove(stackable);
-
-			Container levelStackValue = stack.getContainerStackValue(firstStackValue.getDz());
-			Stack levelStack = new Stack();
-			stack.add(levelStack);
-
-			StackPlacement first = new StackPlacement(stackable, firstStackValue, 0, 0, 0);
-
-			levelStack.add(first);
-
-			int maxRemainingLevelWeight = levelStackValue.getMaxLoadWeight() - stackable.getWeight();
-
-			extremePoints3D.reset(targetContainer.getLoadDx(), targetContainer.getLoadDy(), firstStackValue.getDz());
-			extremePoints3D.add(0, first);
-
-			while (!extremePoints3D.isEmpty() && maxRemainingLevelWeight > 0 && !scopedStackables.isEmpty()) {
-				long maxPointVolume = extremePoints3D.getMaxVolume();
-				long maxPointArea = extremePoints3D.getMaxArea();
-
-				int bestPointIndex = -1;
-				int bestIndex = -1;
-				BoxStackValue bestStackValue = null;
-				Box bestStackable = null;
-
-				for (int i = 0; i < scopedStackables.size(); i++) {
-					Box box = scopedStackables.get(i);
-					if(box.getVolume() > maxPointVolume) {
-						continue;
-					}
-					if(box.getWeight() > maxRemainingLevelWeight) {
-						continue;
-					}
-
-					if(bestStackValue != null && !DEFAULT_STACKABLE_FILTER.filter(bestStackable, box)) {
-						continue;
-					}
-					for (BoxStackValue stackValue : box.getStackValues()) {
-						if(stackValue.getArea() > maxPointArea) {
-							continue;
-						}
-						if(firstStackValue.getDz() < stackValue.getDz()) {
-							continue;
-						}
-
-						int currentPointsCount = extremePoints3D.size();
-						for (int k = 0; k < currentPointsCount; k++) {
-							Point point3d = extremePoints3D.get(k);
-
-							if(!point3d.fits3D(stackValue)) {
-								continue;
-							}
-							if(bestIndex != -1 && !betterAsNext(bestStackable, extremePoints3D.get(bestPointIndex), bestStackValue, box, point3d, stackValue)) {
-								continue;
-							}
-							bestPointIndex = k;
-							bestIndex = i;
-							bestStackValue = stackValue;
-							bestStackable = box;
-						}
-					}
-				}
-
-				if(bestIndex == -1) {
+			
+			IntermediatePlacementResult result;
+			if(newLevel) {
+				// first
+				result = findBestFirstPoint(filteredBoxItems, extremePoints3D, compositeContainerItem.getFilteredPointsBuilderFactory(), container, stack);
+				if(result == null) {
 					break;
 				}
+				levelStack = new Stack();
+				stack.add(levelStack);
+				
+				DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, result.getStackValue().getDz() - 1 + levelOffset);
+				
+				extremePoints3D.setInitialPoints(Arrays.asList(levelFloor));
+				extremePoints3D.clear();
+				
+				levelOffset += result.getStackValue().getDz();
 
-				Box remove = scopedStackables.remove(bestIndex);
-				remainingStackables.remove(remove);
+				newLevel = false;
+			} else {
+				// next
+				result = findBestPoint(filteredBoxItems, extremePoints3D, compositeContainerItem.getFilteredPointsBuilderFactory(), container, levelStack);
+				if(result == null) {
+					newLevel = true;
 
-				Point point = extremePoints3D.get(bestPointIndex);
-
-				StackPlacement stackPlacement = new StackPlacement(remove, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ());
-				levelStack.add(stackPlacement);
-				extremePoints3D.add(bestPointIndex, stackPlacement);
-
-				boolean minArea = bestStackValue.getArea() == extremePoints3D.getMinAreaLimit();
-				boolean minVolume = extremePoints3D.getMinVolumeLimit() == bestStackable.getVolume();
-				if(minArea && minVolume) {
-					extremePoints3D.setMinimumAreaAndVolumeLimit(getMinStackableArea(scopedStackables), getMinStackableVolume(scopedStackables));
-				} else if(minArea) {
-					extremePoints3D.setMinimumAreaLimit(getMinStackableArea(scopedStackables));
-				} else if(minVolume) {
-					extremePoints3D.setMinimumVolumeLimit(getMinStackableVolume(scopedStackables));
+					int remainingDz = container.getLoadDz() - levelOffset;
+					if(remainingDz == 0) {
+						break;
+					}
+					
+					DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, container.getLoadDz() - 1);
+					extremePoints3D.setInitialPoints(Arrays.asList(levelFloor));
+					extremePoints3D.clear();
+					
+					continue;
 				}
-
-				maxRemainingLevelWeight -= remove.getWeight();
 			}
+			
+			StackPlacement stackPlacement = new StackPlacement(null, 
+					result.getBoxItem(), 
+					result.getStackValue(), 
+					result.getPoint().getMinX(), 
+					result.getPoint().getMinY(), 
+					result.getPoint().getMinZ()
+			);
 
-			// move boxes up
-			for (StackPlacement stackPlacement : levelStack.getPlacements()) {
-				stackPlacement.setZ(levelOffset + stackPlacement.getAbsoluteZ());
+			levelStack.add(stackPlacement);
+			extremePoints3D.add(result.getPoint(), stackPlacement);
+			
+			remainingLoadWeight -= result.getBoxItem().getBox().getWeight();
+			
+			result.getBoxItem().decrement();
+			
+			listener.accepted(result.getBoxItem());
+			
+			filteredBoxItems.removeEmpty();
+			
+			if(!filteredBoxItems.isEmpty()) {
+				extremePoints3D.updateMinimums(result.getStackValue(), filteredBoxItems);
 			}
-
-			levelOffset += firstStackValue.getDz();
-
-			int remainingDz = targetContainer.getLoadDz() - levelOffset;
-			if(remainingDz == 0) {
-				break;
-			}
-			extremePoints3D.reset(targetContainer.getLoadDx(), targetContainer.getLoadDy(), remainingDz);
 		}
-
-		return new DefaultPackResult(new Container(targetContainer.getId(), targetContainer.getDescription(), 
-				targetContainer.getDx(), targetContainer.getDy(),targetContainer.getDz(),
-				
-				targetContainer.getEmptyWeight(), 
-
-				targetContainer.getLoadDx(), targetContainer.getLoadDy(), targetContainer.getLoadDz(),
-				targetContainer.getMaxLoadWeight(),
-				stack),
-				
-				stack, remainingStackables.isEmpty(), index);
+		
+		return new DefaultIntermediatePackagerResult(compositeContainerItem.getContainerItem(), stack);
 	}
 
+	public DefaultIntermediatePackagerResult pack(List<BoxItemGroup> boxItemGroups, Order itemGroupOrder, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt) {
+		ContainerItem containerItem = compositeContainerItem.getContainerItem();
+		Container container = containerItem.getContainer();
+		
+		List<BoxItemGroup> scopedBoxItemGroups = getFitsInside(boxItemGroups, container);
 
+		DefaultFilteredBoxItemGroups filteredBoxItemGroups = new DefaultFilteredBoxItemGroups(scopedBoxItemGroups);
+
+		LevelStack stack = new LevelStack(container);
+
+		MarkResetExtremePoints3D extremePoints3D = new MarkResetExtremePoints3D();
+		extremePoints3D.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
+		extremePoints3D.setMinimumAreaAndVolumeLimit(filteredBoxItemGroups.getMinArea(), filteredBoxItemGroups.getMinVolume());
+
+		BoxItemGroupListener listener = compositeContainerItem.createBoxItemGroupListener(container, stack, filteredBoxItemGroups, extremePoints3D);
+
+		BoxItemGroupIterator boxItemGroupIterator = createBoxItemGroupIterator(filteredBoxItemGroups, itemGroupOrder, container, extremePoints3D);
+
+		groups:
+		while (!extremePoints3D.isEmpty() && !filteredBoxItemGroups.isEmpty() && boxItemGroupIterator.hasNext()) {
+			int bestBoxItemGroupIndex = boxItemGroupIterator.next();
+
+			BoxItemGroup boxItemGroup = filteredBoxItemGroups.remove(bestBoxItemGroupIndex);
+
+			extremePoints3D.mark();
+			int markStackSize = stack.size();
+			
+			while(!boxItemGroup.isEmpty()) {
+				
+				DefaultFilteredBoxItems items = new DefaultFilteredBoxItems(boxItemGroup.getItems()); 
+				
+				IntermediatePlacementResult bestPoint = findBestPoint(items, extremePoints3D, compositeContainerItem.getFilteredPointsBuilderFactory(), container, stack);
+				if(bestPoint == null) {
+					if(itemGroupOrder == Order.FIXED) {
+						break groups;
+					}
+					// discard the whole group
+					extremePoints3D.reset();
+					stack.setSize(markStackSize);
+
+					continue groups;
+				}
+				
+				bestPoint.getBoxItem().decrement();
+
+				StackPlacement stackPlacement = new StackPlacement(boxItemGroup, bestPoint.getBoxItem(), bestPoint.getStackValue(), bestPoint.getPoint().getMinX(), bestPoint.getPoint().getMinY(), bestPoint.getPoint().getMinZ());
+				stack.add(stackPlacement);
+				extremePoints3D.add(bestPoint.getPoint(), stackPlacement);
+
+				if(!boxItemGroup.isEmpty()) {
+					extremePoints3D.updateMinimums(bestPoint.getStackValue(), filteredBoxItemGroups);
+				}
+
+			}
+			
+			if(container.getMaxLoadWeight() < extremePoints3D.getUsedWeight()) {
+				throw new RuntimeException();
+			}
+			
+			// successfully stacked group
+			listener.accepted(boxItemGroup);
+
+		}
+		
+		return new DefaultIntermediatePackagerResult(containerItem, stack);
+	}
+
+	
+	protected BoxItemGroupIterator createBoxItemGroupIterator(FilteredBoxItemGroups filteredBoxItemGroups, Order itemGroupOrder, Container container, ExtremePoints extremePoints) {
+		if(itemGroupOrder == Order.FIXED) {
+			return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints, boxItemGroupComparator);
+		}
+		return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints);
+	}
+
+	public IntermediatePlacementResult findBestPoint(FilteredBoxItems boxItems, ExtremePoints extremePoints, FilteredPointsBuilderFactory filteredPointsBuilderFactory, Container container, Stack stack) {
+		return intermediatePlacementResultBuilderFactory.createIntermediatePlacementResultBuilder()
+			.withContainer(container)
+			.withExtremePoints(extremePoints)
+			.withStack(stack)
+			.withFilteredBoxItems(boxItems)
+			.withFilteredPointsBuilderFactory(filteredPointsBuilderFactory)
+			.withIntermediatePlacementResultComparator(intermediatePlacementResultComparator)
+			.withBoxItemComparator(boxItemComparator)
+			.build();
+	}
+	
+	public IntermediatePlacementResult findBestFirstPoint(FilteredBoxItems boxItems, ExtremePoints extremePoints, FilteredPointsBuilderFactory filteredPointsBuilderFactory, Container container, Stack stack) {
+		return intermediatePlacementResultBuilderFactory.createIntermediatePlacementResultBuilder()
+			.withContainer(container)
+			.withExtremePoints(extremePoints)
+			.withStack(stack)
+			.withFilteredBoxItems(boxItems)
+			.withFilteredPointsBuilderFactory(filteredPointsBuilderFactory)
+			.withIntermediatePlacementResultComparator(firstIntermediatePlacementResultComparator)
+			.withBoxItemComparator(firstBoxItemComparator)
+			.build();
+	}
 }

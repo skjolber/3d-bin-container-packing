@@ -11,16 +11,6 @@ import com.github.skjolber.packing.packer.AbstractDefaultPackager;
  */
 public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaultPackager {
 
-	public static BoxFilter FIRST_STACKABLE_FILTER = (best, candidate) -> {
-		// return true if the candidate might be better than the current best
-		return candidate.getMaximumArea() >= best.getMinimumArea();
-	};
-
-	public static BoxFilter DEFAULT_STACKABLE_FILTER = (best, candidate) -> {
-		// return true if the candidate might be better than the current best
-		return candidate.getVolume() >= best.getVolume();
-	};	
-	
 	public AbstractLargestAreaFitFirstPackager(IntermediatePackagerResultComparator packResultComparator) {
 		super(packResultComparator);
 	}

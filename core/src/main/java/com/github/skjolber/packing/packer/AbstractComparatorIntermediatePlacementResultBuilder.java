@@ -28,9 +28,11 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 	@Override
 	public T build() {
 		T result = null;
-
+		
 		long maxPointArea = extremePoints.getMaxArea();		
 		long maxPointVolume = extremePoints.getMaxVolume();
+		
+		long maxWeight = container.getMaxLoadWeight() - stack.getWeight();
 		
 		for (BoxItem boxItem : boxItems) {
 			Box box = boxItem.getBox();
@@ -43,10 +45,14 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 				continue;
 			}
 			
+			if(box.getWeight() > maxWeight) {
+				continue;
+			}
+			
 			// a negative integer, zero, or a positive integer as the 
 			// first argument is less than, equal to, or greater than the
 		    // second.
-			if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) > 0) {
+			if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
 				continue;
 			}
 
@@ -72,15 +78,14 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 					if(!point3d.fits3D(stackValue)) {
 						continue;
 					}
-	
 					T intermediatePlacementResult = createIntermediatePlacementResult(boxItem, point3d, stackValue);
 					
-					if(result != null && intermediatePlacementResultComparator.compare(result, intermediatePlacementResult) > 0) {
+					if(result != null && intermediatePlacementResultComparator.compare(result, intermediatePlacementResult) >= 0) {
 						continue;
 					}
 					
 					result = intermediatePlacementResult;
-				}
+				} 
 			}
 
 		}

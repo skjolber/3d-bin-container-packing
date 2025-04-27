@@ -25,7 +25,7 @@ public class DefaultPackResult implements PackResult {
 
 	@Override
 	public int getSize() {
-		return stack.getSize();
+		return stack.size();
 	}
 
 	@Override

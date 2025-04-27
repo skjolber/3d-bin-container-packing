@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -15,7 +16,7 @@ public class PackagerResult {
 	protected final boolean timeout;
 
 	public PackagerResult(List<Container> containers, long duration, boolean timeout) {
-		this.containers = containers;
+		this.containers = containers != null ? containers : Collections.emptyList();
 		this.duration = duration;
 		this.timeout = timeout;
 	}

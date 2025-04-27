@@ -256,7 +256,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			Container fits = build.getContainers().get(0);
 			assertNotNull(bouwkampCode.getName(), fits);
 			assertValid(fits);
-			assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), squares.size());
+			assertEquals(bouwkampCode.getName(), fits.getStack().size(), squares.size());
 		} finally {
 			packager.close();
 		}

@@ -109,7 +109,7 @@ public class AbstractPackagerTest {
 
 		Container fits = result.get(0);
 		assertNotNull(bouwkampCode.getName(), fits);
-		assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), squares.size());
+		assertEquals(bouwkampCode.getName(), fits.getStack().size(), squares.size());
 
 		for (StackPlacement stackPlacement : fits.getStack().getPlacements()) {
 			BoxStackValue stackValue = stackPlacement.getStackValue();

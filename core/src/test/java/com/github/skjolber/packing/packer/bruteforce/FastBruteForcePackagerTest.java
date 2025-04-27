@@ -180,7 +180,7 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 			assertNotNull(bouwkampCode.getName(), fits);
 			assertValid(fits);
-			assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), squares.size());
+			assertEquals(bouwkampCode.getName(), fits.getStack().size(), squares.size());
 		} finally {
 			packager.close();
 		}

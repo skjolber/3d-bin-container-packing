@@ -373,7 +373,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			assertEquals(containers.size(), 2);
 			
 			for(Container c : containers) {
-				assertEquals(c.getStack().getSize(), 1);
+				assertEquals(c.getStack().size(), 1);
 			}
 			
 			assertEquals(containers.get(0).getStack().getPlacements().get(0).getBoxItem().getBox().getId(), "matches-2");
@@ -410,12 +410,12 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2))
 					.build();
-			
+			assertTrue(build.isSuccess());
 			List<Container> containers = build.getContainers();
 			assertEquals(containers.size(), 2);
 			
 			for(Container c : containers) {
-				assertEquals(c.getStack().getSize(), 1);
+				assertEquals(c.getStack().size(), 1);
 			}
 			
 			assertEquals(containers.get(0).getStack().getPlacements().get(0).getBoxItem().getBox().getId(), "petrol-1");
@@ -520,7 +520,8 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2))
 					.build();
-			
+			assertTrue(build.isSuccess());
+
 			List<Container> containers = build.getContainers();
 			assertEquals(containers.size(), 2);
 

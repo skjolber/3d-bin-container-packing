@@ -27,9 +27,9 @@ public class DefaultIntermediatePackagerResultComparator implements Intermediate
 		}
 
 		// load count - more is better
-		if(o1.getSize() > o2.getSize()) {
+		if(o1.size() > o2.size()) {
 			return ARGUMENT_1_IS_BETTER;
-		} else if(o1.getSize() < o2.getSize()) {
+		} else if(o1.size() < o2.size()) {
 			return ARGUMENT_2_IS_BETTER;
 		}
 

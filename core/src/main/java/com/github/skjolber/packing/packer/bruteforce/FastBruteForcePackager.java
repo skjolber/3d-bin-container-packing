@@ -76,7 +76,9 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			}			
 			
 			this.stackPlacements = getPlacements(stackableCount);
-			this.extremePoints3D = new FastExtremePoints3DStack(1, 1, 1, count);
+			this.extremePoints3D = new FastExtremePoints3DStack(count);
+			this.extremePoints3D.reset(1, 1, 1);
+
 		}
 
 		private List<StackPlacement> getPlacements(int size) {
@@ -105,7 +107,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			Container container = bruteForceResult.getContainer();
 			Stack stack = container.getStack();
 
-			int size = stack.getSize();
+			int size = stack.size();
 			if(stackPlacements.size() > size) {
 				// this result does not consume all placements
 				// remove consumed items from the iterators

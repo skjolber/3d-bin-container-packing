@@ -208,10 +208,10 @@ public class LevelStack extends Stack {
 	}
 
 	@Override
-	public int getSize() {
+	public int size() {
 		int count = 0;
 		for (Stack stack : levels) {
-			count += stack.getSize();
+			count += stack.size();
 		}
 		return count;
 	}

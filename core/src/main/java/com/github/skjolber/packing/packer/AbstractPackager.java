@@ -57,7 +57,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 				if(result == null) {
 					return null; // timeout, no result
 				}
-				if(result.getStack().getSize() == adapter.countRemainingBoxes()) {
+				if(result.getStack().size() == adapter.countRemainingBoxes()) {
 					return result;
 				}
 			}
@@ -87,7 +87,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 						// return best result so far, whatever it is
 						break search;
 					}
-					if(result.getStack().getSize() == adapter.countRemainingBoxes()) {
+					if(result.getStack().size() == adapter.countRemainingBoxes()) {
 						results[nextContainerItemIndex] = result;
 
 						iterator.lower();
@@ -230,7 +230,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 
 				if(result == null) {
 					// timeout, unless already have a result ready
-					if(best != null && best.getStack().getSize() == adapter.countRemainingBoxes()) {
+					if(best != null && best.getStack().size() == adapter.countRemainingBoxes()) {
 						containerPackResults.add(adapter.accept(best));
 
 						return containerPackResults;

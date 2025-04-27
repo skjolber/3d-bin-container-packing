@@ -10,9 +10,9 @@ public interface ExtremePoints extends FilteredPoints {
 
 	List<Point> getValues();
 
-	void reset(int dx, int dy, int dz);
+	void clearToSize(int dx, int dy, int dz);
 
-	void redo();
+	void clear();
 	
 	List<StackPlacement> getPlacements();
 

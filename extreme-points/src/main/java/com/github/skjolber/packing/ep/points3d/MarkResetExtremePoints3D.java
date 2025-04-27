@@ -13,12 +13,12 @@ public class MarkResetExtremePoints3D extends ExtremePoints3D {
 
 	protected ArrayList<StackPlacement> markPlacements = new ArrayList<>();
 	
-	public MarkResetExtremePoints3D(int dx, int dy, int dz, boolean cloneOnConstrain) {
-		super(dx, dy, dz, cloneOnConstrain);
+	public MarkResetExtremePoints3D(boolean cloneOnConstrain) {
+		super(cloneOnConstrain);
 	}
 
-	public MarkResetExtremePoints3D(int dx, int dy, int dz) {
-		super(dx, dy, dz);
+	public MarkResetExtremePoints3D() {
+		this(false);
 	}
 	
 	public void mark() {

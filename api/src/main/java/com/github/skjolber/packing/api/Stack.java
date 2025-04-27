@@ -70,7 +70,7 @@ public class Stack implements Serializable, Iterable<StackPlacement> {
 		return entries.isEmpty();
 	}
 
-	public int getSize() {
+	public int size() {
 		return entries.size();
 	}
 

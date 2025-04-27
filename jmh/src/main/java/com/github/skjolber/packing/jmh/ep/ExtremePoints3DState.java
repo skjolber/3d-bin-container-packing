@@ -93,7 +93,7 @@ public class ExtremePoints3DState {
 			throw new IllegalStateException("Still have " + points.size() + ": " + points.getValues());
 		}
 
-		points.redo();
+		points.clear();
 
 		entries.add(extremePointsEntries);
 	}

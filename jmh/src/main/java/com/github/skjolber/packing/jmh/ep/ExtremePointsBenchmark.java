@@ -56,7 +56,7 @@ public class ExtremePointsBenchmark {
 			}
 			size += extremePoints3D.size();
 
-			extremePoints3D.redo();
+			extremePoints3D.clear();
 		}
 
 		return size;

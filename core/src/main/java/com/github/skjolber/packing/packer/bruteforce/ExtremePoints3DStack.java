@@ -7,6 +7,7 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
+import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 
 public class ExtremePoints3DStack extends ExtremePoints3D {
 
@@ -23,8 +24,8 @@ public class ExtremePoints3DStack extends ExtremePoints3D {
 	protected List<StackItem> stackItems = new ArrayList<>();
 	protected int stackIndex = 0;
 
-	public ExtremePoints3DStack(int dx, int dy, int dz, int maxStackDepth) {
-		super(dx, dy, dz, true);
+	public ExtremePoints3DStack(int maxStackDepth) {
+		super(true);
 
 		for (int i = 0; i < maxStackDepth; i++) {
 			stackItems.add(new StackItem());
@@ -132,7 +133,7 @@ public class ExtremePoints3DStack extends ExtremePoints3D {
 		stackItem.otherValues.clear();
 		stackItem.point = null;
 
-		stackItem.values.add(firstPoint);
+		stackItem.values.add(createContainerPoint());
 
 		loadCurrent();
 	}

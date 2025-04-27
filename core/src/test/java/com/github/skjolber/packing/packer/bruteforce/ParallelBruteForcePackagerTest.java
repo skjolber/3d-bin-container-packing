@@ -55,7 +55,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 	
 			Container fits = build.get(0);
 			assertValid(fits);
-			assertEquals(fits.getStack().getSize(), products.size());
+			assertEquals(fits.getStack().size(), products.size());
 	
 			List<StackPlacement> placements = fits.getStack().getPlacements();
 	
@@ -159,7 +159,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 			assertValid(build);
 	
 			Container fits = build.get(0);
-			assertEquals(fits.getStack().getSize(), products.size());
+			assertEquals(fits.getStack().size(), products.size());
 		} finally {
 			packager.close();
 		}
@@ -186,7 +186,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 			assertValid(build);
 			Container fits = build.get(0);
 	
-			assertEquals(fits.getStack().getSize(), products.size());
+			assertEquals(fits.getStack().size(), products.size());
 		} finally {
 			packager.close();
 		}
@@ -258,7 +258,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 	
 			assertNotNull(bouwkampCode.getName(), fits);
 			assertValid(fits);
-			assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), squares.size());
+			assertEquals(bouwkampCode.getName(), fits.getStack().size(), squares.size());
 		} finally {
 			packager.close();
 		}

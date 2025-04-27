@@ -75,7 +75,7 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 
 		Container fits = result.get(0);
 		assertNotNull(fits);
-		assertEquals(fits.getStack().getSize(), products.size());
+		assertEquals(fits.getStack().size(), products.size());
 
 		write(fits);
 	}

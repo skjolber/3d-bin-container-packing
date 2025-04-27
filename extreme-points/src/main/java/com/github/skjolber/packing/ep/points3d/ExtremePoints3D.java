@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.ep.points3d;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -62,43 +63,31 @@ public class ExtremePoints3D implements ExtremePoints {
 	protected final boolean immutablePoints;
 
 	protected StackPlacement containerPlacement;
-	protected Default3DPlanePoint3D firstPoint;
 
 	protected CustomIntXComparator xxComparator = new CustomIntXComparator();
 	protected CustomIntYComparator yyComparator = new CustomIntYComparator();
 	protected CustomIntZComparator zzComparator = new CustomIntZComparator();
+	
+	protected List<SimplePoint3D> initialPoints = Collections.emptyList();
 
-	public ExtremePoints3D(int dx, int dy, int dz) {
-		this(dx, dy, dz, false);
+	public ExtremePoints3D() {
+		this(false);
 	}
 
-	public ExtremePoints3D(int dx, int dy, int dz, boolean immutablePoints) {
-		setSize(dx, dy, dz);
+	public ExtremePoints3D(boolean immutablePoints) {
 		this.immutablePoints = immutablePoints;
-
-		values.add(firstPoint);
 	}
 
-	protected void setSize(int dx, int dy, int dz) {
+	public void setSize(int dx, int dy, int dz) {
 		this.containerMaxX = dx - 1;
 		this.containerMaxY = dy - 1;
 		this.containerMaxZ = dz - 1;
 
 		this.containerPlacement = createContainerPlacement();
-
-		this.firstPoint = new Default3DPlanePoint3D(
-				0, 0, 0,
-				containerMaxX, containerMaxY, containerMaxZ,
-				containerPlacement,
-				containerPlacement,
-				containerPlacement);
-		
-		this.firstPoint.setIndex(0);
 	}
 
 	@SuppressWarnings("unchecked")
 	private StackPlacement createContainerPlacement() {
-		
 		BoxStackValue value = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, containerMaxY + 1, null, -1);
 		
 		return new StackPlacement(null, null, value, 0, 0, 0);
@@ -1522,18 +1511,84 @@ public class ExtremePoints3D implements ExtremePoints {
 		return maxPointArea;
 	}
 
-	public void redo() {
+	public void clear() {
 		values.clear();
 		placements.clear();
 
-		values.add(firstPoint);
+		if(initialPoints.isEmpty()) {
+			SimplePoint3D origin = createContainerPoint();
+			values.add(origin);
+		} else {
+			for (SimplePoint3D simplePoint3D : initialPoints) {
+				SimplePoint3D clone = simplePoint3D.clone();
+				clone.setIndex(values.size());
+				values.add(clone);
+			}
+		}
+		minAreaLimit = 0;
+		minVolumeLimit = 0;
+	}
+	
+	public void setInitialPoints(List<Point> points) {
+		// transform coordinates to internal representation, i.e. with support etc
+		initialPoints = new ArrayList<>(points.size());
+		
+		for(Point p: points) {
+			boolean xyPlane = p.getMinZ() == 0;
+			boolean yzPlane = p.getMinX() == 0;
+			boolean xzPlane = p.getMinY() == 0;
+			
+			if(p.getMaxX() > containerMaxX) {
+				throw new IllegalArgumentException();
+			}
+			if(p.getMaxY() > containerMaxY) {
+				throw new IllegalArgumentException();
+			}
+			if(p.getMaxZ() > containerMaxZ) {
+				throw new IllegalArgumentException();
+			}
+
+			if(xyPlane && yzPlane && xzPlane) {
+				initialPoints.add(new Default3DPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement, containerPlacement));
+			} else if(yzPlane && xzPlane) {
+				initialPoints.add(new DefaultXZPlaneYZPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement));
+			} else if(xyPlane && xzPlane) {
+				initialPoints.add(new DefaultXYPlaneXZPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement));
+			} else if(xyPlane && yzPlane) {
+				initialPoints.add(new DefaultXYPlaneYZPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement));
+			} else if(xyPlane) {
+				initialPoints.add(new DefaultXYPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement));
+			} else if(xzPlane) {
+				initialPoints.add(new DefaultXZPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement));
+			} else if(yzPlane) {
+				initialPoints.add(new DefaultYZPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement));
+			} else {
+				initialPoints.add(new DefaultPoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ()));
+			}
+		}
+		
+		for(int i = 0; i < initialPoints.size(); i++) {
+			initialPoints.get(i).setIndex(i);
+		}
+	}
+
+	protected SimplePoint3D createContainerPoint() {
+		SimplePoint3D firstPoint = new Default3DPlanePoint3D(
+				0, 0, 0,
+				containerMaxX, containerMaxY, containerMaxZ,
+				containerPlacement,
+				containerPlacement,
+				containerPlacement);
+		
+		firstPoint.setIndex(0);
+		return firstPoint;
 	}
 
 	@Override
-	public void reset(int dx, int dy, int dz) {
+	public void clearToSize(int dx, int dy, int dz) {
 		setSize(dx, dy, dz);
 
-		redo();
+		clear();
 	}
 
 	public int findPoint(int x, int y, int z) {
@@ -1787,4 +1842,21 @@ public class ExtremePoints3D implements ExtremePoints {
 			setMinimumVolumeLimit(filteredBoxItemGroups.getMinVolume());
 		}
 	}
+	
+	public int getDx() {
+		return containerMaxX + 1; 
+	}
+	
+	public int getDy() {
+		return containerMaxY + 1; 
+	}
+	
+	public int getDz() {
+		return containerMaxZ + 1; 
+	}
+
+	public void clearInitialPoints() {
+		initialPoints.clear();
+	}
+	
 }

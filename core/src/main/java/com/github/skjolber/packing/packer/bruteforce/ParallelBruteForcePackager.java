@@ -140,7 +140,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		public RunnableAdapter(int placementsCount, int maxIteratorLength, long minStackableItemVolume, long minStackableArea) {
 			this.placements = getPlacements(placementsCount);
 
-			this.extremePoints3D = new ExtremePoints3DStack(1, 1, 1, maxIteratorLength + 1);
+			this.extremePoints3D = new ExtremePoints3DStack(maxIteratorLength + 1);
+			this.extremePoints3D.reset(1, 1, 1);
 		}
 
 		public void setContainer(Container container) {
@@ -264,7 +265,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				// this result does not consume all placements
 				// remove consumed items from the iterators
 
-				int size = container.getStack().getSize();
+				int size = container.getStack().size();
 
 				PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
 

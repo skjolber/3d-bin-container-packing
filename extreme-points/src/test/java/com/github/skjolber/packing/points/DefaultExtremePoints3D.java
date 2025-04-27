@@ -6,8 +6,8 @@ import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 
 public class DefaultExtremePoints3D extends ExtremePoints3D {
 
-	public DefaultExtremePoints3D(int dx, int dy, int dz) {
-		super(dx, dy, dz);
+	public DefaultExtremePoints3D() {
+		super();
 	}
 
 	@Override
