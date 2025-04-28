@@ -15,7 +15,7 @@
 	    <http-client5.version>5.4.2</http-client5.version>
 	    <spring.version>6.2.3</spring.version>
 		<httpclient5.version>5.4.1</httpclient5.version>
-		<open-api-generator.version>7.10.0</open-api-generator.version>
+		<open-api-generator.version>7.13.0</open-api-generator.version>
 		<jakarta.validation-api.version>3.1.1</jakarta.validation-api.version>
 		<jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
 		<jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
