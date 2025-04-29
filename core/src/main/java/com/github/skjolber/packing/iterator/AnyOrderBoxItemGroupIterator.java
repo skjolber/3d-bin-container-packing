@@ -88,7 +88,8 @@ public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 	public int next() {
 		if(dirty) {
 			next = getBestItemGroup();
-			dirty = false;
+		} else {
+			dirty = true;
 		}
 		return next;
 	}

@@ -180,17 +180,12 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			assertNotNull(fits);
 	
-			LevelStack levelStack = (LevelStack)fits.getStack();
-	
-			for (Stack stack : levelStack.getLevels()) {
-				System.out.println(stack);
-				for (StackPlacement stackPlacement : stack) {
-					System.out.println(stackPlacement);
-				}
+			System.out.println(fits.getStack());
+			for (StackPlacement stackPlacement : fits.getStack()) {
+				System.out.println(stackPlacement);
 			}
 
 			validate(fits);
-			assertEquals(2, levelStack.getLevels().size());
 
 			List<StackPlacement> placements = fits.getStack().getPlacements();
 	
@@ -228,9 +223,6 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			assertNotNull(fits);
 			validate(fits);
-	
-			LevelStack levelStack = (LevelStack)fits.getStack();
-			assertEquals(3, levelStack.getLevels().size());
 		} finally {
 			packager.close();
 		}

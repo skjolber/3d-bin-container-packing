@@ -275,12 +275,12 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 			extremePoints3D.mark();
 			
 			int markStackSize = stack.size();
-			
-			while(!boxItemGroup.isEmpty()) {
+
+			DefaultFilteredBoxItems boxItems = new DefaultFilteredBoxItems(new ArrayList<>(boxItemGroup.getItems())); 
+
+			while(!boxItems.isEmpty()) {
 				
-				DefaultFilteredBoxItems items = new DefaultFilteredBoxItems(boxItemGroup.getItems()); 
-				
-				IntermediatePlacementResult bestPoint = findBestPoint(items, extremePoints3D, compositeContainerItem.getFilteredPointsBuilderFactory(), container, stack);
+				IntermediatePlacementResult bestPoint = findBestPoint(boxItems, extremePoints3D, compositeContainerItem.getFilteredPointsBuilderFactory(), container, stack);
 				if(bestPoint == null) {
 					if(itemGroupOrder == Order.FIXED) {
 						break groups;
@@ -294,11 +294,13 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 				
 				bestPoint.getBoxItem().decrement();
 
+				boxItems.removeEmpty();
+				
 				StackPlacement stackPlacement = new StackPlacement(boxItemGroup, bestPoint.getBoxItem(), bestPoint.getStackValue(), bestPoint.getPoint().getMinX(), bestPoint.getPoint().getMinY(), bestPoint.getPoint().getMinZ());
 				stack.add(stackPlacement);
 				extremePoints3D.add(bestPoint.getPoint(), stackPlacement);
 
-				if(!boxItemGroup.isEmpty()) {
+				if(!boxItems.isEmpty()) {
 					extremePoints3D.updateMinimums(bestPoint.getStackValue(), filteredBoxItemGroups);
 				}
 
