@@ -3,7 +3,12 @@ package com.github.skjolber.packing.ep.points2d;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+
+import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
+import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 
 /**
  * 
@@ -12,12 +17,48 @@ import java.util.List;
  */
 
 @SuppressWarnings("unchecked")
-public class Point2DFlagList {
+public class Point2DFlagList implements Iterable<Point> {
 
+	private static class PointIterator implements Iterator<Point> {
+
+		private int size;
+		private SimplePoint2D[] points;
+		private int index = 0;
+
+		public void set(int size, SimplePoint2D[] points) {
+			this.size = size;
+			this.points = points;
+			this.index = 0;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return index < size;
+		}
+
+		@Override
+		public Point next() {
+			SimplePoint2D p = points[index];
+			index++;
+			return p;
+		}
+		
+	}
+
+	
 	private int size = 0;
 	private SimplePoint2D[] points = new SimplePoint2D[16];
 	private boolean[] flag = new boolean[16];
 
+	public Point2DFlagList() {
+		this(16);
+	}
+
+	public Point2DFlagList(int capacity) {
+		points = new SimplePoint2D[capacity];
+		flag = new boolean[capacity];
+	}
+	
 	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
 	}
@@ -116,8 +157,8 @@ public class Point2DFlagList {
 		return index - offset;
 	}
 
-	public List<SimplePoint2D> toList() {
-		List<SimplePoint2D> list = new ArrayList<>();
+	public List<Point> toList() {
+		List<Point> list = new ArrayList<>();
 		for (int i = 0; i < size; i++) {
 			list.add(points[i]);
 		}
@@ -178,6 +219,30 @@ public class Point2DFlagList {
 
 	public void sort(Comparator<Point2D> comparator, int maxSize) {
 		Arrays.sort(points, 0, maxSize, comparator);
+	}
+	
+	@Override
+	public Iterator<Point> iterator() {
+		PointIterator iterator = new PointIterator();
+		iterator.set(size, points);
+		return iterator;
+	}
+
+	public Point2DFlagList clone(boolean clonePoints) {
+		Point2DFlagList clone = new Point2DFlagList(points.length);
+
+		clone.size = size;
+
+		System.arraycopy(flag, 0, clone.flag, 0, flag.length);
+		if(clonePoints) {
+			for(int i = 0; i < size; i++) {
+				clone.points[i] = points[i].clone();
+			}
+		} else {
+			System.arraycopy(points, 0, clone.points, 0, points.length);
+		}
+		
+		return clone;
 	}
 
 }

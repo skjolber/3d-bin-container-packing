@@ -276,19 +276,40 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 			while(!boxItems.isEmpty()) {
 				
-				IntermediatePlacementResult bestPoint = findBestPoint(boxItems, extremePoints3D, compositeContainerItem.getFilteredPointsBuilderFactory(), container, stack);
-				if(bestPoint == null) {
-					if(itemGroupOrder == Order.FIXED) {
-						break groups;
+				IntermediatePlacementResult bestPoint;
+				if(newLevel) {
+					// get first box in new level
+					bestPoint = findBestFirstPoint(boxItems, extremePoints3D, compositeContainerItem.getFilteredPointsBuilderFactory(), container, stack);
+					if(bestPoint == null) {
+						break;
 					}
-					// discard the whole group
-					extremePoints3D.reset();
-					stack.setSize(markStackSize);
 					
-					levelOffset = markLevelOffset;
-					newLevel = markNewLevel;
+					DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, bestPoint.getStackValue().getDz() - 1 + levelOffset);
+					
+					extremePoints3D.setInitialPoints(Arrays.asList(levelFloor));
+					extremePoints3D.clear();
+					
+					levelOffset += bestPoint.getStackValue().getDz();
 
-					continue groups;
+					newLevel = false;
+				} else {
+					// next
+					bestPoint = findBestPoint(boxItems, extremePoints3D, compositeContainerItem.getFilteredPointsBuilderFactory(), container, stack);
+					if(bestPoint == null) {
+						newLevel = true;
+
+						int remainingDz = container.getLoadDz() - levelOffset;
+						if(remainingDz == 0) {
+							break;
+						}
+
+						// prepare extreme points for a new level						
+						DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, container.getLoadDz() - 1);
+						extremePoints3D.setInitialPoints(Arrays.asList(levelFloor));
+						extremePoints3D.clear();
+						
+						continue;
+					}
 				}
 				
 				bestPoint.getBoxItem().decrement();
@@ -303,6 +324,21 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 					extremePoints3D.updateMinimums(bestPoint.getStackValue(), filteredBoxItemGroups);
 				}
 
+			}
+			
+			if(!boxItems.isEmpty()) {
+				// unable to stack whole group
+				if(itemGroupOrder == Order.FIXED) {
+					break groups;
+				}
+				// discard the whole group, try again with another group if possible
+				extremePoints3D.reset();
+				stack.setSize(markStackSize);
+				
+				levelOffset = markLevelOffset;
+				newLevel = markNewLevel;
+
+				continue groups;
 			}
 			
 			if(container.getMaxLoadWeight() < extremePoints3D.getUsedWeight()) {

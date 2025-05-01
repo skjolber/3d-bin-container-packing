@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.ep.points2d;
 
-import java.io.Serializable;
-
 import com.github.skjolber.packing.api.StackPlacement;
 
 public abstract class SimplePoint2D extends Point2D {
@@ -110,4 +108,5 @@ public abstract class SimplePoint2D extends Point2D {
 
 	public abstract SimplePoint2D moveY(int y, StackPlacement xSupport);
 
+	public abstract SimplePoint2D clone();
 }

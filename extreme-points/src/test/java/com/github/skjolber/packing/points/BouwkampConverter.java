@@ -78,11 +78,11 @@ public class BouwkampConverter {
 			}
 		}
 
-		if(points.getValueCount() > 0) {
+		if(points.size() > 0) {
 			if(throwException) {
-				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+				throw new IllegalStateException("Still have " + points.size() + ": " + points.getValues());
 			} else {
-				System.out.println("Still have " + points.getValueCount() + ": " + points.getValues());
+				System.out.println("Still have " + points.size() + ": " + points.getValues());
 			}
 		}
 

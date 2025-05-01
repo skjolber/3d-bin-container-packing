@@ -140,8 +140,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			Container fits = containers.get(0);
 	
-			LevelStack levelStack = (LevelStack)fits.getStack();
-			assertEquals(2, levelStack.getLevels().size());
+			assertEquals(2, LargestAreaFitFirstPackagerTest.countLevels(fits));
 		} finally {
 			packager.close();
 		}
@@ -167,8 +166,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			Container fits = containers.get(0);
 	
-			LevelStack levelStack = (LevelStack)fits.getStack();
-			assertEquals(3, levelStack.getLevels().size());
+			assertEquals(3, LargestAreaFitFirstPackagerTest.countLevels(fits));
 		} finally {
 			packager.close();
 		}

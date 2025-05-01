@@ -23,6 +23,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
@@ -66,6 +67,47 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			packager.close();
 		}
 	}
+	
+
+	@Test
+	void testStackingSquaresOnSquareForGroup() {
+
+		List<ContainerItem> containerItems = ContainerItem
+				.newListBuilder()
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.build();
+
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+	
+			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+	
+			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", products);
+
+			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItemGroups(Arrays.asList(boxItemGroup1)).build();
+			assertTrue(result.isSuccess());
+			Container fits = result.get(0);
+	
+			assertNotNull(fits);
+			validate(fits);
+	
+			List<StackPlacement> placements = fits.getStack().getPlacements();
+	
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
+			assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("B");
+			assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("C");
+	
+			assertThat(placements.get(0)).isAlongsideX(placements.get(1));
+			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
+			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
+		} finally {
+			packager.close();
+		}
+	}
+
 
 	@Test
 	void testStackingRectangles() {
@@ -180,10 +222,47 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			assertNotNull(fits);
 	
-			System.out.println(fits.getStack());
-			for (StackPlacement stackPlacement : fits.getStack()) {
-				System.out.println(stackPlacement);
-			}
+			validate(fits);
+
+			List<StackPlacement> placements = fits.getStack().getPlacements();
+	
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
+			assertThat(placements.get(1)).isAt(2, 0, 0).hasStackableName("A");
+			assertThat(placements.get(2)).isAt(0, 1, 0).hasStackableName("B");
+	
+			assertThat(placements.get(3)).isAt(0, 0, 1).hasStackableName("B");
+			assertThat(placements.get(4)).isAt(2, 0, 1).hasStackableName("C");
+			assertThat(placements.get(5)).isAt(0, 1, 1).hasStackableName("C");
+			
+			assertEquals(2, countLevels(fits));
+		} finally {
+			packager.close();
+		}
+	}
+	
+
+	@Test
+	void testStackingRectanglesTwoLevelsForGroups() {
+
+		List<ContainerItem> containerItems = ContainerItem
+				.newListBuilder()
+				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 2).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.build();
+
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+	
+			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+	
+			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", products);
+
+			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItemGroups(Arrays.asList(boxItemGroup1)).build();
+			Container fits = result.get(0);
+	
+			assertNotNull(fits);
 
 			validate(fits);
 
@@ -196,6 +275,8 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertThat(placements.get(3)).isAt(0, 0, 1).hasStackableName("B");
 			assertThat(placements.get(4)).isAt(2, 0, 1).hasStackableName("C");
 			assertThat(placements.get(5)).isAt(0, 1, 1).hasStackableName("C");
+			
+			assertEquals(2, countLevels(fits));
 		} finally {
 			packager.close();
 		}
@@ -223,6 +304,8 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			assertNotNull(fits);
 			validate(fits);
+			
+			assertEquals(3, countLevels(fits));
 		} finally {
 			packager.close();
 		}
@@ -403,6 +486,17 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	public void testAHugeProblemShouldRespectDeadline() {
 		assertDeadlineRespected(LargestAreaFitFirstPackager.newBuilder());
 	}
-	
+
+	public static int countLevels(Container container) {
+		int count = 0;
+		List<StackPlacement> placements = container.getStack().getPlacements();
+		for (StackPlacement stackPlacement : placements) {
+			if(stackPlacement.getAbsoluteX() == 0 && stackPlacement.getAbsoluteY() == 0) {
+				count++;
+			}
+		}
+		
+		return count;
+	}
 
 }

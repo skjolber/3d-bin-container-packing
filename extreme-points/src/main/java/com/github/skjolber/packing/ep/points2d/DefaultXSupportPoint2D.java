@@ -3,6 +3,7 @@ package com.github.skjolber.packing.ep.points2d;
 import java.io.Serializable;
 
 import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.ep.Point;
 
 public class DefaultXSupportPoint2D extends SimplePoint2D implements XSupportPoint2D {
 
@@ -73,4 +74,15 @@ public class DefaultXSupportPoint2D extends SimplePoint2D implements XSupportPoi
 	public SimplePoint2D moveY(int y, StackPlacement xSupport) {
 		return new DefaultXSupportPoint2D(minX, y, maxX, maxY, xSupport);
 	}
+
+	@Override
+	public Point clone(int maxX, int maxY, int maxZ) {
+		return new DefaultXSupportPoint2D(minX, minY, maxX, maxY, xSupport);
+	}
+
+	@Override
+	public SimplePoint2D clone() {
+		return new DefaultXSupportPoint2D(minX, minY, maxX, maxY, xSupport);
+	}
+
 }

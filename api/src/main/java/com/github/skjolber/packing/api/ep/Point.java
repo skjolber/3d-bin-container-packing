@@ -458,8 +458,6 @@ public abstract class Point {
 		return minZ <= z && point.getMaxZ() <= maxZ && eclipsesX(point) && eclipsesY(point);
 	}
 
-	public abstract Point rotate();
-
 	public long getVolumeAtZ(int zz) {
 		return (long)dx * (long)dy * (maxZ - zz + 1);
 	}

@@ -88,8 +88,8 @@ public class ExtremePoints2DState {
 			}
 		}
 
-		if(points.getValueCount() > 0) {
-			throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+		if(points.size() > 0) {
+			throw new IllegalStateException("Still have " + points.size() + ": " + points.getValues());
 		}
 
 		points.redo();

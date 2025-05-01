@@ -148,5 +148,7 @@ public abstract class SimplePoint3D extends Point {
 
 	public abstract long calculateYZSupport(int dy, int dz);
 
+	public abstract Point rotate();
+
 	public abstract SimplePoint3D clone();
 }
