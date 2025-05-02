@@ -6,8 +6,8 @@ import com.github.skjolber.packing.ep.points2d.Point2D;
 
 public class DefaultExtremePoints2D extends ExtremePoints2D {
 
-	public DefaultExtremePoints2D(int dx, int dy) {
-		super(dx, dy);
+	public DefaultExtremePoints2D() {
+		super();
 	}
 
 	@Override

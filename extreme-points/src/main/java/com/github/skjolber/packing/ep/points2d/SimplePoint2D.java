@@ -4,8 +4,8 @@ import com.github.skjolber.packing.api.StackPlacement;
 
 public abstract class SimplePoint2D extends Point2D {
 
-	public SimplePoint2D(int minX, int minY, int maxX, int maxY) {
-		super(minX, minY, maxX, maxY);
+	public SimplePoint2D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+		super(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	//       |                  

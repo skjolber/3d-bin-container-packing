@@ -9,8 +9,8 @@ public class DefaultPoint2D extends SimplePoint2D {
 
 	private static final long serialVersionUID = 1L;
 
-	public DefaultPoint2D(int minX, int minY, int maxX, int maxY) {
-		super(minX, minY, maxX, maxY);
+	public DefaultPoint2D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+		super(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
@@ -24,37 +24,37 @@ public class DefaultPoint2D extends SimplePoint2D {
 	}
 
 	public SimplePoint2D clone(int maxX, int maxY) {
-		return new DefaultPoint2D(minX, minY, maxX, maxY);
+		return new DefaultPoint2D(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
 	public SimplePoint2D moveX(int x) {
-		return new DefaultPoint2D(x, minY, maxX, maxY);
+		return new DefaultPoint2D(x, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
 	public SimplePoint2D moveY(int y) {
-		return new DefaultPoint2D(minX, y, maxX, maxY);
+		return new DefaultPoint2D(minX, y, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
 	public SimplePoint2D moveX(int x, StackPlacement ySupport) {
-		return new DefaultYSupportPoint2D(x, minY, maxY, maxY, ySupport);
+		return new DefaultYSupportPoint2D(x, minY, minZ, maxY, maxY, maxZ, ySupport);
 	}
 
 	@Override
 	public SimplePoint2D moveY(int y, StackPlacement xSupport) {
-		return new DefaultXSupportPoint2D(minX, y, maxX, maxX, xSupport);
+		return new DefaultXSupportPoint2D(minX, y, minZ, maxX, maxX, maxZ, xSupport);
 	}
 
 	@Override
 	public Point clone(int maxX, int maxY, int maxZ) {
-		return new DefaultPoint2D(minX, minY, maxX, maxY);
+		return new DefaultPoint2D(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
 	public SimplePoint2D clone() {
-		return new DefaultPoint2D(minX, minY, maxX, maxY);
+		return new DefaultPoint2D(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
 }

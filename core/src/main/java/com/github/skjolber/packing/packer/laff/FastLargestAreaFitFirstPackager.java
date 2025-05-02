@@ -35,6 +35,7 @@ import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupCompar
 import com.github.skjolber.packing.comparator.VolumeWeightAreaPointIntermediatePlacementResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
+import com.github.skjolber.packing.ep.points2d.MarkResetExtremePoints2D;
 import com.github.skjolber.packing.ep.points2d.Point2D;
 import com.github.skjolber.packing.ep.points2d.SimplePoint2D;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
@@ -63,7 +64,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 		return new Builder();
 	}
 
-	public static class Builder extends AbstractPackagerBuilder<LargestAreaFitFirstPackager, Builder> {
+	public static class Builder extends AbstractPackagerBuilder<FastLargestAreaFitFirstPackager, Builder> {
 
 		protected Comparator<IntermediatePlacementResult> intermediatePlacementResultComparator;
 		protected IntermediatePackagerResultComparator intermediatePackagerResultComparator;
@@ -105,7 +106,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			return this;
 		}
 		
-		public LargestAreaFitFirstPackager build() {
+		public FastLargestAreaFitFirstPackager build() {
 			if(intermediatePlacementResultComparator == null) {
 				intermediatePlacementResultComparator = new VolumeWeightAreaPointIntermediatePlacementResultComparator();
 			}
@@ -127,7 +128,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			if(firstIntermediatePlacementResultComparator == null) {
 				firstIntermediatePlacementResultComparator = new LargestAreaIntermediatePlacementResultComparator();
 			}
-			return new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, intermediatePlacementResultComparator, boxItemComparator, boxItemGroupComparator, firstBoxItemGroupComparator, firstBoxItemComparator, firstIntermediatePlacementResultComparator);
+			return new FastLargestAreaFitFirstPackager(intermediatePackagerResultComparator, intermediatePlacementResultComparator, boxItemComparator, boxItemGroupComparator, firstBoxItemGroupComparator, firstBoxItemComparator, firstIntermediatePlacementResultComparator);
 		}
 	}
 
@@ -257,9 +258,9 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 
 		Stack stack = new Stack();
 
-		MarkResetExtremePoints3D extremePoints3D = new MarkResetExtremePoints3D();
+		MarkResetExtremePoints2D extremePoints3D = new MarkResetExtremePoints2D();
 		extremePoints3D.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		extremePoints3D.setMinimumAreaAndVolumeLimit(filteredBoxItemGroups.getMinArea(), filteredBoxItemGroups.getMinVolume());
+		//extremePoints3D.setMinimumAreaAndVolumeLimit(filteredBoxItemGroups.getMinArea(), filteredBoxItemGroups.getMinVolume());
 
 		BoxItemGroupListener listener = compositeContainerItem.createBoxItemGroupListener(container, stack, filteredBoxItemGroups, extremePoints3D);
 
@@ -328,9 +329,11 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 				stack.add(stackPlacement);
 				extremePoints3D.add(bestPoint.getPoint(), stackPlacement);
 
+				/*
 				if(!boxItems.isEmpty()) {
 					extremePoints3D.updateMinimums(bestPoint.getStackValue(), filteredBoxItemGroups);
 				}
+				*/
 
 			}
 			

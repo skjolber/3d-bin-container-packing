@@ -76,8 +76,8 @@ public abstract class Point2D extends Point {
 		}
 	};
 
-	public Point2D(int minX, int minY, int maxX, int maxY) {
-		super(minX, minY, 0, maxX, maxY, 0);
+	public Point2D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+		super(minX, minY, minZ, maxX, maxY, maxZ);
 
 		/*
 		if(maxX < minX) {

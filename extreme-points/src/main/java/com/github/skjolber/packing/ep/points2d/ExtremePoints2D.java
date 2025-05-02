@@ -13,16 +13,6 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point;
-import com.github.skjolber.packing.ep.points3d.Default3DPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultXYPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultXYPlaneXZPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultXYPlaneYZPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultXZPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultXZPlaneYZPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultYZPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
-import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 
 /**
  * 
@@ -42,6 +32,7 @@ public class ExtremePoints2D implements ExtremePoints {
 
 	protected int containerMaxX;
 	protected int containerMaxY;
+	protected int containerMaxZ;
 
 	protected Point2DFlagList values = new Point2DFlagList();
 	protected List<StackPlacement> placements = new ArrayList<>();
@@ -78,17 +69,20 @@ public class ExtremePoints2D implements ExtremePoints {
 	}	
 
 	@SuppressWarnings("unchecked")
-	private void setSize(int dx, int dy) {
+	public void setSize(int dx, int dy, int dz) {
 		this.containerMaxX = dx - 1;
 		this.containerMaxY = dy - 1;
+		this.containerMaxZ = dz - 1;
 
-		BoxStackValue stackValue = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, 0, null, -1);
+		BoxStackValue stackValue = new BoxStackValue(dx, dy, dz, null, -1);
 		
 		this.containerPlacement = new StackPlacement(null, null, stackValue, 0, 0, 0);
 	}
 
 	private DefaultXYSupportPoint2D createContainerPoint() {
-		return new DefaultXYSupportPoint2D(0, 0, containerMaxX, containerMaxY, containerPlacement, containerPlacement);
+		DefaultXYSupportPoint2D point = new DefaultXYSupportPoint2D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ, containerPlacement, containerPlacement);
+		point.setIndex(0);
+		return point;
 	}
 
 	public boolean add(Point point, StackPlacement placement) {
@@ -456,6 +450,8 @@ public class ExtremePoints2D implements ExtremePoints {
 
 		addXX.clear();
 		addYY.clear();
+		
+		updateIndexes(values);
 
 		return !values.isEmpty();
 	}
@@ -1038,7 +1034,7 @@ public class ExtremePoints2D implements ExtremePoints {
 	}
 
 	public void reset(int dx, int dy, int dz) {
-		setSize(dx, dy);
+		setSize(dx, dy, dz);
 
 		redo();
 	}
@@ -1168,16 +1164,9 @@ public class ExtremePoints2D implements ExtremePoints {
 	public Iterator<Point> iterator() {
 		return values.iterator();
 	}
-	
-	public void clearToSize(int dx, int dy) {
-		setSize(dx, dy);
-
-		clear();
-	}
-	
 	@Override
 	public void clearToSize(int dx, int dy, int dz) {
-		setSize(dx, dy);
+		setSize(dx, dy, dz);
 
 		clear();
 	}
@@ -1232,13 +1221,13 @@ public class ExtremePoints2D implements ExtremePoints {
 				throw new IllegalArgumentException();
 			}
 			if(yzPlane && xzPlane) {
-				initialPoints.add(new DefaultXYSupportPoint2D(p.getMinX(), p.getMinY(), p.getMaxX(), p.getMaxY(), containerPlacement, containerPlacement));
+				initialPoints.add(new DefaultXYSupportPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement));
 			} else if(xzPlane) {
-				initialPoints.add(new DefaultXSupportPoint2D(p.getMinX(), p.getMinY(), p.getMaxX(), p.getMaxY(), containerPlacement));
+				initialPoints.add(new DefaultXSupportPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement));
 			} else if(yzPlane) {
-				initialPoints.add(new DefaultYSupportPoint2D(p.getMinX(), p.getMinY(), p.getMaxX(), p.getMaxY(), containerPlacement));
+				initialPoints.add(new DefaultYSupportPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement));
 			} else {
-				initialPoints.add(new DefaultPoint2D(p.getMinX(), p.getMinY(), p.getMaxX(), p.getMaxY()));
+				initialPoints.add(new DefaultPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ()));
 			}
 		}
 		

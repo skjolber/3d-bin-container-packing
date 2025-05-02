@@ -3,7 +3,6 @@ package com.github.skjolber.packing.ep.points2d;
 import java.util.ArrayList;
 
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
 
 public class MarkResetExtremePoints2D extends ExtremePoints2D {
 
