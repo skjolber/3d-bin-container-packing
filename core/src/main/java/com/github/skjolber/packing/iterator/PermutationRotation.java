@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.iterator;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 
 /**
@@ -11,17 +12,17 @@ import com.github.skjolber.packing.api.BoxStackValue;
 
 public class PermutationRotation {
 
-	private final Box box;
+	private final BoxItem boxItem;
 	private final BoxStackValue value;
 
-	public PermutationRotation(Box stackable, BoxStackValue value) {
+	public PermutationRotation(BoxItem boxItem, BoxStackValue value) {
 		super();
-		this.box = stackable;
+		this.boxItem = boxItem;
 		this.value = value;
 	}
 
-	public Box getBox() {
-		return box;
+	public BoxItem getBoxItem() {
+		return boxItem;
 	}
 
 	public BoxStackValue getBoxStackValue() {

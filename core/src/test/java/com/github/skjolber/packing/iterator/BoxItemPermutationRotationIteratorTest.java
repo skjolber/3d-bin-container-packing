@@ -7,8 +7,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator.Builder;
 
 class BoxItemPermutationRotationIteratorTest extends AbstractBoxItemPermutationRotationIteratorTest<DefaultBoxItemPermutationRotationIterator.Builder> {

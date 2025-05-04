@@ -53,8 +53,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		private final ExtremePoints3DStack extremePoints3D;
 		private List<StackPlacement> stackPlacements;
 
-		public BruteForceAdapter(List<ContainerItem> containers, DefaultPermutationRotationIterator[] iterators, List<BoxItem> stackableItems, PackagerInterruptSupplier interrupt) {
-			super(containers, stackableItems);
+		public BruteForceAdapter(List<ContainerItem> containers, DefaultPermutationRotationIterator[] iterators, List<BoxItem> boxItems, PackagerInterruptSupplier interrupt) {
+			super(containers, boxItems);
 			
 			this.iterators = iterators;
 			this.interrupt = interrupt;
@@ -65,8 +65,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			}
 			
 			int stackableCount = 0;
-			for(int i = 0; i < stackableItems.size(); i++) {
-				BoxItem stackableItem = stackableItems.get(i);
+			for(int i = 0; i < boxItems.size(); i++) {
+				BoxItem stackableItem = boxItems.get(i);
 				stackableCount += stackableItem.getCount();
 			}
 			
@@ -77,12 +77,12 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		@Override
-		public BruteForcePackagerResult attempt(int i, BruteForcePackagerResult best) {
+		public BruteForceIntermediatePackagerResult attempt(int i, BruteForcePackagerResult best) {
 			if(iterators[i].length() == 0) {
 				return BruteForcePackagerResult.EMPTY;
 			}
 			// TODO break if this container cannot beat the existing best result
-			return BruteForcePackager.this.pack(extremePoints3D, stackPlacements, containerItems.get(i).getContainer(), i, iterators[i], interrupt);
+			return BruteForcePackager.this.pack(extremePoints3D, stackPlacements, containerItems.get(i).getContainerItem(), i, iterators[i], interrupt);
 		}
 
 		@Override
@@ -139,7 +139,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			iterators[i] = DefaultPermutationRotationIterator
 					.newBuilder()
 					.withLoadSize(dimension)
-					.withStackableItems(stackableItems)
+					.withBoxItems(stackableItems)
 					.withMaxLoadWeight(container.getMaxLoadWeight())
 					.build();
 		}

@@ -15,49 +15,40 @@ import com.github.skjolber.packing.api.ep.FilteredPointsBuilderFactory;
 public class CompositeContainerItem {
 
 	protected final ContainerItem containerItem;
-	protected BoxItemGroupListenerBuilderFactory boxItemGroupListenerBuilderFactory;
-	protected BoxItemListenerBuilderFactory boxItemListenerBuilderFactory;
-	protected FilteredPointsBuilderFactory filteredPointsBuilderFactory;
+	protected BoxItemGroupControlsBuilderFactory boxItemGroupListenerBuilderFactory;
+	protected BoxItemControlsBuilderFactory boxItemListenerBuilderFactory;
 
 	public CompositeContainerItem(ContainerItem containerItem) {
 		this.containerItem = containerItem;
 	}
 	
 	public void setBoxItemListenerBuilderFactory(
-			BoxItemListenerBuilderFactory boxItemListenerBuilderSupplier) {
+			BoxItemControlsBuilderFactory boxItemListenerBuilderSupplier) {
 		this.boxItemListenerBuilderFactory = boxItemListenerBuilderSupplier;
 	}
 	
-	public void setFilteredPointsBuilderFactory(FilteredPointsBuilderFactory supplier) {
-		this.filteredPointsBuilderFactory = supplier;
-	}
-
-	public BoxItemListenerBuilderFactory getBoxItemListenerBuilderFactory() {
+	public BoxItemControlsBuilderFactory getBoxItemListenerBuilderFactory() {
 		return boxItemListenerBuilderFactory;
 	}
 	
 	public ContainerItem getContainerItem() {
 		return containerItem;
 	}
-	
-	public FilteredPointsBuilderFactory getFilteredPointsBuilderFactory() {
-		return filteredPointsBuilderFactory;
-	}
 
 	public void setBoxItemGroupListenerBuilderSupplier(
-			BoxItemGroupListenerBuilderFactory factory) {
+			BoxItemGroupControlsBuilderFactory factory) {
 		this.boxItemGroupListenerBuilderFactory = factory;
 	}
 	
-	public BoxItemGroupListenerBuilderFactory getBoxItemGroupListenerBuilderSupplier() {
+	public BoxItemGroupControlsBuilderFactory getBoxItemGroupListenerBuilderSupplier() {
 		return boxItemGroupListenerBuilderFactory;
 	}
 
-	public BoxItemGroupListener createBoxItemGroupListener(Container container, Stack stack, FilteredBoxItemGroups groups, FilteredPoints points) {
+	public BoxItemGroupControls createBoxItemGroupListener(Container container, Stack stack, FilteredBoxItemGroups groups, FilteredPoints points) {
 		if(boxItemGroupListenerBuilderFactory == null) {
-			return NoopBoxItemGroupListener.getInstance();
+			return new DefaultBoxItemGroupControls(points);
 		}
-		return boxItemGroupListenerBuilderFactory.createBoxItemGroupListenerBuilder()
+		return boxItemGroupListenerBuilderFactory.createBoxItemGroupControlsBuilder()
 				.withContainer(container)
 				.withStack(stack)
 				.withFilteredBoxItemGroups(groups)
@@ -65,11 +56,11 @@ public class CompositeContainerItem {
 				.build();
 	}
 
-	public BoxItemListener createBoxItemListener(Container container, Stack stack, FilteredBoxItems filteredBoxItems, FilteredPoints points) {
+	public BoxItemControls createBoxItemListener(Container container, Stack stack, FilteredBoxItems filteredBoxItems, FilteredPoints points) {
 		if(boxItemListenerBuilderFactory == null) {
-			return NoopBoxItemListener.getInstance();
+			return new DefaultBoxItemControls(filteredBoxItems, points);
 		}
-		return boxItemListenerBuilderFactory.createBoxItemListenerBuilder()
+		return boxItemListenerBuilderFactory.createBoxItemControlsBuilder()
 				.withContainer(container)
 				.withStack(stack)
 				.withFilteredBoxItems(filteredBoxItems)
@@ -77,14 +68,8 @@ public class CompositeContainerItem {
 				.build();
 	}
 	
-	public FilteredPoints createFilteredPoints(Container container, Stack stack, FilteredPoints points) {
-		if(filteredPointsBuilderFactory == null) {
-			return points;
-		}
-		return filteredPointsBuilderFactory.createFilteredPointsBuilder()
-				.withContainer(container)
-				.withStack(stack)
-				.withPoints(points)
-				.build();
+	public boolean hasBoxItemGroupListenerBuilderFactory() {
+		return boxItemGroupListenerBuilderFactory != null;
 	}
+	
 }

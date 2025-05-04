@@ -9,6 +9,7 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.FilteredPointsBuilderFactory;
+import com.github.skjolber.packing.api.packager.BoxItemControls;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 import com.github.skjolber.packing.api.packager.IntermediatePlacementResult;
@@ -102,13 +103,12 @@ public class PlainPackager extends AbstractDefaultPackager {
 		return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints);
 	}
 
-	public IntermediatePlacementResult findBestPoint(FilteredBoxItems boxItems, ExtremePoints extremePoints, FilteredPointsBuilderFactory filteredPointsBuilderFactory, Container container, Stack stack) {
+	public IntermediatePlacementResult findBestPoint(BoxItemControls boxItemControls, ExtremePoints extremePoints, Container container, Stack stack) {
 		return intermediatePlacementResultBuilderFactory.createIntermediatePlacementResultBuilder()
-			.withContainer(container)
 			.withExtremePoints(extremePoints)
+			.withBoxItemControls(boxItemControls)
 			.withStack(stack)
-			.withFilteredBoxItems(boxItems)
-			.withFilteredPointsBuilderFactory(filteredPointsBuilderFactory)
+			.withContainer(container)
 			.withIntermediatePlacementResultComparator(intermediatePlacementResultComparator)
 			.withBoxItemComparator(boxItemComparator)
 			.build();

@@ -21,7 +21,7 @@ public class ParallelPermutationRotationIteratorListBuilder extends AbstractPerm
 			throw new IllegalStateException();
 		}
 
-		PermutationStackableValue[] matrix = toMatrix();
+		PermutationBoxItemValue[] matrix = toMatrix();
 
 		return new ParallelPermutationRotationIteratorList(matrix, parallelizationCount);
 	}

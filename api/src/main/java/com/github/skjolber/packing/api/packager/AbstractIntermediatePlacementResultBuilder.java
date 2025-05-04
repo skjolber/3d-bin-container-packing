@@ -7,12 +7,22 @@ import com.github.skjolber.packing.api.ep.FilteredPointsBuilderFactory;
 
 public abstract class AbstractIntermediatePlacementResultBuilder<R extends IntermediatePlacementResult, B extends AbstractIntermediatePlacementResultBuilder<R, B>> implements IntermediatePlacementResultBuilder<R, B> {
 
-	protected Container container;
+	protected BoxItemControls controls;
 	protected ExtremePoints extremePoints;
-	protected FilteredBoxItems boxItems;
-	protected FilteredPointsBuilderFactory filteredPointsBuilderFactory;
+	protected Container container;
 	protected Stack stack;
-
+	
+	@Override
+	public B withBoxItemControls(BoxItemControls controls) {
+		this.controls = controls;
+		return (B)this;
+	}
+	
+	public B withStack(Stack stack) {
+		this.stack = stack;
+		return (B)this;
+	}
+	
 	@Override
 	public B withContainer(Container container) {
 		this.container = container;
@@ -22,21 +32,6 @@ public abstract class AbstractIntermediatePlacementResultBuilder<R extends Inter
 	@Override
 	public B withExtremePoints(ExtremePoints extremePoints) {
 		this.extremePoints = extremePoints;
-		return (B)this;
-	}
-
-	public B withFilteredBoxItems(FilteredBoxItems boxItems) {
-		this.boxItems = boxItems;
-		return (B)this;
-	}
-
-	public B withFilteredPointsBuilderFactory(FilteredPointsBuilderFactory factory) {
-		this.filteredPointsBuilderFactory = factory;
-		return (B)this;
-	}
-
-	public B withStack(Stack stack) {
-		this.stack = stack;
 		return (B)this;
 	}
 

@@ -11,20 +11,20 @@ import com.github.skjolber.packing.api.ep.FilteredPoints;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class AbstractBoxItemGroupListenerBuilder<B extends AbstractBoxItemGroupListenerBuilder<B>> implements BoxItemGroupListenerBuilder<B> {
+public abstract class AbstractBoxItemControlsBuilder<B extends AbstractBoxItemControlsBuilder<B>> implements BoxItemControlsBuilder<B> {
 
 	protected Stack stack;
 	protected Container container;
-	protected FilteredBoxItemGroups groups;
+	protected FilteredBoxItems items;
 	protected FilteredPoints points;
 
 	public B withPoints(FilteredPoints points) {
 		this.points = points;
 		return (B)this;
 	}
-	
-	public B withFilteredBoxItemGroups(FilteredBoxItemGroups input) {
-		this.groups = input;
+
+	public B withFilteredBoxItems(FilteredBoxItems input) {
+		this.items = input;
 		return (B)this;
 	}
 	
@@ -38,6 +38,8 @@ public abstract class AbstractBoxItemGroupListenerBuilder<B extends AbstractBoxI
 		return (B)this;
 	}
 	
-	public abstract BoxItemGroupListener build();
+	public abstract BoxItemControls build();
+	
+	
 
 }

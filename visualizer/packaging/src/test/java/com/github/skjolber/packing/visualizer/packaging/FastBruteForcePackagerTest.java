@@ -71,9 +71,9 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 
 		System.out.println(fits.getStack().getPlacements());
 
-		assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
-		assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("A");
-		assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("B");
+		assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
+		assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemDescription("A");
+		assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemDescription("B");
 
 		assertThat(placements.get(0)).isAlongsideX(placements.get(1));
 		assertThat(placements.get(2)).followsAlongsideX(placements.get(1));

@@ -7,11 +7,14 @@ import com.github.skjolber.packing.api.BoxItem;
 
 public class DefaultFilteredBoxItems implements FilteredBoxItems {
 
-	private List<BoxItem> values;
+	protected List<BoxItem> values;
 	
 	public DefaultFilteredBoxItems(List<BoxItem> values) {
 		super();
 		this.values = values;
+	}
+	
+	public DefaultFilteredBoxItems() {
 	}
 
 	@Override

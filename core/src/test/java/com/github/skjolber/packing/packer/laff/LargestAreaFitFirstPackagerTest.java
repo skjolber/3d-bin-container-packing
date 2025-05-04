@@ -3,30 +3,24 @@ package com.github.skjolber.packing.packer.laff;
 import static com.github.skjolber.packing.test.assertj.StackPlacementAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
-import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.assertj.StackAssert;
 
 public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
@@ -56,9 +50,9 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			List<StackPlacement> placements = fits.getStack().getPlacements();
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
-			assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("B");
-			assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("C");
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
+			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemDescription("B");
+			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemDescription("C");
 	
 			assertThat(placements.get(0)).isAlongsideX(placements.get(1));
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
@@ -81,9 +75,9 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
-			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", products);
 
@@ -95,10 +89,14 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			validate(fits);
 	
 			List<StackPlacement> placements = fits.getStack().getPlacements();
+			
+			for(StackPlacement p : placements) {
+				System.out.println(p.getBoxItem().getBox().getId() + " " + p.getAbsoluteX() + "x" + p.getAbsoluteY() + "x" + p.getAbsoluteZ()); 
+			}
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
-			assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("B");
-			assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("C");
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemId("B");
+			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemId("C");
 	
 			assertThat(placements.get(0)).isAlongsideX(placements.get(1));
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
@@ -133,9 +131,9 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			List<StackPlacement> placements = fits.getStack().getPlacements();
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
-			assertThat(placements.get(1)).isAt(2, 0, 0).hasStackableName("B");
-			assertThat(placements.get(2)).isAt(0, 1, 0).hasStackableName("C");
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
+			assertThat(placements.get(1)).isAt(2, 0, 0).hasBoxItemDescription("B");
+			assertThat(placements.get(2)).isAt(0, 1, 0).hasBoxItemDescription("C");
 		} finally {
 			packager.close();
 		}
@@ -192,9 +190,9 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			List<StackPlacement> placements = fits.getStack().getPlacements();
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
-			assertThat(placements.get(1)).isAt(3, 0, 0).hasStackableName("B"); // point with lowest x is selected first
-			assertThat(placements.get(2)).isAt(5, 0, 0).hasStackableName("C");
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
+			assertThat(placements.get(1)).isAt(3, 0, 0).hasBoxItemDescription("B"); // point with lowest x is selected first
+			assertThat(placements.get(2)).isAt(5, 0, 0).hasBoxItemDescription("C");
 		} finally {
 			packager.close();
 		}
@@ -226,13 +224,13 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 			List<StackPlacement> placements = fits.getStack().getPlacements();
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
-			assertThat(placements.get(1)).isAt(2, 0, 0).hasStackableName("A");
-			assertThat(placements.get(2)).isAt(0, 1, 0).hasStackableName("B");
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
+			assertThat(placements.get(1)).isAt(2, 0, 0).hasBoxItemDescription("A");
+			assertThat(placements.get(2)).isAt(0, 1, 0).hasBoxItemDescription("B");
 	
-			assertThat(placements.get(3)).isAt(0, 0, 1).hasStackableName("B");
-			assertThat(placements.get(4)).isAt(2, 0, 1).hasStackableName("C");
-			assertThat(placements.get(5)).isAt(0, 1, 1).hasStackableName("C");
+			assertThat(placements.get(3)).isAt(0, 0, 1).hasBoxItemDescription("B");
+			assertThat(placements.get(4)).isAt(2, 0, 1).hasBoxItemDescription("C");
+			assertThat(placements.get(5)).isAt(0, 1, 1).hasBoxItemDescription("C");
 			
 			assertEquals(2, countLevels(fits));
 		} finally {
@@ -253,9 +251,9 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
-			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
-			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
-			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
 	
 			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", products);
 
@@ -267,14 +265,18 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			validate(fits);
 
 			List<StackPlacement> placements = fits.getStack().getPlacements();
+			
+			for(StackPlacement p : placements) {
+				System.out.println(p.getBoxItem().getBox().getId() + " " + p.getAbsoluteX() + "x" + p.getAbsoluteY() + "x" + p.getAbsoluteZ()); 
+			}
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
-			assertThat(placements.get(1)).isAt(2, 0, 0).hasStackableName("A");
-			assertThat(placements.get(2)).isAt(0, 1, 0).hasStackableName("B");
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(1)).isAt(2, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(2)).isAt(0, 1, 0).hasBoxItemId("B");
 	
-			assertThat(placements.get(3)).isAt(0, 0, 1).hasStackableName("B");
-			assertThat(placements.get(4)).isAt(2, 0, 1).hasStackableName("C");
-			assertThat(placements.get(5)).isAt(0, 1, 1).hasStackableName("C");
+			assertThat(placements.get(3)).isAt(0, 0, 1).hasBoxItemId("B");
+			assertThat(placements.get(4)).isAt(2, 0, 1).hasBoxItemId("C");
+			assertThat(placements.get(5)).isAt(0, 1, 1).hasBoxItemId("C");
 			
 			assertEquals(2, countLevels(fits));
 		} finally {

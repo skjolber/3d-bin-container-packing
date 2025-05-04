@@ -26,6 +26,10 @@ public class StackPlacement implements Serializable {
 
 	public StackPlacement() {
 	}
+	
+	public void setBoxItem(BoxItem boxItem) {
+		this.boxItem = boxItem;
+	}
 
 	public BoxStackValue getStackValue() {
 		return stackValue;

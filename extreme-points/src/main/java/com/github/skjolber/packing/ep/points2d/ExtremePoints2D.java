@@ -13,6 +13,8 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
+import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
 /**
  * 
@@ -1119,7 +1121,7 @@ public class ExtremePoints2D implements ExtremePoints {
 		return low;
 	}
 
-	public void setMinArea(long minArea) {
+	public void setMinimumAreaLimit(long minArea) {
 		if(minAreaLimit != minArea) {
 			this.minAreaLimit = minArea;
 			filterMinimums();
@@ -1309,4 +1311,18 @@ public class ExtremePoints2D implements ExtremePoints {
 		}
 	}
 
+	public void updateMinimums(BoxStackValue stackValue, FilteredBoxItems filteredBoxItems) {
+		boolean minArea = stackValue.getArea() == minAreaLimit;
+		if(minArea) {
+			setMinimumAreaLimit(filteredBoxItems.getMinArea());
+		}
+	}
+	
+	
+	public void updateMinimums(BoxStackValue stackValue, FilteredBoxItemGroups filteredBoxItemGroups) {
+		boolean minArea = stackValue.getArea() == minAreaLimit;
+		if(minArea) {
+			setMinimumAreaLimit(filteredBoxItemGroups.getMinArea());
+		}
+	}
 }

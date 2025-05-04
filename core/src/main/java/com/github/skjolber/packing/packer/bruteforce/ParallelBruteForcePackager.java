@@ -218,7 +218,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 							Future<BruteForcePackagerResult> future = executorCompletionService.take();
 							BruteForcePackagerResult result = future.get();
 							if(result != null) {
-								if(best == null || packResultComparator.compare(best, result) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
+								if(best == null || intermediatePackagerResultComparator.compare(best, result) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
 									best = result;
 
 									if(best.containsLastStackable()) { // will not match any better than this
@@ -318,7 +318,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 			parallelIterators[i] = new ParallelPermutationRotationIteratorListBuilder()
 					.withLoadSize(dimension)
-					.withStackableItems(stackableItems)
+					.withBoxItems(stackableItems)
 					.withMaxLoadWeight(container.getMaxLoadWeight())
 					.withParallelizationCount(parallelizationCount)
 					.build();
@@ -326,7 +326,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			iterators[i] = DefaultPermutationRotationIterator
 					.newBuilder()
 					.withLoadSize(dimension)
-					.withStackableItems(stackableItems)
+					.withBoxItems(stackableItems)
 					.withMaxLoadWeight(container.getMaxLoadWeight())
 					.build();
 		}

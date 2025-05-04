@@ -6,16 +6,21 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
+import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackager;
+import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
+import com.github.skjolber.packing.packer.DefaultPackagerResultBuilder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -28,11 +33,11 @@ import com.github.skjolber.packing.packer.AbstractPackager;
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
-public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteForcePackagerResult, BruteForcePackagerResultBuilder> {
+public abstract class AbstractBruteForcePackager extends AbstractPackager<DefaultIntermediatePackagerResult, BruteForcePackagerResultBuilder> {
 
 	private static Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
 
-	public AbstractBruteForcePackager(PackResultComparator packResultComparator) {
+	public AbstractBruteForcePackager(IntermediatePackagerResultComparator packResultComparator) {
 		super(packResultComparator);
 	}
 
@@ -51,16 +56,16 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		return placements;
 	}
 
-	public BruteForcePackagerResult pack(ExtremePoints3DStack extremePoints, List<StackPlacement> stackPlacements, Container targetContainer, int index,
+	public BruteForceIntermediatePackagerResult pack(ExtremePoints3DStack extremePoints, List<StackPlacement> stackPlacements, ContainerItem containerItem, int index,
 			PermutationRotationIterator iterator, PackagerInterruptSupplier interrupt) {
-		
-		Container holder = targetContainer.clone();
+
+		Container holder = containerItem.getContainer().clone();
 		
 		Stack stack = holder.getStack();
 		
-		BruteForcePackagerResult bestResult = new BruteForcePackagerResult(holder, index, iterator);
+		BruteForceIntermediatePackagerResult bestResult = new BruteForceIntermediatePackagerResult(containerItem, stack, index, iterator);
 		// optimization: compare pack results by looking only at count within the same permutation 
-		BruteForcePackagerResult bestPermutationResult = new BruteForcePackagerResult(holder, index, iterator);
+		BruteForceIntermediatePackagerResult bestPermutationResult = new BruteForceIntermediatePackagerResult(containerItem, stack, index, iterator);
 
 		// iterator over all permutations
 		do {
@@ -106,9 +111,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			if(!bestPermutationResult.isEmpty()) {
 				// compare against other permutation's result
 
-				if(bestResult.isEmpty() || packResultComparator.compare(bestResult, bestPermutationResult) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
+				if(bestResult.isEmpty() || intermediatePackagerResultComparator.compare(bestResult, bestPermutationResult) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
 					// switch the two results for one another
-					BruteForcePackagerResult tmp = bestResult;
+					BruteForceIntermediatePackagerResult tmp = bestResult;
 					bestResult = bestPermutationResult;
 					bestPermutationResult = tmp;
 				}
@@ -168,7 +173,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 		PermutationRotation permutationRotation = rotator.get(placementIndex);
 
-		Box stackable = permutationRotation.getBox();
+		BoxItem stackable = permutationRotation.getBoxItem();
 		if(stackable.getWeight() > maxLoadWeight) {
 			return null;
 		}
@@ -176,7 +181,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		StackPlacement placement = placements.get(placementIndex);
 		BoxStackValue stackValue = permutationRotation.getBoxStackValue();
 
-		placement.setBox(stackable);
+		placement.setBoxItem(stackable);
 		placement.setStackValue(stackValue);
 
 		maxLoadWeight -= stackable.getWeight();

@@ -4,17 +4,19 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.AbstractBoxItemGroupListenerBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemGroupListener;
-import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder;
+import com.github.skjolber.packing.api.ep.FilteredPoints;
+import com.github.skjolber.packing.api.packager.AbstractBoxItemGroupControlsBuilder;
+import com.github.skjolber.packing.api.packager.BoxItemGroupControls;
+import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
+import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
-public class FireHazardsInSpecificContainersBoxItemGroupListener implements BoxItemGroupListener {
+public class FireHazardsInSpecificContainersBoxItemGroupListener implements BoxItemGroupControls {
 
-	public static class Builder extends AbstractBoxItemGroupListenerBuilder<Builder> {
+	public static class Builder extends AbstractBoxItemGroupControlsBuilder<Builder> {
 
 		@Override
-		public BoxItemGroupListener build() {
+		public BoxItemGroupControls build() {
 			
 			for(int i = 0; i < groups.size(); i++) {
 				BoxItemGroup boxItemGroup = groups.get(i);
@@ -24,7 +26,7 @@ public class FireHazardsInSpecificContainersBoxItemGroupListener implements BoxI
 					i--;
 				}
 			}
-			return new FireHazardsInSpecificContainersBoxItemGroupListener(container, groups, stack);
+			return new FireHazardsInSpecificContainersBoxItemGroupListener(container, groups, points, stack);
 		}
 
 		private boolean isFireHazard(BoxItemGroup boxItemGroup) {
@@ -49,15 +51,46 @@ public class FireHazardsInSpecificContainersBoxItemGroupListener implements BoxI
 	protected final Container container;
 	protected final FilteredBoxItemGroups groups;
 	protected final Stack stack;
+	protected final DefaultFilteredBoxItems filteredBoxItems;
+	protected final FilteredPoints points;
 
-	public FireHazardsInSpecificContainersBoxItemGroupListener(Container container, FilteredBoxItemGroups groups, Stack stack) {
+	public FireHazardsInSpecificContainersBoxItemGroupListener(Container container, FilteredBoxItemGroups groups, FilteredPoints points, Stack stack) {
 		this.container = container;
 		this.groups = groups;
 		this.stack = stack;
+		this.points = points;
+		
+		this.filteredBoxItems = new DefaultFilteredBoxItems();
 	}
 
 	@Override
 	public void accepted(BoxItemGroup group) {
+		// do nothing
+	}
+	
+
+	@Override
+	public FilteredBoxItems getFilteredBoxItems() {
+		return filteredBoxItems;
+	}
+
+	@Override
+	public FilteredPoints getPoints(BoxItem boxItem) {
+		return points;
+	}
+
+	@Override
+	public void accepted(BoxItem boxItem) {
+		// do nothing
+	}
+
+	@Override
+	public void attempt(BoxItemGroup group) {
+		filteredBoxItems.setValues(group.getItems());
+	}
+
+	@Override
+	public void declined(BoxItemGroup group) {
 		// do nothing
 	}
 

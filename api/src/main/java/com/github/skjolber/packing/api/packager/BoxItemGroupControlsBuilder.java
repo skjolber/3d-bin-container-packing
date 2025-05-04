@@ -11,16 +11,16 @@ import com.github.skjolber.packing.api.ep.FilteredPoints;
  */
 
 @SuppressWarnings("unchecked")
-public interface BoxItemListenerBuilder<B extends BoxItemListenerBuilder<B>> {
+public interface BoxItemGroupControlsBuilder<B extends BoxItemGroupControlsBuilder<B>> {
 
 	B withPoints(FilteredPoints points);
-
-	B withFilteredBoxItems(FilteredBoxItems input);
+	
+	B withFilteredBoxItemGroups(FilteredBoxItemGroups input);
 	
 	B withContainer(Container container);
 	
 	B withStack(Stack stack);
 	
-	BoxItemListener build();
+	BoxItemGroupControls build();
 
 }

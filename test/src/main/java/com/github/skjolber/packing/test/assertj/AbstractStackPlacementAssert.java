@@ -314,13 +314,22 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 	}
 	*/
 	
-	public SELF hasStackableName(String name) {
+	public SELF hasBoxItemDescription(String name) {
 		isNotNull();
 		if(!Objects.equals(name, actual.getBoxItem().getBox().getDescription())) {
 			failWithMessage("Expected stackable name " + name + ", not " + actual.getBoxItem().getBox().getDescription());
 		}
 		return myself;
 	}
+	
+	public SELF hasBoxItemId(String name) {
+		isNotNull();
+		if(!Objects.equals(name, actual.getBoxItem().getBox().getId())) {
+			failWithMessage("Expected stackable name " + name + ", not " + actual.getBoxItem().getBox().getId());
+		}
+		return myself;
+	}
+
 
 	public SELF hasStackValue(BoxStackValue stackValue) {
 		isNotNull();

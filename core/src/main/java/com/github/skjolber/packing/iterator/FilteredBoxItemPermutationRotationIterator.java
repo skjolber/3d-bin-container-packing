@@ -16,7 +16,6 @@ import com.github.skjolber.packing.api.packager.FilteredBoxItems;
  *
  */
 
-
 public class FilteredBoxItemPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator implements FilteredBoxItems, BoxItemPermutationRotationIterator {
 
 	public static Builder newBuilder() {
@@ -76,7 +75,7 @@ public class FilteredBoxItemPermutationRotationIterator extends AbstractBoxItemP
 	protected final BoxItemPermutationRotationIterator iterator;
 	
 	public FilteredBoxItemPermutationRotationIterator(BoxItemPermutationRotationIterator iterator) {
-		super(iterator.getStackableItems());
+		super(iterator.getBoxItems());
 		
 		permutations = new int[0]; // n!
 		
@@ -101,7 +100,7 @@ public class FilteredBoxItemPermutationRotationIterator extends AbstractBoxItemP
 		this.minStackableVolume = new long[permutations.length];
 		
 		System.arraycopy(permutations, 0, this.permutations, 0, permutations.length);
-		System.arraycopy(iterator.getMinStackableVolume(), 0, minStackableVolume, 0, permutations.length);
+		System.arraycopy(iterator.getMinBoxVolume(), 0, minStackableVolume, 0, permutations.length);
 	}
 	
 	public BoxItem get(int index) {

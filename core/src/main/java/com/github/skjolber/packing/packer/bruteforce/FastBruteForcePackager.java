@@ -21,7 +21,7 @@ import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.iterator.PermutationStackableValue;
+import com.github.skjolber.packing.iterator.PermutationBoxItemValue;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.PackagerAdapter;
@@ -158,7 +158,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			iterators[i] = DefaultPermutationRotationIterator
 					.newBuilder()
 					.withLoadSize(dimension)
-					.withStackableItems(stackableItems)
+					.withBoxItems(stackableItems)
 					.withMaxLoadWeight(container.getMaxLoadWeight())
 					.build();
 		}
@@ -245,7 +245,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			if(!bestPermutationResult.isEmpty()) {
 				// compare against other permutation's result
 
-				if(bestResult.isEmpty() || packResultComparator.compare(bestResult, bestPermutationResult) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
+				if(bestResult.isEmpty() || intermediatePackagerResultComparator.compare(bestResult, bestPermutationResult) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
 					// switch the two results for one another
 					BruteForcePackagerResult tmp = bestResult;
 					bestResult = bestPermutationResult;
@@ -283,7 +283,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		for(int i = permutationIndex + 1; i < freeLoadWeights.length; i++) {
 			 freeLoadWeights[i] = nextFreeLoadWeight;
 			 
-			 PermutationStackableValue value = rotator.getPermutation(i);
+			 PermutationBoxItemValue value = rotator.getPermutation(i);
 			 nextFreeLoadWeight -= value.getStackable().getWeight();
 		}
 	}
@@ -295,7 +295,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		for(int i = 0; i < freeLoadWeights.length; i++) {
 			 freeLoadWeights[i] = freeLoadWeight;
 			 
-			 PermutationStackableValue value = rotator.getPermutation(i);
+			 PermutationBoxItemValue value = rotator.getPermutation(i);
 			 freeLoadWeight -= value.getStackable().getWeight();
 		}
 		return freeLoadWeights;
@@ -312,7 +312,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 			}
 			PermutationRotation permutationRotation = iterator.get(placementIndex);
 
-			Box stackable = permutationRotation.getBox();
+			Box stackable = permutationRotation.getBoxItem();
 			if(stackable.getWeight() > freeWeightLoad) {
 				break;
 			}

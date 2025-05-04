@@ -15,8 +15,8 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.FilteredPointsBuilderFactory;
 import com.github.skjolber.packing.api.ep.Point;
-import com.github.skjolber.packing.api.packager.BoxItemGroupListener;
-import com.github.skjolber.packing.api.packager.BoxItemListener;
+import com.github.skjolber.packing.api.packager.BoxItemGroupControls;
+import com.github.skjolber.packing.api.packager.BoxItemControls;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
@@ -124,6 +124,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 				BoxItemGroup clone = boxItemGroup.clone();
 				clone.setIndex(groupClones.size());
 				groupClones.add(clone);
+				clone.mark();
 			}
 
 			this.remainingBoxItemGroups = groupClones;
@@ -211,7 +212,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 		extremePoints3D.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		extremePoints3D.setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());
 
-		BoxItemListener listener = compositeContainerItem.createBoxItemListener(container, stack, filteredBoxItems, extremePoints3D);
+		BoxItemControls listener = compositeContainerItem.createBoxItemListener(container, stack, filteredBoxItems, extremePoints3D);
 
 		int remainingLoadWeight = container.getMaxLoadWeight();
 
@@ -221,7 +222,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 				throw new PackagerInterruptedException();
 			}
 			
-			IntermediatePlacementResult result = findBestPoint(filteredBoxItems, extremePoints3D, compositeContainerItem.getFilteredPointsBuilderFactory(), container, stack);
+			IntermediatePlacementResult result = findBestPoint(listener, extremePoints3D, container, stack);
 			if(result == null) {
 				break;
 			}
@@ -251,37 +252,38 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 	public DefaultIntermediatePackagerResult pack(List<BoxItemGroup> boxItemGroups, Order itemGroupOrder, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt) {
 		ContainerItem containerItem = compositeContainerItem.getContainerItem();
 		Container container = containerItem.getContainer();
-		
-		List<BoxItemGroup> scopedBoxItemGroups = getFitsInside(boxItemGroups, container);
 
-		DefaultFilteredBoxItemGroups filteredBoxItemGroups = new DefaultFilteredBoxItemGroups(scopedBoxItemGroups);
-
+		DefaultFilteredBoxItemGroups filteredBoxItemGroups = new DefaultFilteredBoxItemGroups(new ArrayList<>(boxItemGroups));
 		Stack stack = new Stack();
 
 		MarkResetExtremePoints3D extremePoints3D = new MarkResetExtremePoints3D();
 		extremePoints3D.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		extremePoints3D.setMinimumAreaAndVolumeLimit(filteredBoxItemGroups.getMinArea(), filteredBoxItemGroups.getMinVolume());
 
-		BoxItemGroupListener listener = compositeContainerItem.createBoxItemGroupListener(container, stack, filteredBoxItemGroups, extremePoints3D);
+		BoxItemGroupControls controls = compositeContainerItem.createBoxItemGroupListener(container, stack, filteredBoxItemGroups, extremePoints3D);
 
 		BoxItemGroupIterator boxItemGroupIterator = createBoxItemGroupIterator(filteredBoxItemGroups, itemGroupOrder, container, extremePoints3D);
 		
 		groups:
-		while (!extremePoints3D.isEmpty() && !filteredBoxItemGroups.isEmpty() && boxItemGroupIterator.hasNext()) {
+		while (!extremePoints3D.isEmpty() && boxItemGroupIterator.hasNext()) {
 			int bestBoxItemGroupIndex = boxItemGroupIterator.next();
 
 			BoxItemGroup boxItemGroup = filteredBoxItemGroups.remove(bestBoxItemGroupIndex);
-
+			boxItemGroup.mark();
+			
 			extremePoints3D.mark();
+			
+			controls.attempt(boxItemGroup);
 			
 			int markStackSize = stack.size();
 
-			DefaultFilteredBoxItems boxItems = new DefaultFilteredBoxItems(new ArrayList<>(boxItemGroup.getItems())); 
-
-			while(!boxItems.isEmpty()) {
+			while(!boxItemGroup.isEmpty()) {
 				
-				IntermediatePlacementResult bestPoint = findBestPoint(boxItems, extremePoints3D, compositeContainerItem.getFilteredPointsBuilderFactory(), container, stack);
+				IntermediatePlacementResult bestPoint = findBestPoint(controls, extremePoints3D, container, stack);
 				if(bestPoint == null) {
+					boxItemGroup.reset();
+					controls.declined(boxItemGroup);
+
 					if(itemGroupOrder == Order.FIXED) {
 						break groups;
 					}
@@ -294,24 +296,24 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 				
 				bestPoint.getBoxItem().decrement();
 
-				boxItems.removeEmpty();
+				boxItemGroup.removeEmpty();
 				
 				StackPlacement stackPlacement = new StackPlacement(boxItemGroup, bestPoint.getBoxItem(), bestPoint.getStackValue(), bestPoint.getPoint().getMinX(), bestPoint.getPoint().getMinY(), bestPoint.getPoint().getMinZ());
 				stack.add(stackPlacement);
 				extremePoints3D.add(bestPoint.getPoint(), stackPlacement);
 
-				if(!boxItems.isEmpty()) {
+				if(!boxItemGroup.isEmpty()) {
 					extremePoints3D.updateMinimums(bestPoint.getStackValue(), filteredBoxItemGroups);
 				}
-
 			}
 			
 			if(container.getMaxLoadWeight() < extremePoints3D.getUsedWeight()) {
 				throw new RuntimeException();
 			}
-			
+			boxItemGroup.reset();
+
 			// successfully stacked group
-			listener.accepted(boxItemGroup);
+			controls.accepted(boxItemGroup);
 
 		}
 		
@@ -326,9 +328,8 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 		);
 
 	protected abstract IntermediatePlacementResult findBestPoint(
-			FilteredBoxItems items,
-			ExtremePoints extremePoints, 
-			FilteredPointsBuilderFactory filteredPointsBuilderFactory,
+			BoxItemControls listener,
+			ExtremePoints extremePoints,
 			Container container, 
 			Stack stack
 		);

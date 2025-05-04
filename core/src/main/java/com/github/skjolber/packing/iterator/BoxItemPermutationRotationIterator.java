@@ -70,9 +70,9 @@ public interface BoxItemPermutationRotationIterator {
 
 	List<BoxStackValue> get(PermutationRotationState state, int length);
 
-	long getMinStackableVolume(int index);
+	long getMinBoxVolume(int index);
 
-	long[] getMinStackableVolume();
+	long[] getMinBoxVolume();
 
 	int getMinStackableAreaIndex(int i);
 	
@@ -136,6 +136,6 @@ public interface BoxItemPermutationRotationIterator {
 	
 	void removePermutations(int count);
 
-	BoxItem[] getStackableItems();
+	BoxItem[] getBoxItems();
 	
 }

@@ -7,6 +7,10 @@ public class DefaultFilteredPoints implements FilteredPoints {
 
 	protected List<Point> values;
 	
+	public DefaultFilteredPoints(List<Point> values) {
+		this.values = values;
+	}
+
 	public void setValues(List<Point> values) {
 		this.values = values;
 	}

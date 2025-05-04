@@ -84,14 +84,14 @@ public class IteratorState {
 		}
 
 		this.parallelIterator = new ParallelPermutationRotationIteratorListBuilder()
-				.withStackableItems(stackableItems3D)
+				.withBoxItems(stackableItems3D)
 				.withLoadSize(new Dimension(x, y, z))
 				.withParallelizationCount(threadPoolSize)
 				.withMaxLoadWeight(weight)
 				.build();
 
 		this.iterator = DefaultPermutationRotationIterator.newBuilder()
-				.withStackableItems(stackableItems3D)
+				.withBoxItems(stackableItems3D)
 				.withLoadSize(new Dimension(x, y, z))
 				.withMaxLoadWeight(weight)
 				.build();

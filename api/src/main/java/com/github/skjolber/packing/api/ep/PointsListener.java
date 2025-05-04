@@ -1,6 +1,7 @@
-package com.github.skjolber.packing.api.packager;
+package com.github.skjolber.packing.api.ep;
 
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.StackPlacement;
 
 /**
  * 
@@ -10,15 +11,14 @@ import com.github.skjolber.packing.api.BoxItem;
  * 
  */
 
-public interface BoxItemListener {
+public interface PointsListener {
 
 	/**
 	 * 
-	 * Notify group was loaded
+	 * Notify point was used
 	 * 
-	 * @param boxItem index as in {@linkplain FilteredBoxItemGroups}
 	 */
 	
-	void accepted(BoxItem boxItem);
+	void accepted(Point point, StackPlacement placemen);
 	
 }

@@ -11,8 +11,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.Dimension;
 
 class PermutationRotationIteratorTest extends AbstractPermutationRotationIteratorTest {
 
@@ -34,7 +34,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 			DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 					.newBuilder()
 					.withLoadSize(container)
-					.withStackableItems(products1)
+					.withBoxItems(products1)
 					.withMaxLoadWeight(products1.size())
 					.build();
 
@@ -61,7 +61,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -81,7 +81,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -103,7 +103,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -123,7 +123,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -142,7 +142,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -161,7 +161,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -181,7 +181,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -190,7 +190,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		do {
 			// check order unchanged
 			for (int i = 0; i < products.size(); i++) {
-				assertEquals(Integer.toString(i), rotator.get(i).getBox().getDescription());
+				assertEquals(Integer.toString(i), rotator.get(i).getBoxItem().getBox().getDescription());
 			}
 
 			// all rotations can fit
@@ -218,7 +218,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -247,7 +247,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -274,14 +274,14 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator rotator1 = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
 		DefaultPermutationRotationIterator rotator2 = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -314,7 +314,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -363,7 +363,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -389,7 +389,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -413,7 +413,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator iterator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -433,7 +433,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator iterator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -455,7 +455,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator iterator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -489,7 +489,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		DefaultPermutationRotationIterator iterator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 

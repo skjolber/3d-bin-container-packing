@@ -29,7 +29,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 
 	protected static final EmptyPackagerResultAdapter EMPTY_PACK_RESULT = EmptyPackagerResultAdapter.EMPTY;
 
-	protected final IntermediatePackagerResultComparator packResultComparator;
+	protected final IntermediatePackagerResultComparator intermediatePackagerResultComparator;
 	
 	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Integer.MAX_VALUE);
 
@@ -40,7 +40,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 	 */
 
 	public AbstractPackager(IntermediatePackagerResultComparator packResultComparator) {
-		this.packResultComparator = packResultComparator;
+		this.intermediatePackagerResultComparator = packResultComparator;
 	}
 
 	// pack in single container
@@ -240,7 +240,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 				}
 
 				if(!result.isEmpty()) {
-					if(best == null || packResultComparator.compare(best, result) != PackResultComparator.ARGUMENT_1_IS_BETTER) {
+					if(best == null || intermediatePackagerResultComparator.compare(best, result) != PackResultComparator.ARGUMENT_1_IS_BETTER) {
 						best = result;
 					}
 				}
@@ -295,7 +295,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		return result;
 	}
 	
-	protected ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
+	public ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
 		return scheduledThreadPoolExecutor;
 	}
 }

@@ -18,9 +18,8 @@ import com.github.skjolber.packing.api.Dimension;
 public abstract class AbstractPermutationRotationIteratorBuilder<B extends AbstractPermutationRotationIteratorBuilder<B>> {
 
 	protected int maxLoadWeight = -1;
-	protected Predicate<Box> filter;
 	protected Dimension size;
-	protected List<BoxItem> stackableItems;
+	protected List<BoxItem> boxItems;
 
 	public B withSize(int dx, int dy, int dz) {
 		this.size = new Dimension(dx, dy, dz);
@@ -34,52 +33,41 @@ public abstract class AbstractPermutationRotationIteratorBuilder<B extends Abstr
 		return (B)this;
 	}
 
-	public B withFilter(Predicate<Box> filter) {
-		this.filter = filter;
-
-		return (B)this;
-	}
-
 	public B withMaxLoadWeight(int maxLoadWeight) {
 		this.maxLoadWeight = maxLoadWeight;
 
 		return (B)this;
 	}
 
-	public B withStackableItems(List<BoxItem> stackableItems) {
-		this.stackableItems = stackableItems;
+	public B withBoxItems(List<BoxItem> boxItems) {
+		this.boxItems = boxItems;
 
 		return (B)this;
 	}
 
-	protected PermutationStackableValue[] toMatrix() {
-		PermutationStackableValue[] results = new PermutationStackableValue[stackableItems.size()];
+	protected PermutationBoxItemValue[] toMatrix() {
+		PermutationBoxItemValue[] results = new PermutationBoxItemValue[boxItems.size()];
 
-		for (int i = 0; i < stackableItems.size(); i++) {
-			BoxItem item = stackableItems.get(i);
+		for (int i = 0; i < boxItems.size(); i++) {
+			BoxItem item = boxItems.get(i);
 
-			Box stackable = item.getBox();
-			if(stackable.getWeight() > maxLoadWeight) {
+			Box box = item.getBox();
+			if(box.getWeight() > maxLoadWeight) {
 				continue;
 			}
 
-			if(stackable.getVolume() > size.getVolume()) {
+			if(box.getVolume() > size.getVolume()) {
 				continue;
 			}
 
-			List<BoxStackValue> boundRotations = stackable.rotations(size);
+			List<BoxStackValue> boundRotations = box.rotations(size);
 			if(boundRotations == null || boundRotations.isEmpty()) {
 				continue;
 			}
 
-			if(filter != null && !filter.test(stackable)) {
-				continue;
-			}
-
-			results[i] = new PermutationStackableValue(i, item.getCount(), stackable, boundRotations);
+			results[i] = new PermutationBoxItemValue(i, item.getCount(), item, boundRotations);
 		}
 		return results;
 	}
-
 
 }

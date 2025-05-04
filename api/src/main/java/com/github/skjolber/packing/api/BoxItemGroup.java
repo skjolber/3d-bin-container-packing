@@ -17,7 +17,9 @@ public class BoxItemGroup implements Iterable<BoxItem>{
 	protected List<BoxItem> items;
 	
 	protected int index = -1;
-	
+
+	protected List<BoxItem> resetItems;
+
 	public BoxItemGroup(String id, List<BoxItem> items) {
 		super();
 		this.id = id;
@@ -131,12 +133,20 @@ public class BoxItemGroup implements Iterable<BoxItem>{
 	}
 
 	public void reset() {
-		for (BoxItem boxItem : items) {
+		this.items.clear();
+		this.items.addAll(resetItems);
+		for (BoxItem boxItem : resetItems) {
 			boxItem.reset();
 		}
 	}
 	
 	public void mark() {
+		if(resetItems == null) {
+			resetItems = new ArrayList<>(items);
+		} else {
+			resetItems.clear();
+			resetItems.addAll(items);
+		}
 		for (BoxItem boxItem : items) {
 			boxItem.mark();
 		}
@@ -146,4 +156,6 @@ public class BoxItemGroup implements Iterable<BoxItem>{
 	public Iterator<BoxItem> iterator() {
 		return items.listIterator();
 	}
+	
+	
 }

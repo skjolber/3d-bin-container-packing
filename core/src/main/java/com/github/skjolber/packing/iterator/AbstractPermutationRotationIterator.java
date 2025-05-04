@@ -7,14 +7,14 @@ import com.github.skjolber.packing.api.BoxItem;
 
 public abstract class AbstractPermutationRotationIterator implements PermutationRotationIterator {
 
-	protected final PermutationStackableValue[] matrix;
+	protected final PermutationBoxItemValue[] matrix;
 	protected int[] reset;
 
-	public AbstractPermutationRotationIterator(PermutationStackableValue[] matrix) {
+	public AbstractPermutationRotationIterator(PermutationBoxItemValue[] matrix) {
 		this.matrix = matrix;
 	}
 
-	public PermutationStackableValue[] getMatrix() {
+	public PermutationBoxItemValue[] getMatrix() {
 		return matrix;
 	}
 	
@@ -30,7 +30,7 @@ public abstract class AbstractPermutationRotationIterator implements Permutation
 
 	public long getMinStackableVolume() {
 		long minVolume = Long.MAX_VALUE;
-		for (PermutationStackableValue permutationStackableValue : matrix) {
+		for (PermutationBoxItemValue permutationStackableValue : matrix) {
 			if(permutationStackableValue.getMinVolumeLimit() < minVolume) {
 				minVolume = permutationStackableValue.getMinVolumeLimit();
 			}
@@ -40,7 +40,7 @@ public abstract class AbstractPermutationRotationIterator implements Permutation
 
 	public long getMinStackableArea() {
 		long minArea = Long.MAX_VALUE;
-		for (PermutationStackableValue permutationStackableValue : matrix) {
+		for (PermutationBoxItemValue permutationStackableValue : matrix) {
 			if(permutationStackableValue.getMinAreaLimit() < minArea) {
 				minArea = permutationStackableValue.getMinAreaLimit();
 			}

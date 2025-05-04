@@ -194,8 +194,8 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	}
 
 	@Override
-	public long getMinStackableVolume(int index) {
-		return workUnits[workUnitIndex].getMinStackableVolume(index);
+	public long getMinBoxVolume(int index) {
+		return workUnits[workUnitIndex].getMinBoxVolume(index);
 	}
 
 	@Override
@@ -317,13 +317,13 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	}
 
 	@Override
-	public long[] getMinStackableVolume() {
-		return workUnits[workUnitIndex].getMinStackableVolume();
+	public long[] getMinBoxVolume() {
+		return workUnits[workUnitIndex].getMinBoxVolume();
 	}
 
 	@Override
-	public BoxItem[] getStackableItems() {
-		return workUnits[workUnitIndex].getStackableItems();
+	public BoxItem[] getBoxItems() {
+		return workUnits[workUnitIndex].getBoxItems();
 	}
 
 	@Override

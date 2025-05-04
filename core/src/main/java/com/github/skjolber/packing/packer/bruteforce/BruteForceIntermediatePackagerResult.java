@@ -6,24 +6,20 @@ import java.util.List;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point;
-import com.github.skjolber.packing.api.packager.PackResult;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
+import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
-public class BruteForcePackagerResult implements PackResult {
-
-	public static final BruteForcePackagerResult EMPTY = new BruteForcePackagerResult(null, -1, null);
-
-	static {
-		EMPTY.setState(Collections.emptyList(), null, Collections.emptyList());
-	}
+public class BruteForceIntermediatePackagerResult implements IntermediatePackagerResult {
 
 	// work objects
-	private final Container container;
+	private final Stack stack;
+	private final ContainerItem containerItem;
 	private final PermutationRotationIterator iterator;
 	private final int index;
 
@@ -37,8 +33,9 @@ public class BruteForcePackagerResult implements PackResult {
 	private long loadVolume;
 	private int loadWeight;
 
-	public BruteForcePackagerResult(Container container, int index, PermutationRotationIterator iterator) {
-		this.container = container;
+	public BruteForceIntermediatePackagerResult(ContainerItem containerItem, Stack stack, int index, PermutationRotationIterator iterator) {
+		this.containerItem = containerItem;
+		this.stack = stack;
 		this.iterator = iterator;
 		this.index = index;
 	}
@@ -60,11 +57,19 @@ public class BruteForcePackagerResult implements PackResult {
 
 			this.loadVolume = loadVolume;
 			this.loadWeight = loadWeight;
+			
+			calculateStack();
 		}
 	}
+	
+	@Override
+	public Stack getStack() {
+		calculateLoad();
 
-	public Container getContainer() {
-		Stack stack = container.getStack();
+		return stack;
+	}
+
+	private void calculateStack() {
 		stack.clear();
 
 		List<PermutationRotation> list = iterator.get(state, points.size());
@@ -83,8 +88,10 @@ public class BruteForcePackagerResult implements PackResult {
 
 			stack.add(stackPlacement);
 		}
+	}
 
-		return container;
+	public ContainerItem getContainerItem() {
+		return containerItem;
 	}
 
 	public PermutationRotationState getPermutationRotationIteratorForState() {
@@ -110,55 +117,47 @@ public class BruteForcePackagerResult implements PackResult {
 		return points.isEmpty();
 	}
 
-	@Override
 	public boolean containsLastStackable() {
 		return placements.size() == points.size();
 	}
 
-	@Override
 	public int getSize() {
 		return points.size();
 	}
 
-	@Override
 	public long getLoadVolume() {
 		calculateLoad();
 		return loadVolume;
 	}
 
-	@Override
 	public int getLoadWeight() {
 		calculateLoad();
 		return loadWeight;
 	}
 
-	@Override
 	public int getMaxLoadWeight() {
-		return container.getMaxLoadWeight();
+		return containerItem.getContainer().getMaxLoadWeight();
 	}
 
-	@Override
 	public int getWeight() {
 		calculateLoad();
-		return loadWeight + container.getEmptyWeight();
+		return loadWeight + containerItem.getContainer().getEmptyWeight();
 	}
 
-	@Override
 	public long getVolume() {
-		return container.getVolume();
+		return containerItem.getContainer().getVolume();
 	}
 
-	@Override
 	public long getMaxLoadVolume() {
-		return container.getMaxLoadVolume();
+		return containerItem.getContainer().getMaxLoadVolume();
 	}
 
 	public void markDirty() {
 		this.dirty = true;
 	}
 
-	@Override
 	public int getContainerItemIndex() {
 		return index;
 	}
+
 }

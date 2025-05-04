@@ -168,14 +168,14 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 		return n;
 	}
 	
-	public BoxItem[] getStackableItems() {
+	public BoxItem[] getBoxItems() {
 		return stackableItems;
 	}
-	public long getMinStackableVolume(int offset) {
+	public long getMinBoxVolume(int offset) {
 		return minStackableVolume[offset];
 	}
 	
-	public long[] getMinStackableVolume() {
+	public long[] getMinBoxVolume() {
 		return minStackableVolume;
 	}
 	

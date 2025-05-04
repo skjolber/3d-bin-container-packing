@@ -18,11 +18,11 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
@@ -59,9 +59,9 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 	
 			List<StackPlacement> placements = fits.getStack().getPlacements();
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
-			assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("B");
-			assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("C");
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
+			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemDescription("B");
+			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemDescription("C");
 	
 			assertThat(placements.get(0)).isAlongsideX(placements.get(1));
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
@@ -98,9 +98,9 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 	
 			List<StackPlacement> placements = fits.getStack().getPlacements();
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasStackableName("A");
-			assertThat(placements.get(1)).isAt(1, 0, 0).hasStackableName("A");
-			assertThat(placements.get(2)).isAt(2, 0, 0).hasStackableName("B");
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
+			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemDescription("A");
+			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemDescription("B");
 	
 			assertThat(placements.get(0)).isAlongsideX(placements.get(1));
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));

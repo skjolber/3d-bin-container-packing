@@ -5,18 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
-import com.github.skjolber.packing.iterator.FilteredBoxItemPermutationRotationIterator.Builder;
-import com.github.skjolber.packing.iterator.FilteredBoxItemPermutationRotationIterator.DelegateBuilder;
 
 class FilteredBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxItemGroupPermutationRotationIteratorTest<FilteredBoxItemGroupPermutationRotationIterator.DelegateBuilder> {
 
@@ -102,7 +99,7 @@ class FilteredBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxIte
 			// removing items do not affect the number of permutations
 			rotator.decrement(0, 1);
 			
-			// still two types of loadable items
+			// still two types of box items
 			assertEquals(rotator.size(), 2);
 
 			count++;
@@ -131,7 +128,7 @@ class FilteredBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxIte
 
 		rotator.decrement(0, 1);
 		
-		// still two types of loadable items
+		// still two types of box items
 		assertEquals(rotator.size(), 2);
 
 		int[] frequencies = toFrequency(rotator, 2);
@@ -139,7 +136,7 @@ class FilteredBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxIte
 		assertEquals(1, frequencies[0]);
 		assertEquals(4, frequencies[1]);
 
-		// still two types of loadable items
+		// still two types of box items
 		rotator.decrement(1, 2);
 		assertEquals(rotator.size(), 2);
 
@@ -167,8 +164,5 @@ class FilteredBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxIte
 		}
 		return counts;
 	}
-
-
-
 
 }

@@ -11,16 +11,16 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.Dimension;
-import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.Dimension;
 
 public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends AbstractBoxItemIteratorBuilder> {
 
 	protected static void assertMinStackableVolumeValid(BoxItemPermutationRotationIterator iterator) {
 		for (int i = 0; i < iterator.length(); i++) {
 			long calculatedMinStackableVolume = getMinStackableVolume(iterator, i);
-			long cachedMinStackableVolume = iterator.getMinStackableVolume(i);
+			long cachedMinStackableVolume = iterator.getMinBoxVolume(i);
 
 			assertEquals(calculatedMinStackableVolume, cachedMinStackableVolume, "Calculated " + calculatedMinStackableVolume + ", got " + cachedMinStackableVolume);
 		}

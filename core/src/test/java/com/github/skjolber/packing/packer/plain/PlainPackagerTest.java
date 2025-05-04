@@ -561,7 +561,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 1));
-				b.withFilteredPointsBuilderSupplier(HeavyItemsOnGroundLevel.newFactory(2));
+				b.withBoxItemListenerBuilderSupplier(HeavyItemsOnGroundLevel.newFactory(2));
 			}).withBoxItems(products).build();
 			
 			List<Container> containers = build.getContainers();

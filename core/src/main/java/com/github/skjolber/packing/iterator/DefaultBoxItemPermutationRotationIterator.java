@@ -88,7 +88,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 		}
 	}
 
-	public long getMinStackableVolume(int offset) {
+	public long getMinBoxVolume(int offset) {
 		return minStackableVolume[offset];
 	}
 

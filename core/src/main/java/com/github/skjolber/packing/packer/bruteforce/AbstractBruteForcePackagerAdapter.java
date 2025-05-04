@@ -6,47 +6,43 @@ import java.util.List;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 
-public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackagerAdapter<BruteForcePackagerResult> {
+public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackagerAdapter<BruteForceIntermediatePackagerResult> {
 
 	// keep inventory over all of the iterators here
-	protected Box[] stackables;
-	protected int[] stackablesRemaining;
+	protected Box[] boxes;
+	protected int[] boxesRemaining;
+	protected List<BoxItem> boxItems;
 	
-	public AbstractBruteForcePackagerAdapter(List<ContainerItem> items, List<BoxItem> stackableItems) {
+	public AbstractBruteForcePackagerAdapter(List<CompositeContainerItem> items, List<BoxItem> boxItems) {
 		super(items);
 		
-		stackables = new Box[stackableItems.size()];
-		stackablesRemaining = new int[stackableItems.size()];
+		boxes = new Box[boxItems.size()];
+		boxesRemaining = new int[boxItems.size()];
 		
-		for(int i = 0; i < stackableItems.size(); i++) {
-			BoxItem stackableItem = stackableItems.get(i);
+		for(int i = 0; i < boxItems.size(); i++) {
+			BoxItem stackableItem = boxItems.get(i);
 			
-			stackables[i] = stackableItem.getBox();
-			stackablesRemaining[i] = stackableItem.getCount();
+			boxes[i] = stackableItem.getBox();
+			boxesRemaining[i] = stackableItem.getCount();
 		}
+		
+		this.boxItems = new ArrayList<>(boxItems);
 	} 
 	
 	protected void removeInventory(List<Integer> p) {
 		// remove adapter inventory
 		for (Integer remove : p) {
-			stackablesRemaining[remove]--;
+			boxesRemaining[remove]--;
 		}
 	}
 	
 	@Override
 	public List<Integer> getContainers(int maxCount) {
-		List<Box> boxes = new ArrayList<>();
-		
-		for (int i = 0; i < stackables.length; i++) {
-			for(int k = 0; k < stackablesRemaining[i]; k++) {
-				boxes.add(stackables[i]);
-			}
-		}
-
-		return getContainers(boxes, maxCount);
+		return getContainers(boxItems, maxCount);
 	}	
 	
 	public static boolean hasAtLeastOneContainerForEveryStackable(DefaultPermutationRotationIterator[] iterators, int size) {

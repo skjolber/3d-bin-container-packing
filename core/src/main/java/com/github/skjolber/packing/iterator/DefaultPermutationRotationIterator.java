@@ -20,7 +20,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 				throw new IllegalStateException();
 			}
 
-			PermutationStackableValue[] matrix = toMatrix();
+			PermutationBoxItemValue[] matrix = toMatrix();
 
 			return new DefaultPermutationRotationIterator(matrix);
 		}
@@ -35,12 +35,12 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	// minimum volume from index i and above
 	protected long[] minStackableVolume;
 
-	public DefaultPermutationRotationIterator(PermutationStackableValue[] matrix) {
+	public DefaultPermutationRotationIterator(PermutationBoxItemValue[] matrix) {
 		super(matrix);
 
 		List<Integer> types = new ArrayList<>(matrix.length * 2);
 		for (int j = 0; j < matrix.length; j++) {
-			PermutationStackableValue value = matrix[j];
+			PermutationBoxItemValue value = matrix[j];
 			if(value != null) {
 				for (int k = 0; k < value.count; k++) {
 					types.add(j);
@@ -173,7 +173,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	public long countRotations() {
 		long n = 1;
 		for (int i = 0; i < permutations.length; i++) {
-			PermutationStackableValue value = matrix[permutations[i]];
+			PermutationBoxItemValue value = matrix[permutations[i]];
 			if(Long.MAX_VALUE / value.getBoxes().length <= n) {
 				return -1L;
 			}
@@ -196,7 +196,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		// fit within the container volume
 
 		int maxCount = 0;
-		for (PermutationStackableValue value : matrix) {
+		for (PermutationBoxItemValue value : matrix) {
 			if(value != null) {
 				if(maxCount < value.getCount()) {
 					maxCount = value.getCount();
@@ -207,7 +207,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		long n = 1;
 		if(maxCount > 1) {
 			int[] factors = new int[maxCount];
-			for (PermutationStackableValue value : matrix) {
+			for (PermutationBoxItemValue value : matrix) {
 				if(value != null) {
 					for (int k = 0; k < value.getCount(); k++) {
 						factors[k]++;
@@ -351,7 +351,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		return new PermutationRotationState(rotations, permutations);
 	}
 
-	public PermutationStackableValue getPermutation(int index) {
+	public PermutationBoxItemValue getPermutation(int index) {
 		return matrix[permutations[index]];
 	}
 

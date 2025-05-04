@@ -5,16 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
-import com.github.skjolber.packing.iterator.FilteredBoxItemPermutationRotationIterator.Builder;
 import com.github.skjolber.packing.iterator.FilteredBoxItemPermutationRotationIterator.DelegateBuilder;
 
 class FilteredBoxItemPermutationRotationIteratorTest extends AbstractBoxItemPermutationRotationIteratorTest<DelegateBuilder> {

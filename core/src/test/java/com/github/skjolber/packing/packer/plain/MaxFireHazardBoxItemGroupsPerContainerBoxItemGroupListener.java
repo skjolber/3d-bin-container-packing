@@ -5,17 +5,19 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.AbstractBoxItemGroupListenerBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemGroupListener;
-import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemGroupListenerBuilderFactory;
+import com.github.skjolber.packing.api.ep.FilteredPoints;
+import com.github.skjolber.packing.api.packager.AbstractBoxItemGroupControlsBuilder;
+import com.github.skjolber.packing.api.packager.BoxItemGroupControls;
+import com.github.skjolber.packing.api.packager.BoxItemGroupControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
+import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
-public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implements BoxItemGroupListener {
+public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implements BoxItemGroupControls {
 
 	public static final String KEY = "fireHazard";
 
-	public static class Builder extends AbstractBoxItemGroupListenerBuilder<Builder> {
+	public static class Builder extends AbstractBoxItemGroupControlsBuilder<Builder> {
 
 		private int maxCount = -1;
 		
@@ -25,11 +27,11 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 		}
 		
 		@Override
-		public BoxItemGroupListener build() {
+		public BoxItemGroupControls build() {
 			if(maxCount == -1) {
 				throw new IllegalStateException("Expected max count");
 			}
-			return new MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener(container, groups, stack, maxCount);
+			return new MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener(container, groups, points, stack, maxCount);
 		}
 
 	}
@@ -38,7 +40,7 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 		return new Builder();
 	}
 	
-	public static final BoxItemGroupListenerBuilderFactory newFactory(int maxCount) {
+	public static final BoxItemGroupControlsBuilderFactory newFactory(int maxCount) {
 		return () -> newBuilder().withMaxCount(maxCount);
 	}
 	
@@ -47,12 +49,15 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 	protected final Stack stack;
 	protected final int maxCount;
 	protected int count = 0;
+	protected final FilteredPoints points;
+	protected DefaultFilteredBoxItems filteredBoxItems = new DefaultFilteredBoxItems();
 
-	public MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener(Container container, FilteredBoxItemGroups groups, Stack stack, int maxCount) {
+	public MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener(Container container, FilteredBoxItemGroups groups, FilteredPoints points, Stack stack, int maxCount) {
 		this.container = container;
 		this.groups = groups;
 		this.stack = stack;
 		this.maxCount = maxCount;
+		this.points = points;
 	}
 
 	@Override
@@ -91,5 +96,31 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 		
 		Boolean b = box.getProperty(KEY);
 		return b != null && b;
+	}
+	
+
+	@Override
+	public FilteredBoxItems getFilteredBoxItems() {
+		return filteredBoxItems;
+	}
+
+	@Override
+	public FilteredPoints getPoints(BoxItem boxItem) {
+		return points;
+	}
+
+	@Override
+	public void accepted(BoxItem boxItem) {
+		// do nothing
+	}
+
+	@Override
+	public void attempt(BoxItemGroup group) {
+		filteredBoxItems.setValues(group.getItems());
+	}
+
+	@Override
+	public void declined(BoxItemGroup group) {
+		// do nothing
 	}
 }

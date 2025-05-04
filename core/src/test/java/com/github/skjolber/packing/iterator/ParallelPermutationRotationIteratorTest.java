@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.Dimension;
 
 public class ParallelPermutationRotationIteratorTest extends AbstractPermutationRotationIteratorTest {
 
@@ -33,13 +33,13 @@ public class ParallelPermutationRotationIteratorTest extends AbstractPermutation
 		DefaultPermutationRotationIterator iterator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
 		ParallelPermutationRotationIteratorList calculator = new ParallelPermutationRotationIteratorListBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.withParallelizationCount(1)
 				.build();
@@ -81,13 +81,13 @@ public class ParallelPermutationRotationIteratorTest extends AbstractPermutation
 			DefaultPermutationRotationIterator rotator1 = DefaultPermutationRotationIterator
 					.newBuilder()
 					.withLoadSize(container)
-					.withStackableItems(products)
+					.withBoxItems(products)
 					.withMaxLoadWeight(products.size())
 					.build();
 
 			ParallelPermutationRotationIteratorList calculator = new ParallelPermutationRotationIteratorListBuilder()
 					.withLoadSize(container)
-					.withStackableItems(products)
+					.withBoxItems(products)
 					.withMaxLoadWeight(products.size())
 					.withParallelizationCount(1)
 					.build();
@@ -126,13 +126,13 @@ public class ParallelPermutationRotationIteratorTest extends AbstractPermutation
 			DefaultPermutationRotationIterator rotator1 = DefaultPermutationRotationIterator
 					.newBuilder()
 					.withLoadSize(container)
-					.withStackableItems(products)
+					.withBoxItems(products)
 					.withMaxLoadWeight(products.size())
 					.build();
 
 			ParallelPermutationRotationIteratorList calculator = new ParallelPermutationRotationIteratorListBuilder()
 					.withLoadSize(container)
-					.withStackableItems(products)
+					.withBoxItems(products)
 					.withMaxLoadWeight(products.size())
 					.withParallelizationCount(1)
 					.build();
@@ -163,7 +163,7 @@ public class ParallelPermutationRotationIteratorTest extends AbstractPermutation
 
 		ParallelPermutationRotationIteratorList calculator = new ParallelPermutationRotationIteratorListBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.withParallelizationCount(1)
 				.build();
@@ -201,13 +201,13 @@ public class ParallelPermutationRotationIteratorTest extends AbstractPermutation
 		DefaultPermutationRotationIterator iterator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
 		ParallelPermutationRotationIteratorList calculator = new ParallelPermutationRotationIteratorListBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.withParallelizationCount(2)
 				.build();
@@ -274,13 +274,13 @@ public class ParallelPermutationRotationIteratorTest extends AbstractPermutation
 		DefaultPermutationRotationIterator iterator = DefaultPermutationRotationIterator
 				.newBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
 		ParallelPermutationRotationIteratorList calculator = new ParallelPermutationRotationIteratorListBuilder()
 				.withLoadSize(container)
-				.withStackableItems(products)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.withParallelizationCount(2)
 				.build();
@@ -398,7 +398,7 @@ public class ParallelPermutationRotationIteratorTest extends AbstractPermutation
 
 			ParallelPermutationRotationIteratorList calculator = new ParallelPermutationRotationIteratorListBuilder()
 					.withLoadSize(container)
-					.withStackableItems(products)
+					.withBoxItems(products)
 					.withMaxLoadWeight(products.size())
 					.withParallelizationCount(2)
 					.build();
@@ -406,7 +406,7 @@ public class ParallelPermutationRotationIteratorTest extends AbstractPermutation
 			DefaultPermutationRotationIterator iterator = DefaultPermutationRotationIterator
 					.newBuilder()
 					.withLoadSize(container)
-					.withStackableItems(products)
+					.withBoxItems(products)
 					.withMaxLoadWeight(products.size())
 					.build();
 

@@ -82,8 +82,8 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		super.calculateMinStackableVolume(offset + ParallelPermutationRotationIteratorList.PADDING);
 	}
 
-	public long getMinStackableVolume(int offset) {
-		return super.getMinStackableVolume(ParallelPermutationRotationIteratorList.PADDING + offset);
+	public long getMinBoxVolume(int offset) {
+		return super.getMinBoxVolume(ParallelPermutationRotationIteratorList.PADDING + offset);
 	}
 
 	public int[] getRotations() {

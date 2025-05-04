@@ -15,7 +15,7 @@ public class ParallelPermutationRotationIteratorList {
 	protected final int[] frequencies;
 	protected ParallelPermutationRotationIterator[] workUnits;
 
-	public ParallelPermutationRotationIteratorList(PermutationStackableValue[] matrix, int parallelizationCount) {
+	public ParallelPermutationRotationIteratorList(PermutationBoxItemValue[] matrix, int parallelizationCount) {
 		this.frequencies = new int[matrix.length];
 
 		for (int i = 0; i < matrix.length; i++) {
@@ -29,7 +29,7 @@ public class ParallelPermutationRotationIteratorList {
 			
 			// clone working variables so threads are less of the same
 			// memory area as one another
-			PermutationStackableValue[] clone = clone(matrix);
+			PermutationBoxItemValue[] clone = clone(matrix);
 			
 			workUnits[i] = new ParallelPermutationRotationIterator(clone, this);
 			if(workUnits[i].preventOptmisation() != -1L) {
@@ -40,10 +40,10 @@ public class ParallelPermutationRotationIteratorList {
 		calculate();
 	}
 
-	private PermutationStackableValue[] clone(PermutationStackableValue[] matrix) {
-		PermutationStackableValue[] clone = new PermutationStackableValue[matrix.length];
+	private PermutationBoxItemValue[] clone(PermutationBoxItemValue[] matrix) {
+		PermutationBoxItemValue[] clone = new PermutationBoxItemValue[matrix.length];
 		for(int i = 0; i < clone.length; i++) {
-			PermutationStackableValue permutationStackableValue = matrix[i];
+			PermutationBoxItemValue permutationStackableValue = matrix[i];
 			if(permutationStackableValue != null) {
 				clone[i] = permutationStackableValue.clone();
 			}

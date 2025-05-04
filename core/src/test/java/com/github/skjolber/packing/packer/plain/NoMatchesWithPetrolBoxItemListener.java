@@ -5,19 +5,19 @@ import java.util.function.Predicate;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.AbstractBoxItemListenerBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemListener;
-import com.github.skjolber.packing.api.packager.BoxItemListenerBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemListenerBuilderFactory;
+import com.github.skjolber.packing.api.ep.FilteredPoints;
+import com.github.skjolber.packing.api.packager.AbstractBoxItemControlsBuilder;
+import com.github.skjolber.packing.api.packager.BoxItemControls;
+import com.github.skjolber.packing.api.packager.BoxItemControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
-public class NoMatchesWithPetrolBoxItemListener implements BoxItemListener {
+public class NoMatchesWithPetrolBoxItemListener implements BoxItemControls {
 
-	public static class Builder extends AbstractBoxItemListenerBuilder<Builder> {
+	public static class Builder extends AbstractBoxItemControlsBuilder<Builder> {
 
 		@Override
-		public BoxItemListener build() {
-			return new NoMatchesWithPetrolBoxItemListener(container, items, stack);
+		public BoxItemControls build() {
+			return new NoMatchesWithPetrolBoxItemListener(container, items, points, stack);
 		}
 
 	}
@@ -26,20 +26,22 @@ public class NoMatchesWithPetrolBoxItemListener implements BoxItemListener {
 		return new Builder();
 	}
 	
-	public static BoxItemListenerBuilderFactory newFactory() {
+	public static BoxItemControlsBuilderFactory newFactory() {
 		return () -> NoMatchesWithPetrolBoxItemListener.newBuilder();
 	}
 	
 	protected final Container container;
 	protected final FilteredBoxItems items;
 	protected final Stack stack;
-	
+	protected final FilteredPoints points;
+
 	protected boolean matches = false;
 	protected boolean petrol = false;
 
-	public NoMatchesWithPetrolBoxItemListener(Container container, FilteredBoxItems items, Stack stack) {
+	public NoMatchesWithPetrolBoxItemListener(Container container, FilteredBoxItems items, FilteredPoints filteredPoints, Stack stack) {
 		this.container = container;
 		this.items = items;
+		this.points = filteredPoints;
 		this.stack = stack;
 	}
 
@@ -83,6 +85,16 @@ public class NoMatchesWithPetrolBoxItemListener implements BoxItemListener {
 
 	private boolean isMatches(BoxItem item) {
 		return item.getBox().getId().startsWith("matches-");
+	}
+
+	@Override
+	public FilteredBoxItems getFilteredBoxItems() {
+		return items;
+	}
+
+	@Override
+	public FilteredPoints getPoints(BoxItem boxItem) {
+		return points;
 	}
 
 }
