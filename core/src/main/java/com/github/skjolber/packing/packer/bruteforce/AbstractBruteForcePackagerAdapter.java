@@ -45,7 +45,7 @@ public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackager
 		return getContainers(boxItems, maxCount);
 	}	
 	
-	public static boolean hasAtLeastOneContainerForEveryStackable(DefaultPermutationRotationIterator[] iterators, int size) {
+	public static boolean hasAtLeastOneContainerForEveryBox(DefaultPermutationRotationIterator[] iterators, int size) {
 		// check that all boxes fit in one or more container(s)
 		// otherwise do not attempt packaging
 		boolean[] containerChecklist = new boolean[size]; 

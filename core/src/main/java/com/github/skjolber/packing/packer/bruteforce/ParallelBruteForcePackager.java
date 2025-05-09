@@ -333,7 +333,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 		// check that all boxes fit in one or more container(s)
 		// otherwise do not attempt packaging
-		if(!AbstractBruteForcePackagerAdapter.hasAtLeastOneContainerForEveryStackable(iterators, stackableItems.size())) {
+		if(!AbstractBruteForcePackagerAdapter.hasAtLeastOneContainerForEveryBox(iterators, stackableItems.size())) {
 			return null;
 		}
 		
