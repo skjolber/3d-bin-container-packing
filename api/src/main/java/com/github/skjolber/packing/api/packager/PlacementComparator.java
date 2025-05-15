@@ -1,9 +1,13 @@
-package com.github.skjolber.packing.api;
+package com.github.skjolber.packing.api.packager;
 
 import java.util.Comparator;
 
+import com.github.skjolber.packing.api.StackValue;
+import com.github.skjolber.packing.api.Stackable;
+import com.github.skjolber.packing.api.ep.Point3D;
+
 @FunctionalInterface
-public interface PlacementComparator<L> {
+public interface PlacementComparator {
 
 	/**
 	 * See {@linkplain Comparator#compare(Object, Object)}.<br>
@@ -22,6 +26,6 @@ public interface PlacementComparator<L> {
 	 *                              being compared by this comparator.
 	 */
 
-	int compare(Stackable s1, StackValue sv1, L l1, Stackable s2, StackValue sv2, L l2);
+	int compare(Stackable s1, StackValue sv1, Point3D l1, Stackable s2, StackValue sv2, Point3D l2);
 
 }
