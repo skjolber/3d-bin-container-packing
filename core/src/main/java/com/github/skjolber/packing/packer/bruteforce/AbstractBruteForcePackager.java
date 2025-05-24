@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
@@ -79,10 +80,15 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			do {
 				int minStackableAreaIndex = iterator.getMinStackableAreaIndex(0);
 
+				System.out.println(Arrays.toString(iterator.getState().getPermutations()));
+				
 				List<Point> points = packStackPlacement(extremePoints, stackPlacements, iterator, stack, holder, interrupt, minStackableAreaIndex);
 				if(points == null) {
 					return null; // stack overflow
 				}
+				
+				System.out.println(" " + points.size());
+				
 				if(points.size() > bestPermutationResult.getSize()) {
 					bestPermutationResult.setState(points, iterator.getState(), stackPlacements);
 					if(points.size() == iterator.length() || isAcceptAsFull(bestPermutationResult, holder)) {
@@ -91,7 +97,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 					}
 				}
 
-				holder.getStack().clear();
+				stack.clear();
 
 				// search for the next rotation which actually 
 				// has a chance of affecting the result.

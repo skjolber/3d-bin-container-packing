@@ -114,6 +114,13 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			Container container = super.toContainer(bruteForceResult.getContainerItem(), bruteForceResult.getStack());
 
 			Stack stack = container.getStack();
+			
+			stack.clear();
+			
+			
+			// put placements in stack according to state
+			
+			
 
 			int size = stack.size();
 			if(stackPlacements.size() > size) {
