@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.api.packager;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -11,7 +12,7 @@ public class DefaultFilteredBoxItems implements FilteredBoxItems {
 	
 	public DefaultFilteredBoxItems(List<BoxItem> values) {
 		super();
-		this.values = values;
+		this.values = new ArrayList<>(values);
 	}
 	
 	public DefaultFilteredBoxItems() {

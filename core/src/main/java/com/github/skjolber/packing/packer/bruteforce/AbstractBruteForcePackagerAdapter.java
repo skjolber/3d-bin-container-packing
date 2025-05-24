@@ -1,11 +1,11 @@
 package com.github.skjolber.packing.packer.bruteforce;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
+import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
+import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 
@@ -14,34 +14,40 @@ public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackager
 	// keep inventory over all of the iterators here
 	protected Box[] boxes;
 	protected int[] boxesRemaining;
-	protected List<BoxItem> boxItems;
+	protected BoxItem[] boxItems;
+	protected FilteredBoxItems filteredBoxItems;
 	
 	public AbstractBruteForcePackagerAdapter(List<CompositeContainerItem> items, List<BoxItem> boxItems) {
 		super(items);
 		
-		boxes = new Box[boxItems.size()];
-		boxesRemaining = new int[boxItems.size()];
+		this.boxes = new Box[boxItems.size()];
+		this.boxesRemaining = new int[boxItems.size()];
+		this.boxItems = new BoxItem[boxItems.size()];
 		
 		for(int i = 0; i < boxItems.size(); i++) {
-			BoxItem stackableItem = boxItems.get(i);
-			
-			boxes[i] = stackableItem.getBox();
-			boxesRemaining[i] = stackableItem.getCount();
+			BoxItem boxItem = boxItems.get(i);
+
+			this.boxItems[i] = boxItem;
+			this.boxes[i] = boxItem.getBox();
+			this.boxesRemaining[i] = boxItem.getCount();
 		}
 		
-		this.boxItems = new ArrayList<>(boxItems);
+		this.filteredBoxItems = new DefaultFilteredBoxItems(boxItems);
 	} 
 	
 	protected void removeInventory(List<Integer> p) {
 		// remove adapter inventory
 		for (Integer remove : p) {
 			boxesRemaining[remove]--;
+			
+			boxItems[remove].decrement();
 		}
+		filteredBoxItems.removeEmpty();
 	}
 	
 	@Override
 	public List<Integer> getContainers(int maxCount) {
-		return getContainers(boxItems, maxCount);
+		return getContainers(filteredBoxItems, maxCount);
 	}	
 	
 	public static boolean hasAtLeastOneContainerForEveryBox(DefaultPermutationRotationIterator[] iterators, int size) {

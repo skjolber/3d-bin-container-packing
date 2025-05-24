@@ -177,26 +177,28 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		do {
 			// is it possible to fit the remaining boxes a single container?
 			int maxContainers = limit - containerPackResults.size();
-			List<Integer> containerItemIndexes = adapter.getContainers(1);
-			if(!containerItemIndexes.isEmpty()) {
-
-				P result = packSingle(containerItemIndexes, adapter, interrupt);
-				if(result == null) {
-					// timeout
-					return null;
+			if(maxContainers > 1) {
+				List<Integer> containerItemIndexes = adapter.getContainers(1);
+				if(!containerItemIndexes.isEmpty()) {
+	
+					P result = packSingle(containerItemIndexes, adapter, interrupt);
+					if(result == null) {
+						// timeout
+						return null;
+					}
+					if(!result.isEmpty()) {
+						containerPackResults.add(adapter.accept(result));
+	
+						// positive result
+						return containerPackResults;
+					}
+					
+					// TODO any way to reuse partial results as the current best result?
 				}
-				if(!result.isEmpty()) {
-					containerPackResults.add(adapter.accept(result));
-
-					// positive result
-					return containerPackResults;
-				}
-				
-				// TODO any way to reuse partial results as the current best result?
 			}
 
 			// one or more containers
-			containerItemIndexes = adapter.getContainers(maxContainers);
+			List<Integer> containerItemIndexes = adapter.getContainers(maxContainers);
 			if(containerItemIndexes.isEmpty()) {
 				return Collections.emptyList();
 			}

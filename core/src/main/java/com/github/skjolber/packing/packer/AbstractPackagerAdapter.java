@@ -69,7 +69,7 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 	 * @return list of containers
 	 */
 	
-	protected List<Integer> getContainers(List<BoxItem> boxes, int maxCount) {
+	protected List<Integer> getContainers(Iterable<BoxItem> boxes, int maxCount) {
 		long totalVolume = 0;
 		long totalWeight = 0;
 
@@ -267,7 +267,7 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 		return list;
 	}
 	
-	protected boolean canLoadAtLeastOneBox(Container containerBox, List<BoxItem> boxes) {
+	protected boolean canLoadAtLeastOneBox(Container containerBox, Iterable<BoxItem> boxes) {
 		
 		for (BoxItem boxItem : boxes) {
 			Box box = boxItem.getBox();
