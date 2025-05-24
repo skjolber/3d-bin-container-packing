@@ -80,11 +80,16 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
-			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
-			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
-			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
+			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 	
-			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withBoxItems(products).withMaxContainerCount(5).build();
+			PackagerResult build = packager
+					.newResultBuilder()
+					.withContainerItems(containers)
+					.withBoxItems(products)
+					.withMaxContainerCount(5)
+					.build();
 	
 			List<Container> packList = build.getContainers();
 	
@@ -95,9 +100,11 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 			List<StackPlacement> placements = fits.getStack().getPlacements();
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
-			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemDescription("A");
-			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemDescription("B");
+			System.out.println(placements);
+			
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemId("B");
 	
 			assertThat(placements.get(0)).isAlongsideX(placements.get(1));
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
@@ -120,6 +127,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			List<BoxItem> products = new ArrayList<>();
 			products.add(new BoxItem(Box.newBuilder().withDescription("J").withRotate3D().withSize(4, 4, 1).withWeight(1).build(), 1));
 	
+			
 			for (int i = 0; i < 4; i++) {
 				products.add(new BoxItem(Box.newBuilder().withDescription("K").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 1));
 			}

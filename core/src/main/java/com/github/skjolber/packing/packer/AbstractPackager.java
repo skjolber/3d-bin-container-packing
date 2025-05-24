@@ -205,44 +205,44 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 			// assume larger boxes is at the end of list, so start there
 			P best = null;
 			for (int i = containerItemIndexes.size() - 1; i >= 0; i--) {
-				if(interrupt.getAsBoolean()) {
-					throw new PackagerInterruptedException();
-				}
+				try {
 
-				Integer containerItemIndex = containerItemIndexes.get(i);
-
-				// can this container hold more than the previously best result?
-				if(best != null) {
-					ContainerItem containerItem = adapter.getContainerItem(containerItemIndex);
-					Container container = containerItem.getContainer();
-
-					long loadVolume = container.getLoadVolume();
-					if(loadVolume > container.getMaxLoadVolume()) {
-						continue;
+					if(interrupt.getAsBoolean()) {
+						throw new PackagerInterruptedException();
 					}
-					int loadWeight = container.getLoadWeight();
-					if(loadWeight > container.getMaxLoadWeight()) {
-						continue;
+
+					Integer containerItemIndex = containerItemIndexes.get(i);
+
+					// can this container hold more than the previously best result?
+					if(best != null) {
+						ContainerItem containerItem = adapter.getContainerItem(containerItemIndex);
+						Container container = containerItem.getContainer();
+	
+						long loadVolume = container.getLoadVolume();
+						if(loadVolume > container.getMaxLoadVolume()) {
+							continue;
+						}
+						int loadWeight = container.getLoadWeight();
+						if(loadWeight > container.getMaxLoadWeight()) {
+							continue;
+						}
 					}
-				}
 
-				P result = adapter.attempt(containerItemIndex, best);
-
-				if(result == null) {
+					P result = adapter.attempt(containerItemIndex, best);
+	
+					if(!result.isEmpty()) {
+						if(best == null || intermediatePackagerResultComparator.compare(best, result) != PackResultComparator.ARGUMENT_1_IS_BETTER) {
+							best = result;
+						}
+					}
+				} catch(PackagerInterruptedException e) {
 					// timeout, unless already have a result ready
 					if(best != null && best.getStack().size() == adapter.countRemainingBoxes()) {
 						containerPackResults.add(adapter.accept(best));
 
 						return containerPackResults;
 					}
-
 					return null;
-				}
-
-				if(!result.isEmpty()) {
-					if(best == null || intermediatePackagerResultComparator.compare(best, result) != PackResultComparator.ARGUMENT_1_IS_BETTER) {
-						best = result;
-					}
 				}
 			}
 
@@ -252,6 +252,11 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 			}
 
 			containerPackResults.add(adapter.accept(best));
+			
+			if(adapter.countRemainingBoxes() == 0) {
+				return containerPackResults;
+			}
+			
 		} while (containerPackResults.size() < limit);
 
 		return null;

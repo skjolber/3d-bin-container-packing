@@ -21,6 +21,7 @@ import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.DefaultPackagerResultBuilder;
+import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -33,10 +34,10 @@ import com.github.skjolber.packing.packer.DefaultPackagerResultBuilder;
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
-public abstract class AbstractBruteForcePackager extends AbstractPackager<DefaultIntermediatePackagerResult, BruteForcePackagerResultBuilder> {
+public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteForceIntermediatePackagerResult, BruteForcePackagerResultBuilder> {
 
 	private static Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
-
+	
 	public AbstractBruteForcePackager(IntermediatePackagerResultComparator packResultComparator) {
 		super(packResultComparator);
 	}
@@ -57,7 +58,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Defaul
 	}
 
 	public BruteForceIntermediatePackagerResult pack(ExtremePoints3DStack extremePoints, List<StackPlacement> stackPlacements, ContainerItem containerItem, int index,
-			PermutationRotationIterator iterator, PackagerInterruptSupplier interrupt) {
+			PermutationRotationIterator iterator, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 
 		Container holder = containerItem.getContainer().clone();
 		
@@ -70,7 +71,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Defaul
 		// iterator over all permutations
 		do {
 			if(interrupt.getAsBoolean()) {
-				return null;
+				throw new PackagerInterruptedException();
 			}
 			// iterator over all rotations
 			bestPermutationResult.reset();
@@ -80,11 +81,11 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Defaul
 
 				List<Point> points = packStackPlacement(extremePoints, stackPlacements, iterator, stack, holder, interrupt, minStackableAreaIndex);
 				if(points == null) {
-					return null; // timeout
+					return null; // stack overflow
 				}
 				if(points.size() > bestPermutationResult.getSize()) {
 					bestPermutationResult.setState(points, iterator.getState(), stackPlacements);
-					if(points.size() == iterator.length()) {
+					if(points.size() == iterator.length() || isAcceptAsFull(bestPermutationResult, holder)) {
 						// best possible result for this container
 						return bestPermutationResult;
 					}
@@ -132,9 +133,11 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Defaul
 		return bestResult;
 	}
 
+	protected abstract boolean isAcceptAsFull(BruteForceIntermediatePackagerResult bestPermutationResult, Container holder);
+
 	public List<Point> packStackPlacement(ExtremePoints3DStack extremePoints, List<StackPlacement> placements, PermutationRotationIterator iterator, Stack stack,
 			Container container,
-			PackagerInterruptSupplier interrupt, int minStackableAreaIndex) {
+			PackagerInterruptSupplier interrupt, int minStackableAreaIndex) throws PackagerInterruptedException {
 		if(placements.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -149,6 +152,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Defaul
 			// note: currently implemented as a recursive algorithm
 			return packStackPlacement(extremePoints, placements, iterator, stack, maxLoadWeight, 0, interrupt, minStackableAreaIndex, Collections.emptyList());
 		} catch (StackOverflowError e) {
+			// TODO throw packager exception
+			
 			LOGGER.warning("Stack overflow occoured for " + placements.size() + " boxes. Limit number of boxes or increase thread stack");
 			return null;
 		}
@@ -165,12 +170,11 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Defaul
 			int minStackableAreaIndex,
 			// optimize: pass best along so that we do not need to get points to known whether extracting the points is necessary
 			List<Point> best
-		) {
+		) throws PackagerInterruptedException {
 		if(interrupt.getAsBoolean()) {
 			// fit2d below might have returned due to deadline
-			return null;
+			throw new PackagerInterruptedException();
 		}
-
 		PermutationRotation permutationRotation = rotator.get(placementIndex);
 
 		BoxItem stackable = permutationRotation.getBoxItem();
