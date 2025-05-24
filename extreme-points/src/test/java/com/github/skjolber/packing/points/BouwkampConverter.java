@@ -35,9 +35,14 @@ public class BouwkampConverter {
 	public DefaultExtremePoints2D convert2D(BouwkampCode bkpLine, int factor) {
 
 		DefaultExtremePoints2D points = new DefaultExtremePoints2D();
-		points.setSize(bkpLine.getWidth() * factor, bkpLine.getDepth() * factor, 0);
-
+		points.setSize(bkpLine.getWidth() * factor, bkpLine.getDepth() * factor, factor);
+		points.clear();
+		
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
+		
+		if(points.isEmpty()) {
+			throw new RuntimeException();
+		}
 
 		int count = 0;
 
@@ -46,7 +51,9 @@ public class BouwkampConverter {
 			int minY = points.getMinY();
 
 			Point2D value = points.get(minY);
-
+			
+			if(value == null) throw new RuntimeException("No point at " + minY + ", got " + points.getValues());
+			
 			int offset = value.getMinX();
 
 			int nextY = minY;

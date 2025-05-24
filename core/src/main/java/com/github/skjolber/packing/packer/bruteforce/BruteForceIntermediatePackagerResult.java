@@ -69,7 +69,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		return stack;
 	}
 
-	private void calculateStack() {
+	public void calculateStack() {
 		stack.clear();
 
 		List<PermutationRotation> list = iterator.get(state, points.size());

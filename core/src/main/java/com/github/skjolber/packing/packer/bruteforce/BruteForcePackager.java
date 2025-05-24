@@ -111,17 +111,11 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 		@Override
 		public Container accept(BruteForceIntermediatePackagerResult bruteForceResult) {
-			Container container = super.toContainer(bruteForceResult.getContainerItem(), bruteForceResult.getStack());
-
-			Stack stack = container.getStack();
+			bruteForceResult.markDirty();
+			Stack stack = bruteForceResult.getStack();
 			
-			stack.clear();
-			
-			
-			// put placements in stack according to state
-			
-			
-
+			Container container = super.toContainer(bruteForceResult.getContainerItem(), stack);
+						
 			int size = stack.size();
 			if(stackPlacements.size() > size) {
 				// this result does not consume all placements

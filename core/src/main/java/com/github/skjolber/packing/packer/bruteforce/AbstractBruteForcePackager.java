@@ -65,9 +65,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		
 		Stack stack = holder.getStack();
 		
-		BruteForceIntermediatePackagerResult bestResult = new BruteForceIntermediatePackagerResult(containerItem, stack, index, iterator);
+		BruteForceIntermediatePackagerResult bestResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(), index, iterator);
+		
 		// optimization: compare pack results by looking only at count within the same permutation 
-		BruteForceIntermediatePackagerResult bestPermutationResult = new BruteForceIntermediatePackagerResult(containerItem, stack, index, iterator);
+		BruteForceIntermediatePackagerResult bestPermutationResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(), index, iterator);
 
 		// iterator over all permutations
 		do {
@@ -80,14 +81,12 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			do {
 				int minStackableAreaIndex = iterator.getMinStackableAreaIndex(0);
 
-				System.out.println(Arrays.toString(iterator.getState().getPermutations()));
-				
 				List<Point> points = packStackPlacement(extremePoints, stackPlacements, iterator, stack, holder, interrupt, minStackableAreaIndex);
 				if(points == null) {
 					return null; // stack overflow
 				}
 				
-				System.out.println(" " + points.size());
+				stack.clear();
 				
 				if(points.size() > bestPermutationResult.getSize()) {
 					bestPermutationResult.setState(points, iterator.getState(), stackPlacements);
@@ -96,8 +95,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 						return bestPermutationResult;
 					}
 				}
-
-				stack.clear();
 
 				// search for the next rotation which actually 
 				// has a chance of affecting the result.
@@ -117,7 +114,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 			if(!bestPermutationResult.isEmpty()) {
 				// compare against other permutation's result
-
+				
 				if(bestResult.isEmpty() || intermediatePackagerResultComparator.compare(bestResult, bestPermutationResult) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
 					// switch the two results for one another
 					BruteForceIntermediatePackagerResult tmp = bestResult;
