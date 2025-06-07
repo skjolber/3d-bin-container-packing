@@ -21,7 +21,7 @@
 		<eclipse-collections.version>11.1.0</eclipse-collections.version>
 		<google-truth.version>1.4.4</google-truth.version>
 		<junit-quicktest.version>1.0</junit-quicktest.version>
-		<junit.version>5.11.4</junit.version>
+		<junit.version>5.13.1</junit.version>
 		<jmh.version>1.37</jmh.version>
 		<commons-io.version>2.18.0</commons-io.version>
 
