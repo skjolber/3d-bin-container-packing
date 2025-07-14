@@ -92,7 +92,12 @@ public class MaxFireHazardBoxItemPerContainerBoxItemListener implements BoxItemC
 	}
 
 	@Override
-	public FilteredPoints getPoints(BoxItem boxItem) {
+	public FilteredPoints getFilteredPoints(BoxItem boxItem) {
 		return points;
+	}
+
+	@Override
+	public void declined(BoxItem group) {
+		// do nothing
 	}
 }

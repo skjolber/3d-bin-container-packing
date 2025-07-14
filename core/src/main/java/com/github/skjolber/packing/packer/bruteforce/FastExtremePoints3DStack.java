@@ -58,7 +58,7 @@ public class FastExtremePoints3DStack extends ExtremePoints3D {
 	}
 
 	@Override
-	public void reset(int dx, int dy, int dz) {
+	public void clearToSize(int dx, int dy, int dz) {
 		stackSize = 0;
 
 		super.clearToSize(dx, dy, dz);

@@ -56,7 +56,7 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 				continue;
 			}
 
-			FilteredPoints points = controls.getPoints(boxItem);
+			FilteredPoints points = controls.getFilteredPoints(boxItem);
 
 			for (Point point3d : points) {
 				for (BoxStackValue stackValue : box.getStackValues()) {

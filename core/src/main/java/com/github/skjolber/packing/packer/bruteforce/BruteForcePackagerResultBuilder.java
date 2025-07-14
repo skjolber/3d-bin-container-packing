@@ -60,7 +60,7 @@ public class BruteForcePackagerResultBuilder extends PackagerResultBuilder<Brute
 		} finally {
 			interrupt.close();
 		}
-
 	}
 
+	
 }

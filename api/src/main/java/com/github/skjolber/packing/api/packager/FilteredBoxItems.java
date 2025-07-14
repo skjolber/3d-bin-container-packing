@@ -17,7 +17,7 @@ public interface FilteredBoxItems extends Iterable<BoxItem> {
 
 	BoxItem get(int index);
 
-	BoxItem decrement(int index, int count);
+	boolean decrement(int index, int count);
  
 	BoxItem remove(int index);
 

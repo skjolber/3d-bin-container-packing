@@ -4,13 +4,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+
 /**
  * 
  * Items which belong together, for example different parts of a single product or order.
  * 
  */
 
-public class BoxItemGroup implements Iterable<BoxItem>{
+public class BoxItemGroup implements FilteredBoxItems {
 
 	protected String id;
 
@@ -64,6 +66,17 @@ public class BoxItemGroup implements Iterable<BoxItem>{
 		
 		return !items.isEmpty();
 	}
+	
+	@Override
+	public boolean decrement(int index, int count) {
+		BoxItem boxItem = items.get(index);
+		if(!boxItem.decrement(count)) {
+			items.remove(index);
+		}
+		
+		return !items.isEmpty();
+	}
+	
 	
 	public int getBoxCount() {
 		int count = 0;
@@ -120,8 +133,8 @@ public class BoxItemGroup implements Iterable<BoxItem>{
 		return weight;
 	}
 
-	public void remove(int index) {
-		items.remove(index);
+	public BoxItem remove(int index) {
+		return items.remove(index);
 	}
 	
 	public void setIndex(int index) {
@@ -156,6 +169,6 @@ public class BoxItemGroup implements Iterable<BoxItem>{
 	public Iterator<BoxItem> iterator() {
 		return items.listIterator();
 	}
-	
+
 	
 }

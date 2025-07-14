@@ -23,7 +23,7 @@ public abstract class AbstractBoxItemControlsBuilder<B extends AbstractBoxItemCo
 		return (B)this;
 	}
 
-	public B withFilteredBoxItems(FilteredBoxItems input) {
+	public B withBoxItems(FilteredBoxItems input) {
 		this.items = input;
 		return (B)this;
 	}

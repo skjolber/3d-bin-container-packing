@@ -37,7 +37,6 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupCont
 	protected final FilteredBoxItemGroups groups;
 	protected final Stack stack;
 	protected final FilteredPoints points;
-	protected DefaultFilteredBoxItems filteredBoxItems = new DefaultFilteredBoxItems();
 
 	protected boolean matches = false;
 	protected boolean petrol = false;
@@ -113,27 +112,12 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupCont
 	}
 
 	@Override
-	public FilteredBoxItems getFilteredBoxItems() {
-		return filteredBoxItems;
-	}
-
-	@Override
-	public FilteredPoints getPoints(BoxItem boxItem) {
-		return points;
-	}
-
-	@Override
-	public void accepted(BoxItem boxItem) {
-		// do nothing
-	}
-
-	@Override
-	public void attempt(BoxItemGroup group) {
-		filteredBoxItems.setValues(group.getItems());
-	}
-
-	@Override
 	public void declined(BoxItemGroup group) {
 		// do nothing
+	}
+
+	@Override
+	public FilteredBoxItemGroups getFilteredBoxItemGroups() {
+		return groups;
 	}
 }

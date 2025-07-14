@@ -136,7 +136,7 @@ public class FilteredBoxItemPermutationRotationIterator extends AbstractBoxItemP
 	}	
 	
 	@Override
-	public BoxItem decrement(int index, int count) {
+	public boolean decrement(int index, int count) {
 		BoxItem mutableBoxItem = boxItems.get(index);
 		mutableBoxItem.decrement(count);
 		
@@ -169,7 +169,7 @@ public class FilteredBoxItemPermutationRotationIterator extends AbstractBoxItemP
 			calculateMinStackableVolume(0);
 		}
 		
-		return mutableBoxItem;
+		return !boxItems.isEmpty();
 	}
 
 	public PermutationRotationState getState() {
@@ -229,9 +229,9 @@ public class FilteredBoxItemPermutationRotationIterator extends AbstractBoxItemP
 
 	@Override
 	public BoxItem remove(int index) {
-		BoxItem mutableBoxItem = boxItems.get(index);
-
-		return decrement(index, mutableBoxItem.getCount());
+		BoxItem boxItem = boxItems.get(index);
+		decrement(index, boxItem.getCount());
+		return boxItem;
 	}
 
 	@Override

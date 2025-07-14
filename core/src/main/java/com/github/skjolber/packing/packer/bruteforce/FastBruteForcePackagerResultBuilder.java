@@ -8,6 +8,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
+import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 public class FastBruteForcePackagerResultBuilder extends PackagerResultBuilder<FastBruteForcePackagerResultBuilder> {
 
@@ -40,16 +41,24 @@ public class FastBruteForcePackagerResultBuilder extends PackagerResultBuilder<F
 		
 		booleanSupplierBuilder.withScheduledThreadPoolExecutor(packager.getScheduledThreadPoolExecutor());
 
-		PackagerInterruptSupplier build = booleanSupplierBuilder.build();
+		PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 		try {
-			List<Container> packList = packager.pack(itemGroups, containers, maxContainerCount, build);
+			List<Container> packList;
+			if(items != null && !items.isEmpty()) {
+				packList = packager.pack(items, containers, maxContainerCount, interrupt);
+			} else {
+				packList = packager.pack(itemGroups, itemGroupOrder, containers, maxContainerCount, interrupt);
+			}
 			long duration = System.currentTimeMillis() - start;
 			if(packList == null) {
 				return new PackagerResult(Collections.emptyList(), duration, true);
 			}
 			return new PackagerResult(packList, duration, false);
+		} catch (PackagerInterruptedException e) {
+			long duration = System.currentTimeMillis() - start;
+			return new PackagerResult(Collections.emptyList(), duration, true);
 		} finally {
-			build.close();
+			interrupt.close();
 		}
 	}
 	

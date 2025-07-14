@@ -13,7 +13,6 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
-import com.github.skjolber.packing.api.ep.FilteredPointsBuilderFactory;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.BoxItemGroupControls;
 import com.github.skjolber.packing.api.packager.BoxItemControls;
@@ -206,23 +205,24 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 
 		List<BoxItem> scopedBoxItems = boxes.stream().filter(s -> container.fitsInside(s.getBox())).collect(Collectors.toList());
 
-		DefaultFilteredBoxItems filteredBoxItems = new DefaultFilteredBoxItems(scopedBoxItems);
+		ExtremePoints3D extremePoints = new ExtremePoints3D();
+		extremePoints.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 
-		ExtremePoints3D extremePoints3D = new ExtremePoints3D();
-		extremePoints3D.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		extremePoints3D.setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());
+		BoxItemControls listener = compositeContainerItem.createBoxItemListener(container, stack, new DefaultFilteredBoxItems(scopedBoxItems), extremePoints);
 
-		BoxItemControls listener = compositeContainerItem.createBoxItemListener(container, stack, filteredBoxItems, extremePoints3D);
+		FilteredBoxItems filteredBoxItems = listener.getFilteredBoxItems();
+		
+		extremePoints.setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());
 
 		int remainingLoadWeight = container.getMaxLoadWeight();
 
-		while (!extremePoints3D.isEmpty() && remainingLoadWeight > 0 && !filteredBoxItems.isEmpty()) {
+		while (!extremePoints.isEmpty() && remainingLoadWeight > 0 && !filteredBoxItems.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
 				// fit2d below might have returned due to deadline
 				throw new PackagerInterruptedException();
 			}
 			
-			IntermediatePlacementResult result = findBestPoint(listener, extremePoints3D, container, stack);
+			IntermediatePlacementResult result = findBestPoint(listener, extremePoints, container, stack);
 			if(result == null) {
 				break;
 			}
@@ -231,16 +231,18 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 			
 			StackPlacement stackPlacement = new StackPlacement(null, result.getBoxItem(), result.getStackValue(), point.getMinX(), point.getMinY(), point.getMinZ());
 			stack.add(stackPlacement);
-			extremePoints3D.add(result.getPoint(), stackPlacement);
+			extremePoints.add(result.getPoint(), stackPlacement);
 
 			result.getBoxItem().decrement();
+
+			filteredBoxItems.removeEmpty();
 
 			listener.accepted(result.getBoxItem());
 			
 			filteredBoxItems.removeEmpty();
 	
 			if(!filteredBoxItems.isEmpty()) {
-				extremePoints3D.updateMinimums(result.getStackValue(), filteredBoxItems);
+				extremePoints.updateMinimums(result.getStackValue(), filteredBoxItems);
 			}
 
 			remainingLoadWeight -= result.getBoxItem().getBox().getWeight();
@@ -253,33 +255,32 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 		ContainerItem containerItem = compositeContainerItem.getContainerItem();
 		Container container = containerItem.getContainer();
 
-		DefaultFilteredBoxItemGroups filteredBoxItemGroups = new DefaultFilteredBoxItemGroups(new ArrayList<>(boxItemGroups));
 		Stack stack = new Stack();
 
-		MarkResetExtremePoints3D extremePoints3D = new MarkResetExtremePoints3D();
-		extremePoints3D.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		extremePoints3D.setMinimumAreaAndVolumeLimit(filteredBoxItemGroups.getMinArea(), filteredBoxItemGroups.getMinVolume());
+		MarkResetExtremePoints3D extremePoints = new MarkResetExtremePoints3D();
+		extremePoints.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 
-		BoxItemGroupControls controls = compositeContainerItem.createBoxItemGroupListener(container, stack, filteredBoxItemGroups, extremePoints3D);
+		BoxItemGroupControls controls = compositeContainerItem.createBoxItemGroupListener(container, stack, new DefaultFilteredBoxItemGroups(new ArrayList<>(boxItemGroups)), extremePoints);
 
-		BoxItemGroupIterator boxItemGroupIterator = createBoxItemGroupIterator(filteredBoxItemGroups, itemGroupOrder, container, extremePoints3D);
+		FilteredBoxItemGroups filteredBoxItemGroups = controls.getFilteredBoxItemGroups();
 		
+		extremePoints.setMinimumAreaAndVolumeLimit(filteredBoxItemGroups.getMinArea(), filteredBoxItemGroups.getMinVolume());
+
 		groups:
-		while (!extremePoints3D.isEmpty() && boxItemGroupIterator.hasNext()) {
-			int bestBoxItemGroupIndex = boxItemGroupIterator.next();
-
-			BoxItemGroup boxItemGroup = filteredBoxItemGroups.remove(bestBoxItemGroupIndex);
+		while (!extremePoints.isEmpty() && !filteredBoxItemGroups.isEmpty()) {
+			BoxItemGroup boxItemGroup = filteredBoxItemGroups.remove(0);
 			boxItemGroup.mark();
-			
-			extremePoints3D.mark();
-			
-			controls.attempt(boxItemGroup);
-			
-			int markStackSize = stack.size();
+						
+			BoxItemControls boxItemControls = compositeContainerItem.createBoxItemListener(container, stack, boxItemGroup, extremePoints);
 
-			while(!boxItemGroup.isEmpty()) {
+			extremePoints.mark();
+			int markStackSize = stack.size();
+			
+			FilteredBoxItems filteredBoxItems = boxItemControls.getFilteredBoxItems();
+
+			while(!filteredBoxItems.isEmpty()) {
 				
-				IntermediatePlacementResult bestPoint = findBestPoint(controls, extremePoints3D, container, stack);
+				IntermediatePlacementResult bestPoint = findBestPoint(boxItemControls, extremePoints, container, stack);
 				if(bestPoint == null) {
 					boxItemGroup.reset();
 					controls.declined(boxItemGroup);
@@ -288,33 +289,38 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 						break groups;
 					}
 					// discard the whole group
-					extremePoints3D.reset();
+					extremePoints.reset();
 					stack.setSize(markStackSize);
 					
 					continue groups;
 				}
 				
-				bestPoint.getBoxItem().decrement();
-
-				boxItemGroup.removeEmpty();
+				BoxItem boxItem = bestPoint.getBoxItem();
 				
-				StackPlacement stackPlacement = new StackPlacement(boxItemGroup, bestPoint.getBoxItem(), bestPoint.getStackValue(), bestPoint.getPoint().getMinX(), bestPoint.getPoint().getMinY(), bestPoint.getPoint().getMinZ());
-				stack.add(stackPlacement);
-				extremePoints3D.add(bestPoint.getPoint(), stackPlacement);
+				boxItem.decrement();
 
-				if(!boxItemGroup.isEmpty()) {
-					extremePoints3D.updateMinimums(bestPoint.getStackValue(), filteredBoxItemGroups);
+				filteredBoxItems.removeEmpty();
+				
+				StackPlacement stackPlacement = new StackPlacement(boxItemGroup, boxItem, bestPoint.getStackValue(), bestPoint.getPoint().getMinX(), bestPoint.getPoint().getMinY(), bestPoint.getPoint().getMinZ());
+				stack.add(stackPlacement);
+				extremePoints.add(bestPoint.getPoint(), stackPlacement);
+
+				if(!filteredBoxItemGroups.isEmpty()) {
+					extremePoints.updateMinimums(bestPoint.getStackValue(), filteredBoxItemGroups);
 				}
+				
+				boxItemControls.accepted(boxItem);
+				
+				filteredBoxItems.removeEmpty();
 			}
 			
-			if(container.getMaxLoadWeight() < extremePoints3D.getUsedWeight()) {
+			if(container.getMaxLoadWeight() < extremePoints.getUsedWeight()) {
 				throw new RuntimeException();
 			}
 			boxItemGroup.reset();
 
 			// successfully stacked group
 			controls.accepted(boxItemGroup);
-
 		}
 		
 		return new DefaultIntermediatePackagerResult(containerItem, stack);

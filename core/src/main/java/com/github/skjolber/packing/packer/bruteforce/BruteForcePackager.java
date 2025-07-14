@@ -54,7 +54,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	//  * box items
 	//  * box item groups 
 	//
-	// points:  (resets for each box)
+	// points: (resets for each box)
 	//  * finding best point is not necessary
 	//  * filtering available points per box item is necessary
 	//
@@ -199,8 +199,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected boolean isAcceptAsFull(BruteForceIntermediatePackagerResult bestPermutationResult, Container holder) {
-		return false;
+	protected boolean acceptAsFull(BruteForceIntermediatePackagerResult result, Container holder) {
+		return result.getLoadVolume() == holder.getMaxLoadVolume();
 	}
 
 }

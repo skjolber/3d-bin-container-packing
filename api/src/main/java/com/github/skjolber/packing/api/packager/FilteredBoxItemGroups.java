@@ -5,7 +5,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 
 /**
  * 
- * List of box item which have been filtered.
+ * List of box item groups which have been filtered.
  * 
  */
 
@@ -19,7 +19,7 @@ public interface FilteredBoxItemGroups extends Iterable<BoxItemGroup>{
  
 	boolean isEmpty();
 
-	void clearEmpty();
+	void removeEmpty();
 
 	default long getMinVolume() {
 		long minVolume = Integer.MAX_VALUE;

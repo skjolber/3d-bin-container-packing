@@ -7,7 +7,6 @@ import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
-import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 
 public class ExtremePoints3DStack extends ExtremePoints3D {
 

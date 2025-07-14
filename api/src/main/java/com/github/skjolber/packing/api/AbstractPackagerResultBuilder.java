@@ -24,16 +24,16 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 	public static class ExtendedContainerItemBuilder {
 		
 		protected ContainerItem containerItem;
-		protected BoxItemControlsBuilderFactory boxItemListenerBuilderSupplier;
-		protected BoxItemGroupControlsBuilderFactory boxItemGroupListenerBuilderSupplier;
+		protected BoxItemControlsBuilderFactory boxItemControlsBuilderFactory;
+		protected BoxItemGroupControlsBuilderFactory boxItemGroupControlsBuilderFactory;
 		
-		public ExtendedContainerItemBuilder withBoxItemGroupListenerBuilderSupplier(BoxItemGroupControlsBuilderFactory boxItemGroupListenerBuilderSupplier) {
-			this.boxItemGroupListenerBuilderSupplier = boxItemGroupListenerBuilderSupplier;
+		public ExtendedContainerItemBuilder withBoxItemGroupControlsBuilderFactory(BoxItemGroupControlsBuilderFactory factory) {
+			this.boxItemGroupControlsBuilderFactory = factory;
 			return this;
 		}
 		
-		public ExtendedContainerItemBuilder withBoxItemListenerBuilderSupplier(BoxItemControlsBuilderFactory supplier) {
-			this.boxItemListenerBuilderSupplier = supplier;
+		public ExtendedContainerItemBuilder withBoxItemControlsBuilderFactory(BoxItemControlsBuilderFactory supplier) {
+			this.boxItemControlsBuilderFactory = supplier;
 			return this;
 		}
 		public ExtendedContainerItemBuilder withContainerItem(ContainerItem containerItem) {
@@ -46,8 +46,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 				throw new IllegalStateException("Expected container item");
 			}
 			CompositeContainerItem packContainerItem = new CompositeContainerItem(containerItem);
-			packContainerItem.setBoxItemListenerBuilderFactory(boxItemListenerBuilderSupplier);
-			packContainerItem.setBoxItemGroupListenerBuilderSupplier(boxItemGroupListenerBuilderSupplier);
+			packContainerItem.setBoxItemControlsBuilderFactory(boxItemControlsBuilderFactory);
+			packContainerItem.setBoxItemGroupControlsBuilderFactory(boxItemGroupControlsBuilderFactory);
 			return packContainerItem;
 		}
 	}
@@ -84,8 +84,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			}
 			ContainerItem containerItem = new ContainerItem(container, count);
 			CompositeContainerItem packContainerItem = new CompositeContainerItem(containerItem);
-			packContainerItem.setBoxItemListenerBuilderFactory(boxItemListenerBuilderFactory);
-			packContainerItem.setBoxItemGroupListenerBuilderSupplier(boxItemGroupListenerBuilderFactory);
+			packContainerItem.setBoxItemControlsBuilderFactory(boxItemListenerBuilderFactory);
+			packContainerItem.setBoxItemGroupControlsBuilderFactory(boxItemGroupListenerBuilderFactory);
 			return packContainerItem;
 		}
 	}

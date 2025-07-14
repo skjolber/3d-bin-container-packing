@@ -51,7 +51,6 @@ public class FireHazardsInSpecificContainersBoxItemGroupListener implements BoxI
 	protected final Container container;
 	protected final FilteredBoxItemGroups groups;
 	protected final Stack stack;
-	protected final DefaultFilteredBoxItems filteredBoxItems;
 	protected final FilteredPoints points;
 
 	public FireHazardsInSpecificContainersBoxItemGroupListener(Container container, FilteredBoxItemGroups groups, FilteredPoints points, Stack stack) {
@@ -59,39 +58,21 @@ public class FireHazardsInSpecificContainersBoxItemGroupListener implements BoxI
 		this.groups = groups;
 		this.stack = stack;
 		this.points = points;
-		
-		this.filteredBoxItems = new DefaultFilteredBoxItems();
 	}
 
 	@Override
 	public void accepted(BoxItemGroup group) {
 		// do nothing
 	}
-	
-
-	@Override
-	public FilteredBoxItems getFilteredBoxItems() {
-		return filteredBoxItems;
-	}
-
-	@Override
-	public FilteredPoints getPoints(BoxItem boxItem) {
-		return points;
-	}
-
-	@Override
-	public void accepted(BoxItem boxItem) {
-		// do nothing
-	}
-
-	@Override
-	public void attempt(BoxItemGroup group) {
-		filteredBoxItems.setValues(group.getItems());
-	}
 
 	@Override
 	public void declined(BoxItemGroup group) {
 		// do nothing
+	}
+
+	@Override
+	public FilteredBoxItemGroups getFilteredBoxItemGroups() {
+		return groups;
 	}
 
 }

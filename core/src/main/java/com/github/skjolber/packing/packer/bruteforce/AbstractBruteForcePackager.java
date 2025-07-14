@@ -37,7 +37,7 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteForceIntermediatePackagerResult, BruteForcePackagerResultBuilder> {
 
-	private static Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
 	
 	public AbstractBruteForcePackager(IntermediatePackagerResultComparator packResultComparator) {
 		super(packResultComparator);
@@ -75,7 +75,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			if(interrupt.getAsBoolean()) {
 				throw new PackagerInterruptedException();
 			}
-			// iterator over all rotations
+			// iterate over all rotations
 			bestPermutationResult.reset();
 
 			do {
@@ -90,15 +90,15 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				
 				if(points.size() > bestPermutationResult.getSize()) {
 					bestPermutationResult.setState(points, iterator.getState(), stackPlacements);
-					if(points.size() == iterator.length() || isAcceptAsFull(bestPermutationResult, holder)) {
+					if(points.size() == iterator.length() || acceptAsFull(bestPermutationResult, holder)) {
 						// best possible result for this container
 						return bestPermutationResult;
 					}
 				}
 
-				// search for the next rotation which actually 
+				// search for the next rotation which actually
 				// has a chance of affecting the result.
-				// i.e. if we have four boxes, and two boxes could be placed with the 
+				// i.e. if we have four boxes, and two boxes could be placed with the
 				// current rotations, and the new rotation only changes the rotation of box 4,
 				// then we know that attempting to stack again will not work
 
@@ -136,7 +136,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		return bestResult;
 	}
 
-	protected abstract boolean isAcceptAsFull(BruteForceIntermediatePackagerResult bestPermutationResult, Container holder);
+	protected abstract boolean acceptAsFull(BruteForceIntermediatePackagerResult bestPermutationResult, Container holder);
 
 	public List<Point> packStackPlacement(ExtremePoints3DStack extremePoints, List<StackPlacement> placements, PermutationRotationIterator iterator, Stack stack,
 			Container container,

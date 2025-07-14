@@ -14,10 +14,8 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
-import com.github.skjolber.packing.api.ep.FilteredPointsBuilderFactory;
-import com.github.skjolber.packing.api.ep.Point;
-import com.github.skjolber.packing.api.packager.BoxItemGroupControls;
 import com.github.skjolber.packing.api.packager.BoxItemControls;
+import com.github.skjolber.packing.api.packager.BoxItemGroupControls;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
@@ -157,14 +155,15 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			return new DefaultIntermediatePackagerResult(containerItem, stack);
 		}
 		
-		DefaultFilteredBoxItems filteredBoxItems = new DefaultFilteredBoxItems(scopedBoxItems);
-
 		ExtremePoints3D extremePoints3D = new ExtremePoints3D();
 		extremePoints3D.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
+
+		DefaultFilteredBoxItems defaultFilteredBoxItems = new DefaultFilteredBoxItems(scopedBoxItems);
+		BoxItemControls boxItemControls = compositeContainerItem.createBoxItemListener(container, stack, defaultFilteredBoxItems, extremePoints3D);
+
+		FilteredBoxItems filteredBoxItems = boxItemControls.getFilteredBoxItems();
 		extremePoints3D.setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());
-
-		BoxItemControls boxItemControls = compositeContainerItem.createBoxItemListener(container, stack, filteredBoxItems, extremePoints3D);
-
+		
 		int remainingLoadWeight = container.getMaxLoadWeight();
 
 		int levelOffset = 0;
@@ -227,6 +226,8 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			
 			result.getBoxItem().decrement();
 			
+			filteredBoxItems.removeEmpty();
+
 			boxItemControls.accepted(result.getBoxItem());
 			
 			filteredBoxItems.removeEmpty();
@@ -243,57 +244,56 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 		ContainerItem containerItem = compositeContainerItem.getContainerItem();
 		Container container = containerItem.getContainer();
 		
-		DefaultFilteredBoxItemGroups filteredBoxItemGroups = new DefaultFilteredBoxItemGroups(new ArrayList<>(boxItemGroups));
-
 		Stack stack = new Stack();
 
-		MarkResetExtremePoints3D extremePoints3D = new MarkResetExtremePoints3D();
-		extremePoints3D.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		extremePoints3D.setMinimumAreaAndVolumeLimit(filteredBoxItemGroups.getMinArea(), filteredBoxItemGroups.getMinVolume());
+		MarkResetExtremePoints3D extremePoints = new MarkResetExtremePoints3D();
+		extremePoints.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 
-		BoxItemGroupControls listener = compositeContainerItem.createBoxItemGroupListener(container, stack, filteredBoxItemGroups, extremePoints3D);
+		BoxItemGroupControls boxItemGroupControls = compositeContainerItem.createBoxItemGroupListener(container, stack, new DefaultFilteredBoxItemGroups(new ArrayList<>(boxItemGroups)), extremePoints);
 
-		BoxItemGroupIterator boxItemGroupIterator = createBoxItemGroupIterator(filteredBoxItemGroups, itemGroupOrder, container, extremePoints3D);
+		FilteredBoxItemGroups groups = boxItemGroupControls.getFilteredBoxItemGroups();
 
+		extremePoints.setMinimumAreaAndVolumeLimit(groups.getMinArea(), groups.getMinVolume());
+		
 		int levelOffset = 0;
 		boolean newLevel = true;
 
 		groups:
-		while (!extremePoints3D.isEmpty() && boxItemGroupIterator.hasNext()) {
-			int bestBoxItemGroupIndex = boxItemGroupIterator.next();
-
-			BoxItemGroup boxItemGroup = filteredBoxItemGroups.remove(bestBoxItemGroupIndex);
+		while (!extremePoints.isEmpty() && !groups.isEmpty()) {
+			BoxItemGroup boxItemGroup = groups.remove(0);
 			boxItemGroup.mark();
 			
-			listener.attempt(boxItemGroup);
+			BoxItemControls boxItemControls = compositeContainerItem.createBoxItemListener(container, stack, boxItemGroup, extremePoints);
 
-			extremePoints3D.mark();
+			FilteredBoxItems filteredBoxItems = boxItemControls.getFilteredBoxItems();
+			
+			extremePoints.mark();
 			int markStackSize = stack.size();
 			
 			int markLevelOffset = levelOffset;
 			boolean markNewLevel = newLevel;
 			
-			while(!boxItemGroup.isEmpty()) {
+			while(!filteredBoxItems.isEmpty()) {
 				
 				IntermediatePlacementResult bestPoint;
 				if(newLevel) {
 					// get first box in new level
-					bestPoint = findBestFirstPoint(listener, extremePoints3D, container, stack);
+					bestPoint = findBestFirstPoint(boxItemControls, extremePoints, container, stack);
 					if(bestPoint == null) {
 						break;
 					}
 					
 					DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, bestPoint.getStackValue().getDz() - 1 + levelOffset);
 					
-					extremePoints3D.setInitialPoints(Arrays.asList(levelFloor));
-					extremePoints3D.clear();
+					extremePoints.setInitialPoints(Arrays.asList(levelFloor));
+					extremePoints.clear();
 					
 					levelOffset += bestPoint.getStackValue().getDz();
 
 					newLevel = false;
 				} else {
 					// next
-					bestPoint = findBestPoint(listener, extremePoints3D, container, stack);
+					bestPoint = findBestPoint(boxItemControls, extremePoints, container, stack);
 					if(bestPoint == null) {
 						newLevel = true;
 
@@ -304,37 +304,43 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 						// prepare extreme points for a new level						
 						DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, container.getLoadDz() - 1);
-						extremePoints3D.setInitialPoints(Arrays.asList(levelFloor));
-						extremePoints3D.clear();
+						extremePoints.setInitialPoints(Arrays.asList(levelFloor));
+						extremePoints.clear();
 						
 						continue;
 					}
 				}
 				
-				bestPoint.getBoxItem().decrement();
-
-				boxItemGroup.removeEmpty();
+				BoxItem boxItem = bestPoint.getBoxItem();
 				
-				StackPlacement stackPlacement = new StackPlacement(boxItemGroup, bestPoint.getBoxItem(), bestPoint.getStackValue(), bestPoint.getPoint().getMinX(), bestPoint.getPoint().getMinY(), bestPoint.getPoint().getMinZ());
+				StackPlacement stackPlacement = new StackPlacement(boxItemGroup, boxItem, bestPoint.getStackValue(), bestPoint.getPoint().getMinX(), bestPoint.getPoint().getMinY(), bestPoint.getPoint().getMinZ());
 				stack.add(stackPlacement);
-				extremePoints3D.add(bestPoint.getPoint(), stackPlacement);
+				extremePoints.add(bestPoint.getPoint(), stackPlacement);
 
-				if(!boxItemGroup.isEmpty()) {
-					extremePoints3D.updateMinimums(bestPoint.getStackValue(), filteredBoxItemGroups);
+				boxItem.decrement();
+
+				filteredBoxItems.removeEmpty();
+
+				boxItemControls.accepted(boxItem);
+
+				filteredBoxItems.removeEmpty();
+
+				if(!filteredBoxItems.isEmpty()) {
+					extremePoints.updateMinimums(bestPoint.getStackValue(), filteredBoxItems);
 				}
 
 			}
 			
 			if(!boxItemGroup.isEmpty()) {
 				boxItemGroup.reset();
-				listener.declined(boxItemGroup);
+				boxItemGroupControls.declined(boxItemGroup);
 				
 				// unable to stack whole group
 				if(itemGroupOrder == Order.FIXED) {
 					break groups;
 				}
 				// discard the whole group, try again with another group if possible
-				extremePoints3D.reset();
+				extremePoints.reset();
 				stack.setSize(markStackSize);
 				
 				levelOffset = markLevelOffset;
@@ -343,13 +349,13 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				continue groups;
 			}
 			
-			if(container.getMaxLoadWeight() < extremePoints3D.getUsedWeight()) {
+			if(container.getMaxLoadWeight() < extremePoints.getUsedWeight()) {
 				throw new RuntimeException();
 			}
 			
 			// successfully stacked group
 			boxItemGroup.reset();
-			listener.accepted(boxItemGroup);
+			boxItemGroupControls.accepted(boxItemGroup);
 
 		}
 		

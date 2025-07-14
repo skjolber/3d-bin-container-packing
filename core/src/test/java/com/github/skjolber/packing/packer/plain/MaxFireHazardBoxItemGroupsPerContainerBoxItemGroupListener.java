@@ -50,7 +50,6 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 	protected final int maxCount;
 	protected int count = 0;
 	protected final FilteredPoints points;
-	protected DefaultFilteredBoxItems filteredBoxItems = new DefaultFilteredBoxItems();
 
 	public MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener(Container container, FilteredBoxItemGroups groups, FilteredPoints points, Stack stack, int maxCount) {
 		this.container = container;
@@ -98,29 +97,13 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 		return b != null && b;
 	}
 	
-
-	@Override
-	public FilteredBoxItems getFilteredBoxItems() {
-		return filteredBoxItems;
-	}
-
-	@Override
-	public FilteredPoints getPoints(BoxItem boxItem) {
-		return points;
-	}
-
-	@Override
-	public void accepted(BoxItem boxItem) {
-		// do nothing
-	}
-
-	@Override
-	public void attempt(BoxItemGroup group) {
-		filteredBoxItems.setValues(group.getItems());
-	}
-
 	@Override
 	public void declined(BoxItemGroup group) {
 		// do nothing
+	}
+
+	@Override
+	public FilteredBoxItemGroups getFilteredBoxItemGroups() {
+		return groups;
 	}
 }

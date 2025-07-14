@@ -56,7 +56,7 @@ public class HeavyItemsOnGroundLevel extends DefaultBoxItemControls {
 	}
 
 	@Override
-	public FilteredPoints getPoints(BoxItem boxItem) {
+	public FilteredPoints getFilteredPoints(BoxItem boxItem) {
 		if(boxItem.getBox().getWeight() > maxWeight) {
 			List<Point> values = new ArrayList<>();
 

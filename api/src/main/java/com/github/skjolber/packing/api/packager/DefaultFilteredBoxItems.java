@@ -29,12 +29,12 @@ public class DefaultFilteredBoxItems implements FilteredBoxItems {
 	}
 
 	@Override
-	public BoxItem decrement(int index, int count) {
+	public boolean decrement(int index, int count) {
 		BoxItem boxItem = values.get(index);
 		if(!boxItem.decrement(count)) {
 			values.remove(index);
 		}
-		return boxItem;
+		return !values.isEmpty();
 	}
 	
 	@Override

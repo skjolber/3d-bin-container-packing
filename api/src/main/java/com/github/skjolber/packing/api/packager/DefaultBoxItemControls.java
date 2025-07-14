@@ -24,8 +24,13 @@ public class DefaultBoxItemControls implements BoxItemControls {
 	}
 
 	@Override
-	public FilteredPoints getPoints(BoxItem boxItem) {
+	public FilteredPoints getFilteredPoints(BoxItem boxItem) {
 		return filteredPoints;
+	}
+
+	@Override
+	public void declined(BoxItem boxItem) {
+		filteredBoxItems.remove(boxItem.getIndex());
 	}
 
 }

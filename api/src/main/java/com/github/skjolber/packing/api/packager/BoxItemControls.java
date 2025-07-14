@@ -1,28 +1,38 @@
 package com.github.skjolber.packing.api.packager;
 
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
 
 /**
  * 
  * Controls (filter) for items and points which are available for load into some particular container.
  * 
- * The filter is expected to maintain a underlying {@linkplain FilteredBoxItems} instance.
+ * The filter is expected to maintain underlying {@linkplain FilteredBoxItems} and {@linkplain FilteredPoints} instances.
  * 
  */
 
 public interface BoxItemControls {
 
 	FilteredBoxItems getFilteredBoxItems();
-	FilteredPoints getPoints(BoxItem boxItem);
+	FilteredPoints getFilteredPoints(BoxItem boxItem);
 
 	/**
 	 * 
-	 * Notify group was loaded
+	 * Notify box was loaded. 
 	 * 
-	 * @param boxItem index as in {@linkplain FilteredBoxItemGroups}
+	 * @param boxItem {@linkplain BoxItem} to be added.
 	 */
 	
 	void accepted(BoxItem boxItem);
 	
+	/**
+	 * 
+	 * Notify box cannot be fitted.
+	 * 
+	 * @param group {@linkplain FilteredBoxBoxItemGroupItems}
+	 */
+	
+	void declined(BoxItem group);
+
 }

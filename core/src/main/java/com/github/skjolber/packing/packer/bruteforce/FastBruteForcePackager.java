@@ -37,6 +37,27 @@ import com.github.skjolber.packing.packer.PackagerAdapter;
 
 public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerResult, FastBruteForcePackagerResultBuilder> {
 
+	// implementation notes:
+	//  * new BoxItemControlsBuilder / BoxItemGroupControls per permutation 
+	//
+	// placement results:
+	//  * comparing box items is not necessary
+	//  * comparing groups is not necessary
+	//
+	// filtering:
+	// boxes: (resets for each permutation)
+	//  * box items
+	//  * box item groups 
+	//
+	// points: (resets for each box)
+	//  * finding best point is necessary
+	//  * filtering available points per box item is necessary
+	//
+	// strategy:
+	//  * find first result (current implementation)
+	//  * find best result according to comparator (future implementation)
+	//
+
 	public static FastBruteForcePackagerBuilder newBuilder() {
 		return new FastBruteForcePackagerBuilder();
 	}

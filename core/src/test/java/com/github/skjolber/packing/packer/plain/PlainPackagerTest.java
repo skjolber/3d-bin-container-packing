@@ -363,7 +363,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
-				b.withBoxItemListenerBuilderSupplier(NoMatchesWithPetrolBoxItemListener.newFactory());
+				b.withBoxItemControlsBuilderFactory(NoMatchesWithPetrolBoxItemListener.newFactory());
 			})
 					.withMaxContainerCount(5)
 					.withBoxItems(products)
@@ -405,7 +405,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
-				b.withBoxItemGroupListenerBuilderSupplier(NoMatchesWithPetrolBoxItemGroupListener.newFactory());
+				b.withBoxItemGroupControlsBuilderFactory(NoMatchesWithPetrolBoxItemGroupListener.newFactory());
 			})
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2))
@@ -460,7 +460,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			PackagerResult build = packager.newResultBuilder()
 				.withContainerItem( b -> {
 					b.withContainerItem(new ContainerItem(container, 5));
-					b.withBoxItemListenerBuilderSupplier(MaxFireHazardBoxItemPerContainerBoxItemListener.newFactory(1));
+					b.withBoxItemControlsBuilderFactory(MaxFireHazardBoxItemPerContainerBoxItemListener.newFactory(1));
 				})
 				.withMaxContainerCount(5)
 				.withBoxItems(products)
@@ -508,22 +508,31 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withSize(1, 1, 1)
 					.withWeight(1)
 					.withProperty(MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.KEY, Boolean.TRUE)
-					.build(), 2);
-	
+					.build(), 1);
+
+			BoxItem boxItem3 = new BoxItem(Box.newBuilder()
+					.withId("firehazard")
+					.withRotate3D()
+					.withSize(1, 1, 1)
+					.withWeight(1)
+					.withProperty(MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.KEY, Boolean.TRUE)
+					.build(), 1);
+
 			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", Arrays.asList(boxItem1));
 			BoxItemGroup boxItemGroup2 = new BoxItemGroup("b", Arrays.asList(boxItem2));
+			BoxItemGroup boxItemGroup3 = new BoxItemGroup("c", Arrays.asList(boxItem3));
 			
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
-				b.withBoxItemGroupListenerBuilderSupplier(MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.newFactory(1));
+				b.withBoxItemGroupControlsBuilderFactory(MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.newFactory(1));
 			})
 					.withMaxContainerCount(5)
-					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2))
+					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2, boxItemGroup3))
 					.build();
 			assertTrue(build.isSuccess());
 
 			List<Container> containers = build.getContainers();
-			assertEquals(containers.size(), 2);
+			assertEquals(2, containers.size());
 
 			for(Container c : containers) {
 				System.out.println(c);
@@ -561,7 +570,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 1));
-				b.withBoxItemListenerBuilderSupplier(HeavyItemsOnGroundLevel.newFactory(2));
+				b.withBoxItemControlsBuilderFactory(HeavyItemsOnGroundLevel.newFactory(2));
 			}).withBoxItems(products).build();
 			
 			List<Container> containers = build.getContainers();
