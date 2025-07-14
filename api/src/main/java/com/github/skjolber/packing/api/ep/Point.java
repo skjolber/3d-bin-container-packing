@@ -7,8 +7,6 @@ import com.github.skjolber.packing.api.StackPlacement;
 
 public abstract class Point {
 
-	private static final long serialVersionUID = 1L;
-
 	public static final Comparator<Point> X_COMPARATOR = new Comparator<Point>() {
 
 		@Override

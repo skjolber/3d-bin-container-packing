@@ -9,8 +9,6 @@ import java.util.Map;
 
 public class Box {
 
-	private static final long serialVersionUID = 1L;
-
 	public static Builder newBuilder() {
 		return new Builder();
 	}
@@ -530,6 +528,7 @@ public class Box {
 		return minimumArea;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <T> T getProperty(String key) {
 		return (T) properties.get(key);
 	}

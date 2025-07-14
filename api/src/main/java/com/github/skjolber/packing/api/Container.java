@@ -4,8 +4,6 @@ import java.util.List;
 
 public class Container {
 
-	private static final long serialVersionUID = 1L;
-
 	public static Builder newBuilder() {
 		return new Builder();
 	}

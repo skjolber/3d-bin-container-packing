@@ -7,10 +7,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.github.skjolber.packing.api.ep.FilteredPointsBuilder;
-import com.github.skjolber.packing.api.ep.FilteredPointsBuilderFactory;
-import com.github.skjolber.packing.api.packager.BoxItemGroupControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.BoxItemControlsBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.BoxItemGroupControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 
 /**

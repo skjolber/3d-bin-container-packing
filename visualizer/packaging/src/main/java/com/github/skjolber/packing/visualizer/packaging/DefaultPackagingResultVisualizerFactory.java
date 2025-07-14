@@ -54,10 +54,11 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 
 			Stack stack = inputContainer.getStack();
 
-			ExtremePoints3D extremePoints = new ExtremePoints3D(inputContainer.getDx(), inputContainer.getDy(), inputContainer.getDz(), true);
-
+			ExtremePoints3D extremePoints = new ExtremePoints3D(true);
+			extremePoints.clearToSize(inputContainer.getDx(), inputContainer.getDy(), inputContainer.getDz());
+			
 			for (StackPlacement placement : stack.getPlacements()) {
-				Box box = placement.getBox();
+				Box box = placement.getBoxItem().getBox();
 				BoxVisualizer boxVisualization = new BoxVisualizer();
 				boxVisualization.setId(box.getId());
 				boxVisualization.setName(box.getDescription());

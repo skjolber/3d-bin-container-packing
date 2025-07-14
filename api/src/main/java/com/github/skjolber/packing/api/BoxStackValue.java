@@ -4,8 +4,6 @@ import java.util.List;
 
 public class BoxStackValue {
 
-	private static final long serialVersionUID = 1L;
-	
 	private Box box;
 	
 	protected final int dx; // width

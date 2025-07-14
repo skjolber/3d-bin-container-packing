@@ -1,8 +1,6 @@
 package com.github.skjolber.packing.api.packager;
 
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.ep.FilteredPoints;
 
 public class DefaultBoxItemGroupControls implements BoxItemGroupControls {
 

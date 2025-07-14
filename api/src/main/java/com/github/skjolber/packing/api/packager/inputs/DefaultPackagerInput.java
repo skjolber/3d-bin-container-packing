@@ -3,8 +3,8 @@ package com.github.skjolber.packing.api.packager.inputs;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.ContainerItem;
 
 public class DefaultPackagerInput implements PackagerInput {
 
