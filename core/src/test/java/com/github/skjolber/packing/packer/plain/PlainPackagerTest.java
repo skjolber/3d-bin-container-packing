@@ -570,7 +570,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 1));
-				b.withBoxItemControlsBuilderFactory(HeavyItemsOnGroundLevel.newFactory(2));
+				b.withPointControlsBuilderFactory(HeavyItemsOnGroundLevel.newFactory(2));
 			}).withBoxItems(products).build();
 			
 			List<Container> containers = build.getContainers();

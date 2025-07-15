@@ -10,7 +10,9 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.packager.BoxItemControls;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
+import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 import com.github.skjolber.packing.api.packager.IntermediatePlacementResult;
+import com.github.skjolber.packing.api.packager.PointControls;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
@@ -57,8 +59,7 @@ public class PlainPackager extends AbstractDefaultPackager {
 			return this;
 		}
 
-		public Builder withIntermediatePlacementResultComparator(
-				Comparator<PlainIntermediatePlacementResult> intermediatePlacementResultComparator) {
+		public Builder withIntermediatePlacementResultComparator(Comparator<PlainIntermediatePlacementResult> intermediatePlacementResultComparator) {
 			this.intermediatePlacementResultComparator = intermediatePlacementResultComparator;
 			return this;
 		}
@@ -101,10 +102,12 @@ public class PlainPackager extends AbstractDefaultPackager {
 		return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints);
 	}
 
-	public IntermediatePlacementResult findBestPoint(BoxItemControls boxItemControls, ExtremePoints extremePoints, Container container, Stack stack) {
+	public IntermediatePlacementResult findBestPoint(FilteredBoxItemGroups groups, FilteredBoxItems boxItems, PointControls pointControls, Container container, ExtremePoints extremePoints, Stack stack) {
 		return intermediatePlacementResultBuilderFactory.createIntermediatePlacementResultBuilder()
 			.withExtremePoints(extremePoints)
-			.withBoxItemControls(boxItemControls)
+			.withBoxItems(boxItems)
+			.withBoxItemGroups(groups)
+			.withPointControls(pointControls)
 			.withStack(stack)
 			.withContainer(container)
 			.withIntermediatePlacementResultComparator(intermediatePlacementResultComparator)

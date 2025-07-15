@@ -8,6 +8,7 @@ import com.github.skjolber.packing.api.ep.FilteredPoints;
 import com.github.skjolber.packing.api.packager.AbstractBoxItemControlsBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemControls;
 import com.github.skjolber.packing.api.packager.BoxItemControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
 public class MaxFireHazardBoxItemPerContainerBoxItemListener implements BoxItemControls {
@@ -44,7 +45,6 @@ public class MaxFireHazardBoxItemPerContainerBoxItemListener implements BoxItemC
 	
 	protected final Container container;
 	protected final FilteredBoxItems items;
-	protected FilteredPoints points;
 	protected final Stack stack;
 	protected final int maxCount;
 	protected int count = 0;
@@ -52,7 +52,6 @@ public class MaxFireHazardBoxItemPerContainerBoxItemListener implements BoxItemC
 	public MaxFireHazardBoxItemPerContainerBoxItemListener(Container container, FilteredBoxItems items, FilteredPoints points, Stack stack, int maxCount) {
 		this.container = container;
 		this.items = items;
-		this.points = points;
 		this.stack = stack;
 		this.maxCount = maxCount;
 	}
@@ -90,12 +89,7 @@ public class MaxFireHazardBoxItemPerContainerBoxItemListener implements BoxItemC
 	public FilteredBoxItems getFilteredBoxItems() {
 		return items;
 	}
-
-	@Override
-	public FilteredPoints getFilteredPoints(BoxItem boxItem) {
-		return points;
-	}
-
+	
 	@Override
 	public void declined(BoxItem group) {
 		// do nothing

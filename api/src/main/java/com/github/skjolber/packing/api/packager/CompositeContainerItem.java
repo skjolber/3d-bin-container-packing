@@ -14,20 +14,28 @@ import com.github.skjolber.packing.api.ep.FilteredPoints;
 public class CompositeContainerItem {
 
 	protected final ContainerItem containerItem;
-	protected BoxItemGroupControlsBuilderFactory boxItemGroupListenerControlsFactory;
-	protected BoxItemControlsBuilderFactory boxItemListenerBuilderFactory;
+	protected BoxItemGroupControlsBuilderFactory boxItemGroupControlsBuilderFactory;
+	protected BoxItemControlsBuilderFactory boxItemControlsBuilderFactory;
+	protected PointControlsBuilderFactory pointControlsBuilderFactory;
 
 	public CompositeContainerItem(ContainerItem containerItem) {
 		this.containerItem = containerItem;
 	}
 	
-	public void setBoxItemControlsBuilderFactory(
-			BoxItemControlsBuilderFactory factory) {
-		this.boxItemListenerBuilderFactory = factory;
+	public void setPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory) {
+		this.pointControlsBuilderFactory = pointControlsBuilderFactory;
+	}
+	
+	public PointControlsBuilderFactory getPointControlsBuilderFactory() {
+		return pointControlsBuilderFactory;
+	}
+	
+	public void setBoxItemControlsBuilderFactory(BoxItemControlsBuilderFactory factory) {
+		this.boxItemControlsBuilderFactory = factory;
 	}
 	
 	public BoxItemControlsBuilderFactory getBoxItemControlsBuilderFactory() {
-		return boxItemListenerBuilderFactory;
+		return boxItemControlsBuilderFactory;
 	}
 	
 	public ContainerItem getContainerItem() {
@@ -35,18 +43,14 @@ public class CompositeContainerItem {
 	}
 
 	public void setBoxItemGroupControlsBuilderFactory(BoxItemGroupControlsBuilderFactory factory) {
-		this.boxItemGroupListenerControlsFactory = factory;
-	}
-	
-	public BoxItemGroupControlsBuilderFactory getBoxItemGroupListenerControlsFactory() {
-		return boxItemGroupListenerControlsFactory;
+		this.boxItemGroupControlsBuilderFactory = factory;
 	}
 
-	public BoxItemGroupControls createBoxItemGroupListener(Container container, Stack stack, FilteredBoxItemGroups groups, FilteredPoints points) {
-		if(boxItemGroupListenerControlsFactory == null) {
+	public BoxItemGroupControls createBoxItemGroupControls(Container container, Stack stack, FilteredBoxItemGroups groups, FilteredPoints points) {
+		if(boxItemGroupControlsBuilderFactory == null) {
 			return new DefaultBoxItemGroupControls(groups);
 		}
-		return boxItemGroupListenerControlsFactory.createBoxItemGroupControlsBuilder()
+		return boxItemGroupControlsBuilderFactory.createBoxItemGroupControlsBuilder()
 				.withContainer(container)
 				.withStack(stack)
 				.withFilteredBoxItemGroups(groups)
@@ -54,20 +58,42 @@ public class CompositeContainerItem {
 				.build();
 	}
 
-	public BoxItemControls createBoxItemListener(Container container, Stack stack, FilteredBoxItems filteredBoxItems, FilteredPoints points) {
-		if(boxItemListenerBuilderFactory == null) {
-			return new DefaultBoxItemControls(filteredBoxItems, points);
+	public BoxItemControls createBoxItemControls(Container container, Stack stack, FilteredBoxItemGroups groups, FilteredBoxItems filteredBoxItems, FilteredPoints points) {
+		if(boxItemControlsBuilderFactory == null) {
+			return new DefaultBoxItemControls(filteredBoxItems);
 		}
-		return boxItemListenerBuilderFactory.createBoxItemControlsBuilder()
+		return boxItemControlsBuilderFactory.createBoxItemControlsBuilder()
 				.withContainer(container)
 				.withStack(stack)
 				.withBoxItems(filteredBoxItems)
+				.withBoxItemGroups(groups)
+				.withPoints(points)
+				.build();
+	}
+	
+	public PointControls createPointControls(Container container, Stack stack, FilteredBoxItemGroups groups, FilteredBoxItems filteredBoxItems, FilteredPoints points) {
+		if(pointControlsBuilderFactory == null) {
+			return new DefaultPointControls(points);
+		}
+		return pointControlsBuilderFactory.createPointControlsBuilder()
+				.withContainer(container)
+				.withStack(stack)
+				.withBoxItems(filteredBoxItems)
+				.withBoxItemGroups(groups)
 				.withPoints(points)
 				.build();
 	}
 	
 	public boolean hasBoxItemGroupListenerBuilderFactory() {
-		return boxItemGroupListenerControlsFactory != null;
+		return boxItemGroupControlsBuilderFactory != null;
 	}
+	
+	public boolean hasPointControlsBuilderFactory() {
+		return pointControlsBuilderFactory != null;
+	}
+	
+	public boolean hasBoxItemControlsBuilderFactory() {
+		return boxItemControlsBuilderFactory != null;
+	}	
 	
 }

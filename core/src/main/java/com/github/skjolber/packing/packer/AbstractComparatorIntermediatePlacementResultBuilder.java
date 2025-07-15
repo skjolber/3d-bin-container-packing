@@ -34,7 +34,7 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 		
 		long maxWeight = container.getMaxLoadWeight() - stack.getWeight();
 		
-		for (BoxItem boxItem : controls.getFilteredBoxItems()) {
+		for (BoxItem boxItem : boxItems) {
 			Box box = boxItem.getBox();
 			
 			if(box.getVolume() > maxPointVolume) {
@@ -56,7 +56,7 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 				continue;
 			}
 
-			FilteredPoints points = controls.getFilteredPoints(boxItem);
+			FilteredPoints points = pointControls.getFilteredPoints(boxItem);
 
 			for (Point point3d : points) {
 				for (BoxStackValue stackValue : box.getStackValues()) {

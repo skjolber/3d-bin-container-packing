@@ -11,19 +11,19 @@ import com.github.skjolber.packing.api.ep.FilteredPoints;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class AbstractBoxItemControlsBuilder<B extends AbstractBoxItemControlsBuilder<B>> implements BoxItemControlsBuilder<B> {
+public abstract class AbstractPointControlsBuilder<B extends AbstractPointControlsBuilder<B>> implements PointControlsBuilder<B> {
 
 	protected Stack stack;
 	protected Container container;
 	protected FilteredBoxItems items;
 	protected FilteredPoints points;
 	protected FilteredBoxItemGroups groups;
-	
+
 	public B withBoxItemGroups(FilteredBoxItemGroups groups) {
 		this.groups = groups;
 		return (B)this;
 	}
-
+	
 	public B withPoints(FilteredPoints points) {
 		this.points = points;
 		return (B)this;
@@ -44,6 +44,8 @@ public abstract class AbstractBoxItemControlsBuilder<B extends AbstractBoxItemCo
 		return (B)this;
 	}
 	
-	public abstract BoxItemControls build();
+	public abstract PointControls build();
+	
+	
 
 }

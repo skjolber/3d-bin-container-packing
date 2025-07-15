@@ -33,7 +33,6 @@ public class NoMatchesWithPetrolBoxItemListener implements BoxItemControls {
 	protected final Container container;
 	protected final FilteredBoxItems items;
 	protected final Stack stack;
-	protected final FilteredPoints points;
 
 	protected boolean matches = false;
 	protected boolean petrol = false;
@@ -41,7 +40,6 @@ public class NoMatchesWithPetrolBoxItemListener implements BoxItemControls {
 	public NoMatchesWithPetrolBoxItemListener(Container container, FilteredBoxItems items, FilteredPoints filteredPoints, Stack stack) {
 		this.container = container;
 		this.items = items;
-		this.points = filteredPoints;
 		this.stack = stack;
 	}
 
@@ -90,11 +88,6 @@ public class NoMatchesWithPetrolBoxItemListener implements BoxItemControls {
 	@Override
 	public FilteredBoxItems getFilteredBoxItems() {
 		return items;
-	}
-
-	@Override
-	public FilteredPoints getFilteredPoints(BoxItem boxItem) {
-		return points;
 	}
 
 	@Override

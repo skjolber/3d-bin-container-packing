@@ -9,7 +9,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
  * 
  */
 
-public interface FilteredBoxItemGroups extends Iterable<BoxItemGroup>{
+public interface FilteredBoxItemGroups extends Iterable<BoxItemGroup> {
 	
 	int size();
 	

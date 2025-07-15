@@ -4,21 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.ep.AbstractFilteredPointsBuilder;
 import com.github.skjolber.packing.api.ep.DefaultFilteredPoints;
 import com.github.skjolber.packing.api.ep.EmptyFilteredPoints;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
-import com.github.skjolber.packing.api.ep.FilteredPointsBuilderFactory;
 import com.github.skjolber.packing.api.ep.Point;
-import com.github.skjolber.packing.api.packager.AbstractBoxItemControlsBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemControls;
-import com.github.skjolber.packing.api.packager.BoxItemControlsBuilderFactory;
-import com.github.skjolber.packing.api.packager.DefaultBoxItemControls;
+import com.github.skjolber.packing.api.packager.AbstractPointControlsBuilder;
+import com.github.skjolber.packing.api.packager.DefaultPointControls;
+import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.api.packager.PointControls;
+import com.github.skjolber.packing.api.packager.PointControlsBuilderFactory;
 
-public class HeavyItemsOnGroundLevel extends DefaultBoxItemControls {
+public class HeavyItemsOnGroundLevel extends DefaultPointControls {
 
-	public static class Builder extends AbstractBoxItemControlsBuilder<Builder> {
+	public static class Builder extends AbstractPointControlsBuilder<Builder> {
 
 		private int maxWeight = -1;
 		
@@ -28,7 +27,7 @@ public class HeavyItemsOnGroundLevel extends DefaultBoxItemControls {
 		}
 
 		@Override
-		public BoxItemControls build() {
+		public PointControls build() {
 			
 			if(maxWeight == -1) {
 				throw new IllegalStateException("Expected max weight limit");
@@ -37,13 +36,14 @@ public class HeavyItemsOnGroundLevel extends DefaultBoxItemControls {
 			return new HeavyItemsOnGroundLevel(items, points, maxWeight);
 		}
 
-
 	}
 	
 	protected final int maxWeight;
+	protected FilteredBoxItems filteredBoxItems;
 
 	public HeavyItemsOnGroundLevel(FilteredBoxItems filteredBoxItems, FilteredPoints filteredPoints, int maxWeight) {
-		super(filteredBoxItems, filteredPoints);
+		super(filteredPoints);
+		this.filteredBoxItems = filteredBoxItems;
 		this.maxWeight = maxWeight;
 	}
 
@@ -51,7 +51,7 @@ public class HeavyItemsOnGroundLevel extends DefaultBoxItemControls {
 		return new Builder();
 	}
 	
-	public static final BoxItemControlsBuilderFactory newFactory(int maxWeight) {
+	public static final PointControlsBuilderFactory newFactory(int maxWeight) {
 		return () -> HeavyItemsOnGroundLevel.newBuilder().withMaxWeight(maxWeight);
 	}
 
