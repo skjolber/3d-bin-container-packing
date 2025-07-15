@@ -158,7 +158,8 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 		BoxItemControls boxItemControls = compositeContainerItem.createBoxItemControls(container, stack, null, defaultFilteredBoxItems, extremePoints3D);
 
 		FilteredBoxItems filteredBoxItems = boxItemControls.getFilteredBoxItems();
-		
+		PointControls pointControls = compositeContainerItem.createPointControls(container, stack, null, filteredBoxItems, extremePoints3D);
+
 		// remove boxes which do not fit at all
 		for(int i = 0; i < filteredBoxItems.size(); i++) {
 			BoxItem boxItem = filteredBoxItems.get(i);
@@ -167,13 +168,12 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				i--;
 				
 				boxItemControls.declined(boxItem);
+				pointControls.declined(boxItem);
 			}
 		}
 		
 		extremePoints3D.setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());
 		
-		PointControls pointControls = compositeContainerItem.createPointControls(container, stack, null, filteredBoxItems, extremePoints3D);
-
 		int remainingLoadWeight = container.getMaxLoadWeight();
 
 		int levelOffset = 0;
@@ -239,7 +239,8 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			filteredBoxItems.removeEmpty();
 
 			boxItemControls.accepted(result.getBoxItem());
-			
+			pointControls.accepted(result.getBoxItem());
+
 			filteredBoxItems.removeEmpty();
 			
 			if(!filteredBoxItems.isEmpty()) {
@@ -347,6 +348,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				filteredBoxItems.removeEmpty();
 
 				boxItemControls.accepted(boxItem);
+				pointControls.accepted(boxItem);
 
 				filteredBoxItems.removeEmpty();
 

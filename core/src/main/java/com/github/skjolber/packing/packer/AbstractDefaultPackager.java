@@ -210,6 +210,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 		BoxItemControls boxItemControls = compositeContainerItem.createBoxItemControls(container, stack, null, new DefaultFilteredBoxItems(boxItems), extremePoints);
 
 		FilteredBoxItems filteredBoxItems = boxItemControls.getFilteredBoxItems();
+		PointControls pointControls = compositeContainerItem.createPointControls(container, stack, null, filteredBoxItems, extremePoints);
 
 		// remove boxes which do not fit at all
 		for(int i = 0; i < filteredBoxItems.size(); i++) {
@@ -219,12 +220,11 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 				i--;
 				
 				boxItemControls.declined(boxItem);
+				pointControls.declined(boxItem);
 			}
 		}
 		
 		extremePoints.setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());
-
-		PointControls pointControls = compositeContainerItem.createPointControls(container, stack, null, filteredBoxItems, extremePoints);
 
 		int remainingLoadWeight = container.getMaxLoadWeight();
 
@@ -250,6 +250,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 			filteredBoxItems.removeEmpty();
 
 			boxItemControls.accepted(result.getBoxItem());
+			pointControls.accepted(result.getBoxItem());
 			
 			filteredBoxItems.removeEmpty();
 	
@@ -337,6 +338,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 				}
 				
 				boxItemControls.accepted(boxItem);
+				pointControls.accepted(boxItem);
 				
 				filteredBoxItems.removeEmpty();
 			}

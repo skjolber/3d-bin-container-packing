@@ -187,9 +187,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected PackagerAdapter<BruteForceIntermediatePackagerResult> adapter(List<BoxItemGroup> boxes,
-			List<CompositeContainerItem> containers, Order itemGroupOrder, PackagerInterruptSupplier interrupt) {
-		
+	protected PackagerAdapter<BruteForceIntermediatePackagerResult> adapter(List<BoxItemGroup> boxes, List<CompositeContainerItem> containers, Order order, PackagerInterruptSupplier interrupt) {
 		return null;
 	}
 

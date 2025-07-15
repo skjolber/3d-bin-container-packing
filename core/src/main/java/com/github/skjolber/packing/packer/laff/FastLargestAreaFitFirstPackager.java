@@ -236,7 +236,8 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			filteredBoxItems.removeEmpty();
 
 			boxItemControls.accepted(result.getBoxItem());
-			
+			pointControls.accepted(result.getBoxItem());
+
 			filteredBoxItems.removeEmpty();
 			
 			if(!filteredBoxItems.isEmpty()) {
@@ -347,7 +348,8 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 				filteredBoxItems.removeEmpty();
 
 				boxItemControls.accepted(boxItem);
-				
+				pointControls.accepted(boxItem);
+
 				filteredBoxItems.removeEmpty();
 				
 				if(!boxItemGroup.isEmpty()) {
