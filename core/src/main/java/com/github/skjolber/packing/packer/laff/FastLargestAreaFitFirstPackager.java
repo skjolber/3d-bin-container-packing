@@ -150,19 +150,26 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 
 		Stack stack = new Stack();
 
-		List<BoxItem> scopedBoxItems = boxes.stream().filter(s -> container.fitsInside(s.getBox())).collect(Collectors.toList());
-		if(scopedBoxItems.isEmpty()) {
-			return new DefaultIntermediatePackagerResult(containerItem, stack);
-		}
-		
-		DefaultFilteredBoxItems filteredBoxItems = new DefaultFilteredBoxItems(scopedBoxItems);
+		DefaultFilteredBoxItems filteredBoxItems = new DefaultFilteredBoxItems(boxes);
 
 		ExtremePoints2D extremePoints = new ExtremePoints2D();
 		extremePoints.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		extremePoints.setMinimumAreaLimit(filteredBoxItems.getMinArea());
 
 		BoxItemControls boxItemControls = compositeContainerItem.createBoxItemListener(container, stack, filteredBoxItems, extremePoints);
 
+		// remove boxes which do not fit at all
+		for(int i = 0; i < filteredBoxItems.size(); i++) {
+			BoxItem boxItem = filteredBoxItems.get(i);
+			if(!container.fitsInside(boxItem.getBox()) || boxItem.getWeight() > container.getMaxLoadWeight()) {
+				filteredBoxItems.remove(i);
+				i--;
+				
+				boxItemControls.declined(boxItem);
+			}
+		}
+		
+		extremePoints.setMinimumAreaLimit(filteredBoxItems.getMinArea());
+		
 		int remainingLoadWeight = container.getMaxLoadWeight();
 
 		int levelOffset = 0;
@@ -248,17 +255,30 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 		MarkResetExtremePoints2D extremePoints = new MarkResetExtremePoints2D();
 		extremePoints.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 
-		BoxItemGroupControls controls = compositeContainerItem.createBoxItemGroupListener(container, stack, new DefaultFilteredBoxItemGroups(new ArrayList<>(boxItemGroups)), extremePoints);
+		BoxItemGroupControls boxItemGroupControls = compositeContainerItem.createBoxItemGroupListener(container, stack, new DefaultFilteredBoxItemGroups(new ArrayList<>(boxItemGroups)), extremePoints);
 		
-		FilteredBoxItemGroups groups = controls.getFilteredBoxItemGroups();
-		extremePoints.setMinimumAreaLimit(groups.getMinArea());
+		FilteredBoxItemGroups filteredBoxItemGroups = boxItemGroupControls.getFilteredBoxItemGroups();
+		
+		// filter groups which are too big
+		// remove groups which do not fit at all
+		for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
+			BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(i);
+			if(!container.fitsInside(boxItemGroup)) {
+				filteredBoxItemGroups.remove(i);
+				i--;
+				
+				boxItemGroupControls.declined(boxItemGroup);
+			}
+		}
+
+		extremePoints.setMinimumAreaLimit(filteredBoxItemGroups.getMinArea());
 
 		int levelOffset = 0;
 		boolean newLevel = true;
 
 		groups:
-		while (!extremePoints.isEmpty() && !groups.isEmpty()) {
-			BoxItemGroup boxItemGroup = groups.remove(0);
+		while (!extremePoints.isEmpty() && !filteredBoxItemGroups.isEmpty()) {
+			BoxItemGroup boxItemGroup = filteredBoxItemGroups.remove(0);
 
 			extremePoints.mark();
 			
@@ -354,7 +374,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			boxItemGroup.reset();
 			
 			// successfully stacked group
-			controls.accepted(boxItemGroup);
+			boxItemGroupControls.accepted(boxItemGroup);
 
 		}
 		

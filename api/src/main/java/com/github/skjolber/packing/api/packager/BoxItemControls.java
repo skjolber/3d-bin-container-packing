@@ -29,9 +29,9 @@ public interface BoxItemControls {
 	 * 
 	 * Notify box cannot be fitted.
 	 * 
-	 * @param group {@linkplain FilteredBoxBoxItemGroupItems}
+	 * @param boxItem {@linkplain FilteredBoxBoxItemGroupItems}
 	 */
 	
-	void declined(BoxItem group);
+	void declined(BoxItem boxItem);
 
 }

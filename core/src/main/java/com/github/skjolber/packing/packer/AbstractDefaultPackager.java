@@ -197,20 +197,29 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 		return new DefaultPackagerResultBuilder().withPackager(this);
 	}
 
-	public DefaultIntermediatePackagerResult pack(List<BoxItem> boxes, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+	public DefaultIntermediatePackagerResult pack(List<BoxItem> boxItems, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 		Stack stack = new Stack();
 
 		ContainerItem containerItem = compositeContainerItem.getContainerItem();
 		Container container = containerItem.getContainer();
 
-		List<BoxItem> scopedBoxItems = boxes.stream().filter(s -> container.fitsInside(s.getBox())).collect(Collectors.toList());
-
 		ExtremePoints3D extremePoints = new ExtremePoints3D();
 		extremePoints.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 
-		BoxItemControls listener = compositeContainerItem.createBoxItemListener(container, stack, new DefaultFilteredBoxItems(scopedBoxItems), extremePoints);
+		BoxItemControls listener = compositeContainerItem.createBoxItemListener(container, stack, new DefaultFilteredBoxItems(boxItems), extremePoints);
 
 		FilteredBoxItems filteredBoxItems = listener.getFilteredBoxItems();
+
+		// remove boxes which do not fit at all
+		for(int i = 0; i < filteredBoxItems.size(); i++) {
+			BoxItem boxItem = filteredBoxItems.get(i);
+			if(!container.fitsInside(boxItem.getBox())) {
+				filteredBoxItems.remove(i);
+				i--;
+				
+				listener.declined(boxItem);
+			}
+		}
 		
 		extremePoints.setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());
 
@@ -263,6 +272,17 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 		BoxItemGroupControls controls = compositeContainerItem.createBoxItemGroupListener(container, stack, new DefaultFilteredBoxItemGroups(new ArrayList<>(boxItemGroups)), extremePoints);
 
 		FilteredBoxItemGroups filteredBoxItemGroups = controls.getFilteredBoxItemGroups();
+		
+		// remove groups which do not fit at all
+		for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
+			BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(i);
+			if(!container.fitsInside(boxItemGroup)) {
+				filteredBoxItemGroups.remove(i);
+				i--;
+				
+				controls.declined(boxItemGroup);
+			}
+		}
 		
 		extremePoints.setMinimumAreaAndVolumeLimit(filteredBoxItemGroups.getMinArea(), filteredBoxItemGroups.getMinVolume());
 
