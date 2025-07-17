@@ -17,12 +17,12 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 	protected int[] permutations; // n!
 
 	// minimum volume from index i and above
-	protected long[] minStackableVolume;
+	protected long[] minBoxVolume;
 	
 	public AbstractBoxItemPermutationRotationIterator(BoxItem[] matrix) {
 		this.stackableItems = matrix;
 	}
-	
+
 	/**
 	 * Get number of box items within the constraints.
 	 *
@@ -172,25 +172,25 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 		return stackableItems;
 	}
 	public long getMinBoxVolume(int offset) {
-		return minStackableVolume[offset];
+		return minBoxVolume[offset];
 	}
 	
 	public long[] getMinBoxVolume() {
-		return minStackableVolume;
+		return minBoxVolume;
 	}
 	
 	protected void calculateMinStackableVolume(int offset) {
 		BoxStackValue last = stackableItems[permutations[permutations.length - 1]].getBox().getStackValue(rotations[permutations.length - 1]);
 
-		minStackableVolume[permutations.length - 1] = last.getVolume();
+		minBoxVolume[permutations.length - 1] = last.getVolume();
 
 		for (int i = permutations.length - 2; i >= offset; i--) {
 			long volume = stackableItems[permutations[i]].getBox().getStackValue(rotations[i]).getVolume();
 
-			if(volume < minStackableVolume[i + 1]) {
-				minStackableVolume[i] = volume;
+			if(volume < minBoxVolume[i + 1]) {
+				minBoxVolume[i] = volume;
 			} else {
-				minStackableVolume[i] = minStackableVolume[i + 1];
+				minBoxVolume[i] = minBoxVolume[i + 1];
 			}
 		}
 	}

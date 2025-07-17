@@ -26,12 +26,18 @@ public class BoxItemGroup implements FilteredBoxItems {
 		super();
 		this.id = id;
 		this.items = items;
+		for (BoxItem boxItem : items) {
+			boxItem.setGroup(this);
+		}
 	}
 
 	public BoxItemGroup(BoxItemGroup clone) {
 		this.id = clone.id;
 		this.items = new ArrayList<>(clone.items);
 		this.index = clone.index;
+		for (BoxItem boxItem : items) {
+			boxItem.setGroup(this);
+		}
 	}
 
 	public String getId() {

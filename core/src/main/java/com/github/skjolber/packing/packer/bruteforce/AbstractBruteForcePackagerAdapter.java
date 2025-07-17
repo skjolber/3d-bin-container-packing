@@ -6,6 +6,8 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 
@@ -50,11 +52,11 @@ public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackager
 		return getContainers(filteredBoxItems, maxCount);
 	}	
 	
-	public static boolean hasAtLeastOneContainerForEveryBox(DefaultPermutationRotationIterator[] iterators, int size) {
+	public static boolean hasAtLeastOneContainerForEveryBox(BoxItemPermutationRotationIterator[] iterators, int size) {
 		// check that all boxes fit in one or more container(s)
 		// otherwise do not attempt packaging
 		boolean[] containerChecklist = new boolean[size]; 
-		for (DefaultPermutationRotationIterator iterator : iterators) {
+		for (BoxItemPermutationRotationIterator iterator : iterators) {
 			int[] fits = iterator.getPermutations();
 			for(int fit : fits) {
 				containerChecklist[fit] = true;

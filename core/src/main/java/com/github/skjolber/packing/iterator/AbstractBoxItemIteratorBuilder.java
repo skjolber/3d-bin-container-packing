@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.iterator;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -62,27 +63,31 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 				continue;
 			}
 
-			Box stackable = item.getBox();
-			if(stackable.getWeight() > maxLoadWeight) {
+			Box box = item.getBox();
+			if(box.getWeight() > maxLoadWeight) {
 				continue;
 			}
 
-			if(stackable.getVolume() > size.getVolume()) {
+			if(box.getVolume() > size.getVolume()) {
 				continue;
 			}
 
-			List<BoxStackValue> boundRotations = stackable.rotations(size);
+			List<BoxStackValue> boundRotations = box.rotations(size);
 			if(boundRotations == null || boundRotations.isEmpty()) {
 				continue;
 			}
 
-			if(filter != null && !filter.test(stackable)) {
+			if(filter != null && !filter.test(box)) {
 				continue;
 			}
-						
-			Box loadable = new Box(stackable, boundRotations);
+			
+			List<BoxStackValue> cloned = new ArrayList<>(boundRotations.size());
+			for(BoxStackValue v : boundRotations) {
+				cloned.add(v.clone());
+			}
+			Box clonedBox = new Box(box, cloned);
 
-			results[i] = new BoxItem(loadable, item.getCount(), i);
+			results[i] = new BoxItem(clonedBox, item.getCount(), i);
 		}
 		return results;
 	}

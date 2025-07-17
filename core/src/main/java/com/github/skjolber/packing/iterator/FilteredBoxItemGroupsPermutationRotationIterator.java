@@ -17,7 +17,7 @@ import com.github.skjolber.packing.api.packager.FilteredBoxItems;
  */
 
 
-public class FilteredBoxItemGroupPermutationRotationIterator extends AbstractBoxItemGroupPermutationRotationIterator implements FilteredBoxItems, BoxItemPermutationRotationIterator {
+public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBoxItemGroupsPermutationRotationIterator implements FilteredBoxItems, BoxItemPermutationRotationIterator {
 
 	public static Builder newBuilder() {
 		return new Builder();
@@ -36,8 +36,8 @@ public class FilteredBoxItemGroupPermutationRotationIterator extends AbstractBox
 			return this;
 		}
 		
-		public FilteredBoxItemGroupPermutationRotationIterator build() {
-			return new FilteredBoxItemGroupPermutationRotationIterator(iterator);
+		public FilteredBoxItemGroupsPermutationRotationIterator build() {
+			return new FilteredBoxItemGroupsPermutationRotationIterator(iterator);
 		}
 	}
 	
@@ -49,7 +49,7 @@ public class FilteredBoxItemGroupPermutationRotationIterator extends AbstractBox
 			this.builder = builder;
 		}
 		
-		public FilteredBoxItemGroupPermutationRotationIterator build() {
+		public FilteredBoxItemGroupsPermutationRotationIterator build() {
 			if(maxLoadWeight == -1) {
 				throw new IllegalStateException();
 			}
@@ -67,7 +67,7 @@ public class FilteredBoxItemGroupPermutationRotationIterator extends AbstractBox
 																	.withFilter(filter)
 																	.build();
 			
-			return new FilteredBoxItemGroupPermutationRotationIterator(iterator);
+			return new FilteredBoxItemGroupsPermutationRotationIterator(iterator);
 		}
 	}
 	
@@ -75,7 +75,7 @@ public class FilteredBoxItemGroupPermutationRotationIterator extends AbstractBox
 	
 	protected final BoxItemGroupPermutationRotationIterator iterator;
 	
-	public FilteredBoxItemGroupPermutationRotationIterator(BoxItemGroupPermutationRotationIterator iterator) {
+	public FilteredBoxItemGroupsPermutationRotationIterator(BoxItemGroupPermutationRotationIterator iterator) {
 		super(iterator.getBoxItems(), iterator.getGroups());
 		
 		permutations = new int[0]; // n!
@@ -98,11 +98,11 @@ public class FilteredBoxItemGroupPermutationRotationIterator extends AbstractBox
 		
 		this.permutations = new int[permutations.length];
 		this.rotations = new int[permutations.length];
-		this.minStackableVolume = new long[permutations.length];
+		this.minBoxVolume = new long[permutations.length];
 		this.groups = iterator.getGroups();
 		
 		System.arraycopy(permutations, 0, this.permutations, 0, permutations.length);
-		System.arraycopy(iterator.getMinBoxVolume(), 0, minStackableVolume, 0, permutations.length);
+		System.arraycopy(iterator.getMinBoxVolume(), 0, minBoxVolume, 0, permutations.length);
 	}
 	
 	public BoxItem get(int index) {

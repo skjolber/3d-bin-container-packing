@@ -39,7 +39,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 			}
 		}
 		
-		this.minStackableVolume = new long[count];
+		this.minBoxVolume = new long[count];
 
 		initiatePermutation(count);
 	}
@@ -89,7 +89,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	}
 
 	public long getMinBoxVolume(int offset) {
-		return minStackableVolume[offset];
+		return minBoxVolume[offset];
 	}
 
 	/**
@@ -97,18 +97,22 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	 */
 	
 	public void removePermutations(List<Integer> removed) {
-		
-		 for (Integer i : removed) {
-			BoxItem loadableItem = stackableItems[i];
-			
-			loadableItem.decrement();
-			
-			if(loadableItem.isEmpty()) {
-				stackableItems[i] = null;
+
+		int count = rotations.length;
+		for (Integer i : removed) {
+			BoxItem boxItem = stackableItems[i];
+			if(boxItem != null) {
+				boxItem.decrement();
+				
+				count--;
+				
+				if(boxItem.isEmpty()) {
+					stackableItems[i] = null;
+				}
 			}
 		}
 		 
-		initiatePermutation(rotations.length - removed.size());
+		initiatePermutation(count);
 	}
 
 	

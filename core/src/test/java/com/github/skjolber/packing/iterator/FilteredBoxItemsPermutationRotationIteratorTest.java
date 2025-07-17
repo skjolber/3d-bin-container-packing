@@ -11,23 +11,21 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.iterator.FilteredBoxItemsPermutationRotationIterator.DelegateBuilder;
 
-class FilteredBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxItemGroupPermutationRotationIteratorTest<FilteredBoxItemGroupPermutationRotationIterator.DelegateBuilder> {
+class FilteredBoxItemsPermutationRotationIteratorTest extends AbstractBoxItemPermutationRotationIteratorTest<DelegateBuilder> {
 
 	@Override
-	public FilteredBoxItemGroupPermutationRotationIterator.DelegateBuilder newBuilder() {
-		return new FilteredBoxItemGroupPermutationRotationIterator.DelegateBuilder(DefaultBoxItemGroupPermutationRotationIterator.newBuilder());
+	public DelegateBuilder newBuilder() {
+		return new DelegateBuilder(DefaultBoxItemPermutationRotationIterator.newBuilder());
 	}
 	
 	@Test
 	void testMutableRotationCount() {
 		for (int i = 1; i <= 8; i++) {
 			Dimension container = new Dimension(null, 3 * (i + 1), 3, 1);
-
-			List<BoxItemGroup> groups = new ArrayList<>();
 
 			List<BoxItem> products1 = new ArrayList<>();
 
@@ -38,13 +36,11 @@ class FilteredBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxIte
 
 				products1.add(item);
 			}
-			
-			groups.add(new BoxItemGroup("1", products1));
 
-			FilteredBoxItemGroupPermutationRotationIterator rotator = 
+			FilteredBoxItemsPermutationRotationIterator rotator = 
 					newBuilder()
 					.withLoadSize(container)
-					.withBoxItemGroups(groups)
+					.withBoxItems(products1)
 					.withMaxLoadWeight(products1.size())
 					.build();
 			
@@ -83,14 +79,12 @@ class FilteredBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxIte
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2, 0));
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4, 1));
 
-		List<BoxItemGroup> groups = new ArrayList<>();
-		groups.add(new BoxItemGroup("1", products));
-		
-		FilteredBoxItemGroupPermutationRotationIterator rotator = newBuilder()
+		FilteredBoxItemsPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withBoxItemGroups(groups)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
+
 		
 		int count = 0;
 		do {
@@ -109,7 +103,7 @@ class FilteredBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxIte
 	}
 
 	@Test
-	void testLoadableItems() {
+	void testBoxItems() {
 		Dimension container = new Dimension(null, 9, 1, 1);
 
 		List<BoxItem> products = new ArrayList<>();
@@ -117,12 +111,9 @@ class FilteredBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxIte
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2, 0));
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4, 1));
 
-		List<BoxItemGroup> groups = new ArrayList<>();
-		groups.add(new BoxItemGroup("1", products));
-
-		FilteredBoxItemGroupPermutationRotationIterator rotator = newBuilder()
+		FilteredBoxItemsPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container)
-				.withBoxItemGroups(groups)
+				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -157,12 +148,15 @@ class FilteredBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxIte
 		assertEquals(rotator.size(), 0);
 	}
 	
-	public int[] toFrequency(BoxItemGroupPermutationRotationIterator rotator, int size) {
+	public int[] toFrequency(FilteredBoxItemsPermutationRotationIterator rotator, int size) {
 		int[] counts = new int[size];
 		for (int i : rotator.getPermutations()) {
 			counts[i]++;
 		}
 		return counts;
 	}
+
+
+
 
 }

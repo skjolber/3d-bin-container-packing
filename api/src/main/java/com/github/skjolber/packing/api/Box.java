@@ -21,6 +21,12 @@ public class Box {
 		protected String description;
 
 		protected Map<String, Object> properties;
+		protected BoxItem boxItem;
+		
+		public Builder withBoxItem(BoxItem boxItem) {
+			this.boxItem = boxItem;
+			return (Builder)this;
+		}
 		
 		public Builder withDescription(String description) {
 			this.description = description;
@@ -335,7 +341,7 @@ public class Box {
 				properties = Collections.emptyMap();
 			}
 
-			return new Box(id, description, size.getVolume(), weight, getStackValues(), properties);
+			return new Box(id, description, size.getVolume(), weight, getStackValues(), properties, boxItem);
 		}
 
 		@SuppressWarnings("unchecked")
@@ -361,8 +367,10 @@ public class Box {
 	protected final String description;
 	
 	protected final Map<String, Object> properties;
-	
-	public Box(String id, String description, long volume, int weight, BoxStackValue[] stackValues, Map<String, Object> properties) {
+
+	protected BoxItem boxItem;
+
+	public Box(String id, String description, long volume, int weight, BoxStackValue[] stackValues, Map<String, Object> properties, BoxItem boxItem) {
 		this.id = id;
 		this.description = description;
 		
@@ -381,10 +389,11 @@ public class Box {
 		}
 		
 		this.properties = properties;
+		this.boxItem = boxItem;
 	}
 	
 	public Box(Box box, List<BoxStackValue> stackValues) {
-		this(box.id, box.description, box.volume, box.weight, stackValues.toArray(new BoxStackValue[stackValues.size()]), box.properties);
+		this(box.id, box.description, box.volume, box.weight, stackValues.toArray(new BoxStackValue[stackValues.size()]), box.properties, box.boxItem);
 	}
 
 	public String getDescription() {
@@ -413,7 +422,7 @@ public class Box {
 		for(int i = 0; i < stackValues.length; i++) {
 			stackValues[i] = this.stackValues[i].clone();
 		}
-		return new Box(id, description, volume, weight, stackValues, properties);
+		return new Box(id, description, volume, weight, stackValues, properties, boxItem);
 	}
 	
 	public BoxStackValue getStackValue(int index) {
@@ -533,4 +542,11 @@ public class Box {
 		return (T) properties.get(key);
 	}
 
+	public void setBoxItem(BoxItem boxItem) {
+		this.boxItem = boxItem;
+	}
+	
+	public BoxItem getBoxItem() {
+		return boxItem;
+	}
 }

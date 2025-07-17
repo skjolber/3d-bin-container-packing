@@ -4,7 +4,7 @@ import java.util.List;
 
 public class BoxStackValue {
 
-	private Box box;
+	protected Box box;
 	
 	protected final int dx; // width
 	protected final int dy; // depth

@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
 
-public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxItemGroupPermutationRotationIterator {
+public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxItemGroupsPermutationRotationIterator {
 	
 	public static Builder newBuilder() {
 		return new Builder();
@@ -41,7 +41,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 		
 		int count = getCount();
 		
-		this.minStackableVolume = new long[count];
+		this.minBoxVolume = new long[count];
 
 		initiatePermutation(count);
 	}
@@ -104,7 +104,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	}
 
 	public long getMinBoxVolume(int offset) {
-		return minStackableVolume[offset];
+		return minBoxVolume[offset];
 	}
 
 	/**

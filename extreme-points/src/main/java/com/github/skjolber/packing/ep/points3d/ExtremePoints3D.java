@@ -90,7 +90,7 @@ public class ExtremePoints3D implements ExtremePoints {
 	private StackPlacement createContainerPlacement() {
 		BoxStackValue value = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, containerMaxY + 1, null, -1);
 		
-		return new StackPlacement(null, null, value, 0, 0, 0);
+		return new StackPlacement(value, 0, 0, 0);
 	}
 	
 	public boolean add(Point point, StackPlacement placement) {
@@ -1796,7 +1796,7 @@ public class ExtremePoints3D implements ExtremePoints {
 	public long getUsedVolume() {
 		long used = 0;
 		for (StackPlacement stackPlacement : placements) {
-			used += stackPlacement.getBoxItem().getBox().getVolume();
+			used += stackPlacement.getStackValue().getBox().getVolume();
 		}
 		return used;
 	}
@@ -1804,7 +1804,7 @@ public class ExtremePoints3D implements ExtremePoints {
 	public long getUsedWeight() {
 		long used = 0;
 		for (StackPlacement stackPlacement : placements) {
-			used += stackPlacement.getBoxItem().getBox().getWeight();
+			used += stackPlacement.getStackValue().getBox().getWeight();
 		}
 		return used;
 	}

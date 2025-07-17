@@ -74,7 +74,6 @@ public class BruteForcePackagerResult implements PackResult {
 
 			PermutationRotation permutationRotation = list.get(i);
 			stackPlacement.setStackValue(permutationRotation.getBoxStackValue());
-			stackPlacement.setBoxItem(permutationRotation.getBoxItem());
 
 			Point point3d = points.get(i);
 			stackPlacement.setX(point3d.getMinX());

@@ -376,8 +376,8 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				assertEquals(c.getStack().size(), 1);
 			}
 			
-			assertEquals(containers.get(0).getStack().getPlacements().get(0).getBoxItem().getBox().getId(), "matches-2");
-			assertEquals(containers.get(1).getStack().getPlacements().get(0).getBoxItem().getBox().getId(), "petrol-1");
+			assertEquals(containers.get(0).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "matches-2");
+			assertEquals(containers.get(1).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "petrol-1");
 			
 			assertValid(build);
 		} finally {
@@ -418,8 +418,8 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				assertEquals(c.getStack().size(), 1);
 			}
 			
-			assertEquals(containers.get(0).getStack().getPlacements().get(0).getBoxItem().getBox().getId(), "petrol-1");
-			assertEquals(containers.get(1).getStack().getPlacements().get(0).getBoxItem().getBox().getId(), "matches-2");
+			assertEquals(containers.get(0).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "petrol-1");
+			assertEquals(containers.get(1).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "matches-2");
 			
 			assertValid(build);
 		} finally {
@@ -582,7 +582,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				}
 			}
 			
-			assertEquals("A", containers.get(0).getStack().getPlacements().get(0).getBoxItem().getBox().getId());
+			assertEquals("A", containers.get(0).getStack().getPlacements().get(0).getStackValue().getBox().getId());
 			
 			assertValid(build);
 		} finally {

@@ -5,11 +5,13 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotation;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
@@ -20,7 +22,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	// work objects
 	private final Stack stack;
 	private final ContainerItem containerItem;
-	private final PermutationRotationIterator iterator;
+	private final BoxItemPermutationRotationIterator iterator;
 	private final int index;
 
 	// state
@@ -33,7 +35,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	private long loadVolume;
 	private int loadWeight;
 
-	public BruteForceIntermediatePackagerResult(ContainerItem containerItem, Stack stack, int index, PermutationRotationIterator iterator) {
+	public BruteForceIntermediatePackagerResult(ContainerItem containerItem, Stack stack, int index, BoxItemPermutationRotationIterator iterator) {
 		this.containerItem = containerItem;
 		this.stack = stack;
 		this.iterator = iterator;
@@ -47,9 +49,8 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 			int loadWeight = 0;
 
 			for (int i = 0; i < points.size(); i++) {
-				PermutationRotation permutationRotation = iterator.get(i);
-				BoxItem boxItem = permutationRotation.getBoxItem();
-				Box box = boxItem.getBox();
+				BoxStackValue v = iterator.getStackValue(i);
+				Box box = v.getBox();
 				
 				loadVolume += box.getVolume();
 				loadWeight += box.getWeight();
@@ -72,14 +73,13 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	public void calculateStack() {
 		stack.clear();
 
-		List<PermutationRotation> list = iterator.get(state, points.size());
+		List<BoxStackValue> list = iterator.get(state, points.size());
 
 		for (int i = 0; i < points.size(); i++) {
 			StackPlacement stackPlacement = placements.get(i);
 
-			PermutationRotation permutationRotation = list.get(i);
-			stackPlacement.setStackValue(permutationRotation.getBoxStackValue());
-			stackPlacement.setBoxItem(permutationRotation.getBoxItem());
+			BoxStackValue value = list.get(i);
+			stackPlacement.setStackValue(value);
 
 			Point point3d = points.get(i);
 			stackPlacement.setX(point3d.getMinX());

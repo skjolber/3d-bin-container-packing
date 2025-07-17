@@ -91,7 +91,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			List<StackPlacement> placements = fits.getStack().getPlacements();
 			
 			for(StackPlacement p : placements) {
-				System.out.println(p.getBoxItem().getBox().getId() + " " + p.getAbsoluteX() + "x" + p.getAbsoluteY() + "x" + p.getAbsoluteZ()); 
+				System.out.println(p.getStackValue().getBox().getId() + " " + p.getAbsoluteX() + "x" + p.getAbsoluteY() + "x" + p.getAbsoluteZ()); 
 			}
 	
 			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
@@ -267,7 +267,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			List<StackPlacement> placements = fits.getStack().getPlacements();
 			
 			for(StackPlacement p : placements) {
-				System.out.println(p.getBoxItem().getBox().getId() + " " + p.getAbsoluteX() + "x" + p.getAbsoluteY() + "x" + p.getAbsoluteZ()); 
+				System.out.println(p.getStackValue().getBox().getId() + " " + p.getAbsoluteX() + "x" + p.getAbsoluteY() + "x" + p.getAbsoluteZ()); 
 			}
 	
 			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");

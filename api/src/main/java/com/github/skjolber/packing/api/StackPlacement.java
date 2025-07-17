@@ -6,18 +6,14 @@ public class StackPlacement implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	protected BoxItemGroup boxItemGroup;
-	protected BoxItem boxItem;
 	protected BoxStackValue stackValue;
 
 	protected int x; // width coordinate
 	protected int y; // depth coordinate
 	protected int z; // height coordinate
 
-	public StackPlacement(BoxItemGroup boxItemGroup, BoxItem boxItem, BoxStackValue stackValue, int x, int y, int z) {
+	public StackPlacement(BoxStackValue stackValue, int x, int y, int z) {
 		super();
-		this.boxItemGroup = boxItemGroup;
-		this.boxItem = boxItem;
 		this.stackValue = stackValue;
 		this.x = x;
 		this.y = y;
@@ -27,10 +23,6 @@ public class StackPlacement implements Serializable {
 	public StackPlacement() {
 	}
 	
-	public void setBoxItem(BoxItem boxItem) {
-		this.boxItem = boxItem;
-	}
-
 	public BoxStackValue getStackValue() {
 		return stackValue;
 	}
@@ -104,7 +96,7 @@ public class StackPlacement implements Serializable {
 	}
 
 	public long getVolume() {
-		return boxItem.getBox().getVolume();
+		return stackValue.getBox().getVolume();
 	}
 
 	public boolean intersects2D(StackPlacement point) {
@@ -118,7 +110,7 @@ public class StackPlacement implements Serializable {
 
 	@Override
 	public String toString() {
-		return (boxItem != null ? boxItem.getBox().getId() : "") + "[" + x + "x" + y + "x" + z + " " + getAbsoluteEndX() + "x" + getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
+		return (stackValue.getBox().getId()) + "[" + x + "x" + y + "x" + z + " " + getAbsoluteEndX() + "x" + getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
 	}
 
 	public void setX(int x) {
@@ -134,15 +126,7 @@ public class StackPlacement implements Serializable {
 	}
 
 	public int getWeight() {
-		return boxItem.getBox().getWeight();
-	}
-	
-	public BoxItem getBoxItem() {
-		return boxItem;
-	}
-	
-	public BoxItemGroup getBoxItemGroup() {
-		return boxItemGroup;
+		return stackValue.getBox().getWeight();
 	}
 
 }

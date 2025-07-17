@@ -16,6 +16,7 @@ import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
@@ -76,19 +77,19 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 	private class BruteForceAdapter extends AbstractBruteForcePackagerAdapter {
 
-		private final DefaultPermutationRotationIterator[] containerIterators;
+		private final DefaultBoxItemPermutationRotationIterator[] containerIterators;
 		private final PackagerInterruptSupplier interrupt;
 		private final ExtremePoints3DStack extremePoints3D;
 		private List<StackPlacement> stackPlacements;
 
-		public BruteForceAdapter(List<CompositeContainerItem> containerItems, List<BoxItem> boxItems, DefaultPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
+		public BruteForceAdapter(List<CompositeContainerItem> containerItems, List<BoxItem> boxItems, DefaultBoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(containerItems, boxItems);
 			
 			this.containerIterators = containerIterators;
 			this.interrupt = interrupt;
 			
 			int maxIteratorLength = 0;
-			for (DefaultPermutationRotationIterator iterator : containerIterators) {
+			for (DefaultBoxItemPermutationRotationIterator iterator : containerIterators) {
 				maxIteratorLength = Math.max(maxIteratorLength, iterator.length());
 			}
 			
@@ -123,13 +124,13 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 				for (int i = 0; i < size; i++) {
 					p.add(permutations[i]);
 				}
-
-				for (PermutationRotationIterator it : containerIterators) {
-					it.removePermutations(p);
-				}
 				
 				// remove adapter inventory
 				removeInventory(p);
+
+				for (DefaultBoxItemPermutationRotationIterator it : containerIterators) {
+					it.removePermutations(p);
+				}
 				
 				stackPlacements = stackPlacements.subList(size, this.stackPlacements.size());
 			} else {
@@ -160,7 +161,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 	@Override
 	protected BruteForceAdapter adapter(List<BoxItem> boxItems, List<CompositeContainerItem> containers, PackagerInterruptSupplier interrupt) {
-		DefaultPermutationRotationIterator[] containerIterators = new DefaultPermutationRotationIterator[containers.size()];
+		DefaultBoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[containers.size()];
 
 		for (int i = 0; i < containers.size(); i++) {
 			CompositeContainerItem compositeContainerItem = containers.get(i);
@@ -169,7 +170,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 			Dimension dimension = new Dimension(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 
-			containerIterators[i] = DefaultPermutationRotationIterator
+			containerIterators[i] = DefaultBoxItemPermutationRotationIterator
 					.newBuilder()
 					.withLoadSize(dimension)
 					.withBoxItems(boxItems)

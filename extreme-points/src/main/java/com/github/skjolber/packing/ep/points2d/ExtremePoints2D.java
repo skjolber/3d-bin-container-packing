@@ -78,7 +78,7 @@ public class ExtremePoints2D implements ExtremePoints {
 
 		BoxStackValue stackValue = new BoxStackValue(dx, dy, dz, null, -1);
 		
-		this.containerPlacement = new StackPlacement(null, null, stackValue, 0, 0, 0);
+		this.containerPlacement = new StackPlacement(stackValue, 0, 0, 0);
 	}
 
 	private DefaultXYSupportPoint2D createContainerPoint() {
@@ -1194,7 +1194,7 @@ public class ExtremePoints2D implements ExtremePoints {
 	public long getUsedVolume() {
 		long used = 0;
 		for (StackPlacement stackPlacement : placements) {
-			used += stackPlacement.getBoxItem().getBox().getVolume();
+			used += stackPlacement.getStackValue().getBox().getVolume();
 		}
 		return used;
 	}
@@ -1202,7 +1202,7 @@ public class ExtremePoints2D implements ExtremePoints {
 	public long getUsedWeight() {
 		long used = 0;
 		for (StackPlacement stackPlacement : placements) {
-			used += stackPlacement.getBoxItem().getBox().getWeight();
+			used += stackPlacement.getStackValue().getBox().getWeight();
 		}
 		return used;
 	}

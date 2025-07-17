@@ -77,7 +77,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 			Stack stack = container.getStack();
 
 			for (StackPlacement stackPlacement : stack.getPlacements()) {
-				BoxItem boxItem = (BoxItem) stackPlacement.getBoxItem();
+				BoxItem boxItem = (BoxItem) stackPlacement.getStackValue().getBox().getBoxItem();
 				
 				boxItem.decrementResetCount();
 				boxItem.reset();
@@ -150,7 +150,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 			Stack stack = container.getStack();
 
 			for (StackPlacement stackPlacement : stack.getPlacements()) {
-				BoxItem boxItem = (BoxItem) stackPlacement.getBoxItem();
+				BoxItem boxItem = (BoxItem) stackPlacement.getStackValue().getBox().getBoxItem();
 				
 				boxItem.decrementResetCount();
 				boxItem.reset();
@@ -241,7 +241,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 
 			Point point = result.getPoint();
 			
-			StackPlacement stackPlacement = new StackPlacement(null, result.getBoxItem(), result.getStackValue(), point.getMinX(), point.getMinY(), point.getMinZ());
+			StackPlacement stackPlacement = new StackPlacement(result.getStackValue(), point.getMinX(), point.getMinY(), point.getMinZ());
 			stack.add(stackPlacement);
 			extremePoints.add(result.getPoint(), stackPlacement);
 
@@ -329,7 +329,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 
 				filteredBoxItems.removeEmpty();
 				
-				StackPlacement stackPlacement = new StackPlacement(boxItemGroup, boxItem, bestPoint.getStackValue(), bestPoint.getPoint().getMinX(), bestPoint.getPoint().getMinY(), bestPoint.getPoint().getMinZ());
+				StackPlacement stackPlacement = new StackPlacement(bestPoint.getStackValue(), bestPoint.getPoint().getMinX(), bestPoint.getPoint().getMinY(), bestPoint.getPoint().getMinZ());
 				stack.add(stackPlacement);
 				extremePoints.add(bestPoint.getPoint(), stackPlacement);
 

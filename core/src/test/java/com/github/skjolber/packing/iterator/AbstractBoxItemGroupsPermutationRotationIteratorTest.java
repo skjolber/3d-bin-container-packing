@@ -16,7 +16,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Dimension;
 
 @SuppressWarnings("unchecked")
-public abstract class AbstractBoxItemGroupPermutationRotationIteratorTest<T extends AbstractBoxItemGroupIteratorBuilder>{
+public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T extends AbstractBoxItemGroupIteratorBuilder>{
 
 	public abstract T newBuilder();
 	

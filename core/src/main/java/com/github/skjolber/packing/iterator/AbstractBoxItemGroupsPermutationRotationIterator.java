@@ -5,11 +5,11 @@ import java.util.List;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 
-public abstract class AbstractBoxItemGroupPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator implements BoxItemGroupPermutationRotationIterator {
+public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator implements BoxItemGroupPermutationRotationIterator {
 
 	protected List<BoxItemGroup> groups;
 	
-	public AbstractBoxItemGroupPermutationRotationIterator(BoxItem[] matrix, List<BoxItemGroup> groups) {
+	public AbstractBoxItemGroupsPermutationRotationIterator(BoxItem[] matrix, List<BoxItemGroup> groups) {
 		super(matrix);
 		this.groups = groups;
 	}

@@ -221,12 +221,10 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				}
 			}
 			
-			StackPlacement stackPlacement = new StackPlacement(null, 
-					result.getBoxItem(), 
-					result.getStackValue(), 
-					result.getPoint().getMinX(), 
-					result.getPoint().getMinY(), 
-					result.getPoint().getMinZ()
+			StackPlacement stackPlacement = new StackPlacement(result.getStackValue(), 
+				result.getPoint().getMinX(), 
+				result.getPoint().getMinY(), 
+				result.getPoint().getMinZ()
 			);
 
 			stack.add(stackPlacement);
@@ -339,7 +337,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 				
 				BoxItem boxItem = bestPoint.getBoxItem();
 				
-				StackPlacement stackPlacement = new StackPlacement(boxItemGroup, boxItem, bestPoint.getStackValue(), bestPoint.getPoint().getMinX(), bestPoint.getPoint().getMinY(), bestPoint.getPoint().getMinZ());
+				StackPlacement stackPlacement = new StackPlacement(bestPoint.getStackValue(), bestPoint.getPoint().getMinX(), bestPoint.getPoint().getMinY(), bestPoint.getPoint().getMinZ());
 				stack.add(stackPlacement);
 				extremePoints.add(bestPoint.getPoint(), stackPlacement);
 

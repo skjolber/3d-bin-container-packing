@@ -3,7 +3,7 @@ package com.github.skjolber.packing.iterator;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class ParallelBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxItemGroupPermutationRotationIteratorTest<ParallelBoxItemGroupPermutationRotationIterator.Builder> {
+public class ParallelBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxItemGroupsPermutationRotationIteratorTest<ParallelBoxItemGroupPermutationRotationIterator.Builder> {
 
 	@Override
 	public ParallelBoxItemGroupPermutationRotationIterator.Builder newBuilder() {
