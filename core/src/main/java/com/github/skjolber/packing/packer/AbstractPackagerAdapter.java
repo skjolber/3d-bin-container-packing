@@ -292,7 +292,7 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 	}
 
 	public Container toContainer(ContainerItem item, Stack stack) {
-		item.consume();
+		item.decrement();
 
 		// do we need to adjust limits?
 		if(!item.isAvailable()) {

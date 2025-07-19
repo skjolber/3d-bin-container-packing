@@ -9,7 +9,6 @@ public class DefaultIntermediatePackagerResult implements IntermediatePackagerRe
 	protected Stack stack;
 	
 	public DefaultIntermediatePackagerResult(ContainerItem containerItem, Stack stack) {
-		super();
 		this.containerItem = containerItem;
 		this.stack = stack;
 	}

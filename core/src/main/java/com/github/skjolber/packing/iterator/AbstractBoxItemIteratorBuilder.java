@@ -92,6 +92,6 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 		return results;
 	}
 
-	public abstract <I extends AbstractBoxItemPermutationRotationIterator> I build();
+	public abstract AbstractBoxItemPermutationRotationIterator build();
 
 }

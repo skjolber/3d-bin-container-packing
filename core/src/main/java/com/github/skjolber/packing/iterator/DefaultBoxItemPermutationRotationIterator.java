@@ -114,7 +114,6 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 		 
 		initiatePermutation(count);
 	}
-
 	
 	public int nextRotation() {
 		// next rotation
@@ -135,7 +134,6 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 
 		return -1;
 	}
-
 	
 	@Override
 	public int[] getPermutations() {
@@ -150,7 +148,6 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 
 	public int nextPermutation(int maxIndex) {
 		while (maxIndex >= 0) {
-
 			int[] permutations = this.permutations;
 
 			int current = permutations[maxIndex];

@@ -88,8 +88,13 @@ public class ContainerItem {
 		return count > 0;
 	}
 
-	public void consume() {
-		count--;
+	public boolean decrement() {
+		return decrement(1);
+	}
+
+	public boolean decrement(int value) {
+		this.count = this.count - value;
+		return count > 0;
 	}
 
 }

@@ -16,9 +16,8 @@ import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
-import com.github.skjolber.packing.iterator.PermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.PackagerAdapter;
@@ -77,19 +76,19 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 	private class BruteForceAdapter extends AbstractBruteForcePackagerAdapter {
 
-		private final DefaultBoxItemPermutationRotationIterator[] containerIterators;
+		private final BoxItemPermutationRotationIterator[] containerIterators;
 		private final PackagerInterruptSupplier interrupt;
-		private final ExtremePoints3DStack extremePoints3D;
+		private final ExtremePoints3DStack extremePoints;
 		private List<StackPlacement> stackPlacements;
 
-		public BruteForceAdapter(List<CompositeContainerItem> containerItems, List<BoxItem> boxItems, DefaultBoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
+		public BruteForceAdapter(List<CompositeContainerItem> containerItems, List<BoxItem> boxItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(containerItems, boxItems);
 			
 			this.containerIterators = containerIterators;
 			this.interrupt = interrupt;
 			
 			int maxIteratorLength = 0;
-			for (DefaultBoxItemPermutationRotationIterator iterator : containerIterators) {
+			for (BoxItemPermutationRotationIterator iterator : containerIterators) {
 				maxIteratorLength = Math.max(maxIteratorLength, iterator.length());
 			}
 			
@@ -101,8 +100,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			
 			this.stackPlacements = getPlacements(count);
 
-			this.extremePoints3D = new ExtremePoints3DStack(maxIteratorLength + 1);
-			this.extremePoints3D.reset(1, 1, 1);
+			this.extremePoints = new ExtremePoints3DStack(maxIteratorLength + 1);
+			this.extremePoints.reset(1, 1, 1);
 		}
 
 		@Override
@@ -128,7 +127,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 				// remove adapter inventory
 				removeInventory(p);
 
-				for (DefaultBoxItemPermutationRotationIterator it : containerIterators) {
+				for (BoxItemPermutationRotationIterator it : containerIterators) {
 					it.removePermutations(p);
 				}
 				
@@ -145,7 +144,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return BruteForcePackager.this.pack(extremePoints3D, stackPlacements, containerItems.get(i).getContainerItem(), i, containerIterators[i], interrupt);
+			return BruteForcePackager.this.pack(extremePoints, stackPlacements, containerItems.get(i).getContainerItem(), i, containerIterators[i], interrupt);
 		}
 
 		@Override
@@ -161,7 +160,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 	@Override
 	protected BruteForceAdapter adapter(List<BoxItem> boxItems, List<CompositeContainerItem> containers, PackagerInterruptSupplier interrupt) {
-		DefaultBoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[containers.size()];
+		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[containers.size()];
 
 		for (int i = 0; i < containers.size(); i++) {
 			CompositeContainerItem compositeContainerItem = containers.get(i);
