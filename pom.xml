@@ -28,7 +28,7 @@
 		<!-- plugins -->
 		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
 		<jacoco-maven-plugin.version>0.8.9</jacoco-maven-plugin.version>
-		<nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
+		<sonatype-plugin.version>0.8.0</sonatype-plugin.version>
 		<maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
 		<maven-source-plugin.version>3.2.1</maven-source-plugin.version>
 		<maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
@@ -274,23 +274,14 @@
 					</executions>
 				</plugin>
 				<plugin>
-					<groupId>org.sonatype.plugins</groupId>
-					<artifactId>nexus-staging-maven-plugin</artifactId>
-					<version>${nexus-staging-maven-plugin.version}</version>
+					<groupId>org.sonatype.central</groupId>
+					<artifactId>central-publishing-maven-plugin</artifactId>
+					<version>${sonatype-plugin.version}</version>
 					<extensions>true</extensions>
-					<executions>
-						<execution>
-							<id>default-deploy</id>
-							<phase>deploy</phase>
-							<goals>
-								<goal>deploy</goal>
-							</goals>
-						</execution>
-					</executions>
 					<configuration>
-						<serverId>ossrh</serverId>
-						<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-						<autoReleaseAfterClose>false</autoReleaseAfterClose>
+						<publishingServerId>central</publishingServerId>
+						<autoPublish>true</autoPublish>
+						<waitUntil>published</waitUntil>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -484,8 +475,8 @@
 						<artifactId>maven-release-plugin</artifactId>
 					</plugin>
 					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
