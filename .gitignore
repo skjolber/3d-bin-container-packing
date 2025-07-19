@@ -81,3 +81,5 @@ Contact GitHub API Training Shop Blog About
 
 node_modules
 *.releaseBackup
+
+pom.xml.versionsBackup
