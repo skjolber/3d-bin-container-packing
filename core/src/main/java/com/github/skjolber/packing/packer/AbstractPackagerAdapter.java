@@ -148,8 +148,8 @@ public abstract class AbstractPackagerAdapter<T extends PackResult> implements P
 				}
 			}
 			
-			BigInteger totalAvailableVolumeMinusBiggestContainer = totalAvailableWeight.subtract(BigInteger.valueOf(maxContainerLoadVolume));
-			BigInteger totalAvailableWeightMinusBiggestContainer = totalAvailableVolume.subtract(BigInteger.valueOf(maxContainerLoadWeight));
+			BigInteger totalAvailableVolumeMinusBiggestContainer = totalAvailableVolume.subtract(BigInteger.valueOf(maxContainerLoadVolume));
+			BigInteger totalAvailableWeightMinusBiggestContainer = totalAvailableWeight.subtract(BigInteger.valueOf(maxContainerLoadWeight));
 
 			for (int i = 0; i < containerItems.size(); i++) {
 				ContainerItem item = containerItems.get(i);
