@@ -8,6 +8,8 @@
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>extreme-points</artifactId>
+	<name>extreme-points</name>
+	<description>Point calculations for 3D bin packaging</description>
 
 	<properties>
 		<module-name>com.github.skjolber.packing.ep</module-name>

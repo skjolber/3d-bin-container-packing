@@ -8,6 +8,8 @@
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>visualizer-api</artifactId>
+	<name>visualizer-api</name>
+	<description>Visualization API for 3D bin packaging</description>
 
 	<properties>
 		<module-name>com.github.skjolber.packing.visualizer.api</module-name>
@@ -90,6 +92,13 @@
 			<plugin>
 				<groupId>org.moditect</groupId>
 				<artifactId>moditect-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<configuration>
+					<skipPublishing>true</skipPublishing>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

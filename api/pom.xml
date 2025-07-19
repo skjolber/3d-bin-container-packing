@@ -7,6 +7,8 @@
 		<version>4.0.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>api</artifactId>
+	<name>api</name>
+	<description>API for 3D bin packaging</description>
 
 	<properties>
 		<module-name>com.github.skjolber.packing.api</module-name>
