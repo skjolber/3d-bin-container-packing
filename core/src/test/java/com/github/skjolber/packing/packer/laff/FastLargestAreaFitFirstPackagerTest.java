@@ -2,6 +2,7 @@ package com.github.skjolber.packing.packer.laff;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -213,4 +214,34 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		assertDeadlineRespected(FastLargestAreaFitFirstPackager.newBuilder());
 	}
 
+    @Test
+    public void testIssue1022() throws Exception {
+        List<StackableItem> products = new ArrayList<StackableItem>();
+        products.add(new StackableItem(Box.newBuilder().withId("a").withSize(950, 1510, 2300).withRotate2D().withWeight(0).build(), 20));
+
+        // add a single container type
+        Container container1 = Container.newBuilder()
+                .withDescription("45HQ")
+                .withFixed(Boolean.FALSE)
+                .withSize(2350, 13560, 2690)
+                .withEmptyWeight(0)
+                .withMaxLoadWeight(Integer.MAX_VALUE)
+                .build();
+
+        List<ContainerItem> containerItems = ContainerItem
+                .newListBuilder()
+                .withContainer(container1, Integer.MAX_VALUE)
+                .build();
+
+        FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
+
+        PackagerResult result = packager
+                .newResultBuilder()
+                .withContainers(containerItems)
+                .withStackables(products)
+                .withMaxContainerCount(Integer.MAX_VALUE)
+                .build();
+
+        assertTrue(result.isSuccess());
+    }
 }
