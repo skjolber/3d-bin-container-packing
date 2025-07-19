@@ -287,5 +287,4 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			packager.close();
 		}
 	}
-
 }

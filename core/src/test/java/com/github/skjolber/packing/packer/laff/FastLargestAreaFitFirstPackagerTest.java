@@ -286,7 +286,6 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		assertDeadlineRespected(FastLargestAreaFitFirstPackager.newBuilder());
 	}
 
-
 	@Test
 	public void testIssue698() {
 		Container container1 = Container.newBuilder()
@@ -386,4 +385,33 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		}
 	}
 	
+    @Test
+    public void testIssue1022() throws Exception {
+        List<BoxItem> products = new ArrayList<BoxItem>();
+        products.add(new BoxItem(Box.newBuilder().withId("a").withSize(950, 1510, 2300).withRotate2D().withWeight(0).build(), 20));
+
+        // add a single container type
+        Container container1 = Container.newBuilder()
+                .withDescription("45HQ")
+                .withSize(2350, 13560, 2690)
+                .withEmptyWeight(0)
+                .withMaxLoadWeight(Integer.MAX_VALUE)
+                .build();
+
+        List<ContainerItem> containerItems = ContainerItem
+                .newListBuilder()
+                .withContainer(container1, Integer.MAX_VALUE)
+                .build();
+
+        FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
+
+        PackagerResult result = packager
+                .newResultBuilder()
+                .withContainerItems(containerItems)
+                .withBoxItems(products)
+                .withMaxContainerCount(Integer.MAX_VALUE)
+                .build();
+
+        assertTrue(result.isSuccess());
+    }
 }
