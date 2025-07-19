@@ -235,4 +235,5 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 		return FastBruteForcePackager.newBuilder().build();
 	}
 
+	
 }

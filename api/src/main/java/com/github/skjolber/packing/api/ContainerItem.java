@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.api;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -10,6 +11,24 @@ import java.util.List;
  */
 
 public class ContainerItem {
+
+	public static final Comparator<ContainerItem> MAX_LOAD_VOLUME_COMPARATOR = new Comparator<ContainerItem>() {
+
+		@Override
+		public int compare(ContainerItem o1, ContainerItem o2) {
+			return Long.compare(o1.getContainer().getMaxLoadVolume(), o2.getContainer().getMaxLoadVolume());
+		}
+		
+	};
+
+	public static final Comparator<ContainerItem> MAX_LOAD_WEIGHT_COMPARATOR = new Comparator<ContainerItem>() {
+
+		@Override
+		public int compare(ContainerItem o1, ContainerItem o2) {
+			return Long.compare(o1.getContainer().getMaxLoadWeight(), o2.getContainer().getMaxLoadWeight());
+		}
+		
+	};
 
 	public static Builder newListBuilder() {
 		return new Builder();
