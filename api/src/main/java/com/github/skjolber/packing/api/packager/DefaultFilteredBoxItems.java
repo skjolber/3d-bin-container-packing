@@ -54,7 +54,7 @@ public class DefaultFilteredBoxItems implements FilteredBoxItems {
 	public void removeEmpty() {
 		for(int i = 0; i < values.size(); i++) {
 			if(values.get(i).isEmpty()) {
-				values.remove(i);
+				remove(i);
 				i--;
 			}
 		}
@@ -63,6 +63,11 @@ public class DefaultFilteredBoxItems implements FilteredBoxItems {
 	@Override
 	public Iterator<BoxItem> iterator() {
 		return values.listIterator();
+	}
+
+	@Override
+	public FilteredBoxItemGroups getGroups() {
+		return null;
 	}
 
 }

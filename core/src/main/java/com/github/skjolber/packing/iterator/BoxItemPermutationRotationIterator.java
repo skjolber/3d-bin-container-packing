@@ -94,7 +94,7 @@ public interface BoxItemPermutationRotationIterator {
 	/**
 	 * Next rotation.
 	 * 
-	 * @return change index, or -1 if none
+	 * @return lowest change index, or -1 if none
 	 */
 
 	int nextRotation();
@@ -103,7 +103,7 @@ public interface BoxItemPermutationRotationIterator {
 	 * Next rotation. Returns the index of the lowest element which as affected.
 	 *
 	 * @param maxIndex skip ahead so that rotation affects the argument at index or lower.
-	 * @return change index, or -1 if none
+	 * @return lowest changed index, or -1 if none
 	 */
 
 	int nextRotation(int maxIndex);
@@ -111,7 +111,7 @@ public interface BoxItemPermutationRotationIterator {
 	/**
 	 * Next permutation.
 	 * 
-	 * @return change index, or -1 if none
+	 * @return lowest change index, or -1 if none
 	 */
 
 	int nextPermutation();
@@ -120,7 +120,7 @@ public interface BoxItemPermutationRotationIterator {
 	 * Next permutation. Returns the index of the lowest element which as affected.
 	 *
 	 * @param maxIndex skip ahead so that permutation affects the argument at index or lower.
-	 * @return change index, or -1 if none
+	 * @return lowest change index, or -1 if none
 	 */
 
 	int nextPermutation(int maxIndex);

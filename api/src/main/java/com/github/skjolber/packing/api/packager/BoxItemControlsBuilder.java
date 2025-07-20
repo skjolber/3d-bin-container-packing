@@ -16,8 +16,6 @@ public interface BoxItemControlsBuilder<B extends BoxItemControlsBuilder<B>> {
 
 	B withBoxItems(FilteredBoxItems input);
 	
-	B withBoxItemGroups(FilteredBoxItemGroups filteredBoxItemGroups);
-
 	B withContainer(Container container);
 	
 	B withStack(Stack stack);

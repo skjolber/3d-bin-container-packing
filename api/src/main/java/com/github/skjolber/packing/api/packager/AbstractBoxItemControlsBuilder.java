@@ -17,13 +17,7 @@ public abstract class AbstractBoxItemControlsBuilder<B extends AbstractBoxItemCo
 	protected Container container;
 	protected FilteredBoxItems items;
 	protected FilteredPoints points;
-	protected FilteredBoxItemGroups groups;
 	
-	public B withBoxItemGroups(FilteredBoxItemGroups groups) {
-		this.groups = groups;
-		return (B)this;
-	}
-
 	public B withPoints(FilteredPoints points) {
 		this.points = points;
 		return (B)this;

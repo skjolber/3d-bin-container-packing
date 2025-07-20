@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
  /**
@@ -283,6 +284,12 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 	@Override
 	public Iterator<BoxItem> iterator() {
 		return boxItems.listIterator();
+	}
+
+	@Override
+	public FilteredBoxItemGroups getGroups() {
+		// return empty
+		return null;
 	}
 
 }

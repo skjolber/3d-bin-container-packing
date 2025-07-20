@@ -232,10 +232,34 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 			}
 		}
 
-		if(maxContainerLoadVolume * maxCount < totalBoxVolume || maxContainerLoadWeight * maxCount < totalBoxWeight) {
-			// no containers will work at current count
+		// sanity check - cheap rough estimate volume
+		BigInteger totalAvailableVolumeForMaxContainer = BigInteger.valueOf(maxContainerLoadVolume).multiply(BigInteger.valueOf(maxCount));
+		if(totalAvailableVolumeForMaxContainer.compareTo(BigInteger.valueOf(totalBoxVolume)) < 0) {
+			// constrained at volume even if using only the biggest container
 			return Collections.emptyList();
 		}
+
+		// sanity check - cheap rough estimate weight
+		BigInteger totalAvailableWeightForMaxContainer = BigInteger.valueOf(maxContainerLoadWeight).multiply(BigInteger.valueOf(maxCount));
+		if(totalAvailableWeightForMaxContainer.compareTo(BigInteger.valueOf(totalBoxWeight)) < 0) {
+			// constrained at weight even if using only the biggest container
+			return Collections.emptyList();
+		}
+
+		// sanity check - exact values for volume
+		BigInteger totalAvailableVolume = calculateMaxVolume(maxCount);
+		if(totalAvailableVolume.compareTo(BigInteger.valueOf(totalBoxVolume)) < 0) {
+			// constrained by volume
+			return Collections.emptyList();
+		}
+
+		// sanity check - exact values for weight
+		BigInteger totalAvailableWeight = calculateMaxWeight(maxCount);
+		if(totalAvailableWeight.compareTo(BigInteger.valueOf(totalBoxWeight)) < 0) {
+			// constrained by weight
+			return Collections.emptyList();
+		}
+
 
 		List<Integer> list = new ArrayList<>(containerItems.size());
 
@@ -269,6 +293,10 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 			}
 
 		} else {
+			
+			BigInteger totalAvailableVolumeMinusBiggestContainer = totalAvailableVolume.subtract(BigInteger.valueOf(maxContainerLoadVolume));
+			BigInteger totalAvailableWeightMinusBiggestContainer = totalAvailableWeight.subtract(BigInteger.valueOf(maxContainerLoadWeight));
+
 			for (int i = 0; i < containerItems.size(); i++) {
 				CompositeContainerItem packContainerItem = containerItems.get(i);
 
@@ -284,8 +312,17 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 					// this container cannot even fit a single group
 					continue;
 				}
-
-				if(container.getMaxLoadVolume() + maxContainerLoadVolume * (maxCount - 1) < totalBoxVolume || container.getMaxLoadWeight() + maxContainerLoadWeight * (maxCount - 1) < totalBoxWeight) {
+				
+				// santiy-check use of this container
+				// corner case: can we exchange the largest available container for the current and still have enough weight / volume?
+				BigInteger maxAvailableVolumeWithThisContainer = totalAvailableVolumeMinusBiggestContainer.add(BigInteger.valueOf(container.getMaxLoadVolume()));
+				if(maxAvailableVolumeWithThisContainer.compareTo(BigInteger.valueOf(totalBoxVolume)) < 0) {
+					// this container cannot be used even together with all biggest boxes
+					continue;
+				}
+				
+				BigInteger maxAvailableWeightWithThisContainer = totalAvailableWeightMinusBiggestContainer.add(BigInteger.valueOf(container.getMaxLoadWeight()));
+				if(maxAvailableWeightWithThisContainer.compareTo(BigInteger.valueOf(totalBoxWeight)) < 0) {
 					// this container cannot be used even together with all biggest boxes
 					continue;
 				}

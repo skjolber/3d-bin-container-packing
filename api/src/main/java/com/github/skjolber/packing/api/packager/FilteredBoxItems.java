@@ -45,4 +45,6 @@ public interface FilteredBoxItems extends Iterable<BoxItem> {
 		return minArea;
 	}
 	
+	FilteredBoxItemGroups getGroups();
+	
 }

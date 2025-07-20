@@ -49,7 +49,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 		public DefaultBoxItemAdapter(List<BoxItem> boxItems, List<CompositeContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
 			super(containerItems);
 
-			List<BoxItem> boxClones = new LinkedList<>();
+			List<BoxItem> boxClones = new ArrayList<>();
 			for (BoxItem item : boxItems) {
 				BoxItem clone = item.clone();
 				clone.setIndex(boxClones.size());
