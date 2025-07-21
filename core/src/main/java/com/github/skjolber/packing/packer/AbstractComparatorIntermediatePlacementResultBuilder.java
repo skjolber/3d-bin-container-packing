@@ -34,7 +34,7 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 		
 		long maxWeight = container.getMaxLoadWeight() - stack.getWeight();
 		
-		for(int i = 0; i < boxItems.size(); i++) {
+		for(int i = boxItemsStartIndex; i < boxItemsEndIndex; i++) {
 			BoxItem boxItem = boxItems.get(i);
 			
 			Box box = boxItem.getBox();

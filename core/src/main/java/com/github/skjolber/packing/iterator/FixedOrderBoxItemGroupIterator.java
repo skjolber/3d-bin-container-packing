@@ -82,32 +82,6 @@ public class FixedOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 	}
 	
 	protected int getFirstBoxItemGroup() {
-		long maxPointVolume = extremePoints.getMaxVolume();
-		long maxPointArea = extremePoints.getMaxArea();
-
-		long maxTotalPointVolume = container.getMaxLoadVolume() -  extremePoints.getUsedVolume();		
-		long maxTotalWeight = container.getMaxLoadWeight() -  extremePoints.getUsedWeight();
-
-		BoxItemGroup bestBoxItemGroup = filteredBoxItemGroups.get(0);
-
-		if(bestBoxItemGroup.getVolume() > maxTotalPointVolume) {
-			return -1;
-		}
-		if(bestBoxItemGroup.getWeight() > maxTotalWeight) {
-			return -1;
-		}
-		for (int i = 0; i < bestBoxItemGroup.size(); i++) {
-			BoxItem boxItem = bestBoxItemGroup.get(i);
-			
-			Box box = boxItem.getBox();
-			if(box.getVolume() > maxPointVolume) {
-				return -1;
-			}
-
-			if(box.getMinimumArea() > maxPointArea) {
-				return -1;
-			}
-		}
 		return 0;
 	}
 

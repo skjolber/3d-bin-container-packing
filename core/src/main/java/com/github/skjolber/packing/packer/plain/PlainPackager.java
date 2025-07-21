@@ -102,11 +102,10 @@ public class PlainPackager extends AbstractDefaultPackager {
 		return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints);
 	}
 
-	public IntermediatePlacementResult findBestPoint(FilteredBoxItemGroups groups, FilteredBoxItems boxItems, PointControls pointControls, Container container, ExtremePoints extremePoints, Stack stack) {
+	public IntermediatePlacementResult findBestPoint(FilteredBoxItems boxItems, int offset, int length, PointControls pointControls, Container container, ExtremePoints extremePoints, Stack stack) {
 		return intermediatePlacementResultBuilderFactory.createIntermediatePlacementResultBuilder()
 			.withExtremePoints(extremePoints)
-			.withBoxItems(boxItems)
-			.withBoxItemGroups(groups)
+			.withBoxItems(boxItems, offset, length)
 			.withPointControls(pointControls)
 			.withStack(stack)
 			.withContainer(container)

@@ -26,7 +26,7 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 			// also removes from parent filtered box items
 			int startIndex = 0;
 			for(int i = 0; i < groupIndex; i++) {
-				startIndex += groups.get(groupIndex).size();
+				startIndex += groups.get(i).size();
 			}
 			
 			BoxItemGroup group = groups.remove(groupIndex);
@@ -159,7 +159,7 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 			for(int k = 0; k < group.size(); k++) {
 				groupIndexes[index + k] = i;
 			}
-			index += groups.size();
+			index += group.size();
 		}
 	}
 	

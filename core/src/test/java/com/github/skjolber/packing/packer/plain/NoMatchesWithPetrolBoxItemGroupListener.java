@@ -10,7 +10,6 @@ import com.github.skjolber.packing.api.ep.FilteredPoints;
 import com.github.skjolber.packing.api.packager.AbstractBoxItemControlsBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.BoxItemGroupControls;
-import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
@@ -51,7 +50,6 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupCont
 	@Override
 	public void accepted(BoxItemGroup group) {
 		// do nothing
-		
 		if(!matches) {
 			matches = isMatches(group);
 			
@@ -115,6 +113,10 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupCont
 	@Override
 	public void declined(BoxItemGroup group) {
 		// do nothing
+	}
+	
+	@Override
+	public void accepted(BoxItem boxItem) {
 	}
 
 }

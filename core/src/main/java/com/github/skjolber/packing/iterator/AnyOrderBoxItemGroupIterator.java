@@ -96,39 +96,12 @@ public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 	
 
 	protected int getBestItemGroup() {
-		long maxPointVolume = extremePoints.getMaxVolume();
-		long maxPointArea = extremePoints.getMaxArea();
-
-		long maxTotalPointVolume = container.getMaxLoadVolume() -  extremePoints.getUsedVolume();		
-		long maxTotalWeight = container.getMaxLoadWeight() -  extremePoints.getUsedWeight();
-
 		BoxItemGroup bestBoxItemGroup = null;
 		int bestIndex = -1;
 		
 		// find next best group
-		bestGroupSearch:
 		for (int l = 0; l < filteredBoxItemGroups.size(); l++) {
 			BoxItemGroup group = filteredBoxItemGroups.get(l);
-			
-			if(group.getVolume() > maxTotalPointVolume) {
-				continue;
-			}
-			if(group.getWeight() > maxTotalWeight) {
-				continue;
-			}
-			for (int i = 0; i < group.size(); i++) {
-				BoxItem boxItem = group.get(i);
-				
-				Box box = boxItem.getBox();
-				if(box.getVolume() > maxPointVolume) {
-					continue bestGroupSearch;
-				}
-
-				if(box.getMinimumArea() > maxPointArea) {
-					continue bestGroupSearch;
-				}
-			}
-			
 			if(bestBoxItemGroup == null || comparator.compare(bestBoxItemGroup, group) > 0) {
 				bestBoxItemGroup = group;
 				bestIndex = l;
