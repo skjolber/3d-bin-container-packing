@@ -16,7 +16,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 
 		<commons-math3.version>3.6.1</commons-math3.version>
-		<mockito.version>5.15.2</mockito.version>
+		<mockito.version>5.18.0</mockito.version>
 
 		<eclipse-collections.version>11.1.0</eclipse-collections.version>
 		<google-truth.version>1.4.4</google-truth.version>
