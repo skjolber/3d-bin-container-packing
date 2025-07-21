@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
 import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
@@ -1329,5 +1330,15 @@ public class ExtremePoints2D implements ExtremePoints {
 	@Override
 	public void setMinimumAreaAndVolumeLimit(long area, long volume) {
 		setMinimumAreaLimit(area);
+	}
+
+	@Override
+	public void reduce(Predicate<Point> test) {
+		for(int i = 0; i < values.size(); i++) {
+			if(!test.test(values.get(i))) {
+				values.flag(i);
+			}
+		}
+		values.removeFlagged();
 	}
 }

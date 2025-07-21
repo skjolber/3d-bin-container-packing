@@ -43,6 +43,28 @@ public interface FilteredBoxItems extends Iterable<BoxItem> {
 		return minArea;
 	}
 	
+	default long getMaxVolume() {
+		long maxVolume = Integer.MIN_VALUE;
+		for(BoxItem boxItem : this) {
+			Box box = boxItem.getBox();
+			if(box.getVolume() > maxVolume) {
+				maxVolume = box.getVolume();
+			}
+		}
+		return maxVolume;
+	}
+	
+	default long getMaxArea() {
+		long maxArea = Integer.MIN_VALUE;
+		for(BoxItem boxItem : this) {
+			Box box = boxItem.getBox();
+			if(box.getMinimumArea() > maxArea) {
+				maxArea = box.getMaximumArea();
+			}
+		}
+		return maxArea;
+	}
+	
 	FilteredBoxItemGroups getGroups();
 	
 }

@@ -2,7 +2,6 @@ package com.github.skjolber.packing.packer.plain;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.ExtremePoints;

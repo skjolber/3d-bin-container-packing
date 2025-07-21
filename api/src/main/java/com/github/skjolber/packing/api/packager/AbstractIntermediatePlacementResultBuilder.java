@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.api.packager;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.Priority;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 
@@ -14,6 +15,12 @@ public abstract class AbstractIntermediatePlacementResultBuilder<R extends Inter
 	protected ExtremePoints extremePoints;
 	protected Container container;
 	protected Stack stack;
+	protected Priority priority;
+	
+	public B withPriority(Priority priority) {
+		this.priority = priority;
+		return (B)this;
+	}
 	
 	@Override
 	public B withPointControls(PointControls pointControls) {

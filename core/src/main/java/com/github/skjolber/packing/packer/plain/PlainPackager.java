@@ -5,10 +5,9 @@ import java.util.Comparator;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.Order;
+import com.github.skjolber.packing.api.Priority;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
-import com.github.skjolber.packing.api.packager.BoxItemControls;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 import com.github.skjolber.packing.api.packager.IntermediatePlacementResult;
@@ -95,14 +94,14 @@ public class PlainPackager extends AbstractDefaultPackager {
 		this.boxItemGroupComparator = boxItemGroupComparator;
 	}
 
-	protected BoxItemGroupIterator createBoxItemGroupIterator(FilteredBoxItemGroups filteredBoxItemGroups, Order itemGroupOrder, Container container, ExtremePoints extremePoints) {
-		if(itemGroupOrder == Order.FIXED) {
-			return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints, boxItemGroupComparator);
+	protected BoxItemGroupIterator createBoxItemGroupIterator(FilteredBoxItemGroups filteredBoxItemGroups, Priority priority, Container container, ExtremePoints extremePoints) {
+		if(priority == Priority.NATURAL || priority == Priority.NATURAL_ALLOW_SKIPPING) {
+			return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints);
 		}
-		return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints);
+		return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints, boxItemGroupComparator);
 	}
-
-	public IntermediatePlacementResult findBestPoint(FilteredBoxItems boxItems, int offset, int length, PointControls pointControls, Container container, ExtremePoints extremePoints, Stack stack) {
+	
+	public IntermediatePlacementResult findBestPoint(FilteredBoxItems boxItems, int offset, int length, Priority priority, PointControls pointControls, Container container, ExtremePoints extremePoints, Stack stack) {
 		return intermediatePlacementResultBuilderFactory.createIntermediatePlacementResultBuilder()
 			.withExtremePoints(extremePoints)
 			.withBoxItems(boxItems, offset, length)

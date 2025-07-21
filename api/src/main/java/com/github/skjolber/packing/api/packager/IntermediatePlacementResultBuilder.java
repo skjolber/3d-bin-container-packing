@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.api.packager;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.Priority;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 
@@ -15,6 +16,8 @@ public interface IntermediatePlacementResultBuilder<R extends IntermediatePlacem
 	B withStack(Stack stack);
 
 	B withContainer(Container container);
+
+	B withPriority(Priority priority);
 
 	R build();
 	

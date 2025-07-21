@@ -40,9 +40,9 @@ public class DefaultPackagerResultBuilder extends PackagerResultBuilder<DefaultP
 		try {
 			List<Container> packList;
 			if(items != null && !items.isEmpty()) {
-				packList = packager.pack(items, containers, maxContainerCount, interrupt);
+				packList = packager.pack(items, priority, containers, maxContainerCount, interrupt);
 			} else {
-				packList = packager.pack(itemGroups, itemGroupOrder, containers, maxContainerCount, interrupt);
+				packList = packager.packGroups(itemGroups, priority, containers, maxContainerCount, interrupt);
 			}
 			long duration = System.currentTimeMillis() - start;
 			return new PackagerResult(packList, duration, false);

@@ -1,8 +1,5 @@
 package com.github.skjolber.packing.iterator;
 
-import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;

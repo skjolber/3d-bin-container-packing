@@ -7,8 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.ep.Point;
-import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
-import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 
 /**
  * 

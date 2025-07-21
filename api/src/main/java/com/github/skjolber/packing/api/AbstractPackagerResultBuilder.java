@@ -97,7 +97,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 
 	protected int maxContainerCount = 1;
 	
-	protected Order itemGroupOrder = Order.FIXED;
+	protected Priority priority = Priority.NONE;
 	
 	protected Supplier<BoxItemControlsBuilder<?>> boxItemListenerBuilderSupplier;
 	protected Supplier<FilteredPointsBuilder<?>> filteredPointsBuilderSupplier;
@@ -119,8 +119,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		return (B)this;
 	}
 
-	public B withItemGroupOrder(Order order) {
-		this.itemGroupOrder = order;
+	public B withItemGroupOrder(Priority order) {
+		this.priority = order;
 		return (B)this;
 	}
 

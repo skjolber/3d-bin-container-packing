@@ -7,8 +7,6 @@ import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 
 public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackagerAdapter<BruteForceIntermediatePackagerResult> {

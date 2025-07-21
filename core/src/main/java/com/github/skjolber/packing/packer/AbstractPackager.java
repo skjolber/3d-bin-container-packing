@@ -9,9 +9,9 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
+import com.github.skjolber.packing.api.Priority;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
@@ -136,12 +136,12 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		return (P) EMPTY_PACK_RESULT;
 	}
 
-	public List<Container> packList(List<BoxItemGroup> boxes, Order itemGroupOrder, List<CompositeContainerItem> containers, int limit) throws PackagerInterruptedException {
-		return pack(boxes, itemGroupOrder, containers, limit, PackagerInterruptSupplierBuilder.NEGATIVE);
+	public List<Container> packList(List<BoxItemGroup> boxes, Priority priority, List<CompositeContainerItem> containers, int limit) throws PackagerInterruptedException {
+		return packGroups(boxes, priority, containers, limit, PackagerInterruptSupplierBuilder.NEGATIVE);
 	}
 
-	public List<Container> pack(List<BoxItem> boxes, List<CompositeContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
-		PackagerAdapter<P> adapter = adapter(boxes, containerItems, interrupt);
+	public List<Container> pack(List<BoxItem> boxes, Priority priority, List<CompositeContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+		PackagerAdapter<P> adapter = adapter(boxes, priority, containerItems, interrupt);
 
 		if(adapter == null) {
 			return Collections.emptyList();
@@ -154,6 +154,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 	 * Return a list of containers which holds all the boxes in the argument
 	 *
 	 * @param boxes     list of boxes to fit in a container
+	 * @param priority	packaging priority
 	 * @param containerItems list of containers available for use in this operation
 	 * @param limit     maximum number of containers
 	 * @param interrupt When true, the computation is interrupted as soon as possible.
@@ -161,8 +162,8 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 	 * @throws PackagerInterruptedException 
 	 */
 
-	public List<Container> pack(List<BoxItemGroup> boxes, Order itemGroupOrder, List<CompositeContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
-		PackagerAdapter<P> adapter = adapter(boxes, containerItems, itemGroupOrder, interrupt);
+	public List<Container> packGroups(List<BoxItemGroup> boxes, Priority priority, List<CompositeContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+		PackagerAdapter<P> adapter = groupAdapter(boxes, containerItems, priority, interrupt);
 
 		if(adapter == null) {
 			return Collections.emptyList();
@@ -264,9 +265,9 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		return null;
 	}
 
-	protected abstract PackagerAdapter<P> adapter(List<BoxItemGroup> boxes, List<CompositeContainerItem> containers, Order itemGroupOrder, PackagerInterruptSupplier interrupt);
+	protected abstract PackagerAdapter<P> groupAdapter(List<BoxItemGroup> boxes, List<CompositeContainerItem> containers, Priority itemGroupOrder, PackagerInterruptSupplier interrupt);
 
-	protected abstract PackagerAdapter<P> adapter(List<BoxItem> boxItems, List<CompositeContainerItem> containers, PackagerInterruptSupplier interrupt);
+	protected abstract PackagerAdapter<P> adapter(List<BoxItem> boxItems, Priority priority, List<CompositeContainerItem> containers, PackagerInterruptSupplier interrupt);
 
 	public void close() {
 		scheduledThreadPoolExecutor.shutdownNow();

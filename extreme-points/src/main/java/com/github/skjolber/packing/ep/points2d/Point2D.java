@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.ep.points2d;
 
-import java.io.Serializable;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxStackValue;

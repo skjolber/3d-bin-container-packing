@@ -5,6 +5,7 @@ import java.util.Comparator;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.Priority;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.AbstractIntermediatePlacementResultBuilder;
@@ -29,10 +30,7 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 	public T build() {
 		T result = null;
 		
-		long maxPointArea = extremePoints.getMaxArea();		
-		long maxPointVolume = extremePoints.getMaxVolume();
-		
-		long maxWeight = container.getMaxLoadWeight() - stack.getWeight();
+		long maxPointArea = extremePoints.getMaxArea();
 		
 		for(int i = boxItemsStartIndex; i < boxItemsEndIndex; i++) {
 			BoxItem boxItem = boxItems.get(i);

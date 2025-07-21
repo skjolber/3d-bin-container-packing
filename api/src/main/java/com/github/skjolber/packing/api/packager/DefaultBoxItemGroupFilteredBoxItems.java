@@ -197,4 +197,5 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 		return filteredBoxItemGroups;
 	}
 
+
 }

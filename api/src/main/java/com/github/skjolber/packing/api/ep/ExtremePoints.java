@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.api.ep;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import com.github.skjolber.packing.api.StackPlacement;
 
@@ -25,4 +26,6 @@ public interface ExtremePoints extends FilteredPoints {
 	void setInitialPoints(List<Point> points);
 	
 	void setMinimumAreaAndVolumeLimit(long area, long volume);
+	
+	void reduce(Predicate<Point> test);
 }

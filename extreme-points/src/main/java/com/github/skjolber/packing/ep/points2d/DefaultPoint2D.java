@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.ep.points2d;
 
-import java.io.Serializable;
-
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point;
 

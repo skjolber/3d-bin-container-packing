@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.iterator;
 
 import java.util.List;
-import java.util.function.Predicate;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
