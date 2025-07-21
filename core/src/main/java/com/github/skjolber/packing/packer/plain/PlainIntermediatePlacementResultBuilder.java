@@ -85,10 +85,10 @@ public class PlainIntermediatePlacementResultBuilder extends AbstractComparatorI
 	}
 
 	@Override
-	protected PlainIntermediatePlacementResult createIntermediatePlacementResult(BoxItem boxItem, Point point, BoxStackValue stackValue) {
+	protected PlainIntermediatePlacementResult createIntermediatePlacementResult(int index, Point point, BoxStackValue stackValue) {
 		long pointSupportPercent = calculateXYSupportPercent(extremePoints, point, stackValue);
 		
-		return new PlainIntermediatePlacementResult(boxItem, stackValue, point, pointSupportPercent);
+		return new PlainIntermediatePlacementResult(index, stackValue, point, pointSupportPercent);
 	}
 
 }

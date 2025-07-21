@@ -86,11 +86,6 @@ public class NoMatchesWithPetrolBoxItemListener implements BoxItemControls {
 	}
 
 	@Override
-	public FilteredBoxItems getFilteredBoxItems() {
-		return items;
-	}
-
-	@Override
 	public void declined(BoxItem group) {
 		// do nothing
 	}

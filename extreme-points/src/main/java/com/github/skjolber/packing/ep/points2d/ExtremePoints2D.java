@@ -1325,4 +1325,9 @@ public class ExtremePoints2D implements ExtremePoints {
 			setMinimumAreaLimit(filteredBoxItemGroups.getMinArea());
 		}
 	}
+
+	@Override
+	public void setMinimumAreaAndVolumeLimit(long area, long volume) {
+		setMinimumAreaLimit(area);
+	}
 }

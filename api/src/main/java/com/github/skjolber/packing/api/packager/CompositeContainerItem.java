@@ -14,7 +14,6 @@ import com.github.skjolber.packing.api.ep.FilteredPoints;
 public class CompositeContainerItem {
 
 	protected final ContainerItem containerItem;
-	protected BoxItemGroupControlsBuilderFactory boxItemGroupControlsBuilderFactory;
 	protected BoxItemControlsBuilderFactory boxItemControlsBuilderFactory;
 	protected PointControlsBuilderFactory pointControlsBuilderFactory;
 
@@ -42,10 +41,7 @@ public class CompositeContainerItem {
 		return containerItem;
 	}
 
-	public void setBoxItemGroupControlsBuilderFactory(BoxItemGroupControlsBuilderFactory factory) {
-		this.boxItemGroupControlsBuilderFactory = factory;
-	}
-
+	/*
 	public BoxItemGroupControls createBoxItemGroupControls(Container container, Stack stack, FilteredBoxItemGroups groups, FilteredPoints points) {
 		if(boxItemGroupControlsBuilderFactory == null) {
 			return new DefaultBoxItemGroupControls(groups);
@@ -57,8 +53,9 @@ public class CompositeContainerItem {
 				.withPoints(points)
 				.build();
 	}
+	*/
 
-	public BoxItemControls createBoxItemControls(Container container, Stack stack, FilteredBoxItemGroups groups, FilteredBoxItems filteredBoxItems, FilteredPoints points) {
+	public BoxItemControls createBoxItemControls(Container container, Stack stack, FilteredBoxItems filteredBoxItems, FilteredPoints points) {
 		if(boxItemControlsBuilderFactory == null) {
 			return new DefaultBoxItemControls(filteredBoxItems);
 		}
@@ -66,12 +63,11 @@ public class CompositeContainerItem {
 				.withContainer(container)
 				.withStack(stack)
 				.withBoxItems(filteredBoxItems)
-				.withBoxItemGroups(groups)
 				.withPoints(points)
 				.build();
 	}
 	
-	public PointControls createPointControls(Container container, Stack stack, FilteredBoxItemGroups groups, FilteredBoxItems filteredBoxItems, FilteredPoints points) {
+	public PointControls createPointControls(Container container, Stack stack, FilteredBoxItems filteredBoxItems, FilteredPoints points) {
 		if(pointControlsBuilderFactory == null) {
 			return new DefaultPointControls(points);
 		}
@@ -79,13 +75,8 @@ public class CompositeContainerItem {
 				.withContainer(container)
 				.withStack(stack)
 				.withBoxItems(filteredBoxItems)
-				.withBoxItemGroups(groups)
 				.withPoints(points)
 				.build();
-	}
-	
-	public boolean hasBoxItemGroupListenerBuilderFactory() {
-		return boxItemGroupControlsBuilderFactory != null;
 	}
 	
 	public boolean hasPointControlsBuilderFactory() {

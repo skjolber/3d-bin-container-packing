@@ -28,8 +28,9 @@ public class BouwkampConverter {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, -1);
 		
 		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(0).build();
+		stackValue.setBox(box);
 		
-		return new StackPlacement(null, new BoxItem(box, 1), stackValue, x, y, z);
+		return new StackPlacement(stackValue, x, y, z);
 	}
 
 	public DefaultExtremePoints2D convert2D(BouwkampCode bkpLine, int factor) {

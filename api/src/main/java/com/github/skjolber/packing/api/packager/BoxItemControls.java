@@ -14,8 +14,6 @@ import com.github.skjolber.packing.api.ep.FilteredPoints;
 
 public interface BoxItemControls {
 
-	FilteredBoxItems getFilteredBoxItems();
-
 	/**
 	 * 
 	 * Notify box was loaded. 
@@ -34,8 +32,7 @@ public interface BoxItemControls {
 	 * @param boxItem {@linkplain FilteredBoxBoxItemGroupItems}
 	 */
 	
-	default void declined(BoxItem boxItem) {
-		
+	default void declined(BoxItem boxItem) {		
 	}
 
 	/**
@@ -49,27 +46,7 @@ public interface BoxItemControls {
 	default void undo(BoxItem boxItem) {
 	}
 
-	/**
-	 * 
-	 * Notify start of group.
-	 * 
-	 * @param group {@linkplain BoxItemGroup}
-	 */
 
-	default void begin(BoxItemGroup group) {	
-	}
 
-	/**
-	 * 
-	 * Notify end of group.
-	 * 
-	 * Corresponding calls to declined and/or undo will be performed before this call.
-	 * 
-	 * @param group {@linkplain BoxItemGroup}
-	 * @param accepted true if all items could fit.
-	 */
-
-	default void ended(BoxItemGroup group, boolean accepted) {		
-	}
 
 }

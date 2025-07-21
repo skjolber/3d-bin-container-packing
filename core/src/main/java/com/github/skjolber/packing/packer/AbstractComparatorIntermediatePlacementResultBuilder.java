@@ -34,7 +34,9 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 		
 		long maxWeight = container.getMaxLoadWeight() - stack.getWeight();
 		
-		for (BoxItem boxItem : boxItems) {
+		for(int i = 0; i < boxItems.size(); i++) {
+			BoxItem boxItem = boxItems.get(i);
+			
 			Box box = boxItem.getBox();
 			
 			if(box.getVolume() > maxPointVolume) {
@@ -67,7 +69,7 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 					if(!point3d.fits3D(stackValue)) {
 						continue;
 					}
-					T intermediatePlacementResult = createIntermediatePlacementResult(boxItem, point3d, stackValue);
+					T intermediatePlacementResult = createIntermediatePlacementResult(i, point3d, stackValue);
 					
 					if(result != null && intermediatePlacementResultComparator.compare(result, intermediatePlacementResult) >= 0) {
 						continue;
@@ -81,6 +83,6 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 		return result;
 	}
 
-	protected abstract T createIntermediatePlacementResult(BoxItem boxItem, Point point, BoxStackValue stackValue);
+	protected abstract T createIntermediatePlacementResult(int index, Point point, BoxStackValue stackValue);
 
 }

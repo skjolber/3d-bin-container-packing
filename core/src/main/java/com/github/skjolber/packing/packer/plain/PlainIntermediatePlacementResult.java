@@ -9,8 +9,8 @@ public class PlainIntermediatePlacementResult extends IntermediatePlacementResul
 
 	protected long bestPointSupportPercent = -1;
 
-	public PlainIntermediatePlacementResult(BoxItem boxItem, BoxStackValue stackValue, Point point, long bestPointSupportPercent) {
-		super(boxItem, stackValue, point);
+	public PlainIntermediatePlacementResult(int index, BoxStackValue stackValue, Point point, long bestPointSupportPercent) {
+		super(index, stackValue, point);
 		
 		this.bestPointSupportPercent = bestPointSupportPercent;
 	}

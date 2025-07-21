@@ -14,8 +14,6 @@ public interface PointControlsBuilder<B extends PointControlsBuilder<B>> {
 
 	B withPoints(FilteredPoints points);
 	
-	B withBoxItemGroups(FilteredBoxItemGroups filteredBoxItemGroups);
-
 	B withBoxItems(FilteredBoxItems input);
 	
 	B withContainer(Container container);

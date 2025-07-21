@@ -363,8 +363,8 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 		);
 
 	protected abstract IntermediatePlacementResult findBestPoint(
-			FilteredBoxItemGroups groups,
 			FilteredBoxItems boxItems,
+			int offset, int length,
 			PointControls pointControls,
 			Container container,
 			ExtremePoints extremePoints, 

@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 import com.github.skjolber.packing.api.ep.FilteredPointsBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemControlsBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemControlsBuilderFactory;
-import com.github.skjolber.packing.api.packager.BoxItemGroupControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
 import com.github.skjolber.packing.api.packager.PointControlsBuilderFactory;
 
@@ -25,13 +24,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		
 		protected ContainerItem containerItem;
 		protected BoxItemControlsBuilderFactory boxItemControlsBuilderFactory;
-		protected BoxItemGroupControlsBuilderFactory boxItemGroupControlsBuilderFactory;
 		protected PointControlsBuilderFactory pointControlsBuilderFactory;
-		
-		public ExtendedContainerItemBuilder withBoxItemGroupControlsBuilderFactory(BoxItemGroupControlsBuilderFactory factory) {
-			this.boxItemGroupControlsBuilderFactory = factory;
-			return this;
-		}
 		
 		public ExtendedContainerItemBuilder withBoxItemControlsBuilderFactory(BoxItemControlsBuilderFactory supplier) {
 			this.boxItemControlsBuilderFactory = supplier;
@@ -54,7 +47,6 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			}
 			CompositeContainerItem packContainerItem = new CompositeContainerItem(containerItem);
 			packContainerItem.setBoxItemControlsBuilderFactory(boxItemControlsBuilderFactory);
-			packContainerItem.setBoxItemGroupControlsBuilderFactory(boxItemGroupControlsBuilderFactory);
 			packContainerItem.setPointControlsBuilderFactory(pointControlsBuilderFactory);
 			return packContainerItem;
 		}
@@ -66,14 +58,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		protected int count = -1;
 		
 		protected BoxItemControlsBuilderFactory boxItemListenerBuilderFactory;
-		protected BoxItemGroupControlsBuilderFactory boxItemGroupListenerBuilderFactory;
 		protected PointControlsBuilderFactory pointControlsBuilderFactory;
 
-		public ExtendedContainerBuilder withBoxItemGroupListenerBuilderSupplier(BoxItemGroupControlsBuilderFactory factory) {
-			this.boxItemGroupListenerBuilderFactory = factory;
-			return this;
-		}
-		
 		public ExtendedContainerBuilder withBoxItemListenerBuilderSupplier(BoxItemControlsBuilderFactory factory) {
 			this.boxItemListenerBuilderFactory = factory;
 			return this;
@@ -99,7 +85,6 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			ContainerItem containerItem = new ContainerItem(container, count);
 			CompositeContainerItem packContainerItem = new CompositeContainerItem(containerItem);
 			packContainerItem.setBoxItemControlsBuilderFactory(boxItemListenerBuilderFactory);
-			packContainerItem.setBoxItemGroupControlsBuilderFactory(boxItemGroupListenerBuilderFactory);
 			packContainerItem.setPointControlsBuilderFactory(pointControlsBuilderFactory);
 			return packContainerItem;
 		}

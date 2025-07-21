@@ -8,9 +8,7 @@ public interface IntermediatePlacementResultBuilder<R extends IntermediatePlacem
 
 	B withExtremePoints(ExtremePoints extremePoints);
 
-	B withBoxItemGroups(FilteredBoxItemGroups groups);
-
-	B withBoxItems(FilteredBoxItems boxItems);
+	B withBoxItems(FilteredBoxItems boxItems, int offset, int length);
 
 	B withPointControls(PointControls pointControls);
 

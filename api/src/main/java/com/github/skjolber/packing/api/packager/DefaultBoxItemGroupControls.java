@@ -4,15 +4,10 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 
 public class DefaultBoxItemGroupControls implements BoxItemGroupControls {
 
-	protected FilteredBoxItemGroups filteredBoxItemGroups;
-
-	public DefaultBoxItemGroupControls(FilteredBoxItemGroups filteredBoxItemGroups) {
-		this.filteredBoxItemGroups = filteredBoxItemGroups;
-	}
+	protected FilteredBoxItems filteredBoxItems;
 	
-	@Override
-	public FilteredBoxItemGroups getFilteredBoxItemGroups() {
-		return filteredBoxItemGroups;
+	public DefaultBoxItemGroupControls(FilteredBoxItems filteredBoxItems) {
+		this.filteredBoxItems = filteredBoxItems;
 	}
 	
 	@Override

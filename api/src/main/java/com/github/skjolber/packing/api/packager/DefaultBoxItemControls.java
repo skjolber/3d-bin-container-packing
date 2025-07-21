@@ -16,14 +16,8 @@ public class DefaultBoxItemControls implements BoxItemControls {
 	}
 
 	@Override
-	public void declined(BoxItem boxItem) {
-		
+	public void declined(BoxItem boxItem) {		
+		// do nothing
 	}
-
-	@Override
-	public FilteredBoxItems getFilteredBoxItems() {
-		return filteredBoxItems;
-	}
-
 
 }

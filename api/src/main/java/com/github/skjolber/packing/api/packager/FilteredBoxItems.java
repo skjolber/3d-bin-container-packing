@@ -21,8 +21,6 @@ public interface FilteredBoxItems extends Iterable<BoxItem> {
  
 	BoxItem remove(int index);
 
-	void removeEmpty();
-
 	default long getMinVolume() {
 		long minVolume = Integer.MAX_VALUE;
 		for(BoxItem boxItem : this) {

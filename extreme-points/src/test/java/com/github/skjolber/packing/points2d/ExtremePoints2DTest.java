@@ -27,8 +27,11 @@ public class ExtremePoints2DTest {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, 1, null, -1);
 		
 		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, 1).withWeight(0).build();
+		stackValue.setBox(box);
 		
-		return new StackPlacement(null, new BoxItem(box, 1), stackValue, x, y, z);
+		BoxItem boxItem = new BoxItem(box, 1);
+		
+		return new StackPlacement(stackValue, x, y, z);
 	}
 	
 	@Test

@@ -19,8 +19,6 @@ public interface FilteredBoxItemGroups extends Iterable<BoxItemGroup> {
  
 	boolean isEmpty();
 
-	void removeEmpty();
-
 	default long getMinVolume() {
 		long minVolume = Integer.MAX_VALUE;
 		for(BoxItemGroup boxItemGroup: this) {

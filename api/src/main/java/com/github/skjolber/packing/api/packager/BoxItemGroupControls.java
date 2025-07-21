@@ -10,25 +10,37 @@ import com.github.skjolber.packing.api.BoxItemGroup;
  * 
  */
 
-public interface BoxItemGroupControls {
+public interface BoxItemGroupControls extends BoxItemControls {
 
-	FilteredBoxItemGroups getFilteredBoxItemGroups();
 
 	/**
 	 * 
-	 * Notify box was loaded
+	 * Notify box group was loaded. 
 	 * 
-	 * @param group {@linkplain FilteredBoxBoxItemGroupItems}
+	 * @param group {@linkplain BoxItemGroup} to be added.
 	 */
 	
-	void accepted(BoxItemGroup group);
+	default void attempt(BoxItemGroup group, int offset, int length) {
+		
+	}
+	
+	/**
+	 * 
+	 * Notify box cannot be fitted.
+	 * 
+	 * @param group {@linkplain BoxItemGroup}
+	 */
+	
+	default void accepted(BoxItemGroup group) {		
+	}
 
 	/**
 	 * 
 	 * Notify box group cannot be fitted.
 	 * 
-	 * @param group {@linkplain FilteredBoxBoxItemGroupItems}
+	 * @param group {@linkplain BoxItemGroup}
 	 */
-
-	void declined(BoxItemGroup group);
+	
+	default void declined(BoxItemGroup group) {
+	}
 }

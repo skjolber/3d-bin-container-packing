@@ -50,7 +50,6 @@ public class DefaultFilteredBoxItems implements FilteredBoxItems {
 		return this.values.isEmpty();
 	}
 
-	@Override
 	public void removeEmpty() {
 		for(int i = 0; i < values.size(); i++) {
 			if(values.get(i).isEmpty()) {

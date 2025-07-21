@@ -8,8 +8,8 @@ import com.github.skjolber.packing.api.packager.IntermediatePlacementResult;
 public class ComparatorIntermediatePlacementResultBuilder extends AbstractComparatorIntermediatePlacementResultBuilder<IntermediatePlacementResult, ComparatorIntermediatePlacementResultBuilder> {
 
 	@Override
-	protected IntermediatePlacementResult createIntermediatePlacementResult(BoxItem boxItem, Point point, BoxStackValue stackValue) {
-		return new IntermediatePlacementResult(boxItem, stackValue, point);
+	protected IntermediatePlacementResult createIntermediatePlacementResult(int index, Point point, BoxStackValue stackValue) {
+		return new IntermediatePlacementResult(index, stackValue, point);
 	}
 
 

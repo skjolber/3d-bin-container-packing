@@ -9,7 +9,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 
 public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 
-	class InnerFilteredBoxItemGroup implements FilteredBoxItemGroups {
+	public class InnerFilteredBoxItemGroup implements FilteredBoxItemGroups {
 
 		@Override
 		public int size() {
@@ -45,7 +45,6 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 			return groups.isEmpty();
 		}
 		
-		@Override
 		public void removeEmpty() {
 			for(int i = 0; i < groups.size(); i++) {
 				if(groups.get(i).isEmpty()) {
@@ -59,6 +58,14 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 		public Iterator<BoxItemGroup> iterator() {
 			return groups.listIterator();
 		}
+
+		public boolean contains(BoxItemGroup boxItemGroup) {
+			return groups.contains(boxItemGroup);
+		}
+
+		public void remove(BoxItemGroup boxItemGroup) {
+			groups.remove(boxItemGroup);
+		}
 		
 	};
 	
@@ -66,7 +73,7 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 	protected List<BoxItem> values;
 	protected int[] groupIndexes;
 	
-	protected FilteredBoxItemGroups filteredBoxItemGroups = new InnerFilteredBoxItemGroup();
+	protected InnerFilteredBoxItemGroup filteredBoxItemGroups = new InnerFilteredBoxItemGroup();
 	
 	public DefaultBoxItemGroupFilteredBoxItems(List<BoxItemGroup> groups) {
 		setValues(new ArrayList<>(groups));
@@ -115,7 +122,7 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 		return item;
 	}
 
-	protected int getGroupStartIndex(int index, int groupIndex) {
+	public int getGroupStartIndex(int index, int groupIndex) {
 		int startIndex = index;
 		while(startIndex > 0) {
 			if(groupIndexes[startIndex - 1] != groupIndex) {
@@ -124,6 +131,14 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 			startIndex--;
 		}
 		return startIndex;
+	}
+	
+	public int getGroupStartIndex(int groupIndex) {
+		int index = 0;
+		for(int i = 0; i < groupIndex; i++) {
+			index += groups.get(index).size();
+		}
+		return index;
 	}
 
 	public void setValues(List<BoxItemGroup> groups) {
@@ -152,17 +167,22 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 		return this.values.isEmpty();
 	}
 
-	@Override
-	public void removeEmpty() {
+	public void removeEmpty(boolean group) {
 		for(int i = 0; i < values.size(); i++) {
 			if(values.get(i).isEmpty()) {
-				int groupIndex = groupIndexes[i];
-
-				int startIndex = getGroupStartIndex(i, groupIndex);
-
-				remove(i);
 				
-				i = startIndex - 1;				
+				if(group) {
+					int groupIndex = groupIndexes[i];
+	
+					int startIndex = getGroupStartIndex(i, groupIndex);
+	
+					remove(i);
+					
+					i = startIndex - 1;				
+				} else {
+					values.remove(i);
+					i--;
+				}
 			}
 		}
 	}
@@ -173,7 +193,7 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 	}
 	
 	@Override
-	public FilteredBoxItemGroups getGroups() {
+	public InnerFilteredBoxItemGroup getGroups() {
 		return filteredBoxItemGroups;
 	}
 

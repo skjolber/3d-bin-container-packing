@@ -7,20 +7,20 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
-import com.github.skjolber.packing.api.packager.AbstractBoxItemGroupControlsBuilder;
+import com.github.skjolber.packing.api.packager.AbstractBoxItemControlsBuilder;
+import com.github.skjolber.packing.api.packager.BoxItemControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.BoxItemGroupControls;
-import com.github.skjolber.packing.api.packager.BoxItemGroupControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
 public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupControls {
 
-	public static class Builder extends AbstractBoxItemGroupControlsBuilder<Builder> {
+	public static class Builder extends AbstractBoxItemControlsBuilder<Builder> {
 
 		@Override
 		public BoxItemGroupControls build() {
-			return new NoMatchesWithPetrolBoxItemGroupListener(container, groups, stack, points);
+			return new NoMatchesWithPetrolBoxItemGroupListener(container, items, stack, points);
 		}
 
 	}
@@ -29,21 +29,21 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupCont
 		return new Builder();
 	}
 	
-	public static final BoxItemGroupControlsBuilderFactory newFactory() {
+	public static final BoxItemControlsBuilderFactory newFactory() {
 		return () -> NoMatchesWithPetrolBoxItemGroupListener.newBuilder();
 	}
 	
 	protected final Container container;
-	protected final FilteredBoxItemGroups groups;
+	protected final FilteredBoxItems boxItems;
 	protected final Stack stack;
 	protected final FilteredPoints points;
 
 	protected boolean matches = false;
 	protected boolean petrol = false;
 
-	public NoMatchesWithPetrolBoxItemGroupListener(Container container, FilteredBoxItemGroups groups, Stack stack, FilteredPoints points) {
+	public NoMatchesWithPetrolBoxItemGroupListener(Container container, FilteredBoxItems boxItems, Stack stack, FilteredPoints points) {
 		this.container = container;
-		this.groups = groups;
+		this.boxItems = boxItems;
 		this.stack = stack;
 		this.points = points;
 	}
@@ -72,6 +72,7 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupCont
 	}
 
 	private void remove(Predicate<BoxItemGroup> test) {
+		FilteredBoxItemGroups groups = boxItems.getGroups();
 		for(int i = 0; i < groups.size(); i++) {
 			BoxItemGroup boxItemGroup = groups.get(i);
 			
@@ -116,8 +117,4 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupCont
 		// do nothing
 	}
 
-	@Override
-	public FilteredBoxItemGroups getFilteredBoxItemGroups() {
-		return groups;
-	}
 }

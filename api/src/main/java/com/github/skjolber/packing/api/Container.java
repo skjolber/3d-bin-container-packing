@@ -272,15 +272,41 @@ public class Container {
 	}
 
 	public boolean fitsInside(BoxItemGroup boxItemGroup) {
-		return boxItemGroup.getVolume() <= getMaxLoadVolume() && boxItemGroup.getWeight() <= getMaxLoadWeight();
+		if(boxItemGroup.getVolume() <= getMaxLoadVolume() && boxItemGroup.getWeight() <= getMaxLoadWeight()) {			
+			for(int i = 0; i < boxItemGroup.size(); i++) {
+				
+				Box box = boxItemGroup.get(i).getBox();
+				for (BoxStackValue boxStackValue : box.getStackValues()) {
+					if(boxStackValue.fitsInside3D(loadDx, loadDy, loadDz)) {
+						return true;
+					}
+				}
+			}		
+		}
+		return false;
 	}
 	
 	public boolean fitsInside(BoxItem boxItem) {
-		return boxItem.getVolume() <= getMaxLoadVolume() && boxItem.getWeight() <= getMaxLoadWeight();
+		if(boxItem.getVolume() <= getMaxLoadVolume() && boxItem.getWeight() <= getMaxLoadWeight()) {
+			Box box = boxItem.getBox();
+			for (BoxStackValue boxStackValue : box.getStackValues()) {
+				if(boxStackValue.fitsInside3D(loadDx, loadDy, loadDz)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	public boolean fitsInside(Box box) {
-		return box.getVolume() <= getMaxLoadVolume() && box.getWeight() <= getMaxLoadWeight();
+		if(box.getVolume() <= getMaxLoadVolume() && box.getWeight() <= getMaxLoadWeight()) {
+			for (BoxStackValue boxStackValue : box.getStackValues()) {
+				if(boxStackValue.fitsInside3D(loadDx, loadDy, loadDz)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	public String toString() {

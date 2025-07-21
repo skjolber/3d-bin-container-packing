@@ -6,8 +6,10 @@ import com.github.skjolber.packing.api.ep.ExtremePoints;
 
 public abstract class AbstractIntermediatePlacementResultBuilder<R extends IntermediatePlacementResult, B extends AbstractIntermediatePlacementResultBuilder<R, B>> implements IntermediatePlacementResultBuilder<R, B> {
 
-	protected FilteredBoxItemGroups boxItemGroups;
 	protected FilteredBoxItems boxItems;
+	protected int boxItemsStartIndex = -1;
+	protected int boxItemsEndIndex = -1;
+	
 	protected PointControls pointControls;
 	protected ExtremePoints extremePoints;
 	protected Container container;
@@ -19,14 +21,11 @@ public abstract class AbstractIntermediatePlacementResultBuilder<R extends Inter
 		return (B)this;
 	}
 	
-	public B withBoxItemGroups(FilteredBoxItemGroups boxItemGroups) {
-		this.boxItemGroups = boxItemGroups;
-		return (B)this;
-	}
-	
 	@Override
-	public B withBoxItems(FilteredBoxItems boxItems) {
+	public B withBoxItems(FilteredBoxItems boxItems, int offset, int length) {
 		this.boxItems = boxItems;
+		this.boxItemsStartIndex = offset;
+		this.boxItemsEndIndex = offset + length;
 		return (B)this;
 	}
 	

@@ -1831,6 +1831,19 @@ public class ExtremePoints3D implements ExtremePoints {
 		}
 	}
 	
+	public void updateMinimums(FilteredBoxItems filteredBoxItems) {
+		boolean minArea = filteredBoxItems.getMinArea() == minAreaLimit;
+		boolean minVolume = filteredBoxItems.getMinVolume() == minVolumeLimit;
+		if(minArea && minVolume) {
+			setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());
+		} else if(minArea) {
+			setMinimumAreaLimit(filteredBoxItems.getMinArea());
+		} else if(minVolume) {
+			setMinimumVolumeLimit(filteredBoxItems.getMinVolume());
+		}
+	}
+
+	
 	public void updateMinimums(BoxStackValue stackValue, FilteredBoxItemGroups filteredBoxItemGroups) {
 		boolean minArea = stackValue.getArea() == minAreaLimit;
 		boolean minVolume = stackValue.getVolume() == minVolumeLimit;

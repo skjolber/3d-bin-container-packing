@@ -151,7 +151,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 
 		DefaultFilteredBoxItems filteredBoxItems = new DefaultFilteredBoxItems(boxes);
 
-		ExtremePoints2D extremePoints = new ExtremePoints2D();
+		ExtremePoints extremePoints = new ExtremePoints2D();
 		extremePoints.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 
 		BoxItemControls boxItemControls = compositeContainerItem.createBoxItemControls(container, stack, null, filteredBoxItems, extremePoints);

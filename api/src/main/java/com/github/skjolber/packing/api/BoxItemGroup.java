@@ -12,7 +12,7 @@ import com.github.skjolber.packing.api.packager.FilteredBoxItems;
  * 
  */
 
-public class BoxItemGroup implements FilteredBoxItems {
+public class BoxItemGroup {
 
 	protected String id;
 
@@ -73,7 +73,6 @@ public class BoxItemGroup implements FilteredBoxItems {
 		return !items.isEmpty();
 	}
 	
-	@Override
 	public boolean decrement(int index, int count) {
 		BoxItem boxItem = items.get(index);
 		if(!boxItem.decrement(count)) {
@@ -170,11 +169,5 @@ public class BoxItemGroup implements FilteredBoxItems {
 			boxItem.mark();
 		}
 	}
-
-	@Override
-	public Iterator<BoxItem> iterator() {
-		return items.listIterator();
-	}
-
 	
 }

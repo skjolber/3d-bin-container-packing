@@ -84,11 +84,6 @@ public class MaxFireHazardBoxItemPerContainerBoxItemListener implements BoxItemC
 		Boolean b = box.getProperty(KEY);
 		return b != null && b;
 	}
-
-	@Override
-	public FilteredBoxItems getFilteredBoxItems() {
-		return items;
-	}
 	
 	@Override
 	public void declined(BoxItem group) {
