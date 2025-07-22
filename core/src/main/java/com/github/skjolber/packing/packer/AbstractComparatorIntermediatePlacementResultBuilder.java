@@ -32,30 +32,22 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 		
 		long maxPointArea = extremePoints.getMaxArea();
 		
+		// max volume and weight should already be accounted for by packager
+		
 		for(int i = boxItemsStartIndex; i < boxItemsEndIndex; i++) {
 			BoxItem boxItem = boxItems.get(i);
 			
 			Box box = boxItem.getBox();
 			
-			if(box.getVolume() > maxPointVolume) {
-				continue;
+			if(priority == Priority.NONE) {
+				// a negative integer, zero, or a positive integer as the 
+				// first argument is less than, equal to, or greater than the
+			    // second.
+				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
+					continue;
+				}
 			}
 			
-			if(box.getMinimumArea() > maxPointArea) {
-				continue;
-			}
-			
-			if(box.getWeight() > maxWeight) {
-				continue;
-			}
-			
-			// a negative integer, zero, or a positive integer as the 
-			// first argument is less than, equal to, or greater than the
-		    // second.
-			if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
-				continue;
-			}
-
 			FilteredPoints points = pointControls.getFilteredPoints(boxItem);
 
 			for (Point point3d : points) {
@@ -76,7 +68,15 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 					result = intermediatePlacementResult;
 				} 
 			}
-
+			
+			if(priority == Priority.NATURAL) {
+				// even if null
+				return result;
+			}
+			if(priority == Priority.NATURAL_ALLOW_SKIPPING && result != null) {
+				return result;
+			}
+			
 		}
 		return result;
 	}

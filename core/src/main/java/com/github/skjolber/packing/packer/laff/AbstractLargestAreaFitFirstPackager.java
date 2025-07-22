@@ -131,11 +131,23 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 		for(int i = 0; i < filteredBoxItems.size(); i++) {
 			BoxItem boxItem = filteredBoxItems.get(i);
 			if(!container.fitsInside(boxItem.getBox())) {
-				filteredBoxItems.remove(i);
-				i--;
-				
-				boxItemControls.declined(boxItem);
-				pointControls.declined(boxItem);
+				if(priority != Priority.NATURAL) {
+					filteredBoxItems.remove(i);
+					i--;
+					
+					boxItemControls.declined(boxItem);
+					pointControls.declined(boxItem);
+				} else {
+					// remove all later then the first removed
+
+					while(i < filteredBoxItems.size()) {
+						boxItem = filteredBoxItems.get(i);
+						filteredBoxItems.remove(i);
+						
+						boxItemControls.declined(boxItem);
+						pointControls.declined(boxItem);
+					}
+				}
 			}
 		}
 		
@@ -193,11 +205,23 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 						BoxItem boxItem = filteredBoxItems.get(i);
 						Box box = boxItem.getBox();
 						if(box.getVolume() > maxVolume || box.getMinimumArea() > maxArea) {
-							filteredBoxItems.remove(i);
-							i--;
-							
-							boxItemControls.declined(boxItem);
-							pointControls.declined(boxItem);
+							if(priority != Priority.NATURAL) {
+								filteredBoxItems.remove(i);
+								i--;
+								
+								boxItemControls.declined(boxItem);
+								pointControls.declined(boxItem);
+							} else {
+								// remove all later then the first removed
+
+								while(i < filteredBoxItems.size()) {
+									boxItem = filteredBoxItems.get(i);
+									filteredBoxItems.remove(i);
+									
+									boxItemControls.declined(boxItem);
+									pointControls.declined(boxItem);
+								}
+							}
 						}
 					}					
 					
@@ -228,11 +252,23 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 					BoxItem boxItem = filteredBoxItems.get(i);
 					Box box = boxItem.getBox();
 					if(box.getVolume() > remainingLoadVolume || box.getWeight() > remainingLoadWeight) {
-						filteredBoxItems.remove(i);
-						i--;
-						
-						boxItemControls.declined(boxItem);
-						pointControls.declined(boxItem);
+						if(priority != Priority.NATURAL) {
+							filteredBoxItems.remove(i);
+							i--;
+							
+							boxItemControls.declined(boxItem);
+							pointControls.declined(boxItem);
+						} else {
+							// remove all later then the first removed
+
+							while(i < filteredBoxItems.size()) {
+								boxItem = filteredBoxItems.get(i);
+								filteredBoxItems.remove(i);
+								
+								boxItemControls.declined(boxItem);
+								pointControls.declined(boxItem);
+							}
+						}
 					}
 				}
 				

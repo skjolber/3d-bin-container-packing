@@ -106,6 +106,7 @@ public class PlainPackager extends AbstractDefaultPackager {
 			.withExtremePoints(extremePoints)
 			.withBoxItems(boxItems, offset, length)
 			.withPointControls(pointControls)
+			.withPriority(priority)
 			.withStack(stack)
 			.withContainer(container)
 			.withIntermediatePlacementResultComparator(intermediatePlacementResultComparator)

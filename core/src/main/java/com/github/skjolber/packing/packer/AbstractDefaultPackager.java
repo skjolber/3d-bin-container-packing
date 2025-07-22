@@ -228,9 +228,13 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 				} else {
 					// remove all later then the first removed
 
-					
-					
-					
+					while(i < filteredBoxItems.size()) {
+						boxItem = filteredBoxItems.get(i);
+						filteredBoxItems.remove(i);
+						
+						boxItemControls.declined(boxItem);
+						pointControls.declined(boxItem);
+					}
 				}
 			}
 		}
@@ -247,7 +251,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 			if(interrupt.getAsBoolean()) {
 				throw new PackagerInterruptedException();
 			}
-			
+
 			IntermediatePlacementResult result = findBestPoint(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, extremePoints, stack);
 			if(result == null) {
 				break;
@@ -271,6 +275,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 			pointControls.accepted(result.getBoxItem());
 			
 			if(!filteredBoxItems.isEmpty()) {
+				
 				// remove items are too big according to total volume / weight
 				for(int i = 0; i < filteredBoxItems.size(); i++) {
 					BoxItem boxItem = filteredBoxItems.get(i);
@@ -284,8 +289,13 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 							pointControls.declined(boxItem);
 						} else {
 							// remove all later then the first removed
-							
-							
+							while(i < filteredBoxItems.size()) {
+								boxItem = filteredBoxItems.get(i);
+								filteredBoxItems.remove(i);
+								
+								boxItemControls.declined(boxItem);
+								pointControls.declined(boxItem);
+							}							
 						}
 					}
 				}
@@ -310,9 +320,14 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 								pointControls.declined(boxItem);
 							} else {
 								// remove all later then the first removed
-								
-								
-								
+
+								while(i < filteredBoxItems.size()) {
+									boxItem = filteredBoxItems.get(i);
+									filteredBoxItems.remove(i);
+									
+									boxItemControls.declined(boxItem);
+									pointControls.declined(boxItem);
+								}					
 							}
 						}
 					}				
@@ -351,17 +366,38 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 			for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
 				BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(i);
 				if(!container.fitsInside(boxItemGroup)) {
-					filteredBoxItemGroups.remove(i);
-					i--;
 					
-					for(int k = 0; k < boxItemGroup.size(); k++) {
-						boxItemControls.declined(boxItemGroup.get(k));
-						pointControls.declined(boxItemGroup.get(k));
-					}
+					if(priority != Priority.NATURAL) {
+						filteredBoxItemGroups.remove(i);
+						i--;
+						
+						for(int k = 0; k < boxItemGroup.size(); k++) {
+							boxItemControls.declined(boxItemGroup.get(k));
+							pointControls.declined(boxItemGroup.get(k));
+						}
+						
+						if(boxItemGroupControls != null) {
+							boxItemGroupControls.declined(boxItemGroup);
+						}
+
+					} else {
+						// remove all later then the first removed
+
+						while(i < filteredBoxItems.size()) {
+							filteredBoxItemGroups.remove(i);
+							i--;
+							
+							for(int k = 0; k < boxItemGroup.size(); k++) {
+								boxItemControls.declined(boxItemGroup.get(k));
+								pointControls.declined(boxItemGroup.get(k));
+							}
+							
+							if(boxItemGroupControls != null) {
+								boxItemGroupControls.declined(boxItemGroup);
+							}
+						}
+					}		
 					
-					if(boxItemGroupControls != null) {
-						boxItemGroupControls.declined(boxItemGroup);
-					}
 	
 				}
 			}
