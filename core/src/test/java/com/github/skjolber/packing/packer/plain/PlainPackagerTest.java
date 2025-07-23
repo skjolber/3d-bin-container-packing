@@ -17,6 +17,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.Priority;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
@@ -589,4 +590,93 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			packager.close();
 		}
 	}
+	
+	@Test
+	void testStackingPriority1() {
+
+		Container container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2, 5, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
+		
+		ContainerItem containerItem = new ContainerItem(container, 10);
+		
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+	
+			products.add(new BoxItem(Box.newBuilder().withId("0").withRotate3D().withSize(1, 5, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("1").withRotate3D().withSize(1, 3, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("2").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("3").withRotate3D().withSize(1, 4, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("4").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+	
+			PackagerResult build = packager.newResultBuilder()
+					.withContainerItem( b -> {
+						b.withContainerItem(containerItem);
+					})
+					.withBoxItems(products)
+					.withPriority(Priority.NATURAL)
+					.withMaxContainerCount(10)
+					.build();
+			assertValid(build);
+			
+			List<Container> containers = build.getContainers();
+			assertEquals(containers.size(), 2);
+			
+			int index = 0;
+			for (Container c : containers) {
+				for (StackPlacement stackPlacement : c.getStack().getPlacements()) {
+					assertEquals(stackPlacement.getStackValue().getBox().getId(), Integer.toString(index));
+					index++;
+				}
+			}
+		} finally {
+			packager.close();
+		}
+
+	}
+	
+
+	@Test
+	void testStackingPriority2() {
+
+		Container container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2, 5, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
+		
+		ContainerItem containerItem = new ContainerItem(container, 10);
+		
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+	
+			products.add(new BoxItem(Box.newBuilder().withId("0").withRotate3D().withSize(1, 5, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("1").withRotate3D().withSize(1, 3, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("2").withRotate3D().withSize(1, 4, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("3").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("4").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+	
+			PackagerResult build = packager.newResultBuilder()
+					.withContainerItem( b -> {
+						b.withContainerItem(containerItem);
+					})
+					.withBoxItems(products)
+					.withPriority(Priority.NATURAL_ALLOW_SKIPPING)
+					.withMaxContainerCount(10)
+					.build();
+			assertValid(build);
+			
+			List<Container> containers = build.getContainers();
+			assertEquals(containers.size(), 2);
+			
+			for (Container c : containers) {
+				int index = 0;
+				for (StackPlacement stackPlacement : c.getStack().getPlacements()) {
+					int n = Integer.parseInt(stackPlacement.getStackValue().getBox().getId());
+					assertTrue(n >= index);
+					index = n;
+				}
+			}
+		} finally {
+			packager.close();
+		}
+
+	}
+
 }

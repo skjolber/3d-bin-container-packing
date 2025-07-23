@@ -119,7 +119,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		return (B)this;
 	}
 
-	public B withItemGroupOrder(Priority order) {
+	public B withPriority(Priority order) {
 		this.priority = order;
 		return (B)this;
 	}

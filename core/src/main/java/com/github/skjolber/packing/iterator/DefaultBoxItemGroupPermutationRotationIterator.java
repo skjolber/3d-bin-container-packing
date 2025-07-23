@@ -306,7 +306,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 		return rotations;
 	}
 	
-	public List<BoxItemGroup> getGroups() {
+	public List<BoxItemGroup> getBoxItemGroups() {
 		return groups;
 	}
 

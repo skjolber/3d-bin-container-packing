@@ -124,7 +124,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 		}
 	}
 	
-	public List<BoxItemGroup> getGroups() {
+	public List<BoxItemGroup> getBoxItemGroups() {
 		return groups;
 	}
 	

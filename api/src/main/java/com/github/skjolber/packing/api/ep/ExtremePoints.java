@@ -11,7 +11,7 @@ public interface ExtremePoints extends FilteredPoints {
 	
 	boolean add(int index, StackPlacement placement);
 
-	List<Point> getValues();
+	List<Point> getAll();
 
 	void clearToSize(int dx, int dy, int dz);
 
@@ -19,13 +19,13 @@ public interface ExtremePoints extends FilteredPoints {
 	
 	List<StackPlacement> getPlacements();
 
-	long getUsedVolume();
+	long calculateUsedVolume();
 
-	long getUsedWeight();
+	long calculateUsedWeight();
 	
-	void setInitialPoints(List<Point> points);
+	void setPoints(List<Point> points);
 	
 	void setMinimumAreaAndVolumeLimit(long area, long volume);
 	
-	void reduce(Predicate<Point> test);
+	void remove(Predicate<Point> test);
 }

@@ -22,6 +22,7 @@ import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 import com.github.skjolber.packing.api.packager.IntermediatePlacementResult;
+import com.github.skjolber.packing.api.packager.PackagerBoxItems;
 import com.github.skjolber.packing.api.packager.PointControls;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -175,7 +176,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 				
 				DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, result.getStackValue().getDz() - 1 + levelOffset);
 				
-				extremePoints.setInitialPoints(Arrays.asList(levelFloor));
+				extremePoints.setPoints(Arrays.asList(levelFloor));
 				extremePoints.clear();
 				
 				levelOffset += result.getStackValue().getDz();
@@ -194,7 +195,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 
 					// prepare extreme points for a new level						
 					DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, container.getLoadDz() - 1);
-					extremePoints.setInitialPoints(Arrays.asList(levelFloor));
+					extremePoints.setPoints(Arrays.asList(levelFloor));
 					extremePoints.clear();
 					
 					// remove boxes which are too big for the max new level
@@ -290,10 +291,12 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 		
 		Stack stack = new Stack();
 
-		MarkResetExtremePoints3D extremePoints = new MarkResetExtremePoints3D();
+		MarkResetExtremePoints3D extremePoints = new MarkResetExtremePoints3D(true);
 		extremePoints.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		
-		DefaultBoxItemGroupFilteredBoxItems filteredBoxItems = new DefaultBoxItemGroupFilteredBoxItems(boxItemGroups);
+		PackagerBoxItems packagerBoxItems = new PackagerBoxItems(boxItemGroups);
+
+		FilteredBoxItems filteredBoxItems = packagerBoxItems.getFilteredBoxItems();
 
 		BoxItemControls boxItemControls = compositeContainerItem.createBoxItemControls(container, stack, filteredBoxItems, extremePoints);
 
@@ -301,7 +304,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 
 		BoxItemGroupControls boxItemGroupControls = boxItemControls instanceof BoxItemGroupControls ? (BoxItemGroupControls)boxItemControls : null;
 
-		InnerFilteredBoxItemGroup filteredBoxItemGroups = filteredBoxItems.getGroups();
+		FilteredBoxItemGroups filteredBoxItemGroups = packagerBoxItems.getFilteredBoxItemGroups();
 				
 		// remove boxes which do not fit due to volume, weight or stack value dimensions
 		for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
@@ -338,7 +341,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !extremePoints.isEmpty() && boxItemGroupIterator.hasNext()) {
 			int groupIndex = boxItemGroupIterator.next();
 			
-			int boxItemStartIndex = filteredBoxItems.getGroupStartIndex(groupIndex);
+			int boxItemStartIndex = packagerBoxItems.getFirstBoxItemIndexForGroup(groupIndex);
 			
 			BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(groupIndex);
 			boxItemGroup.mark();
@@ -361,7 +364,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 					
 					DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, bestPoint.getStackValue().getDz() - 1 + levelOffset);
 					
-					extremePoints.setInitialPoints(Arrays.asList(levelFloor));
+					extremePoints.setPoints(Arrays.asList(levelFloor));
 					extremePoints.clear();
 					
 					levelOffset += bestPoint.getStackValue().getDz();
@@ -380,14 +383,13 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 
 						// prepare extreme points for a new level						
 						DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, container.getLoadDz() - 1);
-						extremePoints.setInitialPoints(Arrays.asList(levelFloor));
+						extremePoints.setPoints(Arrays.asList(levelFloor));
 						extremePoints.clear();
 						
 						// remove groups which have boxes which are too big for the max level size
 						long maxArea = extremePoints.getMaxArea();
 						long maxVolume = extremePoints.getMaxVolume();
 						
-						g:
 						for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
 							BoxItemGroup g = filteredBoxItemGroups.get(i);
 
@@ -409,8 +411,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 									if(boxItemGroupControls != null) {
 										boxItemGroupControls.declined(boxItemGroup);
 									}
-									continue g;
-									
+									break;
 								}
 							}				
 						}
@@ -427,9 +428,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 				remainingLoadVolume -= bestPoint.getBoxItem().getBox().getVolume();
 				
 				// decrement box item without deleting the whole group
-				bestPoint.getBoxItem().decrement();
-				boxItemGroup.removeEmpty();
-				filteredBoxItems.removeEmpty(false);
+				packagerBoxItems.decrement(bestPoint.getIndex());
 				
 				boxItemControls.accepted(bestPoint.getBoxItem());
 				if(pointControls != null) {
@@ -462,15 +461,15 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 					extremePoints.setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());
 				}
 				
-				if(!filteredBoxItemGroups.contains(boxItemGroup)) {
+				if(!packagerBoxItems.contains(boxItemGroup)) {
 					// the current group was removed, assume packaging unsuccessful.
 					break;
 				}
 			}
 
-			boolean removed = !filteredBoxItemGroups.contains(boxItemGroup);
+			boolean removed = !packagerBoxItems.contains(boxItemGroup);
 			if(!removed) {
-				filteredBoxItemGroups.remove(boxItemGroup);
+				packagerBoxItems.remove(boxItemGroup);
 			}
 			
 			if(removed || !boxItemGroup.isEmpty()) {				
@@ -506,7 +505,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 				continue groups;
 			}
 			
-			if(container.getMaxLoadWeight() < extremePoints.getUsedWeight()) {
+			if(container.getMaxLoadWeight() < extremePoints.calculateUsedWeight()) {
 				throw new RuntimeException();
 			}
 			

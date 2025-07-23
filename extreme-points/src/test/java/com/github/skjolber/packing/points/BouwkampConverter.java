@@ -53,7 +53,7 @@ public class BouwkampConverter {
 
 			Point2D value = points.get(minY);
 			
-			if(value == null) throw new RuntimeException("No point at " + minY + ", got " + points.getValues());
+			if(value == null) throw new RuntimeException("No point at " + minY + ", got " + points.getAll());
 			
 			int offset = value.getMinX();
 
@@ -89,9 +89,9 @@ public class BouwkampConverter {
 
 		if(points.size() > 0) {
 			if(throwException) {
-				throw new IllegalStateException("Still have " + points.size() + ": " + points.getValues());
+				throw new IllegalStateException("Still have " + points.size() + ": " + points.getAll());
 			} else {
-				System.out.println("Still have " + points.size() + ": " + points.getValues());
+				System.out.println("Still have " + points.size() + ": " + points.getAll());
 			}
 		}
 
@@ -145,9 +145,9 @@ public class BouwkampConverter {
 
 		if(points.size() > 0) {
 			if(throwException) {
-				throw new IllegalStateException("Still have " + points.size() + ": " + points.getValues());
+				throw new IllegalStateException("Still have " + points.size() + ": " + points.getAll());
 			} else {
-				System.out.println("Still have " + points.size() + ": " + points.getValues());
+				System.out.println("Still have " + points.size() + ": " + points.getAll());
 			}
 		}
 
@@ -200,9 +200,9 @@ public class BouwkampConverter {
 
 		if(points.size() > 0) {
 			if(throwException) {
-				throw new IllegalStateException("Still have " + points.size() + ": " + points.getValues());
+				throw new IllegalStateException("Still have " + points.size() + ": " + points.getAll());
 			} else {
-				System.out.println("Still have " + points.size() + ": " + points.getValues());
+				System.out.println("Still have " + points.size() + ": " + points.getAll());
 			}
 		}
 
@@ -255,9 +255,9 @@ public class BouwkampConverter {
 
 		if(points.size() > 0) {
 			if(throwException) {
-				throw new IllegalStateException("Still have " + points.size() + ": " + points.getValues());
+				throw new IllegalStateException("Still have " + points.size() + ": " + points.getAll());
 			} else {
-				System.out.println("Still have " + points.size() + ": " + points.getValues());
+				System.out.println("Still have " + points.size() + ": " + points.getAll());
 			}
 		}
 

@@ -1438,7 +1438,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		return values.get(i);
 	}
 
-	public List<Point> getValues() {
+	public List<Point> getAll() {
 		return values.toList();
 	}
 
@@ -1530,7 +1530,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		minVolumeLimit = 0;
 	}
 	
-	public void setInitialPoints(List<Point> points) {
+	public void setPoints(List<Point> points) {
 		// transform coordinates to internal representation, i.e. with support etc
 		initialPoints = new ArrayList<>(points.size());
 		
@@ -1794,7 +1794,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		return minVolumeLimit;
 	}
 
-	public long getUsedVolume() {
+	public long calculateUsedVolume() {
 		long used = 0;
 		for (StackPlacement stackPlacement : placements) {
 			used += stackPlacement.getStackValue().getBox().getVolume();
@@ -1802,7 +1802,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		return used;
 	}
 	
-	public long getUsedWeight() {
+	public long calculateUsedWeight() {
 		long used = 0;
 		for (StackPlacement stackPlacement : placements) {
 			used += stackPlacement.getStackValue().getBox().getWeight();
@@ -1874,7 +1874,7 @@ public class ExtremePoints3D implements ExtremePoints {
 	}
 	
 	@Override
-	public void reduce(Predicate<Point> test) {
+	public void remove(Predicate<Point> test) {
 		for(int i = 0; i < values.size(); i++) {
 			if(!test.test(values.get(i))) {
 				values.flag(i);

@@ -11,7 +11,6 @@ public class DefaultFilteredBoxItems implements FilteredBoxItems {
 	protected List<BoxItem> values;
 	
 	public DefaultFilteredBoxItems(List<BoxItem> values) {
-		super();
 		this.values = new ArrayList<>(values);
 	}
 	

@@ -35,8 +35,8 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 				values.remove(startIndex);
 			}
 			
-			for(int i = startIndex; i < groupIndexes.length; i++) {
-				groupIndexes[i]--;
+			for(int i = startIndex; i < boxToGroupIndexes.length; i++) {
+				boxToGroupIndexes[i]--;
 			}
 			return group;
 		}
@@ -69,9 +69,9 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 		
 	};
 	
-	protected List<BoxItemGroup> groups;
 	protected List<BoxItem> values;
-	protected int[] groupIndexes;
+	protected List<BoxItemGroup> groups;
+	protected int[] boxToGroupIndexes;
 	
 	protected InnerFilteredBoxItemGroup filteredBoxItemGroups = new InnerFilteredBoxItemGroup();
 	
@@ -104,7 +104,7 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 	@Override
 	public BoxItem remove(int index) {
 		// also remove all boxes in the same group, and the box group itself.
-		int groupIndex = groupIndexes[index];
+		int groupIndex = boxToGroupIndexes[index];
 		
 		int startIndex = getGroupStartIndex(index, groupIndex);
 		BoxItemGroup group = groups.remove(groupIndex);
@@ -115,8 +115,8 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 			values.remove(startIndex);
 		}
 		
-		for(int i = startIndex; i < groupIndexes.length; i++) {
-			groupIndexes[i]--;
+		for(int i = startIndex; i < boxToGroupIndexes.length; i++) {
+			boxToGroupIndexes[i]--;
 		}		
 		
 		return item;
@@ -125,7 +125,7 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 	public int getGroupStartIndex(int index, int groupIndex) {
 		int startIndex = index;
 		while(startIndex > 0) {
-			if(groupIndexes[startIndex - 1] != groupIndex) {
+			if(boxToGroupIndexes[startIndex - 1] != groupIndex) {
 				break;
 			}
 			startIndex--;
@@ -151,13 +151,13 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 			values.addAll(group.getItems());
 		}
 		
-		groupIndexes = new int[values.size()];
+		boxToGroupIndexes = new int[values.size()];
 		int index = 0;
 		for(int i = 0; i < groups.size(); i++) {
 			BoxItemGroup group = groups.get(i);
 			
 			for(int k = 0; k < group.size(); k++) {
-				groupIndexes[index + k] = i;
+				boxToGroupIndexes[index + k] = i;
 			}
 			index += group.size();
 		}
@@ -172,7 +172,7 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 			if(values.get(i).isEmpty()) {
 				
 				if(group) {
-					int groupIndex = groupIndexes[i];
+					int groupIndex = boxToGroupIndexes[i];
 	
 					int startIndex = getGroupStartIndex(i, groupIndex);
 	
@@ -191,7 +191,7 @@ public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 	public Iterator<BoxItem> iterator() {
 		return values.listIterator();
 	}
-	
+
 	@Override
 	public InnerFilteredBoxItemGroup getGroups() {
 		return filteredBoxItemGroups;

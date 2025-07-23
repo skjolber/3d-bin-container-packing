@@ -87,7 +87,7 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 					} else {
 						extremePoints.add(pointIndex, placement);
 		
-						for (Point point : extremePoints.getValues()) {
+						for (Point point : extremePoints.getAll()) {
 							PointVisualizer p = new PointVisualizer();
 		
 							p.setX(point.getMinX());

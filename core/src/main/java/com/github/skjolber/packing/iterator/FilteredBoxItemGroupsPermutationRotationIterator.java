@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
  /**
@@ -76,7 +77,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 	protected final BoxItemGroupPermutationRotationIterator iterator;
 	
 	public FilteredBoxItemGroupsPermutationRotationIterator(BoxItemGroupPermutationRotationIterator iterator) {
-		super(iterator.getBoxItems(), iterator.getGroups());
+		super(iterator.getBoxItems(), iterator.getBoxItemGroups());
 		
 		permutations = new int[0]; // n!
 		
@@ -99,7 +100,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 		this.permutations = new int[permutations.length];
 		this.rotations = new int[permutations.length];
 		this.minBoxVolume = new long[permutations.length];
-		this.groups = iterator.getGroups();
+		this.groups = iterator.getBoxItemGroups();
 		
 		System.arraycopy(permutations, 0, this.permutations, 0, permutations.length);
 		System.arraycopy(iterator.getMinBoxVolume(), 0, minBoxVolume, 0, permutations.length);
@@ -238,7 +239,6 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 		return boxItem;
 	}
 
-	@Override
 	public void removeEmpty() {
 		int remainingCount = 0;
 		for (BoxItem boxItem : boxItems) {
@@ -287,6 +287,11 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 	@Override
 	public Iterator<BoxItem> iterator() {
 		return boxItems.listIterator();
+	}
+	
+	@Override
+	public FilteredBoxItemGroups getGroups() {
+		return iterator.getBoxItemGroups();
 	}
 
 }

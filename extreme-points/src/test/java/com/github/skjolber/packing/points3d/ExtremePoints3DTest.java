@@ -35,7 +35,7 @@ public class ExtremePoints3DTest {
 		ExtremePoints3D ep = new ExtremePoints3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
-		assertThat(ep.getValues()).hasSize(3);
+		assertThat(ep.getAll()).hasSize(3);
 
 		// y
 		// |
@@ -80,7 +80,7 @@ public class ExtremePoints3DTest {
 		ExtremePoints3D ep = new ExtremePoints3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 0, 0, 0));
-		assertThat(ep.getValues()).hasSize(3);
+		assertThat(ep.getAll()).hasSize(3);
 
 		assertThat(ep.get(0)).isMin(0, 0, 1);
 		assertThat(ep.get(1)).isMin(0, 1, 0);
@@ -94,7 +94,7 @@ public class ExtremePoints3DTest {
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 99, 9, 9));
 
-		assertThat(ep.getValues()).hasSize(2);
+		assertThat(ep.getAll()).hasSize(2);
 
 		assertThat(ep.get(0)).isMin(0, 0, 10);
 		assertThat(ep.get(0)).isXYSupportAt(99, 9);
@@ -114,7 +114,7 @@ public class ExtremePoints3DTest {
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 99, 9));
 
-		assertThat(ep.getValues()).hasSize(2);
+		assertThat(ep.getAll()).hasSize(2);
 
 		assertThat(ep.get(0)).isMin(0, 0, 10);
 		assertThat(ep.get(0)).isXYSupportAt(9, 99);
@@ -133,7 +133,7 @@ public class ExtremePoints3DTest {
 		ExtremePoints3D ep = new ExtremePoints3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 99));
-		assertThat(ep.getValues()).hasSize(2);
+		assertThat(ep.getAll()).hasSize(2);
 
 		assertThat(ep.get(0)).isMin(0, 10, 0);
 		assertThat(ep.get(0)).isXYSupportAt(99, 99);
@@ -152,7 +152,7 @@ public class ExtremePoints3DTest {
 		ExtremePoints3D ep = new ExtremePoints3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 99, 99, 99));
-		assertThat(ep.getValues()).hasSize(0);
+		assertThat(ep.getAll()).hasSize(0);
 	}
 
 	@ParameterizedTest
@@ -162,7 +162,7 @@ public class ExtremePoints3DTest {
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
-		assertThat(ep.getValues()).hasSize(3);
+		assertThat(ep.getAll()).hasSize(3);
 
 		assertThat(ep.get(0)).isMin(0, 0, 10);
 		assertThat(ep.get(1)).isMin(0, 10, 0);
@@ -202,7 +202,7 @@ public class ExtremePoints3DTest {
 		//          10    
 		//
 
-		assertThat(ep.getValues()).hasSize(5);
+		assertThat(ep.getAll()).hasSize(5);
 
 		assertThat(ep.get(0)).isMin(0, 0, 10);
 		assertThat(ep.get(0)).isXYSupportAt(9, 9);
@@ -237,11 +237,11 @@ public class ExtremePoints3DTest {
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 0));
 
-		assertThat(ep.getValues()).hasSize(3);
+		assertThat(ep.getAll()).hasSize(3);
 
 		ep.add(2, createStackPlacement(10, 0, 0, 19, 3, 0));
 
-		assertThat(ep.getValues()).hasSize(4);
+		assertThat(ep.getAll()).hasSize(4);
 
 		ep.add(3, createStackPlacement(20, 0, 0, 29, 6, 0));
 	}
@@ -253,7 +253,7 @@ public class ExtremePoints3DTest {
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
-		assertThat(ep.getValues()).hasSize(3);
+		assertThat(ep.getAll()).hasSize(3);
 
 		assertThat(ep.get(0)).isMin(0, 0, 10);
 		assertThat(ep.get(1)).isMin(0, 10, 0);
@@ -302,7 +302,7 @@ public class ExtremePoints3DTest {
 		//       4  10    
 		//
 
-		assertThat(ep.getValues()).hasSize(5);
+		assertThat(ep.getAll()).hasSize(5);
 
 		assertThat(ep.get(0)).isMin(0, 0, 20);
 		assertThat(ep.get(0)).isXYSupportAt(4, 4);
@@ -337,11 +337,11 @@ public class ExtremePoints3DTest {
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
-		assertThat(ep.getValues()).hasSize(3);
+		assertThat(ep.getAll()).hasSize(3);
 
 		ep.add(1, createStackPlacement(0, 10, 0, 4, 19, 4));
 
-		assertThat(ep.getValues()).hasSize(5);
+		assertThat(ep.getAll()).hasSize(5);
 
 		assertThat(ep.get(0)).isMin(0, 0, 10);
 		assertThat(ep.get(1)).isMin(0, 10, 5);
@@ -403,7 +403,7 @@ public class ExtremePoints3DTest {
 		// |-----|-------- x
 		//
 
-		assertThat(ep.getValues()).hasSize(3);
+		assertThat(ep.getAll()).hasSize(3);
 
 		assertThat(ep.get(0)).isMin(0, 0, 10);
 		assertThat(ep.get(0)).isXYSupportAt(9, 9);
@@ -470,7 +470,7 @@ public class ExtremePoints3DTest {
 		// *-----*---- x
 		//
 
-		assertThat(ep.getValues()).hasSize(3);
+		assertThat(ep.getAll()).hasSize(3);
 
 		assertThat(ep.get(0)).isMin(0, 0, 10);
 		assertThat(ep.get(0)).isXYSupportAt(9, 9);
@@ -520,7 +520,7 @@ public class ExtremePoints3DTest {
 		// |---------- x
 		//
 
-		assertThat(ep.getValues()).hasSize(3);
+		assertThat(ep.getAll()).hasSize(3);
 
 		assertThat(ep.get(0)).isMin(0, 0, 20);
 		assertThat(ep.get(0)).isXYSupportAt(9, 9);
@@ -545,11 +545,11 @@ public class ExtremePoints3DTest {
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
-		assertThat(ep.getValues()).hasSize(3);
+		assertThat(ep.getAll()).hasSize(3);
 
 		ep.add(2, createStackPlacement(10, 0, 0, 19, 19, 19));
 
-		assertThat(ep.getValues()).hasSize(5);
+		assertThat(ep.getAll()).hasSize(5);
 
 		//    y
 		//    |
@@ -605,7 +605,7 @@ public class ExtremePoints3DTest {
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
-		assertThat(ep.getValues()).hasSize(3);
+		assertThat(ep.getAll()).hasSize(3);
 
 		ep.add(1, createStackPlacement(0, 10, 0, 19, 19, 19));
 
@@ -648,7 +648,7 @@ public class ExtremePoints3DTest {
 		//          10    
 		//
 
-		assertThat(ep.getValues()).hasSize(5);
+		assertThat(ep.getAll()).hasSize(5);
 
 	}
 
@@ -659,7 +659,7 @@ public class ExtremePoints3DTest {
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
-		assertThat(ep.getValues()).hasSize(3);
+		assertThat(ep.getAll()).hasSize(3);
 
 		ep.add(0, createStackPlacement(0, 0, 10, 19, 19, 19));
 	}
@@ -671,11 +671,11 @@ public class ExtremePoints3DTest {
 		ep.setSize(100, 100, 100);
 		
 		Point levelPoint = new DefaultPoint3D(0, 0, 20, 99, 99, 99);
-		ep.setInitialPoints(Arrays.asList(levelPoint));
+		ep.setPoints(Arrays.asList(levelPoint));
 		ep.clear();
 		
 		ep.add(0, createStackPlacement(0, 0, 20, 9, 9, 29));
-		assertThat(ep.getValues()).hasSize(3);
+		assertThat(ep.getAll()).hasSize(3);
 
 		// y
 		// |

@@ -445,7 +445,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		seenLastPermutationMaxIndex = true;
 	}
 
-	public List<BoxItemGroup> getGroups() {
+	public List<BoxItemGroup> getBoxItemGroups() {
 		return groups;
 	}
 

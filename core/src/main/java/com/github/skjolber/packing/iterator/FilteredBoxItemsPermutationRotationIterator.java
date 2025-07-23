@@ -17,7 +17,7 @@ import com.github.skjolber.packing.api.packager.FilteredBoxItems;
  *
  */
 
-public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator implements FilteredBoxItems, BoxItemPermutationRotationIterator {
+public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator implements FilteredBoxItems {
 
 	public static Builder newBuilder() {
 		return new Builder();
@@ -235,7 +235,6 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 		return boxItem;
 	}
 
-	@Override
 	public void removeEmpty() {
 		int remainingCount = 0;
 		for (BoxItem boxItem : boxItems) {
@@ -288,7 +287,6 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 
 	@Override
 	public FilteredBoxItemGroups getGroups() {
-		// return empty
 		return null;
 	}
 

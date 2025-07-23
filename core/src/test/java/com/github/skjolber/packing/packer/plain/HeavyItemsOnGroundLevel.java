@@ -71,6 +71,7 @@ public class HeavyItemsOnGroundLevel extends DefaultPointControls {
 		}
 		
 		if(isHeavyBoxes()) {
+			// alternatively make point comparator perform the same
 			return EmptyFilteredPoints.getInstance();
 		}
 		

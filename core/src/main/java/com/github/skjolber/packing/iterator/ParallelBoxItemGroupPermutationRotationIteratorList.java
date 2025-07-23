@@ -89,7 +89,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 
 	private void calculate() {
 		int count = workUnits[0].getCount();
-		List<BoxItemGroup> groups = workUnits[0].getGroups();
+		List<BoxItemGroup> groups = workUnits[0].getBoxItemGroups();
 
 		if(count == 0) {
 			return;
@@ -327,8 +327,8 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	}
 
 	@Override
-	public List<BoxItemGroup> getGroups() {
-		return workUnits[workUnitIndex].getGroups();
+	public List<BoxItemGroup> getBoxItemGroups() {
+		return workUnits[workUnitIndex].getBoxItemGroups();
 	}
 
 }

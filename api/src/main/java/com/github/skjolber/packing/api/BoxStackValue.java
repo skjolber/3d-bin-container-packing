@@ -3,8 +3,6 @@ package com.github.skjolber.packing.api;
 import java.util.List;
 
 public class BoxStackValue {
-
-	protected Box box;
 	
 	protected final int dx; // width
 	protected final int dy; // depth
@@ -16,6 +14,7 @@ public class BoxStackValue {
 	protected long volume;
 	
 	protected final int index;
+	protected Box box;
 
 	public BoxStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index) {
 		this.dx = dx;
