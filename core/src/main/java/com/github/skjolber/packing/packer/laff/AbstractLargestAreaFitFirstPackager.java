@@ -16,8 +16,6 @@ import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.packager.BoxItemControls;
 import com.github.skjolber.packing.api.packager.BoxItemGroupControls;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
-import com.github.skjolber.packing.api.packager.DefaultBoxItemGroupFilteredBoxItems;
-import com.github.skjolber.packing.api.packager.DefaultBoxItemGroupFilteredBoxItems.InnerFilteredBoxItemGroup;
 import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
@@ -35,6 +33,8 @@ import com.github.skjolber.packing.packer.AbstractDefaultPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.ComparatorIntermediatePlacementResultBuilderFactory;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
+import com.github.skjolber.packing.packer.EmptyPackagerResultAdapter;
+import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
@@ -114,7 +114,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 		this.firstIntermediatePlacementResultComparator = firstIntermediatePlacementResultComparator;
 	}
 
-	public DefaultIntermediatePackagerResult pack(List<BoxItem> boxItems, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt, Priority priority) throws PackagerInterruptedException {
+	public IntermediatePackagerResult pack(List<BoxItem> boxItems, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt, Priority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		ContainerItem containerItem = compositeContainerItem.getContainerItem();
 		Container container = containerItem.getContainer();
 
@@ -132,6 +132,10 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 		for(int i = 0; i < filteredBoxItems.size(); i++) {
 			BoxItem boxItem = filteredBoxItems.get(i);
 			if(!container.fitsInside(boxItem.getBox())) {
+				if(abortOnAnyBoxTooBig) {
+					return EmptyPackagerResultAdapter.EMPTY;
+				}
+				
 				if(priority != Priority.NATURAL) {
 					filteredBoxItems.remove(i);
 					i--;
@@ -206,6 +210,10 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 						BoxItem boxItem = filteredBoxItems.get(i);
 						Box box = boxItem.getBox();
 						if(box.getVolume() > maxVolume || box.getMinimumArea() > maxArea) {
+							if(abortOnAnyBoxTooBig) {
+								return EmptyPackagerResultAdapter.EMPTY;
+							}
+							
 							if(priority != Priority.NATURAL) {
 								filteredBoxItems.remove(i);
 								i--;
@@ -253,6 +261,11 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 					BoxItem boxItem = filteredBoxItems.get(i);
 					Box box = boxItem.getBox();
 					if(box.getVolume() > remainingLoadVolume || box.getWeight() > remainingLoadWeight) {
+						
+						if(abortOnAnyBoxTooBig) {
+							return EmptyPackagerResultAdapter.EMPTY;
+						}
+						
 						if(priority != Priority.NATURAL) {
 							filteredBoxItems.remove(i);
 							i--;
@@ -285,7 +298,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 
 	protected abstract ExtremePoints createExtremePoints();
 
-	public DefaultIntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Priority priority, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt) {
+	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Priority priority, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
 		ContainerItem containerItem = compositeContainerItem.getContainerItem();
 		Container container = containerItem.getContainer();
 		
@@ -310,6 +323,10 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 		for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
 			BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(i);
 			if(!container.fitsInside(boxItemGroup)) {
+				if(abortOnAnyBoxTooBig) {
+					return EmptyPackagerResultAdapter.EMPTY;
+				}
+				
 				filteredBoxItemGroups.remove(i);
 				i--;
 				
@@ -398,6 +415,10 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 								Box box = boxItem.getBox();
 								if(box.getVolume() > maxVolume || box.getMinimumArea() > maxArea) {
 
+									if(abortOnAnyBoxTooBig) {
+										return EmptyPackagerResultAdapter.EMPTY;
+									}
+									
 									filteredBoxItemGroups.remove(i);
 									i--;
 									
@@ -441,6 +462,11 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 					for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
 						BoxItemGroup g = filteredBoxItemGroups.get(i);
 						if(g.getVolume() > remainingLoadVolume || g.getWeight() > remainingLoadWeight) {
+							
+							if(abortOnAnyBoxTooBig) {
+								return EmptyPackagerResultAdapter.EMPTY;
+							}
+							
 							filteredBoxItemGroups.remove(i);
 							i--;
 							
@@ -475,6 +501,10 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractDefaul
 			if(removed || !boxItemGroup.isEmpty()) {				
 				boxItemGroup.reset();
 
+				if(abortOnAnyBoxTooBig) {
+					return EmptyPackagerResultAdapter.EMPTY;
+				}
+				
 				for(int i = markStackSize; i < stack.size(); i++) {
 					boxItemControls.undo(stack.getPlacements().get(i).getStackValue().getBox().getBoxItem());
 				}

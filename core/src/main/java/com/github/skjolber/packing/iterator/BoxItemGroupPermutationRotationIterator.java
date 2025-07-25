@@ -41,4 +41,6 @@ public interface BoxItemGroupPermutationRotationIterator extends BoxItemPermutat
 	
 	List<BoxItemGroup> getBoxItemGroups();
 	
+	
+	
 }

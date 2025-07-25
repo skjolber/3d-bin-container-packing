@@ -16,8 +16,6 @@ import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.packager.BoxItemControls;
 import com.github.skjolber.packing.api.packager.BoxItemGroupControls;
 import com.github.skjolber.packing.api.packager.CompositeContainerItem;
-import com.github.skjolber.packing.api.packager.DefaultBoxItemGroupFilteredBoxItems;
-import com.github.skjolber.packing.api.packager.DefaultBoxItemGroupFilteredBoxItems.InnerFilteredBoxItemGroup;
 import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
@@ -34,15 +32,15 @@ import com.github.skjolber.packing.iterator.BoxItemGroupIterator;
  * Fit boxes into container, i.e. perform bin packing to a single container.
  * <br>
  * <br>
- * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
+ * Thread-safe implementation.
  */
-public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIntermediatePackagerResult, DefaultPackagerResultBuilder> {
+public abstract class AbstractDefaultPackager extends AbstractPackager<IntermediatePackagerResult, DefaultPackagerResultBuilder> {
 
 	public AbstractDefaultPackager(IntermediatePackagerResultComparator comparator) {
 		super(comparator);
 	}
 
-	protected class DefaultBoxItemAdapter extends AbstractPackagerAdapter<DefaultIntermediatePackagerResult> {
+	protected class DefaultBoxItemAdapter extends AbstractPackagerAdapter<IntermediatePackagerResult> {
 
 		private List<BoxItem> remainingBoxItems;
 		private final PackagerInterruptSupplier interrupt;
@@ -63,9 +61,9 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 		}
 
 		@Override
-		public DefaultIntermediatePackagerResult attempt(int index, DefaultIntermediatePackagerResult best) throws PackagerInterruptedException {
+		public IntermediatePackagerResult attempt(int index, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			try {
-				return AbstractDefaultPackager.this.pack(remainingBoxItems, containerItems.get(index), interrupt, priority);
+				return AbstractDefaultPackager.this.pack(remainingBoxItems, containerItems.get(index), interrupt, priority, false);
 			} finally {
 				for(BoxItem boxItem : remainingBoxItems) {
 					boxItem.reset();
@@ -74,7 +72,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 		}
 
 		@Override
-		public Container accept(DefaultIntermediatePackagerResult result) {
+		public Container accept(IntermediatePackagerResult result) {
 			Container container = super.toContainer(result.getContainerItem(), result.getStack());
 
 			Stack stack = container.getStack();
@@ -113,7 +111,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 
 	}
 	
-	protected class DefaultBoxItemGroupAdapter extends AbstractPackagerAdapter<DefaultIntermediatePackagerResult> {
+	protected class DefaultBoxItemGroupAdapter extends AbstractPackagerAdapter<IntermediatePackagerResult> {
 
 		private List<BoxItemGroup> remainingBoxItemGroups;
 		private final PackagerInterruptSupplier interrupt;
@@ -136,9 +134,9 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 		}
 
 		@Override
-		public DefaultIntermediatePackagerResult attempt(int index, DefaultIntermediatePackagerResult best) throws PackagerInterruptedException {
+		public IntermediatePackagerResult attempt(int index, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			try {
-				return AbstractDefaultPackager.this.packGroup(remainingBoxItemGroups, priority, containerItems.get(index), interrupt);
+				return AbstractDefaultPackager.this.packGroup(remainingBoxItemGroups, priority, containerItems.get(index), interrupt, false);
 			} finally {
 				for(BoxItemGroup group : remainingBoxItemGroups) {
 					group.reset();
@@ -147,7 +145,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 		}
 
 		@Override
-		public Container accept(DefaultIntermediatePackagerResult result) {
+		public Container accept(IntermediatePackagerResult result) {
 			Container container = super.toContainer(result.getContainerItem(), result.getStack());
 
 			Stack stack = container.getStack();
@@ -187,12 +185,12 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 	}
 
 	@Override
-	protected PackagerAdapter<DefaultIntermediatePackagerResult> adapter(List<BoxItem> boxItems, Priority priority, List<CompositeContainerItem> containers, PackagerInterruptSupplier interrupt) {
+	protected PackagerAdapter<IntermediatePackagerResult> adapter(List<BoxItem> boxItems, Priority priority, List<CompositeContainerItem> containers, PackagerInterruptSupplier interrupt) {
 		return new DefaultBoxItemAdapter(boxItems, priority, containers, interrupt);
 	}
 	
 	@Override
-	protected PackagerAdapter<DefaultIntermediatePackagerResult> groupAdapter(List<BoxItemGroup> boxes, List<CompositeContainerItem> containers, Priority priority, PackagerInterruptSupplier interrupt) {
+	protected PackagerAdapter<IntermediatePackagerResult> groupAdapter(List<BoxItemGroup> boxes, List<CompositeContainerItem> containers, Priority priority, PackagerInterruptSupplier interrupt) {
 		return new DefaultBoxItemGroupAdapter(boxes, containers, priority, interrupt);
 	}
 
@@ -201,7 +199,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 		return new DefaultPackagerResultBuilder().withPackager(this);
 	}
 
-	public DefaultIntermediatePackagerResult pack(List<BoxItem> boxItems, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt, Priority priority) throws PackagerInterruptedException {
+	public IntermediatePackagerResult pack(List<BoxItem> boxItems, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt, Priority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		ContainerItem containerItem = compositeContainerItem.getContainerItem();
 		Container container = containerItem.getContainer();
 
@@ -220,6 +218,10 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 			BoxItem boxItem = filteredBoxItems.get(i);
 			if(!container.fitsInside(boxItem.getBox())) {
 
+				if(abortOnAnyBoxTooBig) {
+					return EmptyPackagerResultAdapter.EMPTY;
+				}
+				
 				if(priority != Priority.NATURAL) {
 					filteredBoxItems.remove(i);
 					i--;
@@ -282,6 +284,11 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 					BoxItem boxItem = filteredBoxItems.get(i);
 					Box box = boxItem.getBox();
 					if(box.getVolume() > remainingLoadVolume || box.getWeight() > remainingLoadWeight) {
+						
+						if(abortOnAnyBoxTooBig) {
+							return EmptyPackagerResultAdapter.EMPTY;
+						}
+						
 						if(priority != Priority.NATURAL) {
 							filteredBoxItems.remove(i);
 							i--;
@@ -313,6 +320,11 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 						BoxItem boxItem = filteredBoxItems.get(i);
 						Box box = boxItem.getBox();
 						if(box.getVolume() > maxPointVolume || box.getMinimumArea() > maxPointArea) {
+							
+							if(abortOnAnyBoxTooBig) {
+								return EmptyPackagerResultAdapter.EMPTY;
+							}
+							
 							if(priority != Priority.NATURAL) {
 								filteredBoxItems.remove(i);
 								i--;
@@ -342,7 +354,7 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 	}
 
 
-	public DefaultIntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Priority priority, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt) {
+	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Priority priority, CompositeContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
 		ContainerItem containerItem = compositeContainerItem.getContainerItem();
 		Container container = containerItem.getContainer();
 		
@@ -369,7 +381,9 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 			for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
 				BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(i);
 				if(!container.fitsInside(boxItemGroup)) {
-					
+					if(abortOnAnyBoxTooBig) {
+						return EmptyPackagerResultAdapter.EMPTY;
+					}
 					if(priority != Priority.NATURAL) {
 						filteredBoxItemGroups.remove(i);
 						i--;
@@ -458,6 +472,11 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 					for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
 						BoxItemGroup g = filteredBoxItemGroups.get(i);
 						if(g.getVolume() > remainingLoadVolume || g.getWeight() > remainingLoadWeight) {
+							
+							if(abortOnAnyBoxTooBig) {
+								return EmptyPackagerResultAdapter.EMPTY;
+							}
+							
 							filteredBoxItemGroups.remove(i);
 							i--;
 							
@@ -489,6 +508,10 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 								Box box = boxItem.getBox();
 								if(box.getVolume() > maxPointVolume || box.getMinimumArea() > maxPointArea) {
 	
+									if(abortOnAnyBoxTooBig) {
+										return EmptyPackagerResultAdapter.EMPTY;
+									}
+									
 									filteredBoxItemGroups.remove(i);
 									i--;
 									
@@ -521,6 +544,10 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 			
 			if(removed || !boxItemGroup.isEmpty()) {				
 				boxItemGroup.reset();
+				
+				if(abortOnAnyBoxTooBig) {
+					return EmptyPackagerResultAdapter.EMPTY;
+				}
 
 				// undo any work on this group
 				for(int i = markStackSize; i < stack.size(); i++) {
@@ -551,6 +578,12 @@ public abstract class AbstractDefaultPackager extends AbstractPackager<DefaultIn
 			if(container.getMaxLoadWeight() < extremePoints.calculateUsedWeight()) {
 				throw new RuntimeException();
 			}
+			
+			
+			// TODO
+			// remove points which are invalid for use with a new group
+			// i.e. inner points which cannot be accessed without moving
+			// something else.
 			
 			// successfully stacked group
 			boxItemGroup.reset();

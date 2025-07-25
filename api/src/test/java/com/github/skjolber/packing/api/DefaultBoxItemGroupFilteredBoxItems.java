@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.api.packager;
+package com.github.skjolber.packing.api;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -6,6 +6,8 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
+import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
 public class DefaultBoxItemGroupFilteredBoxItems implements FilteredBoxItems {
 

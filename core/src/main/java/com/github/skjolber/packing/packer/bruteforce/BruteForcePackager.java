@@ -140,7 +140,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		@Override
-		public BruteForceIntermediatePackagerResult attempt(int i, BruteForceIntermediatePackagerResult best) throws PackagerInterruptedException {
+		public BruteForceIntermediatePackagerResult attempt(int i, BruteForceIntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}

@@ -108,7 +108,7 @@ public class AbstractPackagerAdapterTest {
 		return new AbstractPackagerAdapter<IntermediatePackagerResult>(composite) {
 
 			@Override
-			public IntermediatePackagerResult attempt(int containerIndex, IntermediatePackagerResult best) {
+			public IntermediatePackagerResult attempt(int containerIndex, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) {
 				throw new RuntimeException();
 			}
 

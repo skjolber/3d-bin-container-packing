@@ -260,7 +260,6 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 			return Collections.emptyList();
 		}
 
-
 		List<Integer> list = new ArrayList<>(containerItems.size());
 
 		if(maxCount == 1) {
