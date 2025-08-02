@@ -11,26 +11,8 @@ import com.github.skjolber.packing.api.ep.FilteredPoints;
  * 
  */
 
-public interface PointControls {
+public interface PointControls extends ManifestListener {
 
 	FilteredPoints getFilteredPoints(BoxItem boxItem);
-
-	/**
-	 * 
-	 * Notify box was loaded. 
-	 * 
-	 * @param boxItem {@linkplain BoxItem} to be added.
-	 */
-	
-	void accepted(BoxItem boxItem);
-	
-	/**
-	 * 
-	 * Notify box cannot be fitted.
-	 * 
-	 * @param boxItem {@linkplain FilteredBoxBoxItemGroupItems}
-	 */
-	
-	void declined(BoxItem boxItem);
 
 }

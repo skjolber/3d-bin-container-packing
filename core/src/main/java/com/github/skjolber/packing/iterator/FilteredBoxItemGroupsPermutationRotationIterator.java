@@ -65,13 +65,12 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 																	.withLoadSize(size)
 																	.withMaxLoadWeight(maxLoadWeight)
 																	.withBoxItemGroups(boxItemGroups)
-																	.withFilter(filter)
 																	.build();
 			
 			return new FilteredBoxItemGroupsPermutationRotationIterator(iterator);
 		}
 	}
-	
+
 	protected List<BoxItem> boxItems;
 	
 	protected final BoxItemGroupPermutationRotationIterator iterator;
@@ -86,7 +85,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 		resetFromIterator();
 	}
 	
-	public void resetFromIterator() {
+	protected void resetFromIterator() {
 		boxItems = new ArrayList<>();
 		for (int i = 0; i < stackableItems.length; i++) {
 			BoxItem loadableItem = stackableItems[i];

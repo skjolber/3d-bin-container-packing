@@ -360,11 +360,11 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			List<BoxItem> products = new ArrayList<>();
 	
 			products.add(new BoxItem(Box.newBuilder().withId("petrol-1").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withId("matches-2").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("lighter-2").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
-				b.withBoxItemControlsBuilderFactory(NoMatchesWithPetrolBoxItemListener.newFactory());
+				b.withBoxItemControlsBuilderFactory(NoLightersWithPetrolBoxItemListener.newFactory());
 			})
 					.withMaxContainerCount(5)
 					.withBoxItems(products)
@@ -377,7 +377,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				assertEquals(c.getStack().size(), 1);
 			}
 			
-			assertEquals(containers.get(0).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "matches-2");
+			assertEquals(containers.get(0).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "lighter-2");
 			assertEquals(containers.get(1).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "petrol-1");
 			
 			assertValid(build);
@@ -613,7 +613,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 						b.withContainerItem(containerItem);
 					})
 					.withBoxItems(products)
-					.withPriority(Priority.NATURAL)
+					.withPriority(Priority.CRONOLOGICAL)
 					.withMaxContainerCount(10)
 					.build();
 			assertValid(build);
@@ -657,7 +657,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 						b.withContainerItem(containerItem);
 					})
 					.withBoxItems(products)
-					.withPriority(Priority.NATURAL_ALLOW_SKIPPING)
+					.withPriority(Priority.CRONOLOGICAL_ALLOW_SKIPPING)
 					.withMaxContainerCount(10)
 					.build();
 			assertValid(build);

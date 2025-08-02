@@ -11,16 +11,19 @@ import com.github.skjolber.packing.api.ep.FilteredPoints;
  * 
  */
 
-public class CompositeContainerItem {
+public class ControlContainerItem extends ContainerItem {
 
-	protected final ContainerItem containerItem;
+	public ControlContainerItem(Container container, int count) {
+		super(container, count);
+	}
+	
+	public ControlContainerItem(ContainerItem containerItem) {
+		super(containerItem.getContainer(), containerItem.getCount());
+	}
+
 	protected BoxItemControlsBuilderFactory boxItemControlsBuilderFactory;
 	protected PointControlsBuilderFactory pointControlsBuilderFactory;
 
-	public CompositeContainerItem(ContainerItem containerItem) {
-		this.containerItem = containerItem;
-	}
-	
 	public void setPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory) {
 		this.pointControlsBuilderFactory = pointControlsBuilderFactory;
 	}
@@ -36,24 +39,6 @@ public class CompositeContainerItem {
 	public BoxItemControlsBuilderFactory getBoxItemControlsBuilderFactory() {
 		return boxItemControlsBuilderFactory;
 	}
-	
-	public ContainerItem getContainerItem() {
-		return containerItem;
-	}
-
-	/*
-	public BoxItemGroupControls createBoxItemGroupControls(Container container, Stack stack, FilteredBoxItemGroups groups, FilteredPoints points) {
-		if(boxItemGroupControlsBuilderFactory == null) {
-			return new DefaultBoxItemGroupControls(groups);
-		}
-		return boxItemGroupControlsBuilderFactory.createBoxItemGroupControlsBuilder()
-				.withContainer(container)
-				.withStack(stack)
-				.withFilteredBoxItemGroups(groups)
-				.withPoints(points)
-				.build();
-	}
-	*/
 
 	public BoxItemControls createBoxItemControls(Container container, Stack stack, FilteredBoxItems filteredBoxItems, FilteredPoints points) {
 		if(boxItemControlsBuilderFactory == null) {

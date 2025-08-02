@@ -11,13 +11,13 @@ import com.github.skjolber.packing.api.packager.BoxItemControls;
 import com.github.skjolber.packing.api.packager.BoxItemControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
-public class NoMatchesWithPetrolBoxItemListener implements BoxItemControls {
+public class NoLightersWithPetrolBoxItemListener implements BoxItemControls {
 
 	public static class Builder extends AbstractBoxItemControlsBuilder<Builder> {
 
 		@Override
 		public BoxItemControls build() {
-			return new NoMatchesWithPetrolBoxItemListener(container, items, points, stack);
+			return new NoLightersWithPetrolBoxItemListener(container, items, points, stack);
 		}
 
 	}
@@ -27,7 +27,7 @@ public class NoMatchesWithPetrolBoxItemListener implements BoxItemControls {
 	}
 	
 	public static BoxItemControlsBuilderFactory newFactory() {
-		return () -> NoMatchesWithPetrolBoxItemListener.newBuilder();
+		return () -> NoLightersWithPetrolBoxItemListener.newBuilder();
 	}
 	
 	protected final Container container;
@@ -37,7 +37,7 @@ public class NoMatchesWithPetrolBoxItemListener implements BoxItemControls {
 	protected boolean matches = false;
 	protected boolean petrol = false;
 
-	public NoMatchesWithPetrolBoxItemListener(Container container, FilteredBoxItems items, FilteredPoints filteredPoints, Stack stack) {
+	public NoLightersWithPetrolBoxItemListener(Container container, FilteredBoxItems items, FilteredPoints filteredPoints, Stack stack) {
 		this.container = container;
 		this.items = items;
 		this.stack = stack;
@@ -48,7 +48,7 @@ public class NoMatchesWithPetrolBoxItemListener implements BoxItemControls {
 		// do nothing
 		
 		if(!matches) {
-			matches = isMatches(group);
+			matches = isLighter(group);
 			
 			if(matches) {
 				// remove groups which contain petrol
@@ -61,7 +61,7 @@ public class NoMatchesWithPetrolBoxItemListener implements BoxItemControls {
 			if(petrol) {
 				// remove groups which contain matches
 				
-				remove(this::isMatches);
+				remove(this::isLighter);
 			}
 		}
 	}
@@ -81,13 +81,8 @@ public class NoMatchesWithPetrolBoxItemListener implements BoxItemControls {
 		return item.getBox().getId().startsWith("petrol-");
 	}
 
-	private boolean isMatches(BoxItem item) {
-		return item.getBox().getId().startsWith("matches-");
-	}
-
-	@Override
-	public void declined(BoxItem group) {
-		// do nothing
+	private boolean isLighter(BoxItem item) {
+		return item.getBox().getId().startsWith("lighter-");
 	}
 
 }

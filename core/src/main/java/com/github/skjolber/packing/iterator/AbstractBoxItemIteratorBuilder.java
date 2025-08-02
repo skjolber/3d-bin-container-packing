@@ -19,7 +19,6 @@ import com.github.skjolber.packing.api.Dimension;
 public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIteratorBuilder<B>> {
 
 	protected int maxLoadWeight = -1;
-	protected Predicate<Box> filter;
 	protected Dimension size;
 	protected List<BoxItem> boxItems;
 
@@ -31,12 +30,6 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 
 	public B withLoadSize(Dimension dimension) {
 		this.size = dimension;
-
-		return (B)this;
-	}
-
-	public B withFilter(Predicate<Box> filter) {
-		this.filter = filter;
 
 		return (B)this;
 	}
@@ -74,10 +67,6 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 
 			List<BoxStackValue> boundRotations = box.rotations(size);
 			if(boundRotations == null || boundRotations.isEmpty()) {
-				continue;
-			}
-
-			if(filter != null && !filter.test(box)) {
 				continue;
 			}
 			

@@ -46,8 +46,14 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	private int lastPermutationMaxIndex = -1;
 	private boolean seenLastPermutationMaxIndex = false;
 
-	public ParallelBoxItemGroupPermutationRotationIterator(BoxItem[] matrix, List<BoxItemGroup> groups) {
-		super(matrix, groups);
+	private List<BoxItemGroup> allGroups;
+	private List<Integer> excluded;
+
+	public ParallelBoxItemGroupPermutationRotationIterator(List<BoxItemGroup> groups, List<BoxItemGroup> included, BoxItem[] matrix, List<Integer> excluded) {
+		super(matrix, included);
+		
+		this.allGroups = groups;
+		this.excluded = excluded;
 	}
 
 	public long preventOptmisation() {
@@ -446,7 +452,10 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	}
 
 	public List<BoxItemGroup> getBoxItemGroups() {
-		return groups;
+		return allGroups;
 	}
-
+	
+	public List<Integer> getExcluded() {
+		return excluded;
+	}
 }

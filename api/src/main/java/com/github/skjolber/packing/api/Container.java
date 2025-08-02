@@ -13,11 +13,6 @@ public class Container {
 		protected int emptyWeight = -1;
 		protected Stack stack;
 
-		public Builder withFixedStack(Stack stack) {
-			this.stack = stack;
-			return this;
-		}
-
 		public Builder withStack(Stack stack) {
 			this.stack = stack;
 			return this;

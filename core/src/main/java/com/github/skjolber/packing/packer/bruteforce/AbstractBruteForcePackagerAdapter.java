@@ -3,7 +3,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.packager.CompositeContainerItem;
+import com.github.skjolber.packing.api.packager.ControlContainerItem;
 import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
@@ -17,7 +17,7 @@ public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackager
 	protected BoxItem[] boxItems;
 	protected FilteredBoxItems filteredBoxItems;
 	
-	public AbstractBruteForcePackagerAdapter(List<CompositeContainerItem> items, List<BoxItem> boxItems) {
+	public AbstractBruteForcePackagerAdapter(List<ControlContainerItem> items, List<BoxItem> boxItems) {
 		super(items);
 		
 		this.boxes = new Box[boxItems.size()];

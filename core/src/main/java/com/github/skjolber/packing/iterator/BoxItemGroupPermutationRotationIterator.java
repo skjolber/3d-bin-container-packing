@@ -39,8 +39,6 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 
 public interface BoxItemGroupPermutationRotationIterator extends BoxItemPermutationRotationIterator {
 	
-	List<BoxItemGroup> getBoxItemGroups();
-	
-	
-	
+
+
 }

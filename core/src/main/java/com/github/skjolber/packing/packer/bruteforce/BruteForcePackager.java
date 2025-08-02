@@ -12,7 +12,7 @@ import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.Priority;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.packager.CompositeContainerItem;
+import com.github.skjolber.packing.api.packager.ControlContainerItem;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -81,7 +81,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		private final ExtremePoints3DStack extremePoints;
 		private List<StackPlacement> stackPlacements;
 
-		public BruteForceAdapter(List<CompositeContainerItem> containerItems, List<BoxItem> boxItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
+		public BruteForceAdapter(List<ControlContainerItem> containerItems, List<BoxItem> boxItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(containerItems, boxItems);
 			
 			this.containerIterators = containerIterators;
@@ -159,11 +159,11 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected BruteForceAdapter adapter(List<BoxItem> boxItems, Priority priority, List<CompositeContainerItem> containers, PackagerInterruptSupplier interrupt) {
+	protected BruteForceAdapter adapter(List<BoxItem> boxItems, Priority priority, List<ControlContainerItem> containers, PackagerInterruptSupplier interrupt) {
 		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[containers.size()];
 
 		for (int i = 0; i < containers.size(); i++) {
-			CompositeContainerItem compositeContainerItem = containers.get(i);
+			ControlContainerItem compositeContainerItem = containers.get(i);
 			ContainerItem containerItem = compositeContainerItem.getContainerItem();
 			Container container = containerItem.getContainer();
 
@@ -187,7 +187,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected PackagerAdapter<BruteForceIntermediatePackagerResult> groupAdapter(List<BoxItemGroup> boxes, List<CompositeContainerItem> containers, Priority order, PackagerInterruptSupplier interrupt) {
+	protected PackagerAdapter<BruteForceIntermediatePackagerResult> groupAdapter(List<BoxItemGroup> boxes, List<ControlContainerItem> containers, Priority order, PackagerInterruptSupplier interrupt) {
 		return null;
 	}
 

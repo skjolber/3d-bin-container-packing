@@ -7,6 +7,9 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 
+import com.github.skjolber.packing.api.AbstractControlsPackagerResultBuilder;
+import com.github.skjolber.packing.api.AbstractDefaultPackagerResultBuilder;
+import com.github.skjolber.packing.api.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
@@ -120,11 +123,18 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 					.withContainer(container, 1)
 					.build();
 
-			PackagerResult build = packager
-					.newResultBuilder()
-					.withContainerItems(containers)
-					.withBoxItems(singletonList(new BoxItem(box, count)))
-					.build();
+			AbstractPackagerResultBuilder builder = packager.newResultBuilder()
+					.withBoxItems(singletonList(new BoxItem(box, count)));
+			
+			if(builder instanceof AbstractDefaultPackagerResultBuilder) {
+				AbstractDefaultPackagerResultBuilder b = (AbstractDefaultPackagerResultBuilder)builder;
+				builder = b.withContainerItems(containers);
+			} else if(builder instanceof AbstractControlsPackagerResultBuilder) {
+				AbstractControlsPackagerResultBuilder b = (AbstractControlsPackagerResultBuilder)builder;
+				builder = b.withContainerItems(containers);
+			}
+			
+			PackagerResult build = builder.build();
 
 			Container fits = build.get(0);
 			// identifies which packager has failed

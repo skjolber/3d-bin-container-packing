@@ -85,8 +85,4 @@ public class MaxFireHazardBoxItemPerContainerBoxItemListener implements BoxItemC
 		return b != null && b;
 	}
 	
-	@Override
-	public void declined(BoxItem group) {
-		// do nothing
-	}
 }

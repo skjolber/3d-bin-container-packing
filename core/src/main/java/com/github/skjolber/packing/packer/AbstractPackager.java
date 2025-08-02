@@ -5,14 +5,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import com.github.skjolber.packing.api.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
-import com.github.skjolber.packing.api.PackagerResultBuilder;
+import com.github.skjolber.packing.api.AbstractControlsPackagerResultBuilder;
 import com.github.skjolber.packing.api.Priority;
-import com.github.skjolber.packing.api.packager.CompositeContainerItem;
+import com.github.skjolber.packing.api.packager.ControlContainerItem;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -25,7 +26,7 @@ import com.github.skjolber.packing.iterator.BinarySearchIterator;
  * Thread-safe implementation.
  */
 
-public abstract class AbstractPackager<P extends IntermediatePackagerResult, B extends PackagerResultBuilder<B>> implements Packager<B> {
+public abstract class AbstractPackager<P extends IntermediatePackagerResult, B extends AbstractPackagerResultBuilder<B>> implements Packager<B> {
 
 	protected static final EmptyPackagerResultAdapter EMPTY_PACK_RESULT = EmptyPackagerResultAdapter.EMPTY;
 
@@ -33,18 +34,12 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 	
 	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Integer.MAX_VALUE);
 
-	/**
-	 * Constructor
-	 *
-	 * @param packResultComparator result comparator
-	 */
-
 	public AbstractPackager(IntermediatePackagerResultComparator packResultComparator) {
 		this.intermediatePackagerResultComparator = packResultComparator;
 	}
 
 	// pack in single container
-	protected P packSingle(List<Integer> containerItemIndexes, PackagerAdapter<P> adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+	public P packSingle(List<Integer> containerItemIndexes, PackagerAdapter<P> adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 		if(containerItemIndexes.size() <= 2) {
 			for (int i = 0; i < containerItemIndexes.size(); i++) {
 				if(interrupt.getAsBoolean()) {
@@ -128,43 +123,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		return (P) EMPTY_PACK_RESULT;
 	}
 
-	public List<Container> packList(List<BoxItemGroup> boxes, Priority priority, List<CompositeContainerItem> containers, int limit) throws PackagerInterruptedException {
-		return packGroups(boxes, priority, containers, limit, PackagerInterruptSupplierBuilder.NEGATIVE);
-	}
-
-	public List<Container> pack(List<BoxItem> boxes, Priority priority, List<CompositeContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
-		PackagerAdapter<P> adapter = adapter(boxes, priority, containerItems, interrupt);
-
-		if(adapter == null) {
-			return Collections.emptyList();
-		}
-		
-		return packAdapter(limit, interrupt, adapter);
-	}
-
-	/**
-	 * Return a list of containers which holds all the boxes in the argument
-	 *
-	 * @param boxes     list of boxes to fit in a container
-	 * @param priority	packaging priority
-	 * @param containerItems list of containers available for use in this operation
-	 * @param limit     maximum number of containers
-	 * @param interrupt When true, the computation is interrupted as soon as possible.
-	 * @return list of containers, or null if the deadline was reached, or empty list if the packages could not be packaged within the available containers and/or limit.
-	 * @throws PackagerInterruptedException 
-	 */
-
-	public List<Container> packGroups(List<BoxItemGroup> boxes, Priority priority, List<CompositeContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
-		PackagerAdapter<P> adapter = groupAdapter(boxes, containerItems, priority, interrupt);
-
-		if(adapter == null) {
-			return Collections.emptyList();
-		}
-		
-		return packAdapter(limit, interrupt, adapter);
-	}
-
-	private List<Container> packAdapter(int limit, PackagerInterruptSupplier interrupt, PackagerAdapter<P> adapter) throws PackagerInterruptedException {
+	public List<Container> packAdapter(int limit, PackagerInterruptSupplier interrupt, PackagerAdapter<P> adapter) throws PackagerInterruptedException {
 		List<Container> containerPackResults = new ArrayList<>();
 
 		do {
@@ -256,10 +215,6 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 
 		return null;
 	}
-
-	protected abstract PackagerAdapter<P> groupAdapter(List<BoxItemGroup> boxes, List<CompositeContainerItem> containers, Priority itemGroupOrder, PackagerInterruptSupplier interrupt);
-
-	protected abstract PackagerAdapter<P> adapter(List<BoxItem> boxItems, Priority priority, List<CompositeContainerItem> containers, PackagerInterruptSupplier interrupt);
 
 	public void close() {
 		scheduledThreadPoolExecutor.shutdownNow();

@@ -7,6 +7,8 @@ import org.assertj.core.api.AbstractObjectAssert;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.PackagerResultBuilder;
+import com.github.skjolber.packing.api.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.api.BoxItem;
 
 @SuppressWarnings("rawtypes")
@@ -24,7 +26,9 @@ public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert
 		isNotNull();
 
 		long timestamp = System.currentTimeMillis();
-		PackagerResult result = actual.newResultBuilder().withDeadline(timestamp + maxTime).withBoxItems(items).withContainerItems(containerItems).build();
+		
+		PackagerResultBuilder  builder = actual.newResultBuilder();
+		PackagerResult result = builder.withDeadline(timestamp + maxTime).withBoxItems(items).withContainerItems(containerItems).build();
 		long packDuration = System.currentTimeMillis() - timestamp;
 
 		if(result.getContainers().isEmpty()) {

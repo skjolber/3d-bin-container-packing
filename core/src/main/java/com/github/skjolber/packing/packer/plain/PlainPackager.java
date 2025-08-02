@@ -19,7 +19,7 @@ import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupCompar
 import com.github.skjolber.packing.iterator.AnyOrderBoxItemGroupIterator;
 import com.github.skjolber.packing.iterator.BoxItemGroupIterator;
 import com.github.skjolber.packing.iterator.FixedOrderBoxItemGroupIterator;
-import com.github.skjolber.packing.packer.AbstractDefaultPackager;
+import com.github.skjolber.packing.packer.AbstractControlPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 
 /**
@@ -30,7 +30,7 @@ import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
-public class PlainPackager extends AbstractDefaultPackager {
+public class PlainPackager extends AbstractControlPackager {
 	
 	public static Builder newBuilder() {
 		return new Builder();
@@ -95,7 +95,7 @@ public class PlainPackager extends AbstractDefaultPackager {
 	}
 
 	protected BoxItemGroupIterator createBoxItemGroupIterator(FilteredBoxItemGroups filteredBoxItemGroups, Priority priority, Container container, ExtremePoints extremePoints) {
-		if(priority == Priority.NATURAL || priority == Priority.NATURAL_ALLOW_SKIPPING) {
+		if(priority == Priority.CRONOLOGICAL || priority == Priority.CRONOLOGICAL_ALLOW_SKIPPING) {
 			return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints);
 		}
 		return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints, boxItemGroupComparator);

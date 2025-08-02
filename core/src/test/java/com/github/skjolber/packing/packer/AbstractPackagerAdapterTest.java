@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.packager.CompositeContainerItem;
+import com.github.skjolber.packing.api.packager.ControlContainerItem;
 
 public class AbstractPackagerAdapterTest {
 
@@ -101,9 +101,9 @@ public class AbstractPackagerAdapterTest {
 	
 	private AbstractPackagerAdapter create(List<ContainerItem> items) {
 		
-		List<CompositeContainerItem> composite = new ArrayList<>();
+		List<ControlContainerItem> composite = new ArrayList<>();
 		for (ContainerItem i : items) {
-			composite.add(new CompositeContainerItem(i));
+			composite.add(new ControlContainerItem(i));
 		}
 		return new AbstractPackagerAdapter<IntermediatePackagerResult>(composite) {
 

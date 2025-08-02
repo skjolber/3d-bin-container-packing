@@ -64,7 +64,6 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 																	.withLoadSize(size)
 																	.withMaxLoadWeight(maxLoadWeight)
 																	.withBoxItems(boxItems)
-																	.withFilter(filter)
 																	.build();
 			
 			return new FilteredBoxItemsPermutationRotationIterator(iterator);
@@ -267,7 +266,7 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 			boxItem.reset();
 		}
 
-		boxItems = new ArrayList<>();
+		boxItems = new ArrayList<>(stackableItems.length);
 		for (int i = 0; i < stackableItems.length; i++) {
 			BoxItem loadableItem = stackableItems[i];
 			if(loadableItem != null && !loadableItem.isEmpty()) {

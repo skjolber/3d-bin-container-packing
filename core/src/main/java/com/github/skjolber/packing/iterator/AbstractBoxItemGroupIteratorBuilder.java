@@ -20,7 +20,6 @@ import com.github.skjolber.packing.api.Dimension;
 public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxItemGroupIteratorBuilder<B>>  {
 
 	protected int maxLoadWeight = -1;
-	protected Predicate<Box> filter;
 	protected Dimension size;
 	protected List<BoxItemGroup> boxItemGroups;
 
@@ -32,12 +31,6 @@ public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxI
 
 	public B withLoadSize(Dimension dimension) {
 		this.size = dimension;
-
-		return (B)this;
-	}
-
-	public B withFilter(Predicate<Box> filter) {
-		this.filter = filter;
 
 		return (B)this;
 	}
@@ -84,11 +77,7 @@ public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxI
 				if(boundRotations == null || boundRotations.isEmpty()) {
 					continue;
 				}
-	
-				if(filter != null && !filter.test(stackable)) {
-					continue;
-				}
-							
+			
 				Box loadable = new Box(stackable, boundRotations);
 	
 				loadableItems.add(new BoxItem(loadable, item.getCount(), offset));

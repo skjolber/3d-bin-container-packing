@@ -69,11 +69,11 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 				} 
 			}
 			
-			if(priority == Priority.NATURAL) {
+			if(priority == Priority.CRONOLOGICAL) {
 				// even if null
 				return result;
 			}
-			if(priority == Priority.NATURAL_ALLOW_SKIPPING && result != null) {
+			if(priority == Priority.CRONOLOGICAL_ALLOW_SKIPPING && result != null) {
 				return result;
 			}
 			

@@ -5,12 +5,13 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.PackagerResultBuilder;
+import com.github.skjolber.packing.api.AbstractControlsPackagerResultBuilder;
+import com.github.skjolber.packing.api.AbstractDefaultPackagerResultBuilder;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
-public class FastBruteForcePackagerResultBuilder extends PackagerResultBuilder<FastBruteForcePackagerResultBuilder> {
+public class FastBruteForcePackagerResultBuilder extends AbstractDefaultPackagerResultBuilder<FastBruteForcePackagerResultBuilder> {
 
 	private FastBruteForcePackager packager;
 

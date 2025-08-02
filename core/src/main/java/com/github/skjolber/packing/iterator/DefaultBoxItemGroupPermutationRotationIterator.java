@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -23,21 +24,57 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			if(size == null) {
 				throw new IllegalStateException();
 			}
-
-			List<BoxItemGroup> groups = toMatrix();
 			
+			List<BoxItemGroup> groups = new ArrayList<>(boxItemGroups.size());
+			List<BoxItemGroup> excluded = new ArrayList<>(boxItemGroups.size());
+			int offset = 0;
+
+			for (int i = 0; i < boxItemGroups.size(); i++) {
+				
+				BoxItemGroup group = boxItemGroups.get(i);
+				
+				List<BoxItem> loadableItems = new ArrayList<>(group.size());
+				for (int k = 0; k < group.size(); k++) {
+					BoxItem item = group.get(k);
+
+					Box stackable = item.getBox();
+					
+					List<BoxStackValue> boundRotations = stackable.rotations(size);
+					Box loadable = new Box(stackable, boundRotations);
+					
+					loadableItems.add(new BoxItem(loadable, item.getCount(), offset));
+					
+					offset++;
+				}
+				groups.add(new BoxItemGroup(group.getId(), loadableItems));
+			}
+
 			List<BoxItem> matrix = new ArrayList<>();
 			for (BoxItemGroup loadableItemGroup : groups) {
 				matrix.addAll(loadableItemGroup.getItems());
 			}
 			
-			return new DefaultBoxItemGroupPermutationRotationIterator(groups, matrix.toArray(new BoxItem[matrix.size()]));
+			return new DefaultBoxItemGroupPermutationRotationIterator(groups, matrix.toArray(new BoxItem[matrix.size()]), excluded);
 		}
 
+		public boolean fitsInside(BoxItemGroup boxItemGroup) {
+			if(boxItemGroup.getVolume() <= size.getVolume() && boxItemGroup.getWeight() <= maxLoadWeight) {			
+				for(int i = 0; i < boxItemGroup.size(); i++) {
+					
+					Box box = boxItemGroup.get(i).getBox();
+					for (BoxStackValue boxStackValue : box.getStackValues()) {
+						if(boxStackValue.fitsInside3D(size.getDx(), size.getDy(), size.getDz())) {
+							return true;
+						}
+					}
+				}		
+			}
+			return false;
+		}
 	}
 	
-	public DefaultBoxItemGroupPermutationRotationIterator(List<BoxItemGroup> groups, BoxItem[] matrix) {
-		super(matrix, groups);
+	public DefaultBoxItemGroupPermutationRotationIterator(List<BoxItemGroup> groups, BoxItem[] matrix, List<BoxItemGroup> excluded) {
+		super(matrix, groups, excluded);
 		
 		int count = getCount();
 		
@@ -182,7 +219,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 						continue;
 					}
 
-					// increment to the next lexigrapically item
+					// increment to the next lexicographically item
 					// and sort the items to the right of the max index
 					permutations[maxIndex] = permutations[minIndex];
 					permutations[minIndex] = current;
@@ -304,10 +341,6 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	
 	protected int[] getRotations() {
 		return rotations;
-	}
-	
-	public List<BoxItemGroup> getBoxItemGroups() {
-		return groups;
 	}
 
 }

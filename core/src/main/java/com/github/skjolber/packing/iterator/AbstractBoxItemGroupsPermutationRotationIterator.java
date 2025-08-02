@@ -8,10 +8,12 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator implements BoxItemGroupPermutationRotationIterator {
 
 	protected List<BoxItemGroup> groups;
+	protected List<BoxItemGroup> excluded;
 	
-	public AbstractBoxItemGroupsPermutationRotationIterator(BoxItem[] matrix, List<BoxItemGroup> groups) {
+	public AbstractBoxItemGroupsPermutationRotationIterator(BoxItem[] matrix, List<BoxItemGroup> groups, List<BoxItemGroup> excluded) {
 		super(matrix);
 		this.groups = groups;
+		this.excluded = excluded;
 	}
 	
 	protected int getCount() {
