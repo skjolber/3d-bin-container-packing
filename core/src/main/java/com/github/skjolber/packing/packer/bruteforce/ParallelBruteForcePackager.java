@@ -11,10 +11,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Dimension;
-import com.github.skjolber.packing.api.Priority;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.comparator.DefaultPackResultComparator;
@@ -163,7 +163,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		}
 	}
 
-	private class ParallelAdapter extends AbstractBruteForcePackagerAdapter {
+	private class ParallelAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 
 		private final RunnableAdapter[] runnables; // per thread
 
@@ -309,7 +309,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<BoxItem> stackableItems, Priority priority, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
+	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<BoxItem> stackableItems, BoxPriority priority, List<ContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
 		ParallelPermutationRotationIteratorList[] parallelIterators = new ParallelPermutationRotationIteratorList[containerItems.size()];
 		DefaultPermutationRotationIterator[] iterators = new DefaultPermutationRotationIterator[containerItems.size()];
 		for (int i = 0; i < containerItems.size(); i++) {
@@ -334,7 +334,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 		// check that all boxes fit in one or more container(s)
 		// otherwise do not attempt packaging
-		if(!AbstractBruteForcePackagerAdapter.hasAtLeastOneContainerForEveryBox(iterators, stackableItems.size())) {
+		if(!AbstractBruteForceBoxItemPackagerAdapter.hasAtLeastOneContainerForEveryBox(iterators, stackableItems.size())) {
 			return null;
 		}
 		

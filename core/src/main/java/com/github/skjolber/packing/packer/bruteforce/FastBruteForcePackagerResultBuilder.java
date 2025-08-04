@@ -3,10 +3,9 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.Collections;
 import java.util.List;
 
+import com.github.skjolber.packing.api.AbstractDefaultPackagerResultBuilder;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.AbstractControlsPackagerResultBuilder;
-import com.github.skjolber.packing.api.AbstractDefaultPackagerResultBuilder;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;

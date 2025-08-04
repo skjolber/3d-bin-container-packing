@@ -40,7 +40,7 @@ public class ControlContainerItem extends ContainerItem {
 		return boxItemControlsBuilderFactory;
 	}
 
-	public BoxItemControls createBoxItemControls(Container container, Stack stack, FilteredBoxItems filteredBoxItems, FilteredPoints points) {
+	public BoxItemControls createBoxItemControls(Container container, Stack stack, FilteredBoxItems filteredBoxItems, FilteredPoints points, FilteredBoxItemGroups groups) {
 		if(boxItemControlsBuilderFactory == null) {
 			return new DefaultBoxItemControls(filteredBoxItems);
 		}
@@ -48,6 +48,7 @@ public class ControlContainerItem extends ContainerItem {
 				.withContainer(container)
 				.withStack(stack)
 				.withBoxItems(filteredBoxItems)
+				.withBoxItemGroups(groups)
 				.withPoints(points)
 				.build();
 	}
@@ -72,4 +73,7 @@ public class ControlContainerItem extends ContainerItem {
 		return boxItemControlsBuilderFactory != null;
 	}	
 	
+	public boolean hasControls() {
+		return hasBoxItemControlsBuilderFactory() || hasBoxItemControlsBuilderFactory();
+	}
 }

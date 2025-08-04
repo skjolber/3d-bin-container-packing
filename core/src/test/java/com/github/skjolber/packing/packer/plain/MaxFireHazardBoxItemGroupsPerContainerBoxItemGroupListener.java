@@ -7,12 +7,12 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
 import com.github.skjolber.packing.api.packager.AbstractBoxItemControlsBuilder;
+import com.github.skjolber.packing.api.packager.BoxItemControls;
 import com.github.skjolber.packing.api.packager.BoxItemControlsBuilderFactory;
-import com.github.skjolber.packing.api.packager.BoxItemGroupControls;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
-public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implements BoxItemGroupControls {
+public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implements BoxItemControls {
 
 	public static final String KEY = "fireHazard";
 
@@ -26,7 +26,7 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 		}
 		
 		@Override
-		public BoxItemGroupControls build() {
+		public BoxItemControls build() {
 			if(maxCount == -1) {
 				throw new IllegalStateException("Expected max count");
 			}
@@ -55,7 +55,7 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 	}
 
 	@Override
-	public void accepted(BoxItemGroup group) {
+	public void attemptSuccess(BoxItemGroup group) {
 		// do nothing
 		
 		if(isFireHazard(group)) {
@@ -95,11 +95,6 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 		return b != null && b;
 	}
 	
-	@Override
-	public void declined(BoxItemGroup group) {
-		// do nothing
-	}
-
 	public static BoxItemControlsBuilderFactory newFactory(int i) {
 		return () -> newBuilder().withMaxCount(i);
 	}

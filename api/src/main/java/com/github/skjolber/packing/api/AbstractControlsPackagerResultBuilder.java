@@ -135,4 +135,15 @@ public abstract class AbstractControlsPackagerResultBuilder<B extends AbstractCo
 		}
 	}
 
+	public boolean hasControls() {
+		for (ControlContainerItem controlContainerItem : containers) {
+			if(controlContainerItem.getBoxItemControlsBuilderFactory() != null) {
+				return true;
+			}
+			if(controlContainerItem.getPointControlsBuilderFactory() != null) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

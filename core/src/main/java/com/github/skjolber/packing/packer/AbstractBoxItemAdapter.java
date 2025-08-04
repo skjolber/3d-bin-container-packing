@@ -4,21 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Priority;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 
-public abstract class AbstractBoxItemAdapter<C extends ContainerItem> implements PackagerAdapter<IntermediatePackagerResult> {
+public abstract class AbstractBoxItemAdapter<C extends ContainerItem, T extends IntermediatePackagerResult> implements PackagerAdapter<T> {
 
-	private List<BoxItem> remainingBoxItems;
-	private final PackagerInterruptSupplier interrupt;
-	private final Priority priority;
-	private final AbstractContainerItemsCalculator<C> packagerContainerItems;
+	protected List<BoxItem> remainingBoxItems;
+	protected final PackagerInterruptSupplier interrupt;
+	protected final BoxPriority priority;
+	protected final AbstractContainerItemsCalculator<C> packagerContainerItems;
 
-	public AbstractBoxItemAdapter(List<BoxItem> boxItems, Priority priority, AbstractContainerItemsCalculator<C> packagerContainerItems, PackagerInterruptSupplier interrupt) {
+	public AbstractBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority, AbstractContainerItemsCalculator<C> packagerContainerItems, PackagerInterruptSupplier interrupt) {
 		this.packagerContainerItems = packagerContainerItems;
 		this.priority = priority;
 		
@@ -86,7 +86,7 @@ public abstract class AbstractBoxItemAdapter<C extends ContainerItem> implements
 		return count;
 	}
 
-	protected abstract IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, C containerItem, PackagerInterruptSupplier interrupt, Priority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;
+	protected abstract IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, C containerItem, PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;
 
 
 }

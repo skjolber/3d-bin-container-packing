@@ -34,7 +34,7 @@ public class AbstractPackagerAdapterTest {
                 .withContainer(container2, 3)
                 .build();
 
-		AbstractPackagerAdapter adapter = create(items);
+        DefaultContainerItemsCalculator adapter = create(items);
 
 		// volume
         for(int i = 0; i <= 5; i++) {
@@ -79,7 +79,7 @@ public class AbstractPackagerAdapterTest {
                 .withContainer(container2, 3)
                 .build();
         
-		AbstractPackagerAdapter adapter = create(items);
+        DefaultContainerItemsCalculator adapter = create(items);
 
 		// volume overflows, max value is 9,223,372,036,854,775,807 (~19 digits) and 
 		// max integer 2,147,483,647 (~10 digits) 
@@ -99,33 +99,7 @@ public class AbstractPackagerAdapterTest {
     	assertEquals(maxWeight, expectedWeight);
 	}
 	
-	private AbstractPackagerAdapter create(List<ContainerItem> items) {
-		
-		List<ControlContainerItem> composite = new ArrayList<>();
-		for (ContainerItem i : items) {
-			composite.add(new ControlContainerItem(i));
-		}
-		return new AbstractPackagerAdapter<IntermediatePackagerResult>(composite) {
-
-			@Override
-			public IntermediatePackagerResult attempt(int containerIndex, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) {
-				throw new RuntimeException();
-			}
-
-			@Override
-			public Container accept(IntermediatePackagerResult result) {
-				throw new RuntimeException();
-			}
-
-			@Override
-			public List<Integer> getContainers(int maxCount) {
-				throw new RuntimeException();
-			}
-
-			@Override
-			public int countRemainingBoxes() {
-				throw new RuntimeException();
-			}
-		};
+	private DefaultContainerItemsCalculator create(List<ContainerItem> items) {
+		return new DefaultContainerItemsCalculator(items);
 	}
 }

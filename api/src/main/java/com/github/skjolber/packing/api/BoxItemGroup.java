@@ -22,6 +22,11 @@ public class BoxItemGroup {
 
 	protected List<BoxItem> resetItems;
 
+	public BoxItemGroup(String id, List<BoxItem> items, int index) {
+		this(id, items);
+		this.index = index;
+	}
+	
 	public BoxItemGroup(String id, List<BoxItem> items) {
 		super();
 		this.id = id;

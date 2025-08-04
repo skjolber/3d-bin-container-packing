@@ -17,7 +17,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.Priority;
+import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
@@ -613,7 +613,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 						b.withContainerItem(containerItem);
 					})
 					.withBoxItems(products)
-					.withPriority(Priority.CRONOLOGICAL)
+					.withPriority(BoxPriority.CRONOLOGICAL)
 					.withMaxContainerCount(10)
 					.build();
 			assertValid(build);
@@ -657,7 +657,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 						b.withContainerItem(containerItem);
 					})
 					.withBoxItems(products)
-					.withPriority(Priority.CRONOLOGICAL_ALLOW_SKIPPING)
+					.withPriority(BoxPriority.CRONOLOGICAL_ALLOW_SKIPPING)
 					.withMaxContainerCount(10)
 					.build();
 			assertValid(build);

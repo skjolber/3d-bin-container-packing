@@ -30,7 +30,6 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			int offset = 0;
 
 			for (int i = 0; i < boxItemGroups.size(); i++) {
-				
 				BoxItemGroup group = boxItemGroups.get(i);
 				
 				List<BoxItem> loadableItems = new ArrayList<>(group.size());
@@ -46,15 +45,19 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 					
 					offset++;
 				}
-				groups.add(new BoxItemGroup(group.getId(), loadableItems));
+				groups.add(new BoxItemGroup(group.getId(), loadableItems, i));
 			}
 
-			List<BoxItem> matrix = new ArrayList<>();
+			BoxItemGroup[] matrix = new BoxItemGroup[boxItemGroups.size()];
+
+			List<BoxItem> boxMatrix = new ArrayList<>();
 			for (BoxItemGroup loadableItemGroup : groups) {
-				matrix.addAll(loadableItemGroup.getItems());
+				boxMatrix.addAll(loadableItemGroup.getItems());
+				
+				matrix[loadableItemGroup.getIndex()] = loadableItemGroup;
 			}
 			
-			return new DefaultBoxItemGroupPermutationRotationIterator(groups, matrix.toArray(new BoxItem[matrix.size()]), excluded);
+			return new DefaultBoxItemGroupPermutationRotationIterator(groups, matrix, boxMatrix.toArray(new BoxItem[boxMatrix.size()]), excluded);
 		}
 
 		public boolean fitsInside(BoxItemGroup boxItemGroup) {
@@ -73,8 +76,8 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 		}
 	}
 	
-	public DefaultBoxItemGroupPermutationRotationIterator(List<BoxItemGroup> groups, BoxItem[] matrix, List<BoxItemGroup> excluded) {
-		super(matrix, groups, excluded);
+	public DefaultBoxItemGroupPermutationRotationIterator(List<BoxItemGroup> groups, BoxItemGroup[] matrix, BoxItem[] boxMatrix, List<BoxItemGroup> excluded) {
+		super(boxMatrix, groups, excluded);
 		
 		int count = getCount();
 		
@@ -149,7 +152,6 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	 */
 	
 	public void removePermutations(List<Integer> removed) {
-		
 		super.removePermutations(removed);
 		
 		initiatePermutation(rotations.length - removed.size());

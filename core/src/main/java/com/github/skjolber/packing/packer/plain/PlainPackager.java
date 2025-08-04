@@ -4,8 +4,8 @@ import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.Priority;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
@@ -94,14 +94,14 @@ public class PlainPackager extends AbstractControlPackager {
 		this.boxItemGroupComparator = boxItemGroupComparator;
 	}
 
-	protected BoxItemGroupIterator createBoxItemGroupIterator(FilteredBoxItemGroups filteredBoxItemGroups, Priority priority, Container container, ExtremePoints extremePoints) {
-		if(priority == Priority.CRONOLOGICAL || priority == Priority.CRONOLOGICAL_ALLOW_SKIPPING) {
+	protected BoxItemGroupIterator createBoxItemGroupIterator(FilteredBoxItemGroups filteredBoxItemGroups, BoxPriority priority, Container container, ExtremePoints extremePoints) {
+		if(priority == BoxPriority.CRONOLOGICAL || priority == BoxPriority.CRONOLOGICAL_ALLOW_SKIPPING) {
 			return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints);
 		}
 		return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints, boxItemGroupComparator);
 	}
 	
-	public IntermediatePlacementResult findBestPoint(FilteredBoxItems boxItems, int offset, int length, Priority priority, PointControls pointControls, Container container, ExtremePoints extremePoints, Stack stack) {
+	public IntermediatePlacementResult findBestPoint(FilteredBoxItems boxItems, int offset, int length, BoxPriority priority, PointControls pointControls, Container container, ExtremePoints extremePoints, Stack stack) {
 		return intermediatePlacementResultBuilderFactory.createIntermediatePlacementResultBuilder()
 			.withExtremePoints(extremePoints)
 			.withBoxItems(boxItems, offset, length)

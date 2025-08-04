@@ -4,8 +4,8 @@ import java.util.Comparator;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.Priority;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.AbstractIntermediatePlacementResultBuilder;
@@ -39,7 +39,7 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 			
 			Box box = boxItem.getBox();
 			
-			if(priority == Priority.NONE) {
+			if(priority == BoxPriority.NONE) {
 				// a negative integer, zero, or a positive integer as the 
 				// first argument is less than, equal to, or greater than the
 			    // second.
@@ -69,11 +69,11 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 				} 
 			}
 			
-			if(priority == Priority.CRONOLOGICAL) {
+			if(priority == BoxPriority.CRONOLOGICAL) {
 				// even if null
 				return result;
 			}
-			if(priority == Priority.CRONOLOGICAL_ALLOW_SKIPPING && result != null) {
+			if(priority == BoxPriority.CRONOLOGICAL_ALLOW_SKIPPING && result != null) {
 				return result;
 			}
 			

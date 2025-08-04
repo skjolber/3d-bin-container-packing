@@ -3,6 +3,7 @@ package com.github.skjolber.packing.api.packager;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
 
 /**
@@ -32,7 +33,8 @@ public interface ManifestListener {
 	 * @param boxItem {@linkplain FilteredBoxBoxItemGroupItems}
 	 */
 	
-	default void declined(List<BoxItem> boxItems) {		
+	default void declined(List<BoxItem> boxItems) {
+		
 	}
 
 	/**
@@ -47,6 +49,49 @@ public interface ManifestListener {
 	}
 
 
+	/**
+	 * 
+	 * Notify box group was loaded. 
+	 * 
+	 * @param group {@linkplain BoxItemGroup} to be added.
+	 */
+	
+	default void attempt(BoxItemGroup group, int offset, int length) {
+	}
+	
+	/**
+	 * 
+	 * Notify box cannot be fitted.
+	 * 
+	 * @param group {@linkplain BoxItemGroup}
+	 */
+	
+	default void attemptSuccess(BoxItemGroup group) {		
+	}
+	
+	/**
+	 * 
+	 * Notify box cannot be fitted.
+	 * 
+	 * @param group {@linkplain BoxItemGroup}
+	 */
+	
+	default void attemptFailure(BoxItemGroup group) {
+		declined(group.getItems());
+	}
 
+
+	/**
+	 * 
+	 * Notify box group cannot be fitted.
+	 * 
+	 * @param group {@linkplain BoxItemGroup}
+	 */
+	
+	default void filteredGroups(List<BoxItemGroup> groups) {
+		for (BoxItemGroup boxItemGroup : groups) {
+			declined(boxItemGroup.getItems());
+		}
+	}
 
 }

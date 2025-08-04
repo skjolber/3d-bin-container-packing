@@ -9,9 +9,11 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 
 	protected List<BoxItemGroup> groups;
 	protected List<BoxItemGroup> excluded;
+	protected BoxItemGroup[] groupsMatrix;
 	
-	public AbstractBoxItemGroupsPermutationRotationIterator(BoxItem[] matrix, List<BoxItemGroup> groups, List<BoxItemGroup> excluded) {
-		super(matrix);
+	public AbstractBoxItemGroupsPermutationRotationIterator(BoxItemGroup[] matrix, BoxItem[] boxMatrix, List<BoxItemGroup> groups, List<BoxItemGroup> excluded) {
+		super(boxMatrix);
+		this.groupsMatrix = matrix;
 		this.groups = groups;
 		this.excluded = excluded;
 	}
@@ -101,6 +103,16 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 		return n;
 	}
 
+	public void removeGroups(List<Integer> removed) {
+		 for (Integer i : removed) {
+			BoxItemGroup boxItemGroup = groups.get(i);
+			for (BoxItem boxItem : boxItemGroup.getItems()) {
+				boxItem.setCount(0);
+				stackableItems[boxItem.getIndex()] = null;
+			}
+		}
+	}
+	
 
 	@Override
 	public void removePermutations(List<Integer> removed) {

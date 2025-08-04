@@ -5,17 +5,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.github.skjolber.packing.api.AbstractDefaultPackagerResultBuilder;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackager;
+import com.github.skjolber.packing.packer.ControlContainerItemsCalculator;
+import com.github.skjolber.packing.packer.DefaultContainerItemsCalculator;
+import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
@@ -29,18 +38,75 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
-public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteForceIntermediatePackagerResult, BruteForcePackagerResultBuilder> {
+public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteForceIntermediatePackagerResult, AbstractBruteForcePackager.BruteForcePackagerResultBuilder> {
 
 	private static final Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
 	
 	public AbstractBruteForcePackager(IntermediatePackagerResultComparator packResultComparator) {
 		super(packResultComparator);
 	}
+	
+	public class BruteForcePackagerResultBuilder extends AbstractDefaultPackagerResultBuilder<BruteForcePackagerResultBuilder> {
+	
+		private AbstractBruteForcePackager packager;
+	
+		public BruteForcePackagerResultBuilder withPackager(AbstractBruteForcePackager packager) {
+			this.packager = packager;
+			return this;
+		}
+	
+		public PackagerResult build() {
+			validate();
+			
+			long start = System.currentTimeMillis();
+	
+			PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
+			if(deadline != -1L) {
+				booleanSupplierBuilder.withDeadline(deadline);
+			}
+			if(interrupt != null) {
+				booleanSupplierBuilder.withInterrupt(interrupt);
+			}
+			
+			booleanSupplierBuilder.withScheduledThreadPoolExecutor(packager.getScheduledThreadPoolExecutor());
+	
+			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
+			try {
+				
+				AbstractBruteForceBoxItemPackagerAdapter adapter;
+				if(items != null && !items.isEmpty()) {
+					adapter = createBoxItemAdapter(items, priority, new DefaultContainerItemsCalculator(containers), interrupt);
+				} else {
+					adapter = createBoxItemGroupAdapter(itemGroups, priority, new DefaultContainerItemsCalculator(containers), interrupt);
+				}
+				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
+								
+				long duration = System.currentTimeMillis() - start;
+				if(packList == null) {
+					return new PackagerResult(Collections.emptyList(), duration, true);
+				}
+				return new PackagerResult(packList, duration, false);
+			} catch (PackagerInterruptedException e) {
+				long duration = System.currentTimeMillis() - start;
+				return new PackagerResult(Collections.emptyList(), duration, true);
+			} finally {
+				interrupt.close();
+			}
+		}
+		
+	}
+
 
 	@Override
 	public BruteForcePackagerResultBuilder newResultBuilder() {
 		return new BruteForcePackagerResultBuilder().withPackager(this);
 	}
+
+	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, BoxPriority priority,
+			DefaultContainerItemsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt);
+
+	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, BoxPriority priority,
+			DefaultContainerItemsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt);
 
 	static List<StackPlacement> getPlacements(int size) {
 		// each box will at most have a single placement with a space (and its remainder).

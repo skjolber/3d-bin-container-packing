@@ -6,16 +6,16 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
 import com.github.skjolber.packing.api.packager.AbstractBoxItemControlsBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemGroupControls;
+import com.github.skjolber.packing.api.packager.BoxItemControls;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
-public class FireHazardsInSpecificContainersBoxItemGroupListener implements BoxItemGroupControls {
+public class FireHazardsInSpecificContainersBoxItemGroupListener implements BoxItemControls {
 
 	public static class Builder extends AbstractBoxItemControlsBuilder<Builder> {
 
 		@Override
-		public BoxItemGroupControls build() {
+		public BoxItemControls build() {
 			
 			FilteredBoxItemGroups groups = items.getGroups();			
 			
@@ -59,16 +59,6 @@ public class FireHazardsInSpecificContainersBoxItemGroupListener implements BoxI
 		this.boxItems = boxItems;
 		this.stack = stack;
 		this.points = points;
-	}
-
-	@Override
-	public void accepted(BoxItemGroup group) {
-		// do nothing
-	}
-
-	@Override
-	public void declined(BoxItemGroup group) {
-		// do nothing
 	}
 
 }

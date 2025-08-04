@@ -7,11 +7,11 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Dimension;
-import com.github.skjolber.packing.api.Priority;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.ep.Point;
@@ -73,7 +73,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		}
 	}
 
-	private class FastBruteForceAdapter extends AbstractBruteForcePackagerAdapter {
+	private class FastBruteForceAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 
 		private final DefaultPermutationRotationIterator[] iterators;
 		private final PackagerInterruptSupplier interrupt;
@@ -169,7 +169,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 	}
 
 	@Override
-	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<BoxItem> stackableItems, Priority priority, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
+	protected PackagerAdapter<BruteForcePackagerResult> adapter(List<BoxItem> stackableItems, BoxPriority priority, List<ContainerItem> containers, PackagerInterruptSupplier interrupt) {
 		DefaultPermutationRotationIterator[] iterators = new DefaultPermutationRotationIterator[containers.size()];
 
 		for (int i = 0; i < containers.size(); i++) {
@@ -187,7 +187,7 @@ public class FastBruteForcePackager extends AbstractPackager<BruteForcePackagerR
 		
 		// check that all boxes fit in one or more container(s)
 		// otherwise do not attempt packaging
-		if(!AbstractBruteForcePackagerAdapter.hasAtLeastOneContainerForEveryBox(iterators, stackableItems.size())) {
+		if(!AbstractBruteForceBoxItemPackagerAdapter.hasAtLeastOneContainerForEveryBox(iterators, stackableItems.size())) {
 			return null;
 		}
 

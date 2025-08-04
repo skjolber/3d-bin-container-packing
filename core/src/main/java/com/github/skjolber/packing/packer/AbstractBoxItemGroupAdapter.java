@@ -6,21 +6,21 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Priority;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 
-public abstract class AbstractBoxItemGroupAdapter<C extends ContainerItem> implements PackagerAdapter<IntermediatePackagerResult> {
+public abstract class AbstractBoxItemGroupAdapter<C extends ContainerItem, T extends IntermediatePackagerResult> implements PackagerAdapter<T> {
 
 	private List<BoxItemGroup> remainingBoxItemGroups;
 	private final PackagerInterruptSupplier interrupt;
-	private final Priority priority;
+	private final BoxPriority priority;
 	private final AbstractContainerItemsCalculator<C> packagerContainerItems;
 
-	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, AbstractContainerItemsCalculator<C> packagerContainerItems, Priority priority, PackagerInterruptSupplier interrupt) {
+	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, AbstractContainerItemsCalculator<C> packagerContainerItems, BoxPriority priority, PackagerInterruptSupplier interrupt) {
 		this.packagerContainerItems = packagerContainerItems;
 		
 		List<BoxItemGroup> groupClones = new LinkedList<>();
@@ -90,6 +90,6 @@ public abstract class AbstractBoxItemGroupAdapter<C extends ContainerItem> imple
 		return packagerContainerItems.getContainerItem(index);
 	}
 
-	protected abstract IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Priority priority, C containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig);
+	protected abstract IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, BoxPriority priority, C containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig);
 
 }

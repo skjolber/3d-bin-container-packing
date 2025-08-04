@@ -26,7 +26,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 	
 	protected int maxContainerCount = 1;
 	
-	protected Priority priority = Priority.NONE;
+	protected BoxPriority priority = BoxPriority.NONE;
 
 	protected List<BoxItemGroup> itemGroups = new ArrayList<>();
 
@@ -45,7 +45,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		return (B)this;
 	}
 
-	public B withPriority(Priority order) {
+	public B withPriority(BoxPriority order) {
 		this.priority = order;
 		return (B)this;
 	}

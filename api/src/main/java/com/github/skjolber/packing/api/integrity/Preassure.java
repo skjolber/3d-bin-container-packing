@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.api.acceleration;
+package com.github.skjolber.packing.api.integrity;
 
 public interface Preassure extends Force {
 

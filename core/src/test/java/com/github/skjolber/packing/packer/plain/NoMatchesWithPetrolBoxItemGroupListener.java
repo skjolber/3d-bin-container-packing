@@ -8,17 +8,17 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.FilteredPoints;
 import com.github.skjolber.packing.api.packager.AbstractBoxItemControlsBuilder;
+import com.github.skjolber.packing.api.packager.BoxItemControls;
 import com.github.skjolber.packing.api.packager.BoxItemControlsBuilderFactory;
-import com.github.skjolber.packing.api.packager.BoxItemGroupControls;
 import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
-public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupControls {
+public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemControls {
 
 	public static class Builder extends AbstractBoxItemControlsBuilder<Builder> {
 
 		@Override
-		public BoxItemGroupControls build() {
+		public BoxItemControls build() {
 			return new NoMatchesWithPetrolBoxItemGroupListener(container, items, stack, points);
 		}
 
@@ -48,7 +48,7 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupCont
 	}
 
 	@Override
-	public void accepted(BoxItemGroup group) {
+	public void attemptSuccess(BoxItemGroup group) {
 		// do nothing
 		if(!matches) {
 			matches = isMatches(group);
@@ -108,11 +108,6 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements BoxItemGroupCont
 
 	private boolean isMatches(BoxItem item) {
 		return item.getBox().getId().startsWith("matches-");
-	}
-
-	@Override
-	public void declined(BoxItemGroup group) {
-		// do nothing
 	}
 	
 	@Override

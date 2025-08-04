@@ -1,24 +1,31 @@
 package com.github.skjolber.packing.packer.bruteforce;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.packager.ControlContainerItem;
-import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
+import com.github.skjolber.packing.packer.DefaultContainerItemsCalculator;
+import com.github.skjolber.packing.packer.PackagerAdapter;
 
-public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackagerAdapter<BruteForceIntermediatePackagerResult> {
+public abstract class AbstractBruteForceBoxItemPackagerAdapter implements PackagerAdapter<BruteForceIntermediatePackagerResult> {
 
 	// keep inventory over all of the iterators here
 	protected Box[] boxes;
 	protected int[] boxesRemaining;
 	protected BoxItem[] boxItems;
-	protected FilteredBoxItems filteredBoxItems;
 	
-	public AbstractBruteForcePackagerAdapter(List<ControlContainerItem> items, List<BoxItem> boxItems) {
-		super(items);
+	protected final PackagerInterruptSupplier interrupt;
+	protected final BoxPriority priority;
+	protected final DefaultContainerItemsCalculator packagerContainerItems;
+
+	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, BoxPriority priority, DefaultContainerItemsCalculator packagerContainerItems, PackagerInterruptSupplier interrupt) {
+		this.packagerContainerItems = packagerContainerItems;
+		this.priority = priority;
+		this.interrupt = interrupt;
 		
 		this.boxes = new Box[boxItems.size()];
 		this.boxesRemaining = new int[boxItems.size()];
@@ -31,10 +38,13 @@ public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackager
 			this.boxes[i] = boxItem.getBox();
 			this.boxesRemaining[i] = boxItem.getCount();
 		}
-		
-		this.filteredBoxItems = new DefaultFilteredBoxItems(boxItems);
 	} 
 	
+	@Override
+	public ContainerItem getContainerItem(int index) {
+		return packagerContainerItems.getContainerItem(index);
+	}
+
 	protected void removeInventory(List<Integer> p) {
 		// remove adapter inventory
 		for (Integer remove : p) {
@@ -42,14 +52,8 @@ public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackager
 			
 			boxItems[remove].decrement();
 		}
-		filteredBoxItems.removeEmpty();
 	}
-	
-	@Override
-	public List<Integer> getContainers(int maxCount) {
-		return getContainers(filteredBoxItems, maxCount);
-	}	
-	
+
 	public static boolean hasAtLeastOneContainerForEveryBox(BoxItemPermutationRotationIterator[] iterators, int size) {
 		// check that all boxes fit in one or more container(s)
 		// otherwise do not attempt packaging
@@ -68,6 +72,20 @@ public abstract class AbstractBruteForcePackagerAdapter extends AbstractPackager
 			}
 		}
 		return true;
+	}
+	
+	@Override
+	public List<Integer> getContainers(int maxCount) {
+		
+		List<BoxItem> remainingBoxItems = new ArrayList<>(boxItems.length);
+		for(int i = 0; i < boxItems.length; i++) {
+			BoxItem boxItem = boxItems[i];
+			if(boxItem != null) {
+				remainingBoxItems.add(boxItem);
+			}
+		}
+		
+		return packagerContainerItems.getContainers(remainingBoxItems, maxCount);
 	}
 	
 	

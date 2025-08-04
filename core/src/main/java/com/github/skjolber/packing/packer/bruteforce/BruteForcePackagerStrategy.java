@@ -6,7 +6,7 @@ public interface BruteForcePackagerStrategy {
 	
 	boolean allRotations();
 	
-	boolean allPermtation();
+	boolean allPermtations();
 	
 	
 	
