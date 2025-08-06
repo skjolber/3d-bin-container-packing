@@ -17,7 +17,6 @@ import com.github.skjolber.packing.packer.DefaultContainerItemsCalculator;
 public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 
 	protected final BoxItemPermutationRotationIterator[] containerIterators;
-	protected final ExtremePoints3DStack extremePoints;
 	protected List<StackPlacement> stackPlacements;
 
 	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, BoxPriority priority, DefaultContainerItemsCalculator packagerContainerItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
@@ -37,11 +36,16 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 		}
 		
 		this.stackPlacements = BruteForcePackager.getPlacements(count);
-
-		this.extremePoints = new ExtremePoints3DStack(maxIteratorLength + 1);
-		this.extremePoints.reset(1, 1, 1);
 	}
-
+	
+	protected int getMaxIteratorLength() {
+		int maxIteratorLength = 0;
+		for (BoxItemPermutationRotationIterator iterator : containerIterators) {
+			maxIteratorLength = Math.max(maxIteratorLength, iterator.length());
+		}
+		return maxIteratorLength;
+	}
+	
 	@Override
 	public Container accept(BruteForceIntermediatePackagerResult bruteForceResult) {
 		bruteForceResult.markDirty();

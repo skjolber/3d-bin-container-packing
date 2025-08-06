@@ -245,7 +245,7 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	}
 	
 	@Override
-	protected AbstractPackager createPackager() {
+	protected FastBruteForcePackager createPackager() {
 		return FastBruteForcePackager.newBuilder().build();
 	}
 

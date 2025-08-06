@@ -73,10 +73,15 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	
 	private class BruteForceAdapter extends AbstractSingleThreadedBruteForceBoxItemPackagerAdapter {
 
+		protected final ExtremePoints3DStack extremePoints;
+		
 		public BruteForceAdapter(List<BoxItem> boxItems, BoxPriority priority,
 				DefaultContainerItemsCalculator packagerContainerItems,
 				BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, priority, packagerContainerItems, containerIterators, interrupt);
+			
+			this.extremePoints =  new ExtremePoints3DStack(getMaxIteratorLength() + 1);
+			this.extremePoints.reset(1, 1, 1);
 		}
 
 		@Override
@@ -91,12 +96,17 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	
 	private class BruteForceGroupAdapter extends AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter {
 
+		protected final ExtremePoints3DStack extremePoints;
+
 		public BruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, BoxPriority priority,
 				DefaultContainerItemsCalculator packagerContainerItems,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, boxItemGroups, priority, packagerContainerItems, containerIterators, interrupt);
+			
+			this.extremePoints =  new ExtremePoints3DStack(getMaxIteratorLength() + 1);
+			this.extremePoints.reset(1, 1, 1);
 		}
-
+		
 		@Override
 		public BruteForceIntermediatePackagerResult attempt(int i, BruteForceIntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			if(containerIterators[i].length() == 0) {
@@ -109,11 +119,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 	public BruteForcePackager(IntermediatePackagerResultComparator packResultComparator) {
 		super(packResultComparator);
-	}
-
-	@Override
-	protected boolean acceptAsFull(BruteForceIntermediatePackagerResult result, Container holder) {
-		return result.getLoadVolume() == holder.getMaxLoadVolume();
 	}
 
 	@Override
@@ -135,8 +140,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 					.withMaxLoadWeight(container.getMaxLoadWeight())
 					.build();
 		}
-		
-		
 		
 		List<BoxItem> boxItems = new ArrayList<>();
 		for (BoxItemGroup boxItemGroup : itemGroups) {

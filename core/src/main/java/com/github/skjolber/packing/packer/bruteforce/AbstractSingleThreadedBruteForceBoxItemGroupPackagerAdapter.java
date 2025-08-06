@@ -19,7 +19,6 @@ import com.github.skjolber.packing.packer.DefaultContainerItemsCalculator;
 public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 
 	protected final BoxItemGroupPermutationRotationIterator[] containerIterators;
-	protected final ExtremePoints3DStack extremePoints;
 	protected List<StackPlacement> stackPlacements;
 	protected List<BoxItemGroup> boxItemGroups;
 
@@ -28,11 +27,6 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 		
 		this.containerIterators = containerIterators;
 		
-		int maxIteratorLength = 0;
-		for (BoxItemPermutationRotationIterator iterator : containerIterators) {
-			maxIteratorLength = Math.max(maxIteratorLength, iterator.length());
-		}
-		
 		int count = 0;
 		for(int i = 0; i < boxItems.size(); i++) {
 			BoxItem stackableItem = boxItems.get(i);
@@ -40,11 +34,16 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 		}
 		
 		this.stackPlacements = BruteForcePackager.getPlacements(count);
-
-		this.extremePoints = new ExtremePoints3DStack(maxIteratorLength + 1);
-		this.extremePoints.reset(1, 1, 1);
 		
 		this.boxItemGroups = boxItemGroups;
+	}
+	
+	protected int getMaxIteratorLength() {
+		int maxIteratorLength = 0;
+		for (BoxItemPermutationRotationIterator iterator : containerIterators) {
+			maxIteratorLength = Math.max(maxIteratorLength, iterator.length());
+		}
+		return maxIteratorLength;
 	}
 
 	@Override

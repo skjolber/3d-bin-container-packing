@@ -194,8 +194,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		return bestResult;
 	}
 
-	protected abstract boolean acceptAsFull(BruteForceIntermediatePackagerResult bestPermutationResult, Container holder);
-
 	public List<Point> packStackPlacement(ExtremePoints3DStack extremePoints, List<StackPlacement> placements, BoxItemPermutationRotationIterator iterator, Stack stack,
 			Container container,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex) throws PackagerInterruptedException {
@@ -206,7 +204,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		// pack as many items as possible from placementIndex
 		int maxLoadWeight = container.getMaxLoadWeight();
 
-		extremePoints.reset(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
+		extremePoints.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		extremePoints.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
 
 		try {
@@ -314,4 +312,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		return best;
 	}
 
+	protected boolean acceptAsFull(BruteForceIntermediatePackagerResult result, Container holder) {
+		return result.getLoadVolume() == holder.getMaxLoadVolume();
+	}
 }
