@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.Collections;
 
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.packer.bruteforce.AbstractBruteForcePackager.BruteForcePackagerResultBuilder;
 
 public class ParallelBruteForcePackagerResultBuilder extends BruteForcePackagerResultBuilder {
 

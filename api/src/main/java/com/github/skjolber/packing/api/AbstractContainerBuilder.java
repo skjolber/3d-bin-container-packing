@@ -18,8 +18,6 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 	protected int loadDy = -1; // y
 	protected int loadDz = -1; // z
 
-	protected List<Surface> surfaces;
-	
 	public B withSize(int dx, int dy, int dz) {
 		this.dx = dx;
 		this.dy = dy;
@@ -36,11 +34,6 @@ public class AbstractContainerBuilder<B extends AbstractContainerBuilder<B>> {
 		this.loadDx = dx;
 		this.loadDy = dy;
 		this.loadDz = dz;
-		return (B)this;
-	}
-
-	public B withSurfaces(List<Surface> surfaces) {
-		this.surfaces = surfaces;
 		return (B)this;
 	}
 

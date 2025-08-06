@@ -89,6 +89,18 @@ public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxI
 		}
 		return results;
 	}
+	
+	public boolean fitsInside(BoxItemGroup boxItemGroup) {
+		if(boxItemGroup.getVolume() <= size.getVolume() && boxItemGroup.getWeight() <= maxLoadWeight) {			
+			for(int i = 0; i < boxItemGroup.size(); i++) {
+				Box box = boxItemGroup.get(i).getBox();
+				if(!box.fitsInside(size)) {
+					return false;
+				}
+			}		
+		}
+		return true;
+	}
 
 	public abstract BoxItemGroupPermutationRotationIterator build();
 

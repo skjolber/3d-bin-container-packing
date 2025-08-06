@@ -46,12 +46,9 @@ public class Container {
 			if(loadDz == -1) {
 				loadDz = dz;
 			}
-			if(surfaces == null || surfaces.isEmpty()) {
-				surfaces = Surface.DEFAULT_SURFACE;
-			}
 
 			if(emptyWeight == -1) {
-				throw new IllegalStateException("Expected empty weight");
+				emptyWeight = 0;
 			}
 			if(stack == null) {
 				stack = new Stack();

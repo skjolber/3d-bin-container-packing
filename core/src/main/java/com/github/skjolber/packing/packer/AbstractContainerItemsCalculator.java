@@ -434,5 +434,12 @@ public abstract class AbstractContainerItemsCalculator<T extends ContainerItem> 
 	public abstract int getContainerItemCount();
 	
 	public abstract T getContainerItem(int index);
+	
+	protected long getMaxContainerLoadVolume() {
+		return maxContainerLoadVolume;
+	}
 
+	protected long getMaxContainerLoadWeight() {
+		return maxContainerLoadWeight;
+	}
 }

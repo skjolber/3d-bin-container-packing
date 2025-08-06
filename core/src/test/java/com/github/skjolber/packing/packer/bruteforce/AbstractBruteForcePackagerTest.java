@@ -39,7 +39,7 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 			1
 		);
 
-		AbstractPackager packager = createPackager();
+		AbstractBruteForcePackager packager = createPackager();
 		try {
 			PackagerResult build = packager.newResultBuilder()
 				.withContainerItems(ContainerItem.newListBuilder()
@@ -63,7 +63,7 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 						.withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
-		AbstractPackager packager = createPackager();
+		AbstractBruteForcePackager packager = createPackager();
 		try {
 			List<BoxItem> products = Arrays.asList(
 					box(3,7,35,1));
@@ -88,7 +88,7 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 						.withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
-		AbstractPackager packager = createPackager();
+		AbstractBruteForcePackager packager = createPackager();
 		try {
 			List<BoxItem> products = Arrays.asList(
 					box(1,1,1,1), box(3,7,35,1));
@@ -145,7 +145,7 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 				1
 			);
 
-		AbstractPackager packager = createPackager();
+		AbstractBruteForcePackager packager = createPackager();
 		try {
 			PackagerResult build = packager.newResultBuilder()
 				.withContainerItems(ContainerItem.newListBuilder()
@@ -161,6 +161,6 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 		}
 	}
 
-	protected abstract AbstractPackager createPackager();
+	protected abstract AbstractBruteForcePackager createPackager();
 	
 }

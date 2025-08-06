@@ -1,5 +1,9 @@
 package com.github.skjolber.packing.iterator;
 
+import java.util.List;
+
+import com.github.skjolber.packing.api.BoxItemGroup;
+
 /**
  *
  * Rotation and permutations built into the same interface. Minimizes the number of
@@ -34,7 +38,10 @@ package com.github.skjolber.packing.iterator;
  */
 
 public interface BoxItemGroupPermutationRotationIterator extends BoxItemPermutationRotationIterator {
+
+	BoxItemGroup[] getBoxItemGroups();
 	
+	List<BoxItemGroup> getExcludedBoxItemGroups();
 
-
+	void removeGroups(List<Integer> removed);
 }

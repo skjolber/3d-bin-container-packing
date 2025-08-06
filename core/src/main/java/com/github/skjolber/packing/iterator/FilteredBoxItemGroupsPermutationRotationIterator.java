@@ -76,7 +76,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 	protected final BoxItemGroupPermutationRotationIterator iterator;
 	
 	public FilteredBoxItemGroupsPermutationRotationIterator(BoxItemGroupPermutationRotationIterator iterator) {
-		super(iterator.getBoxItems(), iterator.getBoxItemGroups());
+		super(iterator.getBoxItemGroups(), iterator.getBoxItems(), iterator.getExcludedBoxItemGroups());
 		
 		permutations = new int[0]; // n!
 		
@@ -88,9 +88,9 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 	protected void resetFromIterator() {
 		boxItems = new ArrayList<>();
 		for (int i = 0; i < stackableItems.length; i++) {
-			BoxItem loadableItem = stackableItems[i];
-			if(loadableItem != null && !loadableItem.isEmpty()) {
-				boxItems.add(loadableItem.clone());
+			BoxItem boxItem = stackableItems[i];
+			if(boxItem != null && !boxItem.isEmpty()) {
+				boxItems.add(boxItem.clone());
 			}
 		}
 
@@ -99,7 +99,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 		this.permutations = new int[permutations.length];
 		this.rotations = new int[permutations.length];
 		this.minBoxVolume = new long[permutations.length];
-		this.groups = iterator.getBoxItemGroups();
+		this.groupsMatrix = iterator.getBoxItemGroups();
 		
 		System.arraycopy(permutations, 0, this.permutations, 0, permutations.length);
 		System.arraycopy(iterator.getMinBoxVolume(), 0, minBoxVolume, 0, permutations.length);
@@ -290,7 +290,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 	
 	@Override
 	public FilteredBoxItemGroups getGroups() {
-		return iterator.getBoxItemGroups();
+		throw new RuntimeException("Not implemented");
 	}
 
 }

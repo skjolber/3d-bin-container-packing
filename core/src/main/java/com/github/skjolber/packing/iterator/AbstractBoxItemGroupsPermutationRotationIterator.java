@@ -7,20 +7,22 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 
 public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator implements BoxItemGroupPermutationRotationIterator {
 
-	protected List<BoxItemGroup> groups;
-	protected List<BoxItemGroup> excluded;
 	protected BoxItemGroup[] groupsMatrix;
-	
-	public AbstractBoxItemGroupsPermutationRotationIterator(BoxItemGroup[] matrix, BoxItem[] boxMatrix, List<BoxItemGroup> groups, List<BoxItemGroup> excluded) {
+
+	protected List<BoxItemGroup> excludedBoxItemGroups;
+
+	public AbstractBoxItemGroupsPermutationRotationIterator(BoxItemGroup[] groupsMatrix, BoxItem[] boxMatrix, List<BoxItemGroup> excluded) {
 		super(boxMatrix);
-		this.groupsMatrix = matrix;
-		this.groups = groups;
-		this.excluded = excluded;
+		this.groupsMatrix = groupsMatrix;
+		this.excludedBoxItemGroups = excluded;
 	}
 	
 	protected int getCount() {
 		int index = 0;
-		for (BoxItemGroup loadableItemGroup : groups) {
+		for (BoxItemGroup loadableItemGroup : groupsMatrix) {
+			if(loadableItemGroup == null) {
+				continue;
+			}
 			index += loadableItemGroup.getBoxCount();
 		}
 		return index;
@@ -39,7 +41,10 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 		// fit within the container volume
 		long n = 1;
 
-		for (BoxItemGroup loadableItemGroup : groups) {
+		for (BoxItemGroup loadableItemGroup : groupsMatrix) {
+			if(loadableItemGroup == null) {
+				continue;
+			}
 
 			List<BoxItem> items = loadableItemGroup.getItems();
 			
@@ -105,41 +110,45 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 
 	public void removeGroups(List<Integer> removed) {
 		 for (Integer i : removed) {
-			BoxItemGroup boxItemGroup = groups.get(i);
+			BoxItemGroup boxItemGroup = groupsMatrix[i];
 			for (BoxItem boxItem : boxItemGroup.getItems()) {
 				boxItem.setCount(0);
 				stackableItems[boxItem.getIndex()] = null;
 			}
+			groupsMatrix[i] = null;
 		}
 	}
-	
 
 	@Override
 	public void removePermutations(List<Integer> removed) {
 		 for (Integer i : removed) {
-			BoxItem loadableItem = stackableItems[i];
+			BoxItem boxItem = stackableItems[i];
 			
-			loadableItem.decrement();
+			boxItem.decrement();
 			
-			if(loadableItem.isEmpty()) {
+			if(boxItem.isEmpty()) {
 				stackableItems[i] = null;
 			}
 		}
-
-		// go through all groups and clean up
-		for(int i = 0; i < groups.size(); i++) {
-			BoxItemGroup group = groups.get(i);
-			
+		
+		for(int i = 0; i < groupsMatrix.length; i++) {
+			BoxItemGroup group = groupsMatrix[i];
+			if(group == null) {
+				continue;
+			}
 			group.removeEmpty();
 			if(group.isEmpty()) {
-				groups.remove(i);
-				i--;
+				groupsMatrix[i] = null;
 			}
 		}
 	}
 	
-	public List<BoxItemGroup> getBoxItemGroups() {
-		return groups;
+	public BoxItemGroup[] getBoxItemGroups() {
+		return groupsMatrix;
+	}
+	
+	public List<BoxItemGroup> getExcludedBoxItemGroups() {
+		return excludedBoxItemGroups;
 	}
 	
 }

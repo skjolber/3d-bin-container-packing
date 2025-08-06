@@ -51,36 +51,20 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter implements Packag
 			boxesRemaining[remove]--;
 			
 			boxItems[remove].decrement();
+			
+			if(boxItems[remove].isEmpty()) {
+				boxItems[remove] = null;
+			}
 		}
 	}
 
-	public static boolean hasAtLeastOneContainerForEveryBox(BoxItemPermutationRotationIterator[] iterators, int size) {
-		// check that all boxes fit in one or more container(s)
-		// otherwise do not attempt packaging
-		boolean[] containerChecklist = new boolean[size]; 
-		for (BoxItemPermutationRotationIterator iterator : iterators) {
-			int[] fits = iterator.getPermutations();
-			for(int fit : fits) {
-				containerChecklist[fit] = true;
-			}
-		}
-		
-		for(int i = 0; i < containerChecklist.length; i++) {
-			if(!containerChecklist[i]) {
-				// so the result can never be complete, since at least one box does not fit in any of the containers
-				return false;
-			}
-		}
-		return true;
-	}
-	
 	@Override
 	public List<Integer> getContainers(int maxCount) {
 		
 		List<BoxItem> remainingBoxItems = new ArrayList<>(boxItems.length);
 		for(int i = 0; i < boxItems.length; i++) {
 			BoxItem boxItem = boxItems[i];
-			if(boxItem != null) {
+			if(boxItem != null && !boxItem.isEmpty()) {
 				remainingBoxItems.add(boxItem);
 			}
 		}

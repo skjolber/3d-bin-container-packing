@@ -293,7 +293,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			1
 		);
 
-		Packager packager = BruteForcePackager.newBuilder().build();
+		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
 		try {
 			PackagerResult build = packager.newResultBuilder()
 				.withContainerItems(ContainerItem.newListBuilder()
@@ -480,7 +480,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	}
 
 	@Override
-	protected AbstractPackager createPackager() {
+	protected BruteForcePackager createPackager() {
 		return BruteForcePackager.newBuilder().build();
 	}
 
@@ -493,7 +493,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 					.withMaxLoadWeight(50000).build(), 1)
 				.build();
 
-		Packager packager = BruteForcePackager.newBuilder().build();
+		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
 		try {
 			List<BoxItem> products = Arrays.asList(
 				new BoxItem(Box.newBuilder().withRotate3D().withSize(3350, 510, 3350).withWeight(250).build(), 1),

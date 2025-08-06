@@ -469,7 +469,17 @@ public class Box {
 		return maximumPressure;
 	}
 	
-	public List<BoxStackValue> fitsInside(Dimension bound) {
+	public boolean fitsInside(Dimension bound) {
+		for (BoxStackValue stackValue : getStackValues()) {
+			if(stackValue.fitsInside3D(bound)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+	
+	public List<BoxStackValue> getStackValues(Dimension bound) {
 		List<BoxStackValue> list = new ArrayList<>();
 
 		for (BoxStackValue stackValue : getStackValues()) {
