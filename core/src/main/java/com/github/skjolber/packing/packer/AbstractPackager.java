@@ -43,7 +43,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 				}
 
 				Integer containerItemIndex = containerItemIndexes.get(i);
-
+				
 				P result = adapter.attempt(containerItemIndex, null, true);
 				if(result.getStack().size() == adapter.countRemainingBoxes()) {
 					return result;
@@ -130,10 +130,6 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 				if(!containerItemIndexes.isEmpty()) {
 	
 					P result = packSingle(containerItemIndexes, adapter, interrupt);
-					if(result == null) {
-						// timeout
-						return null;
-					}
 					if(!result.isEmpty()) {
 						containerPackResults.add(adapter.accept(result));
 	

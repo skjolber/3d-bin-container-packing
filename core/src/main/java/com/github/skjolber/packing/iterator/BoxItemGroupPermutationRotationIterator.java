@@ -43,5 +43,5 @@ public interface BoxItemGroupPermutationRotationIterator extends BoxItemPermutat
 	
 	List<BoxItemGroup> getExcludedBoxItemGroups();
 
-	void removeGroups(List<Integer> removed);
+	int removeGroups(List<Integer> removed);
 }

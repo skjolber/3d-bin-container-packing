@@ -51,8 +51,6 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 		bruteForceResult.markDirty();
 		Stack stack = bruteForceResult.getStack();
 		
-		Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
-					
 		int size = stack.size();
 		if(stackPlacements.size() > size) {
 			// this result does not consume all placements
@@ -83,11 +81,23 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 			}
 			
 			int[] permutations = state.getPermutations();
-			List<Integer> p = new ArrayList<>(wholeGroupBoxCount);
-			for (int i = 0; i < wholeGroupBoxCount; i++) {
-				p.add(permutations[i]);
+			
+			List<Integer> p = new ArrayList<>();
+			for(Integer removedGroup: removedGroups) {
+				BoxItemGroup boxItemGroup = boxItemGroups.get(removedGroup);
+
+				for (BoxItem boxItem : boxItemGroup.getItems()) {
+					for (int i = 0; i < boxItem.getCount(); i++) {
+						p.add(permutations[p.size()]);
+					}
+				}
 			}
 			
+			// remove stacked items which did not make it
+			stack.setSize(p.size());
+			
+			Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+
 			// remove adapter inventory
 			removeInventory(p);
 
@@ -96,13 +106,15 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 			}
 			
 			boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());
-			stackPlacements = stackPlacements.subList(wholeGroupBoxCount, this.stackPlacements.size());
+			stackPlacements = stackPlacements.subList(p.size(), this.stackPlacements.size());
+			
+			return container;
 		} else {
 			stackPlacements = Collections.emptyList();
 			boxItemGroups = Collections.emptyList();
+			
+			return packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
 		}
-
-		return container;
 	}
 
 	@Override

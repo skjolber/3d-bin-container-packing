@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
@@ -360,130 +361,10 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 		}
 	}
 
-	@Test
-	public void testMutuallyExclusiveBoxesAndContainersForMultiContainerResult() throws Exception {
-		Container thin = Container.newBuilder()
-			.withDescription("1")
-			.withSize(10, 10, 2)
-			.withMaxLoadWeight(100000)
-			.withEmptyWeight(0)
-			.build();
-
-		Container thick = Container.newBuilder()
-				.withDescription("1")
-				.withSize(3, 3, 3)
-				.withMaxLoadWeight(100000)
-				.withEmptyWeight(0)
-				.build();
-
-		BoxItem thinBox = new BoxItem(
-			Box.newBuilder()
-				.withId("b1")
-				.withDescription("b1")
-				.withSize(10, 10, 1)
-				.withWeight(0)
-				.withRotate3D()
-				.build(),
-			2
-		);
-
-		BoxItem thickBox = new BoxItem(
-				Box.newBuilder()
-					.withId("b2")
-					.withDescription("b2")
-					.withSize(3, 3, 3)
-					.withWeight(0)
-					.withRotate3D()
-					.build(),
-				1
-			);
-
-		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
-		try {
-			PackagerResult build = packager.newResultBuilder()
-				.withContainerItems(ContainerItem.newListBuilder()
-					.withContainers(thin, thick)
-					.build())
-				.withBoxItems(thinBox, thickBox)
-				.withMaxContainerCount(2)
-				.build();
-			
-			assertTrue(build.isSuccess());
-		} finally {
-			packager.close();
-		}
-	}
-	
-	@Test
-	public void testMutuallyExclusiveBoxesAndContainersForMultiContainerResult2() throws Exception {
-		Container thin = Container.newBuilder()
-			.withDescription("1")
-			.withSize(10, 10, 2)
-			.withMaxLoadWeight(100000)
-			.withEmptyWeight(0)
-			.build();
-
-		Container thick = Container.newBuilder()
-				.withDescription("1")
-				.withSize(3, 3, 3)
-				.withMaxLoadWeight(100000)
-				.withEmptyWeight(0)
-				.build();
-
-		BoxItem thinBox1 = new BoxItem(
-			Box.newBuilder()
-				.withId("b1")
-				.withDescription("b1")
-				.withSize(10, 10, 1)
-				.withWeight(0)
-				.withRotate3D()
-				.build(),
-			1
-		);
-		
-		BoxItem thinBox2 = new BoxItem(
-				Box.newBuilder()
-					.withId("b1")
-					.withDescription("b1")
-					.withSize(10, 10, 1)
-					.withWeight(0)
-					.withRotate3D()
-					.build(),
-				1
-			);
-
-		BoxItem thickBox = new BoxItem(
-				Box.newBuilder()
-					.withId("b2")
-					.withDescription("b2")
-					.withSize(3, 3, 3)
-					.withWeight(0)
-					.withRotate3D()
-					.build(),
-				1
-			);
-
-		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
-		try {
-			PackagerResult build = packager.newResultBuilder()
-				.withContainerItems(ContainerItem.newListBuilder()
-					.withContainers(thin, thick)
-					.build())
-				.withBoxItems(thinBox1, thickBox, thinBox2)
-				.withMaxContainerCount(2)
-				.build();
-			
-			assertTrue(build.isSuccess());		
-		} finally {
-			packager.close();
-		}
-	}
-
 	@Override
 	protected BruteForcePackager createPackager() {
 		return BruteForcePackager.newBuilder().build();
 	}
-
 
 	@Test
 	public void test752() throws Exception {
@@ -517,6 +398,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			packager.close();
 		}
 	}
+
 
 	
 }

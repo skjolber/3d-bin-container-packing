@@ -117,6 +117,14 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 		
 		initiatePermutation(rotations.length - count);
 	}
+	
+	public int removeGroups(List<Integer> removed) {
+		int count = super.removeGroups(removed);
+		
+		initiatePermutation(rotations.length - count);
+		
+		return count;
+	}
 
 	protected void initiatePermutation(int remainingCount) {
 		this.rotations = new int[remainingCount];
@@ -130,7 +138,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			BoxItem value = stackableItems[j];
 			if(value != null && !value.isEmpty()) {
 				for (int k = 0; k < value.getCount(); k++) {
-					permutations[offset] = j;
+					permutations[offset] = value.getIndex();
 					offset++;
 				}
 			}

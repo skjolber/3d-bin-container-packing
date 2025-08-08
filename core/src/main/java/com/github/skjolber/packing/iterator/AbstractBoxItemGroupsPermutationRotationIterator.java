@@ -108,15 +108,19 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 		return n;
 	}
 
-	public void removeGroups(List<Integer> removed) {
-		 for (Integer i : removed) {
+	public int removeGroups(List<Integer> removed) {
+		int count = 0;
+		for (Integer i : removed) {
 			BoxItemGroup boxItemGroup = groupsMatrix[i];
 			for (BoxItem boxItem : boxItemGroup.getItems()) {
+				count += boxItem.getCount();
+
 				boxItem.setCount(0);
 				stackableItems[boxItem.getIndex()] = null;
 			}
 			groupsMatrix[i] = null;
 		}
+		return count;
 	}
 
 	@Override
@@ -141,6 +145,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 				groupsMatrix[i] = null;
 			}
 		}
+		
 	}
 	
 	public BoxItemGroup[] getBoxItemGroups() {
