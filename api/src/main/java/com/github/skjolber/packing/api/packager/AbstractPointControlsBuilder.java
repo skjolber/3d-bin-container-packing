@@ -45,7 +45,5 @@ public abstract class AbstractPointControlsBuilder<B extends AbstractPointContro
 	}
 	
 	public abstract PointControls build();
-	
-	
 
 }
