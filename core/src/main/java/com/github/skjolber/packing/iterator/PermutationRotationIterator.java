@@ -35,6 +35,7 @@ import java.util.List;
  *      target="_top">next-lexicographical-permutation-algorithm</a>
  */
 
+@Deprecated
 public interface PermutationRotationIterator {
 
 	/**

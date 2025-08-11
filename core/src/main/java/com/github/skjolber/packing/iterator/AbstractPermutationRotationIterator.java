@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 
+@Deprecated
 public abstract class AbstractPermutationRotationIterator implements PermutationRotationIterator {
 
 	protected final PermutationBoxItemValue[] matrix;

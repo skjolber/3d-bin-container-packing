@@ -3,6 +3,7 @@ package com.github.skjolber.packing.iterator;
 import java.util.Arrays;
 import java.util.List;
 
+@Deprecated
 public class ParallelPermutationRotationIterator extends AbstractPermutationRotationIterator {
 
 	// try to avoid false sharing by using padding

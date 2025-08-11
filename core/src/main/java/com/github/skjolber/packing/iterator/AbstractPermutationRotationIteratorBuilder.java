@@ -14,6 +14,7 @@ import com.github.skjolber.packing.api.Dimension;
  *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
  */
 
+@Deprecated
 public abstract class AbstractPermutationRotationIteratorBuilder<B extends AbstractPermutationRotationIteratorBuilder<B>> {
 
 	protected int maxLoadWeight = -1;

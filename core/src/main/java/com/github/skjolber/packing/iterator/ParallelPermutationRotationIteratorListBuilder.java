@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.iterator;
 
+@Deprecated
 public class ParallelPermutationRotationIteratorListBuilder extends AbstractPermutationRotationIteratorBuilder<ParallelPermutationRotationIteratorListBuilder> {
 
 	private int parallelizationCount = -1;

@@ -8,6 +8,7 @@ import java.util.List;
  * 
  */
 
+@Deprecated
 public class ParallelPermutationRotationIteratorList {
 
 	protected final static int PADDING = 16;
