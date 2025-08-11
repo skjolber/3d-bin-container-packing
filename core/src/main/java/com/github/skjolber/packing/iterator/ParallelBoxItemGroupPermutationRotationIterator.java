@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -17,21 +18,48 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	public static class Builder extends AbstractBoxItemGroupIteratorBuilder<Builder> {
 
 		public ParallelBoxItemGroupPermutationRotationIterator build() {
-			if(maxLoadWeight == -1) {
-				throw new IllegalStateException();
-			}
-			if(size == null) {
-				throw new IllegalStateException();
+			List<BoxItemGroup> included = new ArrayList<>(boxItemGroups.size());
+			List<BoxItemGroup> excluded = new ArrayList<>(boxItemGroups.size());
+			
+			// box item and box item groups indexes are unique and static
+			
+			int offset = 0;
+			for (int i = 0; i < boxItemGroups.size(); i++) {
+				BoxItemGroup group = boxItemGroups.get(i);
+				if(fitsInside(group)) {
+					List<BoxItem> loadableItems = new ArrayList<>(group.size());
+					for (int k = 0; k < group.size(); k++) {
+						BoxItem item = group.get(k);
+	
+						Box box = item.getBox();
+						
+						List<BoxStackValue> boundRotations = box.rotations(size);
+						Box boxClone = new Box(box, boundRotations);
+						
+						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset));
+						
+						offset++;
+					}
+					included.add(new BoxItemGroup(group.getId(), loadableItems, i));
+				} else {
+					excluded.add(group);
+					
+					offset += group.size();
+				}
 			}
 
-			List<BoxItemGroup> groups = toMatrix();
+			BoxItemGroup[] groupIndex = new BoxItemGroup[boxItemGroups.size()];
+			BoxItem[] boxIndex = new BoxItem[offset];
 			
-			List<BoxItem> matrix = new ArrayList<>();
-			for (BoxItemGroup loadableItemGroup : groups) {
-				matrix.addAll(loadableItemGroup.getItems());
+			for (BoxItemGroup loadableItemGroup : included) {
+				groupIndex[loadableItemGroup.getIndex()] = loadableItemGroup;
+				for (int k = 0; k < loadableItemGroup.size(); k++) {
+					BoxItem item = loadableItemGroup.get(k);
+					boxIndex[item.getIndex()] = item;
+				}
 			}
 			
-			ParallelBoxItemGroupPermutationRotationIterator result = new ParallelBoxItemGroupPermutationRotationIterator(matrix.toArray(new BoxItem[matrix.size()]), groups);
+			ParallelBoxItemGroupPermutationRotationIterator result = new ParallelBoxItemGroupPermutationRotationIterator(groupIndex, boxIndex, excluded);
 			
 			result.initiatePermutations();
 			
@@ -46,16 +74,13 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	private int lastPermutationMaxIndex = -1;
 	private boolean seenLastPermutationMaxIndex = false;
 
-	private List<BoxItemGroup> allGroups;
 	private List<Integer> excluded;
 
-	public ParallelBoxItemGroupPermutationRotationIterator(List<BoxItemGroup> groups, List<BoxItemGroup> included, BoxItem[] matrix, List<Integer> excluded) {
-		super(matrix, included);
-		
-		this.allGroups = groups;
-		this.excluded = excluded;
-	}
 
+	public ParallelBoxItemGroupPermutationRotationIterator(BoxItemGroup[] groupsMatrix, BoxItem[] boxMatrix, List<BoxItemGroup> excluded) {
+		super(groupsMatrix, boxMatrix, excluded);
+	}	
+	
 	public long preventOptmisation() {
 		return t0 + t1 + t2 + t3 + t4 + t5 + t6 + t7 + t8 + t9 + t10 + t11 + t12 + t13 + t14 + t15;
 	}
@@ -68,10 +93,6 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		int[] result = new int[permutations.length - ParallelPermutationRotationIteratorList.PADDING];
 		System.arraycopy(permutations, ParallelPermutationRotationIteratorList.PADDING, result, 0, result.length);
 		return result;
-	}
-	
-	public void setGroups(List<BoxItemGroup> groups) {
-		this.groups = groups;
 	}
 
 	public void setPermutations(int[] permutations) {
@@ -106,10 +127,10 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		this.lastPermutation = lastPermutation;
 
 		this.seenLastPermutationMaxIndex = false;
-
+		
 		// find the first item that differs, so that we do not have to
 		// compare items for each iteration (to detect whether we have done enough work)
-		for (int k = ParallelPermutationRotationIteratorList.PADDING; k < ParallelPermutationRotationIteratorList.PADDING + lastPermutation.length; k++) {
+		for (int k = ParallelPermutationRotationIteratorList.PADDING; k < lastPermutation.length; k++) {
 			if(permutations[k] != lastPermutation[k]) {
 				lastPermutationMaxIndex = k;
 
@@ -149,9 +170,11 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 
 		int endIndex = permutations.length - 1;
 
-		for(int g = groups.size() - 1; g >= 0; g--) {
-		
-			BoxItemGroup loadableItemGroup = groups.get(g);
+		for(int g = groupsMatrix.length - 1; g >= 0; g--) {
+			if(groupsMatrix[g] == null) {
+				continue;
+			}
+			BoxItemGroup loadableItemGroup = groupsMatrix[g];
 			
 			// Find longest non-increasing suffix
 	
@@ -278,8 +301,11 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	public int nextPermutationImpl(int maxIndex) {
 		int limit = permutations.length;
 
-		for(int g = groups.size() - 1; g >= 0; g--) {
-			BoxItemGroup loadableItemGroup = groups.get(g);
+		for(int g = groupsMatrix.length - 1; g >= 0; g--) {
+			if(groupsMatrix[g] == null) {
+				continue;
+			}
+			BoxItemGroup loadableItemGroup = groupsMatrix[g];
 
 			// Find longest non-increasing suffix
 			int startIndex = limit - loadableItemGroup.getBoxCount();
@@ -349,34 +375,6 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	public int length() {
 		return permutations.length - ParallelPermutationRotationIteratorList.PADDING;
 	}
-
-	/**
-	 * Remove permutations, if present.
-	 */
-	
-	@Override
-	public void removePermutations(List<Integer> removed) {
-		 for (Integer i : removed) {
-			BoxItem item = stackableItems[i];
-			
-			item.decrement();
-			
-			if(item.isEmpty()) {
-				stackableItems[i] = null;
-			}
-		}
-		 
-		// go through all groups and clean up
-		for(int i = 0; i < groups.size(); i++) {
-			BoxItemGroup group = groups.get(i);
-			
-			group.removeEmpty();
-			if(group.isEmpty()) {
-				groups.remove(i);
-				i--;
-			}
-		}
-	}
 	
 	@Override
 	public void removePermutations(int count) {
@@ -422,15 +420,19 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		int[] lastPermutation = new int[ParallelPermutationRotationIteratorList.PADDING + count];
 		
 		count = 0;
-		for(int g = 0; g < groups.size(); g++) {
-			BoxItemGroup group = groups.get(g);
-			
-			int stackableItemsCount = group.getBoxCount();
-			
-			for(int i = 0; i < stackableItemsCount; i++) {
-				lastPermutation[ParallelPermutationRotationIteratorList.PADDING + count + i] = permutations[ParallelPermutationRotationIteratorList.PADDING + count + stackableItemsCount - 1 - i];
+		for(int g = 0; g < groupsMatrix.length; g++) {
+			if(groupsMatrix[g] == null) {
+				continue;
 			}
-			count += stackableItemsCount;
+			
+			BoxItemGroup group = groupsMatrix[g];
+			
+			int boxCount = group.getBoxCount();
+			
+			for(int i = 0; i < boxCount; i++) {
+				lastPermutation[ParallelPermutationRotationIteratorList.PADDING + count + i] = permutations[ParallelPermutationRotationIteratorList.PADDING + count + boxCount - 1 - i];
+			}
+			count += boxCount;
 		}		
 		
 		setLastPermutation(lastPermutation);
@@ -451,11 +453,8 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		seenLastPermutationMaxIndex = true;
 	}
 
-	public List<BoxItemGroup> getBoxItemGroups() {
-		return allGroups;
-	}
-	
 	public List<Integer> getExcluded() {
 		return excluded;
 	}
+	
 }

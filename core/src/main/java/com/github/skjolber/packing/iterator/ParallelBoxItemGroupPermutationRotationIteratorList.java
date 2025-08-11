@@ -1,8 +1,10 @@
 package com.github.skjolber.packing.iterator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -42,9 +44,48 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 				throw new IllegalStateException();
 			}
 
-			List<BoxItemGroup> groups = toMatrix();
+			List<BoxItemGroup> included = new ArrayList<>(boxItemGroups.size());
+			List<BoxItemGroup> excluded = new ArrayList<>(boxItemGroups.size());
 			
-			return new ParallelBoxItemGroupPermutationRotationIteratorList(groups, parallelizationCount);
+			// box item and box item groups indexes are unique and static
+			
+			int offset = 0;
+			for (int i = 0; i < boxItemGroups.size(); i++) {
+				BoxItemGroup group = boxItemGroups.get(i);
+				if(fitsInside(group)) {
+					List<BoxItem> loadableItems = new ArrayList<>(group.size());
+					for (int k = 0; k < group.size(); k++) {
+						BoxItem item = group.get(k);
+	
+						Box box = item.getBox();
+						
+						List<BoxStackValue> boundRotations = box.rotations(size);
+						Box boxClone = new Box(box, boundRotations);
+						
+						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset));
+						
+						offset++;
+					}
+					included.add(new BoxItemGroup(group.getId(), loadableItems, i));
+				} else {
+					excluded.add(group);
+					
+					offset += group.size();
+				}
+			}
+
+			BoxItemGroup[] groupIndex = new BoxItemGroup[boxItemGroups.size()];
+			BoxItem[] boxIndex = new BoxItem[offset];
+			
+			for (BoxItemGroup loadableItemGroup : included) {
+				groupIndex[loadableItemGroup.getIndex()] = loadableItemGroup;
+				for (int k = 0; k < loadableItemGroup.size(); k++) {
+					BoxItem item = loadableItemGroup.get(k);
+					boxIndex[item.getIndex()] = item;
+				}
+			}
+			
+			return new ParallelBoxItemGroupPermutationRotationIteratorList(groupIndex, boxIndex, excluded, parallelizationCount);
 		}
 	}
 	
@@ -53,43 +94,46 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 
 	protected int workUnitIndex = 0;
 	
-	public ParallelBoxItemGroupPermutationRotationIteratorList(List<BoxItemGroup> groups, int parallelizationCount) {
-
+	protected BoxItemGroup[] groupsMatrix;
+	protected BoxItem[] boxMatrix;
+	protected List<BoxItemGroup> excluded;
+	
+	public ParallelBoxItemGroupPermutationRotationIteratorList(BoxItemGroup[] boxItemGroups, BoxItem[] boxItems, List<BoxItemGroup> excluded, int parallelizationCount) {
 		workUnits = new ParallelBoxItemGroupPermutationRotationIterator[parallelizationCount];
 		for (int i = 0; i < parallelizationCount; i++) {
 
 			// clone working variables so threads are less of the same
 			// memory area as one another
+			BoxItem[] boxMatrixClone = new BoxItem[boxItems.length];			
 
-			List<BoxItemGroup> clones = clone(groups);
-			
-			List<BoxItem> matrix = new ArrayList<>();
-			for (BoxItemGroup loadableItemGroup : clones) {
-				matrix.addAll(loadableItemGroup.getItems());
+			BoxItemGroup[] groupsMatrixClone = new BoxItemGroup[boxItemGroups.length];
+			for(int k = 0; k < groupsMatrixClone.length; k++) {
+				groupsMatrixClone[k] = boxItemGroups[k].clone();
+				
+				for(int l = 0; l < groupsMatrixClone[k].size(); l++) {
+					BoxItem item =  groupsMatrixClone[k].get(l);
+					boxMatrixClone[item.getIndex()] = item;
+				}
 			}
 			
-			workUnits[i] = new ParallelBoxItemGroupPermutationRotationIterator(matrix.toArray(new BoxItem[matrix.size()]), clones);
+			workUnits[i] = new ParallelBoxItemGroupPermutationRotationIterator(groupsMatrixClone, boxMatrixClone, excluded);
 			if(workUnits[i].preventOptmisation() != -1L) {
 				throw new RuntimeException();
 			}
 		}
-
+		
+		this.excluded = excluded;
+		this.groupsMatrix = boxItemGroups;
+		this.boxMatrix = boxItems;
+		
 		this.frequencies = workUnits[0].calculateFrequencies();
 
 		calculate();
 	}
 	
-	private List<BoxItemGroup> clone(List<BoxItemGroup> groups) {
-		List<BoxItemGroup> result = new ArrayList<>(groups.size());
-		for (BoxItemGroup stackableItemGroup : groups) {
-			result.add(stackableItemGroup.clone());
-		}
-		return result;
-	}
-
 	private void calculate() {
-		int count = workUnits[0].getCount();
-		List<BoxItemGroup> groups = workUnits[0].getBoxItemGroups();
+		int count = workUnits[0].getBoxCount();
+		BoxItemGroup[] groups = workUnits[0].getBoxItemGroups();
 
 		if(count == 0) {
 			return;
@@ -120,6 +164,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 
 		for (int i = 0; i < workUnits.length - 1; i++) {
 			int[] nextWorkUnitPermutations = workUnits[i + 1].getPermutations();
+			
 			int[] lexiographicalLimit = new int[PADDING + nextWorkUnitPermutations.length];
 
 			System.arraycopy(nextWorkUnitPermutations, 0, lexiographicalLimit, PADDING, nextWorkUnitPermutations.length);
@@ -128,16 +173,19 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 		}
 	}
 
-	protected static int[] unrank(int[] frequencies, int elementCount, long permutationCount, long rank, List<BoxItemGroup> groups) {
+	protected static int[] unrank(int[] frequencies, int elementCount, long permutationCount, long rank,  BoxItemGroup[] groups) {
 	    int[] result = new int[PADDING + elementCount];
 	    
 	    int resultOffset = 0;
-	    for (int j = 0; j < groups.size(); j++) {
-	    	BoxItemGroup group = groups.get(j);
-			
-	    	int stackableItemsCount = group.getBoxCount();
+	    for (int j = 0; j < groups.length; j++) {
 	    	
-		    for(int i = 0; i < stackableItemsCount; i++) {
+	    	BoxItemGroup group = groups[j];
+	    	if(group == null) {
+	    		continue;
+	    	}
+	    	int groupBoxCount = group.getBoxCount();
+	    	
+		    for(int i = 0; i < groupBoxCount; i++) {
 		        for(int k = 0; k < group.size(); k++) {
 		        	BoxItem item = (BoxItem)group.get(k);
 		        	
@@ -147,7 +195,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 		                continue;
 		            }
 		            // suffixcount is the number of distinct perms that begin with x
-		            long suffixcount = permutationCount * frequencies[index] / (stackableItemsCount - i);
+		            long suffixcount = permutationCount * frequencies[index] / (groupBoxCount - i);
 		            if (rank <= suffixcount) {
 		                result[PADDING + resultOffset + i] = index;
 	
@@ -160,7 +208,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 		        }
 		    }
 		    
-		    resultOffset += stackableItemsCount;
+		    resultOffset += groupBoxCount;
 	    }
 	    return result;
 	}
@@ -308,6 +356,27 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 			unit.removePermutations(removed);
 		}
 		
+		for (Integer integer : removed) {
+			BoxItem item = boxMatrix[integer];
+			
+			item.decrement();
+			
+			if(item.isEmpty()) {
+				boxMatrix[integer] = null;
+			}
+		}
+		
+		for(int i = 0; i < groupsMatrix.length; i++) {
+			if(groupsMatrix[i] == null) {
+				continue;
+			}
+			BoxItemGroup group = groupsMatrix[i];
+			group.removeEmpty();
+			if(group.isEmpty()) {
+				groupsMatrix[i] = null;
+			}
+		}			
+		
 		calculate();
 	}
 
@@ -327,8 +396,31 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	}
 
 	@Override
-	public List<BoxItemGroup> getBoxItemGroups() {
-		return workUnits[workUnitIndex].getBoxItemGroups();
+	public BoxItemGroup[] getBoxItemGroups() {
+		return groupsMatrix;
+	}
+
+	@Override
+	public List<BoxItemGroup> getExcludedBoxItemGroups() {
+		return excluded;
+	}
+
+	@Override
+	public int removeGroups(List<Integer> removed) {
+		for (int i = 0; i < workUnits.length; i++) {
+			workUnits[i].removeGroups(removed);
+		}
+		
+		int count = 0;
+		for (Integer i : removed) {
+			BoxItemGroup boxItemGroup = groupsMatrix[i];
+			for (BoxItem boxItem : boxItemGroup.getItems()) {
+				count += boxItem.getCount();
+				boxMatrix[boxItem.getIndex()] = null;
+			}
+			groupsMatrix[i] = null;
+		}
+		return count;
 	}
 
 }

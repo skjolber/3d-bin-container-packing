@@ -8,7 +8,6 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator implements BoxItemGroupPermutationRotationIterator {
 
 	protected BoxItemGroup[] groupsMatrix;
-
 	protected List<BoxItemGroup> excludedBoxItemGroups;
 
 	public AbstractBoxItemGroupsPermutationRotationIterator(BoxItemGroup[] groupsMatrix, BoxItem[] boxMatrix, List<BoxItemGroup> excluded) {
@@ -17,15 +16,15 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 		this.excludedBoxItemGroups = excluded;
 	}
 	
-	protected int getCount() {
-		int index = 0;
-		for (BoxItemGroup loadableItemGroup : groupsMatrix) {
-			if(loadableItemGroup == null) {
+	protected int getBoxCount() {
+		int count = 0;
+		for (BoxItemGroup group : groupsMatrix) {
+			if(group == null) {
 				continue;
 			}
-			index += loadableItemGroup.getBoxCount();
+			count += group.getBoxCount();
 		}
-		return index;
+		return count;
 	}
 	
 	/**
@@ -114,8 +113,6 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 			BoxItemGroup boxItemGroup = groupsMatrix[i];
 			for (BoxItem boxItem : boxItemGroup.getItems()) {
 				count += boxItem.getCount();
-
-				boxItem.setCount(0);
 				stackableItems[boxItem.getIndex()] = null;
 			}
 			groupsMatrix[i] = null;

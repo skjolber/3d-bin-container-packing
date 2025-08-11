@@ -18,7 +18,7 @@ import com.github.skjolber.packing.api.Dimension;
 public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 
 	@Test
-	void testPermutations() {
+	void testPermutationsList() {
 		Dimension container = new Dimension(null, 9, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
@@ -41,8 +41,37 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 				.withMaxLoadWeight(products2.size())
 				.withParallelizationCount(5)
 				.build();
+		
+		int count = 0;
+		do {
+			count++;
+			System.out.println("> " + Arrays.toString(rotator.getPermutations()) );
+		} while (rotator.nextPermutation() != -1);
 
-		ParallelBoxItemGroupPermutationRotationIterator rotator2 = ParallelBoxItemGroupPermutationRotationIterator.newBuilder()
+		assertEquals((3 * 2 * 1) * (3 * 2 * 1), count);
+		
+		assertEquals(count, rotator.countPermutations());
+	}
+
+	@Test
+	void testPermutations() {
+		Dimension container = new Dimension(null, 9, 1, 1);
+
+		List<BoxItemGroup> groups = new ArrayList<>();
+
+		List<BoxItem> products1 = new ArrayList<>();
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
+		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
+		groups.add(new BoxItemGroup("1", products1));
+
+		List<BoxItem> products2 = new ArrayList<>();
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
+		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
+		groups.add(new BoxItemGroup("2", products2));
+
+		ParallelBoxItemGroupPermutationRotationIterator rotator = ParallelBoxItemGroupPermutationRotationIterator.newBuilder()
 				.withLoadSize(container)
 				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
@@ -51,14 +80,15 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		int count = 0;
 		do {
 			count++;
-			System.out.println(Arrays.toString(rotator.getPermutations()) + " " + Arrays.toString(rotator2.getPermutations()));
-		} while (rotator.nextPermutation() != -1 && rotator2.nextPermutation() != -1);
+			System.out.println("> " + Arrays.toString(rotator.getPermutations()) );
+		} while (rotator.nextPermutation() != -1);
 
 		assertEquals((3 * 2 * 1) * (3 * 2 * 1), count);
 		
 		assertEquals(count, rotator.countPermutations());
 	}
 
+	
 	@Test
 	void testPermutationsRepeatedItems() {
 		Dimension container = new Dimension(null, 9, 1, 1);
@@ -201,12 +231,8 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		int[] before = iterator.getPermutations();
 		
 		int maxIndex = 3;
-
-		System.out.println(Arrays.toString(iterator.getPermutations()));
 		
 		iterator.nextPermutation(maxIndex);
-
-		System.out.println(Arrays.toString(iterator.getPermutations()));
 
 		int[] after = iterator.getPermutations();
 		for(int i = 0; i < maxIndex; i++) {

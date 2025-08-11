@@ -261,7 +261,8 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 			assertValid(containers);
 	
 			List<StackPlacement> placements = containers.get(0).getStack().getPlacements();
-	
+			assertThat(placements).size().isEqualTo(3);
+
 			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
 			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemDescription("B");
 			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemDescription("C");
@@ -307,12 +308,14 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 	
 			Container container1 = packList.get(0);
 			List<StackPlacement> placements1 = container1.getStack().getPlacements();
+			assertThat(placements1).size().isEqualTo(2);
 	
 			assertThat(placements1.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
 			assertThat(placements1.get(1)).isAt(1, 0, 0).hasBoxItemId("A");
 			
 			Container container2 = packList.get(1);
 			List<StackPlacement> placements2 = container2.getStack().getPlacements();
+			assertThat(placements2).size().isEqualTo(2);
 	
 			assertThat(placements2.get(0)).isAt(0, 0, 0).hasBoxItemId("B");
 			assertThat(placements2.get(1)).isAt(1, 0, 0).hasBoxItemId("B");

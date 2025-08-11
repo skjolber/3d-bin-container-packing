@@ -1,8 +1,10 @@
 package com.github.skjolber.packing.iterator;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 
@@ -22,18 +24,61 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 				throw new IllegalStateException();
 			}
 
-			BoxItem[] matrix = toMatrix();
+			if(maxLoadWeight == -1) {
+				throw new IllegalStateException();
+			}
+			if(size == null) {
+				throw new IllegalStateException();
+			}
+			
+			BoxItem[] included = new BoxItem[boxItems.size()];
+			List<BoxItem> excluded = new ArrayList<>(boxItems.size());
+			
+			// box item and box item groups indexes are unique and static
+			for (int i = 0; i < boxItems.size(); i++) {
+				BoxItem boxItem = boxItems.get(i);
+				
+				Box box = boxItem.getBox();
+				if(box.getWeight() > maxLoadWeight) {
+					excluded.add(boxItem);
+					continue;
+				}
 
-			return new DefaultBoxItemPermutationRotationIterator(matrix);
+				if(box.getVolume() > size.getVolume()) {
+					excluded.add(boxItem);
+					continue;
+				}
+				
+				List<BoxStackValue> boundRotations = box.rotations(size);
+				if(boundRotations == null || boundRotations.isEmpty()) {
+					excluded.add(boxItem);
+					continue;
+				}
+				
+				List<BoxStackValue> cloned = new ArrayList<>(boundRotations.size());
+				for(BoxStackValue v : boundRotations) {
+					cloned.add(v.clone());
+				}
+				Box clonedBox = new Box(box, cloned);
+				
+				included[i] = new BoxItem(clonedBox, boxItem.getCount(), i);
+			}
+
+			return new DefaultBoxItemPermutationRotationIterator(included, excluded);
 		}
-	}
 
-	public DefaultBoxItemPermutationRotationIterator(BoxItem[] matrix) {
-		super(matrix);
+	}
+	
+	private List<BoxItem> excluded;
+
+	public DefaultBoxItemPermutationRotationIterator(BoxItem[] boxItems, List<BoxItem> excluded) {
+		super(boxItems);
+		
+		this.excluded = excluded;
 		
 		int count = 0;
 		
-		for (BoxItem loadableItem : matrix) {
+		for (BoxItem loadableItem : boxItems) {
 			if(loadableItem != null) {
 				count += loadableItem.getCount();
 			}
@@ -246,5 +291,9 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	
 	protected int[] getRotations() {
 		return rotations;
+	}
+	
+	public List<BoxItem> getExcluded() {
+		return excluded;
 	}
 }

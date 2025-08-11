@@ -70,7 +70,7 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 		}
 	}
 
-	protected List<BoxItem> boxItems;
+	protected List<BoxItem> boxItems = new ArrayList<>();
 	
 	protected final BoxItemPermutationRotationIterator iterator;
 	
@@ -85,20 +85,24 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 	}
 	
 	protected void resetFromIterator() {
-		boxItems = new ArrayList<>();
+		boxItems.clear();
+		
 		for (int i = 0; i < stackableItems.length; i++) {
-			BoxItem loadableItem = stackableItems[i];
-			if(loadableItem != null && !loadableItem.isEmpty()) {
-				boxItems.add(loadableItem.clone());
+			BoxItem boxItem = stackableItems[i];
+			if(boxItem != null) {
+				boxItem.reset();
+				
+				boxItems.add(boxItem);
 			}
 		}
 
 		int[] permutations = iterator.getPermutations();
 		
-		this.permutations = new int[permutations.length];
-		this.rotations = new int[permutations.length];
-		this.minBoxVolume = new long[permutations.length];
-		
+		if(this.permutations.length != permutations.length) {
+			this.permutations = new int[permutations.length];
+			this.rotations = new int[permutations.length];
+			this.minBoxVolume = new long[permutations.length];
+		}		
 		System.arraycopy(permutations, 0, this.permutations, 0, permutations.length);
 		System.arraycopy(iterator.getMinBoxVolume(), 0, minBoxVolume, 0, permutations.length);
 	}
@@ -247,7 +251,6 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 		
 		int offset = 0;
 		for(int i = 0; i < this.permutations.length; i++) {
-			
 			if(stackableItems[this.permutations[i]].isEmpty()) {
 				continue;
 			}

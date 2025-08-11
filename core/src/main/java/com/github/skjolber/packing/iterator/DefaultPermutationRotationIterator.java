@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Deprecated
 public class DefaultPermutationRotationIterator extends AbstractPermutationRotationIterator implements PermutationRotationIterator {
 
 	public static Builder newBuilder() {
@@ -33,7 +34,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	protected int[] permutations; // n!
 
 	// minimum volume from index i and above
-	protected long[] minStackableVolume;
+	protected long[] minBoxVolume;
 
 	public DefaultPermutationRotationIterator(PermutationBoxItemValue[] matrix) {
 		super(matrix);
@@ -60,7 +61,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 			permutations[i] = types.get(i);
 		}
 
-		this.minStackableVolume = new long[permutations.length];
+		this.minBoxVolume = new long[permutations.length];
 
 		if(permutations.length > 0) {
 			calculateMinStackableVolume(0);
@@ -84,21 +85,21 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	private void calculateMinStackableVolume(int offset) {
 		PermutationRotation last = get(permutations.length - 1);
 
-		minStackableVolume[permutations.length - 1] = last.getBoxStackValue().getVolume();
+		minBoxVolume[permutations.length - 1] = last.getBoxStackValue().getVolume();
 
 		for (int i = permutations.length - 2; i >= offset; i--) {
 			long volume = get(i).getBoxStackValue().getVolume();
 
-			if(volume < minStackableVolume[i + 1]) {
-				minStackableVolume[i] = volume;
+			if(volume < minBoxVolume[i + 1]) {
+				minBoxVolume[i] = volume;
 			} else {
-				minStackableVolume[i] = minStackableVolume[i + 1];
+				minBoxVolume[i] = minBoxVolume[i + 1];
 			}
 		}
 	}
 
 	public long getMinStackableVolume(int offset) {
-		return minStackableVolume[offset];
+		return minBoxVolume[offset];
 	}
 
 	/**
