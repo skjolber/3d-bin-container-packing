@@ -1,14 +1,12 @@
 package com.github.skjolber.packing.api;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
 
 /**
  * 
- * Items which belong together, for example different parts of a single product or order.
+ * Items which belong together, for example different parts of a single product
+ * or order.
  * 
  */
 
@@ -17,7 +15,7 @@ public class BoxItemGroup {
 	protected String id;
 
 	protected List<BoxItem> items;
-	
+
 	protected int index = -1;
 
 	protected List<BoxItem> resetItems;
@@ -26,7 +24,7 @@ public class BoxItemGroup {
 		this(id, items);
 		this.index = index;
 	}
-	
+
 	public BoxItemGroup(String id, List<BoxItem> items) {
 		super();
 		this.id = id;
@@ -68,26 +66,25 @@ public class BoxItemGroup {
 	public BoxItem get(int i) {
 		return items.get(i);
 	}
-	
+
 	public boolean decrement(int index) {
 		BoxItem boxItem = items.get(index);
-		if(!boxItem.decrement()) {
+		if (!boxItem.decrement()) {
 			items.remove(index);
 		}
-		
+
 		return !items.isEmpty();
 	}
-	
+
 	public boolean decrement(int index, int count) {
 		BoxItem boxItem = items.get(index);
-		if(!boxItem.decrement(count)) {
+		if (!boxItem.decrement(count)) {
 			items.remove(index);
 		}
-		
+
 		return !items.isEmpty();
 	}
-	
-	
+
 	public int getBoxCount() {
 		int count = 0;
 		for (BoxItem boxItem : items) {
@@ -98,35 +95,35 @@ public class BoxItemGroup {
 
 	public boolean isEmpty() {
 		for (BoxItem boxItem : items) {
-			if(!boxItem.isEmpty()) {
+			if (!boxItem.isEmpty()) {
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
-	
+
 	public void removeEmpty() {
 		for (int j = 0; j < items.size(); j++) {
 			BoxItem boxItem = items.get(j);
-			
-			if(boxItem.isEmpty()) {
+
+			if (boxItem.isEmpty()) {
 				items.remove(j);
 				j--;
 			}
 		}
 	}
-	
+
 	public BoxItemGroup clone() {
 		List<BoxItem> items = new ArrayList<>();
 
 		for (BoxItem boxItem : this.items) {
 			items.add(boxItem.clone());
 		}
-		
+
 		return new BoxItemGroup(id, items);
 	}
-	
+
 	public long getVolume() {
 		long volume = 0;
 		for (BoxItem boxItem : items) {
@@ -146,11 +143,11 @@ public class BoxItemGroup {
 	public BoxItem remove(int index) {
 		return items.remove(index);
 	}
-	
+
 	public void setIndex(int index) {
 		this.index = index;
 	}
-	
+
 	public int getIndex() {
 		return index;
 	}
@@ -162,9 +159,9 @@ public class BoxItemGroup {
 			boxItem.reset();
 		}
 	}
-	
+
 	public void mark() {
-		if(resetItems == null) {
+		if (resetItems == null) {
 			resetItems = new ArrayList<>(items);
 		} else {
 			resetItems.clear();
@@ -174,5 +171,5 @@ public class BoxItemGroup {
 			boxItem.mark();
 		}
 	}
-	
+
 }

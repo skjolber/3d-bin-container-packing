@@ -58,7 +58,7 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			extremePoints.clearToSize(inputContainer.getDx(), inputContainer.getDy(), inputContainer.getDz());
 			
 			for (StackPlacement placement : stack.getPlacements()) {
-				Box box = placement.getBoxItem().getBox();
+				Box box = placement.getStackValue().getBox();
 				BoxVisualizer boxVisualization = new BoxVisualizer();
 				boxVisualization.setId(box.getId());
 				boxVisualization.setName(box.getDescription());

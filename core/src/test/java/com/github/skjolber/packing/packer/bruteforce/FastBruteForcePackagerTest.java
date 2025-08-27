@@ -24,7 +24,6 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.impl.ValidatingStack;
-import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
@@ -69,7 +68,6 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 
 	@Test
 	void testStackMultipleContainers() {
-
 		List<Container> containers = new ArrayList<>();
 
 		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
@@ -143,7 +141,6 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	}
 
 	protected void pack(BouwkampCode bouwkampCode) {
-
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(100)

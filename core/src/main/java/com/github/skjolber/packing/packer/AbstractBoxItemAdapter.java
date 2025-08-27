@@ -16,9 +16,9 @@ public abstract class AbstractBoxItemAdapter<C extends ContainerItem, T extends 
 	protected List<BoxItem> remainingBoxItems;
 	protected final PackagerInterruptSupplier interrupt;
 	protected final BoxPriority priority;
-	protected final AbstractContainerItemsCalculator<C> packagerContainerItems;
+	protected final ContainerItemsCalculator<C> packagerContainerItems;
 
-	public AbstractBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority, AbstractContainerItemsCalculator<C> packagerContainerItems, PackagerInterruptSupplier interrupt) {
+	public AbstractBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority, ContainerItemsCalculator<C> packagerContainerItems, PackagerInterruptSupplier interrupt) {
 		this.packagerContainerItems = packagerContainerItems;
 		this.priority = priority;
 		

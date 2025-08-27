@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -15,6 +16,7 @@ import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
+import com.github.skjolber.packing.packer.bruteforce.BruteForceIntermediatePackagerResult;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -188,7 +190,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 
 						return containerPackResults;
 					}
-					return null;
+					throw e;
 				}
 			}
 

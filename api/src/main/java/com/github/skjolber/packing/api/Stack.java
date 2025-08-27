@@ -85,5 +85,4 @@ public class Stack implements Serializable, Iterable<StackPlacement> {
 		return entries.listIterator();
 	}
 
-
 }

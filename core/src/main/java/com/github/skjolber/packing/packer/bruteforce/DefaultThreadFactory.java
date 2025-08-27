@@ -10,8 +10,7 @@ public class DefaultThreadFactory implements ThreadFactory {
 	private final String namePrefix = "3d-packaging-thread-";
 
 	public DefaultThreadFactory() {
-		SecurityManager s = System.getSecurityManager();
-		group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+		group = Thread.currentThread().getThreadGroup();
 	}
 
 	public Thread newThread(Runnable r) {

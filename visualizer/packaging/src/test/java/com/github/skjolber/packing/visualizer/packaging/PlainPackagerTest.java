@@ -25,7 +25,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
     @Test
     public void testPlainPackager() throws Exception {
-        Packager laff_packager = PlainPackager.newBuilder()
+    	PlainPackager p = PlainPackager.newBuilder()
                 .build();
 
         List<ContainerItem> containerItems = ContainerItem
@@ -33,7 +33,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
                 .withContainer(container)
                 .build();
 
-        PackagerResult result = laff_packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+        PackagerResult result = p.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
         if (result.isSuccess()) {
             write(result.get(0));
         } else {

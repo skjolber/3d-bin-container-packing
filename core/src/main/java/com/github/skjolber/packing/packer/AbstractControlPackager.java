@@ -45,7 +45,7 @@ public abstract class AbstractControlPackager extends AbstractPackager<Intermedi
 	protected class DefaultBoxItemAdapter extends AbstractBoxItemAdapter<ControlContainerItem, IntermediatePackagerResult> {
 
 		public DefaultBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority,
-				AbstractContainerItemsCalculator<ControlContainerItem> packagerContainerItems,
+				ContainerItemsCalculator<ControlContainerItem> packagerContainerItems,
 				PackagerInterruptSupplier interrupt) {
 			super(boxItems, priority, packagerContainerItems, interrupt);
 		}
@@ -62,7 +62,7 @@ public abstract class AbstractControlPackager extends AbstractPackager<Intermedi
 
 		public DefaultBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups,
 				BoxPriority priority,
-				AbstractContainerItemsCalculator<ControlContainerItem> packagerContainerItems, 
+				ContainerItemsCalculator<ControlContainerItem> packagerContainerItems, 
 				PackagerInterruptSupplier interrupt) {
 			super(boxItemGroups, packagerContainerItems, priority, interrupt);
 		}
@@ -99,9 +99,9 @@ public abstract class AbstractControlPackager extends AbstractPackager<Intermedi
 			try {
 				PackagerAdapter adapter;
 				if(items != null && !items.isEmpty()) {
-					adapter = new DefaultBoxItemAdapter(items, priority, new ControlContainerItemsCalculator(containers), interrupt);
+					adapter = new DefaultBoxItemAdapter(items, priority, new ContainerItemsCalculator<>(containers), interrupt);
 				} else {
-					adapter = new DefaultBoxItemGroupAdapter(itemGroups, priority, new ControlContainerItemsCalculator(containers), interrupt);
+					adapter = new DefaultBoxItemGroupAdapter(itemGroups, priority, new ContainerItemsCalculator<>(containers), interrupt);
 				}
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 				
@@ -123,7 +123,6 @@ public abstract class AbstractControlPackager extends AbstractPackager<Intermedi
 	}
 
 	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
-		
 		Container container = controlContainerItem.getContainer();
 
 		Stack stack = new Stack();

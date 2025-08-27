@@ -5,7 +5,8 @@ import java.util.List;
 
 /**
  * 
- * Packager result. If the packaging operation was unsuccessful, the container list is empty.
+ * Packager result. If the packaging operation was unsuccessful, the container
+ * list is empty.
  * 
  */
 

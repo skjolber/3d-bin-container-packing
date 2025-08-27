@@ -18,7 +18,7 @@ public class ContainerItem {
 		public int compare(ContainerItem o1, ContainerItem o2) {
 			return Long.compare(o1.getContainer().getMaxLoadVolume(), o2.getContainer().getMaxLoadVolume());
 		}
-		
+
 	};
 
 	public static final Comparator<ContainerItem> MAX_LOAD_WEIGHT_COMPARATOR = new Comparator<ContainerItem>() {
@@ -27,7 +27,7 @@ public class ContainerItem {
 		public int compare(ContainerItem o1, ContainerItem o2) {
 			return Long.compare(o1.getContainer().getMaxLoadWeight(), o2.getContainer().getMaxLoadWeight());
 		}
-		
+
 	};
 
 	public static Builder newListBuilder() {
@@ -82,11 +82,11 @@ public class ContainerItem {
 		this.container = container;
 		this.count = count;
 	}
-	
+
 	public void setIndex(int index) {
 		this.index = index;
 	}
-	
+
 	public int getIndex() {
 		return index;
 	}

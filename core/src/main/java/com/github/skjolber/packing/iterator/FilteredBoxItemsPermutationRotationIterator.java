@@ -60,7 +60,7 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 				throw new IllegalStateException();
 			}
 
-			AbstractBoxItemPermutationRotationIterator iterator = builder
+			BoxItemPermutationRotationIterator iterator = builder
 																	.withLoadSize(size)
 																	.withMaxLoadWeight(maxLoadWeight)
 																	.withBoxItems(boxItems)

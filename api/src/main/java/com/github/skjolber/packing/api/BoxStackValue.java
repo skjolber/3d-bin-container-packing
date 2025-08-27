@@ -3,7 +3,7 @@ package com.github.skjolber.packing.api;
 import java.util.List;
 
 public class BoxStackValue {
-	
+
 	protected final int dx; // width
 	protected final int dy; // depth
 	protected final int dz; // height
@@ -12,7 +12,7 @@ public class BoxStackValue {
 
 	protected final List<Surface> surfaces;
 	protected long volume;
-	
+
 	protected final int index;
 	protected Box box;
 
@@ -22,12 +22,12 @@ public class BoxStackValue {
 		this.dz = dz;
 		this.surfaces = surfaces;
 
-		this.area = (long)dx * (long)dy;
-		this.volume = (long)dx * (long)dy * (long)dz;
-		
+		this.area = (long) dx * (long) dy;
+		this.volume = (long) dx * (long) dy * (long) dz;
+
 		this.index = index;
 	}
-	
+
 	protected BoxStackValue(BoxStackValue other) {
 		this.dx = other.dx;
 		this.dy = other.dy;
@@ -37,10 +37,10 @@ public class BoxStackValue {
 		this.area = other.area;
 		this.volume = other.volume;
 		this.index = other.index;
-		
+
 		this.box = other.box;
 	}
-	
+
 	public int getDx() {
 		return dx;
 	}
@@ -88,23 +88,22 @@ public class BoxStackValue {
 	public String toString() {
 		return "StackValue[" + surfaces + " " + dx + "x" + dy + "x" + dz + "]";
 	}
-	
+
 	@Override
 	public BoxStackValue clone() {
 		return new BoxStackValue(this);
 	}
-	
+
 	public void setBox(Box box) {
 		this.box = box;
 	}
-	
+
 	public Box getBox() {
 		return box;
 	}
-	
+
 	public int getIndex() {
 		return index;
 	}
 
-	
 }

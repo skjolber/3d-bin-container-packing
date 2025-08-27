@@ -28,9 +28,9 @@ public interface ManifestListener {
 	
 	/**
 	 * 
-	 * Notify box cannot be fitted.
+	 * Notify some box items will not be attempted
 	 * 
-	 * @param boxItem {@linkplain FilteredBoxBoxItemGroupItems}
+	 * @param boxItems list of box items
 	 */
 	
 	default void declined(List<BoxItem> boxItems) {
@@ -42,7 +42,7 @@ public interface ManifestListener {
 	 * Notify box cannot be fitted, even it was previously accepted; usually because
 	 * fitting the whole group was not possible.
 	 * 
-	 * @param boxItem {@linkplain BoxItem}
+	 * @param boxItems {@linkplain BoxItem}
 	 */
 	
 	default void undo(List<BoxItem> boxItems) {
@@ -51,9 +51,17 @@ public interface ManifestListener {
 
 	/**
 	 * 
-	 * Notify box group was loaded. 
 	 * 
 	 * @param group {@linkplain BoxItemGroup} to be added.
+	 */
+	
+	/**
+	 * 
+	 * Notify attempting box group. 
+	 * 
+	 * @param group group
+	 * @param offset box offset
+	 * @param length box length from offset
 	 */
 	
 	default void attempt(BoxItemGroup group, int offset, int length) {
@@ -61,7 +69,7 @@ public interface ManifestListener {
 	
 	/**
 	 * 
-	 * Notify box cannot be fitted.
+	 * Notify box group was fitted.
 	 * 
 	 * @param group {@linkplain BoxItemGroup}
 	 */
@@ -71,7 +79,7 @@ public interface ManifestListener {
 	
 	/**
 	 * 
-	 * Notify box cannot be fitted.
+	 * Notify box group cannot be fitted.
 	 * 
 	 * @param group {@linkplain BoxItemGroup}
 	 */
@@ -85,7 +93,7 @@ public interface ManifestListener {
 	 * 
 	 * Notify box group cannot be fitted.
 	 * 
-	 * @param group {@linkplain BoxItemGroup}
+	 * @param groups {@linkplain BoxItemGroup}
 	 */
 	
 	default void filteredGroups(List<BoxItemGroup> groups) {

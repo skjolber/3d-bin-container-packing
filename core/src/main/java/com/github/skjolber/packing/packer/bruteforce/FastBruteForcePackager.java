@@ -23,7 +23,7 @@ import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
-import com.github.skjolber.packing.packer.DefaultContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
@@ -80,7 +80,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		private final FastExtremePoints3DStack extremePoints;
 
 		public FastBruteForceAdapter(List<BoxItem> boxItems, BoxPriority priority,
-				DefaultContainerItemsCalculator packagerContainerItems,
+				ContainerItemsCalculator<ContainerItem> packagerContainerItems,
 				BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, priority, packagerContainerItems, containerIterators, interrupt);
 			
@@ -103,7 +103,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		private final FastExtremePoints3DStack extremePoints;
 
 		public FastBruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, BoxPriority priority,
-				DefaultContainerItemsCalculator packagerContainerItems,
+				ContainerItemsCalculator<ContainerItem> packagerContainerItems,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, boxItemGroups, priority, packagerContainerItems, containerIterators, interrupt);
 			
@@ -123,7 +123,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 	@Override
 	protected FastBruteForceGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			BoxPriority priority, DefaultContainerItemsCalculator defaultContainerItemsCalculator,
+			BoxPriority priority, ContainerItemsCalculator<ContainerItem> defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt) {
 		DefaultBoxItemGroupPermutationRotationIterator[] containerIterators = new DefaultBoxItemGroupPermutationRotationIterator[defaultContainerItemsCalculator.getContainerItemCount()];
 
@@ -150,7 +150,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 	@Override
 	protected FastBruteForceAdapter createBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority,
-			DefaultContainerItemsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt) {
+			ContainerItemsCalculator<ContainerItem> defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt) {
 		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[defaultContainerItemsCalculator.getContainerItemCount()];
 
 		for (int i = 0; i < defaultContainerItemsCalculator.getContainerItemCount(); i++) {
@@ -180,13 +180,10 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			List<StackPlacement> stackPlacements, ContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator,
 			PackagerInterruptSupplier interrupt) {
-
-
 		
-		Stack stack = new Stack();
-
 		Container holder = containerItem.getContainer().clone();
 		
+		Stack stack = holder.getStack();
 		
 		BruteForceIntermediatePackagerResult bestResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(), containerIndex, iterator);
 		

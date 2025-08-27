@@ -12,6 +12,4 @@ import com.github.skjolber.packing.api.ep.FilteredPoints;
 
 public interface BoxItemControls extends ManifestListener {
 
-
-
 }

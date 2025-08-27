@@ -52,6 +52,36 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
 	}
 
+
+	@Test
+	void testStackingSquaresOnSquareTwoLevels() {
+		
+		int factor = 100;
+
+		Container container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2 * factor, 2 * factor, 2 * factor).withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
+		
+		ContainerItem containerItem = new ContainerItem(container, 1);
+		
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+	
+			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(factor, factor, factor).withWeight(1).build(), 8));
+	
+			PackagerResult build = packager.newResultBuilder()
+					.withContainerItem( b -> {
+						b.withContainerItem(containerItem);
+					})
+					.withBoxItems(products)
+					.build();
+			assertValid(build);
+		} finally {
+			packager.close();
+		}
+
+	}
+
+
 	@Test
 	void testStackingRectangles() {
 		List<ContainerItem> containerItems = ContainerItem

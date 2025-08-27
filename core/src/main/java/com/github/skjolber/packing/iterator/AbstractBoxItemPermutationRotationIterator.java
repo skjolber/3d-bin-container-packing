@@ -10,8 +10,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
 public abstract class AbstractBoxItemPermutationRotationIterator implements BoxItemPermutationRotationIterator {
 
 	protected final BoxItem[] stackableItems; // by index
-	
-	protected int[] rotations; // 2^n or 6^n
+	protected int[] rotations;
 	protected int[] reset;
 
 	// permutations of boxes that fit inside this container

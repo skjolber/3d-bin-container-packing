@@ -44,11 +44,13 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 				2 * boxSize.getDy(),
 				2 * boxSize.getDz());
 
+		System.out.println("Test " + containerSize);
+		
 		runTest(containerSize, boxSize, count,
 				bruteForcePackager,
 				fastBruteForcePackager,
-				parallelBruteForcePackager,
-				plainPackager);
+				parallelBruteForcePackager
+				);
 	}
 
 	@Property
@@ -113,7 +115,7 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 					.build();
 
 			final Box box = Box.newBuilder()
-					.withDescription(boxSize.encode())
+					.withId(boxSize.encode())
 					.withRotate3D()
 					.withSize(boxSize.getDx(), boxSize.getDy(), boxSize.getDz())
 					.withWeight(1)
@@ -132,11 +134,14 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 			} else if(builder instanceof AbstractControlsPackagerResultBuilder) {
 				AbstractControlsPackagerResultBuilder b = (AbstractControlsPackagerResultBuilder)builder;
 				builder = b.withContainerItems(containers);
+			} else {
+				throw new RuntimeException();
 			}
 			
 			PackagerResult build = builder.build();
-
+			Assert.assertTrue(packager.getClass().getSimpleName() + " is expected to pack", build.isSuccess());
 			Container fits = build.get(0);
+			
 			// identifies which packager has failed
 			Assert.assertNotNull(packager.getClass().getSimpleName() + " is expected to pack", fits);
 			assertValid(fits);

@@ -17,7 +17,7 @@ import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
-import com.github.skjolber.packing.packer.DefaultContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
@@ -76,7 +76,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		protected final ExtremePoints3DStack extremePoints;
 		
 		public BruteForceAdapter(List<BoxItem> boxItems, BoxPriority priority,
-				DefaultContainerItemsCalculator packagerContainerItems,
+				ContainerItemsCalculator<ContainerItem> packagerContainerItems,
 				BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, priority, packagerContainerItems, containerIterators, interrupt);
 			
@@ -99,7 +99,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		protected final ExtremePoints3DStack extremePoints;
 
 		public BruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, BoxPriority priority,
-				DefaultContainerItemsCalculator packagerContainerItems,
+				ContainerItemsCalculator<ContainerItem> packagerContainerItems,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, boxItemGroups, priority, packagerContainerItems, containerIterators, interrupt);
 			
@@ -123,12 +123,12 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 	@Override
 	protected BruteForceGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			BoxPriority priority, DefaultContainerItemsCalculator defaultContainerItemsCalculator,
+			BoxPriority priority, ContainerItemsCalculator<ContainerItem> containerItemsCalculator,
 			PackagerInterruptSupplier interrupt) {
-		DefaultBoxItemGroupPermutationRotationIterator[] containerIterators = new DefaultBoxItemGroupPermutationRotationIterator[defaultContainerItemsCalculator.getContainerItemCount()];
+		DefaultBoxItemGroupPermutationRotationIterator[] containerIterators = new DefaultBoxItemGroupPermutationRotationIterator[containerItemsCalculator.getContainerItemCount()];
 
-		for (int i = 0; i < defaultContainerItemsCalculator.getContainerItemCount(); i++) {
-			ContainerItem containerItem = defaultContainerItemsCalculator.getContainerItem(i);
+		for (int i = 0; i < containerItemsCalculator.getContainerItemCount(); i++) {
+			ContainerItem containerItem = containerItemsCalculator.getContainerItem(i);
 			Container container = containerItem.getContainer();
 
 			Dimension dimension = new Dimension(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
@@ -145,16 +145,16 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		for (BoxItemGroup boxItemGroup : itemGroups) {
 			boxItems.addAll(boxItemGroup.getItems());
 		}
-		return new BruteForceGroupAdapter(boxItems, itemGroups, priority, defaultContainerItemsCalculator, containerIterators, interrupt);
+		return new BruteForceGroupAdapter(boxItems, itemGroups, priority, containerItemsCalculator, containerIterators, interrupt);
 	}
 
 	@Override
 	protected BruteForceAdapter createBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority,
-			DefaultContainerItemsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt) {
-		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[defaultContainerItemsCalculator.getContainerItemCount()];
+			ContainerItemsCalculator<ContainerItem> containerItemsCalculator, PackagerInterruptSupplier interrupt) {
+		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[containerItemsCalculator.getContainerItemCount()];
 
-		for (int i = 0; i < defaultContainerItemsCalculator.getContainerItemCount(); i++) {
-			ContainerItem containerItem = defaultContainerItemsCalculator.getContainerItem(i);
+		for (int i = 0; i < containerItemsCalculator.getContainerItemCount(); i++) {
+			ContainerItem containerItem = containerItemsCalculator.getContainerItem(i);
 			Container container = containerItem.getContainer();
 
 			Dimension dimension = new Dimension(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
@@ -167,7 +167,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 					.build();
 		}
 		
-		return new BruteForceAdapter(boxItems, priority, defaultContainerItemsCalculator, containerIterators, interrupt);
+		return new BruteForceAdapter(boxItems, priority, containerItemsCalculator, containerIterators, interrupt);
 	}
 
 }

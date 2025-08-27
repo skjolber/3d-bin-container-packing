@@ -3,8 +3,9 @@ package com.github.skjolber.packing.api;
 import java.io.Serializable;
 
 /**
- * A {@linkplain Box} repeated one or more times. Typically corresponding to an order-line, but
- * can also represent multiple products which share the same size.
+ * A {@linkplain Box} repeated one or more times. Typically corresponding to an
+ * order-line, but can also represent multiple products which share the same
+ * size.
  * 
  */
 public class BoxItem implements Serializable {
@@ -14,7 +15,7 @@ public class BoxItem implements Serializable {
 	protected int count;
 	protected final Box box;
 	protected int index = -1;
-	
+
 	protected int resetCount;
 	protected BoxItemGroup group;
 
@@ -26,17 +27,17 @@ public class BoxItem implements Serializable {
 		super();
 		this.box = box;
 		this.count = count;
-		
+
 		this.resetCount = count;
 		box.setBoxItem(this);
 	}
-	
+
 	public BoxItem(Box stackable, int count, int index) {
 		super();
 		this.box = stackable;
 		this.count = count;
 		this.index = index;
-		
+
 		this.resetCount = count;
 		box.setBoxItem(this);
 	}
@@ -51,9 +52,9 @@ public class BoxItem implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("%dx%s", count, box);
+		return String.format("%dx%s #%d", count, box, index);
 	}
-	
+
 	public boolean decrement() {
 		count--;
 		return count > 0;
@@ -62,7 +63,7 @@ public class BoxItem implements Serializable {
 	public boolean isEmpty() {
 		return count == 0;
 	}
-	
+
 	public boolean decrement(int value) {
 		this.count = this.count - value;
 		return count > 0;
@@ -71,15 +72,15 @@ public class BoxItem implements Serializable {
 	public BoxItem clone() {
 		return new BoxItem(box, count, index);
 	}
-	
+
 	public void setIndex(int index) {
 		this.index = index;
 	}
-	
+
 	public int getIndex() {
 		return index;
 	}
-	
+
 	public long getVolume() {
 		return count * box.getVolume();
 	}
@@ -91,11 +92,11 @@ public class BoxItem implements Serializable {
 	public void setCount(int count) {
 		this.count = count;
 	}
-	
+
 	public void reset() {
 		this.count = resetCount;
 	}
-	
+
 	public void setResetCount(int resetCount) {
 		this.resetCount = resetCount;
 	}
@@ -103,7 +104,7 @@ public class BoxItem implements Serializable {
 	public void decrementResetCount() {
 		this.resetCount--;
 	}
-	
+
 	public void mark() {
 		this.resetCount = count;
 	}
@@ -111,9 +112,9 @@ public class BoxItem implements Serializable {
 	public void setGroup(BoxItemGroup group) {
 		this.group = group;
 	}
-	
+
 	public BoxItemGroup getGroup() {
 		return group;
 	}
-	
+
 }

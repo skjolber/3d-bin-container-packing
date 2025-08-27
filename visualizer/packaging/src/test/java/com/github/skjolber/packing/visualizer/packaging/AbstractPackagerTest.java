@@ -60,7 +60,7 @@ public class AbstractPackagerTest {
 		p.visualize(packList, file);
 	}
 
-	protected void pack(List<BouwkampCodes> codes, AbstractPackager packager) throws Exception {
+	protected <T> void pack(List<BouwkampCodes> codes, AbstractPackager packager) throws Exception {
 		for (BouwkampCodes bouwkampCodes : codes) {
 			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
 				

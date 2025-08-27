@@ -25,7 +25,7 @@ public class Issue extends AbstractPackagerTest {
 
     @Test
     public void testPlainPackager() throws Exception {
-        Packager laff_packager = PlainPackager.newBuilder()
+    	PlainPackager laff_packager = PlainPackager.newBuilder()
                 .build();
 
         List<ContainerItem> containerItems = ContainerItem

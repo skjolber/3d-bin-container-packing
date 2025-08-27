@@ -12,11 +12,20 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 
-public abstract class AbstractContainerItemsCalculator<T extends ContainerItem> {
+public class ContainerItemsCalculator<T extends ContainerItem> {
 
 	protected long maxContainerLoadVolume = 0;
 	protected long maxContainerLoadWeight = 0;
 
+	protected final List<T> containerItems;
+	
+	public ContainerItemsCalculator(List<T> items) {
+		this.containerItems = items;
+
+		calculateMaxLoadVolume();
+		calculateMaxLoadWeight();
+	}
+	
 	protected void calculateMaxLoadVolume() {
 		maxContainerLoadVolume = 0;
 
@@ -431,9 +440,13 @@ public abstract class AbstractContainerItemsCalculator<T extends ContainerItem> 
 		return weight;
 	}
 	
-	public abstract int getContainerItemCount();
+	public int getContainerItemCount() {
+		return containerItems.size();
+	}
 	
-	public abstract T getContainerItem(int index);
+	public T getContainerItem(int index) {
+		return containerItems.get(index);
+	}
 	
 	protected long getMaxContainerLoadVolume() {
 		return maxContainerLoadVolume;
@@ -441,5 +454,9 @@ public abstract class AbstractContainerItemsCalculator<T extends ContainerItem> 
 
 	protected long getMaxContainerLoadWeight() {
 		return maxContainerLoadWeight;
+	}
+	
+	public List<T> getContainerItems() {
+		return containerItems;
 	}
 }

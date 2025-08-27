@@ -8,23 +8,25 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.DefaultContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 
 public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 
 	protected final BoxItemGroupPermutationRotationIterator[] containerIterators;
 	protected List<StackPlacement> stackPlacements;
 	protected List<BoxItemGroup> boxItemGroups;
-
-	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, BoxPriority priority, DefaultContainerItemsCalculator packagerContainerItems, BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-		super(boxItems, priority, packagerContainerItems, interrupt);
-		
+	protected PackagerInterruptSupplier interrupt;
+	
+	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, BoxPriority priority, ContainerItemsCalculator<ContainerItem> packagerContainerItems, BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
+		super(boxItems, priority, packagerContainerItems);
+		this.interrupt = interrupt;
 		this.containerIterators = containerIterators;
 		
 		int count = 0;

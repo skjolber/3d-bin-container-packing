@@ -9,7 +9,7 @@ import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.DefaultContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 
 public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter implements PackagerAdapter<BruteForceIntermediatePackagerResult> {
@@ -22,9 +22,9 @@ public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter implements 
 	
 	protected final PackagerInterruptSupplier interrupt;
 	protected final BoxPriority priority;
-	protected final DefaultContainerItemsCalculator packagerContainerItems;
+	protected final ContainerItemsCalculator packagerContainerItems;
 
-	public AbstractBruteForceBoxItemGroupsPackagerAdapter(List<BoxItemGroup> boxItemGroups, List<BoxItem> boxItems, BoxPriority priority, DefaultContainerItemsCalculator packagerContainerItems, PackagerInterruptSupplier interrupt) {
+	public AbstractBruteForceBoxItemGroupsPackagerAdapter(List<BoxItemGroup> boxItemGroups, List<BoxItem> boxItems, BoxPriority priority, ContainerItemsCalculator packagerContainerItems, PackagerInterruptSupplier interrupt) {
 		this.boxItemGroups = boxItemGroups;
 		this.packagerContainerItems = packagerContainerItems;
 		this.priority = priority;

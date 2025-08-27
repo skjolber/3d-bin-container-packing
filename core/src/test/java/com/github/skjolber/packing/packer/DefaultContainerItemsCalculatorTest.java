@@ -23,7 +23,7 @@ public class DefaultContainerItemsCalculatorTest {
 		List<ContainerItem> items = ContainerItem.newListBuilder()
 				.withContainer(container, 1)
 				.build();
-		DefaultContainerItemsCalculator calculator = new DefaultContainerItemsCalculator(items);
+		ContainerItemsCalculator<ContainerItem> calculator = new ContainerItemsCalculator<>(items);
 		
 		calculator.calculateMaxLoadVolume();
 		calculator.calculateMaxLoadWeight();
@@ -62,7 +62,7 @@ public class DefaultContainerItemsCalculatorTest {
 				.withContainer(container1, 1)
 				.withContainer(container2, 1)
 				.build();
-		DefaultContainerItemsCalculator calculator = new DefaultContainerItemsCalculator(items);
+		ContainerItemsCalculator calculator = new ContainerItemsCalculator<>(items);
 		
 		calculator.calculateMaxLoadVolume();
 		calculator.calculateMaxLoadWeight();
@@ -98,7 +98,7 @@ public class DefaultContainerItemsCalculatorTest {
 		List<ContainerItem> items = ContainerItem.newListBuilder()
 				.withContainer(container, 1)
 				.build();
-		DefaultContainerItemsCalculator calculator = new DefaultContainerItemsCalculator(items);
+		ContainerItemsCalculator calculator = new ContainerItemsCalculator<>(items);
 		
 		Box box = Box.newBuilder().withSize(1, 2, 3).withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 10);
@@ -123,7 +123,7 @@ public class DefaultContainerItemsCalculatorTest {
 		List<ContainerItem> items = ContainerItem.newListBuilder()
 				.withContainer(container, 1)
 				.build();
-		DefaultContainerItemsCalculator calculator = new DefaultContainerItemsCalculator(items);
+		ContainerItemsCalculator calculator = new ContainerItemsCalculator<>(items);
 		
 		Box box = Box.newBuilder().withSize(1, 2, 3).withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 10);
@@ -153,7 +153,7 @@ public class DefaultContainerItemsCalculatorTest {
 				.withContainer(container1, 1)
 				.withContainer(container2, 1)
 				.build();
-		DefaultContainerItemsCalculator calculator = new DefaultContainerItemsCalculator(items);
+		ContainerItemsCalculator calculator = new ContainerItemsCalculator<>(items);
 		
 		calculator.calculateMaxLoadVolume();
 		calculator.calculateMaxLoadWeight();
@@ -193,7 +193,7 @@ public class DefaultContainerItemsCalculatorTest {
 				.withContainer(container1, 10)
 				.withContainer(container2, 1)
 				.build();
-		DefaultContainerItemsCalculator calculator = new DefaultContainerItemsCalculator(items);
+		ContainerItemsCalculator calculator = new ContainerItemsCalculator<>(items);
 		
 		calculator.calculateMaxLoadVolume();
 		calculator.calculateMaxLoadWeight();

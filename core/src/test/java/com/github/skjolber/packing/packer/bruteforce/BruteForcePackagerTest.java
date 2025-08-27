@@ -255,7 +255,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 				products.add(new BoxItem(Box.newBuilder().withDescription(Integer.toString(square)).withSize(square, square, 1).withRotate3D().withWeight(1).build(), count));
 			}
 	
-			Collections.shuffle(products);
+			//Collections.shuffle(products);
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withBoxItems(products).build();
 	

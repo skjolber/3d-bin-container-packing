@@ -7,14 +7,14 @@ import com.github.skjolber.packing.api.ep.FilteredPoints;
 /**
  * Builder scaffold.
  * 
- * This covers initial filtering of box items vs container and possibly in-flight box vs box filtering.
+ * This covers filtering of points per placement and/or per box item.
  */
 
 public interface PointControlsBuilder<B extends PointControlsBuilder<B>> {
 
 	B withPoints(FilteredPoints points);
 	
-	B withBoxItems(FilteredBoxItems input);
+	B withBoxItems(FilteredBoxItems boxItems);
 	
 	B withContainer(Container container);
 	

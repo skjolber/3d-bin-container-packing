@@ -1,9 +1,10 @@
 package com.github.skjolber.packing.test.bouwkamp;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class BouwkampCode {
+public class BouwkampCode implements Comparable<BouwkampCode>{
 
 	protected int width;
 	protected int depth;
@@ -58,6 +59,11 @@ public class BouwkampCode {
 	@Override
 	public String toString() {
 		return "BouwkampCode [name=" + name + ", width=" + width + ", depth=" + depth + ", square=" + lines + "]";
+	}
+
+	@Override
+	public int compareTo(BouwkampCode o) {
+		return name.compareTo(o.name);
 	}
 
 }

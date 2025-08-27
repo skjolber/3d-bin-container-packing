@@ -22,7 +22,7 @@ import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackager;
-import com.github.skjolber.packing.packer.DefaultContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
@@ -73,9 +73,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				
 				AbstractBruteForceBoxItemPackagerAdapter adapter;
 				if(items != null && !items.isEmpty()) {
-					adapter = createBoxItemAdapter(items, priority, new DefaultContainerItemsCalculator(containers), interrupt);
+					adapter = createBoxItemAdapter(items, priority, new ContainerItemsCalculator<>(containers), interrupt);
 				} else {
-					adapter = createBoxItemGroupAdapter(itemGroups, priority, new DefaultContainerItemsCalculator(containers), interrupt);
+					adapter = createBoxItemGroupAdapter(itemGroups, priority, new ContainerItemsCalculator<>(containers), interrupt);
 				}
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 								
@@ -91,9 +91,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				interrupt.close();
 			}
 		}
-		
 	}
-
 
 	@Override
 	public BruteForcePackagerResultBuilder newResultBuilder() {
@@ -101,10 +99,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 	}
 
 	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, BoxPriority priority,
-			DefaultContainerItemsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt);
+			ContainerItemsCalculator<ContainerItem> defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt);
 
 	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, BoxPriority priority,
-			DefaultContainerItemsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt);
+			ContainerItemsCalculator<ContainerItem> defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt);
 
 	static List<StackPlacement> getPlacements(int size) {
 		// each box will at most have a single placement with a space (and its remainder).
@@ -148,7 +146,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				
 				if(points.size() > bestPermutationResult.getSize()) {
 					bestPermutationResult.setState(points, iterator.getState(), stackPlacements);
-					if(points.size() == iterator.length() || acceptAsFull(bestPermutationResult, holder)) {
+					if(points.size() == iterator.length()) {
 						// best possible result for this container
 						return bestPermutationResult;
 					}
@@ -191,6 +189,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			}
 		} while (true);
 
+		if(bestResult != null) {
+			bestResult.markDirty();
+		}
+
 		return bestResult;
 	}
 
@@ -231,7 +233,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			List<Point> best
 		) throws PackagerInterruptedException {
 		if(interrupt.getAsBoolean()) {
-			// fit2d below might have returned due to deadline
 			throw new PackagerInterruptedException();
 		}
 		BoxStackValue stackValue = rotator.getStackValue(placementIndex);
@@ -289,8 +290,16 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				nextMinStackableAreaIndex = minStackableAreaIndex;
 			}
 
-			List<Point> points = packStackPlacement(extremePointsStack, placements, rotator, stack, maxLoadWeight, placementIndex + 1, interrupt, 
-					nextMinStackableAreaIndex, best);
+			List<Point> points = packStackPlacement(
+					extremePointsStack, 
+					placements, 
+					rotator, 
+					stack, 
+					maxLoadWeight, 
+					placementIndex + 1, 
+					interrupt, 
+					nextMinStackableAreaIndex, 
+					best);
 
 			stack.remove(placement);
 

@@ -4,6 +4,7 @@ import static com.github.skjolber.packing.test.assertj.StackPlacementAssert.asse
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -42,7 +44,10 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
-		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().build();
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
+				.withParallelizationCount(2)
+				.withExecutorService(Executors.newSingleThreadExecutor())
+				.build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
@@ -51,6 +56,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			assertTrue(build.isSuccess());
 			assertValid(build);
 	
 			Container fits = build.get(0);
@@ -73,13 +79,15 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 
 	@Test
 	void testStackMultipleContainers() {
-
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 5)
 				.build();
 
-		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().build();
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
+				.withExecutorService(Executors.newSingleThreadExecutor())
+				.withParallelizationCount(2)
+				.build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
@@ -118,7 +126,10 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(8, 8, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
-		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().build();
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
+				.withParallelizationCount(2)
+				.withExecutorService(Executors.newSingleThreadExecutor())
+				.build();
 
 		try {
 			List<BoxItem> products = new ArrayList<>();
@@ -145,7 +156,10 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(10, 10, 4).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
-		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().build();
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
+				.withExecutorService(Executors.newSingleThreadExecutor())
+				.withParallelizationCount(2)
+				.build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
@@ -173,7 +187,10 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(5, 5, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
-		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().build();
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
+				.withParallelizationCount(2)
+				.withExecutorService(Executors.newSingleThreadExecutor())
+				.build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
@@ -216,6 +233,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 	protected void pack(List<BouwkampCodes> codes) {
 		for (BouwkampCodes bouwkampCodes : codes) {
 			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
+				System.out.println("Package " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder());
 				long timestamp = System.currentTimeMillis();
 				pack(bouwkampCode);
 				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.currentTimeMillis() - timestamp));
@@ -230,9 +248,12 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 						.withStack(new ValidatingStack()).build(), 1)
 				.build();
 
-		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(256).build();
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
+				//.withExecutorService(Executors.newSingleThreadExecutor())
+				.withParallelizationCount(4)
+				.build();
 
-			try {
+		try {
 			List<BoxItem> products = new ArrayList<>();
 	
 			List<Integer> squares = new ArrayList<>();
@@ -241,7 +262,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 			}
 	
 			// map similar items to the same stack item - this actually helps a lot
-			Map<Integer, Integer> frequencyMap = new HashMap<>();
+			Map<Integer, Integer> frequencyMap = new TreeMap<>();
 			squares.forEach(word -> frequencyMap.merge(word, 1, (v, newV) -> v + newV));
 	
 			for (Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
@@ -250,7 +271,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 				products.add(new BoxItem(Box.newBuilder().withDescription(Integer.toString(square)).withRotate3D().withSize(square, square, 1).withWeight(1).build(), count));
 			}
 	
-			Collections.shuffle(products);
+			//Collections.shuffle(products);
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			assertValid(build);
@@ -271,7 +292,7 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 	}
 
 	@Override
-	protected AbstractPackager createPackager() {
+	protected ParallelBruteForcePackager createPackager() {
 		return ParallelBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(256).build();
 	}
 }

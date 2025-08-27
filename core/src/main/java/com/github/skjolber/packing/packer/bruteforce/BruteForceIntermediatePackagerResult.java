@@ -1,7 +1,10 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import javax.management.RuntimeErrorException;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -41,11 +44,16 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	private void calculateLoad() {
 		if(dirty) {
 			dirty = false;
+			
+			calculateStack();
+			
 			long loadVolume = 0;
 			int loadWeight = 0;
 
 			for (int i = 0; i < points.size(); i++) {
-				BoxStackValue v = iterator.getStackValue(i);
+				StackPlacement stackPlacement = placements.get(i);
+				
+				BoxStackValue v = stackPlacement.getStackValue();
 				Box box = v.getBox();
 				
 				loadVolume += box.getVolume();
@@ -54,8 +62,6 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 
 			this.loadVolume = loadVolume;
 			this.loadWeight = loadWeight;
-			
-			calculateStack();
 		}
 	}
 	
@@ -69,12 +75,19 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	public void calculateStack() {
 		stack.clear();
 
+		int[] permutations = state.getPermutations();
+		
 		List<BoxStackValue> list = iterator.get(state, points.size());
-
+		
 		for (int i = 0; i < points.size(); i++) {
 			StackPlacement stackPlacement = placements.get(i);
 
 			BoxStackValue value = list.get(i);
+			
+			if(value.getBox().getBoxItem().getIndex() != permutations[i]) {
+				throw new RuntimeException();
+			}
+			
 			stackPlacement.setStackValue(value);
 
 			Point point3d = points.get(i);

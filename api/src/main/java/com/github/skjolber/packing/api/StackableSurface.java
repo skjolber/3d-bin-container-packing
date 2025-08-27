@@ -145,7 +145,7 @@ public class StackableSurface {
 
 			switch (surfaceRotate.getSurface().label) {
 			case TOP: {
-				if(surfaceRotate.isRotated()) {
+				if (surfaceRotate.isRotated()) {
 					top90 = surfaceRotate.getSurface();
 				} else {
 					top0 = surfaceRotate.getSurface();
@@ -153,7 +153,7 @@ public class StackableSurface {
 				break;
 			}
 			case BOTTOM: {
-				if(surfaceRotate.isRotated()) {
+				if (surfaceRotate.isRotated()) {
 					bottom90 = surfaceRotate.getSurface();
 				} else {
 					bottom0 = surfaceRotate.getSurface();
@@ -161,7 +161,7 @@ public class StackableSurface {
 				break;
 			}
 			case LEFT: {
-				if(surfaceRotate.isRotated()) {
+				if (surfaceRotate.isRotated()) {
 					left90 = surfaceRotate.getSurface();
 				} else {
 					left0 = surfaceRotate.getSurface();
@@ -169,7 +169,7 @@ public class StackableSurface {
 				break;
 			}
 			case RIGHT: {
-				if(surfaceRotate.isRotated()) {
+				if (surfaceRotate.isRotated()) {
 					right90 = surfaceRotate.getSurface();
 				} else {
 					right0 = surfaceRotate.getSurface();
@@ -177,7 +177,7 @@ public class StackableSurface {
 				break;
 			}
 			case FRONT: {
-				if(surfaceRotate.isRotated()) {
+				if (surfaceRotate.isRotated()) {
 					front90 = surfaceRotate.getSurface();
 				} else {
 					front0 = surfaceRotate.getSurface();
@@ -185,7 +185,7 @@ public class StackableSurface {
 				break;
 			}
 			case REAR: {
-				if(surfaceRotate.isRotated()) {
+				if (surfaceRotate.isRotated()) {
 					rear90 = surfaceRotate.getSurface();
 				} else {
 					rear0 = surfaceRotate.getSurface();
@@ -318,19 +318,19 @@ public class StackableSurface {
 	}
 
 	private void addXY0(List<Surface> surfaces) {
-		if(top0 != null) {
+		if (top0 != null) {
 			surfaces.add(top0);
 		}
-		if(bottom0 != null) {
+		if (bottom0 != null) {
 			surfaces.add(bottom0);
 		}
 	}
 
 	private void addXY90(List<Surface> surfaces) {
-		if(top90 != null) {
+		if (top90 != null) {
 			surfaces.add(top90);
 		}
-		if(bottom90 != null) {
+		if (bottom90 != null) {
 			surfaces.add(bottom90);
 		}
 	}
@@ -365,19 +365,19 @@ public class StackableSurface {
 	}
 
 	private void addXZ0(List<Surface> surfaces) {
-		if(front0 != null) {
+		if (front0 != null) {
 			surfaces.add(front0);
 		}
-		if(rear0 != null) {
+		if (rear0 != null) {
 			surfaces.add(rear0);
 		}
 	}
 
 	private void addXZ90(List<Surface> surfaces) {
-		if(front90 != null) {
+		if (front90 != null) {
 			surfaces.add(front90);
 		}
-		if(rear90 != null) {
+		if (rear90 != null) {
 			surfaces.add(rear90);
 		}
 	}
@@ -488,19 +488,19 @@ public class StackableSurface {
 	}
 
 	private void addYZ0(List<Surface> surfaces) {
-		if(left0 != null) {
+		if (left0 != null) {
 			surfaces.add(left0);
 		}
-		if(right0 != null) {
+		if (right0 != null) {
 			surfaces.add(right0);
 		}
 	}
 
 	private void addYZ90(List<Surface> surfaces) {
-		if(left90 != null) {
+		if (left90 != null) {
 			surfaces.add(left90);
 		}
-		if(right90 != null) {
+		if (right90 != null) {
 			surfaces.add(right90);
 		}
 	}

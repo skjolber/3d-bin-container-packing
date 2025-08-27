@@ -6,9 +6,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
-import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.DefaultContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 
 public abstract class AbstractBruteForceBoxItemPackagerAdapter implements PackagerAdapter<BruteForceIntermediatePackagerResult> {
@@ -18,14 +16,12 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter implements Packag
 	protected int[] boxesRemaining;
 	protected BoxItem[] boxItems;
 	
-	protected final PackagerInterruptSupplier interrupt;
 	protected final BoxPriority priority;
-	protected final DefaultContainerItemsCalculator packagerContainerItems;
+	protected final ContainerItemsCalculator<ContainerItem> packagerContainerItems;
 
-	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, BoxPriority priority, DefaultContainerItemsCalculator packagerContainerItems, PackagerInterruptSupplier interrupt) {
+	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, BoxPriority priority, ContainerItemsCalculator<ContainerItem> packagerContainerItems) {
 		this.packagerContainerItems = packagerContainerItems;
 		this.priority = priority;
-		this.interrupt = interrupt;
 		
 		this.boxes = new Box[boxItems.size()];
 		this.boxesRemaining = new int[boxItems.size()];
@@ -33,7 +29,6 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter implements Packag
 		
 		for(int i = 0; i < boxItems.size(); i++) {
 			BoxItem boxItem = boxItems.get(i);
-
 			this.boxItems[i] = boxItem;
 			this.boxes[i] = boxItem.getBox();
 			this.boxesRemaining[i] = boxItem.getCount();
@@ -49,9 +44,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter implements Packag
 		// remove adapter inventory
 		for (Integer remove : p) {
 			boxesRemaining[remove]--;
-			
 			boxItems[remove].decrement();
-			
 			if(boxItems[remove].isEmpty()) {
 				boxItems[remove] = null;
 			}
@@ -60,7 +53,6 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter implements Packag
 
 	@Override
 	public List<Integer> getContainers(int maxCount) {
-		
 		List<BoxItem> remainingBoxItems = new ArrayList<>(boxItems.length);
 		for(int i = 0; i < boxItems.length; i++) {
 			BoxItem boxItem = boxItems[i];
@@ -68,10 +60,6 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter implements Packag
 				remainingBoxItems.add(boxItem);
 			}
 		}
-		
 		return packagerContainerItems.getContainers(remainingBoxItems, maxCount);
 	}
-	
-	
-
 }

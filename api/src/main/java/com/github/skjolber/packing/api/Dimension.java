@@ -7,7 +7,8 @@ public class Dimension {
 	public static Dimension decode(String size) {
 		String[] dimensions = size.split("x");
 
-		return newInstance(Integer.parseInt(dimensions[0]), Integer.parseInt(dimensions[1]), Integer.parseInt(dimensions[2]));
+		return newInstance(Integer.parseInt(dimensions[0]), Integer.parseInt(dimensions[1]),
+				Integer.parseInt(dimensions[2]));
 	}
 
 	public static String encode(Dimension dto) {
@@ -38,8 +39,8 @@ public class Dimension {
 		this.dy = dy;
 		this.dz = dz;
 
-		this.volume = ((long)dy) * ((long)dx) * ((long)dz);
-		this.area = ((long)dy) * ((long)dx);
+		this.volume = ((long) dy) * ((long) dx) * ((long) dz);
+		this.area = ((long) dy) * ((long) dx);
 	}
 
 	public Dimension(int dx, int dy, int dz) {
@@ -71,12 +72,9 @@ public class Dimension {
 	}
 
 	public boolean canHold3D(int w, int d, int h) {
-		return (w <= dx && h <= dz && d <= dy) ||
-				(h <= dx && d <= dz && w <= dy) ||
-				(d <= dx && w <= dz && h <= dy) ||
-				(h <= dx && w <= dz && d <= dy) ||
-				(d <= dx && h <= dz && w <= dy) ||
-				(w <= dx && d <= dz && h <= dy);
+		return (w <= dx && h <= dz && d <= dy) || (h <= dx && d <= dz && w <= dy) || (d <= dx && w <= dz && h <= dy)
+				|| (h <= dx && w <= dz && d <= dy) || (d <= dx && h <= dz && w <= dy)
+				|| (w <= dx && d <= dz && h <= dy);
 	}
 
 	/**
@@ -92,7 +90,7 @@ public class Dimension {
 	}
 
 	public boolean canHold2D(int w, int d, int h) {
-		if(h > dz) {
+		if (h > dz) {
 			return false;
 		}
 		return (w <= dx && d <= dy) || (d <= dx && w <= dy);
@@ -177,32 +175,32 @@ public class Dimension {
 		result = prime * result + dy;
 		result = prime * result + dz;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + (int)(volume ^ (volume >>> 32));
+		result = prime * result + (int) (volume ^ (volume >>> 32));
 		result = prime * result + dx;
 		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if(this == obj)
+		if (this == obj)
 			return true;
-		if(obj == null)
+		if (obj == null)
 			return false;
-		if(getClass() != obj.getClass())
+		if (getClass() != obj.getClass())
 			return false;
-		Dimension other = (Dimension)obj;
-		if(dy != other.dy)
+		Dimension other = (Dimension) obj;
+		if (dy != other.dy)
 			return false;
-		if(dz != other.dz)
+		if (dz != other.dz)
 			return false;
-		if(name == null) {
-			if(other.name != null)
+		if (name == null) {
+			if (other.name != null)
 				return false;
-		} else if(!name.equals(other.name))
+		} else if (!name.equals(other.name))
 			return false;
-		if(volume != other.volume)
+		if (volume != other.volume)
 			return false;
-		if(dx != other.dx)
+		if (dx != other.dx)
 			return false;
 		return true;
 	}

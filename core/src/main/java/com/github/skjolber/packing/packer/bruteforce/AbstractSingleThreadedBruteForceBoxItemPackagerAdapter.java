@@ -7,20 +7,24 @@ import java.util.List;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.DefaultContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 
 public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 
 	protected final BoxItemPermutationRotationIterator[] containerIterators;
 	protected List<StackPlacement> stackPlacements;
+	protected final PackagerInterruptSupplier interrupt;
 
-	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, BoxPriority priority, DefaultContainerItemsCalculator packagerContainerItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-		super(boxItems, priority, packagerContainerItems, interrupt);
+	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, BoxPriority priority, ContainerItemsCalculator<ContainerItem> packagerContainerItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
+		super(boxItems, priority, packagerContainerItems);
+		
+		this.interrupt = interrupt;
 		
 		this.containerIterators = containerIterators;
 		

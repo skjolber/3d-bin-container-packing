@@ -26,7 +26,7 @@ public class ExtremePoints2DState {
 	private StackPlacement createStackPlacement(int x, int y, int dx, int dy) {
 		BoxStackValue stackValue = new BoxStackValue(dx, dy, 0, null, -1);
 		
-		return new StackPlacement(null, null, stackValue, x, y, 0);
+		return new StackPlacement(stackValue, x, y, 0);
 	}
 	
 	@Setup(Level.Trial)
@@ -43,7 +43,8 @@ public class ExtremePoints2DState {
 	}
 
 	private void add(BouwkampCode bkpLine) {
-		ExtremePoints2D points = new ExtremePoints2D(bkpLine.getWidth(), bkpLine.getDepth());
+		ExtremePoints2D points = new ExtremePoints2D();
+		points.clearToSize(bkpLine.getWidth(), bkpLine.getDepth(), 1);
 
 		ExtremePoints2DEntries extremePointsEntries = new ExtremePoints2DEntries(points);
 
@@ -57,7 +58,7 @@ public class ExtremePoints2DState {
 			List<Integer> squares = line.getSquares();
 			int minY = points.getMinY();
 
-			Point2D value = points.getValue(minY);
+			Point2D value = points.get(minY);
 
 			int offset = value.getMinX();
 

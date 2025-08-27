@@ -8,7 +8,7 @@ import java.io.Closeable;
  * Thread-safe implementation.
  */
 
-public interface Packager<B extends PackagerResultBuilder> extends Closeable {
+public interface Packager<B extends PackagerResultBuilder<B>> extends Closeable {
 
 	B newResultBuilder();
 

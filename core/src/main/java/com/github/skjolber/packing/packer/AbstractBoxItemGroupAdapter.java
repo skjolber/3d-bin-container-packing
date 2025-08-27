@@ -18,9 +18,9 @@ public abstract class AbstractBoxItemGroupAdapter<C extends ContainerItem, T ext
 	private List<BoxItemGroup> remainingBoxItemGroups;
 	private final PackagerInterruptSupplier interrupt;
 	private final BoxPriority priority;
-	private final AbstractContainerItemsCalculator<C> packagerContainerItems;
+	private final ContainerItemsCalculator<C> packagerContainerItems;
 
-	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, AbstractContainerItemsCalculator<C> packagerContainerItems, BoxPriority priority, PackagerInterruptSupplier interrupt) {
+	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator<C> packagerContainerItems, BoxPriority priority, PackagerInterruptSupplier interrupt) {
 		this.packagerContainerItems = packagerContainerItems;
 		
 		List<BoxItemGroup> groupClones = new LinkedList<>();

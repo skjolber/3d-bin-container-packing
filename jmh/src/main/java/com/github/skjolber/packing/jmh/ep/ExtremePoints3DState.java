@@ -29,8 +29,8 @@ public class ExtremePoints3DState {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, -1);
 		
 		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(0).build();
-		
-		return new StackPlacement(null, new BoxItem(box, 1), stackValue, x, y, z);
+		stackValue.setBox(box);
+		return new StackPlacement(stackValue, x, y, z);
 	}
 	
 	@Setup(Level.Trial)
@@ -48,7 +48,8 @@ public class ExtremePoints3DState {
 	}
 
 	public void convert3DXYPlane(BouwkampCode bkpLine) {
-		ExtremePoints3D points = new ExtremePoints3D(bkpLine.getWidth(), bkpLine.getDepth(), 1);
+		ExtremePoints3D points = new ExtremePoints3D();
+		points.clearToSize(bkpLine.getWidth(), bkpLine.getDepth(), 1);
 
 		ExtremePoints3DEntries extremePointsEntries = new ExtremePoints3DEntries(points);
 
