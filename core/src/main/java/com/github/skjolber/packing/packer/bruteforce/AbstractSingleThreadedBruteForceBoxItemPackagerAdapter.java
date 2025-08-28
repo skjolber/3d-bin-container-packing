@@ -23,9 +23,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 
 	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, BoxPriority priority, ContainerItemsCalculator<ContainerItem> packagerContainerItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 		super(boxItems, priority, packagerContainerItems);
-		
 		this.interrupt = interrupt;
-		
 		this.containerIterators = containerIterators;
 		
 		int maxIteratorLength = 0;

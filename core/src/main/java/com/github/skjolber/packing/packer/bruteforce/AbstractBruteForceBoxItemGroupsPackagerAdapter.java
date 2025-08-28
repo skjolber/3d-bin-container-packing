@@ -87,7 +87,6 @@ public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter implements 
 	
 	@Override
 	public List<Integer> getContainers(int maxCount) {
-		
 		List<BoxItem> remainingBoxItems = new ArrayList<>(boxItems.length);
 		for(int i = 0; i < boxItems.length; i++) {
 			BoxItem boxItem = boxItems[i];
@@ -95,7 +94,6 @@ public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter implements 
 				remainingBoxItems.add(boxItem);
 			}
 		}
-		
 		return packagerContainerItems.getContainers(remainingBoxItems, maxCount);
 	}
 	

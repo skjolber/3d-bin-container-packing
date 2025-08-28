@@ -22,23 +22,17 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
-import com.github.skjolber.packing.comparator.DefaultPackResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.ClonablePackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.ParallelBoxItemGroupPermutationRotationIteratorList;
-import com.github.skjolber.packing.iterator.ParallelBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.ParallelBoxItemPermutationRotationIteratorList;
-import com.github.skjolber.packing.iterator.ParallelPermutationRotationIterator;
-import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.PackagerException;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
@@ -145,7 +139,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	private class RunnableAdapter implements Callable<BruteForceIntermediatePackagerResult> {
 
 		private ContainerItem containerItem;
-		private ParallelBoxItemPermutationRotationIterator iterator;
+		private BoxItemPermutationRotationIterator iterator;
 		private List<StackPlacement> placements;
 		private ExtremePoints3DStack extremePoints3D;
 		private PackagerInterruptSupplier interrupt;
@@ -166,7 +160,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			return containerItem;
 		}
 
-		public void setIterator(ParallelBoxItemPermutationRotationIterator iterator) {
+		public void setIterator(BoxItemPermutationRotationIterator iterator) {
 			this.iterator = iterator;
 		}
 
@@ -176,12 +170,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		@Override
 		public BruteForceIntermediatePackagerResult call() throws PackagerInterruptedException {
-			//System.out.println("START " + containerIndex);
-			try {
-				return ParallelBoxItemBruteForcePackager.this.pack(extremePoints3D, placements, containerItem, containerIndex, iterator, interrupt);
-			} finally {
-				//System.out.println("END "+ containerIndex);
-			}
+			return ParallelBoxItemBruteForcePackager.this.pack(extremePoints3D, placements, containerItem, containerIndex, iterator, interrupt);
 		}
 	}
 
@@ -345,7 +334,207 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 			return count;
 		}
+	}
 
+	private class ParallelGroupAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
+
+		private final RunnableAdapter[] runnables; // per thread
+		private final ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators; // per container
+		private final DefaultBoxItemGroupPermutationRotationIterator[] iterators; // per container
+		private final PackagerInterruptSupplier[] interrupts;
+
+		protected List<BoxItemGroup> boxItemGroups;
+		
+		protected ParallelGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, BoxPriority priority,
+				ContainerItemsCalculator<ContainerItem> packagerContainerItems, RunnableAdapter[] runnables, DefaultBoxItemGroupPermutationRotationIterator[] iterators, ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
+			super(boxItems, priority, packagerContainerItems);
+			this.boxItemGroups = boxItemGroups;
+			this.runnables = runnables;
+			this.parallelIterators = parallelIterators;
+			this.iterators = iterators;
+			this.interrupts = interrupts;
+		}
+
+		@Override
+		public BruteForceIntermediatePackagerResult attempt(int i, BruteForceIntermediatePackagerResult currentBest, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+			// is there enough work to do parallelization?
+			// run on single thread for a small amount of combinations
+			// the algorithm only splits on permutations
+			boolean multithreaded;
+			if(iterators[i].countPermutations() > parallelizationCount * 2) {
+				multithreaded = true;
+			} else {
+				multithreaded = false;
+			}
+			
+			if(multithreaded) {
+				// interrupt needs not be accurate (i.e. atomic boolean)
+				Boolean[] localInterrupt = new Boolean[32]; // add padding to avoid false sharing
+
+				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
+				for (int j = 0; j < runnables.length; j++) {
+					RunnableAdapter runnableAdapter = runnables[j];
+					
+					ContainerItem containerItem = getContainerItem(i);
+					
+					runnableAdapter.setContainerItem(containerItem);
+					runnableAdapter.setIterator(parallelIterators[i].getIterator(j));
+
+					PackagerInterruptSupplier interruptBooleanSupplier = interrupts[i];
+
+					PackagerInterruptSupplier booleanSupplier = () -> localInterrupt[15] != null || interruptBooleanSupplier.getAsBoolean();
+
+					runnableAdapter.setInterrupt(booleanSupplier);
+
+					futures.add(executorCompletionService.submit(runnableAdapter));
+				}
+
+				try {
+					BruteForceIntermediatePackagerResult best = null;
+					for (int j = 0; j < runnables.length; j++) {
+						try {
+							try {
+								Future<BruteForceIntermediatePackagerResult> future = executorCompletionService.take();
+								BruteForceIntermediatePackagerResult result = future.get();
+								if(result != null) {
+									if(best == null || intermediatePackagerResultComparator.compare(best, result) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
+										best = result;
+										
+										if(best.containsLastStackable()) { // will not match any better than this
+											// cancel others
+											localInterrupt[15] = Boolean.TRUE;
+											// don't break, so we're waiting for all the remaining threads to finish
+										}
+									}
+								}
+							} catch (ExecutionException e1) {
+								Throwable cause = e1.getCause();
+								if(cause instanceof PackagerInterruptedException && localInterrupt[15]) {
+									continue;
+								}
+								throw e1.getCause();
+							}								
+						} catch (InterruptedException e1) {
+							// ignore
+							localInterrupt[15] = Boolean.TRUE;
+							return null;
+						} catch (Throwable e) {
+							localInterrupt[15] = Boolean.TRUE;
+							throw new PackagerException(e);
+						}
+					}
+					// was the search interrupted?
+					if(interrupts[i].getAsBoolean()) {
+						return null;
+					}
+					return best;
+				} finally {
+					for (Future<BruteForceIntermediatePackagerResult> future : futures) {
+						future.cancel(true);
+					}
+				}
+			}
+			
+			ContainerItem containerItem = getContainerItem(i);
+			
+			// no need to split this job
+			// run with linear approach
+			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].extremePoints3D, runnables[0].placements, containerItem, i, iterators[i],
+					interrupts[i]);
+		}
+
+		@Override
+		public Container accept(BruteForceIntermediatePackagerResult bruteForceResult) {
+			
+			bruteForceResult.markDirty();
+			Stack stack = bruteForceResult.getStack();
+			
+			Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+
+			if(!bruteForceResult.containsLastStackable()) {
+				// this result does not consume all placements
+				// remove consumed items from the iterators
+
+				int size = container.getStack().size();
+
+				PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
+
+				// this result does not consume all placements
+				// remove consumed items from the iterators
+
+				// TODO only handles groups in order.
+				
+				List<Integer> removedGroups = new ArrayList<>();
+				int wholeGroupBoxCount = 0;
+				for(int i = 0; i < boxItemGroups.size(); i++) {
+					BoxItemGroup boxItemGroup = boxItemGroups.get(i);
+					
+					int groupBoxCount = boxItemGroup.getBoxCount();
+					if(size < wholeGroupBoxCount + groupBoxCount) {
+						// the last group was not successful
+						break;
+					}
+					
+					removedGroups.add(i);
+					
+					wholeGroupBoxCount += groupBoxCount;
+					
+					if(wholeGroupBoxCount == size) {
+						break;
+					}
+				}
+				
+				int[] permutations = state.getPermutations();
+				
+				List<Integer> p = new ArrayList<>();
+				for(Integer removedGroup: removedGroups) {
+					BoxItemGroup boxItemGroup = boxItemGroups.get(removedGroup);
+
+					for (BoxItem boxItem : boxItemGroup.getItems()) {
+						for (int i = 0; i < boxItem.getCount(); i++) {
+							p.add(permutations[p.size()]);
+						}
+					}
+				}						
+
+				// remove stacked items which did not make it
+				stack.setSize(p.size());
+
+				for (ParallelBoxItemGroupPermutationRotationIteratorList it : parallelIterators) {
+					it.removeGroups(removedGroups);
+				}
+
+				for (DefaultBoxItemGroupPermutationRotationIterator it : iterators) {
+					it.removeGroups(removedGroups);
+				}
+				
+				boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());
+				
+				// remove adapter inventory
+				removeInventory(p);
+
+				for (RunnableAdapter runner : runnables) {
+					runner.placements = runner.placements.subList(p.size(), runner.placements.size());
+				}
+			} else {
+				for (RunnableAdapter runner : runnables) {
+					runner.placements = Collections.emptyList();
+				}
+				for(int i = 0; i < boxesRemaining.length; i++) {
+					boxesRemaining[i] = 0;
+				}
+			}
+			return container;
+		}
+
+		@Override
+		public int countRemainingBoxes() {
+			int count = 0;
+			for (int i : boxesRemaining) {
+				count += i;
+			}
+			return count;
+		}
 	}
 
 	public void shutdown() {
@@ -443,11 +632,72 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	}
 
 	@Override
-	protected AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			BoxPriority priority, ContainerItemsCalculator<ContainerItem> defaultContainerItemsCalculator,
+	protected ParallelGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
+			BoxPriority priority, ContainerItemsCalculator<ContainerItem> containerItemsCalculator,
 			PackagerInterruptSupplier interrupt) {
-		throw new RuntimeException("Not implemented");
-	}
 
+		List<ContainerItem> containerItems = containerItemsCalculator.getContainerItems();
+		
+		ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators = new ParallelBoxItemGroupPermutationRotationIteratorList[containerItems.size()];
+		DefaultBoxItemGroupPermutationRotationIterator[] iterators = new DefaultBoxItemGroupPermutationRotationIterator[containerItems.size()];
+		for (int i = 0; i < containerItems.size(); i++) {
+			Container container = containerItems.get(i).getContainer();
+
+			Dimension dimension = new Dimension(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
+
+			parallelIterators[i] = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
+					.withLoadSize(dimension)
+					.withBoxItemGroups(itemGroups)
+					.withMaxLoadWeight(container.getMaxLoadWeight())
+					.withParallelizationCount(parallelizationCount)
+					.build();
+
+			iterators[i] = DefaultBoxItemGroupPermutationRotationIterator
+					.newBuilder()
+					.withLoadSize(dimension)
+					.withBoxItemGroups(itemGroups)
+					.withMaxLoadWeight(container.getMaxLoadWeight())
+					.build();
+		}
+
+		int maxIteratorLength = 0;
+		for (DefaultBoxItemGroupPermutationRotationIterator iterator : iterators) {
+			maxIteratorLength = Math.max(maxIteratorLength, iterator.length());
+		}
+		
+		List<BoxItem> items = new ArrayList<BoxItem>();
+		for (BoxItemGroup boxItemGroup : itemGroups) {
+			items.addAll(boxItemGroup.getItems());
+		}
+		
+		int count = 0;
+		for (BoxItem boxItem : items) {
+			count += boxItem.getCount();
+		}
+
+		long minStackableItemVolume = getMinBoxItemVolume(items);
+		long minStackableArea = getMinBoxItemArea(items);
+
+		RunnableAdapter[] runnables = new RunnableAdapter[parallelizationCount];
+		for (int i = 0; i < parallelizationCount; i++) {
+			runnables[i] = new RunnableAdapter(count, maxIteratorLength, minStackableItemVolume, minStackableArea);
+		}
+		
+		PackagerInterruptSupplier[] interrupts = new PackagerInterruptSupplier[parallelizationCount];
+
+		// clone nth interrupts so that everything is not slowed down by sharing a single counter
+		if(interrupt instanceof ClonablePackagerInterruptSupplier) {
+			ClonablePackagerInterruptSupplier c = (ClonablePackagerInterruptSupplier)interrupt;
+			for (int i = 0; i < parallelizationCount; i++) {
+				interrupts[i] = (PackagerInterruptSupplier)c.clone();
+			}
+		} else {
+			for (int i = 0; i < parallelizationCount; i++) {
+				interrupts[i] = interrupt;
+			}
+		}
+
+		return new ParallelGroupAdapter(items, itemGroups, priority, containerItemsCalculator, runnables, iterators, parallelIterators, interrupts);
+	}
 
 }

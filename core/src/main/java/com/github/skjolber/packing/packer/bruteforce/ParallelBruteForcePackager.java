@@ -208,8 +208,6 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				multithreaded = false;
 			}
 			
-			int length = iterators[i].getPermutations().length;
-			
 			if(multithreaded) {
 				// interrupt needs not be accurate (i.e. atomic boolean)
 				Boolean[] localInterrupt = new Boolean[32]; // add padding to avoid false sharing

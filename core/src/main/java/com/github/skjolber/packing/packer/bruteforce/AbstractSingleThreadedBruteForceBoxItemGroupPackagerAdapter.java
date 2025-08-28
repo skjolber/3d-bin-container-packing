@@ -26,6 +26,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 	
 	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, BoxPriority priority, ContainerItemsCalculator<ContainerItem> packagerContainerItems, BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 		super(boxItems, priority, packagerContainerItems);
+		this.boxItemGroups = boxItemGroups;
 		this.interrupt = interrupt;
 		this.containerIterators = containerIterators;
 		
@@ -36,8 +37,6 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 		}
 		
 		this.stackPlacements = BruteForcePackager.getPlacements(count);
-		
-		this.boxItemGroups = boxItemGroups;
 	}
 	
 	protected int getMaxIteratorLength() {
