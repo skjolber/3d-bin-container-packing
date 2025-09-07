@@ -60,8 +60,8 @@ public class BoxStackValue {
 	 * @return true if this can fit within the argument space
 	 */
 
-	public boolean fitsInside3D(Dimension dimension) {
-		return fitsInside3D(dimension.getDx(), dimension.getDy(), dimension.getDz());
+	public boolean fitsInside3D(Container dimension) {
+		return fitsInside3D(dimension.getLoadDx(), dimension.getLoadDy(), dimension.getLoadDz());
 	}
 
 	public boolean fitsInside3D(int dx, int dy, int dz) {

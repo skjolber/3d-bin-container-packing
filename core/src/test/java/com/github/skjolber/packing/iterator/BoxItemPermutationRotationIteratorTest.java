@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator.Builder;
+import com.github.skjolber.packing.packer.Dimension;
 
 class BoxItemPermutationRotationIteratorTest extends AbstractBoxItemPermutationRotationIteratorTest<DefaultBoxItemPermutationRotationIterator.Builder> {
 
@@ -29,7 +29,7 @@ class BoxItemPermutationRotationIteratorTest extends AbstractBoxItemPermutationR
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();

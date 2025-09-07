@@ -8,7 +8,6 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -131,11 +130,9 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			ContainerItem containerItem = containerItemsCalculator.getContainerItem(i);
 			Container container = containerItem.getContainer();
 
-			Dimension dimension = new Dimension(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-
 			containerIterators[i] = DefaultBoxItemGroupPermutationRotationIterator
 					.newBuilder()
-					.withLoadSize(dimension)
+					.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
 					.withBoxItemGroups(itemGroups)
 					.withMaxLoadWeight(container.getMaxLoadWeight())
 					.build();
@@ -157,11 +154,9 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			ContainerItem containerItem = containerItemsCalculator.getContainerItem(i);
 			Container container = containerItem.getContainer();
 
-			Dimension dimension = new Dimension(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-
 			containerIterators[i] = DefaultBoxItemPermutationRotationIterator
 					.newBuilder()
-					.withLoadSize(dimension)
+					.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
 					.withBoxItems(boxItems)
 					.withMaxLoadWeight(container.getMaxLoadWeight())
 					.build();

@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.packer.Dimension;
 
 class FilteredBoxItemGroupsPermutationRotationIteratorTest extends AbstractBoxItemGroupsPermutationRotationIteratorTest<FilteredBoxItemGroupsPermutationRotationIterator.DelegateBuilder> {
 
@@ -43,7 +43,7 @@ class FilteredBoxItemGroupsPermutationRotationIteratorTest extends AbstractBoxIt
 
 			FilteredBoxItemGroupsPermutationRotationIterator rotator = 
 					newBuilder()
-					.withLoadSize(container)
+					.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 					.withBoxItemGroups(groups)
 					.withMaxLoadWeight(products1.size())
 					.build();
@@ -87,7 +87,7 @@ class FilteredBoxItemGroupsPermutationRotationIteratorTest extends AbstractBoxIt
 		groups.add(new BoxItemGroup("1", products));
 		
 		FilteredBoxItemGroupsPermutationRotationIterator rotator = newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -121,7 +121,7 @@ class FilteredBoxItemGroupsPermutationRotationIteratorTest extends AbstractBoxIt
 		groups.add(new BoxItemGroup("1", products));
 
 		FilteredBoxItemGroupsPermutationRotationIterator rotator = newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products.size())
 				.build();

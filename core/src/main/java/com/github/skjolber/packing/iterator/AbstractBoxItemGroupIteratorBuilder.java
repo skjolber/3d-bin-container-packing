@@ -7,7 +7,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.Dimension;
+import com.github.skjolber.packing.api.StackableSurface;
 
 /**
  * Builder scaffold.
@@ -19,19 +19,22 @@ import com.github.skjolber.packing.api.Dimension;
 public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxItemGroupIteratorBuilder<B>>  {
 
 	protected int maxLoadWeight = -1;
-	protected Dimension size;
+	
+	protected int dx = -1;
+	protected int dy = -1;
+	protected int dz = -1;
+	protected long volume = -1L;
+
 	protected List<BoxItemGroup> boxItemGroups;
 
-	public B withSize(int dx, int dy, int dz) {
-		this.size = new Dimension(dx, dy, dz);
+	public B withLoadSize(int dx, int dy, int dz) {
+		this.dx = dx;
+		this.dy = dy;
+		this.dz = dz;
+		
+		this.volume = (long)dx * (long)dy * (long)dz;
 
-		return (B)this;
-	}
-
-	public B withLoadSize(Dimension dimension) {
-		this.size = dimension;
-
-		return (B)this;
+		return (B) this;
 	}
 
 	public B withMaxLoadWeight(int maxLoadWeight) {
@@ -46,55 +49,11 @@ public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxI
 		return (B)this;
 	}
 
-	protected List<BoxItemGroup> toMatrix() {
-		List<BoxItemGroup> results = new ArrayList<>(boxItemGroups.size());
-
-		int offset = 0;
-		
-		for (int i = 0; i < boxItemGroups.size(); i++) {
-			
-			BoxItemGroup group = boxItemGroups.get(i);
-			
-			List<BoxItem> loadableItems = new ArrayList<>(group.size());
-			for (int k = 0; k < group.size(); k++) {
-				BoxItem item = group.get(k);
-	
-				if(item.getCount() == 0) {
-					continue;
-				}
-	
-				Box stackable = item.getBox();
-				if(stackable.getWeight() > maxLoadWeight) {
-					continue;
-				}
-	
-				if(stackable.getVolume() > size.getVolume()) {
-					continue;
-				}
-	
-				List<BoxStackValue> boundRotations = stackable.rotations(size);
-				if(boundRotations == null || boundRotations.isEmpty()) {
-					continue;
-				}
-			
-				Box loadable = new Box(stackable, boundRotations);
-	
-				loadableItems.add(new BoxItem(loadable, item.getCount(), offset));
-				
-				offset++;
-			}
-			if(!loadableItems.isEmpty()) {
-				results.add(new BoxItemGroup(group.getId(), loadableItems));
-			}
-		}
-		return results;
-	}
-	
 	public boolean fitsInside(BoxItemGroup boxItemGroup) {
-		if(boxItemGroup.getVolume() <= size.getVolume() && boxItemGroup.getWeight() <= maxLoadWeight) {			
+		if(boxItemGroup.getVolume() <= volume && boxItemGroup.getWeight() <= maxLoadWeight) {			
 			for(int i = 0; i < boxItemGroup.size(); i++) {
 				Box box = boxItemGroup.get(i).getBox();
-				if(!box.fitsInside(size)) {
+				if(!box.fitsInside(dx, dy, dz)) {
 					return false;
 				}
 			}		

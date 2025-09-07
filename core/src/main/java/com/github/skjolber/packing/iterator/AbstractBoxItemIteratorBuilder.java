@@ -6,7 +6,6 @@ import java.util.List;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.Dimension;
 
 /**
  * Builder scaffold.
@@ -18,17 +17,19 @@ import com.github.skjolber.packing.api.Dimension;
 public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIteratorBuilder<B>> {
 
 	protected int maxLoadWeight = -1;
-	protected Dimension size;
+	protected int dx = -1;
+	protected int dy = -1;
+	protected int dz = -1;
+	protected long volume = -1L;
+	
 	protected List<BoxItem> boxItems;
 
-	public B withSize(int dx, int dy, int dz) {
-		this.size = new Dimension(dx, dy, dz);
-
-		return (B)this;
-	}
-
-	public B withLoadSize(Dimension dimension) {
-		this.size = dimension;
+	public B withLoadSize(int dx, int dy, int dz) {
+		this.dx = dx;
+		this.dy = dy;
+		this.dz = dz;
+		
+		this.volume = (long)dx * (long)dy * (long)dz;
 
 		return (B)this;
 	}
@@ -60,11 +61,11 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 				continue;
 			}
 
-			if(box.getVolume() > size.getVolume()) {
+			if(box.getVolume() > volume) {
 				continue;
 			}
 
-			List<BoxStackValue> boundRotations = box.rotations(size);
+			List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
 			if(boundRotations == null || boundRotations.isEmpty()) {
 				continue;
 			}

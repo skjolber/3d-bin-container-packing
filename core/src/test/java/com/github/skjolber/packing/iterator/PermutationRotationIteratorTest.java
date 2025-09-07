@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.Dimension;
+import com.github.skjolber.packing.packer.Dimension;
 
 class PermutationRotationIteratorTest extends AbstractPermutationRotationIteratorTest {
 
@@ -33,7 +33,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 			DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 					.newBuilder()
-					.withLoadSize(container)
+					.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 					.withBoxItems(products1)
 					.withMaxLoadWeight(products1.size())
 					.build();
@@ -60,7 +60,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -80,7 +80,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -102,7 +102,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -122,7 +122,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -141,7 +141,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -160,7 +160,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -180,7 +180,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -195,7 +195,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 			// all rotations can fit
 			for (int i = 0; i < products.size(); i++) {
-				assertTrue(rotator.get(i).getBoxStackValue().fitsInside3D(container));
+				assertTrue(rotator.get(i).getBoxStackValue().fitsInside3D(container.getDx(), container.getDy(), container.getDz()));
 			}
 
 			assertMinStackableVolumeValid(rotator);
@@ -217,7 +217,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -246,7 +246,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -273,14 +273,14 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator rotator1 = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
 
 		DefaultPermutationRotationIterator rotator2 = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -313,7 +313,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -362,7 +362,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -388,7 +388,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator rotator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -412,7 +412,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator iterator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -432,7 +432,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 		}
 		DefaultPermutationRotationIterator iterator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -454,7 +454,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator iterator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
@@ -488,7 +488,7 @@ class PermutationRotationIteratorTest extends AbstractPermutationRotationIterato
 
 		DefaultPermutationRotationIterator iterator = DefaultPermutationRotationIterator
 				.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();

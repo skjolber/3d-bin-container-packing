@@ -77,10 +77,6 @@ public class Box {
 
 			List<BoxStackValue> list = new ArrayList<>();
 
-			int dx = size.getDx();
-			int dy = size.getDy();
-			int dz = size.getDz();
-
 			// dx, dy, dz
 
 			if (dx == dy && dx == dz) { // square 3d
@@ -326,7 +322,7 @@ public class Box {
 		}
 
 		public Box build() {
-			if (size == null) {
+			if (dx == -1 || dy == -1 || dz == -1) {
 				throw new IllegalStateException("No size");
 			}
 			if (weight == null) {
@@ -341,7 +337,7 @@ public class Box {
 				properties = Collections.emptyMap();
 			}
 
-			return new Box(id, description, size.getVolume(), weight, getStackValues(), properties, boxItem);
+			return new Box(id, description, (long)dy * (long)dx * (long)dz, weight, getStackValues(), properties, boxItem);
 		}
 
 		@SuppressWarnings("unchecked")
@@ -471,7 +467,7 @@ public class Box {
 		return maximumPressure;
 	}
 
-	public boolean fitsInside(Dimension bound) {
+	public boolean fitsInside(Container bound) {
 		for (BoxStackValue stackValue : getStackValues()) {
 			if (stackValue.fitsInside3D(bound)) {
 				return true;
@@ -480,8 +476,18 @@ public class Box {
 
 		return false;
 	}
+	
+	public boolean fitsInside(int dx, int dy, int dz) {
+		for (BoxStackValue stackValue : getStackValues()) {
+			if (stackValue.fitsInside3D(dx, dy, dz)) {
+				return true;
+			}
+		}
 
-	public List<BoxStackValue> getStackValues(Dimension bound) {
+		return false;
+	}
+
+	public List<BoxStackValue> getStackValues(Container bound) {
 		List<BoxStackValue> list = new ArrayList<>();
 
 		for (BoxStackValue stackValue : getStackValues()) {
@@ -493,8 +499,8 @@ public class Box {
 		return list;
 	}
 
-	public List<BoxStackValue> rotations(Dimension bound) {
-		return rotations(bound.getDx(), bound.getDy(), bound.getDz());
+	public List<BoxStackValue> rotations(Container bound) {
+		return rotations(bound.getLoadDx(), bound.getLoadDy(), bound.getLoadDz());
 	}
 
 	public List<BoxStackValue> rotations(int dx, int dy, int dz) {

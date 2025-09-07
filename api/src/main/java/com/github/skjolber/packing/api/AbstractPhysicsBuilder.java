@@ -10,11 +10,15 @@ package com.github.skjolber.packing.api;
 @SuppressWarnings("unchecked")
 public class AbstractPhysicsBuilder<B extends AbstractPhysicsBuilder<B>> {
 
-	protected Dimension size;
+	protected int dx = -1;
+	protected int dy = -1;
+	protected int dz = -1;
 	protected StackableSurface stackableSurface;
 
 	public B withSize(int dx, int dy, int dz) {
-		this.size = new Dimension(dx, dy, dz);
+		this.dx = dx;
+		this.dy = dy;
+		this.dz = dz;
 
 		return (B) this;
 	}

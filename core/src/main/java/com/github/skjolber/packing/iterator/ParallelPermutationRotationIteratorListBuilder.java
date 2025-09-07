@@ -18,7 +18,7 @@ public class ParallelPermutationRotationIteratorListBuilder extends AbstractPerm
 		if(maxLoadWeight == -1) {
 			throw new IllegalStateException();
 		}
-		if(size == null) {
+		if(dx == -1 || dy == -1 || dz == -1) {
 			throw new IllegalStateException();
 		}
 

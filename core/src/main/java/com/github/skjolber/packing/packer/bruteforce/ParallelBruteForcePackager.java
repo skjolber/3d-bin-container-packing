@@ -18,7 +18,6 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.StackPlacement;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
@@ -386,10 +385,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		for (int i = 0; i < containerItems.size(); i++) {
 			Container container = containerItems.get(i).getContainer();
 
-			Dimension dimension = new Dimension(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-
 			parallelIterators[i] = ParallelBoxItemPermutationRotationIteratorList.newBuilder()
-					.withLoadSize(dimension)
+					.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
 					.withBoxItems(items)
 					.withMaxLoadWeight(container.getMaxLoadWeight())
 					.withParallelizationCount(parallelizationCount)
@@ -397,7 +394,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 			iterators[i] = DefaultBoxItemPermutationRotationIterator
 					.newBuilder()
-					.withLoadSize(dimension)
+					.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
 					.withBoxItems(items)
 					.withMaxLoadWeight(container.getMaxLoadWeight())
 					.build();

@@ -16,7 +16,6 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
@@ -85,14 +84,14 @@ public class IteratorState {
 
 		this.parallelIterator = new ParallelPermutationRotationIteratorListBuilder()
 				.withBoxItems(stackableItems3D)
-				.withLoadSize(new Dimension(x, y, z))
+				.withLoadSize(x, y, z)
 				.withParallelizationCount(threadPoolSize)
 				.withMaxLoadWeight(weight)
 				.build();
 
 		this.iterator = DefaultPermutationRotationIterator.newBuilder()
 				.withBoxItems(stackableItems3D)
-				.withLoadSize(new Dimension(x, y, z))
+				.withLoadSize(x, y, z)
 				.withMaxLoadWeight(weight)
 				.build();
 	}

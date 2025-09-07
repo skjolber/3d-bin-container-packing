@@ -53,7 +53,7 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 			if(maxLoadWeight == -1) {
 				throw new IllegalStateException();
 			}
-			if(size == null) {
+			if(dx == -1 || dy == -1 || dz == -1) {
 				throw new IllegalStateException();
 			}
 			if(builder == null) {
@@ -61,7 +61,7 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 			}
 
 			BoxItemPermutationRotationIterator iterator = builder
-																	.withLoadSize(size)
+																	.withLoadSize(dx, dy, dz)
 																	.withMaxLoadWeight(maxLoadWeight)
 																	.withBoxItems(boxItems)
 																	.build();

@@ -21,7 +21,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			if(maxLoadWeight == -1) {
 				throw new IllegalStateException();
 			}
-			if(size == null) {
+			if(dx == -1 || dy == -1 || dz == -1) {
 				throw new IllegalStateException();
 			}
 			
@@ -40,7 +40,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	
 						Box box = item.getBox();
 						
-						List<BoxStackValue> boundRotations = box.rotations(size);
+						List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
 						Box boxClone = new Box(box, boundRotations);
 						
 						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset));
@@ -70,10 +70,10 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 		}
 
 		public boolean fitsInside(BoxItemGroup boxItemGroup) {
-			if(boxItemGroup.getVolume() <= size.getVolume() && boxItemGroup.getWeight() <= maxLoadWeight) {			
+			if(boxItemGroup.getVolume() <= volume && boxItemGroup.getWeight() <= maxLoadWeight) {			
 				for(int i = 0; i < boxItemGroup.size(); i++) {
 					Box box = boxItemGroup.get(i).getBox();
-					if(!box.fitsInside(size)) {
+					if(!box.fitsInside(dx, dy, dz)) {
 						return false;
 					}
 				}		

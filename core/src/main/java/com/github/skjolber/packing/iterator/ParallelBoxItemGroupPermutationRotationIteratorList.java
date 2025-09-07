@@ -40,7 +40,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 			if(maxLoadWeight == -1) {
 				throw new IllegalStateException();
 			}
-			if(size == null) {
+			if(dx == -1 || dy == -1 || dz == -1) {
 				throw new IllegalStateException();
 			}
 
@@ -59,7 +59,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	
 						Box box = item.getBox();
 						
-						List<BoxStackValue> boundRotations = box.rotations(size);
+						List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
 						Box boxClone = new Box(box, boundRotations);
 						
 						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset));

@@ -20,14 +20,11 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 			if(maxLoadWeight == -1) {
 				throw new IllegalStateException();
 			}
-			if(size == null) {
+			if(dx == -1 || dy == -1 || dz == -1) {
 				throw new IllegalStateException();
 			}
 
 			if(maxLoadWeight == -1) {
-				throw new IllegalStateException();
-			}
-			if(size == null) {
 				throw new IllegalStateException();
 			}
 			
@@ -44,12 +41,12 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 					continue;
 				}
 
-				if(box.getVolume() > size.getVolume()) {
+				if(box.getVolume() > volume) {
 					excluded.add(boxItem);
 					continue;
 				}
 				
-				List<BoxStackValue> boundRotations = box.rotations(size);
+				List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
 				if(boundRotations == null || boundRotations.isEmpty()) {
 					excluded.add(boxItem);
 					continue;

@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.Dimension;
+import com.github.skjolber.packing.packer.Dimension;
 
 public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 
@@ -36,7 +36,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		groups.add(new BoxItemGroup("2", products2));
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.withParallelizationCount(5)
@@ -72,7 +72,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		groups.add(new BoxItemGroup("2", products2));
 
 		ParallelBoxItemGroupPermutationRotationIterator rotator = ParallelBoxItemGroupPermutationRotationIterator.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.build();
@@ -110,7 +110,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		groups.add(new BoxItemGroup("2", products2));
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.withParallelizationCount(2)
@@ -147,7 +147,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		groups.add(new BoxItemGroup("2", products2));
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.withParallelizationCount(2)
@@ -186,7 +186,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		groups.add(new BoxItemGroup("2", products2));
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.withParallelizationCount(2)
@@ -222,7 +222,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		groups.add(new BoxItemGroup("1", products1));
 
 		ParallelBoxItemGroupPermutationRotationIteratorList iterator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products1.size())
 				.withParallelizationCount(1)
@@ -269,7 +269,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		groups.add(new BoxItemGroup("2", products2));
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList iterator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.withParallelizationCount(2)
@@ -322,7 +322,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		groups.add(new BoxItemGroup("2", products2));
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList iterator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
-				.withLoadSize(container)
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
 				.withMaxLoadWeight(products2.size())
 				.withParallelizationCount(2)

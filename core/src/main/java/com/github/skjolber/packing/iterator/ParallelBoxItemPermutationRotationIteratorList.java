@@ -7,7 +7,6 @@ import java.util.List;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.Dimension;
 
 /**
  * 
@@ -24,19 +23,21 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 	public static class Builder {
 
 		protected int maxLoadWeight = -1;
-		protected Dimension size;
+		protected int dx = -1;
+		protected int dy = -1;
+		protected int dz = -1;
+		protected long volume = -1L;
+
 		protected List<BoxItem> boxItems;
 
 		protected int parallelizationCount = -1;
 
-		public Builder withSize(int dx, int dy, int dz) {
-			this.size = new Dimension(dx, dy, dz);
-			return this;
-		}
-
-		public Builder withLoadSize(Dimension dimension) {
-			this.size = dimension;
-
+		public Builder withLoadSize(int dx, int dy, int dz) {
+			this.dx = dx;
+			this.dy = dy;
+			this.dz = dz;
+			
+			this.volume = (long)dx * (long)dy * (long)dz;
 			return this;
 		}
 
@@ -61,14 +62,11 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 			if(maxLoadWeight == -1) {
 				throw new IllegalStateException();
 			}
-			if(size == null) {
+			if(dx == -1 || dy == -1 || dz == -1) {
 				throw new IllegalStateException();
 			}
 
 			if(maxLoadWeight == -1) {
-				throw new IllegalStateException();
-			}
-			if(size == null) {
 				throw new IllegalStateException();
 			}
 			if(parallelizationCount == -1) {
@@ -88,12 +86,12 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 					continue;
 				}
 
-				if(box.getVolume() > size.getVolume()) {
+				if(box.getVolume() > volume) {
 					excluded.add(boxItem);
 					continue;
 				}
 				
-				List<BoxStackValue> boundRotations = box.rotations(size);
+				List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
 				if(boundRotations == null || boundRotations.isEmpty()) {
 					excluded.add(boxItem);
 					continue;
