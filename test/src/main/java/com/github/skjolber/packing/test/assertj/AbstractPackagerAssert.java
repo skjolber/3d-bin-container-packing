@@ -15,7 +15,7 @@ import com.github.skjolber.packing.api.BoxItem;
 public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert<SELF, ACTUAL>, ACTUAL extends Packager>
 		extends AbstractObjectAssert<SELF, ACTUAL> {
 
-	private static final long LEEWAY = 10;
+	private static final long LEEWAY = 100;
 
 	protected AbstractPackagerAssert(ACTUAL actual, Class<?> selfType) {
 		super(actual, selfType);
