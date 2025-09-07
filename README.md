@@ -214,6 +214,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
  * [The Art of Stacking: Challenges Faced While Developing a Packing Algorithm](https://medium.com/@fayyazawais1412/the-art-of-stacking-challenges-faced-while-developing-a-packing-algorithm-64d869b924ab)
 
 # History
+ * 3.0.10: Fix module info, bump dependencies.
  * 3.0.9: Fix point support bug which resulted in invalid packaging result
  * 3.0.8: Visualization fix
  * 3.0.4-3.0.6: Fix issue #689

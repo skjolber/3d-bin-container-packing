@@ -89,7 +89,7 @@
 							</configOptions>
 							<!-- https://open-api-generator.tech/docs/generators/java/ -->
 							<library>apache-httpclient</library>
-							<additionalProperties>supportUrlQuery=false</additionalProperties>
+							<additionalProperties>supportUrlQuery=false,apiNameSuffix=ApiClient</additionalProperties>
 							
 							<generateApis>false</generateApis>
 							<generateModels>true</generateModels>

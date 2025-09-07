@@ -21,7 +21,14 @@ jobs:
       with:
         java-version: ${{ matrix.java }}
         distribution: liberica
+    - name: Restore cache
+      uses: skjolber/maven-cache-github-action@v3.1.2
+      with:
+        step: restore
     - name: Build with Maven
       run: mvn verify
-
+    - name: Restore cache
+      uses: skjolber/maven-cache-github-action@v3.1.2
+      with:
+        step: restore
 
