@@ -17,7 +17,7 @@ public abstract class AbstractDefaultPackagerResultBuilder<B extends AbstractDef
 
 	public B withContainerItems(ContainerItem... containers) {
 		if (this.containers == null) {
-			this.containers = new ArrayList<>();
+			this.containers = new ArrayList<>(containers.length);
 		}
 		for (ContainerItem item : containers) {
 			this.containers.add(item);
@@ -27,7 +27,7 @@ public abstract class AbstractDefaultPackagerResultBuilder<B extends AbstractDef
 
 	public B withContainerItems(List<ContainerItem> containers) {
 		if (this.containers == null) {
-			this.containers = new ArrayList<>();
+			this.containers = new ArrayList<>(containers.size());
 		}
 		for (ContainerItem item : containers) {
 			this.containers.add(item);

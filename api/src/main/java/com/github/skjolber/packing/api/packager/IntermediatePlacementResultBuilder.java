@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.api.packager;
 
-import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 

@@ -8,11 +8,53 @@ public class Container {
 		return new Builder();
 	}
 
-	public static class Builder extends AbstractContainerBuilder<Builder> {
+	public static class Builder {
 
 		protected int emptyWeight = -1;
 		protected Stack stack;
 
+		protected String id;
+		protected String description;
+
+		protected int dx = -1; // width
+		protected int dy = -1; // depth
+		protected int dz = -1; // height
+
+		protected int maxLoadWeight = -1;
+
+		protected int loadDx = -1; // x
+		protected int loadDy = -1; // y
+		protected int loadDz = -1; // z
+
+		public Builder withSize(int dx, int dy, int dz) {
+			this.dx = dx;
+			this.dy = dy;
+			this.dz = dz;
+			return this;
+		}
+
+		public Builder withMaxLoadWeight(int weight) {
+			this.maxLoadWeight = weight;
+			return this;
+		}
+
+		public Builder withLoadSize(int dx, int dy, int dz) {
+			this.loadDx = dx;
+			this.loadDy = dy;
+			this.loadDz = dz;
+			return this;
+		}
+
+		public Builder withDescription(String description) {
+			this.description = description;
+			return this;
+		}
+
+		public Builder withId(String id) {
+			this.id = id;
+			return this;
+		}
+		
 		public Builder withStack(Stack stack) {
 			this.stack = stack;
 			return this;

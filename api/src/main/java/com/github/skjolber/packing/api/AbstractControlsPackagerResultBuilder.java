@@ -59,13 +59,12 @@ public abstract class AbstractControlsPackagerResultBuilder<B extends AbstractCo
 		protected BoxItemControlsBuilderFactory boxItemListenerBuilderFactory;
 		protected PointControlsBuilderFactory pointControlsBuilderFactory;
 
-		public ExtendedContainerBuilder withBoxItemListenerBuilderSupplier(BoxItemControlsBuilderFactory factory) {
+		public ExtendedContainerBuilder withBoxItemListenerBuilderFactory(BoxItemControlsBuilderFactory factory) {
 			this.boxItemListenerBuilderFactory = factory;
 			return this;
 		}
 
-		public ExtendedContainerBuilder withPointControlsBuilderFactory(
-				PointControlsBuilderFactory pointControlsBuilderFactory) {
+		public ExtendedContainerBuilder withPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory) {
 			this.pointControlsBuilderFactory = pointControlsBuilderFactory;
 			return this;
 		}

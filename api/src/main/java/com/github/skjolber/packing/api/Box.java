@@ -13,7 +13,7 @@ public class Box {
 		return new Builder();
 	}
 
-	public static class Builder extends AbstractPhysicsBuilder<Builder> {
+	public static class Builder {
 
 		protected Integer weight;
 
@@ -22,6 +22,34 @@ public class Box {
 
 		protected Map<String, Object> properties;
 		protected BoxItem boxItem;
+		
+		protected int dx = -1;
+		protected int dy = -1;
+		protected int dz = -1;
+		
+		protected StackableSurface stackableSurface;
+
+		public Builder withSize(int dx, int dy, int dz) {
+			this.dx = dx;
+			this.dy = dy;
+			this.dz = dz;
+
+			return this;
+		}
+
+		public Builder withRotate2D() {
+			return withStackableSurface(StackableSurface.TWO_D);
+		}
+
+		public Builder withRotate3D() {
+			return withStackableSurface(StackableSurface.THREE_D);
+		}
+
+		public Builder withStackableSurface(StackableSurface stackableSurface) {
+			this.stackableSurface = stackableSurface;
+
+			return this;
+		}
 
 		public Builder withBoxItem(BoxItem boxItem) {
 			this.boxItem = boxItem;
