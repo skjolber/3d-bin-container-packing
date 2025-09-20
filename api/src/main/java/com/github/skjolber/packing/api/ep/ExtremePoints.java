@@ -3,13 +3,13 @@ package com.github.skjolber.packing.api.ep;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 
-public interface ExtremePoints extends FilteredPoints {
+public interface ExtremePoints extends PointSource {
 
-	boolean add(Point point, StackPlacement placement);
+	boolean add(Point point, Placement placement);
 	
-	boolean add(int index, StackPlacement placement);
+	boolean add(int index, Placement placement);
 
 	List<Point> getAll();
 
@@ -17,7 +17,7 @@ public interface ExtremePoints extends FilteredPoints {
 
 	void clear();
 	
-	List<StackPlacement> getPlacements();
+	List<Placement> getPlacements();
 
 	long calculateUsedVolume();
 

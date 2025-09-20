@@ -11,14 +11,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 
 public class ExtremePoints3DTest {
 	
-	private StackPlacement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
+	private Placement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, -1);
 		
 		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(0).build();
@@ -26,7 +26,7 @@ public class ExtremePoints3DTest {
 		
 		new BoxItem(box, 1);
 		
-		return new StackPlacement(stackValue, x, y, z);
+		return new Placement(stackValue, new DefaultPoint3D(x, y, z, 0, 0, 0));
 	}
 	
 	@ParameterizedTest

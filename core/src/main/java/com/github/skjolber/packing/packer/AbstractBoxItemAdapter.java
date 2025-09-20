@@ -8,17 +8,18 @@ import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.packager.ControlledContainerItem;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 
-public abstract class AbstractBoxItemAdapter<C extends ContainerItem, T extends IntermediatePackagerResult> implements PackagerAdapter<T> {
+public abstract class AbstractBoxItemAdapter<T extends IntermediatePackagerResult> implements PackagerAdapter<T> {
 
 	protected List<BoxItem> remainingBoxItems;
 	protected final PackagerInterruptSupplier interrupt;
 	protected final BoxPriority priority;
-	protected final ContainerItemsCalculator<C> packagerContainerItems;
+	protected final ContainerItemsCalculator packagerContainerItems;
 
-	public AbstractBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority, ContainerItemsCalculator<C> packagerContainerItems, PackagerInterruptSupplier interrupt) {
+	public AbstractBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority, ContainerItemsCalculator packagerContainerItems, PackagerInterruptSupplier interrupt) {
 		this.packagerContainerItems = packagerContainerItems;
 		this.priority = priority;
 		
@@ -44,7 +45,7 @@ public abstract class AbstractBoxItemAdapter<C extends ContainerItem, T extends 
 	}
 	
 	@Override
-	public C getContainerItem(int index) {
+	public ControlledContainerItem getContainerItem(int index) {
 		return packagerContainerItems.getContainerItem(index);
 	}
 
@@ -54,7 +55,7 @@ public abstract class AbstractBoxItemAdapter<C extends ContainerItem, T extends 
 
 		Stack stack = container.getStack();
 
-		for (StackPlacement stackPlacement : stack.getPlacements()) {
+		for (Placement stackPlacement : stack.getPlacements()) {
 			BoxItem boxItem = (BoxItem) stackPlacement.getStackValue().getBox().getBoxItem();
 			
 			boxItem.decrementResetCount();
@@ -86,7 +87,7 @@ public abstract class AbstractBoxItemAdapter<C extends ContainerItem, T extends 
 		return count;
 	}
 
-	protected abstract IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, C containerItem, PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;
+	protected abstract IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;
 
 
 }

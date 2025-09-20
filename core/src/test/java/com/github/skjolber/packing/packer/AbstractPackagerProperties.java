@@ -7,8 +7,6 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 
-import com.github.skjolber.packing.api.AbstractControlsPackagerResultBuilder;
-import com.github.skjolber.packing.api.AbstractDefaultPackagerResultBuilder;
 import com.github.skjolber.packing.api.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -125,17 +123,8 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 					.build();
 
 			AbstractPackagerResultBuilder builder = packager.newResultBuilder()
-					.withBoxItems(singletonList(new BoxItem(box, count)));
-			
-			if(builder instanceof AbstractDefaultPackagerResultBuilder) {
-				AbstractDefaultPackagerResultBuilder b = (AbstractDefaultPackagerResultBuilder)builder;
-				builder = b.withContainerItems(containers);
-			} else if(builder instanceof AbstractControlsPackagerResultBuilder) {
-				AbstractControlsPackagerResultBuilder b = (AbstractControlsPackagerResultBuilder)builder;
-				builder = b.withContainerItems(containers);
-			} else {
-				throw new RuntimeException();
-			}
+					.withBoxItems(singletonList(new BoxItem(box, count)))
+					.withContainerItems(containers);
 			
 			PackagerResult build = builder.build();
 			Assert.assertTrue(packager.getClass().getSimpleName() + " is expected to pack", build.isSuccess());

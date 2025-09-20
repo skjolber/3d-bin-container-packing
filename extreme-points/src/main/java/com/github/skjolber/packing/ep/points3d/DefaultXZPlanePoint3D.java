@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
 
 public class DefaultXZPlanePoint3D extends SimplePoint3D implements XZPlanePoint3D {
@@ -8,13 +8,13 @@ public class DefaultXZPlanePoint3D extends SimplePoint3D implements XZPlanePoint
 	private static final long serialVersionUID = 1L;
 
 	/** range constrained to current minY */
-	private final StackPlacement xzPlane;
+	private final Placement xzPlane;
 
 	public DefaultXZPlanePoint3D(
 			int minX, int minY, int minZ,
 			int maxX, int maxY, int maxZ,
 
-			StackPlacement xzPlane) {
+			Placement xzPlane) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 
 		this.xzPlane = xzPlane;
@@ -67,7 +67,7 @@ public class DefaultXZPlanePoint3D extends SimplePoint3D implements XZPlanePoint
 				xzPlane);
 	}
 
-	public StackPlacement getXZPlane() {
+	public Placement getXZPlane() {
 		return xzPlane;
 	}
 
@@ -81,7 +81,7 @@ public class DefaultXZPlanePoint3D extends SimplePoint3D implements XZPlanePoint
 	}
 
 	@Override
-	public SimplePoint3D moveX(int x, StackPlacement yzSupport) {
+	public SimplePoint3D moveX(int x, Placement yzSupport) {
 		if(x <= xzPlane.getAbsoluteEndX()) {
 			return new DefaultXZPlaneYZPlanePoint3D(x, minY, minZ, maxX, maxY, maxZ, xzPlane, yzSupport);
 		}
@@ -96,7 +96,7 @@ public class DefaultXZPlanePoint3D extends SimplePoint3D implements XZPlanePoint
 	}
 
 	@Override
-	public SimplePoint3D moveY(int y, StackPlacement xzSupport) {
+	public SimplePoint3D moveY(int y, Placement xzSupport) {
 		// xzPlane support is lost
 		return new DefaultXZPlanePoint3D(minX, y, minZ, maxX, maxY, maxZ, xzSupport);
 	}
@@ -111,7 +111,7 @@ public class DefaultXZPlanePoint3D extends SimplePoint3D implements XZPlanePoint
 	}
 
 	@Override
-	public SimplePoint3D moveZ(int z, StackPlacement xySupport) {
+	public SimplePoint3D moveZ(int z, Placement xySupport) {
 		if(z <= xzPlane.getAbsoluteEndZ()) {
 			return new DefaultXYPlaneXZPlanePoint3D(minX, minY, z, maxX, maxY, maxZ, xzPlane, xySupport);
 		}

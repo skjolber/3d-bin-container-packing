@@ -11,9 +11,12 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 
 public class DefaultContainerItemsCalculatorTest {
 
+	
+	
 	@Test
 	public void testSingleContainer() {
 		Container container = Container.newBuilder()
@@ -23,7 +26,7 @@ public class DefaultContainerItemsCalculatorTest {
 		List<ContainerItem> items = ContainerItem.newListBuilder()
 				.withContainer(container, 1)
 				.build();
-		ContainerItemsCalculator<ContainerItem> calculator = new ContainerItemsCalculator<>(items);
+		ContainerItemsCalculator calculator = create(items);
 		
 		calculator.calculateMaxLoadVolume();
 		calculator.calculateMaxLoadWeight();
@@ -62,7 +65,7 @@ public class DefaultContainerItemsCalculatorTest {
 				.withContainer(container1, 1)
 				.withContainer(container2, 1)
 				.build();
-		ContainerItemsCalculator calculator = new ContainerItemsCalculator<>(items);
+		ContainerItemsCalculator calculator = create(items);
 		
 		calculator.calculateMaxLoadVolume();
 		calculator.calculateMaxLoadWeight();
@@ -98,7 +101,7 @@ public class DefaultContainerItemsCalculatorTest {
 		List<ContainerItem> items = ContainerItem.newListBuilder()
 				.withContainer(container, 1)
 				.build();
-		ContainerItemsCalculator calculator = new ContainerItemsCalculator<>(items);
+		ContainerItemsCalculator calculator = create(items);
 		
 		Box box = Box.newBuilder().withSize(1, 2, 3).withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 10);
@@ -123,7 +126,7 @@ public class DefaultContainerItemsCalculatorTest {
 		List<ContainerItem> items = ContainerItem.newListBuilder()
 				.withContainer(container, 1)
 				.build();
-		ContainerItemsCalculator calculator = new ContainerItemsCalculator<>(items);
+		ContainerItemsCalculator calculator = create(items);
 		
 		Box box = Box.newBuilder().withSize(1, 2, 3).withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 10);
@@ -153,7 +156,7 @@ public class DefaultContainerItemsCalculatorTest {
 				.withContainer(container1, 1)
 				.withContainer(container2, 1)
 				.build();
-		ContainerItemsCalculator calculator = new ContainerItemsCalculator<>(items);
+		ContainerItemsCalculator calculator = create(items);
 		
 		calculator.calculateMaxLoadVolume();
 		calculator.calculateMaxLoadWeight();
@@ -193,7 +196,7 @@ public class DefaultContainerItemsCalculatorTest {
 				.withContainer(container1, 10)
 				.withContainer(container2, 1)
 				.build();
-		ContainerItemsCalculator calculator = new ContainerItemsCalculator<>(items);
+		ContainerItemsCalculator calculator = create(items);
 		
 		calculator.calculateMaxLoadVolume();
 		calculator.calculateMaxLoadWeight();
@@ -217,5 +220,15 @@ public class DefaultContainerItemsCalculatorTest {
 		assertEquals(containers.size(), 2);
 		assertEquals(containers.get(0), 0);
 		assertEquals(containers.get(1), 1);
+	}
+	
+	
+	private ContainerItemsCalculator create(List<ContainerItem> items) {
+		List<ControlledContainerItem> containerItems = new ArrayList<>(items.size());
+		for(ContainerItem containerItem : items) {
+			containerItems.add(new ControlledContainerItem(containerItem));
+		}
+		
+		return new ContainerItemsCalculator(containerItems);
 	}
 }

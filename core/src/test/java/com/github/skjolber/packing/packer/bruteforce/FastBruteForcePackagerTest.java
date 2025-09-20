@@ -22,7 +22,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
@@ -52,7 +52,7 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 			Container fits = build.getContainers().get(0);
 	
-			List<StackPlacement> placements = fits.getStack().getPlacements();
+			List<Placement> placements = fits.getStack().getPlacements();
 	
 			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
 			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemDescription("B");
@@ -94,7 +94,7 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 			Container fits = packList.get(0);
 	
-			List<StackPlacement> placements = fits.getStack().getPlacements();
+			List<Placement> placements = fits.getStack().getPlacements();
 	
 			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
 			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemDescription("A");

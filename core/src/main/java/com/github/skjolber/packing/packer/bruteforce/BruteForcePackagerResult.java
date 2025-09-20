@@ -7,7 +7,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.PackResult;
 import com.github.skjolber.packing.iterator.PermutationRotation;
@@ -30,7 +30,7 @@ public class BruteForcePackagerResult implements PackResult {
 	// state
 	private PermutationRotationState state;
 	private List<Point> points = Collections.emptyList();
-	private List<StackPlacement> placements = Collections.emptyList();
+	private List<Placement> placements = Collections.emptyList();
 
 	private boolean dirty = true;
 
@@ -70,15 +70,13 @@ public class BruteForcePackagerResult implements PackResult {
 		List<PermutationRotation> list = iterator.get(state, points.size());
 
 		for (int i = 0; i < points.size(); i++) {
-			StackPlacement stackPlacement = placements.get(i);
+			Placement stackPlacement = placements.get(i);
 
 			PermutationRotation permutationRotation = list.get(i);
 			stackPlacement.setStackValue(permutationRotation.getBoxStackValue());
 
 			Point point3d = points.get(i);
-			stackPlacement.setX(point3d.getMinX());
-			stackPlacement.setY(point3d.getMinY());
-			stackPlacement.setZ(point3d.getMinZ());
+			stackPlacement.setPoint(point3d);
 
 			stack.add(stackPlacement);
 		}
@@ -90,7 +88,7 @@ public class BruteForcePackagerResult implements PackResult {
 		return state;
 	}
 
-	public void setState(List<Point> items, PermutationRotationState state, List<StackPlacement> placements) {
+	public void setState(List<Point> items, PermutationRotationState state, List<Placement> placements) {
 		this.points = items;
 		this.state = state;
 		this.placements = placements;

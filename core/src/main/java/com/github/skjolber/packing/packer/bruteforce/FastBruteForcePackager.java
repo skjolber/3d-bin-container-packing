@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
@@ -79,7 +79,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		private final FastExtremePoints3DStack extremePoints;
 
 		public FastBruteForceAdapter(List<BoxItem> boxItems, BoxPriority priority,
-				ContainerItemsCalculator<ContainerItem> packagerContainerItems,
+				ContainerItemsCalculator packagerContainerItems,
 				BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, priority, packagerContainerItems, containerIterators, interrupt);
 			
@@ -102,7 +102,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		private final FastExtremePoints3DStack extremePoints;
 
 		public FastBruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, BoxPriority priority,
-				ContainerItemsCalculator<ContainerItem> packagerContainerItems,
+				ContainerItemsCalculator packagerContainerItems,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, boxItemGroups, priority, packagerContainerItems, containerIterators, interrupt);
 			
@@ -122,7 +122,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 	@Override
 	protected FastBruteForceGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			BoxPriority priority, ContainerItemsCalculator<ContainerItem> defaultContainerItemsCalculator,
+			BoxPriority priority, ContainerItemsCalculator defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt) {
 		DefaultBoxItemGroupPermutationRotationIterator[] containerIterators = new DefaultBoxItemGroupPermutationRotationIterator[defaultContainerItemsCalculator.getContainerItemCount()];
 
@@ -147,7 +147,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 	@Override
 	protected FastBruteForceAdapter createBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority,
-			ContainerItemsCalculator<ContainerItem> defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt) {
+			ContainerItemsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt) {
 		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[defaultContainerItemsCalculator.getContainerItemCount()];
 
 		for (int i = 0; i < defaultContainerItemsCalculator.getContainerItemCount(); i++) {
@@ -172,7 +172,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	
 
 	public BruteForceIntermediatePackagerResult pack(FastExtremePoints3DStack extremePoints,
-			List<StackPlacement> stackPlacements, ContainerItem containerItem, int containerIndex,
+			List<Placement> stackPlacements, ContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator,
 			PackagerInterruptSupplier interrupt) {
 		
@@ -303,7 +303,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		return freeLoadWeights;
 	}
 
-	public int packStackPlacement(FastExtremePoints3DStack extremePoints3D, List<StackPlacement> placements,
+	public int packStackPlacement(FastExtremePoints3DStack extremePoints3D, List<Placement> placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack, Container container, int placementIndex,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad) {
 		// pack as many items as possible from placementIndex
@@ -320,7 +320,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 				break;
 			}
 
-			StackPlacement placement = placements.get(placementIndex);
+			Placement placement = placements.get(placementIndex);
 
 			int pointCount = extremePoints3D.size();
 
@@ -349,9 +349,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			Point point3d = extremePoints3D.get(bestPointIndex);
 
 			placement.setStackValue(stackValue);
-			placement.setX(point3d.getMinX());
-			placement.setY(point3d.getMinY());
-			placement.setZ(point3d.getMinZ());
+			placement.setPoint(point3d);
 
 			extremePoints3D.add(bestPointIndex, placement);
 

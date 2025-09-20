@@ -4,20 +4,20 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.FilteredPoints;
-import com.github.skjolber.packing.api.packager.AbstractBoxItemControlsBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemControls;
-import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.api.ep.PointSource;
+import com.github.skjolber.packing.api.packager.AbstractManifestControlsBuilder;
+import com.github.skjolber.packing.api.packager.ManifestControls;
+import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
 
-public class FireHazardsInSpecificContainersBoxItemGroupListener implements BoxItemControls {
+public class FireHazardsInSpecificContainersBoxItemGroupListener implements ManifestControls {
 
-	public static class Builder extends AbstractBoxItemControlsBuilder<Builder> {
+	public static class Builder extends AbstractManifestControlsBuilder<Builder> {
 
 		@Override
-		public BoxItemControls build() {
+		public ManifestControls build() {
 			
-			FilteredBoxItemGroups groups = items.getGroups();			
+			BoxItemGroupSource groups = items.getGroups();			
 			
 			for(int i = 0; i < groups.size(); i++) {
 				BoxItemGroup boxItemGroup = groups.get(i);
@@ -50,11 +50,11 @@ public class FireHazardsInSpecificContainersBoxItemGroupListener implements BoxI
 	}
 	
 	protected final Container container;
-	protected final FilteredBoxItems boxItems;
+	protected final BoxItemSource boxItems;
 	protected final Stack stack;
-	protected final FilteredPoints points;
+	protected final PointSource points;
 
-	public FireHazardsInSpecificContainersBoxItemGroupListener(Container container, FilteredBoxItems boxItems, FilteredPoints points, Stack stack) {
+	public FireHazardsInSpecificContainersBoxItemGroupListener(Container container, BoxItemSource boxItems, PointSource points, Stack stack) {
 		this.container = container;
 		this.boxItems = boxItems;
 		this.stack = stack;

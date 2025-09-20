@@ -3,7 +3,7 @@ package com.github.skjolber.packing.api.ep;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
 
 /**
  * Builder scaffold.
@@ -12,18 +12,18 @@ import com.github.skjolber.packing.api.packager.FilteredBoxItems;
  */
 
 @SuppressWarnings("unchecked")
-public interface FilteredPointsBuilder<B extends FilteredPointsBuilder<B>> {
+public interface PointSourceBuilder<B extends PointSourceBuilder<B>> {
 
 	B withBoxItem(BoxItem boxItems);
 	
-	B withPoints(FilteredPoints points);
+	B withPoints(PointSource points);
 	
-	B withItems(FilteredBoxItems input);
+	B withItems(BoxItemSource input);
 	
 	B withContainer(Container container);
 	
 	B withStack(Stack stack);
 	
-	FilteredPoints build();
+	PointSource build();
 
 }

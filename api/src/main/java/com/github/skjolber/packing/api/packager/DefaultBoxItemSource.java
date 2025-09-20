@@ -6,15 +6,15 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 
-public class DefaultFilteredBoxItems implements FilteredBoxItems {
+public class DefaultBoxItemSource implements BoxItemSource {
 
 	protected List<BoxItem> values;
 	
-	public DefaultFilteredBoxItems(List<BoxItem> values) {
+	public DefaultBoxItemSource(List<BoxItem> values) {
 		this.values = new ArrayList<>(values);
 	}
 	
-	public DefaultFilteredBoxItems() {
+	public DefaultBoxItemSource() {
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class DefaultFilteredBoxItems implements FilteredBoxItems {
 	}
 
 	@Override
-	public FilteredBoxItemGroups getGroups() {
+	public BoxItemGroupSource getGroups() {
 		return null;
 	}
 

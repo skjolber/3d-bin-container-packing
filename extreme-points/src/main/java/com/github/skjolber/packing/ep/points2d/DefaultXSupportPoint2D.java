@@ -1,15 +1,15 @@
 package com.github.skjolber.packing.ep.points2d;
 
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
 
 public class DefaultXSupportPoint2D extends SimplePoint2D implements XSupportPoint2D {
 
 	private static final long serialVersionUID = 1L;
 	/** range constrained to current minY */
-	private final StackPlacement xSupport;
+	private final Placement xSupport;
 
-	public DefaultXSupportPoint2D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, StackPlacement xSupport) {
+	public DefaultXSupportPoint2D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, Placement xSupport) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 		this.xSupport = xSupport;
 	}
@@ -56,7 +56,7 @@ public class DefaultXSupportPoint2D extends SimplePoint2D implements XSupportPoi
 	}
 
 	@Override
-	public SimplePoint2D moveX(int x, StackPlacement ySupport) {
+	public SimplePoint2D moveX(int x, Placement ySupport) {
 		if(x <= xSupport.getAbsoluteEndX()) {
 			return new DefaultXYSupportPoint2D(x, minY, minZ, maxX, maxY, maxZ, xSupport, ySupport);
 		}
@@ -69,7 +69,7 @@ public class DefaultXSupportPoint2D extends SimplePoint2D implements XSupportPoi
 	}
 
 	@Override
-	public SimplePoint2D moveY(int y, StackPlacement xSupport) {
+	public SimplePoint2D moveY(int y, Placement xSupport) {
 		return new DefaultXSupportPoint2D(minX, y, minZ, maxX, maxY, maxZ, xSupport);
 	}
 

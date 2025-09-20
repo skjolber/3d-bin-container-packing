@@ -3,7 +3,7 @@ package com.github.skjolber.packing.api.ep;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 
 public abstract class Point {
 
@@ -301,7 +301,7 @@ public abstract class Point {
 		return minZ;
 	}
 
-	public boolean intersects(StackPlacement p) {
+	public boolean intersects(Placement p) {
 		return !(p.getAbsoluteEndX() < minX || p.getAbsoluteX() > maxX || p.getAbsoluteEndY() < minY || p.getAbsoluteY() > maxY || p.getAbsoluteEndZ() < minZ || p.getAbsoluteZ() > maxZ);
 	}
 
@@ -372,36 +372,36 @@ public abstract class Point {
 		return false;
 	}
 
-	public boolean isInXZPlane(StackPlacement point) {
+	public boolean isInXZPlane(Placement point) {
 		if(point.getAbsoluteY() == minY) {
 			return fitsInXZPlane(point);
 		}
 		return false;
 	}
 
-	public boolean isInXYPlane(StackPlacement point) {
+	public boolean isInXYPlane(Placement point) {
 		if(point.getAbsoluteZ() == minZ) {
 			return fitsInXYPlane(point);
 		}
 		return false;
 	}
 
-	public boolean isInYZPlane(StackPlacement point) {
+	public boolean isInYZPlane(Placement point) {
 		if(point.getAbsoluteX() == minX) {
 			return fitsInYZPlane(point);
 		}
 		return false;
 	}
 
-	public boolean fitsInXZPlane(StackPlacement point) {
+	public boolean fitsInXZPlane(Placement point) {
 		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowsMinX(point.getAbsoluteX(), point.getAbsoluteEndX());
 	}
 
-	public boolean fitsInXYPlane(StackPlacement point) {
+	public boolean fitsInXYPlane(Placement point) {
 		return swallowsMinY(point.getAbsoluteY(), point.getAbsoluteEndY()) && swallowsMinX(point.getAbsoluteX(), point.getAbsoluteEndX());
 	}
 
-	public boolean fitsInYZPlane(StackPlacement point) {
+	public boolean fitsInYZPlane(Placement point) {
 		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowsMinY(point.getAbsoluteY(), point.getAbsoluteEndY());
 	}
 

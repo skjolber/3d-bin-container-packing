@@ -11,11 +11,11 @@ import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
 import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point;
-import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
 
 /**
  * 
@@ -38,7 +38,7 @@ public class ExtremePoints2D implements ExtremePoints {
 	protected int containerMaxZ;
 
 	protected Point2DFlagList values = new Point2DFlagList();
-	protected List<StackPlacement> placements = new ArrayList<>();
+	protected List<Placement> placements = new ArrayList<>();
 
 	// reuse working variables
 	protected final Point2DList addXX = new Point2DList();
@@ -47,7 +47,7 @@ public class ExtremePoints2D implements ExtremePoints {
 	protected final IntArrayList moveToYY = new IntArrayList();
 	protected final IntArrayList moveToXX = new IntArrayList();
 
-	protected StackPlacement containerPlacement;
+	protected Placement containerPlacement;
 
 	protected long minAreaLimit = 0;
 
@@ -79,7 +79,7 @@ public class ExtremePoints2D implements ExtremePoints {
 
 		BoxStackValue stackValue = new BoxStackValue(dx, dy, dz, null, -1);
 		
-		this.containerPlacement = new StackPlacement(stackValue, 0, 0, 0);
+		this.containerPlacement = new Placement(stackValue, new DefaultPoint2D(0, 0, 0, dx - 1, dy - 1, dz - 1));
 	}
 
 	private DefaultXYSupportPoint2D createContainerPoint() {
@@ -88,14 +88,14 @@ public class ExtremePoints2D implements ExtremePoints {
 		return point;
 	}
 
-	public boolean add(Point point, StackPlacement placement) {
+	public boolean add(Point point, Placement placement) {
 		if(point.getIndex() == -1) {
 			return add(binarySearch(point, 0), placement);
 		} 
 		return add(point.getIndex(), placement);
 	}
 	
-	public boolean add(Point point, StackPlacement placement, int filteredIndex, int filteredSize) {
+	public boolean add(Point point, Placement placement, int filteredIndex, int filteredSize) {
 		if(point.getIndex() == -1) {
 			if(filteredSize == size()) {
 				// i.e. no filtering was performed
@@ -113,7 +113,7 @@ public class ExtremePoints2D implements ExtremePoints {
 		return add(point.getIndex(), placement);
 	}	
 	
-	public boolean add(int index, StackPlacement placement) {
+	public boolean add(int index, Placement placement) {
 		// overall approach:
 		// Do not iterate over placements to find point max / mins, rather
 		// project existing points. 
@@ -459,7 +459,7 @@ public class ExtremePoints2D implements ExtremePoints {
 		return !values.isEmpty();
 	}
 
-	private void constrainMaxXWithClone(StackPlacement placement, int pointIndex, int endIndex) {
+	private void constrainMaxXWithClone(Placement placement, int pointIndex, int endIndex) {
 		for (int i = pointIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -481,7 +481,7 @@ public class ExtremePoints2D implements ExtremePoints {
 		}
 	}
 
-	private void constrainMaxYWithClone(StackPlacement placement, int pointIndex, int endIndex) {
+	private void constrainMaxYWithClone(Placement placement, int pointIndex, int endIndex) {
 		for (int i = pointIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -502,7 +502,7 @@ public class ExtremePoints2D implements ExtremePoints {
 		}
 	}
 
-	private void constrainMaxX(StackPlacement placement, int pointIndex, int endIndex) {
+	private void constrainMaxX(Placement placement, int pointIndex, int endIndex) {
 		for (int i = pointIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -520,7 +520,7 @@ public class ExtremePoints2D implements ExtremePoints {
 		}
 	}
 
-	private void constrainMaxY(StackPlacement placement, int pointIndex, int endIndex) {
+	private void constrainMaxY(Placement placement, int pointIndex, int endIndex) {
 		for (int i = pointIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -579,7 +579,7 @@ public class ExtremePoints2D implements ExtremePoints {
 		}
 	}
 
-	protected void constrainFloatingMaxWithClone(StackPlacement placement, int limit) {
+	protected void constrainFloatingMaxWithClone(Placement placement, int limit) {
 
 		Point2DFlagList values = this.values;
 		Point2DList addXX = this.addXX;
@@ -729,7 +729,7 @@ public class ExtremePoints2D implements ExtremePoints {
 		}
 	}
 
-	protected void constrainFloatingMax(StackPlacement placement, int limit) {
+	protected void constrainFloatingMax(Placement placement, int limit) {
 
 		Point2DFlagList values = this.values;
 		Point2DList addXX = this.addXX;
@@ -955,11 +955,11 @@ public class ExtremePoints2D implements ExtremePoints {
 		return p.getAreaAtMaxY(maxY) < minAreaLimit;
 	}
 
-	protected boolean withinX(int x, StackPlacement placement) {
+	protected boolean withinX(int x, Placement placement) {
 		return placement.getAbsoluteX() <= x && x <= placement.getAbsoluteEndX();
 	}
 
-	protected boolean withinY(int y, StackPlacement placement) {
+	protected boolean withinY(int y, Placement placement) {
 		return placement.getAbsoluteY() <= y && y <= placement.getAbsoluteEndY();
 	}
 
@@ -976,7 +976,7 @@ public class ExtremePoints2D implements ExtremePoints {
 		return "ExtremePoints2D [" + containerMaxX + "x" + containerMaxY + ": " + values + "]";
 	}
 
-	public List<StackPlacement> getPlacements() {
+	public List<Placement> getPlacements() {
 		return placements;
 	}
 
@@ -1194,7 +1194,7 @@ public class ExtremePoints2D implements ExtremePoints {
 
 	public long calculateUsedVolume() {
 		long used = 0;
-		for (StackPlacement stackPlacement : placements) {
+		for (Placement stackPlacement : placements) {
 			used += stackPlacement.getStackValue().getBox().getVolume();
 		}
 		return used;
@@ -1202,7 +1202,7 @@ public class ExtremePoints2D implements ExtremePoints {
 	
 	public long calculateUsedWeight() {
 		long used = 0;
-		for (StackPlacement stackPlacement : placements) {
+		for (Placement stackPlacement : placements) {
 			used += stackPlacement.getStackValue().getBox().getWeight();
 		}
 		return used;
@@ -1312,7 +1312,7 @@ public class ExtremePoints2D implements ExtremePoints {
 		}
 	}
 
-	public void updateMinimums(BoxStackValue stackValue, FilteredBoxItems filteredBoxItems) {
+	public void updateMinimums(BoxStackValue stackValue, BoxItemSource filteredBoxItems) {
 		boolean minArea = stackValue.getArea() == minAreaLimit;
 		if(minArea) {
 			setMinimumAreaLimit(filteredBoxItems.getMinArea());
@@ -1320,7 +1320,7 @@ public class ExtremePoints2D implements ExtremePoints {
 	}
 	
 	
-	public void updateMinimums(BoxStackValue stackValue, FilteredBoxItemGroups filteredBoxItemGroups) {
+	public void updateMinimums(BoxStackValue stackValue, BoxItemGroupSource filteredBoxItemGroups) {
 		boolean minArea = stackValue.getArea() == minAreaLimit;
 		if(minArea) {
 			setMinimumAreaLimit(filteredBoxItemGroups.getMinArea());

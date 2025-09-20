@@ -2,7 +2,7 @@ package com.github.skjolber.packing.api.packager;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.FilteredPoints;
+import com.github.skjolber.packing.api.ep.PointSource;
 
 /**
  * Builder scaffold.
@@ -12,9 +12,9 @@ import com.github.skjolber.packing.api.ep.FilteredPoints;
 
 public interface PointControlsBuilder<B extends PointControlsBuilder<B>> {
 
-	B withPoints(FilteredPoints points);
+	B withPoints(PointSource points);
 	
-	B withBoxItems(FilteredBoxItems boxItems);
+	B withBoxItems(BoxItemSource boxItems);
 	
 	B withContainer(Container container);
 	

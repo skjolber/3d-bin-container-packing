@@ -6,18 +6,18 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
 
  /**
  *
- * An iterator which also acts as {@linkplain FilteredBoxItems}. 
+ * An iterator which also acts as {@linkplain BoxItemSource}. 
  *
  * State is restored on each remove, next rotation or next permutation.
  *
  */
 
-public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator implements FilteredBoxItems {
+public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator implements BoxItemSource {
 
 	public static Builder newBuilder() {
 		return new Builder();
@@ -288,7 +288,7 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 	}
 
 	@Override
-	public FilteredBoxItemGroups getGroups() {
+	public BoxItemGroupSource getGroups() {
 		return null;
 	}
 

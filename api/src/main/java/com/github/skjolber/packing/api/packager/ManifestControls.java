@@ -1,18 +1,15 @@
 package com.github.skjolber.packing.api.packager;
 
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.ep.PointSource;
 
 /**
  * 
- * Point Controls (filter) for points which are available for a {@linkplain BoxItem}.
+ * Controls (filter) for items which are available for load into some particular container.
  * 
  * The filter is expected to maintain underlying {@linkplain BoxItemSource} and {@linkplain PointSource} instances.
  * 
  */
 
-public interface PointControls extends ManifestListener {
-
-	PointSource getPoints(BoxItem boxItem);
+public interface ManifestControls extends ManifestListener {
 
 }

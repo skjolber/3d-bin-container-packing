@@ -9,7 +9,7 @@ import com.github.skjolber.packing.api.BoxItem;
  * 
  */
 
-public interface FilteredBoxItems extends Iterable<BoxItem> {
+public interface BoxItemSource extends Iterable<BoxItem> {
 	
 	int size();
 
@@ -65,6 +65,6 @@ public interface FilteredBoxItems extends Iterable<BoxItem> {
 		return maxArea;
 	}
 	
-	FilteredBoxItemGroups getGroups();
+	BoxItemGroupSource getGroups();
 	
 }

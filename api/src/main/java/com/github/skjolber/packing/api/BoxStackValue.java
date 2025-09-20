@@ -86,7 +86,7 @@ public class BoxStackValue {
 
 	@Override
 	public String toString() {
-		return "StackValue[" + surfaces + " " + dx + "x" + dy + "x" + dz + "]";
+		return "BoxStackValue[" + surfaces + " " + dx + "x" + dy + "x" + dz + "]";
 	}
 
 	@Override

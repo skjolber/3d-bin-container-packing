@@ -10,11 +10,11 @@ import java.util.function.Predicate;
 import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point;
-import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
 
 /**
  * 
@@ -42,7 +42,7 @@ public class ExtremePoints3D implements ExtremePoints {
 	protected Point3DFlagList values = new Point3DFlagList(); // i.e. current (input) values
 	protected Point3DFlagList otherValues = new Point3DFlagList(); // i.e. next (output) values
 
-	protected ArrayList<StackPlacement> placements = new ArrayList<>();
+	protected ArrayList<Placement> placements = new ArrayList<>();
 
 	// reuse working variables
 	protected final Point3DListArray addXX = new Point3DListArray();
@@ -63,7 +63,7 @@ public class ExtremePoints3D implements ExtremePoints {
 
 	protected final boolean immutablePoints;
 
-	protected StackPlacement containerPlacement;
+	protected Placement containerPlacement;
 
 	protected CustomIntXComparator xxComparator = new CustomIntXComparator();
 	protected CustomIntYComparator yyComparator = new CustomIntYComparator();
@@ -88,20 +88,20 @@ public class ExtremePoints3D implements ExtremePoints {
 	}
 
 	@SuppressWarnings("unchecked")
-	private StackPlacement createContainerPlacement() {
-		BoxStackValue value = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, containerMaxY + 1, null, -1);
+	private Placement createContainerPlacement() {
+		BoxStackValue value = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, containerMaxZ + 1, null, -1);
 		
-		return new StackPlacement(value, 0, 0, 0);
+		return new Placement(value, new DefaultPoint3D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ));
 	}
 	
-	public boolean add(Point point, StackPlacement placement) {
+	public boolean add(Point point, Placement placement) {
 		if(point.getIndex() == -1) {
 			return add(binarySearch(point, 0), placement);
 		} 
 		return add(point.getIndex(), placement);
 	}
 	
-	public boolean add(Point point, StackPlacement placement, int filteredIndex, int filteredSize) {
+	public boolean add(Point point, Placement placement, int filteredIndex, int filteredSize) {
 		if(point.getIndex() == -1) {
 			if(filteredSize == size()) {
 				// i.e. no filtering was performed
@@ -119,7 +119,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		return add(point.getIndex(), placement);
 	}
 
-	public boolean add(int index, StackPlacement placement) {
+	public boolean add(int index, Placement placement) {
 
 		// overall approach:
 		// Do not iterate over placements to find point max / mins, rather
@@ -668,7 +668,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		return false;
 	}
 
-	private void constrainMax(StackPlacement placement, int endIndex) {
+	private void constrainMax(Placement placement, int endIndex) {
 		constrainXX.ensureAdditionalCapacity(endIndex);
 		constrainYY.ensureAdditionalCapacity(endIndex);
 		constrainZZ.ensureAdditionalCapacity(endIndex);
@@ -729,7 +729,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		}
 	}
 
-	private void constrainMaxWithClone(StackPlacement placement, int endIndex) {
+	private void constrainMaxWithClone(Placement placement, int endIndex) {
 		constrainXX.ensureAdditionalCapacity(endIndex);
 		constrainYY.ensureAdditionalCapacity(endIndex);
 		constrainZZ.ensureAdditionalCapacity(endIndex);
@@ -908,7 +908,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		}
 	}
 
-	protected void constrainFloatingMaxWithClone(StackPlacement placement, int limit) {
+	protected void constrainFloatingMaxWithClone(Placement placement, int limit) {
 		/*
 		addXX.ensureAdditionalCapacity(limit);
 		addYY.ensureAdditionalCapacity(limit);
@@ -1111,7 +1111,7 @@ public class ExtremePoints3D implements ExtremePoints {
 
 	}
 
-	protected void constrainFloatingMax(StackPlacement placement, int limit) {
+	protected void constrainFloatingMax(Placement placement, int limit) {
 
 		Point3DFlagList values = this.values;
 
@@ -1401,15 +1401,15 @@ public class ExtremePoints3D implements ExtremePoints {
 
 	}
 
-	protected boolean withinX(int x, StackPlacement placement) {
+	protected boolean withinX(int x, Placement placement) {
 		return placement.getAbsoluteX() <= x && x <= placement.getAbsoluteEndX();
 	}
 
-	protected boolean withinY(int y, StackPlacement placement) {
+	protected boolean withinY(int y, Placement placement) {
 		return placement.getAbsoluteY() <= y && y <= placement.getAbsoluteEndY();
 	}
 
-	protected boolean withinZ(int z, StackPlacement placement) {
+	protected boolean withinZ(int z, Placement placement) {
 		return placement.getAbsoluteZ() <= z && z <= placement.getAbsoluteEndZ();
 	}
 
@@ -1430,7 +1430,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		return "ExtremePoints3D [width=" + containerMaxX + ", depth=" + containerMaxY + ", values=" + values + "]";
 	}
 
-	public List<StackPlacement> getPlacements() {
+	public List<Placement> getPlacements() {
 		return placements;
 	}
 
@@ -1796,7 +1796,7 @@ public class ExtremePoints3D implements ExtremePoints {
 
 	public long calculateUsedVolume() {
 		long used = 0;
-		for (StackPlacement stackPlacement : placements) {
+		for (Placement stackPlacement : placements) {
 			used += stackPlacement.getStackValue().getBox().getVolume();
 		}
 		return used;
@@ -1804,7 +1804,7 @@ public class ExtremePoints3D implements ExtremePoints {
 	
 	public long calculateUsedWeight() {
 		long used = 0;
-		for (StackPlacement stackPlacement : placements) {
+		for (Placement stackPlacement : placements) {
 			used += stackPlacement.getStackValue().getBox().getWeight();
 		}
 		return used;
@@ -1820,7 +1820,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		return values.iterator();
 	}
 	
-	public void updateMinimums(BoxStackValue stackValue, FilteredBoxItems filteredBoxItems) {
+	public void updateMinimums(BoxStackValue stackValue, BoxItemSource filteredBoxItems) {
 		boolean minArea = stackValue.getArea() == minAreaLimit;
 		boolean minVolume = stackValue.getVolume() == minVolumeLimit;
 		if(minArea && minVolume) {
@@ -1832,7 +1832,7 @@ public class ExtremePoints3D implements ExtremePoints {
 		}
 	}
 	
-	public void updateMinimums(FilteredBoxItems filteredBoxItems) {
+	public void updateMinimums(BoxItemSource filteredBoxItems) {
 		boolean minArea = filteredBoxItems.getMinArea() == minAreaLimit;
 		boolean minVolume = filteredBoxItems.getMinVolume() == minVolumeLimit;
 		if(minArea && minVolume) {
@@ -1845,7 +1845,7 @@ public class ExtremePoints3D implements ExtremePoints {
 	}
 
 	
-	public void updateMinimums(BoxStackValue stackValue, FilteredBoxItemGroups filteredBoxItemGroups) {
+	public void updateMinimums(BoxStackValue stackValue, BoxItemGroupSource filteredBoxItemGroups) {
 		boolean minArea = stackValue.getArea() == minAreaLimit;
 		boolean minVolume = stackValue.getVolume() == minVolumeLimit;
 		if(minArea && minVolume) {

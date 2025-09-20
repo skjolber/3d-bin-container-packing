@@ -10,7 +10,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
@@ -27,7 +27,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	// state
 	private PermutationRotationState state;
 	private List<Point> points = Collections.emptyList();
-	private List<StackPlacement> placements = Collections.emptyList();
+	private List<Placement> placements = Collections.emptyList();
 
 	private boolean dirty = true;
 
@@ -51,7 +51,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 			int loadWeight = 0;
 
 			for (int i = 0; i < points.size(); i++) {
-				StackPlacement stackPlacement = placements.get(i);
+				Placement stackPlacement = placements.get(i);
 				
 				BoxStackValue v = stackPlacement.getStackValue();
 				Box box = v.getBox();
@@ -80,7 +80,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		List<BoxStackValue> list = iterator.get(state, points.size());
 		
 		for (int i = 0; i < points.size(); i++) {
-			StackPlacement stackPlacement = placements.get(i);
+			Placement stackPlacement = placements.get(i);
 
 			BoxStackValue value = list.get(i);
 			
@@ -91,9 +91,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 			stackPlacement.setStackValue(value);
 
 			Point point3d = points.get(i);
-			stackPlacement.setX(point3d.getMinX());
-			stackPlacement.setY(point3d.getMinY());
-			stackPlacement.setZ(point3d.getMinZ());
+			stackPlacement.setPoint(point3d);
 
 			stack.add(stackPlacement);
 		}
@@ -107,7 +105,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		return state;
 	}
 
-	public void setState(List<Point> items, PermutationRotationState state, List<StackPlacement> placements) {
+	public void setState(List<Point> items, PermutationRotationState state, List<Placement> placements) {
 		this.points = items;
 		this.state = state;
 		this.placements = placements;

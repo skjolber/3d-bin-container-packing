@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
 
 public class Default3DPlanePoint3D extends SimplePoint3D implements XZPlanePoint3D, YZPlanePoint3D, XYPlanePoint3D {
@@ -8,20 +8,20 @@ public class Default3DPlanePoint3D extends SimplePoint3D implements XZPlanePoint
 	private static final long serialVersionUID = 1L;
 
 	/** range constrained to current minX */
-	private final StackPlacement yzPlane;
+	private final Placement yzPlane;
 
 	/** range constrained to current minY */
-	private final StackPlacement xzPlane;
+	private final Placement xzPlane;
 
 	/** range constrained to current minZ */
-	private final StackPlacement xyPlane;
+	private final Placement xyPlane;
 
 	public Default3DPlanePoint3D(
 			int minX, int minY, int minZ,
 			int maxX, int maxY, int maxZ,
-			StackPlacement yzPlane,
-			StackPlacement xzPlane,
-			StackPlacement xyPlane) {
+			Placement yzPlane,
+			Placement xzPlane,
+			Placement xyPlane) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 
 		this.yzPlane = yzPlane;
@@ -129,15 +129,15 @@ public class Default3DPlanePoint3D extends SimplePoint3D implements XZPlanePoint
 				yzPlane, xzPlane, xyPlane);
 	}
 
-	public StackPlacement getXZPlane() {
+	public Placement getXZPlane() {
 		return xzPlane;
 	}
 
-	public StackPlacement getYZPlane() {
+	public Placement getYZPlane() {
 		return yzPlane;
 	}
 
-	public StackPlacement getXYPlane() {
+	public Placement getXYPlane() {
 		return xyPlane;
 	}
 
@@ -164,7 +164,7 @@ public class Default3DPlanePoint3D extends SimplePoint3D implements XZPlanePoint
 	}
 
 	@Override
-	public SimplePoint3D moveX(int x, StackPlacement yzSupport) {
+	public SimplePoint3D moveX(int x, Placement yzSupport) {
 		boolean withinXYPlane = x <= xyPlane.getAbsoluteEndX();
 		boolean withinXZPlane = x <= xzPlane.getAbsoluteEndX();
 
@@ -198,7 +198,7 @@ public class Default3DPlanePoint3D extends SimplePoint3D implements XZPlanePoint
 	}
 
 	@Override
-	public SimplePoint3D moveY(int y, StackPlacement xzSupport) {
+	public SimplePoint3D moveY(int y, Placement xzSupport) {
 		boolean withinXYPlane = y <= xyPlane.getAbsoluteEndY();
 		boolean withinYZPlane = y <= yzPlane.getAbsoluteEndY();
 
@@ -232,7 +232,7 @@ public class Default3DPlanePoint3D extends SimplePoint3D implements XZPlanePoint
 	}
 
 	@Override
-	public SimplePoint3D moveZ(int z, StackPlacement xySupport) {
+	public SimplePoint3D moveZ(int z, Placement xySupport) {
 		boolean withinXZPlane = z <= xzPlane.getAbsoluteEndZ();
 		boolean withinYZPlane = z <= yzPlane.getAbsoluteEndZ();
 

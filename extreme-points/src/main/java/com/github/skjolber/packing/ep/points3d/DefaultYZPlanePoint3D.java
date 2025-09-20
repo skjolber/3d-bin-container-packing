@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
 
 public class DefaultYZPlanePoint3D extends SimplePoint3D implements YZPlanePoint3D {
@@ -8,12 +8,12 @@ public class DefaultYZPlanePoint3D extends SimplePoint3D implements YZPlanePoint
 	private static final long serialVersionUID = 1L;
 
 	/** range constrained to current minX */
-	private final StackPlacement yzPlane;
+	private final Placement yzPlane;
 
 	public DefaultYZPlanePoint3D(
 			int minX, int minY, int minZ,
 			int maxX, int maxY, int maxZ,
-			StackPlacement yzPlane) {
+			Placement yzPlane) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 
 		this.yzPlane = yzPlane;
@@ -50,7 +50,7 @@ public class DefaultYZPlanePoint3D extends SimplePoint3D implements YZPlanePoint
 		return yzPlane.getAbsoluteEndY() == y - 1;
 	}
 
-	public StackPlacement getYZPlane() {
+	public Placement getYZPlane() {
 		return yzPlane;
 	}
 
@@ -71,7 +71,7 @@ public class DefaultYZPlanePoint3D extends SimplePoint3D implements YZPlanePoint
 	}
 
 	@Override
-	public SimplePoint3D moveX(int x, StackPlacement yzSupport) {
+	public SimplePoint3D moveX(int x, Placement yzSupport) {
 		// xzPlane support is lost
 		return new DefaultYZPlanePoint3D(x, minY, minZ, maxX, maxY, maxZ, yzSupport);
 	}
@@ -86,7 +86,7 @@ public class DefaultYZPlanePoint3D extends SimplePoint3D implements YZPlanePoint
 	}
 
 	@Override
-	public SimplePoint3D moveY(int y, StackPlacement xzSupport) {
+	public SimplePoint3D moveY(int y, Placement xzSupport) {
 		// xzPlane support is lost
 		if(y <= yzPlane.getAbsoluteEndY()) {
 			return new DefaultXZPlaneYZPlanePoint3D(minX, y, minZ, maxX, maxY, maxZ, xzSupport, yzPlane);
@@ -104,7 +104,7 @@ public class DefaultYZPlanePoint3D extends SimplePoint3D implements YZPlanePoint
 	}
 
 	@Override
-	public SimplePoint3D moveZ(int z, StackPlacement xySupport) {
+	public SimplePoint3D moveZ(int z, Placement xySupport) {
 		if(z <= yzPlane.getAbsoluteEndZ()) {
 			return new DefaultXYPlaneYZPlanePoint3D(minX, minY, z, maxX, maxY, maxZ, yzPlane, xySupport);
 		}

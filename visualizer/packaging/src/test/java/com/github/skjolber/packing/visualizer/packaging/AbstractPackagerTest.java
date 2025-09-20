@@ -19,7 +19,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.packer.AbstractPackager;
@@ -111,7 +111,7 @@ public class AbstractPackagerTest {
 		assertNotNull(bouwkampCode.getName(), fits);
 		assertEquals(bouwkampCode.getName(), fits.getStack().size(), squares.size());
 
-		for (StackPlacement stackPlacement : fits.getStack().getPlacements()) {
+		for (Placement stackPlacement : fits.getStack().getPlacements()) {
 			BoxStackValue stackValue = stackPlacement.getStackValue();
 			System.out.println(stackPlacement.getAbsoluteX() + "x" + stackPlacement.getAbsoluteY() + "x" + stackPlacement.getAbsoluteZ() + " " + stackValue.getDx() + "x" + stackValue.getDy() + "x"
 					+ stackValue.getDz());

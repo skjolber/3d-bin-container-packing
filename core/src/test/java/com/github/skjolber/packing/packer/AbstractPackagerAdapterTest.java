@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.packager.ControlContainerItem;
+import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 
 public class AbstractPackagerAdapterTest {
 
@@ -34,7 +34,7 @@ public class AbstractPackagerAdapterTest {
                 .withContainer(container2, 3)
                 .build();
 
-        ContainerItemsCalculator<ContainerItem> adapter = create(items);
+        ContainerItemsCalculator adapter = create(items);
 
 		// volume
         for(int i = 0; i <= 5; i++) {
@@ -79,7 +79,7 @@ public class AbstractPackagerAdapterTest {
                 .withContainer(container2, 3)
                 .build();
         
-        ContainerItemsCalculator<ContainerItem> adapter = create(items);
+        ContainerItemsCalculator adapter = create(items);
 
 		// volume overflows, max value is 9,223,372,036,854,775,807 (~19 digits) and 
 		// max integer 2,147,483,647 (~10 digits) 
@@ -99,7 +99,12 @@ public class AbstractPackagerAdapterTest {
     	assertEquals(maxWeight, expectedWeight);
 	}
 	
-	private ContainerItemsCalculator<ContainerItem> create(List<ContainerItem> items) {
-		return new ContainerItemsCalculator<>(items);
+	private ContainerItemsCalculator create(List<ContainerItem> items) {
+		List<ControlledContainerItem> containerItems = new ArrayList<>(items.size());
+		for(ContainerItem containerItem : items) {
+			containerItems.add(new ControlledContainerItem(containerItem));
+		}
+		
+		return new ContainerItemsCalculator(containerItems);
 	}
 }

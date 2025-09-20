@@ -4,13 +4,13 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.ep.FilteredPoints;
+import com.github.skjolber.packing.api.ep.PointSource;
 
 /**
  * 
  * Listener for items which are available for load into some particular container.
  * 
- * The filter is expected to maintain underlying {@linkplain FilteredBoxItems} and {@linkplain FilteredPoints} instances.
+ * The filter is expected to maintain underlying {@linkplain BoxItemSource} and {@linkplain PointSource} instances.
  * 
  */
 

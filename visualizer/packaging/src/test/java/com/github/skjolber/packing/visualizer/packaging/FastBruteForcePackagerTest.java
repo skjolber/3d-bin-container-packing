@@ -12,7 +12,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
@@ -67,7 +67,7 @@ public class FastBruteForcePackagerTest extends AbstractPackagerTest {
 
 		Container fits = result.get(0);
 
-		List<StackPlacement> placements = fits.getStack().getPlacements();
+		List<Placement> placements = fits.getStack().getPlacements();
 
 		System.out.println(fits.getStack().getPlacements());
 

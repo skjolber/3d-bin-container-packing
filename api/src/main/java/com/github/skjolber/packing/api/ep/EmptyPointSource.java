@@ -3,11 +3,11 @@ package com.github.skjolber.packing.api.ep;
 import java.util.Collections;
 import java.util.Iterator;
 
-public class EmptyFilteredPoints implements FilteredPoints {
+public class EmptyPointSource implements PointSource {
 
-	private static final EmptyFilteredPoints INSTANCE = new EmptyFilteredPoints();
+	private static final EmptyPointSource INSTANCE = new EmptyPointSource();
 	
-	public static EmptyFilteredPoints getInstance() {
+	public static EmptyPointSource getInstance() {
 		return INSTANCE;
 	}
 

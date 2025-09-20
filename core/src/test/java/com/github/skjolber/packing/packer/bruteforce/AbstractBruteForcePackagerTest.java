@@ -17,7 +17,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
@@ -260,7 +260,7 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 			List<Container> containers = build.getContainers();
 			assertValid(containers);
 	
-			List<StackPlacement> placements = containers.get(0).getStack().getPlacements();
+			List<Placement> placements = containers.get(0).getStack().getPlacements();
 			assertThat(placements).size().isEqualTo(3);
 
 			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
@@ -307,14 +307,14 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 			assertThat(packList).hasSize(2);
 	
 			Container container1 = packList.get(0);
-			List<StackPlacement> placements1 = container1.getStack().getPlacements();
+			List<Placement> placements1 = container1.getStack().getPlacements();
 			assertThat(placements1).size().isEqualTo(2);
 	
 			assertThat(placements1.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
 			assertThat(placements1.get(1)).isAt(1, 0, 0).hasBoxItemId("A");
 			
 			Container container2 = packList.get(1);
-			List<StackPlacement> placements2 = container2.getStack().getPlacements();
+			List<Placement> placements2 = container2.getStack().getPlacements();
 			assertThat(placements2).size().isEqualTo(2);
 	
 			assertThat(placements2.get(0)).isAt(0, 0, 0).hasBoxItemId("B");

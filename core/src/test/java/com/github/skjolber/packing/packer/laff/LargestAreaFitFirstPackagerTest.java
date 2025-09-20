@@ -18,7 +18,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
 import com.github.skjolber.packing.test.assertj.StackAssert;
@@ -48,7 +48,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertNotNull(fits);
 			validate(fits);
 	
-			List<StackPlacement> placements = fits.getStack().getPlacements();
+			List<Placement> placements = fits.getStack().getPlacements();
 	
 			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
 			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemDescription("B");
@@ -88,9 +88,9 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertNotNull(fits);
 			validate(fits);
 	
-			List<StackPlacement> placements = fits.getStack().getPlacements();
+			List<Placement> placements = fits.getStack().getPlacements();
 			
-			for(StackPlacement p : placements) {
+			for(Placement p : placements) {
 				System.out.println(p.getStackValue().getBox().getId() + " " + p.getAbsoluteX() + "x" + p.getAbsoluteY() + "x" + p.getAbsoluteZ()); 
 			}
 	
@@ -129,7 +129,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertNotNull(fits);
 			validate(fits);
 	
-			List<StackPlacement> placements = fits.getStack().getPlacements();
+			List<Placement> placements = fits.getStack().getPlacements();
 	
 			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
 			assertThat(placements.get(1)).isAt(2, 0, 0).hasBoxItemDescription("B");
@@ -188,7 +188,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertNotNull(fits);
 			validate(fits);
 	
-			List<StackPlacement> placements = fits.getStack().getPlacements();
+			List<Placement> placements = fits.getStack().getPlacements();
 	
 			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
 			assertThat(placements.get(1)).isAt(3, 0, 0).hasBoxItemDescription("B"); // point with lowest x is selected first
@@ -222,7 +222,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			validate(fits);
 
-			List<StackPlacement> placements = fits.getStack().getPlacements();
+			List<Placement> placements = fits.getStack().getPlacements();
 	
 			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
 			assertThat(placements.get(1)).isAt(2, 0, 0).hasBoxItemDescription("A");
@@ -264,9 +264,9 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 			validate(fits);
 
-			List<StackPlacement> placements = fits.getStack().getPlacements();
+			List<Placement> placements = fits.getStack().getPlacements();
 			
-			for(StackPlacement p : placements) {
+			for(Placement p : placements) {
 				System.out.println(p.getStackValue().getBox().getId() + " " + p.getAbsoluteX() + "x" + p.getAbsoluteY() + "x" + p.getAbsoluteZ()); 
 			}
 	
@@ -491,8 +491,8 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 	public static int countLevels(Container container) {
 		int count = 0;
-		List<StackPlacement> placements = container.getStack().getPlacements();
-		for (StackPlacement stackPlacement : placements) {
+		List<Placement> placements = container.getStack().getPlacements();
+		for (Placement stackPlacement : placements) {
 			if(stackPlacement.getAbsoluteX() == 0 && stackPlacement.getAbsoluteY() == 0) {
 				count++;
 			}

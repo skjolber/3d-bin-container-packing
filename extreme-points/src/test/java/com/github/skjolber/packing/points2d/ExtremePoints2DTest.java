@@ -10,8 +10,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.ep.points2d.DefaultPoint2D;
 import com.github.skjolber.packing.ep.points2d.DefaultXYSupportPoint2D;
 import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
 import com.github.skjolber.packing.ep.points2d.Point2D;
@@ -19,11 +20,11 @@ import com.github.skjolber.packing.points.DefaultExtremePoints2D;
 
 public class ExtremePoints2DTest {
 
-	private StackPlacement createStackPlacement(int x, int y, int endX, int endY) {
+	private Placement createStackPlacement(int x, int y, int endX, int endY) {
 		return createStackPlacement(x, y, 0, endX, endY, 0);
 	}
 	
-	private StackPlacement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
+	private Placement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, 1, null, -1);
 		
 		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, 1).withWeight(0).build();
@@ -31,7 +32,7 @@ public class ExtremePoints2DTest {
 		
 		BoxItem boxItem = new BoxItem(box, 1);
 		
-		return new StackPlacement(stackValue, x, y, z);
+		return new Placement(stackValue, new DefaultPoint2D(x, y, z, 0, 0, 0));
 	}
 	
 	@Test

@@ -6,7 +6,7 @@ package com.github.skjolber.packing.api.ep;
  * 
  */
 
-public interface FilteredPoints extends Iterable<Point> {
+public interface PointSource extends Iterable<Point> {
 
 	int size();
 	

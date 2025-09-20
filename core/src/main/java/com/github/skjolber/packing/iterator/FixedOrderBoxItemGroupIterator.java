@@ -2,7 +2,7 @@ package com.github.skjolber.packing.iterator;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
-import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
+import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 
 public class FixedOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 
@@ -11,7 +11,7 @@ public class FixedOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 	}
 
 	public static class Builder {
-		protected FilteredBoxItemGroups filteredBoxItemGroups;
+		protected BoxItemGroupSource filteredBoxItemGroups;
 		protected Container container;
 		protected ExtremePoints extremePoints;
 		
@@ -25,7 +25,7 @@ public class FixedOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 			return this;
 		}
 		
-		public Builder withFilteredBoxItemGroups(FilteredBoxItemGroups filteredBoxItemGroups) {
+		public Builder withFilteredBoxItemGroups(BoxItemGroupSource filteredBoxItemGroups) {
 			this.filteredBoxItemGroups = filteredBoxItemGroups;
 			return this;
 		}
@@ -44,14 +44,14 @@ public class FixedOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 		}
 	}
 	
-	protected final FilteredBoxItemGroups filteredBoxItemGroups;
+	protected final BoxItemGroupSource filteredBoxItemGroups;
 	protected final Container container;
 	protected final ExtremePoints extremePoints;
 	
 	protected int next = -1;
 	protected boolean dirty = true;
 	
-	public FixedOrderBoxItemGroupIterator(FilteredBoxItemGroups filteredBoxItemGroups, Container container,
+	public FixedOrderBoxItemGroupIterator(BoxItemGroupSource filteredBoxItemGroups, Container container,
 			ExtremePoints extremePoints) {
 		this.filteredBoxItemGroups = filteredBoxItemGroups;
 		this.container = container;

@@ -6,12 +6,12 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
 
 public class PackagerBoxItems {
 
-	public class InnerFilteredBoxItemGroup implements FilteredBoxItemGroups {
+	public class InnerFilteredBoxItemGroup implements BoxItemGroupSource {
 
 		@Override
 		public int size() {
@@ -59,7 +59,7 @@ public class PackagerBoxItems {
 		
 	};
 	
-	public class InnerFilteredBoxItems implements FilteredBoxItems {
+	public class InnerFilteredBoxItems implements BoxItemSource {
 
 		@Override
 		public int size() {

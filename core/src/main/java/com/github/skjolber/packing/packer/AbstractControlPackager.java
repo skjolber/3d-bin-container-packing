@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.github.skjolber.packing.api.AbstractControlsPackagerResultBuilder;
+import com.github.skjolber.packing.api.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
@@ -13,13 +13,13 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
-import com.github.skjolber.packing.api.packager.BoxItemControls;
-import com.github.skjolber.packing.api.packager.ControlContainerItem;
-import com.github.skjolber.packing.api.packager.DefaultFilteredBoxItems;
-import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.api.packager.ManifestControls;
+import com.github.skjolber.packing.api.packager.ControlledContainerItem;
+import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
+import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.IntermediatePlacementResult;
 import com.github.skjolber.packing.api.packager.PointControls;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
@@ -42,40 +42,40 @@ public abstract class AbstractControlPackager extends AbstractPackager<Intermedi
 		super(comparator);
 	}
 
-	protected class DefaultBoxItemAdapter extends AbstractBoxItemAdapter<ControlContainerItem, IntermediatePackagerResult> {
+	protected class DefaultBoxItemAdapter extends AbstractBoxItemAdapter<IntermediatePackagerResult> {
 
 		public DefaultBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority,
-				ContainerItemsCalculator<ControlContainerItem> packagerContainerItems,
+				ContainerItemsCalculator packagerContainerItems,
 				PackagerInterruptSupplier interrupt) {
 			super(boxItems, priority, packagerContainerItems, interrupt);
 		}
 
 		@Override
-		protected IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ControlContainerItem containerItem,
+		protected IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ControlledContainerItem containerItem,
 				PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			return AbstractControlPackager.this.pack(remainingBoxItems, containerItem, interrupt, priority, abortOnAnyBoxTooBig);
 		}
 
 	}
 	
-	protected class DefaultBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter<ControlContainerItem, IntermediatePackagerResult> {
+	protected class DefaultBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter<IntermediatePackagerResult> {
 
 		public DefaultBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups,
 				BoxPriority priority,
-				ContainerItemsCalculator<ControlContainerItem> packagerContainerItems, 
+				ContainerItemsCalculator packagerContainerItems, 
 				PackagerInterruptSupplier interrupt) {
 			super(boxItemGroups, packagerContainerItems, priority, interrupt);
 		}
 
 		@Override
 		protected IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, BoxPriority priority,
-				ControlContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+				ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
 			return AbstractControlPackager.this.packGroup(remainingBoxItemGroups, priority, containerItem, interrupt, abortOnAnyBoxTooBig);
 		}
 
 	}
 	
-	public class DefaultControlsPackagerResultBuilder extends AbstractControlsPackagerResultBuilder<DefaultControlsPackagerResultBuilder> {
+	public class DefaultControlsPackagerResultBuilder extends AbstractPackagerResultBuilder<DefaultControlsPackagerResultBuilder> {
 
 		public PackagerResult build() {
 			validate();
@@ -99,9 +99,9 @@ public abstract class AbstractControlPackager extends AbstractPackager<Intermedi
 			try {
 				PackagerAdapter adapter;
 				if(items != null && !items.isEmpty()) {
-					adapter = new DefaultBoxItemAdapter(items, priority, new ContainerItemsCalculator<>(containers), interrupt);
+					adapter = new DefaultBoxItemAdapter(items, priority, new ContainerItemsCalculator(containers), interrupt);
 				} else {
-					adapter = new DefaultBoxItemGroupAdapter(itemGroups, priority, new ContainerItemsCalculator<>(containers), interrupt);
+					adapter = new DefaultBoxItemGroupAdapter(itemGroups, priority, new ContainerItemsCalculator(containers), interrupt);
 				}
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 				
@@ -122,7 +122,7 @@ public abstract class AbstractControlPackager extends AbstractPackager<Intermedi
 		return new DefaultControlsPackagerResultBuilder();
 	}
 
-	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		Container container = controlContainerItem.getContainer();
 
 		Stack stack = new Stack();
@@ -130,8 +130,8 @@ public abstract class AbstractControlPackager extends AbstractPackager<Intermedi
 		ExtremePoints extremePoints = new ExtremePoints3D();
 		extremePoints.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 
-		DefaultFilteredBoxItems filteredBoxItems = new DefaultFilteredBoxItems(boxItems);
-		BoxItemControls boxItemControls = controlContainerItem.createBoxItemControls(container, stack, filteredBoxItems, extremePoints, null);
+		DefaultBoxItemSource filteredBoxItems = new DefaultBoxItemSource(boxItems);
+		ManifestControls boxItemControls = controlContainerItem.createBoxItemControls(container, stack, filteredBoxItems, extremePoints, null);
 
 		PointControls pointControls = controlContainerItem.createPointControls(container, stack, filteredBoxItems, extremePoints);
 		
@@ -182,11 +182,7 @@ public abstract class AbstractControlPackager extends AbstractPackager<Intermedi
 				break;
 			}
 			
-			StackPlacement stackPlacement = new StackPlacement(result.getStackValue(), 
-				result.getPoint().getMinX(), 
-				result.getPoint().getMinY(), 
-				result.getPoint().getMinZ()
-			);
+			Placement stackPlacement = new Placement(result.getStackValue(), result.getPoint());
 
 			stack.add(stackPlacement);
 			extremePoints.add(result.getPoint(), stackPlacement);
@@ -274,7 +270,7 @@ public abstract class AbstractControlPackager extends AbstractPackager<Intermedi
 	}
 
 
-	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, BoxPriority priority, ControlContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, BoxPriority priority, ControlledContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
 		ContainerItem containerItem = compositeContainerItem;
 		Container container = containerItem.getContainer();
 		
@@ -285,11 +281,11 @@ public abstract class AbstractControlPackager extends AbstractPackager<Intermedi
 		
 		PackagerBoxItems packagerBoxItems = new PackagerBoxItems(boxItemGroups);
 
-		FilteredBoxItems filteredBoxItems = packagerBoxItems.getFilteredBoxItems();
+		BoxItemSource filteredBoxItems = packagerBoxItems.getFilteredBoxItems();
 
-		FilteredBoxItemGroups filteredBoxItemGroups = packagerBoxItems.getFilteredBoxItemGroups();
+		BoxItemGroupSource filteredBoxItemGroups = packagerBoxItems.getFilteredBoxItemGroups();
 
-		BoxItemControls boxItemControls = compositeContainerItem.createBoxItemControls(container, stack, filteredBoxItems, extremePoints, filteredBoxItemGroups);
+		ManifestControls boxItemControls = compositeContainerItem.createBoxItemControls(container, stack, filteredBoxItems, extremePoints, filteredBoxItemGroups);
 
 		PointControls pointControls = compositeContainerItem.createPointControls(container, stack, filteredBoxItems, extremePoints);
 						
@@ -360,7 +356,7 @@ public abstract class AbstractControlPackager extends AbstractPackager<Intermedi
 					break;
 				}
 				
-				StackPlacement stackPlacement = new StackPlacement(bestPoint.getStackValue(), bestPoint.getPoint().getMinX(), bestPoint.getPoint().getMinY(), bestPoint.getPoint().getMinZ());
+				Placement stackPlacement = new Placement(bestPoint.getStackValue(), bestPoint.getPoint());
 				stack.add(stackPlacement);
 				extremePoints.add(bestPoint.getPoint(), stackPlacement);
 				
@@ -534,14 +530,14 @@ public abstract class AbstractControlPackager extends AbstractPackager<Intermedi
 	}
 
 	protected abstract BoxItemGroupIterator createBoxItemGroupIterator(
-			FilteredBoxItemGroups groups, 
+			BoxItemGroupSource groups, 
 			BoxPriority itemGroupOrder, 
 			Container container,
 			ExtremePoints extremePoints
 		);
 
 	protected abstract IntermediatePlacementResult findBestPoint(
-			FilteredBoxItems boxItems,
+			BoxItemSource boxItems,
 			int offset, int length,
 			BoxPriority priority,
 			PointControls pointControls,

@@ -17,9 +17,9 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter implements Packag
 	protected BoxItem[] boxItems;
 	
 	protected final BoxPriority priority;
-	protected final ContainerItemsCalculator<ContainerItem> packagerContainerItems;
+	protected final ContainerItemsCalculator packagerContainerItems;
 
-	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, BoxPriority priority, ContainerItemsCalculator<ContainerItem> packagerContainerItems) {
+	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, BoxPriority priority, ContainerItemsCalculator packagerContainerItems) {
 		this.packagerContainerItems = packagerContainerItems;
 		this.priority = priority;
 		

@@ -6,7 +6,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.ep.FilteredPoints;
+import com.github.skjolber.packing.api.ep.PointSource;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.AbstractIntermediatePlacementResultBuilder;
 import com.github.skjolber.packing.api.packager.IntermediatePlacementResult;
@@ -48,7 +48,7 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 				}
 			}
 			
-			FilteredPoints points = pointControls.getFilteredPoints(boxItem);
+			PointSource points = pointControls.getPoints(boxItem);
 
 			for (Point point3d : points) {
 				for (BoxStackValue stackValue : box.getStackValues()) {

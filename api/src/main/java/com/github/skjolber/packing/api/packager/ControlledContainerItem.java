@@ -3,25 +3,25 @@ package com.github.skjolber.packing.api.packager;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.FilteredPoints;
+import com.github.skjolber.packing.api.ep.PointSource;
 
 /**
  * 
- * Container item wrapped with some constraints.
+ * Container item wrapped with some controls.
  * 
  */
 
-public class ControlContainerItem extends ContainerItem {
+public class ControlledContainerItem extends ContainerItem {
 
-	public ControlContainerItem(Container container, int count) {
+	public ControlledContainerItem(Container container, int count) {
 		super(container, count);
 	}
 	
-	public ControlContainerItem(ContainerItem containerItem) {
+	public ControlledContainerItem(ContainerItem containerItem) {
 		super(containerItem.getContainer(), containerItem.getCount());
 	}
 
-	protected BoxItemControlsBuilderFactory boxItemControlsBuilderFactory;
+	protected ManifestControlsBuilderFactory manifestControlsBuilderFactory;
 	protected PointControlsBuilderFactory pointControlsBuilderFactory;
 
 	public void setPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory) {
@@ -32,19 +32,19 @@ public class ControlContainerItem extends ContainerItem {
 		return pointControlsBuilderFactory;
 	}
 	
-	public void setBoxItemControlsBuilderFactory(BoxItemControlsBuilderFactory factory) {
-		this.boxItemControlsBuilderFactory = factory;
+	public void setBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory factory) {
+		this.manifestControlsBuilderFactory = factory;
 	}
 	
-	public BoxItemControlsBuilderFactory getBoxItemControlsBuilderFactory() {
-		return boxItemControlsBuilderFactory;
+	public ManifestControlsBuilderFactory getBoxItemControlsBuilderFactory() {
+		return manifestControlsBuilderFactory;
 	}
 
-	public BoxItemControls createBoxItemControls(Container container, Stack stack, FilteredBoxItems filteredBoxItems, FilteredPoints points, FilteredBoxItemGroups groups) {
-		if(boxItemControlsBuilderFactory == null) {
-			return new DefaultBoxItemControls(filteredBoxItems);
+	public ManifestControls createBoxItemControls(Container container, Stack stack, BoxItemSource filteredBoxItems, PointSource points, BoxItemGroupSource groups) {
+		if(manifestControlsBuilderFactory == null) {
+			return new DefaultManifestControls(filteredBoxItems);
 		}
-		return boxItemControlsBuilderFactory.createBoxItemControlsBuilder()
+		return manifestControlsBuilderFactory.createBoxItemControlsBuilder()
 				.withContainer(container)
 				.withStack(stack)
 				.withBoxItems(filteredBoxItems)
@@ -53,7 +53,7 @@ public class ControlContainerItem extends ContainerItem {
 				.build();
 	}
 	
-	public PointControls createPointControls(Container container, Stack stack, FilteredBoxItems filteredBoxItems, FilteredPoints points) {
+	public PointControls createPointControls(Container container, Stack stack, BoxItemSource filteredBoxItems, PointSource points) {
 		if(pointControlsBuilderFactory == null) {
 			return new DefaultPointControls(points);
 		}
@@ -70,7 +70,7 @@ public class ControlContainerItem extends ContainerItem {
 	}
 	
 	public boolean hasBoxItemControlsBuilderFactory() {
-		return boxItemControlsBuilderFactory != null;
+		return manifestControlsBuilderFactory != null;
 	}	
 	
 	public boolean hasControls() {

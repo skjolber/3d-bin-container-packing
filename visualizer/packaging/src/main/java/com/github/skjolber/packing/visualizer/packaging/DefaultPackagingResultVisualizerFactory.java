@@ -7,7 +7,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
@@ -57,7 +57,7 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			ExtremePoints3D extremePoints = new ExtremePoints3D(true);
 			extremePoints.clearToSize(inputContainer.getDx(), inputContainer.getDy(), inputContainer.getDz());
 			
-			for (StackPlacement placement : stack.getPlacements()) {
+			for (Placement placement : stack.getPlacements()) {
 				Box box = placement.getStackValue().getBox();
 				BoxVisualizer boxVisualization = new BoxVisualizer();
 				boxVisualization.setId(box.getId());

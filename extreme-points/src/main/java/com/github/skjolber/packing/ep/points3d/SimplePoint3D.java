@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
 
 public abstract class SimplePoint3D extends Point {
@@ -74,7 +74,7 @@ public abstract class SimplePoint3D extends Point {
 	//       |---------x===================
 	//
 
-	public abstract SimplePoint3D moveX(int x, StackPlacement yzSupport);
+	public abstract SimplePoint3D moveX(int x, Placement yzSupport);
 
 	//
 	//       |   ║              
@@ -134,11 +134,11 @@ public abstract class SimplePoint3D extends Point {
 	//       |                 
 	//       |---------------------------
 
-	public abstract SimplePoint3D moveY(int y, StackPlacement xzSupport);
+	public abstract SimplePoint3D moveY(int y, Placement xzSupport);
 
 	public abstract SimplePoint3D moveZ(int z);
 
-	public abstract SimplePoint3D moveZ(int z, StackPlacement xySupport);
+	public abstract SimplePoint3D moveZ(int z, Placement xySupport);
 	
 	public abstract SimplePoint3D clone(int maxX, int maxY, int maxZ);
 

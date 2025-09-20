@@ -18,7 +18,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.BoxPriority;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
 
@@ -40,9 +40,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder()
-					.withContainerItem( b -> {
-						b.withContainerItem(containerItem);
-					})
+					.withContainerItem(containerItem)
 					.withBoxItems(products)
 					.build();
 			assertValid(build);
@@ -69,9 +67,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(factor, factor, factor).withWeight(1).build(), 8));
 	
 			PackagerResult build = packager.newResultBuilder()
-					.withContainerItem( b -> {
-						b.withContainerItem(containerItem);
-					})
+					.withContainerItem(containerItem)
 					.withBoxItems(products)
 					.build();
 			assertValid(build);
@@ -504,7 +500,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			for(Container c : containers) {
 				System.out.println(c);
 				
-				for(StackPlacement s : c.getStack().getPlacements()) {
+				for(Placement s : c.getStack().getPlacements()) {
 					System.out.println(" " + s);
 				}
 			}
@@ -568,7 +564,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			for(Container c : containers) {
 				System.out.println(c);
 				
-				for(StackPlacement s : c.getStack().getPlacements()) {
+				for(Placement s : c.getStack().getPlacements()) {
 					System.out.println(" " + s);
 				}
 			}
@@ -608,7 +604,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			for(Container c : containers) {
 				System.out.println(c);
 				
-				for(StackPlacement s : c.getStack().getPlacements()) {
+				for(Placement s : c.getStack().getPlacements()) {
 					System.out.println(" " + s);
 				}
 			}
@@ -653,7 +649,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			
 			int index = 0;
 			for (Container c : containers) {
-				for (StackPlacement stackPlacement : c.getStack().getPlacements()) {
+				for (Placement stackPlacement : c.getStack().getPlacements()) {
 					assertEquals(stackPlacement.getStackValue().getBox().getId(), Integer.toString(index));
 					index++;
 				}
@@ -697,7 +693,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			
 			for (Container c : containers) {
 				int index = 0;
-				for (StackPlacement stackPlacement : c.getStack().getPlacements()) {
+				for (Placement stackPlacement : c.getStack().getPlacements()) {
 					int n = Integer.parseInt(stackPlacement.getStackValue().getBox().getId());
 					assertTrue(n >= index);
 					index = n;

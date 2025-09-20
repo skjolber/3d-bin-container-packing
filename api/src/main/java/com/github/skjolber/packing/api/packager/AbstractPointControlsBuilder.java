@@ -2,7 +2,7 @@ package com.github.skjolber.packing.api.packager;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.FilteredPoints;
+import com.github.skjolber.packing.api.ep.PointSource;
 
 /**
  * Builder scaffold.
@@ -15,21 +15,21 @@ public abstract class AbstractPointControlsBuilder<B extends AbstractPointContro
 
 	protected Stack stack;
 	protected Container container;
-	protected FilteredBoxItems items;
-	protected FilteredPoints points;
-	protected FilteredBoxItemGroups groups;
+	protected BoxItemSource items;
+	protected PointSource points;
+	protected BoxItemGroupSource groups;
 
-	public B withBoxItemGroups(FilteredBoxItemGroups groups) {
+	public B withBoxItemGroups(BoxItemGroupSource groups) {
 		this.groups = groups;
 		return (B)this;
 	}
 	
-	public B withPoints(FilteredPoints points) {
+	public B withPoints(PointSource points) {
 		this.points = points;
 		return (B)this;
 	}
 
-	public B withBoxItems(FilteredBoxItems input) {
+	public B withBoxItems(BoxItemSource input) {
 		this.items = input;
 		return (B)this;
 	}

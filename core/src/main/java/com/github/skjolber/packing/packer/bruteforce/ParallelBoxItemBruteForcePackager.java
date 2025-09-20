@@ -18,7 +18,8 @@ import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
@@ -139,7 +140,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		private ContainerItem containerItem;
 		private BoxItemPermutationRotationIterator iterator;
-		private List<StackPlacement> placements;
+		private List<Placement> placements;
 		private ExtremePoints3DStack extremePoints3D;
 		private PackagerInterruptSupplier interrupt;
 		private int containerIndex;
@@ -181,7 +182,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		private final PackagerInterruptSupplier[] interrupts;
 
 		protected ParallelAdapter(List<BoxItem> boxItems, BoxPriority priority,
-				ContainerItemsCalculator<ContainerItem> packagerContainerItems, RunnableAdapter[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators, ParallelBoxItemPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
+				ContainerItemsCalculator packagerContainerItems, RunnableAdapter[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators, ParallelBoxItemPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
 			super(boxItems, priority, packagerContainerItems);
 
 			this.runnables = runnables;
@@ -345,7 +346,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		protected List<BoxItemGroup> boxItemGroups;
 		
 		protected ParallelGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, BoxPriority priority,
-				ContainerItemsCalculator<ContainerItem> packagerContainerItems, RunnableAdapter[] runnables, DefaultBoxItemGroupPermutationRotationIterator[] iterators, ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
+				ContainerItemsCalculator packagerContainerItems, RunnableAdapter[] runnables, DefaultBoxItemGroupPermutationRotationIterator[] iterators, ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
 			super(boxItems, priority, packagerContainerItems);
 			this.boxItemGroups = boxItemGroups;
 			this.runnables = runnables;
@@ -568,10 +569,10 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 	@Override
 	protected AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, BoxPriority priority,
-			ContainerItemsCalculator<ContainerItem> defaultContainerItemsCalculator,
+			ContainerItemsCalculator defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt) {
 		
-		List<ContainerItem> containerItems = defaultContainerItemsCalculator.getContainerItems();
+		List<ControlledContainerItem> containerItems = defaultContainerItemsCalculator.getContainerItems();
 		
 		ParallelBoxItemPermutationRotationIteratorList[] parallelIterators = new ParallelBoxItemPermutationRotationIteratorList[containerItems.size()];
 		DefaultBoxItemPermutationRotationIterator[] iterators = new DefaultBoxItemPermutationRotationIterator[containerItems.size()];
@@ -630,10 +631,10 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 	@Override
 	protected ParallelGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			BoxPriority priority, ContainerItemsCalculator<ContainerItem> containerItemsCalculator,
+			BoxPriority priority, ContainerItemsCalculator containerItemsCalculator,
 			PackagerInterruptSupplier interrupt) {
 
-		List<ContainerItem> containerItems = containerItemsCalculator.getContainerItems();
+		List<ControlledContainerItem> containerItems = containerItemsCalculator.getContainerItems();
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators = new ParallelBoxItemGroupPermutationRotationIteratorList[containerItems.size()];
 		DefaultBoxItemGroupPermutationRotationIterator[] iterators = new DefaultBoxItemGroupPermutationRotationIterator[containerItems.size()];

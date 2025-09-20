@@ -3,6 +3,11 @@ package com.github.skjolber.packing.api;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+
+import com.github.skjolber.packing.api.packager.ControlledContainerItem;
+import com.github.skjolber.packing.api.packager.ManifestControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.PointControlsBuilderFactory;
 
 /**
  * {@linkplain PackagerResult} builder scaffold.
@@ -24,6 +29,97 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 	protected List<BoxItemGroup> itemGroups = new ArrayList<>();
 
 	protected List<BoxItem> items = new ArrayList<>();
+	
+	protected List<ControlledContainerItem> containers;
+
+	public static class ControlledContainerItemBuilder {
+
+		protected ContainerItem containerItem;
+		protected ManifestControlsBuilderFactory boxItemControlsBuilderFactory;
+		protected PointControlsBuilderFactory pointControlsBuilderFactory;
+
+		public ControlledContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier) {
+			this.boxItemControlsBuilderFactory = supplier;
+			return this;
+		}
+
+		public ControlledContainerItemBuilder withPointControlsBuilderFactory(
+				PointControlsBuilderFactory pointControlsBuilderFactory) {
+			this.pointControlsBuilderFactory = pointControlsBuilderFactory;
+			return this;
+		}
+
+		public ControlledContainerItemBuilder withContainerItem(ContainerItem containerItem) {
+			this.containerItem = containerItem;
+			return this;
+		}
+		
+		public ControlledContainerItemBuilder withContainerItem(Container container, int count) {
+			this.containerItem = new ContainerItem(container, count);
+			return this;
+		}
+
+		public ControlledContainerItem build() {
+			if (containerItem == null) {
+				throw new IllegalStateException("Expected container item");
+			}
+			ControlledContainerItem packContainerItem = new ControlledContainerItem(containerItem);
+			packContainerItem.setBoxItemControlsBuilderFactory(boxItemControlsBuilderFactory);
+			packContainerItem.setPointControlsBuilderFactory(pointControlsBuilderFactory);
+			return packContainerItem;
+		}
+	}
+
+
+	public B withContainerItem(Consumer<ControlledContainerItemBuilder> consumer) {
+		ControlledContainerItemBuilder builder = new ControlledContainerItemBuilder();
+		consumer.accept(builder);
+		if (this.containers == null) {
+			this.containers = new ArrayList<>();
+		}
+		this.containers.add(builder.build());
+		return (B) this;
+	}
+
+	public boolean hasControls() {
+		for (ControlledContainerItem controlContainerItem : containers) {
+			if (controlContainerItem.hasPointControlsBuilderFactory()) {
+				return true;
+			}
+			if (controlContainerItem.hasBoxItemControlsBuilderFactory()) {
+				return true;
+			}
+		}
+		return false;
+	}	
+	
+	public B withContainerItems(ContainerItem... containers) {
+		if (this.containers == null) {
+			this.containers = new ArrayList<>(containers.length);
+		}
+		for (ContainerItem item : containers) {
+			this.containers.add(new ControlledContainerItem(item));
+		}
+		return (B) this;
+	}
+
+	public B withContainerItems(List<ContainerItem> containers) {
+		if (this.containers == null) {
+			this.containers = new ArrayList<>(containers.size());
+		}
+		for (ContainerItem item : containers) {
+			this.containers.add(new ControlledContainerItem(item));
+		}
+		return (B) this;
+	}
+	
+	public B withContainerItem(ContainerItem container) {
+		if (this.containers == null) {
+			this.containers = new ArrayList<>();
+		}
+		this.containers.add(new ControlledContainerItem(container));
+		return (B) this;
+	}
 
 	public B withBoxItems(BoxItem... items) {
 		List<BoxItem> list = new ArrayList<>(items.length);
@@ -80,5 +176,4 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		return withBoxItemGroups(list);
 	}
 	
-	public abstract B withContainerItems(List<ContainerItem> containers);
 }

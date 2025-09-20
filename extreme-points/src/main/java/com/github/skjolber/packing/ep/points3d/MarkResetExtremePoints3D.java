@@ -2,7 +2,7 @@ package com.github.skjolber.packing.ep.points3d;
 
 import java.util.ArrayList;
 
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 
 public class MarkResetExtremePoints3D extends ExtremePoints3D {
 
@@ -11,7 +11,7 @@ public class MarkResetExtremePoints3D extends ExtremePoints3D {
 
 	protected Point3DFlagList markValues = new Point3DFlagList(); // i.e. current (input) values
 
-	protected ArrayList<StackPlacement> markPlacements = new ArrayList<>();
+	protected ArrayList<Placement> markPlacements = new ArrayList<>();
 	
 	public MarkResetExtremePoints3D(boolean cloneOnConstrain) {
 		super(cloneOnConstrain);

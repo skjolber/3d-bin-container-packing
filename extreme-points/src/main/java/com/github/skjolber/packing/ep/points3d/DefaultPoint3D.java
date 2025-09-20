@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
 
 public class DefaultPoint3D extends SimplePoint3D {
@@ -27,7 +27,7 @@ public class DefaultPoint3D extends SimplePoint3D {
 	}
 
 	@Override
-	public SimplePoint3D moveX(int x, StackPlacement yzSupport) {
+	public SimplePoint3D moveX(int x, Placement yzSupport) {
 		return new DefaultYZPlanePoint3D(x, minY, minZ, maxX, maxY, maxZ, yzSupport);
 	}
 
@@ -37,7 +37,7 @@ public class DefaultPoint3D extends SimplePoint3D {
 	}
 
 	@Override
-	public SimplePoint3D moveY(int y, StackPlacement xzSupport) {
+	public SimplePoint3D moveY(int y, Placement xzSupport) {
 		return new DefaultXZPlanePoint3D(minX, y, minZ, maxX, maxY, maxZ, xzSupport);
 	}
 
@@ -47,7 +47,7 @@ public class DefaultPoint3D extends SimplePoint3D {
 	}
 
 	@Override
-	public SimplePoint3D moveZ(int z, StackPlacement xySupport) {
+	public SimplePoint3D moveZ(int z, Placement xySupport) {
 		return new DefaultXYPlanePoint3D(minX, minY, z, maxX, maxY, maxZ, xySupport);
 	}
 

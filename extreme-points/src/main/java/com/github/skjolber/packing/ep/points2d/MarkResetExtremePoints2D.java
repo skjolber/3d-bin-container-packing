@@ -2,7 +2,7 @@ package com.github.skjolber.packing.ep.points2d;
 
 import java.util.ArrayList;
 
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 
 public class MarkResetExtremePoints2D extends ExtremePoints2D {
 
@@ -10,7 +10,7 @@ public class MarkResetExtremePoints2D extends ExtremePoints2D {
 
 	protected Point2DFlagList markValues = new Point2DFlagList(); // i.e. current (input) values
 
-	protected ArrayList<StackPlacement> markPlacements = new ArrayList<>();
+	protected ArrayList<Placement> markPlacements = new ArrayList<>();
 	
 	public MarkResetExtremePoints2D(boolean cloneOnConstrain) {
 		super(cloneOnConstrain);

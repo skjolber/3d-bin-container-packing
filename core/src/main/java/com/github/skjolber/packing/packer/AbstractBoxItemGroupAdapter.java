@@ -10,17 +10,18 @@ import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.packager.ControlledContainerItem;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 
-public abstract class AbstractBoxItemGroupAdapter<C extends ContainerItem, T extends IntermediatePackagerResult> implements PackagerAdapter<T> {
+public abstract class AbstractBoxItemGroupAdapter<T extends IntermediatePackagerResult> implements PackagerAdapter<T> {
 
 	private List<BoxItemGroup> remainingBoxItemGroups;
 	private final PackagerInterruptSupplier interrupt;
 	private final BoxPriority priority;
-	private final ContainerItemsCalculator<C> packagerContainerItems;
+	private final ContainerItemsCalculator packagerContainerItems;
 
-	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator<C> packagerContainerItems, BoxPriority priority, PackagerInterruptSupplier interrupt) {
+	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems, BoxPriority priority, PackagerInterruptSupplier interrupt) {
 		this.packagerContainerItems = packagerContainerItems;
 		
 		List<BoxItemGroup> groupClones = new LinkedList<>();
@@ -53,7 +54,7 @@ public abstract class AbstractBoxItemGroupAdapter<C extends ContainerItem, T ext
 
 		Stack stack = container.getStack();
 
-		for (StackPlacement stackPlacement : stack.getPlacements()) {
+		for (Placement stackPlacement : stack.getPlacements()) {
 			BoxItem boxItem = (BoxItem) stackPlacement.getStackValue().getBox().getBoxItem();
 			
 			boxItem.decrementResetCount();
@@ -86,10 +87,10 @@ public abstract class AbstractBoxItemGroupAdapter<C extends ContainerItem, T ext
 	}
 	
 	@Override
-	public C getContainerItem(int index) {
+	public ControlledContainerItem getContainerItem(int index) {
 		return packagerContainerItems.getContainerItem(index);
 	}
 
-	protected abstract IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, BoxPriority priority, C containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig);
+	protected abstract IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, BoxPriority priority, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig);
 
 }

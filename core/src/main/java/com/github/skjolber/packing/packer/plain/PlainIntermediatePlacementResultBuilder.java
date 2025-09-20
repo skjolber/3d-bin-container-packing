@@ -3,7 +3,7 @@ package com.github.skjolber.packing.packer.plain;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.packer.AbstractComparatorIntermediatePlacementResultBuilder;
@@ -27,8 +27,8 @@ public class PlainIntermediatePlacementResultBuilder extends AbstractComparatorI
 		
 		int z = referencePoint.getMinZ() - 1;
 		
-		List<StackPlacement> placements = extremePoints.getPlacements();
-		for(StackPlacement stackPlacement : placements) {
+		List<Placement> placements = extremePoints.getPlacements();
+		for(Placement stackPlacement : placements) {
 			if(stackPlacement.getAbsoluteEndZ() == z) {
 				
 				// calculate the common area

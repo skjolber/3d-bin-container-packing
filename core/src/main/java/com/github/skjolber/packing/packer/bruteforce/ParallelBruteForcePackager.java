@@ -19,7 +19,8 @@ import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
@@ -138,7 +139,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 		private ContainerItem containerItem;
 		private ParallelBoxItemPermutationRotationIterator iterator;
-		private List<StackPlacement> placements;
+		private List<Placement> placements;
 		private ExtremePoints3DStack extremePoints3D;
 		private PackagerInterruptSupplier interrupt;
 		private int containerIndex;
@@ -185,7 +186,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		private final PackagerInterruptSupplier[] interrupts;
 
 		protected ParallelAdapter(List<BoxItem> boxItems, BoxPriority priority,
-				ContainerItemsCalculator<ContainerItem> packagerContainerItems, RunnableAdapter[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators, ParallelBoxItemPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
+				ContainerItemsCalculator packagerContainerItems, RunnableAdapter[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators, ParallelBoxItemPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
 			super(boxItems, priority, packagerContainerItems);
 
 			this.runnables = runnables;
@@ -375,10 +376,10 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 	@Override
 	protected AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, BoxPriority priority,
-			ContainerItemsCalculator<ContainerItem> defaultContainerItemsCalculator,
+			ContainerItemsCalculator defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt) {
 		
-		List<ContainerItem> containerItems = defaultContainerItemsCalculator.getContainerItems();
+		List<ControlledContainerItem> containerItems = defaultContainerItemsCalculator.getContainerItems();
 		
 		ParallelBoxItemPermutationRotationIteratorList[] parallelIterators = new ParallelBoxItemPermutationRotationIteratorList[containerItems.size()];
 		DefaultBoxItemPermutationRotationIterator[] iterators = new DefaultBoxItemPermutationRotationIterator[containerItems.size()];
@@ -437,7 +438,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 	@Override
 	protected AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			BoxPriority priority, ContainerItemsCalculator<ContainerItem> defaultContainerItemsCalculator,
+			BoxPriority priority, ContainerItemsCalculator defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt) {
 		throw new RuntimeException("Not implemented");
 	}

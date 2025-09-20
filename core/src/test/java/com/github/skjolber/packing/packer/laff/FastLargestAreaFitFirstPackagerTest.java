@@ -21,7 +21,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
 
@@ -76,9 +76,9 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			assertNotNull(fits);
 	
-			List<StackPlacement> placements = fits.getStack().getPlacements();
+			List<Placement> placements = fits.getStack().getPlacements();
 			
-			for(StackPlacement p : placements) {
+			for(Placement p : placements) {
 				System.out.println(p.getStackValue().getBox().getId() + " " + p.getAbsoluteX() + "x" + p.getAbsoluteY() + "x" + p.getAbsoluteZ()); 
 			}
 	

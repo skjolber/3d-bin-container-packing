@@ -3,11 +3,11 @@ package com.github.skjolber.packing.api.ep;
 import java.util.Iterator;
 import java.util.List;
 
-public class DefaultFilteredPoints implements FilteredPoints {
+public class DefaultPointSource implements PointSource {
 
 	protected List<Point> values;
 	
-	public DefaultFilteredPoints(List<Point> values) {
+	public DefaultPointSource(List<Point> values) {
 		this.values = values;
 	}
 

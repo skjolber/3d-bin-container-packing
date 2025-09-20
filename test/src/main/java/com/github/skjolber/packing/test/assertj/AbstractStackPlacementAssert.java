@@ -5,9 +5,9 @@ import java.util.Objects;
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 
-public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPlacementAssert<SELF, ACTUAL>, ACTUAL extends StackPlacement>
+public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPlacementAssert<SELF, ACTUAL>, ACTUAL extends Placement>
 		extends AbstractObjectAssert<SELF, ACTUAL> {
 
 	protected AbstractStackPlacementAssert(ACTUAL actual, Class<?> selfType) {
@@ -96,7 +96,7 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		return getStartCoordinates() + " " + getEndCoordinates();
 	}
 
-	protected boolean isOverlapX(StackPlacement placement) {
+	protected boolean isOverlapX(Placement placement) {
 
 		if(placement.getAbsoluteX() <= actual.getAbsoluteX() && actual.getAbsoluteX() <= placement.getAbsoluteEndX()) {
 			return true;
@@ -109,7 +109,7 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		return false;
 	}
 
-	protected boolean isOverlapY(StackPlacement placement) {
+	protected boolean isOverlapY(Placement placement) {
 		if(placement.getAbsoluteY() <= actual.getAbsoluteY() && actual.getAbsoluteY() <= placement.getAbsoluteEndY()) {
 			return true;
 		}
@@ -121,7 +121,7 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		return false;
 	}
 
-	protected boolean isOverlapZ(StackPlacement placement) {
+	protected boolean isOverlapZ(Placement placement) {
 		if(placement.getAbsoluteZ() <= actual.getAbsoluteZ() && actual.getAbsoluteZ() <= placement.getAbsoluteEndZ()) {
 			return true;
 		}
@@ -133,7 +133,7 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		return false;
 	}
 
-	public SELF isAlongsideY(StackPlacement other) {
+	public SELF isAlongsideY(Placement other) {
 		isNotNull();
 
 		if(!isOverlapX(other)) {
@@ -149,7 +149,7 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		return myself;
 	}
 
-	public SELF isAlongsideX(StackPlacement other) {
+	public SELF isAlongsideX(Placement other) {
 		isNotNull();
 
 		if(!isOverlapY(other)) {
@@ -165,7 +165,7 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		return myself;
 	}
 
-	public SELF isAlongsideZ(StackPlacement other) {
+	public SELF isAlongsideZ(Placement other) {
 		isNotNull();
 
 		if(!isOverlapX(other)) {
@@ -181,7 +181,7 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		return myself;
 	}
 
-	public SELF followsAlongsideX(StackPlacement other) {
+	public SELF followsAlongsideX(Placement other) {
 		isNotNull();
 
 		if(!isOverlapY(other)) {
@@ -197,7 +197,7 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		return myself;
 	}
 
-	public SELF followsAlongsideY(StackPlacement other) {
+	public SELF followsAlongsideY(Placement other) {
 		isNotNull();
 
 		if(!isOverlapX(other)) {
@@ -213,7 +213,7 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		return myself;
 	}
 
-	public SELF followsAlongsideZ(StackPlacement other) {
+	public SELF followsAlongsideZ(Placement other) {
 		isNotNull();
 
 		if(!isOverlapX(other)) {
@@ -229,7 +229,7 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		return myself;
 	}
 
-	public SELF preceedsAlongsideY(StackPlacement other) {
+	public SELF preceedsAlongsideY(Placement other) {
 		isNotNull();
 
 		if(!isOverlapX(other)) {
@@ -245,7 +245,7 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		return myself;
 	}
 
-	public SELF preceedsAlongsideX(StackPlacement other) {
+	public SELF preceedsAlongsideX(Placement other) {
 		isNotNull();
 
 		if(!isOverlapY(other)) {
@@ -261,7 +261,7 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		return myself;
 	}
 
-	public SELF preceedsAlongsideZ(StackPlacement other) {
+	public SELF preceedsAlongsideZ(Placement other) {
 		isNotNull();
 
 		if(!isOverlapX(other)) {

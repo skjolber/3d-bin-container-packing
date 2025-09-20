@@ -11,21 +11,22 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 
-public class ContainerItemsCalculator<T extends ContainerItem> {
+public class ContainerItemsCalculator {
 
 	protected long maxContainerLoadVolume = 0;
 	protected long maxContainerLoadWeight = 0;
 
-	protected final List<T> containerItems;
+	protected final List<ControlledContainerItem> containerItems;
 	
-	public ContainerItemsCalculator(List<T> items) {
+	public ContainerItemsCalculator(List<ControlledContainerItem> items) {
 		this.containerItems = items;
 
 		calculateMaxLoadVolume();
 		calculateMaxLoadWeight();
 	}
-	
+
 	protected void calculateMaxLoadVolume() {
 		maxContainerLoadVolume = 0;
 
@@ -444,7 +445,7 @@ public class ContainerItemsCalculator<T extends ContainerItem> {
 		return containerItems.size();
 	}
 	
-	public T getContainerItem(int index) {
+	public ControlledContainerItem getContainerItem(int index) {
 		return containerItems.get(index);
 	}
 	
@@ -456,7 +457,7 @@ public class ContainerItemsCalculator<T extends ContainerItem> {
 		return maxContainerLoadWeight;
 	}
 	
-	public List<T> getContainerItems() {
+	public List<ControlledContainerItem> getContainerItems() {
 		return containerItems;
 	}
 }

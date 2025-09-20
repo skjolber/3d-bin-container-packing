@@ -5,30 +5,30 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class Stack implements Serializable, Iterable<StackPlacement> {
+public class Stack implements Serializable, Iterable<Placement> {
 
 	private static final long serialVersionUID = 1L;
 
-	protected final List<StackPlacement> entries = new ArrayList<>();
+	protected final List<Placement> entries = new ArrayList<>();
 
 	public Stack() {
 	}
 
-	public void addAll(List<StackPlacement> placements) {
-		for (StackPlacement p : placements) {
+	public void addAll(List<Placement> placements) {
+		for (Placement p : placements) {
 			add(p);
 		}
 	}
 
-	public List<StackPlacement> getPlacements() {
+	public List<Placement> getPlacements() {
 		return entries;
 	}
 
-	public void add(StackPlacement e) {
+	public void add(Placement e) {
 		entries.add(e);
 	}
 
-	public void remove(StackPlacement e) {
+	public void remove(Placement e) {
 		entries.remove(e);
 	}
 
@@ -39,7 +39,7 @@ public class Stack implements Serializable, Iterable<StackPlacement> {
 	public int getWeight() {
 		int weight = 0;
 
-		for (StackPlacement stackEntry : entries) {
+		for (Placement stackEntry : entries) {
 			weight += stackEntry.getStackValue().getBox().getWeight();
 		}
 
@@ -49,7 +49,7 @@ public class Stack implements Serializable, Iterable<StackPlacement> {
 	public int getDz() {
 		int dz = 0;
 
-		for (StackPlacement stackEntry : entries) {
+		for (Placement stackEntry : entries) {
 			dz = Math.max(dz, stackEntry.getAbsoluteEndZ());
 		}
 
@@ -59,7 +59,7 @@ public class Stack implements Serializable, Iterable<StackPlacement> {
 	public long getVolume() {
 		long volume = 0;
 
-		for (StackPlacement stackEntry : entries) {
+		for (Placement stackEntry : entries) {
 			volume += stackEntry.getStackValue().getBox().getVolume();
 		}
 
@@ -81,7 +81,7 @@ public class Stack implements Serializable, Iterable<StackPlacement> {
 	}
 
 	@Override
-	public Iterator<StackPlacement> iterator() {
+	public Iterator<Placement> iterator() {
 		return entries.listIterator();
 	}
 

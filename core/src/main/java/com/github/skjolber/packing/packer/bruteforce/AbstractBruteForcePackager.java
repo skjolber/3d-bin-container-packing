@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.github.skjolber.packing.api.AbstractDefaultPackagerResultBuilder;
+import com.github.skjolber.packing.api.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxPriority;
@@ -14,7 +14,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
@@ -44,7 +44,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		super(packResultComparator);
 	}
 	
-	public class BruteForcePackagerResultBuilder extends AbstractDefaultPackagerResultBuilder<BruteForcePackagerResultBuilder> {
+	public class BruteForcePackagerResultBuilder extends AbstractPackagerResultBuilder<BruteForcePackagerResultBuilder> {
 	
 		private AbstractBruteForcePackager packager;
 	
@@ -73,9 +73,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				
 				AbstractBruteForceBoxItemPackagerAdapter adapter;
 				if(items != null && !items.isEmpty()) {
-					adapter = createBoxItemAdapter(items, priority, new ContainerItemsCalculator<>(containers), interrupt);
+					adapter = createBoxItemAdapter(items, priority, new ContainerItemsCalculator(containers), interrupt);
 				} else {
-					adapter = createBoxItemGroupAdapter(itemGroups, priority, new ContainerItemsCalculator<>(containers), interrupt);
+					adapter = createBoxItemGroupAdapter(itemGroups, priority, new ContainerItemsCalculator(containers), interrupt);
 				}
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 								
@@ -99,22 +99,22 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 	}
 
 	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, BoxPriority priority,
-			ContainerItemsCalculator<ContainerItem> defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt);
+			ContainerItemsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt);
 
 	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, BoxPriority priority,
-			ContainerItemsCalculator<ContainerItem> defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt);
+			ContainerItemsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt);
 
-	static List<StackPlacement> getPlacements(int size) {
+	static List<Placement> getPlacements(int size) {
 		// each box will at most have a single placement with a space (and its remainder).
-		List<StackPlacement> placements = new ArrayList<>(size);
+		List<Placement> placements = new ArrayList<>(size);
 
 		for (int i = 0; i < size; i++) {
-			placements.add(new StackPlacement());
+			placements.add(new Placement());
 		}
 		return placements;
 	}
 
-	public BruteForceIntermediatePackagerResult pack(ExtremePoints3DStack extremePoints, List<StackPlacement> stackPlacements, ContainerItem containerItem, int index,
+	public BruteForceIntermediatePackagerResult pack(ExtremePoints3DStack extremePoints, List<Placement> stackPlacements, ContainerItem containerItem, int index,
 			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 
 		Container holder = containerItem.getContainer().clone();
@@ -196,7 +196,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		return bestResult;
 	}
 
-	public List<Point> packStackPlacement(ExtremePoints3DStack extremePoints, List<StackPlacement> placements, BoxItemPermutationRotationIterator iterator, Stack stack,
+	public List<Point> packStackPlacement(ExtremePoints3DStack extremePoints, List<Placement> placements, BoxItemPermutationRotationIterator iterator, Stack stack,
 			Container container,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex) throws PackagerInterruptedException {
 		if(placements.isEmpty()) {
@@ -222,7 +222,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 	private List<Point> packStackPlacement(
 			ExtremePoints3DStack extremePointsStack, 
-			List<StackPlacement> placements, 
+			List<Placement> placements, 
 			BoxItemPermutationRotationIterator rotator, 
 			Stack stack,
 			int maxLoadWeight, 
@@ -241,7 +241,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			return null;
 		}
 
-		StackPlacement placement = placements.get(placementIndex);
+		Placement placement = placements.get(placementIndex);
 
 		placement.setStackValue(stackValue);
 
@@ -262,9 +262,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				continue;
 			}
 
-			placement.setX(point3d.getMinX());
-			placement.setY(point3d.getMinY());
-			placement.setZ(point3d.getMinZ());
+			placement.setPoint(point3d);
 
 			extremePointsStack.add(k, placement);
 

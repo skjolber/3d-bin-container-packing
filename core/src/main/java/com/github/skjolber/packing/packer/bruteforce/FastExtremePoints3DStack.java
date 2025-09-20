@@ -3,7 +3,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
@@ -34,7 +34,7 @@ public class FastExtremePoints3DStack extends ExtremePoints3D {
 	}
 
 	@Override
-	public boolean add(int index, StackPlacement placement) {
+	public boolean add(int index, Placement placement) {
 		// copy state before it is updated
 		Point point3d = values.get(index);
 

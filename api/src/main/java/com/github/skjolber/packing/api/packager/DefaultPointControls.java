@@ -1,18 +1,18 @@
 package com.github.skjolber.packing.api.packager;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.ep.FilteredPoints;
+import com.github.skjolber.packing.api.ep.PointSource;
 
 public class DefaultPointControls implements PointControls {
 
-	protected FilteredPoints filteredPoints;
+	protected PointSource filteredPoints;
 
-	public DefaultPointControls(FilteredPoints filteredPoints) {
+	public DefaultPointControls(PointSource filteredPoints) {
 		this.filteredPoints = filteredPoints;
 	}
 
 	@Override
-	public FilteredPoints getFilteredPoints(BoxItem boxItem) {
+	public PointSource getPoints(BoxItem boxItem) {
 		return filteredPoints;
 	}
 

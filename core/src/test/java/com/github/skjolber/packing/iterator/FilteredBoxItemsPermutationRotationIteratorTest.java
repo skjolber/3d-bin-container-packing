@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.iterator.FilteredBoxItemsPermutationRotationIterator.DelegateBuilder;
 import com.github.skjolber.packing.packer.Dimension;
 
@@ -44,7 +44,7 @@ class FilteredBoxItemsPermutationRotationIteratorTest extends AbstractBoxItemPer
 					.withMaxLoadWeight(products1.size())
 					.build();
 			
-			FilteredBoxItems items = rotator;
+			BoxItemSource items = rotator;
 
 			long unmodifiedRotationsCount = rotator.getIterator().countRotations();
 			

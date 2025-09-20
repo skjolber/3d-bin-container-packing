@@ -75,7 +75,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		protected final ExtremePoints3DStack extremePoints;
 		
 		public BruteForceAdapter(List<BoxItem> boxItems, BoxPriority priority,
-				ContainerItemsCalculator<ContainerItem> packagerContainerItems,
+				ContainerItemsCalculator packagerContainerItems,
 				BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, priority, packagerContainerItems, containerIterators, interrupt);
 			
@@ -98,7 +98,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		protected final ExtremePoints3DStack extremePoints;
 
 		public BruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, BoxPriority priority,
-				ContainerItemsCalculator<ContainerItem> packagerContainerItems,
+				ContainerItemsCalculator packagerContainerItems,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, boxItemGroups, priority, packagerContainerItems, containerIterators, interrupt);
 			
@@ -122,7 +122,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 	@Override
 	protected BruteForceGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			BoxPriority priority, ContainerItemsCalculator<ContainerItem> containerItemsCalculator,
+			BoxPriority priority, ContainerItemsCalculator containerItemsCalculator,
 			PackagerInterruptSupplier interrupt) {
 		DefaultBoxItemGroupPermutationRotationIterator[] containerIterators = new DefaultBoxItemGroupPermutationRotationIterator[containerItemsCalculator.getContainerItemCount()];
 
@@ -147,7 +147,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 	@Override
 	protected BruteForceAdapter createBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority,
-			ContainerItemsCalculator<ContainerItem> containerItemsCalculator, PackagerInterruptSupplier interrupt) {
+			ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt) {
 		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[containerItemsCalculator.getContainerItemCount()];
 
 		for (int i = 0; i < containerItemsCalculator.getContainerItemCount(); i++) {

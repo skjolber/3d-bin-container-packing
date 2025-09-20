@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.ep.points2d;
 
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 
 public abstract class SimplePoint2D extends Point2D {
 
@@ -46,7 +46,7 @@ public abstract class SimplePoint2D extends Point2D {
 	//       |---------x===================
 	//
 
-	public abstract SimplePoint2D moveX(int x, StackPlacement ySupport);
+	public abstract SimplePoint2D moveX(int x, Placement ySupport);
 
 	//
 	//       |   ║              
@@ -106,7 +106,7 @@ public abstract class SimplePoint2D extends Point2D {
 	//       |                 
 	//       |---------------------------
 
-	public abstract SimplePoint2D moveY(int y, StackPlacement xSupport);
+	public abstract SimplePoint2D moveY(int y, Placement xSupport);
 
 	public abstract SimplePoint2D clone();
 }

@@ -5,18 +5,18 @@ import java.util.function.Predicate;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.FilteredPoints;
-import com.github.skjolber.packing.api.packager.AbstractBoxItemControlsBuilder;
-import com.github.skjolber.packing.api.packager.BoxItemControls;
-import com.github.skjolber.packing.api.packager.BoxItemControlsBuilderFactory;
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.api.ep.PointSource;
+import com.github.skjolber.packing.api.packager.AbstractManifestControlsBuilder;
+import com.github.skjolber.packing.api.packager.ManifestControls;
+import com.github.skjolber.packing.api.packager.ManifestControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
 
-public class NoLightersWithPetrolBoxItemListener implements BoxItemControls {
+public class NoLightersWithPetrolBoxItemListener implements ManifestControls {
 
-	public static class Builder extends AbstractBoxItemControlsBuilder<Builder> {
+	public static class Builder extends AbstractManifestControlsBuilder<Builder> {
 
 		@Override
-		public BoxItemControls build() {
+		public ManifestControls build() {
 			return new NoLightersWithPetrolBoxItemListener(container, items, points, stack);
 		}
 
@@ -26,18 +26,18 @@ public class NoLightersWithPetrolBoxItemListener implements BoxItemControls {
 		return new Builder();
 	}
 	
-	public static BoxItemControlsBuilderFactory newFactory() {
+	public static ManifestControlsBuilderFactory newFactory() {
 		return () -> NoLightersWithPetrolBoxItemListener.newBuilder();
 	}
 	
 	protected final Container container;
-	protected final FilteredBoxItems items;
+	protected final BoxItemSource items;
 	protected final Stack stack;
 
 	protected boolean matches = false;
 	protected boolean petrol = false;
 
-	public NoLightersWithPetrolBoxItemListener(Container container, FilteredBoxItems items, FilteredPoints filteredPoints, Stack stack) {
+	public NoLightersWithPetrolBoxItemListener(Container container, BoxItemSource items, PointSource filteredPoints, Stack stack) {
 		this.container = container;
 		this.items = items;
 		this.stack = stack;

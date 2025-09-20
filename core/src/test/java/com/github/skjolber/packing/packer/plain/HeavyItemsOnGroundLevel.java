@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.ep.DefaultFilteredPoints;
-import com.github.skjolber.packing.api.ep.EmptyFilteredPoints;
-import com.github.skjolber.packing.api.ep.FilteredPoints;
+import com.github.skjolber.packing.api.ep.DefaultPointSource;
+import com.github.skjolber.packing.api.ep.EmptyPointSource;
+import com.github.skjolber.packing.api.ep.PointSource;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.AbstractPointControlsBuilder;
 import com.github.skjolber.packing.api.packager.DefaultPointControls;
-import com.github.skjolber.packing.api.packager.FilteredBoxItemGroups;
-import com.github.skjolber.packing.api.packager.FilteredBoxItems;
+import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.PointControls;
 import com.github.skjolber.packing.api.packager.PointControlsBuilderFactory;
 
@@ -39,9 +39,9 @@ public class HeavyItemsOnGroundLevel extends DefaultPointControls {
 	}
 	
 	protected final int maxWeight;
-	protected FilteredBoxItems filteredBoxItems;
+	protected BoxItemSource filteredBoxItems;
 
-	public HeavyItemsOnGroundLevel(FilteredBoxItems filteredBoxItems, FilteredPoints filteredPoints, int maxWeight) {
+	public HeavyItemsOnGroundLevel(BoxItemSource filteredBoxItems, PointSource filteredPoints, int maxWeight) {
 		super(filteredPoints);
 		this.filteredBoxItems = filteredBoxItems;
 		this.maxWeight = maxWeight;
@@ -56,7 +56,7 @@ public class HeavyItemsOnGroundLevel extends DefaultPointControls {
 	}
 
 	@Override
-	public FilteredPoints getFilteredPoints(BoxItem boxItem) {
+	public PointSource getPoints(BoxItem boxItem) {
 		if(boxItem.getBox().getWeight() > maxWeight) {
 			List<Point> values = new ArrayList<>();
 
@@ -67,12 +67,12 @@ public class HeavyItemsOnGroundLevel extends DefaultPointControls {
 				}
 			}
 			
-			return new DefaultFilteredPoints(values);
+			return new DefaultPointSource(values);
 		}
 		
 		if(isHeavyBoxes()) {
 			// alternatively make point comparator perform the same
-			return EmptyFilteredPoints.getInstance();
+			return EmptyPointSource.getInstance();
 		}
 		
 		return filteredPoints;

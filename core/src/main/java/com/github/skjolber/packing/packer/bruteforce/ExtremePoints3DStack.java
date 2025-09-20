@@ -3,7 +3,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
@@ -13,8 +13,8 @@ public class ExtremePoints3DStack extends ExtremePoints3D {
 	protected static class StackItem {
 		protected Point3DFlagList values = new Point3DFlagList();
 		protected Point3DFlagList otherValues = new Point3DFlagList();
-		protected ArrayList<StackPlacement> placements = new ArrayList<>();
-		protected StackPlacement stackPlacement = new StackPlacement();
+		protected ArrayList<Placement> placements = new ArrayList<>();
+		protected Placement stackPlacement = new Placement();
 		protected Point point;
 		protected long minVolumeLimit;
 		protected long minAreaLimit;
@@ -36,13 +36,13 @@ public class ExtremePoints3DStack extends ExtremePoints3D {
 	}
 
 	@Override
-	public boolean add(int index, StackPlacement placement) {
+	public boolean add(int index, Placement placement) {
 		stackItems.get(this.stackIndex).point = values.get(index);
 
 		return super.add(index, placement);
 	}
 
-	public StackPlacement push() {
+	public Placement push() {
 		StackItem currentStackItem = stackItems.get(stackIndex);
 		// save current state
 		currentStackItem.minAreaLimit = minAreaLimit;
@@ -113,8 +113,8 @@ public class ExtremePoints3DStack extends ExtremePoints3D {
 		return list;
 	}
 
-	public List<StackPlacement> getStackPlacement() {
-		List<StackPlacement> list = new ArrayList<>(stackIndex);
+	public List<Placement> getStackPlacement() {
+		List<Placement> list = new ArrayList<>(stackIndex);
 		for (StackItem stackItem : stackItems) {
 			list.add(stackItem.stackPlacement);
 		}
