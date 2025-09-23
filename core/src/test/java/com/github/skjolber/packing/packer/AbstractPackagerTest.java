@@ -40,7 +40,7 @@ public abstract class AbstractPackagerTest {
 		return new BoxItem(Box.newBuilder().withRotate3D().withSize(l, w, h).withWeight(0).build(), count);
 	}
 
-	protected void assertDeadlineRespected(AbstractPackagerBuilder builder) {
+	protected void assertDeadlineRespected(Packager packager) {
 
 		Container container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1900, 1500, 4000)
 				.withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
@@ -49,8 +49,6 @@ public abstract class AbstractPackagerTest {
 				.newListBuilder()
 				.withContainer(container, 1)
 				.build();
-
-		Packager packager = builder.build();
 
 		List<BoxItem> products = Arrays.asList(
 				box(1000, 12, 12, 1),

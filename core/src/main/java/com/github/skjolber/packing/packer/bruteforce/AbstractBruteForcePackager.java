@@ -2,10 +2,10 @@ package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.github.skjolber.packing.api.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxPriority;
@@ -16,14 +16,16 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.api.packager.AbstractPackagerResultBuilder;
+import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
+import com.github.skjolber.packing.api.packager.PackagerInterruptedException;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -40,8 +42,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 	private static final Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
 	
-	public AbstractBruteForcePackager(IntermediatePackagerResultComparator packResultComparator) {
-		super(packResultComparator);
+	public AbstractBruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator) {
+		super(comparator);
 	}
 	
 	public class BruteForcePackagerResultBuilder extends AbstractPackagerResultBuilder<BruteForcePackagerResultBuilder> {
@@ -53,6 +55,17 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			return this;
 		}
 	
+		@Override
+		protected void validate() {
+			super.validate();
+			
+			for(ControlledContainerItem container : containers) {
+				if(container.hasControls()) {
+					throw new IllegalStateException("Controls not supported");
+				}
+			}
+		}
+		
 		public PackagerResult build() {
 			validate();
 			
@@ -321,5 +334,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 	protected boolean acceptAsFull(BruteForceIntermediatePackagerResult result, Container holder) {
 		return result.getLoadVolume() == holder.getMaxLoadVolume();
+	}
+	
+	@Override
+	protected BruteForceIntermediatePackagerResult createEmptyIntermediatePackagerResult() {
+		return BruteForceIntermediatePackagerResult.EMPTY;
 	}
 }

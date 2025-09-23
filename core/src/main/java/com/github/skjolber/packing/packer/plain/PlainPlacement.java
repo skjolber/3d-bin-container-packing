@@ -2,13 +2,13 @@ package com.github.skjolber.packing.packer.plain;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.ep.Point;
-import com.github.skjolber.packing.api.packager.IntermediatePlacementResult;
+import com.github.skjolber.packing.api.packager.IntermediatePlacement;
 
-public class PlainIntermediatePlacementResult extends IntermediatePlacementResult {
+public class PlainPlacement extends IntermediatePlacement {
 
 	protected long bestPointSupportPercent = -1;
 
-	public PlainIntermediatePlacementResult(int index, BoxStackValue stackValue, Point point, long bestPointSupportPercent) {
+	public PlainPlacement(int index, BoxStackValue stackValue, Point point, long bestPointSupportPercent) {
 		super(index, stackValue, point);
 		
 		this.bestPointSupportPercent = bestPointSupportPercent;

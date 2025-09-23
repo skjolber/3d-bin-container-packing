@@ -1,13 +1,18 @@
 package com.github.skjolber.packing.comparator;
 
+import java.util.Comparator;
+
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
-public class DefaultIntermediatePackagerResultComparator implements IntermediatePackagerResultComparator {
+public class DefaultIntermediatePackagerResultComparator<T extends IntermediatePackagerResult> implements Comparator<T> {
 
+	static final int ARGUMENT_1_IS_BETTER = 1;
+	static final int ARGUMENT_2_IS_BETTER = -1;
+	
 	@Override
-	public int compare(IntermediatePackagerResult r1, IntermediatePackagerResult r2) {
+	public int compare(T r1, T r2) {
 
 		Stack o1 = r1.getStack();
 		Stack o2 = r2.getStack();

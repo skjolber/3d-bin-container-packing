@@ -13,6 +13,9 @@ import com.github.skjolber.packing.api.ep.PointSource;
 
 public class ControlledContainerItem extends ContainerItem {
 
+	protected ManifestControlsBuilderFactory manifestControlsBuilderFactory;
+	protected PointControlsBuilderFactory pointControlsBuilderFactory;
+
 	public ControlledContainerItem(Container container, int count) {
 		super(container, count);
 	}
@@ -20,9 +23,6 @@ public class ControlledContainerItem extends ContainerItem {
 	public ControlledContainerItem(ContainerItem containerItem) {
 		super(containerItem.getContainer(), containerItem.getCount());
 	}
-
-	protected ManifestControlsBuilderFactory manifestControlsBuilderFactory;
-	protected PointControlsBuilderFactory pointControlsBuilderFactory;
 
 	public void setPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory) {
 		this.pointControlsBuilderFactory = pointControlsBuilderFactory;
@@ -40,27 +40,27 @@ public class ControlledContainerItem extends ContainerItem {
 		return manifestControlsBuilderFactory;
 	}
 
-	public ManifestControls createBoxItemControls(Container container, Stack stack, BoxItemSource filteredBoxItems, PointSource points, BoxItemGroupSource groups) {
+	public ManifestControls createBoxItemControls(Container container, Stack stack, BoxItemSource boxItemSource, PointSource points, BoxItemGroupSource groups) {
 		if(manifestControlsBuilderFactory == null) {
-			return new DefaultManifestControls(filteredBoxItems);
+			return new DefaultManifestControls(boxItemSource);
 		}
 		return manifestControlsBuilderFactory.createBoxItemControlsBuilder()
 				.withContainer(container)
 				.withStack(stack)
-				.withBoxItems(filteredBoxItems)
+				.withBoxItems(boxItemSource)
 				.withBoxItemGroups(groups)
 				.withPoints(points)
 				.build();
 	}
 	
-	public PointControls createPointControls(Container container, Stack stack, BoxItemSource filteredBoxItems, PointSource points) {
+	public PointControls createPointControls(Container container, Stack stack, BoxItemSource boxItemSource, PointSource points) {
 		if(pointControlsBuilderFactory == null) {
 			return new DefaultPointControls(points);
 		}
 		return pointControlsBuilderFactory.createPointControlsBuilder()
 				.withContainer(container)
 				.withStack(stack)
-				.withBoxItems(filteredBoxItems)
+				.withBoxItems(boxItemSource)
 				.withPoints(points)
 				.build();
 	}

@@ -1,22 +1,21 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import com.github.skjolber.packing.api.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
+import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
-import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
+import com.github.skjolber.packing.api.packager.PackagerInterruptedException;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
-import com.github.skjolber.packing.packer.bruteforce.BruteForceIntermediatePackagerResult;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -24,16 +23,14 @@ import com.github.skjolber.packing.packer.bruteforce.BruteForceIntermediatePacka
  * Thread-safe implementation.
  */
 
-public abstract class AbstractPackager<P extends IntermediatePackagerResult, B extends AbstractPackagerResultBuilder<B>> implements Packager<B> {
+public abstract class AbstractPackager<P extends IntermediatePackagerResult, B extends PackagerResultBuilder<B>> implements Packager<B> {
 
-	protected static final EmptyPackagerResultAdapter EMPTY_PACK_RESULT = EmptyPackagerResultAdapter.EMPTY;
-
-	protected final IntermediatePackagerResultComparator intermediatePackagerResultComparator;
+	protected final Comparator<P> intermediatePackagerResultComparator;
 	
 	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Integer.MAX_VALUE);
 
-	public AbstractPackager(IntermediatePackagerResultComparator packResultComparator) {
-		this.intermediatePackagerResultComparator = packResultComparator;
+	public AbstractPackager(Comparator<P> comparator) {
+		this.intermediatePackagerResultComparator = comparator;
 	}
 
 	// pack in single container
@@ -83,7 +80,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 						}
 					} else {
 						// count as empty
-						results[nextContainerItemIndex] = EMPTY_PACK_RESULT;
+						results[nextContainerItemIndex] = createEmptyIntermediatePackagerResult();
 								
 						iterator.higher();
 					}
@@ -118,7 +115,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 				}
 			}
 		}
-		return (P) EMPTY_PACK_RESULT;
+		return createEmptyIntermediatePackagerResult();
 	}
 
 	public List<Container> packAdapter(int limit, PackagerInterruptSupplier interrupt, PackagerAdapter<P> adapter) throws PackagerInterruptedException {
@@ -247,4 +244,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 	public ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
 		return scheduledThreadPoolExecutor;
 	}
+	
+	protected abstract P createEmptyIntermediatePackagerResult();
+
 }

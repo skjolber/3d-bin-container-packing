@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
@@ -8,16 +9,14 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.packager.PackagerInterruptedException;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
-import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -58,13 +57,13 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		return new BruteForcePackagerBuilder();
 	}
 
-	public static class BruteForcePackagerBuilder extends AbstractPackagerBuilder<BruteForcePackager, BruteForcePackagerBuilder> {
+	public static class BruteForcePackagerBuilder {
 
-		protected IntermediatePackagerResultComparator comparator;
+		protected Comparator<BruteForceIntermediatePackagerResult> comparator;
 		
 		public BruteForcePackager build() {
 			if(comparator == null) {
-				comparator = new DefaultIntermediatePackagerResultComparator();
+				comparator = new DefaultIntermediatePackagerResultComparator<>();
 			}
 			return new BruteForcePackager(comparator);
 		}
@@ -116,8 +115,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		
 	}
 
-	public BruteForcePackager(IntermediatePackagerResultComparator packResultComparator) {
-		super(packResultComparator);
+	public BruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator) {
+		super(comparator);
 	}
 
 	@Override

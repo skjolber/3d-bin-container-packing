@@ -17,6 +17,8 @@ import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public class BruteForceIntermediatePackagerResult implements IntermediatePackagerResult {
+	
+	public static final BruteForceIntermediatePackagerResult EMPTY = new BruteForceIntermediatePackagerResult(null, null, 0, null);
 
 	// work objects
 	private final Stack stack;

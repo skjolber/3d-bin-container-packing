@@ -2,6 +2,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -21,6 +22,8 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
+import com.github.skjolber.packing.api.packager.PackagerException;
+import com.github.skjolber.packing.api.packager.PackagerInterruptedException;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.ClonablePackagerInterruptSupplier;
@@ -31,10 +34,7 @@ import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIte
 import com.github.skjolber.packing.iterator.ParallelBoxItemGroupPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.ParallelBoxItemPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.PackagerException;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
  * 
@@ -48,12 +48,12 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		return new ParallelBruteForcePackagerBuilder();
 	}
 
-	public static class ParallelBruteForcePackagerBuilder extends AbstractPackagerBuilder<ParallelBoxItemBruteForcePackager, ParallelBruteForcePackagerBuilder> {
+	public static class ParallelBruteForcePackagerBuilder {
 
 		protected int threads = -1;
 		protected int parallelizationCount = -1;
 		protected ExecutorService executorService;
-		protected IntermediatePackagerResultComparator comparator;
+		protected Comparator<BruteForceIntermediatePackagerResult> comparator;
 		
 		public ParallelBruteForcePackagerBuilder withThreads(int threads) {
 			if(threads < 1) {
@@ -128,8 +128,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	private final ExecutorService executorService;
 
 	public ParallelBoxItemBruteForcePackager(ExecutorService executorService, int parallelizationCount, 
-			IntermediatePackagerResultComparator packResultComparator) {
-		super(packResultComparator);
+			Comparator<BruteForceIntermediatePackagerResult> comparator) {
+		super(comparator);
 
 		this.parallelizationCount = parallelizationCount;
 		this.executorService = executorService;

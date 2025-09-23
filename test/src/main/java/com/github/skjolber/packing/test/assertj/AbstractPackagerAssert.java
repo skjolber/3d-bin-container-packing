@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
-import com.github.skjolber.packing.api.AbstractPackagerResultBuilder;
+import com.github.skjolber.packing.api.packager.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.api.BoxItem;
 
 @SuppressWarnings("rawtypes")

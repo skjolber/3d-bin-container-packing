@@ -7,12 +7,13 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 
-import com.github.skjolber.packing.api.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.PackagerResultBuilder;
+import com.github.skjolber.packing.api.packager.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
@@ -122,7 +123,7 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 					.withContainer(container, 1)
 					.build();
 
-			AbstractPackagerResultBuilder builder = packager.newResultBuilder()
+			PackagerResultBuilder builder = packager.newResultBuilder()
 					.withBoxItems(singletonList(new BoxItem(box, count)))
 					.withContainerItems(containers);
 			

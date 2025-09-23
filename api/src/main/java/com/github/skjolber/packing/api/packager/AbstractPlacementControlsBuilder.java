@@ -2,10 +2,11 @@ package com.github.skjolber.packing.api.packager;
 
 import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 
-public abstract class AbstractIntermediatePlacementResultBuilder<R extends IntermediatePlacementResult, B extends AbstractIntermediatePlacementResultBuilder<R, B>> implements IntermediatePlacementResultBuilder<R, B> {
+public abstract class AbstractPlacementControlsBuilder<R extends Placement, B extends AbstractPlacementControlsBuilder<R, B>> implements PlacementControlsBuilder<R, B> {
 
 	protected BoxItemSource boxItems;
 	protected int boxItemsStartIndex = -1;

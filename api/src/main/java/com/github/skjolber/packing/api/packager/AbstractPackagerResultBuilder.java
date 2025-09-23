@@ -1,13 +1,17 @@
-package com.github.skjolber.packing.api;
+package com.github.skjolber.packing.api.packager;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-import com.github.skjolber.packing.api.packager.ControlledContainerItem;
-import com.github.skjolber.packing.api.packager.ManifestControlsBuilderFactory;
-import com.github.skjolber.packing.api.packager.PointControlsBuilderFactory;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.PackagerResultBuilder;
 
 /**
  * {@linkplain PackagerResult} builder scaffold.
@@ -15,8 +19,7 @@ import com.github.skjolber.packing.api.packager.PointControlsBuilderFactory;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerResultBuilder<B>>
-		implements PackagerResultBuilder<B> {
+public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerResultBuilder<B>> implements PackagerResultBuilder<B> {
 
 	protected long deadline = -1L;
 
@@ -32,7 +35,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 	
 	protected List<ControlledContainerItem> containers;
 
-	public static class ControlledContainerItemBuilder {
+	public static class DefaultControlledContainerItemBuilder implements ControlledContainerItemBuilder {
 
 		protected ContainerItem containerItem;
 		protected ManifestControlsBuilderFactory boxItemControlsBuilderFactory;
@@ -70,9 +73,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		}
 	}
 
-
 	public B withContainerItem(Consumer<ControlledContainerItemBuilder> consumer) {
-		ControlledContainerItemBuilder builder = new ControlledContainerItemBuilder();
+		ControlledContainerItemBuilder builder = new DefaultControlledContainerItemBuilder();
 		consumer.accept(builder);
 		if (this.containers == null) {
 			this.containers = new ArrayList<>();

@@ -6,35 +6,38 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.PointSource;
+import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point;
-import com.github.skjolber.packing.api.packager.AbstractIntermediatePlacementResultBuilder;
-import com.github.skjolber.packing.api.packager.IntermediatePlacementResult;
+import com.github.skjolber.packing.api.packager.AbstractPlacementControls;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.PointControls;
 
-public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T extends IntermediatePlacementResult, B extends AbstractComparatorIntermediatePlacementResultBuilder<T, B>> extends AbstractIntermediatePlacementResultBuilder<T, B> {
+public abstract class AbstractComparatorPlacementControls<T extends Placement> extends AbstractPlacementControls<T> {
 
 	protected Comparator<T> intermediatePlacementResultComparator;
 	protected Comparator<BoxItem> boxItemComparator;
 
-	public B withBoxItemComparator(Comparator<BoxItem> boxItemComparator) {
+	public AbstractComparatorPlacementControls(BoxItemSource boxItems, int boxItemsStartIndex, int boxItemsEndIndex,
+			PointControls pointControls, ExtremePoints extremePoints, Container container, Stack stack,
+			BoxPriority priority, Comparator<T> intermediatePlacementResultComparator, Comparator<BoxItem> boxItemComparator) {
+		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, extremePoints, container, stack, priority);
+		
+		this.intermediatePlacementResultComparator = intermediatePlacementResultComparator;
 		this.boxItemComparator = boxItemComparator;
-		return (B)this;
 	}
-	
-	public B withIntermediatePlacementResultComparator(Comparator<T> comparator) {
-		this.intermediatePlacementResultComparator = comparator;
-		return (B)this;
-	}
-	
-	@Override
-	public T build() {
+
+	public T getPlacement(int offset, int length) {
 		T result = null;
 		
 		long maxPointArea = extremePoints.getMaxArea();
 		
 		// max volume and weight should already be accounted for by packager
 		
-		for(int i = boxItemsStartIndex; i < boxItemsEndIndex; i++) {
+		for(int i = offset; i < length; i++) {
 			BoxItem boxItem = boxItems.get(i);
 			
 			Box box = boxItem.getBox();
@@ -81,6 +84,7 @@ public abstract class AbstractComparatorIntermediatePlacementResultBuilder<T ext
 		return result;
 	}
 
-	protected abstract T createIntermediatePlacementResult(int index, Point point, BoxStackValue stackValue);
+
+	protected abstract T createIntermediatePlacementResult(int i, Point point3d, BoxStackValue stackValue);
 
 }

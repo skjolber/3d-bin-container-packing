@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.packager.PackagerInterruptedException;
 
 /**
  * Logical packager for wrapping preprocessing / optimizations.

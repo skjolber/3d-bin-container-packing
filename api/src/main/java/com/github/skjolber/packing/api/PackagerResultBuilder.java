@@ -1,19 +1,30 @@
 package com.github.skjolber.packing.api;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+
+import com.github.skjolber.packing.api.packager.ControlledContainerItem;
+import com.github.skjolber.packing.api.packager.ManifestControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.PointControlsBuilderFactory;
 
 public interface PackagerResultBuilder<B extends PackagerResultBuilder<B>> {
 
-	/**
-	 * 
-	 * Build result (perform packaging)
-	 * 
-	 * @return the result
-	 */
+	public static interface ControlledContainerItemBuilder {
 
-	PackagerResult build();
+		ControlledContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier);
 
+		ControlledContainerItemBuilder withPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory);
+
+		ControlledContainerItemBuilder withContainerItem(ContainerItem containerItem);
+		
+		ControlledContainerItemBuilder withContainerItem(Container container, int count);
+
+		ControlledContainerItem build();
+		
+	}
+	
 	B withBoxItems(BoxItem... items);
 
 	B withBoxItems(List<BoxItem> items);
@@ -31,4 +42,19 @@ public interface PackagerResultBuilder<B extends PackagerResultBuilder<B>> {
 	B withBoxItems(BoxItemGroup... items);
 	
 	B withContainerItems(List<ContainerItem> containers);
+
+	B withContainerItem(Consumer<ControlledContainerItemBuilder> consumer);
+
+	B withContainerItems(ContainerItem... containers);
+
+
+	/**
+	 * 
+	 * Build result (perform packaging)
+	 * 
+	 * @return the result
+	 */
+
+	PackagerResult build();
+
 }

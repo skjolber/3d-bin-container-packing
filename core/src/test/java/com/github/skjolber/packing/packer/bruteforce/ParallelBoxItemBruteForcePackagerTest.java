@@ -285,7 +285,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 	@Disabled // TODO
 	@Test
 	public void testAHugeProblemShouldRespectDeadline() {
-		assertDeadlineRespected(ParallelBoxItemBruteForcePackager.newBuilder());
+		assertDeadlineRespected(ParallelBoxItemBruteForcePackager.newBuilder().build());
 	}
 
 	@Override

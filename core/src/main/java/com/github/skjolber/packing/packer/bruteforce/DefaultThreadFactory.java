@@ -14,13 +14,13 @@ public class DefaultThreadFactory implements ThreadFactory {
 	}
 
 	public Thread newThread(Runnable r) {
-		Thread t = new Thread(group, r,
-				namePrefix + threadNumber.getAndIncrement(),
-				0);
-		if(t.isDaemon())
+		Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+		if(t.isDaemon()) {
 			t.setDaemon(false);
-		if(t.getPriority() != Thread.NORM_PRIORITY)
+		}
+		if(t.getPriority() != Thread.NORM_PRIORITY) {
 			t.setPriority(Thread.NORM_PRIORITY);
+		}
 		return t;
 	}
 }

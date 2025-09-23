@@ -271,7 +271,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	@Test
 	@Disabled
 	public void testAHugeProblemShouldRespectDeadline() {
-		assertDeadlineRespected(BruteForcePackager.newBuilder());
+		assertDeadlineRespected(BruteForcePackager.newBuilder().build());
 	}
 	
 	@Test

@@ -13,12 +13,12 @@ public interface BoxItemGroupSource extends Iterable<BoxItemGroup> {
 	
 	int size();
 	
+	boolean isEmpty();
+
 	BoxItemGroup get(int index);
 
 	BoxItemGroup remove(int index);
  
-	boolean isEmpty();
-
 	default long getMinVolume() {
 		long minVolume = Integer.MAX_VALUE;
 		for(BoxItemGroup boxItemGroup: this) {

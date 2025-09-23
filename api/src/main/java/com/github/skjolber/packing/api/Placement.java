@@ -8,9 +8,8 @@ public class Placement implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	protected BoxStackValue stackValue;
-
 	protected Point point;
-
+	
 	public Placement(BoxStackValue stackValue, Point point) {
 		super();
 		this.stackValue = stackValue;
@@ -119,6 +118,14 @@ public class Placement implements Serializable {
 	
 	public int getWeight() {
 		return stackValue.getBox().getWeight();
+	}
+
+	public BoxItem getBoxItem() {
+		return stackValue.getBox().getBoxItem();
+	}
+	
+	public Point getPoint() {
+		return point;
 	}
 
 }

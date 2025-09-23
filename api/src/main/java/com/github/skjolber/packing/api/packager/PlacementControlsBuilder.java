@@ -2,10 +2,11 @@ package com.github.skjolber.packing.api.packager;
 
 import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 
-public interface IntermediatePlacementResultBuilder<R extends IntermediatePlacementResult, B extends IntermediatePlacementResultBuilder<R, B>> {
+public interface PlacementControlsBuilder<R extends Placement, B extends PlacementControlsBuilder<R, B>> {
 
 	B withExtremePoints(ExtremePoints extremePoints);
 
@@ -19,6 +20,6 @@ public interface IntermediatePlacementResultBuilder<R extends IntermediatePlacem
 
 	B withPriority(BoxPriority priority);
 
-	R build();
+	PlacementControls<R> build();
 	
 }

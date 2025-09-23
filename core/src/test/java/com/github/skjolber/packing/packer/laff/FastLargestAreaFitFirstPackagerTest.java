@@ -283,7 +283,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	@Test
 	@Disabled
 	public void testAHugeProblemShouldRespectDeadline() {
-		assertDeadlineRespected(FastLargestAreaFitFirstPackager.newBuilder());
+		assertDeadlineRespected(FastLargestAreaFitFirstPackager.newBuilder().build());
 	}
 
 	@Test

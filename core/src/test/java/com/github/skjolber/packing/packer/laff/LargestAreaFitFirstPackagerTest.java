@@ -486,7 +486,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	@Test
 	@Disabled
 	public void testAHugeProblemShouldRespectDeadline() {
-		assertDeadlineRespected(LargestAreaFitFirstPackager.newBuilder());
+		assertDeadlineRespected(LargestAreaFitFirstPackager.newBuilder().build());
 	}
 
 	public static int countLevels(Container container) {

@@ -5,7 +5,8 @@ import java.util.Comparator;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
-import com.github.skjolber.packing.api.packager.IntermediatePlacementResult;
+import com.github.skjolber.packing.api.packager.IntermediatePlacement;
+import com.github.skjolber.packing.api.packager.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemComparator;
@@ -15,6 +16,11 @@ import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
 import com.github.skjolber.packing.comparator.VolumeWeightAreaPointIntermediatePlacementResultComparator;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.packer.ComparatorIntermediatePlacementControlsBuilder;
+import com.github.skjolber.packing.packer.ComparatorIntermediatePlacementControlsBuilderFactory;
+import com.github.skjolber.packing.packer.DefaultControlsPackagerResultBuilder;
+import com.github.skjolber.packing.packer.IntermediatePackagerResult;
+import com.github.skjolber.packing.packer.plain.PlainPackager.PlainResultBuilder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -29,14 +35,14 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 		return new Builder();
 	}
 
-	public static class Builder extends LargestAreaFitFirstPackagerBuilder<LargestAreaFitFirstPackager, Builder> {
+	public static class Builder extends AbstractLargestAreaFitFirstPackagerBuilder<Builder> {
 
 		public LargestAreaFitFirstPackager build() {
-			if(intermediatePlacementResultComparator == null) {
-				intermediatePlacementResultComparator = new VolumeWeightAreaPointIntermediatePlacementResultComparator();
+			if(intermediatePlacementComparator == null) {
+				intermediatePlacementComparator = new VolumeWeightAreaPointIntermediatePlacementResultComparator();
 			}
 			if(intermediatePackagerResultComparator == null) {
-				intermediatePackagerResultComparator = new DefaultIntermediatePackagerResultComparator();
+				intermediatePackagerResultComparator = new DefaultIntermediatePackagerResultComparator<>();
 			}
 			if(boxItemComparator == null) {
 				boxItemComparator = VolumeThenWeightBoxItemComparator.getInstance();
@@ -50,20 +56,23 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			if(firstBoxItemComparator == null) {
 				firstBoxItemComparator = new LargestAreaBoxItemComparator();
 			}
-			if(firstIntermediatePlacementResultComparator == null) {
-				firstIntermediatePlacementResultComparator = new LargestAreaIntermediatePlacementResultComparator();
+			if(firstIntermediatePlacementComparator == null) {
+				firstIntermediatePlacementComparator = new LargestAreaIntermediatePlacementResultComparator();
 			}
-			return new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, intermediatePlacementResultComparator, boxItemComparator, boxItemGroupComparator, firstBoxItemGroupComparator, firstBoxItemComparator, firstIntermediatePlacementResultComparator);
+			if(placementControlsBuilderFactory == null) {
+				placementControlsBuilderFactory = new ComparatorIntermediatePlacementControlsBuilderFactory();
+			}
+			return new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, intermediatePlacementComparator, boxItemComparator, boxItemGroupComparator, firstBoxItemGroupComparator, firstBoxItemComparator, firstIntermediatePlacementComparator, placementControlsBuilderFactory);
 		}
 	}
 
-	public LargestAreaFitFirstPackager(IntermediatePackagerResultComparator comparator,
-			Comparator<IntermediatePlacementResult> intermediatePlacementResultComparator,
+	public LargestAreaFitFirstPackager(Comparator<IntermediatePackagerResult> comparator,
+			Comparator<IntermediatePlacement> intermediatePlacementResultComparator,
 			Comparator<BoxItem> boxItemComparator, Comparator<BoxItemGroup> boxItemGroupComparator,
 			Comparator<BoxItemGroup> firstBoxItemGroupComparator, Comparator<BoxItem> firstBoxItemComparator,
-			Comparator<IntermediatePlacementResult> firstIntermediatePlacementResultComparator) {
+			Comparator<IntermediatePlacement> firstIntermediatePlacementResultComparator, PlacementControlsBuilderFactory<IntermediatePlacement, ComparatorIntermediatePlacementControlsBuilder> placementControlsBuilderFactory) {
 		super(comparator, intermediatePlacementResultComparator, boxItemComparator, boxItemGroupComparator,
-				firstBoxItemGroupComparator, firstBoxItemComparator, firstIntermediatePlacementResultComparator);
+				firstBoxItemGroupComparator, firstBoxItemComparator, firstIntermediatePlacementResultComparator, placementControlsBuilderFactory);
 	}
 
 	@Override

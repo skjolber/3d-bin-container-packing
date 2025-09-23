@@ -21,6 +21,8 @@ import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
+import com.github.skjolber.packing.packer.DefaultControlsPackagerResultBuilder;
+import com.github.skjolber.packing.packer.plain.PlainPackager.PlainResultBuilder;
 
 public class PlainPackagerTest extends AbstractPackagerTest {
 
@@ -339,7 +341,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	public void testAHugeProblemShouldRespectDeadline() {
-		assertDeadlineRespected(PlainPackager.newBuilder());
+		assertDeadlineRespected(PlainPackager.newBuilder().build());
 	}
 
 	@Test

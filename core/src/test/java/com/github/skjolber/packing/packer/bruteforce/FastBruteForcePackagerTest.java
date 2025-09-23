@@ -238,7 +238,7 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	@Test
 	@Disabled
 	public void testAHugeProblemShouldRespectDeadline() {
-		assertDeadlineRespected(FastBruteForcePackager.newBuilder());
+		assertDeadlineRespected(FastBruteForcePackager.newBuilder().build());
 	}
 	
 	@Override

@@ -1,14 +1,21 @@
 package com.github.skjolber.packing.packer.plain;
 
+import java.util.Comparator;
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.ep.Point;
-import com.github.skjolber.packing.packer.AbstractComparatorIntermediatePlacementResultBuilder;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.PointControls;
+import com.github.skjolber.packing.packer.AbstractComparatorPlacementControls;
 
-public class PlainIntermediatePlacementResultBuilder extends AbstractComparatorIntermediatePlacementResultBuilder<PlainIntermediatePlacementResult, PlainIntermediatePlacementResultBuilder> {
+public class PlainPlacementControls extends AbstractComparatorPlacementControls<PlainPlacement> {
 
 	public static long calculateXYSupportPercent(ExtremePoints extremePoints, Point referencePoint, BoxStackValue stackValue) {
 		if(referencePoint.getMinZ() == 0) {
@@ -82,12 +89,20 @@ public class PlainIntermediatePlacementResultBuilder extends AbstractComparatorI
 		
 		return (sum * 100) / stackValue.getArea();
 	}
+	
+	public PlainPlacementControls(BoxItemSource boxItems, int boxItemsStartIndex, int boxItemsEndIndex,
+			PointControls pointControls, ExtremePoints extremePoints, Container container, Stack stack,
+			BoxPriority priority, Comparator<PlainPlacement> intermediatePlacementResultComparator,
+			Comparator<BoxItem> boxItemComparator) {
+		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, extremePoints, container, stack, priority,
+				intermediatePlacementResultComparator, boxItemComparator);
+	}
 
 	@Override
-	protected PlainIntermediatePlacementResult createIntermediatePlacementResult(int index, Point point, BoxStackValue stackValue) {
+	protected PlainPlacement createIntermediatePlacementResult(int index, Point point, BoxStackValue stackValue) {
 		long pointSupportPercent = calculateXYSupportPercent(extremePoints, point, stackValue);
 		
-		return new PlainIntermediatePlacementResult(index, stackValue, point, pointSupportPercent);
+		return new PlainPlacement(index, stackValue, point, pointSupportPercent);
 	}
 
 }

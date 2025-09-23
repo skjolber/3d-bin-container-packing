@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
@@ -10,20 +11,18 @@ import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
+import com.github.skjolber.packing.api.packager.PackagerInterruptedException;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
-import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. This implementation tries all
@@ -61,13 +60,13 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		return new FastBruteForcePackagerBuilder();
 	}
 
-	public static class FastBruteForcePackagerBuilder extends AbstractPackagerBuilder<FastBruteForcePackager, FastBruteForcePackagerBuilder> {
+	public static class FastBruteForcePackagerBuilder {
 
-		protected IntermediatePackagerResultComparator comparator;
+		protected Comparator<BruteForceIntermediatePackagerResult> comparator;
 		
 		public FastBruteForcePackager build() {
 			if(comparator == null) {
-				comparator = new DefaultIntermediatePackagerResultComparator();
+				comparator = new DefaultIntermediatePackagerResultComparator<>();
 			}
 			return new FastBruteForcePackager(comparator);
 		}
@@ -165,11 +164,9 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		return new FastBruteForceAdapter(boxItems, priority, defaultContainerItemsCalculator, containerIterators, interrupt);
 	}
 	
-	public FastBruteForcePackager(IntermediatePackagerResultComparator comparator) {
+	public FastBruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator) {
 		super(comparator);
 	}
-	
-	
 
 	public BruteForceIntermediatePackagerResult pack(FastExtremePoints3DStack extremePoints,
 			List<Placement> stackPlacements, ContainerItem containerItem, int containerIndex,

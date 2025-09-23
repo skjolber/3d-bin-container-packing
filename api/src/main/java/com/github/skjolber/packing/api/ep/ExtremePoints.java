@@ -28,4 +28,5 @@ public interface ExtremePoints extends PointSource {
 	void setMinimumAreaAndVolumeLimit(long area, long volume);
 	
 	void remove(Predicate<Point> test);
+
 }
