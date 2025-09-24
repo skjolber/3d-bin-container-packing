@@ -3,8 +3,8 @@ package com.github.skjolber.packing.packer.laff;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.packager.AbstractPlacementControlsBuilder;
 import com.github.skjolber.packing.api.packager.IntermediatePlacement;
+import com.github.skjolber.packing.api.packager.control.placement.AbstractPlacementControlsBuilder;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.packer.ComparatorIntermediatePlacementControls;
 

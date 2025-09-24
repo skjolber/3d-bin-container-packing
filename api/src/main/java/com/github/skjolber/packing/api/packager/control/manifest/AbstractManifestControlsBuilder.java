@@ -1,8 +1,10 @@
-package com.github.skjolber.packing.api.packager;
+package com.github.skjolber.packing.api.packager.control.manifest;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.PointSource;
+import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.point.PointSource;
 
 /**
  * Builder scaffold.

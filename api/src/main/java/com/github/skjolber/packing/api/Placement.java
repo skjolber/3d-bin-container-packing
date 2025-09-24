@@ -1,7 +1,8 @@
 package com.github.skjolber.packing.api;
 
 import java.io.Serializable;
-import com.github.skjolber.packing.api.ep.Point;
+
+import com.github.skjolber.packing.api.point.Point;
 
 public class Placement implements Serializable {
 

@@ -4,16 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.ep.DefaultPointSource;
-import com.github.skjolber.packing.api.ep.EmptyPointSource;
-import com.github.skjolber.packing.api.ep.PointSource;
-import com.github.skjolber.packing.api.ep.Point;
-import com.github.skjolber.packing.api.packager.AbstractPointControlsBuilder;
-import com.github.skjolber.packing.api.packager.DefaultPointControls;
-import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.packager.PointControls;
-import com.github.skjolber.packing.api.packager.PointControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.control.point.AbstractPointControlsBuilder;
+import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
+import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
+import com.github.skjolber.packing.api.point.DefaultPointSource;
+import com.github.skjolber.packing.api.point.EmptyPointSource;
+import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.api.point.PointSource;
 
 public class HeavyItemsOnGroundLevel extends DefaultPointControls {
 

@@ -2,7 +2,7 @@ package com.github.skjolber.packing.api.packager;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.api.point.Point;
 
 public class IntermediatePlacement extends Placement {
 

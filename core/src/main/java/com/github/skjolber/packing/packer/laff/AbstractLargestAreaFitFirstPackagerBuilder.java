@@ -5,7 +5,7 @@ import java.util.Comparator;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.packager.IntermediatePlacement;
-import com.github.skjolber.packing.api.packager.PlacementControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.packer.ComparatorIntermediatePlacementControlsBuilder;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 

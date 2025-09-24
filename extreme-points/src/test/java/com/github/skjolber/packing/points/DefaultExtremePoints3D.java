@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.points;
 
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 
 public class DefaultExtremePoints3D extends ExtremePoints3D {

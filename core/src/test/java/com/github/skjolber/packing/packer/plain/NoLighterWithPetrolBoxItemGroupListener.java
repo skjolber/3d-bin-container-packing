@@ -6,20 +6,20 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.PointSource;
-import com.github.skjolber.packing.api.packager.AbstractManifestControlsBuilder;
-import com.github.skjolber.packing.api.packager.ManifestControls;
-import com.github.skjolber.packing.api.packager.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.control.manifest.AbstractManifestControlsBuilder;
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
+import com.github.skjolber.packing.api.point.PointSource;
 
-public class NoMatchesWithPetrolBoxItemGroupListener implements ManifestControls {
+public class NoLighterWithPetrolBoxItemGroupListener implements ManifestControls {
 
 	public static class Builder extends AbstractManifestControlsBuilder<Builder> {
 
 		@Override
 		public ManifestControls build() {
-			return new NoMatchesWithPetrolBoxItemGroupListener(container, items, stack, points);
+			return new NoLighterWithPetrolBoxItemGroupListener(container, items, stack, points);
 		}
 
 	}
@@ -29,7 +29,7 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements ManifestControls
 	}
 	
 	public static final ManifestControlsBuilderFactory newFactory() {
-		return () -> NoMatchesWithPetrolBoxItemGroupListener.newBuilder();
+		return () -> NoLighterWithPetrolBoxItemGroupListener.newBuilder();
 	}
 	
 	protected final Container container;
@@ -37,10 +37,10 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements ManifestControls
 	protected final Stack stack;
 	protected final PointSource points;
 
-	protected boolean matches = false;
+	protected boolean lighter = false;
 	protected boolean petrol = false;
 
-	public NoMatchesWithPetrolBoxItemGroupListener(Container container, BoxItemSource boxItems, Stack stack, PointSource points) {
+	public NoLighterWithPetrolBoxItemGroupListener(Container container, BoxItemSource boxItems, Stack stack, PointSource points) {
 		this.container = container;
 		this.boxItems = boxItems;
 		this.stack = stack;
@@ -50,10 +50,10 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements ManifestControls
 	@Override
 	public void attemptSuccess(BoxItemGroup group) {
 		// do nothing
-		if(!matches) {
-			matches = isMatches(group);
+		if(!lighter) {
+			lighter = isLighter(group);
 			
-			if(matches) {
+			if(lighter) {
 				// remove groups which contain petrol
 				remove(this::isPetrol);
 			}
@@ -64,7 +64,7 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements ManifestControls
 			if(petrol) {
 				// remove groups which contain matches
 				
-				remove(this::isMatches);
+				remove(this::isLighter);
 			}
 		}
 	}
@@ -96,7 +96,7 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements ManifestControls
 	}
 
 	
-	private boolean isMatches(BoxItemGroup boxItemGroup) {
+	private boolean isLighter(BoxItemGroup boxItemGroup) {
 		for(int i = 0; i < boxItemGroup.size(); i++) {
 			BoxItem item = boxItemGroup.get(i);
 			if(isMatches(item)) {
@@ -107,7 +107,7 @@ public class NoMatchesWithPetrolBoxItemGroupListener implements ManifestControls
 	}
 
 	private boolean isMatches(BoxItem item) {
-		return item.getBox().getId().startsWith("matches-");
+		return item.getBox().getId().startsWith("lighter-");
 	}
 	
 	@Override

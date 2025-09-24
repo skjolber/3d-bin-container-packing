@@ -6,11 +6,10 @@ import java.util.List;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 import com.github.skjolber.packing.api.packager.PackagerInterruptedException;
-import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 
 public abstract class AbstractBoxItemAdapter<T extends IntermediatePackagerResult> implements PackagerAdapter<T> {

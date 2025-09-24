@@ -1,13 +1,12 @@
 package com.github.skjolber.packing.api;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 import com.github.skjolber.packing.api.packager.ControlledContainerItem;
-import com.github.skjolber.packing.api.packager.ManifestControlsBuilderFactory;
-import com.github.skjolber.packing.api.packager.PointControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 
 public interface PackagerResultBuilder<B extends PackagerResultBuilder<B>> {
 

@@ -14,15 +14,13 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
-import com.github.skjolber.packing.packer.DefaultControlsPackagerResultBuilder;
-import com.github.skjolber.packing.packer.plain.PlainPackager.PlainResultBuilder;
 
 public class PlainPackagerTest extends AbstractPackagerTest {
 
@@ -427,14 +425,14 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			BoxItem boxItem1 = new BoxItem(Box.newBuilder().withId("petrol-1").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1);
-			BoxItem boxItem2 = new BoxItem(Box.newBuilder().withId("matches-2").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 1);
+			BoxItem boxItem2 = new BoxItem(Box.newBuilder().withId("lighter-2").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 1);
 	
 			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", Arrays.asList(boxItem1));
 			BoxItemGroup boxItemGroup2 = new BoxItemGroup("b", Arrays.asList(boxItem2));
 			
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
-				b.withBoxItemControlsBuilderFactory(NoMatchesWithPetrolBoxItemGroupListener.newFactory());
+				b.withBoxItemControlsBuilderFactory(NoLighterWithPetrolBoxItemGroupListener.newFactory());
 			})
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2))
@@ -448,7 +446,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			}
 			
 			assertEquals(containers.get(0).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "petrol-1");
-			assertEquals(containers.get(1).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "matches-2");
+			assertEquals(containers.get(1).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "lighter-2");
 			
 			assertValid(build);
 		} finally {

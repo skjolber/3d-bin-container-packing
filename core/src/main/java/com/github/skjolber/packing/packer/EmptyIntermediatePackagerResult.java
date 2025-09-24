@@ -12,7 +12,7 @@ public class EmptyIntermediatePackagerResult implements IntermediatePackagerResu
 		throw new RuntimeException();
 	}
 	
-	@Override
+	@Override	
 	public Stack getStack() {
 		throw new RuntimeException();
 	}

@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.ep.points3d;
 
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.api.point.Point;
 
 public class DefaultYZPlanePoint3D extends SimplePoint3D implements YZPlanePoint3D {
 

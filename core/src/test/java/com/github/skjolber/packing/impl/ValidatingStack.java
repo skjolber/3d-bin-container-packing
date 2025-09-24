@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.impl;
 
-import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Stack;
 
 public class ValidatingStack extends Stack {
 

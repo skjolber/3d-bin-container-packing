@@ -11,14 +11,14 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.packager.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 import com.github.skjolber.packing.api.packager.PackagerInterruptedException;
-import com.github.skjolber.packing.api.packager.PlacementControlsBuilderFactory;
-import com.github.skjolber.packing.api.packager.PointControls;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.point.ExtremePoints;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
@@ -211,7 +211,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 				.withPriority(priority)
 				.withStack(stack)
 				.withContainer(container)
-				.withIntermediatePlacementComparator(intermediatePlacementResultComparator)
+				.withPlacementComparator(intermediatePlacementResultComparator)
 				.withBoxItemComparator(boxItemComparator)
 				.build();
 	}

@@ -7,11 +7,11 @@ import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.ExtremePoints;
-import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.IntermediatePlacement;
-import com.github.skjolber.packing.api.packager.PointControls;
+import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.Point;
 
 public class ComparatorIntermediatePlacementControls extends AbstractComparatorPlacementControls<IntermediatePlacement>{
 

@@ -13,21 +13,20 @@ import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.packager.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.IntermediatePlacement;
-import com.github.skjolber.packing.api.packager.ManifestControls;
 import com.github.skjolber.packing.api.packager.PackagerInterruptedException;
-import com.github.skjolber.packing.api.packager.PlacementControls;
-import com.github.skjolber.packing.api.packager.PlacementControlsBuilderFactory;
-import com.github.skjolber.packing.api.packager.PointControls;
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.point.ExtremePoints;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
@@ -47,8 +46,6 @@ import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyPackagerResultAdapter;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerAdapter;
-import com.github.skjolber.packing.packer.laff.AbstractLargestAreaFitFirstPackager.LargestAreaFitFirstResultBuilder;
-import com.github.skjolber.packing.packer.plain.PlainPackager;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.

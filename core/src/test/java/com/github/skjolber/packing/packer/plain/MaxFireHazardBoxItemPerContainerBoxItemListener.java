@@ -4,12 +4,11 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.PointSource;
-import com.github.skjolber.packing.api.packager.AbstractManifestControlsBuilder;
-import com.github.skjolber.packing.api.packager.ManifestControls;
-import com.github.skjolber.packing.api.packager.ManifestControlsBuilderFactory;
-import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.control.manifest.AbstractManifestControlsBuilder;
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
+import com.github.skjolber.packing.api.point.PointSource;
 
 public class MaxFireHazardBoxItemPerContainerBoxItemListener implements ManifestControls {
 

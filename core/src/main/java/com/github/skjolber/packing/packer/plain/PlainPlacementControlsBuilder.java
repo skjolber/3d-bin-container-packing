@@ -3,7 +3,7 @@ package com.github.skjolber.packing.packer.plain;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.packager.AbstractPlacementControlsBuilder;
+import com.github.skjolber.packing.api.packager.control.placement.AbstractPlacementControlsBuilder;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 
 public class PlainPlacementControlsBuilder extends AbstractPlacementControlsBuilder<PlainPlacement, PlainPlacementControlsBuilder> {
@@ -11,7 +11,7 @@ public class PlainPlacementControlsBuilder extends AbstractPlacementControlsBuil
 	protected Comparator<PlainPlacement> intermediatePlacementResultComparator;
 	protected Comparator<BoxItem> boxItemComparator;
 
-	public PlainPlacementControlsBuilder withIntermediatePlacementComparator(Comparator<PlainPlacement> intermediatePlacementResultComparator) {
+	public PlainPlacementControlsBuilder withPlacementComparator(Comparator<PlainPlacement> intermediatePlacementResultComparator) {
 		this.intermediatePlacementResultComparator = intermediatePlacementResultComparator;
 		return this;
 	}

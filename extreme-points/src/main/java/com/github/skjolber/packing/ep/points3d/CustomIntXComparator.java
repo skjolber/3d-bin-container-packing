@@ -2,7 +2,7 @@ package com.github.skjolber.packing.ep.points3d;
 
 import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
 
-import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.api.point.Point;
 
 public class CustomIntXComparator implements IntComparator {
 

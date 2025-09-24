@@ -1,8 +1,8 @@
 package com.github.skjolber.packing.packer.plain;
 
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.ep.Point;
 import com.github.skjolber.packing.api.packager.IntermediatePlacement;
+import com.github.skjolber.packing.api.point.Point;
 
 public class PlainPlacement extends IntermediatePlacement {
 

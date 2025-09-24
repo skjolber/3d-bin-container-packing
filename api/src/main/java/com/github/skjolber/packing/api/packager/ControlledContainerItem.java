@@ -3,7 +3,13 @@ package com.github.skjolber.packing.api.packager;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.PointSource;
+import com.github.skjolber.packing.api.packager.control.manifest.DefaultManifestControls;
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
+import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
+import com.github.skjolber.packing.api.point.PointSource;
 
 /**
  * 

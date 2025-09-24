@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.test.assertj;
 
-import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.api.point.Point;
 
 @SuppressWarnings("rawtypes")
 public class Point3DAssert extends AbstractPoint3DAssert<Point3DAssert, Point> {

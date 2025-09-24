@@ -1,17 +1,14 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import javax.management.RuntimeErrorException;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;

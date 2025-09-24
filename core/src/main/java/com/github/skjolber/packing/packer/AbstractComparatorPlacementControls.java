@@ -9,12 +9,12 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.ep.PointSource;
-import com.github.skjolber.packing.api.ep.ExtremePoints;
-import com.github.skjolber.packing.api.ep.Point;
-import com.github.skjolber.packing.api.packager.AbstractPlacementControls;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.packager.PointControls;
+import com.github.skjolber.packing.api.packager.control.placement.AbstractPlacementControls;
+import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.api.point.PointSource;
 
 public abstract class AbstractComparatorPlacementControls<T extends Placement> extends AbstractPlacementControls<T> {
 

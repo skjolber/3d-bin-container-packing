@@ -3,7 +3,7 @@ package com.github.skjolber.packing.ep.points2d;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.api.point.Point;
 
 public abstract class Point2D extends Point {
 

@@ -1,10 +1,10 @@
-package com.github.skjolber.packing.api.packager;
+package com.github.skjolber.packing.api.packager.control.placement;
 
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.api.point.Point;
 
 @FunctionalInterface
 public interface PlacementComparator {

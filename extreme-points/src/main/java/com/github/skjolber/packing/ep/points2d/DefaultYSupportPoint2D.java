@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.ep.points2d;
 
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.ep.Point;
+import com.github.skjolber.packing.api.point.Point;
 
 public class DefaultYSupportPoint2D extends SimplePoint2D implements YSupportPoint2D {
 

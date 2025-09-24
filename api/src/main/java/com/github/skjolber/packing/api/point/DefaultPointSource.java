@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.api.ep;
+package com.github.skjolber.packing.api.point;
 
 import java.util.Iterator;
 import java.util.List;

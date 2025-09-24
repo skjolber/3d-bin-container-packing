@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.api.ep;
+package com.github.skjolber.packing.api.point;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;

@@ -1,10 +1,11 @@
-package com.github.skjolber.packing.api.packager;
+package com.github.skjolber.packing.api.packager.control.manifest;
 
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.ep.PointSource;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.point.PointSource;
 
 /**
  * 

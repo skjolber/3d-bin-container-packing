@@ -4,11 +4,10 @@ import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.packager.IntermediatePlacement;
-import com.github.skjolber.packing.api.packager.PlacementControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
+import com.github.skjolber.packing.api.point.ExtremePoints;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
-import com.github.skjolber.packing.comparator.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemComparator;
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemGroupComparator;
 import com.github.skjolber.packing.comparator.LargestAreaIntermediatePlacementResultComparator;
@@ -18,9 +17,7 @@ import com.github.skjolber.packing.comparator.VolumeWeightAreaPointIntermediateP
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.packer.ComparatorIntermediatePlacementControlsBuilder;
 import com.github.skjolber.packing.packer.ComparatorIntermediatePlacementControlsBuilderFactory;
-import com.github.skjolber.packing.packer.DefaultControlsPackagerResultBuilder;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.plain.PlainPackager.PlainResultBuilder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.

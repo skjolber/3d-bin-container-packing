@@ -1,8 +1,8 @@
 package com.github.skjolber.packing.iterator;
 
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
+import com.github.skjolber.packing.api.point.ExtremePoints;
 
 public class FixedOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 

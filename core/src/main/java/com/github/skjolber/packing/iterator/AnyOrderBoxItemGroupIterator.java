@@ -4,8 +4,8 @@ import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.ep.ExtremePoints;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
+import com.github.skjolber.packing.api.point.ExtremePoints;
 
 public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 	
