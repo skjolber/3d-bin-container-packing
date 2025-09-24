@@ -11,7 +11,6 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.ControlledContainerItem;
-import com.github.skjolber.packing.api.packager.PackagerInterruptedException;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 
 public abstract class AbstractBoxItemGroupAdapter<T extends IntermediatePackagerResult> implements PackagerAdapter<T> {

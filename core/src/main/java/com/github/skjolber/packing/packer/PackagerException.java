@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.api.packager;
+package com.github.skjolber.packing.packer;
 
 public class PackagerException extends RuntimeException {
 

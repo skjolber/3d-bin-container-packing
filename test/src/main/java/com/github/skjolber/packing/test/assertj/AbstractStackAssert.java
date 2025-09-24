@@ -5,8 +5,8 @@ import java.util.List;
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Stack;
 
 public abstract class AbstractStackAssert<SELF extends AbstractStackAssert<SELF, ACTUAL>, ACTUAL extends Stack>
 		extends AbstractObjectAssert<SELF, ACTUAL> {

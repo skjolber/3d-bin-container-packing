@@ -13,7 +13,6 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.packager.PackResultComparator;
-import com.github.skjolber.packing.api.packager.PackagerInterruptedException;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
 

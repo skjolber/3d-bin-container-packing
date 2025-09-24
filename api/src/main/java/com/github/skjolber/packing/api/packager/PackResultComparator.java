@@ -2,7 +2,7 @@ package com.github.skjolber.packing.api.packager;
 
 import java.util.Comparator;
 
-public interface PackResultComparator extends Comparator<PackResult> {
+public interface PackResultComparator {
 
 	static final int ARGUMENT_1_IS_BETTER = 1;
 	static final int ARGUMENT_2_IS_BETTER = -1;
@@ -14,8 +14,5 @@ public interface PackResultComparator extends Comparator<PackResult> {
 	 * 
 	 * Return 0 otherwise.
 	 */
-
-	@Override
-	int compare(PackResult o1, PackResult o2);
 
 }

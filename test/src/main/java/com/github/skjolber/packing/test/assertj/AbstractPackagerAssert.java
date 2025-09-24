@@ -4,12 +4,11 @@ import java.util.List;
 
 import org.assertj.core.api.AbstractObjectAssert;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
-import com.github.skjolber.packing.api.packager.AbstractPackagerResultBuilder;
-import com.github.skjolber.packing.api.BoxItem;
 
 @SuppressWarnings("rawtypes")
 public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert<SELF, ACTUAL>, ACTUAL extends Packager>
