@@ -18,15 +18,15 @@ import com.github.skjolber.packing.api.point.PointSource;
 
 public abstract class AbstractComparatorPlacementControls<T extends Placement> extends AbstractPlacementControls<T> {
 
-	protected Comparator<T> intermediatePlacementResultComparator;
+	protected Comparator<T> placementComparator;
 	protected Comparator<BoxItem> boxItemComparator;
 
 	public AbstractComparatorPlacementControls(BoxItemSource boxItems, int boxItemsStartIndex, int boxItemsEndIndex,
 			PointControls pointControls, ExtremePoints extremePoints, Container container, Stack stack,
-			BoxPriority priority, Comparator<T> intermediatePlacementResultComparator, Comparator<BoxItem> boxItemComparator) {
+			BoxPriority priority, Comparator<T> placementComparator, Comparator<BoxItem> boxItemComparator) {
 		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, extremePoints, container, stack, priority);
 		
-		this.intermediatePlacementResultComparator = intermediatePlacementResultComparator;
+		this.placementComparator = placementComparator;
 		this.boxItemComparator = boxItemComparator;
 	}
 
@@ -62,22 +62,22 @@ public abstract class AbstractComparatorPlacementControls<T extends Placement> e
 					if(!point3d.fits3D(stackValue)) {
 						continue;
 					}
-					T intermediatePlacementResult = createIntermediatePlacementResult(i, point3d, stackValue);
+					T placementResult = createPlacement(point3d, stackValue);
 					
-					if(result != null && intermediatePlacementResultComparator.compare(result, intermediatePlacementResult) >= 0) {
+					if(result != null && placementComparator.compare(result, placementResult) >= 0) {
 						continue;
 					}
 					
-					result = intermediatePlacementResult;
+					result = placementResult;
 				} 
 			}
 			
 			if(priority == BoxPriority.CRONOLOGICAL) {
 				// even if null
-				return result;
+				break;
 			}
 			if(priority == BoxPriority.CRONOLOGICAL_ALLOW_SKIPPING && result != null) {
-				return result;
+				break;
 			}
 			
 		}
@@ -85,6 +85,6 @@ public abstract class AbstractComparatorPlacementControls<T extends Placement> e
 	}
 
 
-	protected abstract T createIntermediatePlacementResult(int i, Point point3d, BoxStackValue stackValue);
+	protected abstract T createPlacement(Point point3d, BoxStackValue stackValue);
 
 }

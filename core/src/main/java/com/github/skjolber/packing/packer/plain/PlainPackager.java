@@ -204,7 +204,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 			BoxPriority priority, PointControls pointControls, Container container, ExtremePoints extremePoints,
 			Stack stack) {
 		
-		return placementControlsBuilderFactory.createIntermediatePlacementResultBuilder()
+		return placementControlsBuilderFactory.createPlacementControlsBuilder()
 				.withExtremePoints(extremePoints)
 				.withBoxItems(boxItems, offset, length)
 				.withPointControls(pointControls)

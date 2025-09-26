@@ -8,6 +8,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.sun.jdi.Value;
 
 public class PackagerBoxItems {
 
@@ -36,6 +37,12 @@ public class PackagerBoxItems {
 			for(int i = startIndex; i < boxToGroupIndexes.length; i++) {
 				boxToGroupIndexes[i]--;
 			}
+			
+			// update indexes
+			for(int i = startIndex; i < values.size(); i++) {
+				values.get(i).setIndex(i);
+			}
+			
 			return group;
 		}
 
@@ -161,6 +168,12 @@ public class PackagerBoxItems {
 			}
 			index += group.size();
 		}
+		
+		// update indexes
+		for(int i = 0; i < values.size(); i++) {
+			values.get(i).setIndex(i);
+		}
+
 	}
 	
 	public boolean isEmpty() {
@@ -179,6 +192,11 @@ public class PackagerBoxItems {
 			
 			values.remove(index);
 			System.arraycopy(boxToGroupIndexes, index + 1, boxToGroupIndexes, index, values.size() - index);
+
+			// update indexes
+			for(int i = index; i < values.size(); i++) {
+				values.get(i).setIndex(i);
+			}
 		}
 	}
 
@@ -202,6 +220,10 @@ public class PackagerBoxItems {
 				}
 			}
 		}
+		// update indexes
+		for(int i = 0; i < values.size(); i++) {
+			values.get(i).setIndex(i);
+		}
 	}
 
 	public InnerFilteredBoxItems getFilteredBoxItems() {
@@ -220,5 +242,10 @@ public class PackagerBoxItems {
 		int index = groups.indexOf(boxItemGroup);
 		
 		filteredBoxItemGroups.remove(index);
+		
+		// update indexes
+		for(int i = 0; i < values.size(); i++) {
+			values.get(i).setIndex(i);
+		}
 	}
 }

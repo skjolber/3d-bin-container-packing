@@ -8,16 +8,16 @@ import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 
 public class PlainPlacementControlsBuilder extends AbstractPlacementControlsBuilder<PlainPlacement, PlainPlacementControlsBuilder> {
 
-	protected Comparator<PlainPlacement> intermediatePlacementResultComparator;
+	protected Comparator<PlainPlacement> plainPlacementComparator;
 	protected Comparator<BoxItem> boxItemComparator;
 
-	public PlainPlacementControlsBuilder withPlacementComparator(Comparator<PlainPlacement> intermediatePlacementResultComparator) {
-		this.intermediatePlacementResultComparator = intermediatePlacementResultComparator;
+	public PlainPlacementControlsBuilder withPlacementComparator(Comparator<PlainPlacement> comparator) {
+		this.plainPlacementComparator = comparator;
 		return this;
 	}
 
-	public PlainPlacementControlsBuilder withBoxItemComparator(Comparator<BoxItem> boxItemComparator) {
-		this.boxItemComparator = boxItemComparator;
+	public PlainPlacementControlsBuilder withBoxItemComparator(Comparator<BoxItem> comparator) {
+		this.boxItemComparator = comparator;
 		return this;
 	}
 
@@ -26,7 +26,7 @@ public class PlainPlacementControlsBuilder extends AbstractPlacementControlsBuil
 		if(boxItemComparator == null) {
 			boxItemComparator = new VolumeThenWeightBoxItemComparator();
 		}
-		return new PlainPlacementControls(boxItems, boxItemsEndIndex, boxItemsEndIndex, pointControls, extremePoints, container, stack, priority, intermediatePlacementResultComparator, boxItemComparator);
+		return new PlainPlacementControls(boxItems, boxItemsEndIndex, boxItemsEndIndex, pointControls, extremePoints, container, stack, priority, plainPlacementComparator, boxItemComparator);
 	}
 
 }

@@ -19,7 +19,6 @@ import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
-import com.github.skjolber.packing.api.packager.IntermediatePlacement;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
@@ -37,8 +36,8 @@ import com.github.skjolber.packing.packer.AbstractBoxItemAdapter;
 import com.github.skjolber.packing.packer.AbstractBoxItemGroupAdapter;
 import com.github.skjolber.packing.packer.AbstractControlPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
-import com.github.skjolber.packing.packer.ComparatorIntermediatePlacementControls;
-import com.github.skjolber.packing.packer.ComparatorIntermediatePlacementControlsBuilder;
+import com.github.skjolber.packing.packer.ComparatorPlacementControls;
+import com.github.skjolber.packing.packer.ComparatorPlacementControlsBuilder;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
@@ -53,7 +52,7 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
  * <br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
-public abstract class AbstractLargestAreaFitFirstPackager extends AbstractControlPackager<IntermediatePlacement, IntermediatePackagerResult, AbstractLargestAreaFitFirstPackager.LargestAreaFitFirstResultBuilder> {
+public abstract class AbstractLargestAreaFitFirstPackager extends AbstractControlPackager<Placement, IntermediatePackagerResult, AbstractLargestAreaFitFirstPackager.LargestAreaFitFirstResultBuilder> {
 
 	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter<IntermediatePackagerResult> {
 
@@ -131,17 +130,17 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 	}
 	
 	// intermediatePlacementResultBuilderFactory = new ComparatorIntermediatePlacementControlsBuilderFactory();
-	protected PlacementControlsBuilderFactory<IntermediatePlacement, ComparatorIntermediatePlacementControlsBuilder> placementControlsBuilderFactory;
+	protected PlacementControlsBuilderFactory<Placement, ComparatorPlacementControlsBuilder> placementControlsBuilderFactory;
 	
-	protected Comparator<IntermediatePlacement> intermediatePlacementResultComparator;
+	protected Comparator<Placement> intermediatePlacementResultComparator;
 	protected Comparator<BoxItemGroup> boxItemGroupComparator;
 	protected Comparator<BoxItem> boxItemComparator;
 	
-	protected Comparator<IntermediatePlacement> firstIntermediatePlacementResultComparator;
+	protected Comparator<Placement> firstIntermediatePlacementResultComparator;
 	protected Comparator<BoxItemGroup> firstBoxItemGroupComparator;
 	protected Comparator<BoxItem> firstBoxItemComparator;
 	
-	public AbstractLargestAreaFitFirstPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<IntermediatePlacement> intermediatePlacementResultComparator, Comparator<BoxItem> boxItemComparator, Comparator<BoxItemGroup> boxItemGroupComparator, Comparator<BoxItemGroup> firstBoxItemGroupComparator, Comparator<BoxItem> firstBoxItemComparator, Comparator<IntermediatePlacement> firstIntermediatePlacementResultComparator, PlacementControlsBuilderFactory<IntermediatePlacement, ComparatorIntermediatePlacementControlsBuilder> placementControlsBuilderFactory) {
+	public AbstractLargestAreaFitFirstPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<Placement> intermediatePlacementResultComparator, Comparator<BoxItem> boxItemComparator, Comparator<BoxItemGroup> boxItemGroupComparator, Comparator<BoxItemGroup> firstBoxItemGroupComparator, Comparator<BoxItem> firstBoxItemComparator, Comparator<Placement> firstIntermediatePlacementResultComparator, PlacementControlsBuilderFactory<Placement, ComparatorPlacementControlsBuilder> placementControlsBuilderFactory) {
 		super(comparator);
 
 		this.placementControlsBuilderFactory = placementControlsBuilderFactory;
@@ -204,8 +203,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		int levelOffset = 0;
 		boolean newLevel = true;
 
-		PlacementControls<IntermediatePlacement> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, extremePoints, stack);
-		PlacementControls<IntermediatePlacement> firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, extremePoints, stack);
+		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, extremePoints, stack);
+		PlacementControls<Placement> firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, extremePoints, stack);
 
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !filteredBoxItems.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
@@ -213,7 +212,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				throw new PackagerInterruptedException();
 			}
 			
-			IntermediatePlacement result;
+			Placement result;
 			if(newLevel) {
 				// get first box in new level
 				result = firstPlacementControls.getPlacement(0, filteredBoxItems.size());
@@ -280,15 +279,13 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				}
 			}
 			
-			Placement stackPlacement = new Placement(result.getStackValue(), result.getPoint());
-
-			stack.add(stackPlacement);
-			extremePoints.add(result.getPoint(), stackPlacement);
+			stack.add(result);
+			extremePoints.add(result.getPoint(), result);
 			
 			remainingLoadWeight -= result.getBoxItem().getBox().getWeight();
 			remainingLoadVolume -= result.getBoxItem().getBox().getVolume();
 			
-			filteredBoxItems.decrement(result.getIndex(), 1);
+			filteredBoxItems.decrement(result.getBoxItem().getIndex(), 1);
 
 			boxItemControls.accepted(result.getBoxItem());
 			pointControls.accepted(result.getBoxItem());
@@ -401,8 +398,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
 
-		PlacementControls<IntermediatePlacement> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, extremePoints, stack);
-		PlacementControls<IntermediatePlacement> firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, extremePoints, stack);
+		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, extremePoints, stack);
+		PlacementControls<Placement> firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, extremePoints, stack);
 		groups:
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !extremePoints.isEmpty() && boxItemGroupIterator.hasNext()) {
 			int groupIndex = boxItemGroupIterator.next();
@@ -420,7 +417,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			
 			while(!boxItemGroup.isEmpty()) {
 				
-				IntermediatePlacement bestPoint;
+				Placement bestPoint;
 				if(newLevel) {
 					// get first box in new level
 					bestPoint = firstPlacementControls.getPlacement(boxItemStartIndex, boxItemGroup.size());
@@ -498,16 +495,15 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					}
 				}
 				
-				Placement stackPlacement = new Placement(bestPoint.getStackValue(), bestPoint.getPoint());
-				stack.add(stackPlacement);
-				extremePoints.add(bestPoint.getPoint(), stackPlacement);
+				stack.add(bestPoint);
+				extremePoints.add(bestPoint.getPoint(), bestPoint);
 				
 				remainingLoadWeight -= bestPoint.getBoxItem().getBox().getWeight();
 				remainingLoadVolume -= bestPoint.getBoxItem().getBox().getVolume();
 				
 				// decrement box item without deleting the whole group
-				packagerBoxItems.decrement(bestPoint.getIndex());
-				
+				packagerBoxItems.decrement(bestPoint.getBoxItem().getIndex());
+
 				boxItemControls.accepted(bestPoint.getBoxItem());
 				if(pointControls != null) {
 					pointControls.accepted(bestPoint.getBoxItem());
@@ -630,28 +626,28 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints, boxItemGroupComparator);
 	}
 
-	public PlacementControls<IntermediatePlacement> createControls(BoxItemSource boxItems, int offset, int length, BoxPriority priority, PointControls pointControls, Container container, ExtremePoints extremePoints, Stack stack) {
-		return placementControlsBuilderFactory.createIntermediatePlacementResultBuilder()
+	public PlacementControls<Placement> createControls(BoxItemSource boxItems, int offset, int length, BoxPriority priority, PointControls pointControls, Container container, ExtremePoints extremePoints, Stack stack) {
+		return placementControlsBuilderFactory.createPlacementControlsBuilder()
 			.withContainer(container)
 			.withExtremePoints(extremePoints)
 			.withPriority(priority)
 			.withStack(stack)
 			.withBoxItems(boxItems, offset, length)
 			.withPointControls(pointControls)
-			.withIntermediatePlacementComparator(intermediatePlacementResultComparator)
+			.withPlacementComparator(intermediatePlacementResultComparator)
 			.withBoxItemComparator(boxItemComparator)
 			.build();
 	}
 	
-	public ComparatorIntermediatePlacementControls createFirstControls(BoxItemSource boxItems, int offset, int length, BoxPriority priority, PointControls pointControls, Container container, ExtremePoints extremePoints, Stack stack) {
-		return placementControlsBuilderFactory.createIntermediatePlacementResultBuilder()
+	public ComparatorPlacementControls createFirstControls(BoxItemSource boxItems, int offset, int length, BoxPriority priority, PointControls pointControls, Container container, ExtremePoints extremePoints, Stack stack) {
+		return placementControlsBuilderFactory.createPlacementControlsBuilder()
 			.withContainer(container)
 			.withExtremePoints(extremePoints)
 			.withPriority(priority)
 			.withStack(stack)
 			.withBoxItems(boxItems, offset, length)
 			.withPointControls(pointControls)
-			.withIntermediatePlacementComparator(firstIntermediatePlacementResultComparator)
+			.withPlacementComparator(firstIntermediatePlacementResultComparator)
 			.withBoxItemComparator(firstBoxItemComparator)
 			.build();
 	}

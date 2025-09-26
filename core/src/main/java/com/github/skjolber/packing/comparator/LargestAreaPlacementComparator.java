@@ -3,12 +3,12 @@ package com.github.skjolber.packing.comparator;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.packager.IntermediatePlacement;
+import com.github.skjolber.packing.api.Placement;
 
-public class LargestAreaIntermediatePlacementResultComparator implements Comparator<IntermediatePlacement> {
+public class LargestAreaPlacementComparator implements Comparator<Placement> {
 
 	@Override
-	public int compare(IntermediatePlacement o1, IntermediatePlacement o2) {
+	public int compare(Placement o1, Placement o2) {
 		
 		// ****************************************
 		// * Prefer the highest area

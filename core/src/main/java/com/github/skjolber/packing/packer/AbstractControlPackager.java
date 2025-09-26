@@ -17,7 +17,6 @@ import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
-import com.github.skjolber.packing.api.packager.IntermediatePlacement;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
@@ -34,7 +33,7 @@ import com.github.skjolber.packing.iterator.PackagerBoxItems;
  * <br>
  * Thread-safe implementation.
  */
-public abstract class AbstractControlPackager<I extends IntermediatePlacement, P extends IntermediatePackagerResult, B extends PackagerResultBuilder<B>> extends AbstractPackager<P, B> {
+public abstract class AbstractControlPackager<I extends Placement, P extends IntermediatePackagerResult, B extends PackagerResultBuilder<B>> extends AbstractPackager<P, B> {
 
 	public AbstractControlPackager(Comparator<P> comparator) {
 		super(comparator);
@@ -97,23 +96,21 @@ public abstract class AbstractControlPackager<I extends IntermediatePlacement, P
 				throw new PackagerInterruptedException();
 			}
 
-			I result = placementControls.getPlacement(0, boxItemSource.size());
-			if(result == null) {
+			Placement placement = placementControls.getPlacement(0, boxItemSource.size());
+			if(placement == null) {
 				break;
 			}
 			
-			Placement stackPlacement = new Placement(result.getStackValue(), result.getPoint());
-
-			stack.add(stackPlacement);
-			extremePoints.add(result.getPoint(), stackPlacement);
+			stack.add(placement);
+			extremePoints.add(placement.getPoint(), placement);
 			
-			remainingLoadWeight -= result.getBoxItem().getBox().getWeight();
-			remainingLoadVolume -= result.getBoxItem().getBox().getVolume();
+			remainingLoadWeight -= placement.getBoxItem().getBox().getWeight();
+			remainingLoadVolume -= placement.getBoxItem().getBox().getVolume();
 			
-			boxItemSource.decrement(result.getIndex(), 1);
+			boxItemSource.decrement(placement.getBoxItem().getIndex(), 1);
 
-			manifestControls.accepted(result.getBoxItem());
-			pointControls.accepted(result.getBoxItem());
+			manifestControls.accepted(placement.getBoxItem());
+			pointControls.accepted(placement.getBoxItem());
 			
 			if(!boxItemSource.isEmpty()) {
 				
@@ -272,23 +269,22 @@ public abstract class AbstractControlPackager<I extends IntermediatePlacement, P
 			
 			while(!boxItemGroup.isEmpty()) {
 				
-				IntermediatePlacement bestPoint = placementControls.getPlacement(boxItemStartIndex, boxItemGroup.size());				
-				if(bestPoint == null) {
+				Placement placement = placementControls.getPlacement(boxItemStartIndex, boxItemGroup.size());				
+				if(placement == null) {
 					break;
 				}
 				
-				Placement stackPlacement = new Placement(bestPoint.getStackValue(), bestPoint.getPoint());
-				stack.add(stackPlacement);
-				extremePoints.add(bestPoint.getPoint(), stackPlacement);
+				stack.add(placement);
+				extremePoints.add(placement.getPoint(), placement);
 				
-				remainingLoadWeight -= bestPoint.getBoxItem().getBox().getWeight();
-				remainingLoadVolume -= bestPoint.getBoxItem().getBox().getVolume();
+				remainingLoadWeight -= placement.getBoxItem().getBox().getWeight();
+				remainingLoadVolume -= placement.getBoxItem().getBox().getVolume();
 				
 				// decrement box item without deleting the whole group
-				packagerBoxItems.decrement(bestPoint.getIndex());
-				
-				boxItemControls.accepted(bestPoint.getBoxItem());
-				pointControls.accepted(bestPoint.getBoxItem());
+				packagerBoxItems.decrement(placement.getBoxItem().getIndex());
+
+				boxItemControls.accepted(placement.getBoxItem());
+				pointControls.accepted(placement.getBoxItem());
 
 				if(!filteredBoxItemGroups.isEmpty()) {
 					// remove groups are too big according to total volume / weight

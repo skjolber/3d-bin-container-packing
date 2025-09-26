@@ -4,23 +4,23 @@ import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.packager.IntermediatePlacement;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
-import com.github.skjolber.packing.packer.ComparatorIntermediatePlacementControlsBuilder;
+import com.github.skjolber.packing.packer.ComparatorPlacementControlsBuilder;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public abstract class AbstractLargestAreaFitFirstPackagerBuilder<B extends AbstractLargestAreaFitFirstPackagerBuilder<B>> {
 
-	protected Comparator<IntermediatePlacement> intermediatePlacementComparator;
+	protected Comparator<Placement> placementComparator;
 	protected Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
 	protected Comparator<BoxItemGroup> boxItemGroupComparator;
 	protected Comparator<BoxItem> boxItemComparator;
 	
-	protected Comparator<IntermediatePlacement> firstIntermediatePlacementComparator;
+	protected Comparator<Placement> firstPlacementComparator;
 	protected Comparator<BoxItemGroup> firstBoxItemGroupComparator;
 	protected Comparator<BoxItem> firstBoxItemComparator;
 
-	protected PlacementControlsBuilderFactory<IntermediatePlacement, ComparatorIntermediatePlacementControlsBuilder> placementControlsBuilderFactory;
+	protected PlacementControlsBuilderFactory<Placement, ComparatorPlacementControlsBuilder> placementControlsBuilderFactory;
 
 	public B withFirstBoxItemGroupComparator(Comparator<BoxItemGroup> boxItemGroupComparator) {
 		this.firstBoxItemGroupComparator = boxItemGroupComparator;
@@ -42,19 +42,18 @@ public abstract class AbstractLargestAreaFitFirstPackagerBuilder<B extends Abstr
 		return (B)this;
 	}
 	
-	public B withFirstIntermediatePlacementResultComparator(Comparator<IntermediatePlacement> c) {
-		this.firstIntermediatePlacementComparator = c;
+	public B withFirstIntermediatePlacementResultComparator(Comparator<Placement> c) {
+		this.firstPlacementComparator = c;
 		return (B)this;
 	}
 
-	public B withIntermediatePlacementResultComparator(
-			Comparator<IntermediatePlacement> intermediatePlacementResultComparator) {
-		this.intermediatePlacementComparator = intermediatePlacementResultComparator;
+	public B withIntermediatePlacementResultComparator(Comparator<Placement> comparator) {
+		this.placementComparator = comparator;
 		return (B)this;
 	}
 	
 	public B withPlacementControlsBuilderFactory(
-			PlacementControlsBuilderFactory<IntermediatePlacement, ComparatorIntermediatePlacementControlsBuilder> placementControlsBuilderFactory) {
+			PlacementControlsBuilderFactory<Placement, ComparatorPlacementControlsBuilder> placementControlsBuilderFactory) {
 		this.placementControlsBuilderFactory = placementControlsBuilderFactory;
 		return (B)this;
 	}

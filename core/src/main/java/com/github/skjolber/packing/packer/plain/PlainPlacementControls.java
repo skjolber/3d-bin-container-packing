@@ -89,20 +89,20 @@ public class PlainPlacementControls extends AbstractComparatorPlacementControls<
 		
 		return (sum * 100) / stackValue.getArea();
 	}
-	
+
 	public PlainPlacementControls(BoxItemSource boxItems, int boxItemsStartIndex, int boxItemsEndIndex,
 			PointControls pointControls, ExtremePoints extremePoints, Container container, Stack stack,
-			BoxPriority priority, Comparator<PlainPlacement> intermediatePlacementResultComparator,
+			BoxPriority priority, Comparator<PlainPlacement> placementComparator,
 			Comparator<BoxItem> boxItemComparator) {
 		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, extremePoints, container, stack, priority,
-				intermediatePlacementResultComparator, boxItemComparator);
+				placementComparator, boxItemComparator);
 	}
 
 	@Override
-	protected PlainPlacement createIntermediatePlacementResult(int index, Point point, BoxStackValue stackValue) {
+	protected PlainPlacement createPlacement(Point point, BoxStackValue stackValue) {
 		long pointSupportPercent = calculateXYSupportPercent(extremePoints, point, stackValue);
 		
-		return new PlainPlacement(index, stackValue, point, pointSupportPercent);
+		return new PlainPlacement(stackValue, point, pointSupportPercent);
 	}
 
 }

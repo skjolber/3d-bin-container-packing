@@ -1,9 +1,18 @@
 package com.github.skjolber.packing.api.packager.control.placement;
 
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
 
 public interface PlacementControls<R extends Placement> {
 
+	/**
+	 * Get the next placement. Must decrement {@link BoxItemSource} correspondingly.
+	 * 
+	 * @param offset start offset
+	 * @param length length
+	 * @return the next placement, or null if not available.
+	 */
+	
 	R getPlacement(int offset, int length);
 	
 }

@@ -5,7 +5,7 @@ import com.github.skjolber.packing.api.packager.control.placement.PlacementContr
 public class PlainPlacementControlsBuilderFactory implements PlacementControlsBuilderFactory<PlainPlacement, PlainPlacementControlsBuilder> {
 
 	@Override
-	public PlainPlacementControlsBuilder createIntermediatePlacementResultBuilder() {
+	public PlainPlacementControlsBuilder createPlacementControlsBuilder() {
 		return new PlainPlacementControlsBuilder();
 	}
 

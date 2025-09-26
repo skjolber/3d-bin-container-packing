@@ -12,6 +12,11 @@ public class DefaultBoxItemSource implements BoxItemSource {
 	
 	public DefaultBoxItemSource(List<BoxItem> values) {
 		this.values = new ArrayList<>(values);
+		
+		// update indexes
+		for(int i = 0; i < values.size(); i++) {
+			values.get(i).setIndex(i);
+		}
 	}
 	
 	public DefaultBoxItemSource() {
@@ -32,13 +37,25 @@ public class DefaultBoxItemSource implements BoxItemSource {
 		BoxItem boxItem = values.get(index);
 		if(!boxItem.decrement(count)) {
 			values.remove(index);
+
+			// update indexes
+			for(int i = index; i < values.size(); i++) {
+				values.get(i).setIndex(i);
+			}
 		}
 		return !values.isEmpty();
 	}
 	
 	@Override
 	public BoxItem remove(int index) {
-		return values.remove(index);
+		BoxItem remove = values.remove(index);
+		
+		// update indexes
+		for(int i = index; i < values.size(); i++) {
+			values.get(i).setIndex(i);
+		}
+		
+		return remove;
 	}
 
 	public void setValues(List<BoxItem> values) {
@@ -50,10 +67,23 @@ public class DefaultBoxItemSource implements BoxItemSource {
 	}
 
 	public void removeEmpty() {
+		int firstEmptyIndex = -1;
 		for(int i = 0; i < values.size(); i++) {
 			if(values.get(i).isEmpty()) {
-				remove(i);
+				values.remove(i);
+				
+				if(firstEmptyIndex == -1) {
+					firstEmptyIndex = i;
+				}
+				
 				i--;
+			}
+		}
+		
+		if(firstEmptyIndex != -1) {
+			// update indexes
+			for(int i = firstEmptyIndex; i < values.size(); i++) {
+				values.get(i).setIndex(i);
 			}
 		}
 	}

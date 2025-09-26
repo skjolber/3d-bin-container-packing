@@ -2,12 +2,12 @@ package com.github.skjolber.packing.comparator;
 
 import java.util.Comparator;
 
-import com.github.skjolber.packing.api.packager.IntermediatePlacement;
+import com.github.skjolber.packing.api.Placement;
 
-public class VolumeWeightAreaPointIntermediatePlacementResultComparator implements Comparator<IntermediatePlacement> {
+public class VolumeWeightAreaPointIntermediatePlacementResultComparator implements Comparator<Placement> {
 
 	@Override
-	public int compare(IntermediatePlacement o1, IntermediatePlacement o2) {
+	public int compare(Placement o1, Placement o2) {
 		int result = Long.compare(o1.getStackValue().getVolume(), o2.getStackValue().getVolume());
 		if(result != 0) {
 			return result;
