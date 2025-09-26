@@ -6,7 +6,7 @@ import com.github.skjolber.packing.api.packager.BoxItemSource;
 public interface PlacementControls<R extends Placement> {
 
 	/**
-	 * Get the next placement. Must decrement {@link BoxItemSource} correspondingly.
+	 * Get the next placement.
 	 * 
 	 * @param offset start offset
 	 * @param length length
