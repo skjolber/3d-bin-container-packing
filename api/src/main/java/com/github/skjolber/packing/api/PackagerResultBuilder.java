@@ -1,69 +1,47 @@
 package com.github.skjolber.packing.api;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
-/**
- * {@linkplain PackagerResult} builder scaffold.
- * 
- */
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 
-@SuppressWarnings("unchecked")
-public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> {
+public interface PackagerResultBuilder<B extends PackagerResultBuilder<B>> {
 
-	protected List<ContainerItem> containers;
-	protected List<StackableItem> items;
-	protected long deadline = -1L;
+	public static interface ControlledContainerItemBuilder {
 
-	protected BooleanSupplier interrupt;
+		ControlledContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier);
 
-	protected int maxContainerCount = 1;
+		ControlledContainerItemBuilder withPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory);
 
-	public B withStackables(StackableItem... items) {
-		if(this.items == null) {
-			this.items = new ArrayList<>();
-		}
-		for (StackableItem item : items) {
-			this.items.add(item);
-		}
-		return (B)this;
+		ControlledContainerItemBuilder withContainerItem(ContainerItem containerItem);
+		
+		ControlledContainerItemBuilder withContainerItem(Container container, int count);
 	}
+	
+	B withBoxItems(BoxItem... items);
 
-	public B withStackables(List<StackableItem> items) {
-		this.items = items;
-		return (B)this;
-	}
+	B withBoxItems(List<BoxItem> items);
 
-	public B withContainers(ContainerItem... containers) {
-		if(this.containers == null) {
-			this.containers = new ArrayList<>();
-		}
-		for (ContainerItem item : containers) {
-			this.containers.add(item);
-		}
-		return (B)this;
-	}
+	B withPriority(BoxPriority order);
 
-	public B withContainers(List<ContainerItem> containers) {
-		this.containers = containers;
-		return (B)this;
-	}
+	B withDeadline(long deadline);
 
-	public B withDeadline(long deadline) {
-		this.deadline = deadline;
-		return (B)this;
-	}
+	B withInterrupt(BooleanSupplier interrupt);
 
-	public B withInterrupt(BooleanSupplier interrupt) {
-		this.interrupt = interrupt;
-		return (B)this;
-	}
+	B withMaxContainerCount(int maxResults);
 
-	public B withMaxContainerCount(int maxResults) {
-		this.maxContainerCount = maxResults;
-		return (B)this;
-	}
+	B withBoxItemGroups(List<BoxItemGroup> items);
+
+	B withBoxItems(BoxItemGroup... items);
+	
+	B withContainerItems(List<ContainerItem> containers);
+
+	B withContainerItem(Consumer<ControlledContainerItemBuilder> consumer);
+
+	B withContainerItems(ContainerItem... containers);
+
 
 	/**
 	 * 
@@ -72,6 +50,6 @@ public abstract class PackagerResultBuilder<B extends PackagerResultBuilder<B>> 
 	 * @return the result
 	 */
 
-	public abstract PackagerResult build();
+	PackagerResult build();
 
 }

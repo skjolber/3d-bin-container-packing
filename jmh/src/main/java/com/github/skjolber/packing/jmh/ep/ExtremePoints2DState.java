@@ -10,7 +10,8 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.ep.points2d.DefaultPoint2D;
 import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
 import com.github.skjolber.packing.ep.points2d.Point2D;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
@@ -23,10 +24,10 @@ public class ExtremePoints2DState {
 
 	private List<ExtremePoints2DEntries> entries = new ArrayList<>();
 
-	private StackPlacement createStackPlacement(int x, int y, int dx, int dy) {
-		BoxStackValue stackValue = new BoxStackValue(dx, dy, 0, null, null);
+	private Placement createStackPlacement(int x, int y, int dx, int dy) {
+		BoxStackValue stackValue = new BoxStackValue(dx, dy, 0, null, -1);
 		
-		return new StackPlacement(null, stackValue, x, y, 0);
+		return new Placement(stackValue, new DefaultPoint2D(x, y, 0, 0, 0, 0));
 	}
 	
 	@Setup(Level.Trial)
@@ -43,7 +44,8 @@ public class ExtremePoints2DState {
 	}
 
 	private void add(BouwkampCode bkpLine) {
-		ExtremePoints2D points = new ExtremePoints2D(bkpLine.getWidth(), bkpLine.getDepth());
+		ExtremePoints2D points = new ExtremePoints2D();
+		points.clearToSize(bkpLine.getWidth(), bkpLine.getDepth(), 1);
 
 		ExtremePoints2DEntries extremePointsEntries = new ExtremePoints2DEntries(points);
 
@@ -57,7 +59,7 @@ public class ExtremePoints2DState {
 			List<Integer> squares = line.getSquares();
 			int minY = points.getMinY();
 
-			Point2D value = points.getValue(minY);
+			Point2D value = points.get(minY);
 
 			int offset = value.getMinX();
 
@@ -68,7 +70,7 @@ public class ExtremePoints2DState {
 
 				int factoredSquare = square;
 
-				StackPlacement placement = createStackPlacement(offset, value.getMinY(), offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1);
+				Placement placement = createStackPlacement(offset, value.getMinY(), offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1);
 				extremePointsEntries.add(new ExtremePoint2DEntry(nextY, placement));
 				points.add(nextY, placement);
 
@@ -88,8 +90,8 @@ public class ExtremePoints2DState {
 			}
 		}
 
-		if(points.getValueCount() > 0) {
-			throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+		if(points.size() > 0) {
+			throw new IllegalStateException("Still have " + points.size() + ": " + points.getAll());
 		}
 
 		points.redo();

@@ -4,9 +4,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.point.Point;
 
 /**
  * 
@@ -15,14 +16,49 @@ import com.github.skjolber.packing.api.ep.Point3D;
  */
 
 @SuppressWarnings("unchecked")
-public class Point3DFlagList implements Serializable {
+public class Point3DFlagList implements Serializable, Iterable<Point> {
 
 	private static final long serialVersionUID = 1L;
+	
+	private static class PointIterator implements Iterator<Point> {
+
+		private int size;
+		private SimplePoint3D[] points;
+		private int index = 0;
+
+		public void set(int size, SimplePoint3D[] points) {
+			this.size = size;
+			this.points = points;
+			this.index = 0;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return index < size;
+		}
+
+		@Override
+		public Point next() {
+			SimplePoint3D p = points[index];
+			index++;
+			return p;
+		}
+		
+	}
 
 	private int size = 0;
-	private SimplePoint3D[] points = new SimplePoint3D[16];
-	private boolean[] flag = new boolean[16];
+	private SimplePoint3D[] points;
+	private boolean[] flag;
+	
+	public Point3DFlagList() {
+		this(16);
+	}
 
+	public Point3DFlagList(int capacity) {
+		points = new SimplePoint3D[capacity];
+		flag = new boolean[capacity];
+	}
+	
 	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
 	}
@@ -50,7 +86,7 @@ public class Point3DFlagList implements Serializable {
 		flag[index] = false;
 	}
 
-	public void sort(Comparator<Point3D> comparator, int maxSize) {
+	public void sort(Comparator<Point> comparator, int maxSize) {
 		Arrays.sort(points, 0, maxSize, comparator);
 	}
 
@@ -106,8 +142,8 @@ public class Point3DFlagList implements Serializable {
 		return index - offset;
 	}
 
-	public List<Point3D> toList() {
-		List<Point3D> list = new ArrayList<>(size);
+	public List<Point> toList() {
+		List<Point> list = new ArrayList<>(size);
 		for (int i = 0; i < size; i++) {
 			list.add(points[i]);
 		}
@@ -146,7 +182,7 @@ public class Point3DFlagList implements Serializable {
 		}
 	}
 
-	public Point3D[] getPoints() {
+	public Point[] getPoints() {
 		return points;
 	}
 
@@ -202,6 +238,30 @@ public class Point3DFlagList implements Serializable {
 
 	public void set(SimplePoint3D point, int i) {
 		points[i] = point;
+	}
+	
+	public Point3DFlagList clone(boolean clonePoints) {
+		Point3DFlagList clone = new Point3DFlagList(points.length);
+
+		clone.size = size;
+
+		System.arraycopy(flag, 0, clone.flag, 0, flag.length);
+		if(clonePoints) {
+			for(int i = 0; i < size; i++) {
+				clone.points[i] = points[i].clone();
+			}
+		} else {
+			System.arraycopy(points, 0, clone.points, 0, points.length);
+		}
+		
+		return clone;
+	}
+
+	@Override
+	public Iterator<Point> iterator() {
+		PointIterator iterator = new PointIterator();
+		iterator.set(size, points);
+		return iterator;
 	}
 
 }

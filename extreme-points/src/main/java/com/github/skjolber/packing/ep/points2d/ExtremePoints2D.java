@@ -1,14 +1,21 @@
 package com.github.skjolber.packing.ep.points2d;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
 import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.Point;
 
 /**
  * 
@@ -16,7 +23,7 @@ import com.github.skjolber.packing.api.StackPlacement;
  *
  */
 
-public class ExtremePoints2D {
+public class ExtremePoints2D implements ExtremePoints {
 
 	public static final Comparator<Point2D> COMPARATOR_X = new Comparator<Point2D>() {
 
@@ -28,9 +35,10 @@ public class ExtremePoints2D {
 
 	protected int containerMaxX;
 	protected int containerMaxY;
+	protected int containerMaxZ;
 
-	protected final Point2DFlagList values = new Point2DFlagList();
-	protected final List<StackPlacement> placements = new ArrayList<>();
+	protected Point2DFlagList values = new Point2DFlagList();
+	protected List<Placement> placements = new ArrayList<>();
 
 	// reuse working variables
 	protected final Point2DList addXX = new Point2DList();
@@ -39,11 +47,13 @@ public class ExtremePoints2D {
 	protected final IntArrayList moveToYY = new IntArrayList();
 	protected final IntArrayList moveToXX = new IntArrayList();
 
-	protected StackPlacement containerPlacement;
+	protected Placement containerPlacement;
 
 	protected long minAreaLimit = 0;
 
 	protected final boolean cloneOnConstrain;
+
+	protected List<SimplePoint2D> initialPoints = Collections.emptyList();
 
 	private IntComparator COMPARATOR_MOVE_TO_YY = (a, b) -> {
 		return Point2D.COMPARATOR_MOVE_YY.compare(values.get(a), values.get(b));
@@ -53,31 +63,57 @@ public class ExtremePoints2D {
 		return Point2D.COMPARATOR_MOVE_XX.compare(values.get(a), values.get(b));
 	};
 
-	public ExtremePoints2D(int dx, int dy) {
-		this(dx, dy, false);
+	public ExtremePoints2D() {
+		this(false);
 	}
 
-	public ExtremePoints2D(int dx, int dy, boolean cloneOnConstrain) {
-		setSize(dx, dy);
-		this.cloneOnConstrain = cloneOnConstrain;
-		addFirstPoint();
-	}
+	public ExtremePoints2D(boolean immutablePoints) {
+		this.cloneOnConstrain = immutablePoints;
+	}	
 
 	@SuppressWarnings("unchecked")
-	private void setSize(int dx, int dy) {
+	public void setSize(int dx, int dy, int dz) {
 		this.containerMaxX = dx - 1;
 		this.containerMaxY = dy - 1;
+		this.containerMaxZ = dz - 1;
 
-		BoxStackValue stackValue = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, 0, null, null);
+		BoxStackValue stackValue = new BoxStackValue(dx, dy, dz, null, -1);
 		
-		this.containerPlacement = new StackPlacement(null, stackValue, 0, 0, 0);
+		this.containerPlacement = new Placement(stackValue, new DefaultPoint2D(0, 0, 0, dx - 1, dy - 1, dz - 1));
 	}
 
-	private void addFirstPoint() {
-		values.add(new DefaultXYSupportPoint2D(0, 0, containerMaxX, containerMaxY, containerPlacement, containerPlacement));
+	private DefaultXYSupportPoint2D createContainerPoint() {
+		DefaultXYSupportPoint2D point = new DefaultXYSupportPoint2D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ, containerPlacement, containerPlacement);
+		point.setIndex(0);
+		return point;
 	}
 
-	public boolean add(int index, StackPlacement placement) {
+	public boolean add(Point point, Placement placement) {
+		if(point.getIndex() == -1) {
+			return add(binarySearch(point, 0), placement);
+		} 
+		return add(point.getIndex(), placement);
+	}
+	
+	public boolean add(Point point, Placement placement, int filteredIndex, int filteredSize) {
+		if(point.getIndex() == -1) {
+			if(filteredSize == size()) {
+				// i.e. no filtering was performed
+				return add(filteredIndex, placement);
+			}
+			if(point == values.get(filteredIndex)) {
+				// i.e. filtering only after index
+				return add(filteredIndex, placement);
+			}
+			
+			// TODO point index is probably close to filtered index if no too many items have been filtered
+			
+			return add(binarySearch(point, filteredIndex), placement);
+		} 
+		return add(point.getIndex(), placement);
+	}	
+	
+	public boolean add(int index, Placement placement) {
 		// overall approach:
 		// Do not iterate over placements to find point max / mins, rather
 		// project existing points. 
@@ -417,11 +453,13 @@ public class ExtremePoints2D {
 
 		addXX.clear();
 		addYY.clear();
+		
+		updateIndexes(values);
 
 		return !values.isEmpty();
 	}
 
-	private void constrainMaxXWithClone(StackPlacement placement, int pointIndex, int endIndex) {
+	private void constrainMaxXWithClone(Placement placement, int pointIndex, int endIndex) {
 		for (int i = pointIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -443,7 +481,7 @@ public class ExtremePoints2D {
 		}
 	}
 
-	private void constrainMaxYWithClone(StackPlacement placement, int pointIndex, int endIndex) {
+	private void constrainMaxYWithClone(Placement placement, int pointIndex, int endIndex) {
 		for (int i = pointIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -464,7 +502,7 @@ public class ExtremePoints2D {
 		}
 	}
 
-	private void constrainMaxX(StackPlacement placement, int pointIndex, int endIndex) {
+	private void constrainMaxX(Placement placement, int pointIndex, int endIndex) {
 		for (int i = pointIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -482,7 +520,7 @@ public class ExtremePoints2D {
 		}
 	}
 
-	private void constrainMaxY(StackPlacement placement, int pointIndex, int endIndex) {
+	private void constrainMaxY(Placement placement, int pointIndex, int endIndex) {
 		for (int i = pointIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -541,7 +579,7 @@ public class ExtremePoints2D {
 		}
 	}
 
-	protected void constrainFloatingMaxWithClone(StackPlacement placement, int limit) {
+	protected void constrainFloatingMaxWithClone(Placement placement, int limit) {
 
 		Point2DFlagList values = this.values;
 		Point2DList addXX = this.addXX;
@@ -691,7 +729,7 @@ public class ExtremePoints2D {
 		}
 	}
 
-	protected void constrainFloatingMax(StackPlacement placement, int limit) {
+	protected void constrainFloatingMax(Placement placement, int limit) {
 
 		Point2DFlagList values = this.values;
 		Point2DList addXX = this.addXX;
@@ -917,11 +955,11 @@ public class ExtremePoints2D {
 		return p.getAreaAtMaxY(maxY) < minAreaLimit;
 	}
 
-	protected boolean withinX(int x, StackPlacement placement) {
+	protected boolean withinX(int x, Placement placement) {
 		return placement.getAbsoluteX() <= x && x <= placement.getAbsoluteEndX();
 	}
 
-	protected boolean withinY(int y, StackPlacement placement) {
+	protected boolean withinY(int y, Placement placement) {
 		return placement.getAbsoluteY() <= y && y <= placement.getAbsoluteEndY();
 	}
 
@@ -938,19 +976,19 @@ public class ExtremePoints2D {
 		return "ExtremePoints2D [" + containerMaxX + "x" + containerMaxY + ": " + values + "]";
 	}
 
-	public List<StackPlacement> getPlacements() {
+	public List<Placement> getPlacements() {
 		return placements;
 	}
 
-	public SimplePoint2D getValue(int i) {
+	public SimplePoint2D get(int i) {
 		return values.get(i);
 	}
 
-	public List<SimplePoint2D> getValues() {
+	public List<Point> getAll() {
 		return values.toList();
 	}
 
-	public int getValueCount() {
+	public int size() {
 		return values.size();
 	}
 
@@ -996,12 +1034,10 @@ public class ExtremePoints2D {
 	public void redo() {
 		values.clear();
 		placements.clear();
-
-		addFirstPoint();
 	}
 
 	public void reset(int dx, int dy, int dz) {
-		setSize(dx, dy);
+		setSize(dx, dy, dz);
 
 		redo();
 	}
@@ -1086,7 +1122,7 @@ public class ExtremePoints2D {
 		return low;
 	}
 
-	public void setMinArea(long minArea) {
+	public void setMinimumAreaLimit(long minArea) {
 		if(minAreaLimit != minArea) {
 			this.minAreaLimit = minArea;
 			filterMinimums();
@@ -1122,4 +1158,187 @@ public class ExtremePoints2D {
 		return minAreaLimit;
 	}
 
+	public void remove(int index) {
+		values.flag(index);
+		values.removeFlagged();
+	}
+
+	@Override
+	public Iterator<Point> iterator() {
+		return values.iterator();
+	}
+	@Override
+	public void clearToSize(int dx, int dy, int dz) {
+		setSize(dx, dy, dz);
+
+		clear();
+	}
+
+	@Override
+	public void clear() {
+		values.clear();
+		placements.clear();
+		
+		if(initialPoints.isEmpty()) {
+			SimplePoint2D origin = createContainerPoint();
+			values.add(origin);
+		} else {
+			for (SimplePoint2D simplePoint3D : initialPoints) {
+				SimplePoint2D clone = simplePoint3D.clone();
+				clone.setIndex(values.size());
+				values.add(clone);
+			}
+		}
+		minAreaLimit = 0;
+	}
+
+	public long calculateUsedVolume() {
+		long used = 0;
+		for (Placement stackPlacement : placements) {
+			used += stackPlacement.getStackValue().getBox().getVolume();
+		}
+		return used;
+	}
+	
+	public long calculateUsedWeight() {
+		long used = 0;
+		for (Placement stackPlacement : placements) {
+			used += stackPlacement.getStackValue().getBox().getWeight();
+		}
+		return used;
+	}
+
+	
+	public void setPoints(List<Point> points) {
+		// transform coordinates to internal representation, i.e. with support etc
+		initialPoints = new ArrayList<>(points.size());
+		
+		for(Point p: points) {
+			boolean yzPlane = p.getMinX() == 0; // ySupport
+			boolean xzPlane = p.getMinY() == 0; // xSupport
+			
+			if(p.getMaxX() > containerMaxX) {
+				throw new IllegalArgumentException();
+			}
+			if(p.getMaxY() > containerMaxY) {
+				throw new IllegalArgumentException();
+			}
+			if(yzPlane && xzPlane) {
+				initialPoints.add(new DefaultXYSupportPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement));
+			} else if(xzPlane) {
+				initialPoints.add(new DefaultXSupportPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement));
+			} else if(yzPlane) {
+				initialPoints.add(new DefaultYSupportPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement));
+			} else {
+				initialPoints.add(new DefaultPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ()));
+			}
+		}
+		
+		for(int i = 0; i < initialPoints.size(); i++) {
+			initialPoints.get(i).setIndex(i);
+		}
+	}
+
+
+	public int binarySearch(Point point, int low) {
+		// return inclusive result
+		
+		int key = point.getMinX();
+
+		int high = values.size() - 1;
+
+		while (low <= high) {
+			int mid = (low + high) >>> 1;
+
+			// 0 if x == y
+			// -1 if x < y
+			// 1 if x > y
+
+			int midVal = values.get(mid).getMinX();
+
+			int cmp = Integer.compare(midVal, key);
+
+			if(cmp < 0) {
+				low = mid + 1;
+			} else if(cmp > 0) {
+				high = mid - 1;
+			} else {
+				// key found
+				SimplePoint2D simplePoint = values.get(mid);
+				if(simplePoint == point) {
+					return mid;
+				}
+				
+				int compare = Point.COMPARATOR_X_THEN_Y.compare(point, simplePoint);
+				if(compare <= 0) {
+					// check below
+					do {
+						mid--;
+						if(mid < 0) {
+							throw new IllegalStateException("Cannot locate point " + point);
+						}
+						if(values.get(mid) == point) {
+							return mid;
+						}
+					} while(true);
+				}  
+					
+				if(compare >= 0) {
+					// check above
+					do {
+						mid++;
+						if(mid == values.size()) {
+							throw new IllegalStateException("Cannot locate point " + point);
+						}
+						if(values.get(mid) == point) {
+							return mid;
+						}
+					} while(true);
+				}
+				
+				throw new IllegalStateException("Cannot locate point " + point);
+			}
+		}
+		// key not found
+		return low;
+	}
+	
+	protected void updateIndexes(Point2DFlagList values) {
+		for(int i = 0; i < values.size(); i++) {
+			SimplePoint2D p = values.get(i);
+			if(p.getIndex() != i) {
+				p.setIndex(i);
+			}
+		}
+	}
+
+	public void updateMinimums(BoxStackValue stackValue, BoxItemSource filteredBoxItems) {
+		boolean minArea = stackValue.getArea() == minAreaLimit;
+		if(minArea) {
+			setMinimumAreaLimit(filteredBoxItems.getMinArea());
+		}
+	}
+	
+	
+	public void updateMinimums(BoxStackValue stackValue, BoxItemGroupSource filteredBoxItemGroups) {
+		boolean minArea = stackValue.getArea() == minAreaLimit;
+		if(minArea) {
+			setMinimumAreaLimit(filteredBoxItemGroups.getMinArea());
+		}
+	}
+
+	@Override
+	public void setMinimumAreaAndVolumeLimit(long area, long volume) {
+		setMinimumAreaLimit(area);
+	}
+
+	@Override
+	public void remove(Predicate<Point> test) {
+		for(int i = 0; i < values.size(); i++) {
+			if(!test.test(values.get(i))) {
+				values.flag(i);
+			}
+		}
+		values.removeFlagged();
+	}
 }

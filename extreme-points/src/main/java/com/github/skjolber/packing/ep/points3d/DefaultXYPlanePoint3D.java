@@ -1,19 +1,19 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.point.Point;
 
 public class DefaultXYPlanePoint3D extends SimplePoint3D implements XYPlanePoint3D {
 
 	private static final long serialVersionUID = 1L;
 
 	/** range constrained to current minZ */
-	private final StackPlacement xyPlane;
+	private final Placement xyPlane;
 
 	public DefaultXYPlanePoint3D(
 			int minX, int minY, int minZ,
 			int maxX, int maxY, int maxZ,
-			StackPlacement xyPlane) {
+			Placement xyPlane) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 		this.xyPlane = xyPlane;
 	}
@@ -49,7 +49,7 @@ public class DefaultXYPlanePoint3D extends SimplePoint3D implements XYPlanePoint
 		return xyPlane.getAbsoluteEndY() == y - 1;
 	}
 	
-	public StackPlacement getXYPlane() {
+	public Placement getXYPlane() {
 		return xyPlane;
 	}
 
@@ -60,6 +60,15 @@ public class DefaultXYPlanePoint3D extends SimplePoint3D implements XYPlanePoint
 				maxX, maxY, maxZ,
 				xyPlane);
 	}
+	
+
+	@Override
+	public DefaultXYPlanePoint3D clone() {
+		return new DefaultXYPlanePoint3D(
+				minX, minY, minZ,
+				maxX, maxY, maxZ,
+				xyPlane);
+	}	
 
 	@Override
 	public SimplePoint3D moveX(int x) {
@@ -71,7 +80,7 @@ public class DefaultXYPlanePoint3D extends SimplePoint3D implements XYPlanePoint
 	}
 
 	@Override
-	public SimplePoint3D moveX(int x, StackPlacement yzSupport) {
+	public SimplePoint3D moveX(int x, Placement yzSupport) {
 		if(x <= xyPlane.getAbsoluteEndX()) {
 			return new DefaultXYPlaneYZPlanePoint3D(x, minY, minZ, maxX, maxY, maxZ, yzSupport, xyPlane);
 		}
@@ -89,7 +98,7 @@ public class DefaultXYPlanePoint3D extends SimplePoint3D implements XYPlanePoint
 	}
 
 	@Override
-	public SimplePoint3D moveY(int y, StackPlacement xzSupport) {
+	public SimplePoint3D moveY(int y, Placement xzSupport) {
 		if(y <= xyPlane.getAbsoluteEndY()) {
 			return new DefaultXYPlaneXZPlanePoint3D(minX, y, minZ, maxX, maxY, maxZ, xzSupport, xyPlane);
 		}
@@ -104,7 +113,7 @@ public class DefaultXYPlanePoint3D extends SimplePoint3D implements XYPlanePoint
 	}
 
 	@Override
-	public SimplePoint3D moveZ(int z, StackPlacement xySupport) {
+	public SimplePoint3D moveZ(int z, Placement xySupport) {
 		// xyPlane support is lost
 		return new DefaultXYPlanePoint3D(minX, minY, z, maxX, maxY, maxZ, xySupport);
 	}
@@ -116,7 +125,7 @@ public class DefaultXYPlanePoint3D extends SimplePoint3D implements XYPlanePoint
 	 */
 
 	@Override
-	public Point3D rotate() {
+	public Point rotate() {
 		return new DefaultPoint3D(minY, minZ, minX, maxY, maxZ, maxX);
 	}
 

@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer;
 
-import com.github.skjolber.packing.api.Dimension;
 import com.pholser.junit.quickcheck.generator.GenerationStatus;
 import com.pholser.junit.quickcheck.generator.Generator;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;

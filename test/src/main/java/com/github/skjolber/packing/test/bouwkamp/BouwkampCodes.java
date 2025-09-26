@@ -2,7 +2,7 @@ package com.github.skjolber.packing.test.bouwkamp;
 
 import java.util.List;
 
-public class BouwkampCodes {
+public class BouwkampCodes implements Comparable<BouwkampCodes> {
 
 	protected List<BouwkampCode> codes;
 	protected String source;
@@ -32,5 +32,10 @@ public class BouwkampCodes {
 
 	public String getSource() {
 		return source;
+	}
+
+	@Override
+	public int compareTo(BouwkampCodes o) {
+		return source.compareTo(o.source);
 	}
 }

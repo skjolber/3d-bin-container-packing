@@ -3,9 +3,11 @@ package com.github.skjolber.packing.points;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.ep.points2d.DefaultPoint2D;
 import com.github.skjolber.packing.ep.points2d.Point2D;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
@@ -19,23 +21,30 @@ public class BouwkampConverter {
 		this.throwException = throwException;
 	}
 	
-	private StackPlacement createStackPlacement(int x, int y, int endX, int endY) {
+	private Placement createStackPlacement(int x, int y, int endX, int endY) {
 		return createStackPlacement(x, y, 0, endX, endY, 0);
 	}
 	
-	private StackPlacement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
-		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, null);
+	private Placement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
+		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, -1);
 		
 		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(0).build();
+		stackValue.setBox(box);
 		
-		return new StackPlacement(box, stackValue, x, y, z);
+		return new Placement(stackValue, new DefaultPoint2D(x, y, z, 0, 0, 0));
 	}
 
 	public DefaultExtremePoints2D convert2D(BouwkampCode bkpLine, int factor) {
 
-		DefaultExtremePoints2D points = new DefaultExtremePoints2D(bkpLine.getWidth() * factor, bkpLine.getDepth() * factor);
-
+		DefaultExtremePoints2D points = new DefaultExtremePoints2D();
+		points.setSize(bkpLine.getWidth() * factor, bkpLine.getDepth() * factor, factor);
+		points.clear();
+		
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
+		
+		if(points.isEmpty()) {
+			throw new RuntimeException();
+		}
 
 		int count = 0;
 
@@ -43,8 +52,10 @@ public class BouwkampConverter {
 			List<Integer> squares = line.getSquares();
 			int minY = points.getMinY();
 
-			Point2D value = points.getValue(minY);
-
+			Point2D value = points.get(minY);
+			
+			if(value == null) throw new RuntimeException("No point at " + minY + ", got " + points.getAll());
+			
 			int offset = value.getMinX();
 
 			int nextY = minY;
@@ -77,11 +88,11 @@ public class BouwkampConverter {
 			}
 		}
 
-		if(points.getValueCount() > 0) {
+		if(points.size() > 0) {
 			if(throwException) {
-				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+				throw new IllegalStateException("Still have " + points.size() + ": " + points.getAll());
 			} else {
-				System.out.println("Still have " + points.getValueCount() + ": " + points.getValues());
+				System.out.println("Still have " + points.size() + ": " + points.getAll());
 			}
 		}
 
@@ -90,7 +101,8 @@ public class BouwkampConverter {
 
 	public DefaultExtremePoints3D convert3DXYPlane(BouwkampCode bkpLine, int factor) {
 
-		DefaultExtremePoints3D points = new DefaultExtremePoints3D(bkpLine.getWidth() * factor, bkpLine.getDepth() * factor, factor);
+		DefaultExtremePoints3D points = new DefaultExtremePoints3D();
+		points.clearToSize(bkpLine.getWidth() * factor, bkpLine.getDepth() * factor, factor);
 
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
 
@@ -100,7 +112,7 @@ public class BouwkampConverter {
 			List<Integer> squares = line.getSquares();
 			int minY = points.getMinY();
 
-			Point3D value = points.getValue(minY);
+			Point value = points.get(minY);
 
 			int offset = value.getMinX();
 
@@ -132,11 +144,11 @@ public class BouwkampConverter {
 			}
 		}
 
-		if(points.getValueCount() > 0) {
+		if(points.size() > 0) {
 			if(throwException) {
-				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+				throw new IllegalStateException("Still have " + points.size() + ": " + points.getAll());
 			} else {
-				System.out.println("Still have " + points.getValueCount() + ": " + points.getValues());
+				System.out.println("Still have " + points.size() + ": " + points.getAll());
 			}
 		}
 
@@ -145,7 +157,8 @@ public class BouwkampConverter {
 
 	public DefaultExtremePoints3D convert3DXZPlane(BouwkampCode bkpLine, int factor) {
 
-		DefaultExtremePoints3D points = new DefaultExtremePoints3D(bkpLine.getWidth() * factor, factor, bkpLine.getDepth() * factor);
+		DefaultExtremePoints3D points = new DefaultExtremePoints3D();
+		points.clearToSize(bkpLine.getWidth() * factor, factor, bkpLine.getDepth() * factor);
 
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
 
@@ -155,7 +168,7 @@ public class BouwkampConverter {
 			List<Integer> squares = line.getSquares();
 			int minZ = points.getMinZ();
 
-			Point3D value = points.getValue(minZ);
+			Point value = points.get(minZ);
 
 			int offset = value.getMinX();
 
@@ -186,11 +199,11 @@ public class BouwkampConverter {
 			}
 		}
 
-		if(points.getValueCount() > 0) {
+		if(points.size() > 0) {
 			if(throwException) {
-				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+				throw new IllegalStateException("Still have " + points.size() + ": " + points.getAll());
 			} else {
-				System.out.println("Still have " + points.getValueCount() + ": " + points.getValues());
+				System.out.println("Still have " + points.size() + ": " + points.getAll());
 			}
 		}
 
@@ -199,7 +212,8 @@ public class BouwkampConverter {
 
 	public DefaultExtremePoints3D convert3DYZPlane(BouwkampCode bkpLine, int factor) {
 
-		DefaultExtremePoints3D points = new DefaultExtremePoints3D(factor, bkpLine.getWidth() * factor, bkpLine.getDepth() * factor);
+		DefaultExtremePoints3D points = new DefaultExtremePoints3D();
+		points.clearToSize(factor, bkpLine.getWidth() * factor, bkpLine.getDepth() * factor);
 
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
 
@@ -209,7 +223,7 @@ public class BouwkampConverter {
 			List<Integer> squares = line.getSquares();
 			int minZ = points.getMinZ();
 
-			Point3D value = points.getValue(minZ);
+			Point value = points.get(minZ);
 
 			int offset = value.getMinY();
 
@@ -240,11 +254,11 @@ public class BouwkampConverter {
 			}
 		}
 
-		if(points.getValueCount() > 0) {
+		if(points.size() > 0) {
 			if(throwException) {
-				throw new IllegalStateException("Still have " + points.getValueCount() + ": " + points.getValues());
+				throw new IllegalStateException("Still have " + points.size() + ": " + points.getAll());
 			} else {
-				System.out.println("Still have " + points.getValueCount() + ": " + points.getValues());
+				System.out.println("Still have " + points.size() + ": " + points.getAll());
 			}
 		}
 

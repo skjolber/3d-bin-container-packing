@@ -1,24 +1,40 @@
 package com.github.skjolber.packing.packer.plain;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.ContainerStackValue;
-import com.github.skjolber.packing.api.DefaultContainer;
-import com.github.skjolber.packing.api.DefaultStack;
-import com.github.skjolber.packing.api.PackResultComparator;
-import com.github.skjolber.packing.api.StackConstraint;
-import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.ep.Point3D;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
+import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
+import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
-import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
-import com.github.skjolber.packing.packer.AbstractPackagerBuilder;
-import com.github.skjolber.packing.packer.DefaultPackResult;
-import com.github.skjolber.packing.packer.DefaultPackResultComparator;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
+import com.github.skjolber.packing.iterator.AnyOrderBoxItemGroupIterator;
+import com.github.skjolber.packing.iterator.BoxItemGroupIterator;
+import com.github.skjolber.packing.iterator.FixedOrderBoxItemGroupIterator;
+import com.github.skjolber.packing.packer.AbstractBoxItemAdapter;
+import com.github.skjolber.packing.packer.AbstractBoxItemGroupAdapter;
+import com.github.skjolber.packing.packer.AbstractControlPackager;
+import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
+import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ControlledContainerItem;
+import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
+import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
+import com.github.skjolber.packing.packer.IntermediatePackagerResult;
+import com.github.skjolber.packing.packer.PackagerAdapter;
+import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -28,249 +44,191 @@ import com.github.skjolber.packing.packer.DefaultPackResultComparator;
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
-public class PlainPackager extends AbstractPlainPackager {
-
+public class PlainPackager extends AbstractControlPackager<PlainPlacement, IntermediatePackagerResult, PlainPackager.PlainResultBuilder> {
+	
 	public static Builder newBuilder() {
 		return new Builder();
 	}
 
-	public static class Builder extends AbstractPackagerBuilder<PlainPackager, Builder> {
+	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter<IntermediatePackagerResult> {
+
+		public PlainBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority,
+				ContainerItemsCalculator packagerContainerItems,
+				PackagerInterruptSupplier interrupt) {
+			super(boxItems, priority, packagerContainerItems, interrupt);
+		}
+
+		@Override
+		protected IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ControlledContainerItem containerItem,
+				PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+			return PlainPackager.this.pack(remainingBoxItems, containerItem, interrupt, priority, abortOnAnyBoxTooBig);
+		}
+
+	}
+	
+	protected class PlainBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter<IntermediatePackagerResult> {
+
+		public PlainBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups,
+				BoxPriority priority,
+				ContainerItemsCalculator packagerContainerItems, 
+				PackagerInterruptSupplier interrupt) {
+			super(boxItemGroups, packagerContainerItems, priority, interrupt);
+		}
+
+		@Override
+		protected IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, BoxPriority priority,
+				ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+			return PlainPackager.this.packGroup(remainingBoxItemGroups, priority, containerItem, interrupt, abortOnAnyBoxTooBig);
+		}
+
+	}
+	
+	public class PlainResultBuilder extends AbstractPackagerResultBuilder<PlainResultBuilder> {
+
+		@Override
+		public PackagerResult build() {
+			validate();
+			
+			if( (items == null || items.isEmpty()) && (itemGroups == null || itemGroups.isEmpty())) {
+				throw new IllegalStateException();
+			}
+			long start = System.currentTimeMillis();
+
+			PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
+			if(deadline != -1L) {
+				booleanSupplierBuilder.withDeadline(deadline);
+			}
+			if(interrupt != null) {
+				booleanSupplierBuilder.withInterrupt(interrupt);
+			}
+
+			booleanSupplierBuilder.withScheduledThreadPoolExecutor(getScheduledThreadPoolExecutor());
+
+			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
+			try {
+				PackagerAdapter<IntermediatePackagerResult> adapter;
+				if(items != null && !items.isEmpty()) {
+					adapter = new PlainBoxItemAdapter(items, priority, new ContainerItemsCalculator(containers), interrupt);
+				} else {
+					adapter = new PlainBoxItemGroupAdapter(itemGroups, priority, new ContainerItemsCalculator(containers), interrupt);
+				}
+				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
+				
+				long duration = System.currentTimeMillis() - start;
+				return new PackagerResult(packList, duration, false);
+			} catch (PackagerInterruptedException e) {
+				long duration = System.currentTimeMillis() - start;
+				return new PackagerResult(Collections.emptyList(), duration, true);
+			} finally {
+				interrupt.close();
+			}
+		}
+	}
+
+	public static class Builder {
+
+		protected Comparator<PlainPlacement> placementComparator;
+		protected Comparator<IntermediatePackagerResult> packagerResultComparator;
+		protected Comparator<BoxItemGroup> boxItemGroupComparator;
+		protected Comparator<BoxItem> boxItemComparator;
+		protected PlacementControlsBuilderFactory<PlainPlacement, PlainPlacementControlsBuilder> placementControlsBuilderFactory;
+		
+		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
+			this.boxItemGroupComparator = comparator;
+			return this;
+		}
+		
+		public Builder withBoxItemComparator(Comparator<BoxItem> comparator) {
+			this.boxItemComparator = comparator;
+			return this;
+		}
+		
+		public Builder withPlacementComparator(Comparator<PlainPlacement> c) {
+			this.placementComparator = c;
+			return this;
+		}
+		
+		public Builder withPackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
+			this.packagerResultComparator = comparator;
+			return this;
+		}
+		
+		public Builder withPlacementControlsBuilderFactory(PlacementControlsBuilderFactory<PlainPlacement, PlainPlacementControlsBuilder> factory) {
+			this.placementControlsBuilderFactory = factory;
+			return this;
+		}
 
 		public PlainPackager build() {
-			if(packResultComparator == null) {
-				packResultComparator = new DefaultPackResultComparator();
+			if(placementComparator == null) {
+				placementComparator = new PlainPlacementComparator();
 			}
-			return new PlainPackager(packResultComparator);
+			if(packagerResultComparator == null) {
+				packagerResultComparator = new DefaultIntermediatePackagerResultComparator<>();
+			}
+			if(boxItemComparator == null) {
+				boxItemComparator = VolumeThenWeightBoxItemComparator.getInstance();
+			}
+			if(boxItemGroupComparator == null) {
+				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
+			}
+			if(placementControlsBuilderFactory == null) {
+				placementControlsBuilderFactory = new PlainPlacementControlsBuilderFactory();
+			}
+			return new PlainPackager(packagerResultComparator, placementComparator, boxItemComparator, boxItemGroupComparator, placementControlsBuilderFactory);
 		}
 	}
 
-	public PlainPackager(PackResultComparator packResultComparator) {
-		super(packResultComparator);
+	protected PlacementControlsBuilderFactory<PlainPlacement, PlainPlacementControlsBuilder> placementControlsBuilderFactory;
+	protected Comparator<PlainPlacement> placementComparator;
+	protected Comparator<BoxItem> boxItemComparator;
+	protected Comparator<BoxItemGroup> boxItemGroupComparator;
+
+	public PlainPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<PlainPlacement> placementComparator, Comparator<BoxItem> boxItemComparator, Comparator<BoxItemGroup> boxItemGroupComparator, PlacementControlsBuilderFactory<PlainPlacement, PlainPlacementControlsBuilder> placementControlsBuilderFactory) {
+		super(comparator);
+
+		this.placementControlsBuilderFactory = placementControlsBuilderFactory;
+		this.placementComparator = placementComparator;
+		this.boxItemComparator = boxItemComparator;
+		this.boxItemGroupComparator = boxItemGroupComparator;
 	}
 
-	public DefaultPackResult pack(List<Stackable> stackables, Container targetContainer, int index, PackagerInterruptSupplier interrupt) {
-		List<Stackable> remainingStackables = new ArrayList<>(stackables);
-
-		ContainerStackValue[] stackValues = targetContainer.getStackValues();
-
-		ContainerStackValue containerStackValue = stackValues[0];
-
-		StackConstraint constraint = containerStackValue.getConstraint();
-
-		DefaultStack stack = new DefaultStack(containerStackValue);
-
-		List<Stackable> scopedStackables = stackables
-				.stream()
-				.filter(s -> s.getVolume() <= containerStackValue.getMaxLoadVolume() && s.getWeight() <= targetContainer.getMaxLoadWeight())
-				.filter(s -> constraint == null || constraint.canAccept(s))
-				.collect(Collectors.toList());
-
-		ExtremePoints3D extremePoints3D = new ExtremePoints3D(containerStackValue.getLoadDx(), containerStackValue.getLoadDy(), containerStackValue.getLoadDz());
-		extremePoints3D.setMinimumAreaAndVolumeLimit(getMinStackableArea(scopedStackables), getMinStackableVolume(scopedStackables));
-
-		int maxRemainingWeight = containerStackValue.getMaxLoadWeight();
-
-		while (!extremePoints3D.isEmpty() && maxRemainingWeight > 0 && !scopedStackables.isEmpty()) {
-			if(interrupt.getAsBoolean()) {
-				// fit2d below might have returned due to deadline
-
-				return null;
-			}
-
-			long maxPointVolume = extremePoints3D.getMaxVolume();
-			long maxPointArea = extremePoints3D.getMaxArea();
-
-			int bestPointIndex = -1;
-			int bestIndex = -1;
-			
-			long bestPointSupportPercent = -1L;
-
-			StackValue bestStackValue = null;
-			Stackable bestStackable = null;
-
-			int currentPointsCount = extremePoints3D.getValueCount();
-			for (int i = 0; i < scopedStackables.size(); i++) {
-				Stackable box = scopedStackables.get(i);
-				if(box.getVolume() > maxPointVolume) {
-					continue;
-				}
-				if(box.getWeight() > maxRemainingWeight) {
-					continue;
-				}
-
-				if(bestStackable != null && !isBetter(bestStackable, box)) {
-					continue;
-				}
-
-				if(constraint != null && !constraint.accepts(stack, box)) {
-					continue;
-				}
-
-				for (StackValue stackValue : box.getStackValues()) {
-					if(stackValue.getArea() > maxPointArea) {
-						continue;
-					}
-					if(stackValue.getVolume() > maxPointVolume) {
-						continue;
-					}
-
-					for (int k = 0; k < currentPointsCount; k++) {
-						Point3D point3d = extremePoints3D.getValue(k);
-
-						if(!point3d.fits3D(stackValue)) {
-							continue;
-						}
-
-						long pointSupportPercent; // cache for costly measurement
-						if(bestIndex != -1) {
-							Point3D bestPoint = extremePoints3D.getValue(bestPointIndex);
-							
-							if(point3d.getMinZ() > bestPoint.getMinZ()) {
-								continue;
-							}
-							
-							pointSupportPercent = calculateXYSupportPercent(extremePoints3D, point3d, stackValue);
-							
-							if(point3d.getMinZ() == bestPoint.getMinZ()) {
-								if(pointSupportPercent < bestPointSupportPercent) {
-									continue;
-								}
-							
-								if(stackValue.getArea() <= bestStackValue.getArea()) {
-									continue;
-								}
-							}
-						} else {
-							pointSupportPercent = calculateXYSupportPercent(extremePoints3D, point3d, stackValue);
-						}
-						
-						if(constraint != null && !constraint.supports(stack, box, stackValue, point3d.getMinX(), point3d.getMinY(), point3d.getMinZ())) {
-							continue;
-						}
-						
-						bestPointSupportPercent = pointSupportPercent;
-						bestPointIndex = k;
-						bestIndex = i;
-						bestStackValue = stackValue;
-						bestStackable = box;
-					}
-				}
-			}
-
-			if(bestIndex == -1) {
-				break;
-			}
-			
-			scopedStackables.remove(bestIndex);
-			remainingStackables.remove(bestStackable);
-
-			Point3D point = extremePoints3D.getValue(bestPointIndex);
-
-			StackPlacement stackPlacement = new StackPlacement(bestStackable, bestStackValue, point.getMinX(), point.getMinY(), point.getMinZ());
-			stack.add(stackPlacement);
-			extremePoints3D.add(bestPointIndex, stackPlacement);
-
-			if(!scopedStackables.isEmpty()) {
-				boolean minArea = bestStackValue.getArea() == extremePoints3D.getMinAreaLimit();
-				boolean minVolume = extremePoints3D.getMinVolumeLimit() == bestStackable.getVolume();
-				if(minArea && minVolume) {
-					extremePoints3D.setMinimumAreaAndVolumeLimit(getMinStackableArea(scopedStackables), getMinStackableVolume(scopedStackables));
-				} else if(minArea) {
-					extremePoints3D.setMinimumAreaLimit(getMinStackableArea(scopedStackables));
-				} else if(minVolume) {
-					extremePoints3D.setMinimumVolumeLimit(getMinStackableVolume(scopedStackables));
-				}
-			}
-
-			maxRemainingWeight -= bestStackable.getWeight();
+	protected BoxItemGroupIterator createBoxItemGroupIterator(BoxItemGroupSource filteredBoxItemGroups, BoxPriority priority, Container container, ExtremePoints extremePoints) {
+		if(priority == BoxPriority.CRONOLOGICAL || priority == BoxPriority.CRONOLOGICAL_ALLOW_SKIPPING) {
+			return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints);
 		}
-
-		return new DefaultPackResult(new DefaultContainer(targetContainer.getId(), targetContainer.getDescription(), targetContainer.getVolume(), targetContainer.getEmptyWeight(), stackValues, stack),
-				stack, remainingStackables.isEmpty(), index);
+		return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints, boxItemGroupComparator);
 	}
-
-	protected long calculateXYSupportPercent(ExtremePoints3D extremePoints3D, Point3D referencePoint, StackValue stackValue) {
-		long sum = 0;
-
-		int minX = referencePoint.getMinX();
-		int minY = referencePoint.getMinY();
+	
+	@Override
+	protected PlainPlacementControls createControls(BoxItemSource boxItems, int offset, int length,
+			BoxPriority priority, PointControls pointControls, Container container, ExtremePoints extremePoints,
+			Stack stack) {
 		
-		int maxX = minX + stackValue.getDx() - 1; // inclusive
-		int maxY = minY + stackValue.getDy() - 1; // inclusive
-		
-		long max = (maxX - minX + 1) * (maxY - minY + 1);
-		
-		int z = referencePoint.getMinZ() - 1;
-		
-		List<StackPlacement> placements = extremePoints3D.getPlacements();
-		for(StackPlacement stackPlacement : placements) {
-			if(stackPlacement.getAbsoluteEndZ() == z) {
-				
-				// calculate the common area
-				// check too far
-				if(stackPlacement.getAbsoluteX() > maxX) {
-					continue;
-				}
-				
-				if(stackPlacement.getAbsoluteY() > maxY) {
-					continue;
-				}
-				
-				if(stackPlacement.getAbsoluteEndX() < minX) {
-					continue;
-				}
-				
-				if(stackPlacement.getAbsoluteEndY() < minY) {
-					continue;
-				}
-				
-				// placement can support the stack value
-				
-				// |           
-				// |           |---------|
-				// |           |         | 
-				// |    |-----------|    |
-				// |    |      |xxxx|    |
-				// |    |      -----|----|
-				// |    |           |
-				// |    |-----------| 
-				// |
-				// --------------------------------
-				
-			    int x1 = Math.max(stackPlacement.getAbsoluteX(), minX);
-			    int y1 = Math.max(stackPlacement.getAbsoluteY(), minY);
-			 
-			    // gives top-right point
-			    // of intersection rectangle
-			    int x2 = Math.min(stackPlacement.getAbsoluteEndX(), maxX);
-			    int y2 = Math.min(stackPlacement.getAbsoluteEndY(), maxY);
-				
-			    long intersect = (x2 - x1 + 1) * (y2 - y1 + 1);
-			    
-			    sum += intersect;
-			    
-			    if(sum == max) {
-			    	break;
-			    }
-			}
-		}
-		
-		return (sum * 100) / stackValue.getArea();
-	}
-
-	protected boolean isBetter(Stackable referenceStackable, Stackable potentiallyBetterStackable) {
-		// ****************************************
-		// * Prefer the highest volume
-		// ****************************************
-
-		if(referenceStackable.getVolume() == potentiallyBetterStackable.getVolume()) {
-			return referenceStackable.getWeight() < potentiallyBetterStackable.getWeight();
-		}
-		return referenceStackable.getVolume() < potentiallyBetterStackable.getVolume();
+		return placementControlsBuilderFactory.createPlacementControlsBuilder()
+				.withExtremePoints(extremePoints)
+				.withBoxItems(boxItems, offset, length)
+				.withPointControls(pointControls)
+				.withPriority(priority)
+				.withStack(stack)
+				.withContainer(container)
+				.withPlacementComparator(placementComparator)
+				.withBoxItemComparator(boxItemComparator)
+				.build();
 	}
 
 	@Override
-	public PlainPackagerResultBuilder newResultBuilder() {
-		return new PlainPackagerResultBuilder().withPackager(this);
+	public PlainResultBuilder newResultBuilder() {
+		return new PlainResultBuilder();
 	}
+
+	@Override
+	protected IntermediatePackagerResult createIntermediatePackagerResult(ContainerItem containerItem, Stack stack) {
+		return new DefaultIntermediatePackagerResult(containerItem, stack);
+	}
+
+	@Override
+	protected IntermediatePackagerResult createEmptyIntermediatePackagerResult() {
+		return EmptyIntermediatePackagerResult.EMPTY;
+	}
+
 }

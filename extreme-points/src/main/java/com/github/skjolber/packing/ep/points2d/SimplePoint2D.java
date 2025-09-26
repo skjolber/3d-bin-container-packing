@@ -1,13 +1,11 @@
 package com.github.skjolber.packing.ep.points2d;
 
-import java.io.Serializable;
-
-import com.github.skjolber.packing.api.StackPlacement;
+import com.github.skjolber.packing.api.Placement;
 
 public abstract class SimplePoint2D extends Point2D {
 
-	public SimplePoint2D(int minX, int minY, int maxX, int maxY) {
-		super(minX, minY, maxX, maxY);
+	public SimplePoint2D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+		super(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	//       |                  
@@ -48,7 +46,7 @@ public abstract class SimplePoint2D extends Point2D {
 	//       |---------x===================
 	//
 
-	public abstract SimplePoint2D moveX(int x, StackPlacement ySupport);
+	public abstract SimplePoint2D moveX(int x, Placement ySupport);
 
 	//
 	//       |   ║              
@@ -108,6 +106,7 @@ public abstract class SimplePoint2D extends Point2D {
 	//       |                 
 	//       |---------------------------
 
-	public abstract SimplePoint2D moveY(int y, StackPlacement xSupport);
+	public abstract SimplePoint2D moveY(int y, Placement xSupport);
 
+	public abstract SimplePoint2D clone();
 }
