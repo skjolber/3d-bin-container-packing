@@ -11,7 +11,6 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 
 public class DefaultContainerItemsCalculatorTest {
 

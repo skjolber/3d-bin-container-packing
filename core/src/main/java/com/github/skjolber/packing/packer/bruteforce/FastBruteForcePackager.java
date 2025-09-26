@@ -13,7 +13,6 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -244,7 +243,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(!bestPermutationResult.isEmpty()) {
 				// compare against other permutation's result
 
-				if(bestResult.isEmpty() || intermediatePackagerResultComparator.compare(bestResult, bestPermutationResult) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
+				if(bestResult.isEmpty() || intermediatePackagerResultComparator.compare(bestResult, bestPermutationResult) == ARGUMENT_2_IS_BETTER) {
 					// switch the two results for one another
 					BruteForceIntermediatePackagerResult tmp = bestResult;
 					bestResult = bestPermutationResult;

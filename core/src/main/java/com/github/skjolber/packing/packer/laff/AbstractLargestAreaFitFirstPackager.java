@@ -17,7 +17,6 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
@@ -39,6 +38,7 @@ import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.ComparatorPlacementControls;
 import com.github.skjolber.packing.packer.ComparatorPlacementControlsBuilder;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyPackagerResultAdapter;
@@ -132,25 +132,25 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 	// intermediatePlacementResultBuilderFactory = new ComparatorIntermediatePlacementControlsBuilderFactory();
 	protected PlacementControlsBuilderFactory<Placement, ComparatorPlacementControlsBuilder> placementControlsBuilderFactory;
 	
-	protected Comparator<Placement> intermediatePlacementResultComparator;
+	protected Comparator<Placement> placementComparator;
 	protected Comparator<BoxItemGroup> boxItemGroupComparator;
 	protected Comparator<BoxItem> boxItemComparator;
 	
-	protected Comparator<Placement> firstIntermediatePlacementResultComparator;
+	protected Comparator<Placement> firstPlacementComparator;
 	protected Comparator<BoxItemGroup> firstBoxItemGroupComparator;
 	protected Comparator<BoxItem> firstBoxItemComparator;
 	
-	public AbstractLargestAreaFitFirstPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<Placement> intermediatePlacementResultComparator, Comparator<BoxItem> boxItemComparator, Comparator<BoxItemGroup> boxItemGroupComparator, Comparator<BoxItemGroup> firstBoxItemGroupComparator, Comparator<BoxItem> firstBoxItemComparator, Comparator<Placement> firstIntermediatePlacementResultComparator, PlacementControlsBuilderFactory<Placement, ComparatorPlacementControlsBuilder> placementControlsBuilderFactory) {
+	public AbstractLargestAreaFitFirstPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<Placement> placementComparator, Comparator<BoxItem> boxItemComparator, Comparator<BoxItemGroup> boxItemGroupComparator, Comparator<BoxItemGroup> firstBoxItemGroupComparator, Comparator<BoxItem> firstBoxItemComparator, Comparator<Placement> firstPlacementComparator, PlacementControlsBuilderFactory<Placement, ComparatorPlacementControlsBuilder> placementControlsBuilderFactory) {
 		super(comparator);
 
 		this.placementControlsBuilderFactory = placementControlsBuilderFactory;
-		this.intermediatePlacementResultComparator = intermediatePlacementResultComparator;
+		this.placementComparator = placementComparator;
 		this.boxItemComparator = boxItemComparator;
 		this.boxItemGroupComparator = boxItemGroupComparator;
 		
 		this.firstBoxItemGroupComparator = firstBoxItemGroupComparator;
 		this.firstBoxItemComparator = firstBoxItemComparator;
-		this.firstIntermediatePlacementResultComparator = firstIntermediatePlacementResultComparator;
+		this.firstPlacementComparator = firstPlacementComparator;
 	}
 
 	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
@@ -634,7 +634,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			.withStack(stack)
 			.withBoxItems(boxItems, offset, length)
 			.withPointControls(pointControls)
-			.withPlacementComparator(intermediatePlacementResultComparator)
+			.withPlacementComparator(placementComparator)
 			.withBoxItemComparator(boxItemComparator)
 			.build();
 	}
@@ -647,7 +647,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			.withStack(stack)
 			.withBoxItems(boxItems, offset, length)
 			.withPointControls(pointControls)
-			.withPlacementComparator(firstIntermediatePlacementResultComparator)
+			.withPlacementComparator(firstPlacementComparator)
 			.withBoxItemComparator(firstBoxItemComparator)
 			.build();
 	}

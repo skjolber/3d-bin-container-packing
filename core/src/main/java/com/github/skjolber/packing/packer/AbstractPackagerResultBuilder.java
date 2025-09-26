@@ -12,7 +12,6 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
-import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 
@@ -77,7 +76,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 	}
 
 	public B withContainerItem(Consumer<ControlledContainerItemBuilder> consumer) {
-		ControlledContainerItemBuilder builder = new DefaultControlledContainerItemBuilder();
+		DefaultControlledContainerItemBuilder builder = new DefaultControlledContainerItemBuilder();
 		consumer.accept(builder);
 		if (this.containers == null) {
 			this.containers = new ArrayList<>();

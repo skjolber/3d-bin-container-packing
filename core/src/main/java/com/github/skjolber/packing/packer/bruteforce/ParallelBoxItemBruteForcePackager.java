@@ -20,8 +20,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.ControlledContainerItem;
-import com.github.skjolber.packing.api.packager.PackResultComparator;
+
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.ClonablePackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -32,6 +31,7 @@ import com.github.skjolber.packing.iterator.ParallelBoxItemGroupPermutationRotat
 import com.github.skjolber.packing.iterator.ParallelBoxItemPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.PackagerException;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
@@ -232,7 +232,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 								Future<BruteForceIntermediatePackagerResult> future = executorCompletionService.take();
 								BruteForceIntermediatePackagerResult result = future.get();
 								if(result != null) {
-									if(best == null || intermediatePackagerResultComparator.compare(best, result) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
+									if(best == null || intermediatePackagerResultComparator.compare(best, result) == ARGUMENT_2_IS_BETTER) {
 										best = result;
 										
 										if(best.containsLastStackable()) { // will not match any better than this
@@ -396,7 +396,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 								Future<BruteForceIntermediatePackagerResult> future = executorCompletionService.take();
 								BruteForceIntermediatePackagerResult result = future.get();
 								if(result != null) {
-									if(best == null || intermediatePackagerResultComparator.compare(best, result) == PackResultComparator.ARGUMENT_2_IS_BETTER) {
+									if(best == null || intermediatePackagerResultComparator.compare(best, result) == ARGUMENT_2_IS_BETTER) {
 										best = result;
 										
 										if(best.containsLastStackable()) { // will not match any better than this

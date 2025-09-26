@@ -12,7 +12,6 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
-import com.github.skjolber.packing.api.packager.PackResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
 
@@ -23,6 +22,9 @@ import com.github.skjolber.packing.iterator.BinarySearchIterator;
  */
 
 public abstract class AbstractPackager<P extends IntermediatePackagerResult, B extends PackagerResultBuilder<B>> implements Packager<B> {
+
+	public static final int ARGUMENT_1_IS_BETTER = 1;
+	public static final int ARGUMENT_2_IS_BETTER = -1;
 
 	protected final Comparator<P> intermediatePackagerResultComparator;
 	
@@ -178,7 +180,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 					P result = adapter.attempt(containerItemIndex, best, maxContainers == 1);
 	
 					if(!result.isEmpty()) {
-						if(best == null || intermediatePackagerResultComparator.compare(best, result) != PackResultComparator.ARGUMENT_1_IS_BETTER) {
+						if(best == null || intermediatePackagerResultComparator.compare(best, result) != ARGUMENT_1_IS_BETTER) {
 							best = result;
 						}
 					}

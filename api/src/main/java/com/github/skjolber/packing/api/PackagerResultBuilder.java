@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-import com.github.skjolber.packing.api.packager.ControlledContainerItem;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 
@@ -19,9 +18,6 @@ public interface PackagerResultBuilder<B extends PackagerResultBuilder<B>> {
 		ControlledContainerItemBuilder withContainerItem(ContainerItem containerItem);
 		
 		ControlledContainerItemBuilder withContainerItem(Container container, int count);
-
-		ControlledContainerItem build();
-		
 	}
 	
 	B withBoxItems(BoxItem... items);
