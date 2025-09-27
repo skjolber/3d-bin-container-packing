@@ -84,7 +84,6 @@ public abstract class AbstractComparatorPlacementControls<T extends Placement> e
 		return result;
 	}
 
-
 	protected abstract T createPlacement(Point point3d, BoxStackValue stackValue);
 
 }

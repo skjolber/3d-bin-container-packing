@@ -21,7 +21,7 @@ import com.github.skjolber.packing.api.packager.control.point.PointControlsBuild
  */
 
 @SuppressWarnings("unchecked")
-public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerResultBuilder<B>> implements PackagerResultBuilder<B> {
+public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerResultBuilder<B>> implements PackagerResultBuilder {
 
 	protected long deadline = -1L;
 

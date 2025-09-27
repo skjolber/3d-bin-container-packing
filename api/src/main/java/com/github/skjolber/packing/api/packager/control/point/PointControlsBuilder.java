@@ -11,15 +11,15 @@ import com.github.skjolber.packing.api.point.PointSource;
  * This covers filtering of points per placement and/or per box item.
  */
 
-public interface PointControlsBuilder<B extends PointControlsBuilder<B>> {
+public interface PointControlsBuilder {
 
-	B withPoints(PointSource points);
+	PointControlsBuilder withPoints(PointSource points);
 	
-	B withBoxItems(BoxItemSource boxItems);
+	PointControlsBuilder withBoxItems(BoxItemSource boxItems);
 	
-	B withContainer(Container container);
+	PointControlsBuilder withContainer(Container container);
 	
-	B withStack(Stack stack);
+	PointControlsBuilder withStack(Stack stack);
 	
 	PointControls build();
 

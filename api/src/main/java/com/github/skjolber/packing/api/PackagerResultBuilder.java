@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 
-public interface PackagerResultBuilder<B extends PackagerResultBuilder<B>> {
+public interface PackagerResultBuilder {
 
 	public static interface ControlledContainerItemBuilder {
 
@@ -20,27 +20,27 @@ public interface PackagerResultBuilder<B extends PackagerResultBuilder<B>> {
 		ControlledContainerItemBuilder withContainerItem(Container container, int count);
 	}
 	
-	B withBoxItems(BoxItem... items);
+	PackagerResultBuilder withBoxItems(BoxItem... items);
 
-	B withBoxItems(List<BoxItem> items);
+	PackagerResultBuilder withBoxItems(List<BoxItem> items);
 
-	B withPriority(BoxPriority order);
+	PackagerResultBuilder withPriority(BoxPriority order);
 
-	B withDeadline(long deadline);
+	PackagerResultBuilder withDeadline(long deadline);
 
-	B withInterrupt(BooleanSupplier interrupt);
+	PackagerResultBuilder withInterrupt(BooleanSupplier interrupt);
 
-	B withMaxContainerCount(int maxResults);
+	PackagerResultBuilder withMaxContainerCount(int maxResults);
 
-	B withBoxItemGroups(List<BoxItemGroup> items);
+	PackagerResultBuilder withBoxItemGroups(List<BoxItemGroup> items);
 
-	B withBoxItems(BoxItemGroup... items);
+	PackagerResultBuilder withBoxItems(BoxItemGroup... items);
 	
-	B withContainerItems(List<ContainerItem> containers);
+	PackagerResultBuilder withContainerItems(List<ContainerItem> containers);
 
-	B withContainerItem(Consumer<ControlledContainerItemBuilder> consumer);
+	PackagerResultBuilder withContainerItem(Consumer<ControlledContainerItemBuilder> consumer);
 
-	B withContainerItems(ContainerItem... containers);
+	PackagerResultBuilder withContainerItems(ContainerItem... containers);
 
 
 	/**

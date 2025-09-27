@@ -13,7 +13,7 @@ import com.github.skjolber.packing.api.point.PointSource;
  */
 
 @SuppressWarnings("unchecked")
-public abstract class AbstractPointControlsBuilder<B extends AbstractPointControlsBuilder<B>> implements PointControlsBuilder<B> {
+public abstract class AbstractPointControlsBuilder<B extends AbstractPointControlsBuilder<B>> implements PointControlsBuilder {
 
 	protected Stack stack;
 	protected Container container;

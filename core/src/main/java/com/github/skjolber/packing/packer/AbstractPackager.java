@@ -21,7 +21,7 @@ import com.github.skjolber.packing.iterator.BinarySearchIterator;
  * Thread-safe implementation.
  */
 
-public abstract class AbstractPackager<P extends IntermediatePackagerResult, B extends PackagerResultBuilder<B>> implements Packager<B> {
+public abstract class AbstractPackager<P extends IntermediatePackagerResult, B extends PackagerResultBuilder> implements Packager<B> {
 
 	public static final int ARGUMENT_1_IS_BETTER = 1;
 	public static final int ARGUMENT_2_IS_BETTER = -1;

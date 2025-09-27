@@ -8,17 +8,17 @@ import com.github.skjolber.packing.api.packager.control.placement.AbstractPlacem
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.packer.ComparatorPlacementControls;
 
-public class LargestAreaFirtFirstPlacementControlsBuilder extends AbstractPlacementControlsBuilder<Placement, LargestAreaFirtFirstPlacementControlsBuilder> {
+public class LargestAreaFitFirstPlacementControlsBuilder extends AbstractPlacementControlsBuilder<Placement> {
 
 	protected Comparator<Placement> intermediatePlacementResultComparator;
 	protected Comparator<BoxItem> boxItemComparator;
 
-	public LargestAreaFirtFirstPlacementControlsBuilder withIntermediatePlacementComparator(Comparator<Placement> intermediatePlacementResultComparator) {
+	public LargestAreaFitFirstPlacementControlsBuilder withIntermediatePlacementComparator(Comparator<Placement> intermediatePlacementResultComparator) {
 		this.intermediatePlacementResultComparator = intermediatePlacementResultComparator;
 		return this;
 	}
 
-	public LargestAreaFirtFirstPlacementControlsBuilder withBoxItemComparator(Comparator<BoxItem> boxItemComparator) {
+	public LargestAreaFitFirstPlacementControlsBuilder withBoxItemComparator(Comparator<BoxItem> boxItemComparator) {
 		this.boxItemComparator = boxItemComparator;
 		return this;
 	}

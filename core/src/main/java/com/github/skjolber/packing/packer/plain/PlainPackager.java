@@ -13,11 +13,11 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.ExtremePoints;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
-import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
@@ -80,7 +80,6 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 				ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
 			return PlainPackager.this.packGroup(remainingBoxItemGroups, priority, containerItem, interrupt, abortOnAnyBoxTooBig);
 		}
-
 	}
 	
 	public class PlainResultBuilder extends AbstractPackagerResultBuilder<PlainResultBuilder> {
@@ -127,24 +126,12 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 
 	public static class Builder {
 
-		protected Comparator<PlainPlacement> placementComparator;
 		protected Comparator<IntermediatePackagerResult> packagerResultComparator;
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
-		protected Comparator<BoxItem> boxItemComparator;
-		protected PlacementControlsBuilderFactory<PlainPlacement, PlainPlacementControlsBuilder> placementControlsBuilderFactory;
+		protected PlacementControlsBuilderFactory<PlainPlacement> placementControlsBuilderFactory;
 		
 		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
 			this.boxItemGroupComparator = comparator;
-			return this;
-		}
-		
-		public Builder withBoxItemComparator(Comparator<BoxItem> comparator) {
-			this.boxItemComparator = comparator;
-			return this;
-		}
-		
-		public Builder withPlacementComparator(Comparator<PlainPlacement> c) {
-			this.placementComparator = c;
 			return this;
 		}
 		
@@ -153,42 +140,32 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 			return this;
 		}
 		
-		public Builder withPlacementControlsBuilderFactory(PlacementControlsBuilderFactory<PlainPlacement, PlainPlacementControlsBuilder> factory) {
+		public Builder withPlacementControlsBuilderFactory(PlacementControlsBuilderFactory<PlainPlacement> factory) {
 			this.placementControlsBuilderFactory = factory;
 			return this;
 		}
 
 		public PlainPackager build() {
-			if(placementComparator == null) {
-				placementComparator = new PlainPlacementComparator();
-			}
 			if(packagerResultComparator == null) {
 				packagerResultComparator = new DefaultIntermediatePackagerResultComparator<>();
-			}
-			if(boxItemComparator == null) {
-				boxItemComparator = VolumeThenWeightBoxItemComparator.getInstance();
-			}
-			if(boxItemGroupComparator == null) {
-				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
 			}
 			if(placementControlsBuilderFactory == null) {
 				placementControlsBuilderFactory = new PlainPlacementControlsBuilderFactory();
 			}
-			return new PlainPackager(packagerResultComparator, placementComparator, boxItemComparator, boxItemGroupComparator, placementControlsBuilderFactory);
+			if(boxItemGroupComparator == null) {
+				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
+			}
+			return new PlainPackager(packagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory);
 		}
 	}
 
-	protected PlacementControlsBuilderFactory<PlainPlacement, PlainPlacementControlsBuilder> placementControlsBuilderFactory;
-	protected Comparator<PlainPlacement> placementComparator;
-	protected Comparator<BoxItem> boxItemComparator;
+	protected PlacementControlsBuilderFactory<PlainPlacement> placementControlsBuilderFactory;
 	protected Comparator<BoxItemGroup> boxItemGroupComparator;
 
-	public PlainPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<PlainPlacement> placementComparator, Comparator<BoxItem> boxItemComparator, Comparator<BoxItemGroup> boxItemGroupComparator, PlacementControlsBuilderFactory<PlainPlacement, PlainPlacementControlsBuilder> placementControlsBuilderFactory) {
+	public PlainPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<BoxItemGroup> boxItemGroupComparator, PlacementControlsBuilderFactory<PlainPlacement> placementControlsBuilderFactory) {
 		super(comparator);
 
 		this.placementControlsBuilderFactory = placementControlsBuilderFactory;
-		this.placementComparator = placementComparator;
-		this.boxItemComparator = boxItemComparator;
 		this.boxItemGroupComparator = boxItemGroupComparator;
 	}
 
@@ -200,7 +177,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 	}
 	
 	@Override
-	protected PlainPlacementControls createControls(BoxItemSource boxItems, int offset, int length,
+	protected PlacementControls<PlainPlacement> createControls(BoxItemSource boxItems, int offset, int length,
 			BoxPriority priority, PointControls pointControls, Container container, ExtremePoints extremePoints,
 			Stack stack) {
 		
@@ -211,8 +188,6 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 				.withPriority(priority)
 				.withStack(stack)
 				.withContainer(container)
-				.withPlacementComparator(placementComparator)
-				.withBoxItemComparator(boxItemComparator)
 				.build();
 	}
 

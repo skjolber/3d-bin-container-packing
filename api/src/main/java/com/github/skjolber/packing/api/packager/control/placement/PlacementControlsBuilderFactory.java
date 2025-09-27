@@ -3,7 +3,7 @@ package com.github.skjolber.packing.api.packager.control.placement;
 import com.github.skjolber.packing.api.Placement;
 
 @FunctionalInterface
-public interface PlacementControlsBuilderFactory<R extends Placement, B extends PlacementControlsBuilder<R, B>> {
+public interface PlacementControlsBuilderFactory<R extends Placement> {
 
-	PlacementControlsBuilder<R, B> createPlacementControlsBuilder();
+	PlacementControlsBuilder<R> createPlacementControlsBuilder();
 }

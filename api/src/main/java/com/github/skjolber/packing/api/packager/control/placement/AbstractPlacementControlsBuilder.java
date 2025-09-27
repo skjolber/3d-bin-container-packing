@@ -8,11 +8,11 @@ import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.ExtremePoints;
 
-public abstract class AbstractPlacementControlsBuilder<R extends Placement, B extends AbstractPlacementControlsBuilder<R, B>> implements PlacementControlsBuilder<R, B> {
+public abstract class AbstractPlacementControlsBuilder<R extends Placement> implements PlacementControlsBuilder<R> {
 
 	protected BoxItemSource boxItems;
 	protected int boxItemsStartIndex = -1;
-	protected int boxItemsEndIndex = -1;
+	protected int boxItemsEndIndex = -1; // exclusive
 	
 	protected PointControls pointControls;
 	protected ExtremePoints extremePoints;
@@ -20,40 +20,40 @@ public abstract class AbstractPlacementControlsBuilder<R extends Placement, B ex
 	protected Stack stack;
 	protected BoxPriority priority;
 	
-	public B withPriority(BoxPriority priority) {
+	public AbstractPlacementControlsBuilder<R> withPriority(BoxPriority priority) {
 		this.priority = priority;
-		return (B)this;
+		return this;
 	}
 	
 	@Override
-	public B withPointControls(PointControls pointControls) {
+	public AbstractPlacementControlsBuilder<R> withPointControls(PointControls pointControls) {
 		this.pointControls = pointControls;
-		return (B)this;
+		return this;
 	}
 	
 	@Override
-	public B withBoxItems(BoxItemSource boxItems, int offset, int length) {
+	public AbstractPlacementControlsBuilder<R> withBoxItems(BoxItemSource boxItems, int offset, int length) {
 		this.boxItems = boxItems;
 		this.boxItemsStartIndex = offset;
 		this.boxItemsEndIndex = offset + length;
-		return (B)this;
+		return this;
 	}
 	
-	public B withStack(Stack stack) {
+	public AbstractPlacementControlsBuilder<R> withStack(Stack stack) {
 		this.stack = stack;
-		return (B)this;
+		return this;
 	}
 	
 	@Override
-	public B withContainer(Container container) {
+	public AbstractPlacementControlsBuilder<R> withContainer(Container container) {
 		this.container = container;
-		return (B)this;
+		return this;
 	}
 
 	@Override
-	public B withExtremePoints(ExtremePoints extremePoints) {
+	public AbstractPlacementControlsBuilder<R> withExtremePoints(ExtremePoints extremePoints) {
 		this.extremePoints = extremePoints;
-		return (B)this;
+		return this;
 	}
 
 }

@@ -8,19 +8,19 @@ import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.ExtremePoints;
 
-public interface PlacementControlsBuilder<R extends Placement, B extends PlacementControlsBuilder<R, B>> {
+public interface PlacementControlsBuilder<R extends Placement> {
 
-	B withExtremePoints(ExtremePoints extremePoints);
+	PlacementControlsBuilder<R> withExtremePoints(ExtremePoints extremePoints);
 
-	B withBoxItems(BoxItemSource boxItems, int offset, int length);
+	PlacementControlsBuilder<R> withBoxItems(BoxItemSource boxItems, int offset, int length);
 
-	B withPointControls(PointControls pointControls);
+	PlacementControlsBuilder<R> withPointControls(PointControls pointControls);
 
-	B withStack(Stack stack);
+	PlacementControlsBuilder<R> withStack(Stack stack);
 
-	B withContainer(Container container);
+	PlacementControlsBuilder<R> withContainer(Container container);
 
-	B withPriority(BoxPriority priority);
+	PlacementControlsBuilder<R> withPriority(BoxPriority priority);
 
 	PlacementControls<R> build();
 	

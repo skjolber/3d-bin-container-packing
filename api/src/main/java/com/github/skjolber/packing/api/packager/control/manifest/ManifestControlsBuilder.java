@@ -12,17 +12,17 @@ import com.github.skjolber.packing.api.point.PointSource;
  * This covers initial filtering of box items vs container and possibly in-flight box vs box filtering.
  */
 
-public interface ManifestControlsBuilder<B extends ManifestControlsBuilder<B>> {
+public interface ManifestControlsBuilder {
 
-	B withPoints(PointSource points);
+	ManifestControlsBuilder withPoints(PointSource points);
 
-	B withBoxItems(BoxItemSource input);
+	ManifestControlsBuilder withBoxItems(BoxItemSource input);
 	
-	B withBoxItemGroups(BoxItemGroupSource input);
+	ManifestControlsBuilder withBoxItemGroups(BoxItemGroupSource input);
 	
-	B withContainer(Container container);
+	ManifestControlsBuilder withContainer(Container container);
 	
-	B withStack(Stack stack);
+	ManifestControlsBuilder withStack(Stack stack);
 	
 	ManifestControls build();
 

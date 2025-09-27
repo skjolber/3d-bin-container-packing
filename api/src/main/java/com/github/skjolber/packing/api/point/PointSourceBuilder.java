@@ -11,18 +11,17 @@ import com.github.skjolber.packing.api.packager.BoxItemSource;
  * This covers initial filtering of box items and possibly in-flight filtering.
  */
 
-@SuppressWarnings("unchecked")
-public interface PointSourceBuilder<B extends PointSourceBuilder<B>> {
+public interface PointSourceBuilder {
 
-	B withBoxItem(BoxItem boxItems);
+	PointSourceBuilder withBoxItem(BoxItem boxItems);
 	
-	B withPoints(PointSource points);
+	PointSourceBuilder withPoints(PointSource points);
 	
-	B withItems(BoxItemSource input);
+	PointSourceBuilder withItems(BoxItemSource input);
 	
-	B withContainer(Container container);
+	PointSourceBuilder withContainer(Container container);
 	
-	B withStack(Stack stack);
+	PointSourceBuilder withStack(Stack stack);
 	
 	PointSource build();
 

@@ -32,17 +32,11 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 		return new Builder();
 	}
 
-	public static class Builder extends AbstractLargestAreaFitFirstPackagerBuilder<Builder> {
+	public static class Builder extends AbstractLargestAreaFitFirstPackagerBuilder<Placement, Builder> {
 
 		public LargestAreaFitFirstPackager build() {
-			if(placementComparator == null) {
-				placementComparator = new VolumeWeightAreaPointIntermediatePlacementResultComparator();
-			}
 			if(intermediatePackagerResultComparator == null) {
 				intermediatePackagerResultComparator = new DefaultIntermediatePackagerResultComparator<>();
-			}
-			if(boxItemComparator == null) {
-				boxItemComparator = VolumeThenWeightBoxItemComparator.getInstance();
 			}
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
@@ -50,26 +44,33 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			if(firstBoxItemGroupComparator == null) {
 				firstBoxItemGroupComparator = new LargestAreaBoxItemGroupComparator();
 			}
-			if(firstBoxItemComparator == null) {
-				firstBoxItemComparator = new LargestAreaBoxItemComparator();
-			}
-			if(firstPlacementComparator == null) {
-				firstPlacementComparator = new LargestAreaPlacementComparator();
-			}
 			if(placementControlsBuilderFactory == null) {
-				placementControlsBuilderFactory = new ComparatorPlacementControlsBuilderFactory();
+				VolumeThenWeightBoxItemComparator boxItemComparator = new VolumeThenWeightBoxItemComparator();
+				VolumeWeightAreaPointIntermediatePlacementResultComparator placementComparator = new VolumeWeightAreaPointIntermediatePlacementResultComparator();
+				placementControlsBuilderFactory = new ComparatorPlacementControlsBuilderFactory(placementComparator, boxItemComparator);
 			}
-			return new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, placementComparator, boxItemComparator, boxItemGroupComparator, firstBoxItemGroupComparator, firstBoxItemComparator, firstPlacementComparator, placementControlsBuilderFactory);
+			if(firstPlacementControlsBuilderFactory == null) {
+				LargestAreaBoxItemComparator firstBoxItemComparator = new LargestAreaBoxItemComparator();
+				LargestAreaPlacementComparator firstPlacementComparator = new LargestAreaPlacementComparator();
+				firstPlacementControlsBuilderFactory = new ComparatorPlacementControlsBuilderFactory(firstPlacementComparator, firstBoxItemComparator);
+			}
+			return new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, firstBoxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
 		}
 	}
 
-	public LargestAreaFitFirstPackager(Comparator<IntermediatePackagerResult> comparator,
-			Comparator<Placement> intermediatePlacementResultComparator,
-			Comparator<BoxItem> boxItemComparator, Comparator<BoxItemGroup> boxItemGroupComparator,
-			Comparator<BoxItemGroup> firstBoxItemGroupComparator, Comparator<BoxItem> firstBoxItemComparator,
-			Comparator<Placement> firstIntermediatePlacementResultComparator, PlacementControlsBuilderFactory<Placement, ComparatorPlacementControlsBuilder> placementControlsBuilderFactory) {
-		super(comparator, intermediatePlacementResultComparator, boxItemComparator, boxItemGroupComparator,
-				firstBoxItemGroupComparator, firstBoxItemComparator, firstIntermediatePlacementResultComparator, placementControlsBuilderFactory);
+	public LargestAreaFitFirstPackager(
+			Comparator<IntermediatePackagerResult> comparator, 
+			Comparator<BoxItemGroup> boxItemGroupComparator,
+			Comparator<BoxItemGroup> firstBoxItemGroupComparator, 
+			PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory,
+			PlacementControlsBuilderFactory<Placement> firstPlacementControlsBuilderFactory
+			) {
+		super(comparator, 
+				boxItemGroupComparator, 
+				firstBoxItemGroupComparator, 
+				placementControlsBuilderFactory,
+				firstPlacementControlsBuilderFactory
+				);
 	}
 
 	@Override

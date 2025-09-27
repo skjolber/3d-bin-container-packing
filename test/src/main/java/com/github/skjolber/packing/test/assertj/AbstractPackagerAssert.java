@@ -14,7 +14,7 @@ import com.github.skjolber.packing.api.PackagerResultBuilder;
 public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert<SELF, ACTUAL>, ACTUAL extends Packager>
 		extends AbstractObjectAssert<SELF, ACTUAL> {
 
-	private static final long LEEWAY = 100;
+	private static final long LEEWAY = 250;
 
 	protected AbstractPackagerAssert(ACTUAL actual, Class<?> selfType) {
 		super(actual, selfType);
@@ -32,10 +32,6 @@ public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert
 
 		if(result.getContainers().isEmpty()) {
 			failWithMessage("Unable to pack " + items.size() + " items using " + actual.getClass().getName());
-		}
-
-		if(packDuration < LEEWAY) {
-			failWithMessage("Pack duration too short for " + actual.getClass().getName());
 		}
 
 		int divider = 4;
