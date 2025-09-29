@@ -109,8 +109,8 @@ int maxContainers = ...; // maximum number of containers which can be used
 
 PackagerResult result = packager
     .newResultBuilder()
-    .withContainers(containerItems)
-    .withStackables(products)
+    .withContainerItems(containerItems)
+    .withBoxItems(products)
     .withMaxContainerCount(maxContainers)
     .build();
 ```
@@ -148,6 +148,18 @@ Using a deadline is recommended whenever brute-forcing in a real-time applicatio
 
 <details>
   <summary>Algorithm details</summary>
+ 
+## Packaging controls
+The caller can take control over some aspects of the packaging process:
+
+### Manifest-controls
+Determines which boxes go into which containers, in which combinations. A classic example would to be to not package both lighters and dynamite in the same container.
+
+### Point-controls
+Determines which points are relevant for a specific box. For example, heavy items might be require only points at ground level.
+
+### Placement-controls
+Determines the best placement for a box. Can consider a range of options, like stability, stacking height, structural integrity and so on; even randomization is possible.
  
 ### Largest Area Fit First algorithm
 The implementation is based on [this paper][2], and is not a traditional [bin packing problem][1] solver.
