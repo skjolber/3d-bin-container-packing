@@ -10,11 +10,11 @@ import com.github.skjolber.packing.packer.ComparatorPlacementControls;
 
 public class LargestAreaFitFirstPlacementControlsBuilder extends AbstractPlacementControlsBuilder<Placement> {
 
-	protected Comparator<Placement> intermediatePlacementResultComparator;
+	protected Comparator<Placement> placementComparator;
 	protected Comparator<BoxItem> boxItemComparator;
 
-	public LargestAreaFitFirstPlacementControlsBuilder withIntermediatePlacementComparator(Comparator<Placement> intermediatePlacementResultComparator) {
-		this.intermediatePlacementResultComparator = intermediatePlacementResultComparator;
+	public LargestAreaFitFirstPlacementControlsBuilder withPlacementComparator(Comparator<Placement> intermediatePlacementResultComparator) {
+		this.placementComparator = intermediatePlacementResultComparator;
 		return this;
 	}
 
@@ -28,7 +28,7 @@ public class LargestAreaFitFirstPlacementControlsBuilder extends AbstractPlaceme
 		if(boxItemComparator == null) {
 			boxItemComparator = new VolumeThenWeightBoxItemComparator();
 		}
-		return new ComparatorPlacementControls(boxItems, boxItemsEndIndex, boxItemsEndIndex, pointControls, extremePoints, container, stack, priority, intermediatePlacementResultComparator, boxItemComparator);
+		return new ComparatorPlacementControls(boxItems, boxItemsEndIndex, boxItemsEndIndex, pointControls, extremePoints, container, stack, priority, placementComparator, boxItemComparator);
 	}
 
 }

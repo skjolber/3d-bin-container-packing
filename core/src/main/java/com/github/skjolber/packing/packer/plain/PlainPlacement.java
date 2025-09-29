@@ -6,6 +6,8 @@ import com.github.skjolber.packing.api.point.Point;
 
 public class PlainPlacement extends Placement {
 
+	private static final long serialVersionUID = 1L;
+	
 	protected long bestPointSupportPercent = -1;
 
 	public PlainPlacement(BoxStackValue stackValue, Point point, long bestPointSupportPercent) {

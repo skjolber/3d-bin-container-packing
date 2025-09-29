@@ -65,11 +65,11 @@ The units of measure is out-of-scope, be they cm, mm or inches.
 Obtain a `Packager` instance, then then compose your container and product list:
 
 ```java
-List<StackableItem> products = new ArrayList<StackableItem>();
+List<BoxItem> products = new ArrayList<>();
 
-products.add(new StackableItem(Box.newBuilder().withId("Foot").withSize(6, 10, 2).withRotate3D().withWeight(25).build(), 1));
-products.add(new StackableItem(Box.newBuilder().withId("Leg").withSize(4, 10, 1).withRotate3D().withWeight(25).build(), 1));
-products.add(new StackableItem(Box.newBuilder().withId("Arm").withSize(4, 10, 2).withRotate3D().withWeight(50).build(), 1));
+products.add(new BoxItem(Box.newBuilder().withId("Foot").withSize(6, 10, 2).withRotate3D().withWeight(25).build(), 1));
+products.add(new BoxItem(Box.newBuilder().withId("Leg").withSize(4, 10, 1).withRotate3D().withWeight(25).build(), 1));
+products.add(new BoxItem(Box.newBuilder().withId("Arm").withSize(4, 10, 2).withRotate3D().withWeight(50).build(), 1));
 
 // add a single container type
 Container container = Container.newBuilder()
@@ -91,8 +91,8 @@ Pack all in a single container:
 ```java
 PackagerResult result = packager
     .newResultBuilder()
-    .withContainers(containerItems)
-    .withStackables(products)
+    .withContainerItems(containerItems)
+    .withBoxItems(products)
     .build();
 
 if(result.isSuccess()) {
@@ -214,6 +214,13 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
  * [The Art of Stacking: Challenges Faced While Developing a Packing Algorithm](https://medium.com/@fayyazawais1412/the-art-of-stacking-challenges-faced-while-developing-a-packing-algorithm-64d869b924ab)
 
 # History
+ * 4.0.0: Major rewrite. 
+     * Support for packaging groups
+     * Various ways to control packaging:
+        * Manifest controls (box vs box, box vs container)
+        * Point controls (points per box)
+        * Placement controls (best box+point)
+ * 3.0.11: Use `BigInteger` to sanity-check max volume / max weight, calculate real remaining max volume.
  * 3.0.10: Fix module info, bump dependencies.
  * 3.0.9: Fix point support bug which resulted in invalid packaging result
  * 3.0.8: Visualization fix
@@ -223,7 +230,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
  * 3.0.1: Various performance improvements.
  * 3.0.0: Support max number of containers (i.e. per container type). Use builders from now on. Various optimizations.
  * 2.1.4: Fix issue #574
- * 2.1.3: Fix nullpointer
+ * 2.1.3: Fix null-pointer
  * 2.1.2: Tidy up, i.e. remove warnings, nuke some dependencies.
  * 2.1.1: Improve free space calculation performance
  * 2.1.0: Improve brute force iterators, respect deadlines in brute for packagers.
