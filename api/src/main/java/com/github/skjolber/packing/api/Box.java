@@ -27,7 +27,7 @@ public class Box {
 		protected int dy = -1;
 		protected int dz = -1;
 		
-		protected StackableSurface stackableSurface;
+		protected Rotation rotation;
 
 		public Builder withSize(int dx, int dy, int dz) {
 			this.dx = dx;
@@ -38,15 +38,15 @@ public class Box {
 		}
 
 		public Builder withRotate2D() {
-			return withStackableSurface(StackableSurface.TWO_D);
+			return withRotation(Rotation.TWO_D);
 		}
 
 		public Builder withRotate3D() {
-			return withStackableSurface(StackableSurface.THREE_D);
+			return withRotation(Rotation.THREE_D);
 		}
 
-		public Builder withStackableSurface(StackableSurface stackableSurface) {
-			this.stackableSurface = stackableSurface;
+		public Builder withRotation(Rotation rotation) {
+			this.rotation = rotation;
 
 			return this;
 		}
@@ -125,8 +125,8 @@ public class Box {
 				// |------------------ x
 				//
 
-				if (stackableSurface.is0() || stackableSurface.is90()) {
-					list.add(newStackValue(dx, dy, dz, stackableSurface.getSides(), list.size()));
+				if (rotation.is0() || rotation.is90()) {
+					list.add(newStackValue(dx, dy, dz, rotation.getSides(), list.size()));
 				}
 			} else if (dx == dy) {
 
@@ -153,19 +153,19 @@ public class Box {
 				// two square sides, the other 4 sides are equal (but can be rotated)
 				// add xz/yz and xy
 
-				if (stackableSurface.isXY()) {
-					list.add(newStackValue(dx, dx, dz, stackableSurface.getXYSurfaces(), list.size()));
+				if (rotation.isXY()) {
+					list.add(newStackValue(dx, dx, dz, rotation.getXYSurfaces(), list.size()));
 				}
-				if (stackableSurface.isXZ() || stackableSurface.isYZ()) {
+				if (rotation.isXZ() || rotation.isYZ()) {
 
-					boolean zero = stackableSurface.isXZ0() || stackableSurface.isYZ0();
-					boolean ninety = stackableSurface.isXZ90() || stackableSurface.isYZ90();
+					boolean zero = rotation.isXZ0() || rotation.isYZ0();
+					boolean ninety = rotation.isXZ90() || rotation.isYZ90();
 
 					if (zero) {
-						list.add(newStackValue(dx, dz, dx, stackableSurface.getYZAndXZSurfaces0(), list.size()));
+						list.add(newStackValue(dx, dz, dx, rotation.getYZAndXZSurfaces0(), list.size()));
 					}
 					if (ninety) {
-						list.add(newStackValue(dz, dx, dx, stackableSurface.getYZAndXZSurfaces90(), list.size()));
+						list.add(newStackValue(dz, dx, dx, rotation.getYZAndXZSurfaces90(), list.size()));
 
 					}
 
@@ -190,19 +190,19 @@ public class Box {
 				// two square sides, the other 4 sides are equal (but can be rotated)
 				// add xz/xy and yz
 
-				if (stackableSurface.isYZ()) {
-					list.add(newStackValue(dy, dy, dx, stackableSurface.getYZSurfaces(), list.size()));
+				if (rotation.isYZ()) {
+					list.add(newStackValue(dy, dy, dx, rotation.getYZSurfaces(), list.size()));
 				}
-				if (stackableSurface.isXY() || stackableSurface.isXZ()) {
+				if (rotation.isXY() || rotation.isXZ()) {
 
-					boolean zero = stackableSurface.isXY0() || stackableSurface.isXZ0();
-					boolean ninety = stackableSurface.isXY90() || stackableSurface.isXZ90();
+					boolean zero = rotation.isXY0() || rotation.isXZ0();
+					boolean ninety = rotation.isXY90() || rotation.isXZ90();
 
 					if (zero) {
-						list.add(newStackValue(dx, dz, dz, stackableSurface.getXYAndXZSurfaces0(), list.size()));
+						list.add(newStackValue(dx, dz, dz, rotation.getXYAndXZSurfaces0(), list.size()));
 					}
 					if (ninety) {
-						list.add(newStackValue(dz, dx, dz, stackableSurface.getXYAndXZSurfaces90(), list.size()));
+						list.add(newStackValue(dz, dx, dz, rotation.getXYAndXZSurfaces90(), list.size()));
 					}
 				}
 
@@ -230,18 +230,18 @@ public class Box {
 				// two square sides, the other 4 sides are equal (but can be rotated)
 				// add xy/zy and xz
 
-				if (stackableSurface.isXZ()) {
-					list.add(newStackValue(dx, dx, dy, stackableSurface.getXZSurfaces(), list.size()));
+				if (rotation.isXZ()) {
+					list.add(newStackValue(dx, dx, dy, rotation.getXZSurfaces(), list.size()));
 				}
-				if (stackableSurface.isXY() || stackableSurface.isYZ()) {
-					boolean zero = stackableSurface.isXY0() || stackableSurface.isYZ0();
-					boolean ninety = stackableSurface.isXY90() || stackableSurface.isYZ90();
+				if (rotation.isXY() || rotation.isYZ()) {
+					boolean zero = rotation.isXY0() || rotation.isYZ0();
+					boolean ninety = rotation.isXY90() || rotation.isYZ90();
 
 					if (zero) {
-						list.add(newStackValue(dx, dy, dx, stackableSurface.getXYAndYZSurfaces0(), list.size()));
+						list.add(newStackValue(dx, dy, dx, rotation.getXYAndYZSurfaces0(), list.size()));
 					}
 					if (ninety) {
-						list.add(newStackValue(dy, dx, dx, stackableSurface.getXYAndYZSurfaces90(), list.size()));
+						list.add(newStackValue(dy, dx, dx, rotation.getXYAndYZSurfaces90(), list.size()));
 					}
 				}
 			} else {
@@ -315,25 +315,25 @@ public class Box {
 				// ----------------
 				//
 
-				if (stackableSurface.isXY0()) {
-					list.add(newStackValue(dx, dy, dz, stackableSurface.getXY0Surfaces(), list.size()));
+				if (rotation.isXY0()) {
+					list.add(newStackValue(dx, dy, dz, rotation.getXY0Surfaces(), list.size()));
 				}
-				if (stackableSurface.isXY90()) {
-					list.add(newStackValue(dy, dx, dz, stackableSurface.getXY90Surfaces(), list.size()));
-				}
-
-				if (stackableSurface.isXZ0()) {
-					list.add(newStackValue(dx, dz, dy, stackableSurface.getXZ0Surfaces(), list.size()));
-				}
-				if (stackableSurface.isXZ90()) {
-					list.add(newStackValue(dz, dx, dy, stackableSurface.getXZ90Surfaces(), list.size()));
+				if (rotation.isXY90()) {
+					list.add(newStackValue(dy, dx, dz, rotation.getXY90Surfaces(), list.size()));
 				}
 
-				if (stackableSurface.isYZ0()) {
-					list.add(newStackValue(dz, dy, dx, stackableSurface.getYZ0Surfaces(), list.size()));
+				if (rotation.isXZ0()) {
+					list.add(newStackValue(dx, dz, dy, rotation.getXZ0Surfaces(), list.size()));
 				}
-				if (stackableSurface.isYZ90()) {
-					list.add(newStackValue(dy, dz, dx, stackableSurface.getYZ90Surfaces(), list.size()));
+				if (rotation.isXZ90()) {
+					list.add(newStackValue(dz, dx, dy, rotation.getXZ90Surfaces(), list.size()));
+				}
+
+				if (rotation.isYZ0()) {
+					list.add(newStackValue(dz, dy, dx, rotation.getYZ0Surfaces(), list.size()));
+				}
+				if (rotation.isYZ90()) {
+					list.add(newStackValue(dy, dz, dx, rotation.getYZ90Surfaces(), list.size()));
 				}
 			}
 
@@ -357,8 +357,8 @@ public class Box {
 				throw new IllegalStateException("No weight");
 			}
 
-			if (stackableSurface == null) {
-				stackableSurface = StackableSurface.TWO_D;
+			if (rotation == null) {
+				rotation = Rotation.TWO_D;
 			}
 
 			if (properties == null) {

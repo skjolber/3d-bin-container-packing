@@ -4,10 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class StackableSurface {
+/**
+ * 
+ * Possible ways to place a box; i.e. downwards surfaces.
+ * 
+ */
 
-	public static final StackableSurface THREE_D = newBuilder().withBottom().withLeft().withRear().build();
-	public static final StackableSurface TWO_D = newBuilder().withBottom().build();
+public class Rotation {
+
+	public static final Rotation THREE_D = newBuilder().withBottom().withLeft().withRear().build();
+	public static final Rotation TWO_D = newBuilder().withBottom().build();
 
 	public static Builder newBuilder() {
 		return new Builder();
@@ -118,8 +124,8 @@ public class StackableSurface {
 			return this;
 		}
 
-		public StackableSurface build() {
-			return new StackableSurface(sides);
+		public Rotation build() {
+			return new Rotation(sides);
 		}
 	}
 
@@ -138,7 +144,7 @@ public class StackableSurface {
 	protected Surface rear0; // xz
 	protected Surface rear90;
 
-	public StackableSurface(List<SurfaceRotate> sides) {
+	public Rotation(List<SurfaceRotate> sides) {
 		super();
 		this.surfaces = sides.stream().map(s -> s.getSurface()).collect(Collectors.toList());
 		for (SurfaceRotate surfaceRotate : sides) {
