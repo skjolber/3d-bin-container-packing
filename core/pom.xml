@@ -21,7 +21,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-			<artifactId>extreme-points</artifactId>
+			<artifactId>points</artifactId>
 		</dependency>  	
 		<!-- test -->
 		<dependency>
