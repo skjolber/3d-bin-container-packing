@@ -13,7 +13,7 @@ import org.openjdk.jmh.annotations.TearDown;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
@@ -39,7 +39,7 @@ public class TychoPackagerState {
 	private List<BenchmarkSet> plainPackager = new ArrayList<>();
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 
-	private List<StackableItem> stackableItems3D;
+	private List<BoxItem> stackableItems3D;
 
 	private List<ContainerItem> containers = ContainerItem.newListBuilder()
 			.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build()).build();

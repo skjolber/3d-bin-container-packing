@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Deprecated
 public class DefaultPermutationRotationIterator extends AbstractPermutationRotationIterator implements PermutationRotationIterator {
 
 	public static Builder newBuilder() {
@@ -16,11 +17,11 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 			if(maxLoadWeight == -1) {
 				throw new IllegalStateException();
 			}
-			if(size == null) {
+			if(dx == -1 || dy == -1 || dz == -1) {
 				throw new IllegalStateException();
 			}
 
-			PermutationStackableValue[] matrix = toMatrix();
+			PermutationBoxItemValue[] matrix = toMatrix();
 
 			return new DefaultPermutationRotationIterator(matrix);
 		}
@@ -33,14 +34,14 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	protected int[] permutations; // n!
 
 	// minimum volume from index i and above
-	protected long[] minStackableVolume;
+	protected long[] minBoxVolume;
 
-	public DefaultPermutationRotationIterator(PermutationStackableValue[] matrix) {
+	public DefaultPermutationRotationIterator(PermutationBoxItemValue[] matrix) {
 		super(matrix);
 
 		List<Integer> types = new ArrayList<>(matrix.length * 2);
 		for (int j = 0; j < matrix.length; j++) {
-			PermutationStackableValue value = matrix[j];
+			PermutationBoxItemValue value = matrix[j];
 			if(value != null) {
 				for (int k = 0; k < value.count; k++) {
 					types.add(j);
@@ -60,7 +61,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 			permutations[i] = types.get(i);
 		}
 
-		this.minStackableVolume = new long[permutations.length];
+		this.minBoxVolume = new long[permutations.length];
 
 		if(permutations.length > 0) {
 			calculateMinStackableVolume(0);
@@ -84,21 +85,21 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	private void calculateMinStackableVolume(int offset) {
 		PermutationRotation last = get(permutations.length - 1);
 
-		minStackableVolume[permutations.length - 1] = last.getValue().getVolume();
+		minBoxVolume[permutations.length - 1] = last.getBoxStackValue().getVolume();
 
 		for (int i = permutations.length - 2; i >= offset; i--) {
-			long volume = get(i).getValue().getVolume();
+			long volume = get(i).getBoxStackValue().getVolume();
 
-			if(volume < minStackableVolume[i + 1]) {
-				minStackableVolume[i] = volume;
+			if(volume < minBoxVolume[i + 1]) {
+				minBoxVolume[i] = volume;
 			} else {
-				minStackableVolume[i] = minStackableVolume[i + 1];
+				minBoxVolume[i] = minBoxVolume[i + 1];
 			}
 		}
 	}
 
 	public long getMinStackableVolume(int offset) {
-		return minStackableVolume[offset];
+		return minBoxVolume[offset];
 	}
 
 	/**
@@ -173,7 +174,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 	public long countRotations() {
 		long n = 1;
 		for (int i = 0; i < permutations.length; i++) {
-			PermutationStackableValue value = matrix[permutations[i]];
+			PermutationBoxItemValue value = matrix[permutations[i]];
 			if(Long.MAX_VALUE / value.getBoxes().length <= n) {
 				return -1L;
 			}
@@ -196,7 +197,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		// fit within the container volume
 
 		int maxCount = 0;
-		for (PermutationStackableValue value : matrix) {
+		for (PermutationBoxItemValue value : matrix) {
 			if(value != null) {
 				if(maxCount < value.getCount()) {
 					maxCount = value.getCount();
@@ -207,7 +208,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		long n = 1;
 		if(maxCount > 1) {
 			int[] factors = new int[maxCount];
-			for (PermutationStackableValue value : matrix) {
+			for (PermutationBoxItemValue value : matrix) {
 				if(value != null) {
 					for (int k = 0; k < value.getCount(); k++) {
 						factors[k]++;
@@ -351,7 +352,7 @@ public class DefaultPermutationRotationIterator extends AbstractPermutationRotat
 		return new PermutationRotationState(rotations, permutations);
 	}
 
-	public PermutationStackableValue getPermutation(int index) {
+	public PermutationBoxItemValue getPermutation(int index) {
 		return matrix[permutations[index]];
 	}
 

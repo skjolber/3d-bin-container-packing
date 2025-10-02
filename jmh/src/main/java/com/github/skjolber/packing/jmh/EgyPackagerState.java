@@ -18,9 +18,9 @@ import org.openjdk.jmh.annotations.TearDown;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.DefaultStack;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
@@ -48,7 +48,7 @@ public class EgyPackagerState {
 	private List<BenchmarkSet> plainPackager = new ArrayList<>();
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 
-	private static List<StackableItem> stackableItems3D;
+	private static List<BoxItem> stackableItems3D;
 	private static List<ContainerItem> containers;
 
 	static {
@@ -122,18 +122,18 @@ public class EgyPackagerState {
 
 			List<ContainerItem> containers = ContainerItem.newListBuilder().withContainer(
 					Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(length, length, length).withMaxLoadWeight(length * length * length)
-							.withStack(new DefaultStack()).build())
+							.withStack(new Stack()).build())
 					.build();
 
-			List<StackableItem> stackableItems3D = getStackableItems3D(items);
+			List<BoxItem> stackableItems3D = getStackableItems3D(items);
 
 			FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().build();
 
 			PackagerResult build = fastPackager
 					.newResultBuilder()
-					.withContainers(containers)
+					.withContainerItems(containers)
 					.withMaxContainerCount(1)
-					.withStackables(stackableItems3D)
+					.withBoxItems(stackableItems3D)
 					.withDeadline(System.currentTimeMillis() + 5000)
 					.build();
 			if(build.isSuccess()) {
@@ -145,10 +145,10 @@ public class EgyPackagerState {
 		}
 	}
 
-	private static List<StackableItem> getStackableItems3D(List<Item> items) {
-		List<StackableItem> products = new ArrayList<>();
+	private static List<BoxItem> getStackableItems3D(List<Item> items) {
+		List<BoxItem> products = new ArrayList<>();
 		for (Item item : items) {
-			products.add(new StackableItem(Box.newBuilder().withDescription(item.toString()).withSize(item.getDx(), item.getDy(), item.getDz()).withRotate3D().withWeight(1).build(), item.getCount()));
+			products.add(new BoxItem(Box.newBuilder().withDescription(item.toString()).withSize(item.getDx(), item.getDy(), item.getDz()).withRotate3D().withWeight(1).build(), item.getCount()));
 		}
 
 		return products;

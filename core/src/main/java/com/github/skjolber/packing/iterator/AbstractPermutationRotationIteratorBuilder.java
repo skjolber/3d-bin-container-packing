@@ -1,12 +1,11 @@
 package com.github.skjolber.packing.iterator;
 
 import java.util.List;
-import java.util.function.Predicate;
 
-import com.github.skjolber.packing.api.Dimension;
-import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.Container;
 
 /**
  * Builder scaffold.
@@ -15,29 +14,28 @@ import com.github.skjolber.packing.api.StackableItem;
  *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
  */
 
+@Deprecated
 public abstract class AbstractPermutationRotationIteratorBuilder<B extends AbstractPermutationRotationIteratorBuilder<B>> {
 
 	protected int maxLoadWeight = -1;
-	protected Predicate<Stackable> filter;
-	protected Dimension size;
-	protected List<StackableItem> stackableItems;
+	protected int dx = -1;
+	protected int dy = -1;
+	protected int dz = -1;
+	protected long volume = -1L;
+	protected List<BoxItem> boxItems;
 
-	public B withSize(int dx, int dy, int dz) {
-		this.size = new Dimension(dx, dy, dz);
-
-		return (B)this;
+	public B withLoadSize(Container container) {
+		return withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 	}
 
-	public B withLoadSize(Dimension dimension) {
-		this.size = dimension;
+	public B withLoadSize(int dx, int dy, int dz) {
+		this.dx = dx;
+		this.dy = dy;
+		this.dz = dz;
+		
+		this.volume = (long)dx * (long)dy * (long)dz;
 
-		return (B)this;
-	}
-
-	public B withFilter(Predicate<Stackable> filter) {
-		this.filter = filter;
-
-		return (B)this;
+		return (B) this;
 	}
 
 	public B withMaxLoadWeight(int maxLoadWeight) {
@@ -46,40 +44,35 @@ public abstract class AbstractPermutationRotationIteratorBuilder<B extends Abstr
 		return (B)this;
 	}
 
-	public B withStackableItems(List<StackableItem> stackableItems) {
-		this.stackableItems = stackableItems;
+	public B withBoxItems(List<BoxItem> boxItems) {
+		this.boxItems = boxItems;
 
 		return (B)this;
 	}
 
-	protected PermutationStackableValue[] toMatrix() {
-		PermutationStackableValue[] results = new PermutationStackableValue[stackableItems.size()];
+	protected PermutationBoxItemValue[] toMatrix() {
+		PermutationBoxItemValue[] results = new PermutationBoxItemValue[boxItems.size()];
 
-		for (int i = 0; i < stackableItems.size(); i++) {
-			StackableItem item = stackableItems.get(i);
+		for (int i = 0; i < boxItems.size(); i++) {
+			BoxItem item = boxItems.get(i);
 
-			Stackable stackable = item.getStackable();
-			if(stackable.getWeight() > maxLoadWeight) {
+			Box box = item.getBox();
+			if(box.getWeight() > maxLoadWeight) {
 				continue;
 			}
 
-			if(stackable.getVolume() > size.getVolume()) {
+			if(box.getVolume() > volume) {
 				continue;
 			}
 
-			List<StackValue> boundRotations = stackable.rotations(size);
+			List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
 			if(boundRotations == null || boundRotations.isEmpty()) {
 				continue;
 			}
 
-			if(filter != null && !filter.test(stackable)) {
-				continue;
-			}
-
-			results[i] = new PermutationStackableValue(i, item.getCount(), stackable, boundRotations);
+			results[i] = new PermutationBoxItemValue(i, item.getCount(), item, boundRotations);
 		}
 		return results;
 	}
-
 
 }

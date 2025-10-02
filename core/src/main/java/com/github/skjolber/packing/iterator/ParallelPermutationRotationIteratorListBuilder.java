@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.iterator;
 
+@Deprecated
 public class ParallelPermutationRotationIteratorListBuilder extends AbstractPermutationRotationIteratorBuilder<ParallelPermutationRotationIteratorListBuilder> {
 
 	private int parallelizationCount = -1;
@@ -17,11 +18,11 @@ public class ParallelPermutationRotationIteratorListBuilder extends AbstractPerm
 		if(maxLoadWeight == -1) {
 			throw new IllegalStateException();
 		}
-		if(size == null) {
+		if(dx == -1 || dy == -1 || dz == -1) {
 			throw new IllegalStateException();
 		}
 
-		PermutationStackableValue[] matrix = toMatrix();
+		PermutationBoxItemValue[] matrix = toMatrix();
 
 		return new ParallelPermutationRotationIteratorList(matrix, parallelizationCount);
 	}
