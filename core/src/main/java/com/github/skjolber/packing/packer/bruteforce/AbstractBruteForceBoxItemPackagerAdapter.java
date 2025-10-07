@@ -16,12 +16,10 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter implements Packag
 	protected int[] boxesRemaining;
 	protected BoxItem[] boxItems;
 	
-	protected final BoxPriority priority;
 	protected final ContainerItemsCalculator packagerContainerItems;
 
-	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, BoxPriority priority, ContainerItemsCalculator packagerContainerItems) {
+	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems) {
 		this.packagerContainerItems = packagerContainerItems;
-		this.priority = priority;
 		
 		this.boxes = new Box[boxItems.size()];
 		this.boxesRemaining = new int[boxItems.size()];

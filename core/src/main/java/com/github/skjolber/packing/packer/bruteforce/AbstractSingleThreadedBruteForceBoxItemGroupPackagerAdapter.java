@@ -23,8 +23,8 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 	protected List<BoxItemGroup> boxItemGroups;
 	protected PackagerInterruptSupplier interrupt;
 	
-	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, BoxPriority priority, ContainerItemsCalculator packagerContainerItems, BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-		super(boxItems, priority, packagerContainerItems);
+	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems, BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
+		super(boxItems, packagerContainerItems);
 		this.boxItemGroups = boxItemGroups;
 		this.interrupt = interrupt;
 		this.containerIterators = containerIterators;

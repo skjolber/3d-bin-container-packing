@@ -15,7 +15,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
@@ -89,7 +88,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 		public ParallelBruteForcePackager build() {
 			if(comparator == null) {
-				comparator = new DefaultIntermediatePackagerResultComparator();
+				comparator = new DefaultIntermediatePackagerResultComparator<>();
 			}
 			if(executorService == null) {
 				if(threads == -1) {
@@ -182,9 +181,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		private final DefaultBoxItemPermutationRotationIterator[] iterators; // per container
 		private final PackagerInterruptSupplier[] interrupts;
 
-		protected ParallelAdapter(List<BoxItem> boxItems, BoxPriority priority,
+		protected ParallelAdapter(List<BoxItem> boxItems, 
 				ContainerItemsCalculator packagerContainerItems, RunnableAdapter[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators, ParallelBoxItemPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
-			super(boxItems, priority, packagerContainerItems);
+			super(boxItems, packagerContainerItems);
 
 			this.runnables = runnables;
 			this.parallelIterators = parallelIterators;
@@ -372,8 +371,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, BoxPriority priority,
-			ContainerItemsCalculator defaultContainerItemsCalculator,
+	protected AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, ContainerItemsCalculator defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt) {
 		
 		List<ControlledContainerItem> containerItems = defaultContainerItemsCalculator.getContainerItems();
@@ -430,13 +428,12 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			}
 		}
 
-		return new ParallelAdapter(items, priority, defaultContainerItemsCalculator, runnables, iterators, parallelIterators, interrupts);
+		return new ParallelAdapter(items, defaultContainerItemsCalculator, runnables, iterators, parallelIterators, interrupts);
 	}
 
 	@Override
 	protected AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			BoxPriority priority, ContainerItemsCalculator defaultContainerItemsCalculator,
-			PackagerInterruptSupplier interrupt) {
+			ContainerItemsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt) {
 		throw new RuntimeException("Not implemented");
 	}
 

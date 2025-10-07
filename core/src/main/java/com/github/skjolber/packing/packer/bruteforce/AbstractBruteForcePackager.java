@@ -62,6 +62,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 					throw new IllegalStateException("Controls not supported");
 				}
 			}
+			
+			if(priority != BoxPriority.NONE) {
+				throw new IllegalStateException("Priority not supported for brute force packager");
+			}
 		}
 		
 		public PackagerResult build() {
@@ -84,9 +88,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				
 				AbstractBruteForceBoxItemPackagerAdapter adapter;
 				if(items != null && !items.isEmpty()) {
-					adapter = createBoxItemAdapter(items, priority, new ContainerItemsCalculator(containers), interrupt);
+					adapter = createBoxItemAdapter(items, new ContainerItemsCalculator(containers), interrupt);
 				} else {
-					adapter = createBoxItemGroupAdapter(itemGroups, priority, new ContainerItemsCalculator(containers), interrupt);
+					adapter = createBoxItemGroupAdapter(itemGroups, new ContainerItemsCalculator(containers), interrupt);
 				}
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 								
@@ -109,11 +113,11 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		return new BruteForcePackagerResultBuilder().withPackager(this);
 	}
 
-	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, BoxPriority priority,
-			ContainerItemsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt);
+	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, ContainerItemsCalculator defaultContainerItemsCalculator,
+			PackagerInterruptSupplier interrupt);
 
-	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, BoxPriority priority,
-			ContainerItemsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt);
+	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, ContainerItemsCalculator defaultContainerItemsCalculator,
+			PackagerInterruptSupplier interrupt);
 
 	static List<Placement> getPlacements(int size) {
 		// each box will at most have a single placement with a space (and its remainder).

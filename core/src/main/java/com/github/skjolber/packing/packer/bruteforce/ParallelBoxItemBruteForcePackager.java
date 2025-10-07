@@ -180,9 +180,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		private final DefaultBoxItemPermutationRotationIterator[] iterators; // per container
 		private final PackagerInterruptSupplier[] interrupts;
 
-		protected ParallelAdapter(List<BoxItem> boxItems, BoxPriority priority,
-				ContainerItemsCalculator packagerContainerItems, RunnableAdapter[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators, ParallelBoxItemPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
-			super(boxItems, priority, packagerContainerItems);
+		protected ParallelAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems, RunnableAdapter[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators, ParallelBoxItemPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
+			super(boxItems, packagerContainerItems);
 
 			this.runnables = runnables;
 			this.parallelIterators = parallelIterators;
@@ -344,9 +343,9 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		protected List<BoxItemGroup> boxItemGroups;
 		
-		protected ParallelGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, BoxPriority priority,
+		protected ParallelGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
 				ContainerItemsCalculator packagerContainerItems, RunnableAdapter[] runnables, DefaultBoxItemGroupPermutationRotationIterator[] iterators, ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
-			super(boxItems, priority, packagerContainerItems);
+			super(boxItems, packagerContainerItems);
 			this.boxItemGroups = boxItemGroups;
 			this.runnables = runnables;
 			this.parallelIterators = parallelIterators;
@@ -567,8 +566,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	}
 
 	@Override
-	protected AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, BoxPriority priority,
-			ContainerItemsCalculator defaultContainerItemsCalculator,
+	protected AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, ContainerItemsCalculator defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt) {
 		
 		List<ControlledContainerItem> containerItems = defaultContainerItemsCalculator.getContainerItems();
@@ -625,13 +623,12 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 		}
 
-		return new ParallelAdapter(items, priority, defaultContainerItemsCalculator, runnables, iterators, parallelIterators, interrupts);
+		return new ParallelAdapter(items, defaultContainerItemsCalculator, runnables, iterators, parallelIterators, interrupts);
 	}
 
 	@Override
 	protected ParallelGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			BoxPriority priority, ContainerItemsCalculator containerItemsCalculator,
-			PackagerInterruptSupplier interrupt) {
+			ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt) {
 
 		List<ControlledContainerItem> containerItems = containerItemsCalculator.getContainerItems();
 		
@@ -692,7 +689,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 		}
 
-		return new ParallelGroupAdapter(items, itemGroups, priority, containerItemsCalculator, runnables, iterators, parallelIterators, interrupts);
+		return new ParallelGroupAdapter(items, itemGroups, containerItemsCalculator, runnables, iterators, parallelIterators, interrupts);
 	}
 
 }

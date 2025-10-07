@@ -20,8 +20,8 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 	protected List<Placement> stackPlacements;
 	protected final PackagerInterruptSupplier interrupt;
 
-	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, BoxPriority priority, ContainerItemsCalculator packagerContainerItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-		super(boxItems, priority, packagerContainerItems);
+	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
+		super(boxItems, packagerContainerItems);
 		this.interrupt = interrupt;
 		this.containerIterators = containerIterators;
 		
