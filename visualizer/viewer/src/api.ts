@@ -1,6 +1,12 @@
 import * as THREE from "three";
 import { Color, Mesh, Object3D, Scene } from "three";
 import randomColor from "randomcolor";
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
+import { Font } from "three/examples/jsm/loaders/FontLoader";
+
+const helvetiker = require( 'three/examples/fonts/droid/droid_sans_mono_regular.typeface.json');
+const font = new Font( helvetiker );
+const textMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff } );
 
 export class Point {
     
@@ -275,6 +281,26 @@ export class StackableRenderer {
                 type: "box",
                 source: stackPlacement
             };
+    
+            if(boxStackable.name) {
+                const yLabelTextGeometry = new TextGeometry( boxStackable.name, {
+                font: font,
+                size: 1,
+                depth: 0,
+                curveSegments: 1,
+                bevelEnabled: true,
+                bevelThickness: 0,
+                bevelSize: 0,
+                bevelOffset: 0,
+                bevelSegments: 1
+                } );
+    
+                const yLabelMesh = new THREE.Mesh( yLabelTextGeometry, textMaterial );
+                yLabelMesh.rotation.x = -Math.PI / 2;
+                yLabelMesh.rotation.z = -Math.PI / 2;
+                yLabelMesh.position.set( -yLabelMesh.scale.x / 2, 0, -yLabelMesh.scale.y / 2);
+                box.add( yLabelMesh );
+            }
 
             parent.add(box);
 
