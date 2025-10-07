@@ -9,15 +9,17 @@ public class PlainPlacementControlsBuilder extends AbstractPlacementControlsBuil
 
 	protected final Comparator<PlainPlacement> plainPlacementComparator;
 	protected final Comparator<BoxItem> boxItemComparator;
-
-	public PlainPlacementControlsBuilder(Comparator<PlainPlacement> plainPlacementComparator, Comparator<BoxItem> boxItemComparator) {
+	protected final boolean requireFullSupport;
+	
+	public PlainPlacementControlsBuilder(Comparator<PlainPlacement> plainPlacementComparator, Comparator<BoxItem> boxItemComparator, boolean requireFullSupport) {
 		this.plainPlacementComparator = plainPlacementComparator;
 		this.boxItemComparator = boxItemComparator;
+		this.requireFullSupport = requireFullSupport;
 	}
 
 	@Override
 	public PlainPlacementControls build() {
-		return new PlainPlacementControls(boxItems, boxItemsEndIndex, boxItemsEndIndex, pointControls, extremePoints, container, stack, priority, plainPlacementComparator, boxItemComparator);
+		return new PlainPlacementControls(boxItems, boxItemsEndIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, priority, plainPlacementComparator, boxItemComparator, requireFullSupport);
 	}
 
 }

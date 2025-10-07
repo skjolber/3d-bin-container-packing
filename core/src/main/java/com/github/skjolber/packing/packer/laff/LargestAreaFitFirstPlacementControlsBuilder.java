@@ -28,7 +28,7 @@ public class LargestAreaFitFirstPlacementControlsBuilder extends AbstractPlaceme
 		if(boxItemComparator == null) {
 			boxItemComparator = new VolumeThenWeightBoxItemComparator();
 		}
-		return new ComparatorPlacementControls(boxItems, boxItemsEndIndex, boxItemsEndIndex, pointControls, extremePoints, container, stack, priority, placementComparator, boxItemComparator);
+		return new ComparatorPlacementControls(boxItems, boxItemsEndIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, priority, placementComparator, boxItemComparator);
 	}
 
 }

@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer.plain;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
@@ -10,14 +11,17 @@ import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.PackagerResultBuilder.ControlledContainerItemBuilder;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
-import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
+import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
@@ -145,6 +149,49 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 			return this;
 		}
 
+		public Builder withPlacementControlsBuilderFactory(Consumer<PlacementControlsBuilderFactoryBuilder> consumer) {
+			PlacementControlsBuilderFactoryBuilder b = new PlacementControlsBuilderFactoryBuilder();
+			consumer.accept(b);
+			
+			boolean requireFullSupport = b.requireFullSupport;
+			Comparator<BoxItem> boxItemComparator = b.boxItemComparator;
+			Comparator<PlainPlacement> placementComparator = b.placementComparator;
+			
+			if(boxItemComparator == null) {
+				boxItemComparator = VolumeThenWeightBoxItemComparator.getInstance();
+			}
+			if(boxItemComparator == null) {
+				placementComparator = new PlainPlacementComparator();
+			}
+			
+			this.placementControlsBuilderFactory = new PlainPlacementControlsBuilderFactory(boxItemComparator, placementComparator, requireFullSupport);
+			
+			return this;
+		}
+		
+		public static class PlacementControlsBuilderFactoryBuilder {
+
+			private boolean requireFullSupport;
+			private Comparator<BoxItem> boxItemComparator;
+			private Comparator<PlainPlacement> placementComparator; 
+			
+			public PlacementControlsBuilderFactoryBuilder withRequireFullSupport(boolean require) {
+				this.requireFullSupport = require;
+				return this;
+			}
+			
+			public PlacementControlsBuilderFactoryBuilder withBoxItemComparator(Comparator<BoxItem> boxItemComparator) {
+				this.boxItemComparator = boxItemComparator;
+				return this;
+			}
+			
+			public PlacementControlsBuilderFactoryBuilder withPlacementComparator(Comparator<PlainPlacement> placementComparator) {
+				this.placementComparator = placementComparator;
+				return this;
+			}
+
+		}
+		
 		public PlainPackager build() {
 			if(packagerResultComparator == null) {
 				packagerResultComparator = new DefaultIntermediatePackagerResultComparator<>();
@@ -157,6 +204,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 			}
 			return new PlainPackager(packagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory);
 		}
+		
 	}
 
 	protected PlacementControlsBuilderFactory<PlainPlacement> placementControlsBuilderFactory;
@@ -169,20 +217,20 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 		this.boxItemGroupComparator = boxItemGroupComparator;
 	}
 
-	protected BoxItemGroupIterator createBoxItemGroupIterator(BoxItemGroupSource filteredBoxItemGroups, BoxPriority priority, Container container, ExtremePoints extremePoints) {
+	protected BoxItemGroupIterator createBoxItemGroupIterator(BoxItemGroupSource boxItemGroupSource, BoxPriority priority, Container container, PointCalculator pointCalculator) {
 		if(priority == BoxPriority.CRONOLOGICAL || priority == BoxPriority.CRONOLOGICAL_ALLOW_SKIPPING) {
-			return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints);
+			return new FixedOrderBoxItemGroupIterator(boxItemGroupSource, container, pointCalculator);
 		}
-		return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints, boxItemGroupComparator);
+		return new AnyOrderBoxItemGroupIterator(boxItemGroupSource, container, pointCalculator, boxItemGroupComparator);
 	}
 	
 	@Override
 	protected PlacementControls<PlainPlacement> createControls(BoxItemSource boxItems, int offset, int length,
-			BoxPriority priority, PointControls pointControls, Container container, ExtremePoints extremePoints,
+			BoxPriority priority, PointControls pointControls, Container container, PointCalculator pointCalculator,
 			Stack stack) {
 		
 		return placementControlsBuilderFactory.createPlacementControlsBuilder()
-				.withExtremePoints(extremePoints)
+				.withPointCalculator(pointCalculator)
 				.withBoxItems(boxItems, offset, length)
 				.withPointControls(pointControls)
 				.withPriority(priority)

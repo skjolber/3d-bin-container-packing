@@ -6,7 +6,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
-import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemComparator;
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemGroupComparator;
@@ -74,7 +74,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 	}
 
 	@Override
-	protected ExtremePoints createExtremePoints() {
+	protected PointCalculator createPointCalculator() {
 		return new ExtremePoints3D();
 	}
 

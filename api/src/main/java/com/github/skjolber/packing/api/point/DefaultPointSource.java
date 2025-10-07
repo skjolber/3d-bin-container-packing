@@ -35,4 +35,8 @@ public class DefaultPointSource implements PointSource {
 		return values.listIterator();
 	}
 
+	@Override
+	public List<Point> getAll() {
+		return values;
+	}
 }

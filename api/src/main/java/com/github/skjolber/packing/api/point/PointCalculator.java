@@ -5,22 +5,18 @@ import java.util.function.Predicate;
 
 import com.github.skjolber.packing.api.Placement;
 
-public interface ExtremePoints extends PointSource {
+public interface PointCalculator extends PointSource {
 
 	boolean add(Point point, Placement placement);
 	
 	boolean add(int index, Placement placement);
 
-	List<Point> getAll();
-
 	void clearToSize(int dx, int dy, int dz);
-
 	void clear();
 	
 	List<Placement> getPlacements();
 
 	long calculateUsedVolume();
-
 	long calculateUsedWeight();
 	
 	void setPoints(List<Point> points);

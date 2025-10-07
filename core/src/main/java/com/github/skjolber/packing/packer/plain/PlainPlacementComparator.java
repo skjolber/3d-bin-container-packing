@@ -6,7 +6,11 @@ public class PlainPlacementComparator implements Comparator<PlainPlacement> {
 
 	@Override
 	public int compare(PlainPlacement referenceResult, PlainPlacement potentiallyBetterResult) {
-		int result = Long.compare(referenceResult.getBestPointSupportPercent(), potentiallyBetterResult.getBestPointSupportPercent());
+		
+		long referenceValue = (referenceResult.getSupportArea() * 1000) / referenceResult.getStackValue().getArea();
+		long potentiallyBetterValue = (potentiallyBetterResult.getSupportArea() * 1000) / potentiallyBetterResult.getStackValue().getArea();
+		
+		int result = Long.compare(referenceValue, potentiallyBetterValue);
 		if(result != 0) {
 			return result;
 		}

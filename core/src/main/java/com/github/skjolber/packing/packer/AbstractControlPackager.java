@@ -19,7 +19,7 @@ import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
-import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
 import com.github.skjolber.packing.ep.points3d.MarkResetExtremePoints3D;
@@ -43,13 +43,13 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 
 		Stack stack = new Stack();
 
-		ExtremePoints extremePoints = new ExtremePoints3D();
-		extremePoints.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
+		PointCalculator pointCalculator = new ExtremePoints3D();
+		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 
 		DefaultBoxItemSource boxItemSource = new DefaultBoxItemSource(boxItems);
-		ManifestControls manifestControls = controlContainerItem.createBoxItemControls(container, stack, boxItemSource, extremePoints, null);
+		ManifestControls manifestControls = controlContainerItem.createBoxItemControls(container, stack, boxItemSource, pointCalculator, null);
 
-		PointControls pointControls = controlContainerItem.createPointControls(container, stack, boxItemSource, extremePoints);
+		PointControls pointControls = controlContainerItem.createPointControls(container, stack, boxItemSource, pointCalculator);
 		
 		// remove boxes which do not fit due to volume, weight or dimensions
 		List<BoxItem> removed = new ArrayList<>(boxItemSource.size());
@@ -83,12 +83,12 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		long maxBoxArea = boxItemSource.getMaxArea();
 		long maxBoxVolume = boxItemSource.getMaxVolume();
 		
-		extremePoints.setMinimumAreaAndVolumeLimit(boxItemSource.getMinArea(), boxItemSource.getMinVolume());
+		pointCalculator.setMinimumAreaAndVolumeLimit(boxItemSource.getMinArea(), boxItemSource.getMinVolume());
 
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
 
-		PlacementControls<I> placementControls = createControls(boxItemSource, 0, boxItemSource.size(), priority, pointControls, container, extremePoints, stack);
+		PlacementControls<I> placementControls = createControls(boxItemSource, 0, boxItemSource.size(), priority, pointControls, container, pointCalculator, stack);
 
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !boxItemSource.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
@@ -101,7 +101,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 			}
 			
 			stack.add(placement);
-			extremePoints.add(placement.getPoint(), placement);
+			pointCalculator.add(placement.getPoint(), placement);
 			
 			remainingLoadWeight -= placement.getBoxItem().getBox().getWeight();
 			remainingLoadVolume -= placement.getBoxItem().getBox().getVolume();
@@ -142,11 +142,11 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 				}
 				
 				// remove small points
-				extremePoints.setMinimumAreaAndVolumeLimit(boxItemSource.getMinArea(), boxItemSource.getMinVolume());				
+				pointCalculator.setMinimumAreaAndVolumeLimit(boxItemSource.getMinArea(), boxItemSource.getMinVolume());				
 				
 				// remove boxes which are too big for the available points
-				long maxPointArea = extremePoints.getMaxArea();
-				long maxPointVolume = extremePoints.getMaxVolume();
+				long maxPointArea = pointCalculator.getMaxArea();
+				long maxPointVolume = pointCalculator.getMaxVolume();
 				
 				if(maxPointArea < maxBoxArea || maxPointVolume < maxBoxVolume) {
 					for(int i = 0; i < boxItemSource.size(); i++) {
@@ -453,7 +453,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 			BoxItemGroupSource groups, 
 			BoxPriority itemGroupOrder, 
 			Container container,
-			ExtremePoints extremePoints
+			PointCalculator pointCalculator
 		);
 
 	protected abstract PlacementControls<I> createControls(
@@ -462,6 +462,6 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 			BoxPriority priority,
 			PointControls pointControls,
 			Container container, 
-			ExtremePoints extremePoints, Stack stack
+			PointCalculator pointCalculator, Stack stack
 		);
 }

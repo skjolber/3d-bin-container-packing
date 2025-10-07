@@ -11,15 +11,15 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
-import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.packer.AbstractComparatorPlacementControls;
 
 public class PlainPlacementControls extends AbstractComparatorPlacementControls<PlainPlacement> {
 
-	public static long calculateXYSupportPercent(ExtremePoints extremePoints, Point referencePoint, BoxStackValue stackValue) {
+	public static long calculateAreaSupport(PointCalculator pointCalculator, Point referencePoint, BoxStackValue stackValue) {
 		if(referencePoint.getMinZ() == 0) {
-			return 100;
+			return stackValue.getArea();
 		}
 		
 		long sum = 0;
@@ -34,7 +34,7 @@ public class PlainPlacementControls extends AbstractComparatorPlacementControls<
 		
 		int z = referencePoint.getMinZ() - 1;
 		
-		List<Placement> placements = extremePoints.getPlacements();
+		List<Placement> placements = pointCalculator.getPlacements();
 		for(Placement stackPlacement : placements) {
 			if(stackPlacement.getAbsoluteEndZ() == z) {
 				
@@ -82,27 +82,41 @@ public class PlainPlacementControls extends AbstractComparatorPlacementControls<
 			    sum += intersect;
 			    
 			    if(sum == max) {
-			    	break;
+			    	return stackValue.getArea();
 			    }
 			}
 		}
 		
+		return sum;
+	}
+	
+	public static long calculateXYSupportPercent(PointCalculator pointCalculator, Point referencePoint, BoxStackValue stackValue) {
+		long sum = calculateAreaSupport(pointCalculator, referencePoint, stackValue);
+
 		return (sum * 100) / stackValue.getArea();
 	}
 
+	protected final boolean requireFullSupport;
+	
 	public PlainPlacementControls(BoxItemSource boxItems, int boxItemsStartIndex, int boxItemsEndIndex,
-			PointControls pointControls, ExtremePoints extremePoints, Container container, Stack stack,
+			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
 			BoxPriority priority, Comparator<PlainPlacement> placementComparator,
-			Comparator<BoxItem> boxItemComparator) {
-		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, extremePoints, container, stack, priority,
+			Comparator<BoxItem> boxItemComparator, boolean requireFullSupport) {
+		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, priority,
 				placementComparator, boxItemComparator);
+		
+		this.requireFullSupport = requireFullSupport;
 	}
 
 	@Override
 	protected PlainPlacement createPlacement(Point point, BoxStackValue stackValue) {
-		long pointSupportPercent = calculateXYSupportPercent(extremePoints, point, stackValue);
+		long support = calculateAreaSupport(pointCalculator, point, stackValue);
 		
-		return new PlainPlacement(stackValue, point, pointSupportPercent);
+		if(requireFullSupport && support != stackValue.getArea()) {
+			return null;
+		}
+		
+		return new PlainPlacement(stackValue, point, support);
 	}
 
 }

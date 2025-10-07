@@ -2,6 +2,7 @@ package com.github.skjolber.packing.api.point;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 public class EmptyPointSource implements PointSource {
 
@@ -30,4 +31,9 @@ public class EmptyPointSource implements PointSource {
 	public Iterator<Point> iterator() {
 		return Collections.emptyIterator(); 
 	} 
+	
+	@Override
+	public List<Point> getAll() {
+		return Collections.emptyList();
+	}
 }

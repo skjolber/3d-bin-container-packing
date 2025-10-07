@@ -2,7 +2,7 @@ package com.github.skjolber.packing.iterator;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
-import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.PointCalculator;
 
 public class FixedOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 
@@ -13,15 +13,15 @@ public class FixedOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 	public static class Builder {
 		protected BoxItemGroupSource filteredBoxItemGroups;
 		protected Container container;
-		protected ExtremePoints extremePoints;
+		protected PointCalculator pointCalculator;
 		
 		public Builder withContainer(Container container) {
 			this.container = container;
 			return this;
 		}
 		
-		public Builder withExtremePoints(ExtremePoints extremePoints) {
-			this.extremePoints = extremePoints;
+		public Builder withPointCalculator(PointCalculator pointCalculator) {
+			this.pointCalculator = pointCalculator;
 			return this;
 		}
 		
@@ -34,28 +34,28 @@ public class FixedOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 			if(container == null) {
 				throw new IllegalStateException();
 			}
-			if(extremePoints == null) {
+			if(pointCalculator == null) {
 				throw new IllegalStateException();
 			}
 			if(filteredBoxItemGroups == null) {
 				throw new IllegalStateException();
 			}
-			return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints);
+			return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, pointCalculator);
 		}
 	}
 	
 	protected final BoxItemGroupSource filteredBoxItemGroups;
 	protected final Container container;
-	protected final ExtremePoints extremePoints;
+	protected final PointCalculator pointCalculator;
 	
 	protected int next = -1;
 	protected boolean dirty = true;
 	
 	public FixedOrderBoxItemGroupIterator(BoxItemGroupSource filteredBoxItemGroups, Container container,
-			ExtremePoints extremePoints) {
+			PointCalculator pointCalculator) {
 		this.filteredBoxItemGroups = filteredBoxItemGroups;
 		this.container = container;
-		this.extremePoints = extremePoints;
+		this.pointCalculator = pointCalculator;
 	}
 
 	@Override

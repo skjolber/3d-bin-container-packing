@@ -5,7 +5,7 @@ import java.util.Comparator;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
-import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.PointCalculator;
 
 public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 	
@@ -16,7 +16,7 @@ public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 	public static class Builder {
 		protected BoxItemGroupSource filteredBoxItemGroups;
 		protected Container container;
-		protected ExtremePoints extremePoints;
+		protected PointCalculator pointCalculator;
 		protected Comparator<BoxItemGroup> comparator;
 		
 		public Builder withComparator(Comparator<BoxItemGroup> comparator) {
@@ -29,8 +29,8 @@ public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 			return this;
 		}
 		
-		public Builder withExtremePoints(ExtremePoints extremePoints) {
-			this.extremePoints = extremePoints;
+		public Builder withPointCalculator(PointCalculator pointCalculator) {
+			this.pointCalculator = pointCalculator;
 			return this;
 		}
 		
@@ -46,29 +46,29 @@ public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 			if(container == null) {
 				throw new IllegalStateException();
 			}
-			if(extremePoints == null) {
+			if(pointCalculator == null) {
 				throw new IllegalStateException();
 			}
 			if(filteredBoxItemGroups == null) {
 				throw new IllegalStateException();
 			}
-			return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints, comparator);
+			return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, pointCalculator, comparator);
 		}
 	}
 	
 	protected final BoxItemGroupSource filteredBoxItemGroups;
 	protected final Container container;
-	protected final ExtremePoints extremePoints;
+	protected final PointCalculator pointCalculator;
 	protected final Comparator<BoxItemGroup> comparator;
 	
 	protected int next = -1;
 	protected boolean dirty = true;
 	
 	public AnyOrderBoxItemGroupIterator(BoxItemGroupSource filteredBoxItemGroups, Container container,
-			ExtremePoints extremePoints, Comparator<BoxItemGroup> comparator) {
+			PointCalculator pointCalculator, Comparator<BoxItemGroup> comparator) {
 		this.filteredBoxItemGroups = filteredBoxItemGroups;
 		this.container = container;
-		this.extremePoints = extremePoints;
+		this.pointCalculator = pointCalculator;
 		this.comparator = comparator;
 	}
 

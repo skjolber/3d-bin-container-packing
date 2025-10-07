@@ -14,7 +14,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.Point;
 
 /**
@@ -23,7 +23,7 @@ import com.github.skjolber.packing.api.point.Point;
  *
  */
 
-public class ExtremePoints2D implements ExtremePoints {
+public class ExtremePoints2D implements PointCalculator {
 
 	public static final Comparator<Point2D> COMPARATOR_X = new Comparator<Point2D>() {
 

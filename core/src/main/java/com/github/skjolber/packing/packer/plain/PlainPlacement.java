@@ -8,16 +8,16 @@ public class PlainPlacement extends Placement {
 
 	private static final long serialVersionUID = 1L;
 	
-	protected long bestPointSupportPercent = -1;
+	protected long supportedArea = -1L;
 
-	public PlainPlacement(BoxStackValue stackValue, Point point, long bestPointSupportPercent) {
+	public PlainPlacement(BoxStackValue stackValue, Point point, long supportedArea) {
 		super(stackValue, point);
 		
-		this.bestPointSupportPercent = bestPointSupportPercent;
+		this.supportedArea = supportedArea;
 	}
 
-	public long getBestPointSupportPercent() {
-		return bestPointSupportPercent;
+	public long getSupportArea() {
+		return supportedArea;
 	}
 
 }

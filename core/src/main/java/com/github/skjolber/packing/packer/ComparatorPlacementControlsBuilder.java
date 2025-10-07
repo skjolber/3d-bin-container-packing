@@ -12,7 +12,7 @@ import com.github.skjolber.packing.api.packager.control.placement.AbstractPlacem
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
-import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.PointCalculator;
 
 public class ComparatorPlacementControlsBuilder implements PlacementControlsBuilder<Placement> {
 
@@ -24,7 +24,7 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	protected int boxItemsEndIndex = -1; // exclusive
 	
 	protected PointControls pointControls;
-	protected ExtremePoints extremePoints;
+	protected PointCalculator pointCalculator;
 	protected Container container;
 	protected Stack stack;
 	protected BoxPriority priority;
@@ -60,8 +60,8 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	}
 
 	@Override
-	public ComparatorPlacementControlsBuilder withExtremePoints(ExtremePoints extremePoints) {
-		this.extremePoints = extremePoints;
+	public ComparatorPlacementControlsBuilder withPointCalculator(PointCalculator pointCalculator) {
+		this.pointCalculator = pointCalculator;
 		return this;
 	}
 	
@@ -77,7 +77,7 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	
 	@Override
 	public PlacementControls<Placement> build() {
-		return new ComparatorPlacementControls(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, extremePoints, container, stack, priority, placementComparator, boxItemComparator);
+		return new ComparatorPlacementControls(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, priority, placementComparator, boxItemComparator);
 	}
 
 }

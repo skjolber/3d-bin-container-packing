@@ -47,9 +47,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		} finally {
 			packager.close();
 		}
-
 	}
-
 
 	@Test
 	void testStackingSquaresOnSquareTwoLevels() {
@@ -703,6 +701,38 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			packager.close();
 		}
 
+	}
+
+	@Test
+	void testRequireFullSupport() {
+
+		Container container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2, 3, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
+		
+		ContainerItem containerItem = new ContainerItem(container, 10);
+		
+		PlainPackager packager = PlainPackager.newBuilder().withPlacementControlsBuilderFactory( (c) -> {
+			c.withRequireFullSupport(true);
+		}).build();
+		
+		try {
+			List<BoxItem> products = new ArrayList<>();
+	
+			// neither can be stacked on the other without leaving something in the air
+			products.add(new BoxItem(Box.newBuilder().withDescription("A").withSize(2, 2, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withDescription("B").withSize(1, 3, 1).withWeight(1).build(), 1));
+	
+			PackagerResult build = packager.newResultBuilder()
+					.withContainerItem(containerItem)
+					.withBoxItems(products)
+					.withMaxContainerCount(10)
+					.build();
+			
+			assertValid(build);
+			
+			assertEquals(2, build.getContainers().size());
+		} finally {
+			packager.close();
+		}
 	}
 
 }

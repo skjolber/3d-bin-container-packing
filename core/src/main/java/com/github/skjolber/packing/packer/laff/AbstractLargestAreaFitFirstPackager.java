@@ -22,7 +22,7 @@ import com.github.skjolber.packing.api.packager.control.manifest.ManifestControl
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
-import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
@@ -150,13 +150,13 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		Stack stack = new Stack();
 
-		ExtremePoints extremePoints = createExtremePoints();
-		extremePoints.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
+		PointCalculator pointCalculator = createPointCalculator();
+		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 
 		DefaultBoxItemSource filteredBoxItems = new DefaultBoxItemSource(boxItems);
-		ManifestControls boxItemControls = compositeContainerItem.createBoxItemControls(container, stack, filteredBoxItems, extremePoints, null);
+		ManifestControls boxItemControls = compositeContainerItem.createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, null);
 
-		PointControls pointControls = compositeContainerItem.createPointControls(container, stack, filteredBoxItems, extremePoints);
+		PointControls pointControls = compositeContainerItem.createPointControls(container, stack, filteredBoxItems, pointCalculator);
 		// remove boxes which do not fit due to volume, weight or dimensions
 		List<BoxItem> removed = new ArrayList<>();
 		for(int i = 0; i < filteredBoxItems.size(); i++) {
@@ -186,7 +186,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			removed.clear();
 		}
 		
-		extremePoints.setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());
+		pointCalculator.setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());
 
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
@@ -194,8 +194,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		int levelOffset = 0;
 		boolean newLevel = true;
 
-		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, extremePoints, stack);
-		PlacementControls<Placement> firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, extremePoints, stack);
+		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, pointCalculator, stack);
+		PlacementControls<Placement> firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, pointCalculator, stack);
 
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !filteredBoxItems.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
@@ -213,8 +213,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				
 				DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, result.getStackValue().getDz() - 1 + levelOffset);
 				
-				extremePoints.setPoints(Arrays.asList(levelFloor));
-				extremePoints.clear();
+				pointCalculator.setPoints(Arrays.asList(levelFloor));
+				pointCalculator.clear();
 				
 				levelOffset += result.getStackValue().getDz();
 
@@ -232,12 +232,12 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 					// prepare extreme points for a new level						
 					DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, container.getLoadDz() - 1);
-					extremePoints.setPoints(Arrays.asList(levelFloor));
-					extremePoints.clear();
+					pointCalculator.setPoints(Arrays.asList(levelFloor));
+					pointCalculator.clear();
 					
 					// remove boxes which are too big for the max new level
-					long maxArea = extremePoints.getMaxArea();
-					long maxVolume = extremePoints.getMaxVolume();
+					long maxArea = pointCalculator.getMaxArea();
+					long maxVolume = pointCalculator.getMaxVolume();
 					
 					for(int i = 0; i < filteredBoxItems.size(); i++) {
 						BoxItem boxItem = filteredBoxItems.get(i);
@@ -271,7 +271,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			}
 			
 			stack.add(result);
-			extremePoints.add(result.getPoint(), result);
+			pointCalculator.add(result.getPoint(), result);
 			
 			remainingLoadWeight -= result.getBoxItem().getBox().getWeight();
 			remainingLoadVolume -= result.getBoxItem().getBox().getVolume();
@@ -313,7 +313,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				
 				
 				// remove small points
-				extremePoints.setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());				
+				pointCalculator.setMinimumAreaAndVolumeLimit(filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume());				
 			}
 		}
 		
@@ -322,7 +322,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		return new DefaultIntermediatePackagerResult(compositeContainerItem, stack);
 	}
 
-	protected abstract ExtremePoints createExtremePoints();
+	protected abstract PointCalculator createPointCalculator();
 
 	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, BoxPriority priority, ControlledContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
 		ContainerItem containerItem = compositeContainerItem;
@@ -610,17 +610,17 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		return new DefaultIntermediatePackagerResult(containerItem, stack);
 	}
 	
-	protected BoxItemGroupIterator createBoxItemGroupIterator(BoxItemGroupSource filteredBoxItemGroups, BoxPriority itemGroupOrder, Container container, ExtremePoints extremePoints) {
+	protected BoxItemGroupIterator createBoxItemGroupIterator(BoxItemGroupSource filteredBoxItemGroups, BoxPriority itemGroupOrder, Container container, PointCalculator pointCalculator) {
 		if(itemGroupOrder == BoxPriority.CRONOLOGICAL || itemGroupOrder == BoxPriority.CRONOLOGICAL_ALLOW_SKIPPING) {
-			return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints);
+			return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, pointCalculator);
 		}
-		return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, extremePoints, boxItemGroupComparator);
+		return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, pointCalculator, boxItemGroupComparator);
 	}
 
-	public PlacementControls<Placement> createControls(BoxItemSource boxItems, int offset, int length, BoxPriority priority, PointControls pointControls, Container container, ExtremePoints extremePoints, Stack stack) {
+	public PlacementControls<Placement> createControls(BoxItemSource boxItems, int offset, int length, BoxPriority priority, PointControls pointControls, Container container, PointCalculator extremePoints, Stack stack) {
 		return placementControlsBuilderFactory.createPlacementControlsBuilder()
 			.withContainer(container)
-			.withExtremePoints(extremePoints)
+			.withPointCalculator(extremePoints)
 			.withPriority(priority)
 			.withStack(stack)
 			.withBoxItems(boxItems, offset, length)
@@ -628,10 +628,10 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			.build();
 	}
 	
-	public PlacementControls<Placement> createFirstControls(BoxItemSource boxItems, int offset, int length, BoxPriority priority, PointControls pointControls, Container container, ExtremePoints extremePoints, Stack stack) {
+	public PlacementControls<Placement> createFirstControls(BoxItemSource boxItems, int offset, int length, BoxPriority priority, PointControls pointControls, Container container, PointCalculator pointCalculator, Stack stack) {
 		return firstPlacementControlsBuilderFactory.createPlacementControlsBuilder()
 			.withContainer(container)
-			.withExtremePoints(extremePoints)
+			.withPointCalculator(pointCalculator)
 			.withPriority(priority)
 			.withStack(stack)
 			.withBoxItems(boxItems, offset, length)

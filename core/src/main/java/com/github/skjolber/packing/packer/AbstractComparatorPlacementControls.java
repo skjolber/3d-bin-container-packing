@@ -12,7 +12,7 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.AbstractPlacementControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
-import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointSource;
 
@@ -22,9 +22,9 @@ public abstract class AbstractComparatorPlacementControls<T extends Placement> e
 	protected Comparator<BoxItem> boxItemComparator;
 
 	public AbstractComparatorPlacementControls(BoxItemSource boxItems, int boxItemsStartIndex, int boxItemsEndIndex,
-			PointControls pointControls, ExtremePoints extremePoints, Container container, Stack stack,
+			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
 			BoxPriority priority, Comparator<T> placementComparator, Comparator<BoxItem> boxItemComparator) {
-		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, extremePoints, container, stack, priority);
+		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, priority);
 		
 		this.placementComparator = placementComparator;
 		this.boxItemComparator = boxItemComparator;
@@ -33,7 +33,7 @@ public abstract class AbstractComparatorPlacementControls<T extends Placement> e
 	public T getPlacement(int offset, int length) {
 		T result = null;
 		
-		long maxPointArea = extremePoints.getMaxArea();
+		long maxPointArea = pointCalculator.getMaxArea();
 		
 		// max volume and weight should already be accounted for by packager
 		
@@ -63,7 +63,9 @@ public abstract class AbstractComparatorPlacementControls<T extends Placement> e
 						continue;
 					}
 					T placementResult = createPlacement(point3d, stackValue);
-					
+					if(placementResult == null) {
+						continue;
+					}
 					if(result != null && placementComparator.compare(result, placementResult) >= 0) {
 						continue;
 					}

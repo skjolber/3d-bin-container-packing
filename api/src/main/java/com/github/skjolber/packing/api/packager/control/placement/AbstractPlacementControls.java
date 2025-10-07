@@ -6,7 +6,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
-import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.PointCalculator;
 
 public abstract class AbstractPlacementControls<R extends Placement> implements PlacementControls<R> {
 
@@ -15,20 +15,20 @@ public abstract class AbstractPlacementControls<R extends Placement> implements 
 	protected int boxItemsEndIndex = -1;
 	
 	protected PointControls pointControls;
-	protected ExtremePoints extremePoints;
+	protected PointCalculator pointCalculator;
 	protected Container container;
 	protected Stack stack;
 	protected BoxPriority priority;
 	
 	public AbstractPlacementControls(BoxItemSource boxItems, int boxItemsStartIndex, int boxItemsEndIndex,
-			PointControls pointControls, ExtremePoints extremePoints, Container container, Stack stack,
+			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
 			BoxPriority priority) {
 		super();
 		this.boxItems = boxItems;
 		this.boxItemsStartIndex = boxItemsStartIndex;
 		this.boxItemsEndIndex = boxItemsEndIndex;
 		this.pointControls = pointControls;
-		this.extremePoints = extremePoints;
+		this.pointCalculator = pointCalculator;
 		this.container = container;
 		this.stack = stack;
 		this.priority = priority;

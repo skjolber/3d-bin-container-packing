@@ -10,15 +10,15 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
-import com.github.skjolber.packing.api.point.ExtremePoints;
+import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.Point;
 
 public class ComparatorPlacementControls extends AbstractComparatorPlacementControls<Placement> {
 
 	public ComparatorPlacementControls(BoxItemSource boxItems, int boxItemsStartIndex, int boxItemsEndIndex,
-			PointControls pointControls, ExtremePoints extremePoints, Container container, Stack stack,
+			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
 			BoxPriority priority, Comparator<Placement> placementComparator, Comparator<BoxItem> boxItemComparator) {
-		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, extremePoints, container, stack, priority,
+		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, priority,
 				placementComparator, boxItemComparator);
 	}
 
