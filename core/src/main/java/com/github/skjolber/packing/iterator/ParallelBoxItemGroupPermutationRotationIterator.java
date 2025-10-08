@@ -11,6 +11,8 @@ import com.github.skjolber.packing.api.BoxStackValue;
 
 public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBoxItemGroupsPermutationRotationIterator {
 	
+	protected final int PADDING = 16;
+	
 	public static Builder newBuilder() {
 		return new Builder();
 	}
@@ -90,8 +92,8 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	}
 
 	public int[] getPermutations() {
-		int[] result = new int[permutations.length - ParallelPermutationRotationIteratorList.PADDING];
-		System.arraycopy(permutations, ParallelPermutationRotationIteratorList.PADDING, result, 0, result.length);
+		int[] result = new int[permutations.length - PADDING];
+		System.arraycopy(permutations, PADDING, result, 0, result.length);
 		return result;
 	}
 
@@ -106,16 +108,16 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	}
 
 	public void calculateMinStackableVolume(int offset) {
-		super.calculateMinStackableVolume(offset + ParallelPermutationRotationIteratorList.PADDING);
+		super.calculateMinStackableVolume(offset + PADDING);
 	}
 
 	public long getMinBoxVolume(int offset) {
-		return super.getMinBoxVolume(ParallelPermutationRotationIteratorList.PADDING + offset);
+		return super.getMinBoxVolume(PADDING + offset);
 	}
 
 	public int[] getRotations() {
-		int[] result = new int[rotations.length - ParallelPermutationRotationIteratorList.PADDING];
-		System.arraycopy(rotations, ParallelPermutationRotationIteratorList.PADDING, result, 0, result.length);
+		int[] result = new int[rotations.length - PADDING];
+		System.arraycopy(rotations, PADDING, result, 0, result.length);
 		return result;
 	}
 
@@ -130,7 +132,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		
 		// find the first item that differs, so that we do not have to
 		// compare items for each iteration (to detect whether we have done enough work)
-		for (int k = ParallelPermutationRotationIteratorList.PADDING; k < lastPermutation.length; k++) {
+		for (int k = PADDING; k < lastPermutation.length; k++) {
 			if(permutations[k] != lastPermutation[k]) {
 				lastPermutationMaxIndex = k;
 
@@ -144,19 +146,19 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	}
 
 	public int nextRotation() {
-		return nextRotation(rotations.length - 1 - ParallelPermutationRotationIteratorList.PADDING);
+		return nextRotation(rotations.length - 1 - PADDING);
 	}
 
 	public int nextRotation(int maxIndex) {
 		// next rotation
-		for (int i = ParallelPermutationRotationIteratorList.PADDING + maxIndex; i >= ParallelPermutationRotationIteratorList.PADDING; i--) {
+		for (int i = PADDING + maxIndex; i >= PADDING; i--) {
 			if(rotations[i] < stackableItems[permutations[i]].getBox().getStackValues().length - 1) {
 				rotations[i]++;
 
 				// reset all following counters
 				System.arraycopy(reset, 0, rotations, i + 1, rotations.length - (i + 1));
 
-				return i - ParallelPermutationRotationIteratorList.PADDING;
+				return i - PADDING;
 			}
 		}
 
@@ -216,7 +218,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 			// Now the value array[j] will become the new pivot
 			// Assertion: j >= i
 	
-			int head = i - 1 - ParallelPermutationRotationIteratorList.PADDING;
+			int head = i - 1 - PADDING;
 	
 			// Swap the pivot with j
 			int temp = permutations[i - 1];
@@ -279,7 +281,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 
 				// TODO is there a faster way to do this? 
 				
-				int i = ParallelPermutationRotationIteratorList.PADDING;
+				int i = PADDING;
 				while (i < lastPermutation.length) {
 					int value = permutations[i];
 					if(value < lastPermutation[i]) {
@@ -310,14 +312,14 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 			// Find longest non-increasing suffix
 			int startIndex = limit - loadableItemGroup.getBoxCount();
 
-			if(startIndex <= ParallelPermutationRotationIteratorList.PADDING + maxIndex && ParallelPermutationRotationIteratorList.PADDING + maxIndex < limit) {
+			if(startIndex <= PADDING + maxIndex && PADDING + maxIndex < limit) {
 				
-				while (ParallelPermutationRotationIteratorList.PADDING  + maxIndex >= startIndex) {
+				while (PADDING  + maxIndex >= startIndex) {
 		
-					int current = permutations[ParallelPermutationRotationIteratorList.PADDING + maxIndex];
+					int current = permutations[PADDING + maxIndex];
 		
 					int minIndex = -1;
-					for (int i = ParallelPermutationRotationIteratorList.PADDING + maxIndex + 1; i < permutations.length; i++) {
+					for (int i = PADDING + maxIndex + 1; i < permutations.length; i++) {
 						if(current < permutations[i] && (minIndex == -1 || permutations[i] < permutations[minIndex])) {
 							minIndex = i;
 						}
@@ -330,10 +332,10 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 					}
 
 					// swap indexes
-					permutations[ParallelPermutationRotationIteratorList.PADDING + maxIndex] = permutations[minIndex];
+					permutations[PADDING + maxIndex] = permutations[minIndex];
 					permutations[minIndex] = current;
 		
-					Arrays.sort(permutations, ParallelPermutationRotationIteratorList.PADDING + maxIndex + 1, permutations.length);
+					Arrays.sort(permutations, PADDING + maxIndex + 1, permutations.length);
 		
 					return maxIndex;
 				}
@@ -359,7 +361,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	}
 
 	public BoxStackValue get(int permutationIndex) {
-		return stackableItems[permutations[ParallelPermutationRotationIteratorList.PADDING + permutationIndex]].getBox().getStackValue(rotations[ParallelPermutationRotationIteratorList.PADDING + permutationIndex]);
+		return stackableItems[permutations[PADDING + permutationIndex]].getBox().getStackValue(rotations[PADDING + permutationIndex]);
 	}
 
 	@Override
@@ -368,12 +370,12 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	}
 
 	public void resetRotations() {
-		System.arraycopy(reset, 0, rotations, ParallelPermutationRotationIteratorList.PADDING, rotations.length - ParallelPermutationRotationIteratorList.PADDING);
+		System.arraycopy(reset, 0, rotations, PADDING, rotations.length - PADDING);
 	}
 
 	@Override
 	public int length() {
-		return permutations.length - ParallelPermutationRotationIteratorList.PADDING;
+		return permutations.length - PADDING;
 	}
 	
 	@Override
@@ -381,7 +383,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		List<Integer> removed = new ArrayList<>(permutations.length);
 		
 		for(int i = 0; i < count; i++) {
-			removed.add(permutations[ParallelPermutationRotationIteratorList.PADDING + i]);
+			removed.add(permutations[PADDING + i]);
 		}
 		
 		removePermutations(removed);
@@ -389,7 +391,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 
 	@Override
 	public BoxStackValue getStackValue(int index) {
-		return super.getStackValue(ParallelPermutationRotationIteratorList.PADDING + index);
+		return super.getStackValue(PADDING + index);
 	}
 
 	protected void initiatePermutations() {
@@ -402,14 +404,14 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		}
 		
 		// need to be in ascending order for the algorithm to work
-		int[] permutations = new int[ParallelPermutationRotationIteratorList.PADDING + count];
+		int[] permutations = new int[PADDING + count];
 		
 		int offset = 0;
 		for (int j = 0; j < stackableItems.length; j++) {
 			BoxItem value = stackableItems[j];
 			if(value != null && !value.isEmpty()) {
 				for (int k = 0; k < value.getCount(); k++) {
-					permutations[ParallelPermutationRotationIteratorList.PADDING + offset] = j;
+					permutations[PADDING + offset] = j;
 					offset++;
 				}
 			}
@@ -417,7 +419,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		
 		initiatePermutation(permutations);
 		
-		int[] lastPermutation = new int[ParallelPermutationRotationIteratorList.PADDING + count];
+		int[] lastPermutation = new int[PADDING + count];
 		
 		count = 0;
 		for(int g = 0; g < groupsMatrix.length; g++) {
@@ -430,7 +432,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 			int boxCount = group.getBoxCount();
 			
 			for(int i = 0; i < boxCount; i++) {
-				lastPermutation[ParallelPermutationRotationIteratorList.PADDING + count + i] = permutations[ParallelPermutationRotationIteratorList.PADDING + count + boxCount - 1 - i];
+				lastPermutation[PADDING + count + i] = permutations[PADDING + count + boxCount - 1 - i];
 			}
 			count += boxCount;
 		}		
@@ -446,7 +448,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		this.rotations = new int[permutations.length];
 		this.reset = new int[rotations.length];
 		
-		if(permutations.length > ParallelPermutationRotationIteratorList.PADDING) {
+		if(permutations.length > PADDING) {
 			initMinStackableVolume();
 		}
 		

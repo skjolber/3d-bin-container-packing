@@ -184,7 +184,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 		return permutations;
 	}
 
-	protected void resetRotations() {
+	public void resetRotations() {
 		System.arraycopy(reset, 0, rotations, 0, rotations.length);
 	}
 

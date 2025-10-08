@@ -18,9 +18,8 @@ import org.openjdk.jmh.annotations.TearDown;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
-import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorList;
-import com.github.skjolber.packing.iterator.ParallelPermutationRotationIteratorListBuilder;
+import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.ParallelBoxItemPermutationRotationIteratorList;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.test.generator.Item;
 import com.github.skjolber.packing.test.generator.ItemIO;
@@ -37,8 +36,8 @@ public class IteratorState {
 	private final int threadPoolSize;
 	private ExecutorService pool1;
 
-	private ParallelPermutationRotationIteratorList parallelIterator;
-	private DefaultPermutationRotationIterator iterator;
+	private ParallelBoxItemPermutationRotationIteratorList parallelIterator;
+	private DefaultBoxItemPermutationRotationIterator iterator;
 
 	public IteratorState() {
 		this(16);
@@ -82,14 +81,14 @@ public class IteratorState {
 			weight += stackableItem.getCount() * stackableItem.getBox().getWeight();
 		}
 
-		this.parallelIterator = new ParallelPermutationRotationIteratorListBuilder()
+		this.parallelIterator = ParallelBoxItemPermutationRotationIteratorList.newBuilder()
 				.withBoxItems(stackableItems3D)
 				.withLoadSize(x, y, z)
 				.withParallelizationCount(threadPoolSize)
 				.withMaxLoadWeight(weight)
 				.build();
 
-		this.iterator = DefaultPermutationRotationIterator.newBuilder()
+		this.iterator = DefaultBoxItemPermutationRotationIterator.newBuilder()
 				.withBoxItems(stackableItems3D)
 				.withLoadSize(x, y, z)
 				.withMaxLoadWeight(weight)
@@ -119,7 +118,7 @@ public class IteratorState {
 		return products;
 	}
 
-	public ParallelPermutationRotationIteratorList getParallelIterator() {
+	public ParallelBoxItemPermutationRotationIteratorList getParallelIterator() {
 		return parallelIterator;
 	}
 
@@ -127,7 +126,7 @@ public class IteratorState {
 		return pool1;
 	}
 
-	public DefaultPermutationRotationIterator getIterator() {
+	public DefaultBoxItemPermutationRotationIterator getIterator() {
 		return iterator;
 	}
 
