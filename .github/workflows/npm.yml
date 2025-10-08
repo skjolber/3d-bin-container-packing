@@ -25,5 +25,5 @@ jobs:
           npm ci
       - run: |
           cd visualizer/viewer
-          npm build
+          npm run build
 
