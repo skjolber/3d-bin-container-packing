@@ -16,7 +16,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
@@ -72,7 +72,7 @@ public class BouwkampCodeBruteForcePackagerState {
 
 				List<BoxItem> stackableItems3D = BouwkampConverter.getStackableItems3D(bkpLine);
 
-				ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16).build();
+				ParallelBoxItemBruteForcePackager parallelPackager = ParallelBoxItemBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16).build();
 
 				BruteForcePackager packager = BruteForcePackager.newBuilder().build();
 

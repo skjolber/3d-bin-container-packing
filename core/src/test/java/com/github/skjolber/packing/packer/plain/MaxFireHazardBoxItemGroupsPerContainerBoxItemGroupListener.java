@@ -62,18 +62,19 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 			count++;
 			
 			if(count >= maxCount) {
-				
-				BoxItemGroupSource groups = boxItems.getGroups();
-				
-				// remove other fire hazards
-				for(int i = 0; i < groups.size(); i++) {
-					BoxItemGroup boxItemGroup = groups.get(i);
-					
-					if(isFireHazard(boxItemGroup)) {
-						groups.remove(i);
-						i--;
-					}
-				}
+				removeFireHazards(boxItems.getGroups());
+			}
+		}
+	}
+
+	private void removeFireHazards(BoxItemGroupSource groups) {
+		// remove other fire hazards
+		for(int i = 0; i < groups.size(); i++) {
+			BoxItemGroup boxItemGroup = groups.get(i);
+			
+			if(isFireHazard(boxItemGroup)) {
+				groups.remove(i);
+				i--;
 			}
 		}
 	}

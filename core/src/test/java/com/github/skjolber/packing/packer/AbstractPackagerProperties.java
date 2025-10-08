@@ -16,7 +16,7 @@ import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.pholser.junit.quickcheck.From;
@@ -30,7 +30,7 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 	AbstractPackager<?, ?> plainPackager = PlainPackager.newBuilder().build();
 	AbstractPackager<?, ?> bruteForcePackager = BruteForcePackager.newBuilder().build();
 	AbstractPackager<?, ?> fastBruteForcePackager = FastBruteForcePackager.newBuilder().build();
-	AbstractPackager<?, ?> parallelBruteForcePackager = ParallelBruteForcePackager.newBuilder().build();
+	AbstractPackager<?, ?> parallelBruteForcePackager = ParallelBoxItemBruteForcePackager.newBuilder().build();
 	AbstractPackager<?, ?> largestAreaFitFirstPackager = LargestAreaFitFirstPackager.newBuilder().build();
 
 	@Property

@@ -99,14 +99,14 @@ public class NoLighterWithPetrolBoxItemGroupListener implements ManifestControls
 	private boolean isLighter(BoxItemGroup boxItemGroup) {
 		for(int i = 0; i < boxItemGroup.size(); i++) {
 			BoxItem item = boxItemGroup.get(i);
-			if(isMatches(item)) {
+			if(hasLighter(item)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	private boolean isMatches(BoxItem item) {
+	private boolean hasLighter(BoxItem item) {
 		return item.getBox().getId().startsWith("lighter-");
 	}
 	

@@ -41,7 +41,6 @@ public class MaxFireHazardBoxItemPerContainerBoxItemListener implements Manifest
 		return () -> new Builder().withMaxCount(maxCount);
 	}
 	
-	
 	protected final Container container;
 	protected final BoxItemSource items;
 	protected final Stack stack;
@@ -63,16 +62,16 @@ public class MaxFireHazardBoxItemPerContainerBoxItemListener implements Manifest
 			count++;
 			
 			if(count >= maxCount) {
+				removeFireHazards();
+			}
+		}
+	}
 
-				for(int i = 0; i < items.size(); i++) {
-					BoxItem candidate = items.get(i);
-					
-					if(isFireHazard(candidate)) {
-						items.remove(i);
-						i--;
-					}
-				}
-
+	private void removeFireHazards() {
+		for(int i = 0; i < items.size(); i++) {
+			if(isFireHazard(items.get(i))) {
+				items.remove(i);
+				i--;
 			}
 		}
 	}

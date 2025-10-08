@@ -14,7 +14,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.AbstractPackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
@@ -26,7 +26,7 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 	public void testSimpleImperfectSquaredRectangles() throws Exception {
 		// if you do not have a lot of CPU cores, this will take quite some time
 
-		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(256).build();
+		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(256).build();
 
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
@@ -59,7 +59,7 @@ public class ParallelBruteForcePackagerTest extends AbstractPackagerTest {
 						.withMaxLoadWeight(bouwkampCode.getWidth() * bouwkampCode.getDepth()).build(), 1)
 				.build();
 
-		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().build();
+		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().build();
 
 		List<BoxItem> products = new ArrayList<>();
 
