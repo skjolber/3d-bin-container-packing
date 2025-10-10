@@ -21,7 +21,7 @@ public class ExtremePoints3DTest {
 	private Placement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, -1);
 		
-		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(0).build();
+		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(1).build();
 		stackValue.setBox(box);
 		
 		new BoxItem(box, 1);
@@ -420,6 +420,7 @@ public class ExtremePoints3DTest {
 		assertThat(ep.get(2)).isYZSupportAt(9, 9);
 		assertThat(ep.get(2)).isXZSupportAt(99, 99);
 
+		assertThat(ep.calculateUsedWeight()).isEqualTo(ep.getPlacements().size());
 	}
 
 	@ParameterizedTest
