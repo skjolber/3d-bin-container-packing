@@ -8,15 +8,15 @@ import org.junit.Assert;
 import org.junit.runner.RunWith;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.pholser.junit.quickcheck.From;
@@ -30,7 +30,7 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 	AbstractPackager<?, ?> plainPackager = PlainPackager.newBuilder().build();
 	AbstractPackager<?, ?> bruteForcePackager = BruteForcePackager.newBuilder().build();
 	AbstractPackager<?, ?> fastBruteForcePackager = FastBruteForcePackager.newBuilder().build();
-	AbstractPackager<?, ?> parallelBruteForcePackager = ParallelBruteForcePackager.newBuilder().build();
+	AbstractPackager<?, ?> parallelBruteForcePackager = ParallelBoxItemBruteForcePackager.newBuilder().build();
 	AbstractPackager<?, ?> largestAreaFitFirstPackager = LargestAreaFitFirstPackager.newBuilder().build();
 
 	@Property
@@ -41,11 +41,13 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 				2 * boxSize.getDy(),
 				2 * boxSize.getDz());
 
+		System.out.println("Test " + containerSize);
+		
 		runTest(containerSize, boxSize, count,
 				bruteForcePackager,
 				fastBruteForcePackager,
-				parallelBruteForcePackager,
-				plainPackager);
+				parallelBruteForcePackager
+				);
 	}
 
 	@Property
@@ -110,7 +112,7 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 					.build();
 
 			final Box box = Box.newBuilder()
-					.withDescription(boxSize.encode())
+					.withId(boxSize.encode())
 					.withRotate3D()
 					.withSize(boxSize.getDx(), boxSize.getDy(), boxSize.getDz())
 					.withWeight(1)
@@ -120,13 +122,14 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 					.withContainer(container, 1)
 					.build();
 
-			PackagerResult build = packager
-					.newResultBuilder()
-					.withContainers(containers)
-					.withStackables(singletonList(new StackableItem(box, count)))
-					.build();
-
+			PackagerResultBuilder builder = packager.newResultBuilder()
+					.withBoxItems(singletonList(new BoxItem(box, count)))
+					.withContainerItems(containers);
+			
+			PackagerResult build = builder.build();
+			Assert.assertTrue(packager.getClass().getSimpleName() + " is expected to pack", build.isSuccess());
 			Container fits = build.get(0);
+			
 			// identifies which packager has failed
 			Assert.assertNotNull(packager.getClass().getSimpleName() + " is expected to pack", fits);
 			assertValid(fits);

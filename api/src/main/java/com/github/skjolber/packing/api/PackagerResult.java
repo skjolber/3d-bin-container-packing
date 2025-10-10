@@ -1,10 +1,12 @@
 package com.github.skjolber.packing.api;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
  * 
- * Packager result. If the packaging operation was unsuccessful, the container list is empty.
+ * Packager result. If the packaging operation was unsuccessful, the container
+ * list is empty.
  * 
  */
 
@@ -15,8 +17,7 @@ public class PackagerResult {
 	protected final boolean timeout;
 
 	public PackagerResult(List<Container> containers, long duration, boolean timeout) {
-		super();
-		this.containers = containers;
+		this.containers = containers != null ? containers : Collections.emptyList();
 		this.duration = duration;
 		this.timeout = timeout;
 	}

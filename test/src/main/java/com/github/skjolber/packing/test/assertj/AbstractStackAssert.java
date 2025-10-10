@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.assertj.core.api.AbstractObjectAssert;
 
-import com.github.skjolber.packing.api.ContainerStackValue;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
 
 public abstract class AbstractStackAssert<SELF extends AbstractStackAssert<SELF, ACTUAL>, ACTUAL extends Stack>
 		extends AbstractObjectAssert<SELF, ACTUAL> {
@@ -15,10 +15,10 @@ public abstract class AbstractStackAssert<SELF extends AbstractStackAssert<SELF,
 		super(actual, selfType);
 	}
 
-	public SELF isWithinLoadContraints() {
+	public SELF isWithinLoadContraints(Container container) {
 		isNotNull();
-		isWithinLoadDimensions();
-		isWithinLoadWeight();
+		isWithinLoadDimensions(container);
+		isWithinLoadWeight(container);
 		placementsDoNotIntersect();
 		return myself;
 	}
@@ -26,10 +26,10 @@ public abstract class AbstractStackAssert<SELF extends AbstractStackAssert<SELF,
 	public SELF placementsDoNotIntersect() {
 		isNotNull();
 
-		List<StackPlacement> entries = actual.getPlacements();
+		List<Placement> entries = actual.getPlacements();
 
-		for (StackPlacement stackPlacement1 : entries) {
-			for (StackPlacement stackPlacement2 : entries) {
+		for (Placement stackPlacement1 : entries) {
+			for (Placement stackPlacement2 : entries) {
 				if(stackPlacement1 != stackPlacement2) {
 					if(stackPlacement1.intersects(stackPlacement2)) {
 						failWithMessage(stackPlacement1 + " intersects " + stackPlacement2 + " for stack " + actual.getClass().getName());
@@ -40,16 +40,14 @@ public abstract class AbstractStackAssert<SELF extends AbstractStackAssert<SELF,
 		return myself;
 	}
 
-	public SELF isWithinLoadDimensions() {
+	public SELF isWithinLoadDimensions(Container container) {
 		isNotNull();
 
-		ContainerStackValue containerStackValue = actual.getContainerStackValue();
+		int loadDx = container.getLoadDx();
+		int loadDy = container.getLoadDy();
+		int loadDz = container.getLoadDz();
 
-		int loadDx = containerStackValue.getLoadDx();
-		int loadDy = containerStackValue.getLoadDy();
-		int loadDz = containerStackValue.getLoadDz();
-
-		for (StackPlacement stackPlacement : actual.getPlacements()) {
+		for (Placement stackPlacement : actual.getPlacements()) {
 
 			if(stackPlacement.getAbsoluteX() < 0) {
 				failWithMessage("Expected stacked x position >= 0, got " + stackPlacement.getAbsoluteX() + " for " + stackPlacement);
@@ -75,14 +73,14 @@ public abstract class AbstractStackAssert<SELF extends AbstractStackAssert<SELF,
 		return myself;
 	}
 
-	public SELF isWithinLoadWeight() {
+	public SELF isWithinLoadWeight(Container container) {
 		isNotNull();
 
 		int loadWeight = 0;
-		for (StackPlacement stackPlacement : actual.getPlacements()) {
-			loadWeight += stackPlacement.getStackable().getWeight();
+		for (Placement stackPlacement : actual.getPlacements()) {
+			loadWeight += stackPlacement.getStackValue().getBox().getWeight();
 		}
-		int maxLoadWeight = actual.getContainerStackValue().getMaxLoadWeight();
+		int maxLoadWeight = container.getMaxLoadWeight();
 
 		if(loadWeight > maxLoadWeight) {
 			failWithMessage("Expected stacked load weight <= " + maxLoadWeight + ", got " + loadWeight);

@@ -13,11 +13,11 @@ import org.openjdk.jmh.annotations.TearDown;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 
 /**
@@ -39,7 +39,7 @@ public class TychoPackagerState {
 	private List<BenchmarkSet> plainPackager = new ArrayList<>();
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 
-	private List<StackableItem> stackableItems3D;
+	private List<BoxItem> stackableItems3D;
 
 	private List<ContainerItem> containers = ContainerItem.newListBuilder()
 			.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1500, 1900, 4000).withMaxLoadWeight(100).build()).build();
@@ -57,7 +57,7 @@ public class TychoPackagerState {
 
 	@Setup(Level.Trial)
 	public void init() {
-		ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16)
+		ParallelBoxItemBruteForcePackager parallelPackager = ParallelBoxItemBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16)
 				.build();
 
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();

@@ -1,15 +1,18 @@
 import * as THREE from "three";
 import React, { Component } from "react";
 import { Stats } from "stats-js";
-import { Color, Font } from "three";
-
+import { Color } from "three";
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { MemoryColorScheme, RandomColorScheme, StackPlacement, Box, Container, Point, StackableRenderer } from "./api";
 import { http } from "./utils";
+import { Font } from 'three/examples/jsm/loaders/FontLoader';
 
 import randomColor from "randomcolor";
 import { thisExpression } from "@babel/types";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
+
+const helvetiker = require( 'three/examples/fonts/droid/droid_sans_mono_regular.typeface.json');
 
 const CONTAINERS = "./assets/containers.json";
 
@@ -45,6 +48,9 @@ var stackableRenderer = new StackableRenderer();
 var memoryScheme = new MemoryColorScheme(new RandomColorScheme());
 
 var gridXZ;
+
+const font = new Font( helvetiker );
+
 /**
  * Example temnplate of using Three with React
  */
@@ -254,15 +260,15 @@ class ThreeScene extends Component {
         visibleContainers.push(visibleContainer);
 
 
-		if(x + container.dx > maxX) {
-			maxX = x + container.dx;
-		}
-		if(container.dy > maxY) {
-			maxY = container.dy;
-		}
-		if(container.dz > maxZ) {
-			maxZ = container.dz;
-		}
+        if(x + container.dx > maxX) {
+          maxX = x + container.dx;
+        }
+        if(container.dy > maxY) {
+          maxY = container.dy;
+        }
+        if(container.dz > maxZ) {
+          maxZ = container.dz;
+        }
 
         x += container.dx + GRID_SPACING;
         x = x - (x % GRID_SPACING);
@@ -273,7 +279,7 @@ class ThreeScene extends Component {
       camera.position.x = maxX * 2;
       
 	  // Add grid corresponding to containers
-      var size = Math.max(maxY, maxX) + GRID_SPACING + GRID_SPACING;
+      var size = Math.max(maxY, maxX) + GRID_SPACING + GRID_SPACING + GRID_SPACING;
       let gridXZ = new THREE.GridHelper(
 		      size,
 		      size / GRID_SPACING,
@@ -284,6 +290,57 @@ class ThreeScene extends Component {
        gridXZ.position.y = 0;
        gridXZ.position.x = size / 2 - GRID_SPACING;
        gridXZ.position.z = size / 2 - GRID_SPACING;
+
+       const dir = new THREE.Vector3( 1, 2, 0 );
+
+      //normalize the direction vector (convert to vector of length 1)
+      dir.normalize();
+
+      const origin = new THREE.Vector3( -GRID_SPACING - 1, 0, -GRID_SPACING - 1 );
+      const length = maxY + GRID_SPACING;
+      const hex = 0xffffff;
+      const yAxis = new THREE.ArrowHelper( new THREE.Vector3( 1, 0, 0 ), origin, maxY + GRID_SPACING, hex, 1, 1);
+      scene.add( yAxis );
+
+      const xAxis = new THREE.ArrowHelper( new THREE.Vector3( 0, 0, 1 ), origin, maxX + GRID_SPACING, hex, 1, 1);
+      scene.add( xAxis );
+
+      const textMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff } );
+
+      const yLabelTextGeometry = new TextGeometry( 'Y', {
+        font: font,
+        size: GRID_SPACING / 2,
+        depth: 0,
+        curveSegments: 1,
+        bevelEnabled: true,
+        bevelThickness: 0,
+        bevelSize: 0,
+        bevelOffset: 0,
+        bevelSegments: 1
+      } );
+
+      const yLabelMesh = new THREE.Mesh( yLabelTextGeometry, textMaterial );
+      yLabelMesh.position.set( maxY - GRID_SPACING / 2, 0, -GRID_SPACING - GRID_SPACING / 4  );
+      yLabelMesh.rotation.x = Math.PI / 2;
+      yLabelMesh.rotation.z = -Math.PI / 2;
+      scene.add( yLabelMesh );
+
+      const xLabelTextGeometry = new TextGeometry( 'X', {
+        font: font,
+        size: GRID_SPACING / 2,
+        depth: 0,
+        curveSegments: 1,
+        bevelEnabled: true,
+        bevelThickness: 0,
+        bevelSize: 0,
+        bevelOffset: 0,
+        bevelSegments: 1
+      } );
+
+      const xLabelMesh = new THREE.Mesh( xLabelTextGeometry, textMaterial );
+      xLabelMesh.position.set(-GRID_SPACING - GRID_SPACING / 2 - GRID_SPACING / 4, 0, maxX - GRID_SPACING / 2);
+      xLabelMesh.rotation.x = Math.PI / 2;
+      scene.add( xLabelMesh );
     };
 
     http(

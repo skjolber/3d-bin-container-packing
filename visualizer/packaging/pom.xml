@@ -5,9 +5,11 @@
 		<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 		<artifactId>parent</artifactId>
 		<version>4.0.0-SNAPSHOT</version>
-		<relativePath>../..</relativePath>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<artifactId>visualizer-packaging</artifactId>
+	<name>visualizer-packaging</name>
+	<description>Packaging-result visualization for 3D bin packaging</description>
 
 	<properties>
 		<module-name>com.github.skjolber.packing.visualizer.packaging</module-name>
@@ -28,7 +30,7 @@
 		</dependency>		
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-			<artifactId>extreme-points</artifactId>
+			<artifactId>points</artifactId>
 		</dependency>		
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
@@ -77,33 +79,16 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.moditect</groupId>
-				<artifactId>moditect-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<configuration>
+					<skipPublishing>true</skipPublishing>
 				</configuration>
 			</plugin>
 		</plugins>

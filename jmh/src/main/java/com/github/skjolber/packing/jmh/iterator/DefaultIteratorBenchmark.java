@@ -12,7 +12,7 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import com.github.skjolber.packing.iterator.DefaultPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 
 @Fork(value = 1, warmups = 1, jvmArgsPrepend = "-XX:-RestrictContended")
 @Warmup(iterations = 1, time = 7, timeUnit = TimeUnit.SECONDS)
@@ -25,7 +25,7 @@ public class DefaultIteratorBenchmark {
 	@Benchmark
 	public long rotations(IteratorState state) throws Exception {
 
-		DefaultPermutationRotationIterator iterator = state.getIterator();
+		DefaultBoxItemPermutationRotationIterator iterator = state.getIterator();
 		int index = iterator.length() / 2;
 
 		long count = 0;
@@ -43,7 +43,7 @@ public class DefaultIteratorBenchmark {
 	@Benchmark
 	public long permutations(IteratorState state) throws Exception {
 
-		DefaultPermutationRotationIterator iterator = state.getIterator();
+		DefaultBoxItemPermutationRotationIterator iterator = state.getIterator();
 
 		int index = iterator.length() / 2;
 
