@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.points3d;
 
+import static org.junit.Assert.assertSame;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -7,21 +8,37 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.ep.points3d.DefaultXYPlanePoint3D;
 import com.github.skjolber.packing.ep.points3d.DefaultXZPlanePoint3D;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 
 public class DefaultXZPlanePoint3DTest2 extends AbstractPointTest {
 
-	private Placement placement1 = createStackPlacement(0, 0, 0, 9, 9, 9);
-	private Placement placement2 = createStackPlacement(0, 10, 0, 4, 14, 4);
+	private DefaultXZPlanePoint3D point = new DefaultXZPlanePoint3D(0, 10, 0, 10, 10, 10, centerPlacement);
 	
-	private DefaultXZPlanePoint3D point = new DefaultXZPlanePoint3D(0, 10, 0, 10, 10, 10, placement1);
+	// i.e. front
+	//  
+	// z           
+	// |
+	// |        y
+	// |       /    
+    // |      /  
+	// |     /
+	// |----------|      
+	// |          |
+	// |          |
+	// |          |
+	// |----------|----- x
 	
 	@Test
 	public void testSupport() {
 		assertTrue(point.isSupportedXZPlane());
 		assertFalse(point.isSupportedXYPlane());
 		assertFalse(point.isSupportedYZPlane());
+		
+		assertTrue(point.isSupportedXZPlane(4, 4));
+		assertFalse(point.isSupportedXYPlane(4, 4));
+		assertFalse(point.isSupportedYZPlane(4, 4));
 		
 		assertEquals(point.calculateXYSupport(10, 10), 0);
 		assertEquals(point.calculateYZSupport(10, 10), 0);
@@ -34,17 +51,19 @@ public class DefaultXZPlanePoint3DTest2 extends AbstractPointTest {
 		assertEquals(point.calculateXZSupport(11, 11), 100);
 	}
 	
-	//   x
-	//   |
-	//   | 
-	//   |-------------------|
-	//   |                   | 
-	//   |                   | 
-	// 5 * - - - - - - - - - | 
-	//   |                   | 
-	//   |                   | 
-	//   |----------------------- z
-	//                       10
+	// i.e. front
+	//  
+	// z           
+	// |
+	// |        y
+	// |       /    
+    // |      /  
+	// |     /
+	// |    /|-----|      
+	// |   / |     |
+	// |  /  |     |
+	// | /   |     |
+	// |-----*-----|----- x
 	
 	@Test
 	public void testMoveX() {
@@ -55,17 +74,19 @@ public class DefaultXZPlanePoint3DTest2 extends AbstractPointTest {
 		assertEquals(moveX.calculateXZSupport(5, 11), 50);
 	}
 
-	//    x
-	//    |
-	//    | 
-	// 10 |----------|--------|
-	//    |                   | 
-	//    |          |        | 
-	//    |                   | 
-	//    |          |        | 
-	//    |                   | 
-	//    |----------*------------ z
-	//               5
+	//  
+	// z           
+	// |
+	// |         y
+	// |        /    
+    // |       /  
+	// |      /
+	// |----------|      
+	// |          |
+	// *----------|
+	// |  /        
+	// | /         
+	// |--------------- x
 
 	@Test
 	public void testMoveZ() {
@@ -75,53 +96,91 @@ public class DefaultXZPlanePoint3DTest2 extends AbstractPointTest {
 		assertEquals(moveY.calculateXZSupport(10, 5), 50);
 		assertEquals(moveY.calculateXZSupport(11, 5), 50);
 	}
-
+	
 	@Test
 	public void testMoveY() {
 		SimplePoint3D moveY = point.moveY(point.getMinY() + 5);
 
 		assertFalse(moveY.isSupportedXZPlane());
 	}
-	
-	// z
-	// |
-	// | 
-	// |-------------------|
-	// |                   | 
-	// |                   | 
-	// |----------║        | 
-	// |          ║        | 
-	// |          ║        | 
-	// |----------*------------ x
-	//
+	//            y  
+	//             /|  
+	// z          / |  
+	// |         /  | 
+	// |        /   /
+	// |       /   / 
+	// |      /------|      
+	// |      |  /   |
+	// |      | /    |
+	// |------*/----------- x
 
-	
 	@Test
 	public void testMoveXSupported() {
-		SimplePoint3D moveX = point.moveX(placement2.getAbsoluteX(), placement2);
+		SimplePoint3D moveX = point.moveX(rearPlacement.getAbsoluteX(), rearPlacement);
 
 		assertTrue(moveX.isSupportedXZPlane());
 		assertTrue(moveX.isSupportedYZPlane());
 	}
 	
-	// z
-	// |
-	// | 
-	// |-------------------|
-	// |                   | 
-	// |                   | 
-	// *==========|        | 
-	// |          |        | 
-	// |          |        | 
-	// |----------------------- x
-	//
+	//  
+	// z           
+	// |             y
+	// |           
+	// |      /-----------/
+    // |     /           /
+	// |    /           /
+	// |   /           /  
+	// |----------|   /
+	// | /        |  /
+	// |/         | /
+	// *----------|/
+	// |           
+	// |           
+	// |--------------- x
 	
 	@Test
 	public void testMoveZSupported() {
-		SimplePoint3D moveZ = point.moveZ(placement2.getAbsoluteZ(), placement2);
+		SimplePoint3D moveZ = point.moveZ(rearPlacement.getAbsoluteZ(), rearPlacement);
 
 		assertTrue(moveZ.isSupportedXYPlane());
 		assertTrue(moveZ.isSupportedXZPlane());
 	}
+	
+	//  
+	// z           
+	// |           y  
+	// |          /
+	// |    ----------
+	// |    |        |
+    // |    |        |   
+	// |    |        |  
+	// |    |        |     
+	// |    *---------    
+	// |   /         
+	// |  /       
+	// | /        
+	// |/-------------- x
 
+	@Test
+	public void testMoveYSupported() {
+		SimplePoint3D moveY = point.moveY(rearPlacement.getAbsoluteY(), rearPlacement);
+
+		assertTrue(moveY.isSupportedXZPlane());
+		assertFalse(moveY.isSupportedYZPlane());
+		assertFalse(moveY.isSupportedXYPlane());
+	}
+
+	@Test
+	public void testClone() {
+		DefaultXZPlanePoint3D clone = point.clone();
+		
+		assertEquals(point.getMinX(), clone.getMinX());
+		assertEquals(point.getMinY(), clone.getMinY());
+		assertEquals(point.getMinZ(), clone.getMinZ());
+		assertEquals(point.getMaxX(), clone.getMaxX());
+		assertEquals(point.getMaxY(), clone.getMaxY());
+		assertEquals(point.getMaxZ(), clone.getMaxZ());
+		
+		assertSame(point.getXZPlane(), clone.getXZPlane());
+	}
 }

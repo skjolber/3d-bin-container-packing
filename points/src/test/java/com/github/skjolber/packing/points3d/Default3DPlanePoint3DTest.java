@@ -22,7 +22,11 @@ public class Default3DPlanePoint3DTest extends AbstractPointTest {
 		assertTrue(point.isSupportedXZPlane());
 		assertTrue(point.isSupportedXYPlane());
 		assertTrue(point.isSupportedYZPlane());
-		
+
+		assertTrue(point.isSupportedXZPlane(4, 4));
+		assertTrue(point.isSupportedXYPlane(4, 4));
+		assertTrue(point.isSupportedYZPlane(4, 4));
+
 		assertEquals(point.calculateXYSupport(10, 10), 100);
 		assertEquals(point.calculateYZSupport(10, 10), 100);
 		assertEquals(point.calculateXZSupport(10, 10), 100);
