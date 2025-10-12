@@ -12,10 +12,10 @@ import org.junit.jupiter.api.Test;
 
 public class PlainPackagerTest extends AbstractPackagerTest {
 
-    private static List<StackableItem> products = Arrays.asList(
-            new StackableItem(Box.newBuilder().withDescription("1").withSize(395, 260, 185).withWeight(7).build(), 41),
-            new StackableItem(Box.newBuilder().withDescription("2").withSize(335, 175, 160).withWeight(6).build(), 2),
-            new StackableItem(Box.newBuilder().withDescription("3").withSize(530, 255, 150).withWeight(5).build(), 1));
+    private static List<BoxItem> products = Arrays.asList(
+            new BoxItem(Box.newBuilder().withDescription("1").withSize(395, 260, 185).withWeight(7).build(), 41),
+            new BoxItem(Box.newBuilder().withDescription("2").withSize(335, 175, 160).withWeight(6).build(), 2),
+            new BoxItem(Box.newBuilder().withDescription("3").withSize(530, 255, 150).withWeight(5).build(), 1));
 
     private static Container container = Container.newBuilder().withDescription("1")
             .withEmptyWeight(0)
@@ -25,7 +25,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
     @Test
     public void testPlainPackager() throws Exception {
-        Packager laff_packager = PlainPackager.newBuilder()
+    	PlainPackager p = PlainPackager.newBuilder()
                 .build();
 
         List<ContainerItem> containerItems = ContainerItem
@@ -33,7 +33,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
                 .withContainer(container)
                 .build();
 
-        PackagerResult result = laff_packager.newResultBuilder().withContainers(containerItems).withStackables(products).build();
+        PackagerResult result = p.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
         if (result.isSuccess()) {
             write(result.get(0));
         } else {

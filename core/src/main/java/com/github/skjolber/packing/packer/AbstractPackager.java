@@ -2,19 +2,17 @@ package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.PackResult;
-import com.github.skjolber.packing.api.PackResultComparator;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
-import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
 
 /**
@@ -23,39 +21,34 @@ import com.github.skjolber.packing.iterator.BinarySearchIterator;
  * Thread-safe implementation.
  */
 
-public abstract class AbstractPackager<P extends PackResult, B extends PackagerResultBuilder<B>> implements Packager<B> {
+public abstract class AbstractPackager<P extends IntermediatePackagerResult, B extends PackagerResultBuilder> implements Packager<B> {
 
-	protected static final EmptyPackResult EMPTY_PACK_RESULT = EmptyPackResult.EMPTY;
+	public static final int ARGUMENT_1_IS_BETTER = 1;
+	public static final int ARGUMENT_2_IS_BETTER = -1;
 
-	protected final PackResultComparator packResultComparator;
+	protected final Comparator<P> intermediatePackagerResultComparator;
 	
 	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Integer.MAX_VALUE);
 
-	/**
-	 * Constructor
-	 *
-	 * @param packResultComparator result comparator
-	 */
-
-	public AbstractPackager(PackResultComparator packResultComparator) {
-		this.packResultComparator = packResultComparator;
+	public AbstractPackager(Comparator<P> comparator) {
+		this.intermediatePackagerResultComparator = comparator;
 	}
 
 	// pack in single container
-	protected P packSingle(List<Integer> containerItemIndexes, PackagerAdapter<P> adapter, PackagerInterruptSupplier interrupt) {
+	public P packSingle(List<Integer> containerItemIndexes, PackagerAdapter<P> adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 		if(containerItemIndexes.size() <= 2) {
 			for (int i = 0; i < containerItemIndexes.size(); i++) {
 				if(interrupt.getAsBoolean()) {
-					break;
+					throw new PackagerInterruptedException();
 				}
 
 				Integer containerItemIndex = containerItemIndexes.get(i);
-
-				P result = adapter.attempt(containerItemIndex, null);
-				if(result == null) {
-					return null; // timeout, no result
+				
+				P result = adapter.attempt(containerItemIndex, null, true);
+				if(result.isEmpty()) {
+					continue;
 				}
-				if(result.containsLastStackable()) {
+				if(result.getStack().size() == adapter.countRemainingBoxes()) {
 					return result;
 				}
 			}
@@ -65,7 +58,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			// while the search finds a baseline, we really need to check all the containers
 			// at a lower index before the optional container is located.
 			
-			PackResult[] results = new PackResult[containerItemIndexes.get(containerItemIndexes.size() - 1) + 1];
+			IntermediatePackagerResult[] results = new IntermediatePackagerResult[containerItemIndexes.get(containerItemIndexes.size() - 1) + 1];
 
 			BinarySearchIterator iterator = new BinarySearchIterator();
 
@@ -79,13 +72,8 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 					int mid = iterator.next();
 					int nextContainerItemIndex = containerItemIndexes.get(mid);
 
-					P result = adapter.attempt(nextContainerItemIndex, bestResult);
-					if(result == null) {
-						// timeout 
-						// return best result so far, whatever it is
-						break search;
-					}
-					if(result.containsLastStackable()) {
+					P result = adapter.attempt(nextContainerItemIndex, bestResult, true);
+					if(result.getStack().size() == adapter.countRemainingBoxes()) {
 						results[nextContainerItemIndex] = result;
 
 						iterator.lower();
@@ -96,7 +84,7 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 						}
 					} else {
 						// count as empty
-						results[nextContainerItemIndex] = EMPTY_PACK_RESULT;
+						results[nextContainerItemIndex] = createEmptyIntermediatePackagerResult();
 								
 						iterator.higher();
 					}
@@ -125,107 +113,85 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			} while (!containerItemIndexes.isEmpty());
 
 			// return the best, if any
-			for (final PackResult result : results) {
+			for (final IntermediatePackagerResult result : results) {
 				if(result != null && !result.isEmpty()) {
 					return (P)result;
 				}
 			}
 		}
-		return (P) EMPTY_PACK_RESULT;
+		return createEmptyIntermediatePackagerResult();
 	}
 
-	public List<Container> packList(List<StackableItem> products, List<ContainerItem> containers, int limit) {
-		return pack(products, containers, limit, PackagerInterruptSupplierBuilder.NEGATIVE);
-	}
-
-	/**
-	 * Return a list of containers which holds all the boxes in the argument
-	 *
-	 * @param boxes     list of boxes to fit in a container
-	 * @param containerItems list of containers available for use in this operation
-	 * @param limit     maximum number of containers
-	 * @param interrupt When true, the computation is interrupted as soon as possible.
-	 * @return list of containers, or null if the deadline was reached, or empty list if the packages could not be packaged within the available containers and/or limit.
-	 */
-
-	public List<Container> pack(List<StackableItem> boxes, List<ContainerItem> containerItems, int limit, PackagerInterruptSupplier interrupt) {
-		PackagerAdapter<P> adapter = adapter(boxes, containerItems, interrupt);
-
-		if(adapter == null) {
-			return Collections.emptyList();
-		}
-		
+	public List<Container> packAdapter(int limit, PackagerInterruptSupplier interrupt, PackagerAdapter<P> adapter) throws PackagerInterruptedException {
 		List<Container> containerPackResults = new ArrayList<>();
 
 		do {
 			// is it possible to fit the remaining boxes a single container?
 			int maxContainers = limit - containerPackResults.size();
-			List<Integer> containerItemIndexes = adapter.getContainers(1);
-			if(!containerItemIndexes.isEmpty()) {
-
-				P result = packSingle(containerItemIndexes, adapter, interrupt);
-				if(result == null) {
-					// timeout
-					return null;
+			if(maxContainers > 1) {
+				List<Integer> containerItemIndexes = adapter.getContainers(1);
+				if(!containerItemIndexes.isEmpty()) {
+	
+					P result = packSingle(containerItemIndexes, adapter, interrupt);
+					if(!result.isEmpty()) {
+						containerPackResults.add(adapter.accept(result));
+	
+						// positive result
+						return containerPackResults;
+					}
+					
+					// TODO any way to reuse partial results as the current best result?
 				}
-				if(!result.isEmpty()) {
-					containerPackResults.add(adapter.accept(result));
-
-					// positive result
-					return containerPackResults;
-				}
-				
-				// TODO any way to reuse partial results as the current best result?
 			}
 
 			// one or more containers
-			containerItemIndexes = adapter.getContainers(maxContainers);
+			List<Integer> containerItemIndexes = adapter.getContainers(maxContainers);
 			if(containerItemIndexes.isEmpty()) {
 				return Collections.emptyList();
 			}
 
-			// the best container is the one which can hold the most stackables
+			// the best container is the one which can hold the most box groups
 			// assume larger boxes is at the end of list, so start there
 			P best = null;
 			for (int i = containerItemIndexes.size() - 1; i >= 0; i--) {
-				if(interrupt.getAsBoolean()) {
-					return null;
-				}
+				try {
 
-				Integer containerItemIndex = containerItemIndexes.get(i);
-
-				// can this container hold more than the previously best result?
-				if(best != null) {
-					ContainerItem containerItem = containerItems.get(containerItemIndex);
-					Container container = containerItem.getContainer();
-
-					long loadVolume = best.getLoadVolume();
-					if(loadVolume > container.getMaxLoadVolume()) {
-						continue;
+					if(interrupt.getAsBoolean()) {
+						throw new PackagerInterruptedException();
 					}
-					int loadWeight = best.getLoadWeight();
-					if(loadWeight > container.getMaxLoadWeight()) {
-						continue;
+
+					Integer containerItemIndex = containerItemIndexes.get(i);
+
+					// can this container hold more than the previously best result?
+					if(best != null) {
+						ContainerItem containerItem = adapter.getContainerItem(containerItemIndex);
+						Container container = containerItem.getContainer();
+	
+						long loadVolume = container.getLoadVolume();
+						if(loadVolume > container.getMaxLoadVolume()) {
+							continue;
+						}
+						int loadWeight = container.getLoadWeight();
+						if(loadWeight > container.getMaxLoadWeight()) {
+							continue;
+						}
 					}
-				}
 
-				P result = adapter.attempt(containerItemIndex, best);
-
-				if(result == null) {
+					P result = adapter.attempt(containerItemIndex, best, maxContainers == 1);
+	
+					if(!result.isEmpty()) {
+						if(best == null || intermediatePackagerResultComparator.compare(best, result) != ARGUMENT_1_IS_BETTER) {
+							best = result;
+						}
+					}
+				} catch(PackagerInterruptedException e) {
 					// timeout, unless already have a result ready
-					if(best != null && best.containsLastStackable()) {
+					if(best != null && best.getStack().size() == adapter.countRemainingBoxes()) {
 						containerPackResults.add(adapter.accept(best));
 
 						return containerPackResults;
 					}
-
-					return null;
-				}
-
-				if(!result.isEmpty()) {
-					if(best == null || packResultComparator.compare(best, result) != PackResultComparator.ARGUMENT_1_IS_BETTER) {
-						best = result;
-					}
+					throw e;
 				}
 			}
 
@@ -235,57 +201,54 @@ public abstract class AbstractPackager<P extends PackResult, B extends PackagerR
 			}
 
 			containerPackResults.add(adapter.accept(best));
+			
+			if(adapter.countRemainingBoxes() == 0) {
+				return containerPackResults;
+			}
+			
 		} while (containerPackResults.size() < limit);
 
 		return null;
 	}
 
-	protected abstract PackagerAdapter<P> adapter(List<StackableItem> boxes, List<ContainerItem> containers, PackagerInterruptSupplier interrupt);
-
-	protected long getMinStackableItemVolume(List<StackableItem> stackables) {
-		long minVolume = Integer.MAX_VALUE;
-		for (StackableItem stackableItem : stackables) {
-			Stackable stackable = stackableItem.getStackable();
-			if(stackable.getVolume() < minVolume) {
-				minVolume = stackable.getVolume();
-			}
-		}
-		return minVolume;
-	}
-
-	protected long getMinStackableItemArea(List<StackableItem> stackables) {
-		long minArea = Integer.MAX_VALUE;
-		for (StackableItem stackableItem : stackables) {
-			Stackable stackable = stackableItem.getStackable();
-			if(stackable.getMinimumArea() < minArea) {
-				minArea = stackable.getMinimumArea();
-			}
-		}
-		return minArea;
-	}
-
-	protected long getMinStackableVolume(List<Stackable> stackables) {
-		long minVolume = Integer.MAX_VALUE;
-		for (Stackable stackable : stackables) {
-			if(stackable.getVolume() < minVolume) {
-				minVolume = stackable.getVolume();
-			}
-		}
-		return minVolume;
-	}
-
-	protected long getMinStackableArea(List<Stackable> stackables) {
-		long minArea = Integer.MAX_VALUE;
-		for (Stackable stackable : stackables) {
-			if(stackable.getMinimumArea() < minArea) {
-				minArea = stackable.getMinimumArea();
-			}
-		}
-		return minArea;
-	}
-	
 	public void close() {
 		scheduledThreadPoolExecutor.shutdownNow();
 	}
 	
+	protected List<BoxItemGroup> getFitsInside(List<BoxItemGroup> inputs, Container container) {
+		List<BoxItemGroup> result = new ArrayList<>(inputs.size());
+		for (BoxItemGroup boxItemGroup : inputs) {
+			if(container.fitsInside(boxItemGroup)) {
+				result.add(boxItemGroup);
+			}
+		}
+		return result;
+	}
+	
+	protected List<BoxItem> getBoxItemsFitsInside(List<BoxItem> inputs, Container container) {
+		List<BoxItem> result = new ArrayList<>(inputs.size());
+		for (BoxItem boxItem : inputs) {
+			if(container.fitsInside(boxItem)) {
+				result.add(boxItem);
+			}
+		}
+		return result;
+	}
+	
+	public List<BoxItem> removeEmpty(List<BoxItem> values) {
+		List<BoxItem> result = new ArrayList<>(values.size());
+		for(int i = 0; i < values.size(); i++) {
+			if(!values.get(i).isEmpty()) {
+				result.add(values.get(i));
+			}
+		}
+		return result;
+	}
+	
+	public ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
+		return scheduledThreadPoolExecutor;
+	}
+	
+	protected abstract P createEmptyIntermediatePackagerResult();
+
 }

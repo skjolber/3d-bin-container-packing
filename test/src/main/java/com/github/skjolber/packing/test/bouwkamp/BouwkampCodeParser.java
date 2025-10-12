@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,6 +33,8 @@ public class BouwkampCodeParser {
 			list.add(parseLine(str));
 		}
 
+		Collections.sort(list);
+		
 		return list;
 	}
 
@@ -69,7 +72,7 @@ public class BouwkampCodeParser {
 
 			bkp.addLine(new BouwkampCodeLine(squares));
 		}
-
+		
 		return bkp;
 	}
 

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.test.bouwkamp;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -98,6 +99,9 @@ public class BouwkampCodeDirectory {
 		result.addAll(simpleImperfectSquaredRectangles);
 		result.addAll(simpleImperfectSquaredSquares);
 		result.addAll(simplePerfectSquaredRectangles);
+		
+		Collections.sort(result);
+		
 		return result;
 	}
 
@@ -121,6 +125,9 @@ public class BouwkampCodeDirectory {
 				result.add(code);
 			}
 		}
+		
+		Collections.sort(result);
+
 		return result;
 	}
 

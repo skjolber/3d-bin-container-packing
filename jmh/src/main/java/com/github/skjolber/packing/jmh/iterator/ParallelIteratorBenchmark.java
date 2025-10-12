@@ -17,7 +17,7 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import com.github.skjolber.packing.iterator.ParallelPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.ParallelBoxItemPermutationRotationIterator;
 
 @Fork(value = 1, warmups = 1, jvmArgsPrepend = "-XX:-RestrictContended")
 @Warmup(iterations = 1, time = 7, timeUnit = TimeUnit.SECONDS)
@@ -30,14 +30,14 @@ public class ParallelIteratorBenchmark {
 	@Benchmark
 	public long rotations(IteratorState state) throws Exception {
 
-		ParallelPermutationRotationIterator[] iterators = state.getParallelIterator().getIterators();
+		ParallelBoxItemPermutationRotationIterator[] iterators = state.getParallelIterator().getIterators();
 
 		ExecutorCompletionService<Long> executorCompletionService = new ExecutorCompletionService<Long>(state.getPool());
 
 		long maxCountPerThread = MAX_COUNT / iterators.length;
 
 		for (int i = 0; i < iterators.length; i++) {
-			ParallelPermutationRotationIterator iterator = iterators[i];
+			ParallelBoxItemPermutationRotationIterator iterator = iterators[i];
 
 			Callable<Long> callable = () -> {
 				java.util.concurrent.atomic.LongAdder counter = new LongAdder();
@@ -73,14 +73,14 @@ public class ParallelIteratorBenchmark {
 	@Benchmark
 	public long parallelPermutations(IteratorState state) throws Exception {
 
-		ParallelPermutationRotationIterator[] iterators = state.getParallelIterator().getIterators();
+		ParallelBoxItemPermutationRotationIterator[] iterators = state.getParallelIterator().getIterators();
 
 		ExecutorCompletionService<Long> executorCompletionService = new ExecutorCompletionService<Long>(state.getPool());
 
 		long maxCountPerThread = MAX_COUNT / iterators.length;
 
 		for (int i = 0; i < iterators.length; i++) {
-			ParallelPermutationRotationIterator iterator = iterators[i];
+			ParallelBoxItemPermutationRotationIterator iterator = iterators[i];
 
 			Callable<Long> callable = () -> {
 				java.util.concurrent.atomic.LongAdder counter = new LongAdder();

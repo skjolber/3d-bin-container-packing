@@ -2,34 +2,108 @@ package com.github.skjolber.packing.api;
 
 import java.util.List;
 
-public class BoxStackValue extends StackValue {
+public class BoxStackValue {
 
-	private static final long serialVersionUID = 1L;
-	
-	private Box stackable;
+	protected final int dx; // width
+	protected final int dy; // depth
+	protected final int dz; // height
 
-	public BoxStackValue(int dx, int dy, int dz, StackConstraint constraint, List<Surface> surfaces) {
-		super(dx, dy, dz, constraint, surfaces);
+	protected final long area;
+
+	protected final List<Surface> surfaces;
+	protected long volume;
+
+	protected final int index;
+	protected Box box;
+
+	public BoxStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index) {
+		this.dx = dx;
+		this.dy = dy;
+		this.dz = dz;
+		this.surfaces = surfaces;
+
+		this.area = (long) dx * (long) dy;
+		this.volume = area * (long) dz;
+
+		this.index = index;
 	}
-	
-	public BoxStackValue(BoxStackValue boxStackValue) {
-		super(boxStackValue);
-		
-		this.stackable = boxStackValue.stackable;
+
+	protected BoxStackValue(BoxStackValue other) {
+		this.dx = other.dx;
+		this.dy = other.dy;
+		this.dz = other.dz;
+		this.surfaces = other.surfaces;
+
+		this.area = other.area;
+		this.volume = other.volume;
+		this.index = other.index;
+
+		this.box = other.box;
+	}
+
+	public int getDx() {
+		return dx;
+	}
+
+	public int getDy() {
+		return dy;
+	}
+
+	public int getDz() {
+		return dz;
+	}
+
+	/**
+	 * Check whether this object fits within a dimension (without rotation).
+	 *
+	 * @param dimension the dimensions to fit within
+	 * @return true if this can fit within the argument space
+	 */
+
+	public boolean fitsInside3D(Container dimension) {
+		return fitsInside3D(dimension.getLoadDx(), dimension.getLoadDy(), dimension.getLoadDz());
+	}
+
+	public boolean fitsInside3D(int dx, int dy, int dz) {
+		return dx >= this.dx && dy >= this.dy && dz >= this.dz;
+	}
+
+	public boolean fitsInside2D(int dx, int dy) {
+		return dx >= this.dx && dy >= this.dy;
+	}
+
+	public long getArea() {
+		return area;
+	}
+
+	public long getVolume() {
+		return volume;
+	}
+
+	public List<Surface> getSurfaces() {
+		return surfaces;
+	}
+
+	@Override
+	public String toString() {
+		return "BoxStackValue[" + surfaces + " " + dx + "x" + dy + "x" + dz + "]";
 	}
 
 	@Override
 	public BoxStackValue clone() {
 		return new BoxStackValue(this);
 	}
-	
-	public void setStackable(Box stackable) {
-		this.stackable = stackable;
+
+	public void setBox(Box box) {
+		this.box = box;
 	}
-	
-	@Override
-	public Box getStackable() {
-		return stackable;
+
+	public Box getBox() {
+		return box;
+	}
+
+	public int getIndex() {
+		return index;
 	}
 
 }

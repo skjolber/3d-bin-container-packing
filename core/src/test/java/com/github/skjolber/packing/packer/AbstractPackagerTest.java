@@ -8,11 +8,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackableItem;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.test.assertj.PackagerAssert;
 
@@ -36,11 +36,11 @@ public abstract class AbstractPackagerTest {
 		assertThat(container).isStackedWithinContraints();
 	}
 
-	protected static StackableItem box(int l, int w, int h, int count) {
-		return new StackableItem(Box.newBuilder().withRotate3D().withSize(l, w, h).withWeight(0).build(), count);
+	protected static BoxItem box(int l, int w, int h, int count) {
+		return new BoxItem(Box.newBuilder().withRotate3D().withSize(l, w, h).withWeight(0).build(), count);
 	}
 
-	protected void assertDeadlineRespected(AbstractPackagerBuilder builder) {
+	protected void assertDeadlineRespected(Packager packager) {
 
 		Container container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1900, 1500, 4000)
 				.withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
@@ -50,9 +50,7 @@ public abstract class AbstractPackagerTest {
 				.withContainer(container, 1)
 				.build();
 
-		Packager packager = builder.build();
-
-		List<StackableItem> products = Arrays.asList(
+		List<BoxItem> products = Arrays.asList(
 				box(1000, 12, 12, 1),
 				box(1000, 14, 14, 1),
 				box(100, 250, 410, 2),

@@ -18,7 +18,7 @@ import org.openjdk.jmh.runner.options.TimeValue;
 
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.packer.AbstractPackager;
 
@@ -59,9 +59,9 @@ public class DeadlineBenchmark {
 		for (BenchmarkSet set : sets) {
 			AbstractPackager packager = set.getPackager();
 			List<ContainerItem> containers = set.getContainers();
-			List<StackableItem> products = set.getProducts();
+			List<BoxItem> products = set.getProducts();
 
-			PackagerResult build = packager.newResultBuilder().withContainers(containers).withMaxContainerCount(1).withStackables(products).withDeadline(deadline).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withDeadline(deadline).build();
 			if(build.isSuccess()) {
 				i++;
 			} else {

@@ -1,62 +1,60 @@
 package com.github.skjolber.packing.api;
 
-public abstract class Container extends Stackable {
+import java.util.List;
 
-	private static final long serialVersionUID = 1L;
+public class Container {
 
 	public static Builder newBuilder() {
 		return new Builder();
 	}
 
-	protected static int getMaxLoadWeight(ContainerStackValue[] values) {
-		int maxLoadWeight = -1;
-
-		for (ContainerStackValue value : values) {
-			if(value.getMaxLoadWeight() > maxLoadWeight) {
-				maxLoadWeight = value.getMaxLoadWeight();
-			}
-		}
-		return maxLoadWeight;
-	}
-
-	protected static long calculateMinimumArea(StackValue[] values) {
-		long minimumArea = Long.MAX_VALUE;
-		for (StackValue boxStackValue : values) {
-			if(minimumArea > boxStackValue.getArea()) {
-				minimumArea = boxStackValue.getArea();
-			}
-		}
-		return minimumArea;
-	}
-
-	protected static long getMaxLoadVolume(ContainerStackValue[] values) {
-		long maxLoadVolume = -1;
-
-		for (ContainerStackValue value : values) {
-			if(value.getMaxLoadVolume() > maxLoadVolume) {
-				maxLoadVolume = value.getMaxLoadVolume();
-			}
-		}
-		return maxLoadVolume;
-	}
-
-	public static class Builder extends AbstractContainerBuilder<Builder> {
+	public static class Builder {
 
 		protected int emptyWeight = -1;
 		protected Stack stack;
-		protected boolean fixed = false;
 
-		public Builder withFixed(boolean fixed) {
-			this.fixed = fixed;
+		protected String id;
+		protected String description;
+
+		protected int dx = -1; // width
+		protected int dy = -1; // depth
+		protected int dz = -1; // height
+
+		protected int maxLoadWeight = -1;
+
+		protected int loadDx = -1; // x
+		protected int loadDy = -1; // y
+		protected int loadDz = -1; // z
+
+		public Builder withSize(int dx, int dy, int dz) {
+			this.dx = dx;
+			this.dy = dy;
+			this.dz = dz;
 			return this;
 		}
 
-		public Builder withFixedStack(Stack stack) {
-			this.stack = stack;
-			this.fixed = true;
+		public Builder withMaxLoadWeight(int weight) {
+			this.maxLoadWeight = weight;
 			return this;
 		}
 
+		public Builder withLoadSize(int dx, int dy, int dz) {
+			this.loadDx = dx;
+			this.loadDy = dy;
+			this.loadDz = dz;
+			return this;
+		}
+
+		public Builder withDescription(String description) {
+			this.description = description;
+			return this;
+		}
+
+		public Builder withId(String id) {
+			this.id = id;
+			return this;
+		}
+		
 		public Builder withStack(Stack stack) {
 			this.stack = stack;
 			return this;
@@ -68,74 +66,44 @@ public abstract class Container extends Stackable {
 			return this;
 		}
 
-		public DefaultContainer build() {
-			if(dx == -1) {
+		public Container build() {
+			if (dx == -1) {
 				throw new IllegalStateException("Expected size");
 			}
-			if(dy == -1) {
+			if (dy == -1) {
 				throw new IllegalStateException("Expected size");
 			}
-			if(dz == -1) {
+			if (dz == -1) {
 				throw new IllegalStateException("Expected size");
 			}
-			if(maxLoadWeight == -1) {
+			if (maxLoadWeight == -1) {
 				throw new IllegalStateException("Expected max weight");
 			}
-			if(loadDx == -1) {
+			if (loadDx == -1) {
 				loadDx = dx;
 			}
-			if(loadDy == -1) {
+			if (loadDy == -1) {
 				loadDy = dy;
 			}
-			if(loadDz == -1) {
+			if (loadDz == -1) {
 				loadDz = dz;
 			}
-			if(surfaces == null || surfaces.isEmpty()) {
-				surfaces = Surface.DEFAULT_SURFACE;
+
+			if (emptyWeight == -1) {
+				emptyWeight = 0;
+			}
+			if (stack == null) {
+				stack = new Stack();
 			}
 
-			if(emptyWeight == -1) {
-				throw new IllegalStateException("Expected empty weight");
-			}
-			if(stack == null) {
-				stack = new DefaultStack();
-			}
-
-			long volume = (long)dx * (long)dy * (long)dz;
-
-			return new DefaultContainer(id, description, volume, emptyWeight, getStackValues(), stack);
-		}
-
-		protected ContainerStackValue[] getStackValues() {
-			if(fixed) {
-				FixedContainerStackValue[] stackValues = new FixedContainerStackValue[1];
-
-				int stackWeight = stack.getWeight();
-
-				stackValues[0] = new FixedContainerStackValue(
-						dx, dy, dz,
-						stackConstraint,
-						stackWeight, emptyWeight,
-						loadDx, loadDy, loadDz,
-						maxLoadWeight,
-						surfaces);
-
-				return stackValues;
-			} else {
-				DefaultContainerStackValue[] stackValues = new DefaultContainerStackValue[1];
-
-				stackValues[0] = new DefaultContainerStackValue(
-						dx, dy, dz,
-						stackConstraint,
-						loadDx, loadDy, loadDz,
-						maxLoadWeight,
-						surfaces);
-
-				return stackValues;
-			}
+			return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight,
+					stack);
 		}
 
 	}
+
+	protected final long volume;
+	protected final long loadVolume;
 
 	protected final int emptyWeight;
 	/** i.e. best of the stack values */
@@ -143,25 +111,57 @@ public abstract class Container extends Stackable {
 	/** i.e. best of the stack values */
 	protected final int maxLoadWeight;
 
-	protected final long volume;
-	protected final long minArea;
-	protected final long maxArea;
+	protected final long maximumArea;
 
-	public Container(String id, String name, long volume, int emptyWeight, long maxLoadVolume, int maxLoadWeight, long minArea, long maxArea) {
-		super(id, name);
+	protected final int dx; // x
+	protected final int dy; // y
+	protected final int dz; // z
+
+	protected final int loadDx; // x
+	protected final int loadDy; // y
+	protected final int loadDz; // z
+
+	protected final String id;
+	protected final String description;
+
+	protected final Stack stack;
+
+	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
+			int loadDz, int maxLoadWeight, Stack stack) {
+		this.id = id;
+		this.description = description;
+
+		this.loadDx = loadDx;
+		this.loadDy = loadDy;
+		this.loadDz = loadDz;
+
+		this.loadVolume = (long) loadDx * (long) loadDy * (long) loadDz;
 
 		this.emptyWeight = emptyWeight;
-		this.maxLoadVolume = maxLoadVolume;
+
+		this.maximumArea = ((long) loadDx) * loadDy;
+
+		this.maxLoadVolume = maximumArea * (long) loadDz;
 		this.maxLoadWeight = maxLoadWeight;
 
-		this.volume = volume;
-		this.minArea = minArea;
-		this.maxArea = maxArea;
+		this.dx = dx;
+		this.dy = dy;
+		this.dz = dz;
+		this.volume = (long) dx * (long) dy * (long) dz;
+
+		this.stack = stack;
 	}
 
-	@Override
+	public String getDescription() {
+		return description;
+	}
+
+	public String getId() {
+		return id;
+	}
+
 	public int getWeight() {
-		return emptyWeight + getStack().getWeight();
+		return emptyWeight + stack.getWeight();
 	}
 
 	public long getMaxLoadVolume() {
@@ -172,11 +172,6 @@ public abstract class Container extends Stackable {
 		return maxLoadWeight;
 	}
 
-	@Override
-	public abstract ContainerStackValue[] getStackValues();
-
-	public abstract Stack getStack();
-
 	public int getEmptyWeight() {
 		return emptyWeight;
 	}
@@ -185,31 +180,175 @@ public abstract class Container extends Stackable {
 		return emptyWeight + maxLoadWeight;
 	}
 
-	public abstract boolean canLoad(Stackable box);
-
-	@Override
-	public abstract Container clone();
-
 	public int getLoadWeight() {
-		return getStack().getWeight();
+		return stack.getWeight();
 	}
 
-	@Override
 	public long getVolume() {
 		return volume;
 	}
 
-	@Override
-	public long getMinimumArea() {
-		return minArea;
-	}
-
-	@Override
 	public long getMaximumArea() {
-		return maxArea;
+		return maximumArea;
 	}
 
 	public long getLoadVolume() {
-		return getStack().getVolume();
+		return stack.getVolume();
 	}
+
+	public boolean canLoad(Box box) {
+		if (box.getVolume() > maxLoadVolume) {
+			return false;
+		}
+		if (box.getWeight() > maxLoadWeight) {
+			return false;
+		}
+		// at least one stack value must fit within the container load
+		for (BoxStackValue stackValue : box.getStackValues()) {
+			if (canLoad(stackValue)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean canLoad(BoxItem boxItem) {
+		if (boxItem.getVolume() > maxLoadVolume) {
+			return false;
+		}
+		if (boxItem.getWeight() > maxLoadWeight) {
+			return false;
+		}
+		Box box = boxItem.getBox();
+		for (BoxStackValue stackValue : box.getStackValues()) {
+			if (canLoad(stackValue)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean canLoad(BoxStackValue stackValue) {
+		return stackValue.getDx() <= loadDx && stackValue.getDy() <= loadDy && stackValue.getDz() <= loadDz;
+	}
+
+	public boolean canLoad(BoxItemGroup group) {
+		if (group.getVolume() > maxLoadVolume) {
+			return false;
+		}
+		if (group.getWeight() > maxLoadWeight) {
+			return false;
+		}
+
+		// all boxes must fit within the container load
+		for (BoxItem boxItem : group.getItems()) {
+			Box box = boxItem.getBox();
+			if (!canLoad(box)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean canLoadAtLeastOneBox(List<BoxItem> boxes) {
+
+		for (BoxItem boxItem : boxes) {
+			Box box = boxItem.getBox();
+			if (canLoad(box)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean canLoadAtLeastOneGroup(List<BoxItemGroup> boxes) {
+
+		for (BoxItemGroup group : boxes) {
+			if (canLoad(group)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public Container clone() {
+		return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight,
+				new Stack());
+	}
+
+	public int getLoadDx() {
+		return loadDx;
+	}
+
+	public int getLoadDy() {
+		return loadDy;
+	}
+
+	public int getLoadDz() {
+		return loadDz;
+	}
+
+	public Stack getStack() {
+		return stack;
+	}
+
+	public int getDx() {
+		return dx;
+	}
+
+	public int getDy() {
+		return dy;
+	}
+
+	public int getDz() {
+		return dz;
+	}
+
+	public boolean fitsInside(BoxItemGroup boxItemGroup) {
+		if (boxItemGroup.getVolume() <= getMaxLoadVolume() && boxItemGroup.getWeight() <= getMaxLoadWeight()) {
+			for (int i = 0; i < boxItemGroup.size(); i++) {
+
+				Box box = boxItemGroup.get(i).getBox();
+				for (BoxStackValue boxStackValue : box.getStackValues()) {
+					if (boxStackValue.fitsInside3D(loadDx, loadDy, loadDz)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	public boolean fitsInside(BoxItem boxItem) {
+		if (boxItem.getVolume() <= getMaxLoadVolume() && boxItem.getWeight() <= getMaxLoadWeight()) {
+			Box box = boxItem.getBox();
+			for (BoxStackValue boxStackValue : box.getStackValues()) {
+				if (boxStackValue.fitsInside3D(loadDx, loadDy, loadDz)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public boolean fitsInside(Box box) {
+		if (box.getVolume() <= getMaxLoadVolume() && box.getWeight() <= getMaxLoadWeight()) {
+			for (BoxStackValue boxStackValue : box.getStackValues()) {
+				if (boxStackValue.fitsInside3D(loadDx, loadDy, loadDz)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public String toString() {
+		if (dx != loadDx || dy != loadDy || dz != loadDz) {
+			return "Container[" + (id != null ? id : "") + "[" + dx + "x" + dy + "x" + dz + " (" + loadDx + "x" + loadDy
+					+ "x" + loadDz + ")]";
+		}
+		return "Container[" + (id != null ? id : "") + "[" + dx + "x" + dy + "x" + dz + "]";
+	}
+
 }

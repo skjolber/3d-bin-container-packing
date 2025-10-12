@@ -3,15 +3,13 @@ package com.github.skjolber.packing.visualizer.packaging;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.ContainerStackValue;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.Stackable;
-import com.github.skjolber.packing.api.ep.Point3D;
-import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
-import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
+import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.ContainerVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
@@ -39,17 +37,13 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			ContainerVisualizer containerVisualization = new ContainerVisualizer();
 			containerVisualization.setStep(step++);
 
-			ContainerStackValue[] stackValues = inputContainer.getStackValues();
+			containerVisualization.setDx(inputContainer.getDx());
+			containerVisualization.setDy(inputContainer.getDy());
+			containerVisualization.setDz(inputContainer.getDz());
 
-			ContainerStackValue containerStackValue = stackValues[0];
-
-			containerVisualization.setDx(containerStackValue.getDx());
-			containerVisualization.setDy(containerStackValue.getDy());
-			containerVisualization.setDz(containerStackValue.getDz());
-
-			containerVisualization.setLoadDx(containerStackValue.getLoadDx());
-			containerVisualization.setLoadDy(containerStackValue.getLoadDy());
-			containerVisualization.setLoadDz(containerStackValue.getLoadDz());
+			containerVisualization.setLoadDx(inputContainer.getLoadDx());
+			containerVisualization.setLoadDy(inputContainer.getLoadDy());
+			containerVisualization.setLoadDz(inputContainer.getLoadDz());
 
 			containerVisualization.setId(inputContainer.getId());
 			containerVisualization.setName(inputContainer.getDescription());
@@ -60,16 +54,17 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 
 			Stack stack = inputContainer.getStack();
 
-			ExtremePoints3D extremePoints = new ExtremePoints3D(containerStackValue.getDx(), containerStackValue.getDy(), containerStackValue.getDz(), true);
-
-			for (StackPlacement placement : stack.getPlacements()) {
-				Stackable box = placement.getStackable();
+			DefaultPointCalculator3D pointCalculator = new DefaultPointCalculator3D(true);
+			pointCalculator.clearToSize(inputContainer.getDx(), inputContainer.getDy(), inputContainer.getDz());
+			
+			for (Placement placement : stack.getPlacements()) {
+				Box box = placement.getStackValue().getBox();
 				BoxVisualizer boxVisualization = new BoxVisualizer();
 				boxVisualization.setId(box.getId());
 				boxVisualization.setName(box.getDescription());
 				boxVisualization.setStep(step);
 
-				StackValue stackValue = placement.getStackValue();
+				BoxStackValue stackValue = placement.getStackValue();
 
 				boxVisualization.setDx(stackValue.getDx());
 				boxVisualization.setDy(stackValue.getDy());
@@ -83,16 +78,16 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 				stackPlacement.setStep(step);
 
 				if(calculatePoints) {
-					int pointIndex = extremePoints.findPoint(placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ());
+					int pointIndex = pointCalculator.findPoint(placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ());
 	
 					if(pointIndex == -1) {
 						LOGGER.info("Unable to find next point, disabling further calculation of points");
 						
 						calculatePoints = false;
 					} else {
-						extremePoints.add(pointIndex, placement);
+						pointCalculator.add(pointIndex, placement);
 		
-						for (Point3D point : extremePoints.getValues()) {
+						for (Point point : pointCalculator.getAll()) {
 							PointVisualizer p = new PointVisualizer();
 		
 							p.setX(point.getMinX());

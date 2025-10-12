@@ -7,8 +7,14 @@ import java.util.Map;
 
 public class Surface {
 
-	public static final List<Surface> DEFAULT_SURFACE = Arrays.asList(new Surface(Label.BOTTOM), new Surface(Label.TOP));
+	public static final Surface FRONT = new Surface(Label.FRONT);
+	public static final Surface REAR = new Surface(Label.REAR);
+	public static final Surface LEFT = new Surface(Label.LEFT);
+	public static final Surface RIGHT = new Surface(Label.RIGHT);
+	public static final Surface BOTTOM = new Surface(Label.BOTTOM);
+	public static final Surface TOP = new Surface(Label.TOP);
 
+	public static final List<Surface> DEFAULT_SURFACE = Arrays.asList(BOTTOM, TOP);
 	//
 	// Basically there is up to 6 alternative ways to place a box, i.e. 3 unique sides, each rotated 90 degrees. 
 	//  
@@ -21,7 +27,7 @@ public class Surface {
 	// |       /       /  |    
 	// |      /  top  / t /
 	// |     /       / h /  
-	// |    /       / g / 
+    // |    /       / g / 
 	// |   /       / i /
 	// |  |-------| r /      
 	// |  |       |  /
@@ -78,15 +84,10 @@ public class Surface {
 	//                    |       |
 	//                    |-------| 
 	//
-
+	
 	public static enum Label {
 
-		FRONT,
-		REAR,
-		TOP,
-		BOTTOM,
-		LEFT,
-		RIGHT
+		FRONT, REAR, TOP, BOTTOM, LEFT, RIGHT
 
 	}
 
@@ -113,7 +114,7 @@ public class Surface {
 
 	@Override
 	public String toString() {
-		if(attributes == null) {
+		if (attributes == null || attributes.isEmpty()) {
 			return label.toString();
 		}
 		return "Surface [label=" + label + ", attributes=" + attributes + "]";

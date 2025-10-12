@@ -6,14 +6,22 @@
 This library does 3D rectangular bin packing; it attempts to match a set of 3D items to one or more in a set of 3D containers. The result can be constrained to a maximum number of containers.
 
 Projects using this library will benefit from:
+
  * short and predictable calculation time,
  * fairly good use of container space, 
  * brute-force support for low number of boxes (ideal for small orders)
+
+with
+
+ * friendly API
+ * extendable packagers
     
 Bugs, feature suggestions and help requests can be filed with the [issue-tracker].
 
 ## Obtain
 The project is implemented in Java and built using [Maven]. The project is available on the central Maven repository.
+
+For the previous version, see the [3.x](https://github.com/skjolber/3d-bin-container-packing/tree/3.x) branch.
 
 <details>
   <summary>Maven coordinates</summary>
@@ -65,11 +73,11 @@ The units of measure is out-of-scope, be they cm, mm or inches.
 Obtain a `Packager` instance, then then compose your container and product list:
 
 ```java
-List<StackableItem> products = new ArrayList<StackableItem>();
+List<BoxItem> products = new ArrayList<>();
 
-products.add(new StackableItem(Box.newBuilder().withId("Foot").withSize(6, 10, 2).withRotate3D().withWeight(25).build(), 1));
-products.add(new StackableItem(Box.newBuilder().withId("Leg").withSize(4, 10, 1).withRotate3D().withWeight(25).build(), 1));
-products.add(new StackableItem(Box.newBuilder().withId("Arm").withSize(4, 10, 2).withRotate3D().withWeight(50).build(), 1));
+products.add(new BoxItem(Box.newBuilder().withId("Shoes").withSize(6, 10, 2).withRotate3D().withWeight(25).build(), 1));
+products.add(new BoxItem(Box.newBuilder().withId("Pants").withSize(4, 10, 1).withRotate3D().withWeight(25).build(), 1));
+products.add(new BoxItem(Box.newBuilder().withId("Hat").withSize(4, 10, 2).withRotate3D().withWeight(50).build(), 1));
 
 // add a single container type
 Container container = Container.newBuilder()
@@ -91,8 +99,8 @@ Pack all in a single container:
 ```java
 PackagerResult result = packager
     .newResultBuilder()
-    .withContainers(containerItems)
-    .withStackables(products)
+    .withContainerItems(containerItems)
+    .withBoxItems(products)
     .build();
 
 if(result.isSuccess()) {
@@ -102,15 +110,15 @@ if(result.isSuccess()) {
 }
 ```
 
-Pack all in a maximum number of containers:
+Use a maximum number of containers:
 
 ```java
 int maxContainers = ...; // maximum number of containers which can be used
 
 PackagerResult result = packager
     .newResultBuilder()
-    .withContainers(containerItems)
-    .withStackables(products)
+    .withContainerItems(containerItems)
+    .withBoxItems(products)
     .withMaxContainerCount(maxContainers)
     .build();
 ```
@@ -144,11 +152,13 @@ Packager packager = BruteForcePackager
     .build();
 ```
 
+See also the `ParallelBoxItemBruteForcePackager` and `FastBruteForcePackager` packagers.
+
 Using a deadline is recommended whenever brute-forcing in a real-time application.
 
 <details>
   <summary>Algorithm details</summary>
- 
+
 ### Largest Area Fit First algorithm
 The implementation is based on [this paper][2], and is not a traditional [bin packing problem][1] solver.
 
@@ -172,7 +182,7 @@ This algorithm has no logic for selecting the best box or rotation; running thro
 
 The complexity of this approach is [exponential], and thus there is a limit to the feasible number of boxes which can be packaged within a reasonable time. However, for real-life applications,  a healthy part of for example online shopping orders are within its grasp.
 
-The worst case complexity can be estimated using the `DefaultPermutationRotationIterator` before packaging is attempted.
+The worst case complexity can be estimated using the relevant iterators before packaging is attempted.
 
 The algorithm tries to skip combinations which will obviously not yield a (better) result:
 
@@ -188,25 +198,62 @@ There is also a parallel version `ParallelBruteForcePackager` of the brute-force
 Note that the algorithm is recursive on the number of boxes, so do not attempt this with many boxes (it will likely not complete in time anyhow).
 
 </details> 
- 
-### Visualizer
-There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms (not as stacking instructions).
+
+# Packaging customization
+
+## Obstacles within containers
+Make the packager account for non-rectangular packaging space, i.e. pillars or other obstacles within containers, by providing the container initial free space (i.e. points).
+
+## Packager controls
+The packagers (excluding brute force) can be extended to handle specialized needs via various `control` (plugins) types. 
+
+In a nutshell, the `controls` are stateful objects which are handed various resources from the packagers during construction, and then notified and/or invoked at certain milestones within the packaging process.
+
+`Controls` must be provided as follows:
+
+ * builder factory
+    * builder
+       * controls
+
+### Manifest-controls
+Determines which boxes go into which containers, i.e. in which combinations. 
+
+A classic example would to be to not package both lighters and dynamite in the same container.
+
+### Point-controls
+Determines which points are relevant for a specific box. 
+
+For example, heavy items might be require only points at ground level or flammable items might be required to be stacked in a certain zone.
+
+### Placement-controls
+Determines the best placement for a box. 
+
+Can consider a range of options, like stability, stacking height, structural integrity and so on; even randomization is possible. Note that these features are not necessarily implemented in the packagers within this project.
+
+# Visualizer
+There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms; not as stacking instructions.
+
+### Setup
+```
+cd visualizer/viewer
+npm install
+```
+
+### Run
+```
+npm start
+```
+
+Note: To "hot reload" the visualizer during development, make your unit tests write directly to a file in the viewer (see the `VisualizationTest` example).
 
 ![Alt text](visualizer/viewer/images/view.png?raw=true "Demo")
-
-To use the visualizer during development, make your unit tests write directly to a file in the project (see `VisualizationTest` example). 
-
-# Customization
-The code has been structured so it is possible to extend and adapt to specialized needs. See `AbstractPackager` class, the `extreme-points` and `test` artifacts. 
 
 # Get involved
 If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request. 
 
 Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example and [file a test case with a visualization](https://github.com/skjolber/3d-bin-container-packing/issues/574).
 
-Feel free to connect with me on [LinkedIn], see also my [Github page].
-
-## License
+# License
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
 
 # Interesting links
@@ -214,6 +261,14 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
  * [The Art of Stacking: Challenges Faced While Developing a Packing Algorithm](https://medium.com/@fayyazawais1412/the-art-of-stacking-challenges-faced-while-developing-a-packing-algorithm-64d869b924ab)
 
 # History
+ * 4.0.0: Major rewrite. Breaking changes.
+     * Support for packaging groups
+     * Various ways to control packaging:
+        * Manifest controls (box vs box, box vs container)
+        * Point controls (points per box)
+        * Placement controls (select best box + point)
+     * Minor visualizer improvements
+ * 3.0.11: Use `BigInteger` to sanity-check max volume / max weight, calculate real remaining max volume.
  * 3.0.10: Fix module info, bump dependencies.
  * 3.0.9: Fix point support bug which resulted in invalid packaging result
  * 3.0.8: Visualization fix
@@ -223,7 +278,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
  * 3.0.1: Various performance improvements.
  * 3.0.0: Support max number of containers (i.e. per container type). Use builders from now on. Various optimizations.
  * 2.1.4: Fix issue #574
- * 2.1.3: Fix nullpointer
+ * 2.1.3: Fix null-pointer
  * 2.1.2: Tidy up, i.e. remove warnings, nuke some dependencies.
  * 2.1.1: Improve free space calculation performance
  * 2.1.0: Improve brute force iterators, respect deadlines in brute for packagers.

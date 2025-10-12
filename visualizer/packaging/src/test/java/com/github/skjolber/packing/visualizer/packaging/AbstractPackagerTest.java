@@ -19,12 +19,11 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.StackPlacement;
-import com.github.skjolber.packing.api.StackValue;
-import com.github.skjolber.packing.api.StackableItem;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
@@ -60,7 +59,7 @@ public class AbstractPackagerTest {
 		p.visualize(packList, file);
 	}
 
-	protected void pack(List<BouwkampCodes> codes, AbstractPackager packager) throws Exception {
+	protected <T> void pack(List<BouwkampCodes> codes, AbstractPackager packager) throws Exception {
 		for (BouwkampCodes bouwkampCodes : codes) {
 			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
 				
@@ -95,24 +94,24 @@ public class AbstractPackagerTest {
 		Map<Integer, Integer> frequencyMap = new TreeMap<>();
 		squares.forEach(word -> frequencyMap.merge(word, 1, (v, newV) -> v + newV));
 
-		List<StackableItem> products = new ArrayList<>();
+		List<BoxItem> products = new ArrayList<>();
 		for (Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
 			int square = entry.getKey();
 			int count = entry.getValue();
-			products.add(new StackableItem(Box.newBuilder().withDescription(Integer.toString(square)).withSize(square, square, 1).withRotate3D().withWeight(1).build(), count));
+			products.add(new BoxItem(Box.newBuilder().withDescription(Integer.toString(square)).withSize(square, square, 1).withRotate3D().withWeight(1).build(), count));
 		}
 
 		// shuffle
 		//Collections.shuffle(products);
 
-		PackagerResult result = packager.newResultBuilder().withContainers(containers).withStackables(products).withMaxContainerCount(1).build();
+		PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(products).withMaxContainerCount(1).build();
 
 		Container fits = result.get(0);
 		assertNotNull(bouwkampCode.getName(), fits);
-		assertEquals(bouwkampCode.getName(), fits.getStack().getSize(), squares.size());
+		assertEquals(bouwkampCode.getName(), fits.getStack().size(), squares.size());
 
-		for (StackPlacement stackPlacement : fits.getStack().getPlacements()) {
-			StackValue stackValue = stackPlacement.getStackValue();
+		for (Placement stackPlacement : fits.getStack().getPlacements()) {
+			BoxStackValue stackValue = stackPlacement.getStackValue();
 			System.out.println(stackPlacement.getAbsoluteX() + "x" + stackPlacement.getAbsoluteY() + "x" + stackPlacement.getAbsoluteZ() + " " + stackValue.getDx() + "x" + stackValue.getDy() + "x"
 					+ stackValue.getDz());
 		}
