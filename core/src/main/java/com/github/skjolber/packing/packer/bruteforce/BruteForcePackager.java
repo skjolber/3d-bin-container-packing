@@ -8,6 +8,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
@@ -16,6 +17,7 @@ import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotati
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePackagerBuilder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -37,25 +39,36 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	public static class BruteForcePackagerBuilder {
 
 		protected Comparator<BruteForceIntermediatePackagerResult> comparator;
+		protected List<Point> points;
+		
+		public BruteForcePackagerBuilder withComparator(Comparator<BruteForceIntermediatePackagerResult> comparator) {
+			this.comparator = comparator;
+			return this;
+		}
+		
+		public BruteForcePackagerBuilder withPoints(List<Point> points) {
+			this.points = points;
+			return this;
+		}
 		
 		public BruteForcePackager build() {
 			if(comparator == null) {
 				comparator = new DefaultIntermediatePackagerResultComparator<>();
 			}
-			return new BruteForcePackager(comparator);
+			return new BruteForcePackager(comparator, points);
 		}
 	}
 	
 	private class BruteForceAdapter extends AbstractSingleThreadedBruteForceBoxItemPackagerAdapter {
 
-		protected final ExtremePoints3DStack extremePoints;
+		protected final PointCalculator3DStack pointCalculator;
 		
 		public BruteForceAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems,
 				BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, packagerContainerItems, containerIterators, interrupt);
 			
-			this.extremePoints =  new ExtremePoints3DStack(getMaxIteratorLength() + 1);
-			this.extremePoints.reset(1, 1, 1);
+			this.pointCalculator =  new PointCalculator3DStack(getMaxIteratorLength() + 1);
+			this.pointCalculator.reset(1, 1, 1);
 		}
 
 		@Override
@@ -63,22 +76,22 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return BruteForcePackager.this.pack(extremePoints, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
+			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
 		}
 		
 	}
 	
 	private class BruteForceGroupAdapter extends AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter {
 
-		protected final ExtremePoints3DStack extremePoints;
+		protected final PointCalculator3DStack pointCalculator;
 
 		public BruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
 				ContainerItemsCalculator packagerContainerItems,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, boxItemGroups, packagerContainerItems, containerIterators, interrupt);
 			
-			this.extremePoints =  new ExtremePoints3DStack(getMaxIteratorLength() + 1);
-			this.extremePoints.reset(1, 1, 1);
+			this.pointCalculator =  new PointCalculator3DStack(getMaxIteratorLength() + 1);
+			this.pointCalculator.reset(1, 1, 1);
 		}
 		
 		@Override
@@ -86,13 +99,13 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return BruteForcePackager.this.pack(extremePoints, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
+			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
 		}
 		
 	}
 
-	public BruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator) {
-		super(comparator);
+	public BruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator, List<Point> points) {
+		super(comparator, points);
 	}
 
 	@Override

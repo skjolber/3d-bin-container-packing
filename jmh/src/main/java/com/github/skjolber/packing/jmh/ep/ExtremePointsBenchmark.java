@@ -14,7 +14,7 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 
 @Fork(value = 1, warmups = 1)
 @Warmup(iterations = 1, time = 15, timeUnit = TimeUnit.SECONDS)
@@ -49,7 +49,7 @@ public class ExtremePointsBenchmark {
 		int size = 0;
 		List<ExtremePoints3DEntries> entries = state.getEntries();
 		for (ExtremePoints3DEntries e : entries) {
-			ExtremePoints3D extremePoints3D = e.getExtremePoints3D();
+			DefaultPointCalculator3D extremePoints3D = e.getExtremePoints3D();
 
 			for (ExtremePoint3DEntry extremePointEntry : e.getEntries()) {
 				extremePoints3D.add(extremePointEntry.getIndex(), extremePointEntry.getPlacement());

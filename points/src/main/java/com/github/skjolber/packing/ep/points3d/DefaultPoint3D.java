@@ -58,7 +58,7 @@ public class DefaultPoint3D extends SimplePoint3D {
 	 */
 
 	@Override
-	public Point rotate() {
+	public DefaultPoint3D rotate() {
 		return new DefaultPoint3D(minY, minZ, minX, maxY, maxZ, maxX);
 	}
 
@@ -88,4 +88,6 @@ public class DefaultPoint3D extends SimplePoint3D {
 	public boolean isSupportedXZPlane(int x, int z) { // i.e. y is fixed
 		return false;
 	}
+	
+	
 }

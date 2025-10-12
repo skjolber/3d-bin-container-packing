@@ -5,10 +5,10 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
 
-public class FastExtremePoints3DStack extends ExtremePoints3D {
+public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 
 	private static class StackItem  {
 		// value for extraction
@@ -24,7 +24,7 @@ public class FastExtremePoints3DStack extends ExtremePoints3D {
 	private int stackSize = 0;
 	private List<StackItem> stackItems;
 
-	public FastExtremePoints3DStack(int capacity) {
+	public FastPointCalculator3DStack(int capacity) {
 		super(true);
 
 		stackItems = new ArrayList<StackItem>(capacity);

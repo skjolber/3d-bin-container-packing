@@ -1,6 +1,5 @@
-package com.github.skjolber.packing.points3d;
+package com.github.skjolber.packing.points2d;
 
-import static com.github.skjolber.packing.points3d.assertj.SimplePoint3DAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -9,27 +8,26 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.ep.points2d.MarkResetPointCalculator2D;
+import com.github.skjolber.packing.ep.points2d.SimplePoint2D;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
-import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
-import com.github.skjolber.packing.ep.points3d.MarkResetExtremePoints3D;
-import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 
-public class MarkResetExtremePoints3DTest {
+public class MarkResetPointCalculator2DTest {
 
 	@Test
 	public void testMarkReset() {
-		MarkResetExtremePoints3D ep = new MarkResetExtremePoints3D();
+		MarkResetPointCalculator2D ep = new MarkResetPointCalculator2D();
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
-		assertThat(ep.getAll()).hasSize(3);
+		assertThat(ep.getAll()).hasSize(2);
 
-		SimplePoint3D point1 = ep.get(0);
+		SimplePoint2D point1 = ep.get(0);
 		ep.add(0, createStackPlacement(point1.getMinX(), point1.getMinY(), point1.getMinZ(), point1.getMinX() + 9, point1.getMinY() + 9, point1.getMinZ() + 9));
 
 		ep.mark();
 		
-		SimplePoint3D point2 = ep.get(0);
+		SimplePoint2D point2 = ep.get(0);
 		ep.add(0, createStackPlacement(point2.getMinX(), point2.getMinY(), point2.getMinZ(), point2.getMinX() + 9, point2.getMinY() + 9, point2.getMinZ() + 9));
 		
 		assertThat(ep.getPlacements()).hasSize(3);

@@ -32,9 +32,9 @@ public class BoxItem implements Serializable {
 		box.setBoxItem(this);
 	}
 
-	public BoxItem(Box stackable, int count, int index) {
+	public BoxItem(Box box, int count, int index) {
 		super();
-		this.box = stackable;
+		this.box = box;
 		this.count = count;
 		this.index = index;
 

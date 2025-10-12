@@ -12,7 +12,7 @@ import org.openjdk.jmh.annotations.TearDown;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.ep.points2d.DefaultPoint2D;
-import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
+import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
 import com.github.skjolber.packing.ep.points2d.Point2D;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
@@ -44,7 +44,7 @@ public class ExtremePoints2DState {
 	}
 
 	private void add(BouwkampCode bkpLine) {
-		ExtremePoints2D points = new ExtremePoints2D();
+		DefaultPointCalculator2D points = new DefaultPointCalculator2D();
 		points.clearToSize(bkpLine.getWidth(), bkpLine.getDepth(), 1);
 
 		ExtremePoints2DEntries extremePointsEntries = new ExtremePoints2DEntries(points);

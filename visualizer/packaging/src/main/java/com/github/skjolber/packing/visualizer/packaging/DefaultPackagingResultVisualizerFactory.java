@@ -9,7 +9,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.ContainerVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
@@ -54,8 +54,8 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 
 			Stack stack = inputContainer.getStack();
 
-			ExtremePoints3D extremePoints = new ExtremePoints3D(true);
-			extremePoints.clearToSize(inputContainer.getDx(), inputContainer.getDy(), inputContainer.getDz());
+			DefaultPointCalculator3D pointCalculator = new DefaultPointCalculator3D(true);
+			pointCalculator.clearToSize(inputContainer.getDx(), inputContainer.getDy(), inputContainer.getDz());
 			
 			for (Placement placement : stack.getPlacements()) {
 				Box box = placement.getStackValue().getBox();
@@ -78,16 +78,16 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 				stackPlacement.setStep(step);
 
 				if(calculatePoints) {
-					int pointIndex = extremePoints.findPoint(placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ());
+					int pointIndex = pointCalculator.findPoint(placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ());
 	
 					if(pointIndex == -1) {
 						LOGGER.info("Unable to find next point, disabling further calculation of points");
 						
 						calculatePoints = false;
 					} else {
-						extremePoints.add(pointIndex, placement);
+						pointCalculator.add(pointIndex, placement);
 		
-						for (Point point : extremePoints.getAll()) {
+						for (Point point : pointCalculator.getAll()) {
 							PointVisualizer p = new PointVisualizer();
 		
 							p.setX(point.getMinX());

@@ -3,16 +3,16 @@ package com.github.skjolber.packing.jmh.ep;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.ep.points2d.ExtremePoints2D;
+import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
 
 @SuppressWarnings("rawtypes")
 public class ExtremePoints2DEntries {
 
 	private final List<ExtremePoint2DEntry> entries = new ArrayList<>();
 
-	private final ExtremePoints2D extremePoints2D;
+	private final DefaultPointCalculator2D extremePoints2D;
 
-	public ExtremePoints2DEntries(ExtremePoints2D extremePoints2D) {
+	public ExtremePoints2DEntries(DefaultPointCalculator2D extremePoints2D) {
 		this.extremePoints2D = extremePoints2D;
 	}
 
@@ -24,7 +24,7 @@ public class ExtremePoints2DEntries {
 		return entries;
 	}
 
-	public ExtremePoints2D getExtremePoints2D() {
+	public DefaultPointCalculator2D getExtremePoints2D() {
 		return extremePoints2D;
 	}
 }

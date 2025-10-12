@@ -15,7 +15,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
-import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
@@ -49,7 +49,7 @@ public class ExtremePoints3DState {
 	}
 
 	public void convert3DXYPlane(BouwkampCode bkpLine) {
-		ExtremePoints3D points = new ExtremePoints3D();
+		DefaultPointCalculator3D points = new DefaultPointCalculator3D();
 		points.clearToSize(bkpLine.getWidth(), bkpLine.getDepth(), 1);
 
 		ExtremePoints3DEntries extremePointsEntries = new ExtremePoints3DEntries(points);

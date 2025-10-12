@@ -20,7 +20,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.deadline.ClonablePackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -34,6 +34,7 @@ import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.PackagerException;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager.ParallelBruteForcePackagerBuilder;
 
 /**
  * 
@@ -53,12 +54,18 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		protected int parallelizationCount = -1;
 		protected ExecutorService executorService;
 		protected Comparator<BruteForceIntermediatePackagerResult> comparator;
-		
+		protected List<Point> points;
+
 		public ParallelBruteForcePackagerBuilder withThreads(int threads) {
 			if(threads < 1) {
 				throw new IllegalArgumentException("Unexpected thread count " + threads);
 			}
 			this.threads = threads;
+			return this;
+		}
+		
+		public ParallelBruteForcePackagerBuilder withPoints(List<Point> points) {
+			this.points = points;
 			return this;
 		}
 
@@ -118,7 +125,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					}
 				}
 			}
-			return new ParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator);
+			return new ParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, points);
 		}
 	}
 
@@ -127,8 +134,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	private final ExecutorService executorService;
 
 	public ParallelBoxItemBruteForcePackager(ExecutorService executorService, int parallelizationCount, 
-			Comparator<BruteForceIntermediatePackagerResult> comparator) {
-		super(comparator);
+			Comparator<BruteForceIntermediatePackagerResult> comparator, List<Point> points) {
+		super(comparator, points);
 
 		this.parallelizationCount = parallelizationCount;
 		this.executorService = executorService;
@@ -140,15 +147,15 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		private ContainerItem containerItem;
 		private BoxItemPermutationRotationIterator iterator;
 		private List<Placement> placements;
-		private ExtremePoints3DStack extremePoints3D;
+		private PointCalculator3DStack pointCalculator;
 		private PackagerInterruptSupplier interrupt;
 		private int containerIndex;
 
 		public RunnableAdapter(int placementsCount, int maxIteratorLength, long minStackableItemVolume, long minStackableArea) {
 			this.placements = getPlacements(placementsCount);
 
-			this.extremePoints3D = new ExtremePoints3DStack(maxIteratorLength + 1);
-			this.extremePoints3D.reset(1, 1, 1);
+			this.pointCalculator = new PointCalculator3DStack(maxIteratorLength + 1);
+			this.pointCalculator.reset(1, 1, 1);
 		}
 
 		public void setContainerItem(ContainerItem containerItem) {
@@ -169,7 +176,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		@Override
 		public BruteForceIntermediatePackagerResult call() throws PackagerInterruptedException {
-			return ParallelBoxItemBruteForcePackager.this.pack(extremePoints3D, placements, containerItem, containerIndex, iterator, interrupt);
+			return ParallelBoxItemBruteForcePackager.this.pack(pointCalculator, placements, containerItem, containerIndex, iterator, interrupt);
 		}
 	}
 
@@ -273,7 +280,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			
 			// no need to split this job
 			// run with linear approach
-			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].extremePoints3D, runnables[0].placements, containerItem, i, iterators[i],
+			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, containerItem, i, iterators[i],
 					interrupts[i]);
 		}
 
@@ -437,7 +444,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			
 			// no need to split this job
 			// run with linear approach
-			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].extremePoints3D, runnables[0].placements, containerItem, i, iterators[i],
+			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, containerItem, i, iterators[i],
 					interrupts[i]);
 		}
 

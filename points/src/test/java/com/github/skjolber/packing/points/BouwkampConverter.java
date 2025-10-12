@@ -34,9 +34,9 @@ public class BouwkampConverter {
 		return new Placement(stackValue, new DefaultPoint2D(x, y, z, 0, 0, 0));
 	}
 
-	public DefaultExtremePoints2D convert2D(BouwkampCode bkpLine, int factor) {
+	public ValidatingPointCalculator2D convert2D(BouwkampCode bkpLine, int factor) {
 
-		DefaultExtremePoints2D points = new DefaultExtremePoints2D();
+		ValidatingPointCalculator2D points = new ValidatingPointCalculator2D();
 		points.setSize(bkpLine.getWidth() * factor, bkpLine.getDepth() * factor, factor);
 		points.clear();
 		
@@ -99,9 +99,9 @@ public class BouwkampConverter {
 		return points;
 	}
 
-	public DefaultExtremePoints3D convert3DXYPlane(BouwkampCode bkpLine, int factor) {
+	public ValidatingPointCalculator3D convert3DXYPlane(BouwkampCode bkpLine, int factor) {
 
-		DefaultExtremePoints3D points = new DefaultExtremePoints3D();
+		ValidatingPointCalculator3D points = new ValidatingPointCalculator3D();
 		points.clearToSize(bkpLine.getWidth() * factor, bkpLine.getDepth() * factor, factor);
 
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
@@ -155,9 +155,9 @@ public class BouwkampConverter {
 		return points;
 	}
 
-	public DefaultExtremePoints3D convert3DXZPlane(BouwkampCode bkpLine, int factor) {
+	public ValidatingPointCalculator3D convert3DXZPlane(BouwkampCode bkpLine, int factor) {
 
-		DefaultExtremePoints3D points = new DefaultExtremePoints3D();
+		ValidatingPointCalculator3D points = new ValidatingPointCalculator3D();
 		points.clearToSize(bkpLine.getWidth() * factor, factor, bkpLine.getDepth() * factor);
 
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
@@ -210,9 +210,9 @@ public class BouwkampConverter {
 		return points;
 	}
 
-	public DefaultExtremePoints3D convert3DYZPlane(BouwkampCode bkpLine, int factor) {
+	public ValidatingPointCalculator3D convert3DYZPlane(BouwkampCode bkpLine, int factor) {
 
-		DefaultExtremePoints3D points = new DefaultExtremePoints3D();
+		ValidatingPointCalculator3D points = new ValidatingPointCalculator3D();
 		points.clearToSize(factor, bkpLine.getWidth() * factor, bkpLine.getDepth() * factor);
 
 		List<BouwkampCodeLine> lines = bkpLine.getLines();

@@ -10,7 +10,7 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
-public class BouwcampCodesExtremePoints2DTest {
+public class BouwcampCodesPointCalculator2DTest {
 
 	@Test
 	public void testBouwcampCodes() throws Exception {
@@ -22,7 +22,7 @@ public class BouwcampCodesExtremePoints2DTest {
 		for (BouwkampCodes c : codesForCount) {
 			for (BouwkampCode bkpLine : c.getCodes()) {
 				System.out.println(c.getSource() + " " + bkpLine.getName());
-				DefaultExtremePoints2D points = converter.convert2D(bkpLine, 1);
+				ValidatingPointCalculator2D points = converter.convert2D(bkpLine, 1);
 				assertEquals(c.getSource() + " " + bkpLine.getName(), 0, points.size());
 			}
 		}

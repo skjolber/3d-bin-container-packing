@@ -22,7 +22,7 @@ import com.github.skjolber.packing.api.point.Point;
  *
  */
 
-public class ExtremePoints3D implements PointCalculator {
+public class DefaultPointCalculator3D implements PointCalculator {
 	public static final Comparator<Point> COMPARATOR_X = new Comparator<Point>() {
 
 		@Override
@@ -71,11 +71,11 @@ public class ExtremePoints3D implements PointCalculator {
 	
 	protected List<SimplePoint3D> initialPoints = Collections.emptyList();
 
-	public ExtremePoints3D() {
+	public DefaultPointCalculator3D() {
 		this(false);
 	}
 
-	public ExtremePoints3D(boolean immutablePoints) {
+	public DefaultPointCalculator3D(boolean immutablePoints) {
 		this.immutablePoints = immutablePoints;
 	}
 
@@ -1427,7 +1427,7 @@ public class ExtremePoints3D implements PointCalculator {
 
 	@Override
 	public String toString() {
-		return "ExtremePoints3D [width=" + containerMaxX + ", depth=" + containerMaxY + ", values=" + values + "]";
+		return "DefaultPointCalculator3D [width=" + containerMaxX + ", depth=" + containerMaxY + ", values=" + values + "]";
 	}
 
 	public List<Placement> getPlacements() {

@@ -14,9 +14,9 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
-import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 
-public class ExtremePoints3DTest {
+public class DefaultPointCalculator3DTest {
 	
 	private Placement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, -1);
@@ -32,7 +32,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testSinglePoint(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 		assertThat(ep.getAll()).hasSize(3);
@@ -77,7 +77,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testSinglePointCornercase(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 0, 0, 0));
 		assertThat(ep.getAll()).hasSize(3);
@@ -90,7 +90,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testSinglePointCoveringAllX(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 99, 9, 9));
 
@@ -110,7 +110,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testSinglePointCoveringAllY(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 99, 9));
 
@@ -130,7 +130,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testSinglePointCoveringAllZ(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 99));
 		assertThat(ep.getAll()).hasSize(2);
@@ -149,7 +149,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testSinglePointCoveringWholeContainer(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 99, 99, 99));
 		assertThat(ep.getAll()).hasSize(0);
@@ -158,7 +158,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackInXDirection(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -233,7 +233,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackInXDirectionWithIntermediate(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 0));
 
@@ -249,7 +249,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackInZDirection(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -333,7 +333,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackInYDirection(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -353,7 +353,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackEqualItemsInXDirection(boolean clone) throws InterruptedException {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -426,7 +426,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackEqualItemsInYDirection(boolean clone) throws InterruptedException {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -492,7 +492,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackEqualItemsInZDirection(boolean clone) throws InterruptedException {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -542,7 +542,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackHigherItemsInXDirection(boolean clone) throws InterruptedException {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -602,7 +602,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackHigherItemsInYDirection(boolean clone) throws InterruptedException {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -656,7 +656,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testStackHigherItemsInZDirection(boolean clone) throws InterruptedException {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -668,7 +668,7 @@ public class ExtremePoints3DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void testInitialPointOneLevelUp(boolean clone) {
-		ExtremePoints3D ep = new ExtremePoints3D(clone);
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone);
 		ep.setSize(100, 100, 100);
 		
 		Point levelPoint = new DefaultPoint3D(0, 0, 20, 99, 99, 99);

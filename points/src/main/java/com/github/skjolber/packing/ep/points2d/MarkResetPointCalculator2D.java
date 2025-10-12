@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import com.github.skjolber.packing.api.Placement;
 
-public class MarkResetExtremePoints2D extends ExtremePoints2D {
+public class MarkResetPointCalculator2D extends DefaultPointCalculator2D {
 
 	protected long markMinAreaLimit = 0;
 
@@ -12,11 +12,11 @@ public class MarkResetExtremePoints2D extends ExtremePoints2D {
 
 	protected ArrayList<Placement> markPlacements = new ArrayList<>();
 	
-	public MarkResetExtremePoints2D(boolean cloneOnConstrain) {
+	public MarkResetPointCalculator2D(boolean cloneOnConstrain) {
 		super(cloneOnConstrain);
 	}
 
-	public MarkResetExtremePoints2D() {
+	public MarkResetPointCalculator2D() {
 		this(false);
 	}
 	

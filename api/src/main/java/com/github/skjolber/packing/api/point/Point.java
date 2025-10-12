@@ -1,9 +1,16 @@
 package com.github.skjolber.packing.api.point;
 
 import java.util.Comparator;
+import java.util.Objects;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
+
+/**
+ * 
+ * Note on equal / hashCode: only applies to min/max coordinates.
+ * 
+ */
 
 public abstract class Point {
 
@@ -521,4 +528,24 @@ public abstract class Point {
 	public int getIndex() {
 		return index;
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(maxX, maxY, maxZ, minX, minY, minZ);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Point other = (Point) obj;
+		return maxX == other.maxX && maxY == other.maxY && maxZ == other.maxZ && minX == other.minX
+				&& minY == other.minY && minZ == other.minZ;
+	}
+	
+	
 }

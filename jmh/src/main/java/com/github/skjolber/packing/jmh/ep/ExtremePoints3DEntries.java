@@ -3,16 +3,16 @@ package com.github.skjolber.packing.jmh.ep;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 
 @SuppressWarnings("rawtypes")
 public class ExtremePoints3DEntries {
 
 	private final List<ExtremePoint3DEntry> entries = new ArrayList<>();
 
-	private final ExtremePoints3D extremePoints3D;
+	private final DefaultPointCalculator3D extremePoints3D;
 
-	public ExtremePoints3DEntries(ExtremePoints3D extremePoints3D) {
+	public ExtremePoints3DEntries(DefaultPointCalculator3D extremePoints3D) {
 		this.extremePoints3D = extremePoints3D;
 	}
 
@@ -24,7 +24,7 @@ public class ExtremePoints3DEntries {
 		return entries;
 	}
 
-	public ExtremePoints3D getExtremePoints3D() {
+	public DefaultPointCalculator3D getExtremePoints3D() {
 		return extremePoints3D;
 	}
 }

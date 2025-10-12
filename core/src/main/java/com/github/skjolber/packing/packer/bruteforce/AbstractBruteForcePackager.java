@@ -40,8 +40,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 	private static final Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
 	
-	public AbstractBruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator) {
-		super(comparator);
+	public AbstractBruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator, List<Point> points) {
+		super(comparator, points);
 	}
 	
 	public class BruteForcePackagerResultBuilder extends AbstractPackagerResultBuilder<BruteForcePackagerResultBuilder> {
@@ -129,7 +129,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		return placements;
 	}
 
-	public BruteForceIntermediatePackagerResult pack(ExtremePoints3DStack extremePoints, List<Placement> stackPlacements, ContainerItem containerItem, int index,
+	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, List<Placement> stackPlacements, ContainerItem containerItem, int index,
 			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 
 		Container holder = containerItem.getContainer().clone();
@@ -152,7 +152,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			do {
 				int minStackableAreaIndex = iterator.getMinStackableAreaIndex(0);
 
-				List<Point> points = packStackPlacement(extremePoints, stackPlacements, iterator, stack, holder, interrupt, minStackableAreaIndex);
+				List<Point> points = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, minStackableAreaIndex);
 				if(points == null) {
 					return null; // stack overflow
 				}
@@ -211,7 +211,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		return bestResult;
 	}
 
-	public List<Point> packStackPlacement(ExtremePoints3DStack extremePoints, List<Placement> placements, BoxItemPermutationRotationIterator iterator, Stack stack,
+	public List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements, BoxItemPermutationRotationIterator iterator, Stack stack,
 			Container container,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex) throws PackagerInterruptedException {
 		if(placements.isEmpty()) {
@@ -221,12 +221,14 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		// pack as many items as possible from placementIndex
 		int maxLoadWeight = container.getMaxLoadWeight();
 
-		extremePoints.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		extremePoints.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
-
+		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
+		if(points != null) {
+			pointCalculator.setPoints(points);
+		}
+		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
 		try {
 			// note: currently implemented as a recursive algorithm
-			return packStackPlacement(extremePoints, placements, iterator, stack, maxLoadWeight, 0, interrupt, minStackableAreaIndex, Collections.emptyList());
+			return packStackPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight, 0, interrupt, minStackableAreaIndex, Collections.emptyList());
 		} catch (StackOverflowError e) {
 			// TODO throw packager exception
 			
@@ -236,7 +238,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 	}
 
 	private List<Point> packStackPlacement(
-			ExtremePoints3DStack extremePointsStack, 
+			PointCalculator3DStack pointCalculatorStack, 
 			List<Placement> placements, 
 			BoxItemPermutationRotationIterator rotator, 
 			Stack stack,
@@ -262,16 +264,16 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 		maxLoadWeight -= stackValue.getBox().getWeight();
 
-		if(extremePointsStack.getStackIndex() > best.size()) {
-			best = extremePointsStack.getPoints();
+		if(pointCalculatorStack.getStackIndex() > best.size()) {
+			best = pointCalculatorStack.getPoints();
 		}
 
-		extremePointsStack.push();
+		pointCalculatorStack.push();
 
-		int currentPointsCount = extremePointsStack.size();
+		int currentPointsCount = pointCalculatorStack.size();
 
 		for (int k = 0; k < currentPointsCount; k++) {
-			Point point3d = extremePointsStack.get(k);
+			Point point3d = pointCalculatorStack.get(k);
 
 			if(!point3d.fits3D(stackValue)) {
 				continue;
@@ -279,10 +281,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 			placement.setPoint(point3d);
 
-			extremePointsStack.add(k, placement);
+			pointCalculatorStack.add(k, placement);
 
 			if(placementIndex + 1 >= rotator.length()) {
-				best = extremePointsStack.getPoints();
+				best = pointCalculatorStack.getPoints();
 
 				break;
 			}
@@ -296,15 +298,15 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			if(minArea) {
 				nextMinStackableAreaIndex = rotator.getMinStackableAreaIndex(placementIndex + 1);
 
-				extremePointsStack.setMinimumAreaAndVolumeLimit(rotator.getStackValue(nextMinStackableAreaIndex).getArea(), rotator.getMinBoxVolume(placementIndex + 1));
+				pointCalculatorStack.setMinimumAreaAndVolumeLimit(rotator.getStackValue(nextMinStackableAreaIndex).getArea(), rotator.getMinBoxVolume(placementIndex + 1));
 			} else {
-				extremePointsStack.setMinimumVolumeLimit(rotator.getMinBoxVolume(placementIndex + 1));
+				pointCalculatorStack.setMinimumVolumeLimit(rotator.getMinBoxVolume(placementIndex + 1));
 
 				nextMinStackableAreaIndex = minStackableAreaIndex;
 			}
 
 			List<Point> points = packStackPlacement(
-					extremePointsStack, 
+					pointCalculatorStack, 
 					placements, 
 					rotator, 
 					stack, 
@@ -326,10 +328,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 					best = points;
 				}
 			}
-			extremePointsStack.redo();
+			pointCalculatorStack.redo();
 		}
 
-		extremePointsStack.pop();
+		pointCalculatorStack.pop();
 
 		return best;
 	}

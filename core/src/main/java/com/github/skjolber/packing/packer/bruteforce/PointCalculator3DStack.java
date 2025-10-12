@@ -5,10 +5,10 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
 
-public class ExtremePoints3DStack extends ExtremePoints3D {
+public class PointCalculator3DStack extends DefaultPointCalculator3D {
 
 	protected static class StackItem {
 		protected Point3DFlagList values = new Point3DFlagList();
@@ -23,7 +23,7 @@ public class ExtremePoints3DStack extends ExtremePoints3D {
 	protected List<StackItem> stackItems = new ArrayList<>();
 	protected int stackIndex = 0;
 
-	public ExtremePoints3DStack(int maxStackDepth) {
+	public PointCalculator3DStack(int maxStackDepth) {
 		super(true);
 
 		for (int i = 0; i < maxStackDepth; i++) {

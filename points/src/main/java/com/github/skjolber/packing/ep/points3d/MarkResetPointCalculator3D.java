@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import com.github.skjolber.packing.api.Placement;
 
-public class MarkResetExtremePoints3D extends ExtremePoints3D {
+public class MarkResetPointCalculator3D extends DefaultPointCalculator3D {
 
 	protected long markMinVolumeLimit = 0;
 	protected long markMinAreaLimit = 0;
@@ -13,11 +13,11 @@ public class MarkResetExtremePoints3D extends ExtremePoints3D {
 
 	protected ArrayList<Placement> markPlacements = new ArrayList<>();
 	
-	public MarkResetExtremePoints3D(boolean cloneOnConstrain) {
+	public MarkResetPointCalculator3D(boolean cloneOnConstrain) {
 		super(cloneOnConstrain);
 	}
 
-	public MarkResetExtremePoints3D() {
+	public MarkResetPointCalculator3D() {
 		this(false);
 	}
 	

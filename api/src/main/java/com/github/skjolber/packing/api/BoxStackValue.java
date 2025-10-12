@@ -23,7 +23,7 @@ public class BoxStackValue {
 		this.surfaces = surfaces;
 
 		this.area = (long) dx * (long) dy;
-		this.volume = (long) dx * (long) dy * (long) dz;
+		this.volume = area * (long) dz;
 
 		this.index = index;
 	}

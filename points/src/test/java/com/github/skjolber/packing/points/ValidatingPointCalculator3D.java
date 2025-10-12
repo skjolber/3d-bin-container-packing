@@ -2,11 +2,11 @@ package com.github.skjolber.packing.points;
 
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.ep.points3d.ExtremePoints3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 
-public class DefaultExtremePoints3D extends ExtremePoints3D {
+public class ValidatingPointCalculator3D extends DefaultPointCalculator3D {
 
-	public DefaultExtremePoints3D() {
+	public ValidatingPointCalculator3D() {
 		super();
 	}
 

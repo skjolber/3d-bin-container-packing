@@ -23,7 +23,7 @@ import com.github.skjolber.packing.api.point.Point;
  *
  */
 
-public class ExtremePoints2D implements PointCalculator {
+public class DefaultPointCalculator2D implements PointCalculator {
 
 	public static final Comparator<Point2D> COMPARATOR_X = new Comparator<Point2D>() {
 
@@ -63,11 +63,11 @@ public class ExtremePoints2D implements PointCalculator {
 		return Point2D.COMPARATOR_MOVE_XX.compare(values.get(a), values.get(b));
 	};
 
-	public ExtremePoints2D() {
+	public DefaultPointCalculator2D() {
 		this(false);
 	}
 
-	public ExtremePoints2D(boolean immutablePoints) {
+	public DefaultPointCalculator2D(boolean immutablePoints) {
 		this.cloneOnConstrain = immutablePoints;
 	}	
 
@@ -973,7 +973,7 @@ public class ExtremePoints2D implements PointCalculator {
 
 	@Override
 	public String toString() {
-		return "ExtremePoints2D [" + containerMaxX + "x" + containerMaxY + ": " + values + "]";
+		return "DefaultPointCalculator2D [" + containerMaxX + "x" + containerMaxY + ": " + values + "]";
 	}
 
 	public List<Placement> getPlacements() {

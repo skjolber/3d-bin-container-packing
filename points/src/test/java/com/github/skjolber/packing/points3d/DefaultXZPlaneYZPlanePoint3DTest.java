@@ -164,31 +164,56 @@ public class DefaultXZPlaneYZPlanePoint3DTest extends AbstractPointTest {
 		assertFalse(move.isSupportedYZPlane());
 	}
 	
-	// z
+	//  
+	// z         y   
 	// |
-	// | 
-	// |-------------------|
-	// |                   | 
-	// |                   | 
-	// *==========|        | 
-	// |          |        | 
-	// |          |        | 
-	// |----------------------- y
-	//
+	// |       /|
+	// |      / |
+	// |     /  |
+	// |    /   |
+	// |   /   / 
+	// |  /   /  
+	// | /   /     
+    // |/   /-----/   
+	// |   /     /
+	// |-----------|      
+	// | /     /   |
+	// */-----/    |
+	// |           |
+	// |-----------|--------- x
 	
 	@Test
 	public void testMoveZSupported() {
-		SimplePoint3D moveZ = point.moveZ(rightPlacement.getAbsoluteZ(), rightPlacement);
+		SimplePoint3D moveZ = point.moveZ(point.getMinX() + 5, rightPlacement);
 
 		assertTrue(moveZ.isSupportedXYPlane());
 		assertTrue(moveZ.isSupportedYZPlane());
+		assertTrue(moveZ.isSupportedXZPlane());
 	}
 
+	//  
+	// z         y   
+	// |
+	// |         
+	// |         
+	// |         
+	// |         /|
+	// |        / |
+	// |       /  |
+	// |      /   |
+    // |     /    /
+	// |    /    /
+	// |    |------|      
+	// |    |  /   |
+	// |    | /    |
+	// |----|*-----|--------- x
+	
 	@Test
 	public void testMoveXSupported() {
-		SimplePoint3D moveX = point.moveX(rightPlacement.getAbsoluteX(), rightPlacement);
+		SimplePoint3D moveX = point.moveX(point.getMinX() + 5, rightPlacement);
 
 		assertTrue(moveX.isSupportedYZPlane());
+		assertTrue(moveX.isSupportedXZPlane());
 	}
 
 	@Test
