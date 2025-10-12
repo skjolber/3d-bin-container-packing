@@ -14,7 +14,7 @@ Projects using this library will benefit from:
 with
 
  * friendly API
- * extendable packagers
+ * customizable packagers
     
 Bugs, feature suggestions and help requests can be filed with the [issue-tracker].
 
@@ -29,7 +29,7 @@ For the previous version, see the [3.x](https://github.com/skjolber/3d-bin-conta
 Add
  
 ```xml
-<3d-bin-container-packing.version>3.0.9</3d-bin-container-packing.version>
+<3d-bin-container-packing.version>4.0.0</3d-bin-container-packing.version>
 ```
 
 and
@@ -53,7 +53,7 @@ For
 
 ```groovy
 ext {
-  containerBinPackingVersion = '3.0.9'
+  containerBinPackingVersion = '4.0.0'
 }
 ```
 
@@ -64,8 +64,6 @@ api("com.github.skjolber.3d-bin-container-packing:core:${containerBinPackingVers
 ```
 
 </details>
-
-Java 11+ projects please use module `com.github.skjolber.packing.core`.
 
 # Usage
 The units of measure is out-of-scope, be they cm, mm or inches.
@@ -199,7 +197,7 @@ Note that the algorithm is recursive on the number of boxes, so do not attempt t
 
 </details> 
 
-# Packaging customization
+# Packager customizations
 
 ## Obstacles within containers
 Make the packager account for non-rectangular packaging space, i.e. pillars or other obstacles within containers, by providing the container initial free space (i.e. points).
