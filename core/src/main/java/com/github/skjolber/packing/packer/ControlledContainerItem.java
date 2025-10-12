@@ -26,7 +26,7 @@ public class ControlledContainerItem extends ContainerItem {
 
 	protected ManifestControlsBuilderFactory manifestControlsBuilderFactory;
 	protected PointControlsBuilderFactory pointControlsBuilderFactory;
-	protected List<Point> points; 
+	protected List<Point> initialPoints; 
 
 	public ControlledContainerItem(Container container, int count) {
 		super(container, count);
@@ -37,11 +37,11 @@ public class ControlledContainerItem extends ContainerItem {
 	}
 	
 	public void setInitialPoints(List<Point> points) {
-		this.points = points;
+		this.initialPoints = points;
 	}
 	
 	public List<Point> getInitialPoints() {
-		return points;
+		return initialPoints;
 	}
 
 	public void setPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory) {
@@ -97,7 +97,7 @@ public class ControlledContainerItem extends ContainerItem {
 		return hasBoxItemControlsBuilderFactory() || hasBoxItemControlsBuilderFactory();
 	}
 	
-	public boolean hasPoints() {
-		return points != null;
+	public boolean hasInitialPoints() {
+		return initialPoints != null;
 	}
 }

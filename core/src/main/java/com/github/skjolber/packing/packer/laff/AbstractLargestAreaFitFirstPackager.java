@@ -153,7 +153,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		PointCalculator pointCalculator = createPointCalculator();
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		if(controlledContainerItem.hasPoints()) {
+		if(controlledContainerItem.hasInitialPoints()) {
 			pointCalculator.setPoints(controlledContainerItem.getInitialPoints());
 			pointCalculator.clear();
 		}
@@ -337,7 +337,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		MarkResetPointCalculator3D pointCalculator = new MarkResetPointCalculator3D(true);
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		if(controlledContainerItem.hasPoints()) {
+		if(controlledContainerItem.hasInitialPoints()) {
 			pointCalculator.setPoints(controlledContainerItem.getInitialPoints());
 			pointCalculator.clear();
 		}
