@@ -259,7 +259,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
  * [The Art of Stacking: Challenges Faced While Developing a Packing Algorithm](https://medium.com/@fayyazawais1412/the-art-of-stacking-challenges-faced-while-developing-a-packing-algorithm-64d869b924ab)
 
 # History
- * 4.0.0: Major rewrite. Breaking changes.
+ * 4.0.x: Major rewrite. Breaking changes.
      * Support for packaging groups
      * Various ways to control packaging:
         * Manifest controls (box vs box, box vs container)

@@ -39,7 +39,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 	private static final Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
 	
-	public AbstractBruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator, List<Point> points) {
+	public AbstractBruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator) {
 		super(comparator);
 	}
 	

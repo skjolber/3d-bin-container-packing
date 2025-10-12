@@ -55,7 +55,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(comparator == null) {
 				comparator = new DefaultIntermediatePackagerResultComparator<>();
 			}
-			return new BruteForcePackager(comparator, points);
+			return new BruteForcePackager(comparator);
 		}
 	}
 	
@@ -104,8 +104,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		
 	}
 
-	public BruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator, List<Point> points) {
-		super(comparator, points);
+	public BruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator) {
+		super(comparator);
 	}
 
 	@Override

@@ -52,18 +52,12 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		protected int parallelizationCount = -1;
 		protected ExecutorService executorService;
 		protected Comparator<BruteForceIntermediatePackagerResult> comparator;
-		protected List<Point> points;
 
 		public ParallelBruteForcePackagerBuilder withThreads(int threads) {
 			if(threads < 1) {
 				throw new IllegalArgumentException("Unexpected thread count " + threads);
 			}
 			this.threads = threads;
-			return this;
-		}
-		
-		public ParallelBruteForcePackagerBuilder withPoints(List<Point> points) {
-			this.points = points;
 			return this;
 		}
 
@@ -123,7 +117,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					}
 				}
 			}
-			return new ParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, points);
+			return new ParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator);
 		}
 	}
 
@@ -132,8 +126,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	private final ExecutorService executorService;
 
 	public ParallelBoxItemBruteForcePackager(ExecutorService executorService, int parallelizationCount, 
-			Comparator<BruteForceIntermediatePackagerResult> comparator, List<Point> points) {
-		super(comparator, points);
+			Comparator<BruteForceIntermediatePackagerResult> comparator) {
+		super(comparator);
 
 		this.parallelizationCount = parallelizationCount;
 		this.executorService = executorService;

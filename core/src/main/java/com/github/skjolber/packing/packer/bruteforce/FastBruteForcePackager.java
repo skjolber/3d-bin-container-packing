@@ -61,15 +61,9 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	public static class FastBruteForcePackagerBuilder {
 
 		protected Comparator<BruteForceIntermediatePackagerResult> comparator;
-		protected List<Point> points;
 		
 		public FastBruteForcePackagerBuilder withComparator(Comparator<BruteForceIntermediatePackagerResult> comparator) {
 			this.comparator = comparator;
-			return this;
-		}
-		
-		public FastBruteForcePackagerBuilder withPoints(List<Point> points) {
-			this.points = points;
 			return this;
 		}
 		
@@ -77,7 +71,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(comparator == null) {
 				comparator = new DefaultIntermediatePackagerResultComparator<>();
 			}
-			return new FastBruteForcePackager(comparator, points);
+			return new FastBruteForcePackager(comparator);
 		}
 		
 	}
@@ -170,8 +164,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		return new FastBruteForceAdapter(boxItems, defaultContainerItemsCalculator, containerIterators, interrupt);
 	}
 	
-	public FastBruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator, List<Point> points) {
-		super(comparator, points);
+	public FastBruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator) {
+		super(comparator);
 	}
 
 	public BruteForceIntermediatePackagerResult pack(FastPointCalculator3DStack pointCalculator,
