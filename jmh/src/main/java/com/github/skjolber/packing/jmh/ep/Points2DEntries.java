@@ -6,21 +6,21 @@ import java.util.List;
 import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
 
 @SuppressWarnings("rawtypes")
-public class ExtremePoints2DEntries {
+public class Points2DEntries {
 
-	private final List<ExtremePoint2DEntry> entries = new ArrayList<>();
+	private final List<Point2DEntry> entries = new ArrayList<>();
 
 	private final DefaultPointCalculator2D extremePoints2D;
 
-	public ExtremePoints2DEntries(DefaultPointCalculator2D extremePoints2D) {
+	public Points2DEntries(DefaultPointCalculator2D extremePoints2D) {
 		this.extremePoints2D = extremePoints2D;
 	}
 
-	public void add(ExtremePoint2DEntry entry) {
+	public void add(Point2DEntry entry) {
 		entries.add(entry);
 	}
 
-	public List<ExtremePoint2DEntry> getEntries() {
+	public List<Point2DEntry> getEntries() {
 		return entries;
 	}
 

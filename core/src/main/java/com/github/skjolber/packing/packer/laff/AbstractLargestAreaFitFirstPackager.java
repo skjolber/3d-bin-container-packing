@@ -145,22 +145,23 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		this.firstBoxItemGroupComparator = firstBoxItemGroupComparator;
 	}
 
-	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
-		ContainerItem containerItem = compositeContainerItem;
+	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+		ContainerItem containerItem = controlledContainerItem;
 		Container container = containerItem.getContainer();
 
 		Stack stack = new Stack();
 
 		PointCalculator pointCalculator = createPointCalculator();
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		if(points != null) {
-			pointCalculator.setPoints(points);
+		if(controlledContainerItem.hasPoints()) {
+			pointCalculator.setPoints(controlledContainerItem.getPoints());
+			pointCalculator.clear();
 		}
 
 		DefaultBoxItemSource filteredBoxItems = new DefaultBoxItemSource(boxItems);
-		ManifestControls boxItemControls = compositeContainerItem.createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, null);
+		ManifestControls boxItemControls = controlledContainerItem.createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, null);
 
-		PointControls pointControls = compositeContainerItem.createPointControls(container, stack, filteredBoxItems, pointCalculator);
+		PointControls pointControls = controlledContainerItem.createPointControls(container, stack, filteredBoxItems, pointCalculator);
 		// remove boxes which do not fit due to volume, weight or dimensions
 		List<BoxItem> removed = new ArrayList<>();
 		for(int i = 0; i < filteredBoxItems.size(); i++) {
@@ -234,7 +235,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 						break;
 					}
 
-					// prepare extreme points for a new level						
+					// prepare points for a new level						
 					DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, container.getLoadDz() - 1);
 					pointCalculator.setPoints(Arrays.asList(levelFloor));
 					pointCalculator.clear();
@@ -323,21 +324,22 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		
 		// ignore decline for the rest
 		
-		return new DefaultIntermediatePackagerResult(compositeContainerItem, stack);
+		return new DefaultIntermediatePackagerResult(controlledContainerItem, stack);
 	}
 
 	protected abstract PointCalculator createPointCalculator();
 
-	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, BoxPriority priority, ControlledContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
-		ContainerItem containerItem = compositeContainerItem;
+	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, BoxPriority priority, ControlledContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+		ContainerItem containerItem = controlledContainerItem;
 		Container container = containerItem.getContainer();
 		
 		Stack stack = new Stack();
 
 		MarkResetPointCalculator3D pointCalculator = new MarkResetPointCalculator3D(true);
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		if(points != null) {
-			pointCalculator.setPoints(points);
+		if(controlledContainerItem.hasPoints()) {
+			pointCalculator.setPoints(controlledContainerItem.getPoints());
+			pointCalculator.clear();
 		}
 		PackagerBoxItems packagerBoxItems = new PackagerBoxItems(boxItemGroups);
 
@@ -345,9 +347,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		BoxItemGroupSource filteredBoxItemGroups = packagerBoxItems.getFilteredBoxItemGroups();
 
-		ManifestControls boxItemControls = compositeContainerItem.createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups);
+		ManifestControls boxItemControls = controlledContainerItem.createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups);
 
-		PointControls pointControls = compositeContainerItem.createPointControls(container, stack, filteredBoxItems, pointCalculator);
+		PointControls pointControls = controlledContainerItem.createPointControls(container, stack, filteredBoxItems, pointCalculator);
 				
 		List<BoxItemGroup> removedBoxItemGroups = new ArrayList<>();
 
@@ -441,7 +443,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 							break;
 						}
 
-						// prepare extreme points for a new level						
+						// prepare points for a new level						
 						DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, container.getLoadDz() - 1);
 						pointCalculator.setPoints(Arrays.asList(levelFloor));
 						pointCalculator.clear();

@@ -14,7 +14,7 @@ import com.github.skjolber.packing.api.point.EmptyPointSource;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointSource;
 
-public class HeavyItemsOnGroundLevel extends DefaultPointControls {
+public class HeavyItemsOnGroundLevelPointControls extends DefaultPointControls {
 
 	public static class Builder extends AbstractPointControlsBuilder<Builder> {
 
@@ -32,7 +32,7 @@ public class HeavyItemsOnGroundLevel extends DefaultPointControls {
 				throw new IllegalStateException("Expected max weight limit");
 			}
 			
-			return new HeavyItemsOnGroundLevel(items, points, maxWeight);
+			return new HeavyItemsOnGroundLevelPointControls(items, points, maxWeight);
 		}
 
 	}
@@ -40,7 +40,7 @@ public class HeavyItemsOnGroundLevel extends DefaultPointControls {
 	protected final int maxWeight;
 	protected BoxItemSource filteredBoxItems;
 
-	public HeavyItemsOnGroundLevel(BoxItemSource filteredBoxItems, PointSource filteredPoints, int maxWeight) {
+	public HeavyItemsOnGroundLevelPointControls(BoxItemSource filteredBoxItems, PointSource filteredPoints, int maxWeight) {
 		super(filteredPoints);
 		this.filteredBoxItems = filteredBoxItems;
 		this.maxWeight = maxWeight;
@@ -51,7 +51,7 @@ public class HeavyItemsOnGroundLevel extends DefaultPointControls {
 	}
 	
 	public static final PointControlsBuilderFactory newFactory(int maxWeight) {
-		return () -> HeavyItemsOnGroundLevel.newBuilder().withMaxWeight(maxWeight);
+		return () -> HeavyItemsOnGroundLevelPointControls.newBuilder().withMaxWeight(maxWeight);
 	}
 
 	@Override

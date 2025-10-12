@@ -15,7 +15,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
@@ -34,7 +33,6 @@ import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.PackagerException;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager.ParallelBruteForcePackagerBuilder;
 
 /**
  * 
@@ -144,7 +142,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 	private class RunnableAdapter implements Callable<BruteForceIntermediatePackagerResult> {
 
-		private ContainerItem containerItem;
+		private ControlledContainerItem containerItem;
 		private BoxItemPermutationRotationIterator iterator;
 		private List<Placement> placements;
 		private PointCalculator3DStack pointCalculator;
@@ -158,7 +156,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			this.pointCalculator.reset(1, 1, 1);
 		}
 
-		public void setContainerItem(ContainerItem containerItem) {
+		public void setContainerItem(ControlledContainerItem containerItem) {
 			this.containerItem = containerItem;
 		}
 		
@@ -216,7 +214,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				for (int j = 0; j < runnables.length; j++) {
 					RunnableAdapter runnableAdapter = runnables[j];
 					
-					ContainerItem containerItem = getContainerItem(i);
+					ControlledContainerItem containerItem = getContainerItem(i);
 					
 					runnableAdapter.setContainerItem(containerItem);
 					runnableAdapter.setIterator(parallelIterators[i].getIterator(j));
@@ -276,7 +274,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				}
 			}
 			
-			ContainerItem containerItem = getContainerItem(i);
+			ControlledContainerItem containerItem = getContainerItem(i);
 			
 			// no need to split this job
 			// run with linear approach
@@ -380,7 +378,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				for (int j = 0; j < runnables.length; j++) {
 					RunnableAdapter runnableAdapter = runnables[j];
 					
-					ContainerItem containerItem = getContainerItem(i);
+					ControlledContainerItem containerItem = getContainerItem(i);
 					
 					runnableAdapter.setContainerItem(containerItem);
 					runnableAdapter.setIterator(parallelIterators[i].getIterator(j));
@@ -440,7 +438,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				}
 			}
 			
-			ContainerItem containerItem = getContainerItem(i);
+			ControlledContainerItem containerItem = getContainerItem(i);
 			
 			// no need to split this job
 			// run with linear approach

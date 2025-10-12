@@ -22,6 +22,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
@@ -394,6 +395,44 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 		}
 	}
 
+	@Test
+	void testStackingSquaresOnSquareWithPredefinedPoints() {
+		DefaultPointCalculator3D calculator = new DefaultPointCalculator3D();
+		calculator.clearToSize(2, 2, 1);
+		Box box = Box.newBuilder().withDescription("0").withSize(1, 1, 1).withWeight(1).build();
+		Placement pillar = new Placement(box.getStackValue(0), calculator.get(0));
+		calculator.add(0, pillar);
+		
+		Container container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
+
+		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+	
+			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+	
+			PackagerResult build = packager.newResultBuilder()
+					.withContainerItem( (c) -> {
+						c.withContainerItem(container, 1);
+						c.withPoints(calculator.getAll());
+					})
+					.withBoxItems(products)
+					.build();
+			
+			List<Container> containers = build.getContainers();
+			assertValid(containers);
+	
+			List<Placement> placements = containers.get(0).getStack().getPlacements();
+			for(Placement placement : placements) {
+				assertFalse(placement.getAbsoluteX() == 0 && placement.getAbsoluteY() == 0);
+			}
+			
+		} finally {
+			packager.close();
+		}
+	}
 
 	
 }

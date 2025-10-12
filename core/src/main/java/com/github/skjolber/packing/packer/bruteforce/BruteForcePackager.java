@@ -16,8 +16,8 @@ import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePackagerBuilder;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -138,7 +138,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[containerItemsCalculator.getContainerItemCount()];
 
 		for (int i = 0; i < containerItemsCalculator.getContainerItemCount(); i++) {
-			ContainerItem containerItem = containerItemsCalculator.getContainerItem(i);
+			ControlledContainerItem containerItem = containerItemsCalculator.getContainerItem(i);
 			Container container = containerItem.getContainer();
 
 			containerIterators[i] = DefaultBoxItemPermutationRotationIterator

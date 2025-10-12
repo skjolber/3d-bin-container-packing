@@ -36,7 +36,7 @@ import com.github.skjolber.packing.iterator.PackagerBoxItems;
 public abstract class AbstractControlPackager<I extends Placement, P extends IntermediatePackagerResult, B extends PackagerResultBuilder> extends AbstractPackager<P, B> {
 
 	public AbstractControlPackager(Comparator<P> comparator, List<Point> points) {
-		super(comparator, points);
+		super(comparator);
 	}
 
 	public P pack(List<BoxItem> boxItems, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
@@ -46,8 +46,9 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 
 		PointCalculator pointCalculator = new DefaultPointCalculator3D();
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		if(points != null) {
-			pointCalculator.setPoints(points);
+		if(controlContainerItem.hasPoints()) {
+			pointCalculator.setPoints(controlContainerItem.getPoints());
+			pointCalculator.clear();
 		}
 
 		DefaultBoxItemSource boxItemSource = new DefaultBoxItemSource(boxItems);
@@ -189,16 +190,17 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		return createIntermediatePackagerResult(controlContainerItem, stack);
 	}
 
-	public P packGroup(List<BoxItemGroup> boxItemGroups, BoxPriority priority, ControlledContainerItem compositeContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
-		ContainerItem containerItem = compositeContainerItem;
+	public P packGroup(List<BoxItemGroup> boxItemGroups, BoxPriority priority, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+		ContainerItem containerItem = controlContainerItem;
 		Container container = containerItem.getContainer();
 		
 		Stack stack = new Stack();
 
 		MarkResetPointCalculator3D pointCalculator = new MarkResetPointCalculator3D(true);
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		if(points != null) {
-			pointCalculator.setPoints(points);
+		if(controlContainerItem.hasPoints()) {
+			pointCalculator.setPoints(controlContainerItem.getPoints());
+			pointCalculator.clear();
 		}
 
 		PackagerBoxItems packagerBoxItems = new PackagerBoxItems(boxItemGroups);
@@ -207,9 +209,9 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 
 		BoxItemGroupSource filteredBoxItemGroups = packagerBoxItems.getFilteredBoxItemGroups();
 
-		ManifestControls boxItemControls = compositeContainerItem.createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups);
+		ManifestControls boxItemControls = controlContainerItem.createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups);
 
-		PointControls pointControls = compositeContainerItem.createPointControls(container, stack, filteredBoxItems, pointCalculator);
+		PointControls pointControls = controlContainerItem.createPointControls(container, stack, filteredBoxItems, pointCalculator);
 						
 		List<BoxItemGroup> removedBoxItemGroups = new ArrayList<>();
 

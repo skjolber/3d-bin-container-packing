@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.api.packager.control.placement;
 
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.packager.BoxItemSource;
 
 public interface PlacementControls<R extends Placement> {
 

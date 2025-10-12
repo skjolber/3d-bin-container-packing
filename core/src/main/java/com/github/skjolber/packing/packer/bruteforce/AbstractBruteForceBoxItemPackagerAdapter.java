@@ -4,9 +4,9 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxPriority;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 
 public abstract class AbstractBruteForceBoxItemPackagerAdapter implements PackagerAdapter<BruteForceIntermediatePackagerResult> {
@@ -34,7 +34,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter implements Packag
 	} 
 	
 	@Override
-	public ContainerItem getContainerItem(int index) {
+	public ControlledContainerItem getContainerItem(int index) {
 		return packagerContainerItems.getContainerItem(index);
 	}
 

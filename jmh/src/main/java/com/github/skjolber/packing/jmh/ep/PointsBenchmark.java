@@ -22,7 +22,7 @@ import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class ExtremePointsBenchmark {
+public class PointsBenchmark {
 
 	/*
 	@Benchmark
@@ -45,13 +45,13 @@ public class ExtremePointsBenchmark {
 	*/
 
 	@Benchmark
-	public int points3D(ExtremePoints3DState state) throws Exception {
+	public int points3D(Points3DState state) throws Exception {
 		int size = 0;
-		List<ExtremePoints3DEntries> entries = state.getEntries();
-		for (ExtremePoints3DEntries e : entries) {
+		List<Points3DEntries> entries = state.getEntries();
+		for (Points3DEntries e : entries) {
 			DefaultPointCalculator3D extremePoints3D = e.getExtremePoints3D();
 
-			for (ExtremePoint3DEntry extremePointEntry : e.getEntries()) {
+			for (Point3DEntry extremePointEntry : e.getEntries()) {
 				extremePoints3D.add(extremePointEntry.getIndex(), extremePointEntry.getPlacement());
 			}
 			size += extremePoints3D.size();
@@ -64,7 +64,7 @@ public class ExtremePointsBenchmark {
 
 	public static void main(String[] args) throws RunnerException {
 		Options opt = new OptionsBuilder()
-				.include(ExtremePointsBenchmark.class.getSimpleName())
+				.include(PointsBenchmark.class.getSimpleName())
 				.mode(Mode.Throughput)
 				/*
 				.forks(1)

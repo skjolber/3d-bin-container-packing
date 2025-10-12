@@ -12,7 +12,6 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
-import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
 
@@ -28,13 +27,11 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 	public static final int ARGUMENT_2_IS_BETTER = -1;
 
 	protected final Comparator<P> intermediatePackagerResultComparator;
-	protected final List<Point> points;
 	
 	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Integer.MAX_VALUE);
 
-	public AbstractPackager(Comparator<P> comparator, List<Point> points) {
+	public AbstractPackager(Comparator<P> comparator) {
 		this.intermediatePackagerResultComparator = comparator;
-		this.points = points;
 	}
 
 	// pack in single container

@@ -50,7 +50,6 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			packager.close();
 		}
 	}
-	
 
 	@Test
 	void testStackingSquaresOnSquareForGroup() {

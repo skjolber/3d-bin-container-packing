@@ -14,6 +14,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
+import com.github.skjolber.packing.api.point.Point;
 
 /**
  * {@linkplain PackagerResult} builder scaffold.
@@ -42,6 +43,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		protected ContainerItem containerItem;
 		protected ManifestControlsBuilderFactory boxItemControlsBuilderFactory;
 		protected PointControlsBuilderFactory pointControlsBuilderFactory;
+		protected List<Point> points;
 
 		public ControlledContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier) {
 			this.boxItemControlsBuilderFactory = supplier;
@@ -71,7 +73,14 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			ControlledContainerItem packContainerItem = new ControlledContainerItem(containerItem);
 			packContainerItem.setBoxItemControlsBuilderFactory(boxItemControlsBuilderFactory);
 			packContainerItem.setPointControlsBuilderFactory(pointControlsBuilderFactory);
+			packContainerItem.setPoints(points);
 			return packContainerItem;
+		}
+
+		@Override
+		public ControlledContainerItemBuilder withPoints(List<Point> points) {
+			this.points = points;
+			return this;
 		}
 	}
 

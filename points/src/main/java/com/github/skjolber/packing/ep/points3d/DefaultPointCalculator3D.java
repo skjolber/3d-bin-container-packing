@@ -13,8 +13,8 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.api.point.PointCalculator;
 
 /**
  * 
@@ -1540,13 +1540,13 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			boolean xzPlane = p.getMinY() == 0;
 			
 			if(p.getMaxX() > containerMaxX) {
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("Expected point maxX " + p.getMaxX() + " <= " + containerMaxX + " container maxX");
 			}
 			if(p.getMaxY() > containerMaxY) {
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("Expected point maxY " + p.getMaxY() + " <= " + containerMaxY + " container maxY");
 			}
 			if(p.getMaxZ() > containerMaxZ) {
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("Expected point maxZ " + p.getMaxZ() + " <= " + containerMaxZ + " container maxZ");
 			}
 
 			if(xyPlane && yzPlane && xzPlane) {

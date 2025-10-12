@@ -9,25 +9,29 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
+import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.ep.points2d.DefaultPoint2D;
-import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
-import com.github.skjolber.packing.ep.points2d.Point2D;
+import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 @State(Scope.Benchmark)
-public class ExtremePoints2DState {
+public class Points3DState {
 
-	private List<ExtremePoints2DEntries> entries = new ArrayList<>();
+	private List<Points3DEntries> entries = new ArrayList<>();
 
-	private Placement createStackPlacement(int x, int y, int dx, int dy) {
-		BoxStackValue stackValue = new BoxStackValue(dx, dy, 0, null, -1);
+	private Placement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
+		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, -1);
 		
-		return new Placement(stackValue, new DefaultPoint2D(x, y, 0, 0, 0, 0));
+		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(0).build();
+		stackValue.setBox(box);
+		return new Placement(stackValue, new DefaultPoint3D(x, y, z, 0, 0, 0));
 	}
 	
 	@Setup(Level.Trial)
@@ -38,18 +42,17 @@ public class ExtremePoints2DState {
 		List<BouwkampCodes> codesForCount = directory.getAll();
 		for (BouwkampCodes c : codesForCount) {
 			for (BouwkampCode bkpLine : c.getCodes()) {
-				add(bkpLine);
+				//add(bkpLine);
+				convert3DXYPlane(bkpLine);
 			}
 		}
 	}
 
-	private void add(BouwkampCode bkpLine) {
-		DefaultPointCalculator2D points = new DefaultPointCalculator2D();
+	public void convert3DXYPlane(BouwkampCode bkpLine) {
+		DefaultPointCalculator3D points = new DefaultPointCalculator3D();
 		points.clearToSize(bkpLine.getWidth(), bkpLine.getDepth(), 1);
 
-		ExtremePoints2DEntries extremePointsEntries = new ExtremePoints2DEntries(points);
-
-		// run through the stacking, recording point index + placements
+		Points3DEntries extremePointsEntries = new Points3DEntries(points);
 
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
 
@@ -59,7 +62,7 @@ public class ExtremePoints2DState {
 			List<Integer> squares = line.getSquares();
 			int minY = points.getMinY();
 
-			Point2D value = points.get(minY);
+			Point value = points.get(minY);
 
 			int offset = value.getMinX();
 
@@ -67,26 +70,24 @@ public class ExtremePoints2DState {
 
 			for (int i = 0; i < squares.size(); i++) {
 				Integer square = squares.get(i);
-
 				int factoredSquare = square;
 
-				Placement placement = createStackPlacement(offset, value.getMinY(), offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1);
-				extremePointsEntries.add(new ExtremePoint2DEntry(nextY, placement));
-				points.add(nextY, placement);
+				Placement stackPlacement = createStackPlacement(offset, value.getMinY(), 0, offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, 1);
+				
+				extremePointsEntries.add(new Point3DEntry(nextY, stackPlacement));
+				
+				points.add(nextY, stackPlacement);
 
 				offset += factoredSquare;
 
-				nextY = points.findPoint(offset, value.getMinY());
+				nextY = points.get(offset, value.getMinY(), 0);
 
 				count++;
 
 				if(nextY == -1 && i + 1 < squares.size()) {
-					throw new IllegalStateException("No next y at " + offset + "x" + value.getMinY() + " with " + (squares.size() - 1 - i) + " remaining");
+					throw new IllegalStateException("No next y at " + offset + "x" + value.getMinY() + "x0 with " + (squares.size() - 1 - i) + " remaining for " + bkpLine + " and " + points.size() + " points");
 				}
 
-				if(count == -1) {
-					break lines;
-				}
 			}
 		}
 
@@ -94,12 +95,12 @@ public class ExtremePoints2DState {
 			throw new IllegalStateException("Still have " + points.size() + ": " + points.getAll());
 		}
 
-		points.redo();
+		points.clear();
 
 		entries.add(extremePointsEntries);
 	}
 
-	public List<ExtremePoints2DEntries> getEntries() {
+	public List<Points3DEntries> getEntries() {
 		return entries;
 	}
 

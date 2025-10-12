@@ -12,7 +12,7 @@ import com.github.skjolber.packing.api.packager.control.manifest.ManifestControl
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.PointSource;
 
-public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implements ManifestControls {
+public class MaxFireHazardBoxItemGroupsPerContainerManifestControls implements ManifestControls {
 
 	public static final String KEY = "fireHazard";
 
@@ -30,7 +30,7 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 			if(maxCount == -1) {
 				throw new IllegalStateException("Expected max count");
 			}
-			return new MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener(container, items, points, stack, maxCount);
+			return new MaxFireHazardBoxItemGroupsPerContainerManifestControls(container, items, points, stack, maxCount);
 		}
 
 	}
@@ -46,7 +46,7 @@ public class MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener implemen
 	protected int count = 0;
 	protected final PointSource points;
 
-	public MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener(Container container, BoxItemSource boxItems, PointSource points, Stack stack, int maxCount) {
+	public MaxFireHazardBoxItemGroupsPerContainerManifestControls(Container container, BoxItemSource boxItems, PointSource points, Stack stack, int maxCount) {
 		this.container = container;
 		this.boxItems = boxItems;
 		this.stack = stack;

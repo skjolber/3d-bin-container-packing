@@ -11,13 +11,13 @@ import com.github.skjolber.packing.api.packager.control.manifest.ManifestControl
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.PointSource;
 
-public class NoLightersWithPetrolBoxItemListener implements ManifestControls {
+public class NoLightersWithPetrolManifestControls implements ManifestControls {
 
 	public static class Builder extends AbstractManifestControlsBuilder<Builder> {
 
 		@Override
 		public ManifestControls build() {
-			return new NoLightersWithPetrolBoxItemListener(container, items, points, stack);
+			return new NoLightersWithPetrolManifestControls(container, items, points, stack);
 		}
 
 	}
@@ -27,7 +27,7 @@ public class NoLightersWithPetrolBoxItemListener implements ManifestControls {
 	}
 	
 	public static ManifestControlsBuilderFactory newFactory() {
-		return () -> NoLightersWithPetrolBoxItemListener.newBuilder();
+		return () -> NoLightersWithPetrolManifestControls.newBuilder();
 	}
 	
 	protected final Container container;
@@ -37,7 +37,7 @@ public class NoLightersWithPetrolBoxItemListener implements ManifestControls {
 	protected boolean lighter = false;
 	protected boolean petrol = false;
 
-	public NoLightersWithPetrolBoxItemListener(Container container, BoxItemSource items, PointSource filteredPoints, Stack stack) {
+	public NoLightersWithPetrolManifestControls(Container container, BoxItemSource items, PointSource filteredPoints, Stack stack) {
 		this.container = container;
 		this.items = items;
 		this.stack = stack;

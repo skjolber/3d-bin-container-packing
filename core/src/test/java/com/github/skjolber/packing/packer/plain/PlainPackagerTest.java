@@ -2,6 +2,7 @@ package com.github.skjolber.packing.packer.plain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -15,10 +16,15 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
 
@@ -388,7 +394,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
-				b.withBoxItemControlsBuilderFactory(NoLightersWithPetrolBoxItemListener.newFactory());
+				b.withBoxItemControlsBuilderFactory(NoLightersWithPetrolManifestControls.newFactory());
 			})
 					.withMaxContainerCount(5)
 					.withBoxItems(products)
@@ -430,7 +436,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
-				b.withBoxItemControlsBuilderFactory(NoLighterWithPetrolBoxItemGroupListener.newFactory());
+				b.withBoxItemControlsBuilderFactory(NoLighterWithPetrolManifestControls.newFactory());
 			})
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2))
@@ -475,7 +481,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withRotate3D()
 					.withSize(1, 1, 1)
 					.withWeight(1)
-					.withProperty(MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.KEY, Boolean.TRUE)
+					.withProperty(MaxFireHazardBoxItemGroupsPerContainerManifestControls.KEY, Boolean.TRUE)
 					.build(), 2);
 	
 			List<BoxItem> products = new ArrayList<>();
@@ -485,7 +491,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			PackagerResult build = packager.newResultBuilder()
 				.withContainerItem( b -> {
 					b.withContainerItem(new ContainerItem(container, 5));
-					b.withBoxItemControlsBuilderFactory(MaxFireHazardBoxItemPerContainerBoxItemListener.newFactory(1));
+					b.withBoxItemControlsBuilderFactory(MaxFireHazardBoxItemPerContainerManifestControls.newFactory(1));
 				})
 				.withMaxContainerCount(5)
 				.withBoxItems(products)
@@ -532,7 +538,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withRotate3D()
 					.withSize(1, 1, 1)
 					.withWeight(1)
-					.withProperty(MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.KEY, Boolean.TRUE)
+					.withProperty(MaxFireHazardBoxItemGroupsPerContainerManifestControls.KEY, Boolean.TRUE)
 					.build(), 1);
 
 			BoxItem boxItem3 = new BoxItem(Box.newBuilder()
@@ -540,7 +546,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withRotate3D()
 					.withSize(1, 1, 1)
 					.withWeight(1)
-					.withProperty(MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.KEY, Boolean.TRUE)
+					.withProperty(MaxFireHazardBoxItemGroupsPerContainerManifestControls.KEY, Boolean.TRUE)
 					.build(), 1);
 
 			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", Arrays.asList(boxItem1));
@@ -549,7 +555,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
-				b.withBoxItemControlsBuilderFactory(MaxFireHazardBoxItemGroupsPerContainerBoxItemGroupListener.newFactory(1));
+				b.withBoxItemControlsBuilderFactory(MaxFireHazardBoxItemGroupsPerContainerManifestControls.newFactory(1));
 			})
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2, boxItemGroup3))
@@ -595,7 +601,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 1));
-				b.withPointControlsBuilderFactory(HeavyItemsOnGroundLevel.newFactory(2));
+				b.withPointControlsBuilderFactory(HeavyItemsOnGroundLevelPointControls.newFactory(2));
 			}).withBoxItems(products).build();
 			
 			List<Container> containers = build.getContainers();
@@ -734,5 +740,48 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			packager.close();
 		}
 	}
+	
+	@Test
+	void testStackingSquaresOnSquareWithPredefinedPoints() {
+		DefaultPointCalculator3D calculator = new DefaultPointCalculator3D();
+		calculator.clearToSize(2, 2, 1);
+		Box box = Box.newBuilder().withDescription("0").withSize(1, 1, 1).withWeight(1).build();
+		Placement pillar = new Placement(box.getStackValue(0), calculator.get(0));
+		calculator.add(0, pillar);
+		
+		List<Point> all = calculator.getAll();
+		assertEquals(all.size(), 2);
+		
+		Container container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 3, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
+		
+		ContainerItem containerItem = new ContainerItem(container, 1);
+		
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+	
+			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+	
+			PackagerResult build = packager.newResultBuilder()
+					.withContainerItem( (c) -> {
+						c.withContainerItem(containerItem);
+						c.withPoints(all);
+					})
+					.withBoxItems(products)
+					.build();
+			
+			List<Placement> placements = build.getContainers().get(0).getStack().getPlacements();
+			for(Placement placement : placements) {
+				assertFalse(placement.getAbsoluteX() == 0 && placement.getAbsoluteY() == 0);
+			}
+			
+			assertValid(build);
+		} finally {
+			packager.close();
+		}
+	}
+
 
 }

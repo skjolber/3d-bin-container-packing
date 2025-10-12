@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.ep.points3d;
 
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.point.Point;
 
 public class DefaultPoint3D extends SimplePoint3D {
 

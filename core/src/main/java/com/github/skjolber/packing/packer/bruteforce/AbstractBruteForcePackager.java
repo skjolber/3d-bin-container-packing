@@ -41,7 +41,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 	private static final Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
 	
 	public AbstractBruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator, List<Point> points) {
-		super(comparator, points);
+		super(comparator);
 	}
 	
 	public class BruteForcePackagerResultBuilder extends AbstractPackagerResultBuilder<BruteForcePackagerResultBuilder> {
@@ -129,7 +129,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		return placements;
 	}
 
-	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, List<Placement> stackPlacements, ContainerItem containerItem, int index,
+	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, List<Placement> stackPlacements, ControlledContainerItem containerItem, int index,
 			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 
 		Container holder = containerItem.getContainer().clone();
@@ -152,7 +152,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			do {
 				int minStackableAreaIndex = iterator.getMinStackableAreaIndex(0);
 
-				List<Point> points = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, minStackableAreaIndex);
+				List<Point> points = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, minStackableAreaIndex, containerItem.getPoints());
 				if(points == null) {
 					return null; // stack overflow
 				}
@@ -213,7 +213,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 	public List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements, BoxItemPermutationRotationIterator iterator, Stack stack,
 			Container container,
-			PackagerInterruptSupplier interrupt, int minStackableAreaIndex) throws PackagerInterruptedException {
+			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points) throws PackagerInterruptedException {
 		if(placements.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -224,6 +224,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		if(points != null) {
 			pointCalculator.setPoints(points);
+			pointCalculator.clear();
 		}
 		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
 		try {

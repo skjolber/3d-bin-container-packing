@@ -10,7 +10,7 @@ import com.github.skjolber.packing.api.packager.control.manifest.AbstractManifes
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.point.PointSource;
 
-public class FireHazardsInSpecificContainersBoxItemGroupListener implements ManifestControls {
+public class FireHazardsInSpecificContainersManifestControls implements ManifestControls {
 
 	public static class Builder extends AbstractManifestControlsBuilder<Builder> {
 
@@ -27,7 +27,7 @@ public class FireHazardsInSpecificContainersBoxItemGroupListener implements Mani
 					i--;
 				}
 			}
-			return new FireHazardsInSpecificContainersBoxItemGroupListener(container, items, points, stack);
+			return new FireHazardsInSpecificContainersManifestControls(container, items, points, stack);
 		}
 
 		private boolean isFireHazard(BoxItemGroup boxItemGroup) {
@@ -54,7 +54,7 @@ public class FireHazardsInSpecificContainersBoxItemGroupListener implements Mani
 	protected final Stack stack;
 	protected final PointSource points;
 
-	public FireHazardsInSpecificContainersBoxItemGroupListener(Container container, BoxItemSource boxItems, PointSource points, Stack stack) {
+	public FireHazardsInSpecificContainersManifestControls(Container container, BoxItemSource boxItems, PointSource points, Stack stack) {
 		this.container = container;
 		this.boxItems = boxItems;
 		this.stack = stack;

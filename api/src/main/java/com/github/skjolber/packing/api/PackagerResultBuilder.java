@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
+import com.github.skjolber.packing.api.point.Point;
 
 public interface PackagerResultBuilder {
 
@@ -18,6 +19,8 @@ public interface PackagerResultBuilder {
 		ControlledContainerItemBuilder withContainerItem(ContainerItem containerItem);
 		
 		ControlledContainerItemBuilder withContainerItem(Container container, int count);
+		
+		ControlledContainerItemBuilder withPoints(List<Point> points);
 	}
 	
 	PackagerResultBuilder withBoxItems(BoxItem... items);
