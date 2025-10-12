@@ -4,7 +4,7 @@ import java.util.Comparator;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
@@ -23,8 +23,8 @@ public abstract class AbstractComparatorPlacementControls<T extends Placement> e
 
 	public AbstractComparatorPlacementControls(BoxItemSource boxItems, int boxItemsStartIndex, int boxItemsEndIndex,
 			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
-			BoxPriority priority, Comparator<T> placementComparator, Comparator<BoxItem> boxItemComparator) {
-		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, priority);
+			Order order, Comparator<T> placementComparator, Comparator<BoxItem> boxItemComparator) {
+		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, order);
 		
 		this.placementComparator = placementComparator;
 		this.boxItemComparator = boxItemComparator;
@@ -42,7 +42,7 @@ public abstract class AbstractComparatorPlacementControls<T extends Placement> e
 			
 			Box box = boxItem.getBox();
 			
-			if(priority == BoxPriority.NONE) {
+			if(order == Order.NONE) {
 				// a negative integer, zero, or a positive integer as the 
 				// first argument is less than, equal to, or greater than the
 			    // second.
@@ -74,11 +74,11 @@ public abstract class AbstractComparatorPlacementControls<T extends Placement> e
 				} 
 			}
 			
-			if(priority == BoxPriority.CRONOLOGICAL) {
+			if(order == Order.CRONOLOGICAL) {
 				// even if null
 				break;
 			}
-			if(priority == BoxPriority.CRONOLOGICAL_ALLOW_SKIPPING && result != null) {
+			if(order == Order.CRONOLOGICAL_ALLOW_SKIPPING && result != null) {
 				break;
 			}
 			

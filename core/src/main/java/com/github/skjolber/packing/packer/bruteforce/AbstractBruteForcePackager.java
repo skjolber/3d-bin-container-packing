@@ -8,10 +8,9 @@ import java.util.logging.Logger;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
@@ -63,8 +62,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				}
 			}
 			
-			if(priority != BoxPriority.NONE) {
-				throw new IllegalStateException("Priority not supported for brute force packager");
+			if(order != Order.NONE) {
+				throw new IllegalStateException("Order not supported for brute force packager");
 			}
 		}
 		

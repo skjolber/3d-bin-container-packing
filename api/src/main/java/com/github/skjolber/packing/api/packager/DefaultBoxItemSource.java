@@ -95,6 +95,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 
 	@Override
 	public BoxItemGroupSource getGroups() {
+		// no groups
 		return null;
 	}
 

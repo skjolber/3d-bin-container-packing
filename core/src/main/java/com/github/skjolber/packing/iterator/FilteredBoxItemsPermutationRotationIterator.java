@@ -289,6 +289,7 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 
 	@Override
 	public BoxItemGroupSource getGroups() {
+		// no groups
 		return null;
 	}
 

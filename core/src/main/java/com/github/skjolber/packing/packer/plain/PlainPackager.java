@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
@@ -55,16 +55,16 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 
 	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter<IntermediatePackagerResult> {
 
-		public PlainBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority,
+		public PlainBoxItemAdapter(List<BoxItem> boxItems, Order order,
 				ContainerItemsCalculator packagerContainerItems,
 				PackagerInterruptSupplier interrupt) {
-			super(boxItems, priority, packagerContainerItems, interrupt);
+			super(boxItems, order, packagerContainerItems, interrupt);
 		}
 
 		@Override
 		protected IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ControlledContainerItem containerItem,
-				PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
-			return PlainPackager.this.pack(remainingBoxItems, containerItem, interrupt, priority, abortOnAnyBoxTooBig);
+				PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+			return PlainPackager.this.pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig);
 		}
 
 	}
@@ -72,16 +72,16 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 	protected class PlainBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter<IntermediatePackagerResult> {
 
 		public PlainBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups,
-				BoxPriority priority,
+				Order order,
 				ContainerItemsCalculator packagerContainerItems, 
 				PackagerInterruptSupplier interrupt) {
-			super(boxItemGroups, packagerContainerItems, priority, interrupt);
+			super(boxItemGroups, packagerContainerItems, order, interrupt);
 		}
 
 		@Override
-		protected IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, BoxPriority priority,
+		protected IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order,
 				ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
-			return PlainPackager.this.packGroup(remainingBoxItemGroups, priority, containerItem, interrupt, abortOnAnyBoxTooBig);
+			return PlainPackager.this.packGroup(remainingBoxItemGroups, order, containerItem, interrupt, abortOnAnyBoxTooBig);
 		}
 	}
 	
@@ -110,9 +110,9 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 			try {
 				PackagerAdapter<IntermediatePackagerResult> adapter;
 				if(items != null && !items.isEmpty()) {
-					adapter = new PlainBoxItemAdapter(items, priority, new ContainerItemsCalculator(containers), interrupt);
+					adapter = new PlainBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
 				} else {
-					adapter = new PlainBoxItemGroupAdapter(itemGroups, priority, new ContainerItemsCalculator(containers), interrupt);
+					adapter = new PlainBoxItemGroupAdapter(itemGroups, order, new ContainerItemsCalculator(containers), interrupt);
 				}
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 				
@@ -222,8 +222,8 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 		this.boxItemGroupComparator = boxItemGroupComparator;
 	}
 
-	protected BoxItemGroupIterator createBoxItemGroupIterator(BoxItemGroupSource boxItemGroupSource, BoxPriority priority, Container container, PointCalculator pointCalculator) {
-		if(priority == BoxPriority.CRONOLOGICAL || priority == BoxPriority.CRONOLOGICAL_ALLOW_SKIPPING) {
+	protected BoxItemGroupIterator createBoxItemGroupIterator(BoxItemGroupSource boxItemGroupSource, Order order, Container container, PointCalculator pointCalculator) {
+		if(order == Order.CRONOLOGICAL || order == Order.CRONOLOGICAL_ALLOW_SKIPPING) {
 			return new FixedOrderBoxItemGroupIterator(boxItemGroupSource, container, pointCalculator);
 		}
 		return new AnyOrderBoxItemGroupIterator(boxItemGroupSource, container, pointCalculator, boxItemGroupComparator);
@@ -231,14 +231,14 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 	
 	@Override
 	protected PlacementControls<PlainPlacement> createControls(BoxItemSource boxItems, int offset, int length,
-			BoxPriority priority, PointControls pointControls, Container container, PointCalculator pointCalculator,
+			Order order, PointControls pointControls, Container container, PointCalculator pointCalculator,
 			Stack stack) {
 		
 		return placementControlsBuilderFactory.createPlacementControlsBuilder()
 				.withPointCalculator(pointCalculator)
 				.withBoxItems(boxItems, offset, length)
 				.withPointControls(pointControls)
-				.withPriority(priority)
+				.withOrder(order)
 				.withStack(stack)
 				.withContainer(container)
 				.build();

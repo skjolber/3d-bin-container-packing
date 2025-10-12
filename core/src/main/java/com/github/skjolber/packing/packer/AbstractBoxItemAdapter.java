@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
@@ -14,12 +14,12 @@ public abstract class AbstractBoxItemAdapter<T extends IntermediatePackagerResul
 
 	protected List<BoxItem> remainingBoxItems;
 	protected final PackagerInterruptSupplier interrupt;
-	protected final BoxPriority priority;
+	protected final Order order;
 	protected final ContainerItemsCalculator packagerContainerItems;
 
-	public AbstractBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority, ContainerItemsCalculator packagerContainerItems, PackagerInterruptSupplier interrupt) {
+	public AbstractBoxItemAdapter(List<BoxItem> boxItems, Order order, ContainerItemsCalculator packagerContainerItems, PackagerInterruptSupplier interrupt) {
 		this.packagerContainerItems = packagerContainerItems;
-		this.priority = priority;
+		this.order = order;
 		
 		List<BoxItem> boxClones = new ArrayList<>(boxItems.size());
 		for (BoxItem item : boxItems) {
@@ -34,7 +34,7 @@ public abstract class AbstractBoxItemAdapter<T extends IntermediatePackagerResul
 	@Override
 	public T attempt(int index, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		try {
-			return pack(remainingBoxItems, packagerContainerItems.getContainerItem(index), interrupt, priority, abortOnAnyBoxTooBig);
+			return pack(remainingBoxItems, packagerContainerItems.getContainerItem(index), interrupt, order, abortOnAnyBoxTooBig);
 		} finally {
 			for(BoxItem boxItem : remainingBoxItems) {
 				boxItem.reset();
@@ -85,7 +85,7 @@ public abstract class AbstractBoxItemAdapter<T extends IntermediatePackagerResul
 		return count;
 	}
 
-	protected abstract T pack(List<BoxItem> remainingBoxItems, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;
+	protected abstract T pack(List<BoxItem> remainingBoxItems, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;
 
 
 }

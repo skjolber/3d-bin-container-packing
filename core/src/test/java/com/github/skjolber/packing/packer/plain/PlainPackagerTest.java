@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
@@ -622,7 +622,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	}
 	
 	@Test
-	void testStackingPriority1() {
+	void testStackingOrder1() {
 
 		Container container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2, 5, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
 		
@@ -643,7 +643,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 						b.withContainerItem(containerItem);
 					})
 					.withBoxItems(products)
-					.withPriority(BoxPriority.CRONOLOGICAL)
+					.withOrder(Order.CRONOLOGICAL)
 					.withMaxContainerCount(10)
 					.build();
 			assertValid(build);
@@ -666,7 +666,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	
 
 	@Test
-	void testStackingPriority2() {
+	void testStackingOrder2() {
 
 		Container container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2, 5, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
 		
@@ -687,7 +687,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 						b.withContainerItem(containerItem);
 					})
 					.withBoxItems(products)
-					.withPriority(BoxPriority.CRONOLOGICAL_ALLOW_SKIPPING)
+					.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING)
 					.withMaxContainerCount(10)
 					.build();
 			assertValid(build);

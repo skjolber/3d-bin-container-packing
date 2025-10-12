@@ -19,7 +19,7 @@ public class PlainPlacementControlsBuilder extends AbstractPlacementControlsBuil
 
 	@Override
 	public PlainPlacementControls build() {
-		return new PlainPlacementControls(boxItems, boxItemsEndIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, priority, plainPlacementComparator, boxItemComparator, requireFullSupport);
+		return new PlainPlacementControls(boxItems, boxItemsEndIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, order, plainPlacementComparator, boxItemComparator, requireFullSupport);
 	}
 
 }

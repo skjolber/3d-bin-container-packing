@@ -27,7 +27,7 @@ public interface PackagerResultBuilder {
 
 	PackagerResultBuilder withBoxItems(List<BoxItem> items);
 
-	PackagerResultBuilder withPriority(BoxPriority order);
+	PackagerResultBuilder withOrder(Order order);
 
 	PackagerResultBuilder withDeadline(long deadline);
 

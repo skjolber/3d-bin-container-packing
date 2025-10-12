@@ -5,7 +5,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
@@ -21,13 +21,13 @@ public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter implements 
 	protected List<BoxItemGroup> boxItemGroups;
 	
 	protected final PackagerInterruptSupplier interrupt;
-	protected final BoxPriority priority;
+	protected final Order order;
 	protected final ContainerItemsCalculator packagerContainerItems;
 
-	public AbstractBruteForceBoxItemGroupsPackagerAdapter(List<BoxItemGroup> boxItemGroups, List<BoxItem> boxItems, BoxPriority priority, ContainerItemsCalculator packagerContainerItems, PackagerInterruptSupplier interrupt) {
+	public AbstractBruteForceBoxItemGroupsPackagerAdapter(List<BoxItemGroup> boxItemGroups, List<BoxItem> boxItems, Order order, ContainerItemsCalculator packagerContainerItems, PackagerInterruptSupplier interrupt) {
 		this.boxItemGroups = boxItemGroups;
 		this.packagerContainerItems = packagerContainerItems;
-		this.priority = priority;
+		this.order = order;
 		this.interrupt = interrupt;
 		
 		this.boxes = new Box[boxItems.size()];

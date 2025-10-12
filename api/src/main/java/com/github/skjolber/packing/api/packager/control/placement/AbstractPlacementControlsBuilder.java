@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.api.packager.control.placement;
 
-import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
@@ -18,10 +18,10 @@ public abstract class AbstractPlacementControlsBuilder<R extends Placement> impl
 	protected PointCalculator pointCalculator;
 	protected Container container;
 	protected Stack stack;
-	protected BoxPriority priority;
+	protected Order order;
 	
-	public AbstractPlacementControlsBuilder<R> withPriority(BoxPriority priority) {
-		this.priority = priority;
+	public AbstractPlacementControlsBuilder<R> withOrder(Order order) {
+		this.order = order;
 		return this;
 	}
 	

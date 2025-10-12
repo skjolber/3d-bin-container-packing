@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
@@ -100,9 +100,9 @@ public class PlainPlacementControls extends AbstractComparatorPlacementControls<
 	
 	public PlainPlacementControls(BoxItemSource boxItems, int boxItemsStartIndex, int boxItemsEndIndex,
 			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
-			BoxPriority priority, Comparator<PlainPlacement> placementComparator,
+			Order order, Comparator<PlainPlacement> placementComparator,
 			Comparator<BoxItem> boxItemComparator, boolean requireFullSupport) {
-		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, priority,
+		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, order,
 				placementComparator, boxItemComparator);
 		
 		this.requireFullSupport = requireFullSupport;

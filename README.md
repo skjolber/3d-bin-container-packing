@@ -182,7 +182,7 @@ This algorithm has no logic for selecting the best box or rotation; running thro
 
 The complexity of this approach is [exponential], and thus there is a limit to the feasible number of boxes which can be packaged within a reasonable time. However, for real-life applications,  a healthy part of for example online shopping orders are within its grasp.
 
-The worst case complexity can be estimated using the `DefaultPermutationRotationIterator` before packaging is attempted.
+The worst case complexity can be estimated using the relevant iterators before packaging is attempted.
 
 The algorithm tries to skip combinations which will obviously not yield a (better) result:
 
@@ -228,7 +228,7 @@ For example, heavy items might be require only points at ground level or flammab
 ### Placement-controls
 Determines the best placement for a box. 
 
-Can consider a range of options, like stability, stacking height, structural integrity and so on; even randomization is possible.
+Can consider a range of options, like stability, stacking height, structural integrity and so on; even randomization is possible. Note that these features are not necessarily implemented in the packagers within this project.
 
 # Visualizer
 There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms; not as stacking instructions.
@@ -261,12 +261,13 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
  * [The Art of Stacking: Challenges Faced While Developing a Packing Algorithm](https://medium.com/@fayyazawais1412/the-art-of-stacking-challenges-faced-while-developing-a-packing-algorithm-64d869b924ab)
 
 # History
- * 4.0.0: Major rewrite. 
+ * 4.0.0: Major rewrite. Breaking changes.
      * Support for packaging groups
      * Various ways to control packaging:
         * Manifest controls (box vs box, box vs container)
         * Point controls (points per box)
         * Placement controls (select best box + point)
+     * Minor visualizer improvements
  * 3.0.11: Use `BigInteger` to sanity-check max volume / max weight, calculate real remaining max volume.
  * 3.0.10: Fix module info, bump dependencies.
  * 3.0.9: Fix point support bug which resulted in invalid packaging result

@@ -9,7 +9,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
@@ -55,16 +55,16 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter<IntermediatePackagerResult> {
 
-		public PlainBoxItemAdapter(List<BoxItem> boxItems, BoxPriority priority,
+		public PlainBoxItemAdapter(List<BoxItem> boxItems, Order order,
 				ContainerItemsCalculator packagerContainerItems,
 				PackagerInterruptSupplier interrupt) {
-			super(boxItems, priority, packagerContainerItems, interrupt);
+			super(boxItems, order, packagerContainerItems, interrupt);
 		}
 
 		@Override
 		protected IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ControlledContainerItem containerItem,
-				PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
-			return AbstractLargestAreaFitFirstPackager.this.pack(remainingBoxItems, containerItem, interrupt, priority, abortOnAnyBoxTooBig);
+				PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+			return AbstractLargestAreaFitFirstPackager.this.pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig);
 		}
 
 	}
@@ -72,16 +72,16 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 	protected class PlainBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter<IntermediatePackagerResult> {
 
 		public PlainBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups,
-				BoxPriority priority,
+				Order order,
 				ContainerItemsCalculator packagerContainerItems, 
 				PackagerInterruptSupplier interrupt) {
-			super(boxItemGroups, packagerContainerItems, priority, interrupt);
+			super(boxItemGroups, packagerContainerItems, order, interrupt);
 		}
 
 		@Override
-		protected IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, BoxPriority priority,
+		protected IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order,
 				ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
-			return AbstractLargestAreaFitFirstPackager.this.packGroup(remainingBoxItemGroups, priority, containerItem, interrupt, abortOnAnyBoxTooBig);
+			return AbstractLargestAreaFitFirstPackager.this.packGroup(remainingBoxItemGroups, order, containerItem, interrupt, abortOnAnyBoxTooBig);
 		}
 
 	}
@@ -111,9 +111,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			try {
 				PackagerAdapter<IntermediatePackagerResult> adapter;
 				if(items != null && !items.isEmpty()) {
-					adapter = new PlainBoxItemAdapter(items, priority, new ContainerItemsCalculator(containers), interrupt);
+					adapter = new PlainBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
 				} else {
-					adapter = new PlainBoxItemGroupAdapter(itemGroups, priority, new ContainerItemsCalculator(containers), interrupt);
+					adapter = new PlainBoxItemGroupAdapter(itemGroups, order, new ContainerItemsCalculator(containers), interrupt);
 				}
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 				
@@ -145,7 +145,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		this.firstBoxItemGroupComparator = firstBoxItemGroupComparator;
 	}
 
-	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		ContainerItem containerItem = controlledContainerItem;
 		Container container = containerItem.getContainer();
 
@@ -172,7 +172,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					return EmptyPackagerResultAdapter.EMPTY;
 				}
 				
-				if(priority != BoxPriority.CRONOLOGICAL) {
+				if(order != Order.CRONOLOGICAL) {
 					removed.add(filteredBoxItems.remove(i));
 					i--;
 				} else {
@@ -199,8 +199,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		int levelOffset = 0;
 		boolean newLevel = true;
 
-		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, pointCalculator, stack);
-		PlacementControls<Placement> firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, pointCalculator, stack);
+		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
+		PlacementControls<Placement> firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
 
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !filteredBoxItems.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
@@ -252,7 +252,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 								return EmptyPackagerResultAdapter.EMPTY;
 							}
 							
-							if(priority != BoxPriority.CRONOLOGICAL) {
+							if(order != Order.CRONOLOGICAL) {
 								removed.add(filteredBoxItems.remove(i));
 								i--;
 							} else {
@@ -297,7 +297,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 							return EmptyPackagerResultAdapter.EMPTY;
 						}
 						
-						if(priority != BoxPriority.CRONOLOGICAL) {
+						if(order != Order.CRONOLOGICAL) {
 							removed.add(filteredBoxItems.remove(i));
 							i--;
 						} else {
@@ -329,7 +329,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 	protected abstract PointCalculator createPointCalculator();
 
-	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, BoxPriority priority, ControlledContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
 		ContainerItem containerItem = controlledContainerItem;
 		Container container = containerItem.getContainer();
 		
@@ -353,7 +353,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				
 		List<BoxItemGroup> removedBoxItemGroups = new ArrayList<>();
 
-		if(priority != BoxPriority.CRONOLOGICAL) {
+		if(order != Order.CRONOLOGICAL) {
 	
 			// remove boxes which do not fit due to volume, weight or stack value dimensions
 			for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
@@ -362,7 +362,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					if(abortOnAnyBoxTooBig) {
 						return EmptyPackagerResultAdapter.EMPTY;
 					}
-					if(priority != BoxPriority.CRONOLOGICAL) {
+					if(order != Order.CRONOLOGICAL) {
 						filteredBoxItemGroups.remove(i);
 						i--;
 						
@@ -389,7 +389,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		
 		pointCalculator.setMinimumAreaAndVolumeLimit(filteredBoxItemGroups.getMinArea(), filteredBoxItemGroups.getMinVolume());
 		
-		BoxItemGroupIterator boxItemGroupIterator = createBoxItemGroupIterator(filteredBoxItemGroups, priority, container, pointCalculator);
+		BoxItemGroupIterator boxItemGroupIterator = createBoxItemGroupIterator(filteredBoxItemGroups, order, container, pointCalculator);
 
 		int levelOffset = 0;
 		boolean newLevel = true;
@@ -397,8 +397,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
 
-		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, pointCalculator, stack);
-		PlacementControls<Placement> firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, pointCalculator, stack);
+		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
+		PlacementControls<Placement> firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
 		groups:
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !pointCalculator.isEmpty() && boxItemGroupIterator.hasNext()) {
 			int groupIndex = boxItemGroupIterator.next();
@@ -464,7 +464,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 										return EmptyPackagerResultAdapter.EMPTY;
 									}
 									
-									if(priority != BoxPriority.CRONOLOGICAL) {
+									if(order != Order.CRONOLOGICAL) {
 										filteredBoxItemGroups.remove(i);
 										i--;
 										
@@ -519,7 +519,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 								return EmptyPackagerResultAdapter.EMPTY;
 							}
 							
-							if(priority != BoxPriority.CRONOLOGICAL) {
+							if(order != Order.CRONOLOGICAL) {
 								filteredBoxItemGroups.remove(i);
 								i--;
 								
@@ -591,7 +591,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				stack.setSize(markStackSize);
 				
 				// unable to stack whole group
-				if(priority == BoxPriority.CRONOLOGICAL) {
+				if(order == Order.CRONOLOGICAL) {
 					break groups;
 				}
 				// try again with another group if possible
@@ -618,29 +618,29 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		return new DefaultIntermediatePackagerResult(containerItem, stack);
 	}
 	
-	protected BoxItemGroupIterator createBoxItemGroupIterator(BoxItemGroupSource filteredBoxItemGroups, BoxPriority itemGroupOrder, Container container, PointCalculator pointCalculator) {
-		if(itemGroupOrder == BoxPriority.CRONOLOGICAL || itemGroupOrder == BoxPriority.CRONOLOGICAL_ALLOW_SKIPPING) {
+	protected BoxItemGroupIterator createBoxItemGroupIterator(BoxItemGroupSource filteredBoxItemGroups, Order itemGroupOrder, Container container, PointCalculator pointCalculator) {
+		if(itemGroupOrder == Order.CRONOLOGICAL || itemGroupOrder == Order.CRONOLOGICAL_ALLOW_SKIPPING) {
 			return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, pointCalculator);
 		}
 		return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, pointCalculator, boxItemGroupComparator);
 	}
 
-	public PlacementControls<Placement> createControls(BoxItemSource boxItems, int offset, int length, BoxPriority priority, PointControls pointControls, Container container, PointCalculator pointCalculator, Stack stack) {
+	public PlacementControls<Placement> createControls(BoxItemSource boxItems, int offset, int length, Order order, PointControls pointControls, Container container, PointCalculator pointCalculator, Stack stack) {
 		return placementControlsBuilderFactory.createPlacementControlsBuilder()
 			.withContainer(container)
 			.withPointCalculator(pointCalculator)
-			.withPriority(priority)
+			.withOrder(order)
 			.withStack(stack)
 			.withBoxItems(boxItems, offset, length)
 			.withPointControls(pointControls)
 			.build();
 	}
 	
-	public PlacementControls<Placement> createFirstControls(BoxItemSource boxItems, int offset, int length, BoxPriority priority, PointControls pointControls, Container container, PointCalculator pointCalculator, Stack stack) {
+	public PlacementControls<Placement> createFirstControls(BoxItemSource boxItems, int offset, int length, Order order, PointControls pointControls, Container container, PointCalculator pointCalculator, Stack stack) {
 		return firstPlacementControlsBuilderFactory.createPlacementControlsBuilder()
 			.withContainer(container)
 			.withPointCalculator(pointCalculator)
-			.withPriority(priority)
+			.withOrder(order)
 			.withStack(stack)
 			.withBoxItems(boxItems, offset, length)
 			.withPointControls(pointControls)

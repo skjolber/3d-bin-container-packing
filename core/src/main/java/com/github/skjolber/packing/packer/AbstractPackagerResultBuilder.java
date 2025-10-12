@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
@@ -30,7 +30,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 
 	protected int maxContainerCount = 1;
 
-	protected BoxPriority priority = BoxPriority.NONE;
+	protected Order order = Order.NONE;
 
 	protected List<BoxItemGroup> itemGroups = new ArrayList<>();
 
@@ -147,8 +147,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		return (B) this;
 	}
 
-	public B withPriority(BoxPriority order) {
-		this.priority = order;
+	public B withOrder(Order order) {
+		this.order = order;
 		return (B) this;
 	}
 

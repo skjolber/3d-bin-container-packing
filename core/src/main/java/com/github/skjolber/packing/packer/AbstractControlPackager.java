@@ -7,7 +7,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
@@ -39,7 +39,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		super(comparator);
 	}
 
-	public P pack(List<BoxItem> boxItems, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, BoxPriority priority, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+	public P pack(List<BoxItem> boxItems, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		Container container = controlContainerItem.getContainer();
 
 		Stack stack = new Stack();
@@ -66,7 +66,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 					return createEmptyIntermediatePackagerResult();
 				}
 				
-				if(priority != BoxPriority.CRONOLOGICAL) {
+				if(order != Order.CRONOLOGICAL) {
 					removed.add(boxItemSource.remove(i));
 					i--;
 				} else {
@@ -93,7 +93,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
 
-		PlacementControls<I> placementControls = createControls(boxItemSource, 0, boxItemSource.size(), priority, pointControls, container, pointCalculator, stack);
+		PlacementControls<I> placementControls = createControls(boxItemSource, 0, boxItemSource.size(), order, pointControls, container, pointCalculator, stack);
 
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !boxItemSource.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
@@ -128,7 +128,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 							return createEmptyIntermediatePackagerResult();
 						}
 						
-						if(priority != BoxPriority.CRONOLOGICAL) {
+						if(order != Order.CRONOLOGICAL) {
 							removed.add(boxItemSource.remove(i));
 							i--;
 						} else {
@@ -163,7 +163,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 								return createEmptyIntermediatePackagerResult();
 							}
 							
-							if(priority != BoxPriority.CRONOLOGICAL) {
+							if(order != Order.CRONOLOGICAL) {
 								removed.add(boxItemSource.remove(i));
 								i--;
 							} else {
@@ -190,7 +190,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		return createIntermediatePackagerResult(controlContainerItem, stack);
 	}
 
-	public P packGroup(List<BoxItemGroup> boxItemGroups, BoxPriority priority, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+	public P packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
 		ContainerItem containerItem = controlContainerItem;
 		Container container = containerItem.getContainer();
 		
@@ -215,7 +215,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 						
 		List<BoxItemGroup> removedBoxItemGroups = new ArrayList<>();
 
-		if(priority != BoxPriority.CRONOLOGICAL) {
+		if(order != Order.CRONOLOGICAL) {
 	
 			// remove boxes which do not fit due to volume, weight or stack value dimensions
 			for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
@@ -224,7 +224,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 					if(abortOnAnyBoxTooBig) {
 						return createEmptyIntermediatePackagerResult();
 					}
-					if(priority != BoxPriority.CRONOLOGICAL) {
+					if(order != Order.CRONOLOGICAL) {
 						filteredBoxItemGroups.remove(i);
 						i--;
 						
@@ -251,7 +251,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		
 		pointCalculator.setMinimumAreaAndVolumeLimit(filteredBoxItemGroups.getMinArea(), filteredBoxItemGroups.getMinVolume());
 		
-		BoxItemGroupIterator boxItemGroupIterator = createBoxItemGroupIterator(filteredBoxItemGroups, priority, container, pointCalculator);
+		BoxItemGroupIterator boxItemGroupIterator = createBoxItemGroupIterator(filteredBoxItemGroups, order, container, pointCalculator);
 
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
@@ -259,7 +259,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		long maxBoxVolume = filteredBoxItems.getMaxVolume();
 		long maxBoxArea = filteredBoxItems.getMaxVolume();
 		
-		PlacementControls<I> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), priority, pointControls, container, pointCalculator, stack);
+		PlacementControls<I> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
 
 		groups:
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !pointCalculator.isEmpty() && boxItemGroupIterator.hasNext()) {
@@ -305,7 +305,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 								return createEmptyIntermediatePackagerResult();
 							}
 							
-							if(priority != BoxPriority.CRONOLOGICAL) {
+							if(order != Order.CRONOLOGICAL) {
 								filteredBoxItemGroups.remove(i);
 								i--;
 								
@@ -350,7 +350,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 										return createEmptyIntermediatePackagerResult();
 									}
 
-									if(priority != BoxPriority.CRONOLOGICAL) {
+									if(order != Order.CRONOLOGICAL) {
 										filteredBoxItemGroups.remove(i);
 										i--;
 										
@@ -423,7 +423,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 				stack.setSize(markStackSize);
 				
 				// unable to stack whole group
-				if(priority == BoxPriority.CRONOLOGICAL) {
+				if(order == Order.CRONOLOGICAL) {
 					break groups;
 				}
 				// try again with another group if possible
@@ -460,7 +460,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 
 	protected abstract BoxItemGroupIterator createBoxItemGroupIterator(
 			BoxItemGroupSource groups, 
-			BoxPriority itemGroupOrder, 
+			Order itemGroupOrder, 
 			Container container,
 			PointCalculator pointCalculator
 		);
@@ -468,7 +468,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 	protected abstract PlacementControls<I> createControls(
 			BoxItemSource boxItems,
 			int offset, int length,
-			BoxPriority priority,
+			Order order,
 			PointControls pointControls,
 			Container container, 
 			PointCalculator pointCalculator, Stack stack

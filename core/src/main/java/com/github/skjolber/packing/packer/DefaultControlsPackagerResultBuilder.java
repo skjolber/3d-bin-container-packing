@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -42,9 +42,9 @@ public abstract class DefaultControlsPackagerResultBuilder<P extends Intermediat
 		try {
 			PackagerAdapter<P> adapter;
 			if(items != null && !items.isEmpty()) {
-				adapter = createDefaultBoxItemAdapter(items, priority, new ContainerItemsCalculator(containers), interrupt);
+				adapter = createDefaultBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
 			} else {
-				adapter = createDefaultBoxItemGroupAdapter(itemGroups, priority, new ContainerItemsCalculator(containers), interrupt);
+				adapter = createDefaultBoxItemGroupAdapter(itemGroups, order, new ContainerItemsCalculator(containers), interrupt);
 			}
 			List<Container> packList = packager.packAdapter(maxContainerCount, interrupt, adapter);
 			
@@ -58,9 +58,9 @@ public abstract class DefaultControlsPackagerResultBuilder<P extends Intermediat
 		}
 	}
 
-	protected abstract PackagerAdapter<P> createDefaultBoxItemAdapter(List<BoxItem> items, BoxPriority priority,
+	protected abstract PackagerAdapter<P> createDefaultBoxItemAdapter(List<BoxItem> items, Order order,
 			ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt);
 
-	protected abstract PackagerAdapter<P> createDefaultBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, BoxPriority priority,
+	protected abstract PackagerAdapter<P> createDefaultBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, Order order,
 			ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt);
 }

@@ -3,7 +3,7 @@ package com.github.skjolber.packing.packer;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
@@ -26,10 +26,10 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	protected PointCalculator pointCalculator;
 	protected Container container;
 	protected Stack stack;
-	protected BoxPriority priority;
+	protected Order order;
 	
-	public ComparatorPlacementControlsBuilder withPriority(BoxPriority priority) {
-		this.priority = priority;
+	public ComparatorPlacementControlsBuilder withOrder(Order order) {
+		this.order = order;
 		return this;
 	}
 	
@@ -76,7 +76,7 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	
 	@Override
 	public PlacementControls<Placement> build() {
-		return new ComparatorPlacementControls(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, priority, placementComparator, boxItemComparator);
+		return new ComparatorPlacementControls(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 	}
 
 }

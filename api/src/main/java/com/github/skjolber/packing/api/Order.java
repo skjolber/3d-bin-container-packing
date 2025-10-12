@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.api;
 
-public enum BoxPriority {
+public enum Order {
 
 	CRONOLOGICAL, CRONOLOGICAL_ALLOW_SKIPPING, NONE
 

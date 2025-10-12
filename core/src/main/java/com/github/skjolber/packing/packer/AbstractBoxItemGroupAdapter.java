@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.BoxPriority;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
@@ -16,10 +16,10 @@ public abstract class AbstractBoxItemGroupAdapter<T extends IntermediatePackager
 
 	private List<BoxItemGroup> remainingBoxItemGroups;
 	private final PackagerInterruptSupplier interrupt;
-	private final BoxPriority priority;
+	private final Order order;
 	private final ContainerItemsCalculator packagerContainerItems;
 
-	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems, BoxPriority priority, PackagerInterruptSupplier interrupt) {
+	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems, Order order, PackagerInterruptSupplier interrupt) {
 		this.packagerContainerItems = packagerContainerItems;
 		
 		List<BoxItemGroup> groupClones = new LinkedList<>();
@@ -31,14 +31,14 @@ public abstract class AbstractBoxItemGroupAdapter<T extends IntermediatePackager
 		}
 
 		this.remainingBoxItemGroups = groupClones;
-		this.priority = priority;
+		this.order = order;
 		this.interrupt = interrupt;
 	}
 
 	@Override
 	public T attempt(int index, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		try {
-			return packGroup(remainingBoxItemGroups, priority, packagerContainerItems.getContainerItem(index), interrupt, abortOnAnyBoxTooBig);
+			return packGroup(remainingBoxItemGroups, order, packagerContainerItems.getContainerItem(index), interrupt, abortOnAnyBoxTooBig);
 		} finally {
 			for(BoxItemGroup group : remainingBoxItemGroups) {
 				group.reset();
@@ -89,6 +89,6 @@ public abstract class AbstractBoxItemGroupAdapter<T extends IntermediatePackager
 		return packagerContainerItems.getContainerItem(index);
 	}
 
-	protected abstract T packGroup(List<BoxItemGroup> remainingBoxItemGroups, BoxPriority priority, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig);
+	protected abstract T packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig);
 
 }
