@@ -4,11 +4,13 @@
 	<parent>
 		<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 		<artifactId>parent</artifactId>
-		<version>4.0.0-SNAPSHOT</version>
+		<version>4.0.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>	
 	
 	<artifactId>open-api-parent</artifactId>
+	<name>open-api-parent</name>
+	<description>OpenAPI parent</description>
 	<packaging>pom</packaging>
 	<properties>
 		<swagger-annotations.version>2.2.38</swagger-annotations.version>

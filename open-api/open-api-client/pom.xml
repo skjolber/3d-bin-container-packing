@@ -3,10 +3,12 @@
 	<parent>
 		<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 		<artifactId>open-api-parent</artifactId>
-		<version>4.0.0-SNAPSHOT</version>
+		<version>4.0.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>open-api-client</artifactId>
+	<name>open-api-client</name>
+	<description>OpenAPI client</description>
 	<dependencies>
 		<dependency>
 		    <groupId>io.swagger.core.v3</groupId>

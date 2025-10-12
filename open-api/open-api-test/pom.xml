@@ -3,10 +3,12 @@
 	<parent>
 		<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 		<artifactId>open-api-parent</artifactId>
-		<version>4.0.0-SNAPSHOT</version>
+		<version>4.0.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>	
 	<artifactId>open-api-test</artifactId>
+	<name>open-api-test</name>
+	<description>OpenAPI test</description>		
 	<dependencies>
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -34,7 +36,15 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-			</plugin>							
+			</plugin>
+			<!-- TODO currently empty, skip publishing -->
+	        <plugin>
+	            <groupId>org.sonatype.central</groupId>
+	            <artifactId>central-publishing-maven-plugin</artifactId>
+	            <configuration>
+	                <skipPublishing>true</skipPublishing>
+	            </configuration>
+	        </plugin>			
 		</plugins>
 	</build>
 </project>
