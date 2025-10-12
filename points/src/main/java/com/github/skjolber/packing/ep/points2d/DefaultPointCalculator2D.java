@@ -38,7 +38,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	protected int containerMaxZ;
 
 	protected Point2DFlagList values = new Point2DFlagList();
-	protected List<Placement> placements = new ArrayList<>();
+	protected ArrayList<Placement> placements = new ArrayList<>();
 
 	// reuse working variables
 	protected final Point2DList addXX = new Point2DList();

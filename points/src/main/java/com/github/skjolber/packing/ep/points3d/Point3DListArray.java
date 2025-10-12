@@ -49,8 +49,16 @@ public class Point3DListArray {
 		return points[i];
 	}
 
-	public void ensureAdditionalCapacity(int index, int count) {
+	public void ensurePointAdditionalCapacity(int index, int count) {
 		points[index].ensureAdditionalCapacity(count);
+	}
+
+	public void ensurePointCapacity(int index, int count) {
+		points[index].ensureCapacity(count);
+	}
+
+	public int getCapacity() {
+		return points.length;
 	}
 
 }
