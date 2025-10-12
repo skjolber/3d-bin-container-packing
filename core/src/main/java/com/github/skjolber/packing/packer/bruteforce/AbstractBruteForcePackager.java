@@ -152,7 +152,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 			do {
 				int minStackableAreaIndex = iterator.getMinStackableAreaIndex(0);
 
-				List<Point> points = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, minStackableAreaIndex, containerItem.getPoints());
+				List<Point> points = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, minStackableAreaIndex, containerItem.getInitialPoints());
 				if(points == null) {
 					return null; // stack overflow
 				}

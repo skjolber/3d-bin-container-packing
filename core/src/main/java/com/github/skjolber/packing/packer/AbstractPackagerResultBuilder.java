@@ -73,7 +73,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			ControlledContainerItem packContainerItem = new ControlledContainerItem(containerItem);
 			packContainerItem.setBoxItemControlsBuilderFactory(boxItemControlsBuilderFactory);
 			packContainerItem.setPointControlsBuilderFactory(pointControlsBuilderFactory);
-			packContainerItem.setPoints(points);
+			packContainerItem.setInitialPoints(points);
 			return packContainerItem;
 		}
 

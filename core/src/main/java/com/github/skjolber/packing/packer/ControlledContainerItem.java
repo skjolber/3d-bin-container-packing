@@ -36,11 +36,11 @@ public class ControlledContainerItem extends ContainerItem {
 		super(containerItem.getContainer(), containerItem.getCount());
 	}
 	
-	public void setPoints(List<Point> points) {
+	public void setInitialPoints(List<Point> points) {
 		this.points = points;
 	}
 	
-	public List<Point> getPoints() {
+	public List<Point> getInitialPoints() {
 		return points;
 	}
 

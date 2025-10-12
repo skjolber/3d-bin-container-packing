@@ -67,9 +67,9 @@ Obtain a `Packager` instance, then then compose your container and product list:
 ```java
 List<BoxItem> products = new ArrayList<>();
 
-products.add(new BoxItem(Box.newBuilder().withId("Foot").withSize(6, 10, 2).withRotate3D().withWeight(25).build(), 1));
-products.add(new BoxItem(Box.newBuilder().withId("Leg").withSize(4, 10, 1).withRotate3D().withWeight(25).build(), 1));
-products.add(new BoxItem(Box.newBuilder().withId("Arm").withSize(4, 10, 2).withRotate3D().withWeight(50).build(), 1));
+products.add(new BoxItem(Box.newBuilder().withId("Shoes").withSize(6, 10, 2).withRotate3D().withWeight(25).build(), 1));
+products.add(new BoxItem(Box.newBuilder().withId("Pants").withSize(4, 10, 1).withRotate3D().withWeight(25).build(), 1));
+products.add(new BoxItem(Box.newBuilder().withId("Hat").withSize(4, 10, 2).withRotate3D().withWeight(50).build(), 1));
 
 // add a single container type
 Container container = Container.newBuilder()
@@ -102,7 +102,7 @@ if(result.isSuccess()) {
 }
 ```
 
-Pack all in a maximum number of containers:
+Use a maximum number of containers:
 
 ```java
 int maxContainers = ...; // maximum number of containers which can be used
@@ -144,23 +144,13 @@ Packager packager = BruteForcePackager
     .build();
 ```
 
+See also the `ParallelBoxItemBruteForcePackager` and `FastBruteForcePackager` packagers.
+
 Using a deadline is recommended whenever brute-forcing in a real-time application.
 
 <details>
   <summary>Algorithm details</summary>
- 
-## Packaging controls
-The caller can take control over some aspects of the packaging process:
 
-### Manifest-controls
-Determines which boxes go into which containers, in which combinations. A classic example would to be to not package both lighters and dynamite in the same container.
-
-### Point-controls
-Determines which points are relevant for a specific box. For example, heavy items might be require only points at ground level.
-
-### Placement-controls
-Determines the best placement for a box. Can consider a range of options, like stability, stacking height, structural integrity and so on; even randomization is possible.
- 
 ### Largest Area Fit First algorithm
 The implementation is based on [this paper][2], and is not a traditional [bin packing problem][1] solver.
 
@@ -200,16 +190,38 @@ There is also a parallel version `ParallelBruteForcePackager` of the brute-force
 Note that the algorithm is recursive on the number of boxes, so do not attempt this with many boxes (it will likely not complete in time anyhow).
 
 </details> 
- 
-### Visualizer
+
+# Packaging customization
+
+## Container obstacles
+Make the packager account for non-rectangular packaging space, i.e. pillars or other obstacles within containers, by providing the container initial free space (i.e. points).
+
+## Packager controls (plugins)
+The packagers (excluding brute force) can be extended to handle specialized needs via various `control` types. 
+
+In a nutshell, the `controls` are stateful objects which are handed various resources from the packagers during construction, and then notified and/or invokes at certain milestones within the packaging process.
+
+`Controls` must be provided as follows:
+
+ * builder factory
+    * builder
+       * controls
+
+### Manifest-controls
+Determines which boxes go into which containers, i.e. in which combinations. A classic example would to be to not package both lighters and dynamite in the same container.
+
+### Point-controls
+Determines which points are relevant for a specific box. For example, heavy items might be require only points at ground level or flammable items might be required to be stacked in a certain zone.
+
+### Placement-controls
+Determines the best placement for a box. Can consider a range of options, like stability, stacking height, structural integrity and so on; even randomization is possible.
+
+# Visualizer
 There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms (not as stacking instructions).
 
 ![Alt text](visualizer/viewer/images/view.png?raw=true "Demo")
 
 To use the visualizer during development, make your unit tests write directly to a file in the project (see `VisualizationTest` example). 
-
-# Customization
-The code has been structured so it is possible to extend and adapt to specialized needs. See `AbstractPackager` class, the `extreme-points` and `test` artifacts. 
 
 # Get involved
 If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request. 
@@ -231,7 +243,7 @@ Feel free to connect with me on [LinkedIn], see also my [Github page].
      * Various ways to control packaging:
         * Manifest controls (box vs box, box vs container)
         * Point controls (points per box)
-        * Placement controls (best box+point)
+        * Placement controls (select best box + point)
  * 3.0.11: Use `BigInteger` to sanity-check max volume / max weight, calculate real remaining max volume.
  * 3.0.10: Fix module info, bump dependencies.
  * 3.0.9: Fix point support bug which resulted in invalid packaging result

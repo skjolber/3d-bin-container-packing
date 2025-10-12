@@ -47,7 +47,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		PointCalculator pointCalculator = new DefaultPointCalculator3D();
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		if(controlContainerItem.hasPoints()) {
-			pointCalculator.setPoints(controlContainerItem.getPoints());
+			pointCalculator.setPoints(controlContainerItem.getInitialPoints());
 			pointCalculator.clear();
 		}
 
@@ -199,7 +199,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		MarkResetPointCalculator3D pointCalculator = new MarkResetPointCalculator3D(true);
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		if(controlContainerItem.hasPoints()) {
-			pointCalculator.setPoints(controlContainerItem.getPoints());
+			pointCalculator.setPoints(controlContainerItem.getInitialPoints());
 			pointCalculator.clear();
 		}
 
