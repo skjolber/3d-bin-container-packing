@@ -11,14 +11,13 @@
 	<artifactId>open-api-parent</artifactId>
 	<packaging>pom</packaging>
 	<properties>
-		<swagger-annotations.version>2.2.37</swagger-annotations.version>
-	    <http-client5.version>5.4.2</http-client5.version>
-	    <spring.version>6.2.9</spring.version>
-		<httpclient5.version>5.4.1</httpclient5.version>
+		<swagger-annotations.version>2.2.38</swagger-annotations.version>
+	    <spring.version>6.2.11</spring.version>
+		<httpclient5.version>5.5.1</httpclient5.version>
 		<open-api-generator.version>7.13.0</open-api-generator.version>
 		<jakarta.validation-api.version>3.1.1</jakarta.validation-api.version>
 		<jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
-		<jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
+		<jackson-databind-nullable.version>0.2.7</jackson-databind-nullable.version>
 	</properties>
 
 	<dependencyManagement>
@@ -36,7 +35,7 @@
 			<dependency>
 			    <groupId>org.apache.httpcomponents.client5</groupId>
 			    <artifactId>httpclient5</artifactId>
-			    <version>${http-client5.version}</version>
+			    <version>${httpclient5.version}</version>
 			</dependency>
 			<dependency>
 			    <groupId>jakarta.annotation</groupId>
