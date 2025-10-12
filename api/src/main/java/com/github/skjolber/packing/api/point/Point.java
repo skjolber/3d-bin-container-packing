@@ -7,6 +7,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 
 /**
+ * Point as in a coordinate set + limits; essential a free space for placing a box.
  * 
  * Note on equal / hashCode: only applies to min/max coordinates.
  * 

@@ -6,14 +6,22 @@
 This library does 3D rectangular bin packing; it attempts to match a set of 3D items to one or more in a set of 3D containers. The result can be constrained to a maximum number of containers.
 
 Projects using this library will benefit from:
+
  * short and predictable calculation time,
  * fairly good use of container space, 
  * brute-force support for low number of boxes (ideal for small orders)
+
+with
+
+ * friendly API
+ * extendable packagers
     
 Bugs, feature suggestions and help requests can be filed with the [issue-tracker].
 
 ## Obtain
 The project is implemented in Java and built using [Maven]. The project is available on the central Maven repository.
+
+For the previous version, see the [3.x](https://github.com/skjolber/3d-bin-container-packing/tree/3.x) branch.
 
 <details>
   <summary>Maven coordinates</summary>
@@ -193,13 +201,13 @@ Note that the algorithm is recursive on the number of boxes, so do not attempt t
 
 # Packaging customization
 
-## Container obstacles
+## Obstacles within containers
 Make the packager account for non-rectangular packaging space, i.e. pillars or other obstacles within containers, by providing the container initial free space (i.e. points).
 
-## Packager controls (plugins)
-The packagers (excluding brute force) can be extended to handle specialized needs via various `control` types. 
+## Packager controls
+The packagers (excluding brute force) can be extended to handle specialized needs via various `control` (plugins) types. 
 
-In a nutshell, the `controls` are stateful objects which are handed various resources from the packagers during construction, and then notified and/or invokes at certain milestones within the packaging process.
+In a nutshell, the `controls` are stateful objects which are handed various resources from the packagers during construction, and then notified and/or invoked at certain milestones within the packaging process.
 
 `Controls` must be provided as follows:
 
@@ -208,29 +216,44 @@ In a nutshell, the `controls` are stateful objects which are handed various reso
        * controls
 
 ### Manifest-controls
-Determines which boxes go into which containers, i.e. in which combinations. A classic example would to be to not package both lighters and dynamite in the same container.
+Determines which boxes go into which containers, i.e. in which combinations. 
+
+A classic example would to be to not package both lighters and dynamite in the same container.
 
 ### Point-controls
-Determines which points are relevant for a specific box. For example, heavy items might be require only points at ground level or flammable items might be required to be stacked in a certain zone.
+Determines which points are relevant for a specific box. 
+
+For example, heavy items might be require only points at ground level or flammable items might be required to be stacked in a certain zone.
 
 ### Placement-controls
-Determines the best placement for a box. Can consider a range of options, like stability, stacking height, structural integrity and so on; even randomization is possible.
+Determines the best placement for a box. 
+
+Can consider a range of options, like stability, stacking height, structural integrity and so on; even randomization is possible.
 
 # Visualizer
-There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms (not as stacking instructions).
+There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms; not as stacking instructions.
+
+### Setup
+```
+cd visualizer/viewer
+npm install
+```
+
+### Run
+```
+npm start
+```
+
+Note: To "hot reload" the visualizer during development, make your unit tests write directly to a file in the viewer (see the `VisualizationTest` example).
 
 ![Alt text](visualizer/viewer/images/view.png?raw=true "Demo")
-
-To use the visualizer during development, make your unit tests write directly to a file in the project (see `VisualizationTest` example). 
 
 # Get involved
 If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request. 
 
 Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example and [file a test case with a visualization](https://github.com/skjolber/3d-bin-container-packing/issues/574).
 
-Feel free to connect with me on [LinkedIn], see also my [Github page].
-
-## License
+# License
 [Apache 2.0]. Social media preview by [pch.vector on www.freepik.com](https://www.freepik.com/free-photos-vectors/people).
 
 # Interesting links
