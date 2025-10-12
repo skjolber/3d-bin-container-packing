@@ -53,19 +53,17 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 				VolumeWeightAreaPointIntermediatePlacementResultComparator placementComparator = new VolumeWeightAreaPointIntermediatePlacementResultComparator();
 				placementControlsBuilderFactory = new ComparatorPlacementControlsBuilderFactory(placementComparator, boxItemComparator);
 			}
-			return new FastLargestAreaFitFirstPackager(intermediatePackagerResultComparator, points, boxItemGroupComparator, firstBoxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
+			return new FastLargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, firstBoxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
 		}
 	}
 
 	public FastLargestAreaFitFirstPackager(
 			Comparator<IntermediatePackagerResult> comparator,
-			List<Point> points,
 			Comparator<BoxItemGroup> boxItemGroupComparator,
 			Comparator<BoxItemGroup> firstBoxItemGroupComparator, 
 			PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory,
 			PlacementControlsBuilderFactory<Placement> firstPlacementControlsBuilderFactory) {
 		super(comparator, 
-				points,
 				boxItemGroupComparator, 
 				firstBoxItemGroupComparator, 
 				placementControlsBuilderFactory,

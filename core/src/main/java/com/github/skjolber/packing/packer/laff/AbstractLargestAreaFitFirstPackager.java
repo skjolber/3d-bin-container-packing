@@ -135,8 +135,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 	protected Comparator<BoxItemGroup> boxItemGroupComparator;
 	protected Comparator<BoxItemGroup> firstBoxItemGroupComparator;
 	
-	public AbstractLargestAreaFitFirstPackager(Comparator<IntermediatePackagerResult> comparator, List<Point> points, Comparator<BoxItemGroup> boxItemGroupComparator, Comparator<BoxItemGroup> firstBoxItemGroupComparator, PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory, PlacementControlsBuilderFactory<Placement> firstPlacementControlsBuilderFactory) {
-		super(comparator, points);
+	public AbstractLargestAreaFitFirstPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<BoxItemGroup> boxItemGroupComparator, Comparator<BoxItemGroup> firstBoxItemGroupComparator, PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory, PlacementControlsBuilderFactory<Placement> firstPlacementControlsBuilderFactory) {
+		super(comparator);
 
 		this.firstPlacementControlsBuilderFactory = firstPlacementControlsBuilderFactory;
 		this.placementControlsBuilderFactory = placementControlsBuilderFactory;

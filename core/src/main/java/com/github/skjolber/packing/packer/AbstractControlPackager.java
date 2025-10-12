@@ -35,7 +35,7 @@ import com.github.skjolber.packing.iterator.PackagerBoxItems;
  */
 public abstract class AbstractControlPackager<I extends Placement, P extends IntermediatePackagerResult, B extends PackagerResultBuilder> extends AbstractPackager<P, B> {
 
-	public AbstractControlPackager(Comparator<P> comparator, List<Point> points) {
+	public AbstractControlPackager(Comparator<P> comparator) {
 		super(comparator);
 	}
 

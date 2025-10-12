@@ -132,7 +132,6 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 		protected Comparator<IntermediatePackagerResult> packagerResultComparator;
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
 		protected PlacementControlsBuilderFactory<PlainPlacement> placementControlsBuilderFactory;
-		protected List<Point> points;
 		
 		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
 			this.boxItemGroupComparator = comparator;
@@ -146,11 +145,6 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 		
 		public Builder withPlacementControlsBuilderFactory(PlacementControlsBuilderFactory<PlainPlacement> factory) {
 			this.placementControlsBuilderFactory = factory;
-			return this;
-		}
-		
-		public Builder withPoints(List<Point> points) {
-			this.points = points;
 			return this;
 		}
 
@@ -169,7 +163,9 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 				placementComparator = new PlainPlacementComparator();
 			}
 			
-			this.placementControlsBuilderFactory = new PlainPlacementControlsBuilderFactory(boxItemComparator, placementComparator, requireFullSupport);
+			if(placementControlsBuilderFactory == null) {
+				placementControlsBuilderFactory = new PlainPlacementControlsBuilderFactory(boxItemComparator, placementComparator, requireFullSupport);
+			}
 			
 			return this;
 		}
@@ -207,7 +203,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
 			}
-			return new PlainPackager(packagerResultComparator, points, boxItemGroupComparator, placementControlsBuilderFactory);
+			return new PlainPackager(packagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory);
 		}
 		
 	}
@@ -215,8 +211,8 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 	protected PlacementControlsBuilderFactory<PlainPlacement> placementControlsBuilderFactory;
 	protected Comparator<BoxItemGroup> boxItemGroupComparator;
 
-	public PlainPackager(Comparator<IntermediatePackagerResult> comparator, List<Point> points, Comparator<BoxItemGroup> boxItemGroupComparator, PlacementControlsBuilderFactory<PlainPlacement> placementControlsBuilderFactory) {
-		super(comparator, points);
+	public PlainPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<BoxItemGroup> boxItemGroupComparator, PlacementControlsBuilderFactory<PlainPlacement> placementControlsBuilderFactory) {
+		super(comparator);
 
 		this.placementControlsBuilderFactory = placementControlsBuilderFactory;
 		this.boxItemGroupComparator = boxItemGroupComparator;

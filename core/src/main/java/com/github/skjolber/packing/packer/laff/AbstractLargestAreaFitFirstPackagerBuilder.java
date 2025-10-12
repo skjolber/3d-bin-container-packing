@@ -19,15 +19,8 @@ public abstract class AbstractLargestAreaFitFirstPackagerBuilder<R extends Place
 	protected PlacementControlsBuilderFactory<R> firstPlacementControlsBuilderFactory;
 	protected PlacementControlsBuilderFactory<R> placementControlsBuilderFactory;
 	
-	protected List<Point> points;
-
 	public B withIntermediatePackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
 		this.intermediatePackagerResultComparator = comparator;
-		return (B)this;
-	}
-	
-	public B withPoints(List<Point> points) {
-		this.points = points;
 		return (B)this;
 	}
 	
