@@ -675,10 +675,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	private void constrainMax(Placement placement, int endIndex) {
-		constrainXX.ensureAdditionalCapacity(endIndex);
-		constrainYY.ensureAdditionalCapacity(endIndex);
-		constrainZZ.ensureAdditionalCapacity(endIndex);
-
 		for (int i = 0; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -736,10 +732,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	private void constrainMaxWithClone(Placement placement, int endIndex) {
-		constrainXX.ensureAdditionalCapacity(endIndex);
-		constrainYY.ensureAdditionalCapacity(endIndex);
-		constrainZZ.ensureAdditionalCapacity(endIndex);
-
 		for (int i = 0; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
