@@ -136,7 +136,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		Point3DFlagList values = this.values;
 		Point3DFlagList otherValues = this.otherValues;
 
-		ensureCapacity(values.size());
+		ensureCapacity(values.size() + 1);
 		
 		SimplePoint3D source = values.get(index);
 		values.flag(index);
@@ -306,7 +306,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 			int moveToXXSize = moveToXX.size();
 			int targetIndex = endIndex;
-			
+			addXX.ensurePointAdditionalCapacity(targetIndex, moveToXXSize);
+
 			add: for (int i = 0; i < moveToXXSize; i++) {
 				int currentIndex = moveToXX.get(i);
 				SimplePoint3D p = values.get(currentIndex);
@@ -332,6 +333,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				// TODO skip x
 				while (targetIndex < values.size() && Point.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
+
+					addXX.ensurePointAdditionalCapacity(targetIndex, moveToXXSize - i);
 				}
 
 				addXX.add(added, targetIndex);
@@ -377,6 +380,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					targetIndex++;
 				}
 
+				addYY.ensurePointAdditionalCapacity(targetIndex, 1);
+
 				addYY.add(added, targetIndex);
 				addedYY.add(added);
 			}
@@ -417,6 +422,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				while (targetIndex < values.size() && Point.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
 				}
+
+				addZZ.ensurePointAdditionalCapacity(targetIndex, 1);
 
 				addZZ.add(added, targetIndex);
 				addedZZ.add(added);
@@ -605,19 +612,17 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		// A single point can maximum become to two points, per dimension. 
 		// This might allocate a bit too much memory, but overall improves performance
 		
-		if(size + size >= addXX.getCapacity()) {
+		if(size >= addXX.getCapacity()) {
 			
-			int next = 2 * size + 16;
+			int next = size + size / 2;
 			addXX.ensureCapacity(next);
 			addYY.ensureCapacity(next);
 			addZZ.ensureCapacity(next);
-			
-			for(int i = 0; i < size; i++) {
-				addXX.ensurePointCapacity(i, next);
-				addYY.ensurePointCapacity(i, next);
-				addZZ.ensurePointCapacity(i, next);
-			}
-			
+
+			addXX.ensureCapacity(next);
+			addYY.ensureCapacity(next);
+			addZZ.ensureCapacity(next);
+
 			constrainXX.ensureCapacity(next);
 			constrainYY.ensureCapacity(next);
 			constrainZZ.ensureCapacity(next);
