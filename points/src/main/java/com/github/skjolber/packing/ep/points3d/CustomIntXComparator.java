@@ -31,7 +31,8 @@ public class CustomIntXComparator implements IntComparator {
 		long volume1 = o1.getDy() * o1.getDz() * (o1.getMaxX() - xx + 1L);
 		long volume2 = o2.getDy() * o2.getDz() * (o2.getMaxX() - xx + 1L);
 
-		return -Long.compare(volume1, volume2);
+		// inline -Long.compare(volume1, volume2)
+		return (volume2 < volume1) ? -1 : ((volume2 == volume1) ? 0 : 1);
 	}
 
 	public void setXx(int xx) {
