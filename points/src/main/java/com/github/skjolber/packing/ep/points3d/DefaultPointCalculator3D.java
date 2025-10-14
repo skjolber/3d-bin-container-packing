@@ -57,9 +57,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	protected final IntArrayList moveToYY = new IntArrayList();
 	protected final IntArrayList moveToZZ = new IntArrayList();
 
-	protected final ArrayList<SimplePoint3D> addedXX = new ArrayList<>(128);
-	protected final ArrayList<SimplePoint3D> addedYY = new ArrayList<>(128);
-	protected final ArrayList<SimplePoint3D> addedZZ = new ArrayList<>(128);
+	protected final Point3DList addedXX = new Point3DList(values.getCapacity());
+	protected final Point3DList addedYY = new Point3DList(values.getCapacity());
+	protected final Point3DList addedZZ = new Point3DList(values.getCapacity());
 
 	protected final boolean immutablePoints;
 
@@ -616,13 +616,13 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			addYY.ensureCapacity(capacity);
 			addZZ.ensureCapacity(capacity);
 
-			addXX.ensureCapacity(capacity);
-			addYY.ensureCapacity(capacity);
-			addZZ.ensureCapacity(capacity);
-
 			constrainXX.ensureCapacity(capacity);
 			constrainYY.ensureCapacity(capacity);
 			constrainZZ.ensureCapacity(capacity);
+			
+			addedXX.ensureCapacity(capacity);
+			addedYY.ensureCapacity(capacity);
+			addedZZ.ensureCapacity(capacity);
 		}
 	}
 
@@ -1599,6 +1599,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	public int binarySearchPlusMinY(int key) {
 		// return exclusive result
 
+		Point3DFlagList values = this.values;
+
 		int low = 0;
 		int high = values.size() - 1;
 
@@ -1624,17 +1626,13 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		return low;
 	}
 
-	public int binarySearchPlusMinX(Point3DFlagList values, int low, int key) {
+	public static int binarySearchPlusMinX(Point3DFlagList values, int low, int key) {
 		// return exclusive result
 
 		int high = values.size() - 1;
 
 		while (low <= high) {
 			int mid = (low + high) >>> 1;
-
-			// 0 if x == y
-			// -1 if x < y
-			// 1 if x > y
 
 			int midVal = values.get(mid).getMinX();
 
@@ -1688,6 +1686,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	public int binarySearch(Point point, int low) {
 		// return inclusive result
 		
+		Point3DFlagList values = this.values;
+
 		int key = point.getMinX();
 
 		int high = values.size() - 1;

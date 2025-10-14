@@ -263,5 +263,9 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 		iterator.set(size, points);
 		return iterator;
 	}
+	
+	public int getCapacity() {
+		return points.length;
+	}
 
 }
