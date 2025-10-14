@@ -92,4 +92,8 @@ public class Point2DList {
 		return points;
 	}
 
+	public int getCapacity() {
+		return points.length;
+	}
+
 }
