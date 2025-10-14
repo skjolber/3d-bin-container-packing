@@ -1605,17 +1605,11 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		while (low <= high) {
 			int mid = (low + high) >>> 1;
 
-			// 0 if x == y
-			// -1 if x < y
-			// 1 if x > y
-
 			int midVal = values.get(mid).getMinY();
 
-			int cmp = Integer.compare(midVal, key);
-
-			if(cmp < 0) {
+			if(midVal < key) {
 				low = mid + 1;
-			} else if(cmp > 0) {
+			} else if(midVal != key) {
 				high = mid - 1;
 			} else {
 				// key found
@@ -1664,23 +1658,19 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	public int binarySearchMinusMinX(int key) {
 		// return inclusive result
 
+		Point3DFlagList values = this.values;
+		
 		int low = 0;
 		int high = values.size() - 1;
 
 		while (low <= high) {
 			int mid = (low + high) >>> 1;
 
-			// 0 if x == y
-			// -1 if x < y
-			// 1 if x > y
-
 			int midVal = values.get(mid).getMinX();
 
-			int cmp = Integer.compare(midVal, key);
-
-			if(cmp < 0) {
+			if(midVal < key) {
 				low = mid + 1;
-			} else if(cmp > 0) {
+			} else if(midVal != key) {
 				high = mid - 1;
 			} else {
 				// key found
@@ -1711,11 +1701,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 			int midVal = values.get(mid).getMinX();
 
-			int cmp = Integer.compare(midVal, key);
-
-			if(cmp < 0) {
+			if(midVal < key) {
 				low = mid + 1;
-			} else if(cmp > 0) {
+			} else if(midVal != key) {
 				high = mid - 1;
 			} else {
 				// key found
