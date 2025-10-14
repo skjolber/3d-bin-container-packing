@@ -14,6 +14,7 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 
 @Fork(value = 1, warmups = 1)
@@ -22,49 +23,29 @@ import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 @Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class PointsBenchmark {
+public class PointsBenchmark2D {
 
-	/*
 	@Benchmark
-	public int points2D(ExtremePoints2DState state) throws Exception {
+	public int points2D(Points2DState state) throws Exception {
 		int size = 0;
-		List<ExtremePoints2DEntries> entries = state.getEntries();
-		for(ExtremePoints2DEntries e : entries) {
-			ExtremePoints2D extremePoints2D = e.getExtremePoints2D();
+		List<Points2DEntries> entries = state.getEntries();
+		for(Points2DEntries e : entries) {
+			DefaultPointCalculator2D extremePoints2D = e.getExtremePoints2D();
 			
-			for (ExtremePoint2DEntry extremePointEntry : e.getEntries()) {
+			for (Point2DEntry extremePointEntry : e.getEntries()) {
 				extremePoints2D.add(extremePointEntry.getIndex(), extremePointEntry.getPlacement());
 			}
-			size += extremePoints2D.getValueCount();
+			size += extremePoints2D.getPlacements().size();
 			
 			extremePoints2D.redo();
 		}
 		
 		return size;
 	}
-	*/
-
-	@Benchmark
-	public int points3D(Points3DState state) throws Exception {
-		int size = 0;
-		List<Points3DEntries> entries = state.getEntries();
-		for (Points3DEntries e : entries) {
-			DefaultPointCalculator3D extremePoints3D = e.getExtremePoints3D();
-
-			for (Point3DEntry extremePointEntry : e.getEntries()) {
-				extremePoints3D.add(extremePointEntry.getIndex(), extremePointEntry.getPlacement());
-			}
-			size += extremePoints3D.size();
-
-			extremePoints3D.clear();
-		}
-
-		return size;
-	}
 
 	public static void main(String[] args) throws RunnerException {
 		Options opt = new OptionsBuilder()
-				.include(PointsBenchmark.class.getSimpleName())
+				.include(PointsBenchmark2D.class.getSimpleName())
 				.mode(Mode.Throughput)
 				/*
 				.forks(1)

@@ -14,12 +14,14 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeConverter;
 
 @State(Scope.Benchmark)
 public class Points3DState {
@@ -49,54 +51,25 @@ public class Points3DState {
 	}
 
 	public void convert3DXYPlane(BouwkampCode bkpLine) {
-		DefaultPointCalculator3D points = new DefaultPointCalculator3D();
-		points.clearToSize(bkpLine.getWidth(), bkpLine.getDepth(), 1);
+		BouwkampCodeConverter converter = new BouwkampCodeConverter(true);
 
-		Points3DEntries extremePointsEntries = new Points3DEntries(points);
+		Points3DEntries extremePointsEntries = new Points3DEntries();
 
-		List<BouwkampCodeLine> lines = bkpLine.getLines();
+		DefaultPointCalculator3D points = new DefaultPointCalculator3D() {
+			@Override
+			public boolean add(int index, Placement placement) {
+				extremePointsEntries.add(new Point3DEntry(index, placement));
 
-		int count = 0;
-
-		lines: for (BouwkampCodeLine line : lines) {
-			List<Integer> squares = line.getSquares();
-			int minY = points.getMinY();
-
-			Point value = points.get(minY);
-
-			int offset = value.getMinX();
-
-			int nextY = minY;
-
-			for (int i = 0; i < squares.size(); i++) {
-				Integer square = squares.get(i);
-				int factoredSquare = square;
-
-				Placement stackPlacement = createStackPlacement(offset, value.getMinY(), 0, offset + factoredSquare - 1, value.getMinY() + factoredSquare - 1, 1);
-				
-				extremePointsEntries.add(new Point3DEntry(nextY, stackPlacement));
-				
-				points.add(nextY, stackPlacement);
-
-				offset += factoredSquare;
-
-				nextY = points.get(offset, value.getMinY(), 0);
-
-				count++;
-
-				if(nextY == -1 && i + 1 < squares.size()) {
-					throw new IllegalStateException("No next y at " + offset + "x" + value.getMinY() + "x0 with " + (squares.size() - 1 - i) + " remaining for " + bkpLine + " and " + points.size() + " points");
-				}
-
+				return super.add(index, placement);
 			}
-		}
+		};
 
-		if(points.size() > 0) {
-			throw new IllegalStateException("Still have " + points.size() + ": " + points.getAll());
-		}
+		converter.convert2D(bkpLine, 1, points);
 
-		points.clear();
-
+		DefaultPointCalculator3D defaultPointCalculator3D = new DefaultPointCalculator3D();
+		defaultPointCalculator3D.clearToSize(points.getWidth(), points.getDepth(), 1);
+		extremePointsEntries.setExtremePoints3D(defaultPointCalculator3D);
+		
 		entries.add(extremePointsEntries);
 	}
 

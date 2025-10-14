@@ -32,7 +32,8 @@ public class Point3DList {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			SimplePoint3D[] nextPoints = new SimplePoint3D[size];
+			int nextSize = size + 16;
+			SimplePoint3D[] nextPoints = new SimplePoint3D[nextSize];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 			this.points = nextPoints;
 		}

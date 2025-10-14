@@ -57,9 +57,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	protected final IntArrayList moveToYY = new IntArrayList();
 	protected final IntArrayList moveToZZ = new IntArrayList();
 
-	protected final List<SimplePoint3D> addedXX = new ArrayList<>(128);
-	protected final List<SimplePoint3D> addedYY = new ArrayList<>(128);
-	protected final List<SimplePoint3D> addedZZ = new ArrayList<>(128);
+	protected final ArrayList<SimplePoint3D> addedXX = new ArrayList<>(128);
+	protected final ArrayList<SimplePoint3D> addedYY = new ArrayList<>(128);
+	protected final ArrayList<SimplePoint3D> addedZZ = new ArrayList<>(128);
 
 	protected final boolean immutablePoints;
 
@@ -136,6 +136,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		Point3DFlagList values = this.values;
 		Point3DFlagList otherValues = this.otherValues;
 
+		ensureCapacity(values.size() + 1);
+		
 		SimplePoint3D source = values.get(index);
 		values.flag(index);
 
@@ -179,18 +181,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 		// must be to the right of the current index, so set it as a minimum
 		int endIndex = binarySearchPlusMinX(values, index, placement.getAbsoluteEndX());
-
-		moveToXX.ensureCapacity(endIndex);
-		moveToYY.ensureCapacity(endIndex);
-		moveToZZ.ensureCapacity(endIndex);
-
-		addXX.ensureCapacity(values.size() + 1);
-		addYY.ensureCapacity(values.size() + 1);
-		addZZ.ensureCapacity(values.size() + 1);
-
-		constrainXX.ensureCapacity(values.size());
-		constrainYY.ensureCapacity(values.size());
-		constrainZZ.ensureCapacity(values.size());
 
 		int pointIndex;
 		if(supportedYZPlane) {
@@ -316,7 +306,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 			int moveToXXSize = moveToXX.size();
 			int targetIndex = endIndex;
-			addXX.ensureAdditionalCapacity(targetIndex, moveToXXSize);
+			addXX.ensurePointAdditionalCapacity(targetIndex, moveToXXSize);
 
 			add: for (int i = 0; i < moveToXXSize; i++) {
 				int currentIndex = moveToXX.get(i);
@@ -344,7 +334,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				while (targetIndex < values.size() && Point.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
 
-					addXX.ensureAdditionalCapacity(targetIndex, moveToXXSize - i);
+					addXX.ensurePointAdditionalCapacity(targetIndex, moveToXXSize - i);
 				}
 
 				addXX.add(added, targetIndex);
@@ -390,7 +380,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					targetIndex++;
 				}
 
-				addYY.ensureAdditionalCapacity(targetIndex, 1);
+				addYY.ensurePointAdditionalCapacity(targetIndex, 1);
 
 				addYY.add(added, targetIndex);
 				addedYY.add(added);
@@ -433,7 +423,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					targetIndex++;
 				}
 
-				addZZ.ensureAdditionalCapacity(targetIndex, 1);
+				addZZ.ensurePointAdditionalCapacity(targetIndex, 1);
 
 				addZZ.add(added, targetIndex);
 				addedZZ.add(added);
@@ -618,6 +608,24 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		return !values.isEmpty();
 	}
 
+	private void ensureCapacity(int size) {
+		if(size >= addXX.getCapacity()) {
+			int capacity = size + 32;
+			
+			addXX.ensureCapacity(capacity);
+			addYY.ensureCapacity(capacity);
+			addZZ.ensureCapacity(capacity);
+
+			addXX.ensureCapacity(capacity);
+			addYY.ensureCapacity(capacity);
+			addZZ.ensureCapacity(capacity);
+
+			constrainXX.ensureCapacity(capacity);
+			constrainYY.ensureCapacity(capacity);
+			constrainZZ.ensureCapacity(capacity);
+		}
+	}
+
 	protected void updateIndexes(Point3DFlagList values) {
 		for(int i = 0; i < values.size(); i++) {
 			SimplePoint3D simplePoint3D = values.get(i);
@@ -669,10 +677,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	private void constrainMax(Placement placement, int endIndex) {
-		constrainXX.ensureAdditionalCapacity(endIndex);
-		constrainYY.ensureAdditionalCapacity(endIndex);
-		constrainZZ.ensureAdditionalCapacity(endIndex);
-
 		for (int i = 0; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -730,10 +734,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	private void constrainMaxWithClone(Placement placement, int endIndex) {
-		constrainXX.ensureAdditionalCapacity(endIndex);
-		constrainYY.ensureAdditionalCapacity(endIndex);
-		constrainZZ.ensureAdditionalCapacity(endIndex);
-
 		for (int i = 0; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;

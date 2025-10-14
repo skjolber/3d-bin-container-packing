@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.points;
+package com.github.skjolber.packing.test.bouwkamp;
 
 import java.util.List;
 
@@ -7,17 +7,26 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.ep.points2d.DefaultPoint2D;
-import com.github.skjolber.packing.ep.points2d.Point2D;
-import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
-import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
+import com.github.skjolber.packing.api.point.PointCalculator;
 
 @SuppressWarnings({ "rawtypes" })
-public class BouwkampConverter {
+public class BouwkampCodeConverter {
 
+	private static class BouwkampPoint extends Point {
+
+		public BouwkampPoint(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+			super(minX, minY, minZ, maxX, maxY, maxZ);
+		}
+
+		@Override
+		public Point clone(int maxX, int maxY, int maxZ) {
+			return new BouwkampPoint(minX,  minY,  minZ, maxX, maxY, maxZ);
+		}
+	}
+	
 	private boolean throwException;
 
-	public BouwkampConverter(boolean throwException) {
+	public BouwkampCodeConverter(boolean throwException) {
 		this.throwException = throwException;
 	}
 	
@@ -31,13 +40,12 @@ public class BouwkampConverter {
 		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(0).build();
 		stackValue.setBox(box);
 		
-		return new Placement(stackValue, new DefaultPoint2D(x, y, z, 0, 0, 0));
+		return new Placement(stackValue, new BouwkampPoint(x, y, z, 0, 0, 0));
 	}
 
-	public ValidatingPointCalculator2D convert2D(BouwkampCode bkpLine, int factor) {
+	public void convert2D(BouwkampCode bkpLine, int factor, PointCalculator points) {
 
-		ValidatingPointCalculator2D points = new ValidatingPointCalculator2D();
-		points.setSize(bkpLine.getWidth() * factor, bkpLine.getDepth() * factor, factor);
+		points.clearToSize(bkpLine.getWidth() * factor, bkpLine.getDepth() * factor, factor);
 		points.clear();
 		
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
@@ -50,9 +58,9 @@ public class BouwkampConverter {
 
 		lines: for (BouwkampCodeLine line : lines) {
 			List<Integer> squares = line.getSquares();
-			int minY = points.getMinY();
+			int minY = getMinY(points.getAll());
 
-			Point2D value = points.get(minY);
+			Point value = points.get(minY);
 			
 			if(value == null) throw new RuntimeException("No point at " + minY + ", got " + points.getAll());
 			
@@ -69,7 +77,7 @@ public class BouwkampConverter {
 
 				offset += factoredSquare;
 
-				nextY = points.findPoint(offset, value.getMinY());
+				nextY = findPoint(points.getAll(), offset, value.getMinY(), 0);
 
 				count++;
 
@@ -95,13 +103,9 @@ public class BouwkampConverter {
 				System.out.println("Still have " + points.size() + ": " + points.getAll());
 			}
 		}
-
-		return points;
 	}
 
-	public ValidatingPointCalculator3D convert3DXYPlane(BouwkampCode bkpLine, int factor) {
-
-		ValidatingPointCalculator3D points = new ValidatingPointCalculator3D();
+	public void convert3DXYPlane(BouwkampCode bkpLine, int factor, PointCalculator points) {
 		points.clearToSize(bkpLine.getWidth() * factor, bkpLine.getDepth() * factor, factor);
 
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
@@ -110,7 +114,7 @@ public class BouwkampConverter {
 
 		lines: for (BouwkampCodeLine line : lines) {
 			List<Integer> squares = line.getSquares();
-			int minY = points.getMinY();
+			int minY = getMinY(points.getAll());
 
 			Point value = points.get(minY);
 
@@ -126,7 +130,7 @@ public class BouwkampConverter {
 
 				offset += factoredSquare;
 
-				nextY = points.get(offset, value.getMinY(), 0);
+				nextY = findPoint(points.getAll(), offset, value.getMinY(), 0);
 
 				count++;
 
@@ -151,13 +155,10 @@ public class BouwkampConverter {
 				System.out.println("Still have " + points.size() + ": " + points.getAll());
 			}
 		}
-
-		return points;
 	}
 
-	public ValidatingPointCalculator3D convert3DXZPlane(BouwkampCode bkpLine, int factor) {
+	public void convert3DXZPlane(BouwkampCode bkpLine, int factor, PointCalculator points) {
 
-		ValidatingPointCalculator3D points = new ValidatingPointCalculator3D();
 		points.clearToSize(bkpLine.getWidth() * factor, factor, bkpLine.getDepth() * factor);
 
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
@@ -166,7 +167,7 @@ public class BouwkampConverter {
 
 		lines: for (BouwkampCodeLine line : lines) {
 			List<Integer> squares = line.getSquares();
-			int minZ = points.getMinZ();
+			int minZ = getMinZ(points.getAll());
 
 			Point value = points.get(minZ);
 
@@ -182,7 +183,7 @@ public class BouwkampConverter {
 
 				offset += factoredSquare;
 
-				nextZ = points.get(offset, 0, value.getMinZ());
+				nextZ =findPoint(points.getAll(), offset, 0, value.getMinZ());
 
 				count++;
 
@@ -206,13 +207,10 @@ public class BouwkampConverter {
 				System.out.println("Still have " + points.size() + ": " + points.getAll());
 			}
 		}
-
-		return points;
 	}
 
-	public ValidatingPointCalculator3D convert3DYZPlane(BouwkampCode bkpLine, int factor) {
+	public void convert3DYZPlane(BouwkampCode bkpLine, int factor, PointCalculator points) {
 
-		ValidatingPointCalculator3D points = new ValidatingPointCalculator3D();
 		points.clearToSize(factor, bkpLine.getWidth() * factor, bkpLine.getDepth() * factor);
 
 		List<BouwkampCodeLine> lines = bkpLine.getLines();
@@ -221,7 +219,7 @@ public class BouwkampConverter {
 
 		lines: for (BouwkampCodeLine line : lines) {
 			List<Integer> squares = line.getSquares();
-			int minZ = points.getMinZ();
+			int minZ = getMinZ(points.getAll());
 
 			Point value = points.get(minZ);
 
@@ -237,7 +235,7 @@ public class BouwkampConverter {
 
 				offset += factoredSquare;
 
-				nextZ = points.get(0, offset, value.getMinZ());
+				nextZ = findPoint(points.getAll(), 0, offset, value.getMinZ());
 
 				count++;
 
@@ -261,8 +259,55 @@ public class BouwkampConverter {
 				System.out.println("Still have " + points.size() + ": " + points.getAll());
 			}
 		}
-
-		return points;
 	}
+	
+
+	public int getMinY(List<Point> values) {
+		int min = 0;
+		for (int i = 1; i < values.size(); i++) {
+			Point point = values.get(i);
+
+			if(point.getMinY() < values.get(min).getMinY()) {
+				min = i;
+			}
+		}
+		return min;
+	}
+
+	public int getMinX(List<Point> values) {
+		int min = 0;
+		for (int i = 1; i < values.size(); i++) {
+			Point point = values.get(i);
+
+			if(point.getMinX() < values.get(min).getMinX()) {
+				min = i;
+			}
+		}
+		return min;
+	}
+
+	public int getMinZ(List<Point> values) {
+		int min = 0;
+		for (int i = 1; i < values.size(); i++) {
+			Point point2d = values.get(i);
+
+			if(point2d.getMinZ() < values.get(min).getMinZ()) {
+				min = i;
+			}
+		}
+		return min;
+	}
+	
+	public int findPoint(List<Point> values, int x, int y, int z) {
+		for (int i = 0; i < values.size(); i++) {
+			Point point = values.get(i);
+			if(point.getMinX() == x && point.getMinY() == y && point.getMinZ() == z) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+
 
 }

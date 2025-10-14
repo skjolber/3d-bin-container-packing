@@ -10,9 +10,9 @@ public class Points2DEntries {
 
 	private final List<Point2DEntry> entries = new ArrayList<>();
 
-	private final DefaultPointCalculator2D extremePoints2D;
+	private DefaultPointCalculator2D extremePoints2D;
 
-	public Points2DEntries(DefaultPointCalculator2D extremePoints2D) {
+	public void setExtremePoints2D(DefaultPointCalculator2D extremePoints2D) {
 		this.extremePoints2D = extremePoints2D;
 	}
 

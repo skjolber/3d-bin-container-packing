@@ -38,7 +38,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	protected int containerMaxZ;
 
 	protected Point2DFlagList values = new Point2DFlagList();
-	protected List<Placement> placements = new ArrayList<>();
+	protected ArrayList<Placement> placements = new ArrayList<>();
 
 	// reuse working variables
 	protected final Point2DList addXX = new Point2DList();
@@ -124,6 +124,16 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		// remove points which are eclipsed by others
 
 		// keep track of placement borders, where possible
+		
+		if(addXX.getCapacity() < values.size()) {
+			int capacity = values.size() + 32;
+			moveToXX.ensureCapacity(capacity);
+			moveToYY.ensureCapacity(capacity);
+			
+			addXX.ensureAdditionalCapacity(capacity);
+			addYY.ensureAdditionalCapacity(capacity);
+		}
+
 		Point2D source = values.get(index);
 
 		boolean xSupport = source.isXSupport(source.getMinX());
@@ -205,12 +215,6 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			pointIndex = 0;
 		}
 		int endIndex = binarySearchPlusMinX(placement.getAbsoluteEndX());
-
-		moveToXX.ensureCapacity(endIndex);
-		moveToYY.ensureCapacity(endIndex);
-
-		addXX.ensureAdditionalCapacity(values.size());
-		addYY.ensureAdditionalCapacity(values.size());
 
 		for (int i = pointIndex; i < endIndex; i++) {
 			Point2D point = values.get(i);

@@ -10,11 +10,7 @@ public class Points3DEntries {
 
 	private final List<Point3DEntry> entries = new ArrayList<>();
 
-	private final DefaultPointCalculator3D extremePoints3D;
-
-	public Points3DEntries(DefaultPointCalculator3D extremePoints3D) {
-		this.extremePoints3D = extremePoints3D;
-	}
+	private DefaultPointCalculator3D extremePoints3D;
 
 	public void add(Point3DEntry entry) {
 		entries.add(entry);
@@ -26,5 +22,9 @@ public class Points3DEntries {
 
 	public DefaultPointCalculator3D getExtremePoints3D() {
 		return extremePoints3D;
+	}
+	
+	public void setExtremePoints3D(DefaultPointCalculator3D extremePoints3D) {
+		this.extremePoints3D = extremePoints3D;
 	}
 }

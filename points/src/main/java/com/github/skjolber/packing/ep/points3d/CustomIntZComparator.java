@@ -31,7 +31,8 @@ public class CustomIntZComparator implements IntComparator {
 		long volume1 = o1.getArea() * (o1.getMaxZ() - zz + 1);
 		long volume2 = o2.getArea() * (o2.getMaxZ() - zz + 1);
 
-		return -Long.compare(volume1, volume2);
+		// inline -Long.compare(volume1, volume2)
+		return (volume2 < volume1) ? -1 : ((volume2 == volume1) ? 0 : 1);
 	}
 
 	public void setZz(int zz) {
