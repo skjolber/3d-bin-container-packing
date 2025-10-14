@@ -237,7 +237,11 @@
 		<module>test</module>
 		<module>points</module>
 		<module>core</module>
-		</modules>
+		<module>jmh</module>
+		<module>visualizer/api</module>
+		<module>visualizer/algorithm</module>
+		<module>visualizer/packaging</module>
+	</modules>
 
 	<build>
 		<defaultGoal>clean test</defaultGoal>
@@ -397,9 +401,9 @@
 					</executions>
 				</plugin>
 				<plugin>
-			        <groupId>org.apache.maven.plugins</groupId>
-			        <artifactId>maven-enforcer-plugin</artifactId>
-			        <version>3.6.2</version>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>3.6.2</version>
 					<executions>
 						<execution>
 							<id>enforce-versions</id>
@@ -510,25 +514,13 @@
 				<artifactId>central-publishing-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
-		        <groupId>org.apache.maven.plugins</groupId>
-		        <artifactId>maven-enforcer-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
 
 	<profiles>
-
-		<profile>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<modules>
-				<module>jmh</module>
-				<module>visualizer/api</module>
-				<module>visualizer/algorithm</module>
-				<module>visualizer/packaging</module>
-			</modules>
-		</profile>
 		<profile>
 			<!-- mvn -P release release:perform -->
 			<id>release</id>
