@@ -609,23 +609,20 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	private void ensureCapacity(int size) {
-		// A single point can maximum become to two points, per dimension. 
-		// This might allocate a bit too much memory, but overall improves performance
-		
 		if(size >= addXX.getCapacity()) {
+			int capacity = size + 32;
 			
-			int next = size + size / 2;
-			addXX.ensureCapacity(next);
-			addYY.ensureCapacity(next);
-			addZZ.ensureCapacity(next);
+			addXX.ensureCapacity(capacity);
+			addYY.ensureCapacity(capacity);
+			addZZ.ensureCapacity(capacity);
 
-			addXX.ensureCapacity(next);
-			addYY.ensureCapacity(next);
-			addZZ.ensureCapacity(next);
+			addXX.ensureCapacity(capacity);
+			addYY.ensureCapacity(capacity);
+			addZZ.ensureCapacity(capacity);
 
-			constrainXX.ensureCapacity(next);
-			constrainYY.ensureCapacity(next);
-			constrainZZ.ensureCapacity(next);
+			constrainXX.ensureCapacity(capacity);
+			constrainYY.ensureCapacity(capacity);
+			constrainZZ.ensureCapacity(capacity);
 		}
 	}
 
