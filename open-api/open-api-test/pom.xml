@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 		<artifactId>open-api-parent</artifactId>
-		<version>4.0.4-SNAPSHOT</version>
+		<version>4.0.4</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>	
 	<artifactId>open-api-test</artifactId>
