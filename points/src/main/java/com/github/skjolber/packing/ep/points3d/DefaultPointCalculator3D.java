@@ -2,19 +2,19 @@ package com.github.skjolber.packing.ep.points3d;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
 import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
+import com.github.skjolber.packing.api.point.Point;
 
 /**
  * 
@@ -23,13 +23,6 @@ import com.github.skjolber.packing.api.point.PointCalculator;
  */
 
 public class DefaultPointCalculator3D implements PointCalculator {
-	public static final Comparator<Point> COMPARATOR_X = new Comparator<Point>() {
-
-		@Override
-		public int compare(Point o1, Point o2) {
-			return Integer.compare(o1.getMinX(), o2.getMinX());
-		}
-	};
 
 	protected int containerMaxX;
 	protected int containerMaxY;
@@ -53,9 +46,11 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	protected final Point3DArray constrainYY = new Point3DArray();
 	protected final Point3DArray constrainZZ = new Point3DArray();
 
-	protected final IntArrayList moveToXX = new IntArrayList();
-	protected final IntArrayList moveToYY = new IntArrayList();
-	protected final IntArrayList moveToZZ = new IntArrayList();
+	// note: int array because we also want to keep track of the index
+	// TODO could be point index
+	protected final CustomIntArrayList moveToXX = new CustomIntArrayList();
+	protected final CustomIntArrayList moveToYY = new CustomIntArrayList();
+	protected final CustomIntArrayList moveToZZ = new CustomIntArrayList();
 
 	protected final Point3DList addedXX = new Point3DList(values.getCapacity());
 	protected final Point3DList addedYY = new Point3DList(values.getCapacity());
@@ -196,7 +191,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		}
 
 		for (int i = pointIndex; i < endIndex; i++) {
-			Point point = values.get(i);
+			SimplePoint3D point = values.get(i);
 
 			if(point.getMinY() > placement.getAbsoluteEndY() || point.getMinZ() > placement.getAbsoluteEndZ()) {
 				// 
@@ -301,7 +296,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 		if(!moveToXX.isEmpty()) {
 			xxComparator.setValues(values);
-			xxComparator.setXx(xx);
 			moveToXX.sortThis(xxComparator);
 
 			int moveToXXSize = moveToXX.size();
@@ -314,7 +308,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				// add point on the other side
 				// with x support
 				for (int k = 0; k < addedXX.size(); k++) {
-					Point add = addedXX.get(k);
+					SimplePoint3D add = addedXX.get(k);
 					if(add.eclipsesMovedX(p, xx)) {
 						continue add;
 					}
@@ -331,7 +325,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 				// find right insertion point
 				// TODO skip x
-				while (targetIndex < values.size() && Point.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
+				while (targetIndex < values.size() && SimplePoint3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
 
 					addXX.ensurePointAdditionalCapacity(targetIndex, moveToXXSize - i);
@@ -346,7 +340,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 		if(!moveToYY.isEmpty()) {
 			yyComparator.setValues(values);
-			yyComparator.setYy(yy);
 			moveToYY.sortThis(yyComparator);
 
 			add: for (int i = 0; i < moveToYY.size(); i++) {
@@ -357,7 +350,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				// add point on the other side
 				// with x support
 				for (int k = 0; k < addedYY.size(); k++) {
-					Point add = addedYY.get(k);
+					SimplePoint3D add = addedYY.get(k);
 					if(add.eclipsesMovedY(p, yy)) {
 						continue add;
 					}
@@ -376,7 +369,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				int targetIndex = currentIndex + 1;
 
 				// TODO skip y
-				while (targetIndex < values.size() && Point.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
+				while (targetIndex < values.size() && SimplePoint3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
 				}
 
@@ -391,8 +384,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 		if(!moveToZZ.isEmpty()) {
 			zzComparator.setValues(values);
-			zzComparator.setZz(zz);
-			moveToZZ.sortThis(zzComparator);
+			
+		    // insertion sort: Better when items are already close to ordered
+		    // which should be the case here, i.e. sorted by x, y, z.
+			moveToZZ.insertionSortThis(zzComparator);
 
 			add: for (int i = 0; i < moveToZZ.size(); i++) {
 				int currentIndex = moveToZZ.get(i);
@@ -401,7 +396,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 				// add point on the other side
 				for (int k = 0; k < addedZZ.size(); k++) {
-					Point add = addedZZ.get(k);
+					SimplePoint3D add = addedZZ.get(k);
 					if(add.eclipsesMovedZ(p, zz)) {
 						continue add;
 					}
@@ -419,7 +414,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				// find right insertion point
 				int targetIndex = currentIndex + 1;
 				// TODO skip z
-				while (targetIndex < values.size() && Point.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
+				while (targetIndex < values.size() && SimplePoint3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
 				}
 
@@ -644,10 +639,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		this.otherValues = values;
 	}
 
-	private boolean isEclipsed(Point point) {
+	private boolean isEclipsed(SimplePoint3D point) {
 		// check if one of the existing values contains the new value
 		for (int index = 0; index < otherValues.size(); index++) {
-			Point otherValue = otherValues.get(index);
+			SimplePoint3D otherValue = otherValues.get(index);
 
 			if(point.getVolume() <= otherValue.getVolume() && point.getArea() <= otherValue.getArea()) {
 				if(otherValue.eclipses(point)) {
@@ -659,10 +654,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		return false;
 	}
 
-	private boolean isEclipsedAtXX(Point point, int xx) {
+	private boolean isEclipsedAtXX(SimplePoint3D point, int xx) {
 		// check if one of the existing values contains the new value
 		for (int index = otherValues.size() - 1; index >= 0; index--) {
-			Point otherValue = otherValues.get(index);
+			SimplePoint3D otherValue = otherValues.get(index);
 			if(otherValue.getMinX() < xx) {
 				return false;
 			}
@@ -764,25 +759,25 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		}
 	}
 
-	private boolean canMoveZ(Point p, int zz) {
+	private boolean canMoveZ(SimplePoint3D p, int zz) {
 		if(p.getMaxZ() < zz) {
 			return false;
 		}
 		return !isConstrainedAtZ(p, zz);
 	}
 
-	private boolean isConstrainedAtZ(Point p, int zz) {
+	private boolean isConstrainedAtZ(SimplePoint3D p, int zz) {
 		return p.getVolumeAtZ(zz) < minVolumeLimit;
 	}
 
-	private boolean canMoveX(Point p, int xx) {
+	private boolean canMoveX(SimplePoint3D p, int xx) {
 		if(p.getMaxX() < xx) {
 			return false;
 		}
 		return !isConstrainedAtX(p, xx);
 	}
 
-	private boolean isConstrainedAtX(Point p, int xx) {
+	private boolean isConstrainedAtX(SimplePoint3D p, int xx) {
 		long areaAtX = p.getAreaAtX(xx);
 		if(areaAtX >= minAreaLimit) {
 			return false;
@@ -790,7 +785,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		return areaAtX * p.getDz() < minVolumeLimit;
 	}
 
-	private boolean isConstrainedAtMaxX(Point p, int maxX) {
+	private boolean isConstrainedAtMaxX(SimplePoint3D p, int maxX) {
 		long areaAtMaxX = p.getAreaAtMaxX(maxX);
 		if(areaAtMaxX >= minAreaLimit) {
 			return false;
@@ -798,7 +793,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		return areaAtMaxX * p.getDz() < minVolumeLimit;
 	}
 
-	private boolean isConstrainedAtMaxY(Point p, int maxY) {
+	private boolean isConstrainedAtMaxY(SimplePoint3D p, int maxY) {
 		long areaAtMaxY = p.getAreaAtMaxY(maxY);
 		if(areaAtMaxY >= minAreaLimit) {
 			return false;
@@ -806,18 +801,18 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		return areaAtMaxY * p.getDz() < minVolumeLimit;
 	}
 
-	private boolean isConstrainedAtMaxZ(Point p, int maxZ) {
+	private boolean isConstrainedAtMaxZ(SimplePoint3D p, int maxZ) {
 		return p.getVolumeAtMaxZ(maxZ) < minVolumeLimit;
 	}
 
-	private boolean canMoveY(Point p, int yy) {
+	private boolean canMoveY(SimplePoint3D p, int yy) {
 		if(p.getMaxY() < yy) {
 			return false;
 		}
 		return !isConstraintedAtY(p, yy);
 	}
 
-	private boolean isConstraintedAtY(Point p, int yy) {
+	private boolean isConstraintedAtY(SimplePoint3D p, int yy) {
 		long areaAtY = p.getAreaAtY(yy);
 		if(areaAtY >= minAreaLimit) {
 			return false;
@@ -828,7 +823,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	private void filterMinimums() {
 		boolean flagged = false;
 		for (int i = 0; i < values.size(); i++) {
-			Point p = values.get(i);
+			SimplePoint3D p = values.get(i);
 
 			if(p.getVolume() < minVolumeLimit || p.getArea() < minAreaLimit) {
 				values.flag(i);
@@ -862,7 +857,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		int size = values.size();
 
 		added: for (int i = 0; i < limit; i++) {
-			Point unsorted = values.get(i);
+			SimplePoint3D unsorted = values.get(i);
 
 			// check if one of the existing values contains the new value
 			for (int index = limit; index < size; index++) {
@@ -870,7 +865,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					continue;
 				}
 
-				Point sorted = values.get(index);
+				SimplePoint3D sorted = values.get(index);
 				if(sorted.getMinX() > unsorted.getMinX()) {
 					// so sorted cannot contain unsorted
 					// at this index or later
@@ -1244,7 +1239,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
-						Point point3d = values.get(j);
+						SimplePoint3D point3d = values.get(j);
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
@@ -1260,7 +1255,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					if(splitXX) {
 						// is the point now eclipsed by new points?
 						for (int j = startAddXX; j < addedXX.size(); j++) {
-							Point point3d = addedXX.get(j);
+							SimplePoint3D point3d = addedXX.get(j);
 
 							if(point3d.getVolume() >= point.getVolume()) {
 								if(point3d.eclipses(point)) {
@@ -1289,7 +1284,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
-						Point point3d = values.get(j);
+						SimplePoint3D point3d = values.get(j);
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
@@ -1305,7 +1300,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					if(splitYY) {
 						// is the point now eclipsed by new points?
 						for (int j = startAddYY; j < addedYY.size(); j++) {
-							Point point3d = addedYY.get(j);
+							SimplePoint3D point3d = addedYY.get(j);
 
 							if(point3d.getVolume() >= point.getVolume()) {
 								if(point3d.eclipses(point)) {
@@ -1335,7 +1330,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
-						Point point3d = values.get(j);
+						SimplePoint3D point3d = values.get(j);
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
@@ -1351,7 +1346,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					if(splitZZ) {
 						// is the point now eclipsed by new points?
 						for (int j = startAddZZ; j < addedZZ.size(); j++) {
-							Point point3d = addedZZ.get(j);
+							SimplePoint3D point3d = addedZZ.get(j);
 
 							if(point3d.getVolume() >= point.getVolume()) {
 								if(point3d.eclipses(point)) {
@@ -1447,7 +1442,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	public int getMinY() {
 		int min = 0;
 		for (int i = 1; i < values.size(); i++) {
-			Point point = values.get(i);
+			SimplePoint3D point = values.get(i);
 
 			if(point.getMinY() < values.get(min).getMinY()) {
 				min = i;
@@ -1459,7 +1454,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	public int getMinX() {
 		int min = 0;
 		for (int i = 1; i < values.size(); i++) {
-			Point point = values.get(i);
+			SimplePoint3D point = values.get(i);
 
 			if(point.getMinX() < values.get(min).getMinX()) {
 				min = i;
@@ -1471,7 +1466,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	public int getMinZ() {
 		int min = 0;
 		for (int i = 1; i < values.size(); i++) {
-			Point point2d = values.get(i);
+			SimplePoint3D point2d = values.get(i);
 
 			if(point2d.getMinZ() < values.get(min).getMinZ()) {
 				min = i;
@@ -1482,7 +1477,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	public int get(int x, int y, int z) {
 		for (int i = 0; i < values.size(); i++) {
-			Point point = values.get(i);
+			SimplePoint3D point = values.get(i);
 
 			if(point.getMinX() == x && point.getMinY() == y && point.getMinZ() == z) {
 				return i;
@@ -1498,7 +1493,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	public long getMaxArea() {
 		long maxPointArea = -1L;
 		for (int i = 0; i < values.size(); i++) {
-			Point point = values.get(i);
+			SimplePoint3D point = values.get(i);
 			if(maxPointArea < point.getArea()) {
 				maxPointArea = point.getArea();
 			}
@@ -1588,7 +1583,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	public int findPoint(int x, int y, int z) {
 		for (int i = 0; i < values.size(); i++) {
-			Point point = values.get(i);
+			SimplePoint3D point = values.get(i);
 			if(point.getMinX() == x && point.getMinY() == y && point.getMinZ() == z) {
 				return i;
 			}
@@ -1695,10 +1690,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		while (low <= high) {
 			int mid = (low + high) >>> 1;
 
-			// 0 if x == y
-			// -1 if x < y
-			// 1 if x > y
-
 			int midVal = values.get(mid).getMinX();
 
 			if(midVal < key) {
@@ -1712,7 +1703,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					return mid;
 				}
 				
-				int compare = Point.COMPARATOR_X_THEN_Y_THEN_Z.compare(point, simplePoint3D);
+				int compare = SimplePoint3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(point, simplePoint3D);
 				if(compare <= 0) {
 					// check below
 					do {

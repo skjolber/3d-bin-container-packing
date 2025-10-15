@@ -103,8 +103,24 @@ public class Point3DList {
 		return points;
 	}
 
-	public void sort(Comparator<Point> comparator) {
+	public void sort(Comparator<SimplePoint3D> comparator) {
 		Arrays.sort(points, 0, size, comparator);
+	}
+	
+	public void insertionSort(Comparator<SimplePoint3D> comparator) {
+        int n = size;
+        for (int i = 1; i < n; i++) { // Start from the second element
+            SimplePoint3D key = points[i]; // Element to be inserted
+            int j = i - 1;
+
+            // Move elements of arr[0..i-1], that are greater than key,
+            // to one position ahead of their current position
+            while (j >= 0 && comparator.compare(points[j], key) > 0) {
+            	points[j + 1] = points[j];
+                j--;
+            }
+            points[j + 1] = key; // Place key at its correct position
+        }
 	}
 
 }

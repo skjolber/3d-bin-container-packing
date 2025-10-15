@@ -9,7 +9,6 @@ public class CustomIntYComparator implements IntComparator {
 	private static final long serialVersionUID = 1L;
 
 	private Point3DFlagList values;
-	private int yy;
 
 	@Override
 	public int compare(int value1, int value2) {
@@ -28,15 +27,12 @@ public class CustomIntYComparator implements IntComparator {
 			return 1;
 		}
 
-		long volume1 = o1.getDx() * o1.getDz() * (o1.getMaxY() - yy + 1L);
-		long volume2 = o2.getDx() * o2.getDz() * (o2.getMaxY() - yy + 1L);
+		// not exact volume, but good enough for comparison
+		long volume1 = o1.getDx() * o1.getDz() * o1.getMaxY();
+		long volume2 = o2.getDx() * o2.getDz() * o2.getMaxY();
 
 		// inline -Long.compare(volume1, volume2)
 		return (volume2 < volume1) ? -1 : ((volume2 == volume1) ? 0 : 1);
-	}
-
-	public void setYy(int yy) {
-		this.yy = yy;
 	}
 
 	public void setValues(Point3DFlagList values) {
