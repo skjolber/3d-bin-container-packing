@@ -243,4 +243,154 @@ public class Point2DFlagList implements Iterable<Point> {
 		return clone;
 	}
 
+
+	public int binarySearchPlusMinX(int minIndex, int key) {
+		return binarySearchPlusMinX(points, minIndex, size, key);
+	}
+	
+	public static int binarySearchPlusMinX(SimplePoint2D[] points, int low, int size, int key) {
+		// return exclusive result
+
+		int high = size - 1;
+
+		while (low <= high) {
+			int mid = (low + high) >>> 1;
+
+			int midVal = points[mid].getMinX();
+
+			if(midVal < key) {
+				low = mid + 1;
+			} else if(midVal != key) {
+				high = mid - 1;
+			} else {
+				// key found
+				do {
+					mid++;
+				} while (mid < size && points[mid].getMinX() == key);
+
+				return mid;
+			}
+		}
+		// key not found
+		return low;
+	}
+
+	public int getIndex(Point point, int minIndex) {
+		// return inclusive result
+		
+		int key = point.getMinX();
+
+		int high = size - 1;
+
+		while (minIndex <= high) {
+			int mid = (minIndex + high) >>> 1;
+
+			int midVal = points[mid].getMinX();
+
+			if(midVal < key) {
+				minIndex = mid + 1;
+			} else if(midVal != key) {
+				high = mid - 1;
+			} else {
+				// key found
+				SimplePoint2D simplePoint3D = points[mid];
+				if(simplePoint3D == point) {
+					return mid;
+				}
+				
+				int compare = SimplePoint2D.COMPARATOR_X_THEN_Y_THEN_Z.compare(point, simplePoint3D);
+				if(compare <= 0) {
+					// check below
+					do {
+						mid--;
+						if(mid < 0) {
+							throw new IllegalStateException("Cannot locate point " + point);
+						}
+						if(points[mid] == point) {
+							return mid;
+						}
+					} while(true);
+				}  
+					
+				if(compare >= 0) {
+					// check above
+					do {
+						mid++;
+						if(mid == size) {
+							throw new IllegalStateException("Cannot locate point " + point);
+						}
+						if(points[mid] == point) {
+							return mid;
+						}
+					} while(true);
+				}
+				
+				throw new IllegalStateException("Cannot locate point " + point);
+			}
+		}
+		// key not found
+		throw new IllegalStateException("Cannot locate point " + point);
+	}
+
+	public int binarySearchMinusMinX(int minIndex, int key) {
+		return binarySearchMinusMinX(points, minIndex, size, key);
+	}
+	
+	public static int binarySearchMinusMinX(SimplePoint2D[] points, int low, int size, int key) {
+		// return inclusive result
+		
+		int high = size - 1;
+
+		while (low <= high) {
+			int mid = (low + high) >>> 1;
+
+			int midVal = points[mid].getMinX();
+
+			if(midVal < key) {
+				low = mid + 1;
+			} else if(midVal != key) {
+				high = mid - 1;
+			} else {
+				// key found
+				while (mid > 0 && points[mid - 1].getMinX() == key) {
+					mid--;
+				}
+
+				return mid;
+			}
+		}
+		// key not found
+		return low;
+	}
+
+	public int binarySearchPlusMinY(int minIndex, int key) {
+		return binarySearchPlusMinY(points, minIndex, size, key);
+	}
+	
+	public static int binarySearchPlusMinY(SimplePoint2D[] points, int low, int size, int key) {
+		// return exclusive result
+
+		int high = size - 1;
+
+		while (low <= high) {
+			int mid = (low + high) >>> 1;
+
+			int midVal = points[mid].getMinY();
+
+			if(midVal < key) {
+				low = mid + 1;
+			} else if(midVal != key) {
+				high = mid - 1;
+			} else {
+				// key found
+				do {
+					mid++;
+				} while (mid < size && points[mid].getMinY() == key);
+
+				return mid;
+			}
+		}
+		// key not found
+		return low;
+	}
 }

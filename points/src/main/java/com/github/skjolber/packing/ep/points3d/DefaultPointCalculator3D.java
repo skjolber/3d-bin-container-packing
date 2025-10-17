@@ -174,7 +174,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		// determine start and end index based on previous sort (in x direction)
 		//
 
-		// must be to the right of the current index, so set it as a minimum
+		// must be to the right of the current index, so set its first sibling as a minimum
 		int endIndex = values.binarySearchPlusMinX(index + 1, placement.getAbsoluteEndX());
 
 		int pointIndex;
