@@ -90,7 +90,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 	public boolean add(Point point, Placement placement) {
 		if(point.getIndex() == -1) {
-			return add(binarySearch(point, 0), placement);
+			return add(values.getIndex(point, 0), placement);
 		} 
 		return add(point.getIndex(), placement);
 	}
@@ -108,7 +108,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			
 			// TODO point index is probably close to filtered index if no too many items have been filtered
 			
-			return add(binarySearch(point, filteredIndex), placement);
+			return add(values.getIndex(point, filteredIndex), placement);
 		} 
 		return add(point.getIndex(), placement);
 	}	
@@ -214,7 +214,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		} else {
 			pointIndex = 0;
 		}
-		int endIndex = binarySearchPlusMinX(placement.getAbsoluteEndX());
+		int endIndex = values.binarySearchPlusMinX(index + 1, placement.getAbsoluteEndX());
 
 		for (int i = pointIndex; i < endIndex; i++) {
 			Point2D point = values.get(i);
@@ -1056,76 +1056,6 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		return -1;
 	}
 
-	public int binarySearchPlusMinX(int key) {
-		// return exclusive result
-
-		int low = 0;
-		int high = values.size() - 1;
-
-		while (low <= high) {
-			int mid = (low + high) >>> 1;
-
-			// 0 if x == y
-			// -1 if x < y
-			// 1 if x > y
-
-			int midVal = values.get(mid).getMinX();
-
-			int cmp = Integer.compare(midVal, key);
-
-			if(cmp < 0) {
-				low = mid + 1;
-			} else if(cmp > 0) {
-				high = mid - 1;
-			} else {
-				// key found
-				do {
-					mid++;
-				} while (mid < values.size() && values.get(mid).getMinX() == key);
-
-				// so if there was multiple points at key, we are at the index of the last of them, plus one.
-
-				return mid;
-			}
-		}
-		// key not found
-		return low;
-	}
-
-	public int binarySearchMinusMinX(int key) {
-		// return inclusive result
-
-		int low = 0;
-		int high = values.size() - 1;
-
-		while (low <= high) {
-			int mid = (low + high) >>> 1;
-
-			// 0 if x == y
-			// -1 if x < y
-			// 1 if x > y
-
-			int midVal = values.get(mid).getMinX();
-
-			int cmp = Integer.compare(midVal, key);
-
-			if(cmp < 0) {
-				low = mid + 1;
-			} else if(cmp > 0) {
-				high = mid - 1;
-			} else {
-				// key found
-				while (mid > 0 && values.get(mid - 1).getMinX() == key) {
-					mid--;
-				}
-
-				return mid;
-			}
-		}
-		// key not found
-		return low;
-	}
-
 	public void setMinimumAreaLimit(long minArea) {
 		if(minAreaLimit != minArea) {
 			this.minAreaLimit = minArea;
@@ -1243,70 +1173,6 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		}
 	}
 
-
-	public int binarySearch(Point point, int low) {
-		// return inclusive result
-		
-		int key = point.getMinX();
-
-		int high = values.size() - 1;
-
-		while (low <= high) {
-			int mid = (low + high) >>> 1;
-
-			// 0 if x == y
-			// -1 if x < y
-			// 1 if x > y
-
-			int midVal = values.get(mid).getMinX();
-
-			int cmp = Integer.compare(midVal, key);
-
-			if(cmp < 0) {
-				low = mid + 1;
-			} else if(cmp > 0) {
-				high = mid - 1;
-			} else {
-				// key found
-				SimplePoint2D simplePoint = values.get(mid);
-				if(simplePoint == point) {
-					return mid;
-				}
-				
-				int compare = Point.COMPARATOR_X_THEN_Y.compare(point, simplePoint);
-				if(compare <= 0) {
-					// check below
-					do {
-						mid--;
-						if(mid < 0) {
-							throw new IllegalStateException("Cannot locate point " + point);
-						}
-						if(values.get(mid) == point) {
-							return mid;
-						}
-					} while(true);
-				}  
-					
-				if(compare >= 0) {
-					// check above
-					do {
-						mid++;
-						if(mid == values.size()) {
-							throw new IllegalStateException("Cannot locate point " + point);
-						}
-						if(values.get(mid) == point) {
-							return mid;
-						}
-					} while(true);
-				}
-				
-				throw new IllegalStateException("Cannot locate point " + point);
-			}
-		}
-		// key not found
-		return low;
-	}
-	
 	protected void updateIndexes(Point2DFlagList values) {
 		for(int i = 0; i < values.size(); i++) {
 			SimplePoint2D p = values.get(i);

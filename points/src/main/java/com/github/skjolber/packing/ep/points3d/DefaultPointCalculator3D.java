@@ -91,7 +91,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	
 	public boolean add(Point point, Placement placement) {
 		if(point.getIndex() == -1) {
-			return add(binarySearch(point, 0), placement);
+			return add(values.getIndex(point, 0), placement);
 		} 
 		return add(point.getIndex(), placement);
 	}
@@ -109,7 +109,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			
 			// TODO point index is probably close to filtered index if no too many items have been filtered
 			
-			return add(binarySearch(point, filteredIndex), placement);
+			return add(values.getIndex(point, filteredIndex), placement);
 		} 
 		return add(point.getIndex(), placement);
 	}
@@ -174,8 +174,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		// determine start and end index based on previous sort (in x direction)
 		//
 
-		// must be to the right of the current index, so set it as a minimum
-		int endIndex = binarySearchPlusMinX(values, index, placement.getAbsoluteEndX());
+		// must be to the right of the current index, so set its first sibling as a minimum
+		int endIndex = values.binarySearchPlusMinX(index + 1, placement.getAbsoluteEndX());
 
 		int pointIndex;
 		if(supportedYZPlane) {
@@ -1589,152 +1589,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			}
 		}
 		return -1;
-	}
-
-	public int binarySearchPlusMinY(int key) {
-		// return exclusive result
-
-		Point3DFlagList values = this.values;
-
-		int low = 0;
-		int high = values.size() - 1;
-
-		while (low <= high) {
-			int mid = (low + high) >>> 1;
-
-			int midVal = values.get(mid).getMinY();
-
-			if(midVal < key) {
-				low = mid + 1;
-			} else if(midVal != key) {
-				high = mid - 1;
-			} else {
-				// key found
-				do {
-					mid++;
-				} while (mid < values.size() && values.get(mid).getMinY() == key);
-
-				return mid;
-			}
-		}
-		// key not found
-		return low;
-	}
-
-	public static int binarySearchPlusMinX(Point3DFlagList values, int low, int key) {
-		// return exclusive result
-
-		int high = values.size() - 1;
-
-		while (low <= high) {
-			int mid = (low + high) >>> 1;
-
-			int midVal = values.get(mid).getMinX();
-
-			if(midVal < key) {
-				low = mid + 1;
-			} else if(midVal != key) {
-				high = mid - 1;
-			} else {
-				// key found
-				do {
-					mid++;
-				} while (mid < values.size() && values.get(mid).getMinX() == key);
-
-				return mid;
-			}
-		}
-		// key not found
-		return low;
-	}
-
-	public int binarySearchMinusMinX(int key) {
-		// return inclusive result
-
-		Point3DFlagList values = this.values;
-		
-		int low = 0;
-		int high = values.size() - 1;
-
-		while (low <= high) {
-			int mid = (low + high) >>> 1;
-
-			int midVal = values.get(mid).getMinX();
-
-			if(midVal < key) {
-				low = mid + 1;
-			} else if(midVal != key) {
-				high = mid - 1;
-			} else {
-				// key found
-				while (mid > 0 && values.get(mid - 1).getMinX() == key) {
-					mid--;
-				}
-
-				return mid;
-			}
-		}
-		// key not found
-		return low;
-	}
-	
-	public int binarySearch(Point point, int low) {
-		// return inclusive result
-		
-		Point3DFlagList values = this.values;
-
-		int key = point.getMinX();
-
-		int high = values.size() - 1;
-
-		while (low <= high) {
-			int mid = (low + high) >>> 1;
-
-			int midVal = values.get(mid).getMinX();
-
-			if(midVal < key) {
-				low = mid + 1;
-			} else if(midVal != key) {
-				high = mid - 1;
-			} else {
-				// key found
-				SimplePoint3D simplePoint3D = values.get(mid);
-				if(simplePoint3D == point) {
-					return mid;
-				}
-				
-				int compare = SimplePoint3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(point, simplePoint3D);
-				if(compare <= 0) {
-					// check below
-					do {
-						mid--;
-						if(mid < 0) {
-							throw new IllegalStateException("Cannot locate point " + point);
-						}
-						if(values.get(mid) == point) {
-							return mid;
-						}
-					} while(true);
-				}  
-					
-				if(compare >= 0) {
-					// check above
-					do {
-						mid++;
-						if(mid == values.size()) {
-							throw new IllegalStateException("Cannot locate point " + point);
-						}
-						if(values.get(mid) == point) {
-							return mid;
-						}
-					} while(true);
-				}
-				
-				throw new IllegalStateException("Cannot locate point " + point);
-			}
-		}
-		// key not found
-		return low;
 	}
 
 	public void setMinimumAreaAndVolumeLimit(long area, long volume) {
