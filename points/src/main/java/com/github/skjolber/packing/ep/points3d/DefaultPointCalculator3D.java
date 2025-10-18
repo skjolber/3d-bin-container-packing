@@ -6,14 +6,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
-import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
-import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
-
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.point.PointCalculator;
+import com.github.skjolber.packing.ep.PlacementList;
 import com.github.skjolber.packing.api.point.Point;
 
 /**
@@ -35,7 +33,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	protected Point3DFlagList values = new Point3DFlagList(); // i.e. current (input) values
 	protected Point3DFlagList otherValues = new Point3DFlagList(); // i.e. next (output) values
 
-	protected ArrayList<Placement> placements = new ArrayList<>();
+	protected PlacementList placements;
 
 	// reuse working variables
 	protected final Point3DListArray addXX = new Point3DListArray();
@@ -66,12 +64,20 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	
 	protected List<SimplePoint3D> initialPoints = Collections.emptyList();
 
-	public DefaultPointCalculator3D() {
-		this(false);
-	}
-
-	public DefaultPointCalculator3D(boolean immutablePoints) {
+	public DefaultPointCalculator3D(boolean immutablePoints, BoxItemSource boxItemSource) {
 		this.immutablePoints = immutablePoints;
+		
+		int count = 0;
+		for(int i = 0; i < boxItemSource.size(); i++) {
+			count += boxItemSource.get(i).getCount();
+		}
+		
+		this.placements = new PlacementList(count);
+	}
+	
+	public DefaultPointCalculator3D(boolean immutablePoints, int capacity) {
+		this.immutablePoints = immutablePoints;
+		this.placements = new PlacementList(capacity);
 	}
 
 	public void setSize(int dx, int dy, int dz) {
@@ -495,6 +501,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 			if(!values.isFlag(i)) {
 				otherValues.add(values.get(i));
+			} else {
+				// clear flag here so we dont have to reset later
+				values.unflag(i);
 			}
 
 			SimplePoint3D constrainXXPoint = constrainXX.get(i);
@@ -565,6 +574,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 			if(!values.isFlag(i)) {
 				otherValues.add(values.get(i));
+			} else {
+				// clear flag here so we dont have to reset later
+				values.unflag(i);
 			}
 		}
 
@@ -635,7 +647,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		// this saves a good bit of cleanup
 		this.values = otherValues;
 
-		values.clear();
+		// note: assumes already reset flags 
+		values.setSize(0);
 		this.otherValues = values;
 	}
 
@@ -1420,7 +1433,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	public List<Placement> getPlacements() {
-		return placements;
+		return placements.toList();
 	}
 
 	public SimplePoint3D get(int i) {
@@ -1623,7 +1636,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	public long calculateUsedVolume() {
 		long used = 0;
-		for (Placement stackPlacement : placements) {
+		for(int i = 0; i < placements.size(); i++) {
+			Placement stackPlacement = placements.get(i);
+			
 			used += stackPlacement.getStackValue().getBox().getVolume();
 		}
 		return used;
@@ -1631,7 +1646,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	
 	public long calculateUsedWeight() {
 		long used = 0;
-		for (Placement stackPlacement : placements) {
+		for(int i = 0; i < placements.size(); i++) {
+			Placement stackPlacement = placements.get(i);
+			
 			used += stackPlacement.getStackValue().getBox().getWeight();
 		}
 		return used;

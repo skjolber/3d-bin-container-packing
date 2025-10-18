@@ -16,7 +16,7 @@ public class MarkResetPointCalculator2DTest {
 
 	@Test
 	public void testMarkReset() {
-		MarkResetPointCalculator2D ep = new MarkResetPointCalculator2D();
+		MarkResetPointCalculator2D ep = new MarkResetPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 

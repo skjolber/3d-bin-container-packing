@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
@@ -72,7 +73,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 	}
 
 	@Override
-	protected PointCalculator createPointCalculator() {
-		return new DefaultPointCalculator2D();
+	protected PointCalculator createPointCalculator(BoxItemSource source) {
+		return new DefaultPointCalculator2D(false, source);
 	}
 }

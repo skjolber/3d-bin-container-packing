@@ -25,7 +25,7 @@ import com.github.skjolber.packing.packer.AbstractPackager;
 @Fork(value = 1, warmups = 1, jvmArgsPrepend = "-XX:-RestrictContended")
 @Warmup(iterations = 1, time = 15, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.Throughput)
-@Measurement(iterations = 1, time = 30, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 1, time = 120, timeUnit = TimeUnit.SECONDS)
 public class BouwkampCodeBruteForcePackagerBenchmark {
 
 	@Benchmark

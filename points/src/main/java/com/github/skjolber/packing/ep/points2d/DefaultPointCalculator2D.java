@@ -16,6 +16,7 @@ import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
+import com.github.skjolber.packing.ep.PlacementList;
 
 /**
  * 
@@ -38,7 +39,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	protected int containerMaxZ;
 
 	protected Point2DFlagList values = new Point2DFlagList();
-	protected ArrayList<Placement> placements = new ArrayList<>();
+	protected PlacementList placements;
 
 	// reuse working variables
 	protected final Point2DList addXX = new Point2DList();
@@ -62,13 +63,21 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	private IntComparator COMPARATOR_MOVE_TO_XX = (a, b) -> {
 		return Point2D.COMPARATOR_MOVE_XX.compare(values.get(a), values.get(b));
 	};
-
-	public DefaultPointCalculator2D() {
-		this(false);
+	
+	public DefaultPointCalculator2D(boolean immutablePoints, BoxItemSource boxItemSource) {
+		this.cloneOnConstrain = immutablePoints;
+		
+		int count = 0;
+		for(int i = 0; i < boxItemSource.size(); i++) {
+			count += boxItemSource.get(i).getCount();
+		}
+		
+		this.placements = new PlacementList(count);
 	}
 
-	public DefaultPointCalculator2D(boolean immutablePoints) {
+	public DefaultPointCalculator2D(boolean immutablePoints, int capacity) {
 		this.cloneOnConstrain = immutablePoints;
+		this.placements = new PlacementList(capacity);
 	}	
 
 	@SuppressWarnings("unchecked")
@@ -981,7 +990,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	}
 
 	public List<Placement> getPlacements() {
-		return placements;
+		return placements.toList();
 	}
 
 	public SimplePoint2D get(int i) {
@@ -1128,7 +1137,8 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 	public long calculateUsedVolume() {
 		long used = 0;
-		for (Placement stackPlacement : placements) {
+		for(int i = 0; i < placements.size(); i++) {
+			Placement stackPlacement = placements.get(i);
 			used += stackPlacement.getStackValue().getBox().getVolume();
 		}
 		return used;
@@ -1136,7 +1146,8 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	
 	public long calculateUsedWeight() {
 		long used = 0;
-		for (Placement stackPlacement : placements) {
+		for(int i = 0; i < placements.size(); i++) {
+			Placement stackPlacement = placements.get(i);
 			used += stackPlacement.getStackValue().getBox().getWeight();
 		}
 		return used;

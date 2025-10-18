@@ -25,7 +25,7 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 	private List<StackItem> stackItems;
 
 	public FastPointCalculator3DStack(int capacity) {
-		super(true);
+		super(true, capacity);
 
 		stackItems = new ArrayList<StackItem>(capacity);
 		for (int i = 0; i < capacity; i++) {
@@ -68,9 +68,7 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		if(stackSize != size) {
 			stackSize = size;
 
-			while (size < placements.size()) {
-				placements.remove(placements.size() - 1);
-			}
+			placements.setSize(size);
 
 			reload();
 		}

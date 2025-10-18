@@ -1,8 +1,7 @@
 package com.github.skjolber.packing.ep.points2d;
 
-import java.util.ArrayList;
-
-import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.ep.PlacementList;
 
 public class MarkResetPointCalculator2D extends DefaultPointCalculator2D {
 
@@ -10,22 +9,22 @@ public class MarkResetPointCalculator2D extends DefaultPointCalculator2D {
 
 	protected Point2DFlagList markValues = new Point2DFlagList(); // i.e. current (input) values
 
-	protected ArrayList<Placement> markPlacements = new ArrayList<>();
+	protected PlacementList markPlacements;
 	
-	public MarkResetPointCalculator2D(boolean cloneOnConstrain) {
-		super(cloneOnConstrain);
+	public MarkResetPointCalculator2D(boolean cloneOnConstrain, int capacity) {
+		super(cloneOnConstrain, capacity);
+	}
+	
+	public MarkResetPointCalculator2D(boolean immutablePoints, BoxItemSource boxItemSource) {
+		super(immutablePoints, boxItemSource);
 	}
 
-	public MarkResetPointCalculator2D() {
-		this(false);
-	}
-	
 	public void mark() {
 		this.markValues = values.clone(cloneOnConstrain);
 		
 		this.markMinAreaLimit = minAreaLimit;
 		
-		this.markPlacements = new ArrayList<>(placements);
+		this.markPlacements = new PlacementList(placements);
 	}
 	
 	public void reset() {

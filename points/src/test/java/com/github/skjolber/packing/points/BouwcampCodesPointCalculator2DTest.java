@@ -23,7 +23,7 @@ public class BouwcampCodesPointCalculator2DTest {
 		for (BouwkampCodes c : codesForCount) {
 			for (BouwkampCode bkpLine : c.getCodes()) {
 				System.out.println(c.getSource() + " " + bkpLine.getName());
-				ValidatingPointCalculator2D calculator = new ValidatingPointCalculator2D();
+				ValidatingPointCalculator2D calculator = new ValidatingPointCalculator2D(false, bkpLine.getOrder());
 				converter.convert2D(bkpLine, 1, calculator);
 				assertEquals(c.getSource() + " " + bkpLine.getName(), 0, calculator.size());
 			}
