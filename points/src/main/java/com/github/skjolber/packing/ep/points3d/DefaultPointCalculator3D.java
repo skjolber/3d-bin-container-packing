@@ -1654,6 +1654,18 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		return used;
 	}
 
+	public long calculateMaxVolume() {
+		long volume = 0;
+		for(int i = 0; i < values.size(); i++) {
+			SimplePoint3D point = values.get(i);
+			
+			if(point.getVolume() > volume) {
+				volume = point.getVolume();
+			}
+		}
+		return volume;
+	}
+
 	@Override
 	public Iterator<Point> iterator() {
 		for (Point point : values) {

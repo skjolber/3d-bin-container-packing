@@ -142,6 +142,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		private PointCalculator3DStack pointCalculator;
 		private PackagerInterruptSupplier interrupt;
 		private int containerIndex;
+		private boolean abortOnAnyBoxTooBig;
 
 		public RunnableAdapter(int placementsCount, int maxIteratorLength, long minStackableItemVolume, long minStackableArea) {
 			this.placements = getPlacements(placementsCount);
@@ -165,10 +166,14 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		public void setInterrupt(PackagerInterruptSupplier interrupt) {
 			this.interrupt = interrupt;
 		}
+		
+		public void setAbortOnAnyBoxTooBig(boolean abortOnAnyBoxTooBig) {
+			this.abortOnAnyBoxTooBig = abortOnAnyBoxTooBig;
+		}
 
 		@Override
 		public BruteForceIntermediatePackagerResult call() throws PackagerInterruptedException {
-			return ParallelBoxItemBruteForcePackager.this.pack(pointCalculator, placements, containerItem, containerIndex, iterator, interrupt);
+			return ParallelBoxItemBruteForcePackager.this.pack(pointCalculator, placements, containerItem, containerIndex, iterator, abortOnAnyBoxTooBig, interrupt);
 		}
 	}
 
@@ -207,6 +212,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
 				for (int j = 0; j < runnables.length; j++) {
 					RunnableAdapter runnableAdapter = runnables[j];
+					runnableAdapter.setAbortOnAnyBoxTooBig(abortOnAnyBoxTooBig);
 					
 					ControlledContainerItem containerItem = getContainerItem(i);
 					
@@ -272,7 +278,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			
 			// no need to split this job
 			// run with linear approach
-			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, containerItem, i, iterators[i],
+			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, containerItem, i, iterators[i], abortOnAnyBoxTooBig,
 					interrupts[i]);
 		}
 
@@ -436,7 +442,13 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			
 			// no need to split this job
 			// run with linear approach
-			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, containerItem, i, iterators[i],
+			return ParallelBoxItemBruteForcePackager.this.pack(
+					runnables[0].pointCalculator, 
+					runnables[0].placements, 
+					containerItem, 
+					i, 
+					iterators[i],
+					abortOnAnyBoxTooBig,
 					interrupts[i]);
 		}
 

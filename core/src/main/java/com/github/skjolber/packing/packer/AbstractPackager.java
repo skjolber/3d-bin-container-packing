@@ -74,6 +74,8 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 
 					P result = adapter.attempt(nextContainerItemIndex, bestResult, true);
 					if(result.getStack().size() == adapter.countRemainingBoxes()) {
+						// managed to package the remaining boxes, but we can still do better
+						// by packaging in a smaller container
 						results[nextContainerItemIndex] = result;
 
 						iterator.lower();

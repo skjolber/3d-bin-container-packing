@@ -129,7 +129,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 	}
 
 	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, List<Placement> stackPlacements, ControlledContainerItem containerItem, int index,
-			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+			BoxItemPermutationRotationIterator iterator, boolean abortOnAnyBoxTooBig, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 
 		Container holder = containerItem.getContainer().clone();
 		
@@ -171,6 +171,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 				// i.e. if we have four boxes, and two boxes could be placed with the
 				// current rotations, and the new rotation only changes the rotation of box 4,
 				// then we know that attempting to stack again will not work
+				// since box 1, 2 and 3 are still the same as in the previous permutation.
 
 				int rotationIndex = iterator.nextRotation(points.size());
 
@@ -254,9 +255,14 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 		}
 		BoxStackValue stackValue = rotator.getStackValue(placementIndex);
 
+		// TODO move this check and do not return null
 		if(stackValue.getBox().getWeight() > maxLoadWeight) {
 			return null;
 		}
+		
+		// TODO check remaining box size volumes against max point volume
+		// if we are required to fit all boxes
+		// and space is getting slim (i.e. 75% etc)
 
 		Placement placement = placements.get(placementIndex);
 
@@ -304,6 +310,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteF
 
 				nextMinStackableAreaIndex = minStackableAreaIndex;
 			}
+			
+			// TODO abortOnAnyBoxTooBig: is there still space to pack the largest box item
+			// or can we just give up here already?
 
 			List<Point> points = packStackPlacement(
 					pointCalculatorStack, 

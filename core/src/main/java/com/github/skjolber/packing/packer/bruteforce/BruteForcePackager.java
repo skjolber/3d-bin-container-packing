@@ -76,7 +76,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
+			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], abortOnAnyBoxTooBig, interrupt);
 		}
 		
 	}
@@ -99,7 +99,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
+			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], abortOnAnyBoxTooBig, interrupt);
 		}
 		
 	}
