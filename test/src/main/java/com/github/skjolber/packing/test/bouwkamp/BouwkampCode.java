@@ -50,7 +50,7 @@ public class BouwkampCode implements Comparable<BouwkampCode>{
 	public int getOrder() {
 		int order = 0;
 		for (BouwkampCodeLine bouwkampCodeLine : lines) {
-			order += bouwkampCodeLine.getSquares().size();
+			order += bouwkampCodeLine.size();
 		}
 		return order;
 	}

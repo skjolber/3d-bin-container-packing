@@ -54,7 +54,7 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 
 			Stack stack = inputContainer.getStack();
 
-			DefaultPointCalculator3D pointCalculator = new DefaultPointCalculator3D(true);
+			DefaultPointCalculator3D pointCalculator = new DefaultPointCalculator3D(true, stack.getPlacements().size());
 			pointCalculator.clearToSize(inputContainer.getDx(), inputContainer.getDy(), inputContainer.getDz());
 			
 			for (Placement placement : stack.getPlacements()) {

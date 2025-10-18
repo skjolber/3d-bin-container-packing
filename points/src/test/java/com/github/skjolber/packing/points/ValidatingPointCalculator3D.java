@@ -1,13 +1,18 @@
 package com.github.skjolber.packing.points;
 
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 
 public class ValidatingPointCalculator3D extends DefaultPointCalculator3D {
 
-	public ValidatingPointCalculator3D() {
-		super();
+	public ValidatingPointCalculator3D(boolean immutablePoints, int capacity) {
+		super(immutablePoints, capacity);
+	}
+	
+	public ValidatingPointCalculator3D(boolean immutablePoints, BoxItemSource boxItemSource) {
+		super(immutablePoints, boxItemSource);
 	}
 
 	@Override
@@ -19,7 +24,8 @@ public class ValidatingPointCalculator3D extends DefaultPointCalculator3D {
 
 	private void validate(Placement target) {
 
-		for (Placement p : placements) {
+		for(int k = 0; k < placements.size(); k++) {
+			Placement p = placements.get(k);
 			for (int i = 0; i < values.size(); i++) {
 				Point point = values.get(i);
 

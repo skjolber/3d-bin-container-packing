@@ -743,7 +743,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	
 	@Test
 	void testStackingSquaresOnSquareWithPredefinedPoints() {
-		DefaultPointCalculator3D calculator = new DefaultPointCalculator3D();
+		DefaultPointCalculator3D calculator = new DefaultPointCalculator3D(false, 16);
 		calculator.clearToSize(2, 2, 1);
 		Box box = Box.newBuilder().withDescription("0").withSize(1, 1, 1).withWeight(1).build();
 		Placement pillar = new Placement(box.getStackValue(0), calculator.get(0));

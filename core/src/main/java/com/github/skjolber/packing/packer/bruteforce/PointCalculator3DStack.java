@@ -5,15 +5,16 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.ep.PlacementList;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
 
 public class PointCalculator3DStack extends DefaultPointCalculator3D {
 
 	protected static class StackItem {
+		
 		protected Point3DFlagList values = new Point3DFlagList();
 		protected Point3DFlagList otherValues = new Point3DFlagList();
-		protected ArrayList<Placement> placements = new ArrayList<>();
 		protected Placement stackPlacement = new Placement();
 		protected Point point;
 		protected long minVolumeLimit;
@@ -24,7 +25,7 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 	protected int stackIndex = 0;
 
 	public PointCalculator3DStack(int maxStackDepth) {
-		super(true);
+		super(true, maxStackDepth);
 
 		for (int i = 0; i < maxStackDepth; i++) {
 			stackItems.add(new StackItem());
@@ -55,16 +56,12 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		// clone current state
 		// make sure to overwrite everything, no clear is performed
 		nextStackItem.point = null;
-		nextStackItem.placements.clear();
-
-		nextStackItem.placements.addAll(currentStackItem.placements);
 		nextStackItem.values.copyFrom(currentStackItem.values);
 		nextStackItem.otherValues.copyFrom(currentStackItem.otherValues);
 
 		// set the current stack item as working variables
 		this.values = nextStackItem.values;
 		this.otherValues = nextStackItem.otherValues;
-		this.placements = nextStackItem.placements;
 
 		return nextStackItem.stackPlacement;
 	}
@@ -79,9 +76,8 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 
 		StackItem nextStackItem = stackItems.get(stackIndex);
 		nextStackItem.point = null;
-		nextStackItem.placements.clear();
-
-		nextStackItem.placements.addAll(currentStackItem.placements);
+		
+		placements.setSize(stackIndex);
 
 		nextStackItem.values.copyFrom(currentStackItem.values);
 		nextStackItem.otherValues.copyFrom(currentStackItem.otherValues);
@@ -98,9 +94,10 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 
 		this.values = stackItem.values;
 		this.otherValues = stackItem.otherValues;
-		this.placements = stackItem.placements;
 		this.minAreaLimit = stackItem.minAreaLimit;
 		this.minVolumeLimit = stackItem.minVolumeLimit;
+		
+		placements.setSize(stackIndex);
 	}
 
 	public List<Point> getPoints() {
@@ -113,27 +110,20 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		return list;
 	}
 
-	public List<Placement> getStackPlacement() {
-		List<Placement> list = new ArrayList<>(stackIndex);
-		for (StackItem stackItem : stackItems) {
-			list.add(stackItem.stackPlacement);
-		}
-		return list;
-	}
-
 	public void reset(int dx, int dy, int dz) {
 		setSize(dx, dy, dz);
 
 		stackIndex = 0;
 		StackItem stackItem = stackItems.get(stackIndex);
 
-		stackItem.placements.clear();
 		stackItem.values.clear();
 		stackItem.otherValues.clear();
 		stackItem.point = null;
 
 		stackItem.values.add(createContainerPoint());
 
+		placements.setSize(0);
+		
 		loadCurrent();
 	}
 

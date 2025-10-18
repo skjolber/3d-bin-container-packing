@@ -55,7 +55,7 @@ public class Points3DState {
 
 		Points3DEntries extremePointsEntries = new Points3DEntries();
 
-		DefaultPointCalculator3D points = new DefaultPointCalculator3D() {
+		DefaultPointCalculator3D points = new DefaultPointCalculator3D(false, bkpLine.getOrder()) {
 			@Override
 			public boolean add(int index, Placement placement) {
 				extremePointsEntries.add(new Point3DEntry(index, placement));
@@ -66,7 +66,7 @@ public class Points3DState {
 
 		converter.convert2D(bkpLine, 1, points);
 
-		DefaultPointCalculator3D defaultPointCalculator3D = new DefaultPointCalculator3D();
+		DefaultPointCalculator3D defaultPointCalculator3D = new DefaultPointCalculator3D(false, bkpLine.getOrder());
 		defaultPointCalculator3D.clearToSize(points.getWidth(), points.getDepth(), 1);
 		extremePointsEntries.setExtremePoints3D(defaultPointCalculator3D);
 		

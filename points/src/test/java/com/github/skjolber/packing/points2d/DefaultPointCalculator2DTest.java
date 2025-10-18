@@ -37,7 +37,7 @@ public class DefaultPointCalculator2DTest {
 	
 	@Test
 	public void testSinglePoint() {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D();
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 10, 10));
 		assertThat(ep.getAll()).hasSize(2);
@@ -57,7 +57,7 @@ public class DefaultPointCalculator2DTest {
 
 	@Test
 	public void testSinglePointCornerCase() {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D();
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 0, 0));
 		assertThat(ep.getAll()).hasSize(2);
@@ -77,7 +77,7 @@ public class DefaultPointCalculator2DTest {
 
 	@Test
 	public void testSinglePointCoveringAllX() {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D();
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 99, 10));
 		assertThat(ep.getAll()).hasSize(1);
@@ -88,7 +88,7 @@ public class DefaultPointCalculator2DTest {
 
 	@Test
 	public void testSinglePointCoveringAllY() {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D();
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 10, 99));
 		assertThat(ep.getAll()).hasSize(1);
@@ -99,7 +99,7 @@ public class DefaultPointCalculator2DTest {
 
 	@Test
 	public void testSinglePointCoveringWholeContainer() {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D();
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 99, 99));
 		assertThat(ep.getAll()).hasSize(0);
@@ -107,7 +107,7 @@ public class DefaultPointCalculator2DTest {
 
 	@Test
 	public void testStackInXDirection() {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D();
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 49));
 
@@ -156,7 +156,7 @@ public class DefaultPointCalculator2DTest {
 		//      ------------
 		//         4  9   
 
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D();
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 49));
 
@@ -196,7 +196,7 @@ public class DefaultPointCalculator2DTest {
 		//      -------------
 		//          9   19
 
-		ValidatingPointCalculator2D ep = new ValidatingPointCalculator2D();
+		ValidatingPointCalculator2D ep = new ValidatingPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 9));
 
@@ -240,7 +240,7 @@ public class DefaultPointCalculator2DTest {
 		//      ----------
 		//          9 
 
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D();
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 9));
 
@@ -281,7 +281,7 @@ public class DefaultPointCalculator2DTest {
 		//      -------------
 		//          9   19
 
-		ValidatingPointCalculator2D ep = new ValidatingPointCalculator2D();
+		ValidatingPointCalculator2D ep = new ValidatingPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 9));
 
@@ -329,7 +329,7 @@ public class DefaultPointCalculator2DTest {
 		//      -------------
 		//          9   19
 
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D();
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 9));
 
@@ -367,7 +367,7 @@ public class DefaultPointCalculator2DTest {
 
 	@Test
 	public void testSwallowedInXDirection1() throws InterruptedException {
-		ValidatingPointCalculator2D ep = new ValidatingPointCalculator2D();
+		ValidatingPointCalculator2D ep = new ValidatingPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 9));
 		ep.add(1, createStackPlacement(10, 0, 19, 19));
@@ -424,7 +424,7 @@ public class DefaultPointCalculator2DTest {
 
 	@Test
 	public void testSwallowedInXDirection2() throws InterruptedException {
-		ValidatingPointCalculator2D ep = new ValidatingPointCalculator2D();
+		ValidatingPointCalculator2D ep = new ValidatingPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 9));
 		ep.add(1, createStackPlacement(10, 0, 19, 19));
@@ -535,7 +535,7 @@ public class DefaultPointCalculator2DTest {
 
 	@Test
 	public void testSwallowedInYDirection1() throws InterruptedException {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D();
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 9));
 		ep.add(0, createStackPlacement(0, 10, 19, 19));
@@ -611,7 +611,7 @@ public class DefaultPointCalculator2DTest {
 
 	@Test
 	public void testSwallowedInYDirection2() throws InterruptedException {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D();
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 9));
 		ep.add(0, createStackPlacement(0, 10, 19, 19));
@@ -710,7 +710,7 @@ public class DefaultPointCalculator2DTest {
 
 	@Test
 	public void testStacking() {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D();
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
 		ep.clearToSize(3, 2, 0);
 		ep.add(0, createStackPlacement(0, 0, 0, 1));
 
@@ -734,7 +734,7 @@ public class DefaultPointCalculator2DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
 	public void testFloatingX(boolean b) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(b);
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(b, 16);
 		ep.clearToSize(1000, 1000, 0);
 		ep.add(0, createStackPlacement(0, 0, 49, 99));
 		assertThat(ep.get(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
@@ -1034,7 +1034,7 @@ public class DefaultPointCalculator2DTest {
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
 	public void testFloatingY(boolean b) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(b);
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(b, 16);
 		ep.clearToSize(1000, 1000, 100);
 		ep.add(0, createStackPlacement(0, 0, 49, 99));
 		assertThat(ep.get(0)).isInstanceOf(DefaultXYSupportPoint2D.class);

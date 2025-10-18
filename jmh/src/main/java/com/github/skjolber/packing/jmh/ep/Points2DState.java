@@ -41,7 +41,7 @@ public class Points2DState {
 
 		Points2DEntries extremePointsEntries = new Points2DEntries();
 
-		DefaultPointCalculator2D points = new DefaultPointCalculator2D() {
+		DefaultPointCalculator2D points = new DefaultPointCalculator2D(false, bkpLine.getOrder()) {
 			@Override
 			public boolean add(int index, Placement placement) {
 				extremePointsEntries.add(new Point2DEntry(index, placement));
@@ -51,7 +51,7 @@ public class Points2DState {
 		};
 		converter.convert2D(bkpLine, 1, points);
 
-		DefaultPointCalculator2D defaultPointCalculator2D = new DefaultPointCalculator2D();
+		DefaultPointCalculator2D defaultPointCalculator2D = new DefaultPointCalculator2D(false, bkpLine.getOrder());
 		defaultPointCalculator2D.clearToSize(points.getWidth(), points.getDepth(), 1);
 		extremePointsEntries.setExtremePoints2D(defaultPointCalculator2D);
 

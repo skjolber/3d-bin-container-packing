@@ -44,14 +44,15 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 
 		Stack stack = new Stack();
 
-		PointCalculator pointCalculator = new DefaultPointCalculator3D();
+		DefaultBoxItemSource boxItemSource = new DefaultBoxItemSource(boxItems);
+
+		PointCalculator pointCalculator = new DefaultPointCalculator3D(false, boxItemSource);
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		if(controlContainerItem.hasInitialPoints()) {
 			pointCalculator.setPoints(controlContainerItem.getInitialPoints());
 			pointCalculator.clear();
 		}
 
-		DefaultBoxItemSource boxItemSource = new DefaultBoxItemSource(boxItems);
 		ManifestControls manifestControls = controlContainerItem.createBoxItemControls(container, stack, boxItemSource, pointCalculator, null);
 
 		PointControls pointControls = controlContainerItem.createPointControls(container, stack, boxItemSource, pointCalculator);
@@ -196,16 +197,16 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		
 		Stack stack = new Stack();
 
-		MarkResetPointCalculator3D pointCalculator = new MarkResetPointCalculator3D(true);
+		PackagerBoxItems packagerBoxItems = new PackagerBoxItems(boxItemGroups);
+		BoxItemSource filteredBoxItems = packagerBoxItems.getFilteredBoxItems();
+
+		MarkResetPointCalculator3D pointCalculator = new MarkResetPointCalculator3D(true, filteredBoxItems.size());
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		if(controlContainerItem.hasInitialPoints()) {
 			pointCalculator.setPoints(controlContainerItem.getInitialPoints());
 			pointCalculator.clear();
 		}
 
-		PackagerBoxItems packagerBoxItems = new PackagerBoxItems(boxItemGroups);
-
-		BoxItemSource filteredBoxItems = packagerBoxItems.getFilteredBoxItems();
 
 		BoxItemGroupSource filteredBoxItemGroups = packagerBoxItems.getFilteredBoxItemGroups();
 

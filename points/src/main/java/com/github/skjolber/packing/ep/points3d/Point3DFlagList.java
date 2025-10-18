@@ -418,4 +418,8 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 		return low;
 	}
 
+	public void setSize(int i) {
+		this.size = 0;
+	}
+
 }

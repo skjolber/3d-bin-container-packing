@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.points3d;
 
-import static com.github.skjolber.packing.points3d.assertj.SimplePoint3DAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -10,7 +9,6 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.MarkResetPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 
@@ -18,7 +16,7 @@ public class MarkResetPointCalculator3DTest {
 
 	@Test
 	public void testMarkReset() {
-		MarkResetPointCalculator3D ep = new MarkResetPointCalculator3D();
+		MarkResetPointCalculator3D ep = new MarkResetPointCalculator3D(false, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 

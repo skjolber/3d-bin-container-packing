@@ -8,7 +8,8 @@ import com.github.skjolber.packing.api.point.Point;
 
 /**
  * 
- * Custom list for working with points.
+ * Custom list for working with points. Capacity must be specified in constructor or using designated 
+ * methods.
  * 
  */
 
