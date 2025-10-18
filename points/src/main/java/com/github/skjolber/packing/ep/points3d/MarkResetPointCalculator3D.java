@@ -3,6 +3,7 @@ package com.github.skjolber.packing.ep.points3d;
 import java.util.ArrayList;
 
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.ep.PlacementList;
 
 public class MarkResetPointCalculator3D extends DefaultPointCalculator3D {
@@ -18,6 +19,12 @@ public class MarkResetPointCalculator3D extends DefaultPointCalculator3D {
 		super(cloneOnConstrain, capacity);
 		
 		markPlacements = new PlacementList(capacity);
+	}
+	
+	public MarkResetPointCalculator3D(boolean cloneOnConstrain, BoxItemSource source) {
+		super(cloneOnConstrain, source);
+		
+		markPlacements = new PlacementList(placements.getCapacity());
 	}
 
 	public void mark() {

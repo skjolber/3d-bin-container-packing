@@ -340,7 +340,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		PackagerBoxItems packagerBoxItems = new PackagerBoxItems(boxItemGroups);
 		BoxItemSource filteredBoxItems = packagerBoxItems.getFilteredBoxItems();
 
-		MarkResetPointCalculator3D pointCalculator = new MarkResetPointCalculator3D(true, filteredBoxItems.size());
+		MarkResetPointCalculator3D pointCalculator = new MarkResetPointCalculator3D(true, filteredBoxItems);
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		if(controlledContainerItem.hasInitialPoints()) {
 			pointCalculator.setPoints(controlledContainerItem.getInitialPoints());

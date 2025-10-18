@@ -149,5 +149,9 @@ public class PlacementList {
 			add(placements.placements[i]);
 		}
 	}
+
+	public int getCapacity() {
+		return placements.length;
+	}
 	
 }

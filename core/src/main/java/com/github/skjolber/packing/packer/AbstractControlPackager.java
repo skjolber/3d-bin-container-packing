@@ -200,7 +200,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		PackagerBoxItems packagerBoxItems = new PackagerBoxItems(boxItemGroups);
 		BoxItemSource filteredBoxItems = packagerBoxItems.getFilteredBoxItems();
 
-		MarkResetPointCalculator3D pointCalculator = new MarkResetPointCalculator3D(true, filteredBoxItems.size());
+		MarkResetPointCalculator3D pointCalculator = new MarkResetPointCalculator3D(true, filteredBoxItems);
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		if(controlContainerItem.hasInitialPoints()) {
 			pointCalculator.setPoints(controlContainerItem.getInitialPoints());
