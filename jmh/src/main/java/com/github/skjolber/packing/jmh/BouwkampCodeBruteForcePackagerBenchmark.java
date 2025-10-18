@@ -28,7 +28,6 @@ import com.github.skjolber.packing.packer.AbstractPackager;
 @Measurement(iterations = 1, time = 120, timeUnit = TimeUnit.SECONDS)
 public class BouwkampCodeBruteForcePackagerBenchmark {
 
-	/*
 	@Benchmark
 	public int parallelPackager(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
@@ -38,7 +37,6 @@ public class BouwkampCodeBruteForcePackagerBenchmark {
 	public int packager(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getBruteForcePackager(), Long.MAX_VALUE);
 	}
-	*/
 
 	@Benchmark
 	public int fastPackager(BouwkampCodeBruteForcePackagerState state) throws Exception {
