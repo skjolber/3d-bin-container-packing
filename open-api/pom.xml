@@ -13,7 +13,7 @@
 	<description>OpenAPI parent</description>
 	<packaging>pom</packaging>
 	<properties>
-		<swagger-annotations.version>2.2.38</swagger-annotations.version>
+		<swagger-annotations.version>2.2.39</swagger-annotations.version>
 	    <spring.version>6.2.11</spring.version>
 		<httpclient5.version>5.5.1</httpclient5.version>
 		<open-api-generator.version>7.13.0</open-api-generator.version>
