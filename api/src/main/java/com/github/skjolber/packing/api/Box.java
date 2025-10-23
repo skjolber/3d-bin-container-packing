@@ -406,7 +406,7 @@ public class Box {
 		this.stackValues = stackValues;
 
 		this.minimumArea = getMinimumArea(stackValues);
-		this.maximumArea = getMinimumArea(stackValues);
+		this.maximumArea = getMaximumArea(stackValues);
 
 		this.minimumPressure = (weight * 1000L) / maximumArea.getArea();
 		this.maximumPressure = (weight * 1000L) / minimumArea.getArea();
@@ -576,13 +576,13 @@ public class Box {
 	}
 
 	public static BoxStackValue getMaximumArea(BoxStackValue[] rotations) {
-		BoxStackValue minimumArea = null;
+		BoxStackValue maxArea = null;
 		for (BoxStackValue boxStackValue : rotations) {
-			if (minimumArea == null || boxStackValue.getArea() > minimumArea.getArea()) {
-				minimumArea = boxStackValue;
+			if (maxArea == null || boxStackValue.getArea() > maxArea.getArea()) {
+				maxArea = boxStackValue;
 			}
 		}
-		return minimumArea;
+		return maxArea;
 	}
 
 	@SuppressWarnings("unchecked")
