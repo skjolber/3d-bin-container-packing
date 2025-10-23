@@ -13,8 +13,8 @@
 	<description>OpenAPI parent</description>
 	<packaging>pom</packaging>
 	<properties>
-		<swagger-annotations.version>2.2.38</swagger-annotations.version>
-	    <spring.version>6.2.12</spring.version>
+		<swagger-annotations.version>2.2.39</swagger-annotations.version>
+	  <spring.version>6.2.12</spring.version>
 		<httpclient5.version>5.5.1</httpclient5.version>
 		<open-api-generator.version>7.13.0</open-api-generator.version>
 		<jakarta.validation-api.version>3.1.1</jakarta.validation-api.version>
