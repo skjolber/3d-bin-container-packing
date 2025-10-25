@@ -73,7 +73,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 					int nextContainerItemIndex = containerItemIndexes.get(mid);
 
 					P result = adapter.attempt(nextContainerItemIndex, bestResult, true);
-					if(result.getStack().size() == adapter.countRemainingBoxes()) {
+					if(!result.isEmpty() && result.getStack().size() == adapter.countRemainingBoxes()) {
 						results[nextContainerItemIndex] = result;
 
 						iterator.lower();

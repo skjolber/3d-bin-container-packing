@@ -7,6 +7,9 @@ public class EmptyPackagerResultAdapter implements IntermediatePackagerResult {
 
 	public static final EmptyPackagerResultAdapter EMPTY = new EmptyPackagerResultAdapter();
 	
+	// empty stack
+	private final Stack stack = new Stack();
+	
 	@Override
 	public ContainerItem getContainerItem() {
 		return null;
@@ -14,7 +17,7 @@ public class EmptyPackagerResultAdapter implements IntermediatePackagerResult {
 
 	@Override
 	public Stack getStack() {
-		return null;
+		return stack;
 	}
 
 	@Override
