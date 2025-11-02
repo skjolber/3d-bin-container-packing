@@ -30,10 +30,9 @@ public class ContainerItemsCalculator {
 		}
 	}
 	
-	protected long maxContainerLoadVolume = 0;
-	protected long maxContainerLoadWeight = 0;
-
 	protected final List<ControlledContainerItem> containerItems;
+	protected final List<ControlledContainerItem> containerItemsSortedByWeight;
+	protected final List<ControlledContainerItem> containerItemsSortedByVolume;
 	
 	/**
 	 * Create new instance
@@ -47,42 +46,11 @@ public class ContainerItemsCalculator {
 		}
 		this.containerItems = items;
 		
-		calculateMaxLoadVolume();
-		calculateMaxLoadWeight();
-	}
-
-	protected void calculateMaxLoadVolume() {
-		maxContainerLoadVolume = 0;
-
-		for(int i = 0; i < getContainerItemCount(); i++) {
-			ContainerItem item = getContainerItem(i);
-			if(!item.isAvailable()) {
-				continue;
-			}
-			Container container = item.getContainer();
-			// volume
-			long boxVolume = container.getVolume();
-			if(boxVolume > maxContainerLoadVolume) {
-				maxContainerLoadVolume = boxVolume;
-			}
-		}
-	}
-
-	protected void calculateMaxLoadWeight() {
-		maxContainerLoadWeight = 0;
-
-		for(int i = 0; i < getContainerItemCount(); i++) {
-			ContainerItem item = getContainerItem(i);
-			if(!item.isAvailable()) {
-				continue;
-			}
-			Container container = item.getContainer();
-			// weight
-			long boxWeight = container.getMaxLoadWeight();
-			if(boxWeight > maxContainerLoadWeight) {
-				maxContainerLoadWeight = boxWeight;
-			}
-		}
+		containerItemsSortedByWeight = new ArrayList<>(items);
+		containerItemsSortedByVolume = new ArrayList<>(items);
+		
+		Collections.sort(containerItemsSortedByWeight, ContainerItem.MAX_LOAD_WEIGHT_COMPARATOR);
+		Collections.sort(containerItemsSortedByVolume, ContainerItem.MAX_LOAD_VOLUME_COMPARATOR);
 	}
 
 	/**
@@ -105,20 +73,6 @@ public class ContainerItemsCalculator {
 			totalWeight += box.getWeight();
 		}
 		
-		// sanity check - cheap rough estimate volume
-		BigInteger totalAvailableVolumeForMaxContainer = BigInteger.valueOf(maxContainerLoadVolume).multiply(BigInteger.valueOf(maxCount));
-		if(totalAvailableVolumeForMaxContainer.compareTo(BigInteger.valueOf(totalVolume)) < 0) {
-			// constrained at volume even if using only the biggest container
-			return Collections.emptyList();
-		}
-
-		// sanity check - cheap rough estimate weight
-		BigInteger totalAvailableWeightForMaxContainer = BigInteger.valueOf(maxContainerLoadWeight).multiply(BigInteger.valueOf(maxCount));
-		if(totalAvailableWeightForMaxContainer.compareTo(BigInteger.valueOf(totalWeight)) < 0) {
-			// constrained at weight even if using only the biggest container
-			return Collections.emptyList();
-		}
-
 		// sanity check - exact values for volume
 		Limit totalAvailableVolume = calculateMaxVolume(maxCount);
 		if(totalAvailableVolume.value.compareTo(BigInteger.valueOf(totalVolume)) < 0) {
@@ -260,20 +214,6 @@ public class ContainerItemsCalculator {
 			}
 		}
 
-		// sanity check - cheap rough estimate volume
-		BigInteger totalAvailableVolumeForMaxContainer = BigInteger.valueOf(maxContainerLoadVolume).multiply(BigInteger.valueOf(maxCount));
-		if(totalAvailableVolumeForMaxContainer.compareTo(BigInteger.valueOf(totalBoxVolume)) < 0) {
-			// constrained at volume even if using only the biggest container
-			return Collections.emptyList();
-		}
-
-		// sanity check - cheap rough estimate weight
-		BigInteger totalAvailableWeightForMaxContainer = BigInteger.valueOf(maxContainerLoadWeight).multiply(BigInteger.valueOf(maxCount));
-		if(totalAvailableWeightForMaxContainer.compareTo(BigInteger.valueOf(totalBoxWeight)) < 0) {
-			// constrained at weight even if using only the biggest container
-			return Collections.emptyList();
-		}
-
 		// sanity check - exact values for volume
 		Limit totalAvailableVolume = calculateMaxVolume(maxCount);
 		if(totalAvailableVolume.value.compareTo(BigInteger.valueOf(totalBoxVolume)) < 0) {
@@ -398,18 +338,6 @@ public class ContainerItemsCalculator {
 	public Container toContainer(ContainerItem item, Stack stack) {
 		item.decrement();
 
-		// do we need to adjust limits?
-		if(!item.isAvailable()) {
-			Container container = item.getContainer();
-
-			if(container.getMaxLoadVolume() == maxContainerLoadVolume) {
-				calculateMaxLoadVolume();
-			}
-			if(container.getMaxLoadWeight() == maxContainerLoadWeight) {
-				calculateMaxLoadWeight();
-			}
-		}
-		
 		Container container = item.getContainer();
 		
 		return new Container(container.getId(), container.getDescription(), 
@@ -423,24 +351,17 @@ public class ContainerItemsCalculator {
 	}
 
 	protected Limit calculateMaxVolume(int maxCount) {
-		List<ContainerItem> availableContainers = new ArrayList<>(getContainerItemCount());
-		for(int i = 0; i < getContainerItemCount(); i++) {
-			ContainerItem item = getContainerItem(i);
-			if(!item.isAvailable()) {
-				continue;
-			}
-			availableContainers.add(item);
-		}
-		
-		Collections.sort(availableContainers, ContainerItem.MAX_LOAD_VOLUME_COMPARATOR);
-		
 		Set<Integer> includedContainerIndexes = new HashSet<>();
 		
 		long minVolume = Long.MAX_VALUE;
 		
 		BigInteger volume = BigInteger.valueOf(0);
-		for(int i = availableContainers.size() - 1; i >= 0 && maxCount > 0; i--) {
-			ContainerItem containerItem = availableContainers.get(i);
+		for(int i = containerItemsSortedByVolume.size() - 1; i >= 0 && maxCount > 0; i--) {
+			ContainerItem containerItem = containerItemsSortedByVolume.get(i);
+			if(!containerItem.isAvailable()) {
+				continue;
+			}
+
 			int count = Math.min(maxCount, containerItem.getCount());
 			
 			BigInteger max = BigInteger.valueOf(containerItem.getContainer().getMaxLoadVolume()).multiply(BigInteger.valueOf(count));
@@ -460,24 +381,17 @@ public class ContainerItemsCalculator {
 	}
 
 	protected Limit calculateMaxWeight(int maxCount) {
-		List<ContainerItem> availableContainers = new ArrayList<>(getContainerItemCount());
-		for(int i = 0; i < getContainerItemCount(); i++) {
-			ContainerItem item = getContainerItem(i);
-			if(!item.isAvailable()) {
-				continue;
-			}
-			availableContainers.add(item);
-		}
-		
-		Collections.sort(availableContainers, ContainerItem.MAX_LOAD_WEIGHT_COMPARATOR);
-		
 		Set<Integer> includedContainerIndexes = new HashSet<>();
 		
 		long minWeight = Long.MAX_VALUE;
 		
 		BigInteger weight = BigInteger.valueOf(0);
-		for(int i = availableContainers.size() - 1; i >= 0 && maxCount > 0; i--) {
-			ContainerItem containerItem = availableContainers.get(i);
+		for(int i = containerItemsSortedByWeight.size() - 1; i >= 0 && maxCount > 0; i--) {
+			ContainerItem containerItem = containerItemsSortedByWeight.get(i);
+			if(!containerItem.isAvailable()) {
+				continue;
+			}
+			
 			int count = Math.min(maxCount, containerItem.getCount());
 
 			BigInteger max = BigInteger.valueOf(containerItem.getContainer().getMaxLoadWeight()).multiply(BigInteger.valueOf(count));
@@ -503,14 +417,6 @@ public class ContainerItemsCalculator {
 	
 	public ControlledContainerItem getContainerItem(int index) {
 		return containerItems.get(index);
-	}
-	
-	protected long getMaxContainerLoadVolume() {
-		return maxContainerLoadVolume;
-	}
-
-	protected long getMaxContainerLoadWeight() {
-		return maxContainerLoadWeight;
 	}
 	
 	public List<ControlledContainerItem> getContainerItems() {

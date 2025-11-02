@@ -28,11 +28,8 @@ public class ContainerItemsCalculatorTest {
 				.build();
 		ContainerItemsCalculator calculator = create(items);
 		
-		calculator.calculateMaxLoadVolume();
-		calculator.calculateMaxLoadWeight();
-		
-		assertEquals(1000L, calculator.getMaxContainerLoadVolume());
-		assertEquals(100L, calculator.getMaxContainerLoadWeight());
+		assertEquals(1000L, calculator.calculateMaxVolume(1).value.intValue());
+		assertEquals(100L, calculator.calculateMaxWeight(1).value.intValue());
 		
 		Box box = Box.newBuilder().withSize(1, 2, 3).withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 10);
@@ -67,11 +64,8 @@ public class ContainerItemsCalculatorTest {
 				.build();
 		ContainerItemsCalculator calculator = create(items);
 		
-		calculator.calculateMaxLoadVolume();
-		calculator.calculateMaxLoadWeight();
-		
-		assertEquals(8000L, calculator.getMaxContainerLoadVolume());
-		assertEquals(100L, calculator.getMaxContainerLoadWeight());
+		assertEquals(9000L, calculator.calculateMaxVolume(2).value.intValue());
+		assertEquals(200L, calculator.calculateMaxWeight(2).value.intValue());
 		
 		Box box = Box.newBuilder().withSize(1, 2, 3).withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 10);
@@ -158,12 +152,6 @@ public class ContainerItemsCalculatorTest {
 				.build();
 		ContainerItemsCalculator calculator = create(items);
 		
-		calculator.calculateMaxLoadVolume();
-		calculator.calculateMaxLoadWeight();
-		
-		assertEquals(8000L, calculator.getMaxContainerLoadVolume());
-		assertEquals(100L, calculator.getMaxContainerLoadWeight());
-		
 		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 10);
 		
@@ -196,12 +184,6 @@ public class ContainerItemsCalculatorTest {
 				.withContainer(container2, 1)
 				.build();
 		ContainerItemsCalculator calculator = create(items);
-		
-		calculator.calculateMaxLoadVolume();
-		calculator.calculateMaxLoadWeight();
-		
-		assertEquals(8000L, calculator.getMaxContainerLoadVolume());
-		assertEquals(100L, calculator.getMaxContainerLoadWeight());
 		
 		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 10);
