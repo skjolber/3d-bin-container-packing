@@ -145,7 +145,7 @@ public class ContainerItemsCalculator {
 
 				// santiy-check use of this container
 				// corner case: can we exchange the a bigger container for the current and still have enough weight / volume?
-				if(!totalAvailableVolume.containerIndexes.contains(item.getIndex())) {
+				if(!totalAvailableVolume.containerIndexes.contains(i)) {
 					long reduction = totalAvailableVolume.minimum - container.getMaxLoadVolume();
 					
 					BigInteger maxAvailableVolumeWithThisContainer = totalAvailableVolume.value.subtract(BigInteger.valueOf(reduction));
@@ -155,7 +155,7 @@ public class ContainerItemsCalculator {
 					}
 				}
 
-				if(!totalAvailableWeight.containerIndexes.contains(item.getIndex())) {
+				if(!totalAvailableWeight.containerIndexes.contains(i)) {
 					long reduction = totalAvailableWeight.minimum - container.getMaxLoadWeight();
 					
 					BigInteger maxAvailableWeightWithThisContainer = totalAvailableWeight.value.subtract(BigInteger.valueOf(reduction));
@@ -273,7 +273,7 @@ public class ContainerItemsCalculator {
 				
 				// santiy-check use of this container
 				// corner case: can we exchange the a bigger container for the current and still have enough weight / volume?
-				if(!totalAvailableVolume.containerIndexes.contains(item.getIndex())) {
+				if(!totalAvailableVolume.containerIndexes.contains(i)) {
 					long reduction = totalAvailableVolume.minimum - container.getMaxLoadVolume();
 					
 					BigInteger maxAvailableVolumeWithThisContainer = totalAvailableVolume.value.subtract(BigInteger.valueOf(reduction));
@@ -283,7 +283,7 @@ public class ContainerItemsCalculator {
 					}
 				}
 
-				if(!totalAvailableWeight.containerIndexes.contains(item.getIndex())) {
+				if(!totalAvailableWeight.containerIndexes.contains(i)) {
 					long reduction = totalAvailableWeight.minimum - container.getMaxLoadWeight();
 					
 					BigInteger maxAvailableWeightWithThisContainer = totalAvailableWeight.value.subtract(BigInteger.valueOf(reduction));
@@ -351,9 +351,9 @@ public class ContainerItemsCalculator {
 	}
 
 	protected Limit calculateMaxVolume(int maxCount) {
-		Set<Integer> includedContainerIndexes = new HashSet<>();
+		Set<Integer> includedContainerIndexes = new HashSet<>(containerItemsSortedByWeight.size() * 2);
 		
-		long minVolume = Long.MAX_VALUE;
+		long minLoadVolume = Long.MAX_VALUE;
 		
 		BigInteger volume = BigInteger.valueOf(0);
 		for(int i = containerItemsSortedByVolume.size() - 1; i >= 0 && maxCount > 0; i--) {
@@ -372,18 +372,18 @@ public class ContainerItemsCalculator {
 			
 			includedContainerIndexes.add(containerItem.getIndex());
 			
-			if(minVolume > containerItem.getContainer().getMaxLoadVolume()) {
-				minVolume = containerItem.getContainer().getMaxLoadVolume();
+			if(minLoadVolume > containerItem.getContainer().getMaxLoadVolume()) {
+				minLoadVolume = containerItem.getContainer().getMaxLoadVolume();
 			}
 		}
 		
-		return new Limit(volume, includedContainerIndexes, minVolume);
+		return new Limit(volume, includedContainerIndexes, minLoadVolume);
 	}
 
 	protected Limit calculateMaxWeight(int maxCount) {
-		Set<Integer> includedContainerIndexes = new HashSet<>();
+		Set<Integer> includedContainerIndexes = new HashSet<>(containerItemsSortedByWeight.size() * 2);
 		
-		long minWeight = Long.MAX_VALUE;
+		long minLoadWeight = Long.MAX_VALUE;
 		
 		BigInteger weight = BigInteger.valueOf(0);
 		for(int i = containerItemsSortedByWeight.size() - 1; i >= 0 && maxCount > 0; i--) {
@@ -403,12 +403,12 @@ public class ContainerItemsCalculator {
 			includedContainerIndexes.add(containerItem.getIndex());
 			
 			
-			if(minWeight > containerItem.getContainer().getMaxLoadWeight()) {
-				minWeight = containerItem.getContainer().getMaxLoadWeight();
+			if(minLoadWeight > containerItem.getContainer().getMaxLoadWeight()) {
+				minLoadWeight = containerItem.getContainer().getMaxLoadWeight();
 			}
 		}
 		
-		return new Limit(weight, includedContainerIndexes, minWeight);
+		return new Limit(weight, includedContainerIndexes, minLoadWeight);
 	}
 
 	public int getContainerItemCount() {
