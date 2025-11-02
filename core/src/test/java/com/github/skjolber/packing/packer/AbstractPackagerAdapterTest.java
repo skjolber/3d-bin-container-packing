@@ -37,23 +37,23 @@ public class AbstractPackagerAdapterTest {
 
 		// volume
         for(int i = 0; i <= 5; i++) {
-        	BigInteger max = adapter.calculateMaxVolume(i).value;
+        	BigInteger max = adapter.calculateMaxVolume(i).getValue();
         	assertEquals(max, BigInteger.valueOf(i * 10 * 10 * 10));
         }
 
         for(int i = 0; i <= 3; i++) {
-        	BigInteger max = adapter.calculateMaxVolume(5 + i).value;
+        	BigInteger max = adapter.calculateMaxVolume(5 + i).getValue();
         	assertEquals(max, BigInteger.valueOf(5 * 10 * 10 * 10 + i * 1));
         }
         
 		// weight
         for(int i = 0; i <= 5; i++) {
-        	BigInteger max = adapter.calculateMaxWeight(i).value;
+        	BigInteger max = adapter.calculateMaxWeight(i).getValue();
         	assertEquals(max, BigInteger.valueOf(i * 1000000));
         }
 
         for(int i = 0; i <= 3; i++) {
-        	BigInteger max = adapter.calculateMaxWeight(5 + i).value;
+        	BigInteger max = adapter.calculateMaxWeight(5 + i).getValue();
         	assertEquals(max, BigInteger.valueOf(5 * 1000000 + i * 1));
         }
 	}
@@ -82,7 +82,7 @@ public class AbstractPackagerAdapterTest {
 
 		// volume overflows, max value is 9,223,372,036,854,775,807 (~19 digits) and 
 		// max integer 2,147,483,647 (~10 digits) 
-    	BigInteger maxVolume = adapter.calculateMaxVolume(Integer.MAX_VALUE).value;
+    	BigInteger maxVolume = adapter.calculateMaxVolume(Integer.MAX_VALUE).getValue();
     	BigInteger expectedVolume = BigInteger.valueOf(Integer.MAX_VALUE) // ~10
     			.multiply(BigInteger.valueOf(23500)) // ~4 
     			.multiply(BigInteger.valueOf(13560)) // ~4
@@ -91,7 +91,7 @@ public class AbstractPackagerAdapterTest {
     	assertEquals(maxVolume, expectedVolume);
 
 		// weight should really not log overflow, but test max values here too
-    	BigInteger maxWeight = adapter.calculateMaxWeight(Integer.MAX_VALUE).value;
+    	BigInteger maxWeight = adapter.calculateMaxWeight(Integer.MAX_VALUE).getValue();
     	BigInteger expectedWeight = BigInteger.valueOf(Integer.MAX_VALUE)
     			.multiply(BigInteger.valueOf(Integer.MAX_VALUE));
     	

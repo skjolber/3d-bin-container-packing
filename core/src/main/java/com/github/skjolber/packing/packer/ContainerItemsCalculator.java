@@ -18,15 +18,27 @@ public class ContainerItemsCalculator {
 
 	public static class Limit {
 		
-		BigInteger value;
-		Set<Integer> containerIndexes;
-		long minimum;
+		private BigInteger value;
+		private Set<Integer> containerIndexes;
+		private long minimum;
 		
 		public Limit(BigInteger value, Set<Integer> containerIndexes, long minimum) {
 			super();
 			this.value = value;
 			this.containerIndexes = containerIndexes;
 			this.minimum = minimum;
+		}
+		
+		public Set<Integer> getContainerIndexes() {
+			return containerIndexes;
+		}
+		
+		public long getMinimum() {
+			return minimum;
+		}
+		
+		public BigInteger getValue() {
+			return value;
 		}
 	}
 	

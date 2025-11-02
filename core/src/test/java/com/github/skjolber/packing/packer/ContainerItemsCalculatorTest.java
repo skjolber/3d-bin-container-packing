@@ -28,8 +28,8 @@ public class ContainerItemsCalculatorTest {
 				.build();
 		ContainerItemsCalculator calculator = create(items);
 		
-		assertEquals(1000L, calculator.calculateMaxVolume(1).value.intValue());
-		assertEquals(100L, calculator.calculateMaxWeight(1).value.intValue());
+		assertEquals(1000L, calculator.calculateMaxVolume(1).getValue().intValue());
+		assertEquals(100L, calculator.calculateMaxWeight(1).getValue().intValue());
 		
 		Box box = Box.newBuilder().withSize(1, 2, 3).withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 10);
@@ -64,8 +64,8 @@ public class ContainerItemsCalculatorTest {
 				.build();
 		ContainerItemsCalculator calculator = create(items);
 		
-		assertEquals(9000L, calculator.calculateMaxVolume(2).value.intValue());
-		assertEquals(200L, calculator.calculateMaxWeight(2).value.intValue());
+		assertEquals(9000L, calculator.calculateMaxVolume(2).getValue().intValue());
+		assertEquals(200L, calculator.calculateMaxWeight(2).getValue().intValue());
 		
 		Box box = Box.newBuilder().withSize(1, 2, 3).withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 10);
