@@ -34,7 +34,8 @@ public abstract class AbstractBoxItemAdapter<T extends IntermediatePackagerResul
 	@Override
 	public T attempt(int index, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		try {
-			return pack(remainingBoxItems, packagerContainerItems.getContainerItem(index), interrupt, order, abortOnAnyBoxTooBig);
+			ControlledContainerItem containerItem = packagerContainerItems.getContainerItem(index);
+			return pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig);
 		} finally {
 			for(BoxItem boxItem : remainingBoxItems) {
 				boxItem.reset();

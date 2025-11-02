@@ -38,12 +38,26 @@ public class ContainerItem {
 
 		private List<ContainerItem> items = new ArrayList<>();
 
+		/**
+		 * Add {@linkplain Container}s (note that containers must be added in order of preference).
+		 * 
+		 * @param containers containers
+		 * @return
+		 */
+
 		public Builder withContainers(Container... containers) {
 			for (Container container : containers) {
 				items.add(new ContainerItem(container, Integer.MAX_VALUE));
 			}
 			return this;
 		}
+
+		/**
+		 * Add {@linkplain Container}s (note that containers must be added in order of preference).
+		 * 
+		 * @param containers containers
+		 * @return
+		 */
 
 		public Builder withContainers(List<Container> containers) {
 			for (Container container : containers) {
@@ -52,15 +66,39 @@ public class ContainerItem {
 			return this;
 		}
 
+		
+		/**
+		 * Add {@linkplain Container} (note that containers must be added in order of preference).
+		 * 
+		 * @param container container
+		 * @return
+		 */
+		
 		public Builder withContainer(Container container) {
 			items.add(new ContainerItem(container, Integer.MAX_VALUE));
 			return this;
 		}
+		
+		/**
+		 * Add {@linkplain Container} (note that containers must be added in order of preference).
+		 * 
+		 * @param container container
+		 * @param limit max usage of this container
+		 * @return
+		 */
 
 		public Builder withContainer(Container container, int limit) {
 			items.add(new ContainerItem(container, limit));
 			return this;
 		}
+
+		/**
+		 * Add {@linkplain Container}s (note that containers must be added in order of preference).
+		 * 
+		 * @param containers containers
+		 * @param limit max usage (of each individual container)
+		 * @return
+		 */
 
 		public Builder withContainers(List<Container> containers, int limit) {
 			for (Container container : containers) {
