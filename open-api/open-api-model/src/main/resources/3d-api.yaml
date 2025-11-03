@@ -115,15 +115,15 @@ components:
           type: integer
 
     ContainerItem:
-      type: object
+      type: object    
       properties:
         container:
-          $ref: '#/components/schemas/Container'
+          $ref: '#/components/schemas/Container'    
         count:
           type: integer
 
     BoxItem:
-      type: object
+      type: object    
       properties:
         box:
           $ref: '#/components/schemas/Box'
@@ -135,8 +135,14 @@ components:
       properties:
         id:
           type: string
-        maxDurationInPercent:
-          type: integer
+        resourceLimits:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceLimit'
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackagerFeature'
           
     PackResult:
       type: object
@@ -161,12 +167,13 @@ components:
     PackRequest:
       type: object
       properties:
-        deadline:
-          type: integer
-          format: int64
+        temporalLimit:
+           $ref: '#/components/schemas/TemporalLimit'
+        resourceLimits:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceLimit'
         maxContainers:
-          type: integer
-        maxDuration:
           type: integer
         containerItems:
           type: array
@@ -180,3 +187,42 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Packager'
+
+    TemporalLimit:
+      type: object
+      properties:
+        value:
+          type: integer
+          format: int64
+        type:
+          $ref: '#/components/schemas/TemporalLimitType'
+
+    TemporalLimitType:
+      type: string
+      enum:
+        - duration
+        - deadline
+            
+    ResourceLimit:
+      type: object
+      properties:
+        value:
+          type: integer
+          format: int64
+        type:
+          $ref: '#/components/schemas/ResourceLimitType'
+            
+    ResourceLimitType:
+      type: string
+      enum:
+        - CPU_COUNT
+        - CPU_TIME
+        - CPU_COST
+
+    PackagerFeature:
+      type: object
+      properties:
+        name: 
+          type: string
+
+
