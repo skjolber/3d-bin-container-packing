@@ -27,7 +27,6 @@ paths:
 
 components:
   schemas:
-
     Surface:
       type: string
       enum:
@@ -115,32 +114,21 @@ components:
         emptyWeight:
           type: integer
 
-    StackableItem:
+    ContainerItem:
       type: object
-      discriminator:
-        propertyName: stackableType
-        mapping:
-          box: "#/components/schemas/BoxItem"
-          container: "#/components/schemas/ContainerItem"      
       properties:
+        container:
+          $ref: '#/components/schemas/Container'
         count:
           type: integer
 
-    ContainerItem:
-      allOf:
-        - $ref: "#/components/schemas/StackableItem"
-        - type: object    
-          properties:
-            container:
-              $ref: '#/components/schemas/Container'    
-
     BoxItem:
-      allOf:
-        - $ref: "#/components/schemas/StackableItem"
-        - type: object    
-          properties:
-            box:
-              $ref: '#/components/schemas/Box'
+      type: object
+      properties:
+        box:
+          $ref: '#/components/schemas/Box'
+        count:
+          type: integer
 
     Packager:
       type: object
