@@ -81,4 +81,5 @@ Contact GitHub API Training Shop Blog About
 
 node_modules
 pom.xml.versionsBackup
-
+*.releaseBackup
+release.properties
