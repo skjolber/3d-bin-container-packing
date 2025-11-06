@@ -8,7 +8,7 @@ info:
 paths:
   /pack:
     post:
-      summary: Pack an order
+      summary: Perform a packaging operation
       description: |
         Pack an order
       requestBody:
@@ -118,9 +118,11 @@ components:
       type: object    
       properties:
         container:
-          $ref: '#/components/schemas/Container'    
+          $ref: '#/components/schemas/Container'
         count:
           type: integer
+        cost:
+          $ref: '#/components/schemas/Cost'
 
     BoxItem:
       type: object    
@@ -224,5 +226,74 @@ components:
       properties:
         name: 
           type: string
+
+    Cost:
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          fixed: "#/components/schemas/FixedCost"
+          weight: "#/components/schemas/WeightCost"
+          volume: "#/components/schemas/VolumeCost"
+          composite: "#/components/schemas/CompositeCost"
+      properties:
+        name: 
+          type: string
+
+    CompositeCost:
+      allOf:
+        - $ref: "#/components/schemas/Cost"
+        - type: object    
+          properties:
+            operator:
+                $ref: '#/components/schemas/CompositeCostOperator'      
+            costs:
+              type: array
+              items:
+                $ref: '#/components/schemas/Cost'
+
+    FixedCost:
+      allOf:
+        - $ref: "#/components/schemas/Cost"
+        - type: object    
+          properties:
+            value:
+              type: integer
+              format: int64
+
+    WeightCost:
+      allOf:
+        - $ref: "#/components/schemas/Cost"
+        - type: object    
+          properties:
+            value:
+              type: integer
+              format: int64
+            quantity:
+              type: integer
+              format: int64
+
+    VolumeCost:
+      allOf:
+        - $ref: "#/components/schemas/Cost"
+        - type: object    
+          properties:
+            value:
+              type: integer
+              format: int64
+            quantity:
+              type: integer
+              format: int64
+
+    CompositeCostOperator:
+      type: string
+      enum:
+        - MAX
+        - MIN
+        - SUM
+
+
+
+
 
 
