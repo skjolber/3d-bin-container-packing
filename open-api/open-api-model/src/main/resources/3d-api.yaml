@@ -233,24 +233,10 @@ components:
         propertyName: type
         mapping:
           fixed: "#/components/schemas/FixedCost"
-          weight: "#/components/schemas/WeightCost"
-          volume: "#/components/schemas/VolumeCost"
-          composite: "#/components/schemas/CompositeCost"
+          variable: "#/components/schemas/VariableCost"
       properties:
         name: 
           type: string
-
-    CompositeCost:
-      allOf:
-        - $ref: "#/components/schemas/Cost"
-        - type: object    
-          properties:
-            operator:
-                $ref: '#/components/schemas/CompositeCostOperator'      
-            costs:
-              type: array
-              items:
-                $ref: '#/components/schemas/Cost'
 
     FixedCost:
       allOf:
@@ -261,36 +247,60 @@ components:
               type: integer
               format: int64
 
+    VariableCost:
+      allOf:
+        - $ref: "#/components/schemas/Cost"
+        - type: object    
+          properties:
+            name: 
+              type: string
+            weight:
+              $ref: '#/components/schemas/WeightCost'
+
     WeightCost:
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          unit: "#/components/schemas/WeightUnitCost"
+          table: "#/components/schemas/WeightTableCost"
+      properties:
+        from:
+          type: integer
+          format: int64
+
+    WeightUnitCost:
       allOf:
-        - $ref: "#/components/schemas/Cost"
+        - $ref: "#/components/schemas/WeightCost"
         - type: object    
           properties:
-            value:
+            weight:
               type: integer
               format: int64
-            quantity:
+            cost:
               type: integer
               format: int64
 
-    VolumeCost:
+    WeightTableCost:
       allOf:
-        - $ref: "#/components/schemas/Cost"
+        - $ref: "#/components/schemas/WeightCost"
         - type: object    
           properties:
-            value:
-              type: integer
-              format: int64
-            quantity:
-              type: integer
-              format: int64
+            table:
+              type: array
+              items:
+                $ref: '#/components/schemas/WeightTableCostItem'
 
-    CompositeCostOperator:
-      type: string
-      enum:
-        - MAX
-        - MIN
-        - SUM
+    WeightTableCostItem:
+      type: object
+      properties:
+        weight:
+          type: integer
+          format: int64
+        cost:
+          type: integer
+          format: int64
+
 
 
 
