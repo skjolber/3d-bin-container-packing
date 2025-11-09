@@ -265,15 +265,20 @@ components:
           unit: "#/components/schemas/WeightUnitCost"
           table: "#/components/schemas/WeightTableCost"
       properties:
-        from:
-          type: integer
-          format: int64
+        inclusive:
+          type: boolean
 
     WeightUnitCost:
       allOf:
         - $ref: "#/components/schemas/WeightCost"
         - type: object    
           properties:
+            startCost:
+              type: integer
+              format: int64
+            startWeight:
+              type: integer
+              format: int64
             weight:
               type: integer
               format: int64
@@ -284,7 +289,7 @@ components:
     WeightTableCost:
       allOf:
         - $ref: "#/components/schemas/WeightCost"
-        - type: object    
+        - type: object
           properties:
             table:
               type: array
@@ -300,6 +305,21 @@ components:
         cost:
           type: integer
           format: int64
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
 
 
 
