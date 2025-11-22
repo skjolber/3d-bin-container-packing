@@ -11,6 +11,7 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
+import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public class BruteForceIntermediatePackagerResult implements IntermediatePackagerResult {
@@ -19,7 +20,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 
 	// work objects
 	private final Stack stack;
-	private final ContainerItem containerItem;
+	private final ControlledContainerItem containerItem;
 	private final BoxItemPermutationRotationIterator iterator;
 	private final int index;
 
@@ -33,7 +34,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	private long loadVolume;
 	private int loadWeight;
 
-	public BruteForceIntermediatePackagerResult(ContainerItem containerItem, Stack stack, int index, BoxItemPermutationRotationIterator iterator) {
+	public BruteForceIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack, int index, BoxItemPermutationRotationIterator iterator) {
 		this.containerItem = containerItem;
 		this.stack = stack;
 		this.iterator = iterator;
@@ -96,7 +97,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		}
 	}
 
-	public ContainerItem getContainerItem() {
+	public ControlledContainerItem getContainerItem() {
 		return containerItem;
 	}
 
@@ -164,6 +165,10 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 
 	public int getContainerItemIndex() {
 		return index;
+	}
+	
+	public BoxItemPermutationRotationIterator getIterator() {
+		return iterator;
 	}
 
 }

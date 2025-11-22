@@ -342,6 +342,25 @@ public class Container {
 		}
 		return false;
 	}
+	
+
+	public boolean fitsInside(Stack stack) {
+		List<Placement> placements = stack.getPlacements();
+		for(int i = placements.size() - 1; i >= 0; i--) {
+			Placement placement = placements.get(i);
+			
+			if(placement.getAbsoluteEndX() >= loadDx) {
+				return false;
+			}
+			if(placement.getAbsoluteEndY() >= loadDy) {
+				return false;
+			}
+			if(placement.getAbsoluteEndZ() >= loadDz) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	public String toString() {
 		if (dx != loadDx || dy != loadDy || dz != loadDz) {

@@ -67,6 +67,11 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			return AbstractLargestAreaFitFirstPackager.this.pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig);
 		}
 
+		@Override
+		protected IntermediatePackagerResult copy(ControlledContainerItem controlledContainerItem, IntermediatePackagerResult result) {
+			return createIntermediatePackagerResult(controlledContainerItem, result.getStack());
+		}
+
 	}
 	
 	protected class PlainBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter<IntermediatePackagerResult> {
@@ -82,6 +87,11 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		protected IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order,
 				ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
 			return AbstractLargestAreaFitFirstPackager.this.packGroup(remainingBoxItemGroups, order, containerItem, interrupt, abortOnAnyBoxTooBig);
+		}
+
+		@Override
+		protected IntermediatePackagerResult copy(ControlledContainerItem controlledContainerItem, IntermediatePackagerResult result) {
+			return createIntermediatePackagerResult(controlledContainerItem, result.getStack());
 		}
 
 	}
@@ -617,7 +627,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			}
 		}
 		
-		return new DefaultIntermediatePackagerResult(containerItem, stack);
+		return new DefaultIntermediatePackagerResult(controlledContainerItem, stack);
 	}
 	
 	protected BoxItemGroupIterator createBoxItemGroupIterator(BoxItemGroupSource filteredBoxItemGroups, Order itemGroupOrder, Container container, PointCalculator pointCalculator) {
@@ -650,7 +660,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 	}
 	
 	@Override
-	protected IntermediatePackagerResult createIntermediatePackagerResult(ContainerItem containerItem, Stack stack) {
+	protected IntermediatePackagerResult createIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack) {
 		return new DefaultIntermediatePackagerResult(containerItem, stack);
 	}
 

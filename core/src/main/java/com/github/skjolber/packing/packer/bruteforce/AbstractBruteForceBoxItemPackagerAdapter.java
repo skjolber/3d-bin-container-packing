@@ -1,9 +1,12 @@
 package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.PackagerAdapter;
@@ -58,5 +61,44 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter implements Packag
 			}
 		}
 		return packagerContainerItems.getContainers(remainingBoxItems, maxCount);
+	}
+	
+	@Override
+	public BruteForceIntermediatePackagerResult peek(int containerIndex, BruteForceIntermediatePackagerResult result) {
+
+		Stack stack = result.getStack();
+		ControlledContainerItem peek = packagerContainerItems.getContainerItem(containerIndex);
+
+		
+		if(!peek.getContainer().fitsInside(stack)) {
+			return null;
+		}
+		
+		ControlledContainerItem containerItem = result.getContainerItem();
+		
+		List<Point> initialPoints = peek.getInitialPoints();
+		if(initialPoints != null && !initialPoints.isEmpty()) {
+			if(!containerItem.getInitialPoints().equals(peek.getInitialPoints())) {
+				return null;
+			}
+		}
+		
+		if(containerItem.getBoxItemControlsBuilderFactory() != null) {
+			if(!Objects.equals(containerItem.getBoxItemControlsBuilderFactory(), peek.getBoxItemControlsBuilderFactory())) {
+				return null;
+			}
+		}
+
+		if(containerItem.getPointControlsBuilderFactory() != null) {
+			if(!Objects.equals(containerItem.getPointControlsBuilderFactory(), peek.getPointControlsBuilderFactory())) {
+				return null;
+			}
+		}
+		
+		return copy(peek, result, containerIndex);
+	}
+	
+	protected BruteForceIntermediatePackagerResult copy(ControlledContainerItem peek, BruteForceIntermediatePackagerResult result, int index) {
+		return new BruteForceIntermediatePackagerResult(peek, result.getStack(), index, result.getIterator());
 	}
 }

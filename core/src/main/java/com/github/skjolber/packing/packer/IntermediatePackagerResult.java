@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.Stack;
 
 public interface IntermediatePackagerResult {
 
-	ContainerItem getContainerItem();
+	ControlledContainerItem getContainerItem();
 	
 	Stack getStack();
 	

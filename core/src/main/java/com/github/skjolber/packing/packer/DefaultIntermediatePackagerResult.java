@@ -5,16 +5,16 @@ import com.github.skjolber.packing.api.Stack;
 
 public class DefaultIntermediatePackagerResult implements IntermediatePackagerResult {
 
-	protected ContainerItem containerItem;
+	protected ControlledContainerItem containerItem;
 	protected Stack stack;
 	
-	public DefaultIntermediatePackagerResult(ContainerItem containerItem, Stack stack) {
+	public DefaultIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack) {
 		this.containerItem = containerItem;
 		this.stack = stack;
 	}
 
 	@Override
-	public ContainerItem getContainerItem() {
+	public ControlledContainerItem getContainerItem() {
 		return containerItem;
 	}
 	

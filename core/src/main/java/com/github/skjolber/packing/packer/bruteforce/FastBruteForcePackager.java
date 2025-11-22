@@ -20,6 +20,7 @@ import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
@@ -74,6 +75,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			}
 			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
 		}
+		
 		
 	}
 	
@@ -148,7 +150,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	public BruteForceIntermediatePackagerResult pack(FastPointCalculator3DStack pointCalculator,
-			List<Placement> stackPlacements, ContainerItem containerItem, int containerIndex,
+			List<Placement> stackPlacements, ControlledContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator,
 			PackagerInterruptSupplier interrupt) {
 		

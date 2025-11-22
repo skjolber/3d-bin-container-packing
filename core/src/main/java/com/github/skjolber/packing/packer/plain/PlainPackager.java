@@ -67,6 +67,11 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 			return PlainPackager.this.pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig);
 		}
 
+		@Override
+		protected IntermediatePackagerResult copy(ControlledContainerItem controlledContainerItem, IntermediatePackagerResult result) {
+			return createIntermediatePackagerResult(controlledContainerItem, result.getStack());
+		}
+
 	}
 	
 	protected class PlainBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter<IntermediatePackagerResult> {
@@ -83,6 +88,12 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 				ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
 			return PlainPackager.this.packGroup(remainingBoxItemGroups, order, containerItem, interrupt, abortOnAnyBoxTooBig);
 		}
+		
+		@Override
+		protected IntermediatePackagerResult copy(ControlledContainerItem controlledContainerItem, IntermediatePackagerResult result) {
+			return createIntermediatePackagerResult(controlledContainerItem, result.getStack());
+		}
+
 	}
 	
 	public class PlainResultBuilder extends AbstractPackagerResultBuilder<PlainResultBuilder> {
@@ -246,7 +257,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 	}
 
 	@Override
-	protected IntermediatePackagerResult createIntermediatePackagerResult(ContainerItem containerItem, Stack stack) {
+	protected IntermediatePackagerResult createIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack) {
 		return new DefaultIntermediatePackagerResult(containerItem, stack);
 	}
 

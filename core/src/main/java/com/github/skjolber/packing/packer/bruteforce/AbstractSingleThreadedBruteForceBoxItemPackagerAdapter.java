@@ -3,15 +3,19 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ControlledContainerItem;
 
 public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 

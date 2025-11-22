@@ -11,7 +11,7 @@ public class EmptyPackagerResultAdapter implements IntermediatePackagerResult {
 	private final Stack stack = new Stack();
 	
 	@Override
-	public ContainerItem getContainerItem() {
+	public ControlledContainerItem getContainerItem() {
 		return null;
 	}
 

@@ -101,7 +101,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			}
 			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
 		}
-		
 	}
 
 	public BruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator) {
