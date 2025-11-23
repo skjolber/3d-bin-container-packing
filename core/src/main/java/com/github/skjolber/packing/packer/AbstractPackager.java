@@ -74,7 +74,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 					
 					P result = null;
 					
-					// see whether the current container holds the boxes of the same result at before
+					// see whether the current container holds the boxes of the same result as before
 					if(bestResult != null) {
 						result = adapter.peek(nextContainerItemIndex, bestResult);
 					}
