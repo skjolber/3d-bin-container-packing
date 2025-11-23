@@ -50,19 +50,5 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 	}
 	
 	protected abstract T copy(ControlledContainerItem peek, T result, int index);
-
-	
-	/*
-	
-	
-		@Override
-		protected IntermediatePackagerResult copy(ControlledContainerItem peek, IntermediatePackagerResult result,
-				int index) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-	
-	
-	*/
 	
 }
