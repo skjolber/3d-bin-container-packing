@@ -92,7 +92,7 @@ public class ControlledContainerItem extends ContainerItem {
 	}
 	
 	public boolean hasCostCalculator() {
-		return !costCalculators.isEmpty();
+		return costCalculators != null && !costCalculators.isEmpty();
 	}
 	
 	public boolean hasPointControlsBuilderFactory() {
