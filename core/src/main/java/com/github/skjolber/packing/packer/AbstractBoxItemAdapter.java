@@ -105,7 +105,7 @@ public abstract class AbstractBoxItemAdapter<T extends IntermediatePackagerResul
 		
 		List<Point> initialPoints = peek.getInitialPoints();
 		if(initialPoints != null && !initialPoints.isEmpty()) {
-			if(!containerItem.getInitialPoints().equals(peek.getInitialPoints())) {
+			if(!Objects.equals(containerItem.getInitialPoints(), initialPoints)) {
 				return null;
 			}
 		}

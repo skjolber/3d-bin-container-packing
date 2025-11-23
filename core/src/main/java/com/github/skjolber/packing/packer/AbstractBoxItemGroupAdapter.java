@@ -99,7 +99,6 @@ public abstract class AbstractBoxItemGroupAdapter<T extends IntermediatePackager
 
 		Stack stack = result.getStack();
 		ControlledContainerItem peek = packagerContainerItems.getContainerItem(containerIndex);
-
 		
 		if(!peek.getContainer().fitsInside(stack)) {
 			return null;
@@ -109,7 +108,7 @@ public abstract class AbstractBoxItemGroupAdapter<T extends IntermediatePackager
 		
 		List<Point> initialPoints = peek.getInitialPoints();
 		if(initialPoints != null && !initialPoints.isEmpty()) {
-			if(!containerItem.getInitialPoints().equals(peek.getInitialPoints())) {
+			if(!Objects.equals(containerItem.getInitialPoints(), initialPoints)) {
 				return null;
 			}
 		}
