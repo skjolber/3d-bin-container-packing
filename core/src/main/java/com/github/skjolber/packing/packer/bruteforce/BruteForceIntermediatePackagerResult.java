@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.point.Point;

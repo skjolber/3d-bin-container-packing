@@ -2,13 +2,16 @@ package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
+import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.packer.bruteforce.BruteForceIntermediatePackagerResult;
 
 public abstract class AbstractBoxItemAdapter<T extends IntermediatePackagerResult> extends AbstractPackagerAdapter<T> implements PackagerAdapter<T> {
 

@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.api.packager.control.placement;
 
-import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
+import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;

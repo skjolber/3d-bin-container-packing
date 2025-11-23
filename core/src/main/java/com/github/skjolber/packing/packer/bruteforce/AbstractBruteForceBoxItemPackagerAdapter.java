@@ -1,9 +1,12 @@
 package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;

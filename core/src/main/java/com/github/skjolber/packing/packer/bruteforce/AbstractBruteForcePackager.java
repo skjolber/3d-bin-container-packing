@@ -8,9 +8,9 @@ import java.util.logging.Logger;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;

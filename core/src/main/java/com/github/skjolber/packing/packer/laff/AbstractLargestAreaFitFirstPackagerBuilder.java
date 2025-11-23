@@ -1,10 +1,12 @@
 package com.github.skjolber.packing.packer.laff;
 
 import java.util.Comparator;
+import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public abstract class AbstractLargestAreaFitFirstPackagerBuilder<R extends Placement, B extends AbstractLargestAreaFitFirstPackagerBuilder<R, B>> {

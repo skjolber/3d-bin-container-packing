@@ -7,8 +7,9 @@ import java.util.function.Consumer;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
@@ -16,6 +17,7 @@ import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
