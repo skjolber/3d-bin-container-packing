@@ -452,10 +452,10 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 			}
 		}
 		
-		return createIntermediatePackagerResult(containerItem, stack);
+		return createIntermediatePackagerResult(controlContainerItem, stack);
 	}
 
-	protected abstract P createIntermediatePackagerResult(ContainerItem containerItem, Stack stack);
+	protected abstract P createIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack);
 
 	protected abstract P createEmptyIntermediatePackagerResult();
 

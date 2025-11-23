@@ -12,6 +12,8 @@ import com.github.skjolber.packing.api.ContainerItem;
 public interface PackagerAdapter<T extends IntermediatePackagerResult> {
 
 	T attempt(int containerIndex, T best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;
+	
+	T peek(int containerIndex, T existing);
 
 	Container accept(T result);
 
