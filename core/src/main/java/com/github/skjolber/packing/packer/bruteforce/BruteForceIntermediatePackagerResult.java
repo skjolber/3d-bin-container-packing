@@ -97,6 +97,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		}
 	}
 
+	@Override
 	public ControlledContainerItem getContainerItem() {
 		return containerItem;
 	}
