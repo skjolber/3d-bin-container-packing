@@ -1,24 +1,26 @@
 package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 
-public abstract class AbstractBruteForceBoxItemPackagerAdapter implements PackagerAdapter<BruteForceIntermediatePackagerResult> {
+public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractPackagerAdapter<BruteForceIntermediatePackagerResult> implements PackagerAdapter<BruteForceIntermediatePackagerResult> {
 
 	// keep inventory over all of the iterators here
 	protected Box[] boxes;
 	protected int[] boxesRemaining;
 	protected BoxItem[] boxItems;
-	
-	protected final ContainerItemsCalculator packagerContainerItems;
 
 	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems) {
-		this.packagerContainerItems = packagerContainerItems;
+		super(packagerContainerItems);
 		
 		this.boxes = new Box[boxItems.size()];
 		this.boxesRemaining = new int[boxItems.size()];
@@ -58,5 +60,9 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter implements Packag
 			}
 		}
 		return packagerContainerItems.getContainers(remainingBoxItems, maxCount);
+	}
+
+	protected BruteForceIntermediatePackagerResult copy(ControlledContainerItem peek, BruteForceIntermediatePackagerResult result, int index) {
+		return new BruteForceIntermediatePackagerResult(peek, result.getStack(), index, result.getIterator());
 	}
 }

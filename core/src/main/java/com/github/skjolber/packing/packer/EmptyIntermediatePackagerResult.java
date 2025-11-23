@@ -8,7 +8,7 @@ public class EmptyIntermediatePackagerResult implements IntermediatePackagerResu
 	public static final EmptyIntermediatePackagerResult EMPTY = new EmptyIntermediatePackagerResult();
 	
 	@Override
-	public ContainerItem getContainerItem() {
+	public ControlledContainerItem getContainerItem() {
 		throw new RuntimeException();
 	}
 	

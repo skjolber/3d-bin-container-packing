@@ -71,8 +71,17 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 				do {
 					int mid = iterator.next();
 					int nextContainerItemIndex = containerItemIndexes.get(mid);
+					
+					P result = null;
+					
+					// see whether the current container holds the boxes of the same result as before
+					if(bestResult != null) {
+						result = adapter.peek(nextContainerItemIndex, bestResult);
+					}
 
-					P result = adapter.attempt(nextContainerItemIndex, bestResult, true);
+					if(result == null) {
+						result = adapter.attempt(nextContainerItemIndex, bestResult, true);
+					}
 					if(!result.isEmpty() && result.getStack().size() == adapter.countRemainingBoxes()) {
 						results[nextContainerItemIndex] = result;
 
@@ -160,11 +169,11 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 						throw new PackagerInterruptedException();
 					}
 
-					Integer containerItemIndex = containerItemIndexes.get(i);
+					Integer nextContainerItemIndex = containerItemIndexes.get(i);
 
 					// can this container hold more than the previously best result?
 					if(best != null) {
-						ContainerItem containerItem = adapter.getContainerItem(containerItemIndex);
+						ContainerItem containerItem = adapter.getContainerItem(nextContainerItemIndex);
 						Container container = containerItem.getContainer();
 	
 						long loadVolume = container.getLoadVolume();
@@ -177,9 +186,18 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 						}
 					}
 
-					P result = adapter.attempt(containerItemIndex, best, maxContainers == 1);
-	
-					if(!result.isEmpty()) {
+					P result;
+					if(best != null && best.getStack().size() == adapter.countRemainingBoxes() ) {
+						result = adapter.peek(nextContainerItemIndex, best);
+						
+						if(result == null) {
+							result = adapter.attempt(nextContainerItemIndex, best, maxContainers == 1);
+						}
+					} else {
+						result = adapter.attempt(nextContainerItemIndex, best, maxContainers == 1);
+					}
+					
+					if(result != null && !result.isEmpty()) {
 						if(best == null || intermediatePackagerResultComparator.compare(best, result) != ARGUMENT_1_IS_BETTER) {
 							best = result;
 						}

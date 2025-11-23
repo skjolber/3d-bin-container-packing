@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
@@ -10,17 +11,18 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.packer.bruteforce.BruteForceIntermediatePackagerResult;
 
-public abstract class AbstractBoxItemGroupAdapter<T extends IntermediatePackagerResult> implements PackagerAdapter<T> {
+public abstract class AbstractBoxItemGroupAdapter<T extends IntermediatePackagerResult> extends AbstractPackagerAdapter<T> implements PackagerAdapter<T> {
 
 	private List<BoxItemGroup> remainingBoxItemGroups;
 	private final PackagerInterruptSupplier interrupt;
 	private final Order order;
-	private final ContainerItemsCalculator packagerContainerItems;
 
 	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems, Order order, PackagerInterruptSupplier interrupt) {
-		this.packagerContainerItems = packagerContainerItems;
+		super(packagerContainerItems);
 		
 		List<BoxItemGroup> groupClones = new LinkedList<>();
 		for (BoxItemGroup boxItemGroup : boxItemGroups) {
