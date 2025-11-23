@@ -68,7 +68,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 		}
 
 		@Override
-		protected IntermediatePackagerResult copy(ControlledContainerItem controlledContainerItem, IntermediatePackagerResult result) {
+		protected IntermediatePackagerResult copy(ControlledContainerItem controlledContainerItem, IntermediatePackagerResult result, int index) {
 			return createIntermediatePackagerResult(controlledContainerItem, result.getStack());
 		}
 
@@ -90,7 +90,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 		}
 		
 		@Override
-		protected IntermediatePackagerResult copy(ControlledContainerItem controlledContainerItem, IntermediatePackagerResult result) {
+		protected IntermediatePackagerResult copy(ControlledContainerItem controlledContainerItem, IntermediatePackagerResult result, int index) {
 			return createIntermediatePackagerResult(controlledContainerItem, result.getStack());
 		}
 

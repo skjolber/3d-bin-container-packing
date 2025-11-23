@@ -76,7 +76,6 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
 		}
 		
-		
 	}
 	
 	private class FastBruteForceGroupAdapter extends AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter {

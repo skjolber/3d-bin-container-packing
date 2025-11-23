@@ -7,21 +7,20 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 
-public abstract class AbstractBruteForceBoxItemPackagerAdapter implements PackagerAdapter<BruteForceIntermediatePackagerResult> {
+public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractPackagerAdapter<BruteForceIntermediatePackagerResult> implements PackagerAdapter<BruteForceIntermediatePackagerResult> {
 
 	// keep inventory over all of the iterators here
 	protected Box[] boxes;
 	protected int[] boxesRemaining;
 	protected BoxItem[] boxItems;
-	
-	protected final ContainerItemsCalculator packagerContainerItems;
 
 	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems) {
-		this.packagerContainerItems = packagerContainerItems;
+		super(packagerContainerItems);
 		
 		this.boxes = new Box[boxItems.size()];
 		this.boxesRemaining = new int[boxItems.size()];
@@ -62,42 +61,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter implements Packag
 		}
 		return packagerContainerItems.getContainers(remainingBoxItems, maxCount);
 	}
-	
-	@Override
-	public BruteForceIntermediatePackagerResult peek(int containerIndex, BruteForceIntermediatePackagerResult result) {
 
-		Stack stack = result.getStack();
-		ControlledContainerItem peek = packagerContainerItems.getContainerItem(containerIndex);
-
-		
-		if(!peek.getContainer().fitsInside(stack)) {
-			return null;
-		}
-		
-		ControlledContainerItem containerItem = result.getContainerItem();
-		
-		List<Point> initialPoints = peek.getInitialPoints();
-		if(initialPoints != null && !initialPoints.isEmpty()) {
-			if(!Objects.equals(containerItem.getInitialPoints(), initialPoints)) {
-				return null;
-			}
-		}
-		
-		if(containerItem.getBoxItemControlsBuilderFactory() != null) {
-			if(!Objects.equals(containerItem.getBoxItemControlsBuilderFactory(), peek.getBoxItemControlsBuilderFactory())) {
-				return null;
-			}
-		}
-
-		if(containerItem.getPointControlsBuilderFactory() != null) {
-			if(!Objects.equals(containerItem.getPointControlsBuilderFactory(), peek.getPointControlsBuilderFactory())) {
-				return null;
-			}
-		}
-		
-		return copy(peek, result, containerIndex);
-	}
-	
 	protected BruteForceIntermediatePackagerResult copy(ControlledContainerItem peek, BruteForceIntermediatePackagerResult result, int index) {
 		return new BruteForceIntermediatePackagerResult(peek, result.getStack(), index, result.getIterator());
 	}

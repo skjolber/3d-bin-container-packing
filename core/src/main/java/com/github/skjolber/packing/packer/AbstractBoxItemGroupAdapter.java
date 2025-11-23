@@ -15,15 +15,14 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.packer.bruteforce.BruteForceIntermediatePackagerResult;
 
-public abstract class AbstractBoxItemGroupAdapter<T extends IntermediatePackagerResult> implements PackagerAdapter<T> {
+public abstract class AbstractBoxItemGroupAdapter<T extends IntermediatePackagerResult> extends AbstractPackagerAdapter<T> implements PackagerAdapter<T> {
 
 	private List<BoxItemGroup> remainingBoxItemGroups;
 	private final PackagerInterruptSupplier interrupt;
 	private final Order order;
-	private final ContainerItemsCalculator packagerContainerItems;
 
 	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems, Order order, PackagerInterruptSupplier interrupt) {
-		this.packagerContainerItems = packagerContainerItems;
+		super(packagerContainerItems);
 		
 		List<BoxItemGroup> groupClones = new LinkedList<>();
 		for (BoxItemGroup boxItemGroup : boxItemGroups) {
@@ -94,39 +93,4 @@ public abstract class AbstractBoxItemGroupAdapter<T extends IntermediatePackager
 
 	protected abstract T packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig);
 
-	@Override
-	public T peek(int containerIndex, T result) {
-
-		Stack stack = result.getStack();
-		ControlledContainerItem peek = packagerContainerItems.getContainerItem(containerIndex);
-		
-		if(!peek.getContainer().fitsInside(stack)) {
-			return null;
-		}
-		
-		ControlledContainerItem containerItem = result.getContainerItem();
-		
-		List<Point> initialPoints = peek.getInitialPoints();
-		if(initialPoints != null && !initialPoints.isEmpty()) {
-			if(!Objects.equals(containerItem.getInitialPoints(), initialPoints)) {
-				return null;
-			}
-		}
-		
-		if(containerItem.getBoxItemControlsBuilderFactory() != null) {
-			if(!Objects.equals(containerItem.getBoxItemControlsBuilderFactory(), peek.getBoxItemControlsBuilderFactory())) {
-				return null;
-			}
-		}
-
-		if(containerItem.getPointControlsBuilderFactory() != null) {
-			if(!Objects.equals(containerItem.getPointControlsBuilderFactory(), peek.getPointControlsBuilderFactory())) {
-				return null;
-			}
-		}
-		
-		return copy(peek, result);
-	}
-	
-	protected abstract T copy(ControlledContainerItem peek, T result);
 }
