@@ -1,8 +1,5 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import java.util.ArrayList;
-
-import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.ep.PlacementList;
 

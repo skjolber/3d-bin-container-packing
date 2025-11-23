@@ -1,13 +1,11 @@
 package com.github.skjolber.packing.packer.laff;
 
 import java.util.Comparator;
-import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
-import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemComparator;

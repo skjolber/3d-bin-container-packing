@@ -4,8 +4,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import com.github.skjolber.packing.api.point.Point;
-
 /**
  * 
  * Custom list for working with points. Capacity must be specified in constructor or using designated 

@@ -4,9 +4,9 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;

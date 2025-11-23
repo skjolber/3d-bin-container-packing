@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.ep.PlacementList;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
 
