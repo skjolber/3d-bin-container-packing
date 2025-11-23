@@ -4,17 +4,16 @@ import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 
 public class LinearBucketWeightContainerCostCalculator implements ContainerCostCalculator {
 
-	private final long minimumWeight;
-	private final long maximumWeight;
-	
-	private final long minimumCost;
+	protected final long minimumWeight;
+	protected final long maximumWeight;
+	protected final long minimumCost;
 	
 	// cost per weight
-	private final long cost;
-	private final long weight;
-	private final long volume;
+	protected final long cost;
+	protected final long weight;
+	protected final long volume;
 	
-	private final String id;
+	protected final String id;
 	
 	public LinearBucketWeightContainerCostCalculator(int minimumCost, int minimumWeight, int maximumWeight, int cost, int weight, long volume, String id) {
 		super();

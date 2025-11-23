@@ -7,9 +7,10 @@ import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 public abstract class AbstractBucketWeightContainerCostCalculator implements ContainerCostCalculator {
 
 	protected static class Bucket {
-		int cost;
-		int minWeight;
-		int maxWeight;
+		
+		private int cost;
+		private int minWeight;
+		private int maxWeight;
 		
 		/**
 		 * 
@@ -27,8 +28,20 @@ public abstract class AbstractBucketWeightContainerCostCalculator implements Con
 			this.cost = cost;
 		}
 
-		public boolean is(long minimumVolumeWeight) {
+		public boolean holds(long minimumVolumeWeight) {
 			return minWeight <= minimumVolumeWeight && minimumVolumeWeight < maxWeight;
+		}
+		
+		public int getCost() {
+			return cost;
+		}
+		
+		public int getMaxWeight() {
+			return maxWeight;
+		}
+		
+		public int getMinWeight() {
+			return minWeight;
 		}
 	}
 
@@ -89,7 +102,7 @@ public abstract class AbstractBucketWeightContainerCostCalculator implements Con
 		}
 		
 		for(Bucket bucket : buckets) {
-			if(bucket.is(weight)) {
+			if(bucket.holds(weight)) {
 				return bucket.cost;
 			}
 		}

@@ -4,9 +4,9 @@ import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 
 public class FixedContainerCostCalculator implements ContainerCostCalculator {
 
-	private final long cost;
-	private final long volume;
-	private final String id;
+	protected final long cost;
+	protected final long volume;
+	protected final String id;
 	
 	public FixedContainerCostCalculator(int cost, long volume, String id) {
 		this.cost = cost;

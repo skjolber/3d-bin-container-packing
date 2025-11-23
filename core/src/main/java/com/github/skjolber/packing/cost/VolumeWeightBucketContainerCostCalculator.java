@@ -55,8 +55,8 @@ public class VolumeWeightBucketContainerCostCalculator extends AbstractBucketWei
 				Bucket currentBucket = buckets.get(i);
 				Bucket nextBucket = buckets.get(i + 1);
 				
-				if(currentBucket.maxWeight != nextBucket.minWeight) {
-					throw new IllegalStateException("Expected back to back buckets; bucket " + i + " max weight " + currentBucket.maxWeight + " is not enough to reach bucket " + (i + 1) + " min weight " + nextBucket.minWeight);
+				if(currentBucket.getMaxWeight() != nextBucket.getMinWeight()) {
+					throw new IllegalStateException("Expected back to back buckets; bucket " + i + " max weight " + currentBucket.getMaxWeight() + " is not enough to reach bucket " + (i + 1) + " min weight " + nextBucket.getMinWeight());
 				}
 			}
 			
@@ -65,12 +65,12 @@ public class VolumeWeightBucketContainerCostCalculator extends AbstractBucketWei
 			Bucket first = buckets.getFirst();
 			Bucket last = buckets.getLast();
 			
-			if(minimumVolumeWeight <= first.minWeight) {
+			if(minimumVolumeWeight <= first.getMinWeight()) {
 				// weight dominates volume-weight, volume-weight can be ignored
 				return new VolumeWeightBucketContainerCostCalculator(buckets, volume, id);
-			} else if(minimumVolumeWeight >= last.maxWeight) {
+			} else if(minimumVolumeWeight >= last.getMaxWeight()) {
 				// volume-weight dominates weight, weight can be ignored
-				return new FixedContainerCostCalculator(last.cost, first.minWeight, id);
+				return new FixedContainerCostCalculator(last.getCost(), first.getMinWeight(), id);
 			} else {
 				// so the volume of the container is know, i.e. there is a minimum effective volume-weight.
 				// all real weight below the effective volume-weight is "free", as in it does not affect the 
@@ -79,14 +79,14 @@ public class VolumeWeightBucketContainerCostCalculator extends AbstractBucketWei
 				Bucket limit = null;
 				
 				int index = 0;
-				while(!buckets.get(index).is(minimumVolumeWeight)) {
+				while(!buckets.get(index).holds(minimumVolumeWeight)) {
 					index++;
 				}
 				
 				limit = buckets.get(index);
 
 				List<Bucket> correctedBuckets = new ArrayList<>();
-				correctedBuckets.add(new Bucket(first.minWeight, limit.maxWeight, limit.cost));
+				correctedBuckets.add(new Bucket(first.getMinWeight(), limit.getMaxWeight(), limit.getCost()));
 				
 				for(int i = index + 1; i < buckets.size(); i++) {
 					correctedBuckets.add(buckets.get(i));
