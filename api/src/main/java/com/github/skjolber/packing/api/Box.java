@@ -384,6 +384,9 @@ public class Box {
 	protected final BoxStackValue[] stackValues;
 	protected final long volume;
 
+	protected final BoxStackValue minX;
+	protected final BoxStackValue minY;
+	protected final BoxStackValue minZ;
 	protected final BoxStackValue minimumArea;
 	protected final BoxStackValue maximumArea;
 	protected long minimumPressure;
@@ -407,6 +410,9 @@ public class Box {
 
 		this.minimumArea = getMinimumArea(stackValues);
 		this.maximumArea = getMaximumArea(stackValues);
+		this.minX = getMinimumX(stackValues);
+		this.minY = getMinimumY(stackValues);
+		this.minZ = getMinimumZ(stackValues);
 
 		this.minimumPressure = (weight * 1000L) / maximumArea.getArea();
 		this.maximumPressure = (weight * 1000L) / minimumArea.getArea();
@@ -418,7 +424,7 @@ public class Box {
 		this.properties = properties;
 		this.boxItem = boxItem;
 	}
-
+	
 	public Box(Box box, List<BoxStackValue> stackValues) {
 		this(box.id, box.description, box.volume, box.weight,
 				stackValues.toArray(new BoxStackValue[stackValues.size()]), box.properties, box.boxItem);
@@ -597,4 +603,47 @@ public class Box {
 	public BoxItem getBoxItem() {
 		return boxItem;
 	}
+	
+	private BoxStackValue getMinimumX(BoxStackValue[] rotations) {
+		BoxStackValue minimum = null;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (minimum == null || boxStackValue.getDx() < minimum.getDx()) {
+				minimum = boxStackValue;
+			}
+		}
+		return minimum;
+	}
+
+	private BoxStackValue getMinimumY(BoxStackValue[] rotations) {
+		BoxStackValue minimum = null;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (minimum == null || boxStackValue.getDy() < minimum.getDy()) {
+				minimum = boxStackValue;
+			}
+		}
+		return minimum;
+	}
+
+	private BoxStackValue getMinimumZ(BoxStackValue[] rotations) {
+		BoxStackValue minimum = null;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (minimum == null || boxStackValue.getDz() < minimum.getDz()) {
+				minimum = boxStackValue;
+			}
+		}
+		return minimum;
+	}
+	
+	public BoxStackValue getMinimumDx() {
+		return minX;
+	}
+	
+	public BoxStackValue getMinimumDy() {
+		return minY;
+	}
+	
+	public BoxStackValue getMinimumDz() {
+		return minZ;
+	}
+
 }

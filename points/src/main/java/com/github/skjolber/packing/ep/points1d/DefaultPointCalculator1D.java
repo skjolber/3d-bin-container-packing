@@ -7,10 +7,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
-import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
-import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
+import org.eclipse.collections.api.block.function.primitive.BooleanFunction;
 
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
@@ -20,7 +20,9 @@ import com.github.skjolber.packing.ep.PlacementList;
 
 /**
  * 
- * Implementation of so-called extreme points in 2D.
+ * Implementation of so-called extreme points in 1D.
+ * 
+ * This is a very simple "side by side" implementation in x, y or z direction.
  *
  */
 
@@ -33,37 +35,53 @@ public class DefaultPointCalculator1D implements PointCalculator {
 			return Integer.compare(o1.getMinX(), o2.getMinX());
 		}
 	};
-
+	
 	protected int containerMaxX;
 	protected int containerMaxY;
 	protected int containerMaxZ;
 
-	protected Point1D values = null;
+	protected Point1D value = null;
 	protected PlacementList placements;
 
 	protected Placement containerPlacement;
 
 	protected long minAreaLimit = 0;
 
-	protected final boolean cloneOnConstrain;
-
-	protected List<Point1D> initialPoints = Collections.emptyList();
-
-	public DefaultPointCalculator1D(boolean immutablePoints, BoxItemSource boxItemSource) {
-		this.cloneOnConstrain = immutablePoints;
-		
+	protected Point1D initialPoint;
+	
+	protected BooleanFunction<Placement> adder;
+	
+	public DefaultPointCalculator1D(BoxItemSource boxItemSource, Dimension dimension) {
 		int count = 0;
 		for(int i = 0; i < boxItemSource.size(); i++) {
 			count += boxItemSource.get(i).getCount();
 		}
 		
 		this.placements = new PlacementList(count);
+		this.adder = toAdder(dimension);
 	}
 
-	public DefaultPointCalculator1D(boolean immutablePoints, int capacity) {
-		this.cloneOnConstrain = immutablePoints;
+	public DefaultPointCalculator1D(int capacity, Dimension dimension) {
 		this.placements = new PlacementList(capacity);
+		this.adder = toAdder(dimension);
 	}	
+
+	private BooleanFunction<Placement> toAdder(Dimension dimension) {
+		switch(dimension) {
+			case X: {
+				return this::addX;
+			}
+			case Y: {
+				return this::addY;
+			}
+			case Z: {
+				return this::addZ;
+			}
+			default: {
+				throw new RuntimeException();
+			}
+		}
+	}
 
 	@SuppressWarnings("unchecked")
 	public void setSize(int dx, int dy, int dz) {
@@ -90,25 +108,41 @@ public class DefaultPointCalculator1D implements PointCalculator {
 	}
 	
 	public boolean add(int index, Placement placement) {
+		placements.add(placement);
+		
+		return adder.booleanValueOf(placement);
+	}
 
-		Point1D point = values;
-		
-		
-		
+	private boolean addX(Placement placement) {
+		if(placement.getAbsoluteEndX() >= containerMaxX) {
+			value = null;
+			return false;
+		}
+		value = value.moveX(placement.getAbsoluteEndX() + 1);
 		return true;
 	}
-
-	public int getDepth() {
-		return containerMaxY + 1;
+	
+	private boolean addY(Placement placement) {
+		if(placement.getAbsoluteEndY() >= containerMaxY) {
+			value = null;
+			return false;
+		}
+		value = value.moveY(placement.getAbsoluteEndY() + 1);
+		return true;
 	}
-
-	public int getWidth() {
-		return containerMaxX + 1;
+	
+	private boolean addZ(Placement placement) {
+		if(placement.getAbsoluteEndZ() >= containerMaxZ) {
+			value = null;
+			return false;
+		}
+		value = value.moveZ(placement.getAbsoluteEndZ() + 1);
+		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "DefaultPointCalculator1D [" + containerMaxX + ": " + values + "]";
+		return "DefaultPointCalculator1D [" + containerMaxX + ": " + value + "]";
 	}
 
 	public List<Placement> getPlacements() {
@@ -116,49 +150,57 @@ public class DefaultPointCalculator1D implements PointCalculator {
 	}
 
 	public Point1D get(int i) {
-		return values;
+		return value;
 	}
 
 	public List<Point> getAll() {
-		if(values != null) {
+		if(value != null) {
 			List<Point> points = new ArrayList<>();
-			points.add(values);
+			points.add(value);
 			return points;
 		}
 		return Collections.emptyList();
 	}
 
 	public int size() {
-		return values == null ? 0 : 1;
+		return value == null ? 0 : 1;
 	}
 
 	public int getMinY() {
-		if(values != null) {
-			return values.getMinY();
+		if(value != null) {
+			return value.getMinY();
 		}
 		return 0;
 	}
 
 	public int getMinX() {
-		if(values != null) {
-			return values.getMinX();
+		if(value != null) {
+			return value.getMinX();
 		}
 		return 0;
 	}
 
+	public int getMinZ() {
+		if(value != null) {
+			return value.getMinZ();
+		}
+		return 0;
+	}
+
+	
 	public boolean isEmpty() {
-		return values == null;
+		return value == null;
 	}
 
 	public long getMaxArea() {
-		if(values != null) {
-			return values.getArea();
+		if(value != null) {
+			return value.getArea();
 		}
 		return -1L;
 	}
 
 	public void redo() {
-		values = null;
+		value = null;
 		placements.clear();
 	}
 
@@ -168,9 +210,9 @@ public class DefaultPointCalculator1D implements PointCalculator {
 		redo();
 	}
 
-	public int findPoint(int x, int y) {
-		if(values != null) {
-			if(values.getMinX() == x && values.getMinY() == y) {
+	public int findPoint(int x) {
+		if(value != null) {
+			if(value.getMinX() == x) {
 				return 0;
 			}
 		}
@@ -185,9 +227,9 @@ public class DefaultPointCalculator1D implements PointCalculator {
 	}
 
 	private void filterMinimums() {
-		if(values != null) {
-			if(values.getArea() < minAreaLimit) {
-				values = null;
+		if(value != null) {
+			if(value.getArea() < minAreaLimit) {
+				value = null;
 			}
 		}
 	}
@@ -197,7 +239,7 @@ public class DefaultPointCalculator1D implements PointCalculator {
 	}
 
 	public void remove(int index) {
-		values = null;
+		value = null;
 	}
 
 	@Override
@@ -213,7 +255,7 @@ public class DefaultPointCalculator1D implements PointCalculator {
 
 	@Override
 	public void clear() {
-		values = createContainerPoint();
+		value = createContainerPoint();
 		placements.clear();
 		minAreaLimit = 0;
 	}
@@ -235,12 +277,13 @@ public class DefaultPointCalculator1D implements PointCalculator {
 		}
 		return used;
 	}
-
 	
 	public void setPoints(List<Point> points) {
-		if(!points.isEmpty()) {
+		if(points.isEmpty()) {
+			value = null;
+		} else {
 			if(points.size() != 1) {
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("Expected 0 or 1 points");
 			}
 			
 			Point p = points.get(0);
@@ -250,10 +293,13 @@ public class DefaultPointCalculator1D implements PointCalculator {
 			if(p.getMaxY() > containerMaxY) {
 				throw new IllegalArgumentException();
 			}
-
+			if(p.getMaxZ() > containerMaxZ) {
+				throw new IllegalArgumentException();
+			}
+	
 			// transform coordinates to internal representation, i.e. with support etc
-			this.values = new Point1D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ());
-			this.values.setIndex(0);
+			this.value = new Point1D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ());
+			this.value.setIndex(0);
 		}
 	}
 
@@ -263,7 +309,6 @@ public class DefaultPointCalculator1D implements PointCalculator {
 			setMinimumAreaLimit(filteredBoxItems.getMinArea());
 		}
 	}
-	
 	
 	public void updateMinimums(BoxStackValue stackValue, BoxItemGroupSource filteredBoxItemGroups) {
 		boolean minArea = stackValue.getArea() == minAreaLimit;
@@ -279,8 +324,10 @@ public class DefaultPointCalculator1D implements PointCalculator {
 
 	@Override
 	public void remove(Predicate<Point> test) {
-		if(!test.test(values)) {
-			values = null;
+		if(value != null) {
+			if(!test.test(value)) {
+				value = null;
+			}
 		}
 	}
 }
