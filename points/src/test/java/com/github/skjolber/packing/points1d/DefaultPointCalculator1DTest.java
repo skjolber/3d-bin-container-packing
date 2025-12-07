@@ -2,6 +2,8 @@ package com.github.skjolber.packing.points1d;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
@@ -10,6 +12,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.ep.points1d.DefaultPointCalculator1D;
+import com.github.skjolber.packing.ep.points1d.Point1D;
 import com.github.skjolber.packing.ep.points2d.DefaultPoint2D;
 
 public class DefaultPointCalculator1DTest {
@@ -82,6 +85,48 @@ public class DefaultPointCalculator1DTest {
 
 		assertThat(ep.get(0).getMinX()).isEqualTo(20);
 		assertThat(ep.get(0).getMinY()).isEqualTo(0);
+	}
+	
+	@Test
+	public void testPointsX() {
+		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Dimension.X);
+		ep.clearToSize(100, 100, 100);
+		
+		//
+		// y
+		// |
+		// |------------------------|
+		// |                        |
+		// |        free            |
+		// |                        |
+		// |------------------------|
+		// |                        |
+		// |          used          |
+		// |                        |
+		// |------------------------|---- x
+		//
+		
+		ep.setPoints(Arrays.asList(new Point1D(0, 49, 0, 99, 99, 99)));
+		
+		//
+		// y
+		// |
+		// |----|-------------------|
+		// |    |                   |
+		// | A  |       free        |
+		// |    |                   |
+		// |----|-------------------|
+		// |                        |
+		// |                        |
+		// |                        |
+		// |------------------------|---- x
+		//
+		
+		ep.add(0, createStackPlacement(0, 50, 0, 9, 59, 10)); // A
+		assertThat(ep.getAll()).hasSize(1);
+		
+		assertThat(ep.get(0).getMinX()).isEqualTo(10);
+		assertThat(ep.get(0).getMinY()).isEqualTo(49);
 	}
 
 }
