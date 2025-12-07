@@ -45,7 +45,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 
 		DefaultBoxItemSource boxItemSource = new DefaultBoxItemSource(boxItems);
 
-		PointCalculator pointCalculator = new DefaultPointCalculator3D(false, boxItemSource);
+		PointCalculator pointCalculator = createPointCalculator(boxItemSource);
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		if(controlContainerItem.hasInitialPoints()) {
 			pointCalculator.setPoints(controlContainerItem.getInitialPoints());
@@ -188,6 +188,10 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		// ignore decline for the rest
 		
 		return createIntermediatePackagerResult(controlContainerItem, stack);
+	}
+
+	protected PointCalculator createPointCalculator(DefaultBoxItemSource boxItemSource) {
+		return new DefaultPointCalculator3D(false, boxItemSource);
 	}
 
 	public P packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
