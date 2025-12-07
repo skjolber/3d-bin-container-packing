@@ -174,6 +174,17 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		if (maxContainerCount <= 0) {
 			throw new IllegalStateException();
 		}
+		
+		// if one has cost, they all must have
+		for(ControlledContainerItem c : containers) {
+			if(c.hasCostCalculator()) {
+				for(ControlledContainerItem other : containers) {
+					if(!other.hasCostCalculator()) {
+						throw new IllegalStateException("Expected either none or all containers to have cost calculator");
+					}
+				}
+			}
+		}
 	}
 
 	public B withBoxItemGroups(List<BoxItemGroup> items) {
