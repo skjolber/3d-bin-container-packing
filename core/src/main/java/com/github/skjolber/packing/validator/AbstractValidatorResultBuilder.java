@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer;
+package com.github.skjolber.packing.validator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,19 +11,17 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.PackagerResultBuilder;
-import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
-import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
-import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.validator.ValidatorContainerItem;
+import com.github.skjolber.packing.api.ValidatorResultBuilder;
+import com.github.skjolber.packing.api.validator.manifest.ManifestValidatorBuilderFactory;
+import com.github.skjolber.packing.api.validator.placement.PlacementValidatorBuilderFactory;
 
 /**
- * {@linkplain PackagerResult} builder scaffold.
+ * {@linkplain ValidatorResult} builder scaffold.
  * 
  */
 
 @SuppressWarnings("unchecked")
-public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerResultBuilder<B>> implements PackagerResultBuilder {
+public abstract class AbstractValidatorResultBuilder<B extends AbstractValidatorResultBuilder<B>> implements ValidatorResultBuilder {
 
 	protected long deadline = -1L;
 
@@ -37,56 +35,52 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 
 	protected List<BoxItem> items = new ArrayList<>();
 	
-	protected List<ControlledContainerItem> containers;
+	protected List<ValidatorContainerItem> containers;
 
-	public static class DefaultControlledContainerItemBuilder implements ControlledContainerItemBuilder {
+	protected PackagerResult packagerResult;
+
+	public static class DefaultValidatorContainerItemBuilder implements ValidatorContainerItemBuilder {
 
 		protected ContainerItem containerItem;
-		protected ManifestControlsBuilderFactory boxItemControlsBuilderFactory;
-		protected PointControlsBuilderFactory pointControlsBuilderFactory;
-		protected List<Point> points;
+		protected PlacementValidatorBuilderFactory placementValidatorBuilderFactory;
+		protected ManifestValidatorBuilderFactory manifestValidatorBuilderFactory;
 
-		public ControlledContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier) {
-			this.boxItemControlsBuilderFactory = supplier;
+		public ValidatorContainerItemBuilder withManifestValidatorBuilderFactory(
+				ManifestValidatorBuilderFactory manifestValidatorBuilderFactory) {
+			this.manifestValidatorBuilderFactory = manifestValidatorBuilderFactory;
 			return this;
 		}
 
-		public ControlledContainerItemBuilder withPointControlsBuilderFactory(
-				PointControlsBuilderFactory pointControlsBuilderFactory) {
-			this.pointControlsBuilderFactory = pointControlsBuilderFactory;
+		public ValidatorContainerItemBuilder withPlacementValidatorBuilderFactory(
+				PlacementValidatorBuilderFactory placementValidatorBuilderFactory) {
+			this.placementValidatorBuilderFactory = placementValidatorBuilderFactory;
 			return this;
 		}
 
-		public ControlledContainerItemBuilder withContainerItem(ContainerItem containerItem) {
+		public ValidatorContainerItemBuilder withContainerItem(ContainerItem containerItem) {
 			this.containerItem = containerItem;
 			return this;
 		}
 		
-		public ControlledContainerItemBuilder withContainerItem(Container container, int count) {
+		public ValidatorContainerItemBuilder withContainerItem(Container container, int count) {
 			this.containerItem = new ContainerItem(container, count);
 			return this;
 		}
 
-		public ControlledContainerItem build() {
+		public ValidatorContainerItem build() {
 			if (containerItem == null) {
 				throw new IllegalStateException("Expected container item");
 			}
-			ControlledContainerItem packContainerItem = new ControlledContainerItem(containerItem);
-			packContainerItem.setBoxItemControlsBuilderFactory(boxItemControlsBuilderFactory);
-			packContainerItem.setPointControlsBuilderFactory(pointControlsBuilderFactory);
-			packContainerItem.setInitialPoints(points);
+			ValidatorContainerItem packContainerItem = new ValidatorContainerItem(containerItem);
+			packContainerItem.setManifestValidatorBuilderFactory(manifestValidatorBuilderFactory);
+			packContainerItem.setPlacementValidatorBuilderFactory(placementValidatorBuilderFactory);
 			return packContainerItem;
 		}
 
-		@Override
-		public ControlledContainerItemBuilder withPoints(List<Point> points) {
-			this.points = points;
-			return this;
-		}
 	}
 
-	public B withContainerItem(Consumer<ControlledContainerItemBuilder> consumer) {
-		DefaultControlledContainerItemBuilder builder = new DefaultControlledContainerItemBuilder();
+	public B withContainerItem(Consumer<ValidatorContainerItemBuilder> consumer) {
+		DefaultValidatorContainerItemBuilder builder = new DefaultValidatorContainerItemBuilder();
 		consumer.accept(builder);
 		if (this.containers == null) {
 			this.containers = new ArrayList<>();
@@ -95,12 +89,12 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		return (B) this;
 	}
 
-	public boolean hasControls() {
-		for (ControlledContainerItem controlContainerItem : containers) {
-			if (controlContainerItem.hasPointControlsBuilderFactory()) {
+	public boolean hasValidator() {
+		for (ValidatorContainerItem controlContainerItem : containers) {
+			if (controlContainerItem.hasManifestValidatorBuilderFactory()) {
 				return true;
 			}
-			if (controlContainerItem.hasBoxItemControlsBuilderFactory()) {
+			if (controlContainerItem.hasPlacementValidatorBuilderFactory()) {
 				return true;
 			}
 		}
@@ -112,7 +106,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			this.containers = new ArrayList<>(containers.length);
 		}
 		for (ContainerItem item : containers) {
-			this.containers.add(new ControlledContainerItem(item));
+			this.containers.add(new ValidatorContainerItem(item));
 		}
 		return (B) this;
 	}
@@ -122,8 +116,13 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			this.containers = new ArrayList<>(containers.size());
 		}
 		for (ContainerItem item : containers) {
-			this.containers.add(new ControlledContainerItem(item));
+			this.containers.add(new ValidatorContainerItem(item));
 		}
+		return (B) this;
+	}
+	
+	public B withPackagerResult(PackagerResult packagerResult) {
+		this.packagerResult = packagerResult;
 		return (B) this;
 	}
 	
@@ -131,7 +130,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		if (this.containers == null) {
 			this.containers = new ArrayList<>();
 		}
-		this.containers.add(new ControlledContainerItem(container));
+		this.containers.add(new ValidatorContainerItem(container));
 		return (B) this;
 	}
 
@@ -184,12 +183,43 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		if(containers == null || containers.isEmpty()) {
 			throw new IllegalStateException("Expected one or more containers");
 		}
-
-		for (ControlledContainerItem item : containers) {
+		
+		for (ValidatorContainerItem item : containers) {
 			if(item.getCount() == 0) {
 				throw new IllegalStateException("Expected one or more count for every container");
 			}
 		}
+								
+		if(itemGroups != null) {
+			for (BoxItemGroup boxItemGroup : itemGroups) {
+				if(boxItemGroup.getId() == null) {
+					throw new IllegalStateException("Expected all box item groups to have ids");
+				}
+				if(boxItemGroup.isEmpty())  {
+					throw new IllegalStateException("Expected at least one box in each group");
+				}
+				
+				for (BoxItem boxItem : boxItemGroup.getItems()) {
+					if(boxItem.getBox().getId() == null) {
+						throw new IllegalStateException("Expected all box items to have ids");
+					}
+					if(boxItem.getCount() == 0) {
+						throw new IllegalStateException("Expected one or more box item count");
+					}
+																	}
+			}
+		}
+		if(items != null) {
+			for (BoxItem item : items) {
+				if(item.getBox().getId() == null) {
+					throw new IllegalStateException("Expected all box items to have ids");
+				}
+				if(item.getCount() == 0) {
+					throw new IllegalStateException("Expected one or more box item count");
+				}
+			}
+		}
+		
 	}
 
 	public B withBoxItemGroups(List<BoxItemGroup> items) {

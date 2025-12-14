@@ -1,48 +1,33 @@
 package com.github.skjolber.packing.api;
 
-import java.util.List;
-
 /**
  * 
- * Packager result. If the packaging operation was unsuccessful, the container
- * list is empty.
+ * Packager result. 
  * 
  */
 
 public class ValidatorResult {
 
 	protected final long duration;
-	protected final List<Container> containers;
 	protected final boolean valid;
+	protected final boolean timeout;
 
-	public ValidatorResult(List<Container> containers, long duration, boolean valid) {
-		this.containers = containers;
+	public ValidatorResult(long duration, boolean valid, boolean timeout) {
 		this.duration = duration;
 		this.valid = valid;
-	}
-
-	public List<Container> getContainers() {
-		return containers;
+		this.timeout = timeout;
 	}
 
 	public long getDuration() {
 		return duration;
 	}
 
-	public Container get(int index) {
-		return containers.get(index);
-	}
-
-	public int size() {
-		return containers.size();
-	}
-
-	public boolean isSuccess() {
-		return !containers.isEmpty();
-	}
-
 	public boolean isValid() {
 		return valid;
+	}
+	
+	public boolean isTimeout() {
+		return timeout;
 	}
 
 }

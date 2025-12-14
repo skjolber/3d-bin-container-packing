@@ -125,6 +125,10 @@ public class Placement implements Serializable {
 		return stackValue.getBox().getBoxItem();
 	}
 	
+	public Box getBox() {
+		return stackValue.getBox();
+	}
+	
 	public Point getPoint() {
 		return point;
 	}

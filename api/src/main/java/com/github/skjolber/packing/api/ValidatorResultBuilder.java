@@ -3,27 +3,23 @@ package com.github.skjolber.packing.api;
 import java.util.List;
 import java.util.function.Consumer;
 
-import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
-import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
-import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.api.validator.manifest.ManifestValidatorBuilderFactory;
+import com.github.skjolber.packing.api.validator.placement.PlacementValidatorBuilderFactory;
 
 public interface ValidatorResultBuilder {
 
-	public static interface ControlledContainerItemBuilder {
+	public static interface ValidatorContainerItemBuilder {
 
-		ControlledContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier);
+		public ValidatorContainerItemBuilder withManifestValidatorBuilderFactory(ManifestValidatorBuilderFactory manifestValidatorBuilderFactory);
 
-		ControlledContainerItemBuilder withPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory);
+		public ValidatorContainerItemBuilder withPlacementValidatorBuilderFactory(PlacementValidatorBuilderFactory placementValidatorBuilderFactory) ;
 
-		ControlledContainerItemBuilder withContainerItem(ContainerItem containerItem);
+		ValidatorContainerItemBuilder withContainerItem(ContainerItem containerItem);
 		
-		ControlledContainerItemBuilder withContainerItem(Container container, int count);
+		ValidatorContainerItemBuilder withContainerItem(Container container, int count);
 		
-		ControlledContainerItemBuilder withPoints(List<Point> points);
 	}
 	
-	ValidatorResultBuilder withBoxItems(BoxItem... items);
-
 	ValidatorResultBuilder withBoxItems(List<BoxItem> items);
 
 	ValidatorResultBuilder withOrder(Order order);
@@ -32,14 +28,11 @@ public interface ValidatorResultBuilder {
 
 	ValidatorResultBuilder withBoxItemGroups(List<BoxItemGroup> items);
 
-	ValidatorResultBuilder withBoxItems(BoxItemGroup... items);
-	
 	ValidatorResultBuilder withContainerItems(List<ContainerItem> containers);
 
-	ValidatorResultBuilder withContainerItem(Consumer<ControlledContainerItemBuilder> consumer);
+	ValidatorResultBuilder withContainerItem(Consumer<ValidatorContainerItemBuilder> consumer);
 
-	ValidatorResultBuilder withContainerItems(ContainerItem... containers);
-
+	ValidatorResultBuilder withPackagerResult(PackagerResult result);
 
 	/**
 	 * 
