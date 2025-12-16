@@ -216,7 +216,7 @@ public abstract class AbstractValidatorResultBuilder<B extends AbstractValidator
 					throw new IllegalStateException("Expected all box items to have ids");
 				}
 				if(item.getCount() == 0) {
-					throw new IllegalStateException("Expected one or more box item count");
+					throw new IllegalStateException("Expected one or more box item count for " + item.getBox().getId());
 				}
 			}
 		}

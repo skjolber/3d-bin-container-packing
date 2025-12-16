@@ -3,7 +3,9 @@ package com.github.skjolber.packing.packer;
 import static com.github.skjolber.packing.test.assertj.ContainerAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,8 +15,10 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.ValidatorResult;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.test.assertj.PackagerAssert;
+import com.github.skjolber.packing.validator.DefaultValidator;
 
 @SuppressWarnings("rawtypes")
 public abstract class AbstractPackagerTest {
@@ -124,5 +128,30 @@ public abstract class AbstractPackagerTest {
 		// XXXX
 		PackagerAssert.assertThat(packager).respectsDeadline(containers, products, 30 * 1000);
 	}
+	
+	protected void assertValidUsingValidator(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItem> boxItems) {
+		DefaultValidator validator = new DefaultValidator();
+		ValidatorResult validatorResult = validator.newResultBuilder()
+				.withContainerItems(containerItems)
+				.withMaxContainerCount(maxContainers)
+				.withPackagerResult(result)
+				.withBoxItems(boxItems)
+				.build();
+		
+		assertTrue(validatorResult.isValid());
+	}
+	
+
+	public List<BoxItem> clone(List<BoxItem> products) {
+		List<BoxItem> results = new ArrayList<>();
+		
+		for (BoxItem boxItem : products) {
+			results.add(boxItem.clone());
+		}
+		
+		return results;
+	}
+
+
 
 }

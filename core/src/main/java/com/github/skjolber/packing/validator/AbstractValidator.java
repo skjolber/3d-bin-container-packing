@@ -154,7 +154,7 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 			return false;
 		}
 
-		return false;
+		return true;
 	}
 
 	// check that each group is just within one container

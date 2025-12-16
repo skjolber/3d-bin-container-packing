@@ -30,16 +30,16 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
-			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			assertTrue(result.isSuccess());
@@ -50,13 +50,15 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			List<Placement> placements = fits.getStack().getPlacements();
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
-			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemDescription("B");
-			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemDescription("C");
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemId("B");
+			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemId("C");
 	
 			assertThat(placements.get(0)).isAlongsideX(placements.get(1));
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
+			
+			assertValidUsingValidator(containerItems, 1, result, products);
 		} finally {
 			packager.close();
 		}
@@ -68,7 +70,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
@@ -101,6 +103,8 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertThat(placements.get(0)).isAlongsideX(placements.get(1));
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
+			
+			assertValidUsingValidator(containerItems, 1, result, products);
 		} finally {
 			packager.close();
 		}
@@ -112,16 +116,16 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(3, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
-			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			Container fits = result.get(0);
@@ -131,9 +135,11 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			List<Placement> placements = fits.getStack().getPlacements();
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
-			assertThat(placements.get(1)).isAt(2, 0, 0).hasBoxItemDescription("B");
-			assertThat(placements.get(2)).isAt(0, 1, 0).hasBoxItemDescription("C");
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(1)).isAt(2, 0, 0).hasBoxItemId("B");
+			assertThat(placements.get(2)).isAt(0, 1, 0).hasBoxItemId("C");
+			
+			assertValidUsingValidator(containerItems, 1, result, products);
 		} finally {
 			packager.close();
 		}
@@ -145,22 +151,24 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(6, 10, 10).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(6, 10, 10).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
-			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(5, 10, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(5, 10, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			Container fits = result.get(0);
 	
 			assertNotNull(fits);
 			validate(fits);
+			
+			assertValidUsingValidator(containerItems, 1, result, products);
 		} finally {
 			packager.close();
 		}
@@ -171,16 +179,16 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(6, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(6, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
-			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(3, 1, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(3, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			Container fits = result.get(0);
@@ -190,9 +198,11 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			List<Placement> placements = fits.getStack().getPlacements();
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
-			assertThat(placements.get(1)).isAt(3, 0, 0).hasBoxItemDescription("B"); // point with lowest x is selected first
-			assertThat(placements.get(2)).isAt(5, 0, 0).hasBoxItemDescription("C");
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(1)).isAt(3, 0, 0).hasBoxItemId("B"); // point with lowest x is selected first
+			assertThat(placements.get(2)).isAt(5, 0, 0).hasBoxItemId("C");
+			
+			assertValidUsingValidator(containerItems, 1, result, products);
 		} finally {
 			packager.close();
 		}
@@ -204,16 +214,16 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 2).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(3, 2, 2).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
-			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
-			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
-			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
+			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			Container fits = result.get(0);
@@ -224,15 +234,17 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 			List<Placement> placements = fits.getStack().getPlacements();
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
-			assertThat(placements.get(1)).isAt(2, 0, 0).hasBoxItemDescription("A");
-			assertThat(placements.get(2)).isAt(0, 1, 0).hasBoxItemDescription("B");
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(1)).isAt(2, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(2)).isAt(0, 1, 0).hasBoxItemId("B");
 	
-			assertThat(placements.get(3)).isAt(0, 0, 1).hasBoxItemDescription("B");
-			assertThat(placements.get(4)).isAt(2, 0, 1).hasBoxItemDescription("C");
-			assertThat(placements.get(5)).isAt(0, 1, 1).hasBoxItemDescription("C");
+			assertThat(placements.get(3)).isAt(0, 0, 1).hasBoxItemId("B");
+			assertThat(placements.get(4)).isAt(2, 0, 1).hasBoxItemId("C");
+			assertThat(placements.get(5)).isAt(0, 1, 1).hasBoxItemId("C");
 			
 			assertEquals(2, countLevels(fits));
+			
+			assertValidUsingValidator(containerItems, 1, result, products);
 		} finally {
 			packager.close();
 		}
@@ -244,7 +256,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 2).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(3, 2, 2).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
@@ -279,6 +291,8 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertThat(placements.get(5)).isAt(0, 1, 1).hasBoxItemId("C");
 			
 			assertEquals(2, countLevels(fits));
+			
+			assertValidUsingValidator(containerItems, 1, result, products);
 		} finally {
 			packager.close();
 		}
@@ -289,16 +303,16 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
-			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 1));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 	
@@ -308,6 +322,8 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			validate(fits);
 			
 			assertEquals(3, countLevels(fits));
+			
+			assertValidUsingValidator(containerItems, 1, result, products);
 		} finally {
 			packager.close();
 		}
@@ -319,19 +335,19 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				// capacity is 3*2*3 = 18
-				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
 		List<Container> containers = new ArrayList<>();
 
-		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(3, 2, 3).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
 
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
-			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 18)); // 12
-			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1)); // 1
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 18)); // 12
+			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1)); // 1
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			assertEquals(result.size(), 0);
@@ -344,7 +360,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	void issue433() {
 		Container container = Container
 				.newBuilder()
-				.withDescription("1")
+				.withId("1")
 				.withSize(14, 195, 74)
 				.withEmptyWeight(0)
 				.withMaxLoadWeight(100)
@@ -367,6 +383,8 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertTrue(result.isSuccess());
 			Container pack = result.get(0);
 			assertNotNull(pack);
+			
+			assertValidUsingValidator(containerItems, 1, result, products);
 		} finally {
 			packager.close();
 		}
@@ -376,7 +394,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	@Test
 	void issue440() {
 		Container build = Container.newBuilder()
-				.withDescription("1")
+				.withId("1")
 				.withSize(2352, 2394, 12031)
 				.withEmptyWeight(4000)
 				.withMaxLoadWeight(26480)
@@ -406,13 +424,14 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 						createStackableItem("9", 1120, 1700, 2120, 160, boxCountPerStackableItem),
 						createStackableItem("10", 1200, 1050, 2280, 390, boxCountPerStackableItem));
 	
-				PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-				
-				List<Container> packList = result.getContainers();
-	
-				assertNotNull(packList);
-				assertTrue(i >= packList.size());
-				validate(packList);
+				PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(clone(products)).build();
+				if(result.isSuccess()) {
+					List<Container> packList = result.getContainers();
+					assertTrue(i >= packList.size());
+					
+					validate(packList);
+					assertValidUsingValidator(containerItems, packList.size(), result, products);
+				}
 			}
 		} finally {
 			packager.close();
@@ -423,7 +442,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	@Test
 	void testCorrectLevelZOffsetAdjustments() { // issue 450
 		Container build = Container.newBuilder()
-				.withDescription("1")
+				.withId("1")
 				.withSize(2352, 2394, 12031)
 				.withEmptyWeight(4000)
 				.withMaxLoadWeight(26480)
@@ -452,6 +471,8 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			List<Container> packList = result.getContainers();
 			validate(packList);
+			
+			assertValidUsingValidator(containerItems, 1, result, products);
 		} finally {
 			packager.close();
 		}
