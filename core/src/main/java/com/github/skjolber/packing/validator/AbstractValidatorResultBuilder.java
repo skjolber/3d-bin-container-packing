@@ -112,6 +112,7 @@ public abstract class AbstractValidatorResultBuilder<B extends AbstractValidator
 		return (B) this;
 	}
 
+	@Override
 	public B withContainerItems(List<ContainerItem> containers) {
 		if (this.containers == null) {
 			this.containers = new ArrayList<>(containers.size());
