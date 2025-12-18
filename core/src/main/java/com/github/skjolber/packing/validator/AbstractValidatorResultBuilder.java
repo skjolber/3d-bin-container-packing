@@ -166,6 +166,7 @@ public abstract class AbstractValidatorResultBuilder<B extends AbstractValidator
 		return (B) this;
 	}
 
+	@Override
 	public B withMaxContainerCount(int maxResults) {
 		this.maxContainerCount = maxResults;
 		return (B) this;
