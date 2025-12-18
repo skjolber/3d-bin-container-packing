@@ -61,7 +61,7 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 			Integer count = resultCount.get(id);
 			
 			if(count == null) {
-				reasons.add(new TooFewBoxItemIdsReason(id + ": No found"));
+				reasons.add(new TooFewBoxItemIdsReason(id + ": Not found"));
 				return false;
 			}
 
@@ -99,7 +99,7 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 			
 			List<Container> list = entry.getValue();
 			if(list.size() > referenceItem.getCount()) {
-				reasons.add(new ContainerCountTooHighReason("Expected maximum " + referenceItem.getCount() + "containers, found " + list.size()));
+				reasons.add(new ContainerCountTooHighReason("Expected maximum " + referenceItem.getCount() + " containers, found " + list.size()));
 				return false; 
 			}
 		}
@@ -186,12 +186,9 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 		Map<String, BoxItemGroup> boxToGroup = new HashMap<>();
 		
 		for (BoxItemGroup boxItemGroup : groups) {
-			Set<String> set = new HashSet<>();
 			
 			for (BoxItem item: boxItemGroup.getItems()) {
 				boxToGroup.put(item.getBox().getId(), boxItemGroup);
-
-				set.add(item.getBox().getId());
 			}
 		}
 		
@@ -248,7 +245,7 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 			}
 		}
 				
-		return false;
+		return true;
 	}
 
 }

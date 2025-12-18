@@ -46,23 +46,27 @@ public abstract class AbstractValidatorResultBuilder<B extends AbstractValidator
 		protected PlacementValidatorBuilderFactory placementValidatorBuilderFactory;
 		protected ManifestValidatorBuilderFactory manifestValidatorBuilderFactory;
 
+		@Override
 		public ValidatorContainerItemBuilder withManifestValidatorBuilderFactory(
 				ManifestValidatorBuilderFactory manifestValidatorBuilderFactory) {
 			this.manifestValidatorBuilderFactory = manifestValidatorBuilderFactory;
 			return this;
 		}
 
+		@Override
 		public ValidatorContainerItemBuilder withPlacementValidatorBuilderFactory(
 				PlacementValidatorBuilderFactory placementValidatorBuilderFactory) {
 			this.placementValidatorBuilderFactory = placementValidatorBuilderFactory;
 			return this;
 		}
 
+		@Override
 		public ValidatorContainerItemBuilder withContainerItem(ContainerItem containerItem) {
 			this.containerItem = containerItem;
 			return this;
 		}
 		
+		@Override
 		public ValidatorContainerItemBuilder withContainerItem(Container container, int count) {
 			this.containerItem = new ContainerItem(container, count);
 			return this;
