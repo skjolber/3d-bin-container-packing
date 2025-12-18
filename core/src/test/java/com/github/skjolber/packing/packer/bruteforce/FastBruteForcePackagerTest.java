@@ -106,7 +106,7 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 			
-			assertValidUsingValidator(containerItems, 1, build, products);
+			assertValidUsingValidator(containerItems, 2, build, products);
 		} finally {
 			packager.close();
 		}

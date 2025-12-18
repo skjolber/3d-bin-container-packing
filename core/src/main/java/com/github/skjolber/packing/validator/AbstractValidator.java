@@ -77,8 +77,13 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 		return true;
 	}
 
-	protected boolean validateContainerItemCounts(Map<String, ValidatorContainerItem> containersById, PackagerResult result, List<ValidatorResultReason> reasons) {
+	protected boolean validateContainerItemCounts(int maxContainerCount, Map<String, ValidatorContainerItem> containersById, PackagerResult result, List<ValidatorResultReason> reasons) {
 		Map<String, List<Container>> resultContainersById = new HashMap<>();
+		
+		if(result.getContainers().size() > maxContainerCount) {
+			reasons.add(new ContainerCountTooHighReason("Expected max container count " + maxContainerCount + ", got " + result.getContainers().size()));
+			return false;
+		}
 		
 		for (Container container : result.getContainers()) {
 			String id = container.getId();
@@ -99,7 +104,7 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 			
 			List<Container> list = entry.getValue();
 			if(list.size() > referenceItem.getCount()) {
-				reasons.add(new ContainerCountTooHighReason("Expected maximum " + referenceItem.getCount() + " containers, found " + list.size()));
+				reasons.add(new ContainerCountTooHighReason("Expected maximum " + referenceItem.getCount() + "'" + referenceItem.getContainer().getId() + "' containers, found " + list.size()));
 				return false; 
 			}
 		}

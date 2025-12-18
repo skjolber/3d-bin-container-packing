@@ -52,9 +52,9 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 				List<ValidatorResultReason> reasons = new ArrayList<>();
 				boolean valid;
 				if(items != null && !items.isEmpty()) {
-					valid = validateBoxItems(items, order, containersById, packagerResult, interrupt, reasons);
+					valid = validateBoxItems(items, order, maxContainerCount, containersById, packagerResult, interrupt, reasons);
 				} else {
-					valid = validateBoxItemGroups(itemGroups, order, containersById, packagerResult, interrupt, reasons);
+					valid = validateBoxItemGroups(itemGroups, order, maxContainerCount, containersById, packagerResult, interrupt, reasons);
 				}
 				
 				long duration = System.currentTimeMillis() - start;
@@ -74,9 +74,9 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 		return new DefaultValidatorResultBuilder();
 	}
 
-	private boolean validateBoxItems(List<BoxItem> items, Order order, Map<String, ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
+	private boolean validateBoxItems(List<BoxItem> items, Order order, int maxContainerCount, Map<String, ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 		// validate first that the box items and containers are used in correct numbers
-		if(!validateContainerItemCounts(containers, result, reasons)) {
+		if(!validateContainerItemCounts(maxContainerCount, containers, result, reasons)) {
 			return false;
 		}
 		if(!validateBoxItemCounts(items, result, reasons)) {
@@ -89,9 +89,9 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 		return validate(containers, result, interrupt, reasons);
 	}
 
-	public boolean validateBoxItemGroups(List<BoxItemGroup> itemGroups, Order order, Map<String, ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
+	public boolean validateBoxItemGroups(List<BoxItemGroup> itemGroups, Order order, int maxContainerCount, Map<String, ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 		// validate first that the box items, groups and containers are used in correct numbers
-		if(!validateContainerItemCounts(containers, result, reasons)) {
+		if(!validateContainerItemCounts(maxContainerCount, containers, result, reasons)) {
 			return false;
 		}
 		if(!validateBoxItemGroupsCounts(itemGroups, result, reasons)) {

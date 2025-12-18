@@ -431,7 +431,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
         assertTrue(result.isSuccess());
         
-		assertValidUsingValidator(containerItems, 1, result, products);
+		assertValidUsingValidator(containerItems, Integer.MAX_VALUE, result, products);
     }
     
     @Test
