@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.PlacementValidator;
 
 public class DefaultPlacementValidator implements PlacementValidator {
@@ -20,7 +21,7 @@ public class DefaultPlacementValidator implements PlacementValidator {
 	}
 
 	@Override
-	public boolean isValid(List<Placement> list) {
+	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		return true;
 	}
 

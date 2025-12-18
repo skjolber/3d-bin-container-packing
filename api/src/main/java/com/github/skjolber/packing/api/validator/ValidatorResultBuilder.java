@@ -1,8 +1,14 @@
-package com.github.skjolber.packing.api;
+package com.github.skjolber.packing.api.validator;
 
 import java.util.List;
 import java.util.function.Consumer;
 
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
+import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.validator.manifest.ManifestValidatorBuilderFactory;
 import com.github.skjolber.packing.api.validator.placement.PlacementValidatorBuilderFactory;
 

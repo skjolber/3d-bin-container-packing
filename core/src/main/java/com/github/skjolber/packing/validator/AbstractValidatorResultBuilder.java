@@ -11,8 +11,8 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.ValidatorResult;
-import com.github.skjolber.packing.api.ValidatorResultBuilder;
+import com.github.skjolber.packing.api.validator.ValidatorResult;
+import com.github.skjolber.packing.api.validator.ValidatorResultBuilder;
 import com.github.skjolber.packing.api.validator.manifest.ManifestValidatorBuilderFactory;
 import com.github.skjolber.packing.api.validator.placement.PlacementValidatorBuilderFactory;
 

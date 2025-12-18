@@ -1,4 +1,6 @@
-package com.github.skjolber.packing.api;
+package com.github.skjolber.packing.api.validator;
+
+import java.util.List;
 
 /**
  * 
@@ -11,11 +13,13 @@ public class ValidatorResult {
 	protected final long duration;
 	protected final boolean valid;
 	protected final boolean timeout;
+	protected final List<ValidatorResultReason> reasons;
 
-	public ValidatorResult(long duration, boolean valid, boolean timeout) {
+	public ValidatorResult(long duration, boolean valid, boolean timeout, List<ValidatorResultReason> reasons) {
 		this.duration = duration;
 		this.valid = valid;
 		this.timeout = timeout;
+		this.reasons = reasons;
 	}
 
 	public long getDuration() {
@@ -30,4 +34,7 @@ public class ValidatorResult {
 		return timeout;
 	}
 
+	public List<ValidatorResultReason> getReasons() {
+		return reasons;
+	}
 }

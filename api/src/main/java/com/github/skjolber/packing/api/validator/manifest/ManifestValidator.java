@@ -3,6 +3,7 @@ package com.github.skjolber.packing.api.validator.manifest;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 
 /**
  * 
@@ -12,6 +13,6 @@ import com.github.skjolber.packing.api.Box;
 
 public interface ManifestValidator {
 
-	boolean isValid(List<Box> boxes);
+	boolean isValid(List<Box> boxes, List<ValidatorResultReason> reasons);
 	
 }

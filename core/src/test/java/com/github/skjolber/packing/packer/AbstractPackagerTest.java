@@ -15,7 +15,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.ValidatorResult;
+import com.github.skjolber.packing.api.validator.ValidatorResult;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.test.assertj.PackagerAssert;
 import com.github.skjolber.packing.validator.DefaultValidator;

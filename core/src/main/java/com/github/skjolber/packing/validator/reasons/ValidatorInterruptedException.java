@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.validator;
+package com.github.skjolber.packing.validator.reasons;
 
 public class ValidatorInterruptedException extends Exception {
 
