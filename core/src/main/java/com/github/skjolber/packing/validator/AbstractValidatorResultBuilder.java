@@ -145,6 +145,7 @@ public abstract class AbstractValidatorResultBuilder<B extends AbstractValidator
 		return withBoxItems(list);
 	}
 
+	@Override
 	public B withBoxItems(List<BoxItem> items) {
 		this.items = items;
 		return (B) this;
