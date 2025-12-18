@@ -151,6 +151,7 @@ public abstract class AbstractValidatorResultBuilder<B extends AbstractValidator
 		return (B) this;
 	}
 
+	@Override
 	public B withOrder(Order order) {
 		this.order = order;
 		return (B) this;
