@@ -302,7 +302,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	public void testIssue698() {
 		Container container1 = Container.newBuilder()
 				.withId("1")
-				.withId("Test container 1")
+				.withDescription("Test container 1")
 				.withSize(145, 220, 35)
 				.withEmptyWeight(0)
 				.withMaxLoadWeight(5000)
@@ -310,7 +310,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		Container container2 = Container.newBuilder()
 				.withId("2")
-				.withId("Test container 2")
+				.withDescription("Test container 2")
 				.withSize(160, 220, 77)
 				.withEmptyWeight(0)
 				.withMaxLoadWeight(5000)
@@ -318,7 +318,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		Container container3 = Container.newBuilder()
 				.withId("3")
-				.withId("Test container 3")
+				.withDescription("Test container 3")
 				.withSize(225, 310, 102)
 				.withEmptyWeight(0)
 				.withMaxLoadWeight(5000)
@@ -326,7 +326,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		Container container4 = Container.newBuilder()
 				.withId("4")
-				.withId("Test container 4")
+				.withDescription("Test container 4")
 				.withSize(200, 250, 150)
 				.withEmptyWeight(0)
 				.withMaxLoadWeight(5000)
@@ -334,7 +334,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		Container container5 = Container.newBuilder()
 				.withId("5")
-				.withId("Test container 5")
+				.withDescription("Test container 5")
 				.withSize(230, 230, 230)
 				.withEmptyWeight(0)
 				.withMaxLoadWeight(5000)
@@ -342,7 +342,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		Container container6 = Container.newBuilder()
 				.withId("6")
-				.withId("Test container 6")
+				.withDescription("Test container 6")
 				.withSize(215, 305, 250)
 				.withEmptyWeight(0)
 				.withMaxLoadWeight(5000)
@@ -350,7 +350,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		Container container7 = Container.newBuilder()
 				.withId("7")
-				.withId("Test container 7")
+				.withDescription("Test container 7")
 				.withSize(305, 305, 305)
 				.withEmptyWeight(0)
 				.withMaxLoadWeight(5000)
@@ -358,7 +358,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 		Container container8 = Container.newBuilder()
 				.withId("8")
-				.withId("Test container 8")
+				.withDescription("Test container 8")
 				.withSize(375, 375, 300)
 				.withEmptyWeight(0)
 				.withMaxLoadWeight(5000)
