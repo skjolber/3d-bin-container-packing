@@ -21,7 +21,7 @@ import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.validator.reasons.BoxItemCountTooHighReason;
 import com.github.skjolber.packing.validator.reasons.BoxItemCountTooLowReason;
 import com.github.skjolber.packing.validator.reasons.BoxesIntersectReason;
-import com.github.skjolber.packing.validator.reasons.BoxesOutsideContainerReason;
+import com.github.skjolber.packing.validator.reasons.BoxOutsideContainerReason;
 import com.github.skjolber.packing.validator.reasons.ContainerCountTooHighReason;
 import com.github.skjolber.packing.validator.reasons.TooFewBoxItemIdsReason;
 import com.github.skjolber.packing.validator.reasons.TooHighVolumeReason;
@@ -136,7 +136,7 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 			List<Placement> placements = stack.getPlacements();
 			for (Placement placement : placements) {
 				if(!isInside(referenceContainer, placement)) {
-					reasons.add(new BoxesOutsideContainerReason("Box " + placement.getBox().getId() + " not placed within load limits"));
+					reasons.add(new BoxOutsideContainerReason("Box " + placement.getBox().getId() + " not placed within load limits"));
 					return false;
 				}
 			}
