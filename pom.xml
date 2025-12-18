@@ -16,7 +16,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 
 		<commons-math3.version>3.6.1</commons-math3.version>
-		<mockito.version>5.20.0</mockito.version>
+		<mockito.version>5.21.0</mockito.version>
 
 		<eclipse-collections.version>13.0.0</eclipse-collections.version>
 		<google-truth.version>1.4.5</google-truth.version>
@@ -32,7 +32,7 @@
 		<maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
 		<maven-source-plugin.version>3.4.0</maven-source-plugin.version>
 		<maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
-		<maven-release-plugin.version>3.3.0</maven-release-plugin.version>
+		<maven-release-plugin.version>3.3.1</maven-release-plugin.version>
 		<maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
 		<maven-dependency-plugin.version>3.9.0</maven-dependency-plugin.version>
 		<jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
