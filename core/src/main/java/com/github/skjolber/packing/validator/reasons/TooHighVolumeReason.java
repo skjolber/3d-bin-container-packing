@@ -2,7 +2,7 @@ package com.github.skjolber.packing.validator.reasons;
 
 /**
  * 
- * There is more box item types than expected.
+ * Represents a validation failure where the total volume is higher than allowed.
  * 
  */
 
