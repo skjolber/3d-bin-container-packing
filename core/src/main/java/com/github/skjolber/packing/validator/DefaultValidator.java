@@ -41,20 +41,15 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			if(interrupt != null) {
 				booleanSupplierBuilder.withInterrupt(interrupt);
 			}
-			
-			Map<String, ValidatorContainerItem> containersById = new HashMap<>();
-			for (ValidatorContainerItem validatorContainerItem : containers) {
-				containersById.put(validatorContainerItem.getContainer().getId(), validatorContainerItem);
-			}
 
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
 				List<ValidatorResultReason> reasons = new ArrayList<>();
 				boolean valid;
 				if(items != null && !items.isEmpty()) {
-					valid = validateBoxItems(items, order, maxContainerCount, containersById, packagerResult, interrupt, reasons);
+					valid = validateBoxItems(items, order, maxContainerCount, containers, packagerResult, interrupt, reasons);
 				} else {
-					valid = validateBoxItemGroups(itemGroups, order, maxContainerCount, containersById, packagerResult, interrupt, reasons);
+					valid = validateBoxItemGroups(itemGroups, order, maxContainerCount, containers, packagerResult, interrupt, reasons);
 				}
 				
 				long duration = System.currentTimeMillis() - start;
@@ -74,36 +69,168 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 		return new DefaultValidatorResultBuilder();
 	}
 
-	private boolean validateBoxItems(List<BoxItem> items, Order order, int maxContainerCount, Map<String, ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
+	private boolean validateBoxItems(List<BoxItem> items, Order order, int maxContainerCount, List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
+		
+		if(!validateBoxItemOrder(items, order, result)) {
+			return false;
+		}
+		
+		Map<String, ValidatorContainerItem> containersById = new HashMap<>();
+		for (ValidatorContainerItem validatorContainerItem : containers) {
+			containersById.put(validatorContainerItem.getContainer().getId(), validatorContainerItem);
+		}
+		
 		// validate first that the box items and containers are used in correct numbers
-		if(!validateContainerItemCounts(maxContainerCount, containers, result, reasons)) {
+		if(!validateContainerItemCounts(maxContainerCount, containersById, result, reasons)) {
 			return false;
 		}
 		if(!validateBoxItemCounts(items, result, reasons)) {
 			return false;
 		}
-		if(!validateLoad(containers, result, reasons)) {
+		if(!validateLoad(containersById, result, reasons)) {
 			return false;
 		}
 
-		return validate(containers, result, interrupt, reasons);
+		return validate(containersById, result, interrupt, reasons);
 	}
 
-	public boolean validateBoxItemGroups(List<BoxItemGroup> itemGroups, Order order, int maxContainerCount, Map<String, ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
+	protected boolean validateBoxItemOrder(List<BoxItem> items, Order order, PackagerResult result) {
+		if(order == Order.CRONOLOGICAL) {
+			int boxItemIndex = 0;
+			int boxIndex = 0;
+			
+			search:
+			for (Container container : result.getContainers()) {
+				for (Placement placement : container.getStack().getPlacements()) {
+					Box box = placement.getBox();
+
+					BoxItem boxItem = items.get(boxItemIndex);
+					if(!box.getId().equals(boxItem.getBox().getId())) {
+						return false;
+					}
+
+					boxIndex++;
+					if(boxIndex >= boxItem.getCount()) {
+						boxItemIndex++;
+						if(boxItemIndex >= items.size()) {
+							break search;
+						}
+
+						boxIndex = 0;
+					}
+				}
+			}
+			
+		} else if(order == Order.CRONOLOGICAL_ALLOW_SKIPPING) {
+			Map<String, Integer> map = new HashMap<>();
+			for(int i = 0; i < items.size(); i++) {
+				BoxItem boxItem = items.get(i);
+				map.put(boxItem.getBox().getId(), map.size());
+			}
+			
+			for (Container container : result.getContainers()) {
+				int index = -1;
+				for (Placement placement : container.getStack().getPlacements()) {
+					int currentIndex = map.get(placement.getBox().getId());
+					if(currentIndex < index) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	public boolean validateBoxItemGroups(List<BoxItemGroup> itemGroups, Order order, int maxContainerCount, List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
+
+		if(!validateBoxItemGroupOrder(itemGroups, order, result)) {
+			return false;
+		}
+		
+		Map<String, ValidatorContainerItem> containersById = new HashMap<>();
+		for (ValidatorContainerItem validatorContainerItem : containers) {
+			containersById.put(validatorContainerItem.getContainer().getId(), validatorContainerItem);
+		}
+		
 		// validate first that the box items, groups and containers are used in correct numbers
-		if(!validateContainerItemCounts(maxContainerCount, containers, result, reasons)) {
+		if(!validateContainerItemCounts(maxContainerCount, containersById, result, reasons)) {
 			return false;
 		}
 		if(!validateBoxItemGroupsCounts(itemGroups, result, reasons)) {
 			return false;
 		}
-		if(!validateLoad(containers, result, reasons)) {
+		if(!validateLoad(containersById, result, reasons)) {
 			return false;
 		}
 
-		return validate(containers, result, interrupt, reasons);
+		return validate(containersById, result, interrupt, reasons);
 	}
 	
+	protected boolean validateBoxItemGroupOrder(List<BoxItemGroup> itemGroups, Order order, PackagerResult result) {
+		if(order == Order.CRONOLOGICAL) {
+			
+			List<Container> containers = result.getContainers();
+			
+			int boxItemGroupIndex = 0;
+			int boxItemIndex = 0;
+			int boxIndex = 0;
+			
+			search:
+			for (Container container : containers) {
+				for (Placement placement : container.getStack().getPlacements()) {
+					
+					BoxItemGroup boxItemGroup = itemGroups.get(boxItemGroupIndex);
+					
+					Box box = placement.getBox();
+
+					BoxItem boxItem = boxItemGroup.get(boxItemIndex);
+					if(!box.getId().equals(boxItem.getBox().getId())) {
+						return false;
+					}
+
+					boxIndex++;
+					if(boxIndex >= boxItem.getCount()) {
+						boxItemIndex++;
+						if(boxItemIndex >= boxItemGroup.size()) {
+							boxItemGroupIndex++;
+
+							if(boxItemGroupIndex >= itemGroups.size()) {
+								break search;
+							}
+							
+							boxItemIndex = 0;
+						}
+
+						boxIndex = 0;
+					}
+				}
+			}
+			
+		} else if(order == Order.CRONOLOGICAL_ALLOW_SKIPPING) {
+			List<Container> containers = result.getContainers();
+			
+			Map<String, Integer> map = new HashMap<>();
+			
+			for (BoxItemGroup boxItemGroup : itemGroups) {
+				int size = map.size();
+				for (BoxItem boxItem : boxItemGroup.getItems()) {
+					map.put(boxItem.getBox().getId(), size);
+				}
+			}
+			
+			for (Container container : containers) {
+				int index = -1;
+				for (Placement placement : container.getStack().getPlacements()) {
+					int currentIndex = map.get(placement.getBox().getId());
+					if(currentIndex < index) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
 	protected boolean validate(Map<String, ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 		for (Container container : result.getContainers()) {
 			ValidatorContainerItem referenceItem = containers.get(container.getId());

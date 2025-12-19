@@ -266,7 +266,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		PlacementControls<I> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
 
 		groups:
-		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !pointCalculator.isEmpty() && boxItemGroupIterator.hasNext()) {
+		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !pointCalculator.isEmpty() && boxItemGroupIterator.hasNext() && !filteredBoxItemGroups.isEmpty()) {
 			int groupIndex = boxItemGroupIterator.next();
 			
 			int boxItemStartIndex = packagerBoxItems.getFirstBoxItemIndexForGroup(groupIndex);
@@ -319,6 +319,8 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 								while(i < filteredBoxItemGroups.size()) {
 									removedBoxItemGroups.add(filteredBoxItemGroups.remove(i));
 								}
+								
+								
 							}
 						}
 					}

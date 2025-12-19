@@ -13,6 +13,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
@@ -176,16 +177,51 @@ public class DefaultValidatorTest {
 			packager.close();
 		}
 	}
+	
+	@Test
+	void testOrderIncorrect() {
+		List<ContainerItem> trustedContainerItems = ContainerItem
+				.newListBuilder()
+				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(3, 3, 3).withMaxLoadWeight(100).withStack(new Stack()).build())
+				.build();
 
-	protected void assertNotValidUsingValidator(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItem> boxItems) {
+		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+	
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+	
+			Container untrustedContainer = Container.newBuilder().withId("1").withEmptyWeight(1).withSize(4, 4, 4).withMaxLoadWeight(100).withStack(new Stack()).build();
+			
+			Stack stack = untrustedContainer.getStack();
+				
+			// products intersects
+			stack.add(createPlacement(products.get(1).getBox().getStackValue(0), 0, 0, 0));
+			stack.add(createPlacement(products.get(0).getBox().getStackValue(0), 1, 1, 1));
+			
+			PackagerResult result = new PackagerResult(Arrays.asList(untrustedContainer), 0, false);
+	
+			assertNotValidUsingValidator(trustedContainerItems, 1, result, products, Order.CRONOLOGICAL);
+		} finally {
+			packager.close();
+		}
+	}
+
+	protected void assertNotValidUsingValidator(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItem> boxItems, Order order) {
 		ValidatorResult validatorResult = validator.newResultBuilder()
 				.withContainerItems(containerItems)
 				.withMaxContainerCount(maxContainers)
 				.withPackagerResult(result)
+				.withOrder(order)
 				.withBoxItems(boxItems)
 				.build();
 		
 		assertFalse(validatorResult.isValid());
+	}
+	
+	protected void assertNotValidUsingValidator(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItem> boxItems) {
+		assertNotValidUsingValidator(containerItems, maxContainers, result, boxItems, Order.NONE);
 	}
 	
 	private Placement createPlacement(BoxStackValue stackValue, int x, int y, int z) {

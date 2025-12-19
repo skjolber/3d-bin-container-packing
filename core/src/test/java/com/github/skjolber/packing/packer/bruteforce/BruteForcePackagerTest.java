@@ -98,8 +98,6 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			Container fits = packList.get(0);
 	
 			List<Placement> placements = fits.getStack().getPlacements();
-	
-			System.out.println(placements);
 			
 			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
 			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemId("A");

@@ -11,8 +11,10 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.validator.ValidatorResult;
@@ -128,14 +130,36 @@ public abstract class AbstractPackagerTest {
 		// XXXX
 		PackagerAssert.assertThat(packager).respectsDeadline(containers, products, 30 * 1000);
 	}
-	
+
 	protected void assertValidUsingValidator(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItem> boxItems) {
+		assertValidUsingValidator(containerItems, maxContainers, result, boxItems, Order.NONE);
+	}
+
+	protected void assertValidUsingValidator(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItem> boxItems, Order order) {
 		DefaultValidator validator = new DefaultValidator();
 		ValidatorResult validatorResult = validator.newResultBuilder()
 				.withContainerItems(containerItems)
 				.withMaxContainerCount(maxContainers)
 				.withPackagerResult(result)
 				.withBoxItems(boxItems)
+				.withOrder(order)
+				.build();
+		
+		assertTrue(validatorResult.isValid());
+	}
+	
+	protected void assertValidUsingValidatorForGroups(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItemGroup> boxItems) {
+		assertValidUsingValidatorForGroups(containerItems, maxContainers, result, boxItems, Order.NONE);
+	}
+
+	protected void assertValidUsingValidatorForGroups(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItemGroup> boxItems, Order order) {
+		DefaultValidator validator = new DefaultValidator();
+		ValidatorResult validatorResult = validator.newResultBuilder()
+				.withContainerItems(containerItems)
+				.withMaxContainerCount(maxContainers)
+				.withPackagerResult(result)
+				.withBoxItemGroups(boxItems)
+				.withOrder(order)
 				.build();
 		
 		assertTrue(validatorResult.isValid());
@@ -147,6 +171,16 @@ public abstract class AbstractPackagerTest {
 		
 		for (BoxItem boxItem : products) {
 			results.add(boxItem.clone());
+		}
+		
+		return results;
+	}
+
+	public List<BoxItemGroup> cloneGroups(List<BoxItemGroup> groups) {
+		List<BoxItemGroup> results = new ArrayList<>();
+		
+		for (BoxItemGroup boxItemGroup : groups) {
+			results.add(boxItemGroup.clone());
 		}
 		
 		return results;
