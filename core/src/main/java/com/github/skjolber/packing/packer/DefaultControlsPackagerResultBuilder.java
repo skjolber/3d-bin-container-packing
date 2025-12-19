@@ -22,10 +22,7 @@ public abstract class DefaultControlsPackagerResultBuilder<P extends Intermediat
 	
 	public PackagerResult build() {
 		validate();
-		
-		if( (items == null || items.isEmpty()) && (itemGroups == null || itemGroups.isEmpty())) {
-			throw new IllegalStateException();
-		}
+
 		long start = System.currentTimeMillis();
 
 		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();

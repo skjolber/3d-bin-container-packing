@@ -501,14 +501,6 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			List<Container> containers = build.getContainers();
 			assertEquals(containers.size(), 2);
 
-			for(Container c : containers) {
-				System.out.println(c);
-				
-				for(Placement s : c.getStack().getPlacements()) {
-					System.out.println(" " + s);
-				}
-			}
-			
 			assertValid(build);
 		} finally {
 			packager.close();
@@ -528,13 +520,14 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			BoxItem boxItem1 = new BoxItem(Box.newBuilder()
+					.withId("id")
 					.withRotate3D()
 					.withSize(1, 1, 1)
 					.withWeight(1)
 					.build(), 1);
 			
 			BoxItem boxItem2 = new BoxItem(Box.newBuilder()
-					.withId("firehazard")
+					.withId("firehazard1")
 					.withRotate3D()
 					.withSize(1, 1, 1)
 					.withWeight(1)
@@ -542,7 +535,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.build(), 1);
 
 			BoxItem boxItem3 = new BoxItem(Box.newBuilder()
-					.withId("firehazard")
+					.withId("firehazard2")
 					.withRotate3D()
 					.withSize(1, 1, 1)
 					.withWeight(1)
@@ -553,31 +546,27 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			BoxItemGroup boxItemGroup2 = new BoxItemGroup("b", Arrays.asList(boxItem2));
 			BoxItemGroup boxItemGroup3 = new BoxItemGroup("c", Arrays.asList(boxItem3));
 			
-			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
+			List<BoxItemGroup> groups = Arrays.asList(boxItemGroup1, boxItemGroup2, boxItemGroup3);
+			
+			PackagerResult result = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
 				b.withBoxItemControlsBuilderFactory(MaxFireHazardBoxItemGroupsPerContainerManifestControls.newFactory(1));
 			})
 					.withMaxContainerCount(5)
-					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2, boxItemGroup3))
+					.withBoxItemGroups(cloneGroups(groups))
+					.withOrder(Order.CRONOLOGICAL)
 					.build();
-			assertTrue(build.isSuccess());
+			assertTrue(result.isSuccess());
 
-			List<Container> containers = build.getContainers();
+			List<Container> containers = result.getContainers();
 			assertEquals(2, containers.size());
 
-			for(Container c : containers) {
-				System.out.println(c);
-				
-				for(Placement s : c.getStack().getPlacements()) {
-					System.out.println(" " + s);
-				}
-			}
+			assertValid(result);
 			
-			assertValid(build);
+			assertValidUsingValidatorForGroups(Arrays.asList(new ContainerItem(container, 5)), 5, result, groups, Order.CRONOLOGICAL);
 		} finally {
 			packager.close();
 		}
-
 	}	
 
 	@Test
@@ -605,13 +594,6 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			}).withBoxItems(products).build();
 			
 			List<Container> containers = build.getContainers();
-			for(Container c : containers) {
-				System.out.println(c);
-				
-				for(Placement s : c.getStack().getPlacements()) {
-					System.out.println(" " + s);
-				}
-			}
 			
 			assertEquals("A", containers.get(0).getStack().getPlacements().get(0).getStackValue().getBox().getId());
 			
@@ -638,7 +620,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("3").withRotate3D().withSize(1, 4, 1).withWeight(1).build(), 1));
 			products.add(new BoxItem(Box.newBuilder().withId("4").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
-			PackagerResult build = packager.newResultBuilder()
+			PackagerResult result = packager.newResultBuilder()
 					.withContainerItem( b -> {
 						b.withContainerItem(containerItem);
 					})
@@ -646,9 +628,9 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withOrder(Order.CRONOLOGICAL)
 					.withMaxContainerCount(10)
 					.build();
-			assertValid(build);
+			assertValid(result);
 			
-			List<Container> containers = build.getContainers();
+			List<Container> containers = result.getContainers();
 			assertEquals(containers.size(), 2);
 			
 			int index = 0;
@@ -658,12 +640,13 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					index++;
 				}
 			}
+			
+			assertValidUsingValidator(Arrays.asList(containerItem), 10, result, products, Order.CRONOLOGICAL);
 		} finally {
 			packager.close();
 		}
 
 	}
-	
 
 	@Test
 	void testStackingOrder2() {
@@ -682,7 +665,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("3").withRotate3D().withSize(1, 2, 1).withWeight(1).build(), 1));
 			products.add(new BoxItem(Box.newBuilder().withId("4").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
-			PackagerResult build = packager.newResultBuilder()
+			PackagerResult result = packager.newResultBuilder()
 					.withContainerItem( b -> {
 						b.withContainerItem(containerItem);
 					})
@@ -690,9 +673,9 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING)
 					.withMaxContainerCount(10)
 					.build();
-			assertValid(build);
+			assertValid(result);
 			
-			List<Container> containers = build.getContainers();
+			List<Container> containers = result.getContainers();
 			assertEquals(containers.size(), 2);
 			
 			for (Container c : containers) {
@@ -703,6 +686,9 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					index = n;
 				}
 			}
+			
+			assertValidUsingValidator(Arrays.asList(containerItem), 10, result, products, Order.CRONOLOGICAL_ALLOW_SKIPPING);
+
 		} finally {
 			packager.close();
 		}
