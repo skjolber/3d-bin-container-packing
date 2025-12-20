@@ -36,16 +36,16 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build())
+				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build())
 				.build();
 
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
-			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			assertValid(build);
@@ -54,13 +54,15 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 			List<Placement> placements = fits.getStack().getPlacements();
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
-			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemDescription("B");
-			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemDescription("C");
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemId("B");
+			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemId("C");
 	
 			assertThat(placements.get(0)).isAlongsideX(placements.get(1));
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
+			
+			assertValidUsingValidator(containerItems, 1, build, products);
 		} finally {
 			packager.close();
 		}
@@ -70,22 +72,22 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	void testStackMultipleContainers() {
 		List<Container> containers = new ArrayList<>();
 
-		containers.add(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
+		containers.add(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build());
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 5)
+				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 5)
 				.build();
 
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
-			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
-			products.add(new BoxItem(Box.newBuilder().withDescription("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
-			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
+			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 	
-			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).withMaxContainerCount(5).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(clone(products)).withMaxContainerCount(5).build();
 			assertValid(build);
 	
 			List<Container> packList = build.getContainers();
@@ -96,13 +98,15 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 			List<Placement> placements = fits.getStack().getPlacements();
 	
-			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemDescription("A");
-			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemDescription("A");
-			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemDescription("B");
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemId("B");
 	
 			assertThat(placements.get(0)).isAlongsideX(placements.get(1));
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
+			
+			assertValidUsingValidator(containerItems, 2, build, products);
 		} finally {
 			packager.close();
 		}
@@ -143,7 +147,7 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	protected void pack(BouwkampCode bouwkampCode) {
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withContainer(Container.newBuilder().withDescription("Container").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(100)
+				.withContainer(Container.newBuilder().withId("Container").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(100)
 						.withStack(new ValidatingStack()).build(), 1)
 				.build();
 
@@ -163,7 +167,7 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			for (Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
 				int square = entry.getKey();
 				int count = entry.getValue();
-				products.add(new BoxItem(Box.newBuilder().withDescription(Integer.toString(square)).withSize(square, square, 1).withRotate3D().withWeight(1).build(), count));
+				products.add(new BoxItem(Box.newBuilder().withId(Integer.toString(square)).withSize(square, square, 1).withRotate3D().withWeight(1).build(), count));
 			}
 	
 			Collections.shuffle(products);
@@ -189,7 +193,7 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
-				.withContainer(Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(1900, 1500, 4000)
+				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(1900, 1500, 4000)
 						.withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
@@ -250,13 +254,13 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	public void issueNew() {
 		Container container = Container
 				.newBuilder()
-				.withDescription("1")
+				.withId("1")
 				.withSize(100, 150, 200)
 				.withEmptyWeight(0)
 				.withMaxLoadWeight(100)
 				.build();
 
-		List<ContainerItem> containers = ContainerItem
+		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(container)
 				.build();
@@ -278,8 +282,10 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 					new BoxItem(Box.newBuilder().withId("9").withSize(150, 4, 65).withRotate3D().withWeight(0).build(), 2),
 					new BoxItem(Box.newBuilder().withId("10").withSize(75, 17, 60).withRotate3D().withWeight(0).build(), 1));
 	
-			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withBoxItems(products).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			assertValid(build);
+			
+			assertValidUsingValidator(containerItems, 1, build, products);
 		} finally {
 			packager.close();
 		}

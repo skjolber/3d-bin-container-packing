@@ -15,6 +15,7 @@ import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.validator.ValidatorContainerItem;
 
 /**
  * {@linkplain PackagerResult} builder scaffold.
@@ -171,8 +172,23 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		if (items != null && !items.isEmpty() && itemGroups != null && !itemGroups.isEmpty()) {
 			throw new IllegalStateException("Expected either box items or groups of box items, not both");
 		}
+		
+		if ( (items == null || items.isEmpty()) && (itemGroups == null || itemGroups.isEmpty())) {
+			throw new IllegalStateException("Expected either box items or groups of box items");
+		}
+		
 		if (maxContainerCount <= 0) {
-			throw new IllegalStateException();
+			throw new IllegalStateException("Expected one or more max container count");
+		}
+
+		if(containers == null || containers.isEmpty()) {
+			throw new IllegalStateException("Expected one or more containers");
+		}
+
+		for (ControlledContainerItem item : containers) {
+			if(item.getCount() == 0) {
+				throw new IllegalStateException("Expected one or more count for every container");
+			}
 		}
 		
 		// if one has cost, they all must have

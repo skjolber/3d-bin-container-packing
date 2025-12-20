@@ -33,10 +33,17 @@ public class PackagerBoxItems {
 				values.remove(startIndex);
 			}
 			
-			for(int i = startIndex; i < boxToGroupIndexes.length; i++) {
-				boxToGroupIndexes[i]--;
-			}
 			
+			int index = startIndex;
+			for(int i = groupIndex; i < groups.size(); i++) {
+				BoxItemGroup g = groups.get(i);
+				
+				for(int k = 0; k < g.size(); k++) {
+					boxToGroupIndexes[index + k] = i;
+				}
+				index += g.size();
+			}			
+
 			// update indexes
 			for(int i = startIndex; i < values.size(); i++) {
 				values.get(i).setIndex(i);
@@ -116,6 +123,8 @@ public class PackagerBoxItems {
 	
 	protected List<BoxItem> values;
 	protected List<BoxItemGroup> groups;
+	
+	// 0,0,0,1,1,2,3,3,3 etc
 	protected int[] boxToGroupIndexes;
 	
 	protected InnerFilteredBoxItemGroup filteredBoxItemGroups = new InnerFilteredBoxItemGroup();

@@ -29,7 +29,7 @@ public class PlacementList {
 	}
 	
 	public PlacementList(PlacementList list) {
-		placements = new Placement[list.size];
+		placements = new Placement[list.placements.length];
 		System.arraycopy(list.placements, 0, placements, 0, list.size);
 		size = list.size;
 	}

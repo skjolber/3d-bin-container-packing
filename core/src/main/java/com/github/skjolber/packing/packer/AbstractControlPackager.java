@@ -45,7 +45,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 
 		DefaultBoxItemSource boxItemSource = new DefaultBoxItemSource(boxItems);
 
-		PointCalculator pointCalculator = new DefaultPointCalculator3D(false, boxItemSource);
+		PointCalculator pointCalculator = createPointCalculator(boxItemSource);
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		if(controlContainerItem.hasInitialPoints()) {
 			pointCalculator.setPoints(controlContainerItem.getInitialPoints());
@@ -190,6 +190,10 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		return createIntermediatePackagerResult(controlContainerItem, stack);
 	}
 
+	protected PointCalculator createPointCalculator(DefaultBoxItemSource boxItemSource) {
+		return new DefaultPointCalculator3D(false, boxItemSource);
+	}
+
 	public P packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
 		ContainerItem containerItem = controlContainerItem;
 		Container container = containerItem.getContainer();
@@ -262,7 +266,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		PlacementControls<I> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
 
 		groups:
-		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !pointCalculator.isEmpty() && boxItemGroupIterator.hasNext()) {
+		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !pointCalculator.isEmpty() && boxItemGroupIterator.hasNext() && !filteredBoxItemGroups.isEmpty()) {
 			int groupIndex = boxItemGroupIterator.next();
 			
 			int boxItemStartIndex = packagerBoxItems.getFirstBoxItemIndexForGroup(groupIndex);
@@ -315,6 +319,8 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 								while(i < filteredBoxItemGroups.size()) {
 									removedBoxItemGroups.add(filteredBoxItemGroups.remove(i));
 								}
+								
+								
 							}
 						}
 					}
