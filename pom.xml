@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 	<artifactId>parent</artifactId>
-	<version>4.0.10-SNAPSHOT</version>
+	<version>4.1.0</version>
 	<packaging>pom</packaging>
 	<name>3D Bin Container Packing</name>
 	<description>Library for 3D rectangular bin packing</description>
@@ -58,7 +58,7 @@
 		<connection>scm:git:git@github.com:skjolber/3d-bin-container-packing.git</connection>
 		<developerConnection>scm:git:git@github.com:skjolber/3d-bin-container-packing.git</developerConnection>
 		<url>git@github.com:skjolber/3d-bin-container-packing.git</url>
-		<tag>HEAD</tag>
+		<tag>parent-4.1.0</tag>
 	</scm>
 
 	<issueManagement>
