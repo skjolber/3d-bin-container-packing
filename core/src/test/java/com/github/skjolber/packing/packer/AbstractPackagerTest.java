@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static com.github.skjolber.packing.test.assertj.ContainerAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -145,7 +146,7 @@ public abstract class AbstractPackagerTest {
 				.withOrder(order)
 				.build();
 		
-		assertTrue(validatorResult.isValid());
+		assertTrue(validatorResult.getReasons().toString(), validatorResult.isValid());
 	}
 	
 	protected void assertValidUsingValidatorForGroups(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItemGroup> boxItems) {
@@ -162,7 +163,7 @@ public abstract class AbstractPackagerTest {
 				.withOrder(order)
 				.build();
 		
-		assertTrue(validatorResult.isValid());
+		assertTrue(validatorResult.getReasons().toString(), validatorResult.isValid());
 	}
 	
 

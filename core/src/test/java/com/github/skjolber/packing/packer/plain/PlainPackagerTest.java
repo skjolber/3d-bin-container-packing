@@ -274,12 +274,12 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 3));
 			products.add(new BoxItem(Box.newBuilder().withDescription("D").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 4));
 	
-			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withMaxContainerCount(5).withBoxItems(products).build();
-			assertValid(build);
+			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withMaxContainerCount(5).withBoxItems(products).build();
+			assertValid(result);
 	
-			assertEquals(build.size(), 2);
-			assertEquals(build.get(0).getVolume(), 7);
-			assertEquals(build.get(1).getVolume(), 3);
+			assertEquals(result.size(), 2);
+			assertEquals(result.get(0).getVolume(), 7);
+			assertEquals(result.get(1).getVolume(), 3);
 		} finally {
 			packager.close();
 		}
@@ -769,5 +769,146 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		}
 	}
 
+	@Test
+	void testUndoGroupsOrder1() {
+		Container container1 = Container.newBuilder()
+				.withId("my-container1")
+				.withEmptyWeight(1)
+				.withSize(4, 1, 2)
+				.withMaxLoadWeight(100)
+				.withStack(new ValidatingStack())
+				.build();
+
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			BoxItem boxItem0 = new BoxItem(Box.newBuilder()
+					.withId("id0")
+					.withSize(1, 1, 2)
+					.withWeight(1)
+					.build(), 1);
+					
+			BoxItem boxItem1 = new BoxItem(Box.newBuilder()
+					.withId("id1")
+					.withSize(1, 1, 2)
+					.withWeight(1)
+					.build(), 1);
+
+			BoxItem boxItem2 = new BoxItem(Box.newBuilder()
+					.withId("id2")
+					.withSize(3, 1, 1)
+					.withWeight(1)
+					.build(), 1);
+
+			BoxItem boxItem3 = new BoxItem(Box.newBuilder()
+					.withId("id3")
+					.withSize(1, 1, 1)
+					.withWeight(1)
+					.build(), 1);
+
+			BoxItem boxItem4 = new BoxItem(Box.newBuilder()
+					.withId("id4")
+					.withSize(1, 1, 1)
+					.withWeight(1)
+					.build(), 1);
+
+			// group 1 make group 2 not fit anymore in the same container
+			// so needs a new container
+
+			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", Arrays.asList(boxItem0));
+			BoxItemGroup boxItemGroup2 = new BoxItemGroup("b", Arrays.asList(boxItem1, boxItem2));
+			BoxItemGroup boxItemGroup3 = new BoxItemGroup("c", Arrays.asList(boxItem3, boxItem4));
+			
+			List<BoxItemGroup> groups = Arrays.asList(boxItemGroup1, boxItemGroup2, boxItemGroup3);
+			
+			PackagerResult result = packager.newResultBuilder().withContainerItem( b -> {
+				b.withContainerItem(new ContainerItem(container1, 5));
+			})
+					.withMaxContainerCount(5)
+					.withBoxItemGroups(cloneGroups(groups))
+					.withOrder(Order.CRONOLOGICAL)
+					.build();
+			assertTrue(result.isSuccess());
+
+			List<Container> containers = result.getContainers();
+			assertEquals(2, containers.size());
+
+			assertValid(result);
+			
+			assertValidUsingValidatorForGroups(Arrays.asList(new ContainerItem(container1, 5)), 5, result, groups, Order.CRONOLOGICAL);
+		} finally {
+			packager.close();
+		}
+	}
+	
+	@Test
+	void testUndoGroupsOrder2() {
+		Container container1 = Container.newBuilder()
+				.withId("my-container1")
+				.withEmptyWeight(1)
+				.withSize(4, 1, 2)
+				.withMaxLoadWeight(100)
+				.withStack(new ValidatingStack())
+				.build();
+
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			BoxItem boxItem0 = new BoxItem(Box.newBuilder()
+					.withId("id0")
+					.withSize(1, 1, 2)
+					.withWeight(1)
+					.build(), 1);
+					
+			BoxItem boxItem1 = new BoxItem(Box.newBuilder()
+					.withId("id1")
+					.withSize(1, 1, 2)
+					.withWeight(1)
+					.build(), 1);
+
+			BoxItem boxItem2 = new BoxItem(Box.newBuilder()
+					.withId("id2")
+					.withSize(3, 1, 1)
+					.withWeight(1)
+					.build(), 1);
+
+			BoxItem boxItem3 = new BoxItem(Box.newBuilder()
+					.withId("id3")
+					.withSize(1, 1, 1)
+					.withWeight(1)
+					.build(), 1);
+
+			BoxItem boxItem4 = new BoxItem(Box.newBuilder()
+					.withId("id4")
+					.withSize(1, 1, 1)
+					.withWeight(1)
+					.build(), 1);
+
+			// group 1 make group 2 not fit anymore in the same container
+			// so needs a new container
+
+			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", Arrays.asList(boxItem0));
+			BoxItemGroup boxItemGroup2 = new BoxItemGroup("b", Arrays.asList(boxItem1, boxItem2));
+			BoxItemGroup boxItemGroup3 = new BoxItemGroup("c", Arrays.asList(boxItem3, boxItem4));
+			
+			List<BoxItemGroup> groups = Arrays.asList(boxItemGroup1, boxItemGroup2, boxItemGroup3);
+			
+			PackagerResult result = packager.newResultBuilder().withContainerItem( b -> {
+				b.withContainerItem(new ContainerItem(container1, 5));
+			})
+					.withMaxContainerCount(5)
+					.withBoxItemGroups(cloneGroups(groups))
+					.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING)
+					.build();
+			assertTrue(result.isSuccess());
+
+			List<Container> containers = result.getContainers();
+			assertEquals(2, containers.size());
+
+			assertValid(result);
+			
+			assertValidUsingValidatorForGroups(Arrays.asList(new ContainerItem(container1, 5)), 5, result, groups, Order.CRONOLOGICAL_ALLOW_SKIPPING);
+		} finally {
+			packager.close();
+		}
+	}	
 
 }

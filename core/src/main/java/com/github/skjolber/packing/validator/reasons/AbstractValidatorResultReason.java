@@ -21,4 +21,10 @@ public abstract class AbstractValidatorResultReason implements ValidatorResultRe
 		return message;
 	}
 	
+	@Override
+	public String toString() {
+		return code + ": " + message;
+	}
+	
+
 }
