@@ -108,8 +108,9 @@ public class Placement implements Serializable {
 	}
 
 	@Override
-	public String toString() {
-		return (stackValue.getBox().getId()) + "[" + point.getMinX() + "x" + point.getMinY() + "x" + point.getMinZ() + " " + getAbsoluteEndX() + "x"
+	public String toString() {		
+		Box box = stackValue.getBox();
+		return (box != null ? box.getId() : "") + "[" + point.getMinX() + "x" + point.getMinY() + "x" + point.getMinZ() + " " + getAbsoluteEndX() + "x"
 				+ getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
 	}
 

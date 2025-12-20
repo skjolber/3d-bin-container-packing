@@ -172,4 +172,8 @@ public class BoxItemGroup {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return id;
+	}
 }

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.validator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -219,7 +220,7 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 					return false;
 				}
 
-				groupsInContainer.put(id, boxToGroup.get(id));
+				groupsInContainer.put(boxItemGroup.getId(), boxItemGroup);
 			}
 
 			for (Entry<String, BoxItemGroup> entry : groupsInContainer.entrySet()) {
