@@ -15,7 +15,10 @@ public class LinearBucketWeightContainerCostCalculator implements ContainerCostC
 	
 	protected final String id;
 	
-	public LinearBucketWeightContainerCostCalculator(int minimumCost, int minimumWeight, int maximumWeight, int cost, int weight, long volume, String id) {
+	// for non-shipping type fixed cost, i.e. for container + handling etc
+	protected final long fixedCost;
+	
+	public LinearBucketWeightContainerCostCalculator(int minimumCost, int minimumWeight, int maximumWeight, int cost, int weight, long volume, String id, long fixedCost) {
 		super();
 		this.minimumCost = minimumCost;
 		this.minimumWeight = minimumWeight;
@@ -24,6 +27,7 @@ public class LinearBucketWeightContainerCostCalculator implements ContainerCostC
 		this.weight = weight;
 		this.volume = volume;
 		this.id = id;
+		this.fixedCost = fixedCost;
 	}
 
 	@Override
@@ -32,7 +36,7 @@ public class LinearBucketWeightContainerCostCalculator implements ContainerCostC
 			throw new IllegalArgumentException();
 		}
 		if(weight < minimumWeight) {
-			return minimumCost;
+			return minimumCost + fixedCost;
 		}
 		
 		long w = weight - minimumWeight;
@@ -42,7 +46,7 @@ public class LinearBucketWeightContainerCostCalculator implements ContainerCostC
 			count++;
 		}
 		
-		return minimumCost + cost * count;
+		return minimumCost + cost * count + fixedCost;
 	}
 
 	@Override
@@ -57,5 +61,20 @@ public class LinearBucketWeightContainerCostCalculator implements ContainerCostC
 
 	public String getId() {
 		return id;
+	}
+	
+	@Override
+	public long getFixedCost() {
+		return fixedCost;
+	}
+	
+	@Override
+	public long getMaximumCost() {
+		return calculateCost(maximumWeight);
+	}
+	
+	@Override
+	public long getMinimumCost() {
+		return minimumCost + fixedCost;
 	}
 }

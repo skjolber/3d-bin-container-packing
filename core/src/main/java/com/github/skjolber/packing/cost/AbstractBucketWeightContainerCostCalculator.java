@@ -56,7 +56,10 @@ public abstract class AbstractBucketWeightContainerCostCalculator implements Con
 	protected final List<Bucket> buckets;
 	protected final String id;
 	
-	protected AbstractBucketWeightContainerCostCalculator(List<Bucket> buckets, long volume, String id) {
+	// for non-shipping type fixed cost, i.e. for container + handling etc
+	protected final long fixedCost;
+	
+	protected AbstractBucketWeightContainerCostCalculator(List<Bucket> buckets, long volume, String id, long fixedCost) {
 		this.buckets = buckets;
 		
 		this.minimumWeight = buckets.getFirst().minWeight;
@@ -64,6 +67,8 @@ public abstract class AbstractBucketWeightContainerCostCalculator implements Con
 		
 		this.minimumCost = buckets.getFirst().cost;
 		this.maximumCost = buckets.getLast().cost;
+		
+		this.fixedCost = fixedCost;
 		
 		this.volume = volume;
 		this.id = id;
@@ -78,11 +83,11 @@ public abstract class AbstractBucketWeightContainerCostCalculator implements Con
 	}
 
 	public long getMinimumCost() {
-		return minimumCost;
+		return minimumCost + fixedCost;
 	}
 
 	public long getMaximumCost() {
-		return maximumCost;
+		return maximumCost + fixedCost;
 	}
 
 	@Override
@@ -94,6 +99,10 @@ public abstract class AbstractBucketWeightContainerCostCalculator implements Con
 	public long getCostPerWeight(long weight) {
 		return calculateCost(weight) / weight;
 	}
+	
+	public long getFixedCost() {
+		return fixedCost;
+	}
 
 	@Override
 	public long calculateCost(long weight) {
@@ -103,7 +112,7 @@ public abstract class AbstractBucketWeightContainerCostCalculator implements Con
 		
 		for(Bucket bucket : buckets) {
 			if(bucket.holds(weight)) {
-				return bucket.cost;
+				return bucket.cost + fixedCost;
 			}
 		}
 		

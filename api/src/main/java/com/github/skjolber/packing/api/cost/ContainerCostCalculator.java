@@ -7,5 +7,10 @@ public interface ContainerCostCalculator {
 	
 	long calculateCost(long weight);
 	
+	long getMinimumCost();
+	long getMaximumCost();
+
+	long getFixedCost();
+
 	String getId();
 }

@@ -8,7 +8,7 @@ public class LinearBucketWeightContainerCostCalculatorTest {
 
 	@Test
 	public void test() {
-		LinearBucketWeightContainerCostCalculator calculator = new LinearBucketWeightContainerCostCalculator(10000, 0, 5000, 500, 100, 2500, null);
+		LinearBucketWeightContainerCostCalculator calculator = new LinearBucketWeightContainerCostCalculator(10000, 0, 5000, 500, 100, 2500, null, 0);
 		
 		assertEquals(10000 + 500, calculator.calculateCost(1));
 		assertEquals(10000 + 500, calculator.calculateCost(31));

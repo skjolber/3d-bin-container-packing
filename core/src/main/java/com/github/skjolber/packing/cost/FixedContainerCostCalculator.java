@@ -6,30 +6,50 @@ public class FixedContainerCostCalculator implements ContainerCostCalculator {
 
 	protected final long cost;
 	protected final long volume;
+	
+	// for non-shipping type fixed cost, i.e. for container + handling etc
+	protected final long fixedCost;
 	protected final String id;
 	
-	public FixedContainerCostCalculator(int cost, long volume, String id) {
+	public FixedContainerCostCalculator(int cost, long volume, String id, long fixedCost) {
 		this.cost = cost;
 		this.volume = volume;
 		this.id = id;
+		this.fixedCost = fixedCost;
 	}
 
 	@Override
 	public long calculateCost(long weight) {
-		return cost;
+		return (cost + fixedCost);
 	}
 
 	@Override
 	public long getCostPerVolume(long weight) {
-		return cost / volume;
+		return (cost + fixedCost) / volume;
 	}
 
 	@Override
 	public long getCostPerWeight(long weight) {
-		return cost / weight;
+		return (cost + fixedCost) / weight;
 	}
 
 	public String getId() {
 		return id;
 	}
+	
+	@Override
+	public long getFixedCost() {
+		return fixedCost;
+	}
+	
+	@Override
+	public long getMaximumCost() {
+		return cost + fixedCost;
+	}
+	
+	@Override
+	public long getMinimumCost() {
+		return cost + fixedCost;
+	}
+	
 }

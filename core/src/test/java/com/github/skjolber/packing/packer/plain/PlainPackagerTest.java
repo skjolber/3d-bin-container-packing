@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.plain;
+								package com.github.skjolber.packing.packer.plain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;

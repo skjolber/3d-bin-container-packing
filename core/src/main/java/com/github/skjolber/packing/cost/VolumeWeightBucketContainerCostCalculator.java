@@ -18,6 +18,14 @@ public class VolumeWeightBucketContainerCostCalculator extends AbstractBucketWei
 		private long volume = -1L;
 		private String id;
 		
+		// for non-shipping type fixed cost, i.e. for container + handling etc
+		private long fixedCost;
+		
+		public Builder withFixedCost(long fixedCost) {
+			this.fixedCost = fixedCost;
+			return this;
+		}
+		
 		public Builder withId(String id) {
 			this.id = id;
 			return this;
@@ -67,10 +75,10 @@ public class VolumeWeightBucketContainerCostCalculator extends AbstractBucketWei
 			
 			if(minimumVolumeWeight <= first.getMinWeight()) {
 				// weight dominates volume-weight, volume-weight can be ignored
-				return new VolumeWeightBucketContainerCostCalculator(buckets, volume, id);
+				return new VolumeWeightBucketContainerCostCalculator(buckets, volume, id, fixedCost);
 			} else if(minimumVolumeWeight >= last.getMaxWeight()) {
 				// volume-weight dominates weight, weight can be ignored
-				return new FixedContainerCostCalculator(last.getCost(), first.getMinWeight(), id);
+				return new FixedContainerCostCalculator(last.getCost(), first.getMinWeight(), id, fixedCost);
 			} else {
 				// so the volume of the container is know, i.e. there is a minimum effective volume-weight.
 				// all real weight below the effective volume-weight is "free", as in it does not affect the 
@@ -92,13 +100,13 @@ public class VolumeWeightBucketContainerCostCalculator extends AbstractBucketWei
 					correctedBuckets.add(buckets.get(i));
 				}
 				
-				return new VolumeWeightBucketContainerCostCalculator(correctedBuckets, volume, id);
+				return new VolumeWeightBucketContainerCostCalculator(correctedBuckets, volume, id, fixedCost);
 			}
 		}
 	}
 	
-	protected VolumeWeightBucketContainerCostCalculator(List<Bucket> buckets, long volume, String id) {
-		super(buckets, volume, id);
+	protected VolumeWeightBucketContainerCostCalculator(List<Bucket> buckets, long volume, String id, long fixedCost) {
+		super(buckets, volume, id, fixedCost);
 	}
 	
 }

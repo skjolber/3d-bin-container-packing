@@ -19,7 +19,7 @@ public class BucketContainerCostCalculatorTest {
 		buckets.add(new Bucket(1000, 2000, 12500));
 		buckets.add(new Bucket(2000, 3000, 15000));
 		
-		BucketContainerCostCalculator calculator = new BucketContainerCostCalculator(buckets, 1000, null);
+		BucketContainerCostCalculator calculator = new BucketContainerCostCalculator(buckets, 1000, null, 0);
 		
 		assertEquals(10000, calculator.getMinimumCost());
 		assertEquals(15000, calculator.getMaximumCost());
