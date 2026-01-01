@@ -1,4 +1,4 @@
-	package com.github.skjolber.packing.packer.bruteforce;
+package com.github.skjolber.packing.packer.bruteforce;
 
 import static com.github.skjolber.packing.test.assertj.StackPlacementAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;

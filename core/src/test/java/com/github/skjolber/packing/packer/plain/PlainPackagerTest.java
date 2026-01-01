@@ -1,4 +1,4 @@
-								package com.github.skjolber.packing.packer.plain;
+package com.github.skjolber.packing.packer.plain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,15 +15,12 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.Order;
-import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
-import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;

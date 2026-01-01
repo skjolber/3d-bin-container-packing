@@ -1,4 +1,4 @@
-		package com.github.skjolber.packing.iterator;
+package com.github.skjolber.packing.iterator;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
