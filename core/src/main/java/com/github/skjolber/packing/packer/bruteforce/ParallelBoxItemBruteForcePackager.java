@@ -30,6 +30,7 @@ import com.github.skjolber.packing.iterator.ParallelBoxItemPermutationRotationIt
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
+import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerException;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
@@ -50,7 +51,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		protected int threads = -1;
 		protected int parallelizationCount = -1;
 		protected ExecutorService executorService;
-		protected Comparator<BruteForceIntermediatePackagerResult> comparator;
+		protected Comparator<IntermediatePackagerResult> comparator;
 
 		public ParallelBruteForcePackagerBuilder withThreads(int threads) {
 			if(threads < 1) {
@@ -125,7 +126,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	private final ExecutorService executorService;
 
 	public ParallelBoxItemBruteForcePackager(ExecutorService executorService, int parallelizationCount, 
-			Comparator<BruteForceIntermediatePackagerResult> comparator) {
+			Comparator<IntermediatePackagerResult> comparator) {
 		super(comparator);
 
 		this.parallelizationCount = parallelizationCount;
@@ -188,7 +189,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		@Override
-		public BruteForceIntermediatePackagerResult attempt(int i, BruteForceIntermediatePackagerResult currentBest, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+		public BruteForceIntermediatePackagerResult attempt(int i, IntermediatePackagerResult currentBest, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			// is there enough work to do parallelization?
 			// run on single thread for a small amount of combinations
 			// the algorithm only splits on permutations
@@ -276,50 +277,54 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		@Override
-		public Container accept(BruteForceIntermediatePackagerResult bruteForceResult) {
-			
-			bruteForceResult.markDirty();
-			Stack stack = bruteForceResult.getStack();
-			
-			Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
-			
-			if(!bruteForceResult.containsLastStackable()) {
-				// this result does not consume all placements
-				// remove consumed items from the iterators
-
-				int size = container.getStack().size();
-
-				PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
-
-				int[] permutations = state.getPermutations();
-				List<Integer> p = new ArrayList<>(size);
-				for (int i = 0; i < size; i++) {
-					p.add(permutations[i]);
-				}
-
-				for (ParallelBoxItemPermutationRotationIteratorList it : parallelIterators) {
-					it.removePermutations(p);
-				}
-
-				for (DefaultBoxItemPermutationRotationIterator it : iterators) {
-					it.removePermutations(p);
-				}
+		public Container accept(IntermediatePackagerResult result) {
+			if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
 				
-				// remove adapter inventory
-				removeInventory(p);
-
-				for (RunnableAdapter runner : runnables) {
-					runner.placements = runner.placements.subList(size, runner.placements.size());
+				bruteForceResult.markDirty();
+				Stack stack = bruteForceResult.getStack();
+				
+				Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+				
+				if(!bruteForceResult.containsLastStackable()) {
+					// this result does not consume all placements
+					// remove consumed items from the iterators
+	
+					int size = container.getStack().size();
+	
+					PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
+	
+					int[] permutations = state.getPermutations();
+					List<Integer> p = new ArrayList<>(size);
+					for (int i = 0; i < size; i++) {
+						p.add(permutations[i]);
+					}
+	
+					for (ParallelBoxItemPermutationRotationIteratorList it : parallelIterators) {
+						it.removePermutations(p);
+					}
+	
+					for (DefaultBoxItemPermutationRotationIterator it : iterators) {
+						it.removePermutations(p);
+					}
+					
+					// remove adapter inventory
+					removeInventory(p);
+	
+					for (RunnableAdapter runner : runnables) {
+						runner.placements = runner.placements.subList(size, runner.placements.size());
+					}
+				} else {
+					for (RunnableAdapter runner : runnables) {
+						runner.placements = Collections.emptyList();
+					}
+					for(int i = 0; i < boxesRemaining.length; i++) {
+						boxesRemaining[i] = 0;
+					}
 				}
+				return container;
 			} else {
-				for (RunnableAdapter runner : runnables) {
-					runner.placements = Collections.emptyList();
-				}
-				for(int i = 0; i < boxesRemaining.length; i++) {
-					boxesRemaining[i] = 0;
-				}
+				throw new IllegalStateException();
 			}
-			return container;
 		}
 
 		@Override
@@ -352,7 +357,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		@Override
-		public BruteForceIntermediatePackagerResult attempt(int i, BruteForceIntermediatePackagerResult currentBest, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+		public BruteForceIntermediatePackagerResult attempt(int i, IntermediatePackagerResult currentBest, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			// is there enough work to do parallelization?
 			// run on single thread for a small amount of combinations
 			// the algorithm only splits on permutations
@@ -440,87 +445,91 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		@Override
-		public Container accept(BruteForceIntermediatePackagerResult bruteForceResult) {
-			
-			bruteForceResult.markDirty();
-			Stack stack = bruteForceResult.getStack();
-			
-			Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
-
-			if(!bruteForceResult.containsLastStackable()) {
-				// this result does not consume all placements
-				// remove consumed items from the iterators
-
-				int size = container.getStack().size();
-
-				PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
-
-				// this result does not consume all placements
-				// remove consumed items from the iterators
-
-				// TODO only handles groups in order.
+		public Container accept(IntermediatePackagerResult result) {
+			if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
 				
-				List<Integer> removedGroups = new ArrayList<>();
-				int wholeGroupBoxCount = 0;
-				for(int i = 0; i < boxItemGroups.size(); i++) {
-					BoxItemGroup boxItemGroup = boxItemGroups.get(i);
-					
-					int groupBoxCount = boxItemGroup.getBoxCount();
-					if(size < wholeGroupBoxCount + groupBoxCount) {
-						// the last group was not successful
-						break;
-					}
-					
-					removedGroups.add(i);
-					
-					wholeGroupBoxCount += groupBoxCount;
-					
-					if(wholeGroupBoxCount == size) {
-						break;
-					}
-				}
+				bruteForceResult.markDirty();
+				Stack stack = bruteForceResult.getStack();
 				
-				int[] permutations = state.getPermutations();
-				
-				List<Integer> p = new ArrayList<>();
-				for(Integer removedGroup: removedGroups) {
-					BoxItemGroup boxItemGroup = boxItemGroups.get(removedGroup);
-
-					for (BoxItem boxItem : boxItemGroup.getItems()) {
-						for (int i = 0; i < boxItem.getCount(); i++) {
-							p.add(permutations[p.size()]);
+				Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+	
+				if(!bruteForceResult.containsLastStackable()) {
+					// this result does not consume all placements
+					// remove consumed items from the iterators
+	
+					int size = container.getStack().size();
+	
+					PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
+	
+					// this result does not consume all placements
+					// remove consumed items from the iterators
+	
+					// TODO only handles groups in order.
+					
+					List<Integer> removedGroups = new ArrayList<>();
+					int wholeGroupBoxCount = 0;
+					for(int i = 0; i < boxItemGroups.size(); i++) {
+						BoxItemGroup boxItemGroup = boxItemGroups.get(i);
+						
+						int groupBoxCount = boxItemGroup.getBoxCount();
+						if(size < wholeGroupBoxCount + groupBoxCount) {
+							// the last group was not successful
+							break;
+						}
+						
+						removedGroups.add(i);
+						
+						wholeGroupBoxCount += groupBoxCount;
+						
+						if(wholeGroupBoxCount == size) {
+							break;
 						}
 					}
-				}						
-
-				// remove stacked items which did not make it
-				stack.setSize(p.size());
-
-				for (ParallelBoxItemGroupPermutationRotationIteratorList it : parallelIterators) {
-					it.removeGroups(removedGroups);
+					
+					int[] permutations = state.getPermutations();
+					
+					List<Integer> p = new ArrayList<>();
+					for(Integer removedGroup: removedGroups) {
+						BoxItemGroup boxItemGroup = boxItemGroups.get(removedGroup);
+	
+						for (BoxItem boxItem : boxItemGroup.getItems()) {
+							for (int i = 0; i < boxItem.getCount(); i++) {
+								p.add(permutations[p.size()]);
+							}
+						}
+					}						
+	
+					// remove stacked items which did not make it
+					stack.setSize(p.size());
+	
+					for (ParallelBoxItemGroupPermutationRotationIteratorList it : parallelIterators) {
+						it.removeGroups(removedGroups);
+					}
+	
+					for (DefaultBoxItemGroupPermutationRotationIterator it : iterators) {
+						it.removeGroups(removedGroups);
+					}
+					
+					boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());
+					
+					// remove adapter inventory
+					removeInventory(p);
+	
+					for (RunnableAdapter runner : runnables) {
+						runner.placements = runner.placements.subList(p.size(), runner.placements.size());
+					}
+				} else {
+					for (RunnableAdapter runner : runnables) {
+						runner.placements = Collections.emptyList();
+					}
+					for(int i = 0; i < boxesRemaining.length; i++) {
+						boxesRemaining[i] = 0;
+					}
 				}
-
-				for (DefaultBoxItemGroupPermutationRotationIterator it : iterators) {
-					it.removeGroups(removedGroups);
-				}
-				
-				boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());
-				
-				// remove adapter inventory
-				removeInventory(p);
-
-				for (RunnableAdapter runner : runnables) {
-					runner.placements = runner.placements.subList(p.size(), runner.placements.size());
-				}
+				return container;
 			} else {
-				for (RunnableAdapter runner : runnables) {
-					runner.placements = Collections.emptyList();
-				}
-				for(int i = 0; i < boxesRemaining.length; i++) {
-					boxesRemaining[i] = 0;
-				}
+				throw new IllegalStateException();
 			}
-			return container;
 		}
 
 		@Override

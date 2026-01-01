@@ -45,13 +45,13 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
-public class PlainPackager extends AbstractControlPackager<PlainPlacement, IntermediatePackagerResult, PlainPackager.PlainResultBuilder> {
+public class PlainPackager extends AbstractControlPackager<PlainPlacement, PlainPackager.PlainResultBuilder> {
 	
 	public static Builder newBuilder() {
 		return new Builder();
 	}
 
-	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter<IntermediatePackagerResult> {
+	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter {
 
 		public PlainBoxItemAdapter(List<BoxItem> boxItems, Order order,
 				ContainerItemsCalculator packagerContainerItems,
@@ -72,7 +72,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 
 	}
 	
-	protected class PlainBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter<IntermediatePackagerResult> {
+	protected class PlainBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter {
 
 		public PlainBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups,
 				Order order,
@@ -117,7 +117,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
-				PackagerAdapter<IntermediatePackagerResult> adapter;
+				PackagerAdapter adapter;
 				if(items != null && !items.isEmpty()) {
 					adapter = new PlainBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
 				} else {

@@ -39,7 +39,6 @@ import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
-import com.github.skjolber.packing.packer.EmptyPackagerResultAdapter;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
@@ -50,9 +49,9 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
  * <br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
-public abstract class AbstractLargestAreaFitFirstPackager extends AbstractControlPackager<Placement, IntermediatePackagerResult, AbstractLargestAreaFitFirstPackager.LargestAreaFitFirstResultBuilder> {
+public abstract class AbstractLargestAreaFitFirstPackager extends AbstractControlPackager<Placement, AbstractLargestAreaFitFirstPackager.LargestAreaFitFirstResultBuilder> {
 
-	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter<IntermediatePackagerResult> {
+	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter {
 
 		public PlainBoxItemAdapter(List<BoxItem> boxItems, Order order,
 				ContainerItemsCalculator packagerContainerItems,
@@ -73,7 +72,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 	}
 	
-	protected class PlainBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter<IntermediatePackagerResult> {
+	protected class PlainBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter {
 
 		public PlainBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups,
 				Order order,
@@ -118,7 +117,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
-				PackagerAdapter<IntermediatePackagerResult> adapter;
+				PackagerAdapter adapter;
 				if(items != null && !items.isEmpty()) {
 					adapter = new PlainBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
 				} else {
@@ -180,7 +179,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			if(!container.fitsInside(boxItem.getBox())) {
 
 				if(abortOnAnyBoxTooBig) {
-					return EmptyPackagerResultAdapter.EMPTY;
+					return EmptyIntermediatePackagerResult.EMPTY;
 				}
 				
 				if(order != Order.CRONOLOGICAL) {
@@ -260,7 +259,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 						Box box = boxItem.getBox();
 						if(box.getVolume() > maxVolume || box.getMinimumArea() > maxArea) {
 							if(abortOnAnyBoxTooBig) {
-								return EmptyPackagerResultAdapter.EMPTY;
+								return EmptyIntermediatePackagerResult.EMPTY;
 							}
 							
 							if(order != Order.CRONOLOGICAL) {
@@ -305,7 +304,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					if(box.getVolume() > remainingLoadVolume || box.getWeight() > remainingLoadWeight) {
 						
 						if(abortOnAnyBoxTooBig) {
-							return EmptyPackagerResultAdapter.EMPTY;
+							return EmptyIntermediatePackagerResult.EMPTY;
 						}
 						
 						if(order != Order.CRONOLOGICAL) {
@@ -371,7 +370,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(i);
 				if(!container.fitsInside(boxItemGroup)) {
 					if(abortOnAnyBoxTooBig) {
-						return EmptyPackagerResultAdapter.EMPTY;
+						return EmptyIntermediatePackagerResult.EMPTY;
 					}
 					if(order != Order.CRONOLOGICAL) {
 						filteredBoxItemGroups.remove(i);
@@ -472,7 +471,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 								if(box.getVolume() > maxVolume || box.getMinimumArea() > maxArea) {
 
 									if(abortOnAnyBoxTooBig) {
-										return EmptyPackagerResultAdapter.EMPTY;
+										return EmptyIntermediatePackagerResult.EMPTY;
 									}
 									
 									if(order != Order.CRONOLOGICAL) {
@@ -527,7 +526,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 						if(g.getVolume() > remainingLoadVolume || g.getWeight() > remainingLoadWeight) {
 							
 							if(abortOnAnyBoxTooBig) {
-								return EmptyPackagerResultAdapter.EMPTY;
+								return EmptyIntermediatePackagerResult.EMPTY;
 							}
 							
 							if(order != Order.CRONOLOGICAL) {
@@ -573,7 +572,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				boxItemGroup.reset();
 
 				if(abortOnAnyBoxTooBig) {
-					return EmptyPackagerResultAdapter.EMPTY;
+					return EmptyIntermediatePackagerResult.EMPTY;
 				}
 
 				List<BoxItem> removedBoxItems = new ArrayList<>();

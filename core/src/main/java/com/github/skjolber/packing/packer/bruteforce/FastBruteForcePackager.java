@@ -21,6 +21,7 @@ import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotati
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
+import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
@@ -40,9 +41,9 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 	public static class FastBruteForcePackagerBuilder {
 
-		protected Comparator<BruteForceIntermediatePackagerResult> comparator;
+		protected Comparator<IntermediatePackagerResult> comparator;
 		
-		public FastBruteForcePackagerBuilder withComparator(Comparator<BruteForceIntermediatePackagerResult> comparator) {
+		public FastBruteForcePackagerBuilder withComparator(Comparator<IntermediatePackagerResult> comparator) {
 			this.comparator = comparator;
 			return this;
 		}
@@ -69,7 +70,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		@Override
-		public BruteForceIntermediatePackagerResult attempt(int i, BruteForceIntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+		public BruteForceIntermediatePackagerResult attempt(int i, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
@@ -91,7 +92,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		}
 		
 		@Override
-		public BruteForceIntermediatePackagerResult attempt(int i, BruteForceIntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+		public BruteForceIntermediatePackagerResult attempt(int i, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
@@ -144,7 +145,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		return new FastBruteForceAdapter(boxItems, defaultContainerItemsCalculator, containerIterators, interrupt);
 	}
 	
-	public FastBruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator) {
+	public FastBruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
 		super(comparator);
 	}
 

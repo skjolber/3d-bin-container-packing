@@ -10,7 +10,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 
-public abstract class AbstractBoxItemAdapter<T extends IntermediatePackagerResult> extends AbstractPackagerAdapter<T> implements PackagerAdapter<T> {
+public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter implements PackagerAdapter {
 
 	protected List<BoxItem> remainingBoxItems;
 	protected final PackagerInterruptSupplier interrupt;
@@ -32,7 +32,7 @@ public abstract class AbstractBoxItemAdapter<T extends IntermediatePackagerResul
 	}
 
 	@Override
-	public T attempt(int index, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+	public IntermediatePackagerResult attempt(int index, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		try {
 			ControlledContainerItem containerItem = packagerContainerItems.getContainerItem(index);
 			return pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig);
@@ -86,7 +86,7 @@ public abstract class AbstractBoxItemAdapter<T extends IntermediatePackagerResul
 		return count;
 	}
 
-	protected abstract T pack(List<BoxItem> remainingBoxItems, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;
+	protected abstract IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;
 
 	
 

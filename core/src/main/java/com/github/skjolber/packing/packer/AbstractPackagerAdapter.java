@@ -6,7 +6,7 @@ import java.util.Objects;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.point.Point;
 
-public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResult> implements PackagerAdapter<T> {
+public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 
 	protected final ContainerItemsCalculator packagerContainerItems;
 
@@ -15,7 +15,7 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 	}
 
 	@Override
-	public T peek(int containerIndex, T result) {
+	public IntermediatePackagerResult peek(int containerIndex, IntermediatePackagerResult result) {
 
 		Stack stack = result.getStack();
 		ControlledContainerItem peek = packagerContainerItems.getContainerItem(containerIndex);
@@ -49,6 +49,6 @@ public abstract class AbstractPackagerAdapter<T extends IntermediatePackagerResu
 		return copy(peek, result, containerIndex);
 	}
 	
-	protected abstract T copy(ControlledContainerItem peek, T result, int index);
+	protected abstract IntermediatePackagerResult copy(ControlledContainerItem peek, IntermediatePackagerResult result, int index);
 	
 }
