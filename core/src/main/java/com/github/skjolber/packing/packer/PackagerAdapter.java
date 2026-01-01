@@ -9,13 +9,13 @@ import com.github.skjolber.packing.api.ContainerItem;
  * Logical packager for wrapping preprocessing / optimizations.
  */
 // 
-public interface PackagerAdapter<T extends IntermediatePackagerResult> {
+public interface PackagerAdapter {
 
-	T attempt(int containerIndex, T best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;
+	IntermediatePackagerResult attempt(int containerIndex, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;
 	
-	T peek(int containerIndex, T existing);
+	IntermediatePackagerResult peek(int containerIndex, IntermediatePackagerResult existing);
 
-	Container accept(T result);
+	Container accept(IntermediatePackagerResult result);
 
 	List<Integer> getContainers(int maxCount);
 	

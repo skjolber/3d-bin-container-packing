@@ -15,5 +15,5 @@ public interface IntermediatePackagerResult {
 	Stack getStack();
 	
 	boolean isEmpty();
-	
+
 }

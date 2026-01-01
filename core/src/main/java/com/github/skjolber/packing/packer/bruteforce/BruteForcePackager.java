@@ -17,6 +17,7 @@ import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotati
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
+import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
@@ -38,10 +39,10 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 	public static class BruteForcePackagerBuilder {
 
-		protected Comparator<BruteForceIntermediatePackagerResult> comparator;
+		protected Comparator<IntermediatePackagerResult> comparator;
 		protected List<Point> points;
 		
-		public BruteForcePackagerBuilder withComparator(Comparator<BruteForceIntermediatePackagerResult> comparator) {
+		public BruteForcePackagerBuilder withComparator(Comparator<IntermediatePackagerResult> comparator) {
 			this.comparator = comparator;
 			return this;
 		}
@@ -72,7 +73,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		@Override
-		public BruteForceIntermediatePackagerResult attempt(int i, BruteForceIntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+		public BruteForceIntermediatePackagerResult attempt(int i, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
@@ -95,7 +96,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		}
 		
 		@Override
-		public BruteForceIntermediatePackagerResult attempt(int i, BruteForceIntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+		public BruteForceIntermediatePackagerResult attempt(int i, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
@@ -103,7 +104,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		}
 	}
 
-	public BruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator) {
+	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
 		super(comparator);
 	}
 

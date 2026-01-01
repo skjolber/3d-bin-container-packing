@@ -12,7 +12,7 @@ import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 
-public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter implements PackagerAdapter<BruteForceIntermediatePackagerResult> {
+public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter implements PackagerAdapter {
 
 	// keep inventory over all of the iterators here
 	protected Box[] boxes;

@@ -22,6 +22,7 @@ import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
+import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
@@ -35,11 +36,11 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
-public abstract class AbstractBruteForcePackager extends AbstractPackager<BruteForceIntermediatePackagerResult, AbstractBruteForcePackager.BruteForcePackagerResultBuilder> {
+public abstract class AbstractBruteForcePackager extends AbstractPackager<AbstractBruteForcePackager.BruteForcePackagerResultBuilder> {
 
 	private static final Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
 	
-	public AbstractBruteForcePackager(Comparator<BruteForceIntermediatePackagerResult> comparator) {
+	public AbstractBruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
 		super(comparator);
 	}
 	

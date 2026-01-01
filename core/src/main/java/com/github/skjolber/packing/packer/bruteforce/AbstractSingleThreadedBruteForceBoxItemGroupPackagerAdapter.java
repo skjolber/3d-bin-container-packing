@@ -14,6 +14,7 @@ import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationItera
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 
@@ -46,73 +47,79 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 	}
 
 	@Override
-	public Container accept(BruteForceIntermediatePackagerResult bruteForceResult) {
-		bruteForceResult.markDirty();
-		Stack stack = bruteForceResult.getStack();
+	public Container accept(IntermediatePackagerResult result) {
 		
-		int size = stack.size();
-		if(stackPlacements.size() > size) {
-			// this result does not consume all placements
-			// remove consumed items from the iterators
-
-			PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
+		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
 			
-			// TODO only handles groups in order.
+			bruteForceResult.markDirty();
+			Stack stack = bruteForceResult.getStack();
 			
-			List<Integer> removedGroups = new ArrayList<>();
-			int wholeGroupBoxCount = 0;
-			for(int i = 0; i < boxItemGroups.size(); i++) {
-				BoxItemGroup boxItemGroup = boxItemGroups.get(i);
+			int size = stack.size();
+			if(stackPlacements.size() > size) {
+				// this result does not consume all placements
+				// remove consumed items from the iterators
+	
+				PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
 				
-				int groupBoxCount = boxItemGroup.getBoxCount();
-				if(size < wholeGroupBoxCount + groupBoxCount) {
-					// the last group was not successful
-					break;
-				}
+				// TODO only handles groups in order.
 				
-				removedGroups.add(i);
-				
-				wholeGroupBoxCount += groupBoxCount;
-				
-				if(wholeGroupBoxCount == size) {
-					break;
-				}
-			}
-			
-			int[] permutations = state.getPermutations();
-			
-			List<Integer> p = new ArrayList<>();
-			for(Integer removedGroup: removedGroups) {
-				BoxItemGroup boxItemGroup = boxItemGroups.get(removedGroup);
-
-				for (BoxItem boxItem : boxItemGroup.getItems()) {
-					for (int i = 0; i < boxItem.getCount(); i++) {
-						p.add(permutations[p.size()]);
+				List<Integer> removedGroups = new ArrayList<>();
+				int wholeGroupBoxCount = 0;
+				for(int i = 0; i < boxItemGroups.size(); i++) {
+					BoxItemGroup boxItemGroup = boxItemGroups.get(i);
+					
+					int groupBoxCount = boxItemGroup.getBoxCount();
+					if(size < wholeGroupBoxCount + groupBoxCount) {
+						// the last group was not successful
+						break;
+					}
+					
+					removedGroups.add(i);
+					
+					wholeGroupBoxCount += groupBoxCount;
+					
+					if(wholeGroupBoxCount == size) {
+						break;
 					}
 				}
+				
+				int[] permutations = state.getPermutations();
+				
+				List<Integer> p = new ArrayList<>();
+				for(Integer removedGroup: removedGroups) {
+					BoxItemGroup boxItemGroup = boxItemGroups.get(removedGroup);
+	
+					for (BoxItem boxItem : boxItemGroup.getItems()) {
+						for (int i = 0; i < boxItem.getCount(); i++) {
+							p.add(permutations[p.size()]);
+						}
+					}
+				}
+				
+				// remove stacked items which did not make it
+				stack.setSize(p.size());
+				
+				Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+	
+				// remove adapter inventory
+				removeInventory(p);
+	
+				for (BoxItemGroupPermutationRotationIterator it : containerIterators) {
+					it.removeGroups(removedGroups);
+				}
+				
+				boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());
+				stackPlacements = stackPlacements.subList(p.size(), this.stackPlacements.size());
+				
+				return container;
+			} else {
+				stackPlacements = Collections.emptyList();
+				boxItemGroups = Collections.emptyList();
+				
+				return packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
 			}
-			
-			// remove stacked items which did not make it
-			stack.setSize(p.size());
-			
-			Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
-
-			// remove adapter inventory
-			removeInventory(p);
-
-			for (BoxItemGroupPermutationRotationIterator it : containerIterators) {
-				it.removeGroups(removedGroups);
-			}
-			
-			boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());
-			stackPlacements = stackPlacements.subList(p.size(), this.stackPlacements.size());
-			
-			return container;
 		} else {
-			stackPlacements = Collections.emptyList();
-			boxItemGroups = Collections.emptyList();
-			
-			return packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+			throw new IllegalStateException(); // TODO
 		}
 	}
 

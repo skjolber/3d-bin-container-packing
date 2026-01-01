@@ -27,11 +27,11 @@ import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 @RunWith(JUnitQuickcheck.class)
 public class AbstractPackagerProperties extends AbstractPackagerTest {
 
-	AbstractPackager<?, ?> plainPackager = PlainPackager.newBuilder().build();
-	AbstractPackager<?, ?> bruteForcePackager = BruteForcePackager.newBuilder().build();
-	AbstractPackager<?, ?> fastBruteForcePackager = FastBruteForcePackager.newBuilder().build();
-	AbstractPackager<?, ?> parallelBruteForcePackager = ParallelBoxItemBruteForcePackager.newBuilder().build();
-	AbstractPackager<?, ?> largestAreaFitFirstPackager = LargestAreaFitFirstPackager.newBuilder().build();
+	AbstractPackager<?> plainPackager = PlainPackager.newBuilder().build();
+	AbstractPackager<?> bruteForcePackager = BruteForcePackager.newBuilder().build();
+	AbstractPackager<?> fastBruteForcePackager = FastBruteForcePackager.newBuilder().build();
+	AbstractPackager<?> parallelBruteForcePackager = ParallelBoxItemBruteForcePackager.newBuilder().build();
+	AbstractPackager<?> largestAreaFitFirstPackager = LargestAreaFitFirstPackager.newBuilder().build();
 
 	@Property
 	public void eightBoxesTight2x2x2(@From(DimensionGenerator.class) Dimension boxSize) {
@@ -101,8 +101,8 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 	private void runTest(final Dimension containerSize,
 			final Dimension boxSize,
 			final int count,
-			AbstractPackager<?, ?>... packagers) {
-		for (final AbstractPackager<?, ?> packager : packagers) {
+			AbstractPackager<?>... packagers) {
+		for (final AbstractPackager<?> packager : packagers) {
 			final Container container = Container.newBuilder()
 					.withDescription(containerSize.encode())
 					.withEmptyWeight(0)
