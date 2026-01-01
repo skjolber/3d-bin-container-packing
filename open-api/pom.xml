@@ -16,7 +16,7 @@
 		<swagger-annotations.version>2.2.41</swagger-annotations.version>
 	  	<spring.version>6.2.12</spring.version>
 		<httpclient5.version>5.6</httpclient5.version>
-		<open-api-generator.version>7.17.0</open-api-generator.version>
+		<open-api-generator.version>7.18.0</open-api-generator.version>
 		<jakarta.validation-api.version>3.1.1</jakarta.validation-api.version>
 		<jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
 		<jackson-databind-nullable.version>0.2.8</jackson-databind-nullable.version>
