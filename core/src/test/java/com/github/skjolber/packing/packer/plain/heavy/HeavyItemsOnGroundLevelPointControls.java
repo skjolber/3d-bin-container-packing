@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.plain;
+package com.github.skjolber.packing.packer.plain.heavy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,22 +102,8 @@ public class HeavyItemsOnGroundLevelPointControls extends DefaultPointControls {
 			
 			return new DefaultPointSource(values);
 		}
-		
-		if(isHeavyBoxes()) {
-			// alternatively make point comparator perform the same
-			return EmptyPointSource.getInstance();
-		}
-		
+
 		return filteredPoints;
 	}
 
-	private boolean isHeavyBoxes() {
-		for(int i = 0; i < filteredBoxItems.size(); i++) {
-			if(filteredBoxItems.get(i).getBox().getWeight() > maxWeight) {
-				return true;
-			}
-		}
-		return false;
-	}	
-	
 }
