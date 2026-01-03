@@ -86,7 +86,6 @@ public abstract class AbstractComparatorPlacementControls<T extends Placement> e
 			}
 			
 		}
-		System.out.println();
 		return result;
 	}
 
