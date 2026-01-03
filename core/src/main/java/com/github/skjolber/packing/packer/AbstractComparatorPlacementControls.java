@@ -43,6 +43,8 @@ public abstract class AbstractComparatorPlacementControls<T extends Placement> e
 			Box box = boxItem.getBox();
 			
 			if(order == Order.NONE) {
+				// is there any point in testing this box?
+				//
 				// a negative integer, zero, or a positive integer as the 
 				// first argument is less than, equal to, or greater than the
 			    // second.
@@ -66,6 +68,7 @@ public abstract class AbstractComparatorPlacementControls<T extends Placement> e
 					if(placementResult == null) {
 						continue;
 					}
+					
 					if(result != null && placementComparator.compare(result, placementResult) >= 0) {
 						continue;
 					}
@@ -83,6 +86,7 @@ public abstract class AbstractComparatorPlacementControls<T extends Placement> e
 			}
 			
 		}
+		System.out.println();
 		return result;
 	}
 

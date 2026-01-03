@@ -27,6 +27,9 @@ import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
+import com.github.skjolber.packing.packer.plain.heavy.HeavyItemsBestBoxItemComparator;
+import com.github.skjolber.packing.packer.plain.heavy.HeavyItemsOnGroundLevelPlacementComparator;
+import com.github.skjolber.packing.packer.plain.heavy.HeavyItemsOnGroundLevelPointControls;
 
 public class PlainPackagerTest extends AbstractPackagerTest {
 
@@ -571,6 +574,8 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
 	@Test
 	void testStackingSquaresOnSquareWithPointConstraints() {
+		
+		int maxWeight = 2;
 
 		Container container = Container.newBuilder()
 				.withDescription("1")
@@ -580,7 +585,11 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				.withStack(new ValidatingStack())
 				.build();
 
-		PlainPackager packager = PlainPackager.newBuilder().build();
+		PlainPackager packager = PlainPackager.newBuilder().withPlacementControlsBuilderFactory( (c) -> {
+			c.withPlacementComparator(new HeavyItemsOnGroundLevelPlacementComparator(maxWeight));
+			c.withBoxItemComparator(new HeavyItemsBestBoxItemComparator(maxWeight));
+		}).build();
+		
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
@@ -590,8 +599,12 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 1));
-				b.withPointControlsBuilderFactory(HeavyItemsOnGroundLevelPointControls.newFactory(2));
+				
+				// strictly not necessary but included
+				b.withPointControlsBuilderFactory(HeavyItemsOnGroundLevelPointControls.newFactory(maxWeight));
 			}).withBoxItems(products).build();
+			
+			assertTrue(build.isSuccess());
 			
 			List<Container> containers = build.getContainers();
 			

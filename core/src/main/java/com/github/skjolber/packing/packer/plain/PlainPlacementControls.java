@@ -15,7 +15,7 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.packer.AbstractComparatorPlacementControls;
 
-public class PlainPlacementControls extends AbstractComparatorPlacementControls<PlainPlacement> {
+public class PlainPlacementControls extends AbstractComparatorPlacementControls<Placement> {
 
 	public static long calculateAreaSupport(PointCalculator pointCalculator, Point referencePoint, BoxStackValue stackValue) {
 		if(referencePoint.getMinZ() == 0) {
@@ -100,7 +100,7 @@ public class PlainPlacementControls extends AbstractComparatorPlacementControls<
 	
 	public PlainPlacementControls(BoxItemSource boxItems, int boxItemsStartIndex, int boxItemsEndIndex,
 			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
-			Order order, Comparator<PlainPlacement> placementComparator,
+			Order order, Comparator<Placement> placementComparator,
 			Comparator<BoxItem> boxItemComparator, boolean requireFullSupport) {
 		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, order,
 				placementComparator, boxItemComparator);
