@@ -35,7 +35,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 		public LargestAreaFitFirstPackager build() {
 			if(intermediatePackagerResultComparator == null) {
-				intermediatePackagerResultComparator = new DefaultIntermediatePackagerResultComparator<>();
+				intermediatePackagerResultComparator = new DefaultIntermediatePackagerResultComparator();
 			}
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();

@@ -205,7 +205,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		
 		public PlainPackager build() {
 			if(packagerResultComparator == null) {
-				packagerResultComparator = new DefaultIntermediatePackagerResultComparator<>();
+				packagerResultComparator = new DefaultIntermediatePackagerResultComparator();
 			}
 			if(placementControlsBuilderFactory == null) {
 				placementControlsBuilderFactory = new PlainPlacementControlsBuilderFactory();

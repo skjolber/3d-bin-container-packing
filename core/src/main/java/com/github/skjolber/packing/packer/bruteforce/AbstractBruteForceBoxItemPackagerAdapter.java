@@ -10,7 +10,7 @@ import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 
-public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractPackagerAdapter implements PackagerAdapter {
+public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractPackagerAdapter {
 
 	// keep inventory over all of the iterators here
 	protected Box[] boxes;

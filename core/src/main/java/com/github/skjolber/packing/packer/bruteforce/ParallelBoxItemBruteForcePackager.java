@@ -91,7 +91,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		public ParallelBoxItemBruteForcePackager build() {
 			if(comparator == null) {
-				comparator = new DefaultIntermediatePackagerResultComparator<>();
+				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
 			if(executorService == null) {
 				if(threads == -1) {

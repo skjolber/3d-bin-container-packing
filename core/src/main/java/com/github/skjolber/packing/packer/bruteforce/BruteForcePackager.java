@@ -54,7 +54,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		
 		public BruteForcePackager build() {
 			if(comparator == null) {
-				comparator = new DefaultIntermediatePackagerResultComparator<>();
+				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
 			return new BruteForcePackager(comparator);
 		}

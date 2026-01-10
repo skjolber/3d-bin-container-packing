@@ -34,7 +34,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 
 		public FastLargestAreaFitFirstPackager build() {
 			if(intermediatePackagerResultComparator == null) {
-				intermediatePackagerResultComparator = new DefaultIntermediatePackagerResultComparator<>();
+				intermediatePackagerResultComparator = new DefaultIntermediatePackagerResultComparator();
 			}
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = new LargestAreaBoxItemGroupComparator();
