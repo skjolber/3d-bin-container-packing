@@ -50,7 +50,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		
 		public FastBruteForcePackager build() {
 			if(comparator == null) {
-				comparator = new DefaultIntermediatePackagerResultComparator<>();
+				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
 			return new FastBruteForcePackager(comparator);
 		}
