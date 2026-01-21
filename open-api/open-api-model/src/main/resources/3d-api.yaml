@@ -8,7 +8,7 @@ info:
 paths:
   /pack:
     post:
-      summary: Pack an order
+      summary: Perform a packaging operation
       description: |
         Pack an order
       requestBody:
@@ -27,7 +27,6 @@ paths:
 
 components:
   schemas:
-
     Surface:
       type: string
       enum:
@@ -115,40 +114,37 @@ components:
         emptyWeight:
           type: integer
 
-    StackableItem:
-      type: object
-      discriminator:
-        propertyName: stackableType
-        mapping:
-          box: "#/components/schemas/BoxItem"
-          container: "#/components/schemas/ContainerItem"      
+    ContainerItem:
+      type: object    
       properties:
+        container:
+          $ref: '#/components/schemas/Container'
         count:
           type: integer
-
-    ContainerItem:
-      allOf:
-        - $ref: "#/components/schemas/StackableItem"
-        - type: object    
-          properties:
-            container:
-              $ref: '#/components/schemas/Container'    
+        cost:
+          $ref: '#/components/schemas/Cost'
 
     BoxItem:
-      allOf:
-        - $ref: "#/components/schemas/StackableItem"
-        - type: object    
-          properties:
-            box:
-              $ref: '#/components/schemas/Box'
+      type: object    
+      properties:
+        box:
+          $ref: '#/components/schemas/Box'
+        count:
+          type: integer
 
     Packager:
       type: object
       properties:
         id:
           type: string
-        maxDurationInPercent:
-          type: integer
+        resourceLimits:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceLimit'
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackagerFeature'
           
     PackResult:
       type: object
@@ -173,12 +169,13 @@ components:
     PackRequest:
       type: object
       properties:
-        deadline:
-          type: integer
-          format: int64
+        temporalLimit:
+           $ref: '#/components/schemas/TemporalLimit'
+        resourceLimits:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceLimit'
         maxContainers:
-          type: integer
-        maxDuration:
           type: integer
         containerItems:
           type: array
@@ -192,3 +189,141 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Packager'
+
+    TemporalLimit:
+      type: object
+      properties:
+        value:
+          type: integer
+          format: int64
+        type:
+          $ref: '#/components/schemas/TemporalLimitType'
+
+    TemporalLimitType:
+      type: string
+      enum:
+        - duration
+        - deadline
+            
+    ResourceLimit:
+      type: object
+      properties:
+        value:
+          type: integer
+          format: int64
+        type:
+          $ref: '#/components/schemas/ResourceLimitType'
+            
+    ResourceLimitType:
+      type: string
+      enum:
+        - CPU_COUNT
+        - CPU_TIME
+        - CPU_COST
+
+    PackagerFeature:
+      type: object
+      properties:
+        name: 
+          type: string
+
+    Cost:
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          fixed: "#/components/schemas/FixedCost"
+          variable: "#/components/schemas/VariableCost"
+      properties:
+        name: 
+          type: string
+
+    FixedCost:
+      allOf:
+        - $ref: "#/components/schemas/Cost"
+        - type: object    
+          properties:
+            value:
+              type: integer
+              format: int64
+
+    VariableCost:
+      allOf:
+        - $ref: "#/components/schemas/Cost"
+        - type: object    
+          properties:
+            name: 
+              type: string
+            weight:
+              $ref: '#/components/schemas/WeightCost'
+
+    WeightCost:
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          unit: "#/components/schemas/WeightUnitCost"
+          table: "#/components/schemas/WeightTableCost"
+      properties:
+        inclusive:
+          type: boolean
+
+    WeightUnitCost:
+      allOf:
+        - $ref: "#/components/schemas/WeightCost"
+        - type: object    
+          properties:
+            startCost:
+              type: integer
+              format: int64
+            startWeight:
+              type: integer
+              format: int64
+            weight:
+              type: integer
+              format: int64
+            cost:
+              type: integer
+              format: int64
+
+    WeightTableCost:
+      allOf:
+        - $ref: "#/components/schemas/WeightCost"
+        - type: object
+          properties:
+            table:
+              type: array
+              items:
+                $ref: '#/components/schemas/WeightTableCostItem'
+
+    WeightTableCostItem:
+      type: object
+      properties:
+        weight:
+          type: integer
+          format: int64
+        cost:
+          type: integer
+          format: int64
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+
+
+
+
+
+
+
