@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -30,14 +31,34 @@ import com.github.skjolber.packing.packer.plain.PlainPackager.Builder.PlacementC
 
 /**
  * 
- * Combine multiple packagers in the same operations; try 
+ * Combine multiple packagers in the same operations. Tiered strategy: Try to get the a baseline result using the first tier, then improve on the result with the next tiers.
  * 
  * @param <B>
  */
 
 public abstract class AbstractCompositePackager<B extends PackagerResultBuilder> implements Packager<B> {
 
-	protected final List<PackagerAdapterBuilderFactory> packagers = null;
+	protected final List<PackagerTier> packagers;
+	
+	protected static class PackagerTier {
+		
+		protected List<PackagerAdapterBuilderFactory> packagers;
+		protected String name;
+		
+		public PackagerTier(String name, List<PackagerAdapterBuilderFactory> packagers) {
+			this.name = name;
+			this.packagers = packagers;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public List<PackagerAdapterBuilderFactory> getPackagers() {
+			return packagers;
+		}
+		
+	}
 
 	protected class CompositeBoxItemAdapter extends AbstractBoxItemAdapter {
 
@@ -47,14 +68,12 @@ public abstract class AbstractCompositePackager<B extends PackagerResultBuilder>
 		}
 
 		@Override
-		public IntermediatePackagerResult attempt(int containerIndex, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
-			// TODO Auto-generated method stub
+		public IntermediatePackagerResult attempt(int containerIndex, IntermediatePackagerResult intermediatePackagerResult, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			return null;
 		}
 
 		@Override
 		public Container accept(IntermediatePackagerResult result) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
@@ -62,18 +81,18 @@ public abstract class AbstractCompositePackager<B extends PackagerResultBuilder>
 		protected IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems,
 				ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, Order order,
 				boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		protected IntermediatePackagerResult copy(ControlledContainerItem peek, IntermediatePackagerResult result,
+		protected IntermediatePackagerResult copy(ControlledContainerItem peek, IntermediatePackagerResult intermediatePackagerResult,
 				int index) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 	}
+	
+	/*
 	
 	protected class CompositeBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter {
 
@@ -110,6 +129,8 @@ public abstract class AbstractCompositePackager<B extends PackagerResultBuilder>
 		}
 	}	
 	
+	*/
+	
 	public class CompositeResultBuilder extends AbstractPackagerResultBuilder<PlainResultBuilder> {
 
 		@Override
@@ -128,15 +149,29 @@ public abstract class AbstractCompositePackager<B extends PackagerResultBuilder>
 			if(interrupt != null) {
 				booleanSupplierBuilder.withInterrupt(interrupt);
 			}
-
+			
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
+			
+			ContainerItemsCalculator containerItemsCalculator = new ContainerItemsCalculator(containers);
 			try {
-				PackagerAdapter adapter;
-				if(items != null && !items.isEmpty()) {
-					adapter = new CompositeBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
-				} else {
-					adapter = new CompositeBoxItemGroupAdapter(itemGroups, order, new ContainerItemsCalculator(containers), interrupt);
+				List<PackagerAdapter> adapters = new ArrayList<>();
+				
+				for (PackagerAdapterBuilderFactory f : packagers) {
+					
+					PackagerAdapter packagerAdapter = f.newPackagerAdapterBuilder()
+						.withBoxItemGroups(itemGroups)
+						.withBoxItems(items)
+						.withOrder(order)
+						.withInterrupt(interrupt)
+						.withContainerItemsCalculator(containerItemsCalculator)
+						.build();
+					
+					adapters.add(packagerAdapter);
 				}
+
+				
+				
+				
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 				
 				long duration = System.currentTimeMillis() - start;
@@ -152,6 +187,10 @@ public abstract class AbstractCompositePackager<B extends PackagerResultBuilder>
 	
 	@Override
 	public void close() throws IOException {
+		
+		for (PackagerAdapterBuilderFactory f : packagers) {
+			f.close();
+		}
 		
 	}
 

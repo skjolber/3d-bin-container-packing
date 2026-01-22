@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.packer.plain;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -151,7 +152,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 				return new PlainBoxItemGroupAdapter(itemGroups, order, calcultor, interrupt);
 			}
 		}
-		
+
 	}
 	
 

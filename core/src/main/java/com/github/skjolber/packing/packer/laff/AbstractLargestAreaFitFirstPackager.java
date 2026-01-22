@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.packer.laff;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -154,7 +155,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				return new PlainBoxItemGroupAdapter(itemGroups, order, calcultor, interrupt);
 			}
 		}
-		
+
 	}
 	
 	
