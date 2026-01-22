@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.packer.laff;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,6 +35,7 @@ import com.github.skjolber.packing.iterator.PackagerBoxItems;
 import com.github.skjolber.packing.packer.AbstractBoxItemAdapter;
 import com.github.skjolber.packing.packer.AbstractBoxItemGroupAdapter;
 import com.github.skjolber.packing.packer.AbstractControlPackager;
+import com.github.skjolber.packing.packer.AbstractPackagerAdapterBuilder;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
@@ -41,6 +43,8 @@ import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerAdapter;
+import com.github.skjolber.packing.packer.PackagerAdapterBuilder;
+import com.github.skjolber.packing.packer.PackagerAdapterBuilderFactory;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
@@ -49,7 +53,7 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
  * <br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
-public abstract class AbstractLargestAreaFitFirstPackager extends AbstractControlPackager<Placement, AbstractLargestAreaFitFirstPackager.LargestAreaFitFirstResultBuilder> {
+public abstract class AbstractLargestAreaFitFirstPackager extends AbstractControlPackager<Placement, AbstractLargestAreaFitFirstPackager.LargestAreaFitFirstResultBuilder> implements PackagerAdapterBuilderFactory {
 
 	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter {
 
@@ -117,12 +121,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
-				PackagerAdapter adapter;
-				if(items != null && !items.isEmpty()) {
-					adapter = new PlainBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
-				} else {
-					adapter = new PlainBoxItemGroupAdapter(itemGroups, order, new ContainerItemsCalculator(containers), interrupt);
-				}
+				PackagerAdapter adapter = createAdapter(interrupt);
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 				
 				long duration = System.currentTimeMillis() - start;
@@ -134,7 +133,31 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				interrupt.close();
 			}
 		}
+
+		private PackagerAdapter createAdapter(PackagerInterruptSupplier interrupt) {
+			PackagerAdapter adapter;
+			if(items != null && !items.isEmpty()) {
+				adapter = new PlainBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
+			} else {
+				adapter = new PlainBoxItemGroupAdapter(itemGroups, order, new ContainerItemsCalculator(containers), interrupt);
+			}
+			return adapter;
+		}
 	}
+	
+	public class LargestAreaFitFirstPackagerAdapterBuilder extends AbstractPackagerAdapterBuilder {
+
+		@Override
+		public PackagerAdapter build() {
+			if(items != null && !items.isEmpty()) {
+				return new PlainBoxItemAdapter(items, order, calcultor, interrupt);
+			} else {
+				return new PlainBoxItemGroupAdapter(itemGroups, order, calcultor, interrupt);
+			}
+		}
+
+	}
+	
 	
 	// intermediatePlacementResultBuilderFactory = new ComparatorIntermediatePlacementControlsBuilderFactory();
 	protected PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory;
@@ -670,6 +693,11 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 	@Override
 	public LargestAreaFitFirstResultBuilder newResultBuilder() {
 		return new LargestAreaFitFirstResultBuilder();
+	}
+	
+	@Override
+	public PackagerAdapterBuilder newPackagerAdapterBuilder() {
+		return new LargestAreaFitFirstPackagerAdapterBuilder();
 	}
 	
 }
