@@ -128,6 +128,8 @@ class ThreeScene extends Component {
   };
 
   // Toggle layer visibility
+  // Note: Boxes and points are nested within containers, so we traverse containersGroup
+  // recursively to find and toggle them by their userData.type
   toggleContainers = () => {
     this.setState({ showContainers: !this.state.showContainers }, () => {
       if (containersGroup) {

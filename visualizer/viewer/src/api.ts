@@ -8,6 +8,11 @@ const helvetiker = require( 'three/examples/fonts/droid/droid_sans_mono_regular.
 const font = new Font( helvetiker );
 const textMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff } );
 
+// Container styling constants
+const CONTAINER_BOX_COLOR = 0x888888;
+const CONTAINER_BOX_OPACITY = 0.15;
+const CONTAINER_EDGE_COLOR = 0x444444;
+
 export class Point {
     
     x : number;
@@ -196,9 +201,6 @@ export class MemoryColorScheme implements ColorScheme {
 
 export class StackableRenderer {
 
-    constructor() {
-    }
-
     add(parent: Object3D, colorScheme : ColorScheme, stackPlacement : StackPlacement, x: number, y:number, z: number): Object3D | undefined {
 
         var stackable = stackPlacement.stackable;
@@ -213,8 +215,8 @@ export class StackableRenderer {
             
             // Create transparent box mesh for container volume
             var containerBoxMaterial = new THREE.MeshPhongMaterial({
-                color: 0x888888,
-                opacity: 0.15,
+                color: CONTAINER_BOX_COLOR,
+                opacity: CONTAINER_BOX_OPACITY,
                 transparent: true,
                 depthWrite: false
             });
@@ -224,7 +226,7 @@ export class StackableRenderer {
             
             // Create edges for container
             var containerEdgesGeometry = new THREE.EdgesGeometry(containerBoxGeometry);
-            var containerEdgesMaterial = new THREE.LineBasicMaterial({ color: 0x444444 });
+            var containerEdgesMaterial = new THREE.LineBasicMaterial({ color: CONTAINER_EDGE_COLOR });
             var containerEdges = new THREE.LineSegments(containerEdgesGeometry, containerEdgesMaterial);
             containerEdges.userData = { type: "container" };
             
