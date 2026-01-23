@@ -25,10 +25,14 @@ var camera;
 var orbit; // light orbit
 var helvatiker;
 var mainGroup;
+var containersGroup;
+var boxesGroup;
+var pointsGroup;
 var shouldAnimate;
 var controls;
 var delta = 0;
 var visibleContainers;
+var containerById = {}; // Map container ID to container object
 
 
 const pointer = new THREE.Vector2();
@@ -44,10 +48,11 @@ var minStepNumber = 0;
 
 var points = false;
 
-var stackableRenderer = new StackableRenderer();
+var stackableRenderer;
 var memoryScheme = new MemoryColorScheme(new RandomColorScheme());
 
 var gridXZ;
+var axesHelper;
 
 const font = new Font( helvetiker );
 
@@ -57,7 +62,14 @@ const font = new Font( helvetiker );
 class ThreeScene extends Component {
   constructor(props) {
     super(props);
-    this.state = { useWireFrame: false };
+    this.state = { 
+      useWireFrame: false,
+      showContainers: true,
+      showBoxes: true,
+      showPoints: true,
+      showGrid: true,
+      selectedBox: null
+    };
     visibleContainers = new Array();
   }
 
@@ -81,6 +93,89 @@ class ThreeScene extends Component {
     this.frameId = window.requestAnimationFrame(this.animate);
   };
 
+  // Helper function to fit camera to an object
+  fitCameraToObject = (camera, controls, object, offset = 1.5) => {
+    const box = new THREE.Box3().setFromObject(object);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const fov = camera.fov * (Math.PI / 180);
+    let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+    cameraZ *= offset;
+
+    camera.position.set(center.x + cameraZ, center.y + cameraZ * 0.6, center.z + cameraZ);
+    camera.lookAt(center);
+    controls.target.copy(center);
+    controls.update();
+  };
+
+  // Fit camera to all containers
+  fitAllContainers = () => {
+    if (containersGroup && containersGroup.children.length > 0) {
+      this.fitCameraToObject(camera, controls, containersGroup, 1.5);
+    } else if (mainGroup) {
+      this.fitCameraToObject(camera, controls, mainGroup, 1.5);
+    }
+  };
+
+  // Focus camera on a specific container by ID
+  focusContainer = (id) => {
+    const container = containerById[id];
+    if (container) {
+      this.fitCameraToObject(camera, controls, container, 2.0);
+    }
+  };
+
+  // Toggle layer visibility
+  toggleContainers = () => {
+    this.setState({ showContainers: !this.state.showContainers }, () => {
+      if (containersGroup) {
+        // Toggle visibility of container shells (not the load area with boxes)
+        containersGroup.traverse((obj) => {
+          if (obj.userData.type === "container") {
+            obj.visible = this.state.showContainers;
+          }
+        });
+      }
+    });
+  };
+
+  toggleBoxes = () => {
+    this.setState({ showBoxes: !this.state.showBoxes }, () => {
+      if (containersGroup) {
+        containersGroup.traverse((obj) => {
+          if (obj.userData.type === "box") {
+            obj.visible = this.state.showBoxes;
+          }
+        });
+      }
+    });
+  };
+
+  togglePoints = () => {
+    this.setState({ showPoints: !this.state.showPoints }, () => {
+      if (containersGroup) {
+        containersGroup.traverse((obj) => {
+          if (obj.userData.type === "point") {
+            obj.visible = this.state.showPoints;
+          }
+        });
+      }
+    });
+  };
+
+  toggleGrid = () => {
+    this.setState({ showGrid: !this.state.showGrid }, () => {
+      if (gridXZ) {
+        gridXZ.visible = this.state.showGrid;
+      }
+      if (axesHelper) {
+        axesHelper.visible = this.state.showGrid;
+      }
+    });
+  };
+
   componentDidMount() {
     //Add Light & nCamera
     this.addScene();
@@ -93,6 +188,7 @@ class ThreeScene extends Component {
     document.addEventListener("keyup", this.onDocumentKeyUp, false);
     document.addEventListener("keydown", this.onDocumentKeyDown, false);
     document.addEventListener("mousemove", this.onDocumentMouseMove, false);
+    document.addEventListener("click", this.onDocumentClick, false);
 
     //--------START ANIMATION-----------
     this.renderScene();
@@ -102,12 +198,18 @@ class ThreeScene extends Component {
   handleIntersection = () => {
     raycaster.setFromCamera( pointer, camera );
     
-    var target = null;
-    for(var i = 0; i < visibleContainers.length; i++) {
-      for(var k = 0; k < visibleContainers[i].children.length; k++) {
-        var intersects = raycaster.intersectObjects(visibleContainers[i].children[k].children );
-        if ( intersects.length > 0 ) {
-          target = intersects[ 0 ].object;
+    // Use containersGroup for raycasting, searching recursively for box meshes
+    if (!containersGroup) return;
+    
+    const intersects = raycaster.intersectObjects(containersGroup.children, true);
+    
+    let target = null;
+    if (intersects.length > 0) {
+      // Find first box mesh (not text labels or containers)
+      for (let i = 0; i < intersects.length; i++) {
+        if (intersects[i].object.userData.type === "box") {
+          target = intersects[i].object;
+          break;
         }
       }
     }
@@ -115,16 +217,31 @@ class ThreeScene extends Component {
     if(target) {
       if ( INTERSECTED != target) {
         if ( INTERSECTED ) {
-          INTERSECTED.material.emissive = new Color("#000000");
-
+          // Restore original material
+          if (INTERSECTED.userData.originalMaterial) {
+            INTERSECTED.material = INTERSECTED.userData.originalMaterial;
+            delete INTERSECTED.userData.originalMaterial;
+          } else {
+            INTERSECTED.material.emissive = new Color("#000000");
+          }
         }
-        INTERSECTED = target
-        INTERSECTED.myColor = INTERSECTED.material.color;
-        INTERSECTED.material.emissive = new Color("#FF0000") 
+        INTERSECTED = target;
+        // Store original material and apply highlight
+        INTERSECTED.userData.originalMaterial = INTERSECTED.material;
+        const highlightMaterial = INTERSECTED.material.clone();
+        highlightMaterial.emissive = new Color("#FFFF00");
+        highlightMaterial.emissiveIntensity = 0.5;
+        INTERSECTED.material = highlightMaterial;
       }
     } else {
       if ( INTERSECTED ) {
-        INTERSECTED.material.emissive = new Color("#000000") ;
+        // Restore original material
+        if (INTERSECTED.userData.originalMaterial) {
+          INTERSECTED.material = INTERSECTED.userData.originalMaterial;
+          delete INTERSECTED.userData.originalMaterial;
+        } else {
+          INTERSECTED.material.emissive = new Color("#000000");
+        }
         INTERSECTED = null;
       }
     }
@@ -172,6 +289,22 @@ class ThreeScene extends Component {
     mainGroup = new THREE.Object3D();
     this.scene.add(mainGroup);
     
+    // Create dedicated groups for scene organization
+    containersGroup = new THREE.Group();
+    containersGroup.name = "containersGroup";
+    mainGroup.add(containersGroup);
+    
+    boxesGroup = new THREE.Group();
+    boxesGroup.name = "boxesGroup";
+    mainGroup.add(boxesGroup);
+    
+    pointsGroup = new THREE.Group();
+    pointsGroup.name = "pointsGroup";
+    mainGroup.add(pointsGroup);
+    
+    // Initialize renderer
+    stackableRenderer = new StackableRenderer();
+    
     let scene = this.scene;
     
     var latestData = null;
@@ -189,6 +322,9 @@ class ThreeScene extends Component {
       for(var i = 0; i < visibleContainers.length; i++) {
         mainGroup.remove(visibleContainers[i]);
       }
+      
+      // Clear container map
+      containerById = {};
 
       var x = 0;
 
@@ -255,9 +391,14 @@ class ThreeScene extends Component {
         pointNumber = -1;
         stepNumber = maxStepNumber;
 
-        // TODO return controls instead
-        var visibleContainer = stackableRenderer.add(mainGroup, memoryScheme, new StackPlacement(container, 0, x, 0, 0), 0, 0, 0);
+        // Add containers to containersGroup instead of mainGroup
+        var visibleContainer = stackableRenderer.add(containersGroup, memoryScheme, new StackPlacement(container, 0, x, 0, 0), 0, 0, 0);
         visibleContainers.push(visibleContainer);
+        
+        // Add to containerById map
+        if (container.id) {
+          containerById[container.id] = visibleContainer;
+        }
 
 
         if(x + container.dx > maxX) {
@@ -278,9 +419,17 @@ class ThreeScene extends Component {
       camera.position.y = maxZ * 1.25;
       camera.position.x = maxX * 2;
       
+	  // Remove old grid and axes if they exist
+	  if (gridXZ) {
+	    scene.remove(gridXZ);
+	  }
+	  if (axesHelper) {
+	    scene.remove(axesHelper);
+	  }
+      
 	  // Add grid corresponding to containers
       var size = Math.max(maxY, maxX) + GRID_SPACING + GRID_SPACING + GRID_SPACING;
-      let gridXZ = new THREE.GridHelper(
+      gridXZ = new THREE.GridHelper(
 		      size,
 		      size / GRID_SPACING,
 		      0x42a5f5, // center line color
@@ -290,6 +439,10 @@ class ThreeScene extends Component {
        gridXZ.position.y = 0;
        gridXZ.position.x = size / 2 - GRID_SPACING;
        gridXZ.position.z = size / 2 - GRID_SPACING;
+       
+       // Add axes helper
+       axesHelper = new THREE.Group();
+       axesHelper.name = "axesHelper";
 
        const dir = new THREE.Vector3( 1, 2, 0 );
 
@@ -300,10 +453,10 @@ class ThreeScene extends Component {
       const length = maxY + GRID_SPACING;
       const hex = 0xffffff;
       const yAxis = new THREE.ArrowHelper( new THREE.Vector3( 1, 0, 0 ), origin, maxY + GRID_SPACING, hex, 1, 1);
-      scene.add( yAxis );
+      axesHelper.add( yAxis );
 
       const xAxis = new THREE.ArrowHelper( new THREE.Vector3( 0, 0, 1 ), origin, maxX + GRID_SPACING, hex, 1, 1);
-      scene.add( xAxis );
+      axesHelper.add( xAxis );
 
       const textMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff } );
 
@@ -323,7 +476,7 @@ class ThreeScene extends Component {
       yLabelMesh.position.set( maxY - GRID_SPACING / 2, 0, -GRID_SPACING - GRID_SPACING / 4  );
       yLabelMesh.rotation.x = Math.PI / 2;
       yLabelMesh.rotation.z = -Math.PI / 2;
-      scene.add( yLabelMesh );
+      axesHelper.add( yLabelMesh );
 
       const xLabelTextGeometry = new TextGeometry( 'X', {
         font: font,
@@ -340,7 +493,9 @@ class ThreeScene extends Component {
       const xLabelMesh = new THREE.Mesh( xLabelTextGeometry, textMaterial );
       xLabelMesh.position.set(-GRID_SPACING - GRID_SPACING / 2 - GRID_SPACING / 4, 0, maxX - GRID_SPACING / 2);
       xLabelMesh.rotation.x = Math.PI / 2;
-      scene.add( xLabelMesh );
+      axesHelper.add( xLabelMesh );
+      
+      scene.add( axesHelper );
     };
 
     http(
@@ -373,6 +528,7 @@ class ThreeScene extends Component {
     this.stop();
 
     document.removeEventListener("mousemove", this.onDocumentMouseMove, false);
+    document.removeEventListener("click", this.onDocumentClick, false);
     window.removeEventListener("resize", this.onWindowResize, false);
     document.removeEventListener("keydown", this.onDocumentKeyDown, false);
     document.removeEventListener("keyup", this.onDocumentKeyUp, false);
@@ -392,6 +548,26 @@ class ThreeScene extends Component {
     if (event && typeof event !== undefined) {
       pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
       pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    }
+  };
+
+  onDocumentClick = event => {
+    event.preventDefault();
+
+    if (!containersGroup) return;
+
+    raycaster.setFromCamera(pointer, camera);
+    const intersects = raycaster.intersectObjects(containersGroup.children, true);
+
+    if (intersects.length > 0) {
+      // Find first box mesh (not text labels)
+      for (let i = 0; i < intersects.length; i++) {
+        const object = intersects[i].object;
+        if (object.userData.type === "box" && object.userData.box) {
+          this.setState({ selectedBox: object.userData.box });
+          return;
+        }
+      }
     }
   };
 
@@ -524,13 +700,149 @@ class ThreeScene extends Component {
   };
   //-------------HELPER------------------
   render() {
+    const { showContainers, showBoxes, showPoints, showGrid, selectedBox } = this.state;
+    
     return (
-      <div
-        style={{ width: window.innerWidth, height: window.innerHeight }}
-        ref={mount => {
-          this.mount = mount;
-        }}
-      />
+      <div>
+        <div
+          style={{ width: window.innerWidth, height: window.innerHeight }}
+          ref={mount => {
+            this.mount = mount;
+          }}
+        />
+        
+        {/* Control Panel */}
+        <div style={{
+          position: 'absolute',
+          top: 10,
+          left: 10,
+          background: 'rgba(0, 0, 0, 0.7)',
+          color: 'white',
+          padding: '15px',
+          borderRadius: '5px',
+          fontSize: '14px',
+          fontFamily: 'Arial, sans-serif',
+          minWidth: '200px'
+        }}>
+          <h3 style={{ margin: '0 0 10px 0', fontSize: '16px' }}>3D Viewer Controls</h3>
+          
+          {/* Camera Controls */}
+          <div style={{ marginBottom: '10px' }}>
+            <button 
+              onClick={this.fitAllContainers}
+              style={{
+                width: '100%',
+                padding: '5px',
+                marginBottom: '5px',
+                cursor: 'pointer',
+                background: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '3px'
+              }}
+            >
+              Fit All Containers
+            </button>
+          </div>
+          
+          {/* Layer Toggles */}
+          <div style={{ marginBottom: '5px' }}>
+            <strong>Layers:</strong>
+          </div>
+          <div style={{ marginLeft: '10px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', cursor: 'pointer' }}>
+              <input 
+                type="checkbox" 
+                checked={showContainers}
+                onChange={this.toggleContainers}
+                style={{ marginRight: '5px' }}
+              />
+              Containers
+            </label>
+            <label style={{ display: 'block', marginBottom: '5px', cursor: 'pointer' }}>
+              <input 
+                type="checkbox" 
+                checked={showBoxes}
+                onChange={this.toggleBoxes}
+                style={{ marginRight: '5px' }}
+              />
+              Boxes
+            </label>
+            <label style={{ display: 'block', marginBottom: '5px', cursor: 'pointer' }}>
+              <input 
+                type="checkbox" 
+                checked={showPoints}
+                onChange={this.togglePoints}
+                style={{ marginRight: '5px' }}
+              />
+              Points
+            </label>
+            <label style={{ display: 'block', marginBottom: '5px', cursor: 'pointer' }}>
+              <input 
+                type="checkbox" 
+                checked={showGrid}
+                onChange={this.toggleGrid}
+                style={{ marginRight: '5px' }}
+              />
+              Grid & Axes
+            </label>
+          </div>
+        </div>
+        
+        {/* Info Panel */}
+        {selectedBox && (
+          <div style={{
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            background: 'rgba(0, 0, 0, 0.8)',
+            color: 'white',
+            padding: '15px',
+            borderRadius: '5px',
+            fontSize: '14px',
+            fontFamily: 'Arial, sans-serif',
+            minWidth: '250px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <h3 style={{ margin: 0, fontSize: '16px' }}>Selected Box</h3>
+              <button 
+                onClick={() => this.setState({ selectedBox: null })}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  padding: '0 5px'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ lineHeight: '1.6' }}>
+              {selectedBox.id && (
+                <div><strong>ID:</strong> {selectedBox.id}</div>
+              )}
+              {selectedBox.name && (
+                <div><strong>Name:</strong> {selectedBox.name}</div>
+              )}
+              {selectedBox.dimensions && (
+                <div>
+                  <strong>Dimensions:</strong><br />
+                  <span style={{ marginLeft: '10px' }}>
+                    X: {selectedBox.dimensions.dx}<br />
+                    Y: {selectedBox.dimensions.dy}<br />
+                    Z: {selectedBox.dimensions.dz}
+                  </span>
+                </div>
+              )}
+              {selectedBox.step !== undefined && (
+                <div><strong>Step:</strong> {selectedBox.step}</div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     );
   }
 }
