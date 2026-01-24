@@ -21,14 +21,14 @@
 		<eclipse-collections.version>13.0.0</eclipse-collections.version>
 		<google-truth.version>1.4.5</google-truth.version>
 		<junit-quicktest.version>1.0</junit-quicktest.version>
-		<junit.version>6.0.1</junit.version>
+		<junit.version>6.0.2</junit.version>
 		<jmh.version>1.37</jmh.version>
 		<commons-io.version>2.21.0</commons-io.version>
 
 		<!-- plugins -->
 		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
 		<jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
-		<sonatype-plugin.version>0.9.0</sonatype-plugin.version>
+		<sonatype-plugin.version>0.10.0</sonatype-plugin.version>
 		<maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
 		<maven-source-plugin.version>3.4.0</maven-source-plugin.version>
 		<maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
@@ -42,7 +42,7 @@
 		<assertj.version>3.27.6</assertj.version>
 		<owasp-dependency-check.version>5.3.2</owasp-dependency-check.version>
 		<pitest.version>1.22.0</pitest.version>
-		<jackson.version>2.20.1</jackson.version>
+		<jackson.version>2.21.0</jackson.version>
 		<spotless.version>3.1.0</spotless.version>
 	</properties>
 
