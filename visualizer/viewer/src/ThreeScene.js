@@ -23,13 +23,12 @@ const GRID_SPACING = 10;
 
 var camera;
 var orbit; // light orbit
-var helvatiker;
 var mainGroup;
-var shouldAnimate;
+var boxesGroup;
 var controls;
 var delta = 0;
 var visibleContainers;
-
+var shouldAnimate = false
 
 const pointer = new THREE.Vector2();
 var raycaster;
@@ -57,7 +56,7 @@ const font = new Font( helvetiker );
 class ThreeScene extends Component {
   constructor(props) {
     super(props);
-    this.state = { useWireFrame: false };
+    this.state = { useWireFrame: false, selectedBox: null };
     visibleContainers = new Array();
   }
 
@@ -81,6 +80,23 @@ class ThreeScene extends Component {
     this.frameId = window.requestAnimationFrame(this.animate);
   };
 
+  // Helper function to fit camera to an object
+  fitCameraToObject = (camera, controls, object, offset = 1.0) => {
+    const box = new THREE.Box3().setFromObject(object);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const fov = camera.fov * (Math.PI / 180);
+    let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+    cameraZ *= offset;
+
+    camera.position.set(center.x - cameraZ, center.y + cameraZ * 0.6, center.z - cameraZ);
+    camera.lookAt(center);
+    controls.target.copy(center);
+    controls.update();
+  };
+
   componentDidMount() {
     //Add Light & nCamera
     this.addScene();
@@ -93,6 +109,8 @@ class ThreeScene extends Component {
     document.addEventListener("keyup", this.onDocumentKeyUp, false);
     document.addEventListener("keydown", this.onDocumentKeyDown, false);
     document.addEventListener("mousemove", this.onDocumentMouseMove, false);
+    document.addEventListener("click", this.onDocumentClick, false);
+    document.addEventListener("contextmenu", this.onDocumentRightClick, false);
 
     //--------START ANIMATION-----------
     this.renderScene();
@@ -170,6 +188,10 @@ class ThreeScene extends Component {
 
     // parent group to hold models
     mainGroup = new THREE.Object3D();
+
+    boxesGroup = new THREE.Group();
+    mainGroup.add(boxesGroup);
+
     this.scene.add(mainGroup);
     
     let scene = this.scene;
@@ -256,7 +278,7 @@ class ThreeScene extends Component {
         stepNumber = maxStepNumber;
 
         // TODO return controls instead
-        var visibleContainer = stackableRenderer.add(mainGroup, memoryScheme, new StackPlacement(container, 0, x, 0, 0), 0, 0, 0);
+        var visibleContainer = stackableRenderer.add(boxesGroup, memoryScheme, new StackPlacement(container, 0, x, 0, 0), 0, 0, 0);
         visibleContainers.push(visibleContainer);
 
 
@@ -341,6 +363,7 @@ class ThreeScene extends Component {
       xLabelMesh.position.set(-GRID_SPACING - GRID_SPACING / 2 - GRID_SPACING / 4, 0, maxX - GRID_SPACING / 2);
       xLabelMesh.rotation.x = Math.PI / 2;
       scene.add( xLabelMesh );
+
     };
 
     http(
@@ -376,8 +399,45 @@ class ThreeScene extends Component {
     window.removeEventListener("resize", this.onWindowResize, false);
     document.removeEventListener("keydown", this.onDocumentKeyDown, false);
     document.removeEventListener("keyup", this.onDocumentKeyUp, false);
+    document.removeEventListener("click", this.onDocumentClick, false);
+    document.removeEventListener("contextmenu", this.onDocumentRightClick, false);
+    
+
     this.mount.removeChild(this.renderer.domElement);
   }
+
+  onDocumentClick = event => {
+    if (!this.mount || !boxesGroup) return;
+
+    const rect = this.mount.getBoundingClientRect();
+    pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(pointer, camera);
+    const intersects = raycaster.intersectObjects(boxesGroup.children, true);
+    if (intersects.length === 0) {
+      this.setState({ selectedBox: null });
+      return;
+    }
+    for(let i = 0; i < intersects.length; i++) {
+      const mesh = intersects[i].object;
+      const box = mesh.userData.box;
+      if (!box) {
+        continue;
+      }
+      if(stepNumber > mesh.userData.step) {
+        this.setState({ selectedBox: box });
+        return
+      }
+    }
+     this.setState({ selectedBox: null });
+  };
+
+  onDocumentRightClick = event => {
+      console.log("Right-click detected!");
+      //event.preventDefault(); // Prevents the default context menu from appearing
+      this.fitCameraToObject(camera, controls, mainGroup, 1.5);
+  };
 
   onWindowResize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -466,7 +526,10 @@ class ThreeScene extends Component {
 
         break;
       }
-      
+      case 32: {
+        this.fitCameraToObject(camera, controls, mainGroup, 1.5);
+        break
+      }
       default: {
         break;
       }
@@ -522,15 +585,49 @@ class ThreeScene extends Component {
     
     this.scene.add(ambientLight);
   };
+
   //-------------HELPER------------------
   render() {
+
+    const { selectedBox } = this.state;
+
     return (
+      <div>
+        <div
+          style={{ width: window.innerWidth, height: window.innerHeight }}
+          ref={mount => {
+            this.mount = mount;
+          }}
+        />
+      {/* Box info panel */}
       <div
-        style={{ width: window.innerWidth, height: window.innerHeight }}
-        ref={mount => {
-          this.mount = mount;
+        style={{
+          position: "absolute",
+          zIndex: 2,
+          top: 0,
+          right: 0,
+          padding: "8px",
+          maxWidth: "260px",
+          background: "rgba(0, 0, 0, 0.5)",
+          color: "#fff",
+          textAlign: "left"
         }}
-      />
+      >
+          {selectedBox && (
+            <div>
+              {selectedBox.id && <div><b>{selectedBox.id}</b></div>}
+              {selectedBox.name && <div>{selectedBox.name}</div>}
+              <div>
+                {selectedBox.location.x} × {selectedBox.location.y} × {selectedBox.location.z}
+              </div>
+              <div>
+                {selectedBox.dimensions.dx} × {selectedBox.dimensions.dy} × {selectedBox.dimensions.dz}
+              </div>
+              <div>Step #{selectedBox.step}</div>
+            </div>
+          )}
+        </div>        
+      </div>
     );
   }
 }

@@ -2,20 +2,27 @@ package com.github.skjolber.packing.packer.plain;
 
 import java.util.Comparator;
 
-public class PlainPlacementComparator implements Comparator<PlainPlacement> {
+import com.github.skjolber.packing.api.Placement;
+
+public class PlainPlacementComparator implements Comparator<Placement> {
 
 	@Override
-	public int compare(PlainPlacement referenceResult, PlainPlacement potentiallyBetterResult) {
+	public int compare(Placement referenceResult, Placement potentiallyBetterResult) {
 		
-		long referenceValue = (referenceResult.getSupportArea() * 1000) / referenceResult.getStackValue().getArea();
-		long potentiallyBetterValue = (potentiallyBetterResult.getSupportArea() * 1000) / potentiallyBetterResult.getStackValue().getArea();
-		
-		int result = Long.compare(referenceValue, potentiallyBetterValue);
-		if(result != 0) {
-			return result;
+		if(referenceResult instanceof PlainPlacement && potentiallyBetterResult instanceof PlainPlacement) {
+			PlainPlacement referenceResultPlainPlacement = (PlainPlacement)referenceResult;
+			PlainPlacement potentiallyBetterResultPlainPlacement = (PlainPlacement)potentiallyBetterResult;
+			
+			long referenceValue = (referenceResultPlainPlacement.getSupportArea() * 1000) / referenceResult.getStackValue().getArea();
+			long potentiallyBetterValue = (potentiallyBetterResultPlainPlacement.getSupportArea() * 1000) / potentiallyBetterResult.getStackValue().getArea();
+			
+			int result = Long.compare(referenceValue, potentiallyBetterValue);
+			if(result != 0) {
+				return result;
+			}
 		}
 
-		result = Integer.compare(referenceResult.getPoint().getMinZ(), potentiallyBetterResult.getPoint().getMinZ());
+		int result = Integer.compare(referenceResult.getPoint().getMinZ(), potentiallyBetterResult.getPoint().getMinZ());
 		if(result != 0) {
 			return result;
 		}

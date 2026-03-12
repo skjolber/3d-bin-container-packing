@@ -12,6 +12,7 @@ import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 
@@ -47,38 +48,44 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 	}
 	
 	@Override
-	public Container accept(BruteForceIntermediatePackagerResult bruteForceResult) {
-		bruteForceResult.markDirty();
-		Stack stack = bruteForceResult.getStack();
+	public Container accept(IntermediatePackagerResult result) {
 		
-		Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
-					
-		int size = stack.size();
-		if(stackPlacements.size() > size) {
-			// this result does not consume all placements
-			// remove consumed items from the iterators
+		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
 
-			PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
-
-			int[] permutations = state.getPermutations();
-			List<Integer> p = new ArrayList<>(size);
-			for (int i = 0; i < size; i++) {
-				p.add(permutations[i]);
-			}
+			bruteForceResult.markDirty();
+			Stack stack = bruteForceResult.getStack();
 			
-			// remove adapter inventory
-			removeInventory(p);
-
-			for (BoxItemPermutationRotationIterator it : containerIterators) {
-				it.removePermutations(p);
+			Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+						
+			int size = stack.size();
+			if(stackPlacements.size() > size) {
+				// this result does not consume all placements
+				// remove consumed items from the iterators
+	
+				PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
+	
+				int[] permutations = state.getPermutations();
+				List<Integer> p = new ArrayList<>(size);
+				for (int i = 0; i < size; i++) {
+					p.add(permutations[i]);
+				}
+				
+				// remove adapter inventory
+				removeInventory(p);
+	
+				for (BoxItemPermutationRotationIterator it : containerIterators) {
+					it.removePermutations(p);
+				}
+				
+				stackPlacements = stackPlacements.subList(size, this.stackPlacements.size());
+			} else {
+				stackPlacements = Collections.emptyList();
 			}
-			
-			stackPlacements = stackPlacements.subList(size, this.stackPlacements.size());
+	
+			return container;
 		} else {
-			stackPlacements = Collections.emptyList();
+			throw new IllegalStateException();
 		}
-
-		return container;
 	}
 
 	@Override

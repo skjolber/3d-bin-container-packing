@@ -11,11 +11,11 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 
-public abstract class DefaultControlsPackagerResultBuilder<P extends IntermediatePackagerResult> extends AbstractPackagerResultBuilder<DefaultControlsPackagerResultBuilder<P>> {
+public abstract class DefaultControlsPackagerResultBuilder extends AbstractPackagerResultBuilder<DefaultControlsPackagerResultBuilder> {
 	
-	private AbstractPackager<P, DefaultControlsPackagerResultBuilder<P>> packager;
+	private AbstractPackager<DefaultControlsPackagerResultBuilder> packager;
 
-	public DefaultControlsPackagerResultBuilder<P> withPackager(AbstractPackager<P, DefaultControlsPackagerResultBuilder<P>> packager) {
+	public DefaultControlsPackagerResultBuilder withPackager(AbstractPackager<DefaultControlsPackagerResultBuilder> packager) {
 		this.packager = packager;
 		return this;
 	}
@@ -37,7 +37,7 @@ public abstract class DefaultControlsPackagerResultBuilder<P extends Intermediat
 
 		PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 		try {
-			PackagerAdapter<P> adapter;
+			PackagerAdapter adapter;
 			if(items != null && !items.isEmpty()) {
 				adapter = createDefaultBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
 			} else {
@@ -55,9 +55,9 @@ public abstract class DefaultControlsPackagerResultBuilder<P extends Intermediat
 		}
 	}
 
-	protected abstract PackagerAdapter<P> createDefaultBoxItemAdapter(List<BoxItem> items, Order order,
+	protected abstract PackagerAdapter createDefaultBoxItemAdapter(List<BoxItem> items, Order order,
 			ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt);
 
-	protected abstract PackagerAdapter<P> createDefaultBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, Order order,
+	protected abstract PackagerAdapter createDefaultBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, Order order,
 			ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt);
 }

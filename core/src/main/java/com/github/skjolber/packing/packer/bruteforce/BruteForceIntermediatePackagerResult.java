@@ -39,8 +39,27 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		this.iterator = iterator;
 		this.index = index;
 	}
+	
+	public void calculateWeightAndVolume() {
+		
+		long loadVolume = 0;
+		int loadWeight = 0;
 
-	private void calculateLoad() {
+		List<BoxStackValue> list = iterator.get(state, points.size());
+
+		for(BoxStackValue v : list) {
+			Box box = v.getBox();
+			
+			loadVolume += box.getVolume();
+			loadWeight += box.getWeight();
+		}
+
+		this.loadVolume = loadVolume;
+		this.loadWeight = loadWeight;
+	}
+
+
+	public void calculateLoad() {
 		if(dirty) {
 			dirty = false;
 			
@@ -169,6 +188,10 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	
 	public BoxItemPermutationRotationIterator getIterator() {
 		return iterator;
+	}
+	
+	public boolean isDirty() {
+		return dirty;
 	}
 
 }

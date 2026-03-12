@@ -8,6 +8,11 @@ const helvetiker = require( 'three/examples/fonts/droid/droid_sans_mono_regular.
 const font = new Font( helvetiker );
 const textMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff } );
 
+// Container styling constants
+const CONTAINER_BOX_COLOR = 0x888888;
+const CONTAINER_BOX_OPACITY = 0.15;
+const CONTAINER_EDGE_COLOR = 0x444444;
+
 export class Point {
     
     x : number;
@@ -204,17 +209,39 @@ export class StackableRenderer {
             var containerStackable : Container = stackable;
 
             var color = colorScheme.getStackable(containerStackable);
-            var containerMaterial = new THREE.LineBasicMaterial({ color: color});
             
-            var containerGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.dy, containerStackable.dz, containerStackable.dx));
+            // Create a group for the container (will hold transparent box + edges)
+            var containerGroup = new THREE.Group();
+            
+            // Create transparent box mesh for container volume
+            var containerBoxMaterial = new THREE.MeshPhongMaterial({
+                color: CONTAINER_BOX_COLOR,
+                opacity: CONTAINER_BOX_OPACITY,
+                transparent: true,
+                depthWrite: false
+            });
+            var containerBoxGeometry = new THREE.BoxGeometry(containerStackable.dy, containerStackable.dz, containerStackable.dx);
+            var containerBox = new THREE.Mesh(containerBoxGeometry, containerBoxMaterial);
+            containerBox.userData = { type: "container" };
+            
+            // Create edges for container
+            var containerEdgesGeometry = new THREE.EdgesGeometry(containerBoxGeometry);
+            var containerEdgesMaterial = new THREE.LineBasicMaterial({ color: CONTAINER_EDGE_COLOR });
+            var containerEdges = new THREE.LineSegments(containerEdgesGeometry, containerEdgesMaterial);
+            containerEdges.userData = { type: "container" };
+            
+            // Add both to container group
+            containerGroup.add(containerBox);
+            containerGroup.add(containerEdges);
+            
+            // Create load area edges (lighter color)
             var containerLoadGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(containerStackable.loadDy, containerStackable.loadDz, containerStackable.loadDx));
+            var containerLoadMaterial = new THREE.LineBasicMaterial({ color: color });
+            var containerLoad = new THREE.LineSegments(containerLoadGeometry, containerLoadMaterial);
 
-            var container = new THREE.LineSegments(containerGeometry, containerMaterial);
-            var containerLoad = new THREE.LineSegments(containerLoadGeometry, containerMaterial);
-
-            container.position.x = stackPlacement.y + containerStackable.dy / 2 + x;
-            container.position.y = stackPlacement.z + containerStackable.dz / 2 + y;
-            container.position.z = stackPlacement.x + containerStackable.dx / 2 + z;
+            containerGroup.position.x = stackPlacement.y + containerStackable.dy / 2 + x;
+            containerGroup.position.y = stackPlacement.z + containerStackable.dz / 2 + y;
+            containerGroup.position.z = stackPlacement.x + containerStackable.dx / 2 + z;
 
             var offsetX = - containerStackable.dy / 2;
             var offsetY = - containerStackable.dz / 2;
@@ -222,13 +249,12 @@ export class StackableRenderer {
 
             console.log("Add container " + containerStackable.name + " size " + containerStackable.dx + "x" + containerStackable.dy + "x" + containerStackable.dz + " with load " + containerStackable.loadDx + "x" + containerStackable.loadDy + "x" + containerStackable.loadDz + " at " + stackPlacement.x + "x" + stackPlacement.y + "x" + stackPlacement.z) ;
 
-            container.name = containerStackable.name;
-            container.userData = containerStackable;
-            
-            container.userData = {
+            containerGroup.name = containerStackable.name;
+            containerGroup.userData = {
                 step: 0,
                 type: "container",
-                source: container
+                source: containerStackable,
+                id: containerStackable.id
             };
             
             containerLoad.name = containerStackable.name;
@@ -240,15 +266,15 @@ export class StackableRenderer {
                 offsetZ : offsetZ
             };
 
-            parent.add(container);
-            container.add(containerLoad);
+            parent.add(containerGroup);
+            containerGroup.add(containerLoad);
 
             var nextColorScheme = colorScheme.getColorScheme(containerStackable);
             for (let s of containerStackable.stack.placements) {
                 this.add(containerLoad, nextColorScheme, s, offsetX, offsetY, offsetZ);
             }
 
-            return container;
+            return containerGroup;
         } else if(stackable instanceof Box) {
             var boxStackable : Box = stackable;
 
@@ -276,10 +302,26 @@ export class StackableRenderer {
             box.position.y = stackPlacement.z + boxStackable.dz / 2 + y;
             box.position.z = stackPlacement.x + boxStackable.dx / 2 + z;
 
+            // Store metadata for picking
             box.userData = {
                 step: boxStackable.step,
                 type: "box",
-                source: stackPlacement
+                source: stackPlacement,
+                box: {
+                    id: boxStackable.id,
+                    name: boxStackable.name,
+                    dimensions: {
+                        dx: boxStackable.dx,
+                        dy: boxStackable.dy,
+                        dz: boxStackable.dz
+                    },
+                    location: {
+                        x: stackPlacement.x,
+                        y: stackPlacement.y,
+                        z: stackPlacement.z
+                    },
+                    step: boxStackable.step
+                }
             };
     
             if(boxStackable.name) {
@@ -369,7 +411,7 @@ export class StackableRenderer {
                                 
                                 pp.visible = true;
                     
-                                containerLoad.add(pp)
+                                containerLoad.add(pp);
                             }
 			            }
 						break;

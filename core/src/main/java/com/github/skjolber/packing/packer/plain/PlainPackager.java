@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
@@ -45,13 +46,13 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
-public class PlainPackager extends AbstractControlPackager<PlainPlacement, IntermediatePackagerResult, PlainPackager.PlainResultBuilder> {
+public class PlainPackager extends AbstractControlPackager<Placement, PlainPackager.PlainResultBuilder> {
 	
 	public static Builder newBuilder() {
 		return new Builder();
 	}
 
-	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter<IntermediatePackagerResult> {
+	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter {
 
 		public PlainBoxItemAdapter(List<BoxItem> boxItems, Order order,
 				ContainerItemsCalculator packagerContainerItems,
@@ -72,7 +73,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 
 	}
 	
-	protected class PlainBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter<IntermediatePackagerResult> {
+	protected class PlainBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter {
 
 		public PlainBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups,
 				Order order,
@@ -117,7 +118,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
-				PackagerAdapter<IntermediatePackagerResult> adapter;
+				PackagerAdapter adapter;
 				if(items != null && !items.isEmpty()) {
 					adapter = new PlainBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
 				} else {
@@ -140,7 +141,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 
 		protected Comparator<IntermediatePackagerResult> packagerResultComparator;
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
-		protected PlacementControlsBuilderFactory<PlainPlacement> placementControlsBuilderFactory;
+		protected PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory;
 		
 		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
 			this.boxItemGroupComparator = comparator;
@@ -152,7 +153,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 			return this;
 		}
 		
-		public Builder withPlacementControlsBuilderFactory(PlacementControlsBuilderFactory<PlainPlacement> factory) {
+		public Builder withPlacementControlsBuilderFactory(PlacementControlsBuilderFactory<Placement> factory) {
 			this.placementControlsBuilderFactory = factory;
 			return this;
 		}
@@ -163,7 +164,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 			
 			boolean requireFullSupport = b.requireFullSupport;
 			Comparator<BoxItem> boxItemComparator = b.boxItemComparator;
-			Comparator<PlainPlacement> placementComparator = b.placementComparator;
+			Comparator<Placement> placementComparator = b.placementComparator;
 			
 			if(boxItemComparator == null) {
 				boxItemComparator = VolumeThenWeightBoxItemComparator.getInstance();
@@ -183,7 +184,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 
 			private boolean requireFullSupport;
 			private Comparator<BoxItem> boxItemComparator;
-			private Comparator<PlainPlacement> placementComparator; 
+			private Comparator<Placement> placementComparator; 
 			
 			public PlacementControlsBuilderFactoryBuilder withRequireFullSupport(boolean require) {
 				this.requireFullSupport = require;
@@ -195,7 +196,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 				return this;
 			}
 			
-			public PlacementControlsBuilderFactoryBuilder withPlacementComparator(Comparator<PlainPlacement> placementComparator) {
+			public PlacementControlsBuilderFactoryBuilder withPlacementComparator(Comparator<Placement> placementComparator) {
 				this.placementComparator = placementComparator;
 				return this;
 			}
@@ -204,7 +205,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 		
 		public PlainPackager build() {
 			if(packagerResultComparator == null) {
-				packagerResultComparator = new DefaultIntermediatePackagerResultComparator<>();
+				packagerResultComparator = new DefaultIntermediatePackagerResultComparator();
 			}
 			if(placementControlsBuilderFactory == null) {
 				placementControlsBuilderFactory = new PlainPlacementControlsBuilderFactory();
@@ -217,10 +218,10 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 		
 	}
 
-	protected PlacementControlsBuilderFactory<PlainPlacement> placementControlsBuilderFactory;
+	protected PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory;
 	protected Comparator<BoxItemGroup> boxItemGroupComparator;
 
-	public PlainPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<BoxItemGroup> boxItemGroupComparator, PlacementControlsBuilderFactory<PlainPlacement> placementControlsBuilderFactory) {
+	public PlainPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<BoxItemGroup> boxItemGroupComparator, PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory) {
 		super(comparator);
 
 		this.placementControlsBuilderFactory = placementControlsBuilderFactory;
@@ -235,7 +236,7 @@ public class PlainPackager extends AbstractControlPackager<PlainPlacement, Inter
 	}
 	
 	@Override
-	protected PlacementControls<PlainPlacement> createControls(BoxItemSource boxItems, int offset, int length,
+	protected PlacementControls<Placement> createControls(BoxItemSource boxItems, int offset, int length,
 			Order order, PointControls pointControls, Container container, PointCalculator pointCalculator,
 			Stack stack) {
 		

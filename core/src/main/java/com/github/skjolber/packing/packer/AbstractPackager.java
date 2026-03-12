@@ -21,21 +21,21 @@ import com.github.skjolber.packing.iterator.BinarySearchIterator;
  * Thread-safe implementation.
  */
 
-public abstract class AbstractPackager<P extends IntermediatePackagerResult, B extends PackagerResultBuilder> implements Packager<B> {
+public abstract class AbstractPackager<B extends PackagerResultBuilder> implements Packager<B> {
 
 	public static final int ARGUMENT_1_IS_BETTER = 1;
 	public static final int ARGUMENT_2_IS_BETTER = -1;
 
-	protected final Comparator<P> intermediatePackagerResultComparator;
+	protected final Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
 	
 	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Integer.MAX_VALUE);
 
-	public AbstractPackager(Comparator<P> comparator) {
+	public AbstractPackager(Comparator<IntermediatePackagerResult> comparator) {
 		this.intermediatePackagerResultComparator = comparator;
 	}
 
 	// pack in single container
-	public P packSingle(List<Integer> containerItemIndexes, PackagerAdapter<P> adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+	public IntermediatePackagerResult packSingle(List<Integer> containerItemIndexes, PackagerAdapter adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 		if(containerItemIndexes.size() <= 2) {
 			for (int i = 0; i < containerItemIndexes.size(); i++) {
 				if(interrupt.getAsBoolean()) {
@@ -44,7 +44,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 
 				Integer containerItemIndex = containerItemIndexes.get(i);
 				
-				P result = adapter.attempt(containerItemIndex, null, true);
+				IntermediatePackagerResult result = adapter.attempt(containerItemIndex, null, true);
 				if(result.isEmpty()) {
 					continue;
 				}
@@ -65,14 +65,14 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 			search: do {
 				iterator.reset(containerItemIndexes.size() - 1, 0);
 
-				P bestResult = null;
+				IntermediatePackagerResult bestResult = null;
 				int bestIndex = Integer.MAX_VALUE;
 
 				do {
 					int mid = iterator.next();
 					int nextContainerItemIndex = containerItemIndexes.get(mid);
 					
-					P result = null;
+					IntermediatePackagerResult result = null;
 					
 					// see whether the current container holds the boxes of the same result as before
 					if(bestResult != null) {
@@ -124,14 +124,14 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 			// return the best, if any
 			for (final IntermediatePackagerResult result : results) {
 				if(result != null && !result.isEmpty()) {
-					return (P)result;
+					return result;
 				}
 			}
 		}
 		return createEmptyIntermediatePackagerResult();
 	}
 
-	public List<Container> packAdapter(int limit, PackagerInterruptSupplier interrupt, PackagerAdapter<P> adapter) throws PackagerInterruptedException {
+	public List<Container> packAdapter(int limit, PackagerInterruptSupplier interrupt, PackagerAdapter adapter) throws PackagerInterruptedException {
 		List<Container> containerPackResults = new ArrayList<>();
 
 		do {
@@ -141,7 +141,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 				List<Integer> containerItemIndexes = adapter.getContainers(1);
 				if(!containerItemIndexes.isEmpty()) {
 	
-					P result = packSingle(containerItemIndexes, adapter, interrupt);
+					IntermediatePackagerResult result = packSingle(containerItemIndexes, adapter, interrupt);
 					if(!result.isEmpty()) {
 						containerPackResults.add(adapter.accept(result));
 	
@@ -161,7 +161,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 
 			// the best container is the one which can hold the most box groups
 			// assume larger boxes is at the end of list, so start there
-			P best = null;
+			IntermediatePackagerResult best = null;
 			for (int i = containerItemIndexes.size() - 1; i >= 0; i--) {
 				try {
 
@@ -186,7 +186,7 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 						}
 					}
 
-					P result;
+					IntermediatePackagerResult result;
 					if(best != null && best.getStack().size() == adapter.countRemainingBoxes() ) {
 						result = adapter.peek(nextContainerItemIndex, best);
 						
@@ -267,6 +267,6 @@ public abstract class AbstractPackager<P extends IntermediatePackagerResult, B e
 		return scheduledThreadPoolExecutor;
 	}
 	
-	protected abstract P createEmptyIntermediatePackagerResult();
+	protected abstract IntermediatePackagerResult createEmptyIntermediatePackagerResult();
 
 }

@@ -3,17 +3,18 @@ package com.github.skjolber.packing.packer.plain;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 
-public class PlainPlacementControlsBuilderFactory implements PlacementControlsBuilderFactory<PlainPlacement> {
+public class PlainPlacementControlsBuilderFactory implements PlacementControlsBuilderFactory<Placement> {
 
-	protected final Comparator<PlainPlacement> placementComparator;
+	protected final Comparator<Placement> placementComparator;
 	protected final Comparator<BoxItem> boxItemComparator;
 	
 	protected final boolean requireFullSupport;
 	
-	public PlainPlacementControlsBuilderFactory(Comparator<BoxItem> boxItemComparator, Comparator<PlainPlacement> placementComparator, boolean requireFullSupport) {
+	public PlainPlacementControlsBuilderFactory(Comparator<BoxItem> boxItemComparator, Comparator<Placement> placementComparator, boolean requireFullSupport) {
 		this.placementComparator = placementComparator;
 		this.boxItemComparator = boxItemComparator;
 		this.requireFullSupport = requireFullSupport;

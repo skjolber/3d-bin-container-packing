@@ -32,13 +32,13 @@ import com.github.skjolber.packing.iterator.PackagerBoxItems;
  * <br>
  * Thread-safe implementation.
  */
-public abstract class AbstractControlPackager<I extends Placement, P extends IntermediatePackagerResult, B extends PackagerResultBuilder> extends AbstractPackager<P, B> {
+public abstract class AbstractControlPackager<I extends Placement, B extends PackagerResultBuilder> extends AbstractPackager<B> {
 
-	public AbstractControlPackager(Comparator<P> comparator) {
+	public AbstractControlPackager(Comparator<IntermediatePackagerResult> comparator) {
 		super(comparator);
 	}
 
-	public P pack(List<BoxItem> boxItems, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		Container container = controlContainerItem.getContainer();
 
 		Stack stack = new Stack();
@@ -194,7 +194,7 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		return new DefaultPointCalculator3D(false, boxItemSource);
 	}
 
-	public P packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
 		ContainerItem containerItem = controlContainerItem;
 		Container container = containerItem.getContainer();
 		
@@ -460,9 +460,9 @@ public abstract class AbstractControlPackager<I extends Placement, P extends Int
 		return createIntermediatePackagerResult(controlContainerItem, stack);
 	}
 
-	protected abstract P createIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack);
+	protected abstract IntermediatePackagerResult createIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack);
 
-	protected abstract P createEmptyIntermediatePackagerResult();
+	protected abstract IntermediatePackagerResult createEmptyIntermediatePackagerResult();
 
 	protected abstract BoxItemGroupIterator createBoxItemGroupIterator(
 			BoxItemGroupSource groups, 

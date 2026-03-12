@@ -16,33 +16,34 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 
 		<commons-math3.version>3.6.1</commons-math3.version>
-		<mockito.version>5.21.0</mockito.version>
+		<mockito.version>5.22.0</mockito.version>
 
 		<eclipse-collections.version>13.0.0</eclipse-collections.version>
 		<google-truth.version>1.4.5</google-truth.version>
 		<junit-quicktest.version>1.0</junit-quicktest.version>
-		<junit.version>6.0.1</junit.version>
+		<junit.version>6.0.3</junit.version>
 		<jmh.version>1.37</jmh.version>
 		<commons-io.version>2.21.0</commons-io.version>
 
 		<!-- plugins -->
 		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
 		<jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
-		<sonatype-plugin.version>0.9.0</sonatype-plugin.version>
-		<maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
+		<sonatype-plugin.version>0.10.0</sonatype-plugin.version>
+		<maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
 		<maven-source-plugin.version>3.4.0</maven-source-plugin.version>
 		<maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
 		<maven-release-plugin.version>3.3.1</maven-release-plugin.version>
 		<maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
-		<maven-dependency-plugin.version>3.9.0</maven-dependency-plugin.version>
+		<maven-dependency-plugin.version>3.10.0</maven-dependency-plugin.version>
 		<jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
-		<maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
-		<maven-shade-plugin.version>3.6.1</maven-shade-plugin.version>
+		<maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+		<maven-shade-plugin.version>3.6.2</maven-shade-plugin.version>
 		<jqwik.version>1.9.3</jqwik.version>
-		<assertj.version>3.27.6</assertj.version>
-		<pitest.version>1.22.0</pitest.version>
-		<jackson.version>2.20.1</jackson.version>
-		<spotless.version>3.1.0</spotless.version>
+		<assertj.version>3.27.7</assertj.version>
+		<owasp-dependency-check.version>5.3.2</owasp-dependency-check.version>
+		<pitest.version>1.22.1</pitest.version>
+		<jackson.version>2.21.1</jackson.version>
+		<spotless.version>3.3.0</spotless.version>
 	</properties>
 
 	<licenses>
