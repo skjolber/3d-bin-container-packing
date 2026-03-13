@@ -17,7 +17,7 @@ public abstract class AbstractPackagerAdapterBuilder implements PackagerAdapterB
 
 	protected List<BoxItem> items = new ArrayList<>();
 	
-	protected ContainerItemsCalculator calcultor;
+	protected ContainerItemsCalculator calculator;
 	
 	protected Order order;
 
@@ -41,7 +41,7 @@ public abstract class AbstractPackagerAdapterBuilder implements PackagerAdapterB
 
 	@Override
 	public PackagerAdapterBuilder withContainerItemsCalculator(ContainerItemsCalculator calculator) {
-		this.calcultor = calculator;
+		this.calculator = calculator;
 		return this;
 	}
 
