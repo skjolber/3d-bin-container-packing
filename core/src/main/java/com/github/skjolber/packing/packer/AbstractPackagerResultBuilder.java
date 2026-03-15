@@ -192,14 +192,19 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		}
 		
 		// if one has cost, they all must have
-		for(ControlledContainerItem c : containers) {
-			if(c.hasCostCalculator()) {
-				for(ControlledContainerItem other : containers) {
-					if(!other.hasCostCalculator()) {
-						throw new IllegalStateException("Expected either none or all containers to have cost calculator");
-					}
-				}
+		boolean anyHasCostCalculator = false;
+		boolean allHaveCostCalculator = true;
+
+		for (ControlledContainerItem c : containers) {
+			if (c.hasCostCalculator()) {
+				anyHasCostCalculator = true;
+			} else {
+				allHaveCostCalculator = false;
 			}
+		}
+
+		if (anyHasCostCalculator && !allHaveCostCalculator) {
+			throw new IllegalStateException("Expected either none or all containers to have cost calculator");
 		}
 	}
 
