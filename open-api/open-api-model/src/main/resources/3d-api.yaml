@@ -252,8 +252,6 @@ components:
         - $ref: "#/components/schemas/Cost"
         - type: object    
           properties:
-            name: 
-              type: string
             weight:
               $ref: '#/components/schemas/WeightCost'
 
