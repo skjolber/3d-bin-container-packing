@@ -17,7 +17,7 @@ public abstract class AbstractBucketWeightContainerCostCalculator implements Con
 		 * Weight bucket
 		 * 
 		 * @param minWeight minimum weight (inclusive)
-		 * @param maxWeight minimum weight (exclusive)
+		 * @param maxWeight maximum weight (exclusive)
 		 * @param cost cost
 		 */
 		
