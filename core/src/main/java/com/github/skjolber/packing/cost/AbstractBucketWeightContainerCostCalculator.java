@@ -107,7 +107,8 @@ public abstract class AbstractBucketWeightContainerCostCalculator implements Con
 	@Override
 	public long calculateCost(long weight) {
 		if(weight > maximumWeight) {
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException(
+					"Weight " + weight + " exceeds maximum supported weight " + maximumWeight + " for calculator id=" + id);
 		}
 		
 		for(Bucket bucket : buckets) {
@@ -117,7 +118,8 @@ public abstract class AbstractBucketWeightContainerCostCalculator implements Con
 		}
 		
 		// should never happen
-		throw new RuntimeException();
+		throw new RuntimeException(
+				"No cost bucket matched weight " + weight + " (range " + minimumWeight + "-" + maximumWeight + ") for calculator id=" + id);
 		
 	}
 
