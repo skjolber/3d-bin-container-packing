@@ -573,7 +573,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	}
 
 	@Override
-	protected AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, ContainerItemsCalculator defaultContainerItemsCalculator,
+	public AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, ContainerItemsCalculator defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt) {
 		
 		List<ControlledContainerItem> containerItems = defaultContainerItemsCalculator.getContainerItems();
@@ -634,7 +634,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	}
 
 	@Override
-	protected ParallelGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
+	public ParallelGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
 			ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt) {
 
 		List<ControlledContainerItem> containerItems = containerItemsCalculator.getContainerItems();
