@@ -45,7 +45,6 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 			}
 		}
 		
-		
 		return copy(peek, result, containerIndex);
 	}
 	
