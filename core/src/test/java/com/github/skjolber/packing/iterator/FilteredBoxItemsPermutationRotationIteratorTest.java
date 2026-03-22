@@ -36,6 +36,7 @@ class FilteredBoxItemsPermutationRotationIteratorTest extends AbstractBoxItemPer
 
 				products1.add(item);
 			}
+			setSequenceNumbers(products1);
 
 			FilteredBoxItemsPermutationRotationIterator rotator = 
 					newBuilder()
@@ -78,13 +79,13 @@ class FilteredBoxItemsPermutationRotationIteratorTest extends AbstractBoxItemPer
 
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2, 0));
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4, 1));
+		setSequenceNumbers(products);
 
 		FilteredBoxItemsPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItems(products)
 				.withMaxLoadWeight(products.size())
 				.build();
-
 		
 		int count = 0;
 		do {
@@ -110,6 +111,7 @@ class FilteredBoxItemsPermutationRotationIteratorTest extends AbstractBoxItemPer
 
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2, 0));
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4, 1));
+		setSequenceNumbers(products);
 
 		FilteredBoxItemsPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())

@@ -277,7 +277,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		@Override
-		public Container accept(IntermediatePackagerResult result) {
+		public Container accept(IntermediatePackagerResult result, boolean useSequenceNumbers) {
 			if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
 				
 				bruteForceResult.markDirty();
@@ -445,7 +445,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		@Override
-		public Container accept(IntermediatePackagerResult result) {
+		public Container accept(IntermediatePackagerResult result, boolean useSequenceNumbers) {
 			if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
 				
 				bruteForceResult.markDirty();
