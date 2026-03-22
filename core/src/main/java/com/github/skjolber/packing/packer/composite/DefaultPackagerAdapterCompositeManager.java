@@ -15,7 +15,6 @@ public class DefaultPackagerAdapterCompositeManager implements PackagerAdapterCo
 
 	@Override
 	public boolean accept(int packagerAdapterIndex, IntermediatePackagerResult result) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
