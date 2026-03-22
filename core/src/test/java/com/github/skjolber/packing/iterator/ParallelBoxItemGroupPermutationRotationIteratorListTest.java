@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.iterator;
 
+import static com.github.skjolber.packing.iterator.AbstractBoxItemPermutationRotationIteratorTest.setSequenceNumbers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,7 +35,8 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
-		
+		setSequenceNumbers(products1, products2);
+
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
@@ -70,6 +72,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
+		setSequenceNumbers(products1, products2);
 
 		ParallelBoxItemGroupPermutationRotationIterator rotator = ParallelBoxItemGroupPermutationRotationIterator.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
@@ -101,14 +104,14 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
 		groups.add(new BoxItemGroup("1", products1));
 
-		
 		List<BoxItem> products2 = new ArrayList<>();
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("6").withWeight(1).build(), 2));
 		groups.add(new BoxItemGroup("2", products2));
-		
+		setSequenceNumbers(products1, products2);
+
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
@@ -138,14 +141,14 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
 		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
 		groups.add(new BoxItemGroup("1", products1));
-
 		
 		List<BoxItem> products2 = new ArrayList<>();
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
-		
+		setSequenceNumbers(products1, products2);
+
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
@@ -178,13 +181,13 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
 		groups.add(new BoxItemGroup("1", products1));
 
-		
 		List<BoxItem> products2 = new ArrayList<>();
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
-		
+		setSequenceNumbers(products1, products2);
+
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
@@ -220,6 +223,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
 		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 		groups.add(new BoxItemGroup("1", products1));
+		setSequenceNumbers(products1);
 
 		ParallelBoxItemGroupPermutationRotationIteratorList iterator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
@@ -260,14 +264,15 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
 		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 		groups.add(new BoxItemGroup("1", products1));
-		
+
 		List<BoxItem> products2 = new ArrayList<>();
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("6").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("7").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("8").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
-		
+		setSequenceNumbers(products1, products2);
+
 		ParallelBoxItemGroupPermutationRotationIteratorList iterator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
@@ -312,7 +317,6 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
 		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 		groups.add(new BoxItemGroup("1", products1));
-
 		
 		List<BoxItem> products2 = new ArrayList<>();
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
@@ -320,7 +324,8 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("7").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("8").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
-		
+		setSequenceNumbers(products1, products2);
+
 		ParallelBoxItemGroupPermutationRotationIteratorList iterator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)

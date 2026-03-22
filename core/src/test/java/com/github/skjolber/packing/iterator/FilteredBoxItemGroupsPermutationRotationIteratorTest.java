@@ -1,6 +1,8 @@
 package com.github.skjolber.packing.iterator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import static com.github.skjolber.packing.iterator.AbstractBoxItemPermutationRotationIteratorTest.setSequenceNumbers;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -38,6 +40,7 @@ class FilteredBoxItemGroupsPermutationRotationIteratorTest extends AbstractBoxIt
 
 				products1.add(item);
 			}
+			setSequenceNumbers(products1);
 			
 			groups.add(new BoxItemGroup("1", products1));
 
@@ -82,6 +85,7 @@ class FilteredBoxItemGroupsPermutationRotationIteratorTest extends AbstractBoxIt
 
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2, 0));
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4, 1));
+		setSequenceNumbers(products);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 		groups.add(new BoxItemGroup("1", products));
@@ -116,6 +120,7 @@ class FilteredBoxItemGroupsPermutationRotationIteratorTest extends AbstractBoxIt
 
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2, 0));
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4, 1));
+		setSequenceNumbers(products);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 		groups.add(new BoxItemGroup("1", products));

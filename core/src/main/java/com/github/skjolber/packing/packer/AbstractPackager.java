@@ -143,7 +143,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	
 					IntermediatePackagerResult result = packSingle(containerItemIndexes, adapter, interrupt);
 					if(!result.isEmpty()) {
-						containerPackResults.add(adapter.accept(result));
+						containerPackResults.add(adapter.accept(result, false));
 	
 						// positive result
 						return containerPackResults;
@@ -205,7 +205,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 				} catch(PackagerInterruptedException e) {
 					// timeout, unless already have a result ready
 					if(best != null && best.getStack().size() == adapter.countRemainingBoxes()) {
-						containerPackResults.add(adapter.accept(best));
+						containerPackResults.add(adapter.accept(best, false));
 
 						return containerPackResults;
 					}
@@ -218,7 +218,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 				return Collections.emptyList();
 			}
 
-			containerPackResults.add(adapter.accept(best));
+			containerPackResults.add(adapter.accept(best, false));
 			
 			if(adapter.countRemainingBoxes() == 0) {
 				return containerPackResults;

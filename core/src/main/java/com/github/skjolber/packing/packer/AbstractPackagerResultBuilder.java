@@ -15,7 +15,6 @@ import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.validator.ValidatorContainerItem;
 
 /**
  * {@linkplain PackagerResult} builder scaffold.

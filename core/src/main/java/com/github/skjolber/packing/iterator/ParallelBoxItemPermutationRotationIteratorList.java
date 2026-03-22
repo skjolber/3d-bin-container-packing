@@ -78,6 +78,9 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 			// box item and box item groups indexes are unique and static
 			for (int i = 0; i < boxItems.size(); i++) {
 				BoxItem boxItem = boxItems.get(i);
+				if(boxItem.getSequenceNumber() != i) {
+					throw new IllegalStateException("Expected box item sequence number to be equal to index");
+				}
 				
 				Box box = boxItem.getBox();
 				if(box.getWeight() > maxLoadWeight) {
@@ -102,7 +105,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 				}
 				Box clonedBox = new Box(box, cloned);
 				
-				included[i] = new BoxItem(clonedBox, boxItem.getCount(), i);
+				included[i] = new BoxItem(clonedBox, boxItem.getCount(), i, i);
 			}
 
 			return new ParallelBoxItemPermutationRotationIteratorList(included, excluded, parallelizationCount);
@@ -150,7 +153,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 				}
 				Box clonedBox = new Box(box, cloned);
 				
-				result[i] = new BoxItem(clonedBox, boxItem.getCount(), i);
+				result[i] = new BoxItem(clonedBox, boxItem.getCount(), i, i);
 			}
 		}
 		return result;
