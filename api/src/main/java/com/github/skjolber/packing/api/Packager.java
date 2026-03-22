@@ -11,5 +11,7 @@ import java.io.Closeable;
 public interface Packager<B extends PackagerResultBuilder> extends Closeable {
 
 	B newResultBuilder();
+	
+	void close(); // avoid IOException for AutoCloseable
 
 }

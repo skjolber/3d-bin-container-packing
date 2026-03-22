@@ -190,6 +190,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 				throw new IllegalStateException("Expected one or more count for every container");
 			}
 		}
+		
+		configureSequenceNumbers();
 	}
 
 	public B withBoxItemGroups(List<BoxItemGroup> items) {
@@ -203,6 +205,26 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			list.add(item);
 		}
 		return withBoxItemGroups(list);
+	}
+	
+	protected void configureSequenceNumbers() {
+		if(items != null && !items.isEmpty()) {
+			for(int i = 0; i < items.size(); i++) {
+				BoxItem item = items.get(i);
+				item.setSequenceNumber(i);
+			}
+		} else if(itemGroups != null && !itemGroups.isEmpty()) {
+			int sequenceNumber = 0;
+			for (BoxItemGroup boxItemGroup : itemGroups) {
+				for (BoxItem boxItem : boxItemGroup.getItems()) {
+					boxItem.setSequenceNumber(sequenceNumber);
+					
+					sequenceNumber++;
+				}
+			}
+		} else {
+			throw new IllegalStateException();
+		}
 	}
 	
 }
