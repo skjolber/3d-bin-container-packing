@@ -194,4 +194,14 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		return dirty;
 	}
 
+	public void trimToSize(int size) {
+		while (size < points.size()) {
+			points.remove(points.size() - 1);
+		}
+		if(!stack.isEmpty()) {
+			stack.setSize(size);
+		}
+		dirty = true;
+	}
+
 }

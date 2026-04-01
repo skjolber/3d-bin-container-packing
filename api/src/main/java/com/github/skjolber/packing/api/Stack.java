@@ -31,6 +31,10 @@ public class Stack implements Serializable, Iterable<Placement> {
 	public void remove(Placement e) {
 		entries.remove(e);
 	}
+	
+	public void remove(int index) {
+		entries.remove(index);
+	}
 
 	public void clear() {
 		entries.clear();
@@ -84,5 +88,6 @@ public class Stack implements Serializable, Iterable<Placement> {
 	public Iterator<Placement> iterator() {
 		return entries.listIterator();
 	}
+
 
 }
