@@ -36,8 +36,8 @@ public class VolumeWeightBucketContainerCostCalculator extends AbstractBucketWei
 			return this;
 		}
 
-		public Builder withVolumeToWeightRatio(double volumeToWeightRatio) {
-			this.weightToVolumeRatio = volumeToWeightRatio;
+		public Builder withWeightToVolumeRatio(double weightToVolumeRatio) {
+			this.weightToVolumeRatio = weightToVolumeRatio;
 			return this;
 		}
 		
