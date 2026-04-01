@@ -89,10 +89,5 @@ public class Stack implements Serializable, Iterable<Placement> {
 		return entries.listIterator();
 	}
 
-	public void trimToSize(int size) {
-		while (size < entries.size()) {
-			entries.remove(entries.size() - 1);
-		}
-	}
 
 }

@@ -393,7 +393,9 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 						try {
 							try {
 								Future<BruteForceIntermediatePackagerResult> future = executorCompletionService.take();
-								BruteForceIntermediatePackagerResult result = future.get();
+								
+								// TODO can truncate be moved to thread?
+								BruteForceIntermediatePackagerResult result = truncateToGroup(future.get());
 								if(result != null) {
 									if(best == null || intermediatePackagerResultComparator.compare(best, result) == ARGUMENT_2_IS_BETTER) {
 										best = result;
@@ -426,7 +428,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 						return null;
 					}
 					// throw away boxes from incomplete groups
-					return truncateToGroup(best);
+					return best;
 				} finally {
 					for (Future<BruteForceIntermediatePackagerResult> future : futures) {
 						future.cancel(true);
@@ -478,7 +480,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 						int groupBoxCount = boxItemGroup.getBoxCount();
 						if(size < wholeGroupBoxCount + groupBoxCount) {
 							// the last group was not successful
-							throw new RuntimeException("Expected to consume whole groups, but group " + i + " was not fully consumed");
+							throw new IllegalStateException("Expected to consume whole groups, but group " + i + " was not fully consumed");
 						}
 						
 						removedGroups.add(i);

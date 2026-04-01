@@ -69,7 +69,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 					int groupBoxCount = boxItemGroup.getBoxCount();
 					if(size < wholeGroupBoxCount + groupBoxCount) {
 						// the last group was not successful
-						throw new RuntimeException("Expected to consume whole groups, but group " + i + " was not fully consumed");
+						throw new IllegalStateException("Expected to consume whole groups, but group " + i + " was not fully consumed");
 					}
 					
 					removedGroups.add(i);

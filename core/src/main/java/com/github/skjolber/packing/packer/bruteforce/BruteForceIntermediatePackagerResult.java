@@ -199,7 +199,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 			points.remove(points.size() - 1);
 		}
 		if(!stack.isEmpty()) {
-			stack.trimToSize(size);
+			stack.setSize(size);
 		}
 		dirty = true;
 	}
