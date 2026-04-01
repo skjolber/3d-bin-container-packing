@@ -275,9 +275,50 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, containerItem, i, iterators[i],
 					interrupts[i]);
 		}
+		
+		@Override
+		public void remove(IntermediatePackagerResult result) {
+			// use sequence numbers to discount the inventory
+			Stack stack = result.getStack();
+
+			int size = stack.size();
+			if(countRemainingBoxes() > size) {
+				// this result does not consume all placements
+				// remove consumed items from the iterators
+
+				List<Integer> p = new ArrayList<>(size);
+				for (Placement stackPlacement : stack.getPlacements()) {
+					BoxItem boxItem = (BoxItem) stackPlacement.getStackValue().getBox().getBoxItem();
+					
+					p.add(boxItem.getSequenceNumber());
+				}
+				
+				for (ParallelBoxItemPermutationRotationIteratorList it : parallelIterators) {
+					it.removePermutations(p);
+				}
+
+				for (DefaultBoxItemPermutationRotationIterator it : iterators) {
+					it.removePermutations(p);
+				}
+				
+				// remove adapter inventory
+				removeInventory(p);
+
+				for (RunnableAdapter runner : runnables) {
+					runner.placements = runner.placements.subList(size, runner.placements.size());
+				}
+			} else {
+				for (RunnableAdapter runner : runnables) {
+					runner.placements = Collections.emptyList();
+				}
+				for(int i = 0; i < boxesRemaining.length; i++) {
+					boxesRemaining[i] = 0;
+				}
+			}
+		}		
 
 		@Override
-		public Container accept(IntermediatePackagerResult result, boolean useSequenceNumbers) {
+		public Container accept(IntermediatePackagerResult result) {
 			if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
 				
 				bruteForceResult.markDirty();
@@ -443,9 +484,58 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, containerItem, i, iterators[i],
 					interrupts[i]);
 		}
+		
 
 		@Override
-		public Container accept(IntermediatePackagerResult result, boolean useSequenceNumbers) {
+		public void remove(IntermediatePackagerResult result) {
+			// use sequence numbers to discount the inventory
+			Stack stack = result.getStack();
+
+			int size = stack.size();
+			if(countRemainingBoxes() > size) {
+				// this result does not consume all placements
+				// remove consumed items from the iterators
+
+				List<Integer> p = new ArrayList<>(size);
+				for (Placement stackPlacement : stack.getPlacements()) {
+					BoxItem boxItem = (BoxItem) stackPlacement.getStackValue().getBox().getBoxItem();
+					
+					p.add(boxItem.getSequenceNumber());
+				}
+				
+				// TODO only handles groups in order.
+				
+				
+				
+				
+				
+				for (ParallelBoxItemGroupPermutationRotationIteratorList it : parallelIterators) {
+					it.removeGroups(removedGroups);
+				}
+
+				for (DefaultBoxItemGroupPermutationRotationIterator it : iterators) {
+					it.removeGroups(removedGroups);
+				}
+				
+				// remove adapter inventory
+				removeInventory(p);
+
+				for (RunnableAdapter runner : runnables) {
+					runner.placements = runner.placements.subList(size, runner.placements.size());
+				}
+			} else {
+				for (RunnableAdapter runner : runnables) {
+					runner.placements = Collections.emptyList();
+				}
+				for(int i = 0; i < boxesRemaining.length; i++) {
+					boxesRemaining[i] = 0;
+				}
+			}
+		}		
+
+
+		@Override
+		public Container accept(IntermediatePackagerResult result) {
 			if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
 				
 				bruteForceResult.markDirty();
@@ -499,6 +589,12 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 						}
 					}						
 	
+					
+					// FIXME breaks cross package logics
+					
+					
+					
+					
 					// remove stacked items which did not make it
 					stack.setSize(p.size());
 	

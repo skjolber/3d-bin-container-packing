@@ -45,10 +45,32 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 		}
 		return maxIteratorLength;
 	}
+	
+	@Override
+	public void remove(IntermediatePackagerResult result) {
+		// use sequence numbers to discount the inventory
+		Stack stack = result.getStack();
+
+		int size = stack.size();
+		if(stackPlacements.size() > size) {
+			// this result does not consume all placements
+			// remove consumed items from the iterators
+
+			for (Placement stackPlacement : stack.getPlacements()) {
+				BoxItem boxItem = (BoxItem) stackPlacement.getStackValue().getBox().getBoxItem();
+				
+				int sequenceNumber = boxItem.getSequenceNumber();
+	
+				// TODO find box items and decrement count.
+			}
+		} else {
+			stackPlacements = Collections.emptyList();
+			boxItemGroups = Collections.emptyList();
+		}
+	}
 
 	@Override
-	public Container accept(IntermediatePackagerResult result, boolean useSequenceNumbers) {
-		
+	public Container accept(IntermediatePackagerResult result) {
 		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
 			
 			bruteForceResult.markDirty();

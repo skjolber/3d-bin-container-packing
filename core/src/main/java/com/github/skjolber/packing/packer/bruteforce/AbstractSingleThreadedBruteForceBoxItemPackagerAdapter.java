@@ -48,8 +48,37 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 	}
 	
 	@Override
-	public Container accept(IntermediatePackagerResult result, boolean useSequenceNumbers) {
-		
+	public void remove(IntermediatePackagerResult result) {
+		// use sequence numbers to discount the inventory
+		Stack stack = result.getStack();
+
+		int size = stack.size();
+		if(stackPlacements.size() > size) {
+			// this result does not consume all placements
+			// remove consumed items from the iterators
+
+			List<Integer> p = new ArrayList<>(size);
+			for (Placement stackPlacement : stack.getPlacements()) {
+				BoxItem boxItem = (BoxItem) stackPlacement.getStackValue().getBox().getBoxItem();
+				
+				p.add(boxItem.getSequenceNumber());
+			}
+			
+			// remove adapter inventory
+			removeInventory(p);
+
+			for (BoxItemPermutationRotationIterator it : containerIterators) {
+				it.removePermutations(p);
+			}
+			
+			stackPlacements = stackPlacements.subList(size, this.stackPlacements.size());
+		} else {
+			stackPlacements = Collections.emptyList();
+		}
+	}
+	
+	@Override
+	public Container accept(IntermediatePackagerResult result) {
 		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
 
 			bruteForceResult.markDirty();
