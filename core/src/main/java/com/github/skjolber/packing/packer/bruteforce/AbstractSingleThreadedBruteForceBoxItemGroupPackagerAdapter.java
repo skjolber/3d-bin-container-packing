@@ -16,16 +16,14 @@ import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
-public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
+public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter extends AbstractBruteForceBoxItemGroupsPackagerAdapter {
 
 	protected final BoxItemGroupPermutationRotationIterator[] containerIterators;
 	protected List<Placement> stackPlacements;
-	protected List<BoxItemGroup> boxItemGroups;
 	protected PackagerInterruptSupplier interrupt;
 	
 	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems, BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-		super(boxItems, packagerContainerItems);
-		this.boxItemGroups = boxItemGroups;
+		super(boxItems, packagerContainerItems, boxItemGroups);
 		this.interrupt = interrupt;
 		this.containerIterators = containerIterators;
 		
@@ -71,7 +69,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 					int groupBoxCount = boxItemGroup.getBoxCount();
 					if(size < wholeGroupBoxCount + groupBoxCount) {
 						// the last group was not successful
-						break;
+						throw new RuntimeException("Expected to consume whole groups, but group " + i + " was not fully consumed");
 					}
 					
 					removedGroups.add(i);
@@ -127,5 +125,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 	public int countRemainingBoxes() {
 		return stackPlacements.size();
 	}
+
+
 
 }

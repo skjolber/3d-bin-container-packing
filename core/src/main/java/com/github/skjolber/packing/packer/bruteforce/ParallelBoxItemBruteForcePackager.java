@@ -337,19 +337,16 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 	}
 
-	private class ParallelGroupAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
+	private class ParallelGroupAdapter extends AbstractBruteForceBoxItemGroupsPackagerAdapter {
 
 		private final RunnableAdapter[] runnables; // per thread
 		private final ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators; // per container
 		private final DefaultBoxItemGroupPermutationRotationIterator[] iterators; // per container
 		private final PackagerInterruptSupplier[] interrupts;
 
-		protected List<BoxItemGroup> boxItemGroups;
-		
 		protected ParallelGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
 				ContainerItemsCalculator packagerContainerItems, RunnableAdapter[] runnables, DefaultBoxItemGroupPermutationRotationIterator[] iterators, ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
-			super(boxItems, packagerContainerItems);
-			this.boxItemGroups = boxItemGroups;
+			super(boxItems, packagerContainerItems, boxItemGroups);
 			this.runnables = runnables;
 			this.parallelIterators = parallelIterators;
 			this.iterators = iterators;
@@ -428,7 +425,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					if(interrupts[i].getAsBoolean()) {
 						return null;
 					}
-					return best;
+					// throw away boxes from incomplete groups
+					return truncateToGroup(best);
 				} finally {
 					for (Future<BruteForceIntermediatePackagerResult> future : futures) {
 						future.cancel(true);
@@ -440,8 +438,14 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			
 			// no need to split this job
 			// run with linear approach
-			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, containerItem, i, iterators[i],
-					interrupts[i]);
+			return truncateToGroup(ParallelBoxItemBruteForcePackager.this.pack(
+					runnables[0].pointCalculator,
+					runnables[0].placements,
+					containerItem,
+					i,
+					iterators[i],
+					interrupts[i]
+			));
 		}
 
 		@Override
@@ -474,7 +478,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 						int groupBoxCount = boxItemGroup.getBoxCount();
 						if(size < wholeGroupBoxCount + groupBoxCount) {
 							// the last group was not successful
-							break;
+							throw new RuntimeException("Expected to consume whole groups, but group " + i + " was not fully consumed");
 						}
 						
 						removedGroups.add(i);
