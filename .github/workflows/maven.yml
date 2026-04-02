@@ -19,7 +19,7 @@ jobs:
         java: [ 25]
     name: Java ${{ matrix.java }} build
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Set up Java
       uses: actions/setup-java@v5
       with:

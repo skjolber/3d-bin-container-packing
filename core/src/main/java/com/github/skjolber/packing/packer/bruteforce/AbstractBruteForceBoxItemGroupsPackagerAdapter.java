@@ -1,102 +1,49 @@
 package com.github.skjolber.packing.packer.bruteforce;
-import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Order;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
-import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.PackagerAdapter;
 
-public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter implements PackagerAdapter {
+public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 
-	// keep inventory over all of the iterators here
-	protected Box[] boxes;
-	protected int[] boxesRemaining;
-	protected BoxItem[] boxItems;
 	protected List<BoxItemGroup> boxItemGroups;
-	
-	protected final PackagerInterruptSupplier interrupt;
-	protected final Order order;
-	protected final ContainerItemsCalculator packagerContainerItems;
 
-	public AbstractBruteForceBoxItemGroupsPackagerAdapter(List<BoxItemGroup> boxItemGroups, List<BoxItem> boxItems, Order order, ContainerItemsCalculator packagerContainerItems, PackagerInterruptSupplier interrupt) {
+	public AbstractBruteForceBoxItemGroupsPackagerAdapter(List<BoxItem> boxItems,
+			ContainerItemsCalculator packagerContainerItems, List<BoxItemGroup> boxItemGroups) {
+		super(boxItems, packagerContainerItems);
+		
 		this.boxItemGroups = boxItemGroups;
-		this.packagerContainerItems = packagerContainerItems;
-		this.order = order;
-		this.interrupt = interrupt;
-		
-		this.boxes = new Box[boxItems.size()];
-		this.boxesRemaining = new int[boxItems.size()];
-		this.boxItems = new BoxItem[boxItems.size()];
-		
-		for(int i = 0; i < boxItems.size(); i++) {
-			BoxItem boxItem = boxItems.get(i);
-
-			this.boxItems[i] = boxItem;
-			this.boxes[i] = boxItem.getBox();
-			this.boxesRemaining[i] = boxItem.getCount();
-		}
-	} 
-	
-	@Override
-	public ContainerItem getContainerItem(int index) {
-		return packagerContainerItems.getContainerItem(index);
-	}
-	
-	public int getFirstBoxItemIndexForGroup(int groupIndex) {
-		int index = 0;
-		for(int i = 0; i < groupIndex; i++) {
-			index += boxItemGroups.get(index).size();
-		}
-		return index;
 	}
 
-	protected void removeInventory(List<Integer> p) {
-		// remove adapter inventory
-		for (Integer remove : p) {
-			boxesRemaining[remove]--;
+	protected BruteForceIntermediatePackagerResult truncateToGroup(BruteForceIntermediatePackagerResult result) {
+		if(result == null) {
+			return null;
+		}
+		
+		// are we at the border between groups?
+		int size = result.getSize();
+
+		// TODO only handles groups in order.
+		int wholeGroupBoxCount = 0;
+		for(int k = 0; k < boxItemGroups.size(); k++) {
+			BoxItemGroup boxItemGroup = boxItemGroups.get(k);
 			
-			boxItems[remove].decrement();
-		}
-	}
-
-	public static boolean hasAtLeastOneContainerForEveryGroup(BoxItemPermutationRotationIterator[] iterators, int size) {
-		// check that all boxes fit in one or more container(s)
-		// otherwise do not attempt packaging
-		boolean[] containerChecklist = new boolean[size]; 
-		for (BoxItemPermutationRotationIterator iterator : iterators) {
-			int[] fits = iterator.getPermutations();
-			for(int fit : fits) {
-				containerChecklist[fit] = true;
+			int groupBoxCount = boxItemGroup.getBoxCount();
+			if(size < wholeGroupBoxCount + groupBoxCount) {
+				// the last group was not successful
+				result.trimToSize(wholeGroupBoxCount);
+				
+				break;
+			}
+			
+			wholeGroupBoxCount += groupBoxCount;
+			
+			if(wholeGroupBoxCount == size) {
+				// do nothing
+				break;
 			}
 		}
-		
-		for(int i = 0; i < containerChecklist.length; i++) {
-			if(!containerChecklist[i]) {
-				// so the result can never be complete, since at least one box does not fit in any of the containers
-				return false;
-			}
-		}
-		return true;
+		return result;
 	}
-	
-	@Override
-	public List<Integer> getContainers(int maxCount) {
-		List<BoxItem> remainingBoxItems = new ArrayList<>(boxItems.length);
-		for(int i = 0; i < boxItems.length; i++) {
-			BoxItem boxItem = boxItems[i];
-			if(boxItem != null) {
-				remainingBoxItems.add(boxItem);
-			}
-		}
-		return packagerContainerItems.getContainers(remainingBoxItems, maxCount);
-	}
-	
-	
-
 }
