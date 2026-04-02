@@ -36,6 +36,22 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 
 	// pack in single container
 	public IntermediatePackagerResult packSingle(List<Integer> containerItemIndexes, PackagerAdapter adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+		for (int i = 0; i < containerItemIndexes.size(); i++) {
+			if(interrupt.getAsBoolean()) {
+				throw new PackagerInterruptedException();
+			}
+
+			Integer containerItemIndex = containerItemIndexes.get(i);
+			
+			IntermediatePackagerResult result = adapter.attempt(containerItemIndex, null, true);
+			if(result.isEmpty()) {
+				continue;
+			}
+			if(result.getStack().size() == adapter.countRemainingBoxes()) {
+				return result;
+			}
+		}
+		
 		if(containerItemIndexes.size() <= 2) {
 			for (int i = 0; i < containerItemIndexes.size(); i++) {
 				if(interrupt.getAsBoolean()) {
@@ -57,6 +73,8 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 			// the list is ranked from most desirable to least.
 			// while the search finds a baseline, we really need to check all the containers
 			// at a lower index before the optional container is located.
+			//
+			// this only makes sense in a real-time scenario, where we want to return the best result possible within a given time limit, and not necessarily the optimal result.
 			
 			IntermediatePackagerResult[] results = new IntermediatePackagerResult[containerItemIndexes.get(containerItemIndexes.size() - 1) + 1];
 
