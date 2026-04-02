@@ -15,7 +15,7 @@ public interface PackagerAdapter {
 	
 	IntermediatePackagerResult peek(int containerIndex, IntermediatePackagerResult existing);
 
-	Container accept(IntermediatePackagerResult result);
+	Container accept(IntermediatePackagerResult result, boolean useSequenceNumbers);
 
 	List<Integer> getContainers(int maxCount);
 	

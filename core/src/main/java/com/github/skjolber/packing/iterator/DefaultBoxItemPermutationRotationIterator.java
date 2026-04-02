@@ -34,7 +34,10 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 			// box item and box item groups indexes are unique and static
 			for (int i = 0; i < boxItems.size(); i++) {
 				BoxItem boxItem = boxItems.get(i);
-				
+				if(boxItem.getSequenceNumber() != i) {
+					throw new IllegalStateException("Expected box item sequence number to be equal to index");
+				}
+
 				Box box = boxItem.getBox();
 				if(box.getWeight() > maxLoadWeight) {
 					excluded.add(boxItem);
@@ -58,7 +61,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 				}
 				Box clonedBox = new Box(box, cloned);
 				
-				included[i] = new BoxItem(clonedBox, boxItem.getCount(), i);
+				included[i] = new BoxItem(clonedBox, boxItem.getCount(), i, i);
 			}
 
 			return new DefaultBoxItemPermutationRotationIterator(included, excluded);

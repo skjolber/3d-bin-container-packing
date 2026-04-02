@@ -45,7 +45,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 	}
 
 	@Override
-	public Container accept(IntermediatePackagerResult result) {
+	public Container accept(IntermediatePackagerResult result, boolean useSequenceNumbers) {
 		
 		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
 			

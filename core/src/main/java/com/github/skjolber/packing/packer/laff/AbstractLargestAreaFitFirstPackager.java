@@ -100,9 +100,6 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		public PackagerResult build() {
 			validate();
 			
-			if( (items == null || items.isEmpty()) && (itemGroups == null || itemGroups.isEmpty())) {
-				throw new IllegalStateException();
-			}
 			long start = System.currentTimeMillis();
 
 			PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
@@ -117,12 +114,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
-				PackagerAdapter adapter;
-				if(items != null && !items.isEmpty()) {
-					adapter = new PlainBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
-				} else {
-					adapter = new PlainBoxItemGroupAdapter(itemGroups, order, new ContainerItemsCalculator(containers), interrupt);
-				}
+				PackagerAdapter adapter = createAdapter(interrupt);
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 				
 				long duration = System.currentTimeMillis() - start;
@@ -133,6 +125,16 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			} finally {
 				interrupt.close();
 			}
+		}
+		
+		private PackagerAdapter createAdapter(PackagerInterruptSupplier interrupt) {
+			PackagerAdapter adapter;
+			if(items != null && !items.isEmpty()) {
+				adapter = new PlainBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
+			} else {
+				adapter = new PlainBoxItemGroupAdapter(itemGroups, order, new ContainerItemsCalculator(containers), interrupt);
+			}
+			return adapter;
 		}
 	}
 	
