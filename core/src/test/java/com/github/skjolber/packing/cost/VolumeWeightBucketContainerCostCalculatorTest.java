@@ -21,7 +21,7 @@ public class VolumeWeightBucketContainerCostCalculatorTest {
 		
 		VolumeWeightBucketContainerCostCalculator calculator = (VolumeWeightBucketContainerCostCalculator) VolumeWeightBucketContainerCostCalculator.newBuilder()
 				.withVolume(10000)
-				.withVolumeToWeightRatio(5)
+				.withWeightToVolumeRatio(5)
 				.withBucket(0, 1000, 15000)
 				.withBucket(1000, 1500, 10000)
 				.withBucket(1500, 2000, 11000)
