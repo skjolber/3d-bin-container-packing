@@ -34,6 +34,7 @@ import com.github.skjolber.packing.iterator.PackagerBoxItems;
 import com.github.skjolber.packing.packer.AbstractBoxItemAdapter;
 import com.github.skjolber.packing.packer.AbstractBoxItemGroupAdapter;
 import com.github.skjolber.packing.packer.AbstractControlPackager;
+import com.github.skjolber.packing.packer.AbstractPackagerAdapterBuilder;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
@@ -41,6 +42,8 @@ import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerAdapter;
+import com.github.skjolber.packing.packer.PackagerAdapterBuilder;
+import com.github.skjolber.packing.packer.PackagerAdapterBuilderFactory;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
@@ -49,7 +52,7 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
  * <br>
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
-public abstract class AbstractLargestAreaFitFirstPackager extends AbstractControlPackager<Placement, AbstractLargestAreaFitFirstPackager.LargestAreaFitFirstResultBuilder> {
+public abstract class AbstractLargestAreaFitFirstPackager extends AbstractControlPackager<Placement, AbstractLargestAreaFitFirstPackager.LargestAreaFitFirstResultBuilder> implements PackagerAdapterBuilderFactory {
 
 	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter {
 
@@ -672,4 +675,27 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		return new LargestAreaFitFirstResultBuilder();
 	}
 	
+	public class LargestAreaFitFirstPackagerAdapterBuilder extends AbstractPackagerAdapterBuilder {
+
+		@Override
+		public PackagerAdapter build() {
+			if(items != null && !items.isEmpty()) {
+				return new PlainBoxItemAdapter(items, order, calculator, interrupt);
+			} else {
+				return new PlainBoxItemGroupAdapter(itemGroups, order, calculator, interrupt);
+			}
+		}
+
+	}
+
+	@Override
+	public PackagerAdapterBuilder newPackagerAdapterBuilder() {
+		return new LargestAreaFitFirstPackagerAdapterBuilder();
+	}
+
+	@Override
+	public void close() {
+		super.close();
+	}
+
 }
