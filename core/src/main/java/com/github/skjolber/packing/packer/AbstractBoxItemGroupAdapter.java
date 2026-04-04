@@ -18,7 +18,7 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 	private final PackagerInterruptSupplier interrupt;
 	private final Order order;
 
-	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems, Order order, PackagerInterruptSupplier interrupt) {
+	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, ContainerItemLoadsCalculator packagerContainerItems, Order order, PackagerInterruptSupplier interrupt) {
 		super(packagerContainerItems);
 		
 		List<BoxItemGroup> groupClones = new LinkedList<>();
@@ -37,7 +37,7 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 	@Override
 	public IntermediatePackagerResult attempt(int index, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		try {
-			return packGroup(remainingBoxItemGroups, order, packagerContainerItems.getContainerItem(index), interrupt, abortOnAnyBoxTooBig);
+			return packGroup(remainingBoxItemGroups, order, containerItemsCalculator.getContainerItem(index), interrupt, abortOnAnyBoxTooBig);
 		} finally {
 			for(BoxItemGroup group : remainingBoxItemGroups) {
 				group.reset();
@@ -47,7 +47,7 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 
 	@Override
 	public Container accept(IntermediatePackagerResult result) {
-		Container container = packagerContainerItems.toContainer(result.getContainerItem(), result.getStack());
+		Container container = containerItemsCalculator.toContainer(result.getContainerItem(), result.getStack());
 
 		Stack stack = container.getStack();
 
@@ -70,8 +70,8 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 	}
 
 	@Override
-	public List<Integer> getContainers(int maxCount) {
-		return packagerContainerItems.getGroupContainers(remainingBoxItemGroups, maxCount);
+	public ContainerItemLoadCalculations getContainers(int maxCount) {
+		return containerItemsCalculator.getGroupContainers(remainingBoxItemGroups, maxCount);
 	}
 	
 	@Override
@@ -85,7 +85,7 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 	
 	@Override
 	public ControlledContainerItem getContainerItem(int index) {
-		return packagerContainerItems.getContainerItem(index);
+		return containerItemsCalculator.getContainerItem(index);
 	}
 
 	protected abstract IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig);

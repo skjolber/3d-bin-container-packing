@@ -5,7 +5,9 @@ import java.util.List;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ContainerItemLoadCalculation;
+import com.github.skjolber.packing.packer.ContainerItemLoadCalculations;
+import com.github.skjolber.packing.packer.ContainerItemLoadsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerAdapter;
@@ -17,7 +19,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 	protected int[] boxesRemaining;
 	protected BoxItem[] boxItems;
 
-	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems) {
+	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, ContainerItemLoadsCalculator packagerContainerItems) {
 		super(packagerContainerItems);
 		
 		this.boxes = new Box[boxItems.size()];
@@ -34,7 +36,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 	
 	@Override
 	public ControlledContainerItem getContainerItem(int index) {
-		return packagerContainerItems.getContainerItem(index);
+		return containerItemsCalculator.getContainerItem(index);
 	}
 
 	protected void removeInventory(List<Integer> p) {
@@ -49,7 +51,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 	}
 
 	@Override
-	public List<Integer> getContainers(int maxCount) {
+	public ContainerItemLoadCalculations getContainers(int maxCount) {
 		List<BoxItem> remainingBoxItems = new ArrayList<>(boxItems.length);
 		for(int i = 0; i < boxItems.length; i++) {
 			BoxItem boxItem = boxItems[i];
@@ -57,7 +59,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 				remainingBoxItems.add(boxItem);
 			}
 		}
-		return packagerContainerItems.getContainers(remainingBoxItems, maxCount);
+		return containerItemsCalculator.getContainers(remainingBoxItems, maxCount);
 	}
 
 	protected BruteForceIntermediatePackagerResult copy(ControlledContainerItem peek, IntermediatePackagerResult result, int index) {

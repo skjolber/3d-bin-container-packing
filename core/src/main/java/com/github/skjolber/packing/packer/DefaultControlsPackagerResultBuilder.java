@@ -39,9 +39,9 @@ public abstract class DefaultControlsPackagerResultBuilder extends AbstractPacka
 		try {
 			PackagerAdapter adapter;
 			if(items != null && !items.isEmpty()) {
-				adapter = createDefaultBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
+				adapter = createDefaultBoxItemAdapter(items, order, new ContainerItemLoadsCalculator(containers, hasContainerCostCalculator), interrupt);
 			} else {
-				adapter = createDefaultBoxItemGroupAdapter(itemGroups, order, new ContainerItemsCalculator(containers), interrupt);
+				adapter = createDefaultBoxItemGroupAdapter(itemGroups, order, new ContainerItemLoadsCalculator(containers, hasContainerCostCalculator), interrupt);
 			}
 			List<Container> packList = packager.packAdapter(maxContainerCount, interrupt, adapter);
 			
@@ -56,8 +56,8 @@ public abstract class DefaultControlsPackagerResultBuilder extends AbstractPacka
 	}
 
 	protected abstract PackagerAdapter createDefaultBoxItemAdapter(List<BoxItem> items, Order order,
-			ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt);
+			ContainerItemLoadsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt);
 
 	protected abstract PackagerAdapter createDefaultBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, Order order,
-			ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt);
+			ContainerItemLoadsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt);
 }

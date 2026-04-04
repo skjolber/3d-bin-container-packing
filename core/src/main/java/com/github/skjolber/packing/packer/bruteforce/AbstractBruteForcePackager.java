@@ -20,7 +20,7 @@ import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ContainerItemLoadsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
@@ -88,9 +88,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				
 				AbstractBruteForceBoxItemPackagerAdapter adapter;
 				if(items != null && !items.isEmpty()) {
-					adapter = createBoxItemAdapter(items, new ContainerItemsCalculator(containers), interrupt);
+					adapter = createBoxItemAdapter(items, new ContainerItemLoadsCalculator(containers, hasContainerCostCalculator), interrupt);
 				} else {
-					adapter = createBoxItemGroupAdapter(itemGroups, new ContainerItemsCalculator(containers), interrupt);
+					adapter = createBoxItemGroupAdapter(itemGroups, new ContainerItemLoadsCalculator(containers, hasContainerCostCalculator), interrupt);
 				}
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 								
@@ -113,10 +113,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		return new BruteForcePackagerResultBuilder().withPackager(this);
 	}
 
-	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, ContainerItemsCalculator defaultContainerItemsCalculator,
+	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, ContainerItemLoadsCalculator defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt);
 
-	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, ContainerItemsCalculator defaultContainerItemsCalculator,
+	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, ContainerItemLoadsCalculator defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt);
 
 	static List<Placement> getPlacements(int size) {

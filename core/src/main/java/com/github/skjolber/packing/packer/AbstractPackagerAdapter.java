@@ -8,17 +8,17 @@ import com.github.skjolber.packing.api.point.Point;
 
 public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 
-	protected final ContainerItemsCalculator packagerContainerItems;
+	protected final ContainerItemLoadsCalculator containerItemsCalculator;
 
-	public AbstractPackagerAdapter(ContainerItemsCalculator packagerContainerItems) {
-		this.packagerContainerItems = packagerContainerItems;
+	public AbstractPackagerAdapter(ContainerItemLoadsCalculator containerItemsCalculator) {
+		this.containerItemsCalculator = containerItemsCalculator;
 	}
 
 	@Override
 	public IntermediatePackagerResult peek(int containerIndex, IntermediatePackagerResult result) {
 
 		Stack stack = result.getStack();
-		ControlledContainerItem peek = packagerContainerItems.getContainerItem(containerIndex);
+		ControlledContainerItem peek = containerItemsCalculator.getContainerItem(containerIndex);
 
 		if(!peek.getContainer().fitsInside(stack)) {
 			return null;

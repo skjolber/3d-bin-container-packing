@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ContainerItemLoadsCalculator;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
@@ -20,7 +20,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 	protected List<Placement> stackPlacements;
 	protected final PackagerInterruptSupplier interrupt;
 
-	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
+	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, ContainerItemLoadsCalculator packagerContainerItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 		super(boxItems, packagerContainerItems);
 		this.interrupt = interrupt;
 		this.containerIterators = containerIterators;
@@ -55,7 +55,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 			bruteForceResult.markDirty();
 			Stack stack = bruteForceResult.getStack();
 			
-			Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+			Container container = containerItemsCalculator.toContainer(bruteForceResult.getContainerItem(), stack);
 						
 			int size = stack.size();
 			if(stackPlacements.size() > size) {

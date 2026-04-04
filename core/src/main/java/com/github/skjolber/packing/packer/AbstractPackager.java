@@ -35,13 +35,14 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	}
 
 	// pack in single container
-	public IntermediatePackagerResult packSingle(List<Integer> containerItemIndexes, PackagerAdapter adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
-		for (int i = 0; i < containerItemIndexes.size(); i++) {
+	public IntermediatePackagerResult packSingle(ContainerItemLoadCalculations containerItemLoadCalculations, PackagerAdapter adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+		for (int i = 0; i < containerItemLoadCalculations.size(); i++) {
 			if(interrupt.getAsBoolean()) {
 				throw new PackagerInterruptedException();
 			}
-
-			Integer containerItemIndex = containerItemIndexes.get(i);
+			
+			ContainerItemLoadCalculation containerItemLoadCalculation = containerItemLoadCalculations.get(i);
+			Integer containerItemIndex = containerItemLoadCalculation.getIndex();
 			
 			IntermediatePackagerResult result = adapter.attempt(containerItemIndex, null, true);
 			if(result.isEmpty()) {
@@ -52,13 +53,14 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 			}
 		}
 		
-		if(containerItemIndexes.size() <= 2) {
-			for (int i = 0; i < containerItemIndexes.size(); i++) {
+		if(containerItemLoadCalculations.size() <= 2) {
+			for (int i = 0; i < containerItemLoadCalculations.size(); i++) {
 				if(interrupt.getAsBoolean()) {
 					throw new PackagerInterruptedException();
 				}
 
-				Integer containerItemIndex = containerItemIndexes.get(i);
+				ContainerItemLoadCalculation containerItemLoadCalculation = containerItemLoadCalculations.get(i);
+				Integer containerItemIndex = containerItemLoadCalculation.getIndex();
 				
 				IntermediatePackagerResult result = adapter.attempt(containerItemIndex, null, true);
 				if(result.isEmpty()) {
@@ -76,19 +78,22 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 			//
 			// this only makes sense in a real-time scenario, where we want to return the best result possible within a given time limit, and not necessarily the optimal result.
 			
-			IntermediatePackagerResult[] results = new IntermediatePackagerResult[containerItemIndexes.get(containerItemIndexes.size() - 1) + 1];
+			IntermediatePackagerResult[] results = new IntermediatePackagerResult[containerItemLoadCalculations.get(containerItemLoadCalculations.size() - 1).getIndex() + 1];
 
 			BinarySearchIterator iterator = new BinarySearchIterator();
 
 			search: do {
-				iterator.reset(containerItemIndexes.size() - 1, 0);
+				iterator.reset(containerItemLoadCalculations.size() - 1, 0);
 
 				IntermediatePackagerResult bestResult = null;
 				int bestIndex = Integer.MAX_VALUE;
 
 				do {
 					int mid = iterator.next();
-					int nextContainerItemIndex = containerItemIndexes.get(mid);
+					
+					ContainerItemLoadCalculation containerItemLoadCalculation = containerItemLoadCalculations.get(mid);
+					
+					int nextContainerItemIndex = containerItemLoadCalculation.getIndex();
 					
 					IntermediatePackagerResult result = null;
 					
@@ -120,24 +125,26 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 					}
 				} while (iterator.hasNext());
 				
-				for (int i = 0; i < containerItemIndexes.size(); i++) {
-					Integer nextContainerItemIndex = containerItemIndexes.get(i);
+				for (int i = 0; i < containerItemLoadCalculations.size(); i++) {
+					ContainerItemLoadCalculation containerItemLoadCalculation = containerItemLoadCalculations.get(i);
+					Integer nextContainerItemIndex = containerItemLoadCalculation.getIndex();
+					
 					if(results[nextContainerItemIndex] != null) {
 						if(!results[nextContainerItemIndex].isEmpty()) {
 							// remove containers at lower indexes; we already have a better match
-							while (containerItemIndexes.size() > i) {
-								containerItemIndexes.remove(containerItemIndexes.size() - 1);
+							while (containerItemLoadCalculations.size() > i) {
+								containerItemLoadCalculations.remove(containerItemLoadCalculations.size() - 1);
 							}
 							break;
 						}
 						
 						// remove container which could not fit all the items
-						containerItemIndexes.remove(i);
+						containerItemLoadCalculations.remove(i);
 						i--;
 					}
 				}
 				// halt when not more containers to check
-			} while (!containerItemIndexes.isEmpty());
+			} while (!containerItemLoadCalculations.isEmpty());
 
 			// return the best, if any
 			for (final IntermediatePackagerResult result : results) {
@@ -156,10 +163,11 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 			// is it possible to fit the remaining boxes a single container?
 			int maxContainers = limit - containerPackResults.size();
 			if(maxContainers > 1) {
-				List<Integer> containerItemIndexes = adapter.getContainers(1);
-				if(!containerItemIndexes.isEmpty()) {
-	
-					IntermediatePackagerResult result = packSingle(containerItemIndexes, adapter, interrupt);
+				
+				// Cost calculation: order by cost 
+				ContainerItemLoadCalculations containerItemLoadCalculations = adapter.getContainers(1);
+				if(!containerItemLoadCalculations.isEmpty()) {
+					IntermediatePackagerResult result = packSingle(containerItemLoadCalculations, adapter, interrupt);
 					if(!result.isEmpty()) {
 						containerPackResults.add(adapter.accept(result));
 	
@@ -172,11 +180,16 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 			}
 
 			// one or more containers
-			List<Integer> containerItemIndexes = adapter.getContainers(maxContainers);
+			ContainerItemLoadCalculations containerItemIndexes = adapter.getContainers(maxContainers);
 			if(containerItemIndexes.isEmpty()) {
 				return Collections.emptyList();
 			}
 
+			// Cost calculation: see what can be stacked then go with the most value for money, 
+			// which does not break the max container constraint.
+			// don't try a container if it as max capacity is less cost efficient than the current best result.
+			
+			
 			// the best container is the one which can hold the most box groups
 			// assume larger boxes is at the end of list, so start there
 			IntermediatePackagerResult best = null;
@@ -187,7 +200,8 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 						throw new PackagerInterruptedException();
 					}
 
-					Integer nextContainerItemIndex = containerItemIndexes.get(i);
+					ContainerItemLoadCalculation containerItemLoadCalculation = containerItemIndexes.get(i);
+					Integer nextContainerItemIndex = containerItemLoadCalculation.getIndex();
 
 					// can this container hold more than the previously best result?
 					if(best != null) {

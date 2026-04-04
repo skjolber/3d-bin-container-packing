@@ -3,14 +3,14 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ContainerItemLoadsCalculator;
 
 public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 
 	protected List<BoxItemGroup> boxItemGroups;
 
 	public AbstractBruteForceBoxItemGroupsPackagerAdapter(List<BoxItem> boxItems,
-			ContainerItemsCalculator packagerContainerItems, List<BoxItemGroup> boxItemGroups) {
+			ContainerItemLoadsCalculator packagerContainerItems, List<BoxItemGroup> boxItemGroups) {
 		super(boxItems, packagerContainerItems);
 		
 		this.boxItemGroups = boxItemGroups;

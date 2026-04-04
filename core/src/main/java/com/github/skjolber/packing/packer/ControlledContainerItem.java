@@ -28,7 +28,7 @@ public class ControlledContainerItem extends ContainerItem {
 	protected ManifestControlsBuilderFactory manifestControlsBuilderFactory;
 	protected PointControlsBuilderFactory pointControlsBuilderFactory;
 	protected List<Point> initialPoints;
-	protected List<ContainerCostCalculator> costCalculators;
+	protected ContainerCostCalculator costCalculator;
 
 	public ControlledContainerItem(Container container, int count) {
 		super(container, count);
@@ -62,8 +62,12 @@ public class ControlledContainerItem extends ContainerItem {
 		return manifestControlsBuilderFactory;
 	}
 	
-	public void setCostCalculators(List<ContainerCostCalculator> calculators) {
-		this.costCalculators = calculators;
+	public void setCostCalculator(ContainerCostCalculator calculator) {
+		this.costCalculator = calculator;
+	}
+	
+	public ContainerCostCalculator getCostCalculator() {
+		return costCalculator;
 	}
 	
 	public ManifestControls createBoxItemControls(Container container, Stack stack, BoxItemSource boxItemSource, PointSource points, BoxItemGroupSource groups) {
@@ -92,7 +96,7 @@ public class ControlledContainerItem extends ContainerItem {
 	}
 	
 	public boolean hasCostCalculator() {
-		return costCalculators != null && !costCalculators.isEmpty();
+		return costCalculator != null;
 	}
 	
 	public boolean hasPointControlsBuilderFactory() {

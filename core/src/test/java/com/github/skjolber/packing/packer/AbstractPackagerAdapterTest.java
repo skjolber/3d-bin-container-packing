@@ -33,7 +33,7 @@ public class AbstractPackagerAdapterTest {
                 .withContainer(container2, 3)
                 .build();
 
-        ContainerItemsCalculator adapter = create(items);
+        ContainerItemLoadsCalculator adapter = create(items);
 
 		// volume
         for(int i = 0; i <= 5; i++) {
@@ -78,7 +78,7 @@ public class AbstractPackagerAdapterTest {
                 .withContainer(container2, 3)
                 .build();
         
-        ContainerItemsCalculator adapter = create(items);
+        ContainerItemLoadsCalculator adapter = create(items);
 
 		// volume overflows, max value is 9,223,372,036,854,775,807 (~19 digits) and 
 		// max integer 2,147,483,647 (~10 digits) 
@@ -98,12 +98,12 @@ public class AbstractPackagerAdapterTest {
     	assertEquals(maxWeight, expectedWeight);
 	}
 	
-	private ContainerItemsCalculator create(List<ContainerItem> items) {
+	private ContainerItemLoadsCalculator create(List<ContainerItem> items) {
 		List<ControlledContainerItem> containerItems = new ArrayList<>(items.size());
 		for(ContainerItem containerItem : items) {
 			containerItems.add(new ControlledContainerItem(containerItem));
 		}
 		
-		return new ContainerItemsCalculator(containerItems);
+		return new ContainerItemLoadsCalculator(containerItems, false);
 	}
 }

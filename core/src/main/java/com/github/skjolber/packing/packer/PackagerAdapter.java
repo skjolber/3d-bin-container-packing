@@ -17,7 +17,7 @@ public interface PackagerAdapter {
 
 	Container accept(IntermediatePackagerResult result);
 
-	List<Integer> getContainers(int maxCount);
+	ContainerItemLoadCalculations getContainers(int maxCount);
 	
 	ContainerItem getContainerItem(int index);
 	

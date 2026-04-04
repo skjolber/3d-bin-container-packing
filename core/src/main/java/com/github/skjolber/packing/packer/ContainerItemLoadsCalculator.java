@@ -14,7 +14,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 
-public class ContainerItemsCalculator {
+public class ContainerItemLoadsCalculator {
 
 	public static class Limit {
 		
@@ -46,17 +46,20 @@ public class ContainerItemsCalculator {
 	protected final List<ControlledContainerItem> containerItemsSortedByWeight;
 	protected final List<ControlledContainerItem> containerItemsSortedByVolume;
 	
+	protected final boolean containerCostCalculator;
+	
 	/**
 	 * Create new instance
 	 * 
 	 * @param items container items.
 	 */
 	
-	public ContainerItemsCalculator(List<ControlledContainerItem> items) {
+	public ContainerItemLoadsCalculator(List<ControlledContainerItem> items, boolean containerCostCalculator) {
 		for(int i = 0; i < items.size(); i++) {
 			items.get(i).setIndex(i);
 		}
 		this.containerItems = items;
+		this.containerCostCalculator = containerCostCalculator;
 		
 		containerItemsSortedByWeight = new ArrayList<>(items);
 		containerItemsSortedByVolume = new ArrayList<>(items);
@@ -73,7 +76,7 @@ public class ContainerItemsCalculator {
 	 * @return list of containers
 	 */
 	
-	public List<Integer> getContainers(List<BoxItem> boxes, int maxCount) {
+	public ContainerItemLoadCalculations getContainers(List<BoxItem> boxes, int maxCount) {
 		long totalVolume = 0;
 		long totalWeight = 0;
 
@@ -89,21 +92,21 @@ public class ContainerItemsCalculator {
 		Limit totalAvailableVolume = calculateMaxVolume(maxCount);
 		if(totalAvailableVolume.value.compareTo(BigInteger.valueOf(totalVolume)) < 0) {
 			// constrained by volume
-			return Collections.emptyList();
+			return ContainerItemLoadCalculations.empty();
 		}
 
 		// sanity check - exact values for weight
 		Limit totalAvailableWeight = calculateMaxWeight(maxCount);
 		if(totalAvailableWeight.value.compareTo(BigInteger.valueOf(totalWeight)) < 0) {
 			// constrained by weight
-			return Collections.emptyList();
+			return ContainerItemLoadCalculations.empty();
 		}
 
-		List<Integer> result = new ArrayList<>(getContainerItemCount());
+		List<ContainerItemLoadCalculation> result = new ArrayList<>(getContainerItemCount());
 		if(maxCount == 1) {
 
 			for (int i = 0; i < getContainerItemCount(); i++) {
-				ContainerItem item = getContainerItem(i);
+				ControlledContainerItem item = getContainerItem(i);
 				if(!item.isAvailable()) {
 					continue;
 				}
@@ -121,7 +124,10 @@ public class ContainerItemsCalculator {
 				if(!canLoadAll(container, boxes)) {
 					continue;
 				}
-				result.add(i);
+				
+				ContainerItemLoadCalculation c = new ContainerItemLoadCalculation(totalVolume, totalWeight, item, i);
+				
+				result.add(c);
 			}
 
 		} else {
@@ -143,7 +149,7 @@ public class ContainerItemsCalculator {
 			}
 			
 			for (int i = 0; i < getContainerItemCount(); i++) {
-				ContainerItem item = getContainerItem(i);
+				ControlledContainerItem item = getContainerItem(i);
 
 				if(!item.isAvailable()) {
 					continue;
@@ -179,17 +185,33 @@ public class ContainerItemsCalculator {
 				}
 
 				// must be able to load at least one
-				if(!canLoadAtLeastOneBox(container, boxes)) {
+				long loadableVolume = 0;
+				long loadableWeight = 0;
+				
+				for (BoxItem boxItem : boxes) {
+					Box box = boxItem.getBox();
+					if(container.canLoad(box)) {
+						loadableVolume += box.getVolume() * boxItem.getCount();
+						loadableWeight += box.getWeight() * boxItem.getCount();
+					}
+				}
+				
+				if(loadableVolume == 0 || loadableWeight == 0) {
+					// cannot load any box
 					continue;
 				}
-				result.add(i);
+				
+				result.add(new ContainerItemLoadCalculation(loadableVolume, loadableWeight, item, i));
 			}
 		}
 
-		return result;
+		if(result.isEmpty()) {
+			return ContainerItemLoadCalculations.empty();
+		}
+		return new ContainerItemLoadCalculations(result, containerCostCalculator);
 	}
 
-	public List<Integer> getGroupContainers(List<BoxItemGroup> boxes, int maxCount) {
+	public ContainerItemLoadCalculations getGroupContainers(List<BoxItemGroup> boxes, int maxCount) {
 		long totalBoxVolume = 0;
 		long totalBoxWeight = 0;
 
@@ -222,7 +244,6 @@ public class ContainerItemsCalculator {
 
 				// weight
 				totalBoxWeight += weight;
-
 			}
 		}
 
@@ -230,24 +251,24 @@ public class ContainerItemsCalculator {
 		Limit totalAvailableVolume = calculateMaxVolume(maxCount);
 		if(totalAvailableVolume.value.compareTo(BigInteger.valueOf(totalBoxVolume)) < 0) {
 			// constrained by volume
-			return Collections.emptyList();
+			return ContainerItemLoadCalculations.empty();
 		}
 
 		// sanity check - exact values for weight
 		Limit totalAvailableWeight = calculateMaxWeight(maxCount);
 		if(totalAvailableWeight.value.compareTo(BigInteger.valueOf(totalBoxWeight)) < 0) {
 			// constrained by weight
-			return Collections.emptyList();
+			return ContainerItemLoadCalculations.empty();
 		}
 
-		List<Integer> list = new ArrayList<>(getContainerItemCount());
+		List<ContainerItemLoadCalculation> result = new ArrayList<>(getContainerItemCount());
 
 		if(maxCount == 1) {
 
 			// check if everything can fit in the same container
 			containers: 
 			for (int i = 0; i < getContainerItemCount(); i++) {
-				ContainerItem item = getContainerItem(i);
+				ControlledContainerItem item = getContainerItem(i);
 				if(!item.isAvailable()) {
 					continue;
 				}
@@ -265,12 +286,13 @@ public class ContainerItemsCalculator {
 						continue containers;
 					}
 				}
-				list.add(i);
+				
+				result.add(new ContainerItemLoadCalculation(totalBoxVolume, totalBoxWeight, item, i));
 			}
 
 		} else {
 			for (int i = 0; i < getContainerItemCount(); i++) {
-				ContainerItem item = getContainerItem(i);
+				ControlledContainerItem item = getContainerItem(i);
 				
 				if(!item.isAvailable()) {
 					continue;
@@ -305,15 +327,32 @@ public class ContainerItemsCalculator {
 					}
 					
 				}
+				
+				// must be able to load at least one
+				long loadableVolume = 0;
+				long loadableWeight = 0;
 
-				if(!canLoadAtLeastOneGroup(container, boxes)) {
+				for (BoxItemGroup group : boxes) {
+					if(container.canLoad(group)) {
+						loadableVolume += group.getVolume();
+						loadableWeight += group.getWeight();
+					}
+				}
+
+				if(loadableVolume == 0 || loadableWeight == 0) {
+					// cannot load any box
 					continue;
 				}
-				list.add(i);
+
+				result.add(new ContainerItemLoadCalculation(loadableVolume, loadableWeight, item, i));
 			}
 		}
 
-		return list;
+		if(result.isEmpty()) {
+			return ContainerItemLoadCalculations.empty();
+		}
+		
+		return new ContainerItemLoadCalculations(result, containerCostCalculator);
 	}
 	
 	protected boolean canLoadAtLeastOneBox(Container containerBox, Iterable<BoxItem> boxes) {
@@ -413,7 +452,6 @@ public class ContainerItemsCalculator {
 			maxCount -= count;
 			
 			includedContainerIndexes.add(containerItem.getIndex());
-			
 			
 			if(minLoadWeight > containerItem.getContainer().getMaxLoadWeight()) {
 				minLoadWeight = containerItem.getContainer().getMaxLoadWeight();
