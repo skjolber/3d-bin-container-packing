@@ -70,8 +70,8 @@ public class VolumeWeightBucketContainerCostCalculator extends AbstractBucketWei
 			
 			long minimumVolumeWeight = (long)(volume / weightToVolumeRatio);
 			
-			Bucket first = buckets.getFirst();
-			Bucket last = buckets.getLast();
+			Bucket first = buckets.get(0);
+			Bucket last = buckets.get(buckets.size() - 1);
 			
 			if(minimumVolumeWeight <= first.getMinWeight()) {
 				// weight dominates volume-weight, volume-weight can be ignored

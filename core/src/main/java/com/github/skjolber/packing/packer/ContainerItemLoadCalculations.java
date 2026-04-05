@@ -6,14 +6,6 @@ import java.util.List;
 
 public class ContainerItemLoadCalculations {
 	
-	private static final Comparator<ContainerItemLoadCalculation> COST_COMPARATOR = new Comparator<ContainerItemLoadCalculation>() {
-		@Override
-		public int compare(ContainerItemLoadCalculation o1, ContainerItemLoadCalculation o2) {
-			return Long.compare(o1.getCostCalculator().calculateCost(o1.getContainer()), o2.getCostCalculator().calculateCost(o2.getContainer()));
-		}
-	};
-	
-	
 	private static final ContainerItemLoadCalculations EMPTY = new ContainerItemLoadCalculations(Collections.emptyList(), false);
 	
 	public static ContainerItemLoadCalculations empty() {
@@ -30,11 +22,7 @@ public class ContainerItemLoadCalculations {
 		this.cost = cost;
 		
 		if(cost) {
-			for (ContainerItemLoadCalculation containerItemLoadCalculation : containerItemLoadCalculations) {
-				if(containerItemLoadCalculation.getCostCalculator() == null) {
-					throw new IllegalArgumentException("Cost calculator is required for cost calculations");
-				}
-			}
+			Collections.sort(containerItemLoadCalculations, WeightContainerItemLoadCalculationComparator.COMPARATOR);
 		}
 	}
 	
