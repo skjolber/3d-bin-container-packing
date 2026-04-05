@@ -38,6 +38,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 	protected List<BoxItem> items = new ArrayList<>();
 	
 	protected List<ControlledContainerItem> containers;
+	
+	protected boolean hasContainerCostCalculator;
 
 	public static class DefaultControlledContainerItemBuilder implements ControlledContainerItemBuilder {
 
@@ -190,6 +192,24 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 				throw new IllegalStateException("Expected one or more count for every container");
 			}
 		}
+		
+		// if one has cost, they all must have
+		boolean anyHasCostCalculator = false;
+		boolean allHaveCostCalculator = true;
+
+		for (ControlledContainerItem c : containers) {
+			if (c.hasCostCalculator()) {
+				anyHasCostCalculator = true;
+			} else {
+				allHaveCostCalculator = false;
+			}
+		}
+
+		if (anyHasCostCalculator && !allHaveCostCalculator) {
+			throw new IllegalStateException("Expected either none or all containers to have cost calculator");
+		}
+		
+		this.hasContainerCostCalculator = anyHasCostCalculator;
 	}
 
 	public B withBoxItemGroups(List<BoxItemGroup> items) {

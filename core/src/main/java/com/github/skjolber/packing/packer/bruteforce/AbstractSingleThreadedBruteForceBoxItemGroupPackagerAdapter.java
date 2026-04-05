@@ -13,7 +13,7 @@ import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ContainerItemLoadsCalculator;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter extends AbstractBruteForceBoxItemGroupsPackagerAdapter {
@@ -22,7 +22,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 	protected List<Placement> stackPlacements;
 	protected PackagerInterruptSupplier interrupt;
 	
-	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems, BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
+	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, ContainerItemLoadsCalculator packagerContainerItems, BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 		super(boxItems, packagerContainerItems, boxItemGroups);
 		this.interrupt = interrupt;
 		this.containerIterators = containerIterators;
@@ -97,7 +97,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 				// remove stacked items which did not make it
 				stack.setSize(p.size());
 				
-				Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+				Container container = containerItemsCalculator.toContainer(bruteForceResult.getContainerItem(), stack);
 	
 				// remove adapter inventory
 				removeInventory(p);
@@ -114,7 +114,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 				stackPlacements = Collections.emptyList();
 				boxItemGroups = Collections.emptyList();
 				
-				return packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+				return containerItemsCalculator.toContainer(bruteForceResult.getContainerItem(), stack);
 			}
 		} else {
 			throw new IllegalStateException(); // TODO

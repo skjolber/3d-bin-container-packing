@@ -35,7 +35,7 @@ import com.github.skjolber.packing.packer.AbstractBoxItemAdapter;
 import com.github.skjolber.packing.packer.AbstractBoxItemGroupAdapter;
 import com.github.skjolber.packing.packer.AbstractControlPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ContainerItemLoadsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
@@ -54,7 +54,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter {
 
 		public PlainBoxItemAdapter(List<BoxItem> boxItems, Order order,
-				ContainerItemsCalculator packagerContainerItems,
+				ContainerItemLoadsCalculator packagerContainerItems,
 				PackagerInterruptSupplier interrupt) {
 			super(boxItems, order, packagerContainerItems, interrupt);
 		}
@@ -76,7 +76,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		public PlainBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups,
 				Order order,
-				ContainerItemsCalculator packagerContainerItems, 
+				ContainerItemLoadsCalculator packagerContainerItems, 
 				PackagerInterruptSupplier interrupt) {
 			super(boxItemGroups, packagerContainerItems, order, interrupt);
 		}
@@ -119,9 +119,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			try {
 				PackagerAdapter adapter;
 				if(items != null && !items.isEmpty()) {
-					adapter = new PlainBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
+					adapter = new PlainBoxItemAdapter(items, order, new ContainerItemLoadsCalculator(containers, hasContainerCostCalculator), interrupt);
 				} else {
-					adapter = new PlainBoxItemGroupAdapter(itemGroups, order, new ContainerItemsCalculator(containers), interrupt);
+					adapter = new PlainBoxItemGroupAdapter(itemGroups, order, new ContainerItemLoadsCalculator(containers, hasContainerCostCalculator), interrupt);
 				}
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 				

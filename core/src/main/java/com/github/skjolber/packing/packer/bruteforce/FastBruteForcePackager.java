@@ -19,7 +19,7 @@ import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationItera
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ContainerItemLoadsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
@@ -61,7 +61,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		private final FastPointCalculator3DStack pointCalculator;
 
-		public FastBruteForceAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems,
+		public FastBruteForceAdapter(List<BoxItem> boxItems, ContainerItemLoadsCalculator packagerContainerItems,
 				BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, packagerContainerItems, containerIterators, interrupt);
 			
@@ -74,7 +74,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
+			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, containerItemsCalculator.getContainerItem(i), i, containerIterators[i], interrupt);
 		}
 		
 	}
@@ -83,7 +83,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		private final FastPointCalculator3DStack pointCalculator;
 
-		public FastBruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems,
+		public FastBruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, ContainerItemLoadsCalculator packagerContainerItems,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, boxItemGroups, packagerContainerItems, containerIterators, interrupt);
 			
@@ -96,14 +96,14 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return truncateToGroup(FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt));
+			return truncateToGroup(FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, containerItemsCalculator.getContainerItem(i), i, containerIterators[i], interrupt));
 		}
 		
 	}
 
 	@Override
 	protected FastBruteForceGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			ContainerItemsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt) {
+			ContainerItemLoadsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt) {
 		DefaultBoxItemGroupPermutationRotationIterator[] containerIterators = new DefaultBoxItemGroupPermutationRotationIterator[defaultContainerItemsCalculator.getContainerItemCount()];
 
 		for (int i = 0; i < defaultContainerItemsCalculator.getContainerItemCount(); i++) {
@@ -126,7 +126,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected FastBruteForceAdapter createBoxItemAdapter(List<BoxItem> boxItems, ContainerItemsCalculator defaultContainerItemsCalculator,
+	protected FastBruteForceAdapter createBoxItemAdapter(List<BoxItem> boxItems, ContainerItemLoadsCalculator defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt) {
 		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[defaultContainerItemsCalculator.getContainerItemCount()];
 

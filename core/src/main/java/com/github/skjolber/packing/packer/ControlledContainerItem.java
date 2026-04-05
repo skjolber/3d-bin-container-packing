@@ -5,6 +5,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.manifest.DefaultManifestControls;
@@ -26,7 +27,8 @@ public class ControlledContainerItem extends ContainerItem {
 
 	protected ManifestControlsBuilderFactory manifestControlsBuilderFactory;
 	protected PointControlsBuilderFactory pointControlsBuilderFactory;
-	protected List<Point> initialPoints; 
+	protected List<Point> initialPoints;
+	protected ContainerCostCalculator costCalculator;
 
 	public ControlledContainerItem(Container container, int count) {
 		super(container, count);
@@ -59,7 +61,15 @@ public class ControlledContainerItem extends ContainerItem {
 	public ManifestControlsBuilderFactory getBoxItemControlsBuilderFactory() {
 		return manifestControlsBuilderFactory;
 	}
-
+	
+	public void setCostCalculator(ContainerCostCalculator calculator) {
+		this.costCalculator = calculator;
+	}
+	
+	public ContainerCostCalculator getCostCalculator() {
+		return costCalculator;
+	}
+	
 	public ManifestControls createBoxItemControls(Container container, Stack stack, BoxItemSource boxItemSource, PointSource points, BoxItemGroupSource groups) {
 		if(manifestControlsBuilderFactory == null) {
 			return new DefaultManifestControls(boxItemSource);
@@ -83,6 +93,10 @@ public class ControlledContainerItem extends ContainerItem {
 				.withBoxItems(boxItemSource)
 				.withPoints(points)
 				.build();
+	}
+	
+	public boolean hasCostCalculator() {
+		return costCalculator != null;
 	}
 	
 	public boolean hasPointControlsBuilderFactory() {

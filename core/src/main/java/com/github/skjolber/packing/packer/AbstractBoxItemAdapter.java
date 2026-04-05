@@ -16,7 +16,7 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	protected final PackagerInterruptSupplier interrupt;
 	protected final Order order;
 
-	public AbstractBoxItemAdapter(List<BoxItem> boxItems, Order order, ContainerItemsCalculator packagerContainerItems, PackagerInterruptSupplier interrupt) {
+	public AbstractBoxItemAdapter(List<BoxItem> boxItems, Order order, ContainerItemLoadsCalculator packagerContainerItems, PackagerInterruptSupplier interrupt) {
 		super(packagerContainerItems);
 		
 		this.order = order;
@@ -34,7 +34,7 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	@Override
 	public IntermediatePackagerResult attempt(int index, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		try {
-			ControlledContainerItem containerItem = packagerContainerItems.getContainerItem(index);
+			ControlledContainerItem containerItem = containerItemsCalculator.getContainerItem(index);
 			return pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig);
 		} finally {
 			for(BoxItem boxItem : remainingBoxItems) {
@@ -45,12 +45,12 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	
 	@Override
 	public ControlledContainerItem getContainerItem(int index) {
-		return packagerContainerItems.getContainerItem(index);
+		return containerItemsCalculator.getContainerItem(index);
 	}
 
 	@Override
 	public Container accept(IntermediatePackagerResult result) {
-		Container container = packagerContainerItems.toContainer(result.getContainerItem(), result.getStack());
+		Container container = containerItemsCalculator.toContainer(result.getContainerItem(), result.getStack());
 
 		Stack stack = container.getStack();
 
@@ -73,8 +73,8 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	}
 
 	@Override
-	public List<Integer> getContainers(int maxCount) {
-		return packagerContainerItems.getContainers(remainingBoxItems, maxCount);
+	public ContainerItemLoadCalculations getContainers(int maxCount) {
+		return containerItemsCalculator.getContainers(remainingBoxItems, maxCount);
 	}
 
 	@Override
