@@ -45,7 +45,7 @@ public interface PackagerResultBuilder {
 
 	PackagerResultBuilder withContainerItems(ContainerItem... containers);
 
-	PackagerResultBuilder withContainerItemsSortOrder();
+	PackagerResultBuilder withContainerItemsSort();
 
 	/**
 	 * 
