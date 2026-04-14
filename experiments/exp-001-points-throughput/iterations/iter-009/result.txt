@@ -1,0 +1,3 @@
+2486.648 ops/s (2D)  2846.171 ops/s (3D)
+combined: 2666.4 ops/s  delta: +2.67% vs baseline 2597
+decision: KEEP (new best, exceeds iter-007 combined 2653)
