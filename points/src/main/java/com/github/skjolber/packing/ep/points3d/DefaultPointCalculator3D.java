@@ -635,10 +635,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	protected void updateIndexes(Point3DFlagList values) {
 		for(int i = 0; i < values.size(); i++) {
-			SimplePoint3D simplePoint3D = values.get(i);
-			if(simplePoint3D.getIndex() != i) {
-				simplePoint3D.setIndex(i);
-			}
+			values.get(i).setIndex(i);
 		}
 	}
 
