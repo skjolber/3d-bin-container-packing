@@ -302,7 +302,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 		if(!moveToXX.isEmpty()) {
 			xxComparator.setValues(values);
-			moveToXX.sortThis(xxComparator);
+			moveToXX.insertionSortThis(xxComparator);
 
 			int moveToXXSize = moveToXX.size();
 			int targetIndex = endIndex;
@@ -346,7 +346,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 		if(!moveToYY.isEmpty()) {
 			yyComparator.setValues(values);
-			moveToYY.sortThis(yyComparator);
+			moveToYY.insertionSortThis(yyComparator);
 
 			add: for (int i = 0; i < moveToYY.size(); i++) {
 				int currentIndex = moveToYY.get(i);
