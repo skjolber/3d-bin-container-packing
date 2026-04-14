@@ -1,0 +1,88 @@
+# Profile Snapshot — iter-002
+
+## 2D Hot Path: DefaultPointCalculator2D.add()
+
+Key operations per call (approximate call frequency):
+1. Main scan loop [pointIndex..endIndex):          O(endIndex)
+2. moveToXX.sortThis(COMPARATOR_MOVE_TO_XX):       O(k log k), k = moveToXX.size ≈ 0-5
+3. Build addXX (eclipse check inner loop):         O(k²) worst case, k small
+4. moveToYY.sortThis(COMPARATOR_MOVE_TO_YY):       O(k log k), k small
+5. Build addYY (eclipse check inner loop):         O(k²) worst case, k small
+6. constrainMax/constrainFloatingMax:              O(endIndex)
+7. values.removeFlagged() × 2:                    O(values.size()) × 2
+8. values.move(added):                            O(values.size())  [System.arraycopy]
+9. removeEclipsed(added):                         O(added × size), added small
+10. ** values.sort(COMPARATOR_X_THEN_Y, endIndex): O(endIndex × log(endIndex)) **
+11. updateIndexes():                              O(values.size())
+
+→ The **sort on line 462** is the dominant O(n log n) cost.
+
+## Why the Sort Is Expensive
+
+Before the sort, the array layout is:
+  [0..newAdded-1]      : new points (addYY then addXX, after eclipse removal)
+  [newAdded..endIndex-1]: old sorted tail
+
+Tim Sort sees a mostly-sorted array with a few unsorted elements at the FRONT.
+However, the new points have HIGHER x values than many old sorted points
+(addXX has minX=xx=large, addYY has minY=yy=large but minX varies).
+This forces Tim Sort to do significant O(endIndex * log(endIndex)) work.
+
+## Key Invariants Discovered
+
+1. addYY points ALL have minX < xx:
+   - Source points have minX in [pointIndex..endIndex) with minX <= absoluteEndX = xx-1
+   - moveY preserves minX, so addYY.minX < xx
+   - addYY is sorted by COMPARATOR_MOVE_YY = (minX asc, maxX desc, maxY desc)
+   - For same minY=yy group, COMPARATOR_MOVE_YY is IDENTICAL to COMPARATOR_X_THEN_Y
+   - So addYY IS sorted by COMPARATOR_X_THEN_Y ✓
+
+2. addXX points ALL have minX = xx:
+   - All xx points have minX = xx
+   - addXX is sorted by COMPARATOR_MOVE_XX = (minY asc, maxY desc, maxX desc)
+   - For same minX=xx group, COMPARATOR_X_THEN_Y primary is same (minY asc)
+   - Minor difference: tiebreaker order (maxX vs maxY) can differ for equal-minY pairs
+   - In practice rarely causes ordering differences; small sort of prefix is cheap insurance
+
+3. addYY PRECEDES addXX in X_THEN_Y order:
+   - All addYY have minX < xx, all addXX have minX = xx
+   - So concat([addYY sorted], [addXX sorted]) is ALMOST sorted by X_THEN_Y
+
+4. After removeFlagged(), [0..newAdded-1] preserves relative order → still two sorted segments
+
+5. [newAdded..endIndex-1] is the old sorted tail → sorted by X_THEN_Y ✓
+
+## Optimization Opportunity
+
+Replace O(endIndex × log(endIndex)) sort with:
+  Step 1: Arrays.sort([0..newAdded-1], COMPARATOR_X_THEN_Y)  → O(newAdded × log(newAdded)) ≈ O(1)
+  Step 2: Merge [0..newAdded-1] with [newAdded..endIndex-1]  → O(endIndex)
+  Total: O(endIndex) vs O(endIndex × log(endIndex))
+
+For endIndex=20, this is ~4x fewer comparison operations.
+For larger endIndex (30+), savings grow with log factor.
+
+## 3D Hot Path: DefaultPointCalculator3D.add()
+
+1. Main scan loop: O(endIndex)
+2. moveToXX/YY/ZZ sort: O(k log k), k small
+3. Build addXX/YY/ZZ with isEclipsed checks per point: O(k × otherValues.size())
+4. The constrainMax / constrainFloatingMax: O(endIndex)
+5. Main output loop (builds otherValues in sorted order): O(values.size() + added)
+6. isEclipsed() called per new point: O(otherValues.size()) per call
+7. updateIndexes(): O(otherValues.size())
+8. **NO explicit sort** – otherValues is built in sorted order during the output loop ✓
+
+The 3D path does NOT have the O(n log n) sort problem.
+Its hot path is isEclipsed() called for each new point, doing O(otherValues.size()) scan.
+
+## removeFlagged() Analysis
+
+Both 2D and 3D use a compact-in-place approach:
+- Scan all elements (O(n)), write non-flagged to front
+- This is cache-friendly and efficient – no improvement needed
+
+## Integer Boxing Analysis
+
+IntArrayList (Eclipse Collections) uses primitive int arrays – no boxing. ✓
+CustomIntArrayList (3D) also uses int[] – no boxing. ✓

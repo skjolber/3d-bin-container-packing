@@ -4,3 +4,5 @@ Last updated: 2026-04-14
 | Rank | Iteration | 2D (ops/s) | 3D (ops/s) | Combined | Delta | Strategy | Status |
 |------|-----------|------------|------------|---------|-------|----------|--------|
 | 1 | baseline | 2362 | 2832 | 2597 | — | — | Baseline |
+| — | iter-001 | 2385 | 2805 | 2595 | -0.07% | remove-updateindexes-conditional-plus-binary-search | ❌ Dropped |
+| — | iter-002 | 2319 | 2808 | 2564 | -1.27% | merge-sorted-segments-2d | ❌ Dropped |
