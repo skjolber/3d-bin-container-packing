@@ -448,13 +448,12 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		values.setAll(addYY, 0);
 		values.setAll(addXX, addYY.size());
 
-		// Pre-compact old items [added..size-1] so removeEclipsed inner loop needs no isFlag check.
-		int oldFlaggedRemoved = values.removeFlaggedFrom(added);
 		removeEclipsed(added);
 
-		// removeFlagged() now only removes eclipse-flagged new items in [0..added-1];
-		// old section is already clean from removeFlaggedFrom above.
-		endIndex += added - oldFlaggedRemoved - values.removeFlagged();
+		// Single removeFlagged pass: removes both constraint-flagged originals (F items)
+		// and eclipse-flagged new items (G items). Formula: endIndex += added - (F+G)
+		// is equivalent to applying two separate passes.
+		endIndex += added - values.removeFlagged();
 
 		// make sure to capture all point <= xx
 		while (endIndex < values.size() && values.get(endIndex).getMinX() <= xx) {
@@ -559,8 +558,9 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		// |   new    |   existing / current |
 		// |----------|----------------------|--> x
 		//
-		// Old items [limit..size-1] were pre-compacted by removeFlaggedFrom(limit)
-		// before this call, so no isFlag check is needed in the inner loop.
+		// Existing items (index >= limit) may be flagged (first removeFlagged is deferred
+		// to end of add() to avoid two O(n) scans). The isFlag check in the inner loop
+		// skips flagged originals so they cannot falsely eclipse new items.
 
 		Point2DFlagList values = this.values;
 
@@ -575,6 +575,9 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			final long unsortedArea = unsorted.getArea();
 
 			for (int index = limit; index < size; index++) {
+				if(values.isFlag(index)) {
+					continue;
+				}
 				Point2D sorted = values.get(index);
 				if(sorted.getMinX() > unsortedMinX) {
 					// so sorted cannot contain unsorted

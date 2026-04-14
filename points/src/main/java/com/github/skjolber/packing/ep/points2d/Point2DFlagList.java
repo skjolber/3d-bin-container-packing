@@ -155,23 +155,6 @@ public class Point2DFlagList implements Iterable<Point> {
 		return index - offset;
 	}
 
-	public int removeFlaggedFrom(int fromIndex) {
-		int offset = fromIndex;
-		int index = fromIndex;
-		while (index < size) {
-			if(flag[index]) {
-				flag[index] = false;
-			} else {
-				points[offset] = points[index];
-				offset++;
-			}
-			index++;
-		}
-		size = offset;
-
-		return index - offset;
-	}
-
 	public List<Point> toList() {
 		List<Point> list = new ArrayList<>();
 		for (int i = 0; i < size; i++) {
