@@ -348,7 +348,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			yyComparator.setValues(values);
 			moveToYY.sortThis(yyComparator);
 
-			add: for (int i = 0; i < moveToYY.size(); i++) {
+			int moveToYYSize = moveToYY.size();
+			add: for (int i = 0; i < moveToYYSize; i++) {
 				int currentIndex = moveToYY.get(i);
 
 				SimplePoint3D p = values.get(currentIndex);
@@ -395,7 +396,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		    // which should be the case here, i.e. sorted by x, y, z.
 			moveToZZ.insertionSortThis(zzComparator);
 
-			add: for (int i = 0; i < moveToZZ.size(); i++) {
+			int moveToZZSize = moveToZZ.size();
+			add: for (int i = 0; i < moveToZZSize; i++) {
 				int currentIndex = moveToZZ.get(i);
 
 				SimplePoint3D p = values.get(currentIndex);
@@ -657,12 +659,15 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		// otherValues is built in non-decreasing minX order; once minX exceeds
 		// point.minX no subsequent element can eclipse point (eclipses() requires minX <= point.minX)
 		final int pointMinX = point.getMinX();
-		for (int index = 0; index < otherValues.size(); index++) {
+		final long pointVolume = point.getVolume();
+		final long pointArea = point.getArea();
+		final int n = otherValues.size();
+		for (int index = 0; index < n; index++) {
 			SimplePoint3D otherValue = otherValues.get(index);
 			if (otherValue.getMinX() > pointMinX) {
 				break;
 			}
-			if(point.getVolume() <= otherValue.getVolume() && point.getArea() <= otherValue.getArea()) {
+			if(pointVolume <= otherValue.getVolume() && pointArea <= otherValue.getArea()) {
 				if(otherValue.eclipses(point)) {
 					// discard 
 					return true;
@@ -674,12 +679,14 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	private boolean isEclipsedAtXX(SimplePoint3D point, int xx) {
 		// check if one of the existing values contains the new value
+		final long pointVolume = point.getVolume();
+		final long pointArea = point.getArea();
 		for (int index = otherValues.size() - 1; index >= 0; index--) {
 			SimplePoint3D otherValue = otherValues.get(index);
 			if(otherValue.getMinX() < xx) {
 				return false;
 			}
-			if(point.getVolume() <= otherValue.getVolume() && point.getArea() <= otherValue.getArea()) {
+			if(pointVolume <= otherValue.getVolume() && pointArea <= otherValue.getArea()) {
 				if(otherValue.eclipses(point)) {
 					// discard 
 					return true;
