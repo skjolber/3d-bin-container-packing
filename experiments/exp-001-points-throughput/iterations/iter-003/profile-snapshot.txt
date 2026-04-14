@@ -1,0 +1,84 @@
+# Profile Snapshot — iter-003
+
+## Key Focus: isEclipsed() in DefaultPointCalculator3D
+
+### Method under investigation (lines 655-668)
+```java
+private boolean isEclipsed(SimplePoint3D point) {
+    // check if one of the existing values contains the new value
+    for (int index = 0; index < otherValues.size(); index++) {
+        SimplePoint3D otherValue = otherValues.get(index);
+        if(point.getVolume() <= otherValue.getVolume() && point.getArea() <= otherValue.getArea()) {
+            if(otherValue.eclipses(point)) {
+                // discard 
+                return true;
+            }
+        }
+    }
+    return false;
+}
+```
+This method scans ALL of otherValues each call. No early-exit based on sorted order.
+
+### Is otherValues sorted by minX?
+
+The output assembly loop (lines 478-600) populates otherValues in two phases:
+
+**Phase 1 – first loop (i = 0..endIndex-1):**
+- For each i, adds: addZZ[i], addYY[i], values[i], constrainXX[i], constrainYY[i], constrainZZ[i]
+- addZZ[i].minX = values[i].minX  (moveZ preserves minX)
+- addYY[i].minX = values[i].minX  (moveY preserves minX)
+- constrainXX/YY/ZZ[i].minX = values[i].minX  (constrain only changes max)
+- Since values is sorted: values[0].minX ≤ values[1].minX ≤ … ≤ values[endIndex-1].minX
+- All elements at step i have minX = values[i].minX → non-decreasing across steps ✓
+
+**Phase 2 – second loop (i = endIndex..values.size()-1):**
+- addXX points have minX = xx (moved to placement end + 1)
+- values[i] have minX ≥ xx (since i ≥ endIndex)
+- addXX[i] points are placed at their COMPARATOR_X_THEN_Y_THEN_Z sorted position via the
+  while-loop advance (line 334). In the second output loop, iterating i = endIndex..size-1
+  interleaves addXX[i] (minX=xx) with values[i] (minX ≥ xx) in sorted order because:
+  - Any addXX point with sort-position = i is emitted just before values[i]
+  - This is exactly a merge of the two sorted sequences
+  - COMPARATOR_X_THEN_Y_THEN_Z primary key is minX → sequence of minX is non-decreasing ✓
+
+VERDICT: otherValues IS built in non-decreasing minX order. ✓
+
+### When does early-break help in isEclipsed()?
+
+Case A – First loop (i=0..endIndex-1): isEclipsed called for addZZ[i], addYY[i], constrainXX/YY/ZZ[i]
+- point.minX = values[i].minX
+- At call time, all elements already in otherValues have minX ≤ values[i-1].minX ≤ values[i].minX
+- NEVER triggers break → adds overhead of one comparison per iteration
+
+Case B – Second loop, isEclipsed called for non-supportedYZPlane addXX points (minX=xx):
+- point.minX = xx
+- otherValues at this point contains:
+    1. All first-loop elements: minX ≤ xx-1 < xx (no break)
+    2. Special endIndex elements (addZZ/addYY at endIndex): minX = values[endIndex].minX ≥ xx
+    3. Second-loop elements from prev iterations: addXX (minX=xx) + values[j] (minX ≥ xx)
+- If values[endIndex].minX > xx: break fires when reaching endIndex special elements →
+  saves scanning all second-loop portion of otherValues (could be 30-50% savings)
+- If values[endIndex].minX = xx: break fires when first values[j].minX > xx is encountered
+
+### Benefit estimation
+
+Typical scenario: size=20, endIndex=10, 3-5 non-SupportedYZPlane addXX points
+- Without break: each isEclipsed call scans ~15 elements
+- With break: each scans ~10 elements (first-loop portion) then breaks
+  → ~33% fewer comparisons for these calls
+
+First-loop overhead: extra comparison per iteration (always-false branch, well-predicted by CPU) → ~0 net overhead due to branch predictor
+
+Net effect: moderate reduction in isEclipsed work for 3D → estimated 5-12% 3D throughput gain
+
+### Existing early breaks (already present, not to be changed)
+
+- removeEclipsed() (line 882): already has `if(sorted.getMinX() > unsorted.getMinX()) break;` ✓
+- isEclipsedAtXX() (line 674): already has backward scan with early exit on minX < xx ✓
+- constrainFloatingMaxWithClone() (line 1256): already has minX > check + break ✓
+
+### Analogous opportunity in DefaultPointCalculator2D?
+
+2D uses inline eclipse checks (removeEclipsed at line 575), not a separate isEclipsed().
+That already has the early-break. No equivalent isEclipsed() method in 2D → 2D unchanged.
