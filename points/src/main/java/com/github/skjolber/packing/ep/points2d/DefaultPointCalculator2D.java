@@ -454,8 +454,10 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 		endIndex += added - values.removeFlagged();
 
-		// make sure to capture all point <= xx (binary search on the sorted tail)
-		endIndex = Point2DFlagList.binarySearchPlusMinX(values.getPoints(), endIndex, values.size(), xx);
+		// make sure to capture all point <= xx
+		while (endIndex < values.size() && values.get(endIndex).getMinX() <= xx) {
+			endIndex++;
+		}
 
 		values.sort(Point2D.COMPARATOR_X_THEN_Y, endIndex);
 
@@ -1184,7 +1186,10 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 	protected void updateIndexes(Point2DFlagList values) {
 		for(int i = 0; i < values.size(); i++) {
-			values.get(i).setIndex(i);
+			SimplePoint2D p = values.get(i);
+			if(p.getIndex() != i) {
+				p.setIndex(i);
+			}
 		}
 	}
 
