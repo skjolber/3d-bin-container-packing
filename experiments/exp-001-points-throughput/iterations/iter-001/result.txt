@@ -1,0 +1,2 @@
+PointsBenchmark2D.points2D  thrpt       2384.953          ops/s
+PointsBenchmark3D.points3D  thrpt       2805.421          ops/s
