@@ -654,9 +654,14 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	private boolean isEclipsed(SimplePoint3D point) {
 		// check if one of the existing values contains the new value
+		// otherValues is built in non-decreasing minX order; once minX exceeds
+		// point.minX no subsequent element can eclipse point (eclipses() requires minX <= point.minX)
+		final int pointMinX = point.getMinX();
 		for (int index = 0; index < otherValues.size(); index++) {
 			SimplePoint3D otherValue = otherValues.get(index);
-
+			if (otherValue.getMinX() > pointMinX) {
+				break;
+			}
 			if(point.getVolume() <= otherValue.getVolume() && point.getArea() <= otherValue.getArea()) {
 				if(otherValue.eclipses(point)) {
 					// discard 
