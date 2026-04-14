@@ -1,0 +1,56 @@
+## Code Analysis – iter-005
+
+### isEclipsedAtXX() in DefaultPointCalculator3D.java (lines 675-690)
+
+Current code (iter-003 state):
+```java
+private boolean isEclipsedAtXX(SimplePoint3D point, int xx) {
+    // check if one of the existing values contains the new value
+    for (int index = otherValues.size() - 1; index >= 0; index--) {
+        SimplePoint3D otherValue = otherValues.get(index);
+        if(otherValue.getMinX() < xx) {
+            return false;
+        }
+        if(point.getVolume() <= otherValue.getVolume() && point.getArea() <= otherValue.getArea()) {
+            if(otherValue.eclipses(point)) {
+                // discard
+                return true;
+            }
+        }
+    }
+    return false;
+}
+```
+
+### Key observations
+
+1. The loop iterates *backward* through `otherValues`, which is sorted ascending by minX.
+   - Highest minX elements are at the end (checked first in backward scan).
+   - The existing `if(otherValue.getMinX() < xx) return false;` exits early when reaching
+     elements with minX < xx (they appear at the front of the list / end of backward scan).
+
+2. The method is called for a candidate point whose `minX == xx`.
+
+3. For an element to satisfy `eclipses(point)`, a necessary condition from Eclipse is:
+   `other.minX <= point.minX`, i.e. `otherMinX <= xx`.
+
+4. Therefore, any element with `otherMinX > xx` **cannot** eclipse the point and can be
+   skipped entirely — saving the volume/area pre-check + possible eclipses() call.
+
+5. In the backward scan, elements with minX > xx appear *first* (highest minX first).
+   These are the Phase-2 derived points (constrained clones from addYY/addZZ) whose minX
+   may be larger than xx. Adding the `continue` guard skips expensive work for all of them.
+
+### DefaultPointCalculator2D.java
+
+No equivalent `isEclipsedAtXX` method found. The 2D calculator uses a different structure
+(`removeEclipsed`) without an analogous per-xx-coordinate scan. No change needed here.
+
+### Change plan
+
+In `isEclipsedAtXX()`:
+- Cache `otherValue.getMinX()` into `final int otherMinX` (replaces existing inline call)
+- Add single guard line: `if (otherMinX > xx) continue;`
+- Leave ALL other code (pre-checks, eclipses() call, return false) unchanged
+
+This is ONE atomic logical addition.
