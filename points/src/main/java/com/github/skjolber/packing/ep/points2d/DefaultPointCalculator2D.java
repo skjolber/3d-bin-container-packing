@@ -434,8 +434,6 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			}
 		}
 
-		endIndex -= values.removeFlagged();
-
 		placements.add(placement);
 
 		int added = addXX.size() + addYY.size();
@@ -452,6 +450,9 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 		removeEclipsed(added);
 
+		// Single removeFlagged pass: removes both constraint-flagged originals (F items)
+		// and eclipse-flagged new items (G items). Formula: endIndex += added - (F+G)
+		// is equivalent to applying two separate passes.
 		endIndex += added - values.removeFlagged();
 
 		// make sure to capture all point <= xx
@@ -557,9 +558,9 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		// |   new    |   existing / current |
 		// |----------|----------------------|--> x
 		//
-		// Existing items (index >= limit) are guaranteed unflagged here:
-		// values.removeFlagged() was called before new points were inserted,
-		// so no flag check is needed in the inner loop.
+		// Existing items (index >= limit) may be flagged (first removeFlagged is deferred
+		// to end of add() to avoid two O(n) scans). The isFlag check in the inner loop
+		// skips flagged originals so they cannot falsely eclipse new items.
 
 		Point2DFlagList values = this.values;
 
@@ -574,6 +575,9 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			final long unsortedArea = unsorted.getArea();
 
 			for (int index = limit; index < size; index++) {
+				if(values.isFlag(index)) {
+					continue;
+				}
 				Point2D sorted = values.get(index);
 				if(sorted.getMinX() > unsortedMinX) {
 					// so sorted cannot contain unsorted
