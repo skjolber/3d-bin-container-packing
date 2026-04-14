@@ -556,6 +556,10 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		//   unsorted        sorted
 		// |   new    |   existing / current |
 		// |----------|----------------------|--> x
+		//
+		// Existing items (index >= limit) are guaranteed unflagged here:
+		// values.removeFlagged() was called before new points were inserted,
+		// so no flag check is needed in the inner loop.
 
 		Point2DFlagList values = this.values;
 
@@ -566,18 +570,17 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				continue;
 			}
 			Point2D unsorted = values.get(i);
+			final int unsortedMinX = unsorted.getMinX();
+			final long unsortedArea = unsorted.getArea();
 
 			for (int index = limit; index < size; index++) {
-				if(values.isFlag(index)) {
-					continue;
-				}
 				Point2D sorted = values.get(index);
-				if(sorted.getMinX() > unsorted.getMinX()) {
+				if(sorted.getMinX() > unsortedMinX) {
 					// so sorted cannot contain unsorted
 					// at this index or later
 					break;
 				}
-				if(unsorted.getArea() <= sorted.getArea()) {
+				if(unsortedArea <= sorted.getArea()) {
 					if(sorted.eclipses(unsorted)) {
 						values.flag(i);
 						continue added;
