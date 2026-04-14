@@ -676,12 +676,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		// check if one of the existing values contains the new value
 		for (int index = otherValues.size() - 1; index >= 0; index--) {
 			SimplePoint3D otherValue = otherValues.get(index);
-			final int otherMinX = otherValue.getMinX();
-			if(otherMinX < xx) {
+			if(otherValue.getMinX() < xx) {
 				return false;
-			}
-			if(otherMinX > xx) {
-				continue;
 			}
 			if(point.getVolume() <= otherValue.getVolume() && point.getArea() <= otherValue.getArea()) {
 				if(otherValue.eclipses(point)) {
