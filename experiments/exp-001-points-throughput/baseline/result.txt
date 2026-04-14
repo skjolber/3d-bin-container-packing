@@ -1,0 +1,10 @@
+# Aggregation: median of 5 runs
+# 2D raw (ops/s): 2334 2358 2362 2369 2376  spread=1.8%
+# 3D raw (ops/s): 2794 2797 2832 2833 2847  spread=1.9%
+
+2D_median=2362
+3D_median=2832
+combined_avg=2597
+
+# Success target (+20% combined avg): 3116 ops/s
+# Iteration threshold (+0.5%): 2D>=2374, 3D>=2846
