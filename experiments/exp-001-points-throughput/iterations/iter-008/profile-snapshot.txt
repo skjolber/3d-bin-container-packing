@@ -1,0 +1,36 @@
+## iter-008 Code Analysis
+
+### Sort call inventory
+
+#### 3D: DefaultPointCalculator3D.java
+- Line 305: moveToXX.sortThis(xxComparator)
+  - Type: CustomIntArrayList (already), comparator: CustomIntXComparator (IntComparator)
+  - Size: number of existing points whose x-coord allows move to XX plane (~5-15)
+  - Note: moveToZZ already uses insertionSortThis() at line 396
+- Line 349: moveToYY.sortThis(yyComparator)
+  - Type: CustomIntArrayList, comparator: CustomIntYComparator (IntComparator)
+  - Size: similar to moveToXX, small (~5-15)
+- No values.sort() call in 3D; "sort" hotspot is entirely from moveToXX+moveToYY sortThis
+
+#### 2D: DefaultPointCalculator2D.java
+- Line 335: moveToXX.sortThis(COMPARATOR_MOVE_TO_XX)
+  - Type: IntArrayList (plain, NOT CustomIntArrayList)
+  - Comparator: IntComparator lambda
+  - Size: small (~5-15)
+- Line 355: moveToYY.sortThis(COMPARATOR_MOVE_TO_YY)
+  - Same as moveToXX
+- Line 463: values.sort(Point2D.COMPARATOR_X_THEN_Y, endIndex)
+  - Type: Point2DFlagList.sort(Comparator<Point2D>, int maxSize) → Arrays.sort(points, 0, maxSize, comparator)
+  - endIndex: all points with x <= placement.getAbsoluteEndX(), typically 10-40 for order 5-25 inputs
+  - THIS is likely the primary 10.1% hotspot — sorts the main values array
+
+### Key asymmetry
+- 3D moveToZZ already uses insertionSortThis, but moveToXX and moveToYY still use sortThis
+- 2D moveToXX/moveToYY use plain IntArrayList (not CustomIntArrayList), so no insertionSortThis
+- 2D values.sort() always uses Arrays.sort regardless of list size
+
+### Conclusion
+Three independent optimizations:
+A. 3D: insertionSortThis for moveToXX and moveToYY (2-line change)
+B. 2D: Change moveToXX/moveToYY to CustomIntArrayList + insertionSortThis
+C. 2D: Add insertion sort threshold in Point2DFlagList.sort(Comparator, int) for endIndex ≤ 32
