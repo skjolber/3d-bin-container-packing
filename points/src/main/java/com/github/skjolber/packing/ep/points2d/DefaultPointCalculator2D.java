@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.ep.points2d;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -47,6 +48,9 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 	protected final IntArrayList moveToYY = new IntArrayList();
 	protected final IntArrayList moveToXX = new IntArrayList();
+
+	/** Pre-allocated buffer for the half-buffered merge in add(). */
+	protected SimplePoint2D[] mergeBuf = new SimplePoint2D[16];
 
 	protected Placement containerPlacement;
 
@@ -452,14 +456,24 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 		removeEclipsed(added);
 
-		endIndex += added - values.removeFlagged();
+		int newAdded = added - values.removeFlagged();
+		endIndex += newAdded;
 
 		// make sure to capture all point <= xx
 		while (endIndex < values.size() && values.get(endIndex).getMinX() <= xx) {
 			endIndex++;
 		}
 
-		values.sort(Point2D.COMPARATOR_X_THEN_Y, endIndex);
+		// [0..newAdded-1] is a sorted-by-X_THEN_Y sequence (addYY then addXX, proven in
+		// profile-snapshot.txt). [newAdded..endIndex-1] is the pre-existing sorted tail.
+		// Merging two sorted segments is O(n) vs the O(n log n) full sort.
+		if (newAdded <= 1 || endIndex <= newAdded) {
+			// Trivially sorted or no old tail to merge with; fall back to sort.
+			values.sort(Point2D.COMPARATOR_X_THEN_Y, endIndex);
+		} else {
+			Arrays.sort(values.getPoints(), 0, newAdded, Point2D.COMPARATOR_X_THEN_Y);
+			mergeWithSortedTail(newAdded, endIndex);
+		}
 
 		moveToXX.clear();
 		moveToYY.clear();
@@ -470,6 +484,30 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		updateIndexes(values);
 
 		return !values.isEmpty();
+	}
+
+	/**
+	 * Half-buffered merge: copies [0..splitPoint-1] into mergeBuf, then merges
+	 * mergeBuf with the already-sorted [splitPoint..endIndex-1] back into [0..endIndex-1].
+	 * Stable, in-place, O(endIndex) comparisons.
+	 */
+	private void mergeWithSortedTail(int splitPoint, int endIndex) {
+		SimplePoint2D[] pts = values.getPoints();
+		if (mergeBuf.length < splitPoint) {
+			mergeBuf = new SimplePoint2D[splitPoint * 2];
+		}
+		System.arraycopy(pts, 0, mergeBuf, 0, splitPoint);
+		int i = 0, j = splitPoint, k = 0;
+		Comparator<Point2D> cmp = Point2D.COMPARATOR_X_THEN_Y;
+		while (i < splitPoint && j < endIndex) {
+			if (cmp.compare(mergeBuf[i], pts[j]) <= 0) {
+				pts[k++] = mergeBuf[i++];
+			} else {
+				pts[k++] = pts[j++];
+			}
+		}
+		// copy remaining left elements; right elements are already in the correct positions
+		System.arraycopy(mergeBuf, i, pts, k, splitPoint - i);
 	}
 
 	private void constrainMaxXWithClone(Placement placement, int pointIndex, int endIndex) {
