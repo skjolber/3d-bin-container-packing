@@ -10,8 +10,6 @@ import java.util.function.Predicate;
 import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
 import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 
-import com.github.skjolber.packing.ep.points3d.CustomIntArrayList;
-
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
@@ -47,8 +45,8 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	protected final Point2DList addXX = new Point2DList();
 	protected final Point2DList addYY = new Point2DList();
 
-	protected final CustomIntArrayList moveToYY = new CustomIntArrayList();
-	protected final CustomIntArrayList moveToXX = new CustomIntArrayList();
+	protected final IntArrayList moveToYY = new IntArrayList();
+	protected final IntArrayList moveToXX = new IntArrayList();
 
 	protected Placement containerPlacement;
 
@@ -334,7 +332,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		}
 
 		if(!moveToXX.isEmpty()) {
-			moveToXX.insertionSortThis(COMPARATOR_MOVE_TO_XX);
+			moveToXX.sortThis(COMPARATOR_MOVE_TO_XX);
 
 			add: for (int i = 0; i < moveToXX.size(); i++) {
 				SimplePoint2D p = values.get(moveToXX.get(i));
@@ -354,7 +352,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		}
 
 		if(!moveToYY.isEmpty()) {
-			moveToYY.insertionSortThis(COMPARATOR_MOVE_TO_YY);
+			moveToYY.sortThis(COMPARATOR_MOVE_TO_YY);
 
 			add: for (int i = 0; i < moveToYY.size(); i++) {
 				SimplePoint2D p = values.get(moveToYY.get(i));

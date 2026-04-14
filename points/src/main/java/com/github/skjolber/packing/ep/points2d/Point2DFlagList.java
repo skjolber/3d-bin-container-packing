@@ -216,20 +216,7 @@ public class Point2DFlagList implements Iterable<Point> {
 	}
 
 	public void sort(Comparator<Point2D> comparator, int maxSize) {
-		if (maxSize <= 1) return;
-		if (maxSize <= 32) {
-			for (int i = 1; i < maxSize; i++) {
-				SimplePoint2D key = points[i];
-				int j = i - 1;
-				while (j >= 0 && comparator.compare(points[j], key) > 0) {
-					points[j + 1] = points[j];
-					j--;
-				}
-				points[j + 1] = key;
-			}
-		} else {
-			Arrays.sort(points, 0, maxSize, comparator);
-		}
+		Arrays.sort(points, 0, maxSize, comparator);
 	}
 	
 	@Override
