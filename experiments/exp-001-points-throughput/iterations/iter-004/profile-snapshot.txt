@@ -1,0 +1,102 @@
+# iter-004 Profile Snapshot
+
+## isEclipsed() Call Sites in DefaultPointCalculator3D
+
+### isEclipsed(SimplePoint3D point) — lines 655-673
+Called at:
+- Line 484: addZZPoint3d Phase 1 (i=0..endIndex-1 range, ZZ sub-list)
+- Line 495: addYYPoint3d Phase 1 (YY sub-list)
+- Line 511: constrainXXPoint Phase 1
+- Line 519: constrainYYPoint Phase 1
+- Line 527: constrainZZPoint Phase 1
+- Line 539: addZZPoint3d at endIndex boundary
+- Line 550: addYYPoint3d at endIndex boundary
+- Line 567: addXXPoint3d Phase 2 (non-supportedYZPlane)
+- Line 594: addXXPoint3d Phase 2 at values.size() boundary (non-supportedYZPlane)
+
+Total: ~9 call sites, mostly in Phase 1.
+
+### isEclipsedAtXX(SimplePoint3D point, int xx) — lines 675-690
+Called at:
+- Line 563: addXXPoint3d Phase 2 (isSupportedYZPlane() == true)
+- Line 590: addXXPoint3d Phase 2 at values.size() (isSupportedYZPlane() == true)
+
+Total: 2 call sites, Phase 2 only.
+
+## isEclipsed() Loop Structure (post iter-003)
+
+```java
+final int pointMinX = point.getMinX();
+for (int index = 0; index < otherValues.size(); index++) {
+    SimplePoint3D otherValue = otherValues.get(index);
+    if (otherValue.getMinX() > pointMinX) break;  // early break from iter-003
+    if (point.getVolume() <= otherValue.getVolume() && point.getArea() <= otherValue.getArea()) {
+        if (otherValue.eclipses(point)) return true;  // 6 int comparisons
+    }
+}
+```
+
+Per-iteration cost:
+- 1 array bounds check + element load
+- 1 int comparison (minX break)
+- If passes break: 1 long comparison (volume pre-check) — often fails here
+- If passes volume: 1 long comparison (area pre-check)
+- If passes both: 6 int comparisons in eclipses()
+
+## isEclipsedAtXX() Loop Structure
+
+```java
+for (int index = otherValues.size() - 1; index >= 0; index--) {
+    SimplePoint3D otherValue = otherValues.get(index);
+    if (otherValue.getMinX() < xx) return false;   // stop when minX < xx
+    if (point.volume <= otherValue.volume && point.area <= otherValue.area) {
+        if (otherValue.eclipses(point)) return true;
+    }
+}
+```
+
+Key insight: point.minX == xx (moved to xx). For eclipses() to hold:
+  otherValue.minX <= point.minX = xx
+But scan only continues while otherValue.minX >= xx.
+Therefore: ONLY elements with minX == xx can eclipse point.
+Elements with minX > xx: otherValue.minX > xx = point.minX → first condition of eclipses() fails.
+
+These elements are scanned from the end (highest minX) but can NEVER eclipse. Current code
+wastes volume+area+eclipses checks on all of them. Adding `if(otherMinX > xx) continue;`
+skips them in O(1).
+
+## eclipses() Method (Point.java lines 434-444)
+```java
+public boolean eclipses(Point point) {
+    return minX <= point.getMinX() &&   // condition 1
+           point.getMaxX() <= maxX &&   // condition 2
+           minY <= point.getMinY() &&   // condition 3
+           point.getMaxY() <= maxY &&   // condition 4
+           minZ <= point.getMinZ() &&   // condition 5
+           point.getMaxZ() <= maxZ;     // condition 6
+}
+```
+
+In isEclipsed(): after break, otherValue.minX <= pointMinX → condition 1 is ALWAYS TRUE.
+In isEclipsedAtXX() after the continue: otherMinX == xx == pointMinX → condition 1 ALWAYS TRUE.
+Both cases: condition 1 is redundant and can be removed when inlining.
+
+## Volume/Area Pre-Check Analysis
+
+Pre-check: `point.volume <= other.volume && point.area <= other.area`
+- These are 64-bit (long) comparisons vs int comparisons in eclipses()
+- For addZZ/addYY points (moved from existing value points): they have smaller X/Y/Z extents
+  compared to original otherValues elements → volume pre-check usually PASSES (not filtering)
+- Pre-check adds 1-2 long comparisons overhead without filtering benefit for these cases
+- Removing pre-check and inlining eclipse conditions (5 int comparisons) is cleaner
+
+## Plan for iter-004 Optimizations
+
+1. isEclipsed(): cache all 6 point fields before loop, cache size(),
+   remove volume/area pre-check, inline eclipse without redundant minX check.
+
+2. isEclipsedAtXX(): cache point fields, add `if(otherMinX > xx) continue` to skip
+   non-eclipsing elements, remove volume/area pre-check, inline eclipse check.
+
+3. removeEclipsed() in DefaultPointCalculator2D: cache unsorted point fields,
+   remove area pre-check, inline eclipse check (skip redundant minX condition).
