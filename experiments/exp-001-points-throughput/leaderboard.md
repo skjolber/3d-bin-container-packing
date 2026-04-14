@@ -13,3 +13,4 @@ Last updated: 2026-04-15
 | — | iter-002 | 2319 | 2808 | 2564 | -1.27% | merge-sorted-segments-2d | ❌ Dropped |
 | — | iter-005 | 2407 | 2781 | 2594 | -0.12% | isEclipsedAtXX-skip-only | ❌ Dropped |
 | — | iter-004 | 2387 | 2734 | 2560 | -1.42% | eclipse-check-inline-and-isEclipsedAtXX-skip | ❌ Dropped |
+| — | iter-010 | 2336 | 2780 | 2558 | -1.50% | pre-compact-before-removeeclipsed | ❌ Dropped |

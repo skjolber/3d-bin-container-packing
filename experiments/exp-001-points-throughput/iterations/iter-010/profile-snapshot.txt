@@ -1,0 +1,84 @@
+## iter-010 Code Analysis
+
+### removeEclipsed() inner loop structure (lines 577-580)
+
+```
+for (int index = limit; index < size; index++) {
+    if(values.isFlag(index)) {    // ← THE BRANCH WE WANT TO REMOVE
+        continue;
+    }
+    Point2D sorted = values.get(index);
+    if(sorted.getMinX() > unsortedMinX) { break; }
+    ...
+}
+```
+
+The inner loop iterates over old items [limit..size-1]. Some of those items are flagged
+(source point, swallowed points, constrained points). The isFlag check skips them.
+
+### Why items in [limit..size-1] are flagged at time of removeEclipsed call
+
+The call sequence in add() is:
+  1. values.flag(index)          - flags the source point
+  2. values.flag(i) (inner loop) - flags swallowed/shadowed points (within placement)
+  3. constrainMaxX/Y             - may flag additional out-of-area points
+  4. values.move(added)          - shifts all old items to [added..size-1]
+  5. values.setAll(addYY, 0)     - puts new items [0..addYY.size-1], flag=false
+  6. values.setAll(addXX, ...)   - puts new items [addYY..added-1], flag=false
+  7. removeEclipsed(added)       ← inner loop needs isFlag check
+  8. endIndex += added - values.removeFlagged()  ← deferred from iter-007
+
+### Point2DFlagList.removeFlagged() — existing method (line 141-156)
+Compacts [0..size-1], returns count removed. O(n).
+
+### Does Point2DFlagList have a partial removeFlagged? NO.
+`removeFlagged()` always scans all [0..size-1].
+There is no `removeFlaggedFrom(fromIndex)` method.
+
+### Feasibility of Approach A: removeFlaggedFrom before removeEclipsed
+
+1. Add `removeFlaggedFrom(int fromIndex)` to Point2DFlagList
+   - Compacts [fromIndex..size-1], returns count removed
+   - ~12 lines
+
+2. In add(), before removeEclipsed:
+   `int oldFlaggedRemoved = values.removeFlaggedFrom(added);`
+   - This compacts [added..size-1]: flagged old items are removed
+   - Cost: O(size - added) = O(n_old_items)
+
+3. Remove inner isFlag check from removeEclipsed inner loop (3 lines removed)
+   - [added..size-1] is now guaranteed clean
+   - O(n²) inner loop is branch-free for the flag check
+
+4. Adjust endIndex formula:
+   Old: `endIndex += added - values.removeFlagged();`
+   New: `endIndex += added - oldFlaggedRemoved - values.removeFlagged();`
+   - removeFlagged() now only removes items flagged by removeEclipsed in [0..added-1]
+   - [added..size-1] is clean → removeFlagged() scans them but removes nothing there
+   - Total removed = oldFlaggedRemoved + newRemoved (from eclipse check) = same as before
+
+### Correctness proof
+Before: removeFlagged() removes (F_old + F_new) items where F_old = flagged in old section,
+        F_new = flagged in new section (eclipsed new items)
+After:  removeFlaggedFrom(added) removes F_old items, then removeFlagged() removes F_new items.
+        Total = F_old + F_new = same as before. ✓
+
+The early-break `if(sorted.getMinX() > unsortedMinX) break` still valid after compaction
+because removeFlaggedFrom preserves order of non-flagged items in [added..size-1]. ✓
+
+### Line count estimate
+- Point2DFlagList: +12 lines (new method)
+- add(): +1 line (declaration), modify 1 line (formula) = net +2 lines
+- removeEclipsed(): -3 lines (remove isFlag block)
+Total: ~11 net lines. UNDER the 15-line threshold. ✓
+
+### Expected benefit
+The inner loop of removeEclipsed is the 13.5% RUNNABLE hotspot in 2D.
+Removing the isFlag branch:
+- Eliminates a branch + potential pipeline stall on every inner iteration
+- Branch miss rate could be significant (10-30% of old items are flagged in typical cases)
+- Cost: one O(n) pass before removeEclipsed (but removeFlagged was already O(n))
+- Net: same O(n) work, but inner O(n²) loop is branch-free
+
+Expected gain: 1-3% on 2D (13.5% hotspot, branch removed from critical path).
+3D is unaffected (removeEclipsed is a 2D-only method).
