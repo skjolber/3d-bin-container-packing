@@ -657,25 +657,16 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		// otherValues is built in non-decreasing minX order; once minX exceeds
 		// point.minX no subsequent element can eclipse point (eclipses() requires minX <= point.minX)
 		final int pointMinX = point.getMinX();
-		final int pointMaxX = point.getMaxX();
-		final int pointMinY = point.getMinY();
-		final int pointMaxY = point.getMaxY();
-		final int pointMinZ = point.getMinZ();
-		final int pointMaxZ = point.getMaxZ();
-		final int n = otherValues.size();
-		for (int index = 0; index < n; index++) {
+		for (int index = 0; index < otherValues.size(); index++) {
 			SimplePoint3D otherValue = otherValues.get(index);
 			if (otherValue.getMinX() > pointMinX) {
 				break;
 			}
-			// otherValue.minX <= pointMinX is guaranteed by the break above;
-			// inline eclipses() skipping that redundant first condition
-			if (pointMaxX <= otherValue.getMaxX() &&
-					otherValue.getMinY() <= pointMinY &&
-					pointMaxY <= otherValue.getMaxY() &&
-					otherValue.getMinZ() <= pointMinZ &&
-					pointMaxZ <= otherValue.getMaxZ()) {
-				return true;
+			if(point.getVolume() <= otherValue.getVolume() && point.getArea() <= otherValue.getArea()) {
+				if(otherValue.eclipses(point)) {
+					// discard 
+					return true;
+				}
 			}
 		}
 		return false;
@@ -683,30 +674,16 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	private boolean isEclipsedAtXX(SimplePoint3D point, int xx) {
 		// check if one of the existing values contains the new value
-		// point.minX == xx; eclipses() requires otherValue.minX <= xx,
-		// so only elements with minX == xx can eclipse (not minX > xx)
-		final int pointMaxX = point.getMaxX();
-		final int pointMinY = point.getMinY();
-		final int pointMaxY = point.getMaxY();
-		final int pointMinZ = point.getMinZ();
-		final int pointMaxZ = point.getMaxZ();
 		for (int index = otherValues.size() - 1; index >= 0; index--) {
 			SimplePoint3D otherValue = otherValues.get(index);
-			final int otherMinX = otherValue.getMinX();
-			if (otherMinX < xx) {
+			if(otherValue.getMinX() < xx) {
 				return false;
 			}
-			if (otherMinX > xx) {
-				// otherMinX > point.minX (=xx): first condition of eclipses() fails
-				continue;
-			}
-			// otherMinX == xx == pointMinX: minX condition satisfied, inline rest of eclipses()
-			if (pointMaxX <= otherValue.getMaxX() &&
-					otherValue.getMinY() <= pointMinY &&
-					pointMaxY <= otherValue.getMaxY() &&
-					otherValue.getMinZ() <= pointMinZ &&
-					pointMaxZ <= otherValue.getMaxZ()) {
-				return true;
+			if(point.getVolume() <= otherValue.getVolume() && point.getArea() <= otherValue.getArea()) {
+				if(otherValue.eclipses(point)) {
+					// discard 
+					return true;
+				}
 			}
 		}
 		return false;

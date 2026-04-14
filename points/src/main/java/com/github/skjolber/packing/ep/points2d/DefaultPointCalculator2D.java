@@ -566,28 +566,22 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				continue;
 			}
 			Point2D unsorted = values.get(i);
-			final int unsortedMinX = unsorted.getMinX();
-			final int unsortedMinY = unsorted.getMinY();
-			final int unsortedMaxX = unsorted.getMaxX();
-			final int unsortedMaxY = unsorted.getMaxY();
 
 			for (int index = limit; index < size; index++) {
 				if(values.isFlag(index)) {
 					continue;
 				}
 				Point2D sorted = values.get(index);
-				if(sorted.getMinX() > unsortedMinX) {
+				if(sorted.getMinX() > unsorted.getMinX()) {
 					// so sorted cannot contain unsorted
 					// at this index or later
 					break;
 				}
-				// sorted.minX <= unsortedMinX guaranteed by break above;
-				// inline eclipses() skipping that redundant minX condition
-				if (sorted.getMinY() <= unsortedMinY &&
-						unsortedMaxX <= sorted.getMaxX() &&
-						unsortedMaxY <= sorted.getMaxY()) {
-					values.flag(i);
-					continue added;
+				if(unsorted.getArea() <= sorted.getArea()) {
+					if(sorted.eclipses(unsorted)) {
+						values.flag(i);
+						continue added;
+					}
 				}
 			}
 
