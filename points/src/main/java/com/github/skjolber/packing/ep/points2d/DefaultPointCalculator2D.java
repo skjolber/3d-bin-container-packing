@@ -433,6 +433,9 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				constrainFloatingMax(placement, endIndex);
 			}
 		}
+		
+		// TODO if many points are flagged, it may pay off to clean up here
+		// endIndex -= values.removeFlagged();
 
 		placements.add(placement);
 
