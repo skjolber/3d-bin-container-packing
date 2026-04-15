@@ -37,7 +37,7 @@ public class PointsBenchmark2D {
 			}
 			size += extremePoints2D.getPlacements().size();
 			
-			extremePoints2D.redo();
+			extremePoints2D.clear();
 		}
 		
 		return size;
