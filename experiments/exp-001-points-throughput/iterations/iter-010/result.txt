@@ -1,8 +1,0 @@
-Benchmark                   Mode  Cnt       Score   Error  Units
-PointsBenchmark2D.points2D  thrpt       2336.046          ops/s
-PointsBenchmark3D.points3D  thrpt       2780.814          ops/s
-
-combined_avg = (2336 + 2780) / 2 = 2558 ops/s
-delta_vs_baseline = (2558 - 2597) / 2597 * 100 = -1.50%
-threshold = 2610 ops/s
-decision = DROP (2558 < 2610)

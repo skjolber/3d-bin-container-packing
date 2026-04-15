@@ -1,6 +1,0 @@
-2D: 2458 ops/s
-3D: 2755 ops/s
-combined: 2606.5 ops/s
-delta_vs_baseline: +0.37%
-delta_vs_iter007: -1.75%
-decision: DROP (combined 2606.5 < threshold 2610)
