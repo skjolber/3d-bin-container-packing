@@ -2,7 +2,6 @@ package com.github.skjolber.packing.ep.points3d;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
 
 import com.github.skjolber.packing.api.point.Point;
 
@@ -10,14 +9,13 @@ import com.github.skjolber.packing.api.point.Point;
  * Computes the extreme points representing the remaining free space within a 3D container
  * after accounting for a set of pre-placed obstacles.
  *
- * <p>An extreme point is a corner of the free space where a new box can potentially be
- * placed. Candidates are generated from the coordinate intersections of obstacle faces
- * and the container origin, filtered to remove occupied positions, and then reduced by
- * eclipse removal (a point whose free space is fully contained within another point's
- * free space is discarded).</p>
+ * <p>Starts from a single point covering the full container and processes each obstacle
+ * in turn via {@link ExtremePointIteration3D}, which projects the current points onto the
+ * obstacle's faces, removes occupied positions, tightens bounds, and eliminates eclipsed
+ * points. The result after all obstacles have been processed is the set of corners where
+ * a new box could be placed.</p>
  *
- * <p>Obstacles need not be in any particular order. They must not overlap each other or
- * extend outside the container.</p>
+ * <p>Obstacles need not be in any particular order.</p>
  */
 public class ExtremePointsCalculator3D {
 
@@ -61,20 +59,15 @@ public class ExtremePointsCalculator3D {
 		int endZ() { return z + dz - 1; }
 	}
 
+	private final ExtremePointIteration3D iteration = new ExtremePointIteration3D();
+
 	/**
 	 * Computes the extreme points of the free space remaining in a container after
 	 * placing all obstacles.
 	 *
-	 * <p>The algorithm:</p>
-	 * <ol>
-	 *   <li>Collect candidate coordinates on each axis: the container origin (0) plus the
-	 *       coordinate immediately beyond each obstacle's far face.</li>
-	 *   <li>For each coordinate triple, skip positions occupied by any obstacle.</li>
-	 *   <li>For surviving positions, compute the tightest bounding box: how far a box
-	 *       placed there can extend in each direction before hitting an obstacle or wall.</li>
-	 *   <li>Remove eclipsed points: if one point's free-space bounding box fully contains
-	 *       another's, the smaller one is redundant and is discarded.</li>
-	 * </ol>
+	 * <p>Starts from a single origin point that covers the full container, then applies
+	 * each obstacle via {@link ExtremePointIteration3D}. After each obstacle, eclipsed
+	 * points are eliminated so the set stays compact.</p>
 	 *
 	 * @param containerDx container size in x
 	 * @param containerDy container size in y
@@ -83,126 +76,16 @@ public class ExtremePointsCalculator3D {
 	 * @return non-eclipsed extreme points representing the remaining free space
 	 */
 	public List<Point> calculate(int containerDx, int containerDy, int containerDz, List<Obstacle> obstacles) {
-		int maxX = containerDx - 1;
-		int maxY = containerDy - 1;
-		int maxZ = containerDz - 1;
+		List<Point> points = new ArrayList<>();
+		points.add(new DefaultPoint3D(0, 0, 0, containerDx - 1, containerDy - 1, containerDz - 1));
 
-		int[] xs = candidateCoordinates(obstacles, containerDx, 0);
-		int[] ys = candidateCoordinates(obstacles, containerDy, 1);
-		int[] zs = candidateCoordinates(obstacles, containerDz, 2);
+		List<Obstacle> accumulated = new ArrayList<>(obstacles.size());
 
-		List<Point> result = new ArrayList<>();
-
-		for (int cx : xs) {
-			for (int cy : ys) {
-				for (int cz : zs) {
-					if (isOccupied(cx, cy, cz, obstacles)) {
-						continue;
-					}
-					int pointMaxX = computeMaxX(cx, cy, cz, maxX, obstacles);
-					int pointMaxY = computeMaxY(cx, cy, cz, maxY, obstacles);
-					int pointMaxZ = computeMaxZ(cx, cy, cz, maxZ, obstacles);
-					result.add(new DefaultPoint3D(cx, cy, cz, pointMaxX, pointMaxY, pointMaxZ));
-				}
-			}
+		for (Obstacle obstacle : obstacles) {
+			accumulated.add(obstacle);
+			points = iteration.calculate(points, obstacle, accumulated, containerDx, containerDy, containerDz);
 		}
 
-		removeEclipsed(result);
-		return result;
-	}
-
-	/**
-	 * Builds the sorted, deduplicated set of candidate coordinates along one axis.
-	 *
-	 * @param axis 0 = x, 1 = y, 2 = z
-	 */
-	private int[] candidateCoordinates(List<Obstacle> obstacles, int containerSize, int axis) {
-		TreeSet<Integer> set = new TreeSet<>();
-		set.add(0);
-		for (Obstacle o : obstacles) {
-			int face = (axis == 0) ? (o.x + o.dx) : (axis == 1) ? (o.y + o.dy) : (o.z + o.dz);
-			if (face < containerSize) {
-				set.add(face);
-			}
-		}
-		int[] result = new int[set.size()];
-		int i = 0;
-		for (int v : set) {
-			result[i++] = v;
-		}
-		return result;
-	}
-
-	private boolean isOccupied(int cx, int cy, int cz, List<Obstacle> obstacles) {
-		for (Obstacle o : obstacles) {
-			if (cx >= o.x && cx <= o.endX()
-					&& cy >= o.y && cy <= o.endY()
-					&& cz >= o.z && cz <= o.endZ()) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/** Returns the largest maxX reachable from cx without entering any obstacle. */
-	private int computeMaxX(int cx, int cy, int cz, int containerMaxX, List<Obstacle> obstacles) {
-		int max = containerMaxX;
-		for (Obstacle o : obstacles) {
-			if (o.x > cx && cy >= o.y && cy <= o.endY() && cz >= o.z && cz <= o.endZ()) {
-				max = Math.min(max, o.x - 1);
-			}
-		}
-		return max;
-	}
-
-	private int computeMaxY(int cx, int cy, int cz, int containerMaxY, List<Obstacle> obstacles) {
-		int max = containerMaxY;
-		for (Obstacle o : obstacles) {
-			if (o.y > cy && cx >= o.x && cx <= o.endX() && cz >= o.z && cz <= o.endZ()) {
-				max = Math.min(max, o.y - 1);
-			}
-		}
-		return max;
-	}
-
-	private int computeMaxZ(int cx, int cy, int cz, int containerMaxZ, List<Obstacle> obstacles) {
-		int max = containerMaxZ;
-		for (Obstacle o : obstacles) {
-			if (o.z > cz && cx >= o.x && cx <= o.endX() && cy >= o.y && cy <= o.endY()) {
-				max = Math.min(max, o.z - 1);
-			}
-		}
-		return max;
-	}
-
-	/**
-	 * Removes points whose free-space bounding box is fully contained within another
-	 * point's bounding box (eclipse removal).
-	 */
-	private void removeEclipsed(List<Point> points) {
-		int size = points.size();
-		boolean[] eclipsed = new boolean[size];
-
-		for (int i = 0; i < size; i++) {
-			if (eclipsed[i]) {
-				continue;
-			}
-			Point pi = points.get(i);
-			for (int j = 0; j < size; j++) {
-				if (i == j || eclipsed[j]) {
-					continue;
-				}
-				if (points.get(j).eclipses(pi)) {
-					eclipsed[i] = true;
-					break;
-				}
-			}
-		}
-
-		for (int i = size - 1; i >= 0; i--) {
-			if (eclipsed[i]) {
-				points.remove(i);
-			}
-		}
+		return points;
 	}
 }
