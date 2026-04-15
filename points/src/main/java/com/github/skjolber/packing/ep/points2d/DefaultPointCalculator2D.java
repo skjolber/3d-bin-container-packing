@@ -345,6 +345,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 					}
 				}
 
+				// check that moving the point to xx does not make it eclipsed by others
 				if(isEclipsedAt(xx, p.getMinY(), p.getMaxX(), p.getMaxY(), endIndex)) {
 					continue add;
 				}
@@ -370,6 +371,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 					}
 				}
 
+				// check that moving the point to yy does not make it eclipsed by others
 				if(isEclipsedAt(p.getMinX(), yy, p.getMaxX(), p.getMaxY(), endIndex)) {
 					continue add;
 				}
