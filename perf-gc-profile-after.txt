@@ -1,0 +1,139 @@
+# JMH version: 1.37
+# VM version: JDK 25.0.2, OpenJDK 64-Bit Server VM, 25.0.2+10
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: <none>
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 1 iterations, 10 s each
+# Measurement: 1 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.github.skjolber.packing.jmh.ep.PointsBenchmark2D.points2D
+
+# Run progress: 0,00% complete, ETA 00:02:40
+# Warmup Fork: 1 of 1
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/thomas/git/3d-bin-container-packing2/jmh/target/benchmark.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: 2848,355 ops/s
+Iteration   1: 2428,710 ops/s
+                 gc.alloc.rate:      1388,486 MB/sec
+                 gc.alloc.rate.norm: 599472,096 B/op
+                 gc.count:           48,000 counts
+                 gc.time:            24,000 ms
+
+
+# Run progress: 25,00% complete, ETA 00:02:00
+# Fork: 1 of 1
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/thomas/git/3d-bin-container-packing2/jmh/target/benchmark.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: 2848,348 ops/s
+Iteration   1: 2429,894 ops/s
+                 gc.alloc.rate:      1389,164 MB/sec
+                 gc.alloc.rate.norm: 599472,098 B/op
+                 gc.count:           48,000 counts
+                 gc.time:            24,000 ms
+
+
+
+Result "com.github.skjolber.packing.jmh.ep.PointsBenchmark2D.points2D":
+  2429,894 ops/s
+
+Secondary result "com.github.skjolber.packing.jmh.ep.PointsBenchmark2D.points2D:gc.alloc.rate":
+  1389,164 MB/sec
+
+Secondary result "com.github.skjolber.packing.jmh.ep.PointsBenchmark2D.points2D:gc.alloc.rate.norm":
+  599472,098 B/op
+
+Secondary result "com.github.skjolber.packing.jmh.ep.PointsBenchmark2D.points2D:gc.count":
+  48,000 counts
+
+Secondary result "com.github.skjolber.packing.jmh.ep.PointsBenchmark2D.points2D:gc.time":
+  24,000 ms
+
+
+# JMH version: 1.37
+# VM version: JDK 25.0.2, OpenJDK 64-Bit Server VM, 25.0.2+10
+# VM invoker: /usr/lib/jvm/java-25-openjdk/bin/java
+# VM options: <none>
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 1 iterations, 10 s each
+# Measurement: 1 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.github.skjolber.packing.jmh.ep.PointsBenchmark3D.points3D
+
+# Run progress: 50,00% complete, ETA 00:01:20
+# Warmup Fork: 1 of 1
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/thomas/git/3d-bin-container-packing2/jmh/target/benchmark.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: 3006,319 ops/s
+Iteration   1: 2848,827 ops/s
+                 gc.alloc.rate:      1564,154 MB/sec
+                 gc.alloc.rate.norm: 575728,083 B/op
+                 gc.count:           54,000 counts
+                 gc.time:            28,000 ms
+
+
+# Run progress: 75,00% complete, ETA 00:00:40
+# Fork: 1 of 1
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.openjdk.jmh.util.Utils (file:/home/thomas/git/3d-bin-container-packing2/jmh/target/benchmark.jar)
+WARNING: Please consider reporting this to the maintainers of class org.openjdk.jmh.util.Utils
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+# Warmup Iteration   1: 3002,827 ops/s
+Iteration   1: 2815,237 ops/s
+                 gc.alloc.rate:      1545,716 MB/sec
+                 gc.alloc.rate.norm: 575728,084 B/op
+                 gc.count:           53,000 counts
+                 gc.time:            28,000 ms
+
+
+
+Result "com.github.skjolber.packing.jmh.ep.PointsBenchmark3D.points3D":
+  2815,237 ops/s
+
+Secondary result "com.github.skjolber.packing.jmh.ep.PointsBenchmark3D.points3D:gc.alloc.rate":
+  1545,716 MB/sec
+
+Secondary result "com.github.skjolber.packing.jmh.ep.PointsBenchmark3D.points3D:gc.alloc.rate.norm":
+  575728,084 B/op
+
+Secondary result "com.github.skjolber.packing.jmh.ep.PointsBenchmark3D.points3D:gc.count":
+  53,000 counts
+
+Secondary result "com.github.skjolber.packing.jmh.ep.PointsBenchmark3D.points3D:gc.time":
+  28,000 ms
+
+
+# Run complete. Total time: 00:02:40
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                       Mode  Cnt       Score   Error   Units
+PointsBenchmark2D.points2D                     thrpt         2429,894           ops/s
+PointsBenchmark2D.points2D:gc.alloc.rate       thrpt         1389,164          MB/sec
+PointsBenchmark2D.points2D:gc.alloc.rate.norm  thrpt       599472,098            B/op
+PointsBenchmark2D.points2D:gc.count            thrpt           48,000          counts
+PointsBenchmark2D.points2D:gc.time             thrpt           24,000              ms
+PointsBenchmark3D.points3D                     thrpt         2815,237           ops/s
+PointsBenchmark3D.points3D:gc.alloc.rate       thrpt         1545,716          MB/sec
+PointsBenchmark3D.points3D:gc.alloc.rate.norm  thrpt       575728,084            B/op
+PointsBenchmark3D.points3D:gc.count            thrpt           53,000          counts
+PointsBenchmark3D.points3D:gc.time             thrpt           28,000              ms
