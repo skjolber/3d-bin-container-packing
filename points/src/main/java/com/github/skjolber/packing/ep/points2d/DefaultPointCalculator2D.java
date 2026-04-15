@@ -453,9 +453,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 		removeEclipsed(added);
 
-		// Single removeFlagged pass: removes both constraint-flagged originals (F items)
-		// and eclipse-flagged new items (G items). Formula: endIndex += added - (F+G)
-		// is equivalent to applying two separate passes.
+		// removes both constraint-flagged originals and eclipse-flagged new items
 		endIndex += added - values.removeFlagged();
 
 		// make sure to capture all point <= xx
@@ -560,6 +558,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		//   unsorted        sorted
 		// |   new    |   existing / current |
 		// |----------|----------------------|--> x
+		// |         limit
 		//
 		// Existing items (index >= limit) may be flagged (first removeFlagged is deferred
 		// to end of add() to avoid two O(n) scans). The isFlag check in the inner loop
