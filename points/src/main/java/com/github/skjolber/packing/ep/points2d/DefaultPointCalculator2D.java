@@ -345,6 +345,11 @@ public class DefaultPointCalculator2D implements PointCalculator {
 					}
 				}
 
+				// check that moving the point to xx does not make it eclipsed by others
+				if(isEclipsedAt(xx, p.getMinY(), p.getMaxX(), p.getMaxY(), endIndex)) {
+					continue add;
+				}
+
 				// note: the new point might shadow one of the previous points
 				SimplePoint2D moveX = p.moveX(xx, placement);
 				addXX.add(moveX);
@@ -364,6 +369,11 @@ public class DefaultPointCalculator2D implements PointCalculator {
 					if(add.eclipsesMovedY(p, yy)) {
 						continue add;
 					}
+				}
+
+				// check that moving the point to yy does not make it eclipsed by others
+				if(isEclipsedAt(p.getMinX(), yy, p.getMaxX(), p.getMaxY(), endIndex)) {
+					continue add;
 				}
 
 				SimplePoint2D moveY = p.moveY(yy, placement);
@@ -551,6 +561,25 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				}
 			}
 		}
+	}
+
+	private boolean isEclipsedAt(int minX, int minY, int maxX, int maxY, int searchFrom) {
+		// Only searches values[searchFrom..] — these are outside the placement X range and
+		// will not be constrained, so using their current bounds is safe.
+		final long area = (long)(maxX - minX + 1) * (maxY - minY + 1);
+		final Point2DFlagList values = this.values;
+		for (int i = searchFrom; i < values.size(); i++) {
+			Point2D o = values.get(i);
+			if (o.getMinX() > minX) break;
+			if (values.isFlag(i)) continue;
+			if (area <= o.getArea()) {
+				if (o.getMinX() <= minX && o.getMinY() <= minY
+						&& o.getMaxX() >= maxX && o.getMaxY() >= maxY) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	protected void removeEclipsed(int limit) {
