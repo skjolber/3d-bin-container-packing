@@ -433,8 +433,9 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				constrainFloatingMax(placement, endIndex);
 			}
 		}
-
-		endIndex -= values.removeFlagged();
+		
+		// TODO if many points are flagged, it may pay off to clean up here
+		// endIndex -= values.removeFlagged();
 
 		placements.add(placement);
 
@@ -452,6 +453,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 		removeEclipsed(added);
 
+		// removes both constraint-flagged originals and eclipse-flagged new items
 		endIndex += added - values.removeFlagged();
 
 		// make sure to capture all point <= xx
@@ -556,6 +558,11 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		//   unsorted        sorted
 		// |   new    |   existing / current |
 		// |----------|----------------------|--> x
+		// |         limit
+		//
+		// Existing items (index >= limit) may be flagged (first removeFlagged is deferred
+		// to end of add() to avoid two O(n) scans). The isFlag check in the inner loop
+		// skips flagged originals so they cannot falsely eclipse new items.
 
 		Point2DFlagList values = this.values;
 
@@ -566,18 +573,20 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				continue;
 			}
 			Point2D unsorted = values.get(i);
+			final int unsortedMinX = unsorted.getMinX();
+			final long unsortedArea = unsorted.getArea();
 
 			for (int index = limit; index < size; index++) {
 				if(values.isFlag(index)) {
 					continue;
 				}
 				Point2D sorted = values.get(index);
-				if(sorted.getMinX() > unsorted.getMinX()) {
+				if(sorted.getMinX() > unsortedMinX) {
 					// so sorted cannot contain unsorted
 					// at this index or later
 					break;
 				}
-				if(unsorted.getArea() <= sorted.getArea()) {
+				if(unsortedArea <= sorted.getArea()) {
 					if(sorted.eclipses(unsorted)) {
 						values.flag(i);
 						continue added;
