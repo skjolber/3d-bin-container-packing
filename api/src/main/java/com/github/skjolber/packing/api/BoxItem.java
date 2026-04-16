@@ -19,6 +19,9 @@ public class BoxItem implements Serializable {
 	protected int resetCount;
 	protected BoxItemGroup group;
 
+	// global sequence number as seen by the result builder
+	protected int sequenceNumber = -1;
+	
 	public BoxItem(Box box) {
 		this(box, 1);
 	}
@@ -33,11 +36,15 @@ public class BoxItem implements Serializable {
 	}
 
 	public BoxItem(Box box, int count, int index) {
+		this(box, count, index, -1);
+	}
+
+	public BoxItem(Box box, int count, int index, int sequenceNumber) {
 		super();
 		this.box = box;
 		this.count = count;
 		this.index = index;
-
+		this.sequenceNumber = sequenceNumber;
 		this.resetCount = count;
 		box.setBoxItem(this);
 	}
@@ -70,7 +77,7 @@ public class BoxItem implements Serializable {
 	}
 
 	public BoxItem clone() {
-		return new BoxItem(box, count, index);
+		return new BoxItem(box, count, index, sequenceNumber);
 	}
 
 	public void setIndex(int index) {
@@ -115,6 +122,14 @@ public class BoxItem implements Serializable {
 
 	public BoxItemGroup getGroup() {
 		return group;
+	}
+
+	public void setSequenceNumber(int sequenceNumber) {
+		this.sequenceNumber = sequenceNumber;
+	}
+	
+	public int getSequenceNumber() {
+		return sequenceNumber;
 	}
 
 }

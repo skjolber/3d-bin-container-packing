@@ -46,7 +46,7 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 	}
 
 	@Override
-	public Container accept(IntermediatePackagerResult result) {
+	public Container accept(IntermediatePackagerResult result, boolean useSequenceNumbers) {
 		Container container = packagerContainerItems.toContainer(result.getContainerItem(), result.getStack());
 
 		Stack stack = container.getStack();

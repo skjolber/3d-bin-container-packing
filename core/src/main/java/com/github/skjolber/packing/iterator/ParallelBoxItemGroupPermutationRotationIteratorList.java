@@ -61,7 +61,12 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 						List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
 						Box boxClone = new Box(box, boundRotations);
 						
-						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset));
+						if(item.getSequenceNumber() != offset) {
+							throw new IllegalStateException("Expected box item sequence number to be equal to index");
+						}
+						BoxItem boxItem = new BoxItem(boxClone, item.getCount(), offset, i);
+						
+						loadableItems.add(boxItem);
 						
 						offset++;
 					}

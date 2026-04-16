@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.iterator;
 
+import static com.github.skjolber.packing.iterator.AbstractBoxItemPermutationRotationIteratorTest.setSequenceNumbers;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +29,7 @@ class BoxItemPermutationRotationIteratorTest extends AbstractBoxItemPermutationR
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("0").withWeight(1).build()));
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
 		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
+		setSequenceNumbers(products);
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())

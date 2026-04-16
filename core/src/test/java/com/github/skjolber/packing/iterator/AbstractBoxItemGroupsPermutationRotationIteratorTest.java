@@ -1,8 +1,10 @@
 package com.github.skjolber.packing.iterator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.github.skjolber.packing.iterator.AbstractBoxItemPermutationRotationIteratorTest.setSequenceNumbers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,7 +21,7 @@ import com.github.skjolber.packing.packer.Dimension;
 public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T extends AbstractBoxItemGroupIteratorBuilder>{
 
 	public abstract T newBuilder();
-	
+
 	@Test
 	void testPermutations() {
 		Dimension container = new Dimension(null, 9, 1, 1);
@@ -37,6 +39,8 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
+		
+		setSequenceNumbers(products1, products2);
 		
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
@@ -75,6 +79,8 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("6").withWeight(1).build(), 2));
 		groups.add(new BoxItemGroup("2", products2));
 		
+		setSequenceNumbers(products1, products2);
+
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
@@ -111,6 +117,8 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
 		
+		setSequenceNumbers(products1, products2);
+
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
@@ -141,14 +149,15 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("1").withWeight(1).build()));
 		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("2").withWeight(1).build()));
 		groups.add(new BoxItemGroup("1", products1));
-
 		
 		List<BoxItem> products2 = new ArrayList<>();
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("3").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
-		
+
+		setSequenceNumbers(products1, products2);
+
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
@@ -190,6 +199,8 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("8").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
 		
+		setSequenceNumbers(products1, products2);
+
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
@@ -240,6 +251,8 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("8").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
 		
+		setSequenceNumbers(products1, products2);
+
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
@@ -284,14 +297,15 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		products1.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("4").withWeight(1).build()));
 		groups.add(new BoxItemGroup("1", products1));
 
-		
 		List<BoxItem> products2 = new ArrayList<>();
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("5").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("6").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("7").withWeight(1).build()));
 		products2.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withDescription("8").withWeight(1).build()));
 		groups.add(new BoxItemGroup("2", products2));
-		
+
+		setSequenceNumbers(products1, products2);
+
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)

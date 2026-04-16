@@ -52,6 +52,10 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 		for (int i = 0; i < boxItems.size(); i++) {
 			BoxItem item = boxItems.get(i);
 
+			if(item.getSequenceNumber() != i) {
+				throw new IllegalStateException("Expected box item sequence number to be equal to index");
+			}
+
 			if(item.getCount() == 0) {
 				continue;
 			}
@@ -76,7 +80,7 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 			}
 			Box clonedBox = new Box(box, cloned);
 
-			results[i] = new BoxItem(clonedBox, item.getCount(), i);
+			results[i] = new BoxItem(clonedBox, item.getCount(), i, i);
 		}
 		return results;
 	}

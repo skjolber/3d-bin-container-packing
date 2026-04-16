@@ -32,13 +32,17 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 					List<BoxItem> loadableItems = new ArrayList<>(group.size());
 					for (int k = 0; k < group.size(); k++) {
 						BoxItem item = group.get(k);
-	
+						if(item.getSequenceNumber() != offset) {
+							throw new IllegalStateException("Expected box item sequence number to be equal to index");
+						}
+						
 						Box box = item.getBox();
 						
 						List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
 						Box boxClone = new Box(box, boundRotations);
 						
-						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset));
+						BoxItem boxItem = new BoxItem(boxClone, item.getCount(), offset, offset);
+						loadableItems.add(boxItem);
 						
 						offset++;
 					}
