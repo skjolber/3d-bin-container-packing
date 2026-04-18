@@ -28,7 +28,7 @@ public class DefaultPointCalculator3DTest {
 		
 		new BoxItem(box, 1);
 		
-		return new Placement(stackValue, new DefaultPoint3D(x, y, z, 0, 0, 0));
+		return new Placement(stackValue, new DefaultPoint3D(x, y, z, endX, endY, endZ));
 	}
 	
 	@ParameterizedTest
