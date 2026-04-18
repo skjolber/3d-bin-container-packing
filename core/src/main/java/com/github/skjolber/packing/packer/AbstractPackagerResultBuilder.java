@@ -1,21 +1,26 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.validator.ValidatorContainerItem;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 
 /**
  * {@linkplain PackagerResult} builder scaffold.
@@ -39,12 +44,37 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 	
 	protected List<ControlledContainerItem> containers;
 
+	public static class DefaultPointsBuilder implements PointsBuilder {
+		
+		private List<Point> points = new ArrayList<>();
+
+		@Override
+		public DefaultPointsBuilder withPoint(Point point) {
+			points.add(point);
+			return this;
+		}
+
+		@Override
+		public DefaultPointsBuilder withPoint(int x, int y, int z, int dx, int dy, int dz) {
+			points.add(new DefaultPoint3D(x, y, z, x + dx - 1, y + dy - 1, z + dz - 1));
+			return this;
+		}
+
+		public List<Point> build() {
+			if(!points.isEmpty()) {
+				return points;
+			}
+			return Collections.emptyList();
+		}
+	}
+	
 	public static class DefaultControlledContainerItemBuilder implements ControlledContainerItemBuilder {
 
 		protected ContainerItem containerItem;
 		protected ManifestControlsBuilderFactory boxItemControlsBuilderFactory;
 		protected PointControlsBuilderFactory pointControlsBuilderFactory;
 		protected List<Point> points;
+		protected List<Point> obstacles;
 
 		public ControlledContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier) {
 			this.boxItemControlsBuilderFactory = supplier;
@@ -71,10 +101,32 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			if (containerItem == null) {
 				throw new IllegalStateException("Expected container item");
 			}
+
 			ControlledContainerItem packContainerItem = new ControlledContainerItem(containerItem);
+
+			if(obstacles != null && !obstacles.isEmpty()) {
+				if(points != null && !points.isEmpty()) {
+					throw new IllegalStateException("Add points of obstacles, not both");
+				}
+				// calculate points from obstacles
+				Container container = containerItem.getContainer();
+				
+				DefaultPointCalculator3D ep = new DefaultPointCalculator3D(false, obstacles.size() + 1);
+				ep.clearToSize(container.getDx(), container.getDy(), container.getDz());
+				
+				for(int i = 0; i < obstacles.size(); i++) {
+					if(!ep.addObstacle(createStackPlacement(obstacles.get(i)))) {
+						throw new IllegalStateException("Unable to add obstacle #" + i + " " + obstacles.get(i));
+					}
+				}
+				
+				packContainerItem.setInitialPoints(ep.getAll());
+			} else {
+				packContainerItem.setInitialPoints(points);
+			}
+
 			packContainerItem.setBoxItemControlsBuilderFactory(boxItemControlsBuilderFactory);
 			packContainerItem.setPointControlsBuilderFactory(pointControlsBuilderFactory);
-			packContainerItem.setInitialPoints(points);
 			return packContainerItem;
 		}
 
@@ -83,6 +135,32 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			this.points = points;
 			return this;
 		}
+
+		@Override
+		public ControlledContainerItemBuilder withPoints(Consumer<PointsBuilder> consumer) {
+			DefaultPointsBuilder builder = new DefaultPointsBuilder();
+			consumer.accept(builder);
+			this.points = builder.build();
+			return this;
+		}
+		
+		@Override
+		public ControlledContainerItemBuilder withObstacles(Consumer<PointsBuilder> consumer) {
+			DefaultPointsBuilder builder = new DefaultPointsBuilder();
+			consumer.accept(builder);
+			this.obstacles = builder.build();
+			return this;
+		}
+		
+		private Placement createStackPlacement(Point point) {
+			BoxStackValue stackValue = new BoxStackValue(point.getDx(), point.getDy(), point.getDz(), null, -1);
+			
+			Box box = Box.newBuilder().withSize(point.getDx(), point.getDy(), point.getDz()).withWeight(0).build();
+			stackValue.setBox(box);
+			
+			return new Placement(stackValue, new DefaultPoint3D(point.getMinX(), point.getMinY(), point.getMinZ(), 0, 0, 0));
+		}
+
 	}
 
 	public B withContainerItem(Consumer<ControlledContainerItemBuilder> consumer) {

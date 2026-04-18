@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
+import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
@@ -121,6 +123,82 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	public boolean add(int index, Placement placement) {
+		values.flag(index);
+
+		return add(values.get(index), index, placement);
+	}
+	
+	public boolean addObstacle(Placement placement) {
+		// find a point which holds the placement
+		
+		for(int i = 0; i < values.size(); i++) {
+			SimplePoint3D point = values.get(i);
+			
+			if(point.getMinX() == placement.getAbsoluteX() && point.getMinY() == placement.getAbsoluteY() && point.getMinZ() == placement.getAbsoluteZ()) {
+				// perfect match
+				if(point.fits3D(placement)) {
+					add(i, placement);
+					
+					return true;
+				}
+			}
+		}
+		
+		for(int i = 0; i < values.size(); i++) {
+			SimplePoint3D point = values.get(i);
+			
+			if(point.fits3D(placement)) {
+				int xx = placement.getAbsoluteEndX() + 1;
+				int yy = placement.getAbsoluteEndY() + 1;
+				int zz = placement.getAbsoluteEndZ() + 1;
+				
+				// move xx
+				if(canMoveX(point, xx)) {
+					// yz plane
+					moveToXX.add(i);
+				}
+
+				if(canMoveY(point, yy)) {
+					// xz plane
+					moveToYY.add(i);
+				}
+
+				if(canMoveZ(point, zz)) {
+					// xy plane
+					moveToZZ.add(i);
+				}
+				
+				boolean supportedXYPlane = point.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY());
+				boolean supportedXZPlane = point.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
+				boolean supportedYZPlane = point.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
+				
+				if(supportedXYPlane && supportedXZPlane && supportedYZPlane) {
+					constrainObstacleWithClone(placement, point);
+					values.flag(point.getIndex());
+				} else if(supportedXYPlane && supportedXZPlane) {
+					// must be directly left of placement - limit x
+					SimplePoint3D clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+					constrainXX.set(clone, i);
+					values.flag(i);
+				} else if(supportedXYPlane && supportedYZPlane) {
+					// must be directly in front of placement - limit y
+					SimplePoint3D clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+					constrainYY.set(clone, i);
+					values.flag(i);
+				} else if(supportedXZPlane && supportedYZPlane) {
+					// must be directly below placement - limit z
+					SimplePoint3D clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+					constrainZZ.set(clone, i);
+					values.flag(i);
+				}
+				
+				return add(point, i, placement);
+			}
+		}
+		return false;
+	}
+
+	public boolean add(SimplePoint3D source, int pointIndex, Placement placement) {
 
 		// overall approach:
 		// Do not iterate over placements to find point max / mins, rather
@@ -139,9 +217,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 		ensureCapacity(values.size() + 1);
 		
-		SimplePoint3D source = values.get(index);
-		values.flag(index);
-
 		int xx = placement.getAbsoluteEndX() + 1;
 		int yy = placement.getAbsoluteEndY() + 1;
 		int zz = placement.getAbsoluteEndZ() + 1;
@@ -181,14 +256,12 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		//
 
 		// must be to the right of the current index, so set its first sibling as a minimum
-		int endIndex = values.binarySearchPlusMinX(index + 1, placement.getAbsoluteEndX());
+		int endIndex = values.binarySearchPlusMinX(pointIndex + 1, placement.getAbsoluteEndX());
 
-		int pointIndex;
 		if(supportedYZPlane) {
 			// b and c only
 
 			// already have index for point at absoluteX, find the lowest value with the same x coordinate
-			pointIndex = index;
 			while (pointIndex > 0 && values.get(pointIndex - 1).getMinX() == placement.getAbsoluteX()) {
 				pointIndex--;
 			}
@@ -231,7 +304,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			// ---------------------------
 			//
 
-			boolean swallowed = point.getMinX() >= source.getMinX() && point.getMinY() >= source.getMinY() && point.getMinZ() >= source.getMinZ();
+			boolean swallowed = point.getMinX() >= placement.getAbsoluteX() && point.getMinY() >= placement.getAbsoluteY() && point.getMinZ() >= placement.getAbsoluteZ();
 			if(swallowed ) {
 				// 
 				// |
@@ -438,15 +511,26 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 		if(supported) {
 			// not necessary
-		} else if(
-			(supportedXYPlane && supportedXZPlane) ||
-					(supportedXYPlane && supportedYZPlane) ||
-					(supportedXZPlane && supportedYZPlane)
-		) {
+		} else if(supportedXYPlane && supportedXZPlane) {
+			// must be directly left of placement
 			if(immutablePoints) {
-				constrainMaxWithClone(placement, endIndex);
+				constrainMaxYZWithClone(placement, endIndex);
 			} else {
-				constrainMax(placement, endIndex);
+				constrainMaxYZ(placement, endIndex);
+			}
+		} else if(supportedXYPlane && supportedYZPlane) {
+			// must be directly in front of placement
+			if(immutablePoints) {
+				constrainMaxXZWithClone(placement, endIndex);
+			} else {
+				constrainMaxXZ(placement, endIndex);
+			}
+		} else if(supportedXZPlane && supportedYZPlane) {
+			// must be directly below placement
+			if(immutablePoints) {
+				constrainMaxXYWithClone(placement, endIndex);
+			} else {
+				constrainMaxXY(placement, endIndex);
 			}
 		} else {
 			// Constrain max values to the new placement
@@ -617,6 +701,75 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		return !values.isEmpty();
 	}
 
+	private void constrainObstacleWithClone(Placement placement, SimplePoint3D point) {
+		// free floating
+		//
+		
+		//  add
+		//             
+		//    |        |---------|
+		//    |        |         | 
+		//    |        |         |
+		//    |        |         |
+		//    |        |         |
+		//    |        |         |
+		// a  *        |---------|
+		//    |                   
+		//    |                          
+		//    *--------*----------------------
+		//    c        b
+
+		// i.e. at c
+		//             
+		//    |--------|         
+		//    |        |         
+		//    |        |         
+		//    |        |
+		//    |        |          
+		//    |        |                
+		//    *--------|----------------------
+		//
+		// and
+		//
+		//    |         
+		//    |                 
+		//    |                 
+		//    |---------------|
+		//    |               |         
+		//    |               |         
+		//    *---------------|--------------
+		//             
+		// and
+		//
+		//    |         
+		//    |                 
+		//    |                 
+		//    |--------|         
+		//    |        |          
+		//    |        |                
+		//    *--------|----------------------
+
+		int i = point.getIndex();
+		
+		if(placement.getAbsoluteX() > point.getMinX()) {
+			SimplePoint3D clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+			constrainXX.set(clone, i);
+			addedXX.add(clone);
+		}
+		if(placement.getAbsoluteY() > point.getMinY()) {
+			SimplePoint3D clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+			constrainYY.set(clone, i);
+			addedYY.add(clone);
+		}
+
+		if(placement.getAbsoluteZ() > point.getMinZ()) {
+			SimplePoint3D clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+			constrainZZ.set(clone, i);
+			addedZZ.add(clone);
+		}
+	}
+
+
 	private void ensureCapacity(int size) {
 		if(size >= addXX.getCapacity()) {
 			int capacity = size + 32;
@@ -748,6 +901,206 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		}
 	}
 
+	private void constrainMaxXYWithClone(Placement placement, int endIndex) {
+		for (int i = 0; i < endIndex; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+
+			SimplePoint3D point = values.get(i);
+			// point must be directly below area of the placement
+
+			// minZ must be below
+			// maxZ must be above
+			
+			// below?
+			if(point.getMinZ() >= placement.getAbsoluteZ() || placement.getAbsoluteZ() > point.getMaxZ()) {
+				continue;
+			}
+			
+			if(!withinY(point.getMinY(), placement)) {
+				continue;
+			}
+			
+			if(!withinX(point.getMinX(), placement)) {
+				continue;
+			}
+			
+			// area is same as before, so not necessary to constrain
+			SimplePoint3D clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+			constrainZZ.set(clone, i);
+			values.flag(i);
+		}
+	}
+	private void constrainMaxXZWithClone(Placement placement, int endIndex) {
+		for (int i = 0; i < endIndex; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+
+			SimplePoint3D point = values.get(i);
+			// point must be directly in front of the placement
+
+			// minY must be below
+			// maxY must be above
+			
+			// in front?
+			if(point.getMinY() >= placement.getAbsoluteY() || placement.getAbsoluteY() > point.getMaxY()) {
+				continue;
+			}
+			
+			if(!withinZ(point.getMinZ(), placement)) {
+				continue;
+			}
+			
+			if(!withinX(point.getMinX(), placement)) {
+				continue;
+			}
+
+			long area = (placement.getAbsoluteY() - point.getMinY()) * (long)point.getDx();
+			if(area >= minAreaLimit) {
+				SimplePoint3D clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+				constrainYY.set(clone, i);
+			}
+			values.flag(i);
+		}
+	}
+
+	private void constrainMaxYZWithClone(Placement placement, int endIndex) {
+		for (int i = 0; i < endIndex; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+
+			SimplePoint3D point = values.get(i);
+			// point must be directly left area of the placement
+
+			// minX must be below
+			// maxX must be above
+			
+			// below?
+			if(point.getMinX() >= placement.getAbsoluteX() || placement.getAbsoluteX() > point.getMaxX()) {
+				continue;
+			}
+			
+			if(!withinZ(point.getMinZ(), placement)) {
+				continue;
+			}
+			
+			if(!withinY(point.getMinY(), placement)) {
+				continue;
+			}
+			
+			long area = (placement.getAbsoluteX() - point.getMinX()) * (long)point.getDy();
+			if(area >= minAreaLimit) {
+				SimplePoint3D clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+				constrainXX.set(clone, i);
+			}
+			values.flag(i);
+		}
+	}
+
+	private void constrainMaxYZ(Placement placement, int endIndex) {
+		for (int i = 0; i < endIndex; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+
+			SimplePoint3D point = values.get(i);
+			// point must be directly left of the placement
+
+			// minX must be below
+			// maxX must be above
+			
+			// below?
+			if(point.getMinX() >= placement.getAbsoluteX() || placement.getAbsoluteX() > point.getMaxX()) {
+				continue;
+			}
+			
+			if(!withinZ(point.getMinZ(), placement)) {
+				continue;
+			}
+			
+			if(!withinY(point.getMinY(), placement)) {
+				continue;
+			}
+			
+			point.setMaxX(placement.getAbsoluteX() - 1);
+			constrainZZ.set(point, i);
+			values.flag(i);
+		}
+	}
+	
+	private void constrainMaxXY(Placement placement, int endIndex) {
+		for (int i = 0; i < endIndex; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+
+			SimplePoint3D point = values.get(i);
+			// point must be directly below area of the placement
+
+			// minZ must be below
+			// maxZ must be above
+			
+			// below?
+			if(point.getMinZ() >= placement.getAbsoluteZ() || placement.getAbsoluteZ() > point.getMaxZ()) {
+				continue;
+			}
+			
+			if(!withinY(point.getMinY(), placement)) {
+				continue;
+			}
+			
+			if(!withinX(point.getMinX(), placement)) {
+				continue;
+			}
+			
+			point.setMaxZ(placement.getAbsoluteZ() - 1);
+			
+			constrainZZ.set(point, i);
+			values.flag(i);
+		}
+	}
+	
+
+	private void constrainMaxXZ(Placement placement, int endIndex) {
+		for (int i = 0; i < endIndex; i++) {
+			if(values.isFlag(i)) {
+				continue;
+			}
+
+			SimplePoint3D point = values.get(i);
+			// point must be directly in front of the placement
+
+			// minY must be below
+			// maxY must be above
+			
+			// in front?
+			if(point.getMinY() >= placement.getAbsoluteY() || placement.getAbsoluteY() > point.getMaxY()) {
+				continue;
+			}
+			
+			if(!withinZ(point.getMinZ(), placement)) {
+				continue;
+			}
+			
+			if(!withinX(point.getMinX(), placement)) {
+				continue;
+			}
+			
+			point.setMaxY(placement.getAbsoluteY() - 1);
+			/*
+			if(point.getArea() >= minAreaLimit) {
+				constrainYY.set(point, i);
+			}
+			*/
+			constrainYY.set(point, i);
+			values.flag(i);
+		}
+	}
+	
+	
 	private void constrainMaxWithClone(Placement placement, int endIndex) {
 		for (int i = 0; i < endIndex; i++) {
 			if(values.isFlag(i)) {

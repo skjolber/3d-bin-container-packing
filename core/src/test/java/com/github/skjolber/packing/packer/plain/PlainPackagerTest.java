@@ -105,7 +105,6 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		} finally {
 			packager.close();
 		}
-
 	}
 
 	@Test
@@ -923,5 +922,38 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			packager.close();
 		}
 	}	
+
+	@Test
+	void testStackingRectanglesWithObstacles() {
+		Container container = Container.newBuilder()
+				.withDescription("1")
+				.withEmptyWeight(1)
+				.withSize(3, 3, 3)
+				.withMaxLoadWeight(100)
+				.withStack(new ValidatingStack())
+				.build();
+
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+			
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 8));
+
+			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
+				b.withContainerItem(new ContainerItem(container, 1));
+				b.withObstacles( o -> {
+					o.withPoint(0, 0, 0, 1, 1, 1);
+				});
+			}).withBoxItems(products).build();
+			
+			assertValid(build);
+			
+			for (Placement placement : build.getContainers().get(0).getStack().getPlacements()) {
+				assertFalse(placement.getAbsoluteX() == 0 && placement.getAbsoluteY() == 0);
+			}
+		} finally {
+			packager.close();
+		}
+	}
 
 }

@@ -21,6 +21,18 @@ public interface PackagerResultBuilder {
 		ControlledContainerItemBuilder withContainerItem(Container container, int count);
 		
 		ControlledContainerItemBuilder withPoints(List<Point> points);
+		
+		ControlledContainerItemBuilder withPoints(Consumer<PointsBuilder> points);
+
+		ControlledContainerItemBuilder withObstacles(Consumer<PointsBuilder> points);
+
+	}
+	
+	public static interface PointsBuilder {
+
+		PointsBuilder withPoint(Point point);
+		
+		PointsBuilder withPoint(int x, int y, int z, int dx, int dy, int dz);
 	}
 	
 	PackagerResultBuilder withBoxItems(BoxItem... items);

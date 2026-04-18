@@ -412,6 +412,13 @@ public abstract class Point {
 	public boolean fitsInYZPlane(Placement point) {
 		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowsMinY(point.getAbsoluteY(), point.getAbsoluteEndY());
 	}
+	
+	public boolean fits3D(Placement placement) {
+		return 
+				minX <= placement.getAbsoluteX() && placement.getAbsoluteEndX() <= maxX &&
+				minY <= placement.getAbsoluteY() && placement.getAbsoluteEndY() <= maxY &&
+				minZ <= placement.getAbsoluteZ() && placement.getAbsoluteEndZ() <= maxZ;
+	}
 
 	public boolean fits3D(BoxStackValue stackValue) {
 		return !(stackValue.getDx() > dx || stackValue.getDy() > dy || stackValue.getDz() > dz);
