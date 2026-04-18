@@ -190,7 +190,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		return createIntermediatePackagerResult(controlContainerItem, stack);
 	}
 
-	protected PointCalculator createPointCalculator(DefaultBoxItemSource boxItemSource) {
+	protected PointCalculator createPointCalculator(BoxItemSource boxItemSource) {
 		return new DefaultPointCalculator3D(false, boxItemSource);
 	}
 
