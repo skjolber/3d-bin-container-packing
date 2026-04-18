@@ -112,7 +112,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 				Container container = containerItem.getContainer();
 				
 				DefaultPointCalculator3D ep = new DefaultPointCalculator3D(false, obstacles.size() + 1);
-				ep.clearToSize(container.getDx(), container.getDy(), container.getDz());
+				ep.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 				
 				for(int i = 0; i < obstacles.size(); i++) {
 					if(!ep.addObstacle(createStackPlacement(obstacles.get(i)))) {
