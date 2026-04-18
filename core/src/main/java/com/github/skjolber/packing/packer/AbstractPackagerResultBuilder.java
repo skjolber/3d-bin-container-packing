@@ -106,7 +106,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 
 			if(obstacles != null && !obstacles.isEmpty()) {
 				if(points != null && !points.isEmpty()) {
-					throw new IllegalStateException("Add points of obstacles, not both");
+					throw new IllegalStateException("Specify either initial points or obstacles, not both");
 				}
 				// calculate points from obstacles
 				Container container = containerItem.getContainer();
