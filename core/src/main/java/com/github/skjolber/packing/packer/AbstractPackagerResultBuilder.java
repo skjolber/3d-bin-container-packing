@@ -158,9 +158,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			Box box = Box.newBuilder().withSize(point.getDx(), point.getDy(), point.getDz()).withWeight(0).build();
 			stackValue.setBox(box);
 			
-			return new Placement(stackValue, new DefaultPoint3D(point.getMinX(), point.getMinY(), point.getMinZ(), 0, 0, 0));
+			return new Placement(stackValue, new DefaultPoint3D(point.getMinX(), point.getMinY(), point.getMinZ(), point.getMaxX(), point.getMaxY(), point.getMaxZ()));
 		}
-
 	}
 
 	public B withContainerItem(Consumer<ControlledContainerItemBuilder> consumer) {
