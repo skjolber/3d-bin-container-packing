@@ -68,6 +68,30 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		}
 	}
 	
+	public static class DefaultObstaclesBuilder implements ObstaclesBuilder {
+		
+		private List<Point> points = new ArrayList<>();
+
+		@Override
+		public DefaultObstaclesBuilder withObstacle(Point point) {
+			points.add(point);
+			return this;
+		}
+
+		@Override
+		public DefaultObstaclesBuilder withObstacle(int x, int y, int z, int dx, int dy, int dz) {
+			points.add(new DefaultPoint3D(x, y, z, x + dx - 1, y + dy - 1, z + dz - 1));
+			return this;
+		}
+
+		public List<Point> build() {
+			if(!points.isEmpty()) {
+				return points;
+			}
+			return Collections.emptyList();
+		}
+	}
+	
 	public static class DefaultControlledContainerItemBuilder implements ControlledContainerItemBuilder {
 
 		protected ContainerItem containerItem;
@@ -145,8 +169,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		}
 		
 		@Override
-		public ControlledContainerItemBuilder withObstacles(Consumer<PointsBuilder> consumer) {
-			DefaultPointsBuilder builder = new DefaultPointsBuilder();
+		public ControlledContainerItemBuilder withObstacles(Consumer<ObstaclesBuilder> consumer) {
+			DefaultObstaclesBuilder builder = new DefaultObstaclesBuilder();
 			consumer.accept(builder);
 			this.obstacles = builder.build();
 			return this;

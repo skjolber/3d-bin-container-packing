@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,8 +23,10 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
+import com.github.skjolber.packing.packer.plain.PlainPackager;
 
 public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
@@ -456,4 +459,44 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		
 		assertValidUsingValidator(containerItems, 2, result, products);
     }
+    
+	@Test
+	void testStackingRectanglesWithObstacles() {
+		Container container = Container.newBuilder()
+				.withDescription("1")
+				.withEmptyWeight(1)
+				.withSize(3, 3, 3)
+				.withMaxLoadWeight(100)
+				.withStack(new ValidatingStack())
+				.build();
+
+		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+			
+			for(int i = 0; i < 8; i++) {
+				products.add(new BoxItem(Box.newBuilder().withId("" + (char)(i + 'A')).withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			}
+
+			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
+				b.withContainerItem(new ContainerItem(container, 1));
+				b.withObstacles( o -> {
+					o.withObstacle(0, 0, 0, 1, 1, 1);
+				});
+			}).withBoxItems(products).build();
+			
+			assertValid(build);
+
+			Box obstacleBox = Box.newBuilder().withId("obstacle").withSize(1, 1, 1).withWeight(0).build();
+			Placement obstacle = new Placement(obstacleBox.getStackValues()[0], new DefaultPoint3D(0, 0, 0, 0, 0, 0));
+			
+			for (Placement placement : build.getContainers().get(0).getStack().getPlacements()) {
+				assertFalse(placement.intersects3D(obstacle));
+			}
+		} finally {
+			packager.close();
+		}
+	}
+
+    
 }

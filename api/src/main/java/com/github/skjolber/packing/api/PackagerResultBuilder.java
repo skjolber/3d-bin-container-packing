@@ -24,7 +24,7 @@ public interface PackagerResultBuilder {
 		
 		ControlledContainerItemBuilder withPoints(Consumer<PointsBuilder> points);
 
-		ControlledContainerItemBuilder withObstacles(Consumer<PointsBuilder> points);
+		ControlledContainerItemBuilder withObstacles(Consumer<ObstaclesBuilder> points);
 
 	}
 	
@@ -33,6 +33,13 @@ public interface PackagerResultBuilder {
 		PointsBuilder withPoint(Point point);
 		
 		PointsBuilder withPoint(int x, int y, int z, int dx, int dy, int dz);
+	}
+	
+	public static interface ObstaclesBuilder {
+
+		ObstaclesBuilder withObstacle(Point point);
+		
+		ObstaclesBuilder withObstacle(int x, int y, int z, int dx, int dy, int dz);
 	}
 	
 	PackagerResultBuilder withBoxItems(BoxItem... items);

@@ -942,7 +942,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 1));
 				b.withObstacles( o -> {
-					o.withPoint(0, 0, 0, 1, 1, 1);
+					o.withObstacle(0, 0, 0, 1, 1, 1);
 				});
 			}).withBoxItems(products).build();
 			
