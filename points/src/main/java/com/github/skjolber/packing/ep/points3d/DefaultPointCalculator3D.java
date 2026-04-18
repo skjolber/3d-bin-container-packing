@@ -751,7 +751,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				}
 			} else {
 				point.setMaxX(placement.getAbsoluteX() - 1);
-				constrainZZ.set(point, i);
+				constrainXX.set(point, i);
 			}
 			values.flag(i);
 		}
