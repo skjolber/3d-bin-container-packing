@@ -449,17 +449,19 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			}
 		} else if(supportedXYPlane && supportedYZPlane) {
 			// must be directly in front of placement
+			// TODO add start index could be more narrow if placement is not in base of point.
 			if(immutablePoints) {
-				constrainMaxXZWithClone(placement, endIndex);
+				constrainMaxXZWithClone(placement, pointIndex, endIndex);
 			} else {
-				constrainMaxXZ(placement, endIndex);
+				constrainMaxXZ(placement, pointIndex, endIndex);
 			}
 		} else if(supportedXZPlane && supportedYZPlane) {
 			// must be directly below placement
+			// TODO add start index could be more narrow if placement is not in base of point.
 			if(immutablePoints) {
-				constrainMaxXYWithClone(placement, endIndex);
+				constrainMaxXYWithClone(placement, pointIndex, endIndex);
 			} else {
-				constrainMaxXY(placement, endIndex);
+				constrainMaxXY(placement, pointIndex, endIndex);
 			}
 		} else {
 			// Constrain max values to the new placement
@@ -712,8 +714,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		return false;
 	}
 
-	private void constrainMaxXYWithClone(Placement placement, int endIndex) {
-		for (int i = 0; i < endIndex; i++) {
+	private void constrainMaxXYWithClone(Placement placement, int startIndex, int endIndex) {
+		for (int i = startIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
 			}
@@ -743,8 +745,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			values.flag(i);
 		}
 	}
-	private void constrainMaxXZWithClone(Placement placement, int endIndex) {
-		for (int i = 0; i < endIndex; i++) {
+	private void constrainMaxXZWithClone(Placement placement, int startIndex, int endIndex) {
+		for (int i = startIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
 			}
@@ -842,8 +844,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		}
 	}
 	
-	private void constrainMaxXY(Placement placement, int endIndex) {
-		for (int i = 0; i < endIndex; i++) {
+	private void constrainMaxXY(Placement placement, int startIndex, int endIndex) {
+		for (int i = startIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
 			}
@@ -875,8 +877,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 	
 
-	private void constrainMaxXZ(Placement placement, int endIndex) {
-		for (int i = 0; i < endIndex; i++) {
+	private void constrainMaxXZ(Placement placement, int startIndex, int endIndex) {
+		for (int i = startIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
 			}
