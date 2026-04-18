@@ -136,20 +136,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	
 	public boolean addObstacle(Placement placement) {
 		// find a point which holds the placement
-		
-		for(int i = 0; i < values.size(); i++) {
-			SimplePoint3D point = values.get(i);
-			
-			if(point.getMinX() == placement.getAbsoluteX() && point.getMinY() == placement.getAbsoluteY() && point.getMinZ() == placement.getAbsoluteZ()) {
-				// perfect match
-				if(point.fits3D(placement)) {
-					add(i, placement);
-					
-					return true;
-				}
-			}
-		}
-		
 		for(int i = 0; i < values.size(); i++) {
 			SimplePoint3D point = values.get(i);
 			
@@ -159,7 +145,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				boolean supportedXZPlane = point.getMinY() == placement.getAbsoluteY() && point.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
 				boolean supportedYZPlane = point.getMinX() == placement.getAbsoluteX() && point.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
 				
-				return add(point, i, placement, supportedXYPlane, supportedXZPlane, supportedYZPlane);
+				add(point, i, placement, supportedXYPlane, supportedXZPlane, supportedYZPlane);
+				
+				return true;
 			}
 		}
 		return false;
