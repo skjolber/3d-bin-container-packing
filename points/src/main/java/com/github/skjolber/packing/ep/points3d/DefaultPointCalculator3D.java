@@ -152,27 +152,27 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				int yy = placement.getAbsoluteEndY() + 1;
 				int zz = placement.getAbsoluteEndZ() + 1;
 				
-				// move xx
-				if(canMoveX(point, xx)) {
-					// yz plane
-					moveToXX.add(i);
-				}
-
-				if(canMoveY(point, yy)) {
-					// xz plane
-					moveToYY.add(i);
-				}
-
-				if(canMoveZ(point, zz)) {
-					// xy plane
-					moveToZZ.add(i);
-				}
-				
 				boolean supportedXYPlane = point.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY());
 				boolean supportedXZPlane = point.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
 				boolean supportedYZPlane = point.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
 				
 				if(supportedXYPlane && supportedXZPlane && supportedYZPlane) {
+					// Only pre-populate move lists here; partially supported points
+					// delegate to add(point, i, placement), which handles move list updates.
+					if(canMoveX(point, xx)) {
+						// yz plane
+						moveToXX.add(i);
+					}
+
+					if(canMoveY(point, yy)) {
+						// xz plane
+						moveToYY.add(i);
+					}
+
+					if(canMoveZ(point, zz)) {
+						// xy plane
+						moveToZZ.add(i);
+					}
 					constrainObstacleWithClone(placement, point);
 					values.flag(point.getIndex());
 				} else if(supportedXYPlane && supportedXZPlane) {
