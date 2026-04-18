@@ -106,13 +106,13 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 
 			if(obstacles != null && !obstacles.isEmpty()) {
 				if(points != null && !points.isEmpty()) {
-					throw new IllegalStateException("Add points of obstacles, not both");
+					throw new IllegalStateException("Specify either initial points or obstacles, not both");
 				}
 				// calculate points from obstacles
 				Container container = containerItem.getContainer();
 				
 				DefaultPointCalculator3D ep = new DefaultPointCalculator3D(false, obstacles.size() + 1);
-				ep.clearToSize(container.getDx(), container.getDy(), container.getDz());
+				ep.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 				
 				for(int i = 0; i < obstacles.size(); i++) {
 					if(!ep.addObstacle(createStackPlacement(obstacles.get(i)))) {

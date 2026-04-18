@@ -947,9 +947,12 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			}).withBoxItems(products).build();
 			
 			assertValid(build);
+
+			Box obstacleBox = Box.newBuilder().withId("obstacle").withSize(1, 1, 1).withWeight(0).build();
+			Placement obstacle = new Placement(new DefaultPoint3D(0, 0, 0, 0, 0, 0), obstacleBox.getStackValues()[0]);
 			
 			for (Placement placement : build.getContainers().get(0).getStack().getPlacements()) {
-				assertFalse(placement.getAbsoluteX() == 0 && placement.getAbsoluteY() == 0);
+				assertFalse(placement.intersects3D(obstacle));
 			}
 		} finally {
 			packager.close();
