@@ -1341,4 +1341,67 @@ public class DefaultPointCalculator3DTest {
 		assertThat(ep.get(5)).isNoYZSupportAt(52, 3);
 	}
 
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testObstacleInXYPlaneCorner(boolean clone) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+		ep.clearToSize(100, 100, 100);
+		ep.addObstacle(createStackPlacement(0, 50, 0, 54, 99, 4));
+		assertThat(ep.getAll()).hasSize(3); // i.e. not below
+		
+		// y
+		// |
+		// |-------|-----------| 99
+		// |       |           |
+		// |       |           |
+		// |-------|           | 50
+		// |                   |
+		// |                   |
+		// |-------------------|--- x
+		//        54
+		// y
+		// |
+		// |
+		// |
+		// |
+		// |---------------------| 50
+		// |         0           |
+		// |---------------------|--- x
+		//
+		
+		SimplePoint3D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0, 0);
+		assertThat(point0).isMax(99, 49, 99);
+		assertThat(point0).isXYSupportAt(99, 99);
+		assertThat(point0).isYZSupportAt(99, 99);
+		assertThat(point0).isXZSupportAt(99, 99);
+
+		// xy support is lost
+		// TOP
+		assertThat(ep.get(1)).isNoXYSupportAt(10, 10);
+		assertThat(ep.get(1)).isNoXYSupportAt(51, 0);
+		assertThat(ep.get(1)).isYZSupportAt(99, 99);
+		assertThat(ep.get(1)).isXZSupportAt(99, 99);
+	
+		// y
+		// |
+		// |       |-----------|
+		// |       |           |
+		// |       |           |
+		// |       |    2      | 50
+		// |       |           |
+		// |       |           |
+		// |-------|-----------|--- x
+		//        54
+		
+		assertThat(ep.get(2)).isMin(55, 0, 0);
+		assertThat(ep.get(2)).isMax(99, 99, 99);
+		assertThat(ep.get(2)).isXYSupportAt(99, 99);
+		assertThat(ep.get(2)).isNoYZSupportAt(99, 99);
+		
+		// xz support is kept
+		assertThat(ep.get(2)).isXZSupportAt(55, 1);
+		assertThat(ep.get(2)).isXZSupportAt(99, 1);
+	}
+
 }

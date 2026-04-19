@@ -1621,16 +1621,12 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		minAreaLimit = 0;
 		minVolumeLimit = 0;
 	}
-	
+
 	public void setPoints(List<Point> points) {
 		// transform coordinates to internal representation, i.e. with support etc
 		initialPoints = new ArrayList<>(points.size());
 		
 		for(Point p: points) {
-			boolean xyPlane = p.getMinZ() == 0;
-			boolean yzPlane = p.getMinX() == 0;
-			boolean xzPlane = p.getMinY() == 0;
-			
 			if(p.getMaxX() > containerMaxX) {
 				throw new IllegalArgumentException("Expected point maxX " + p.getMaxX() + " <= " + containerMaxX + " container maxX");
 			}
@@ -1640,6 +1636,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			if(p.getMaxZ() > containerMaxZ) {
 				throw new IllegalArgumentException("Expected point maxZ " + p.getMaxZ() + " <= " + containerMaxZ + " container maxZ");
 			}
+
+			boolean xyPlane = p.getMinZ() == 0;
+			boolean yzPlane = p.getMinX() == 0;
+			boolean xzPlane = p.getMinY() == 0;
 
 			if(xyPlane && yzPlane && xzPlane) {
 				initialPoints.add(new Default3DPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement, containerPlacement));
@@ -1663,6 +1663,78 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		for(int i = 0; i < initialPoints.size(); i++) {
 			initialPoints.get(i).setIndex(i);
 		}
+	}
+
+	// set points, but limit to a specific box
+	public boolean setPoints(List<Point> points, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+		// transform coordinates to internal representation, i.e. with support etc
+		initialPoints = new ArrayList<>(points.size());
+		
+		for(Point p: points) {
+			
+			// fully above current level?
+			if(p.getMinZ() > maxZ) {
+				continue;
+			}
+			// fully below current level?
+			if(p.getMaxZ() < minZ) {
+				continue;
+			}
+
+			// fully to the right? 
+			if(p.getMinX() > maxX) {
+				continue;
+			}
+			// fully to the left? 
+			if(p.getMaxX() < minX) {
+				continue;
+			}
+
+			// fully to the rear? 
+			if(p.getMinY() > maxY) {
+				continue;
+			}
+			// fully to the front?
+			if(p.getMaxY() < minY) {
+				continue;
+			}
+			
+			// TODO support calculation could be better, but it fairly good for most cases
+			boolean xyPlane = p.getMinZ() == 0;
+			boolean yzPlane = p.getMinX() == 0;
+			boolean xzPlane = p.getMinY() == 0;
+			
+			int limitedMinX = Math.max(p.getMinX(), minX);
+			int limitedMinY = Math.max(p.getMinY(), minY);
+			int limitedMinZ = Math.max(p.getMinZ(), minZ);
+			int limitedMaxX = Math.min(p.getMaxX(), maxX);
+			int limitedMaxY = Math.min(p.getMaxY(), maxY);
+			int limitedMaxZ = Math.min(p.getMaxZ(), maxZ);
+			
+			if(xyPlane && yzPlane && xzPlane) {
+				initialPoints.add(new Default3DPlanePoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ , containerPlacement, containerPlacement, containerPlacement));
+			} else if(yzPlane && xzPlane) {
+				initialPoints.add(new DefaultXZPlaneYZPlanePoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ , containerPlacement, containerPlacement));
+			} else if(xyPlane && xzPlane) {
+				initialPoints.add(new DefaultXYPlaneXZPlanePoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ , containerPlacement, containerPlacement));
+			} else if(xyPlane && yzPlane) {
+				initialPoints.add(new DefaultXYPlaneYZPlanePoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ , containerPlacement, containerPlacement));
+			} else if(xyPlane) {
+				initialPoints.add(new DefaultXYPlanePoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ , containerPlacement));
+			} else if(xzPlane) {
+				initialPoints.add(new DefaultXZPlanePoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ , containerPlacement));
+			} else if(yzPlane) {
+				initialPoints.add(new DefaultYZPlanePoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ , containerPlacement));
+			} else {
+				initialPoints.add(new DefaultPoint3D(limitedMinX, limitedMinY, limitedMinZ, p.getMaxX(), p.getMaxY(), p.getMaxZ()));
+			}
+		}
+		
+		for(int i = 0; i < initialPoints.size(); i++) {
+			initialPoints.get(i).setIndex(i);
+		}
+		
+		return !initialPoints.isEmpty();
 	}
 
 	protected SimplePoint3D createContainerPoint() {
