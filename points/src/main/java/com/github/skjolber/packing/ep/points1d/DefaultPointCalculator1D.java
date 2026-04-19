@@ -319,7 +319,9 @@ public class DefaultPointCalculator1D implements PointCalculator {
 			initialPoints.add(p);
 		}
 		
-		if(!initialPoints.isEmpty()) {
+		if(initialPoints.isEmpty()) {
+			this.value = null;
+		} else {
 			if(initialPoints.size() != 1) {
 				throw new IllegalArgumentException("Expected 0 or 1 points");
 			}
