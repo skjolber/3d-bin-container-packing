@@ -200,7 +200,7 @@ Note that the algorithm is recursive on the number of boxes, so do not attempt t
 # Packager customizations
 
 ## Obstacles within containers
-Make the packager account for non-rectangular packaging space, i.e. pillars or other obstacles within containers, by providing the container initial free space (i.e. points).
+Make the packager account for non-rectangular packaging space, i.e. pillars or other obstacles within the container loading area.
 
 ## Packager controls
 The packagers (excluding brute force) can be extended to handle specialized needs via various `control` (plugins) types. 
