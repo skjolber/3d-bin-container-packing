@@ -105,13 +105,13 @@ public class Placement implements Serializable {
 
 	public boolean intersects3D(Placement placement) {
 		return !(
-				placement.getAbsoluteEndX() < point.getMinX() || 
+				placement.getAbsoluteEndX() < point.getMinX() ||
+				placement.getAbsoluteX() > getAbsoluteEndX() ||
+				placement.getAbsoluteEndY() < point.getMinY() ||
+				placement.getAbsoluteY() > getAbsoluteEndY() ||
 				placement.getAbsoluteEndZ() < point.getMinZ() ||
-				placement.getAbsoluteEndY() < point.getMinY() || 
-				placement.getAbsoluteX() > getAbsoluteEndX() || 
-				placement.getAbsoluteY() > getAbsoluteEndY() || 
 				placement.getAbsoluteZ() > getAbsoluteEndZ()
-				); 
+				);
 	}
 
 	@Override
