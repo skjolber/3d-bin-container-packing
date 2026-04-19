@@ -308,31 +308,30 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 				//.withExecutorService(Executors.newSingleThreadExecutor())
 				.withParallelizationCount(4)
 				.build();
-		
-		Container container = Container.newBuilder()
-				.withDescription("1")
-				.withEmptyWeight(1)
-				.withSize(3, 3, 3)
-				.withMaxLoadWeight(100)
-				.withStack(new ValidatingStack())
-				.build();
-
-		List<BoxItem> products9 = new ArrayList<>();
-		for(int i = 0; i < 9; i++) {
-			products9.add(new BoxItem(Box.newBuilder().withId("" + (char)(i + 'A')).withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-		}
-		
-		PackagerResult build9 = packager.newResultBuilder().withContainerItem( b -> {
-			b.withContainerItem(new ContainerItem(container, 1));
-		}).withBoxItems(products9).build();
-		
-		List<Placement> placements = build9.getContainers().get(0).getStack().getPlacements();
-		
-		for(int obstacleIndex = 0; obstacleIndex < 9; obstacleIndex++) {
+		try {
+			Container container = Container.newBuilder()
+					.withDescription("1")
+					.withEmptyWeight(1)
+					.withSize(3, 3, 3)
+					.withMaxLoadWeight(100)
+					.withStack(new ValidatingStack())
+					.build();
+	
+			List<BoxItem> products9 = new ArrayList<>();
+			for(int i = 0; i < 9; i++) {
+				products9.add(new BoxItem(Box.newBuilder().withId("" + (char)(i + 'A')).withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			}
 			
-			Placement obstacle = placements.get(obstacleIndex);
+			PackagerResult build9 = packager.newResultBuilder().withContainerItem( b -> {
+				b.withContainerItem(new ContainerItem(container, 1));
+			}).withBoxItems(products9).build();
 			
-			try {
+			List<Placement> placements = build9.getContainers().get(0).getStack().getPlacements();
+			
+			for(int obstacleIndex = 0; obstacleIndex < 9; obstacleIndex++) {
+				
+				Placement obstacle = placements.get(obstacleIndex);
+				
 				List<BoxItem> products = new ArrayList<>();
 				
 				for(int i = 0; i < 8; i++) {
@@ -355,9 +354,9 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 				for (Placement placement : buildPlacements) {
 					assertFalse(placement.intersects3D(obstacle));
 				}
-			} finally {
-				packager.close();
 			}
+		} finally {
+			packager.close();
 		}
 	}
 

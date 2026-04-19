@@ -15,19 +15,15 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.Order;
-import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
-import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
-import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.heavy.HeavyItemsBestBoxItemComparator;
 import com.github.skjolber.packing.packer.plain.heavy.HeavyItemsOnGroundLevelPlacementComparator;
 import com.github.skjolber.packing.packer.plain.heavy.HeavyItemsOnGroundLevelPointControls;
@@ -927,31 +923,31 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	@Test
 	void testStackingRectanglesWithObstacles() {
 		PlainPackager packager = PlainPackager.newBuilder().build();
-		
-		Container container = Container.newBuilder()
-				.withDescription("1")
-				.withEmptyWeight(1)
-				.withSize(3, 3, 3)
-				.withMaxLoadWeight(100)
-				.withStack(new ValidatingStack())
-				.build();
 
-		List<BoxItem> products9 = new ArrayList<>();
-		for(int i = 0; i < 9; i++) {
-			products9.add(new BoxItem(Box.newBuilder().withId("" + (char)(i + 'A')).withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
-		}
-		
-		PackagerResult build9 = packager.newResultBuilder().withContainerItem( b -> {
-			b.withContainerItem(new ContainerItem(container, 1));
-		}).withBoxItems(products9).build();
-		
-		List<Placement> placements = build9.getContainers().get(0).getStack().getPlacements();
-		
-		for(int obstacleIndex = 0; obstacleIndex < 9; obstacleIndex++) {
+		try {
+			Container container = Container.newBuilder()
+					.withDescription("1")
+					.withEmptyWeight(1)
+					.withSize(3, 3, 3)
+					.withMaxLoadWeight(100)
+					.withStack(new ValidatingStack())
+					.build();
+	
+			List<BoxItem> products9 = new ArrayList<>();
+			for(int i = 0; i < 9; i++) {
+				products9.add(new BoxItem(Box.newBuilder().withId("" + (char)(i + 'A')).withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+			}
 			
-			Placement obstacle = placements.get(obstacleIndex);
+			PackagerResult build9 = packager.newResultBuilder().withContainerItem( b -> {
+				b.withContainerItem(new ContainerItem(container, 1));
+			}).withBoxItems(products9).build();
 			
-			try {
+			List<Placement> placements = build9.getContainers().get(0).getStack().getPlacements();
+			
+			for(int obstacleIndex = 0; obstacleIndex < 9; obstacleIndex++) {
+				
+				Placement obstacle = placements.get(obstacleIndex);
+				
 				List<BoxItem> products = new ArrayList<>();
 				
 				for(int i = 0; i < 8; i++) {
@@ -974,9 +970,9 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				for (Placement placement : buildPlacements) {
 					assertFalse(placement.intersects3D(obstacle));
 				}
-			} finally {
-				packager.close();
 			}
+		} finally {
+			packager.close();
 		}
 	}
 
