@@ -29,7 +29,7 @@ For the previous version, see the [3.x](https://github.com/skjolber/3d-bin-conta
 Add
  
 ```xml
-<3d-bin-container-packing.version>4.0.0</3d-bin-container-packing.version>
+<3d-bin-container-packing.version>4.2.x</3d-bin-container-packing.version>
 ```
 
 and
@@ -53,7 +53,7 @@ For
 
 ```groovy
 ext {
-  containerBinPackingVersion = '4.0.0'
+  containerBinPackingVersion = '4.2.x'
 }
 ```
 
@@ -259,6 +259,8 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
  * [The Art of Stacking: Challenges Faced While Developing a Packing Algorithm](https://medium.com/@fayyazawais1412/the-art-of-stacking-challenges-faced-while-developing-a-packing-algorithm-64d869b924ab)
 
 # History
+ * 4.2.x: Obstacles.
+ * 4.1.x: Validator.
  * 4.0.x: Major rewrite. Breaking changes.
      * Support for packaging groups
      * Various ways to control packaging:
