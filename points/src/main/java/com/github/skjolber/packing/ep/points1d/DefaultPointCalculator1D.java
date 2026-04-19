@@ -17,6 +17,10 @@ import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.ep.PlacementList;
+import com.github.skjolber.packing.ep.points2d.DefaultPoint2D;
+import com.github.skjolber.packing.ep.points2d.DefaultXSupportPoint2D;
+import com.github.skjolber.packing.ep.points2d.DefaultXYSupportPoint2D;
+import com.github.skjolber.packing.ep.points2d.DefaultYSupportPoint2D;
 
 /**
  * 
@@ -279,28 +283,63 @@ public class DefaultPointCalculator1D implements PointCalculator {
 	}
 	
 	public void setPoints(List<Point> points) {
-		if(points.isEmpty()) {
-			value = null;
+		if(points.size() != 1) {
+			throw new IllegalArgumentException("Expected 0 or 1 points");
+		}
+		
+		Point p = points.get(0);
+		if(p.getMaxX() > containerMaxX) {
+			throw new IllegalArgumentException();
+		}
+		if(p.getMaxY() > containerMaxY) {
+			throw new IllegalArgumentException();
+		}
+		if(p.getMaxZ() > containerMaxZ) {
+			throw new IllegalArgumentException();
+		}
+
+		// transform coordinates to internal representation, i.e. with support etc
+		this.value = new Point1D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ());
+		this.value.setIndex(0);
+	}
+
+	// set points, but limit to a specific box
+	public boolean setPoints(List<Point> points, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+		// transform coordinates to internal representation, i.e. with support etc
+		
+		List<Point> initialPoints = new ArrayList<>(points.size());
+		
+		for(Point p: points) {
+			// is point fully outside  bounds?
+			if(p.getMinZ() > maxZ || p.getMinY() > maxY || p.getMinX() > maxX ||
+					p.getMaxZ() < minZ || p.getMaxY() < minY || p.getMaxX() < minX
+				) {
+				continue;
+			}
+			initialPoints.add(p);
+		}
+		
+		if(initialPoints.isEmpty()) {
+			this.value = null;
 		} else {
-			if(points.size() != 1) {
+			if(initialPoints.size() != 1) {
 				throw new IllegalArgumentException("Expected 0 or 1 points");
 			}
 			
-			Point p = points.get(0);
-			if(p.getMaxX() > containerMaxX) {
-				throw new IllegalArgumentException();
-			}
-			if(p.getMaxY() > containerMaxY) {
-				throw new IllegalArgumentException();
-			}
-			if(p.getMaxZ() > containerMaxZ) {
-				throw new IllegalArgumentException();
-			}
-	
+			Point p = initialPoints.get(0);
+			int limitedMinX = Math.max(p.getMinX(), minX);
+			int limitedMinY = Math.max(p.getMinY(), minY);
+			int limitedMinZ = Math.max(p.getMinZ(), minZ);
+			int limitedMaxX = Math.min(p.getMaxX(), maxX);
+			int limitedMaxY = Math.min(p.getMaxY(), maxY);
+			int limitedMaxZ = Math.min(p.getMaxZ(), maxZ);
+			
 			// transform coordinates to internal representation, i.e. with support etc
-			this.value = new Point1D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ());
+			this.value = new Point1D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ);
 			this.value.setIndex(0);
 		}
+
+		return value != null;
 	}
 
 	public void updateMinimums(BoxStackValue stackValue, BoxItemSource filteredBoxItems) {

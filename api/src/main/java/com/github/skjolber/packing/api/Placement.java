@@ -97,14 +97,21 @@ public class Placement implements Serializable {
 	}
 
 	public boolean intersects2D(Placement placement) {
-		return !(placement.getAbsoluteEndX() < point.getMinX() || placement.getAbsoluteX() > getAbsoluteEndX() || placement.getAbsoluteEndY() < point.getMinY()
-				|| placement.getAbsoluteY() > getAbsoluteEndY());
+		return !(
+				placement.getAbsoluteEndX() < point.getMinX() || placement.getAbsoluteX() > getAbsoluteEndX() || 
+				placement.getAbsoluteEndY() < point.getMinY() || placement.getAbsoluteY() > getAbsoluteEndY()
+				);
 	}
 
 	public boolean intersects3D(Placement placement) {
-		return !(placement.getAbsoluteEndX() < point.getMinX() || placement.getAbsoluteX() > getAbsoluteEndX() || placement.getAbsoluteEndY() < point.getMinY()
-				|| placement.getAbsoluteY() > placement.getAbsoluteEndY() || placement.getAbsoluteEndZ() < point.getMinZ()
-				|| placement.getAbsoluteZ() > placement.getAbsoluteEndZ());
+		return !(
+				placement.getAbsoluteEndX() < point.getMinX() ||
+				placement.getAbsoluteX() > getAbsoluteEndX() ||
+				placement.getAbsoluteEndY() < point.getMinY() ||
+				placement.getAbsoluteY() > getAbsoluteEndY() ||
+				placement.getAbsoluteEndZ() < point.getMinZ() ||
+				placement.getAbsoluteZ() > getAbsoluteEndZ()
+				);
 	}
 
 	@Override

@@ -98,6 +98,6 @@ public class ControlledContainerItem extends ContainerItem {
 	}
 	
 	public boolean hasInitialPoints() {
-		return initialPoints != null;
+		return initialPoints != null && !initialPoints.isEmpty();
 	}
 }

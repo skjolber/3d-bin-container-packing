@@ -22,6 +22,7 @@ import com.github.skjolber.packing.api.packager.control.manifest.ManifestControl
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
@@ -226,12 +227,22 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					break;
 				}
 				
-				DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, result.getStackValue().getDz() - 1 + levelOffset);
-				
-				pointCalculator.setPoints(Arrays.asList(levelFloor));
+				// best placement may not be at the current level offset
+				// keep all points between the level floor and the top of the target placement
+
+				if(controlledContainerItem.hasInitialPoints()) {
+					// account for obstacles etc
+					if(!pointCalculator.setPoints(controlledContainerItem.getInitialPoints(), 0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, result.getAbsoluteEndZ())) {
+						// no more points
+						break;
+					}
+				} else {
+					DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, result.getAbsoluteEndZ());
+					pointCalculator.setPoints(Arrays.asList(levelFloor));
+				}
 				pointCalculator.clear();
 				
-				levelOffset += result.getStackValue().getDz();
+				levelOffset = result.getAbsoluteEndZ() + 1;
 
 				newLevel = false;
 			} else {
@@ -246,8 +257,16 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					}
 
 					// prepare points for a new level						
-					DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, container.getLoadDz() - 1);
-					pointCalculator.setPoints(Arrays.asList(levelFloor));
+					if(controlledContainerItem.hasInitialPoints()) {
+						// account for obstacles etc
+						if(!pointCalculator.setPoints(controlledContainerItem.getInitialPoints(), 0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, container.getLoadDz() - 1)) {
+							// no more points
+							break;
+						}
+					} else {
+						DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, container.getLoadDz() - 1);
+						pointCalculator.setPoints(Arrays.asList(levelFloor));
+					}
 					pointCalculator.clear();
 					
 					// remove boxes which are too big for the max new level
@@ -284,7 +303,6 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					continue;
 				}
 			}
-			
 			stack.add(result);
 			pointCalculator.add(result.getPoint(), result);
 			

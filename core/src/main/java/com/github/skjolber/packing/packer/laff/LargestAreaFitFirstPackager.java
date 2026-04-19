@@ -11,6 +11,7 @@ import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultC
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemComparator;
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemGroupComparator;
 import com.github.skjolber.packing.comparator.LargestAreaPlacementComparator;
+import com.github.skjolber.packing.comparator.LowerZDelegatePlacementComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
 import com.github.skjolber.packing.comparator.VolumeWeightAreaPointIntermediatePlacementResultComparator;
@@ -50,7 +51,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			}
 			if(firstPlacementControlsBuilderFactory == null) {
 				LargestAreaBoxItemComparator firstBoxItemComparator = new LargestAreaBoxItemComparator();
-				LargestAreaPlacementComparator firstPlacementComparator = new LargestAreaPlacementComparator();
+				LowerZDelegatePlacementComparator firstPlacementComparator = new LowerZDelegatePlacementComparator(new LargestAreaPlacementComparator());
 				firstPlacementControlsBuilderFactory = new ComparatorPlacementControlsBuilderFactory(firstPlacementComparator, firstBoxItemComparator);
 			}
 			return new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, firstBoxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);

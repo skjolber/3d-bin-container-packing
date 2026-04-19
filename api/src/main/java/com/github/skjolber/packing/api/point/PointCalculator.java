@@ -20,7 +20,9 @@ public interface PointCalculator extends PointSource {
 	long calculateUsedWeight();
 	
 	void setPoints(List<Point> points);
-	
+
+	boolean setPoints(List<Point> points, int minX, int minY, int minZ, int maxX, int maxY, int maxZ);
+
 	void setMinimumAreaAndVolumeLimit(long area, long volume);
 	
 	void remove(Predicate<Point> test);

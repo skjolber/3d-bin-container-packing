@@ -17,6 +17,14 @@ import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.ep.PlacementList;
+import com.github.skjolber.packing.ep.points3d.Default3DPlanePoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultXYPlanePoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultXYPlaneXZPlanePoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultXYPlaneYZPlanePoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultXZPlanePoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultXZPlaneYZPlanePoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultYZPlanePoint3D;
 
 /**
  * 
@@ -1220,6 +1228,70 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		for(int i = 0; i < initialPoints.size(); i++) {
 			initialPoints.get(i).setIndex(i);
 		}
+	}
+	
+
+	// set points, but limit to a specific box
+	public boolean setPoints(List<Point> points, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+		// transform coordinates to internal representation, i.e. with support etc
+		initialPoints = new ArrayList<>(points.size());
+		
+		for(Point p: points) {
+			
+			// fully above current level?
+			if(p.getMinZ() > maxZ) {
+				continue;
+			}
+			// fully below current level?
+			if(p.getMaxZ() < minZ) {
+				continue;
+			}
+
+			// fully to the right? 
+			if(p.getMinX() > maxX) {
+				continue;
+			}
+			// fully to the left? 
+			if(p.getMaxX() < minX) {
+				continue;
+			}
+
+			// fully to the rear? 
+			if(p.getMinY() > maxY) {
+				continue;
+			}
+			// fully to the front?
+			if(p.getMaxY() < minY) {
+				continue;
+			}
+			
+			// TODO support calculation could be better, but it fairly good for most cases
+			boolean yzPlane = p.getMinX() == 0;
+			boolean xzPlane = p.getMinY() == 0;
+			
+			int limitedMinX = Math.max(p.getMinX(), minX);
+			int limitedMinY = Math.max(p.getMinY(), minY);
+			int limitedMinZ = Math.max(p.getMinZ(), minZ);
+			int limitedMaxX = Math.min(p.getMaxX(), maxX);
+			int limitedMaxY = Math.min(p.getMaxY(), maxY);
+			int limitedMaxZ = Math.min(p.getMaxZ(), maxZ);
+			
+			if(yzPlane && xzPlane) {
+				initialPoints.add(new DefaultXYSupportPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement, containerPlacement));
+			} else if(xzPlane) {
+				initialPoints.add(new DefaultXSupportPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement));
+			} else if(yzPlane) {
+				initialPoints.add(new DefaultYSupportPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement));
+			} else {
+				initialPoints.add(new DefaultPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ));
+			}
+		}
+		
+		for(int i = 0; i < initialPoints.size(); i++) {
+			initialPoints.get(i).setIndex(i);
+		}
+		
+		return !initialPoints.isEmpty();
 	}
 
 	protected void updateIndexes(Point2DFlagList values) {
