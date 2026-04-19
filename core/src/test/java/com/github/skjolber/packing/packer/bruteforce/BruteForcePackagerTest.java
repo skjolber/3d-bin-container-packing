@@ -22,8 +22,10 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.impl.ValidatingStack;
+import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
@@ -440,5 +442,59 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 		}
 	}
 
+	@Test
+	void testStackingRectanglesWithObstacles() {
+		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
+		
+		Container container = Container.newBuilder()
+				.withDescription("1")
+				.withEmptyWeight(1)
+				.withSize(3, 3, 3)
+				.withMaxLoadWeight(100)
+				.withStack(new ValidatingStack())
+				.build();
+
+		List<BoxItem> products9 = new ArrayList<>();
+		for(int i = 0; i < 9; i++) {
+			products9.add(new BoxItem(Box.newBuilder().withId("" + (char)(i + 'A')).withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+		}
+		
+		PackagerResult build9 = packager.newResultBuilder().withContainerItem( b -> {
+			b.withContainerItem(new ContainerItem(container, 1));
+		}).withBoxItems(products9).build();
+		
+		List<Placement> placements = build9.getContainers().get(0).getStack().getPlacements();
+		
+		for(int obstacleIndex = 0; obstacleIndex < 9; obstacleIndex++) {
+			Placement obstacle = placements.get(obstacleIndex);
+			
+			try {
+				List<BoxItem> products = new ArrayList<>();
+				
+				for(int i = 0; i < 8; i++) {
+					products.add(new BoxItem(Box.newBuilder().withId("" + (char)(i + 'A')).withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
+				}
 	
+				PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
+					b.withContainerItem(new ContainerItem(container, 1));
+					b.withObstacles( o -> {
+						o.withObstacle(
+								obstacle.getAbsoluteX(), obstacle.getAbsoluteY(), obstacle.getAbsoluteZ(),
+								obstacle.getAbsoluteEndX() - obstacle.getAbsoluteX() + 1, obstacle.getAbsoluteEndY() - obstacle.getAbsoluteY() + 1, obstacle.getAbsoluteEndZ() - obstacle.getAbsoluteZ() + 1 
+							);
+					});
+				}).withBoxItems(products).build();
+				
+				assertValid(build);
+				
+				List<Placement> buildPlacements = build.getContainers().get(0).getStack().getPlacements();
+				for (Placement placement : buildPlacements) {
+					assertFalse(placement.intersects3D(obstacle));
+				}
+			} finally {
+				packager.close();
+			}
+		}
+	}
+
 }

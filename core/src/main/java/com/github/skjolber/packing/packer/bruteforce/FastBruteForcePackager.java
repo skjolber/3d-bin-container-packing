@@ -175,7 +175,11 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 			bestPermutationResult.reset();
 			pointCalculator.clearToSize(holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz());
-
+			if(containerItem.hasInitialPoints()) {
+				pointCalculator.setPoints(containerItem.getInitialPoints());
+				pointCalculator.clear();
+			}
+			
 			int index = 0;
 
 			do {

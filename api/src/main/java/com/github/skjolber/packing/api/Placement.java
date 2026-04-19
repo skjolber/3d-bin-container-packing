@@ -108,8 +108,8 @@ public class Placement implements Serializable {
 				placement.getAbsoluteEndX() < point.getMinX() || 
 				placement.getAbsoluteEndZ() < point.getMinZ() ||
 				placement.getAbsoluteEndY() < point.getMinY() || 
-				placement.getAbsoluteX() > getAbsoluteEndZ() || 
-				placement.getAbsoluteY() > getAbsoluteEndZ() || 
+				placement.getAbsoluteX() > getAbsoluteEndX() || 
+				placement.getAbsoluteY() > getAbsoluteEndY() || 
 				placement.getAbsoluteZ() > getAbsoluteEndZ()
 				); 
 	}
