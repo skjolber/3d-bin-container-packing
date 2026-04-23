@@ -102,7 +102,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected FastBruteForceGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
+	public FastBruteForceGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
 			ContainerItemsCalculator defaultContainerItemsCalculator, PackagerInterruptSupplier interrupt) {
 		DefaultBoxItemGroupPermutationRotationIterator[] containerIterators = new DefaultBoxItemGroupPermutationRotationIterator[defaultContainerItemsCalculator.getContainerItemCount()];
 
@@ -126,7 +126,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected FastBruteForceAdapter createBoxItemAdapter(List<BoxItem> boxItems, ContainerItemsCalculator defaultContainerItemsCalculator,
+	public FastBruteForceAdapter createBoxItemAdapter(List<BoxItem> boxItems, ContainerItemsCalculator defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt) {
 		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[defaultContainerItemsCalculator.getContainerItemCount()];
 
