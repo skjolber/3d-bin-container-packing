@@ -170,9 +170,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			pointCalculator.clear();
 		}
 
-		ManifestControls boxItemControls = controlledContainerItem.createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, null);
+		ManifestControls boxItemControls = createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, null, controlledContainerItem.getBoxItemControlsBuilderFactory());
 
-		PointControls pointControls = controlledContainerItem.createPointControls(container, stack, filteredBoxItems, pointCalculator);
+		PointControls pointControls = createPointControls(container, stack, filteredBoxItems, pointCalculator, controlledContainerItem.getPointControlsBuilderFactory());
 		// remove boxes which do not fit due to volume, weight or dimensions
 		List<BoxItem> removed = new ArrayList<>();
 		for(int i = 0; i < filteredBoxItems.size(); i++) {
@@ -375,9 +375,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		BoxItemGroupSource filteredBoxItemGroups = packagerBoxItems.getFilteredBoxItemGroups();
 
-		ManifestControls boxItemControls = controlledContainerItem.createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups);
+		ManifestControls boxItemControls = createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups, controlledContainerItem.getBoxItemControlsBuilderFactory());
 
-		PointControls pointControls = controlledContainerItem.createPointControls(container, stack, filteredBoxItems, pointCalculator);
+		PointControls pointControls = createPointControls(container, stack, filteredBoxItems, pointCalculator, controlledContainerItem.getPointControlsBuilderFactory());
 				
 		List<BoxItemGroup> removedBoxItemGroups = new ArrayList<>();
 

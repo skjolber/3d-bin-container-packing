@@ -16,10 +16,15 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
+import com.github.skjolber.packing.api.packager.control.manifest.DefaultManifestControls;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
+import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.PointCalculator;
+import com.github.skjolber.packing.api.point.PointSource;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.MarkResetPointCalculator3D;
@@ -52,9 +57,9 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			pointCalculator.clear();
 		}
 
-		ManifestControls manifestControls = controlContainerItem.createBoxItemControls(container, stack, boxItemSource, pointCalculator, null);
+		ManifestControls manifestControls = createBoxItemControls(container, stack, boxItemSource, pointCalculator, null, controlContainerItem.getBoxItemControlsBuilderFactory());
 
-		PointControls pointControls = controlContainerItem.createPointControls(container, stack, boxItemSource, pointCalculator);
+		PointControls pointControls = createPointControls(container, stack, boxItemSource, pointCalculator, controlContainerItem.getPointControlsBuilderFactory());
 		
 		// remove boxes which do not fit due to volume, weight or dimensions
 		List<BoxItem> removed = new ArrayList<>(boxItemSource.size());
@@ -190,6 +195,33 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		return createIntermediatePackagerResult(controlContainerItem, stack);
 	}
 
+	protected ManifestControls createBoxItemControls(Container container, Stack stack, BoxItemSource boxItemSource,
+			PointCalculator pointCalculator, BoxItemGroupSource groups, ManifestControlsBuilderFactory manifestControlsBuilderFactory) {
+				
+		if(manifestControlsBuilderFactory == null) {
+			return new DefaultManifestControls(boxItemSource);
+		}
+		return manifestControlsBuilderFactory.createBoxItemControlsBuilder()
+				.withContainer(container)
+				.withStack(stack)
+				.withBoxItems(boxItemSource)
+				.withBoxItemGroups(groups)
+				.withPoints(pointCalculator)
+				.build();
+	}
+	
+	protected PointControls createPointControls(Container container, Stack stack, BoxItemSource boxItemSource, PointSource points, PointControlsBuilderFactory pointControlsBuilderFactory) {
+		if(pointControlsBuilderFactory == null) {
+			return new DefaultPointControls(points);
+		}
+		return pointControlsBuilderFactory.createPointControlsBuilder()
+				.withContainer(container)
+				.withStack(stack)
+				.withBoxItems(boxItemSource)
+				.withPoints(points)
+				.build();
+	}
+	
 	protected PointCalculator createPointCalculator(BoxItemSource boxItemSource) {
 		return new DefaultPointCalculator3D(false, boxItemSource);
 	}
@@ -213,9 +245,9 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 
 		BoxItemGroupSource filteredBoxItemGroups = packagerBoxItems.getFilteredBoxItemGroups();
 
-		ManifestControls boxItemControls = controlContainerItem.createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups);
+		ManifestControls boxItemControls = createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups, controlContainerItem.getBoxItemControlsBuilderFactory());
 
-		PointControls pointControls = controlContainerItem.createPointControls(container, stack, filteredBoxItems, pointCalculator);
+		PointControls pointControls = createPointControls(container, stack, filteredBoxItems, pointCalculator, controlContainerItem.getPointControlsBuilderFactory());
 						
 		List<BoxItemGroup> removedBoxItemGroups = new ArrayList<>();
 

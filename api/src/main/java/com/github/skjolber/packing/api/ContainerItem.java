@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
+import com.github.skjolber.packing.api.point.Point;
+
 /**
  * 
  * A {@linkplain Container} repeated one or more times.
@@ -115,6 +119,10 @@ public class ContainerItem {
 	private int count;
 	private final Container container;
 	private int index = -1;
+	
+	protected ManifestControlsBuilderFactory manifestControlsBuilderFactory;
+	protected PointControlsBuilderFactory pointControlsBuilderFactory;
+	protected List<Point> initialPoints; 
 
 	public ContainerItem(Container container, int count) {
 		this.container = container;
@@ -152,6 +160,46 @@ public class ContainerItem {
 	public boolean decrement(int value) {
 		this.count = this.count - value;
 		return count > 0;
+	}
+	
+	public void setInitialPoints(List<Point> points) {
+		this.initialPoints = points;
+	}
+	
+	public List<Point> getInitialPoints() {
+		return initialPoints;
+	}
+
+	public void setPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory) {
+		this.pointControlsBuilderFactory = pointControlsBuilderFactory;
+	}
+	
+	public PointControlsBuilderFactory getPointControlsBuilderFactory() {
+		return pointControlsBuilderFactory;
+	}
+	
+	public void setBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory factory) {
+		this.manifestControlsBuilderFactory = factory;
+	}
+	
+	public ManifestControlsBuilderFactory getBoxItemControlsBuilderFactory() {
+		return manifestControlsBuilderFactory;
+	}
+
+	public boolean hasPointControlsBuilderFactory() {
+		return pointControlsBuilderFactory != null;
+	}
+	
+	public boolean hasBoxItemControlsBuilderFactory() {
+		return manifestControlsBuilderFactory != null;
+	}	
+	
+	public boolean hasControls() {
+		return hasBoxItemControlsBuilderFactory() || hasBoxItemControlsBuilderFactory();
+	}
+	
+	public boolean hasInitialPoints() {
+		return initialPoints != null && !initialPoints.isEmpty();
 	}
 
 }

@@ -49,7 +49,6 @@ public interface PackagerResultBuilder {
 		ControlledBoxItemBuilder withBoxItem(BoxItem boxItem);
 		
 		ControlledBoxItemBuilder withBoxItem(Box box, int count);
-		
 
 	}
 
