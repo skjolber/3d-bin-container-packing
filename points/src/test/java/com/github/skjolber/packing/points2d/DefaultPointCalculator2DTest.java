@@ -16,6 +16,7 @@ import com.github.skjolber.packing.ep.points2d.DefaultPoint2D;
 import com.github.skjolber.packing.ep.points2d.DefaultXYSupportPoint2D;
 import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
 import com.github.skjolber.packing.ep.points2d.Point2D;
+import com.github.skjolber.packing.ep.points2d.SimplePoint2D;
 import com.github.skjolber.packing.points.ValidatingPointCalculator2D;
 
 public class DefaultPointCalculator2DTest {
@@ -1330,6 +1331,589 @@ public class DefaultPointCalculator2DTest {
 
 		assertThat(ep.getAll()).hasSize(9);
 
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testObstacleInXYPlaneMiddle(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 100);
+		ep.addObstacle(createStackPlacement(50, 50, 0, 54, 54, 4));
+		assertThat(ep.getAll()).hasSize(4); // i.e. not below
+		
+		// y
+		// |
+		// |---------------------|
+		// |                     |
+		// |       |-----|       | 54
+		// |       |     |       |
+		// |       |-----|       | 50
+		// |                     |
+		// |---------------------|--- x
+		//        50    54
+		// Two extra parts
+		//
+		// y
+		// |
+		// |--------
+		// |       |
+		// |       |
+		// |   0   |
+		// |       |
+		// |       |
+		// |-------|--- x
+		//
+		// y
+		// |
+		// |---------------------|
+		// |         1           |
+		// |---------------------|--- x
+		//
+		// and xx, yy components
+		
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(99, 49);
+		
+		SimplePoint2D point1 = ep.get(1);
+		assertThat(point1).isMin(0, 0);
+		assertThat(point1).isMax(49, 99);
+
+		// y
+		// |        
+		// |---------------------|
+		// |          2          |
+		// *-------|═════|-------| <- double lined piece of support does not count
+		// |       |     |
+		// |       |-----| 
+		// |              
+		// |------------------------ x
+		// 
+		
+		assertThat(ep.get(2)).isMin(0, 55);
+		assertThat(ep.get(2)).isMax(99, 99);
+		
+		// y
+		// |
+		// |             |-------|
+		// |             |       |
+		// |       |-----║       | 
+		// |       |     ║   3   | double lined piece of support does not count
+		// |       |-----║       | 
+		// |             |       |
+		// |-------------*-------|--- x
+		// 
+		
+		assertThat(ep.get(3)).isMin(55, 0);
+		assertThat(ep.get(3)).isMax(99, 99);
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testObstacleInXYPlaneX(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 100);
+		ep.addObstacle(createStackPlacement(50, 0, 0, 54, 54, 4));
+		assertThat(ep.getAll()).hasSize(3);
+
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(49, 99);
+
+		// y
+		// |        
+		// |---------------------|
+		// |                     |
+		// |          2          |
+		// |                     |
+		// *-------|═════|-------| 54
+		// |       |     |       |
+		// |-------|-----|---------- x
+		//         50   54
+		//
+		//  Double lined piece of support does not count
+		
+		assertThat(ep.get(1)).isMin(0, 55);
+		assertThat(ep.get(1)).isMax(99, 99);
+		
+		// y
+		// |
+		// |             |-------|
+		// |             |       |
+		// |             |       |
+		// |       |-----║       | 
+		// |       |     ║   3   | 
+		// |-------|-----║-------|--- x 
+		// 
+		
+		assertThat(ep.get(2)).isMin(55, 0);
+		assertThat(ep.get(2)).isMax(99, 99);
+	}
+	
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testObstacleInXYPlaneY(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 100);
+		ep.addObstacle(createStackPlacement(0, 50, 0, 54, 54, 4));
+		assertThat(ep.getAll()).hasSize(3); // no left (x=0), no z in 2D
+
+		// y
+		// |
+		// |-------------------|
+		// |                   |
+		// |-------|           | 54
+		// |       |           |
+		// |       |           |
+		// |-------|           | 50
+		// |                   |
+		// |-------------------|--- x
+		//        54
+
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(99, 49);
+
+		assertThat(ep.get(1)).isMin(0, 55);
+		assertThat(ep.get(1)).isMax(99, 99);
+
+		assertThat(ep.get(2)).isMin(55, 0);
+		assertThat(ep.get(2)).isMax(99, 99);
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testTwoObstacleInXYPlaneX(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 100);
+		ep.addObstacle(createStackPlacement(50, 0, 0, 54, 24, 4));
+		ep.addObstacle(createStackPlacement(50, 75, 0, 54, 99, 4));
+		
+		assertThat(ep.getAll()).hasSize(3);
+		
+		// y
+		// |
+		// |-------|-----|-------|
+		// |       |     |       |
+		// |       |-----|       | 75
+		// |                     |
+		// |                     |
+		// |                     |
+		// |                     |
+		// |                     |
+		// |       |-----|       | 24
+		// |       |     |       |
+		// |-------|-----|-------|--- x
+		//         50   54
+		//
+		// y
+		// |
+		// |-------|
+		// |       |
+		// |       |
+		// |       |
+		// |       |
+		// |       |
+		// |       |
+		// |       |
+		// |       |
+		// |       |
+		// |-------|--------------- x
+		//         50  
+		//
+		// |
+		// |             |-------|
+		// |             |       |
+		// |             |       |
+		// |             |       |
+		// |             |       |
+		// |             |       |
+		// |             |       |
+		// |             |       |
+		// |             |       |
+		// |             |       |
+		// |-------------|-------|--- x
+		//         50   54
+		//
+		// y
+		// |
+		// |
+		// |
+		// |---------------------| 74
+		// |                     |
+		// |                     |
+		// |                     |
+		// |                     |
+		// |---------------------| 25
+		// |
+		// |------------------------ x
+		//
+		//
+
+		// and TOP
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(49, 99);
+		
+		assertThat(ep.get(1)).isMin(0, 25);
+		assertThat(ep.get(1)).isMax(99, 74);
+		
+		assertThat(ep.get(2)).isMin(55, 0);
+		assertThat(ep.get(2)).isMax(99, 99);
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testObstacleInXYPlaneTop(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 100);
+		ep.addObstacle(createStackPlacement(50, 50, 0, 54, 99, 4));
+		assertThat(ep.getAll()).hasSize(3); // no above (y=99), no z in 2D
+
+		// y
+		// |
+		// |-------|-----|-------|
+		// |       |     |       |
+		// |       |-----|       | 50
+		// |                     |
+		// |                     |
+		// |                     |
+		// |---------------------|--- x
+		//        50    54
+		// 
+		//
+		// y
+		// |
+		// |--------
+		// |       |
+		// |       |
+		// |   0   |
+		// |       |
+		// |       |
+		// |-------|--- x
+		//
+		// y
+		// |
+		// |
+		// |
+		// |---------------------|
+		// |         1           |
+		// |---------------------|--- x
+		//
+		// TOP
+		// and xx, zz components
+		
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(99, 49);
+
+		SimplePoint2D point1 = ep.get(1);
+		assertThat(point1).isMin(0, 0);
+		assertThat(point1).isMax(49, 99);
+
+		assertThat(ep.get(2)).isMin(55, 0);
+		assertThat(ep.get(2)).isMax(99, 99);
+	}
+	
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testObstacleInXYPlaneRight(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 100);
+		ep.addObstacle(createStackPlacement(50, 50, 0, 99, 54, 4));
+		assertThat(ep.getAll()).hasSize(3);
+
+		// y
+		// |
+		// |---------------------|
+		// |                     |
+		// |             |-------| 54
+		// |             |       |
+		// |             |-------| 50
+		// |                     |
+		// |---------------------|--- x
+		//            50
+		// 
+		//
+		// y
+		// |
+		// |-------------|
+		// |             |
+		// |             |
+		// |      0      |
+		// |             |
+		// |             |
+		// |-------------|
+		//      
+		// y
+		// |
+		// |
+		// |
+		// |---------------------|
+		// |         1           |
+		// |---------------------|--- x
+		//
+		// TOP
+
+		// y
+		// |
+		// |---------------------|
+		// |         2           |
+		// |---------------------|
+		// |
+		// |
+		// |------------------------ x
+		//
+		
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(99, 49);
+
+		SimplePoint2D point1 = ep.get(1);
+		assertThat(point1).isMin(0, 0);
+		assertThat(point1).isMax(49, 99);
+
+		assertThat(ep.get(2)).isMin(0, 55);
+		assertThat(ep.get(2)).isMax(99, 99);
+	}
+
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testObstacleInMiddleAir(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 100);
+		ep.addObstacle(createStackPlacement(50, 50, 5, 54, 54, 9));
+		assertThat(ep.getAll()).hasSize(4); // same as middle in 2D (z is irrelevant)
+
+		// y
+		// |
+		// |---------------------|
+		// |                     |
+		// |       |-----|       | 54
+		// |       |     |       |
+		// |       |-----|       | 50
+		// |                     |
+		// |---------------------|--- x
+		//        50    54
+		// Two extra parts
+		//
+		// y
+		// |
+		// |--------
+		// |       |
+		// |       |
+		// |   0   |
+		// |       |
+		// |       |
+		// |-------|--- x
+		//
+		// y
+		// |
+		// |---------------------|
+		// |         1           |
+		// |---------------------|--- x
+		//
+		// and xx, yy components
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(99, 49);
+
+		SimplePoint2D point1 = ep.get(1);
+		assertThat(point1).isMin(0, 0);
+		assertThat(point1).isMax(49, 99);
+
+		assertThat(ep.get(2)).isMin(0, 55);
+		assertThat(ep.get(2)).isMax(99, 99);
+
+		assertThat(ep.get(3)).isMin(55, 0);
+		assertThat(ep.get(3)).isMax(99, 99);
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testObstacleInXYPlaneCorner(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 100);
+		ep.addObstacle(createStackPlacement(0, 50, 0, 54, 99, 4));
+		assertThat(ep.getAll()).hasSize(2); // i.e. not below
+		
+		// y
+		// |
+		// |-------|-----------| 99
+		// |       |           |
+		// |       |           |
+		// |-------|           | 50
+		// |                   |
+		// |                   |
+		// |-------------------|--- x
+		//        54
+		// y
+		// |
+		// |
+		// |
+		// |
+		// |---------------------| 50
+		// |         0           |
+		// |---------------------|--- x
+		//
+		
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(99, 49);
+
+		// y
+		// |
+		// |       |-----------|
+		// |       |           |
+		// |       |           |
+		// |       |    2      | 50
+		// |       |           |
+		// |       |           |
+		// |-------|-----------|--- x
+		//        54
+		
+		assertThat(ep.get(1)).isMin(55, 0);
+		assertThat(ep.get(1)).isMax(99, 99);
+		
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testOffsetInXYPlaneMiddle(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 100);
+		ep.add(0, createStackPlacement(50, 50, 0, 54, 54, 4));
+		assertThat(ep.getAll()).hasSize(4); // i.e. not below
+		
+		// y
+		// |
+		// |---------------------|
+		// |                     |
+		// |       |-----|       | 54
+		// |       |     |       |
+		// |       |-----|       | 50
+		// |                     |
+		// |---------------------|--- x
+		//        50    54
+		// Two extra parts
+		//
+		// y
+		// |
+		// |--------
+		// |       |
+		// |       |
+		// |   0   |
+		// |       |
+		// |       |
+		// |-------|--- x
+		//
+		// y
+		// |
+		// |---------------------|
+		// |         1           |
+		// |---------------------|--- x
+		//
+		// and xx, yy components
+		
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(99, 49);
+		
+		SimplePoint2D point1 = ep.get(1);
+		assertThat(point1).isMin(0, 0);
+		assertThat(point1).isMax(49, 99);
+
+		// y
+		// |        
+		// |---------------------|
+		// |          2          |
+		// *-------|═════|-------| <- double lined piece of support does not count
+		// |       |     |
+		// |       |-----| 
+		// |              
+		// |------------------------ x
+		// 
+		
+		assertThat(ep.get(2)).isMin(0, 55);
+		assertThat(ep.get(2)).isMax(99, 99);
+		
+		// y
+		// |
+		// |             |-------|
+		// |             |       |
+		// |       |-----║       | 
+		// |       |     ║   3   | double lined piece of support does not count
+		// |       |-----║       | 
+		// |             |       |
+		// |-------------*-------|--- x
+		// 
+		
+		assertThat(ep.get(3)).isMin(55, 0);
+		assertThat(ep.get(3)).isMax(99, 99);
+	}
+
+	// --- Tests using the standard 2D clearToSize(..., 0) configuration ---
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testObstacleInXYPlaneMiddleZeroZ(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 0);
+		ep.addObstacle(createStackPlacement(50, 50, 54, 54));
+		assertThat(ep.getAll()).hasSize(4);
+
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(99, 49);
+
+		SimplePoint2D point1 = ep.get(1);
+		assertThat(point1).isMin(0, 0);
+		assertThat(point1).isMax(49, 99);
+
+		assertThat(ep.get(2)).isMin(0, 55);
+		assertThat(ep.get(2)).isMax(99, 99);
+
+		assertThat(ep.get(3)).isMin(55, 0);
+		assertThat(ep.get(3)).isMax(99, 99);
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testObstacleInXYPlaneXZeroZ(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 0);
+		ep.addObstacle(createStackPlacement(50, 0, 54, 54));
+		assertThat(ep.getAll()).hasSize(3);
+
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(49, 99);
+
+		assertThat(ep.get(1)).isMin(0, 55);
+		assertThat(ep.get(1)).isMax(99, 99);
+
+		assertThat(ep.get(2)).isMin(55, 0);
+		assertThat(ep.get(2)).isMax(99, 99);
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testObstacleInXYPlaneYZeroZ(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 0);
+		ep.addObstacle(createStackPlacement(0, 50, 54, 54));
+		assertThat(ep.getAll()).hasSize(3);
+
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(99, 49);
+
+		assertThat(ep.get(1)).isMin(0, 55);
+		assertThat(ep.get(1)).isMax(99, 99);
+
+		assertThat(ep.get(2)).isMin(55, 0);
+		assertThat(ep.get(2)).isMax(99, 99);
 	}
 
 }

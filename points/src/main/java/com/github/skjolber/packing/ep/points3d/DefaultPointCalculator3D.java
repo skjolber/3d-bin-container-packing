@@ -123,13 +123,12 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	public boolean add(int index, Placement placement) {
-		values.flag(index);
-
 		SimplePoint3D point = values.get(index);
 		
-		boolean supportedXYPlane = point.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY());
-		boolean supportedXZPlane = point.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
-		boolean supportedYZPlane = point.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
+		// check supported planes when placement is not placed at point
+		boolean supportedXYPlane = point.getMinZ() == placement.getAbsoluteZ() && point.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY());
+		boolean supportedXZPlane = point.getMinY() == placement.getAbsoluteY() && point.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
+		boolean supportedYZPlane = point.getMinX() == placement.getAbsoluteX() && point.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
 		
 		return add(point, index, placement, supportedXYPlane, supportedXZPlane, supportedYZPlane);
 	}

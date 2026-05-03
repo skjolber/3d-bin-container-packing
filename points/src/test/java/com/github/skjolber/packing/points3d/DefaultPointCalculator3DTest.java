@@ -1404,4 +1404,109 @@ public class DefaultPointCalculator3DTest {
 		assertThat(ep.get(2)).isXZSupportAt(99, 1);
 	}
 
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testOffsetInXYPlaneMiddle(boolean clone) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+		ep.clearToSize(100, 100, 100);
+		ep.add(0, createStackPlacement(50, 50, 0, 54, 54, 4));
+		assertThat(ep.getAll()).hasSize(5); // i.e. not below
+		
+		// y
+		// |
+		// |---------------------|
+		// |                     |
+		// |       |-----|       | 54
+		// |       |     |       |
+		// |       |-----|       | 50
+		// |                     |
+		// |---------------------|--- x
+		//        50    54
+		// Two extra parts
+		//
+		// y
+		// |
+		// |--------
+		// |       |
+		// |       |
+		// |   0   |
+		// |       |
+		// |       |
+		// |-------|--- x
+		//
+		// y
+		// |
+		// |---------------------|
+		// |         1           |
+		// |---------------------|--- x
+		//
+		// and xx, yy, zz components
+		
+		SimplePoint3D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0, 0);
+		assertThat(point0).isMax(49, 99, 99);
+		assertThat(point0).isXYSupportAt(99, 99);
+		assertThat(point0).isYZSupportAt(99, 99);
+		assertThat(point0).isXZSupportAt(99, 99);
+		
+		SimplePoint3D point1 = ep.get(1);
+		assertThat(point1).isMin(0, 0, 0);
+		assertThat(point1).isMax(99, 49, 99);
+		assertThat(point1).isXYSupportAt(99, 99);
+		assertThat(point1).isYZSupportAt(99, 99);
+		assertThat(point1).isXZSupportAt(99, 99);
+
+		// copy "regular" tests for a placement size 55x55x4
+		// TOP
+		assertThat(ep.get(2)).isMin(0, 0, 5);
+		assertThat(ep.get(2)).isMax(99, 99, 99);
+		
+		// xy support is lost
+		assertThat(ep.get(2)).isNoXYSupportAt(10, 10);
+		assertThat(ep.get(2)).isNoXYSupportAt(51, 51);
+		assertThat(ep.get(2)).isYZSupportAt(99, 99);
+		assertThat(ep.get(2)).isXZSupportAt(99, 99);
+
+		// y
+		// |        
+		// |---------------------|
+		// |          3          |
+		// *-------|═════|-------| <- double lined piece of support does not count
+		// |       |     |
+		// |       |-----| 
+		// |              
+		// |------------------------ x
+		// 
+		
+		assertThat(ep.get(3)).isMin(0, 55, 0);
+		assertThat(ep.get(3)).isMax(99, 99, 99);
+		assertThat(ep.get(3)).isXYSupportAt(99, 99);
+		assertThat(ep.get(3)).isYZSupportAt(99, 99);
+		
+		// xz support is lost
+		assertThat(ep.get(3)).isNoXZSupportAt(9, 9);
+		assertThat(ep.get(3)).isNoXZSupportAt(52, 3);
+
+		// y
+		// |
+		// |             |-------|
+		// |             |       |
+		// |       |-----║       | 
+		// |       |     ║   4   | double lined piece of support does not count
+		// |       |-----║       | 
+		// |             |       |
+		// |-------------*-------|--- x
+		// 
+		
+		assertThat(ep.get(4)).isMin(55, 0, 0);
+		assertThat(ep.get(4)).isMax(99, 99, 99);
+		assertThat(ep.get(4)).isXYSupportAt(99, 99);
+		assertThat(ep.get(4)).isXZSupportAt(99, 99);
+
+		// yz support is lost
+		assertThat(ep.get(4)).isNoYZSupportAt(9, 9);
+		assertThat(ep.get(4)).isNoYZSupportAt(52, 3);
+	}
+
 }
