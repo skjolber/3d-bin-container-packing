@@ -123,8 +123,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	public boolean add(int index, Placement placement) {
-		values.flag(index);
-
 		SimplePoint3D point = values.get(index);
 		
 		// check supported planes when placement is not placed at point
