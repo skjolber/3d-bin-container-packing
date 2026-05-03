@@ -259,7 +259,8 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
  * [The Art of Stacking: Challenges Faced While Developing a Packing Algorithm](https://medium.com/@fayyazawais1412/the-art-of-stacking-challenges-faced-while-developing-a-packing-algorithm-64d869b924ab)
 
 # History
- * 4.2.x: Obstacles.
+ * 4.2.1: `Placement` can now be added anywhere within a `Point` (not only at the point origin).
+ * 4.2.0: Obstacles.
  * 4.1.x: Validator.
  * 4.0.x: Major rewrite. Breaking changes.
      * Support for packaging groups
