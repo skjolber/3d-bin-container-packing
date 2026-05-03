@@ -1412,7 +1412,7 @@ public class DefaultPointCalculator2DTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(booleans = {true})
+	@ValueSource(booleans = {true, false})
 	public void testObstacleInXYPlaneX(boolean clone) {
 		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
 		ep.clearToSize(100, 100, 100);
