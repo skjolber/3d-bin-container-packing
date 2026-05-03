@@ -141,12 +141,23 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		return add(point, index, placement, xSupport, ySupport);
 	}
 	
+	private boolean fits2D(Point2D point, Placement placement) {
+		BoxStackValue stackValue = placement.getBoxStackValue();
+		int endX = placement.getAbsoluteX() + stackValue.getDx() - 1;
+		int endY = placement.getAbsoluteY() + stackValue.getDy() - 1;
+
+		return point.getMinX() <= placement.getAbsoluteX() &&
+				point.getMinY() <= placement.getAbsoluteY() &&
+				point.getMaxX() >= endX &&
+				point.getMaxY() >= endY;
+	}
+	
 	public boolean addObstacle(Placement placement) {
 		// find a point which holds the placement
 		for(int i = 0; i < values.size(); i++) {
 			Point2D point = values.get(i);
 			
-			if(point.fits3D(placement)) {
+			if(fits2D(point, placement)) {
 				// check supported planes when placement is not placed at point
 				// check supported planes when placement is not placed at point
 				boolean xSupport = point.getMinY() == placement.getAbsoluteY() && point.isXSupport(placement.getAbsoluteX());
