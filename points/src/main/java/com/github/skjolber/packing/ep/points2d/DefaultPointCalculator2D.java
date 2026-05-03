@@ -130,7 +130,37 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		return add(point.getIndex(), placement);
 	}	
 	
+
 	public boolean add(int index, Placement placement) {
+		Point2D point = values.get(index);
+		
+		// check supported planes when placement is not placed at point
+		boolean xSupport = point.getMinY() == placement.getAbsoluteY() && point.isXSupport(placement.getAbsoluteX());
+		boolean ySupport = point.getMinX() == placement.getAbsoluteX() && point.isYSupport(placement.getAbsoluteY());
+		
+		return add(point, index, placement, xSupport, ySupport);
+	}
+	
+	public boolean addObstacle(Placement placement) {
+		// find a point which holds the placement
+		for(int i = 0; i < values.size(); i++) {
+			Point2D point = values.get(i);
+			
+			if(point.fits3D(placement)) {
+				// check supported planes when placement is not placed at point
+				// check supported planes when placement is not placed at point
+				boolean xSupport = point.getMinY() == placement.getAbsoluteY() && point.isXSupport(placement.getAbsoluteX());
+				boolean ySupport = point.getMinX() == placement.getAbsoluteX() && point.isYSupport(placement.getAbsoluteY());
+				
+				add(point, i, placement, xSupport, ySupport);
+				
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean add(Point2D source, int index, Placement placement, boolean xSupport, boolean ySupport) {
 		// overall approach:
 		// Do not iterate over placements to find point max / mins, rather
 		// project existing points. 
@@ -150,16 +180,9 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			addXX.ensureAdditionalCapacity(capacity);
 			addYY.ensureAdditionalCapacity(capacity);
 		}
-
-		Point2D source = values.get(index);
-
-		boolean xSupport = source.isXSupport(source.getMinX());
-		boolean ySupport = source.isYSupport(source.getMinY());
-
+		
 		int xx = placement.getAbsoluteEndX() + 1;
 		int yy = placement.getAbsoluteEndY() + 1;
-
-		values.flag(index);
 
 		//       |
 		//       |
@@ -267,7 +290,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			// ---------------------------
 			//
 
-			if(point.getMinX() >= source.getMinX() && point.getMinY() >= source.getMinY()) {
+			if(point.getMinX() >= placement.getAbsoluteX() && point.getMinY() >= placement.getAbsoluteY()) {
 
 				// 
 				// |
@@ -431,18 +454,13 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			//       |--------------------------
 			//               minX             maxX
 			//
-			// so only those points between 0 and minX 
+			// so only those points between 0 and minX (inclusive)
 			// and between minY and maxY need to be constrained
 
-			pointIndex = index;
-			while (pointIndex > 0 && values.get(pointIndex - 1).getMinX() == placement.getAbsoluteX()) {
-				pointIndex--;
-			}
-
 			if(cloneOnConstrain) {
-				constrainMaxXWithClone(placement, 0, pointIndex);
+				constrainMaxXWithClone(placement, 0, endIndex);
 			} else {
-				constrainMaxX(placement, 0, pointIndex);
+				constrainMaxX(placement, 0, endIndex);
 			}
 		} else {
 			if(cloneOnConstrain) {
