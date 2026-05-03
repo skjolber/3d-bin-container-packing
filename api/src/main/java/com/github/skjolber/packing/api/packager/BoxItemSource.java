@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.BoxItem;
 
 public interface BoxItemSource extends Iterable<BoxItem> {
 	
-	int size();	
+	int size();
 
 	boolean isEmpty();
 
