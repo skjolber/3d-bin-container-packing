@@ -142,7 +142,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	}
 	
 	private boolean fits2D(Point2D point, Placement placement) {
-		BoxStackValue stackValue = placement.getBoxStackValue();
+		BoxStackValue stackValue = placement.getStackValue();
 		int endX = placement.getAbsoluteX() + stackValue.getDx() - 1;
 		int endY = placement.getAbsoluteY() + stackValue.getDy() - 1;
 

@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.points2d;
 
 import static com.github.skjolber.packing.points2d.assertj.SimplePoint2DAssert.assertThat;
-import static com.github.skjolber.packing.points3d.assertj.SimplePoint3DAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -18,8 +17,6 @@ import com.github.skjolber.packing.ep.points2d.DefaultXYSupportPoint2D;
 import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
 import com.github.skjolber.packing.ep.points2d.Point2D;
 import com.github.skjolber.packing.ep.points2d.SimplePoint2D;
-import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
-import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.points.ValidatingPointCalculator2D;
 
 public class DefaultPointCalculator2DTest {
@@ -1855,5 +1852,68 @@ public class DefaultPointCalculator2DTest {
 		assertThat(ep.get(3)).isMin(55, 0);
 		assertThat(ep.get(3)).isMax(99, 99);
 	}
-	
+
+	// --- Tests using the standard 2D clearToSize(..., 0) configuration ---
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testObstacleInXYPlaneMiddleZeroZ(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 0);
+		ep.addObstacle(createStackPlacement(50, 50, 54, 54));
+		assertThat(ep.getAll()).hasSize(4);
+
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(99, 49);
+
+		SimplePoint2D point1 = ep.get(1);
+		assertThat(point1).isMin(0, 0);
+		assertThat(point1).isMax(49, 99);
+
+		assertThat(ep.get(2)).isMin(0, 55);
+		assertThat(ep.get(2)).isMax(99, 99);
+
+		assertThat(ep.get(3)).isMin(55, 0);
+		assertThat(ep.get(3)).isMax(99, 99);
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testObstacleInXYPlaneXZeroZ(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 0);
+		ep.addObstacle(createStackPlacement(50, 0, 54, 54));
+		assertThat(ep.getAll()).hasSize(3);
+
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(49, 99);
+
+		assertThat(ep.get(1)).isMin(0, 55);
+		assertThat(ep.get(1)).isMax(99, 99);
+
+		assertThat(ep.get(2)).isMin(55, 0);
+		assertThat(ep.get(2)).isMax(99, 99);
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testObstacleInXYPlaneYZeroZ(boolean clone) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+		ep.clearToSize(100, 100, 0);
+		ep.addObstacle(createStackPlacement(0, 50, 54, 54));
+		assertThat(ep.getAll()).hasSize(3);
+
+		SimplePoint2D point0 = ep.get(0);
+		assertThat(point0).isMin(0, 0);
+		assertThat(point0).isMax(99, 49);
+
+		assertThat(ep.get(1)).isMin(0, 55);
+		assertThat(ep.get(1)).isMax(99, 99);
+
+		assertThat(ep.get(2)).isMin(55, 0);
+		assertThat(ep.get(2)).isMax(99, 99);
+	}
+
 }
