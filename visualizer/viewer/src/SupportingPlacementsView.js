@@ -58,6 +58,42 @@ function findSupportingBoxes(hoveredSource, allBoxPlacements) {
  * Each entry in allBoxPlacements has { placement, stackable, color, isHovered }.
  * color is the sRGB hex string matching the 3D view.
  */
+/**
+ * Compute a font size (px) so that the rendered label text fills roughly
+ * `targetFraction` of the given pixel width.  Clamps between minSize and maxSize.
+ */
+function fitFontSize(ctx, label, pixelWidth, targetFraction, minSize, maxSize) {
+    ctx.font = `bold ${maxSize}px monospace`;
+    const measured = ctx.measureText(label).width;
+    if (measured <= 0) return minSize;
+    const size = Math.floor(maxSize * (pixelWidth * targetFraction) / measured);
+    return Math.max(minSize, Math.min(maxSize, size));
+}
+
+/**
+ * Draw a label centered inside the given box rectangle with a dark outline so
+ * it is always legible against any fill color.
+ */
+function drawLabel(ctx, label, cx, cy, w, h) {
+    const fontSize = fitFontSize(ctx, label, w, 0.5, 8, 128);
+    ctx.font = `bold ${fontSize}px monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const tx = cx + w / 2;
+    const ty = cy + h / 2;
+    // Dark outline for contrast against any background
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.lineWidth = Math.max(2, fontSize * 0.18);
+    ctx.lineJoin = 'round';
+    ctx.strokeText(label, tx, ty);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(label, tx, ty);
+    // Reset to safe defaults
+    ctx.textAlign = 'start';
+    ctx.textBaseline = 'alphabetic';
+}
+
 function drawTopDown(canvas, container, allBoxPlacements, hoveredSource) {
     const ctx = canvas.getContext('2d');
     const W = canvas.width;
@@ -93,50 +129,41 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource) {
     const supporting = hoveredSource ? findSupportingBoxes(hoveredSource, allBoxPlacements) : [];
     const supportingSet = new Set(supporting);
 
-    // Draw only the direct supporting boxes
+    // Collect box geometry for the two-pass render (fills → labels)
+    const boxes = [];
+
     for (const bp of supportingSet) {
         const { placement, stackable } = bp;
         const { cx, cy } = toCanvas(placement.x, placement.y);
         const w = Math.max(1, stackable.dy * scaleX);
         const h = Math.max(1, stackable.dx * scaleY);
-
-        ctx.globalAlpha = 0.85;
-        ctx.fillStyle = bp.color;
-        ctx.fillRect(cx, cy, w, h);
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(cx, cy, w, h);
-
-        if (stackable.name || stackable.id) {
-            const label = stackable.name || stackable.id;
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 14px monospace';
-            ctx.fillText(label, cx + 4, cy + 16);
-        }
+        boxes.push({ cx, cy, w, h, color: bp.color, lineWidth: 2, label: stackable.name || stackable.id || null, alpha: 0.85 });
     }
 
-    // Hovered box drawn on top with its own (emissive-blended) color + bright white border
     if (hoveredSource) {
         const { cx, cy } = toCanvas(hoveredSource.x, hoveredSource.y);
         const w = Math.max(1, hoveredSource.stackable.dy * scaleX);
         const h = Math.max(1, hoveredSource.stackable.dx * scaleY);
         const hoverBp = allBoxPlacements.find(bp => bp.isHovered);
         const hoverColor = hoverBp ? hoverBp.color : '#FFC864';
+        boxes.push({ cx, cy, w, h, color: hoverColor, lineWidth: 2.5, label: hoveredSource.stackable.name || hoveredSource.stackable.id || null, alpha: 0.9 });
+    }
 
-        ctx.globalAlpha = 0.9;
-        ctx.fillStyle = hoverColor;
-        ctx.fillRect(cx, cy, w, h);
+    // Pass 1 – fills and borders
+    for (const b of boxes) {
+        ctx.globalAlpha = b.alpha;
+        ctx.fillStyle = b.color;
+        ctx.fillRect(b.cx, b.cy, b.w, b.h);
         ctx.globalAlpha = 1;
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2.5;
-        ctx.strokeRect(cx, cy, w, h);
+        ctx.lineWidth = b.lineWidth;
+        ctx.strokeRect(b.cx, b.cy, b.w, b.h);
+    }
 
-        if (hoveredSource.stackable.name || hoveredSource.stackable.id) {
-            const label = hoveredSource.stackable.name || hoveredSource.stackable.id;
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 14px monospace';
-            ctx.fillText(label, cx + 4, cy + 16);
+    // Pass 2 – labels drawn last so they are never obscured by another box's fill
+    for (const b of boxes) {
+        if (b.label) {
+            drawLabel(ctx, b.label, b.cx, b.cy, b.w, b.h);
         }
     }
 
