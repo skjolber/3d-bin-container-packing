@@ -204,13 +204,14 @@ class ThreeScene extends Component {
       if(latestData != null && data == latestData) {
         return;
       }
-      console.log("Update model");
+      console.log("Update model @ " + CONTAINERS + " — containers: " + packaging.containers.length);
 
       latestData = data;
 
       for(var i = 0; i < visibleContainers.length; i++) {
         mainGroup.remove(visibleContainers[i]);
       }
+      visibleContainers = [];
 
       var x = 0;
 
@@ -368,12 +369,12 @@ class ThreeScene extends Component {
 
     http(
       "/assets/containers.json"
-    ).then(load);
+    ).then(load).catch((err) => { console.warn("Failed to load containers data:", err.message); });
 
     setInterval(function(){ 
       http(
         "/assets/containers.json"
-      ).then(load);
+      ).then(load).catch((err) => { console.warn("Failed to load containers data:", err.message); });
     }, 500);
   };
 
