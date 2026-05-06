@@ -6,6 +6,7 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { MemoryColorScheme, RandomColorScheme, StackPlacement, Box, Container, Point, StackableRenderer } from "./api";
 import { http } from "./utils";
 import { Font } from 'three/examples/jsm/loaders/FontLoader';
+import SupportingPlacementsView from "./SupportingPlacementsView";
 
 import randomColor from "randomcolor";
 import { thisExpression } from "@babel/types";
@@ -56,8 +57,11 @@ const font = new Font( helvetiker );
 class ThreeScene extends Component {
   constructor(props) {
     super(props);
-    this.state = { useWireFrame: false, selectedBox: null };
+    this.state = { useWireFrame: false, selectedBox: null, hoveredData: null };
     visibleContainers = new Array();
+    // Raw mouse position in client coordinates (updated on every mousemove)
+    this.mouseX = 0;
+    this.mouseY = 0;
   }
 
   animate = () => {
@@ -139,12 +143,64 @@ class ThreeScene extends Component {
         INTERSECTED = target
         INTERSECTED.myColor = INTERSECTED.material.color;
         INTERSECTED.material.emissive = new Color("#FF0000") 
+
+        // Update supporting-placements popup for box meshes
+        if (INTERSECTED.userData && INTERSECTED.userData.type === "box") {
+          this.updateHoveredBoxData(INTERSECTED);
+        } else {
+          this.setState({ hoveredData: null });
+        }
       }
     } else {
       if ( INTERSECTED ) {
         INTERSECTED.material.emissive = new Color("#000000") ;
         INTERSECTED = null;
+        this.setState({ hoveredData: null });
       }
+    }
+  };
+
+  /**
+   * Collect all box placements in the same container as the hovered mesh,
+   * then push the data needed by SupportingPlacementsView into React state.
+   */
+  updateHoveredBoxData = (mesh) => {
+    try {
+      // Mesh hierarchy: box → containerLoad (LineSegments) → containerGroup (Group)
+      const containerLoad = mesh.parent;
+      const containerGroup = containerLoad && containerLoad.parent;
+      const container = containerGroup && containerGroup.userData && containerGroup.userData.source;
+
+      if (!container) {
+        this.setState({ hoveredData: null });
+        return;
+      }
+
+      // Collect all box meshes that live in the same containerLoad
+      const allBoxPlacements = [];
+      for (var i = 0; i < containerLoad.children.length; i++) {
+        var child = containerLoad.children[i];
+        if (child.userData && child.userData.type === "box") {
+          var sp = child.userData.source; // StackPlacement
+          allBoxPlacements.push({
+            placement: sp,          // StackPlacement (has .x .y .z and .points)
+            stackable: sp.stackable, // Box (has .dx .dy .dz .name .step)
+            isHovered: child === mesh,
+          });
+        }
+      }
+
+      this.setState({
+        hoveredData: {
+          source: mesh.userData.source, // StackPlacement for the hovered box
+          container: container,
+          allBoxPlacements: allBoxPlacements,
+          currentStep: stepNumber,
+        },
+      });
+    } catch (e) {
+      console.error("Error building hover data", e);
+      this.setState({ hoveredData: null });
     }
   };
 
@@ -450,6 +506,8 @@ class ThreeScene extends Component {
     event.preventDefault();
 
     if (event && typeof event !== undefined) {
+      this.mouseX = event.clientX;
+      this.mouseY = event.clientY;
       pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
       pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
     }
@@ -589,7 +647,7 @@ class ThreeScene extends Component {
   //-------------HELPER------------------
   render() {
 
-    const { selectedBox } = this.state;
+    const { selectedBox, hoveredData } = this.state;
 
     return (
       <div>
@@ -626,7 +684,13 @@ class ThreeScene extends Component {
               <div>Step #{selectedBox.step}</div>
             </div>
           )}
-        </div>        
+        </div>
+      {/* Supporting placements popup — shown in a separate floating window on hover */}
+      <SupportingPlacementsView
+        hoveredData={hoveredData}
+        mouseX={this.mouseX}
+        mouseY={this.mouseY}
+      />
       </div>
     );
   }
