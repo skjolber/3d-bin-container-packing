@@ -368,12 +368,12 @@ class ThreeScene extends Component {
 
     http(
       "/assets/containers.json"
-    ).then(load);
+    ).then(load).catch((err) => { console.warn("Failed to load containers data:", err.message); });
 
     setInterval(function(){ 
       http(
         "/assets/containers.json"
-      ).then(load);
+      ).then(load).catch((err) => { console.warn("Failed to load containers data:", err.message); });
     }, 500);
   };
 
