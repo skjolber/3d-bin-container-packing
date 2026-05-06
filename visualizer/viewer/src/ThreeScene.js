@@ -176,11 +176,12 @@ class ThreeScene extends Component {
         return;
       }
 
-      // Collect all box meshes that live in the same containerLoad
+      // Collect all box meshes that live in the same containerLoad and are
+      // currently visible (i.e. their step is within the current stepNumber).
       const allBoxPlacements = [];
       for (let i = 0; i < containerLoad.children.length; i++) {
         const child = containerLoad.children[i];
-        if (child.userData && child.userData.type === "box") {
+        if (child.userData && child.userData.type === "box" && child.visible) {
           const sp = child.userData.source; // StackPlacement
           // Convert the mesh color from linear to sRGB, blending in the emissive so
           // the popup color matches what Three.js actually renders (base + emissive, clamped).
@@ -248,7 +249,18 @@ class ThreeScene extends Component {
             }
           }
         }          
-    }
+      }
+
+      // Refresh the supporting-placements popup to reflect the new set of
+      // visible boxes.  If the currently hovered mesh is no longer visible
+      // (stepped past it), clear the popup instead.
+      if (INTERSECTED && INTERSECTED.userData && INTERSECTED.userData.type === "box") {
+        if (INTERSECTED.visible) {
+          this.updateHoveredBoxData(INTERSECTED);
+        } else {
+          this.setState({ hoveredData: null });
+        }
+      }
   };
 
   addModels = () => {
