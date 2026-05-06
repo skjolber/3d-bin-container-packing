@@ -142,7 +142,7 @@ class ThreeScene extends Component {
         }
         INTERSECTED = target
         INTERSECTED.myColor = INTERSECTED.material.color;
-        INTERSECTED.material.emissive = new Color("#FF0000") 
+        INTERSECTED.material.emissive = new Color("#FF0000");
 
         // Update supporting-placements popup for box meshes
         if (INTERSECTED.userData && INTERSECTED.userData.type === "box") {
@@ -178,10 +178,10 @@ class ThreeScene extends Component {
 
       // Collect all box meshes that live in the same containerLoad
       const allBoxPlacements = [];
-      for (var i = 0; i < containerLoad.children.length; i++) {
-        var child = containerLoad.children[i];
+      for (let i = 0; i < containerLoad.children.length; i++) {
+        const child = containerLoad.children[i];
         if (child.userData && child.userData.type === "box") {
-          var sp = child.userData.source; // StackPlacement
+          const sp = child.userData.source; // StackPlacement
           allBoxPlacements.push({
             placement: sp,          // StackPlacement (has .x .y .z and .points)
             stackable: sp.stackable, // Box (has .dx .dy .dz .name .step)

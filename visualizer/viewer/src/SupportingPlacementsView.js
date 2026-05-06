@@ -128,12 +128,11 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource, current
         ctx.fillText(`P${i}`, cx + 2, cy + 10);
     }
 
-    // Hovered box drawn on top (orange-yellow)
+    // Hovered box drawn on top (orange-yellow); hoveredSource is a StackPlacement
     if (hoveredSource) {
-        const { placement, stackable } = hoveredSource;
-        const { cx, cy } = toCanvas(placement.x, placement.y);
-        const w = Math.max(1, stackable.dy * scaleX);
-        const h = Math.max(1, stackable.dx * scaleY);
+        const { cx, cy } = toCanvas(hoveredSource.x, hoveredSource.y);
+        const w = Math.max(1, hoveredSource.stackable.dy * scaleX);
+        const h = Math.max(1, hoveredSource.stackable.dx * scaleY);
 
         ctx.globalAlpha = 0.65;
         ctx.fillStyle = '#FFC864';
@@ -143,10 +142,10 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource, current
         ctx.lineWidth = 2;
         ctx.strokeRect(cx, cy, w, h);
 
-        if (stackable.name) {
+        if (hoveredSource.stackable.name) {
             ctx.fillStyle = '#FFC864';
             ctx.font = 'bold 9px monospace';
-            ctx.fillText(stackable.name, cx + 2, cy + 10);
+            ctx.fillText(hoveredSource.stackable.name, cx + 2, cy + 10);
         }
     }
 
