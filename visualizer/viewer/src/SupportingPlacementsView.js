@@ -1,7 +1,23 @@
 import React, { useEffect, useRef } from 'react';
 
-const CANVAS_SIZE = 320;
+const MAX_DIM = 320;
 const CANVAS_PADDING = 18;
+
+/**
+ * Compute canvas pixel dimensions that preserve the container's X-Y aspect ratio
+ * while fitting within MAX_DIM.
+ *
+ * Container Y dimension → canvas width axis
+ * Container X dimension → canvas height axis
+ */
+function canvasDimensions(container) {
+    const totalY = (container.loadDy > 0 ? container.loadDy : container.dy) || 1;
+    const totalX = (container.loadDx > 0 ? container.loadDx : container.dx) || 1;
+    const aspect = totalY / totalX; // width-to-height
+    const W = aspect >= 1 ? MAX_DIM : Math.round(MAX_DIM * aspect);
+    const H = aspect >= 1 ? Math.round(MAX_DIM / aspect) : MAX_DIM;
+    return { W, H, totalX, totalY };
+}
 
 /**
  * Return all placements from allBoxPlacements whose top face (placement.z + stackable.dz)
@@ -36,10 +52,13 @@ function findSupportingBoxes(hoveredSource, allBoxPlacements) {
  * Canvas X-axis  = algorithm Y axis  (container width)
  * Canvas Y-axis  = algorithm X axis  (container depth)
  *
+ * Only the hovered box and the boxes directly supporting it (one level down,
+ * touching in the XY plane) are drawn. All other boxes are omitted.
+ *
  * Each entry in allBoxPlacements has { placement, stackable, color, isHovered }.
  * color is the sRGB hex string matching the 3D view.
  */
-function drawTopDown(canvas, container, allBoxPlacements, hoveredSource, currentStep) {
+function drawTopDown(canvas, container, allBoxPlacements, hoveredSource) {
     const ctx = canvas.getContext('2d');
     const W = canvas.width;
     const H = canvas.height;
@@ -53,7 +72,7 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource, current
     const drawW = W - 2 * pad;
     const drawH = H - 2 * pad;
 
-    // Use load dimensions for the bounding box, fall back to full dimensions
+    // Container dimensions (same logic as canvasDimensions, but read from canvas size)
     const totalY = (container.loadDy > 0 ? container.loadDy : container.dy) || 1;
     const totalX = (container.loadDx > 0 ? container.loadDx : container.dx) || 1;
 
@@ -74,27 +93,22 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource, current
     const supporting = hoveredSource ? findSupportingBoxes(hoveredSource, allBoxPlacements) : [];
     const supportingSet = new Set(supporting);
 
-    // Draw all placed non-hovered boxes
-    for (const bp of allBoxPlacements) {
-        if (bp.isHovered) continue;
-        if (bp.stackable.step >= currentStep) continue;
-
+    // Draw only the direct supporting boxes
+    for (const bp of supportingSet) {
         const { placement, stackable } = bp;
         const { cx, cy } = toCanvas(placement.x, placement.y);
         const w = Math.max(1, stackable.dy * scaleX);
         const h = Math.max(1, stackable.dx * scaleY);
-        const isSupporting = supportingSet.has(bp);
 
-        ctx.globalAlpha = isSupporting ? 0.85 : 0.3;
+        ctx.globalAlpha = 0.85;
         ctx.fillStyle = bp.color;
         ctx.fillRect(cx, cy, w, h);
         ctx.globalAlpha = 1;
-        ctx.strokeStyle = isSupporting ? '#ffffff' : bp.color;
-        ctx.lineWidth = isSupporting ? 2 : 0.5;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
         ctx.strokeRect(cx, cy, w, h);
 
-        // Label (name or id) for supporting boxes
-        if (isSupporting && (stackable.name || stackable.id)) {
+        if (stackable.name || stackable.id) {
             const label = stackable.name || stackable.id;
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 8px monospace';
@@ -102,7 +116,7 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource, current
         }
     }
 
-    // Hovered box drawn on top with its own color + bright white border
+    // Hovered box drawn on top with its own (emissive-blended) color + bright white border
     if (hoveredSource) {
         const { cx, cy } = toCanvas(hoveredSource.x, hoveredSource.y);
         const w = Math.max(1, hoveredSource.stackable.dy * scaleX);
@@ -110,7 +124,7 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource, current
         const hoverBp = allBoxPlacements.find(bp => bp.isHovered);
         const hoverColor = hoverBp ? hoverBp.color : '#FFC864';
 
-        ctx.globalAlpha = 0.85;
+        ctx.globalAlpha = 0.9;
         ctx.fillStyle = hoverColor;
         ctx.fillRect(cx, cy, w, h);
         ctx.globalAlpha = 1;
@@ -143,6 +157,8 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource, current
  * support the currently hovered box (i.e. boxes whose top face touches the
  * hovered box's bottom face and whose footprint overlaps).
  *
+ * The canvas aspect ratio matches the container's X-Y footprint.
+ *
  * Props:
  *   hoveredData  – { source: StackPlacement, container: Container,
  *                    allBoxPlacements: [{placement, stackable, color, isHovered}],
@@ -153,17 +169,18 @@ function SupportingPlacementsView({ hoveredData }) {
 
     useEffect(() => {
         if (!canvasRef.current || !hoveredData) return;
-        const { source, container, allBoxPlacements, currentStep } = hoveredData;
+        const { source, container, allBoxPlacements } = hoveredData;
         if (!source || !container) return;
 
-        drawTopDown(canvasRef.current, container, allBoxPlacements, source, currentStep);
+        drawTopDown(canvasRef.current, container, allBoxPlacements, source);
     }, [hoveredData]);
 
     if (!hoveredData) return null;
 
-    const { source, allBoxPlacements, currentStep } = hoveredData;
-    if (!source) return null;
+    const { source, container, allBoxPlacements } = hoveredData;
+    if (!source || !container) return null;
 
+    const { W: canvasW, H: canvasH } = canvasDimensions(container);
     const supporting = findSupportingBoxes(source, allBoxPlacements);
 
     return (
@@ -172,7 +189,7 @@ function SupportingPlacementsView({ hoveredData }) {
                 position: 'fixed',
                 bottom: '16px',
                 right: '16px',
-                width: CANVAS_SIZE + 20,
+                width: canvasW + 20,
                 background: 'rgba(18, 26, 36, 0.97)',
                 border: '1px solid #42a5f5',
                 borderRadius: '6px',
@@ -199,19 +216,18 @@ function SupportingPlacementsView({ hoveredData }) {
                 Supporting Boxes — Top View
             </div>
 
-            {/* 2D canvas */}
+            {/* 2D canvas — aspect ratio matches container */}
             <canvas
                 ref={canvasRef}
-                width={CANVAS_SIZE}
-                height={CANVAS_SIZE}
+                width={canvasW}
+                height={canvasH}
                 style={{ display: 'block' }}
             />
 
             {/* Legend */}
             <div style={{ marginTop: '5px', color: '#888', fontSize: '10px' }}>
                 <span style={{ color: '#ffffff' }}>□</span> hovered box &nbsp;
-                <span style={{ color: '#ffffff', opacity: 0.85 }}>■</span> supporting box &nbsp;
-                <span style={{ color: '#5080a0' }}>■</span> other placed boxes
+                <span style={{ color: '#ffffff', opacity: 0.85 }}>■</span> supporting box
             </div>
 
             {/* Supporting box list */}

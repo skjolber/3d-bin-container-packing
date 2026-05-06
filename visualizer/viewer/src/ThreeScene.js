@@ -182,8 +182,16 @@ class ThreeScene extends Component {
         const child = containerLoad.children[i];
         if (child.userData && child.userData.type === "box") {
           const sp = child.userData.source; // StackPlacement
-          // Convert the mesh color from linear back to sRGB to match what the renderer displays
-          const colorHex = '#' + child.material.color.clone().convertLinearToSRGB().getHexString();
+          // Convert the mesh color from linear to sRGB, blending in the emissive so
+          // the popup color matches what Three.js actually renders (base + emissive, clamped).
+          const base = child.material.color;
+          const emissive = child.material.emissive;
+          const blended = new THREE.Color(
+            Math.min(1, base.r + emissive.r),
+            Math.min(1, base.g + emissive.g),
+            Math.min(1, base.b + emissive.b),
+          );
+          const colorHex = '#' + blended.convertLinearToSRGB().getHexString();
           allBoxPlacements.push({
             placement: sp,           // StackPlacement (has .x .y .z)
             stackable: sp.stackable, // Box (has .dx .dy .dz .name .id .step)
