@@ -29,8 +29,3 @@ public class PackController implements PackApi {
 | compile | open-api-model |
 | compile | spring-web, spring-context |
 | compile | jakarta.annotation-api, jakarta.validation-api |
-
-## Regenerating
-```bash
-mvn generate-sources -pl open-api/open-api-server
-```

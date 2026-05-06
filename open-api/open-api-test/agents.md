@@ -12,8 +12,3 @@ Shared test utilities for the open-api modules. Provides common helpers, fixture
 |---------|----------|
 | compile | open-api-model, open-api-server |
 | compile | mockito-core |
-
-## Build
-```bash
-mvn test -pl open-api/open-api-test -am
-```

@@ -29,8 +29,3 @@ String json = objectMapper.writeValueAsString(visualizer);
 | compile | visualizer-api |
 | compile | jackson-databind |
 | test    | test module, junit-jupiter |
-
-## Build
-```bash
-mvn test -pl visualizer/packaging -am
-```

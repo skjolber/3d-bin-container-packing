@@ -33,8 +33,3 @@ java -jar jmh/target/benchmarks.jar PackagerBenchmark -f 1 -wi 3 -i 5 -rf json -
 | compile | core, points |
 | test    | test module, commons-io |
 | provided | jmh-core, jmh-generator-annprocess |
-
-## Build
-```
-mvn package -pl jmh -am -DskipTests
-```

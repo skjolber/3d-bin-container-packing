@@ -1,0 +1,100 @@
+lockfile_version: '1'
+generated_at: '2026-05-06T17:42:58.151725+00:00'
+apm_version: 0.12.2
+dependencies:
+- repo_url: _local/maven
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/maven
+  source: local
+  local_path: ./skills/maven
+- repo_url: bluuewhale/auto-optimize
+  host: github.com
+  resolved_commit: 12ecb918c3fe8234492d005e44fb01f0fdc25fdf
+  virtual_path: skills/auto-optimize
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/auto-optimize
+  content_hash: sha256:a7650c571299a954bcc5cd46facfaf7f108fc59f2c4b593a821c0fb706020f78
+- repo_url: github/awesome-copilot
+  host: github.com
+  resolved_commit: 9ca2b128f5a2d5288d1afe4a99356a0ecc264333
+  virtual_path: skills/java-docs
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/java-docs
+  content_hash: sha256:76cf49efcd6e99d95031c78e56615dbaf641a756e852acf7e87f9197dfab43e0
+- repo_url: github/awesome-copilot
+  host: github.com
+  resolved_commit: 9ca2b128f5a2d5288d1afe4a99356a0ecc264333
+  virtual_path: skills/java-junit
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/java-junit
+  content_hash: sha256:fbf3cb0d47ffb44bdb6e1ebcc4d89dd7083208efdfc5b88f316c8bc2b58250b5
+- repo_url: github/awesome-copilot
+  host: github.com
+  resolved_commit: 9ca2b128f5a2d5288d1afe4a99356a0ecc264333
+  virtual_path: skills/java-refactoring-extract-method
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/java-refactoring-extract-method
+  content_hash: sha256:8a467a2fe1f1d8c14a2c344dfef7060f5cf1300ad5b4d4f036b336c78f6952ab
+- repo_url: github/awesome-copilot
+  host: github.com
+  resolved_commit: 9ca2b128f5a2d5288d1afe4a99356a0ecc264333
+  virtual_path: skills/java-refactoring-remove-parameter
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/java-refactoring-remove-parameter
+  content_hash: sha256:96f080496b55308f9e65e35789f243641e6986139a798fed81b452bac3cda34e
+- repo_url: github/awesome-copilot
+  host: github.com
+  resolved_commit: 9ca2b128f5a2d5288d1afe4a99356a0ecc264333
+  virtual_path: skills/java-springboot
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/java-springboot
+  content_hash: sha256:f1b9c6b1277178fc33e5a612761c1cd1cf6ab5f946d05d69d52026d142c0a0c1
+- repo_url: github/awesome-copilot
+  host: github.com
+  resolved_commit: 9ca2b128f5a2d5288d1afe4a99356a0ecc264333
+  virtual_path: skills/javascript-typescript-jest
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/javascript-typescript-jest
+  content_hash: sha256:0073d19ab0275eb6a8200aced6789a53744667bd717b5d1f44ce708a1740e5d4
+- repo_url: github/awesome-copilot
+  host: github.com
+  resolved_commit: 9ca2b128f5a2d5288d1afe4a99356a0ecc264333
+  virtual_path: skills/review-and-refactor
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/review-and-refactor
+  content_hash: sha256:9236d06a1500089ddb46975b866e9a63478e502afe7095b1980c618678a7c7fe
+- repo_url: github/awesome-copilot
+  host: github.com
+  resolved_commit: 9ca2b128f5a2d5288d1afe4a99356a0ecc264333
+  virtual_path: skills/spring-boot-testing
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/spring-boot-testing
+  content_hash: sha256:eaad2dd0c8cc72d2e96872bec73eeec4015ddbc03364e65a1fbf3d9b7deeb697
+- repo_url: github/awesome-copilot
+  host: github.com
+  resolved_commit: 9ca2b128f5a2d5288d1afe4a99356a0ecc264333
+  virtual_path: skills/web-coder
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/web-coder
+  content_hash: sha256:d9fe089752bbe8bfcae9af20f91da6037bf9a5fdac076a2100632acc2ede1c1e
