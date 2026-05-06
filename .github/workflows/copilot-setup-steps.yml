@@ -39,8 +39,6 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-maven-
-    - name: Add dependency
-      run: mvn install:install-file -Dfile=./custom/liqp-0.7.4-SNAPSHOT.jar -DpomFile=./custom/liqp-0.7.4-SNAPSHOT.pom
     - name: Install dependencies (Maven example)
       run: mvn install -DskipTests # Install dependencies but skip tests during setup
     - name: Setup node
