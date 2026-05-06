@@ -3,27 +3,27 @@ import React, { useEffect, useRef } from 'react';
 const CANVAS_SIZE = 320;
 const CANVAS_PADDING = 18;
 
-// Colors cycled per point index
-const POINT_COLORS = ['#64FF96', '#FF9664', '#9664FF', '#64FFFF', '#FF6496'];
-
 /**
- * Return all placements whose top face (z + dz) sits flush with the point's
- * bottom face (point.z) and whose x-y footprint overlaps with the point.
+ * Return all placements from allBoxPlacements whose top face (placement.z + stackable.dz)
+ * is flush with the hovered box's bottom face (hoveredZ) and whose X-Y footprint
+ * overlaps with the hovered box's footprint.
  */
-function findSupportingPlacements(point, allBoxPlacements) {
+function findSupportingBoxes(hoveredSource, allBoxPlacements) {
+    const hoveredZ = hoveredSource.z;
+    const hoveredX = hoveredSource.x;
+    const hoveredY = hoveredSource.y;
+    const hoveredDx = hoveredSource.stackable.dx;
+    const hoveredDy = hoveredSource.stackable.dy;
     const results = [];
     for (const bp of allBoxPlacements) {
+        if (bp.isHovered) continue;
         const { placement, stackable } = bp;
-
-        // Top of this box must equal the bottom of the point (height axis = z)
-        if (Math.abs(placement.z + stackable.dz - point.z) > 0.5) continue;
-
-        // X-axis overlap
-        if (placement.x + stackable.dx <= point.x || placement.x >= point.x + point.dx) continue;
-
-        // Y-axis overlap
-        if (placement.y + stackable.dy <= point.y || placement.y >= point.y + point.dy) continue;
-
+        // Top face must touch the hovered box's bottom
+        if (Math.abs(placement.z + stackable.dz - hoveredZ) > 0.5) continue;
+        // X-axis footprint overlap
+        if (placement.x + stackable.dx <= hoveredX || placement.x >= hoveredX + hoveredDx) continue;
+        // Y-axis footprint overlap
+        if (placement.y + stackable.dy <= hoveredY || placement.y >= hoveredY + hoveredDy) continue;
         results.push(bp);
     }
     return results;
@@ -35,6 +35,9 @@ function findSupportingPlacements(point, allBoxPlacements) {
  *
  * Canvas X-axis  = algorithm Y axis  (container width)
  * Canvas Y-axis  = algorithm X axis  (container depth)
+ *
+ * Each entry in allBoxPlacements has { placement, stackable, color, isHovered }.
+ * color is the sRGB hex string matching the 3D view.
  */
 function drawTopDown(canvas, container, allBoxPlacements, hoveredSource, currentStep) {
     const ctx = canvas.getContext('2d');
@@ -68,88 +71,63 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource, current
     ctx.lineWidth = 1;
     ctx.strokeRect(pad, pad, totalY * scaleX, totalX * scaleY);
 
-    // All placed boxes (grey, only those visible at currentStep)
+    const supporting = hoveredSource ? findSupportingBoxes(hoveredSource, allBoxPlacements) : [];
+    const supportingSet = new Set(supporting);
+
+    // Draw all placed non-hovered boxes
     for (const bp of allBoxPlacements) {
-        if (bp.isHovered) continue;             // drawn last
-        if (bp.stackable.step >= currentStep) continue; // not yet placed
+        if (bp.isHovered) continue;
+        if (bp.stackable.step >= currentStep) continue;
 
         const { placement, stackable } = bp;
         const { cx, cy } = toCanvas(placement.x, placement.y);
         const w = Math.max(1, stackable.dy * scaleX);
         const h = Math.max(1, stackable.dx * scaleY);
+        const isSupporting = supportingSet.has(bp);
 
-        ctx.globalAlpha = 0.35;
-        ctx.fillStyle = '#5080a0';
+        ctx.globalAlpha = isSupporting ? 0.85 : 0.3;
+        ctx.fillStyle = bp.color;
         ctx.fillRect(cx, cy, w, h);
         ctx.globalAlpha = 1;
-        ctx.strokeStyle = '#4a7090';
-        ctx.lineWidth = 0.5;
+        ctx.strokeStyle = isSupporting ? '#ffffff' : bp.color;
+        ctx.lineWidth = isSupporting ? 2 : 0.5;
         ctx.strokeRect(cx, cy, w, h);
-    }
 
-    // For each point of the hovered placement: supporting placements + point outline
-    const points = hoveredSource ? (hoveredSource.points || []) : [];
-
-    for (let i = 0; i < points.length; i++) {
-        const point = points[i];
-        const color = POINT_COLORS[i % POINT_COLORS.length];
-        const supporting = findSupportingPlacements(point, allBoxPlacements);
-
-        // Highlight supporting placements
-        for (const bp of supporting) {
-            const { placement, stackable } = bp;
-            const { cx, cy } = toCanvas(placement.x, placement.y);
-            const w = Math.max(1, stackable.dy * scaleX);
-            const h = Math.max(1, stackable.dx * scaleY);
-
-            ctx.globalAlpha = 0.5;
-            ctx.fillStyle = color;
-            ctx.fillRect(cx, cy, w, h);
-            ctx.globalAlpha = 1;
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 1.5;
-            ctx.strokeRect(cx, cy, w, h);
+        // Label (name or id) for supporting boxes
+        if (isSupporting && (stackable.name || stackable.id)) {
+            const label = stackable.name || stackable.id;
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 8px monospace';
+            ctx.fillText(label, cx + 2, cy + 9);
         }
-
-        // Point footprint (dashed outline)
-        const { cx, cy } = toCanvas(point.x, point.y);
-        const pw = Math.max(1, point.dy * scaleX);
-        const ph = Math.max(1, point.dx * scaleY);
-
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([4, 3]);
-        ctx.strokeRect(cx, cy, pw, ph);
-        ctx.setLineDash([]);
-
-        // Point index label
-        ctx.fillStyle = color;
-        ctx.font = 'bold 9px monospace';
-        ctx.fillText(`P${i}`, cx + 2, cy + 10);
     }
 
-    // Hovered box drawn on top (orange-yellow); hoveredSource is a StackPlacement
+    // Hovered box drawn on top with its own color + bright white border
     if (hoveredSource) {
         const { cx, cy } = toCanvas(hoveredSource.x, hoveredSource.y);
         const w = Math.max(1, hoveredSource.stackable.dy * scaleX);
         const h = Math.max(1, hoveredSource.stackable.dx * scaleY);
+        const hoverBp = allBoxPlacements.find(bp => bp.isHovered);
+        const hoverColor = hoverBp ? hoverBp.color : '#FFC864';
 
-        ctx.globalAlpha = 0.65;
-        ctx.fillStyle = '#FFC864';
+        ctx.globalAlpha = 0.85;
+        ctx.fillStyle = hoverColor;
         ctx.fillRect(cx, cy, w, h);
         ctx.globalAlpha = 1;
-        ctx.strokeStyle = '#FFC864';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
         ctx.strokeRect(cx, cy, w, h);
 
-        if (hoveredSource.stackable.name) {
-            ctx.fillStyle = '#FFC864';
-            ctx.font = 'bold 9px monospace';
-            ctx.fillText(hoveredSource.stackable.name, cx + 2, cy + 10);
+        if (hoveredSource.stackable.name || hoveredSource.stackable.id) {
+            const label = hoveredSource.stackable.name || hoveredSource.stackable.id;
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 8px monospace';
+            ctx.fillText(label, cx + 2, cy + 9);
         }
     }
 
     // Axis labels
+    ctx.globalAlpha = 1;
     ctx.fillStyle = '#888888';
     ctx.font = '9px monospace';
     ctx.fillText('Y →', W - pad - 14, pad - 5);
@@ -161,16 +139,16 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource, current
 }
 
 /**
- * Floating popup window shown when the mouse hovers a box in the 3D scene.
+ * Floating popup fixed to the lower-right corner showing which boxes directly
+ * support the currently hovered box (i.e. boxes whose top face touches the
+ * hovered box's bottom face and whose footprint overlaps).
  *
  * Props:
  *   hoveredData  – { source: StackPlacement, container: Container,
- *                    allBoxPlacements: [{placement, stackable, isHovered}],
+ *                    allBoxPlacements: [{placement, stackable, color, isHovered}],
  *                    currentStep: number }
- *   mouseX       – client X where the popup should appear
- *   mouseY       – client Y where the popup should appear
  */
-function SupportingPlacementsView({ hoveredData, mouseX, mouseY }) {
+function SupportingPlacementsView({ hoveredData }) {
     const canvasRef = useRef(null);
 
     useEffect(() => {
@@ -186,26 +164,15 @@ function SupportingPlacementsView({ hoveredData, mouseX, mouseY }) {
     const { source, allBoxPlacements, currentStep } = hoveredData;
     if (!source) return null;
 
-    const points = source.points || [];
-
-    // Pre-compute supporting placements for display below the canvas
-    const pointInfo = points.map((p, i) => ({
-        point: p,
-        index: i,
-        supporting: findSupportingPlacements(p, allBoxPlacements),
-    }));
-
-    const windowW = CANVAS_SIZE + 20;
-    const popupLeft = Math.min(mouseX + 24, window.innerWidth - windowW - 10);
-    const popupTop = Math.max(10, Math.min(mouseY - 24, window.innerHeight - 520));
+    const supporting = findSupportingBoxes(source, allBoxPlacements);
 
     return (
         <div
             style={{
                 position: 'fixed',
-                left: popupLeft,
-                top: popupTop,
-                width: windowW,
+                bottom: '16px',
+                right: '16px',
+                width: CANVAS_SIZE + 20,
                 background: 'rgba(18, 26, 36, 0.97)',
                 border: '1px solid #42a5f5',
                 borderRadius: '6px',
@@ -229,7 +196,7 @@ function SupportingPlacementsView({ hoveredData, mouseX, mouseY }) {
                     fontSize: '12px',
                 }}
             >
-                Supporting Placements — Top View
+                Supporting Boxes — Top View
             </div>
 
             {/* 2D canvas */}
@@ -242,62 +209,52 @@ function SupportingPlacementsView({ hoveredData, mouseX, mouseY }) {
 
             {/* Legend */}
             <div style={{ marginTop: '5px', color: '#888', fontSize: '10px' }}>
-                <span style={{ color: '#FFC864' }}>■</span> hovered box &nbsp;
-                <span style={{ color: '#64FF96' }}>■</span> supporting placement &nbsp;
+                <span style={{ color: '#ffffff' }}>□</span> hovered box &nbsp;
+                <span style={{ color: '#ffffff', opacity: 0.85 }}>■</span> supporting box &nbsp;
                 <span style={{ color: '#5080a0' }}>■</span> other placed boxes
             </div>
 
-            {/* Per-point supporting placement origins */}
-            {pointInfo.length > 0 && (
+            {/* Supporting box list */}
+            {supporting.length > 0 && (
                 <div
                     style={{
                         marginTop: '8px',
-                        maxHeight: '160px',
+                        maxHeight: '120px',
                         overflowY: 'auto',
                         borderTop: '1px solid #2a3f55',
                         paddingTop: '5px',
                     }}
                 >
-                    {pointInfo.map(({ point, index, supporting }) => (
-                        <div key={index} style={{ marginBottom: '5px' }}>
+                    {supporting.map((bp, i) => (
+                        <div
+                            key={i}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                marginBottom: '3px',
+                            }}
+                        >
                             <span
                                 style={{
-                                    color: POINT_COLORS[index % POINT_COLORS.length],
-                                    fontWeight: 'bold',
+                                    display: 'inline-block',
+                                    width: '10px',
+                                    height: '10px',
+                                    background: bp.color,
+                                    border: '1px solid #fff',
+                                    flexShrink: 0,
                                 }}
-                            >
-                                P{index}
-                            </span>{' '}
+                            />
                             <span style={{ color: '#cccccc' }}>
-                                ({point.x}, {point.y}, {point.z})
-                            </span>{' '}
-                            <span style={{ color: '#888' }}>
-                                — {supporting.length} support
-                                {supporting.length !== 1 ? 's' : ''}:
+                                {bp.stackable.name || bp.stackable.id || '(unnamed)'}
                             </span>
-                            {supporting.length === 0 && (
-                                <span style={{ color: '#666', paddingLeft: '6px' }}>
-                                    (container floor)
-                                </span>
-                            )}
-                            {supporting.map((bp, j) => (
-                                <div
-                                    key={j}
-                                    style={{
-                                        paddingLeft: '14px',
-                                        color: '#aaaacc',
-                                        marginTop: '1px',
-                                    }}
-                                >
-                                    origin ({bp.placement.x}, {bp.placement.y},{' '}
-                                    {bp.placement.z})
-                                    {bp.stackable.name
-                                        ? ` "${bp.stackable.name}"`
-                                        : ''}
-                                </div>
-                            ))}
                         </div>
                     ))}
+                </div>
+            )}
+            {supporting.length === 0 && (
+                <div style={{ marginTop: '6px', color: '#666', fontSize: '10px' }}>
+                    Resting on container floor
                 </div>
             )}
         </div>
@@ -305,4 +262,3 @@ function SupportingPlacementsView({ hoveredData, mouseX, mouseY }) {
 }
 
 export default SupportingPlacementsView;
-export { findSupportingPlacements };

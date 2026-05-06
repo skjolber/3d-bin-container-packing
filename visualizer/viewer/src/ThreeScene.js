@@ -182,9 +182,12 @@ class ThreeScene extends Component {
         const child = containerLoad.children[i];
         if (child.userData && child.userData.type === "box") {
           const sp = child.userData.source; // StackPlacement
+          // Convert the mesh color from linear back to sRGB to match what the renderer displays
+          const colorHex = '#' + child.material.color.clone().convertLinearToSRGB().getHexString();
           allBoxPlacements.push({
-            placement: sp,          // StackPlacement (has .x .y .z and .points)
-            stackable: sp.stackable, // Box (has .dx .dy .dz .name .step)
+            placement: sp,           // StackPlacement (has .x .y .z)
+            stackable: sp.stackable, // Box (has .dx .dy .dz .name .id .step)
+            color: colorHex,
             isHovered: child === mesh,
           });
         }
@@ -688,8 +691,6 @@ class ThreeScene extends Component {
       {/* Supporting placements popup — shown in a separate floating window on hover */}
       <SupportingPlacementsView
         hoveredData={hoveredData}
-        mouseX={this.mouseX}
-        mouseY={this.mouseY}
       />
       </div>
     );
