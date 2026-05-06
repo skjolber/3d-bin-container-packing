@@ -1,20 +1,28 @@
 const path = require('path');
 const fs = require('fs');
 
-const CONTAINERS_FILE = path.join(__dirname, '..', 'public', 'assets', 'containers.json');
-const EMPTY_RESPONSE = JSON.stringify({ containers: [] });
+const CONTAINERS_FILE = path.resolve(__dirname, '..', 'public', 'assets', 'containers.json');
+const EMPTY_RESPONSE = '{"containers":[]}';
+
+console.log('[viewer] setupProxy: watching containers.json at', CONTAINERS_FILE);
 
 module.exports = function (app) {
   app.get('/assets/containers.json', function (req, res) {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    res.setHeader('Content-Type', 'application/json');
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.set('Content-Type', 'application/json; charset=utf-8');
 
-    if (fs.existsSync(CONTAINERS_FILE)) {
-      res.sendFile(CONTAINERS_FILE);
-    } else {
-      res.send(EMPTY_RESPONSE);
+    let data;
+    try {
+      data = fs.readFileSync(CONTAINERS_FILE, 'utf8');
+      const parsed = JSON.parse(data);
+      const count = parsed.containers ? parsed.containers.length : 0;
+      console.log(`[viewer] Serving containers.json: ${count} container(s) from ${CONTAINERS_FILE}`);
+    } catch (e) {
+      data = EMPTY_RESPONSE;
+      console.log('[viewer] containers.json not found or invalid — serving empty response');
     }
+    res.end(data);
   });
 };
