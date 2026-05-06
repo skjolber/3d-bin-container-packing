@@ -134,6 +134,16 @@ class ThreeScene extends Component {
       }
     }
 
+    // Three.js v0.180 raycaster does not check object.visible, so we must
+    // walk the ancestor chain ourselves and discard hits on hidden objects.
+    if (target) {
+      var obj = target;
+      while (obj) {
+        if (!obj.visible) { target = null; break; }
+        obj = obj.parent;
+      }
+    }
+
     if(target) {
       if ( INTERSECTED != target) {
         if ( INTERSECTED ) {
@@ -252,12 +262,20 @@ class ThreeScene extends Component {
       }
 
       // Refresh the supporting-placements popup to reflect the new set of
-      // visible boxes.  If the currently hovered mesh is no longer visible
-      // (stepped past it), clear the popup instead.
+      // visible boxes.  If the currently hovered mesh is no longer effectively
+      // visible (stepped past it), clear its highlight, release it, and hide the popup.
       if (INTERSECTED && INTERSECTED.userData && INTERSECTED.userData.type === "box") {
-        if (INTERSECTED.visible) {
+        var stillVisible = true;
+        var obj = INTERSECTED;
+        while (obj) {
+          if (!obj.visible) { stillVisible = false; break; }
+          obj = obj.parent;
+        }
+        if (stillVisible) {
           this.updateHoveredBoxData(INTERSECTED);
         } else {
+          INTERSECTED.material.emissive = new Color("#000000");
+          INTERSECTED = null;
           this.setState({ hoveredData: null });
         }
       }
