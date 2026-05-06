@@ -565,6 +565,7 @@ class ThreeScene extends Component {
     camera.position.z = -50;
     camera.position.y = 50;
     camera.position.x = -50;
+    cameraInitialized = false;
 //    camera.lookAt(new THREE.Vector3(19000, 0, 0));
 
     //------Add ORBIT CONTROLS--------
