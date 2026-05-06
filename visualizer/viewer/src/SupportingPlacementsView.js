@@ -60,14 +60,52 @@ function findSupportingBoxes(hoveredSource, allBoxPlacements) {
  */
 /**
  * Compute a font size (px) so that the rendered label text fills roughly
- * `targetFraction` of the given pixel width.  Clamps between minSize and maxSize.
+ * `targetFraction` of the given pixel width, while also staying within
+ * 50% of the pixel height.  Clamps between minSize and maxSize.
  */
-function fitFontSize(ctx, label, pixelWidth, targetFraction, minSize, maxSize) {
+function fitFontSize(ctx, label, pixelWidth, pixelHeight, targetFraction, minSize, maxSize) {
     ctx.font = `bold ${maxSize}px monospace`;
     const measured = ctx.measureText(label).width;
     if (measured <= 0) return minSize;
-    const size = Math.floor(maxSize * (pixelWidth * targetFraction) / measured);
+    const sizeByWidth = Math.floor(maxSize * (pixelWidth * targetFraction) / measured);
+    // Cap at 50 % of the available height (font size ≈ cap height)
+    const sizeByHeight = Math.floor(pixelHeight * 0.5);
+    const size = Math.min(sizeByWidth, sizeByHeight);
     return Math.max(minSize, Math.min(maxSize, size));
+}
+
+/**
+ * Given a box rectangle and an overlapping rectangle (both in canvas px coords),
+ * return the largest axis-aligned sub-rectangle of the box that lies fully
+ * outside the overlap.  Returns the full box rect when there is no overlap.
+ */
+function visibleSubRect(box, overlap) {
+    const bx2 = box.cx + box.w;
+    const by2 = box.cy + box.h;
+    const ix1 = Math.max(box.cx, overlap.cx);
+    const iy1 = Math.max(box.cy, overlap.cy);
+    const ix2 = Math.min(bx2, overlap.cx + overlap.w);
+    const iy2 = Math.min(by2, overlap.cy + overlap.h);
+
+    if (ix2 <= ix1 || iy2 <= iy1) {
+        // No real overlap – use the whole box
+        return { cx: box.cx, cy: box.cy, w: box.w, h: box.h };
+    }
+
+    // Up to four axis-aligned strips remain visible; pick the largest by area.
+    const candidates = [
+        { cx: box.cx, cy: box.cy,  w: box.w,      h: iy1 - box.cy }, // top
+        { cx: box.cx, cy: iy2,     w: box.w,      h: by2 - iy2    }, // bottom
+        { cx: box.cx, cy: box.cy,  w: ix1 - box.cx, h: box.h      }, // left
+        { cx: ix2,    cy: box.cy,  w: bx2 - ix2,    h: box.h      }, // right
+    ].filter(s => s.w > 0 && s.h > 0);
+
+    if (candidates.length === 0) {
+        // Fully covered – fall back to original rect (label will be tiny)
+        return { cx: box.cx, cy: box.cy, w: box.w, h: box.h };
+    }
+
+    return candidates.reduce((best, s) => (s.w * s.h > best.w * best.h ? s : best));
 }
 
 /**
@@ -75,7 +113,7 @@ function fitFontSize(ctx, label, pixelWidth, targetFraction, minSize, maxSize) {
  * it is always legible against any fill color.
  */
 function drawLabel(ctx, label, cx, cy, w, h) {
-    const fontSize = fitFontSize(ctx, label, w, 0.5, 8, 128);
+    const fontSize = fitFontSize(ctx, label, w, h, 0.5, 8, 128);
     ctx.font = `bold ${fontSize}px monospace`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -137,16 +175,18 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource) {
         const { cx, cy } = toCanvas(placement.x, placement.y);
         const w = Math.max(1, stackable.dy * scaleX);
         const h = Math.max(1, stackable.dx * scaleY);
-        boxes.push({ cx, cy, w, h, color: bp.color, lineWidth: 2, label: stackable.name || stackable.id || null, alpha: 0.85 });
+        boxes.push({ cx, cy, w, h, color: bp.color, lineWidth: 2, label: stackable.name || stackable.id || null, alpha: 0.85, isHovered: false });
     }
 
+    let hoveredRect = null;
     if (hoveredSource) {
         const { cx, cy } = toCanvas(hoveredSource.x, hoveredSource.y);
         const w = Math.max(1, hoveredSource.stackable.dy * scaleX);
         const h = Math.max(1, hoveredSource.stackable.dx * scaleY);
         const hoverBp = allBoxPlacements.find(bp => bp.isHovered);
         const hoverColor = hoverBp ? hoverBp.color : '#FFC864';
-        boxes.push({ cx, cy, w, h, color: hoverColor, lineWidth: 2.5, label: hoveredSource.stackable.name || hoveredSource.stackable.id || null, alpha: 0.9 });
+        hoveredRect = { cx, cy, w, h };
+        boxes.push({ cx, cy, w, h, color: hoverColor, lineWidth: 2.5, label: hoveredSource.stackable.name || hoveredSource.stackable.id || null, alpha: 0.9, isHovered: true });
     }
 
     // Pass 1 – fills and borders
@@ -160,11 +200,16 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource) {
         ctx.strokeRect(b.cx, b.cy, b.w, b.h);
     }
 
-    // Pass 2 – labels drawn last so they are never obscured by another box's fill
+    // Pass 2 – labels drawn last so they are never obscured by another box's fill.
+    // For supporting (non-hovered) boxes that are partially overlaid by the hovered
+    // box, size and position the label within the largest visible sub-rectangle.
     for (const b of boxes) {
-        if (b.label) {
-            drawLabel(ctx, b.label, b.cx, b.cy, b.w, b.h);
+        if (!b.label) continue;
+        let lr = { cx: b.cx, cy: b.cy, w: b.w, h: b.h };
+        if (!b.isHovered && hoveredRect) {
+            lr = visibleSubRect({ cx: b.cx, cy: b.cy, w: b.w, h: b.h }, hoveredRect);
         }
+        drawLabel(ctx, b.label, lr.cx, lr.cy, lr.w, lr.h);
     }
 
     // Axis labels
