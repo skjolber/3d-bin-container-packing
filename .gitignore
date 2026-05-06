@@ -84,3 +84,8 @@ pom.xml.versionsBackup
 *.releaseBackup
 release.properties
 
+
+# APM dependencies
+apm_modules/
+
+.agents

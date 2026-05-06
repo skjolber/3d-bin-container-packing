@@ -24,8 +24,3 @@ Foundation layer of the 3D bin-packing library. Defines all public interfaces, a
 | Scope | Artifact |
 |-------|----------|
 | test  | junit-jupiter, assertj-core, mockito-core, jqwik |
-
-## Build
-```
-mvn test -pl api
-```

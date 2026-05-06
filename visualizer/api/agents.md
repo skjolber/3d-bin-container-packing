@@ -20,8 +20,3 @@ Defines the JSON serialisation interfaces and data structures used to represent 
 |---------|----------|
 | compile | core |
 | compile | jackson-databind |
-
-## Build
-```bash
-mvn test -pl visualizer/api -am
-```

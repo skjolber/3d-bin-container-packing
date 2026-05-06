@@ -26,8 +26,3 @@ PackResponse response = api.pack(request);
 | compile | open-api-model |
 | compile | httpclient5, jackson-databind |
 | test    | open-api-server, truth |
-
-## Regenerating
-```bash
-mvn generate-sources -pl open-api/open-api-client
-```

@@ -1,0 +1,24 @@
+name: 3d-bin-container-packing
+version: 1.0.0
+description: 3D bin packaging
+author: Thomas Skjølberg
+dependencies:
+  apm:
+  - github/awesome-copilot/skills/review-and-refactor
+  - github/awesome-copilot/skills/java-junit
+  - github/awesome-copilot/skills/java-docs
+  - github/awesome-copilot/skills/java-refactoring-extract-method
+  - github/awesome-copilot/skills/java-refactoring-remove-parameter
+  - github/awesome-copilot/skills/java-springboot
+  - github/awesome-copilot/skills/spring-boot-testing
+  - github/awesome-copilot/skills/javascript-typescript-jest
+  - github/awesome-copilot/skills/web-coder
+  - bluuewhale/auto-optimize/skills/auto-optimize
+  - ./skills/maven
+includes: auto
+scripts: {}
+marketplaces:
+  awesome-copilot:
+    source: github/awesome-copilot
+  auto-optimize:
+    source: bluuewhale/auto-optimize

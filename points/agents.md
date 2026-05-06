@@ -16,15 +16,9 @@ Manages free-space bookkeeping during packing. Tracks 2D and 3D points that repr
 
 ## Testing
 - JUnit 5, AssertJ, jQwik (property-based tests verify point calculator invariants)
-- Run: `mvn test -pl points`
 
 ## Dependencies
 | Scope   | Artifact |
 |---------|----------|
 | compile | api, eclipse-collections |
 | test    | test module, junit-jupiter, assertj-core, jqwik |
-
-## Build
-```
-mvn test -pl points
-```
