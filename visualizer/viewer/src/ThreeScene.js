@@ -48,6 +48,8 @@ var memoryScheme = new MemoryColorScheme(new RandomColorScheme());
 
 var gridXZ;
 
+var cameraInitialized = false;
+
 const font = new Font( helvetiker );
 
 /**
@@ -296,9 +298,12 @@ class ThreeScene extends Component {
         x = x - (x % GRID_SPACING);
       }
       
-      camera.position.z = maxY * 2;
-      camera.position.y = maxZ * 1.25;
-      camera.position.x = maxX * 2;
+      if (!cameraInitialized) {
+        camera.position.z = maxY * 2;
+        camera.position.y = maxZ * 1.25;
+        camera.position.x = maxX * 2;
+        cameraInitialized = true;
+      }
       
 	  // Add grid corresponding to containers
       var size = Math.max(maxY, maxX) + GRID_SPACING + GRID_SPACING + GRID_SPACING;
