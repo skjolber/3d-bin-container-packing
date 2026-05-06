@@ -24,8 +24,3 @@ Captures intermediate algorithm states during packing for step-by-step visualisa
 | compile | core |
 | compile | jackson-databind |
 | test    | junit-jupiter, assertj-core |
-
-## Build
-```bash
-mvn test -pl visualizer/algorithm -am
-```

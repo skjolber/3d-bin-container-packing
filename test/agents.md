@@ -22,8 +22,3 @@ Shared testing utilities consumed by every other module's test scope. Provides c
 | compile | jackson-databind (test data serialization) |
 | compile | commons-math3 (statistical helpers) |
 | test    | junit-jupiter, jqwik, mockito-core |
-
-## Build
-```
-mvn test -pl test
-```

@@ -6,6 +6,7 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { MemoryColorScheme, RandomColorScheme, StackPlacement, Box, Container, Point, StackableRenderer } from "./api";
 import { http } from "./utils";
 import { Font } from 'three/examples/jsm/loaders/FontLoader';
+import SupportingPlacementsView from "./SupportingPlacementsView";
 
 import randomColor from "randomcolor";
 import { thisExpression } from "@babel/types";
@@ -40,6 +41,7 @@ var pointNumber = -1;
 var maxPointNumbers;
 var maxStepNumber = 0;
 var minStepNumber = 0;
+var cameraInitialized = false;
 
 var points = false;
 
@@ -56,8 +58,11 @@ const font = new Font( helvetiker );
 class ThreeScene extends Component {
   constructor(props) {
     super(props);
-    this.state = { useWireFrame: false, selectedBox: null };
+    this.state = { useWireFrame: false, selectedBox: null, hoveredData: null };
     visibleContainers = new Array();
+    // Raw mouse position in client coordinates (updated on every mousemove)
+    this.mouseX = 0;
+    this.mouseY = 0;
   }
 
   animate = () => {
@@ -130,6 +135,16 @@ class ThreeScene extends Component {
       }
     }
 
+    // Three.js v0.180 raycaster does not check object.visible, so we must
+    // walk the ancestor chain ourselves and discard hits on hidden objects.
+    if (target) {
+      var obj = target;
+      while (obj) {
+        if (!obj.visible) { target = null; break; }
+        obj = obj.parent;
+      }
+    }
+
     if(target) {
       if ( INTERSECTED != target) {
         if ( INTERSECTED ) {
@@ -138,13 +153,77 @@ class ThreeScene extends Component {
         }
         INTERSECTED = target
         INTERSECTED.myColor = INTERSECTED.material.color;
-        INTERSECTED.material.emissive = new Color("#FF0000") 
+        INTERSECTED.material.emissive = new Color("#FF0000");
+
+        // Update supporting-placements popup for box meshes
+        if (INTERSECTED.userData && INTERSECTED.userData.type === "box") {
+          this.updateHoveredBoxData(INTERSECTED);
+        } else {
+          this.setState({ hoveredData: null });
+        }
       }
     } else {
       if ( INTERSECTED ) {
         INTERSECTED.material.emissive = new Color("#000000") ;
         INTERSECTED = null;
+        this.setState({ hoveredData: null });
       }
+    }
+  };
+
+  /**
+   * Collect all box placements in the same container as the hovered mesh,
+   * then push the data needed by SupportingPlacementsView into React state.
+   */
+  updateHoveredBoxData = (mesh) => {
+    try {
+      // Mesh hierarchy: box → containerLoad (LineSegments) → containerGroup (Group)
+      const containerLoad = mesh.parent;
+      const containerGroup = containerLoad && containerLoad.parent;
+      const container = containerGroup && containerGroup.userData && containerGroup.userData.source;
+
+      if (!container) {
+        this.setState({ hoveredData: null });
+        return;
+      }
+
+      // Collect all box meshes that live in the same containerLoad and are
+      // currently visible (i.e. their step is within the current stepNumber).
+      const allBoxPlacements = [];
+      for (let i = 0; i < containerLoad.children.length; i++) {
+        const child = containerLoad.children[i];
+        if (child.userData && child.userData.type === "box" && child.visible) {
+          const sp = child.userData.source; // StackPlacement
+          // Convert the mesh color from linear to sRGB, blending in the emissive so
+          // the popup color matches what Three.js actually renders (base + emissive, clamped).
+          const base = child.material.color;
+          const emissive = child.material.emissive;
+          const blended = new THREE.Color(
+            Math.min(1, base.r + emissive.r),
+            Math.min(1, base.g + emissive.g),
+            Math.min(1, base.b + emissive.b),
+          );
+          const colorHex = '#' + blended.convertLinearToSRGB().getHexString();
+          allBoxPlacements.push({
+            placement: sp,           // StackPlacement (has .x .y .z)
+            stackable: sp.stackable, // Box (has .dx .dy .dz .name .id .step)
+            color: colorHex,
+            isHovered: child === mesh,
+          });
+        }
+      }
+
+      this.setState({
+        hoveredData: {
+          source: mesh.userData.source, // StackPlacement for the hovered box
+          container: container,
+          allBoxPlacements: allBoxPlacements,
+          currentStep: stepNumber,
+        },
+      });
+    } catch (e) {
+      console.error("Error building hover data", e);
+      this.setState({ hoveredData: null });
     }
   };
 
@@ -181,7 +260,26 @@ class ThreeScene extends Component {
             }
           }
         }          
-    }
+      }
+
+      // Refresh the supporting-placements popup to reflect the new set of
+      // visible boxes.  If the currently hovered mesh is no longer effectively
+      // visible (stepped past it), clear its highlight, release it, and hide the popup.
+      if (INTERSECTED && INTERSECTED.userData && INTERSECTED.userData.type === "box") {
+        var stillVisible = true;
+        var obj = INTERSECTED;
+        while (obj) {
+          if (!obj.visible) { stillVisible = false; break; }
+          obj = obj.parent;
+        }
+        if (stillVisible) {
+          this.updateHoveredBoxData(INTERSECTED);
+        } else {
+          INTERSECTED.material.emissive = new Color("#000000");
+          INTERSECTED = null;
+          this.setState({ hoveredData: null });
+        }
+      }
   };
 
   addModels = () => {
@@ -204,13 +302,14 @@ class ThreeScene extends Component {
       if(latestData != null && data == latestData) {
         return;
       }
-      console.log("Update model");
+      console.log("Update model @ " + CONTAINERS + " — containers: " + packaging.containers.length);
 
       latestData = data;
 
       for(var i = 0; i < visibleContainers.length; i++) {
         mainGroup.remove(visibleContainers[i]);
       }
+      visibleContainers = [];
 
       var x = 0;
 
@@ -296,9 +395,12 @@ class ThreeScene extends Component {
         x = x - (x % GRID_SPACING);
       }
       
-      camera.position.z = maxY * 2;
-      camera.position.y = maxZ * 1.25;
-      camera.position.x = maxX * 2;
+      if (!cameraInitialized) {
+        camera.position.z = maxY * 2;
+        camera.position.y = maxZ * 1.25;
+        camera.position.x = maxX * 2;
+        cameraInitialized = true;
+      }
       
 	  // Add grid corresponding to containers
       var size = Math.max(maxY, maxX) + GRID_SPACING + GRID_SPACING + GRID_SPACING;
@@ -368,12 +470,12 @@ class ThreeScene extends Component {
 
     http(
       "/assets/containers.json"
-    ).then(load);
+    ).then(load).catch((err) => { console.warn("Failed to load containers data:", err.message); });
 
     setInterval(function(){ 
       http(
         "/assets/containers.json"
-      ).then(load);
+      ).then(load).catch((err) => { console.warn("Failed to load containers data:", err.message); });
     }, 500);
   };
 
@@ -450,6 +552,8 @@ class ThreeScene extends Component {
     event.preventDefault();
 
     if (event && typeof event !== undefined) {
+      this.mouseX = event.clientX;
+      this.mouseY = event.clientY;
       pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
       pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
     }
@@ -589,7 +693,7 @@ class ThreeScene extends Component {
   //-------------HELPER------------------
   render() {
 
-    const { selectedBox } = this.state;
+    const { selectedBox, hoveredData } = this.state;
 
     return (
       <div>
@@ -626,7 +730,11 @@ class ThreeScene extends Component {
               <div>Step #{selectedBox.step}</div>
             </div>
           )}
-        </div>        
+        </div>
+      {/* Supporting placements popup — shown in a separate floating window on hover */}
+      <SupportingPlacementsView
+        hoveredData={hoveredData}
+      />
       </div>
     );
   }

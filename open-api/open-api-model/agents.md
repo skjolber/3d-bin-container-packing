@@ -17,8 +17,3 @@ Generated Jackson data model for the Pack REST API. Contains all request/respons
 | compile | jackson-databind, jackson-annotations |
 | compile | jakarta.validation-api |
 | compile | swagger-annotations |
-
-## Regenerating
-```bash
-mvn generate-sources -pl open-api/open-api-model
-```

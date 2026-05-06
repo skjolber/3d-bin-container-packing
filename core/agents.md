@@ -23,15 +23,9 @@ The main algorithmic engine. Implements all packager strategies (LAFF, brute-for
 ## Testing
 - JUnit 5, AssertJ, jQwik, junit-quickcheck
 - Property-based tests verify packing correctness across random inputs
-- Run: `mvn test -pl core`
 
 ## Dependencies
 | Scope   | Artifact |
 |---------|----------|
 | compile | api, points |
 | test    | test module, junit-jupiter, assertj-core, jqwik, junit-quickcheck |
-
-## Build
-```
-mvn test -pl core
-```
