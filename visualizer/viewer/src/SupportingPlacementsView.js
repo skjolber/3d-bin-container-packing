@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
-const MAX_DIM = 320;
-const CANVAS_PADDING = 18;
+const MAX_DIM = 640;
+const CANVAS_PADDING = 24;
 
 /**
  * Compute canvas pixel dimensions that preserve the container's X-Y aspect ratio
@@ -111,8 +111,8 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource) {
         if (stackable.name || stackable.id) {
             const label = stackable.name || stackable.id;
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 8px monospace';
-            ctx.fillText(label, cx + 2, cy + 9);
+            ctx.font = 'bold 14px monospace';
+            ctx.fillText(label, cx + 4, cy + 16);
         }
     }
 
@@ -135,18 +135,18 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource) {
         if (hoveredSource.stackable.name || hoveredSource.stackable.id) {
             const label = hoveredSource.stackable.name || hoveredSource.stackable.id;
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 8px monospace';
-            ctx.fillText(label, cx + 2, cy + 9);
+            ctx.font = 'bold 14px monospace';
+            ctx.fillText(label, cx + 4, cy + 16);
         }
     }
 
     // Axis labels
     ctx.globalAlpha = 1;
     ctx.fillStyle = '#888888';
-    ctx.font = '9px monospace';
-    ctx.fillText('Y →', W - pad - 14, pad - 5);
+    ctx.font = '14px monospace';
+    ctx.fillText('Y →', W - pad - 22, pad - 6);
     ctx.save();
-    ctx.translate(pad - 5, H - pad);
+    ctx.translate(pad - 6, H - pad);
     ctx.rotate(-Math.PI / 2);
     ctx.fillText('X →', 0, 0);
     ctx.restore();
@@ -181,7 +181,6 @@ function SupportingPlacementsView({ hoveredData }) {
     if (!source || !container) return null;
 
     const { W: canvasW, H: canvasH } = canvasDimensions(container);
-    const supporting = findSupportingBoxes(source, allBoxPlacements);
 
     return (
         <div
@@ -189,33 +188,16 @@ function SupportingPlacementsView({ hoveredData }) {
                 position: 'fixed',
                 bottom: '16px',
                 right: '16px',
-                width: canvasW + 20,
+                width: canvasW + 8,
                 background: 'rgba(18, 26, 36, 0.97)',
                 border: '1px solid #42a5f5',
                 borderRadius: '6px',
-                padding: '8px 10px 10px',
+                padding: '4px',
                 zIndex: 1000,
-                color: '#fff',
-                fontFamily: 'monospace',
-                fontSize: '11px',
                 pointerEvents: 'none',
                 boxShadow: '0 4px 24px rgba(0,0,0,0.75)',
             }}
         >
-            {/* Window title bar */}
-            <div
-                style={{
-                    color: '#42a5f5',
-                    fontWeight: 'bold',
-                    marginBottom: '6px',
-                    borderBottom: '1px solid #2a3f55',
-                    paddingBottom: '4px',
-                    fontSize: '12px',
-                }}
-            >
-                Supporting Boxes — Top View
-            </div>
-
             {/* 2D canvas — aspect ratio matches container */}
             <canvas
                 ref={canvasRef}
@@ -223,56 +205,6 @@ function SupportingPlacementsView({ hoveredData }) {
                 height={canvasH}
                 style={{ display: 'block' }}
             />
-
-            {/* Legend */}
-            <div style={{ marginTop: '5px', color: '#888', fontSize: '10px' }}>
-                <span style={{ color: '#ffffff' }}>□</span> hovered box &nbsp;
-                <span style={{ color: '#ffffff', opacity: 0.85 }}>■</span> supporting box
-            </div>
-
-            {/* Supporting box list */}
-            {supporting.length > 0 && (
-                <div
-                    style={{
-                        marginTop: '8px',
-                        maxHeight: '120px',
-                        overflowY: 'auto',
-                        borderTop: '1px solid #2a3f55',
-                        paddingTop: '5px',
-                    }}
-                >
-                    {supporting.map((bp, i) => (
-                        <div
-                            key={i}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                marginBottom: '3px',
-                            }}
-                        >
-                            <span
-                                style={{
-                                    display: 'inline-block',
-                                    width: '10px',
-                                    height: '10px',
-                                    background: bp.color,
-                                    border: '1px solid #fff',
-                                    flexShrink: 0,
-                                }}
-                            />
-                            <span style={{ color: '#cccccc' }}>
-                                {bp.stackable.name || bp.stackable.id || '(unnamed)'}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            )}
-            {supporting.length === 0 && (
-                <div style={{ marginTop: '6px', color: '#666', fontSize: '10px' }}>
-                    Resting on container floor
-                </div>
-            )}
         </div>
     );
 }
