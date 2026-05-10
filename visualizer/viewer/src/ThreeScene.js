@@ -124,24 +124,36 @@ class ThreeScene extends Component {
 
   handleIntersection = () => {
     raycaster.setFromCamera( pointer, camera );
-    
-    var target = null;
+
+    // Collect all intersections across every container, then sort by distance
+    // so we can find the closest one.  We cannot simply take the last hit from
+    // the loop because a farther invisible box would overwrite a closer visible
+    // one, causing the post-loop visibility check to discard the valid hit.
+    var allIntersects = [];
     for(var i = 0; i < visibleContainers.length; i++) {
       for(var k = 0; k < visibleContainers[i].children.length; k++) {
-        var intersects = raycaster.intersectObjects(visibleContainers[i].children[k].children );
-        if ( intersects.length > 0 ) {
-          target = intersects[ 0 ].object;
+        var hits = raycaster.intersectObjects(visibleContainers[i].children[k].children);
+        for(var j = 0; j < hits.length; j++) {
+          allIntersects.push(hits[j]);
         }
       }
     }
+    allIntersects.sort((a, b) => a.distance - b.distance);
 
-    // Three.js v0.180 raycaster does not check object.visible, so we must
-    // walk the ancestor chain ourselves and discard hits on hidden objects.
-    if (target) {
-      var obj = target;
+    // Three.js v0.180 raycaster does not check object.visible, so walk the
+    // ancestor chain and pick the closest hit whose full chain is visible.
+    var target = null;
+    for(var ii = 0; ii < allIntersects.length; ii++) {
+      var candidate = allIntersects[ii].object;
+      var visible = true;
+      var obj = candidate;
       while (obj) {
-        if (!obj.visible) { target = null; break; }
+        if (!obj.visible) { visible = false; break; }
         obj = obj.parent;
+      }
+      if (visible) {
+        target = candidate;
+        break;
       }
     }
 
