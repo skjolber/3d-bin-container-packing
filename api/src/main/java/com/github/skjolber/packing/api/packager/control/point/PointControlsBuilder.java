@@ -20,7 +20,7 @@ public interface PointControlsBuilder {
 	PointControlsBuilder withContainer(Container container);
 	
 	PointControlsBuilder withStack(Stack stack);
-	
+
 	PointControls build();
 
 }

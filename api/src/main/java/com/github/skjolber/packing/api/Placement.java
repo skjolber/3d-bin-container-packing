@@ -1,8 +1,8 @@
 package com.github.skjolber.packing.api;
 
 import java.io.Serializable;
-
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.api.support.Support;
 
 public class Placement implements Serializable {
 
@@ -10,6 +10,7 @@ public class Placement implements Serializable {
 
 	protected BoxStackValue stackValue;
 	protected Point point;
+	protected Support support;
 	
 	public Placement(BoxStackValue stackValue, Point point) {
 		super();
@@ -140,5 +141,16 @@ public class Placement implements Serializable {
 	public Point getPoint() {
 		return point;
 	}
+	
+	public void setSupport(Support support) {
+		this.support = support;
+	}
+	
+	public Support getSupport() {
+		return support;
+	}
 
+	public boolean hasSupport() {
+		return support != null;
+	}
 }
