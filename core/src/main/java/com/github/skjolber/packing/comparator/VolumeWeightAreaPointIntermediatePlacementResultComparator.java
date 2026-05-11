@@ -21,11 +21,6 @@ public class VolumeWeightAreaPointIntermediatePlacementResultComparator implemen
 		if(result != 0) {
 			return result;
 		}
-		// reversed: smaller point is better
-		result = Long.compare(o2.getPoint().getVolume(), o1.getPoint().getVolume());
-		if(result != 0) {
-			return result;
-		}
 		return 0;
 	}
 	

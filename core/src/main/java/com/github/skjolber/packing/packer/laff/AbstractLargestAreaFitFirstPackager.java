@@ -304,7 +304,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				}
 			}
 			stack.add(result);
-			pointCalculator.add(result.getPoint(), result);
+			pointCalculator.add(result.getPointIndex(), result);
 			
 			remainingLoadWeight -= result.getBoxItem().getBox().getWeight();
 			remainingLoadVolume -= result.getBoxItem().getBox().getVolume();
@@ -523,7 +523,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				}
 				
 				stack.add(bestPoint);
-				pointCalculator.add(bestPoint.getPoint(), bestPoint);
+				pointCalculator.add(bestPoint.getPointIndex(), bestPoint);
 				
 				remainingLoadWeight -= bestPoint.getBoxItem().getBox().getWeight();
 				remainingLoadVolume -= bestPoint.getBoxItem().getBox().getVolume();
