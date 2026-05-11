@@ -4,7 +4,7 @@ import java.util.Comparator;
 
 import com.github.skjolber.packing.api.Placement;
 
-public class VolumeWeightAreaPointIntermediatePlacementResultComparator implements Comparator<Placement> {
+public class VolumeWeightAreaMinZIntermediatePlacementResultComparator implements Comparator<Placement> {
 
 	@Override
 	public int compare(Placement o1, Placement o2) {
@@ -21,7 +21,9 @@ public class VolumeWeightAreaPointIntermediatePlacementResultComparator implemen
 		if(result != 0) {
 			return result;
 		}
-		return 0;
+
+		// smaller z is better
+		return Integer.compare(o1.getAbsoluteZ(), o2.getAbsoluteZ());
 	}
 	
 }
