@@ -9,13 +9,25 @@ public class Placement implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	protected BoxStackValue stackValue;
-	protected Point point;
+	protected int x;
+	protected int y;
+	protected int z;
 	protected Support support;
 	
-	public Placement(BoxStackValue stackValue, Point point) {
+	protected int pointIndex;
+
+	public Placement(BoxStackValue stackValue, int index, int x, int y, int z) {
 		super();
 		this.stackValue = stackValue;
-		this.point = point;
+		this.pointIndex = index;
+		
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
+
+	public Placement(BoxStackValue stackValue, Point point) {
+		this(stackValue, point.getIndex(), point.getMinX(), point.getMinY(), point.getMinZ());
 	}
 
 	public Placement() {
@@ -34,63 +46,60 @@ public class Placement implements Serializable {
 	}
 
 	public boolean intersectsY(Placement placement) {
-		int startY = point.getMinY();
-		int endY = startY + stackValue.getDy() - 1;
+		int endY = y + stackValue.getDy() - 1;
 
-		if (startY <= placement.getAbsoluteY() && placement.getAbsoluteY() <= endY) {
+		if (y <= placement.getAbsoluteY() && placement.getAbsoluteY() <= endY) {
 			return true;
 		}
 
-		return startY <= placement.getAbsoluteY() + placement.getStackValue().getDy() - 1
+		return y <= placement.getAbsoluteY() + placement.getStackValue().getDy() - 1
 				&& placement.getAbsoluteY() + placement.getStackValue().getDy() - 1 <= endY;
 	}
 
 	public boolean intersectsX(Placement placement) {
-		int startX = point.getMinX();
-		int endX = startX + stackValue.getDx() - 1;
+		int endX = x + stackValue.getDx() - 1;
 
-		if (startX <= placement.getAbsoluteX() && placement.getAbsoluteX() <= endX) {
+		if (x <= placement.getAbsoluteX() && placement.getAbsoluteX() <= endX) {
 			return true;
 		}
 
-		return startX <= placement.getAbsoluteX() + placement.getStackValue().getDx() - 1
+		return x <= placement.getAbsoluteX() + placement.getStackValue().getDx() - 1
 				&& placement.getAbsoluteX() + placement.getStackValue().getDx() - 1 <= endX;
 	}
 
 	public boolean intersectsZ(Placement placement) {
-		int startZ = point.getMinZ();
-		int endZ = startZ + stackValue.getDz() - 1;
+		int endZ = z + stackValue.getDz() - 1;
 
-		if (startZ <= placement.getAbsoluteZ() && placement.getAbsoluteZ() <= endZ) {
+		if (z <= placement.getAbsoluteZ() && placement.getAbsoluteZ() <= endZ) {
 			return true;
 		}
 
-		return startZ <= placement.getAbsoluteZ() + placement.getStackValue().getDz() - 1
+		return z <= placement.getAbsoluteZ() + placement.getStackValue().getDz() - 1
 				&& placement.getAbsoluteZ() + placement.getStackValue().getDz() - 1 <= endZ;
 	}
 
 	public int getAbsoluteX() {
-		return point.getMinX();
+		return x;
 	}
 
 	public int getAbsoluteY() {
-		return point.getMinY();
+		return y;
 	}
 
 	public int getAbsoluteZ() {
-		return point.getMinZ();
+		return z;
 	}
 
 	public int getAbsoluteEndX() {
-		return point.getMinX() + stackValue.getDx() - 1;
+		return x + stackValue.getDx() - 1;
 	}
 
 	public int getAbsoluteEndY() {
-		return point.getMinY() + stackValue.getDy() - 1;
+		return y + stackValue.getDy() - 1;
 	}
 
 	public int getAbsoluteEndZ() {
-		return point.getMinZ() + stackValue.getDz() - 1;
+		return z + stackValue.getDz() - 1;
 	}
 
 	public long getVolume() {
@@ -99,18 +108,18 @@ public class Placement implements Serializable {
 
 	public boolean intersects2D(Placement placement) {
 		return !(
-				placement.getAbsoluteEndX() < point.getMinX() || placement.getAbsoluteX() > getAbsoluteEndX() || 
-				placement.getAbsoluteEndY() < point.getMinY() || placement.getAbsoluteY() > getAbsoluteEndY()
+				placement.getAbsoluteEndX() < x || placement.getAbsoluteX() > getAbsoluteEndX() || 
+				placement.getAbsoluteEndY() < y || placement.getAbsoluteY() > getAbsoluteEndY()
 				);
 	}
 
 	public boolean intersects3D(Placement placement) {
 		return !(
-				placement.getAbsoluteEndX() < point.getMinX() ||
+				placement.getAbsoluteEndX() < x ||
 				placement.getAbsoluteX() > getAbsoluteEndX() ||
-				placement.getAbsoluteEndY() < point.getMinY() ||
+				placement.getAbsoluteEndY() < y ||
 				placement.getAbsoluteY() > getAbsoluteEndY() ||
-				placement.getAbsoluteEndZ() < point.getMinZ() ||
+				placement.getAbsoluteEndZ() < z ||
 				placement.getAbsoluteZ() > getAbsoluteEndZ()
 				);
 	}
@@ -118,12 +127,19 @@ public class Placement implements Serializable {
 	@Override
 	public String toString() {		
 		Box box = stackValue.getBox();
-		return (box != null ? box.getId() : "") + "[" + point.getMinX() + "x" + point.getMinY() + "x" + point.getMinZ() + " " + getAbsoluteEndX() + "x"
+		return (box != null ? box.getId() : "") + "[" +x + "x" + y + "x" + z + " " + getAbsoluteEndX() + "x"
 				+ getAbsoluteEndY() + "x" + getAbsoluteEndZ() + "]";
+	}
+	
+	public void setPoint(int index, int x, int y, int z) {
+		this.pointIndex = index;
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
 
 	public void setPoint(Point point) {
-		this.point = point;
+		setPoint(point.getIndex(), point.getMinX(), point.getMinY(), point.getMinZ());
 	}
 	
 	public int getWeight() {
@@ -137,9 +153,9 @@ public class Placement implements Serializable {
 	public Box getBox() {
 		return stackValue.getBox();
 	}
-	
-	public Point getPoint() {
-		return point;
+
+	public int getPointIndex() {
+		return pointIndex;
 	}
 	
 	public void setSupport(Support support) {

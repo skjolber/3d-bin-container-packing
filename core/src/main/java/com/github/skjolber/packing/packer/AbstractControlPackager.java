@@ -111,7 +111,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			}
 			
 			stack.add(placement);
-			pointCalculator.add(placement.getPoint(), placement);
+			pointCalculator.add(placement.getPointIndex(), placement);
 			
 			remainingLoadWeight -= placement.getBoxItem().getBox().getWeight();
 			remainingLoadVolume -= placement.getBoxItem().getBox().getVolume();
@@ -319,7 +319,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				}
 				
 				stack.add(placement);
-				pointCalculator.add(placement.getPoint(), placement);
+				pointCalculator.add(placement.getPointIndex(), placement);
 				
 				remainingLoadWeight -= placement.getBoxItem().getBox().getWeight();
 				remainingLoadVolume -= placement.getBoxItem().getBox().getVolume();

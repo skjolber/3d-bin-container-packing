@@ -22,7 +22,7 @@ public class PlainPlacementComparator implements Comparator<Placement> {
 			}
 		}
 
-		int result = Integer.compare(referenceResult.getPoint().getMinZ(), potentiallyBetterResult.getPoint().getMinZ());
+		int result = Integer.compare(referenceResult.getAbsoluteZ(), potentiallyBetterResult.getAbsoluteZ());
 		if(result != 0) {
 			return result;
 		}
