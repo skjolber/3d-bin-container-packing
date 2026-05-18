@@ -1,8 +1,134 @@
 package com.github.skjolber.packing.api;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class BoxStackValue {
+	
+	public static Builder newBuilder() {
+		return new Builder();
+	}
+	
+	public static ListBuilder newListBuilder() {
+		return new ListBuilder();
+	}
+	
+	public static class ListBuilder {
+
+		protected List<BoxStackValue> stackValues = new ArrayList<>();
+		
+		public ListBuilder withRotate(List<BoxStackValue> stackValues) {
+			this.stackValues = stackValues;
+			return this;
+		}
+
+		public ListBuilder withRotate(BoxStackValue stackValue) {
+			this.stackValues.add(stackValue);
+			return this;
+		}
+		
+		public ListBuilder withRotate(Consumer<BoxStackValue.AbstractBuilder> stackValue) {
+			Builder builder = new Builder();
+			stackValue.accept(builder);
+			this.stackValues.add(builder.build());
+			return this;
+		}
+
+		public ListBuilder withRotate2D(Consumer<BoxStackValue.AbstractBuilder> stackValue) {
+			Builder builder = new Builder();
+			stackValue.accept(builder);
+			this.stackValues.add(builder.build());
+			builder.withDimensions(builder.dy, builder.dx, builder.dz);
+			this.stackValues.add(builder.build());
+			return this;
+		}
+		
+		public List<BoxStackValue> build() {
+			return stackValues;
+		}
+	}
+
+	public abstract static class AbstractBuilder<T extends AbstractBuilder<T>> {
+
+		protected int dx = -1;
+		protected int dy = -1;
+		protected int dz = -1;
+
+		protected BoxItem boxItem;
+
+		protected List<Surface> surfaces;
+		protected int index = 0;
+
+		protected long maxLoadWeight   = -1;
+		protected long maxLoadPressure = -1;
+		protected int maxLoadBoxCount = -1;
+		protected int maxLoadIdenticalBoxCount = -1;
+
+		public T withBoxItem(BoxItem boxItem) {
+			this.boxItem = boxItem;
+			return (T) this;
+		}
+		
+		public T withDimensions(int dx, int dy, int dz) {
+			this.dx = dx;
+			this.dy = dy;
+			this.dz = dz;
+			return (T) this;
+		}
+
+		public T withSurfaces(List<Surface> surfaces) {
+			this.surfaces = surfaces;
+			return (T) this;
+		}
+
+		public T withIndex(int index) {
+			this.index = index;
+			return (T) this;
+		}
+
+		/**
+		 * Sets the max weight allowed on top. If {@link #withMaxLoadPressure} is also set,
+		 * pressure takes precedence.
+		 */
+		public T withMaxLoadWeight(long weight) {
+			this.maxLoadWeight = weight;
+			return (T) this;
+		}
+
+		/**
+		 * Sets the max load as a pressure value (weight × 1000 / area), matching the
+		 * convention used by {@link Box#getMinimumPressure()} / {@link Box#getMaximumPressure()}.
+		 * Takes precedence over {@link #withMaxLoadWeight} when both are set.
+		 */
+		public T withMaxLoadPressure(long pressure) {
+			this.maxLoadPressure = pressure;
+			return (T) this;
+		}
+
+		/** Sets max total boxes allowed on top. -1 means no limit. */
+		public T withMaxLoadBoxCount(int count) {
+			this.maxLoadBoxCount = count;
+			return (T) this;
+		}
+
+		/** Sets max same-type boxes allowed on top. -1 means no limit. */
+		public T withMaxLoadIdenticalBoxCount(int count) {
+			this.maxLoadIdenticalBoxCount = count;
+			return (T) this;
+		}
+
+	}
+
+	public static class Builder extends AbstractBuilder<Builder> {
+
+		public BoxStackValue build() {
+			return new BoxStackValue(dx, dy, dz, surfaces, index,
+					maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
+		}
+	}
+
+	// -------------------------------------------------------------------------
 
 	protected final int dx; // width
 	protected final int dy; // depth
@@ -16,7 +142,17 @@ public class BoxStackValue {
 	protected final int index;
 	protected Box box;
 
+	protected final long maxLoadWeight;
+	protected final long maxLoadPressure;
+	protected final int maxLoadBoxCount;
+	protected final int maxLoadIdenticalBoxCount;
+
 	public BoxStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index) {
+		this(dx, dy, dz, surfaces, index, -1, -1, -1, -1);
+	}
+
+	public BoxStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index,
+			long maxLoadWeight, long maxLoadPressure, int maxLoadBoxCount, int maxLoadIdenticalBoxCount) {
 		this.dx = dx;
 		this.dy = dy;
 		this.dz = dz;
@@ -26,6 +162,10 @@ public class BoxStackValue {
 		this.volume = area * (long) dz;
 
 		this.index = index;
+		this.maxLoadWeight = maxLoadWeight;
+		this.maxLoadPressure = maxLoadPressure;
+		this.maxLoadBoxCount = maxLoadBoxCount;
+		this.maxLoadIdenticalBoxCount = maxLoadIdenticalBoxCount;
 	}
 
 	protected BoxStackValue(BoxStackValue other) {
@@ -39,6 +179,10 @@ public class BoxStackValue {
 		this.index = other.index;
 
 		this.box = other.box;
+		this.maxLoadWeight = other.maxLoadWeight;
+		this.maxLoadPressure = other.maxLoadPressure;
+		this.maxLoadBoxCount = other.maxLoadBoxCount;
+		this.maxLoadIdenticalBoxCount = other.maxLoadIdenticalBoxCount;
 	}
 
 	public int getDx() {
@@ -80,6 +224,45 @@ public class BoxStackValue {
 		return volume;
 	}
 
+	/**
+	 * Maximum weight that may rest on top of this stack value (i.e. this specific orientation).
+	 * -1 means no limit.
+	 *
+	 * @return max load weight in the same unit as {@link Box#getWeight()}, or -1 if unconstrained
+	 */
+	public long getMaxLoadWeight() {
+		return maxLoadWeight;
+	}
+
+	/**
+	 * Maximum load pressure on top of this stack value (weight × 1000 / area),
+	 * matching the convention used by {@link Box#getMinimumPressure()}.
+	 * -1 means no limit.
+	 *
+	 * @return max load pressure, or -1 if unconstrained
+	 */
+	public long getMaxLoadPressure() {
+		return maxLoadPressure;
+	}
+
+	/**
+	 * Maximum number of boxes (any type) that may rest on top of this stack value.
+	 *
+	 * @return max box count, or -1 if unconstrained
+	 */
+	public int getMaxLoadBoxCount() {
+		return maxLoadBoxCount;
+	}
+
+	/**
+	 * Maximum number of boxes of the same type that may rest on top of this stack value.
+	 *
+	 * @return max same-box count, or -1 if unconstrained
+	 */
+	public int getMaxLoadIdenticalBoxCount() {
+		return maxLoadIdenticalBoxCount;
+	}
+
 	public List<Surface> getSurfaces() {
 		return surfaces;
 	}
@@ -106,4 +289,20 @@ public class BoxStackValue {
 		return index;
 	}
 
+	public boolean isMaxLoadWeight() {
+		return maxLoadWeight != -1L;
+	}
+	
+	public boolean isMaxLoadPressure() {
+		return maxLoadPressure != -1L;
+	}
+	
+	public boolean isMaxLoadBoxCount() {
+		return maxLoadBoxCount != -1;
+	}
+	
+	public boolean isMaxLoadIdenticalBoxCount() {
+		return maxLoadIdenticalBoxCount != -1;
+	}
+	
 }
