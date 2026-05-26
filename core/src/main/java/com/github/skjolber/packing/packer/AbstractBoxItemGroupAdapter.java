@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
@@ -18,6 +19,11 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 	private final PackagerInterruptSupplier interrupt;
 	private final Order order;
 
+	protected final boolean maxLoadWeight;
+	protected final boolean maxLoadPressure;
+	protected final boolean maxLoadBoxCount;
+	protected final boolean maxLoadIdenticalBoxCount;
+	
 	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems, Order order, PackagerInterruptSupplier interrupt) {
 		super(packagerContainerItems);
 		
@@ -32,6 +38,29 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 		this.remainingBoxItemGroups = groupClones;
 		this.order = order;
 		this.interrupt = interrupt;
+		
+		boolean maxLoadWeight = false;
+		boolean maxLoadPressure = false;
+		boolean maxLoadBoxCount = false;
+		boolean maxLoadIdenticalBoxCount = false;
+		
+		for (BoxItemGroup boxItemGroup : boxItemGroups) {
+			for (BoxItem item : boxItemGroup.getItems()) {
+				if(item.isMaxLoad()) {
+					Box box = item.getBox();	
+					maxLoadWeight |= box.isMaxLoadWeight();
+					maxLoadPressure |= box.isMaxLoadPressure();
+					maxLoadBoxCount |= box.isMaxLoadBoxCount();
+					maxLoadIdenticalBoxCount |= box.isMaxLoadWeight();
+				}
+			}
+		}
+		
+		this.maxLoadWeight = maxLoadWeight;
+		this.maxLoadPressure = maxLoadPressure;
+		this.maxLoadBoxCount = maxLoadBoxCount;
+		this.maxLoadIdenticalBoxCount = maxLoadIdenticalBoxCount;
+		
 	}
 
 	@Override

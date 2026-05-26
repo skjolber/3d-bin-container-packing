@@ -20,6 +20,11 @@ public abstract class AbstractPlacementControlsBuilder<R extends Placement> impl
 	protected Stack stack;
 	protected Order order;
 	
+	protected boolean maxLoadWeight;
+	protected boolean maxLoadPressure;
+	protected boolean maxLoadBoxCount;
+	protected boolean maxLoadIdenticalBoxCount;
+	
 	public AbstractPlacementControlsBuilder<R> withOrder(Order order) {
 		this.order = order;
 		return this;
@@ -53,6 +58,19 @@ public abstract class AbstractPlacementControlsBuilder<R extends Placement> impl
 	@Override
 	public AbstractPlacementControlsBuilder<R> withPointCalculator(PointCalculator pointCalculator) {
 		this.pointCalculator = pointCalculator;
+		return this;
+	}
+	
+	protected boolean isMaxLoad() {
+		return maxLoadWeight || maxLoadPressure || maxLoadBoxCount || maxLoadIdenticalBoxCount;
+	}
+	
+	@Override
+	public AbstractPlacementControlsBuilder<R> withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) {
+		this.maxLoadWeight = maxLoadWeight;
+		this.maxLoadPressure = maxLoadPressure;
+		this.maxLoadBoxCount = maxLoadBoxCount;
+		this.maxLoadIdenticalBoxCount = maxLoadIdenticalBoxCount;
 		return this;
 	}
 

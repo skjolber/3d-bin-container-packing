@@ -6,6 +6,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilder;
 import com.github.skjolber.packing.api.point.PointCalculator;
 
 public interface PlacementControlsBuilder<R extends Placement> {
@@ -21,6 +22,8 @@ public interface PlacementControlsBuilder<R extends Placement> {
 	PlacementControlsBuilder<R> withContainer(Container container);
 
 	PlacementControlsBuilder<R> withOrder(Order order);
+
+	PlacementControlsBuilder<R> withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount);
 
 	PlacementControls<R> build();
 	

@@ -21,7 +21,9 @@ import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.control.point.DefaultPointControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
@@ -62,8 +64,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		@Override
 		protected IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ControlledContainerItem containerItem,
-				PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
-			return AbstractLargestAreaFitFirstPackager.this.pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig);
+				PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig
+				) throws PackagerInterruptedException {
+			return AbstractLargestAreaFitFirstPackager.this.pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		}
 
 		@Override
@@ -85,7 +88,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		@Override
 		protected IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order,
 				ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
-			return AbstractLargestAreaFitFirstPackager.this.packGroup(remainingBoxItemGroups, order, containerItem, interrupt, abortOnAnyBoxTooBig);
+			return AbstractLargestAreaFitFirstPackager.this.packGroup(remainingBoxItemGroups, order, containerItem, interrupt, abortOnAnyBoxTooBig, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		}
 
 		@Override
@@ -154,7 +157,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		this.firstBoxItemGroupComparator = firstBoxItemGroupComparator;
 	}
 
-	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) throws PackagerInterruptedException {
 		ContainerItem containerItem = controlledContainerItem;
 		Container container = containerItem.getContainer();
 
@@ -172,7 +175,12 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		ManifestControls boxItemControls = createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, null, controlledContainerItem.getBoxItemControlsBuilderFactory());
 
-		PointControls pointControls = createPointControls(container, stack, filteredBoxItems, pointCalculator, controlledContainerItem.getPointControlsBuilderFactory());
+		PointControlsBuilderFactory pointControlsBuilderFactory = controlledContainerItem.getPointControlsBuilderFactory();
+		if(pointControlsBuilderFactory == null) {
+			pointControlsBuilderFactory = new DefaultPointControlsBuilderFactory();
+		}
+
+		PointControls pointControls = createPointControls(container, stack, filteredBoxItems, pointCalculator, pointControlsBuilderFactory, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		// remove boxes which do not fit due to volume, weight or dimensions
 		List<BoxItem> removed = new ArrayList<>();
 		for(int i = 0; i < filteredBoxItems.size(); i++) {
@@ -357,7 +365,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 	protected abstract PointCalculator createPointCalculator(BoxItemSource source);
 
-	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) {
 		ContainerItem containerItem = controlledContainerItem;
 		Container container = containerItem.getContainer();
 		
@@ -377,7 +385,12 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		ManifestControls boxItemControls = createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups, controlledContainerItem.getBoxItemControlsBuilderFactory());
 
-		PointControls pointControls = createPointControls(container, stack, filteredBoxItems, pointCalculator, controlledContainerItem.getPointControlsBuilderFactory());
+		PointControlsBuilderFactory pointControlsBuilderFactory = controlledContainerItem.getPointControlsBuilderFactory();
+		if(pointControlsBuilderFactory == null) {
+			pointControlsBuilderFactory = new DefaultPointControlsBuilderFactory();
+		}
+
+		PointControls pointControls = createPointControls(container, stack, filteredBoxItems, pointCalculator, pointControlsBuilderFactory, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 				
 		List<BoxItemGroup> removedBoxItemGroups = new ArrayList<>();
 

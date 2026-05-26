@@ -24,6 +24,11 @@ public class Box {
 		protected Map<String, Object> properties;
 		protected BoxItem boxItem;
 		
+		public T withId(String id) {
+			this.id = id;
+			return (T)this;
+		}
+		
 		public T withBoxItem(BoxItem boxItem) {
 			this.boxItem = boxItem;
 			return (T)this;
@@ -774,4 +779,7 @@ public class Box {
 		return maxLoadWeight;
 	}
 	
+	public boolean isMaxLoad() {
+		return maxLoadWeight || maxLoadPressure || maxLoadBoxCount || maxLoadIdenticalBoxCount;
+	}
 }
