@@ -39,6 +39,11 @@ import com.github.skjolber.packing.iterator.PackagerBoxItems;
  */
 public abstract class AbstractControlPackager<I extends Placement, B extends PackagerResultBuilder> extends AbstractPackager<B> {
 
+	/** Current load-constraint flags, set before each {@code createControls} call. */
+	protected boolean currentMaxLoadWeight;
+	protected boolean currentMaxLoadPressure;
+	protected boolean currentMaxLoadBoxCount;
+
 	public AbstractControlPackager(Comparator<IntermediatePackagerResult> comparator) {
 		super(comparator);
 	}
@@ -104,6 +109,9 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
 
+		this.currentMaxLoadWeight = maxLoadWeight;
+		this.currentMaxLoadPressure = maxLoadPressure;
+		this.currentMaxLoadBoxCount = maxLoadBoxCount;
 		PlacementControls<I> placementControls = createControls(boxItemSource, order, pointControls, container, pointCalculator, stack);
 
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !boxItemSource.isEmpty()) {
@@ -304,6 +312,9 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		long maxBoxVolume = filteredBoxItems.getMaxVolume();
 		long maxBoxArea = filteredBoxItems.getMaxVolume();
 		
+		this.currentMaxLoadWeight = maxLoadWeight;
+		this.currentMaxLoadPressure = maxLoadPressure;
+		this.currentMaxLoadBoxCount = maxLoadBoxCount;
 		PlacementControls<I> placementControls = createControls(filteredBoxItems, order, pointControls, container, pointCalculator, stack);
 
 		groups:

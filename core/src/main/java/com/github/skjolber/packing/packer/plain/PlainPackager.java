@@ -283,6 +283,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 				.withOrder(order)
 				.withStack(stack)
 				.withContainer(container)
+				.withMaxLoad(currentMaxLoadWeight, currentMaxLoadPressure, currentMaxLoadBoxCount)
 				.build();
 	}
 

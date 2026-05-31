@@ -195,7 +195,7 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 	public static boolean canStackLevels(Placement candidate, int levels) {
 		BoxStackValue stackValue = candidate.getStackValue();
 		if(stackValue.isMaxLoadBoxCount()) {
-			if(stackValue.getMaxLoadBoxCount() <= levels) {
+			if(stackValue.getMaxLoadBoxCount() < levels) {
 				return false;
 			}
 		}
