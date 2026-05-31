@@ -128,7 +128,7 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 						} else {
 							populatePlacementSupporters(point3d, stackValue, placementSupporters, stack.getPlacements());
 							
-							long supportedArea = (fullSupport || calculateSupport) ? calculateSupport(placementSupporters, stackValue, point3d.getMinX(), point3d.getMinY()) : 0;
+							long supportedArea = (fullSupport || calculateSupport) ? calculateSupport(placementSupporters, stackValue, point3d.getMinX(), point3d.getMinY()) : -1;
 							if(fullSupport && supportedArea != stackValue.getArea()) {
 								continue;
 							}
@@ -153,7 +153,7 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 					} else {
 						populatePlacementSupporters(point3d, stackValue, placementSupporters, stack.getPlacements());
 						
-						long supportedArea = (fullSupport || calculateSupport) ? calculateSupport(placementSupporters, stackValue, point3d.getMinX(), point3d.getMinY()) : 0;						
+						long supportedArea = (fullSupport || calculateSupport) ? calculateSupport(placementSupporters, stackValue, point3d.getMinX(), point3d.getMinY()) : -1;						
 						if(fullSupport && supportedArea != stackValue.getArea()) {
 							continue;
 						}
