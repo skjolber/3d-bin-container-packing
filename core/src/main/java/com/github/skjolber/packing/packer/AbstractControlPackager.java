@@ -105,7 +105,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
 
-		PlacementControls<I> placementControls = createControls(boxItemSource, 0, boxItemSource.size(), order, pointControls, container, pointCalculator, stack);
+		PlacementControls<I> placementControls = createControls(boxItemSource, order, pointControls, container, pointCalculator, stack);
 
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !boxItemSource.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
@@ -116,7 +116,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			if(placement == null) {
 				break;
 			}
-			
+
 			stack.add(placement);
 			pointCalculator.add(placement.getPointIndex(), placement);
 			
@@ -223,7 +223,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				.withStack(stack)
 				.withBoxItems(boxItemSource)
 				.withPoints(points)
-				.withMaxLoad(maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount)
+				.withMaxLoad(maxLoadWeight, maxLoadPressure, maxLoadBoxCount)
 				.build();
 	}
 	
@@ -305,7 +305,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		long maxBoxVolume = filteredBoxItems.getMaxVolume();
 		long maxBoxArea = filteredBoxItems.getMaxVolume();
 		
-		PlacementControls<I> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
+		PlacementControls<I> placementControls = createControls(filteredBoxItems, order, pointControls, container, pointCalculator, stack);
 
 		groups:
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !pointCalculator.isEmpty() && boxItemGroupIterator.hasNext() && !filteredBoxItemGroups.isEmpty()) {
@@ -327,7 +327,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				if(placement == null) {
 					break;
 				}
-				
+
 				stack.add(placement);
 				pointCalculator.add(placement.getPointIndex(), placement);
 				
@@ -515,10 +515,9 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 
 	protected abstract PlacementControls<I> createControls(
 			BoxItemSource boxItems,
-			int offset, int length,
-			Order order,
-			PointControls pointControls,
-			Container container, 
-			PointCalculator pointCalculator, Stack stack
+			Order order, PointControls pointControls,
+			Container container,
+			PointCalculator pointCalculator,
+			Stack stack
 		);
 }

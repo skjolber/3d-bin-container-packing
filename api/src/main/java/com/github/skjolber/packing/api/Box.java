@@ -63,7 +63,7 @@ public class Box {
 		
 		private BoxStackValue build() {
 			return new BoxStackValue(dx, dy, dz, surfaces, index,
-					maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
+					maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalOnly);
 		}
 	}
 
@@ -141,7 +141,7 @@ public class Box {
 		protected long maxLoadWeight  = -1;
 		protected long maxLoadPressure = -1;
 		protected int maxLoadBoxCount = -1;
-		protected int maxLoadIdenticalBoxCount = -1;
+		protected boolean maxLoadIdenticalOnly = false;
 
 		public Builder withSize(int dx, int dy, int dz) {
 			this.dx = dx;
@@ -479,7 +479,8 @@ public class Box {
 		 * @param count max number of same-type boxes on top
 		 */
 		public Builder withMaxLoadIdenticalBoxCount(int count) {
-			this.maxLoadIdenticalBoxCount = count;
+			this.maxLoadBoxCount = count;
+			this.maxLoadIdenticalOnly = true;
 			return (Builder) this;
 		}
 
@@ -508,7 +509,7 @@ public class Box {
 		}
 
 		protected BoxStackValue newStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index) {
-			return new BoxStackValue(dx, dy, dz, surfaces, index, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
+			return new BoxStackValue(dx, dy, dz, surfaces, index, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalOnly);
 		}
 	}
 
@@ -531,7 +532,6 @@ public class Box {
 	protected boolean maxLoadWeight;
 	protected boolean maxLoadPressure;
 	protected boolean maxLoadBoxCount;
-	protected boolean maxLoadIdenticalBoxCount;
 
 	public Box(String id, String description, long volume, int weight, BoxStackValue[] stackValues,
 			Map<String, Object> properties, BoxItem boxItem) {
@@ -572,13 +572,6 @@ public class Box {
 		for (BoxStackValue boxStackValue : stackValues) {
 			if (boxStackValue.isMaxLoadBoxCount()) {
 				maxLoadBoxCount = true;
-				break;
-			}
-		}
-		
-		for (BoxStackValue boxStackValue : stackValues) {
-			if (boxStackValue.isMaxLoadIdenticalBoxCount()) {
-				maxLoadIdenticalBoxCount = true;
 				break;
 			}
 		}
@@ -767,10 +760,6 @@ public class Box {
 		return maxLoadBoxCount;
 	}
 	
-	public boolean isMaxLoadIdenticalBoxCount() {
-		return maxLoadIdenticalBoxCount;
-	}
-	
 	public boolean isMaxLoadPressure() {
 		return maxLoadPressure;
 	}
@@ -780,6 +769,6 @@ public class Box {
 	}
 	
 	public boolean isMaxLoad() {
-		return maxLoadWeight || maxLoadPressure || maxLoadBoxCount || maxLoadIdenticalBoxCount;
+		return maxLoadWeight || maxLoadPressure || maxLoadBoxCount;
 	}
 }

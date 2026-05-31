@@ -11,8 +11,6 @@ import com.github.skjolber.packing.api.point.PointCalculator;
 public abstract class AbstractPlacementControlsBuilder<R extends Placement> implements PlacementControlsBuilder<R> {
 
 	protected BoxItemSource boxItems;
-	protected int boxItemsStartIndex = -1;
-	protected int boxItemsEndIndex = -1; // exclusive
 	
 	protected PointControls pointControls;
 	protected PointCalculator pointCalculator;
@@ -23,7 +21,6 @@ public abstract class AbstractPlacementControlsBuilder<R extends Placement> impl
 	protected boolean maxLoadWeight;
 	protected boolean maxLoadPressure;
 	protected boolean maxLoadBoxCount;
-	protected boolean maxLoadIdenticalBoxCount;
 	
 	public AbstractPlacementControlsBuilder<R> withOrder(Order order) {
 		this.order = order;
@@ -37,10 +34,8 @@ public abstract class AbstractPlacementControlsBuilder<R extends Placement> impl
 	}
 	
 	@Override
-	public AbstractPlacementControlsBuilder<R> withBoxItems(BoxItemSource boxItems, int offset, int length) {
+	public AbstractPlacementControlsBuilder<R> withBoxItems(BoxItemSource boxItems) {
 		this.boxItems = boxItems;
-		this.boxItemsStartIndex = offset;
-		this.boxItemsEndIndex = offset + length;
 		return this;
 	}
 	
@@ -62,15 +57,14 @@ public abstract class AbstractPlacementControlsBuilder<R extends Placement> impl
 	}
 	
 	protected boolean isMaxLoad() {
-		return maxLoadWeight || maxLoadPressure || maxLoadBoxCount || maxLoadIdenticalBoxCount;
+		return maxLoadWeight || maxLoadPressure || maxLoadBoxCount;
 	}
 	
 	@Override
-	public AbstractPlacementControlsBuilder<R> withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) {
+	public AbstractPlacementControlsBuilder<R> withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount) {
 		this.maxLoadWeight = maxLoadWeight;
 		this.maxLoadPressure = maxLoadPressure;
 		this.maxLoadBoxCount = maxLoadBoxCount;
-		this.maxLoadIdenticalBoxCount = maxLoadIdenticalBoxCount;
 		return this;
 	}
 

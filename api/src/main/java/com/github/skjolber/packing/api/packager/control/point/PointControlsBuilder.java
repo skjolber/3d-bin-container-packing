@@ -21,7 +21,9 @@ public interface PointControlsBuilder {
 	
 	PointControlsBuilder withStack(Stack stack);
 	
-	PointControlsBuilder withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount);
+	PointControlsBuilder withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount);
+
+	PointControlsBuilder withStability(boolean fullSupport);
 
 	PointControls build();
 

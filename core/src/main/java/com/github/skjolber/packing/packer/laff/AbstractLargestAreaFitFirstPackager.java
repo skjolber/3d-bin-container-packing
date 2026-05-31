@@ -218,7 +218,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		int levelOffset = 0;
 		boolean newLevel = true;
 
-		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
+		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, order, pointControls, container, pointCalculator, stack);
 		PlacementControls<Placement> firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
 
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !filteredBoxItems.isEmpty()) {
@@ -438,7 +438,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
 
-		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
+		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, order, pointControls, container, pointCalculator, stack);
 		PlacementControls<Placement> firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
 		groups:
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !pointCalculator.isEmpty() && boxItemGroupIterator.hasNext() && !filteredBoxItemGroups.isEmpty()) {
@@ -666,13 +666,13 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, pointCalculator, boxItemGroupComparator);
 	}
 
-	public PlacementControls<Placement> createControls(BoxItemSource boxItems, int offset, int length, Order order, PointControls pointControls, Container container, PointCalculator pointCalculator, Stack stack) {
+	public PlacementControls<Placement> createControls(BoxItemSource boxItems, Order order, PointControls pointControls, Container container, PointCalculator pointCalculator, Stack stack) {
 		return placementControlsBuilderFactory.createPlacementControlsBuilder()
 			.withContainer(container)
 			.withPointCalculator(pointCalculator)
 			.withOrder(order)
 			.withStack(stack)
-			.withBoxItems(boxItems, offset, length)
+			.withBoxItems(boxItems)
 			.withPointControls(pointControls)
 			.build();
 	}
@@ -683,7 +683,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			.withPointCalculator(pointCalculator)
 			.withOrder(order)
 			.withStack(stack)
-			.withBoxItems(boxItems, offset, length)
+			.withBoxItems(boxItems)
 			.withPointControls(pointControls)
 			.build();
 	}

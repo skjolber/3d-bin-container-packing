@@ -9,6 +9,10 @@ import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public abstract class AbstractLargestAreaFitFirstPackagerBuilder<R extends Placement, B extends AbstractLargestAreaFitFirstPackagerBuilder<R, B>> {
 
+	// only applies if no placementControlsBuilderFactory is provided
+	protected boolean requireFullSupport;
+	protected boolean calculateSupport;
+
 	protected Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
 	
 	protected Comparator<BoxItemGroup> firstBoxItemGroupComparator;
@@ -16,6 +20,16 @@ public abstract class AbstractLargestAreaFitFirstPackagerBuilder<R extends Place
 
 	protected PlacementControlsBuilderFactory<R> firstPlacementControlsBuilderFactory;
 	protected PlacementControlsBuilderFactory<R> placementControlsBuilderFactory;
+	
+	public B withCalculateSupport(boolean calculateSupport) {
+		this.calculateSupport = calculateSupport;
+		return (B)this;
+	}
+	
+	public B withRequireFullSupport(boolean requireFullSupport) {
+		this.requireFullSupport = requireFullSupport;
+		return (B)this;
+	}
 	
 	public B withIntermediatePackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
 		this.intermediatePackagerResultComparator = comparator;

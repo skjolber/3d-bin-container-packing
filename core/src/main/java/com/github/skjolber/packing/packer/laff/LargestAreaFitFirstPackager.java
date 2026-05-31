@@ -12,12 +12,14 @@ import com.github.skjolber.packing.comparator.LargestAreaBoxItemComparator;
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemGroupComparator;
 import com.github.skjolber.packing.comparator.LargestAreaPlacementComparator;
 import com.github.skjolber.packing.comparator.LowerZDelegatePlacementComparator;
+import com.github.skjolber.packing.comparator.SupportDelegateComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
-import com.github.skjolber.packing.comparator.VolumeWeightAreaMinZIntermediatePlacementResultComparator;
+import com.github.skjolber.packing.comparator.VolumeWeightAreaMinZPlacementComparator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.packer.ComparatorPlacementControlsBuilderFactory;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
+import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFactory;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -46,13 +48,23 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			}
 			if(placementControlsBuilderFactory == null) {
 				VolumeThenWeightBoxItemComparator boxItemComparator = new VolumeThenWeightBoxItemComparator();
-				VolumeWeightAreaMinZIntermediatePlacementResultComparator placementComparator = new VolumeWeightAreaMinZIntermediatePlacementResultComparator();
-				placementControlsBuilderFactory = new ComparatorPlacementControlsBuilderFactory(placementComparator, boxItemComparator);
+				Comparator<Placement> placementComparator = new VolumeWeightAreaMinZPlacementComparator();
+				
+				if(!requireFullSupport && calculateSupport) {
+					placementComparator = new SupportDelegateComparator(placementComparator);
+				}
+				
+				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementComparator, boxItemComparator, requireFullSupport, calculateSupport);
 			}
 			if(firstPlacementControlsBuilderFactory == null) {
 				LargestAreaBoxItemComparator firstBoxItemComparator = new LargestAreaBoxItemComparator();
-				LowerZDelegatePlacementComparator firstPlacementComparator = new LowerZDelegatePlacementComparator(new LargestAreaPlacementComparator());
-				firstPlacementControlsBuilderFactory = new ComparatorPlacementControlsBuilderFactory(firstPlacementComparator, firstBoxItemComparator);
+				Comparator<Placement> firstPlacementComparator = new LowerZDelegatePlacementComparator(new LargestAreaPlacementComparator());
+				
+				if(!requireFullSupport && calculateSupport) {
+					firstPlacementComparator = new SupportDelegateComparator(firstPlacementComparator);
+				}
+				
+				firstPlacementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(firstPlacementComparator, firstBoxItemComparator, requireFullSupport, calculateSupport);
 			}
 			return new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, firstBoxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
 		}

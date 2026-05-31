@@ -401,16 +401,22 @@ public abstract class Point {
 		return false;
 	}
 
-	public boolean fitsInXZPlane(Placement point) {
-		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowsMinX(point.getAbsoluteX(), point.getAbsoluteEndX());
+	public boolean fitsInXZPlane(Placement placement) {
+		return 
+				minX <= placement.getAbsoluteX() && placement.getAbsoluteEndX() <= maxX &&
+				minZ <= placement.getAbsoluteZ() && placement.getAbsoluteEndZ() <= maxZ;
 	}
 
-	public boolean fitsInXYPlane(Placement point) {
-		return swallowsMinY(point.getAbsoluteY(), point.getAbsoluteEndY()) && swallowsMinX(point.getAbsoluteX(), point.getAbsoluteEndX());
+	public boolean fitsInXYPlane(Placement placement) {
+		return 
+				minX <= placement.getAbsoluteX() && placement.getAbsoluteEndX() <= maxX &&
+				minY <= placement.getAbsoluteY() && placement.getAbsoluteEndY() <= maxY;
 	}
 
-	public boolean fitsInYZPlane(Placement point) {
-		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowsMinY(point.getAbsoluteY(), point.getAbsoluteEndY());
+	public boolean fitsInYZPlane(Placement placement) {
+		return 
+				minY <= placement.getAbsoluteY() && placement.getAbsoluteEndY() <= maxY &&
+				minZ <= placement.getAbsoluteZ() && placement.getAbsoluteEndZ() <= maxZ;
 	}
 	
 	public boolean fits3D(Placement placement) {
@@ -569,6 +575,5 @@ public abstract class Point {
 		return maxX == other.maxX && maxY == other.maxY && maxZ == other.maxZ && minX == other.minX
 				&& minY == other.minY && minZ == other.minZ;
 	}
-	
 	
 }

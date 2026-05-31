@@ -13,7 +13,7 @@ public interface PlacementControlsBuilder<R extends Placement> {
 
 	PlacementControlsBuilder<R> withPointCalculator(PointCalculator pointCalculator);
 
-	PlacementControlsBuilder<R> withBoxItems(BoxItemSource boxItems, int offset, int length);
+	PlacementControlsBuilder<R> withBoxItems(BoxItemSource boxItems);
 
 	PlacementControlsBuilder<R> withPointControls(PointControls pointControls);
 
@@ -23,7 +23,9 @@ public interface PlacementControlsBuilder<R extends Placement> {
 
 	PlacementControlsBuilder<R> withOrder(Order order);
 
-	PlacementControlsBuilder<R> withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount);
+	PlacementControlsBuilder<R> withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount);
+
+	PlacementControlsBuilder<R> withStability(boolean calculateSupport, boolean fullSupport);	
 
 	PlacementControls<R> build();
 	

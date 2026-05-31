@@ -19,8 +19,10 @@ import com.github.skjolber.packing.api.packager.control.placement.PlacementContr
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
+import com.github.skjolber.packing.comparator.SupportDelegateComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
+import com.github.skjolber.packing.comparator.VolumeWeightAreaMinZPlacementComparator;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.AnyOrderBoxItemGroupIterator;
@@ -35,6 +37,7 @@ import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
+import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFactory;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
@@ -139,9 +142,23 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 
 	public static class Builder {
 
+		// only applies if no placementControlsBuilderFactory is provided
+		protected boolean requireFullSupport;
+		protected boolean calculateSupport;
+		
 		protected Comparator<IntermediatePackagerResult> packagerResultComparator;
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
 		protected PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory;
+		
+		public Builder withCalculateSupport(boolean calculateSupport) {
+			this.calculateSupport = calculateSupport;
+			return this;
+		}
+		
+		public Builder withRequireFullSupport(boolean requireFullSupport) {
+			this.requireFullSupport = requireFullSupport;
+			return this;
+		}
 		
 		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
 			this.boxItemGroupComparator = comparator;
@@ -163,19 +180,26 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			consumer.accept(b);
 			
 			boolean requireFullSupport = b.requireFullSupport;
+			boolean calculateSupport = b.calculateSupport;
 			Comparator<BoxItem> boxItemComparator = b.boxItemComparator;
 			Comparator<Placement> placementComparator = b.placementComparator;
 			
 			if(boxItemComparator == null) {
 				boxItemComparator = VolumeThenWeightBoxItemComparator.getInstance();
 			}
-			if(boxItemComparator == null) {
-				placementComparator = new PlainPlacementComparator();
+			if(placementComparator == null) {
+				if(!requireFullSupport) {
+					if(calculateSupport) {
+						placementComparator = new SupportDelegateComparator(new VolumeWeightAreaMinZPlacementComparator());
+					} else {
+						placementComparator = new VolumeWeightAreaMinZPlacementComparator();
+					}
+				} else {
+					placementComparator = new VolumeWeightAreaMinZPlacementComparator();
+				}
 			}
 			
-			if(placementControlsBuilderFactory == null) {
-				placementControlsBuilderFactory = new PlainPlacementControlsBuilderFactory(boxItemComparator, placementComparator, requireFullSupport);
-			}
+			placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementComparator, boxItemComparator, requireFullSupport, calculateSupport);
 			
 			return this;
 		}
@@ -183,8 +207,14 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		public static class PlacementControlsBuilderFactoryBuilder {
 
 			private boolean requireFullSupport;
+			private boolean calculateSupport;
 			private Comparator<BoxItem> boxItemComparator;
 			private Comparator<Placement> placementComparator; 
+			
+			public PlacementControlsBuilderFactoryBuilder withCalculateSupport(boolean calculateSupport) {
+				this.calculateSupport = calculateSupport;
+				return this;
+			}
 			
 			public PlacementControlsBuilderFactoryBuilder withRequireFullSupport(boolean require) {
 				this.requireFullSupport = require;
@@ -208,7 +238,14 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 				packagerResultComparator = new DefaultIntermediatePackagerResultComparator();
 			}
 			if(placementControlsBuilderFactory == null) {
-				placementControlsBuilderFactory = new PlainPlacementControlsBuilderFactory();
+				VolumeThenWeightBoxItemComparator boxItemComparator = new VolumeThenWeightBoxItemComparator();
+				Comparator<Placement> placementComparator = new VolumeWeightAreaMinZPlacementComparator();
+				
+				if(!requireFullSupport && calculateSupport) {
+					placementComparator = new SupportDelegateComparator(placementComparator);
+				}
+
+				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementComparator, boxItemComparator, requireFullSupport, calculateSupport);
 			}
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
@@ -236,13 +273,12 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 	}
 	
 	@Override
-	protected PlacementControls<Placement> createControls(BoxItemSource boxItems, int offset, int length,
-			Order order, PointControls pointControls, Container container, PointCalculator pointCalculator,
-			Stack stack) {
+	protected PlacementControls<Placement> createControls(BoxItemSource boxItems, Order order, PointControls pointControls,
+			Container container, PointCalculator pointCalculator, Stack stack) {
 		
 		return placementControlsBuilderFactory.createPlacementControlsBuilder()
 				.withPointCalculator(pointCalculator)
-				.withBoxItems(boxItems, offset, length)
+				.withBoxItems(boxItems)
 				.withPointControls(pointControls)
 				.withOrder(order)
 				.withStack(stack)

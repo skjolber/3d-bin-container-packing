@@ -4,7 +4,7 @@ import java.util.Comparator;
 
 import com.github.skjolber.packing.api.Placement;
 
-public class VolumeWeightAreaMinZIntermediatePlacementResultComparator implements Comparator<Placement> {
+public class VolumeWeightAreaMinZPlacementComparator implements Comparator<Placement> {
 
 	@Override
 	public int compare(Placement o1, Placement o2) {

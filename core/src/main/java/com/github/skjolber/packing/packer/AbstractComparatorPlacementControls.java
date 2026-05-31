@@ -21,74 +21,13 @@ public abstract class AbstractComparatorPlacementControls<T extends Placement> e
 	protected Comparator<T> placementComparator;
 	protected Comparator<BoxItem> boxItemComparator;
 
-	public AbstractComparatorPlacementControls(BoxItemSource boxItems, int boxItemsStartIndex, int boxItemsEndIndex,
+	public AbstractComparatorPlacementControls(BoxItemSource boxItems,
 			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
 			Order order, Comparator<T> placementComparator, Comparator<BoxItem> boxItemComparator) {
-		super(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, order);
+		super(boxItems, pointControls, pointCalculator, container, stack, order);
 		
 		this.placementComparator = placementComparator;
 		this.boxItemComparator = boxItemComparator;
 	}
-
-	public T getPlacement(int offset, int length) {
-		T result = null;
-		
-		long maxPointArea = pointCalculator.getMaxArea();
-		
-		// max volume and weight should already be accounted for by packager
-		
-		for(int i = offset; i < length; i++) {
-			BoxItem boxItem = boxItems.get(i);
-			
-			Box box = boxItem.getBox();
-			
-			if(order == Order.NONE) {
-				// is there any point in testing this box?
-				//
-				// a negative integer, zero, or a positive integer as the 
-				// first argument is less than, equal to, or greater than the
-			    // second.
-				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
-					continue;
-				}
-			}
-			
-			PointSource points = pointControls.getPoints(boxItem);
-
-			for (Point point3d : points) {
-				for (BoxStackValue stackValue : box.getStackValues()) {
-					if(stackValue.getArea() > maxPointArea) {
-						continue;
-					}
-		
-					if(!point3d.fits3D(stackValue)) {
-						continue;
-					}
-					T placementResult = createPlacement(point3d, stackValue);
-					if(placementResult == null) {
-						continue;
-					}
-					
-					if(result != null && placementComparator.compare(result, placementResult) >= 0) {
-						continue;
-					}
-					
-					result = placementResult;
-				} 
-			}
-			
-			if(order == Order.CRONOLOGICAL) {
-				// even if null
-				break;
-			}
-			if(order == Order.CRONOLOGICAL_ALLOW_SKIPPING && result != null) {
-				break;
-			}
-			
-		}
-		return result;
-	}
-
-	protected abstract T createPlacement(Point point3d, BoxStackValue stackValue);
 
 }

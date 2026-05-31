@@ -10,4 +10,6 @@ public class DefaultPointControlsBuilder extends AbstractPointControlsBuilder<De
 		return new DefaultPointControls(points);
 	}
 
+
+
 }

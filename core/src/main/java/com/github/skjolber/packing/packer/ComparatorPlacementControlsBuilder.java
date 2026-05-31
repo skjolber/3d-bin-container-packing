@@ -8,7 +8,6 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.packager.control.placement.AbstractPlacementControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
@@ -20,8 +19,6 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	protected Comparator<BoxItem> boxItemComparator;
 
 	protected BoxItemSource boxItems;
-	protected int boxItemsStartIndex = -1;
-	protected int boxItemsEndIndex = -1; // exclusive
 	
 	protected PointControls pointControls;
 	protected PointCalculator pointCalculator;
@@ -32,8 +29,9 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	protected boolean maxLoadWeight;
 	protected boolean maxLoadPressure;
 	protected boolean maxLoadBoxCount;
-	protected boolean maxLoadIdenticalBoxCount;
-	
+
+	protected boolean fullSupport;
+
 	public ComparatorPlacementControlsBuilder withOrder(Order order) {
 		this.order = order;
 		return this;
@@ -46,10 +44,8 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	}
 	
 	@Override
-	public ComparatorPlacementControlsBuilder withBoxItems(BoxItemSource boxItems, int offset, int length) {
+	public ComparatorPlacementControlsBuilder withBoxItems(BoxItemSource boxItems) {
 		this.boxItems = boxItems;
-		this.boxItemsStartIndex = offset;
-		this.boxItemsEndIndex = offset + length;
 		return this;
 	}
 	
@@ -81,17 +77,28 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	}
 	
 	@Override
-	public ComparatorPlacementControlsBuilder withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) {
+	public ComparatorPlacementControlsBuilder withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount) {
 		this.maxLoadWeight = maxLoadWeight;
 		this.maxLoadPressure = maxLoadPressure;
 		this.maxLoadBoxCount = maxLoadBoxCount;
-		this.maxLoadIdenticalBoxCount = maxLoadIdenticalBoxCount;
+		return this;
+	}
+	
+	@Override
+	public PlacementControlsBuilder<Placement> withStability(boolean calculateSupport, boolean fullSupport) {
+		this.fullSupport = fullSupport;
 		return this;
 	}
 	
 	@Override
 	public PlacementControls<Placement> build() {
-		return new ComparatorPlacementControls(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
+		if(fullSupport) {
+			throw new IllegalStateException("Full support not supported");
+		}
+		if(maxLoadWeight || maxLoadPressure || maxLoadBoxCount) {
+			throw new IllegalStateException("Max load not supported");
+		}
+		return new ComparatorPlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 	}
 
 }

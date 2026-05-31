@@ -15,12 +15,12 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.PointSource;
 
-public class ComparatorPlacementControls extends AbstractComparatorPlacementControls<Placement> {
+public class SupportPlacementControls extends AbstractComparatorPlacementControls<Placement> {
 
-	public ComparatorPlacementControls(BoxItemSource boxItems, PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
-			Order order, Comparator<Placement> placementComparator, Comparator<BoxItem> boxItemComparator) {
-		super(boxItems, pointControls, pointCalculator, container, stack, order,
-				placementComparator, boxItemComparator);
+	public SupportPlacementControls(BoxItemSource boxItems, PointControls pointControls,
+			PointCalculator pointCalculator, Container container, Stack stack, Order order,
+			Comparator<Placement> placementComparator, Comparator<BoxItem> boxItemComparator) {
+		super(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 	}
 
 	public Placement getPlacement(int offset, int length) {
@@ -82,9 +82,14 @@ public class ComparatorPlacementControls extends AbstractComparatorPlacementCont
 		}
 		return result;
 	}
-	
-	protected Placement createPlacement(Point point3d, BoxStackValue stackValue) {
-		return new Placement(stackValue, point3d);
-	}
 
+	protected Placement createPlacement(Point point, BoxStackValue stackValue) {
+		Placement placement = new Placement(stackValue, point);
+		if(point.getMinZ() != 0) {
+			placement.setSupportedArea(stackValue.getArea());
+		} else {
+			placement.setSupportedArea(calculateAreaSupport(stack.getPlacements(), point.getMinX(), point.getMinY(), point.getMinZ(), stackValue));
+		}
+		return placement;
+	}
 }

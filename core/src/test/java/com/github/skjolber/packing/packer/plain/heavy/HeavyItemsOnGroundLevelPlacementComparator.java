@@ -1,7 +1,9 @@
 package com.github.skjolber.packing.packer.plain.heavy;
 
+import java.util.Comparator;
+
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.packer.plain.PlainPlacementComparator;
+import com.github.skjolber.packing.comparator.SupportDelegateComparator;
 
 
 /**
@@ -10,12 +12,11 @@ import com.github.skjolber.packing.packer.plain.PlainPlacementComparator;
  * 
  */
 
-public class HeavyItemsOnGroundLevelPlacementComparator extends PlainPlacementComparator {
+public class HeavyItemsOnGroundLevelPlacementComparator implements Comparator<Placement> {
 	
 	protected final int maxWeight;
 
 	public HeavyItemsOnGroundLevelPlacementComparator(int maxWeight) {
-		super();
 		this.maxWeight = maxWeight;
 	}
 	
@@ -26,7 +27,13 @@ public class HeavyItemsOnGroundLevelPlacementComparator extends PlainPlacementCo
 		boolean heavyPotentiallyBetter = potentiallyBetterResult.getBox().getWeight() > maxWeight && potentiallyBetterResult.getAbsoluteZ() == 0;
 		
 		if( (!heavyReference && !heavyPotentiallyBetter) || (heavyReference && heavyPotentiallyBetter)) {
-			return super.compare(referenceResult, potentiallyBetterResult);
+			
+			int result = Integer.compare(referenceResult.getAbsoluteZ(), potentiallyBetterResult.getAbsoluteZ());
+			if(result != 0) {
+				return result;
+			}
+
+			return Long.compare(referenceResult.getStackValue().getArea(), potentiallyBetterResult.getStackValue().getArea());
 		}
 		
 		if(heavyReference && !heavyPotentiallyBetter) {
