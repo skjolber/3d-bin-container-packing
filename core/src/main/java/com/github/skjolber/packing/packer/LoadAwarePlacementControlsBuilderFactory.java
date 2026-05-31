@@ -17,7 +17,7 @@ public class LoadAwarePlacementControlsBuilderFactory implements PlacementContro
 	protected final boolean requireFullSupport;
 	protected final boolean calculateSupport;
 	
-	public LoadAwarePlacementControlsBuilderFactory(Comparator<Placement> placementComparator, Comparator<BoxItem> boxItemComparator, boolean requireFullSupport, boolean calculateSupport) {
+	public LoadAwarePlacementControlsBuilderFactory(Comparator<Placement> placementComparator, Comparator<BoxItem> boxItemComparator, boolean calculateSupport, boolean requireFullSupport) {
 		this.placementComparator = placementComparator;
 		this.boxItemComparator = boxItemComparator;
 		this.requireFullSupport = requireFullSupport;

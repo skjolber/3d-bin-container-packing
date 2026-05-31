@@ -199,7 +199,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 				}
 			}
 			
-			placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementComparator, boxItemComparator, requireFullSupport, calculateSupport);
+			placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementComparator, boxItemComparator, calculateSupport, requireFullSupport);
 			
 			return this;
 		}
@@ -245,7 +245,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 					placementComparator = new SupportDelegateComparator(placementComparator);
 				}
 
-				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementComparator, boxItemComparator, requireFullSupport, calculateSupport);
+				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementComparator, boxItemComparator, calculateSupport, requireFullSupport);
 			}
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();

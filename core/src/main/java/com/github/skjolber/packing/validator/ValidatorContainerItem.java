@@ -2,9 +2,6 @@ package com.github.skjolber.packing.validator;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.point.PointSource;
 import com.github.skjolber.packing.api.validator.manifest.ManifestValidator;
 import com.github.skjolber.packing.api.validator.manifest.ManifestValidatorBuilderFactory;
 import com.github.skjolber.packing.api.validator.placement.PlacementValidator;

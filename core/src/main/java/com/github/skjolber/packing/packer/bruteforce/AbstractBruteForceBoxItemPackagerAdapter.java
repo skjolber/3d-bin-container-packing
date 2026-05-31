@@ -8,7 +8,6 @@ import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerAdapter;
 
 public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractPackagerAdapter {
 

@@ -2,9 +2,7 @@ package com.github.skjolber.packing.packer;
 
 import java.util.Comparator;
 
-import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
@@ -12,9 +10,7 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.AbstractPlacementControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
-import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
-import com.github.skjolber.packing.api.point.PointSource;
 
 public abstract class AbstractComparatorPlacementControls<T extends Placement> extends AbstractPlacementControls<T> {
 

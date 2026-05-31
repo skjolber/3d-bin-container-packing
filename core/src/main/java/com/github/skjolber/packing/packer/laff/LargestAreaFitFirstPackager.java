@@ -17,7 +17,6 @@ import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
 import com.github.skjolber.packing.comparator.VolumeWeightAreaMinZPlacementComparator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
-import com.github.skjolber.packing.packer.ComparatorPlacementControlsBuilderFactory;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFactory;
 
@@ -54,7 +53,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 					placementComparator = new SupportDelegateComparator(placementComparator);
 				}
 				
-				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementComparator, boxItemComparator, requireFullSupport, calculateSupport);
+				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementComparator, boxItemComparator, calculateSupport, requireFullSupport);
 			}
 			if(firstPlacementControlsBuilderFactory == null) {
 				LargestAreaBoxItemComparator firstBoxItemComparator = new LargestAreaBoxItemComparator();
@@ -64,7 +63,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 					firstPlacementComparator = new SupportDelegateComparator(firstPlacementComparator);
 				}
 				
-				firstPlacementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(firstPlacementComparator, firstBoxItemComparator, requireFullSupport, calculateSupport);
+				firstPlacementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(firstPlacementComparator, firstBoxItemComparator, calculateSupport, requireFullSupport);
 			}
 			return new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, firstBoxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
 		}
