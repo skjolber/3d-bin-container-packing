@@ -40,6 +40,9 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 	protected boolean fullSupport;
 	protected boolean calculateSupport;
 
+	/** Reusable buffer for per-supporter overlap areas; grows as needed. */
+	private long[] placementAreas = new long[8];
+
 	public LoadAwarePlacementControls(BoxItemSource boxItems, 
 			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
 			Order order, Comparator<Placement> placementComparator, Comparator<BoxItem> boxItemComparator, boolean fullSupport, boolean calculateSupport) {
@@ -126,17 +129,16 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 							}
 						} else {
 							populatePlacementSupporters(point3d, stackValue, placementSupporters, stack.getPlacements());
-							
-							long supportedArea = (fullSupport || calculateSupport) ? calculateSupport(placementSupporters, stackValue, point3d.getMinX(), point3d.getMinY()) : -1;
+
+							long supportedArea = calculateSupportAndValidateLoad(placementSupporters, stackValue, point3d.getMinX(), point3d.getMinY());
+							if(supportedArea < 0) {
+								continue;
+							}
 							if(fullSupport && supportedArea != stackValue.getArea()) {
 								continue;
 							}
 
 							if(!isWithinMaxLoadBoxCount(placementSupporters)) {
-								continue;
-							}
-							
-							if(!isWithinMaxLoadWeightAndPressure(placementSupporters, stackValue, point3d.getMinX(), point3d.getMaxY())) {
 								continue;
 							}
 							
@@ -151,13 +153,12 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 						}
 					} else {
 						populatePlacementSupporters(point3d, stackValue, placementSupporters, stack.getPlacements());
-						
-						long supportedArea = (fullSupport || calculateSupport) ? calculateSupport(placementSupporters, stackValue, point3d.getMinX(), point3d.getMinY()) : -1;						
-						if(fullSupport && supportedArea != stackValue.getArea()) {
+					
+						long supportedArea = calculateSupportAndValidateLoad(placementSupporters, stackValue, point3d.getMinX(), point3d.getMinY());
+						if(supportedArea < 0) {
 							continue;
 						}
-						
-						if(!isWithinMaxLoadWeightAndPressure(placementSupporters, stackValue, point3d.getMinX(), point3d.getMaxY())) {
+						if(fullSupport && supportedArea != stackValue.getArea()) {
 							continue;
 						}
 						
@@ -264,40 +265,37 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 	 * load constraints on any of the supporters below.
 	 */
 	
-	private boolean isWithinMaxLoadWeightAndPressure(List<Placement> placementSupporters, BoxStackValue stackValue, int absoluteX, int absoluteY) {
-		
+	/**
+	 * Calculates the total overlap area of all supporters with the new box and simultaneously
+	 * validates load (weight/pressure) constraints in a single pass using cached per-supporter
+	 * areas — avoiding the O(2n) double {@code overlapArea} scan that separate
+	 * {@code calculateSupport} + {@code isWithinMaxLoadWeightAndPressure} calls would incur.
+	 *
+	 * @return total supported area, or {@code -1} if any load constraint is violated
+	 */
+	private long calculateSupportAndValidateLoad(List<Placement> placementSupporters, BoxStackValue stackValue, int absoluteX, int absoluteY) {
+		int n = placementSupporters.size();
 		int newMaxX = absoluteX + stackValue.getDx() - 1;
 		int newMaxY = absoluteY + stackValue.getDy() - 1;
-		
-		long totalOverlapArea = 0;
-		for (Placement placement : placementSupporters) {
-			totalOverlapArea += overlapArea(absoluteX, absoluteY, newMaxX, newMaxY, placement);
-		}
-		
-		long weight = stackValue.getBox().getWeight();
-		
-		for (Placement candidate : placementSupporters) {
-			long area = overlapArea(absoluteX, absoluteY, newMaxX, newMaxY, candidate);
-			long share = (weight * area) / totalOverlapArea;
 
-			if(!isWithinMaxLoadWeightAndPressure(candidate, share, area)) {
-				return false;
+		if (placementAreas.length < n) {
+			placementAreas = new long[n];
+		}
+
+		long totalOverlapArea = 0;
+		for (int i = 0; i < n; i++) {
+			placementAreas[i] = overlapArea(absoluteX, absoluteY, newMaxX, newMaxY, placementSupporters.get(i));
+			totalOverlapArea += placementAreas[i];
+		}
+
+		long weight = stackValue.getBox().getWeight();
+		for (int i = 0; i < n; i++) {
+			long share = (weight * placementAreas[i]) / totalOverlapArea;
+			if (!isWithinMaxLoadWeightAndPressure(placementSupporters.get(i), share, placementAreas[i])) {
+				return -1;
 			}
 		}
-		
-		return true;
-	}
 
-	private long calculateSupport(List<Placement> placementSupporters, BoxStackValue stackValue, int absoluteX, int absoluteY) {
-		
-		int newMaxX = absoluteX + stackValue.getDx() - 1;
-		int newMaxY = absoluteY + stackValue.getDy() - 1;
-		
-		long totalOverlapArea = 0;
-		for (Placement placement : placementSupporters) {
-			totalOverlapArea += overlapArea(absoluteX, absoluteY, newMaxX, newMaxY, placement);
-		}
-		
 		return totalOverlapArea;
 	}
 	
@@ -315,17 +313,18 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 			}
 		}
 		
-		long totalArea = 0;
-		for (PlacementLoad placementLoad : placement.getSupporters()) {
-			totalArea += placementLoad.getArea();
-		}
-		
-		for (PlacementLoad placementLoad : placement.getSupporters()) {
-			long weightShare = (candidateSupporter.getBox().getWeight() * placementLoad.getArea()) / totalArea;
-			
-			if(!isWithinMaxLoadWeightAndPressure(placementLoad.getPlacement(), weightShare, placementLoad.getArea())) {
-				return false;
-			}		
+		// getSupportedArea() is maintained incrementally by addSupporter/removeSupporter,
+		// so it equals the sum of all supporter areas without an extra loop.
+		long totalArea = placement.getSupportedArea();
+
+		if (totalArea > 0) {
+			for (PlacementLoad placementLoad : placement.getSupporters()) {
+				long weightShare = (candidateSupporter.getBox().getWeight() * placementLoad.getArea()) / totalArea;
+				
+				if(!isWithinMaxLoadWeightAndPressure(placementLoad.getPlacement(), weightShare, placementLoad.getArea())) {
+					return false;
+				}		
+			}
 		}
 		
 		return true;
@@ -336,13 +335,17 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 	 * where the placement is inserted below existing placements (requiring load recalculation).
 	 */
 	protected void applyLoad(Placement placement) {
-		List<Placement> existing = stack.getPlacements();
+		// setSupportedArea was pre-computed for comparator use during candidate selection.
+		// Reset here so addSupporter accumulates the correct total from a clean 0.
+		placement.setSupportedArea(0);
+
+		List<Placement> placements = stack.getPlacements();
 
 		// Check if there are existing placements resting on top of this new one
 		// (i.e., this box was placed in a gap below existing boxes)
 		// this can have ripple effects throughout the stack
 		
-		List<PlacementLoad> supporteesAbove = findSupportees(placement, existing);
+		List<PlacementLoad> supporteesAbove = findSupportees(placement, placements);
 		if (!supporteesAbove.isEmpty()) {
 			long totalArea = 0;
 			for (int i = 0; i < supporteesAbove.size(); i++) {
@@ -357,7 +360,7 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 		}
 		
 		// Distribute load to supporters below
-		List<PlacementLoad> supportersBelow = findSupporters(placement, existing);
+		List<PlacementLoad> supportersBelow = findSupporters(placement, placements);
 		if (!supportersBelow.isEmpty()) {
 			long totalArea = 0;
 			for (int i = 0; i < supportersBelow.size(); i++) {
@@ -376,7 +379,7 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 	/**
 	 * Finds placements below that support the given placement.
 	 */
-	protected List<PlacementLoad> findSupporters(Placement placement, List<Placement> existing) {
+	protected List<PlacementLoad> findSupporters(Placement placement, List<Placement> placements) {
 		List<PlacementLoad> result = new ArrayList<>();
 		int newMinX = placement.getAbsoluteX();
 		int newMinY = placement.getAbsoluteY();
@@ -384,18 +387,16 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 		int newMaxY = placement.getAbsoluteEndY();
 		int z = placement.getAbsoluteZ() - 1;
 
-		for (int i = 0; i < existing.size(); i++) {
-			Placement candidate = existing.get(i);
+		for (int i = 0; i < placements.size(); i++) {
+			Placement candidate = placements.get(i);
 			if (candidate.getAbsoluteEndZ() != z) {
 				continue;
 			}
-			if(!candidate.intersects2D(newMinX, newMinY, newMaxX, newMaxY)) {
+			if(!candidate.intersects2D(newMinX, newMaxX, newMinY, newMaxY)) {
 				continue;
 			}
 			long area = overlapArea(newMinX, newMinY, newMaxX, newMaxY, candidate);
-			if (area > 0) {
-				result.add(new PlacementLoad(candidate, area));
-			}
+			result.add(new PlacementLoad(candidate, area));
 		}
 		return result;
 	}
@@ -416,13 +417,11 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 			if (candidate.getAbsoluteZ() != z) {
 				continue;
 			}
-			if(!candidate.intersects2D(pMinX, pMaxX, pMinY, pMaxY)) {
+			if(!candidate.intersects2D(placement)) {
 				continue;
 			}
 			long area = overlapArea(pMinX, pMinY, pMaxX, pMaxY, candidate);
-			if (area > 0) {
-				result.add(new PlacementLoad(candidate, area));
-			}
+			result.add(new PlacementLoad(candidate, area));
 		}
 		return result;
 	}

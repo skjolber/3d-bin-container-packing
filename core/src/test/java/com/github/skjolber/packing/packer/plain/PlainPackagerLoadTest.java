@@ -25,7 +25,7 @@ import com.github.skjolber.packing.packer.AbstractPackagerTest;
  * <p>The packager automatically enables {@link com.github.skjolber.packing.packer.LoadAwarePlacementControls}
  * whenever at least one box in the item list declares a load constraint.
  */
-public class PlainPackagerConstraintTest extends AbstractPackagerTest {
+public class PlainPackagerLoadTest extends AbstractPackagerTest {
 
 	// -----------------------------------------------------------------------
 	// maxLoadWeight – basic stacking acceptance / rejection

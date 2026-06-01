@@ -51,7 +51,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) throws PackagerInterruptedException {
 		Container container = controlContainerItem.getContainer();
 
-		Stack stack = new Stack();
+		Stack stack = createStack();
 
 		DefaultBoxItemSource boxItemSource = new DefaultBoxItemSource(boxItems);
 
@@ -209,6 +209,10 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		return createIntermediatePackagerResult(controlContainerItem, stack);
 	}
 
+	protected Stack createStack() {
+		return new Stack();
+	}
+
 	protected ManifestControls createBoxItemControls(Container container, Stack stack, BoxItemSource boxItemSource,
 			PointCalculator pointCalculator, BoxItemGroupSource groups, ManifestControlsBuilderFactory manifestControlsBuilderFactory) {
 				
@@ -242,8 +246,8 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		ContainerItem containerItem = controlContainerItem;
 		Container container = containerItem.getContainer();
 		
-		Stack stack = new Stack();
-
+		Stack stack = createStack();
+		
 		PackagerBoxItems packagerBoxItems = new PackagerBoxItems(boxItemGroups);
 		BoxItemSource filteredBoxItems = packagerBoxItems.getFilteredBoxItems();
 

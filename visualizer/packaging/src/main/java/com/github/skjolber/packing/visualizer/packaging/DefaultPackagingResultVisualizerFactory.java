@@ -57,7 +57,9 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			DefaultPointCalculator3D pointCalculator = new DefaultPointCalculator3D(true, stack.getPlacements().size());
 			pointCalculator.clearToSize(inputContainer.getDx(), inputContainer.getDy(), inputContainer.getDz());
 			
-			for (Placement placement : stack.getPlacements()) {
+			List<Placement> placements = stack.getPlacements();
+			for (int i = 0; i < placements.size(); i++) {
+				Placement placement = placements.get(i);
 				Box box = placement.getStackValue().getBox();
 				BoxVisualizer boxVisualization = new BoxVisualizer();
 				boxVisualization.setId(box.getId());
@@ -69,7 +71,22 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 				boxVisualization.setDx(stackValue.getDx());
 				boxVisualization.setDy(stackValue.getDy());
 				boxVisualization.setDz(stackValue.getDz());
-
+				
+				boxVisualization.setWeight(box.getWeight());
+			
+			if(stackValue.isMaxLoadBoxCount()) {
+					boxVisualization.setMaxLoadBoxCount(stackValue.getMaxLoadBoxCount());
+				}
+				if(stackValue.isMaxLoadWeight()) {
+					boxVisualization.setMaxLoadWeight(stackValue.getMaxLoadWeight());
+				}
+				if(stackValue.isMaxLoadPressure()) {
+					boxVisualization.setMaxLoadPressure(stackValue.getMaxLoadPressure());
+				}
+				if(stackValue.isMaxLoadBoxCountIdenticalOnly()) {
+					boxVisualization.setMaxLoadIdenticalOnly(stackValue.isMaxLoadBoxCountIdenticalOnly());
+				}
+				
 				StackPlacementVisualizer stackPlacement = new StackPlacementVisualizer();
 				stackPlacement.setX(placement.getAbsoluteX());
 				stackPlacement.setY(placement.getAbsoluteY());

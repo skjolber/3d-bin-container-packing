@@ -310,5 +310,4 @@ public class Placement implements Serializable {
 		this.supportedArea = supportedArea;
 	}
 	
-	
 }
