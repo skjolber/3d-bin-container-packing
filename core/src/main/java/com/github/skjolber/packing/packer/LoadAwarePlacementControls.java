@@ -66,7 +66,7 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 			Box box = boxItem.getBox();
 
 			if (order == Order.NONE) {
-				if (result != null && boxItemComparator != null && boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
+				if (result != null && boxItemComparator != null && boxItemComparator.compare(result.getBoxItem(), boxItem) != AbstractPackager.ARGUMENT_2_IS_BETTER) {
 					continue;
 				}
 			}
@@ -86,7 +86,7 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 					if(point3d.getMinZ() == 0) {
 						Placement placementResult = new Placement(stackValue, point3d);
 						
-						if (result != null && placementComparator != null && placementComparator.compare(result, placementResult) >= 0) {
+						if (result != null && placementComparator != null && placementComparator.compare(result, placementResult) != AbstractPackager.ARGUMENT_2_IS_BETTER) {
 							continue;
 						}
 	

@@ -23,7 +23,7 @@ public class VolumeWeightAreaMinZPlacementComparator implements Comparator<Place
 		}
 
 		// smaller z is better
-		return Integer.compare(o1.getAbsoluteZ(), o2.getAbsoluteZ());
+		return Integer.compare(o2.getAbsoluteZ(), o1.getAbsoluteZ());
 	}
 	
 }

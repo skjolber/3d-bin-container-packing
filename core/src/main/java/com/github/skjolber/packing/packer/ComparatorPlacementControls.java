@@ -41,7 +41,7 @@ public class ComparatorPlacementControls extends AbstractComparatorPlacementCont
 				// a negative integer, zero, or a positive integer as the 
 				// first argument is less than, equal to, or greater than the
 			    // second.
-				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
+				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) != AbstractPackager.ARGUMENT_2_IS_BETTER) {
 					continue;
 				}
 			}
@@ -63,7 +63,7 @@ public class ComparatorPlacementControls extends AbstractComparatorPlacementCont
 						continue;
 					}
 					
-					if(result != null && placementComparator.compare(result, placementResult) >= 0) {
+					if(result != null && placementComparator.compare(result, placementResult) != AbstractPackager.ARGUMENT_2_IS_BETTER) {
 						continue;
 					}
 					

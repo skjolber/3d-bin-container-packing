@@ -365,7 +365,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withMaxContainerCount(5).withBoxItems(products).build();
 			assertValid(build);
-	
+			
 			assertEquals(build.get(0).getId(), "big");
 			assertEquals(build.get(1).getId(), "small");
 			assertEquals(build.get(2).getId(), "small");
