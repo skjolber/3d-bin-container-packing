@@ -31,6 +31,7 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	protected boolean maxLoadBoxCount;
 
 	protected boolean fullSupport;
+	protected boolean loadIdenticalBox;
 
 	public ComparatorPlacementControlsBuilder withOrder(Order order) {
 		this.order = order;
@@ -95,10 +96,16 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 		if(fullSupport) {
 			throw new IllegalStateException("Full support not supported");
 		}
-		if(maxLoadWeight || maxLoadPressure || maxLoadBoxCount) {
+		if(maxLoadWeight || maxLoadPressure || maxLoadBoxCount || loadIdenticalBox) {
 			throw new IllegalStateException("Max load not supported");
 		}
 		return new ComparatorPlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
+	}
+
+	@Override
+	public PlacementControlsBuilder<Placement> withLoadIdenticalBox(boolean loadIdenticalBox) {
+		this.loadIdenticalBox = loadIdenticalBox;
+		return this;
 	}
 
 }

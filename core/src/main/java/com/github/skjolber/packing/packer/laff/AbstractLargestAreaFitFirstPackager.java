@@ -217,7 +217,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		int levelOffset = 0;
 		boolean newLevel = true;
 
-		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, order, pointControls, container, pointCalculator, stack);
+		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, order, pointControls, container, pointCalculator, stack, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		PlacementControls<Placement> firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
 
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !filteredBoxItems.isEmpty()) {
@@ -437,7 +437,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
 
-		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, order, pointControls, container, pointCalculator, stack);
+		PlacementControls<Placement> placementControls = createControls(filteredBoxItems, order, pointControls, container, pointCalculator, stack, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		PlacementControls<Placement> firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
 		groups:
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !pointCalculator.isEmpty() && boxItemGroupIterator.hasNext() && !filteredBoxItemGroups.isEmpty()) {
@@ -665,17 +665,21 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		return new AnyOrderBoxItemGroupIterator(filteredBoxItemGroups, container, pointCalculator, boxItemGroupComparator);
 	}
 
-	public PlacementControls<Placement> createControls(BoxItemSource boxItems, Order order, PointControls pointControls, Container container, PointCalculator pointCalculator, Stack stack) {
+	@Override
+	protected PlacementControls<Placement> createControls(BoxItemSource boxItems, Order order, PointControls pointControls,
+			Container container, PointCalculator pointCalculator, Stack stack, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) {
+		
 		return placementControlsBuilderFactory.createPlacementControlsBuilder()
-			.withContainer(container)
-			.withPointCalculator(pointCalculator)
-			.withOrder(order)
-			.withStack(stack)
-			.withBoxItems(boxItems)
-			.withPointControls(pointControls)
-			.build();
+				.withPointCalculator(pointCalculator)
+				.withBoxItems(boxItems)
+				.withPointControls(pointControls)
+				.withOrder(order)
+				.withStack(stack)
+				.withContainer(container)
+				.withMaxLoad(maxLoadWeight, maxLoadPressure, maxLoadBoxCount)
+				.build();
 	}
-	
+
 	public PlacementControls<Placement> createFirstControls(BoxItemSource boxItems, int offset, int length, Order order, PointControls pointControls, Container container, PointCalculator pointCalculator, Stack stack) {
 		return firstPlacementControlsBuilderFactory.createPlacementControlsBuilder()
 			.withContainer(container)

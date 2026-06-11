@@ -30,6 +30,7 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 	protected boolean maxLoadWeight;
 	protected boolean maxLoadPressure;
 	protected boolean maxLoadBoxCount;
+	protected boolean loadIdenticalBox;
 	
 	protected boolean fullSupport;
 	protected boolean calculateSupport;
@@ -89,6 +90,13 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 
 		return this;
 	}
+	
+	@Override
+	public PlacementControlsBuilder<Placement> withLoadIdenticalBox(boolean loadIdenticalBox) {
+		this.loadIdenticalBox = loadIdenticalBox;
+		return this;
+	}
+
 
 	@Override
 	public PlacementControlsBuilder<Placement> withStability(boolean calculateSupport, boolean fullSupport) {
@@ -100,16 +108,23 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 	@Override
 	public PlacementControls<Placement> build() {
 		if(maxLoadWeight || maxLoadPressure || maxLoadBoxCount) {
-			// If any load awareness is enabled, ensure that the box item comparator is set to consider load
-			return new LoadAwarePlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator, fullSupport, calculateSupport);
+			boolean maxLoadWeightOnly = maxLoadWeight && !maxLoadPressure && !maxLoadBoxCount;
+			
+			if(maxLoadWeightOnly) {
+				return new WeightLoadAwarePlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator, fullSupport);
+			}
+
+			return new LoadAwarePlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator, fullSupport);
 		}
 		
+		
 		if(fullSupport) {
-			// If only stability is required, use the full support placement controls
+			// Full placement support only
 			return new FullSupportPlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 		}
 		
 		if(calculateSupport) {
+			// Calculate placement support. 
 			return new SupportPlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 		}
 

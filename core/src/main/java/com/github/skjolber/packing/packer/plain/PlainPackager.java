@@ -274,7 +274,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 	
 	@Override
 	protected PlacementControls<Placement> createControls(BoxItemSource boxItems, Order order, PointControls pointControls,
-			Container container, PointCalculator pointCalculator, Stack stack) {
+			Container container, PointCalculator pointCalculator, Stack stack, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean loadIdenticalBox) {
 		
 		return placementControlsBuilderFactory.createPlacementControlsBuilder()
 				.withPointCalculator(pointCalculator)
@@ -283,7 +283,8 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 				.withOrder(order)
 				.withStack(stack)
 				.withContainer(container)
-				.withMaxLoad(currentMaxLoadWeight, currentMaxLoadPressure, currentMaxLoadBoxCount)
+				.withMaxLoad(maxLoadWeight, maxLoadPressure, maxLoadBoxCount)
+				.withLoadIdenticalBox(loadIdenticalBox)
 				.build();
 	}
 

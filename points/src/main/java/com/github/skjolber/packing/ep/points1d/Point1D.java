@@ -35,4 +35,9 @@ public class Point1D extends Point {
 		return new Point1D(minX, minY, z, maxX, maxY, maxZ);
 	}
 
+	@Override
+	public boolean isSupportedXYPlane(int x, int y) {
+		return x <= maxX && y <= maxY;
+	}
+
 }

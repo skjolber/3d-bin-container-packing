@@ -83,8 +83,8 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 				if(stackValue.isMaxLoadPressure()) {
 					boxVisualization.setMaxLoadPressure(stackValue.getMaxLoadPressure());
 				}
-				if(stackValue.isMaxLoadBoxCountIdenticalOnly()) {
-					boxVisualization.setMaxLoadIdenticalOnly(stackValue.isMaxLoadBoxCountIdenticalOnly());
+				if(stackValue.isLoadIdenticalBoxOnly()) {
+					boxVisualization.setMaxLoadIdenticalOnly(stackValue.isLoadIdenticalBoxOnly());
 				}
 				
 				StackPlacementVisualizer stackPlacement = new StackPlacementVisualizer();

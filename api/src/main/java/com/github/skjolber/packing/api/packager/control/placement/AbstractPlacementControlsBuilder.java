@@ -22,6 +22,8 @@ public abstract class AbstractPlacementControlsBuilder<R extends Placement> impl
 	protected boolean maxLoadPressure;
 	protected boolean maxLoadBoxCount;
 	
+	protected boolean loadIdenticalBox;
+	
 	public AbstractPlacementControlsBuilder<R> withOrder(Order order) {
 		this.order = order;
 		return this;
@@ -41,6 +43,11 @@ public abstract class AbstractPlacementControlsBuilder<R extends Placement> impl
 	
 	public AbstractPlacementControlsBuilder<R> withStack(Stack stack) {
 		this.stack = stack;
+		return this;
+	}
+	
+	public AbstractPlacementControlsBuilder<R> withLoadIdenticalBox(boolean loadIdenticalBox) {
+		this.loadIdenticalBox = loadIdenticalBox;
 		return this;
 	}
 	

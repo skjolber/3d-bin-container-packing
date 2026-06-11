@@ -15,6 +15,12 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.PointSource;
 
+/**
+ * 
+ * Load aware placement controls which calculates support area.
+ * 
+ */
+
 public class SupportPlacementControls extends AbstractComparatorPlacementControls<Placement> {
 
 	public SupportPlacementControls(BoxItemSource boxItems, PointControls pointControls,
@@ -25,8 +31,6 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 
 	public Placement getPlacement(int offset, int length) {
 		Placement result = null;
-		
-		long maxPointArea = pointCalculator.getMaxArea();
 		
 		// max volume and weight should already be accounted for by packager
 		
@@ -48,12 +52,12 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 			
 			PointSource points = pointControls.getPoints(boxItem);
 
-			for (Point point3d : points) {
-				for (BoxStackValue stackValue : box.getStackValues()) {
-					if(stackValue.getArea() > maxPointArea) {
+			for (BoxStackValue stackValue : box.getStackValues()) {
+				for (Point point3d : points) {
+					if(stackValue.getArea() > point3d.getArea()) {
 						continue;
 					}
-		
+					
 					if(!point3d.fits3D(stackValue)) {
 						continue;
 					}
@@ -77,15 +81,14 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 			}
 			if(order == Order.CRONOLOGICAL_ALLOW_SKIPPING && result != null) {
 				break;
-			}
-			
+			}			
 		}
 		return result;
 	}
 
 	protected Placement createPlacement(Point point, BoxStackValue stackValue) {
 		Placement placement = new Placement(stackValue, point);
-		if(point.getMinZ() != 0) {
+		if(point.getMinZ() == 0 || point.isSupportedXYPlane(stackValue)) {
 			placement.setSupportedArea(stackValue.getArea());
 		} else {
 			placement.setSupportedArea(calculateAreaSupport(stack.getPlacements(), point.getMinX(), point.getMinY(), point.getMinZ(), stackValue));

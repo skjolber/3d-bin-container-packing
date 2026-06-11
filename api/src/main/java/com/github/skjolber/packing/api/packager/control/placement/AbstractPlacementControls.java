@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 
 public abstract class AbstractPlacementControls<R extends Placement> implements PlacementControls<R> {
@@ -75,7 +76,7 @@ public abstract class AbstractPlacementControls<R extends Placement> implements 
 			    sum += intersect;
 			    
 			    if(sum == max) {
-			    	return stackValue.getArea();
+			    	break;
 			    }
 			}
 		}
@@ -100,5 +101,6 @@ public abstract class AbstractPlacementControls<R extends Placement> implements 
 		this.stack = stack;
 		this.order = order;
 	}
-	
+
+
 }

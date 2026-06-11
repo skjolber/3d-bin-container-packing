@@ -161,7 +161,9 @@ public class BoxStackValue {
 	protected final long maxLoadWeight;
 	protected final long maxLoadPressure;
 	protected final int maxLoadBoxCount;
-	protected final boolean maxLoadBoxCountIdenticalOnly;
+	
+	// TODO better name?
+	protected final boolean loadIdenticalBoxOnly;
 
 	public BoxStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index) {
 		this(dx, dy, dz, surfaces, index, -1, -1, -1, false);
@@ -181,7 +183,7 @@ public class BoxStackValue {
 		this.maxLoadWeight = maxLoadWeight;
 		this.maxLoadPressure = maxLoadPressure;
 		this.maxLoadBoxCount = maxLoadBoxCount;
-		this.maxLoadBoxCountIdenticalOnly = maxLoadIdenticalOnly;
+		this.loadIdenticalBoxOnly = maxLoadIdenticalOnly;
 	}
 
 	protected BoxStackValue(BoxStackValue other) {
@@ -198,7 +200,7 @@ public class BoxStackValue {
 		this.maxLoadWeight = other.maxLoadWeight;
 		this.maxLoadPressure = other.maxLoadPressure;
 		this.maxLoadBoxCount = other.maxLoadBoxCount;
-		this.maxLoadBoxCountIdenticalOnly = other.maxLoadBoxCountIdenticalOnly;
+		this.loadIdenticalBoxOnly = other.loadIdenticalBoxOnly;
 	}
 
 	public int getDx() {
@@ -277,8 +279,8 @@ public class BoxStackValue {
 	 * 
 	 * @return true if identical only
 	 */
-	public boolean isMaxLoadBoxCountIdenticalOnly() {
-		return maxLoadBoxCountIdenticalOnly;
+	public boolean isLoadIdenticalBoxOnly() {
+		return loadIdenticalBoxOnly;
 	}
 
 	public List<Surface> getSurfaces() {
@@ -319,10 +321,6 @@ public class BoxStackValue {
 		return maxLoadBoxCount != -1;
 	}
 	
-	public boolean isMaxLoadIdenticalBoxCount() {
-		return maxLoadBoxCountIdenticalOnly;
-	}
-
 	public long getPressure() {
 		// TODO optimize
 		return box.getWeight() / area;

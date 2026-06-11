@@ -576,4 +576,10 @@ public abstract class Point {
 				&& minY == other.minY && minZ == other.minZ;
 	}
 	
+	public abstract boolean isSupportedXYPlane(int x, int y);
+
+	public boolean isSupportedXYPlane(BoxStackValue stackValue) {
+		return isSupportedXYPlane(minX + dx - 1, minY + dy - 1);
+	}
+
 }

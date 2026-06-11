@@ -13,29 +13,18 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.PointSource;
 
 /**
- * A {@link PlacementControls} implementation that enforces load constraints
- * (weight, pressure, box count) during placement selection. It also handles
- * inter-point placement to align identical boxes vertically when the
- * identical-box-count constraint is active.
- * <p>
- * When a placement is selected, this class:
- * <ol>
- *   <li>Validates that the placement would not exceed load constraints on any supporter below.</li>
- *   <li>If the identical-only constraint is active, prefers points that align directly above
- *       existing placements of the same box type.</li>
- *   <li>Distributes load proportionally and propagates it through the support graph.</li>
- *   <li>If the new placement is inserted below existing placements (filling a gap), recalculates
- *       load shares for all implicated placements above.</li>
- * </ol>
+ * 
+ * Load aware placement controls which calculates weight and support area.
+ * 
  */
-public class LoadAwarePlacementControls extends AbstractComparatorPlacementControls<Placement> {
+
+public class WeightLoadAwarePlacementControls extends AbstractComparatorPlacementControls<Placement> {
 
 	protected boolean fullSupport;
 
@@ -46,7 +35,7 @@ public class LoadAwarePlacementControls extends AbstractComparatorPlacementContr
 
 	protected long[] placementAreas = new long[pointCalculator.size()];
 
-	public LoadAwarePlacementControls(BoxItemSource boxItems, 
+	public WeightLoadAwarePlacementControls(BoxItemSource boxItems, 
 			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
 			Order order, Comparator<Placement> placementComparator, Comparator<BoxItem> boxItemComparator, boolean fullSupport) {
 		super(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
