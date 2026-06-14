@@ -15,6 +15,7 @@ public class Placement implements Serializable {
 	protected int z;
 	
 	protected int pointIndex;
+	protected int index;
 
 	protected long supportedArea;
 
@@ -222,9 +223,6 @@ public class Placement implements Serializable {
 		return supporters;
 	}
 
-	public long getSupportdArea() {
-		return supportedArea;
-	}
 	
 	/**
 	 * Records that {@code supportee} is resting on top of this placement.
@@ -308,6 +306,14 @@ public class Placement implements Serializable {
 
 	public void setSupportedArea(long supportedArea) {
 		this.supportedArea = supportedArea;
+	}
+	
+	public void setIndex(int index) {
+		this.index = index;
+	}
+	
+	public int getIndex() {
+		return index;
 	}
 	
 }
