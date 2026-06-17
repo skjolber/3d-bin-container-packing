@@ -48,4 +48,4 @@ jobs:
     - run: |
         cd visualizer/viewer
         npm ci
-    - uses: microsoft/apm-action@v1
+    - uses: microsoft/apm-action@v1.8.0
