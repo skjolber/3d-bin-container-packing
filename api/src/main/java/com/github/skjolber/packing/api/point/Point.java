@@ -312,6 +312,10 @@ public abstract class Point {
 	public boolean intersects(Placement p) {
 		return !(p.getAbsoluteEndX() < minX || p.getAbsoluteX() > maxX || p.getAbsoluteEndY() < minY || p.getAbsoluteY() > maxY || p.getAbsoluteEndZ() < minZ || p.getAbsoluteZ() > maxZ);
 	}
+	
+	public boolean intersectsXY(Placement p) {
+		return !(p.getAbsoluteEndX() < minX || p.getAbsoluteX() > maxX || p.getAbsoluteEndY() < minY || p.getAbsoluteY() > maxY);
+	}
 
 	public boolean intersects(Point point) {
 		return !(point.getMaxX() < minX || point.getMinX() > maxX || point.getMaxY() < minY || point.getMinY() > maxY || point.getMaxZ() < minZ || point.getMinZ() > maxZ);
@@ -579,7 +583,7 @@ public abstract class Point {
 	public abstract boolean isSupportedXYPlane(int x, int y);
 
 	public boolean isSupportedXYPlane(BoxStackValue stackValue) {
-		return isSupportedXYPlane(minX + dx - 1, minY + dy - 1);
+		return isSupportedXYPlane(minX + stackValue.getDx() - 1, minY + stackValue.getDy() - 1);
 	}
 
 }

@@ -326,4 +326,5 @@ public class BoxStackValue {
 		return box.getWeight() / area;
 	}
 	
+	
 }

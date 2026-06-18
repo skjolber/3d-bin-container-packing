@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.Comparator;
+import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -18,13 +19,14 @@ import com.github.skjolber.packing.api.point.PointSource;
 
 /**
  * 
- * Load aware placement controls which calculates weight and support area.
+ * Load aware placement controls which calculates weight and support area, accounts for max pressure and max box count. 
  * 
  */
 
-public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparatorPlacementControls<Placement> {
 
-	public WeightLoadAwarePlacementControls(BoxItemSource boxItems, 
+public class WeightPressureCountLoadAwarePlacementControls extends AbstractLoadWeightComparatorPlacementControls<Placement> {
+
+	public WeightPressureCountLoadAwarePlacementControls(BoxItemSource boxItems, 
 			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
 			Order order, Comparator<Placement> placementComparator, Comparator<BoxItem> boxItemComparator, boolean fullSupport) {
 		super(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator, fullSupport);
@@ -63,31 +65,8 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 						continue;
 					}
 
-					// if there is any box above which now needs to be supported, add weight
-					long weight = calculateSupporteeWeight(stackValue, point3d);
-					if(weight == -1L) {
-						continue;
-					}
+					Placement placement = getPlacement(point3d, stackValue);
 					
-					long supportedArea;
-					if(point3d.getMinZ() > 0) {
-						populateSupporters(point3d, stackValue);
-						
-						supportedArea = calculateSupportAndValidateSupporterLoad(stackValue, point3d.getMinX(), point3d.getMinY(), weight);
-						if(supportedArea == -1L) {
-							continue;
-						}
-						
-						if(fullSupport && supportedArea != stackValue.getArea()) {
-							continue;
-						}
-					} else {
-						supportedArea = stackValue.getArea();
-					}
-					
-					Placement placement = new Placement(stackValue, point3d);
-					placement.setSupportedArea(supportedArea);
-
 					if(result != null && placementComparator.compare(result, placement) >= 0) {
 						continue;
 					}
@@ -116,6 +95,39 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 		// give it another shot by trying to place box within points (not just in the point origo)
 		return getFullySupportedPlacement(offset, length);
 	}
+	
+
+	private Placement getPlacement(Point point3d, BoxStackValue stackValue) {
+
+		// if there is any box above which now needs to be supported, add weight
+		long weight = calculateSupporteeWeight(stackValue, point3d);
+		if(weight == -1L) {
+			return null;
+		}
+		
+		long supportedArea;
+		if(point3d.getMinZ() > 0) {
+			if(!populateSupporters(point3d, stackValue)) {
+				return null;
+			}
+			
+			supportedArea = calculateSupportAndValidateSupporterLoad(stackValue, point3d.getMinX(), point3d.getMinY(), weight);
+			if(supportedArea == -1L) {
+				return null;
+			}
+			
+			if(fullSupport && supportedArea != stackValue.getArea()) {
+				return null;
+			}
+		} else {
+			supportedArea = stackValue.getArea();
+		}
+		
+		Placement placement = new Placement(stackValue, point3d);
+		placement.setSupportedArea(supportedArea);
+		return placement;
+	}
+
 
 	protected Placement getFullySupportedPlacement(int offset, int length) {
 		
@@ -168,46 +180,10 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 					}
 					
 					for (Placement candidate : pointSupporters) {
-						if (candidate.getAbsoluteEndZ() != z) {
+						Placement placement = getPlacement(point3d, stackValue, candidate, limitX, limitY, z, limitMaxX, limitMaxY);
+						if(placement == null) {
 							continue;
 						}
-						
-						if(candidate.getAbsoluteX() > limitX || candidate.getAbsoluteEndX() < limitMaxX) {
-							continue;
-						}
-						
-						if(candidate.getAbsoluteY() > limitY || candidate.getAbsoluteEndY() < limitMaxY) {
-							continue;
-						}
-						
-						int x = candidate.getAbsoluteX();
-						if(x < point3d.getMinX()) {
-							x = point3d.getMinX();
-						}
-						int y = candidate.getAbsoluteY();
-						if(y < point3d.getMinY()) {
-							y = point3d.getMinY();
-						}
-											
-						// if there is any box above which now needs to be supported, add weight
-						long weight = calculateSupportAndValidateSupporteeLoad(stackValue, x, y, point3d.getMinZ(), x + stackValue.getDx() - 1, y + stackValue.getDy() - 1);
-						if(weight == -1L) {
-							continue;
-						}
-						
-						populateSupporters(x, y, point3d.getMinZ(), x + stackValue.getDx() - 1, y + stackValue.getDy() - 1);
-						
-						long supportedArea = calculateSupportAndValidateSupporterLoad(stackValue, x, y, weight);
-						if(supportedArea < 0) {
-							continue;
-						}
-						
-						if(supportedArea != stackValue.getArea()) {
-							continue;
-						}
-
-						Placement placement = createPlacement(stackValue, point3d.getIndex(), x, y, point3d.getMinZ());
-						
 						if(result != null && placementComparator.compare(result, placement) >= 0) {
 							continue;
 						}
@@ -232,6 +208,51 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 		
 		return result;
 	}
+	
+	private Placement getPlacement(Point point3d, BoxStackValue stackValue, Placement candidate, int limitX, int limitY, int z, int limitMaxX, int limitMaxY) {
+		if (candidate.getAbsoluteEndZ() != z) {
+			return null;
+		}
+		
+		if(candidate.getAbsoluteX() > limitX || candidate.getAbsoluteEndX() < limitMaxX) {
+			return null;
+		}
+		
+		if(candidate.getAbsoluteY() > limitY || candidate.getAbsoluteEndY() < limitMaxY) {
+			return null;
+		}
+		
+		int x = candidate.getAbsoluteX();
+		if(x < point3d.getMinX()) {
+			x = point3d.getMinX();
+		}
+		int y = candidate.getAbsoluteY();
+		if(y < point3d.getMinY()) {
+			y = point3d.getMinY();
+		}
+							
+		// if there is any box above which now needs to be supported, add weight
+		long weight = calculateSupportAndValidateSupporteeLoad(stackValue, x, y, point3d.getMinZ(), x + stackValue.getDx() - 1, y + stackValue.getDy() - 1);
+		if(weight == -1L) {
+			return null;
+		}
+		
+		if(!populateSupporters(x, y, point3d.getMinZ(), x + stackValue.getDx() - 1, y + stackValue.getDy() - 1)) {
+			return null;
+		}
+		
+		long supportedArea = calculateSupportAndValidateSupporterLoad(stackValue, x, y, weight);
+		if(supportedArea < 0) {
+			return null;
+		}
+
+		if(supportedArea != stackValue.getArea()) {
+			return null;
+		}
+
+		return createPlacement(stackValue, point3d.getIndex(), x, y, point3d.getMinZ());
+	}
+
 
 	public long calculateSupportAndValidateSupporteeLoad(BoxStackValue boxStackValue, int minX, int minY, int minZ, int maxX, int maxY) {
 		long weight = 0;
@@ -261,6 +282,18 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 			
 			long effectiveWeight = (candidateWeight * area) / (area + candidate.getSupportedArea());
 			
+			if(boxStackValue.isMaxLoadPressure()) {
+				if(boxStackValue.getMaxLoadPressure() * area < effectiveWeight) {
+					return -1;
+				}
+			}
+
+			if(boxStackValue.isMaxLoadBoxCount()) {
+				if(!isWithinSupporteeBoxCount(candidate, boxStackValue.getMaxLoadBoxCount(), pointSupportees, minX, minY, maxX, maxY)) {
+					return -1;
+				}
+			}
+
 			calculateRelifWeight(candidate, effectiveWeight);
 			
 			weight += effectiveWeight;
@@ -271,6 +304,31 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 		}
 		
 		return weight +  boxStackValue.getBox().getWeight();
+	}
+	
+	private boolean isWithinSupporteeBoxCount(Placement candidate, int count, List<Placement> pointSupportees, int minX, int minY, int maxX, int maxY) {
+		BoxStackValue supporteeStackValue = candidate.getStackValue();
+		if(supporteeStackValue.isMaxLoadBoxCount() && supporteeStackValue.getMaxLoadBoxCount() > count) {
+			return true;
+		}
+		
+		if(count <= 0) {
+			return false;
+		}
+		
+		count--;
+		
+		for (Placement placement : pointSupportees) {
+			if(!placement.intersects2D(minX, maxX, minY, maxY)) {
+				continue;
+			}
+			
+			if(!isWithinSupporteeBoxCount(placement, count, pointSupportees, minX, minY, maxX, maxY)) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 
 	public long calculateSupporteeWeight(BoxStackValue boxStackValue, Point point) {
@@ -283,19 +341,19 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 		return calculateSupportAndValidateSupporteeLoad(boxStackValue, newMinX, newMinY, point.getMinZ(), newMaxX, newMaxY);
 	}
 
-	protected void populateSupporters(Point point, BoxStackValue boxStackValue) {
+	protected boolean populateSupporters(Point point, BoxStackValue boxStackValue) {
 		int newMinX = point.getMinX();
 		int newMinY = point.getMinY();
 		
 		int newMaxX = newMinX + boxStackValue.getDx() - 1;
 		int newMaxY = newMinY + boxStackValue.getDy() - 1;
 		
-		populateSupporters(newMinX, newMinY, point.getMinZ(), newMaxX, newMaxY);
+		return populateSupporters(newMinX, newMinY, point.getMinZ(), newMaxX, newMaxY);
 	}
 
-	protected void populateSupporters(int newMinX, int newMinY, int minZ, int newMaxX, int newMaxY) {
+	protected boolean populateSupporters(int newMinX, int newMinY, int minZ, int newMaxX, int newMaxY) {
 		placementSupporters.clear();
-		
+
 		int z = minZ - 1;
 		
 		for (Placement candidate : pointSupporters) {
@@ -307,8 +365,14 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 				continue;
 			}
 			
+			if(!canStackOneMore(candidate)) {
+				return false;
+			}
+			
 			placementSupporters.add(candidate);
 		}
+		
+		return true;
 	}
 
 }

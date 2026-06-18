@@ -107,14 +107,18 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 	
 	@Override
 	public PlacementControls<Placement> build() {
-		if(maxLoadWeight || maxLoadPressure || maxLoadBoxCount) {
+		if(maxLoadWeight || maxLoadPressure || maxLoadBoxCount || loadIdenticalBox) {
 			boolean maxLoadWeightOnly = maxLoadWeight && !maxLoadPressure && !maxLoadBoxCount;
 			
 			if(maxLoadWeightOnly) {
 				return new WeightLoadAwarePlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator, fullSupport);
 			}
+			
+			if(!loadIdenticalBox) {
+				return new WeightPressureCountLoadAwarePlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator, fullSupport);
+			}
 
-			return new LoadAwarePlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator, fullSupport);
+			return new WeightPressureCountIdenticalLoadAwarePlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator, fullSupport);
 		}
 		
 		
@@ -124,7 +128,7 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 		}
 		
 		if(calculateSupport) {
-			// Calculate placement support. 
+			// Calculate placement support so to use the value in comparisons
 			return new SupportPlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 		}
 

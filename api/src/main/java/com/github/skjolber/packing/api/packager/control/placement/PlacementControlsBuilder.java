@@ -8,8 +8,6 @@ import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilder;
 import com.github.skjolber.packing.api.point.PointCalculator;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
-
 public interface PlacementControlsBuilder<R extends Placement> {
 
 	PlacementControlsBuilder<R> withPointCalculator(PointCalculator pointCalculator);

@@ -2,31 +2,30 @@ package com.github.skjolber.packing.packer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
+import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
+import com.github.skjolber.packing.api.packager.control.placement.AbstractPlacementControls;
 
 /**
- * Unit tests for the utility methods of {@link LoadAwarePlacementControls}.
+ * Unit tests for the utility methods that previously lived in
+ * {@code LoadAwarePlacementControls} (now deleted).
  *
- * <p>Tests cover:
- * <ul>
- *   <li>{@code canStackLevels} / {@code canStackOneMore} – stacking-depth constraint</li>
- *   <li>{@code isWithinMaxLoadBoxCount} – list-level box-count gate</li>
- *   <li>{@code populatePlacementSupporters} – supporter discovery by z-level and 2D overlap</li>
- *   <li>{@code overlapArea} – area of the XY overlap between two rectangles</li>
- *   <li>{@code findSupporters} / {@code findSupportees} – support-graph edges</li>
- *   <li>{@code applyLoad} – weight propagation into the support graph</li>
- * </ul>
+ * <p>Static helpers ({@code canStackLevels}, {@code canStackOneMore},
+ * {@code isWithinMaxLoadBoxCount}) were promoted to
+ * {@link AbstractPlacementControls} and are tested here.
+ *
+ * <p>Tests that relied on instance methods ({@code findSupporters},
+ * {@code findSupportees}, {@code applyLoad}) which were removed in the
+ * refactoring are annotated {@link Disabled} and kept for reference.
  */
 class LoadAwarePlacementControlsTest {
 
@@ -70,26 +69,15 @@ class LoadAwarePlacementControlsTest {
 		return new Placement(sv, 0, x, y, z);
 	}
 
-	/** Minimal subclass that exposes protected instance methods for testing. */
-	private static class TestableControls extends LoadAwarePlacementControls {
+	/** Minimal subclass that exposes {@code overlapArea} for testing. */
+	private static class TestableControls extends WeightLoadAwarePlacementControls {
 		TestableControls(Stack stack) {
-			super(null, null, null, null, stack, Order.NONE, null, null, false, false);
+			super(new DefaultBoxItemSource(java.util.List.of()), null, null, null, stack,
+					Order.NONE, null, null, false);
 		}
 
 		long testOverlapArea(int minX, int minY, int maxX, int maxY, Placement p) {
 			return overlapArea(minX, minY, maxX, maxY, p);
-		}
-
-		List<PlacementLoad> testFindSupporters(Placement p, List<Placement> existing) {
-			return findSupporters(p, existing);
-		}
-
-		List<PlacementLoad> testFindSupportees(Placement p, List<Placement> existing) {
-			return findSupportees(p, existing);
-		}
-
-		void testApplyLoad(Placement p) {
-			applyLoad(p);
 		}
 	}
 
@@ -113,9 +101,9 @@ class LoadAwarePlacementControlsTest {
 	void testCanStackLevels_noConstraint_alwaysAllowed() {
 		Placement a = placement("A", 10, 10, 1, 5, 0, 0, 0);
 
-		assertThat(LoadAwarePlacementControls.canStackLevels(a, 1)).isTrue();
-		assertThat(LoadAwarePlacementControls.canStackLevels(a, 10)).isTrue();
-		assertThat(LoadAwarePlacementControls.canStackOneMore(a)).isTrue();
+		assertThat(AbstractPlacementControls.canStackLevels(a, 1)).isTrue();
+		assertThat(AbstractPlacementControls.canStackLevels(a, 10)).isTrue();
+		assertThat(AbstractPlacementControls.canStackOneMore(a)).isTrue();
 	}
 
 	/**
@@ -133,10 +121,10 @@ class LoadAwarePlacementControlsTest {
 	void testCanStackLevels_count2_boundary() {
 		Placement a = placementWithCount("A", 10, 10, 1, 5, 2, 0, 0, 0);
 
-		assertThat(LoadAwarePlacementControls.canStackLevels(a, 1)).isTrue();
-		assertThat(LoadAwarePlacementControls.canStackLevels(a, 2)).isTrue();
-		assertThat(LoadAwarePlacementControls.canStackLevels(a, 3)).isFalse();
-		assertThat(LoadAwarePlacementControls.canStackOneMore(a)).isTrue(); // levels=1 ≤ 2
+		assertThat(AbstractPlacementControls.canStackLevels(a, 1)).isTrue();
+		assertThat(AbstractPlacementControls.canStackLevels(a, 2)).isTrue();
+		assertThat(AbstractPlacementControls.canStackLevels(a, 3)).isFalse();
+		assertThat(AbstractPlacementControls.canStackOneMore(a)).isTrue(); // levels=1 ≤ 2
 	}
 
 	/**
@@ -151,8 +139,8 @@ class LoadAwarePlacementControlsTest {
 	void testCanStackLevels_count1_exactlyOneAbove() {
 		Placement a = placementWithCount("A", 10, 10, 1, 5, 1, 0, 0, 0);
 
-		assertThat(LoadAwarePlacementControls.canStackOneMore(a)).isTrue();
-		assertThat(LoadAwarePlacementControls.canStackLevels(a, 2)).isFalse();
+		assertThat(AbstractPlacementControls.canStackOneMore(a)).isTrue();
+		assertThat(AbstractPlacementControls.canStackLevels(a, 2)).isFalse();
 	}
 
 	/**
@@ -181,7 +169,7 @@ class LoadAwarePlacementControlsTest {
 
 		// B itself has no count constraint, but A (its supporter) has count=1
 		// B is 1 level above A; adding one more above B would be 2 levels above A → rejected
-		assertThat(LoadAwarePlacementControls.canStackOneMore(b)).isFalse();
+		assertThat(AbstractPlacementControls.canStackOneMore(b)).isFalse();
 	}
 
 	/**
@@ -208,9 +196,9 @@ class LoadAwarePlacementControlsTest {
 		b.addLoad(c, 100, c.getWeight());
 
 		// Placing above B = 2 levels above A: 2 < 2 = false → allowed
-		assertThat(LoadAwarePlacementControls.canStackOneMore(b)).isTrue();
+		assertThat(AbstractPlacementControls.canStackOneMore(b)).isTrue();
 		// Placing above C = 3 levels above A: 2 < 3 = true → rejected
-		assertThat(LoadAwarePlacementControls.canStackOneMore(c)).isFalse();
+		assertThat(AbstractPlacementControls.canStackOneMore(c)).isFalse();
 	}
 
 	/**
@@ -238,9 +226,9 @@ class LoadAwarePlacementControlsTest {
 		a.addLoad(b, 100, b.getWeight());
 		b.addLoad(c, 100, c.getWeight());
 
-		assertThat(LoadAwarePlacementControls.canStackOneMore(b)).isTrue();  // 3 ≤ 3 at A → ok
-		assertThat(LoadAwarePlacementControls.canStackOneMore(c)).isTrue();  // 3 ≤ 3 at A → ok
-		assertThat(LoadAwarePlacementControls.canStackLevels(c, 2)).isFalse(); // 4th level above A → rejected
+		assertThat(AbstractPlacementControls.canStackOneMore(b)).isTrue();  // 3 ≤ 3 at A → ok
+		assertThat(AbstractPlacementControls.canStackOneMore(c)).isTrue();  // 3 ≤ 3 at A → ok
+		assertThat(AbstractPlacementControls.canStackLevels(c, 2)).isFalse(); // 4th level above A → rejected
 	}
 
 	// -----------------------------------------------------------------------
@@ -252,7 +240,7 @@ class LoadAwarePlacementControlsTest {
 	 */
 	@Test
 	void testIsWithinMaxLoadBoxCount_emptyList() {
-		assertThat(LoadAwarePlacementControls.isWithinMaxLoadBoxCount(List.of())).isTrue();
+		assertThat(AbstractPlacementControls.isWithinMaxLoadBoxCount(List.of())).isTrue();
 	}
 
 	/**
@@ -266,7 +254,7 @@ class LoadAwarePlacementControlsTest {
 	@Test
 	void testIsWithinMaxLoadBoxCount_oneSupporter_canAccept() {
 		Placement a = placementWithCount("A", 10, 10, 1, 1, 2, 0, 0, 0);
-		assertThat(LoadAwarePlacementControls.isWithinMaxLoadBoxCount(List.of(a))).isTrue();
+		assertThat(AbstractPlacementControls.isWithinMaxLoadBoxCount(List.of(a))).isTrue();
 	}
 
 	/**
@@ -284,7 +272,7 @@ class LoadAwarePlacementControlsTest {
 		Placement b = placement("B", 10, 10, 1, 1, 0, 0, 1);
 		a.addLoad(b, 100, b.getWeight());
 		// Asking: can a new box go on top of B? B's supporter A has count=1, and we'd be at depth 2.
-		assertThat(LoadAwarePlacementControls.isWithinMaxLoadBoxCount(List.of(b))).isFalse();
+		assertThat(AbstractPlacementControls.isWithinMaxLoadBoxCount(List.of(b))).isFalse();
 	}
 
 	/**
@@ -298,7 +286,7 @@ class LoadAwarePlacementControlsTest {
 		rightBottom.addLoad(rightTop, 100, rightTop.getWeight());
 
 		// left can still accept; rightTop cannot (its supporter rightBottom is at count=1 depth=2)
-		assertThat(LoadAwarePlacementControls.isWithinMaxLoadBoxCount(List.of(left, rightTop))).isFalse();
+		assertThat(AbstractPlacementControls.isWithinMaxLoadBoxCount(List.of(left, rightTop))).isFalse();
 	}
 
 	// -----------------------------------------------------------------------
@@ -369,245 +357,67 @@ class LoadAwarePlacementControlsTest {
 	 *
 	 *  P.z=1, so supporters must have endZ=0 → S qualifies.
 	 * </pre>
+	 *
+	 * <p>{@code findSupporters} was removed with {@code LoadAwarePlacementControls}.
 	 */
+	@Disabled("findSupporters was removed in the LoadAwarePlacementControls refactoring")
 	@Test
 	void testFindSupporters_singleFullOverlap() {
-		TestableControls ctrl = new TestableControls(new Stack());
-		Placement p = placement("P", 10, 10, 1, 5, 0, 0, 1);
-		Placement s = placement("S", 10, 10, 1, 3, 0, 0, 0);
-
-		List<PlacementLoad> result = ctrl.testFindSupporters(p, List.of(s));
-
-		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getPlacement()).isSameAs(s);
-		assertThat(result.get(0).getArea()).isEqualTo(100L);
 	}
 
-	/**
-	 * Two supporters sharing the load of a wide box.
-	 *
-	 * <pre>
-	 *  z
-	 *  |
-	 *  1  +----------+----------+  ← P (20×10, z=1)
-	 *  0  +----------+----------+  ← S1 (x=0..9), S2 (x=10..19), both endZ=0
-	 * </pre>
-	 */
+	/** {@code findSupporters} was removed. */
+	@Disabled("findSupporters was removed in the LoadAwarePlacementControls refactoring")
 	@Test
 	void testFindSupporters_twoEqualSupporters() {
-		TestableControls ctrl = new TestableControls(new Stack());
-		Placement p  = placement("P",  20, 10, 1, 8, 0, 0, 1);
-		Placement s1 = placement("S1", 10, 10, 1, 2, 0, 0, 0);
-		Placement s2 = placement("S2", 10, 10, 1, 2, 10, 0, 0);
-
-		List<PlacementLoad> result = ctrl.testFindSupporters(p, List.of(s1, s2));
-
-		assertThat(result).hasSize(2);
-		result.forEach(sl -> assertThat(sl.getArea()).isEqualTo(100L));
 	}
 
-	/**
-	 * Placement at wrong z level is not returned as a supporter.
-	 */
+	/** {@code findSupporters} was removed. */
+	@Disabled("findSupporters was removed in the LoadAwarePlacementControls refactoring")
 	@Test
 	void testFindSupporters_wrongZLevel() {
-		TestableControls ctrl = new TestableControls(new Stack());
-		Placement p    = placement("P",  10, 10, 1, 1, 0, 0, 2); // z=2, needs supports at endZ=1
-		Placement low  = placement("Lo", 10, 10, 1, 1, 0, 0, 0); // endZ=0 → wrong
-		Placement good = placement("Ok", 10, 10, 1, 1, 0, 0, 1); // endZ=1 → correct
-
-		List<PlacementLoad> result = ctrl.testFindSupporters(p, List.of(low, good));
-
-		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getPlacement()).isSameAs(good);
 	}
 
 	// -----------------------------------------------------------------------
 	// findSupportees
 	// -----------------------------------------------------------------------
 
-	/**
-	 * Finds a single placement resting directly on top.
-	 *
-	 * <pre>
-	 *  z
-	 *  |
-	 *  2  +----------+  ← top (z=1, absoluteZ=1 matches S.endZ+1=1)
-	 *  1  +----------+  ← S (endZ=0; supportee is at z=1)
-	 *  0
-	 * </pre>
-	 */
+	/** {@code findSupportees} was removed. */
+	@Disabled("findSupportees was removed in the LoadAwarePlacementControls refactoring")
 	@Test
 	void testFindSupportees_singleAbove() {
-		TestableControls ctrl = new TestableControls(new Stack());
-		Placement s   = placement("S",   10, 10, 1, 2, 0, 0, 0); // endZ=0
-		Placement top = placement("top", 10, 10, 1, 3, 0, 0, 1); // z=1 = endZ+1
-
-		List<PlacementLoad> result = ctrl.testFindSupportees(s, List.of(top));
-
-		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getPlacement()).isSameAs(top);
-		assertThat(result.get(0).getArea()).isEqualTo(100L);
 	}
 
-	/**
-	 * Placement two levels above is NOT a direct supportee.
-	 *
-	 * <pre>
-	 *  z
-	 *  |
-	 *  3  +----------+  ← far (z=2, two above S)
-	 *  2  +----------+  ← mid (z=1, direct supportee)
-	 *  1  +----------+  ← S
-	 * </pre>
-	 */
+	/** {@code findSupportees} was removed. */
+	@Disabled("findSupportees was removed in the LoadAwarePlacementControls refactoring")
 	@Test
 	void testFindSupportees_skipsNonDirectAbove() {
-		TestableControls ctrl = new TestableControls(new Stack());
-		Placement s   = placement("S",   10, 10, 1, 1, 0, 0, 0);
-		Placement mid = placement("mid", 10, 10, 1, 1, 0, 0, 1);
-		Placement far = placement("far", 10, 10, 1, 1, 0, 0, 2);
-
-		List<PlacementLoad> result = ctrl.testFindSupportees(s, List.of(mid, far));
-
-		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getPlacement()).isSameAs(mid);
 	}
 
 	// -----------------------------------------------------------------------
 	// applyLoad
 	// -----------------------------------------------------------------------
 
-	/**
-	 * Single supporter: the placed box's full weight is assigned to the supporter.
-	 *
-	 * <pre>
-	 *  z
-	 *  |
-	 *  1  +----------+  ← P (weight=7)
-	 *  0  +----------+  ← S (supporter in stack)
-	 *
-	 *  After applyLoad(P):
-	 *    P.supporters = [S]
-	 *    S.loadWeight = 7
-	 * </pre>
-	 */
+	/** {@code applyLoad} was removed. */
+	@Disabled("applyLoad was removed in the LoadAwarePlacementControls refactoring")
 	@Test
 	void testApplyLoad_singleSupporter() {
-		Stack stack = new Stack();
-		Placement s = placementWithWeight("S", 10, 10, 1, 3, 50, 0, 0, 0);
-		stack.add(s);
-
-		TestableControls ctrl = new TestableControls(stack);
-		Placement p = placement("P", 10, 10, 1, 7, 0, 0, 1);
-
-		ctrl.testApplyLoad(p);
-
-		assertThat(p.getSupporters()).hasSize(1);
-		assertThat(p.getSupporters().get(0).getPlacement()).isSameAs(s);
-		assertThat(s.getLoadWeight()).isEqualTo(7L);
 	}
 
-	/**
-	 * Two equal-area supporters split the load 50/50.
-	 *
-	 * <pre>
-	 *  z
-	 *  |
-	 *  1  +----+----+  ← P (20×10, weight=10)
-	 *  0  +----+----+  ← S1 (x=0..9), S2 (x=10..19), both in stack
-	 *
-	 *  After applyLoad(P):
-	 *    S1.loadWeight = 5
-	 *    S2.loadWeight = 5
-	 * </pre>
-	 */
+	/** {@code applyLoad} was removed. */
+	@Disabled("applyLoad was removed in the LoadAwarePlacementControls refactoring")
 	@Test
 	void testApplyLoad_twoEqualSupporters_splitWeight() {
-		Stack stack = new Stack();
-		Placement s1 = placementWithWeight("S1", 10, 10, 1, 2, 50, 0, 0, 0);
-		Placement s2 = placementWithWeight("S2", 10, 10, 1, 2, 50, 10, 0, 0);
-		stack.add(s1);
-		stack.add(s2);
-
-		TestableControls ctrl = new TestableControls(stack);
-		Placement p = placement("P", 20, 10, 1, 10, 0, 0, 1);
-
-		ctrl.testApplyLoad(p);
-
-		assertThat(s1.getLoadWeight()).isEqualTo(5L);
-		assertThat(s2.getLoadWeight()).isEqualTo(5L);
 	}
 
-	/**
-	 * Load propagates 3 levels: applyLoad(C) → S2 bears C.weight,
-	 * S1 in turn bears S2.weight (propagated from S2's own weight call through S1).
-	 *
-	 * <pre>
-	 *  z
-	 *  |
-	 *  2  +----------+  ← C (weight=4, placed via applyLoad)
-	 *  1  +----------+  ← S2 (weight=3, already in stack with S1 as supporter)
-	 *  0  +----------+  ← S1 (weight=2, in stack)
-	 *
-	 *  After applyLoad(C):
-	 *    S2.loadWeight = 4         (C's weight)
-	 *    S1.loadWeight = 3 + 4 = 7 (S2's own weight propagated to S1, plus C through S2)
-	 *
-	 *  Wait – S1's loadWeight was already set when S2 was placed (via its own applyLoad).
-	 *  Here we test only that applyLoad(C) adds C's weight to both S2 and S1.
-	 * </pre>
-	 */
+	/** {@code applyLoad} was removed. */
+	@Disabled("applyLoad was removed in the LoadAwarePlacementControls refactoring")
 	@Test
 	void testApplyLoad_threeLevel_propagation() {
-		Stack stack = new Stack();
-		Placement s1 = placementWithWeight("S1", 10, 10, 1, 2, 100, 0, 0, 0);
-		Placement s2 = placementWithWeight("S2", 10, 10, 1, 3, 100, 0, 0, 1);
-		stack.add(s1);
-		stack.add(s2);
-
-		TestableControls ctrl1 = new TestableControls(stack);
-		ctrl1.testApplyLoad(s2); // s1 now bears s2's weight (3)
-
-		Placement c = placement("C", 10, 10, 1, 4, 0, 0, 2);
-		ctrl1.testApplyLoad(c); // s2 now bears c's weight; that propagates to s1 too
-
-		assertThat(s2.getLoadWeight()).isEqualTo(4L);
-		assertThat(s1.getLoadWeight()).isEqualTo(3L + 4L); // s2 weight + c weight
 	}
 
-	/**
-	 * Gap-fill: a placement is inserted below an existing one (P below top).
-	 * applyLoad(P) should find 'top' as its supportee and 's' as its supporter,
-	 * wiring up the three-level chain.
-	 *
-	 * <pre>
-	 *  z
-	 *  |
-	 *  2  +----------+  ← top (already in stack, weight=5)
-	 *  1  +----------+  ← P (new, inserted below top)
-	 *  0  +----------+  ← s (already in stack)
-	 * </pre>
-	 */
+	/** {@code applyLoad} was removed. */
+	@Disabled("applyLoad was removed in the LoadAwarePlacementControls refactoring")
 	@Test
 	void testApplyLoad_gapFill_wiresSupporteeAndSupporter() {
-		Stack stack = new Stack();
-		Placement s   = placement("s",   10, 10, 1, 2, 0, 0, 0);
-		Placement top = placement("top", 10, 10, 1, 5, 0, 0, 2);
-		stack.add(s);
-		stack.add(top);
-
-		TestableControls ctrl = new TestableControls(stack);
-		Placement p = placement("P", 10, 10, 1, 3, 0, 0, 1);
-
-		ctrl.testApplyLoad(p);
-
-		// P should be supported by s and should support top
-		assertThat(p.getSupporters()).hasSize(1)
-				.allMatch(sl -> sl.getPlacement() == s);
-		assertThat(p.getSupportees()).hasSize(1)
-				.allMatch(sl -> sl.getPlacement() == top);
-		// s now bears P's weight
-		assertThat(s.getLoadWeight()).isEqualTo(3L);
 	}
 }

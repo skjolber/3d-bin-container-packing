@@ -7,6 +7,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
@@ -102,5 +103,34 @@ public abstract class AbstractPlacementControls<R extends Placement> implements 
 		this.order = order;
 	}
 
+	public static boolean canStackOneMore(Placement candidate) {
+		return canStackLevels(candidate, 1);
+	}
 
+	public static boolean canStackLevels(Placement candidate, int levels) {
+		BoxStackValue stackValue = candidate.getStackValue();
+		if(stackValue.isMaxLoadBoxCount()) {
+			if(stackValue.getMaxLoadBoxCount() < levels) {
+				return false;
+			}
+		}
+		
+		levels++;
+		for (PlacementLoad placementLoad : candidate.getSupporters()) {
+			if(!canStackLevels(placementLoad.getPlacement(), levels)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+
+	public static boolean isWithinMaxLoadBoxCount(List<Placement> supporters) {
+		for (Placement candidate : supporters) {
+			if(!canStackOneMore(candidate)) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

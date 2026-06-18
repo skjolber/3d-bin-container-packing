@@ -532,6 +532,7 @@ public class Box {
 	protected boolean maxLoadWeight;
 	protected boolean maxLoadPressure;
 	protected boolean maxLoadBoxCount;
+	protected boolean loadIdenticalBoxOnly;
 
 	public Box(String id, String description, long volume, int weight, BoxStackValue[] stackValues,
 			Map<String, Object> properties, BoxItem boxItem) {
@@ -572,6 +573,13 @@ public class Box {
 		for (BoxStackValue boxStackValue : stackValues) {
 			if (boxStackValue.isMaxLoadBoxCount()) {
 				maxLoadBoxCount = true;
+				break;
+			}
+		}
+		
+		for (BoxStackValue boxStackValue : stackValues) {
+			if (boxStackValue.isLoadIdenticalBoxOnly()) {
+				loadIdenticalBoxOnly = true;
 				break;
 			}
 		}
@@ -770,5 +778,9 @@ public class Box {
 	
 	public boolean isMaxLoad() {
 		return maxLoadWeight || maxLoadPressure || maxLoadBoxCount;
+	}
+	
+	public boolean isLoadIdenticalBoxOnly() {
+		return loadIdenticalBoxOnly;
 	}
 }
