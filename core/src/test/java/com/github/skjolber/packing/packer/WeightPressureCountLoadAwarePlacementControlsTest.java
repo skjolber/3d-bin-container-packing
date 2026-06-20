@@ -173,7 +173,7 @@ public class WeightPressureCountLoadAwarePlacementControlsTest {
 	 *  |  | overhang |   10×10×9, w=200
 	 *  |  |          |
 	 *  1  +-+--------+   ← overhang rests on bottom at z=1
-	 *  0  +-+  [??]      ← bottom (2×2, mLW=200) | candidate (1×1, mLW=300) here
+	 *  0  +-+            ← bottom (2×2, mLW=200) | candidate (1×1, mLW=300) here
 	 *     0 2         10  x
 	 *
 	 *  effective weight ≤ maxLoadWeight=300 → ACCEPTED
@@ -259,7 +259,7 @@ public class WeightPressureCountLoadAwarePlacementControlsTest {
 	 *  |  | overhang |   10×10×8, w=100
 	 *  |  |          |
 	 *  2  +-+--------+   ← overhang rests on corner at z=2
-	 *  1  +-+  [??]      ← corner (2×2, w=1) | candidate (1×1, mLW=1000) here
+	 *  1  +-+            ← corner (2×2, w=1) | candidate (1×1, mLW=1000) here
 	 *  0  +----------+   ← floor (10×10, w=1, maxLoadWeight=102)
 	 *     0 2         10  x
 	 *
