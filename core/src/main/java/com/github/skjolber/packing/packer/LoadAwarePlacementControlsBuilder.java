@@ -13,9 +13,6 @@ import com.github.skjolber.packing.api.packager.control.placement.PlacementContr
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.PointCalculator;
 
-/**
- * Builder for {@link LoadAwarePlacementControls}.
- */
 public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuilder {
 
 	protected BoxItemSource boxItems;
