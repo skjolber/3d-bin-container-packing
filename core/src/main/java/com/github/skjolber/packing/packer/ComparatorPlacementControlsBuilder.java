@@ -13,7 +13,7 @@ import com.github.skjolber.packing.api.packager.control.placement.PlacementContr
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.PointCalculator;
 
-public class ComparatorPlacementControlsBuilder implements PlacementControlsBuilder<Placement> {
+public class ComparatorPlacementControlsBuilder implements PlacementControlsBuilder {
 
 	protected Comparator<Placement> placementComparator;
 	protected Comparator<BoxItem> boxItemComparator;
@@ -86,13 +86,13 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	}
 	
 	@Override
-	public PlacementControlsBuilder<Placement> withStability(boolean calculateSupport, boolean fullSupport) {
+	public PlacementControlsBuilder withStability(boolean calculateSupport, boolean fullSupport) {
 		this.fullSupport = fullSupport;
 		return this;
 	}
 	
 	@Override
-	public PlacementControls<Placement> build() {
+	public PlacementControls build() {
 		if(fullSupport) {
 			throw new IllegalStateException("Full support not supported");
 		}
@@ -103,7 +103,7 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	}
 
 	@Override
-	public PlacementControlsBuilder<Placement> withLoadIdenticalBox(boolean loadIdenticalBox) {
+	public PlacementControlsBuilder withLoadIdenticalBox(boolean loadIdenticalBox) {
 		this.loadIdenticalBox = loadIdenticalBox;
 		return this;
 	}

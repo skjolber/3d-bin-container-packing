@@ -130,8 +130,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		boolean supportedXZPlane = point.getMinY() == placement.getAbsoluteY() && point.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
 		boolean supportedYZPlane = point.getMinX() == placement.getAbsoluteX() && point.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
 		
-		System.out.println(index + " " + placement.getAbsoluteX() + "x" + placement.getAbsoluteY() + "x" + placement.getAbsoluteZ() + " " + supportedXYPlane + " " + supportedXZPlane + " " + supportedYZPlane);
-		
 		return add(point, index, placement, supportedXYPlane, supportedXZPlane, supportedYZPlane);
 	}
 	
@@ -171,10 +169,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		Point3DFlagList values = this.values;
 		Point3DFlagList otherValues = this.otherValues;
 		
-		if(placement.getPointIndex() == 7) {
-			System.out.println("DING");
-		}
-
 		ensureCapacity(values.size() + 1);
 		
 		int xx = placement.getAbsoluteEndX() + 1;

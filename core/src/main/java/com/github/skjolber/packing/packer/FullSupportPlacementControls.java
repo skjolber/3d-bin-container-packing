@@ -15,7 +15,7 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.PointSource;
 
-public class FullSupportPlacementControls extends AbstractComparatorPlacementControls<Placement> {
+public class FullSupportPlacementControls extends AbstractComparatorPlacementControls {
 
 	public FullSupportPlacementControls(BoxItemSource boxItems, PointControls pointControls,
 			PointCalculator pointCalculator, Container container, Stack stack, Order order,

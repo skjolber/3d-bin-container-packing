@@ -8,26 +8,26 @@ import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilder;
 import com.github.skjolber.packing.api.point.PointCalculator;
-public interface PlacementControlsBuilder<R extends Placement> {
+public interface PlacementControlsBuilder {
 
-	PlacementControlsBuilder<R> withPointCalculator(PointCalculator pointCalculator);
+	PlacementControlsBuilder withPointCalculator(PointCalculator pointCalculator);
 
-	PlacementControlsBuilder<R> withBoxItems(BoxItemSource boxItems);
+	PlacementControlsBuilder withBoxItems(BoxItemSource boxItems);
 
-	PlacementControlsBuilder<R> withPointControls(PointControls pointControls);
+	PlacementControlsBuilder withPointControls(PointControls pointControls);
 
-	PlacementControlsBuilder<R> withStack(Stack stack);
+	PlacementControlsBuilder withStack(Stack stack);
 
-	PlacementControlsBuilder<R> withContainer(Container container);
+	PlacementControlsBuilder withContainer(Container container);
 
-	PlacementControlsBuilder<R> withOrder(Order order);
+	PlacementControlsBuilder withOrder(Order order);
 
-	PlacementControlsBuilder<R> withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount);
+	PlacementControlsBuilder withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount);
 
-	PlacementControlsBuilder<R> withStability(boolean calculateSupport, boolean fullSupport);	
+	PlacementControlsBuilder withStability(boolean calculateSupport, boolean fullSupport);	
 
-	PlacementControlsBuilder<R> withLoadIdenticalBox(boolean loadIdenticalBox);
+	PlacementControlsBuilder withLoadIdenticalBox(boolean loadIdenticalBox);
 
-	PlacementControls<R> build();
+	PlacementControls build();
 	
 }

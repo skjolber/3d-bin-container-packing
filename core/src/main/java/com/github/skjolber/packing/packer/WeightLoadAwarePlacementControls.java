@@ -22,7 +22,7 @@ import com.github.skjolber.packing.api.point.PointSource;
  * 
  */
 
-public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparatorPlacementControls<Placement> {
+public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparatorPlacementControls {
 
 	public WeightLoadAwarePlacementControls(BoxItemSource boxItems, 
 			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,

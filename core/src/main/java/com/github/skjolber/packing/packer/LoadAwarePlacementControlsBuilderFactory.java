@@ -10,7 +10,7 @@ import com.github.skjolber.packing.api.packager.control.placement.PlacementContr
 /**
  * Factory that produces {@link LoadAwarePlacementControlsBuilder} instances.
  */
-public class LoadAwarePlacementControlsBuilderFactory implements PlacementControlsBuilderFactory<Placement> {
+public class LoadAwarePlacementControlsBuilderFactory implements PlacementControlsBuilderFactory {
 
 	protected final Comparator<Placement> placementComparator;
 	protected final Comparator<BoxItem> boxItemComparator;
@@ -25,7 +25,7 @@ public class LoadAwarePlacementControlsBuilderFactory implements PlacementContro
 	}
 
 	@Override
-	public PlacementControlsBuilder<Placement> createPlacementControlsBuilder() {
+	public PlacementControlsBuilder createPlacementControlsBuilder() {
 		return new LoadAwarePlacementControlsBuilder()
 				.withPlacementComparator(placementComparator)
 				.withBoxItemComparator(boxItemComparator)

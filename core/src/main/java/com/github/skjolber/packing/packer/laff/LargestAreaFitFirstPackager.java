@@ -33,7 +33,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 		return new Builder();
 	}
 
-	public static class Builder extends AbstractLargestAreaFitFirstPackagerBuilder<Placement, Builder> {
+	public static class Builder extends AbstractLargestAreaFitFirstPackagerBuilder<Builder> {
 
 		public LargestAreaFitFirstPackager build() {
 			if(intermediatePackagerResultComparator == null) {
@@ -73,8 +73,8 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			Comparator<IntermediatePackagerResult> comparator,
 			Comparator<BoxItemGroup> boxItemGroupComparator,
 			Comparator<BoxItemGroup> firstBoxItemGroupComparator, 
-			PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory,
-			PlacementControlsBuilderFactory<Placement> firstPlacementControlsBuilderFactory
+			PlacementControlsBuilderFactory placementControlsBuilderFactory,
+			PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory
 			) {
 		super(comparator,
 				boxItemGroupComparator, 

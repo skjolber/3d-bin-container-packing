@@ -298,7 +298,6 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 
 		try {
 			for (int i = 1; i <= 1; i++) {
-				System.out.println("Attempt " + i);
 				int boxCountPerStackableItem = i;
 	
 				List<ContainerItem> containerItems = ContainerItem

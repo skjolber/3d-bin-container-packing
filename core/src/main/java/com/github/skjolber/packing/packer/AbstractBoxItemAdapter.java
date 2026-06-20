@@ -45,7 +45,7 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 				maxLoadWeight |= box.isMaxLoadWeight();
 				maxLoadPressure |= box.isMaxLoadPressure();
 				maxLoadBoxCount |= box.isMaxLoadBoxCount();
-				maxLoadIdenticalBoxCount |= box.isMaxLoadWeight();
+				maxLoadIdenticalBoxCount |= box.isMaxLoadBoxCount() && box.getStackValues()[0].isLoadIdenticalBoxOnly();
 			}
 		}
 		

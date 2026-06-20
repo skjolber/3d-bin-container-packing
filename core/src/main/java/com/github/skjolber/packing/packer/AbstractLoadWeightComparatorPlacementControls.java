@@ -16,7 +16,7 @@ import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 
-public abstract class AbstractLoadWeightComparatorPlacementControls<T extends Placement> extends AbstractComparatorPlacementControls<T> {
+public abstract class AbstractLoadWeightComparatorPlacementControls extends AbstractComparatorPlacementControls {
 
 	protected boolean fullSupport;
 
@@ -30,7 +30,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls<T extends Pl
 	
 	public AbstractLoadWeightComparatorPlacementControls(BoxItemSource boxItems, PointControls pointControls,
 			PointCalculator pointCalculator, Container container, Stack stack, Order order,
-			Comparator<T> placementComparator, Comparator<BoxItem> boxItemComparator, boolean fullSupport) {
+			Comparator<Placement> placementComparator, Comparator<BoxItem> boxItemComparator, boolean fullSupport) {
 		super(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 		
 		this.fullSupport = fullSupport;
@@ -150,6 +150,56 @@ public abstract class AbstractLoadWeightComparatorPlacementControls<T extends Pl
 		return true;
 	}
 	
+
+	/**
+	 * Wires load-graph relationships after a placement is accepted.
+	 * Finds all direct supporters (placements at absoluteEndZ == placement.absoluteZ - 1
+	 * that overlap in XY), then calls {@link Placement#addLoad} on each, distributing
+	 * the new placement's weight proportionally by overlap area.
+	 */
+	@Override
+	public void accepted(Placement placement) {
+		int z = placement.getAbsoluteZ();
+		if (z == 0) {
+			return;
+		}
+
+		int minX = placement.getAbsoluteX();
+		int maxX = placement.getAbsoluteEndX();
+		int minY = placement.getAbsoluteY();
+		int maxY = placement.getAbsoluteEndY();
+		int supportZ = z - 1;
+
+		// First pass: compute total overlap area across all direct supporters
+		long totalArea = 0;
+		List<Placement> stackPlacements = stack.getPlacements();
+		int n = stackPlacements.size();
+		for (int i = 0; i < n; i++) {
+			Placement candidate = stackPlacements.get(i);
+			if (candidate.getAbsoluteEndZ() != supportZ) continue;
+			if (!candidate.intersects2D(minX, maxX, minY, maxY)) continue;
+			totalArea += overlapArea(minX, minY, maxX, maxY, candidate);
+		}
+
+		if (totalArea == 0) {
+			return;
+		}
+
+		// Reset supportedArea to 0 so addSupporter (called inside addLoad) accumulates correctly.
+		// getPlacement sets it via setSupportedArea; addSupporter would double-count it otherwise.
+		placement.setSupportedArea(0);
+
+		// Second pass: wire load relationships, distributing weight proportionally
+		long weight = placement.getWeight();
+		for (int i = 0; i < n; i++) {
+			Placement candidate = stackPlacements.get(i);
+			if (candidate.getAbsoluteEndZ() != supportZ) continue;
+			if (!candidate.intersects2D(minX, maxX, minY, maxY)) continue;
+			long area = overlapArea(minX, minY, maxX, maxY, candidate);
+			long weightShare = (weight * area) / totalArea;
+			candidate.addLoad(placement, area, weightShare);
+		}
+	}
 
 	protected void populatePointSupporters(Point point) {
 		pointSupporters.clear();

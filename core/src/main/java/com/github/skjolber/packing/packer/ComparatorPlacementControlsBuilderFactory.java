@@ -6,7 +6,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 
-public class ComparatorPlacementControlsBuilderFactory implements PlacementControlsBuilderFactory<Placement>  {
+public class ComparatorPlacementControlsBuilderFactory implements PlacementControlsBuilderFactory  {
 
 	protected final Comparator<Placement> placementComparator;
 	protected final Comparator<BoxItem> boxItemComparator;

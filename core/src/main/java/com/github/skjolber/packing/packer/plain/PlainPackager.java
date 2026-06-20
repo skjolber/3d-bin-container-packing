@@ -148,7 +148,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		
 		protected Comparator<IntermediatePackagerResult> packagerResultComparator;
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
-		protected PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory;
+		protected PlacementControlsBuilderFactory placementControlsBuilderFactory;
 		
 		public Builder withCalculateSupport(boolean calculateSupport) {
 			this.calculateSupport = calculateSupport;
@@ -170,7 +170,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			return this;
 		}
 		
-		public Builder withPlacementControlsBuilderFactory(PlacementControlsBuilderFactory<Placement> factory) {
+		public Builder withPlacementControlsBuilderFactory(PlacementControlsBuilderFactory factory) {
 			this.placementControlsBuilderFactory = factory;
 			return this;
 		}
@@ -255,10 +255,10 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		
 	}
 
-	protected PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory;
+	protected PlacementControlsBuilderFactory placementControlsBuilderFactory;
 	protected Comparator<BoxItemGroup> boxItemGroupComparator;
 
-	public PlainPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<BoxItemGroup> boxItemGroupComparator, PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory) {
+	public PlainPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<BoxItemGroup> boxItemGroupComparator, PlacementControlsBuilderFactory placementControlsBuilderFactory) {
 		super(comparator);
 
 		this.placementControlsBuilderFactory = placementControlsBuilderFactory;
@@ -273,7 +273,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 	}
 	
 	@Override
-	protected PlacementControls<Placement> createControls(BoxItemSource boxItems, Order order, PointControls pointControls,
+	protected PlacementControls createControls(BoxItemSource boxItems, Order order, PointControls pointControls,
 			Container container, PointCalculator pointCalculator, Stack stack, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean loadIdenticalBox) {
 		
 		return placementControlsBuilderFactory.createPlacementControlsBuilder()

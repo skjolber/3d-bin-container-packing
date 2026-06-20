@@ -14,7 +14,7 @@ import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 
-public abstract class AbstractPlacementControls<R extends Placement> implements PlacementControls<R> {
+public abstract class AbstractPlacementControls implements PlacementControls {
 
 	public static boolean isFullSupport(List<Placement> placements, int minX, int minY, int minZ, BoxStackValue stackValue) {
 		return stackValue.getArea() == calculateAreaSupport(placements, minX, minY, minZ, stackValue);

@@ -12,14 +12,14 @@ import com.github.skjolber.packing.api.packager.control.placement.AbstractPlacem
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.PointCalculator;
 
-public abstract class AbstractComparatorPlacementControls<T extends Placement> extends AbstractPlacementControls<T> {
+public abstract class AbstractComparatorPlacementControls extends AbstractPlacementControls {
 
-	protected Comparator<T> placementComparator;
+	protected Comparator<Placement> placementComparator;
 	protected Comparator<BoxItem> boxItemComparator;
 
 	public AbstractComparatorPlacementControls(BoxItemSource boxItems,
 			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
-			Order order, Comparator<T> placementComparator, Comparator<BoxItem> boxItemComparator) {
+			Order order, Comparator<Placement> placementComparator, Comparator<BoxItem> boxItemComparator) {
 		super(boxItems, pointControls, pointCalculator, container, stack, order);
 		
 		this.placementComparator = placementComparator;

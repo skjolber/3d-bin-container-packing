@@ -128,7 +128,7 @@ public class WeightLoadAwarePlacementControlsTest {
 		Placement overhangPlacement = new Placement(overhang.getStackValue(0), stack.size(), 0, 0, 1);
 		pointCalculator.add(pointCalculator.findPoint(0, 0, 1), overhangPlacement);
 		stack.add(overhangPlacement);
-		buttomPlacement.addLoad(overhangPlacement, 4, 200);
+		buttomPlacement.addLoad(overhangPlacement, 4, overhang.getWeight());
 
 		Box tooLowMaxLoadLimit = Box.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(300).withWeight(1).build();
 		
@@ -151,7 +151,7 @@ public class WeightLoadAwarePlacementControlsTest {
 		Placement wholeLevel2Placement = new Placement(wholeLevel2.getStackValue(0), stack.size(), 0, 0, 1);
 		pointCalculator.add(pointCalculator.findPoint(0, 0, 1), wholeLevel2Placement);
 		stack.add(wholeLevel2Placement);
-		wholeButtom.addLoad(wholeLevel2Placement, 100, 1);
+		wholeButtom.addLoad(wholeLevel2Placement, 100, wholeLevel2.getWeight());
 
 		Box tooHeavy = Box.newBuilder().withSize(1, 1, 1).withWeight(2).build();
 		
@@ -183,14 +183,14 @@ public class WeightLoadAwarePlacementControlsTest {
 		pointCalculator.add(0, cornerPlacement);
 		cornerPlacement.setIndex(stack.size());
 		stack.add(cornerPlacement);
-		wholeButtomPlacement.addLoad(cornerPlacement, 4, 1);
+		wholeButtomPlacement.addLoad(cornerPlacement, 4, cornerBox.getWeight());
 		
 		Box overhangBox = Box.newBuilder().withSize(10, 10, 8).withWeight(100).withId("Second").build();
 		Placement overhangPlacement = new Placement(overhangBox.getStackValue(0), stack.size(), 0, 0, 2);
 		pointCalculator.add(pointCalculator.findPoint(0, 0, 2), overhangPlacement);
 		overhangPlacement.setIndex(stack.size());
 		stack.add(overhangPlacement);
-		cornerPlacement.addLoad(overhangPlacement, 4, 100);
+		cornerPlacement.addLoad(overhangPlacement, 4, overhangBox.getWeight());
 
 		Box tooLowMaxLoadLimit = Box.newBuilder().withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(1000).build();
 		

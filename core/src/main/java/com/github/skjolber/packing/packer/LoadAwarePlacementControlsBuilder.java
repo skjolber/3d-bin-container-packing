@@ -16,7 +16,7 @@ import com.github.skjolber.packing.api.point.PointCalculator;
 /**
  * Builder for {@link LoadAwarePlacementControls}.
  */
-public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuilder<Placement> {
+public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuilder {
 
 	protected BoxItemSource boxItems;
 	protected PointControls pointControls;
@@ -46,43 +46,43 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 	}
 
 	@Override
-	public PlacementControlsBuilder<Placement> withPointCalculator(PointCalculator pointCalculator) {
+	public PlacementControlsBuilder withPointCalculator(PointCalculator pointCalculator) {
 		this.pointCalculator = pointCalculator;
 		return this;
 	}
 
 	@Override
-	public PlacementControlsBuilder<Placement> withBoxItems(BoxItemSource boxItems) {
+	public PlacementControlsBuilder withBoxItems(BoxItemSource boxItems) {
 		this.boxItems = boxItems;
 		return this;
 	}
 
 	@Override
-	public PlacementControlsBuilder<Placement> withPointControls(PointControls pointControls) {
+	public PlacementControlsBuilder withPointControls(PointControls pointControls) {
 		this.pointControls = pointControls;
 		return this;
 	}
 
 	@Override
-	public PlacementControlsBuilder<Placement> withStack(Stack stack) {
+	public PlacementControlsBuilder withStack(Stack stack) {
 		this.stack = stack;
 		return this;
 	}
 
 	@Override
-	public PlacementControlsBuilder<Placement> withContainer(Container container) {
+	public PlacementControlsBuilder withContainer(Container container) {
 		this.container = container;
 		return this;
 	}
 
 	@Override
-	public PlacementControlsBuilder<Placement> withOrder(Order order) {
+	public PlacementControlsBuilder withOrder(Order order) {
 		this.order = order;
 		return this;
 	}
 
 	@Override
-	public PlacementControlsBuilder<Placement> withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount) {
+	public PlacementControlsBuilder withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount) {
 		// Load awareness is always active in this implementation
 		this.maxLoadWeight = maxLoadWeight;
 		this.maxLoadPressure = maxLoadPressure;
@@ -92,21 +92,21 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 	}
 	
 	@Override
-	public PlacementControlsBuilder<Placement> withLoadIdenticalBox(boolean loadIdenticalBox) {
+	public PlacementControlsBuilder withLoadIdenticalBox(boolean loadIdenticalBox) {
 		this.loadIdenticalBox = loadIdenticalBox;
 		return this;
 	}
 
 
 	@Override
-	public PlacementControlsBuilder<Placement> withStability(boolean calculateSupport, boolean fullSupport) {
+	public PlacementControlsBuilder withStability(boolean calculateSupport, boolean fullSupport) {
 		this.fullSupport = fullSupport;
 		this.calculateSupport = calculateSupport;
 		return this;
 	}
 	
 	@Override
-	public PlacementControls<Placement> build() {
+	public PlacementControls build() {
 		if(maxLoadWeight || maxLoadPressure || maxLoadBoxCount || loadIdenticalBox) {
 			boolean maxLoadWeightOnly = maxLoadWeight && !maxLoadPressure && !maxLoadBoxCount;
 			
