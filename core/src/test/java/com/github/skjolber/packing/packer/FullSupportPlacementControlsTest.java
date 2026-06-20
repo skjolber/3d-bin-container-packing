@@ -44,8 +44,8 @@ class FullSupportPlacementControlsTest {
 	 * <pre>
 	 *  z
 	 *  |
-	 *  5  +-----+     ← A (5×5×5) placed at origin
-	 *  |  |  A  |
+	 *  5  +-----+
+	 *  |  |  A  |     ← A (5×5×5) placed at origin
 	 *  0  +-----+-------   ← initial extreme point, minZ=0 → always ok
 	 *     0     5      10 x
 	 *
@@ -77,8 +77,8 @@ class FullSupportPlacementControlsTest {
 	 * <pre>
 	 *  z
 	 *  |
-	 *  2  +-----+   ← TOP (5×5×1) placed at z=1
-	 *  |  |TOP  |
+	 *  2  +-----+
+	 *  |  |TOP  |   ← TOP (5×5×1) placed at z=1
 	 *  1  +-----+   ← extreme point with XY-plane support from BASE
 	 *  0  +-----+   ← BASE (5×5×1) in stack
 	 *     0     5  10 x
@@ -118,8 +118,8 @@ class FullSupportPlacementControlsTest {
 	 * <pre>
 	 *  z
 	 *  |
-	 *  2  +----------+   ← WIDE (10×5×1) at z=1
-	 *  |  | L  |  R  |
+	 *  2  +----------+
+	 *  |  | L  |  R  |   ← WIDE (10×5×1) at z=1
 	 *  1  +----+----+·   ← extreme point at z=1 (above both bases)
 	 *  0  +----++----+   ← LEFT (5×5×1) and RIGHT (5×5×1), side by side
 	 *     0    5    10 x
@@ -205,8 +205,8 @@ class FullSupportPlacementControlsTest {
 	 * <pre>
 	 *  z
 	 *  |
-	 *  2  +----------+   ← SupportPlacementControls: WIDE placed (partial ok)
-	 *  |  | supp| ?? |
+	 *  2  +----------+
+	 *  |  | supp| ?? |   ← SupportPlacementControls: WIDE placed (partial ok)
 	 *  1  +----·+----·   ← point at z=1
 	 *  0  +----+         ← NARROW (5×10×1)
 	 *     0    5    10 x

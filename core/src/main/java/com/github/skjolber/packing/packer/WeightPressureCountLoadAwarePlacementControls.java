@@ -23,7 +23,6 @@ import com.github.skjolber.packing.api.point.PointSource;
  * 
  */
 
-
 public class WeightPressureCountLoadAwarePlacementControls extends AbstractLoadWeightComparatorPlacementControls {
 
 	public WeightPressureCountLoadAwarePlacementControls(BoxItemSource boxItems, 
@@ -66,6 +65,9 @@ public class WeightPressureCountLoadAwarePlacementControls extends AbstractLoadW
 					}
 
 					Placement placement = getPlacement(point3d, stackValue);
+					if(placement == null) {
+						continue;
+					}
 					
 					if(result != null && placementComparator.compare(result, placement) >= 0) {
 						continue;
@@ -283,18 +285,10 @@ public class WeightPressureCountLoadAwarePlacementControls extends AbstractLoadW
 			long effectiveWeight = (candidateWeight * area) / (area + candidate.getSupportedArea());
 			
 			if(boxStackValue.isMaxLoadPressure()) {
-				if(boxStackValue.getMaxLoadPressure() * area < effectiveWeight) {
+				if(boxStackValue.getMaxLoadPressure() * (double)area < (double)effectiveWeight) {
 					return -1;
 				}
 			}
-
-			if(boxStackValue.isMaxLoadBoxCount()) {
-				if(!isWithinSupporteeBoxCount(candidate, boxStackValue.getMaxLoadBoxCount(), pointSupportees, minX, minY, maxX, maxY)) {
-					return -1;
-				}
-			}
-
-			calculateRelifWeight(candidate, effectiveWeight);
 			
 			weight += effectiveWeight;
 		}
@@ -365,7 +359,7 @@ public class WeightPressureCountLoadAwarePlacementControls extends AbstractLoadW
 				continue;
 			}
 			
-			if(!canStackOneMore(candidate)) {
+			if(!candidate.isWithinMaxLoadBoxCount(1)) {
 				return false;
 			}
 			

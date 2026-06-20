@@ -68,14 +68,12 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withSize(10, 10, 1)
 					.withWeight(10)
 					.withMaxLoadWeight(5)
-					.withRotate2D()
 					.build(), 1));
 			// Box B: weight 10, far too heavy for A's maxLoadWeight=5
 			items.add(new BoxItem(Box.newBuilder()
 					.withId("B")
 					.withSize(10, 10, 1)
 					.withWeight(10)
-					.withRotate2D()
 					.build(), 1));
 
 			PackagerResult result = packager.newResultBuilder()
@@ -128,13 +126,11 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withSize(10, 10, 1)
 					.withWeight(3)
 					.withMaxLoadWeight(5)
-					.withRotate2D()
 					.build(), 1));
 			items.add(new BoxItem(Box.newBuilder()
 					.withId("B")
 					.withSize(10, 10, 1)
 					.withWeight(3)
-					.withRotate2D()
 					.build(), 1));
 
 			PackagerResult result = packager.newResultBuilder()
@@ -185,13 +181,11 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withSize(10, 10, 1)
 					.withWeight(5)
 					.withMaxLoadWeight(20)
-					.withRotate2D()
 					.build(), 1));
 			items.add(new BoxItem(Box.newBuilder()
 					.withId("top")
 					.withSize(10, 10, 1)
 					.withWeight(7)
-					.withRotate2D()
 					.build(), 1));
 
 			PackagerResult result = packager.newResultBuilder()
@@ -252,11 +246,11 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 		try {
 			List<BoxItem> items = new ArrayList<>();
 			items.add(new BoxItem(Box.newBuilder().withId("A")
-					.withSize(10, 10, 1).withWeight(2).withMaxLoadWeight(50).withRotate2D().build(), 1));
+					.withSize(10, 10, 1).withWeight(2).withMaxLoadWeight(50).build(), 1));
 			items.add(new BoxItem(Box.newBuilder().withId("B")
-					.withSize(10, 10, 1).withWeight(3).withMaxLoadWeight(50).withRotate2D().build(), 1));
+					.withSize(10, 10, 1).withWeight(3).withMaxLoadWeight(50).build(), 1));
 			items.add(new BoxItem(Box.newBuilder().withId("C")
-					.withSize(10, 10, 1).withWeight(4).withRotate2D().build(), 1));
+					.withSize(10, 10, 1).withWeight(4).build(), 1));
 
 			PackagerResult result = packager.newResultBuilder()
 					.withContainerItem(new ContainerItem(container, 1))
@@ -325,7 +319,6 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withSize(10, 10, 1)
 					.withWeight(1)
 					.withMaxLoadBoxCount(1)
-					.withRotate2D()
 					.build();
 
 			List<BoxItem> items = new ArrayList<>();
@@ -383,7 +376,6 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withSize(10, 10, 1)
 					.withWeight(1)
 					.withMaxLoadBoxCount(2)
-					.withRotate2D()
 					.build();
 
 			List<BoxItem> items = new ArrayList<>();
@@ -441,7 +433,6 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withSize(10, 10, 1)
 					.withWeight(1)
 					.withMaxLoadBoxCount(2)
-					.withRotate2D()
 					.build();
 
 			List<BoxItem> items = new ArrayList<>();
@@ -508,7 +499,6 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withSize(10, 10, 1)
 					.withWeight(1)
 					.withMaxLoadBoxCount(1)
-					.withRotate2D()
 					.build();
 
 			List<BoxItem> items = new ArrayList<>();
@@ -563,7 +553,6 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withSize(10, 10, 1)
 					.withWeight(1)
 					.withMaxLoadBoxCount(2)
-					.withRotate2D()
 					.build();
 
 			List<BoxItem> items = new ArrayList<>();
@@ -620,7 +609,6 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withWeight(10)
 					.withMaxLoadBoxCount(3)
 					.withMaxLoadWeight(5)
-					.withRotate2D()
 					.build();
 
 			List<BoxItem> items = new ArrayList<>();

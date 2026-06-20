@@ -315,5 +315,23 @@ public class Placement implements Serializable {
 	public int getIndex() {
 		return index;
 	}
-	
+
+	public boolean isWithinMaxLoadBoxCount(int levels) {
+		if(stackValue.isMaxLoadBoxCount()) {
+			if(stackValue.getMaxLoadBoxCount() < levels) {
+				return false;
+			}
+		}
+		
+		levels++;
+		for (PlacementLoad placementLoad : supporters) {
+			if(!placementLoad.getPlacement().isWithinMaxLoadBoxCount(levels)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+
+
 }

@@ -117,7 +117,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 
 		BoxStackValue candidateSupporter = placement.getStackValue();
 		if(candidateSupporter.isMaxLoadPressure()) {
-			if(effectiveWeight > area * candidateSupporter.getMaxLoadPressure()) {
+			if((double)effectiveWeight > (double)area * candidateSupporter.getMaxLoadPressure()) {
 				return false;
 			}
 		}
@@ -156,6 +156,11 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 	 * Finds all direct supporters (placements at absoluteEndZ == placement.absoluteZ - 1
 	 * that overlap in XY), then calls {@link Placement#addLoad} on each, distributing
 	 * the new placement's weight proportionally by overlap area.
+	 * <p>
+	 * Guard against double-wiring: some packagers (e.g. LAFF) hold two
+	 * {@code PlacementControls} instances and call {@code accepted()} on both
+	 * for the same placement. We detect this by checking whether supporters
+	 * have already been registered, and skip if so.
 	 */
 	@Override
 	public void accepted(Placement placement) {

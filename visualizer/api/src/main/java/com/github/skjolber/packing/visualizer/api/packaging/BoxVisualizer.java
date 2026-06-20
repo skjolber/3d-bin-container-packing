@@ -6,7 +6,7 @@ public class BoxVisualizer extends StackableVisualizer {
 
 	protected long weight;
 	protected Long maxLoadWeight;
-	protected Long maxLoadPressure;
+	protected Double maxLoadPressure;
 	protected Integer maxLoadBoxCount;
 	protected Boolean maxLoadIdenticalOnly;
 	
@@ -34,11 +34,11 @@ public class BoxVisualizer extends StackableVisualizer {
 		this.maxLoadWeight = maxLoadWeight;
 	}
 
-	public Long getMaxLoadPressure() {
+	public Double getMaxLoadPressure() {
 		return maxLoadPressure;
 	}
 
-	public void setMaxLoadPressure(Long maxLoadPressure) {
+	public void setMaxLoadPressure(Double maxLoadPressure) {
 		this.maxLoadPressure = maxLoadPressure;
 	}
 

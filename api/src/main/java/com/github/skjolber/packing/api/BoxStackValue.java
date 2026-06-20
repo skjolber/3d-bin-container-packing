@@ -61,7 +61,7 @@ public class BoxStackValue {
 		protected int index = 0;
 
 		protected long maxLoadWeight   = -1;
-		protected long maxLoadPressure = -1;
+		protected double maxLoadPressure = -1.0;
 		protected int maxLoadBoxCount = -1;
 		protected boolean maxLoadIdenticalOnly = false;
 
@@ -101,7 +101,7 @@ public class BoxStackValue {
 		 * convention used by {@link Box#getMinimumPressure()} / {@link Box#getMaximumPressure()}.
 		 * Takes precedence over {@link #withMaxLoadWeight} when both are set.
 		 */
-		public T withMaxLoadPressure(long pressure) {
+		public T withMaxLoadPressure(double pressure) {
 			this.maxLoadPressure = pressure;
 			return (T) this;
 		}
@@ -159,18 +159,18 @@ public class BoxStackValue {
 	protected Box box;
 
 	protected final long maxLoadWeight;
-	protected final long maxLoadPressure;
+	protected final double maxLoadPressure;
 	protected final int maxLoadBoxCount;
 	
 	// TODO better name?
 	protected final boolean loadIdenticalBoxOnly;
 
 	public BoxStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index) {
-		this(dx, dy, dz, surfaces, index, -1, -1, -1, false);
+		this(dx, dy, dz, surfaces, index, -1, -1.0, -1, false);
 	}
 
 	public BoxStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index,
-			long maxLoadWeight, long maxLoadPressure, int maxLoadBoxCount, boolean maxLoadIdenticalOnly) {
+			long maxLoadWeight, double maxLoadPressure, int maxLoadBoxCount, boolean maxLoadIdenticalOnly) {
 		this.dx = dx;
 		this.dy = dy;
 		this.dz = dz;
@@ -259,7 +259,7 @@ public class BoxStackValue {
 	 *
 	 * @return max load pressure, or -1 if unconstrained
 	 */
-	public long getMaxLoadPressure() {
+	public double getMaxLoadPressure() {
 		return maxLoadPressure;
 	}
 
@@ -314,7 +314,7 @@ public class BoxStackValue {
 	}
 	
 	public boolean isMaxLoadPressure() {
-		return maxLoadPressure != -1L;
+		return maxLoadPressure != -1.0;
 	}
 	
 	public boolean isMaxLoadBoxCount() {

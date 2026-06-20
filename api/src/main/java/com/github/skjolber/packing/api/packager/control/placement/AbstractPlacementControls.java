@@ -1,17 +1,14 @@
 package com.github.skjolber.packing.api.packager.control.placement;
 
-import com.github.skjolber.packing.api.Order;
-
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
-import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 
 public abstract class AbstractPlacementControls implements PlacementControls {
@@ -85,7 +82,6 @@ public abstract class AbstractPlacementControls implements PlacementControls {
 		return sum;
 	}
 	
-	
 	protected BoxItemSource boxItems;
 	protected PointControls pointControls;
 	protected PointCalculator pointCalculator;
@@ -103,31 +99,9 @@ public abstract class AbstractPlacementControls implements PlacementControls {
 		this.order = order;
 	}
 
-	public static boolean canStackOneMore(Placement candidate) {
-		return canStackLevels(candidate, 1);
-	}
-
-	public static boolean canStackLevels(Placement candidate, int levels) {
-		BoxStackValue stackValue = candidate.getStackValue();
-		if(stackValue.isMaxLoadBoxCount()) {
-			if(stackValue.getMaxLoadBoxCount() < levels) {
-				return false;
-			}
-		}
-		
-		levels++;
-		for (PlacementLoad placementLoad : candidate.getSupporters()) {
-			if(!canStackLevels(placementLoad.getPlacement(), levels)) {
-				return false;
-			}
-		}
-		
-		return true;
-	}
-
 	public static boolean isWithinMaxLoadBoxCount(List<Placement> supporters) {
 		for (Placement candidate : supporters) {
-			if(!canStackOneMore(candidate)) {
+			if(!candidate.isWithinMaxLoadBoxCount(1)) {
 				return false;
 			}
 		}

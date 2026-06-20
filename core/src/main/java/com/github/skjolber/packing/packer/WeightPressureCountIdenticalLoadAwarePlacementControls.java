@@ -92,6 +92,10 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 						}
 					}
 					
+					if(placement == null) {
+						continue;
+					}
+					
 					if(result != null && placementComparator.compare(result, placement) >= 0) {
 						continue;
 					}
@@ -304,7 +308,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 			long effectiveWeight = (candidateWeight * area) / (area + candidate.getSupportedArea());
 			
 			if(boxStackValue.isMaxLoadPressure()) {
-				if(boxStackValue.getMaxLoadPressure() * area < effectiveWeight) {
+				if(boxStackValue.getMaxLoadPressure() * (double)area < (double)effectiveWeight) {
 					return -1;
 				}
 			}
@@ -398,7 +402,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 				}
 			}
 			
-			if(!canStackOneMore(candidate)) {
+			if(!candidate.isWithinMaxLoadBoxCount(1)) {
 				return false;
 			}
 			

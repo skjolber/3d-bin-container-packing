@@ -139,7 +139,7 @@ public class Box {
 		protected Rotation rotation;
 
 		protected long maxLoadWeight  = -1;
-		protected long maxLoadPressure = -1;
+		protected double maxLoadPressure = -1.0;
 		protected int maxLoadBoxCount = -1;
 		protected boolean maxLoadIdenticalOnly = false;
 
@@ -454,7 +454,7 @@ public class Box {
 		 *
 		 * @param pressure max load pressure in (weight-unit × 1000) / area-unit
 		 */
-		public Builder withMaxLoadPressure(long pressure) {
+		public Builder withMaxLoadPressure(double pressure) {
 			this.maxLoadPressure = pressure;
 			return (Builder) this;
 		}

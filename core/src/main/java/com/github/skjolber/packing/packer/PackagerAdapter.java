@@ -6,7 +6,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 
 /**
- * Logical packager for wrapping preprocessing / optimizations.
+ * Logical packager for wrapping pre-processing / optimizations.
  */
 // 
 public interface PackagerAdapter {

@@ -36,8 +36,8 @@ class ComparatorPlacementControlsTest {
 	 * <pre>
 	 *  z
 	 *  |
-	 *  5  +-----+              ← box placed at (0,0,0)
-	 *  |  |  A  |
+	 *  5  +-----+
+	 *  |  |  A  |              ← box placed at (0,0,0)
 	 *  0  +-----+----------   ← floor / initial extreme point
 	 *     0     5          10 x
 	 * </pre>
@@ -65,8 +65,8 @@ class ComparatorPlacementControlsTest {
 	 * <pre>
 	 *  z
 	 *  |
-	 * 15  +-----------+        ← box B is bigger than the container
-	 *  |  |     B     |
+	 * 15  +-----------+
+	 *  |  |     B     |        ← box B is bigger than the container
 	 *  0  +-----------+
 	 *     0           15 x
 	 *
@@ -102,8 +102,8 @@ class ComparatorPlacementControlsTest {
 	 *  z
 	 *  |
 	 *  8  +--------+           ← L placed (preferred)
-	 *  5  +-----+  |
-	 *  |  |  S  |  |
+	 *  5  +-----+
+	 *  |  |  S  |  |  |
 	 *  0  +-----+--+--------
 	 *     0     5  8       10 x
 	 *
@@ -245,8 +245,8 @@ class ComparatorPlacementControlsTest {
 	 *  z
 	 *  |
 	 *  8  +--------+
-	 *  5  +-----+  |  ← L would be larger, but never reached
-	 *  |  |  S  |  |
+	 *  5  +-----+
+	 *  |  |  S  |  |  |  ← L would be larger, but never reached
 	 *  0  +-----+--+--
 	 *     0     5  8  10 x
 	 *

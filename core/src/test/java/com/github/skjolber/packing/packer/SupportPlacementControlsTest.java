@@ -44,8 +44,8 @@ class SupportPlacementControlsTest {
 	 * <pre>
 	 *  z
 	 *  |
-	 *  5  +----------+   ← box placed here (dx=10, dy=10)
-	 *  |  |    A     |
+	 *  5  +----------+
+	 *  |  |    A     |   ← box placed here (dx=10, dy=10)
 	 *  0  +----------+   ← point at z=0 (floor)
 	 *     0          10 x
 	 *
@@ -168,8 +168,8 @@ class SupportPlacementControlsTest {
 	 * <pre>
 	 *  z
 	 *  |
-	 *  5  +-----+   ← A (5×5×5) placed
-	 *  |  |  A  |
+	 *  5  +-----+
+	 *  |  |  A  |   ← A (5×5×5) placed
 	 *  0  +-----+---------   ← initial point (floor, XY plane support)
 	 *     0     5        10 x
 	 *

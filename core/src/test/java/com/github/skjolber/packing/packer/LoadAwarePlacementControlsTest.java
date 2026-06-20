@@ -101,9 +101,8 @@ class LoadAwarePlacementControlsTest {
 	void testCanStackLevels_noConstraint_alwaysAllowed() {
 		Placement a = placement("A", 10, 10, 1, 5, 0, 0, 0);
 
-		assertThat(AbstractPlacementControls.canStackLevels(a, 1)).isTrue();
-		assertThat(AbstractPlacementControls.canStackLevels(a, 10)).isTrue();
-		assertThat(AbstractPlacementControls.canStackOneMore(a)).isTrue();
+		assertThat(a.isWithinMaxLoadBoxCount(1)).isTrue();
+		assertThat(a.isWithinMaxLoadBoxCount(10)).isTrue();
 	}
 
 	/**
@@ -121,10 +120,9 @@ class LoadAwarePlacementControlsTest {
 	void testCanStackLevels_count2_boundary() {
 		Placement a = placementWithCount("A", 10, 10, 1, 5, 2, 0, 0, 0);
 
-		assertThat(AbstractPlacementControls.canStackLevels(a, 1)).isTrue();
-		assertThat(AbstractPlacementControls.canStackLevels(a, 2)).isTrue();
-		assertThat(AbstractPlacementControls.canStackLevels(a, 3)).isFalse();
-		assertThat(AbstractPlacementControls.canStackOneMore(a)).isTrue(); // levels=1 ≤ 2
+		assertThat(a.isWithinMaxLoadBoxCount(1)).isTrue();
+		assertThat(a.isWithinMaxLoadBoxCount(2)).isTrue();
+		assertThat(a.isWithinMaxLoadBoxCount(3)).isFalse();
 	}
 
 	/**
@@ -139,8 +137,8 @@ class LoadAwarePlacementControlsTest {
 	void testCanStackLevels_count1_exactlyOneAbove() {
 		Placement a = placementWithCount("A", 10, 10, 1, 5, 1, 0, 0, 0);
 
-		assertThat(AbstractPlacementControls.canStackOneMore(a)).isTrue();
-		assertThat(AbstractPlacementControls.canStackLevels(a, 2)).isFalse();
+		assertThat(a.isWithinMaxLoadBoxCount(1)).isTrue();
+		assertThat(a.isWithinMaxLoadBoxCount(2)).isFalse();
 	}
 
 	/**
@@ -169,7 +167,7 @@ class LoadAwarePlacementControlsTest {
 
 		// B itself has no count constraint, but A (its supporter) has count=1
 		// B is 1 level above A; adding one more above B would be 2 levels above A → rejected
-		assertThat(AbstractPlacementControls.canStackOneMore(b)).isFalse();
+		assertThat(b.isWithinMaxLoadBoxCount(1)).isFalse();
 	}
 
 	/**
@@ -196,9 +194,10 @@ class LoadAwarePlacementControlsTest {
 		b.addLoad(c, 100, c.getWeight());
 
 		// Placing above B = 2 levels above A: 2 < 2 = false → allowed
-		assertThat(AbstractPlacementControls.canStackOneMore(b)).isTrue();
+		assertThat(b.isWithinMaxLoadBoxCount(1)).isTrue();
+
 		// Placing above C = 3 levels above A: 2 < 3 = true → rejected
-		assertThat(AbstractPlacementControls.canStackOneMore(c)).isFalse();
+		assertThat(c.isWithinMaxLoadBoxCount(1)).isFalse();
 	}
 
 	/**
@@ -226,9 +225,9 @@ class LoadAwarePlacementControlsTest {
 		a.addLoad(b, 100, b.getWeight());
 		b.addLoad(c, 100, c.getWeight());
 
-		assertThat(AbstractPlacementControls.canStackOneMore(b)).isTrue();  // 3 ≤ 3 at A → ok
-		assertThat(AbstractPlacementControls.canStackOneMore(c)).isTrue();  // 3 ≤ 3 at A → ok
-		assertThat(AbstractPlacementControls.canStackLevels(c, 2)).isFalse(); // 4th level above A → rejected
+		assertThat(b.isWithinMaxLoadBoxCount(1)).isTrue();
+		assertThat(c.isWithinMaxLoadBoxCount(1)).isTrue();
+		assertThat(c.isWithinMaxLoadBoxCount(2)).isFalse();
 	}
 
 	// -----------------------------------------------------------------------

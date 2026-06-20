@@ -75,8 +75,8 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 	 * <pre>
 	 *  z
 	 *  |
-	 *  2  +----------+   ← tooHeavy (10×10, w=6): REJECTED — w=6 > maxLoadWeight=5
-	 *  |  | tooHeavy |
+	 *  2  +----------+
+	 *  |  | tooHeavy |   ← tooHeavy (10×10, w=6): REJECTED — w=6 > maxLoadWeight=5
 	 *  1  +----------+
 	 *  0  +----------+   ← bottom (10×10, w=1, maxLoadWeight=5)
 	 *     0          10  x
@@ -102,8 +102,8 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 	 * <pre>
 	 *  z
 	 *  |
-	 *  2  +----------+   ← light (10×10, w=1): ACCEPTED — w=1 ≤ maxLoadWeight=5
-	 *  |  |  light   |
+	 *  2  +----------+
+	 *  |  |  light   |   ← light (10×10, w=1): ACCEPTED — w=1 ≤ maxLoadWeight=5
 	 *  1  +----------+
 	 *  0  +----------+   ← bottom (10×10, w=1, maxLoadWeight=5)
 	 *     0          10  x
@@ -402,8 +402,8 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 	 * <pre>
 	 *  z
 	 *  |
-	 *  3  +----------+   ← new (10×10): ACCEPTED — 2nd box above floor (count=2/2)
-	 *  |  |   new    |
+	 *  3  +----------+
+	 *  |  |   new    |   ← new (10×10): ACCEPTED — 2nd box above floor (count=2/2)
 	 *  2  +----------+
 	 *  1  +----------+   ← level2 (10×10, already placed, count=1/2)
 	 *  0  +----------+   ← bottom (10×10, maxLoadBoxCount=2)
