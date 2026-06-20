@@ -5,8 +5,6 @@ import com.github.skjolber.packing.api.point.Point;
 
 public class DefaultXZPlanePoint3D extends SimplePoint3D implements XZPlanePoint3D {
 
-	private static final long serialVersionUID = 1L;
-
 	/** range constrained to current minY */
 	private final Placement xzPlane;
 

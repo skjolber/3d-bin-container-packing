@@ -7,8 +7,6 @@ import com.github.skjolber.packing.api.point.Point;
 
 public abstract class Point2D extends Point {
 
-	private static final long serialVersionUID = 1L;
-
 	public static final Comparator<Point2D> COMPARATOR_X_THEN_Y = new Comparator<Point2D>() {
 
 		@Override

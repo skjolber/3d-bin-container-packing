@@ -14,7 +14,6 @@ import com.github.skjolber.packing.api.point.Point;
  * 
  */
 
-@SuppressWarnings("unchecked")
 public class Point2DFlagList implements Iterable<Point> {
 
 	private static class PointIterator implements Iterator<Point> {

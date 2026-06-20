@@ -17,14 +17,6 @@ import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.ep.PlacementList;
-import com.github.skjolber.packing.ep.points3d.Default3DPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultXYPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultXYPlaneXZPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultXYPlaneYZPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultXZPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultXZPlaneYZPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultYZPlanePoint3D;
 
 /**
  * 

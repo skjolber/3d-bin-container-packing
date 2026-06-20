@@ -6,8 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
@@ -90,7 +88,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		this.containerPlacement = createContainerPlacement();
 	}
 
-	@SuppressWarnings("unchecked")
 	private Placement createContainerPlacement() {
 		BoxStackValue value = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, containerMaxZ + 1, null, -1);
 		

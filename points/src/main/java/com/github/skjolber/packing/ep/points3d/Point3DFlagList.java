@@ -15,7 +15,6 @@ import com.github.skjolber.packing.api.point.Point;
  * 
  */
 
-@SuppressWarnings("unchecked")
 public class Point3DFlagList implements Serializable, Iterable<Point> {
 
 	private static final long serialVersionUID = 1L;

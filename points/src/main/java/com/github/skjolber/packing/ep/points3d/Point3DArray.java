@@ -12,7 +12,6 @@ import com.github.skjolber.packing.api.point.Point;
  * 
  */
 
-@SuppressWarnings("unchecked")
 public class Point3DArray {
 
 	private int size = 0;

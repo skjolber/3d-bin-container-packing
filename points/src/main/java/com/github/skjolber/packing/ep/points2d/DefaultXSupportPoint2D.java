@@ -5,7 +5,6 @@ import com.github.skjolber.packing.api.point.Point;
 
 public class DefaultXSupportPoint2D extends SimplePoint2D implements XSupportPoint2D {
 
-	private static final long serialVersionUID = 1L;
 	/** range constrained to current minY */
 	private final Placement xSupport;
 
