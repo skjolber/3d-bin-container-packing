@@ -11,7 +11,6 @@ import java.util.List;
  * 
  */
 
-@SuppressWarnings("unchecked")
 public class Point3DList {
 
 	private int size = 0;

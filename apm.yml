@@ -22,3 +22,5 @@ marketplaces:
     source: github/awesome-copilot
   auto-optimize:
     source: bluuewhale/auto-optimize
+targets:
+  - copilot

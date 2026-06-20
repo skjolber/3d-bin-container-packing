@@ -8,7 +8,6 @@ import java.util.List;
  * 
  */
 
-@SuppressWarnings("unchecked")
 public class Point2DList {
 
 	private int size = 0;

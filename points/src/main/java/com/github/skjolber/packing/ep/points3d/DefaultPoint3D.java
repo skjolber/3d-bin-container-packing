@@ -4,8 +4,6 @@ import com.github.skjolber.packing.api.Placement;
 
 public class DefaultPoint3D extends SimplePoint3D {
 
-	private static final long serialVersionUID = 1L;
-
 	public DefaultPoint3D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 	}

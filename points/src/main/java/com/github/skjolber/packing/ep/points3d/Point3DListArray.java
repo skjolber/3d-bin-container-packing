@@ -6,7 +6,6 @@ package com.github.skjolber.packing.ep.points3d;
  * 
  */
 
-@SuppressWarnings("unchecked")
 public class Point3DListArray {
 
 	private static final int INITIAL_CAPACITY = 8;

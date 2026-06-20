@@ -5,8 +5,6 @@ import com.github.skjolber.packing.api.point.Point;
 
 public class DefaultPoint2D extends SimplePoint2D {
 
-	private static final long serialVersionUID = 1L;
-
 	public DefaultPoint2D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 	}
