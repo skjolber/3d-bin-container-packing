@@ -12,6 +12,7 @@ import com.github.skjolber.packing.comparator.LargestAreaBoxItemComparator;
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemGroupComparator;
 import com.github.skjolber.packing.comparator.LargestAreaPlacementComparator;
 import com.github.skjolber.packing.comparator.LowerZDelegatePlacementComparator;
+import com.github.skjolber.packing.comparator.PlacementComparator;
 import com.github.skjolber.packing.comparator.SupportDelegateComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeWeightAreaMinZPlacementComparator;
@@ -46,7 +47,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			}
 			if(firstPlacementControlsBuilderFactory == null) {
 				LargestAreaBoxItemComparator firstBoxItemComparator = new LargestAreaBoxItemComparator();
-				Comparator<Placement> firstPlacementComparator = new LowerZDelegatePlacementComparator(new LargestAreaPlacementComparator());
+				PlacementComparator firstPlacementComparator = new LowerZDelegatePlacementComparator(new LargestAreaPlacementComparator());
 				
 				if(!requireFullSupport && calculateSupport) {
 					firstPlacementComparator = new SupportDelegateComparator(firstPlacementComparator);
@@ -56,7 +57,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			}
 			if(placementControlsBuilderFactory == null) {
 				VolumeThenWeightBoxItemComparator boxItemComparator = new VolumeThenWeightBoxItemComparator();
-				Comparator<Placement> placementComparator = new VolumeWeightAreaMinZPlacementComparator();
+				PlacementComparator placementComparator = new VolumeWeightAreaMinZPlacementComparator();
 				
 				if(!requireFullSupport && calculateSupport) {
 					placementComparator = new SupportDelegateComparator(placementComparator);

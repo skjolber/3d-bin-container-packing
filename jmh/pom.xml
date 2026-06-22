@@ -63,6 +63,11 @@
 			<artifactId>commons-io</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>visualizer-packaging</artifactId>
+			<scope>test</scope>
+		</dependency>
 
 	</dependencies>
 

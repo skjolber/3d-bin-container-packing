@@ -6,18 +6,19 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
+import com.github.skjolber.packing.comparator.PlacementComparator;
 
 /**
  * Factory that produces {@link LoadAwarePlacementControlsBuilder} instances.
  */
 public class LoadAwarePlacementControlsBuilderFactory implements PlacementControlsBuilderFactory {
 
-	protected final Comparator<Placement> placementComparator;
+	protected final PlacementComparator placementComparator;
 	protected final Comparator<BoxItem> boxItemComparator;
 	protected final boolean requireFullSupport;
 	protected final boolean calculateSupport;
 	
-	public LoadAwarePlacementControlsBuilderFactory(Comparator<Placement> placementComparator, Comparator<BoxItem> boxItemComparator, boolean calculateSupport, boolean requireFullSupport) {
+	public LoadAwarePlacementControlsBuilderFactory(PlacementComparator placementComparator, Comparator<BoxItem> boxItemComparator, boolean calculateSupport, boolean requireFullSupport) {
 		this.placementComparator = placementComparator;
 		this.boxItemComparator = boxItemComparator;
 		this.requireFullSupport = requireFullSupport;

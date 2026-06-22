@@ -1,10 +1,8 @@
 package com.github.skjolber.packing.comparator;
 
-import java.util.Comparator;
-
 import com.github.skjolber.packing.api.Placement;
 
-public class VolumeWeightAreaMinZPlacementComparator implements Comparator<Placement> {
+public class VolumeWeightAreaMinZPlacementComparator implements PlacementComparator {
 
 	@Override
 	public int compare(Placement o1, Placement o2) {

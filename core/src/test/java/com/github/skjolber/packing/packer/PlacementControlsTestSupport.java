@@ -15,6 +15,7 @@ import com.github.skjolber.packing.api.packager.control.point.DefaultPointContro
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemComparator;
 import com.github.skjolber.packing.comparator.LargestAreaPlacementComparator;
+import com.github.skjolber.packing.comparator.PlacementComparator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 
 /**
@@ -104,7 +105,7 @@ class PlacementControlsTestSupport {
 	// Comparator factories (reused across all three control classes)
 	// -----------------------------------------------------------------------
 
-	static Comparator<Placement> placementComparator() {
+	static PlacementComparator placementComparator() {
 		return new LargestAreaPlacementComparator();
 	}
 

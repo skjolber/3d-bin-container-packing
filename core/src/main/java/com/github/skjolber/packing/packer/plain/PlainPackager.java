@@ -19,6 +19,8 @@ import com.github.skjolber.packing.api.packager.control.placement.PlacementContr
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
+import com.github.skjolber.packing.comparator.PlacementComparator;
+import com.github.skjolber.packing.comparator.PlacementComparatorBuilder;
 import com.github.skjolber.packing.comparator.SupportDelegateComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
@@ -182,7 +184,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			boolean requireFullSupport = b.requireFullSupport;
 			boolean calculateSupport = b.calculateSupport;
 			Comparator<BoxItem> boxItemComparator = b.boxItemComparator;
-			Comparator<Placement> placementComparator = b.placementComparator;
+			PlacementComparator placementComparator = b.placementComparator;
 			
 			if(boxItemComparator == null) {
 				boxItemComparator = VolumeThenWeightBoxItemComparator.getInstance();
@@ -209,7 +211,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			private boolean requireFullSupport;
 			private boolean calculateSupport;
 			private Comparator<BoxItem> boxItemComparator;
-			private Comparator<Placement> placementComparator; 
+			private PlacementComparator placementComparator; 
 			
 			public PlacementControlsBuilderFactoryBuilder withCalculateSupport(boolean calculateSupport) {
 				this.calculateSupport = calculateSupport;
@@ -226,11 +228,16 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 				return this;
 			}
 			
-			public PlacementControlsBuilderFactoryBuilder withPlacementComparator(Comparator<Placement> placementComparator) {
+			public PlacementControlsBuilderFactoryBuilder withPlacementComparator(PlacementComparator placementComparator) {
 				this.placementComparator = placementComparator;
 				return this;
 			}
 
+			public PlacementControlsBuilderFactoryBuilder withPlacementComparator(Consumer<PlacementComparatorBuilder> consumer) {
+				PlacementComparatorBuilder b = PlacementComparatorBuilder.newBuilder();
+				consumer.accept(b);
+				return withPlacementComparator(b.build());
+			}
 		}
 		
 		public PlainPackager build() {
@@ -239,7 +246,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			}
 			if(placementControlsBuilderFactory == null) {
 				VolumeThenWeightBoxItemComparator boxItemComparator = new VolumeThenWeightBoxItemComparator();
-				Comparator<Placement> placementComparator = new VolumeWeightAreaMinZPlacementComparator();
+				PlacementComparator placementComparator = new VolumeWeightAreaMinZPlacementComparator();
 				
 				if(!requireFullSupport && calculateSupport) {
 					placementComparator = new SupportDelegateComparator(placementComparator);

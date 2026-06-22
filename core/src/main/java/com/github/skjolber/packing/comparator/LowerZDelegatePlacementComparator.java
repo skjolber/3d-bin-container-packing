@@ -1,21 +1,19 @@
 package com.github.skjolber.packing.comparator;
 
-import java.util.Comparator;
-
 import com.github.skjolber.packing.api.Placement;
 
-public class LowerZDelegatePlacementComparator implements Comparator<Placement> {
+public class LowerZDelegatePlacementComparator implements PlacementComparator {
 
-	private Comparator<Placement> delegate;
-	
-	public LowerZDelegatePlacementComparator(Comparator<Placement> delegate) {
+	private PlacementComparator delegate;
+
+	public LowerZDelegatePlacementComparator(PlacementComparator delegate) {
 		super();
 		this.delegate = delegate;
 	}
 
 	@Override
 	public int compare(Placement o1, Placement o2) {
-		
+
 		// ****************************************
 		// * Prefer lower z
 		// ****************************************
@@ -27,5 +25,5 @@ public class LowerZDelegatePlacementComparator implements Comparator<Placement> 
 
 		return delegate.compare(o1, o2);
 	}
-	
+
 }

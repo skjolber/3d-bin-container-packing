@@ -14,6 +14,7 @@ import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.PointSource;
+import com.github.skjolber.packing.comparator.PlacementComparator;
 
 /**
  * 
@@ -25,7 +26,7 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 
 	public SupportPlacementControls(BoxItemSource boxItems, PointControls pointControls,
 			PointCalculator pointCalculator, Container container, Stack stack, Order order,
-			Comparator<Placement> placementComparator, Comparator<BoxItem> boxItemComparator) {
+			PlacementComparator placementComparator, Comparator<BoxItem> boxItemComparator) {
 		super(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 	}
 

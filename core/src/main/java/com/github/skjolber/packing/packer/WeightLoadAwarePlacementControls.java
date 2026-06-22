@@ -15,6 +15,7 @@ import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.PointSource;
+import com.github.skjolber.packing.comparator.PlacementComparator;
 
 /**
  * 
@@ -26,7 +27,7 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 
 	public WeightLoadAwarePlacementControls(BoxItemSource boxItems, 
 			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
-			Order order, Comparator<Placement> placementComparator, Comparator<BoxItem> boxItemComparator, boolean fullSupport) {
+			Order order, PlacementComparator placementComparator, Comparator<BoxItem> boxItemComparator, boolean fullSupport) {
 		super(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator, fullSupport);
 	}
 	

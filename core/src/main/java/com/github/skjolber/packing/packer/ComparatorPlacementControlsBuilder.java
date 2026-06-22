@@ -12,10 +12,11 @@ import com.github.skjolber.packing.api.packager.control.placement.PlacementContr
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.PointCalculator;
+import com.github.skjolber.packing.comparator.PlacementComparator;
 
 public class ComparatorPlacementControlsBuilder implements PlacementControlsBuilder {
 
-	protected Comparator<Placement> placementComparator;
+	protected PlacementComparator placementComparator;
 	protected Comparator<BoxItem> boxItemComparator;
 
 	protected BoxItemSource boxItems;
@@ -67,8 +68,15 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 		return this;
 	}
 	
-	public ComparatorPlacementControlsBuilder withPlacementComparator(Comparator<Placement> intermediatePlacementResultComparator) {
+	public ComparatorPlacementControlsBuilder withPlacementComparator(PlacementComparator intermediatePlacementResultComparator) {
 		this.placementComparator = intermediatePlacementResultComparator;
+		return this;
+	}
+
+	/** Wraps an existing {@link java.util.Comparator} as a {@link PlacementComparator}. */
+	public ComparatorPlacementControlsBuilder withPlacementComparator(
+			java.util.Comparator<com.github.skjolber.packing.api.Placement> intermediatePlacementResultComparator) {
+		this.placementComparator = PlacementComparator.of(intermediatePlacementResultComparator);
 		return this;
 	}
 

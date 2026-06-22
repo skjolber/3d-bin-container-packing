@@ -3,15 +3,15 @@ package com.github.skjolber.packing.packer;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
+import com.github.skjolber.packing.comparator.PlacementComparator;
 
 public class ComparatorPlacementControlsBuilderFactory implements PlacementControlsBuilderFactory  {
 
-	protected final Comparator<Placement> placementComparator;
+	protected final PlacementComparator placementComparator;
 	protected final Comparator<BoxItem> boxItemComparator;
 	
-	public ComparatorPlacementControlsBuilderFactory(Comparator<Placement> placementComparator,
+	public ComparatorPlacementControlsBuilderFactory(PlacementComparator placementComparator,
 			Comparator<BoxItem> boxItemComparator) {
 		super();
 		this.placementComparator = placementComparator;

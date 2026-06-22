@@ -57,7 +57,6 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			pointCalculator.setPoints(controlContainerItem.getInitialPoints());
 			pointCalculator.clear();
 		}
-		
 
 		ManifestControls manifestControls = createBoxItemControls(container, stack, boxItemSource, pointCalculator, null, controlContainerItem.getBoxItemControlsBuilderFactory());
 

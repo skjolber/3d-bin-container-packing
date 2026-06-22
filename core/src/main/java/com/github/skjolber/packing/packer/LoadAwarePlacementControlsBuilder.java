@@ -5,13 +5,13 @@ import java.util.Comparator;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
-import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.PointCalculator;
+import com.github.skjolber.packing.comparator.PlacementComparator;
 
 public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuilder {
 
@@ -21,7 +21,7 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 	protected Container container;
 	protected Stack stack;
 	protected Order order;
-	protected Comparator<Placement> placementComparator;
+	protected PlacementComparator placementComparator;
 	protected Comparator<BoxItem> boxItemComparator;
 	
 	protected boolean maxLoadWeight;
@@ -32,7 +32,7 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 	protected boolean fullSupport;
 	protected boolean calculateSupport;
 
-	public LoadAwarePlacementControlsBuilder withPlacementComparator(Comparator<Placement> placementComparator) {
+	public LoadAwarePlacementControlsBuilder withPlacementComparator(PlacementComparator placementComparator) {
 		this.placementComparator = placementComparator;
 		return this;
 	}

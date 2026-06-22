@@ -18,6 +18,7 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.comparator.PlacementComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeWeightAreaMinZPlacementComparator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
@@ -36,7 +37,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 	private Container container;
 	private Stack stack;
 	private Order order = Order.NONE;
-	private Comparator<Placement> placementComparator;
+	private PlacementComparator placementComparator;
 	private Comparator<BoxItem> boxItemComparator;
 	private boolean fullSupport = false;
 	private WeightPressureCountIdenticalLoadAwarePlacementControls ctrl;

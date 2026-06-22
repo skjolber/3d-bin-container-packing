@@ -1,8 +1,7 @@
 package com.github.skjolber.packing.packer.plain.heavy;
 
-import java.util.Comparator;
-
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.comparator.PlacementComparator;
 import com.github.skjolber.packing.comparator.SupportDelegateComparator;
 
 
@@ -12,7 +11,7 @@ import com.github.skjolber.packing.comparator.SupportDelegateComparator;
  * 
  */
 
-public class HeavyItemsOnGroundLevelPlacementComparator implements Comparator<Placement> {
+public class HeavyItemsOnGroundLevelPlacementComparator implements PlacementComparator {
 	
 	protected final int maxWeight;
 
