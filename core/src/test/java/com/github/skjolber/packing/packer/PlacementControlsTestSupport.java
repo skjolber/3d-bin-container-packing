@@ -14,8 +14,8 @@ import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemComparator;
-import com.github.skjolber.packing.comparator.LargestAreaPlacementComparator;
-import com.github.skjolber.packing.comparator.PlacementComparator;
+import com.github.skjolber.packing.comparator.placement.LargestAreaPlacementComparator;
+import com.github.skjolber.packing.comparator.placement.PlacementComparator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 
 /**

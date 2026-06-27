@@ -4,7 +4,7 @@ import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
-import com.github.skjolber.packing.comparator.PlacementComparator;
+import com.github.skjolber.packing.comparator.placement.PlacementComparator;
 
 public class ComparatorPlacementControlsBuilderFactory implements PlacementControlsBuilderFactory  {
 

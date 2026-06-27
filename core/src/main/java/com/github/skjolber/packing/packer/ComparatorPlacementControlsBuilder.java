@@ -12,7 +12,7 @@ import com.github.skjolber.packing.api.packager.control.placement.PlacementContr
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.PointCalculator;
-import com.github.skjolber.packing.comparator.PlacementComparator;
+import com.github.skjolber.packing.comparator.placement.PlacementComparator;
 
 public class ComparatorPlacementControlsBuilder implements PlacementControlsBuilder {
 

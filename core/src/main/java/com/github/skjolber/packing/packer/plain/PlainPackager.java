@@ -19,12 +19,11 @@ import com.github.skjolber.packing.api.packager.control.placement.PlacementContr
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
-import com.github.skjolber.packing.comparator.PlacementComparator;
-import com.github.skjolber.packing.comparator.PlacementComparatorBuilder;
-import com.github.skjolber.packing.comparator.SupportDelegateComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
-import com.github.skjolber.packing.comparator.VolumeWeightAreaMinZPlacementComparator;
+import com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory;
+import com.github.skjolber.packing.comparator.placement.PlacementComparator;
+import com.github.skjolber.packing.comparator.placement.PlacementComparatorFactory;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.AnyOrderBoxItemGroupIterator;
@@ -184,24 +183,16 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			boolean requireFullSupport = b.requireFullSupport;
 			boolean calculateSupport = b.calculateSupport;
 			Comparator<BoxItem> boxItemComparator = b.boxItemComparator;
-			PlacementComparator placementComparator = b.placementComparator;
 			
 			if(boxItemComparator == null) {
 				boxItemComparator = VolumeThenWeightBoxItemComparator.getInstance();
 			}
-			if(placementComparator == null) {
-				if(!requireFullSupport) {
-					if(calculateSupport) {
-						placementComparator = new SupportDelegateComparator(new VolumeWeightAreaMinZPlacementComparator());
-					} else {
-						placementComparator = new VolumeWeightAreaMinZPlacementComparator();
-					}
-				} else {
-					placementComparator = new VolumeWeightAreaMinZPlacementComparator();
-				}
-			}
-			
-			placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementComparator, boxItemComparator, calculateSupport, requireFullSupport);
+			PlacementComparatorFactory factory = b.comparatorFactory != null
+					? b.comparatorFactory
+					: DefaultPlacementComparatorFactory.newFactory()
+							.higherVolumeIsBetter().higherWeightIsBetter()
+							.lowerAreaIsBetter().lowerZIsBetter();
+			placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(factory, boxItemComparator, calculateSupport, requireFullSupport);
 			
 			return this;
 		}
@@ -211,7 +202,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			private boolean requireFullSupport;
 			private boolean calculateSupport;
 			private Comparator<BoxItem> boxItemComparator;
-			private PlacementComparator placementComparator; 
+			private PlacementComparatorFactory comparatorFactory;
 			
 			public PlacementControlsBuilderFactoryBuilder withCalculateSupport(boolean calculateSupport) {
 				this.calculateSupport = calculateSupport;
@@ -228,15 +219,32 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 				return this;
 			}
 			
+			/**
+			 * Wraps a fixed {@link PlacementComparator} via {@link PlacementComparatorFactory#of}
+			 * so it is used as-is for every packing run, ignoring any disabled attributes.
+			 */
 			public PlacementControlsBuilderFactoryBuilder withPlacementComparator(PlacementComparator placementComparator) {
-				this.placementComparator = placementComparator;
+				this.comparatorFactory = PlacementComparatorFactory.of(placementComparator);
 				return this;
 			}
 
-			public PlacementControlsBuilderFactoryBuilder withPlacementComparator(Consumer<PlacementComparatorBuilder> consumer) {
-				PlacementComparatorBuilder b = PlacementComparatorBuilder.newBuilder();
-				consumer.accept(b);
-				return withPlacementComparator(b.build());
+			/**
+			 * Configures a {@link DefaultPlacementComparatorFactory} via a consumer.
+			 * The factory is used dynamically — per-run, only constraint dimensions that
+			 * are active for that run are included. Position dimensions added via the
+			 * consumer are always included.
+			 */
+			public PlacementControlsBuilderFactoryBuilder withComparatorFactory(Consumer<DefaultPlacementComparatorFactory> consumer) {
+				DefaultPlacementComparatorFactory f = DefaultPlacementComparatorFactory.newFactory();
+				consumer.accept(f);
+				this.comparatorFactory = f;
+				return this;
+			}
+
+			/** Sets a pre-configured {@link PlacementComparatorFactory} directly. */
+			public PlacementControlsBuilderFactoryBuilder withComparatorFactory(PlacementComparatorFactory factory) {
+				this.comparatorFactory = factory;
+				return this;
 			}
 		}
 		
@@ -246,13 +254,15 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			}
 			if(placementControlsBuilderFactory == null) {
 				VolumeThenWeightBoxItemComparator boxItemComparator = new VolumeThenWeightBoxItemComparator();
-				PlacementComparator placementComparator = new VolumeWeightAreaMinZPlacementComparator();
-				
+				DefaultPlacementComparatorFactory placementFactory = DefaultPlacementComparatorFactory.newFactory();
 				if(!requireFullSupport && calculateSupport) {
-					placementComparator = new SupportDelegateComparator(placementComparator);
+					placementFactory.higherSupportIsBetter();
 				}
-
-				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementComparator, boxItemComparator, calculateSupport, requireFullSupport);
+				placementFactory.higherVolumeIsBetter()
+						.higherWeightIsBetter()
+						.lowerAreaIsBetter()
+						.lowerZIsBetter();
+				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementFactory, boxItemComparator, calculateSupport, requireFullSupport);
 			}
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();

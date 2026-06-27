@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.comparator;
 
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.comparator.placement.PlacementComparator;
 
 public class SupportDelegateComparator implements PlacementComparator {
 

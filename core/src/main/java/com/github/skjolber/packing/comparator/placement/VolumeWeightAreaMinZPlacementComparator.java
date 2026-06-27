@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.comparator;
+package com.github.skjolber.packing.comparator.placement;
 
 import com.github.skjolber.packing.api.Placement;
 

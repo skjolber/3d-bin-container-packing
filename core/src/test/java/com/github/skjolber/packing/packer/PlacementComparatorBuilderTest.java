@@ -10,24 +10,53 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.comparator.AbstractChainedPlacementComparator;
-import com.github.skjolber.packing.comparator.PlacementComparator;
-import com.github.skjolber.packing.comparator.PlacementComparatorBuilder;
+import com.github.skjolber.packing.comparator.placement.PlacementComparator;
+import com.github.skjolber.packing.comparator.placement.PlacementComparatorAttribute;
+import com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory;
+import com.github.skjolber.packing.comparator.placement.PlacementComparatorFactory;
 
 /**
- * Unit tests for {@link PlacementComparatorBuilder}.
+ * Unit tests for {@link PlacementComparatorFactory}.
  *
  * <p>Convention: {@code compare(a, b) > 0} means {@code a} is the preferred placement.
  */
 class PlacementComparatorBuilderTest {
 
 	// =========================================================================
-	// Empty builder
+	// emptyBuilder / newBuilder semantics
 	// =========================================================================
 
+	/**
+	 * {@code emptyBuilder()} has no entries — produces a no-op comparator.
+	 *
+	 * <pre>
+	 *  emptyBuilder().build() → always returns 0
+	 * </pre>
+	 */
 	@Test
 	void emptyBuilder_alwaysReturnsZero() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.emptyFactory().build();
 		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 0, 1), p(5, 5, 1, 3, 3, 3, 10))).isZero();
+	}
+
+	/**
+	 * {@code newBuilder()} pre-loads all four constraint entries in natural priority order.
+	 * Calling {@code build()} immediately produces the fused all-constraint comparator.
+	 *
+	 * <pre>
+	 *  newBuilder().build()
+	 *  → NoIdenticalHigherCountHigherWeightHigherPressureComparator
+	 *
+	 *  A: unrestricted  B: identical-only  → A preferred
+	 * </pre>
+	 */
+	@Test
+	void newBuilder_preloadsAllFourConstraintEntries_identicalIsFirst() {
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().build();
+		assertThat(cmp).isInstanceOf(
+				DefaultPlacementComparatorFactory.NoIdenticalHigherCountHigherWeightHigherPressureComparator.class);
+		assertThat(cmp.compare(pAllConstraints(false, 5, 500, 9.0),
+				pAllConstraints(true, 2, 100, 1.0))).isPositive();
 	}
 
 	// =========================================================================
@@ -49,14 +78,14 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void lowerZIsBetter_lowerZWins() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().lowerZIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().lowerZIsBetter().build();
 		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 1, 1), p(5, 5, 1, 0, 0, 5, 1))).isPositive();
 		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 5, 1), p(5, 5, 1, 0, 0, 1, 1))).isNegative();
 	}
 
 	@Test
 	void higherZIsBetter_higherZWins() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().higherZIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().higherZIsBetter().build();
 		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 5, 1), p(5, 5, 1, 0, 0, 1, 1))).isPositive();
 	}
 
@@ -80,25 +109,25 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void lowerXIsBetter() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().lowerXIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().lowerXIsBetter().build();
 		assertThat(cmp.compare(p(2, 2, 1, 0, 0, 0, 1), p(2, 2, 1, 8, 0, 0, 1))).isPositive();
 	}
 
 	@Test
 	void higherXIsBetter() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().higherXIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().higherXIsBetter().build();
 		assertThat(cmp.compare(p(2, 2, 1, 8, 0, 0, 1), p(2, 2, 1, 0, 0, 0, 1))).isPositive();
 	}
 
 	@Test
 	void lowerYIsBetter() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().lowerYIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().lowerYIsBetter().build();
 		assertThat(cmp.compare(p(2, 2, 1, 0, 0, 0, 1), p(2, 2, 1, 0, 8, 0, 1))).isPositive();
 	}
 
 	@Test
 	void higherYIsBetter() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().higherYIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().higherYIsBetter().build();
 		assertThat(cmp.compare(p(2, 2, 1, 0, 8, 0, 1), p(2, 2, 1, 0, 0, 0, 1))).isPositive();
 	}
 
@@ -122,14 +151,14 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void higherAreaIsBetter() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().higherAreaIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().higherAreaIsBetter().build();
 		assertThat(cmp.compare(p(6, 6, 2, 0, 0, 0, 1), p(3, 3, 2, 0, 0, 0, 1))).isPositive();
 		assertThat(cmp.compare(p(3, 3, 2, 0, 0, 0, 1), p(6, 6, 2, 0, 0, 0, 1))).isNegative();
 	}
 
 	@Test
 	void lowerAreaIsBetter() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().lowerAreaIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().lowerAreaIsBetter().build();
 		assertThat(cmp.compare(p(2, 2, 1, 0, 0, 0, 1), p(6, 6, 1, 0, 0, 0, 1))).isPositive();
 	}
 
@@ -153,13 +182,13 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void higherVolumeIsBetter() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().higherVolumeIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().higherVolumeIsBetter().build();
 		assertThat(cmp.compare(p(4, 4, 4, 0, 0, 0, 1), p(2, 2, 2, 0, 0, 0, 1))).isPositive();
 	}
 
 	@Test
 	void lowerVolumeIsBetter() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().lowerVolumeIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().lowerVolumeIsBetter().build();
 		assertThat(cmp.compare(p(2, 2, 2, 0, 0, 0, 1), p(4, 4, 4, 0, 0, 0, 1))).isPositive();
 	}
 
@@ -184,14 +213,14 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void higherWeightIsBetter() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().higherWeightIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().higherWeightIsBetter().build();
 		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 0, 50), p(5, 5, 1, 0, 0, 0, 5))).isPositive();
 		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 0, 5), p(5, 5, 1, 0, 0, 0, 50))).isNegative();
 	}
 
 	@Test
 	void lowerWeightIsBetter() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().lowerWeightIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().lowerWeightIsBetter().build();
 		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 0, 5), p(5, 5, 1, 0, 0, 0, 50))).isPositive();
 	}
 
@@ -217,7 +246,7 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void higherSupportIsBetter_higherRatioWins() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().higherSupportIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().higherSupportIsBetter().build();
 		assertThat(cmp.compare(ps(10, 10, 1, 90), ps(10, 10, 1, 30))).isPositive();
 		assertThat(cmp.compare(ps(10, 10, 1, 30), ps(10, 10, 1, 90))).isNegative();
 	}
@@ -242,13 +271,13 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void higherSupportIsBetter_normalisedAcrossDifferentBoxSizes() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().higherSupportIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().higherSupportIsBetter().build();
 		assertThat(cmp.compare(ps(5, 5, 1, 25), ps(10, 10, 1, 60))).isPositive(); // 1.00 > 0.60
 	}
 
 	@Test
 	void lowerSupportIsBetter_lowerRatioWins() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().lowerSupportIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().lowerSupportIsBetter().build();
 		assertThat(cmp.compare(ps(10, 10, 1, 30), ps(10, 10, 1, 90))).isPositive();
 	}
 
@@ -273,7 +302,7 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void higherMaxLoadWeightIsBetter_higherLimitWins() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().higherMaxLoadWeightIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().higherMaxLoadWeightIsBetter().build();
 		assertThat(cmp.compare(pMaxWeight(5, 5, 1, 500), pMaxWeight(5, 5, 1, 100))).isPositive();
 		assertThat(cmp.compare(pMaxWeight(5, 5, 1, 100), pMaxWeight(5, 5, 1, 500))).isNegative();
 	}
@@ -291,13 +320,13 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void higherMaxLoadWeightIsBetter_unconstrainedBeatsConstrained() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().higherMaxLoadWeightIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().higherMaxLoadWeightIsBetter().build();
 		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 0, 1), pMaxWeight(5, 5, 1, 300))).isPositive();
 	}
 
 	@Test
 	void lowerMaxLoadWeightIsBetter_lowerLimitWins() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().lowerMaxLoadWeightIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().lowerMaxLoadWeightIsBetter().build();
 		assertThat(cmp.compare(pMaxWeight(5, 5, 1, 100), pMaxWeight(5, 5, 1, 500))).isPositive();
 	}
 
@@ -322,19 +351,19 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void higherMaxLoadPressureIsBetter_higherLimitWins() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().higherMaxLoadPressureIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().higherMaxLoadPressureIsBetter().build();
 		assertThat(cmp.compare(pMaxPressure(5, 5, 1, 8.0), pMaxPressure(5, 5, 1, 2.0))).isPositive();
 	}
 
 	@Test
 	void higherMaxLoadPressureIsBetter_unconstrainedBeatsConstrained() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().higherMaxLoadPressureIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().higherMaxLoadPressureIsBetter().build();
 		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 0, 1), pMaxPressure(5, 5, 1, 5.0))).isPositive();
 	}
 
 	@Test
 	void lowerMaxLoadPressureIsBetter_lowerLimitWins() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().lowerMaxLoadPressureIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().lowerMaxLoadPressureIsBetter().build();
 		assertThat(cmp.compare(pMaxPressure(5, 5, 1, 2.0), pMaxPressure(5, 5, 1, 8.0))).isPositive();
 	}
 
@@ -361,20 +390,20 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void higherMaxLoadBoxCountIsBetter_higherLimitWins() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().higherMaxLoadBoxCountIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().higherMaxLoadBoxCountIsBetter().build();
 		assertThat(cmp.compare(pMaxCount(5, 5, 1, 5), pMaxCount(5, 5, 1, 2))).isPositive();
 		assertThat(cmp.compare(pMaxCount(5, 5, 1, 2), pMaxCount(5, 5, 1, 5))).isNegative();
 	}
 
 	@Test
 	void higherMaxLoadBoxCountIsBetter_unconstrainedBeatsConstrained() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().higherMaxLoadBoxCountIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().higherMaxLoadBoxCountIsBetter().build();
 		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 0, 1), pMaxCount(5, 5, 1, 3))).isPositive();
 	}
 
 	@Test
 	void lowerMaxLoadBoxCountIsBetter_lowerLimitWins() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().lowerMaxLoadBoxCountIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().lowerMaxLoadBoxCountIsBetter().build();
 		assertThat(cmp.compare(pMaxCount(5, 5, 1, 2), pMaxCount(5, 5, 1, 5))).isPositive();
 	}
 
@@ -399,20 +428,20 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void noIdenticalConstraintIsBetter_unrestrictedWins() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().noIdenticalConstraintIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().noIdenticalConstraintIsBetter().build();
 		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 0, 1), pIdentOnly(5, 5, 1))).isPositive();
 		assertThat(cmp.compare(pIdentOnly(5, 5, 1), p(5, 5, 1, 0, 0, 0, 1))).isNegative();
 	}
 
 	@Test
 	void noIdenticalConstraintIsBetter_bothUnrestricted_returnsZero() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().noIdenticalConstraintIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().noIdenticalConstraintIsBetter().build();
 		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 0, 1), p(3, 3, 2, 0, 0, 0, 1))).isZero();
 	}
 
 	@Test
 	void identicalConstraintIsBetter_identicalWins() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().identicalConstraintIsBetter().build();
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory().identicalConstraintIsBetter().build();
 		assertThat(cmp.compare(pIdentOnly(5, 5, 1), p(5, 5, 1, 0, 0, 0, 1))).isPositive();
 	}
 
@@ -435,7 +464,7 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void mixedChain_constraintBeforePosition_constraintDecides() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder()
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory()
 				.noIdenticalConstraintIsBetter()
 				.lowerZIsBetter()
 				.higherAreaIsBetter()
@@ -463,7 +492,7 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void mixedChain_constraintTie_positionDecides() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder()
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory()
 				.noIdenticalConstraintIsBetter()
 				.lowerZIsBetter()
 				.higherAreaIsBetter()
@@ -582,7 +611,7 @@ class PlacementComparatorBuilderTest {
 		BoxItem item = new BoxItem(Box.newBuilder()
 				.withId("plain").withSize(10, 10, 10).withWeight(1).build());
 
-		PlacementComparator cmp = PlacementComparatorBuilder.forBoxItems(List.of(item));
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.forBoxItems(List.of(item));
 
 		assertThat(cmp.compare(pMaxWeight(5, 5, 1, 100), pMaxWeight(5, 5, 1, 50))).isZero();
 	}
@@ -602,7 +631,7 @@ class PlacementComparatorBuilderTest {
 				.withId("heavy").withSize(5, 5, 5).withWeight(1)
 				.withMaxLoadWeight(100).build());
 
-		PlacementComparator cmp = PlacementComparatorBuilder.forBoxItems(List.of(item));
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.forBoxItems(List.of(item));
 
 		assertThat(cmp.compare(pMaxWeight(5, 5, 1, 200), pMaxWeight(5, 5, 1, 50))).isPositive();
 	}
@@ -614,7 +643,7 @@ class PlacementComparatorBuilderTest {
 				.withMaxLoadWeight(100).withMaxLoadPressure(5.0)
 				.withMaxLoadIdenticalBoxCount(3).build());
 
-		PlacementComparator cmp = PlacementComparatorBuilder.forBoxItems(List.of(item));
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.forBoxItems(List.of(item));
 
 		assertThat(cmp.compare(
 				pAllConstraints(false, 2, 100, 1.0),
@@ -638,7 +667,7 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void optimizedRegistry_stabilityPreset_returnsFusedType() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder()
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.emptyFactory()
 				.higherSupportIsBetter()
 				.higherVolumeIsBetter()
 				.higherWeightIsBetter()
@@ -646,9 +675,9 @@ class PlacementComparatorBuilderTest {
 				.build();
 
 		assertThat(cmp).isInstanceOf(
-				PlacementComparatorBuilder.HigherSupportHigherVolumeHigherWeightLowerZComparator.class);
+				DefaultPlacementComparatorFactory.HigherSupportHigherVolumeHigherWeightLowerZComparator.class);
 		// No inner chain needed for these four dimensions — next must be null.
-		assertThat(((AbstractChainedPlacementComparator) cmp).next).isNull();
+		assertThat(((AbstractChainedPlacementComparator) cmp).getNext()).isNull();
 	}
 
 	/**
@@ -656,10 +685,10 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void optimizedRegistry_namedPreset_sameAsFourMethodChain() {
-		PlacementComparator manual = PlacementComparatorBuilder.newBuilder()
+		PlacementComparator manual = DefaultPlacementComparatorFactory.newFactory()
 				.higherSupportIsBetter().higherVolumeIsBetter()
 				.higherWeightIsBetter().lowerZIsBetter().build();
-		PlacementComparator preset = PlacementComparatorBuilder
+		PlacementComparator preset = DefaultPlacementComparatorFactory
 				.higherSupportHigherVolumeHigherWeightLowerZ().build();
 
 		Placement a = ps(10, 10, 4, 100, 0, 0, 0, 50);
@@ -680,7 +709,7 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void optimizedRegistry_prefixMatchWithSuffix_suffixIsChainedAsNext() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder()
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.emptyFactory()
 				.higherSupportIsBetter()
 				.higherVolumeIsBetter()
 				.higherWeightIsBetter()
@@ -689,9 +718,9 @@ class PlacementComparatorBuilderTest {
 				.build();
 
 		assertThat(cmp).isInstanceOf(
-				PlacementComparatorBuilder.HigherSupportHigherVolumeHigherWeightLowerZComparator.class);
-		assertThat(((AbstractChainedPlacementComparator) cmp).next)
-				.isInstanceOf(PlacementComparatorBuilder.LowerXComparator.class);
+				DefaultPlacementComparatorFactory.HigherSupportHigherVolumeHigherWeightLowerZComparator.class);
+		assertThat(((AbstractChainedPlacementComparator) cmp).getNext())
+				.isInstanceOf(DefaultPlacementComparatorFactory.LowerXComparator.class);
 	}
 
 	/**
@@ -711,10 +740,10 @@ class PlacementComparatorBuilderTest {
 				.withMaxLoadWeight(200).withMaxLoadPressure(5.0)
 				.withMaxLoadIdenticalBoxCount(3).build());
 
-		PlacementComparator cmp = PlacementComparatorBuilder.forBoxItems(List.of(item));
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.forBoxItems(List.of(item));
 
 		assertThat(cmp).isInstanceOf(
-				PlacementComparatorBuilder.NoIdenticalHigherCountHigherWeightHigherPressureComparator.class);
+				DefaultPlacementComparatorFactory.NoIdenticalHigherCountHigherWeightHigherPressureComparator.class);
 	}
 
 	/**
@@ -728,14 +757,14 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void optimizedRegistry_noMatch_returnsPlainChain() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder()
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.emptyFactory()
 				.lowerZIsBetter()
 				.higherAreaIsBetter()
 				.build();
 
-		assertThat(cmp).isInstanceOf(PlacementComparatorBuilder.LowerZComparator.class);
-		assertThat(((AbstractChainedPlacementComparator) cmp).next)
-				.isInstanceOf(PlacementComparatorBuilder.HigherAreaComparator.class);
+		assertThat(cmp).isInstanceOf(DefaultPlacementComparatorFactory.LowerZComparator.class);
+		assertThat(((AbstractChainedPlacementComparator) cmp).getNext())
+				.isInstanceOf(DefaultPlacementComparatorFactory.HigherAreaComparator.class);
 	}
 
 	// =========================================================================
@@ -757,7 +786,7 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void fused_stability_supportDecides() {
-		PlacementComparator cmp = PlacementComparatorBuilder
+		PlacementComparator cmp = DefaultPlacementComparatorFactory
 				.higherSupportHigherVolumeHigherWeightLowerZ().build();
 
 		Placement a = ps(10, 10, 2, 100, 0, 0, 5, 1);   // support=100%, vol=200, w=1,  z=5
@@ -781,7 +810,7 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void fused_stability_volumeDecides() {
-		PlacementComparator cmp = PlacementComparatorBuilder
+		PlacementComparator cmp = DefaultPlacementComparatorFactory
 				.higherSupportHigherVolumeHigherWeightLowerZ().build();
 
 		Placement a = ps(10, 10, 3, 100, 0, 0, 3, 1);  // vol=300, w=1,  z=3
@@ -802,7 +831,7 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void fused_stability_weightDecides() {
-		PlacementComparator cmp = PlacementComparatorBuilder
+		PlacementComparator cmp = DefaultPlacementComparatorFactory
 				.higherSupportHigherVolumeHigherWeightLowerZ().build();
 
 		Placement a = ps(10, 10, 2, 200, 0, 0, 5, 80); // vol=200, w=80, z=5
@@ -824,7 +853,7 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void fused_stability_zDecides() {
-		PlacementComparator cmp = PlacementComparatorBuilder
+		PlacementComparator cmp = DefaultPlacementComparatorFactory
 				.higherSupportHigherVolumeHigherWeightLowerZ().build();
 
 		Placement a = ps(10, 10, 2, 200, 0, 0, 1, 10); // z=1
@@ -847,7 +876,7 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void fused_constraintChain_identicalDecides() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder()
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory()
 				.noIdenticalConstraintIsBetter()
 				.higherMaxLoadBoxCountIsBetter()
 				.higherMaxLoadWeightIsBetter()
@@ -872,7 +901,7 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void fused_constraintChain_countDecides() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder()
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory()
 				.noIdenticalConstraintIsBetter()
 				.higherMaxLoadBoxCountIsBetter()
 				.higherMaxLoadWeightIsBetter()
@@ -887,7 +916,7 @@ class PlacementComparatorBuilderTest {
 	/** Weight decides when identical and count are tied. */
 	@Test
 	void fused_constraintChain_weightDecides() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder()
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory()
 				.noIdenticalConstraintIsBetter()
 				.higherMaxLoadBoxCountIsBetter()
 				.higherMaxLoadWeightIsBetter()
@@ -902,7 +931,7 @@ class PlacementComparatorBuilderTest {
 	/** Pressure decides when all other constraint dimensions are tied. */
 	@Test
 	void fused_constraintChain_pressureDecides() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder()
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory()
 				.noIdenticalConstraintIsBetter()
 				.higherMaxLoadBoxCountIsBetter()
 				.higherMaxLoadWeightIsBetter()
@@ -920,27 +949,254 @@ class PlacementComparatorBuilderTest {
 
 	@Test
 	void singleDimension_z_returnsCorrectSubclass() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder().lowerZIsBetter().build();
-		assertThat(cmp).isInstanceOf(PlacementComparatorBuilder.LowerZComparator.class);
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.emptyFactory().lowerZIsBetter().build();
+		assertThat(cmp).isInstanceOf(DefaultPlacementComparatorFactory.LowerZComparator.class);
 	}
 
 	@Test
 	void singleDimension_weight_returnsCorrectSubclass() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder()
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.emptyFactory()
 				.higherMaxLoadWeightIsBetter().build();
-		assertThat(cmp).isInstanceOf(PlacementComparatorBuilder.HigherMaxLoadWeightComparator.class);
+		assertThat(cmp).isInstanceOf(DefaultPlacementComparatorFactory.HigherMaxLoadWeightComparator.class);
 	}
 
 	@Test
 	void chain_outerIsFirstDimension_innerIsSecond() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder()
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.emptyFactory()
 				.noIdenticalConstraintIsBetter()
 				.lowerZIsBetter()
 				.build();
 
-		assertThat(cmp).isInstanceOf(PlacementComparatorBuilder.NoIdenticalConstraintComparator.class);
-		assertThat(((AbstractChainedPlacementComparator) cmp).next)
-				.isInstanceOf(PlacementComparatorBuilder.LowerZComparator.class);
+		assertThat(cmp).isInstanceOf(DefaultPlacementComparatorFactory.NoIdenticalConstraintComparator.class);
+		assertThat(((AbstractChainedPlacementComparator) cmp).getNext())
+				.isInstanceOf(DefaultPlacementComparatorFactory.LowerZComparator.class);
+	}
+
+	// =========================================================================
+	// withConstraints() — clone with active constraint flags
+	// =========================================================================
+
+	/**
+	 * {@code withConstraints(all false)} keeps only position entries (none here), producing noOp.
+	 *
+	 * <pre>
+	 *  newBuilder()                   ← pre-loads 4 constraint entries
+	 *  .withConstraints(false, false, false, false)
+	 *  → no constraint entries in clone → noOp
+	 *
+	 *  A: maxWeight=500  B: maxWeight=100  → compare returns 0
+	 * </pre>
+	 */
+	@Test
+	void withConstraints_allFalse_producesNoOp() {
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory()
+				.withConstraints(false, false, false, false).build();
+		assertThat(cmp.compare(pMaxWeight(5, 5, 1, 500), pMaxWeight(5, 5, 1, 100))).isZero();
+	}
+
+	/**
+	 * {@code withConstraints(weight=true, rest=false)} retains only the weight entry.
+	 *
+	 * <pre>
+	 *  newBuilder()                          ← pre-loads [identical, count, weight, pressure]
+	 *  .withConstraints(true, false, false, false)
+	 *  → clone contains only weight entry
+	 *
+	 *  A: maxWeight=500  B: maxWeight=100  → A preferred (weight active)
+	 *  A: maxPressure=9.0  B: maxPressure=0.5  → tie (pressure not active)
+	 * </pre>
+	 */
+	@Test
+	void withConstraints_weightOnly_otherConstraintsExcluded() {
+		DefaultPlacementComparatorFactory template = DefaultPlacementComparatorFactory.newFactory();
+		PlacementComparator cmp = template.withConstraints(true, false, false, false).build();
+
+		assertThat(cmp.compare(pMaxWeight(5, 5, 1, 500), pMaxWeight(5, 5, 1, 100))).isPositive();
+		assertThat(cmp.compare(pMaxPressure(5, 5, 1, 9.0), pMaxPressure(5, 5, 1, 0.5))).isZero();
+	}
+
+	/**
+	 * {@code withConstraints} preserves position entries regardless of flags.
+	 *
+	 * <pre>
+	 *  Template: newBuilder() + lowerZIsBetter
+	 *            entries: [identical, count, weight, pressure, lowerZ]
+	 *
+	 *  withConstraints(false, false, false, false)
+	 *  → clone: [lowerZ]   (position entries always included)
+	 *
+	 *  A: z=1   B: z=8  → z decides (constraint entries absent but position fires)
+	 * </pre>
+	 */
+	@Test
+	void withConstraints_positionEntriesAlwaysIncluded() {
+		DefaultPlacementComparatorFactory template = DefaultPlacementComparatorFactory.newFactory().lowerZIsBetter();
+		PlacementComparator cmp = template.withConstraints(false, false, false, false).build();
+
+		assertThat(cmp).isInstanceOf(DefaultPlacementComparatorFactory.LowerZComparator.class);
+		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 1, 1), p(5, 5, 1, 0, 0, 8, 1))).isPositive();
+	}
+
+	/**
+	 * {@code withConstraints} produces an independent clone; modifying the clone does not
+	 * affect the template and vice-versa.
+	 *
+	 * <pre>
+	 *  Template: newBuilder()  (4 constraint entries)
+	 *  Clone A:  withConstraints(weight=true, rest=false)  → [weight]
+	 *  Clone B:  withConstraints(count=true,  rest=false)  → [count]
+	 *  Modifying clone A does not affect clone B.
+	 * </pre>
+	 */
+	@Test
+	void withConstraints_returnsIndependentClone() {
+		DefaultPlacementComparatorFactory template = DefaultPlacementComparatorFactory.newFactory();
+		DefaultPlacementComparatorFactory cloneA = template.withConstraints(true, false, false, false);
+		DefaultPlacementComparatorFactory cloneB = template.withConstraints(false, false, true, false);
+
+		// Append a position dim to clone A — must not affect clone B
+		cloneA.lowerZIsBetter();
+
+		PlacementComparator cmpA = cloneA.build();
+		PlacementComparator cmpB = cloneB.build();
+
+		// cmpA has weight + lowerZ; count tie → z decides
+		assertThat(cmpA.compare(p(5, 5, 1, 0, 0, 1, 1), p(5, 5, 1, 0, 0, 8, 1))).isPositive();
+		// cmpB has only count; z does NOT influence it
+		assertThat(cmpB.compare(pMaxCount(5, 5, 1, 5), pMaxCount(5, 5, 1, 1))).isPositive();
+		assertThat(cmpB.compare(p(5, 5, 1, 0, 0, 1, 1), p(5, 5, 1, 0, 0, 8, 1))).isZero();
+	}
+
+	// =========================================================================
+	// withoutConstraintType() — remove a constraint in-place
+	// =========================================================================
+
+	/**
+	 * {@code withoutConstraintType(WEIGHT)} removes the weight entry from the builder.
+	 *
+	 * <pre>
+	 *  newBuilder()               ← pre-loads [identical, count, weight, pressure]
+	 *  .withoutAttribute(WEIGHT)
+	 *  → builder contains [identical, count, pressure]
+	 *
+	 *  A: maxWeight=500  B: maxWeight=100  → tie (weight absent)
+	 *  A: maxCount=10    B: maxCount=2     → A preferred (count still active)
+	 * </pre>
+	 */
+	@Test
+	void withoutConstraintType_removesWeightEntry() {
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory()
+				.withoutAttribute(PlacementComparatorAttribute.HIGHER_MAX_LOAD_WEIGHT)
+				.build();
+
+		assertThat(cmp.compare(pMaxWeight(5, 5, 1, 500), pMaxWeight(5, 5, 1, 100))).isZero();
+		assertThat(cmp.compare(pMaxCount(5, 5, 1, 10), pMaxCount(5, 5, 1, 2))).isPositive();
+	}
+
+	/**
+	 * Removing all constraint types makes the builder position-only.
+	 *
+	 * <pre>
+	 *  newBuilder()
+	 *  .withoutAttribute(IDENTICAL)
+	 *  .withoutAttribute(COUNT)
+	 *  .withoutAttribute(WEIGHT)
+	 *  .withoutAttribute(PRESSURE)
+	 *  .lowerZIsBetter()
+	 *  → only lowerZ remains
+	 *
+	 *  A: z=1   B: z=8  → z decides
+	 * </pre>
+	 */
+	@Test
+	void withoutConstraintType_allRemoved_positionDimFires() {
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory()
+				.withoutAttribute(PlacementComparatorAttribute.NO_IDENTICAL_CONSTRAINT)
+				.withoutAttribute(PlacementComparatorAttribute.HIGHER_MAX_LOAD_BOX_COUNT)
+				.withoutAttribute(PlacementComparatorAttribute.HIGHER_MAX_LOAD_WEIGHT)
+				.withoutAttribute(PlacementComparatorAttribute.HIGHER_MAX_LOAD_PRESSURE)
+				.lowerZIsBetter()
+				.build();
+
+		assertThat(cmp).isInstanceOf(DefaultPlacementComparatorFactory.LowerZComparator.class);
+		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 1, 1), p(5, 5, 1, 0, 0, 8, 1))).isPositive();
+	}
+
+	// =========================================================================
+	// Constraint methods — replaceOrAdd semantics
+	// =========================================================================
+
+	/**
+	 * Calling {@code higherMaxLoadWeightIsBetter()} on {@code newBuilder()} replaces the
+	 * pre-loaded weight entry in-place, preserving priority order.
+	 *
+	 * <pre>
+	 *  newBuilder()    → entries: [identical, count, weight(higher), pressure]
+	 *  .higherMaxLoadWeightIsBetter()  → replaceOrAdd: same entry, order unchanged
+	 *  .lowerMaxLoadWeightIsBetter()   → replaceOrAdd: REPLACES weight entry in-place
+	 *
+	 *  After lowerMaxLoadWeightIsBetter():
+	 *  entries: [identical, count, weight(lower), pressure]
+	 *
+	 *  A: maxWeight=100 (smaller → lower is better)   B: maxWeight=500
+	 *  Expected: A preferred (lower weight is now better)
+	 * </pre>
+	 */
+	@Test
+	void constraintMethod_replaceOrAdd_replacesExistingEntryInPlace() {
+		// Default is higherMaxLoadWeightIsBetter; switch to lower
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory()
+				.lowerMaxLoadWeightIsBetter()        // replaces the default WEIGHT entry in-place
+				.withConstraints(true, false, false, false)
+				.build();
+
+		assertThat(cmp.compare(pMaxWeight(5, 5, 1, 100), pMaxWeight(5, 5, 1, 500))).isPositive();
+	}
+
+	/**
+	 * Calling a constraint method on {@code emptyBuilder()} appends the entry (add semantics).
+	 *
+	 * <pre>
+	 *  emptyBuilder() has no entries.
+	 *  .higherMaxLoadBoxCountIsBetter() → appends COUNT entry
+	 *  .higherMaxLoadWeightIsBetter()   → appends WEIGHT entry
+	 *
+	 *  Both count and weight are present; count fires first.
+	 *
+	 *  A: count=5, weight=50   B: count=2, weight=500  → A preferred (count decides)
+	 * </pre>
+	 */
+	@Test
+	void constraintMethod_replaceOrAdd_appendsWhenNotPresent() {
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.emptyFactory()
+				.higherMaxLoadBoxCountIsBetter()
+				.higherMaxLoadWeightIsBetter()
+				.build();
+
+		assertThat(cmp.compare(
+				pAllConstraints(false, 5, 50, 1.0),
+				pAllConstraints(false, 2, 500, 9.0))).isPositive(); // count decides
+	}
+
+	/**
+	 * Disable flags do not affect position dimension methods.
+	 *
+	 * <pre>
+	 *  withConstraints(false, false, false, false) removes all constraint entries;
+	 *  lowerZIsBetter is a position entry, always included.
+	 *
+	 *  A: z=0   B: z=5  → z decides (position dims unaffected by constraint filtering)
+	 * </pre>
+	 */
+	@Test
+	void withConstraints_doesNotAffectPositionDimensions() {
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory()
+				.lowerZIsBetter()
+				.withConstraints(false, false, false, false)
+				.build();
+
+		assertThat(cmp).isInstanceOf(DefaultPlacementComparatorFactory.LowerZComparator.class);
+		assertThat(cmp.compare(p(5, 5, 1, 0, 0, 0, 1), p(5, 5, 1, 0, 0, 5, 1))).isPositive();
 	}
 
 	// =========================================================================
@@ -949,7 +1205,7 @@ class PlacementComparatorBuilderTest {
 
 	@Test
 	void identicalPlacements_returnZero() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder()
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory()
 				.lowerZIsBetter().higherAreaIsBetter().higherMaxLoadWeightIsBetter().build();
 		Placement pp = p(5, 5, 1, 0, 0, 2, 10);
 		assertThat(cmp.compare(pp, pp)).isZero();
@@ -957,7 +1213,7 @@ class PlacementComparatorBuilderTest {
 
 	@Test
 	void antisymmetry() {
-		PlacementComparator cmp = PlacementComparatorBuilder.newBuilder()
+		PlacementComparator cmp = DefaultPlacementComparatorFactory.newFactory()
 				.noIdenticalConstraintIsBetter().lowerZIsBetter().higherAreaIsBetter().build();
 		Placement a = pAllConstraints(false, 5, 300, 7.0);
 		Placement b = pAllConstraints(true,  2,  50, 1.5);
@@ -969,7 +1225,7 @@ class PlacementComparatorBuilderTest {
 	// =========================================================================
 
 	private static PlacementComparator constraintChain() {
-		return PlacementComparatorBuilder.newBuilder()
+		return DefaultPlacementComparatorFactory.newFactory()
 				.noIdenticalConstraintIsBetter()
 				.higherMaxLoadBoxCountIsBetter()
 				.higherMaxLoadWeightIsBetter()
@@ -978,7 +1234,7 @@ class PlacementComparatorBuilderTest {
 	}
 
 	private static PlacementComparator positionChain() {
-		return PlacementComparatorBuilder.newBuilder()
+		return DefaultPlacementComparatorFactory.emptyFactory()
 				.lowerZIsBetter()
 				.higherSupportIsBetter()
 				.higherAreaIsBetter()

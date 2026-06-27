@@ -10,13 +10,9 @@ import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemComparator;
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemGroupComparator;
-import com.github.skjolber.packing.comparator.LargestAreaPlacementComparator;
-import com.github.skjolber.packing.comparator.LowerZDelegatePlacementComparator;
-import com.github.skjolber.packing.comparator.PlacementComparator;
-import com.github.skjolber.packing.comparator.SupportDelegateComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
-import com.github.skjolber.packing.comparator.VolumeWeightAreaMinZPlacementComparator;
+import com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFactory;
@@ -48,23 +44,27 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			}
 			if(placementControlsBuilderFactory == null) {
 				VolumeThenWeightBoxItemComparator boxItemComparator = new VolumeThenWeightBoxItemComparator();
-				PlacementComparator placementComparator = new VolumeWeightAreaMinZPlacementComparator();
-				
+				DefaultPlacementComparatorFactory placementFactory = DefaultPlacementComparatorFactory.newFactory();
 				if(!requireFullSupport && calculateSupport) {
-					placementComparator = new SupportDelegateComparator(placementComparator);
+					placementFactory.higherSupportIsBetter();
 				}
-				
-				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementComparator, boxItemComparator, calculateSupport, requireFullSupport);
+				placementFactory.higherVolumeIsBetter()
+						.higherWeightIsBetter()
+						.lowerAreaIsBetter()
+						.lowerZIsBetter();
+				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementFactory, boxItemComparator, calculateSupport, requireFullSupport);
 			}
 			if(firstPlacementControlsBuilderFactory == null) {
 				LargestAreaBoxItemComparator firstBoxItemComparator = new LargestAreaBoxItemComparator();
-				PlacementComparator firstPlacementComparator = new LowerZDelegatePlacementComparator(new LargestAreaPlacementComparator());
-				
+				DefaultPlacementComparatorFactory firstFactory = DefaultPlacementComparatorFactory.newFactory();
 				if(!requireFullSupport && calculateSupport) {
-					firstPlacementComparator = new SupportDelegateComparator(firstPlacementComparator);
+					firstFactory.higherSupportIsBetter();
 				}
-				
-				firstPlacementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(firstPlacementComparator, firstBoxItemComparator, calculateSupport, requireFullSupport);
+				firstFactory.lowerZIsBetter()
+						.higherAreaIsBetter()
+						.higherVolumeIsBetter()
+						.higherWeightIsBetter();
+				firstPlacementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(firstFactory, firstBoxItemComparator, calculateSupport, requireFullSupport);
 			}
 			return new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, firstBoxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
 		}
