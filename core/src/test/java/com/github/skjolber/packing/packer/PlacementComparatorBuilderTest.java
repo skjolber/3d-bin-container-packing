@@ -1008,7 +1008,7 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void withConstraints_weightOnly_otherConstraintsExcluded() {
-		DefaultPlacementComparatorFactory template = DefaultPlacementComparatorFactory.newFactory();
+		DefaultPlacementComparatorFactory.Builder template = DefaultPlacementComparatorFactory.newFactory();
 		PlacementComparator cmp = template.withConstraints(true, false, false, false).build();
 
 		assertThat(cmp.compare(pMaxWeight(5, 5, 1, 500), pMaxWeight(5, 5, 1, 100))).isPositive();
@@ -1030,7 +1030,7 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void withConstraints_positionEntriesAlwaysIncluded() {
-		DefaultPlacementComparatorFactory template = DefaultPlacementComparatorFactory.newFactory().lowerZIsBetter();
+		DefaultPlacementComparatorFactory.Builder template = DefaultPlacementComparatorFactory.newFactory().lowerZIsBetter();
 		PlacementComparator cmp = template.withConstraints(false, false, false, false).build();
 
 		assertThat(cmp).isInstanceOf(DefaultPlacementComparatorFactory.LowerZComparator.class);
@@ -1050,9 +1050,9 @@ class PlacementComparatorBuilderTest {
 	 */
 	@Test
 	void withConstraints_returnsIndependentClone() {
-		DefaultPlacementComparatorFactory template = DefaultPlacementComparatorFactory.newFactory();
-		DefaultPlacementComparatorFactory cloneA = template.withConstraints(true, false, false, false);
-		DefaultPlacementComparatorFactory cloneB = template.withConstraints(false, false, true, false);
+		DefaultPlacementComparatorFactory.Builder template = DefaultPlacementComparatorFactory.newFactory();
+		DefaultPlacementComparatorFactory.Builder cloneA = template.withConstraints(true, false, false, false);
+		DefaultPlacementComparatorFactory.Builder cloneB = template.withConstraints(false, false, true, false);
 
 		// Append a position dim to clone A — must not affect clone B
 		cloneA.lowerZIsBetter();

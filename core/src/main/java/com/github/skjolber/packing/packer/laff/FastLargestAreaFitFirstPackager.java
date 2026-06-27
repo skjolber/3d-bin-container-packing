@@ -43,7 +43,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			}
 			if(firstPlacementControlsBuilderFactory == null) {
 				LargestAreaBoxItemComparator firstBoxItemComparator = new LargestAreaBoxItemComparator();
-				DefaultPlacementComparatorFactory firstFactory = DefaultPlacementComparatorFactory.newFactory();
+				DefaultPlacementComparatorFactory.Builder firstFactory = DefaultPlacementComparatorFactory.newFactory();
 				if(!requireFullSupport && calculateSupport) {
 					firstFactory.higherSupportIsBetter();
 				}
@@ -55,7 +55,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			}
 			if(placementControlsBuilderFactory == null) {
 				VolumeThenWeightBoxItemComparator boxItemComparator = new VolumeThenWeightBoxItemComparator();
-				DefaultPlacementComparatorFactory placementFactory = DefaultPlacementComparatorFactory.newFactory();
+				DefaultPlacementComparatorFactory.Builder placementFactory = DefaultPlacementComparatorFactory.newFactory();
 				if(!requireFullSupport && calculateSupport) {
 					placementFactory.higherSupportIsBetter();
 				}

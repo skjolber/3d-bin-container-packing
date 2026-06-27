@@ -229,20 +229,20 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			}
 
 			/**
-			 * Configures a {@link DefaultPlacementComparatorFactory} via a consumer.
+			 * Configures a {@link DefaultPlacementComparatorFactory.Builder} via a consumer.
 			 * The factory is used dynamically — per-run, only constraint dimensions that
 			 * are active for that run are included. Position dimensions added via the
 			 * consumer are always included.
 			 */
-			public PlacementControlsBuilderFactoryBuilder withComparatorFactory(Consumer<DefaultPlacementComparatorFactory> consumer) {
-				DefaultPlacementComparatorFactory f = DefaultPlacementComparatorFactory.newFactory();
+			public PlacementControlsBuilderFactoryBuilder withPlacementComparatorFactory(Consumer<DefaultPlacementComparatorFactory.Builder> consumer) {
+				DefaultPlacementComparatorFactory.Builder f = DefaultPlacementComparatorFactory.newFactory();
 				consumer.accept(f);
 				this.comparatorFactory = f;
 				return this;
 			}
 
 			/** Sets a pre-configured {@link PlacementComparatorFactory} directly. */
-			public PlacementControlsBuilderFactoryBuilder withComparatorFactory(PlacementComparatorFactory factory) {
+			public PlacementControlsBuilderFactoryBuilder withPlacementComparatorFactory(PlacementComparatorFactory factory) {
 				this.comparatorFactory = factory;
 				return this;
 			}
@@ -254,7 +254,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			}
 			if(placementControlsBuilderFactory == null) {
 				VolumeThenWeightBoxItemComparator boxItemComparator = new VolumeThenWeightBoxItemComparator();
-				DefaultPlacementComparatorFactory placementFactory = DefaultPlacementComparatorFactory.newFactory();
+				DefaultPlacementComparatorFactory.Builder placementFactory = DefaultPlacementComparatorFactory.newFactory();
 				if(!requireFullSupport && calculateSupport) {
 					placementFactory.higherSupportIsBetter();
 				}

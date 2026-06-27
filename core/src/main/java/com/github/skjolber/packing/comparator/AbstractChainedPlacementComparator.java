@@ -16,9 +16,16 @@ import com.github.skjolber.packing.comparator.placement.PlacementComparator;
 public abstract class AbstractChainedPlacementComparator implements PlacementComparator {
 
 	/** The next comparator in the chain, or {@code null} if this is the last step. */
-	protected final PlacementComparator next;
+	protected PlacementComparator next;
+
+	protected AbstractChainedPlacementComparator() {}
 
 	protected AbstractChainedPlacementComparator(PlacementComparator next) {
+		this.next = next;
+	}
+
+	/** Sets the next comparator in the chain; used during factory build to wire the suffix. */
+	public void linkNext(PlacementComparator next) {
 		this.next = next;
 	}
 

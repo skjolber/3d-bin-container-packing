@@ -36,7 +36,7 @@ class PlacementComparatorBuilderFactoryTest {
 	 */
 	@Test
 	void allEnabled_allActive_identicalIsDecisive() {
-		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().build();
+		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().compile();
 		PlacementComparator cmp = factory.create(true, true, true, true);
 
 		assertThat(cmp.compare(pUnrestricted(), pIdentOnly())).isPositive();
@@ -55,7 +55,7 @@ class PlacementComparatorBuilderFactoryTest {
 	 */
 	@Test
 	void allEnabled_allActive_countIsDecisiveAfterIdentical() {
-		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().build();
+		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().compile();
 		PlacementComparator cmp = factory.create(true, true, true, true);
 
 		assertThat(cmp.compare(pCount(8), pCount(2))).isPositive();
@@ -73,7 +73,7 @@ class PlacementComparatorBuilderFactoryTest {
 	 */
 	@Test
 	void allEnabled_allActive_weightIsDecisiveAfterCount() {
-		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().build();
+		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().compile();
 		PlacementComparator cmp = factory.create(true, true, true, true);
 
 		assertThat(cmp.compare(pWeight(500), pWeight(100))).isPositive();
@@ -91,7 +91,7 @@ class PlacementComparatorBuilderFactoryTest {
 	 */
 	@Test
 	void allEnabled_allActive_pressureIsLastConstraintPriority() {
-		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().build();
+		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().compile();
 		PlacementComparator cmp = factory.create(true, true, true, true);
 
 		assertThat(cmp.compare(pPressure(8.0), pPressure(1.5))).isPositive();
@@ -115,7 +115,7 @@ class PlacementComparatorBuilderFactoryTest {
 	 */
 	@Test
 	void activeWeight_false_weightNotCompared() {
-		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().build();
+		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().compile();
 		PlacementComparator cmp = factory.create(false, false, false, false);
 
 		assertThat(cmp.compare(pWeight(500), pWeight(100))).isZero();
@@ -136,7 +136,7 @@ class PlacementComparatorBuilderFactoryTest {
 	 */
 	@Test
 	void onlyWeightActive_weightsCompared_pressureIsNotCompared() {
-		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().build();
+		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().compile();
 		PlacementComparator cmp = factory.create(true, false, false, false);
 
 		assertThat(cmp.compare(pWeight(500), pWeight(100))).isPositive();
@@ -162,7 +162,7 @@ class PlacementComparatorBuilderFactoryTest {
 	void factoryPressureDisabled_pressureNotComparedEvenIfActive() {
 		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder()
 				.withPressureEnabled(false)
-				.build();
+				.compile();
 		PlacementComparator cmp = factory.create(false, true, false, false);
 
 		assertThat(cmp.compare(pPressure(9.0), pPressure(0.5))).isZero();
@@ -186,7 +186,7 @@ class PlacementComparatorBuilderFactoryTest {
 	void factoryWeightDisabled_countDecides() {
 		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder()
 				.withWeightEnabled(false)
-				.build();
+				.compile();
 		PlacementComparator cmp = factory.create(true, false, true, false);
 
 		assertThat(cmp.compare(pCount(10), pCount(2))).isPositive();
@@ -208,7 +208,7 @@ class PlacementComparatorBuilderFactoryTest {
 				.withPressureEnabled(false)
 				.withCountEnabled(false)
 				.withIdenticalEnabled(false)
-				.build();
+				.compile();
 		PlacementComparator cmp = factory.create(true, true, true, true);
 
 		assertThat(cmp.compare(pWeight(999), pWeight(1))).isZero();
@@ -231,7 +231,7 @@ class PlacementComparatorBuilderFactoryTest {
 	void factoryIdenticalDisabled_identicalNotCompared() {
 		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder()
 				.withIdenticalEnabled(false)
-				.build();
+				.compile();
 		PlacementComparator cmp = factory.create(false, false, false, true);
 
 		assertThat(cmp.compare(pUnrestricted(), pIdentOnly())).isZero();
@@ -261,7 +261,7 @@ class PlacementComparatorBuilderFactoryTest {
 	void positionDimensions_tiebreakOnZ() {
 		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder()
 				.withPositionDimensions(b -> b.lowerZIsBetter())
-				.build();
+				.compile();
 		PlacementComparator cmp = factory.create(false, false, false, false);
 
 		assertThat(cmp.compare(pAtZ(1), pAtZ(5))).isPositive();
@@ -284,7 +284,7 @@ class PlacementComparatorBuilderFactoryTest {
 	void positionDimensions_constraintBeatsPosition() {
 		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder()
 				.withPositionDimensions(b -> b.lowerZIsBetter())
-				.build();
+				.compile();
 		PlacementComparator cmp = factory.create(true, false, false, false);
 
 		// A: weight=500, z=10   B: weight=100, z=0 → weight decides, A wins
@@ -306,7 +306,7 @@ class PlacementComparatorBuilderFactoryTest {
 	void positionDimensions_firesOnConstraintTie() {
 		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder()
 				.withPositionDimensions(b -> b.lowerZIsBetter())
-				.build();
+				.compile();
 		PlacementComparator cmp = factory.create(true, false, false, false);
 
 		assertThat(cmp.compare(pWeightAtZ(300, 1), pWeightAtZ(300, 8))).isPositive();
@@ -331,7 +331,7 @@ class PlacementComparatorBuilderFactoryTest {
 	void loadAwarePlacementControlsBuilder_usesFactory_weightOnly() {
 		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder()
 				.withPositionDimensions(b -> b.lowerZIsBetter())
-				.build();
+				.compile();
 
 		LoadAwarePlacementControlsBuilder builder = new LoadAwarePlacementControlsBuilder()
 				.withPlacementComparatorBuilderFactory(factory);
@@ -355,7 +355,7 @@ class PlacementComparatorBuilderFactoryTest {
 	void loadAwarePlacementControlsBuilder_noConstraintsActive_positionOnly() {
 		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder()
 				.withPositionDimensions(b -> b.lowerZIsBetter())
-				.build();
+				.compile();
 
 		LoadAwarePlacementControlsBuilder builder = new LoadAwarePlacementControlsBuilder()
 				.withPlacementComparatorBuilderFactory(factory);
@@ -404,7 +404,7 @@ class PlacementComparatorBuilderFactoryTest {
 	 */
 	@Test
 	void createBuilder_sameBehaviourAsCreate() {
-		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().build();
+		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().compile();
 
 		PlacementComparator fromCreate  = factory.create(true, false, false, false);
 		PlacementComparator fromBuilder = factory.createBuilder(true, false, false, false).build();
@@ -430,7 +430,7 @@ class PlacementComparatorBuilderFactoryTest {
 	void createBuilder_callerAppendsExtraDim_firesAsExpected() {
 		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder()
 				.withPositionDimensions(b -> b.lowerZIsBetter())
-				.build();
+				.compile();
 
 		PlacementComparator cmp = factory.createBuilder(true, false, false, false)
 				.higherAreaIsBetter()
@@ -459,7 +459,7 @@ class PlacementComparatorBuilderFactoryTest {
 	void createBuilder_disabledDimAbsentFromTemplate_notIncludedInClone() {
 		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder()
 				.withPressureEnabled(false)
-				.build();
+				.compile();
 
 		PlacementComparator cmp = factory.createBuilder(false, true, false, false).build();
 
@@ -479,7 +479,7 @@ class PlacementComparatorBuilderFactoryTest {
 	void createBuilder_disabledDimAbsentFromTemplate_callerCanAddExplicitly() {
 		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder()
 				.withPressureEnabled(false)
-				.build();
+				.compile();
 
 		PlacementComparator cmp = factory.createBuilder(false, true, false, false)
 				.higherMaxLoadPressureIsBetter()  // caller explicitly adds it back
@@ -503,7 +503,7 @@ class PlacementComparatorBuilderFactoryTest {
 	 */
 	@Test
 	void factory_calledRepeatedly_independentComparatorsPerCall() {
-		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().build();
+		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder().compile();
 
 		PlacementComparator withWeight    = factory.create(true,  false, false, false);
 		PlacementComparator withoutWeight = factory.create(false, false, false, false);
