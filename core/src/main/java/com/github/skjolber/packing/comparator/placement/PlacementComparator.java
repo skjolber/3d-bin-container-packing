@@ -13,9 +13,7 @@ import com.github.skjolber.packing.api.Placement;
  * {@link com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory}
  * for comparators based on load-constraint limits (max weight, pressure, box count,
  * identical-only restriction) and position / physical dimensions (x/y/z, area, volume, weight,
- * support ratio). Use
- * {@link CompositePlacementComparator} to combine two
- * {@code PlacementComparator} instances.
+ * support ratio). 
  *
  * <p>To wrap an existing {@link Comparator}&lt;{@link Placement}&gt; use {@link #of(Comparator)}.
  */

@@ -455,7 +455,6 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	 * Mutable builder that configures which comparison dimensions are included.
 	 *
 	 * <p>Returned by {@link #newFactory()}, {@link #newBuilder()}, and {@link #emptyFactory()}.
-	 * Also returned by {@link DefaultPlacementComparatorFactory#createBuilder(boolean, boolean, boolean, boolean)}.
 	 *
 	 * <p>Call {@link #compile()} to obtain an immutable {@link DefaultPlacementComparatorFactory}
 	 * that can be used repeatedly as a template (calling {@code create()} or {@code createBuilder()}
