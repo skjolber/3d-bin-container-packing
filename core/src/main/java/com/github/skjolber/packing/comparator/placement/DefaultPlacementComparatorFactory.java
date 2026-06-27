@@ -322,28 +322,6 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	}
 
 	/**
-	 * Returns a {@link Builder} pre-loaded with entries filtered for the given constraint profile.
-	 * The caller may append additional dimensions before calling {@link Builder#build()}.
-	 *
-	 * @param weight    include weight entry if present in this factory
-	 * @param pressure  include pressure entry if present
-	 * @param count     include count entry if present
-	 * @param identical include identical entry if present
-	 * @return a mutable {@link Builder} initialized from this factory's filtered entries
-	 */
-	public Builder createBuilder(boolean weight, boolean pressure, boolean count, boolean identical) {
-		Set<String> available = buildAvailableSet(weight, pressure, count, identical);
-		Builder b = new Builder();
-		b.registry = new ArrayList<>(optimizedRegistry);
-		for (AttrEntry e : entries) {
-			if (!e.attribute().isSkippable(available)) {
-				b.entries.add(e);
-			}
-		}
-		return b;
-	}
-
-	/**
 	 * Convenience method — builds a {@link PlacementComparator} for the given constraint profile.
 	 * Equivalent to {@code withConstraints(...).build()}.
 	 *
