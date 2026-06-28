@@ -221,13 +221,14 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				.build();
 	}
 	
-	protected PointControls createPointControls(Container container, Stack stack, BoxItemSource boxItemSource, PointSource points, PointControlsBuilderFactory pointControlsBuilderFactory, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) {
+	protected PointControls createPointControls(Container container, Stack stack, BoxItemSource boxItemSource, PointSource points, PointControlsBuilderFactory pointControlsBuilderFactory, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean loadIdenticalBox) {
 		return pointControlsBuilderFactory.createPointControlsBuilder()
 				.withContainer(container)
 				.withStack(stack)
 				.withBoxItems(boxItemSource)
 				.withPoints(points)
 				.withMaxLoad(maxLoadWeight, maxLoadPressure, maxLoadBoxCount)
+				.withLoadIdenticalBox(loadIdenticalBox)
 				.build();
 	}
 	

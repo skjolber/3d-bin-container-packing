@@ -4,6 +4,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilder;
 import com.github.skjolber.packing.api.point.PointSource;
 
 /**
@@ -24,6 +25,7 @@ public abstract class AbstractPointControlsBuilder<B extends AbstractPointContro
 	protected boolean maxLoadWeight;
 	protected boolean maxLoadPressure;
 	protected boolean maxLoadBoxCount;
+	protected boolean loadIdenticalBox;
 	
 	protected boolean fullSupport;
 
@@ -62,6 +64,11 @@ public abstract class AbstractPointControlsBuilder<B extends AbstractPointContro
 		this.maxLoadWeight = maxLoadWeight;
 		this.maxLoadPressure = maxLoadPressure;
 		this.maxLoadBoxCount = maxLoadBoxCount;
+		return (B)this;
+	}
+	
+	public B withLoadIdenticalBox(boolean loadIdenticalBox) {
+		this.loadIdenticalBox = loadIdenticalBox;
 		return (B)this;
 	}
 	

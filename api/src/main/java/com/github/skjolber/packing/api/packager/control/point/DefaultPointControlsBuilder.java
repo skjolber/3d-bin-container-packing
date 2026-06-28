@@ -4,12 +4,7 @@ public class DefaultPointControlsBuilder extends AbstractPointControlsBuilder<De
 
 	@Override
 	public PointControls build() {
-		if(isMaxLoad()) {
-			// TODO
-		}
 		return new DefaultPointControls(points);
 	}
-
-
 
 }
