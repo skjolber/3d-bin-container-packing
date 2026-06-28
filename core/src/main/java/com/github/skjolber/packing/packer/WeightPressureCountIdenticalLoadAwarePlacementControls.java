@@ -17,6 +17,7 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.PointSource;
 import com.github.skjolber.packing.comparator.placement.PlacementComparator;
+import com.github.skjolber.packing.packer.util.PlacementList;
 
 /**
  * 
@@ -80,7 +81,8 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 							continue;
 						}
 						
-						for (Placement candidate : pointSupporters) {
+						for(int k = 0; k < pointSupporters.size(); k++) {
+							Placement candidate = pointSupporters.get(k);
 							Placement p = getPlacement(point3d, stackValue, candidate, limitX, limitY, z, limitMaxX, limitMaxY);
 							if(p == null) {
 								continue;
@@ -206,7 +208,8 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 						continue;
 					}
 					
-					for (Placement candidate : pointSupporters) {
+					for(int k = 0; k < pointSupporters.size(); k++) {
+						Placement candidate = pointSupporters.get(k);
 						Placement placement = getPlacement(point3d, stackValue, candidate, limitX, limitY, z, limitMaxX, limitMaxY);
 						if(placement == null) {
 							continue;
@@ -290,7 +293,9 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 			reliefWeights[i] = 0;
 		}
 		
-		for (Placement candidate : pointSupportees) {
+		for(int k = 0; k < pointSupportees.size(); k++) {
+			Placement candidate = pointSupportees.get(k);
+			
 			if (candidate.getAbsoluteZ() != z) {
 				continue;
 			}
@@ -338,7 +343,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 		return weight +  boxStackValue.getBox().getWeight();
 	}
 	
-	private boolean isWithinSupporteeBoxCount(Placement candidate, int count, List<Placement> pointSupportees, int minX, int minY, int maxX, int maxY) {
+	private boolean isWithinSupporteeBoxCount(Placement candidate, int count, PlacementList pointSupportees, int minX, int minY, int maxX, int maxY) {
 		BoxStackValue supporteeStackValue = candidate.getStackValue();
 		if(supporteeStackValue.isMaxLoadBoxCount() && supporteeStackValue.getMaxLoadBoxCount() > count) {
 			return true;
@@ -350,7 +355,9 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 		
 		count--;
 		
-		for (Placement placement : pointSupportees) {
+		for(int k = 0; k < pointSupportees.size(); k++) {
+			Placement placement = pointSupportees.get(k);
+
 			if(!placement.intersects2D(minX, maxX, minY, maxY)) {
 				continue;
 			}
@@ -388,7 +395,9 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 
 		int z = minZ - 1;
 		
-		for (Placement candidate : pointSupporters) {
+		for(int k = 0; k < pointSupporters.size(); k++) {
+			Placement candidate = pointSupporters.get(k);
+			
 			if (candidate.getAbsoluteEndZ() != z) {
 				continue;
 			}

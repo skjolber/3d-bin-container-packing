@@ -21,94 +21,110 @@ import java.util.Set;
 public interface PlacementComparatorAttribute {
 
 	// =========================================================================
+	// Attribute ID constants
+	// =========================================================================
+
+	String ID_X        = "x";
+	String ID_Y        = "y";
+	String ID_Z        = "z";
+	String ID_AREA     = "area";
+	String ID_VOLUME   = "volume";
+	String ID_BOX_WEIGHT = "box_weight";
+	String ID_SUPPORT  = "support";
+	String ID_WEIGHT   = "weight";
+	String ID_PRESSURE = "pressure";
+	String ID_COUNT    = "count";
+	String ID_IDENTICAL = "identical";
+
+	// =========================================================================
 	// Position — X
 	// =========================================================================
 
 	/** Prefer placements with a <b>lower x</b> coordinate. */
-	PlacementComparatorAttribute LOWER_X = positional("x", false);
+	PlacementComparatorAttribute LOWER_X = positional(ID_X, false);
 	/** Prefer placements with a <b>higher x</b> coordinate. */
-	PlacementComparatorAttribute HIGHER_X = positional("x", true);
+	PlacementComparatorAttribute HIGHER_X = positional(ID_X, true);
 
 	// =========================================================================
 	// Position — Y
 	// =========================================================================
 
 	/** Prefer placements with a <b>lower y</b> coordinate. */
-	PlacementComparatorAttribute LOWER_Y = positional("y", false);
+	PlacementComparatorAttribute LOWER_Y = positional(ID_Y, false);
 	/** Prefer placements with a <b>higher y</b> coordinate. */
-	PlacementComparatorAttribute HIGHER_Y = positional("y", true);
+	PlacementComparatorAttribute HIGHER_Y = positional(ID_Y, true);
 
 	// =========================================================================
 	// Position — Z
 	// =========================================================================
 
 	/** Prefer placements with a <b>lower z</b> coordinate (floor-first). */
-	PlacementComparatorAttribute LOWER_Z = positional("z", false);
+	PlacementComparatorAttribute LOWER_Z = positional(ID_Z, false);
 	/** Prefer placements with a <b>higher z</b> coordinate. */
-	PlacementComparatorAttribute HIGHER_Z = positional("z", true);
+	PlacementComparatorAttribute HIGHER_Z = positional(ID_Z, true);
 
 	// =========================================================================
 	// Footprint area  (dx × dy)
 	// =========================================================================
 
 	/** Prefer placements where the box has a <b>larger footprint area</b>. */
-	PlacementComparatorAttribute HIGHER_AREA = positional("area", true);
+	PlacementComparatorAttribute HIGHER_AREA = positional(ID_AREA, true);
 	/** Prefer placements where the box has a <b>smaller footprint area</b>. */
-	PlacementComparatorAttribute LOWER_AREA = positional("area", false);
+	PlacementComparatorAttribute LOWER_AREA = positional(ID_AREA, false);
 
 	// =========================================================================
 	// Volume  (dx × dy × dz)
 	// =========================================================================
 
 	/** Prefer placements where the box has a <b>larger volume</b>. */
-	PlacementComparatorAttribute HIGHER_VOLUME = positional("volume", true);
+	PlacementComparatorAttribute HIGHER_VOLUME = positional(ID_VOLUME, true);
 	/** Prefer placements where the box has a <b>smaller volume</b>. */
-	PlacementComparatorAttribute LOWER_VOLUME = positional("volume", false);
+	PlacementComparatorAttribute LOWER_VOLUME = positional(ID_VOLUME, false);
 
 	// =========================================================================
 	// Box weight (physical weight of the box)
 	// =========================================================================
 
 	/** Prefer placements where the box is <b>heavier</b>. */
-	PlacementComparatorAttribute HIGHER_WEIGHT = positional("box_weight", true);
+	PlacementComparatorAttribute HIGHER_WEIGHT = positional(ID_BOX_WEIGHT, true);
 	/** Prefer placements where the box is <b>lighter</b>. */
-	PlacementComparatorAttribute LOWER_WEIGHT = positional("box_weight", false);
+	PlacementComparatorAttribute LOWER_WEIGHT = positional(ID_BOX_WEIGHT, false);
 
 	// =========================================================================
 	// Support ratio  (supportedArea / (dx × dy))
 	// =========================================================================
 
 	/** Prefer placements with a <b>higher support ratio</b> (more area supported from below). */
-	PlacementComparatorAttribute HIGHER_SUPPORT = positional("support", true);
+	PlacementComparatorAttribute HIGHER_SUPPORT = positional(ID_SUPPORT, true);
 	/** Prefer placements with a <b>lower support ratio</b>. */
-	PlacementComparatorAttribute LOWER_SUPPORT = positional("support", false);
+	PlacementComparatorAttribute LOWER_SUPPORT = positional(ID_SUPPORT, false);
 
 	// =========================================================================
 	// Max-load weight  (load constraint — skipped when weight constraint inactive)
 	// =========================================================================
 
 	/** Prefer placements where the box allows a <b>higher max-load weight</b> on top. */
-	PlacementComparatorAttribute HIGHER_MAX_LOAD_WEIGHT = constraint("weight", true, true);
+	PlacementComparatorAttribute HIGHER_MAX_LOAD_WEIGHT = constraint(ID_WEIGHT, true, true);
 	/** Prefer placements where the box allows a <b>lower max-load weight</b> on top. */
-	PlacementComparatorAttribute LOWER_MAX_LOAD_WEIGHT = constraint("weight", false, true);
+	PlacementComparatorAttribute LOWER_MAX_LOAD_WEIGHT = constraint(ID_WEIGHT, false, true);
 
 	// =========================================================================
 	// Max-load pressure  (load constraint — skipped when pressure constraint inactive)
 	// =========================================================================
 
 	/** Prefer placements where the box tolerates a <b>higher max-load pressure</b> on top. */
-	PlacementComparatorAttribute HIGHER_MAX_LOAD_PRESSURE = constraint("pressure", true, true);
+	PlacementComparatorAttribute HIGHER_MAX_LOAD_PRESSURE = constraint(ID_PRESSURE, true, true);
 	/** Prefer placements where the box tolerates a <b>lower max-load pressure</b> on top. */
-	PlacementComparatorAttribute LOWER_MAX_LOAD_PRESSURE = constraint("pressure", false, true);
+	PlacementComparatorAttribute LOWER_MAX_LOAD_PRESSURE = constraint(ID_PRESSURE, false, true);
 
 	// =========================================================================
 	// Max-load box count  (load constraint — skipped when count constraint inactive)
 	// =========================================================================
 
 	/** Prefer placements where the box allows a <b>higher number of boxes</b> stacked on top. */
-	PlacementComparatorAttribute HIGHER_MAX_LOAD_BOX_COUNT = constraint("count", true, true);
+	PlacementComparatorAttribute HIGHER_MAX_LOAD_BOX_COUNT = constraint(ID_COUNT, true, true);
 	/** Prefer placements where the box allows a <b>lower number of boxes</b> on top. */
-	PlacementComparatorAttribute LOWER_MAX_LOAD_BOX_COUNT = constraint("count", false, true);
+	PlacementComparatorAttribute LOWER_MAX_LOAD_BOX_COUNT = constraint(ID_COUNT, false, true);
 
 	// =========================================================================
 	// Identical-only restriction  (load constraint — skipped when identical constraint inactive)
@@ -118,13 +134,13 @@ public interface PlacementComparatorAttribute {
 	 * Prefer placements where the box has <b>no identical-only restriction</b>.
 	 * The <em>absence</em> of the restriction is better (leaves more future stacking options).
 	 */
-	PlacementComparatorAttribute NO_IDENTICAL_CONSTRAINT = constraint("identical", false, false);
+	PlacementComparatorAttribute NO_IDENTICAL_CONSTRAINT = constraint(ID_IDENTICAL, false, false);
 
 	/**
 	 * Prefer placements where the box <b>has</b> the identical-only restriction.
 	 * The <em>presence</em> of the restriction is better.
 	 */
-	PlacementComparatorAttribute IDENTICAL_CONSTRAINT = constraint("identical", false, true);
+	PlacementComparatorAttribute IDENTICAL_CONSTRAINT = constraint(ID_IDENTICAL, false, true);
 
 	// =========================================================================
 	// Interface methods

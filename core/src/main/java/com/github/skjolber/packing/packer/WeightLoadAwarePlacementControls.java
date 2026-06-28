@@ -168,7 +168,8 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 						continue;
 					}
 					
-					for (Placement candidate : pointSupporters) {
+					for(int k = 0; k < pointSupporters.size(); k++) {
+						Placement candidate = pointSupporters.get(k);
 						if (candidate.getAbsoluteEndZ() != z) {
 							continue;
 						}
@@ -244,7 +245,9 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 			reliefWeights[i] = 0;
 		}
 		
-		for (Placement candidate : pointSupportees) {
+		for(int k = 0; k < pointSupportees.size(); k++) {
+			Placement candidate = pointSupportees.get(k);
+
 			if (candidate.getAbsoluteZ() != z) {
 				continue;
 			}
@@ -299,7 +302,9 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 		
 		int z = minZ - 1;
 		
-		for (Placement candidate : pointSupporters) {
+		for(int k = 0; k < pointSupporters.size(); k++) {
+			Placement candidate = pointSupporters.get(k);
+			
 			if (candidate.getAbsoluteEndZ() != z) {
 				continue;
 			}

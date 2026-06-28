@@ -269,26 +269,26 @@ class PlacementComparatorBuilderFactoryTest {
 	}
 
 	/**
-	 * Position dimensions are subordinate to constraint dims: constraint wins when both
-	 * constraints and position differ.
+	 * Position dimensions fire before constraint dims: position wins when both differ.
 	 *
 	 * <pre>
 	 *  Factory: all enabled. Position: lowerZ. Active: weight=true.
 	 *
-	 *  A: maxWeight=500, z=10    B: maxWeight=100, z=0
+	 *  A: maxWeight=100, z=0    B: maxWeight=500, z=10
 	 *
-	 *  Constraint (weight) fires first: A preferred despite higher z.
+	 *  Position (z) fires first: A preferred because z=0 &lt; z=10,
+	 *  even though B has higher maxWeight.
 	 * </pre>
 	 */
 	@Test
-	void positionDimensions_constraintBeatsPosition() {
+	void positionDimensions_positionBeatsConstraint() {
 		DefaultPlacementComparatorFactory factory = DefaultPlacementComparatorFactory.newBuilder()
 				.withPositionDimensions(b -> b.lowerZIsBetter())
 				.compile();
 		PlacementComparator cmp = factory.create(true, false, false, false);
 
-		// A: weight=500, z=10   B: weight=100, z=0 → weight decides, A wins
-		assertThat(cmp.compare(pWeightAtZ(500, 10), pWeightAtZ(100, 0))).isPositive();
+		// A: z=0, weight=100   B: z=10, weight=500 → z decides, A wins despite lower weight
+		assertThat(cmp.compare(pWeightAtZ(100, 0), pWeightAtZ(500, 10))).isPositive();
 	}
 
 	/**
@@ -323,8 +323,8 @@ class PlacementComparatorBuilderFactoryTest {
 	 * <pre>
 	 *  Factory: all enabled + lowerZ position. Active via withMaxLoad: weight=true only.
 	 *
-	 *  A: maxWeight=500, z=5    B: maxWeight=100, z=0
-	 *  → weight decides: A preferred.
+	 *  A: maxWeight=500, z=5    B: maxWeight=100, z=5
+	 *  → z ties, weight decides: A preferred.
 	 * </pre>
 	 */
 	@Test
@@ -337,9 +337,9 @@ class PlacementComparatorBuilderFactoryTest {
 				.withPlacementComparatorBuilderFactory(factory);
 		builder.withMaxLoad(true, false, false);
 
-		// Access the comparator that will be used by calling the factory directly
+		// Both at z=5 (position ties) → weight fires as tiebreaker: A (weight=500) wins
 		PlacementComparator cmp = factory.create(true, false, false, false);
-		assertThat(cmp.compare(pWeightAtZ(500, 5), pWeightAtZ(100, 0))).isPositive();
+		assertThat(cmp.compare(pWeightAtZ(500, 5), pWeightAtZ(100, 5))).isPositive();
 	}
 
 	/**

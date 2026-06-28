@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -16,15 +15,16 @@ import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.placement.PlacementComparator;
+import com.github.skjolber.packing.packer.util.PlacementList;
 
 public abstract class AbstractLoadWeightComparatorPlacementControls extends AbstractComparatorPlacementControls {
 
 	protected boolean fullSupport;
 
-	protected List<Placement> pointSupportees = new ArrayList<>();
-	protected List<Placement> pointSupporters = new ArrayList<>();
-	protected List<Placement> placementSupportees = new ArrayList<>();
-	protected List<Placement> placementSupporters = new ArrayList<>();
+	protected PlacementList pointSupportees = new PlacementList();
+	protected PlacementList pointSupporters = new PlacementList();
+	protected PlacementList placementSupportees = new PlacementList();
+	protected PlacementList placementSupporters = new PlacementList();
 
 	protected long[] placementAreas;
 	protected long[] reliefWeights;
@@ -48,6 +48,11 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 	protected void initialize(int count) {
 		placementAreas = new long[count];
 		reliefWeights = new long[count];
+		
+		pointSupportees.ensureAdditionalCapacity(count);
+		pointSupporters.ensureAdditionalCapacity(count);
+		placementSupportees.ensureAdditionalCapacity(count);
+		placementSupporters.ensureAdditionalCapacity(count);
 	}
 	
 	protected Placement createPlacement(BoxStackValue stackValue, int index, int x, int y, int z) {
@@ -224,7 +229,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 			pointSupporters.add(candidate);
 		}
 	}
-
+	
 	protected void populatePointSupportees(Point point) {
 		pointSupportees.clear();
 		

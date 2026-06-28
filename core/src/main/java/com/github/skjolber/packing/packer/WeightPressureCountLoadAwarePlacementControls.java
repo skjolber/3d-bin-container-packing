@@ -182,7 +182,9 @@ public class WeightPressureCountLoadAwarePlacementControls extends AbstractLoadW
 						continue;
 					}
 					
-					for (Placement candidate : pointSupporters) {
+					for(int k = 0; k < pointSupporters.size(); k++) {
+						Placement candidate = pointSupporters.get(k);
+
 						Placement placement = getPlacement(point3d, stackValue, candidate, limitX, limitY, z, limitMaxX, limitMaxY);
 						if(placement == null) {
 							continue;
@@ -267,7 +269,9 @@ public class WeightPressureCountLoadAwarePlacementControls extends AbstractLoadW
 			reliefWeights[i] = 0;
 		}
 		
-		for (Placement candidate : pointSupportees) {
+		for(int k = 0; k < pointSupportees.size(); k++) {
+			Placement candidate = pointSupportees.get(k);
+
 			if (candidate.getAbsoluteZ() != z) {
 				continue;
 			}
@@ -351,7 +355,9 @@ public class WeightPressureCountLoadAwarePlacementControls extends AbstractLoadW
 
 		int z = minZ - 1;
 		
-		for (Placement candidate : pointSupporters) {
+		for(int k = 0; k < pointSupporters.size(); k++) {
+			Placement candidate = pointSupporters.get(k);
+
 			if (candidate.getAbsoluteEndZ() != z) {
 				continue;
 			}

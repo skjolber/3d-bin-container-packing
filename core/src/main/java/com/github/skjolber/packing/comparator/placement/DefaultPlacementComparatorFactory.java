@@ -1,10 +1,13 @@
 package com.github.skjolber.packing.comparator.placement;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -91,55 +94,160 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	 * Pairs a {@link PlacementComparatorAttribute} (used for filtering and registry lookup)
 	 * with the supplier that creates the comparator node.
 	 */
-	private record AttrEntry(
-			PlacementComparatorAttribute attribute,
-			PlacementComparatorSupplier supplier) {}
+	private static final class AttrEntry {
+		private final PlacementComparatorAttribute attribute;
+		private final PlacementComparatorSupplier supplier;
+
+		AttrEntry(PlacementComparatorAttribute attribute, PlacementComparatorSupplier supplier) {
+			this.attribute = attribute;
+			this.supplier = supplier;
+		}
+
+		PlacementComparatorAttribute attribute() { return attribute; }
+		PlacementComparatorSupplier supplier() { return supplier; }
+
+		@Override
+		public String toString() {
+			return attribute.getId() + "(" + (attribute.higherIsBetter() ? "↑" : "↓") + ")";
+		}
+	}
 
 	// =========================================================================
 	// Default optimized registry
 	// =========================================================================
 
-	/** Built-in registry, computed once. Contains the two default fused presets. */
+	/** Built-in registry list — kept for the public {@link #defaultRegistry()} API. */
 	private static final List<RegistryEntry> DEFAULT_REGISTRY;
+	/** Built-in registry as a map for O(1) prefix lookup during {@link #buildFrom}. */
+	private static final Map<List<PlacementComparatorAttribute>, PlacementComparatorSupplier> DEFAULT_REGISTRY_MAP;
 
 	static {
 		List<RegistryEntry> reg = new ArrayList<>();
 
-		// high support → high volume → high weight → low z  (placement stability preset)
+		// --- 9-attr full chains (position + support + constraints) ---
+		// higher support → higher volume → heavier box → smaller area → lower z → constraints
+		reg.add(new RegistryEntry(
+				List.of(PlacementComparatorAttribute.HIGHER_SUPPORT, PlacementComparatorAttribute.HIGHER_VOLUME,
+						PlacementComparatorAttribute.HIGHER_WEIGHT, PlacementComparatorAttribute.LOWER_AREA,
+						PlacementComparatorAttribute.LOWER_Z,
+						PlacementComparatorAttribute.NO_IDENTICAL_CONSTRAINT, PlacementComparatorAttribute.HIGHER_MAX_LOAD_BOX_COUNT,
+						PlacementComparatorAttribute.HIGHER_MAX_LOAD_WEIGHT, PlacementComparatorAttribute.HIGHER_MAX_LOAD_PRESSURE),
+				ConstraintsHigherSupportHigherVolumeHigherWeightLowerAreaLowerZComparator::new));
+
+		// higher support → lower z → larger area → higher volume → heavier box → constraints
+		reg.add(new RegistryEntry(
+				List.of(PlacementComparatorAttribute.HIGHER_SUPPORT, PlacementComparatorAttribute.LOWER_Z,
+						PlacementComparatorAttribute.HIGHER_AREA, PlacementComparatorAttribute.HIGHER_VOLUME,
+						PlacementComparatorAttribute.HIGHER_WEIGHT,
+						PlacementComparatorAttribute.NO_IDENTICAL_CONSTRAINT, PlacementComparatorAttribute.HIGHER_MAX_LOAD_BOX_COUNT,
+						PlacementComparatorAttribute.HIGHER_MAX_LOAD_WEIGHT, PlacementComparatorAttribute.HIGHER_MAX_LOAD_PRESSURE),
+				ConstraintsHigherSupportLowerZHigherAreaHigherVolumeHigherWeightComparator::new));
+
+		// --- 8-attr full chains (position + constraints, no support) ---
+		// higher volume → heavier box → smaller area → lower z → constraints  (PlainPackager / LAFF placement)
+		reg.add(new RegistryEntry(
+				List.of(PlacementComparatorAttribute.HIGHER_VOLUME, PlacementComparatorAttribute.HIGHER_WEIGHT,
+						PlacementComparatorAttribute.LOWER_AREA, PlacementComparatorAttribute.LOWER_Z,
+						PlacementComparatorAttribute.NO_IDENTICAL_CONSTRAINT, PlacementComparatorAttribute.HIGHER_MAX_LOAD_BOX_COUNT,
+						PlacementComparatorAttribute.HIGHER_MAX_LOAD_WEIGHT, PlacementComparatorAttribute.HIGHER_MAX_LOAD_PRESSURE),
+				ConstraintsHigherVolumeHigherWeightLowerAreaLowerZComparator::new));
+
+		// lower z → larger area → higher volume → heavier box → constraints  (LAFF / FastLAFF first-placement)
+		reg.add(new RegistryEntry(
+				List.of(PlacementComparatorAttribute.LOWER_Z, PlacementComparatorAttribute.HIGHER_AREA,
+						PlacementComparatorAttribute.HIGHER_VOLUME, PlacementComparatorAttribute.HIGHER_WEIGHT,
+						PlacementComparatorAttribute.NO_IDENTICAL_CONSTRAINT, PlacementComparatorAttribute.HIGHER_MAX_LOAD_BOX_COUNT,
+						PlacementComparatorAttribute.HIGHER_MAX_LOAD_WEIGHT, PlacementComparatorAttribute.HIGHER_MAX_LOAD_PRESSURE),
+				ConstraintsLowerZHigherAreaHigherVolumeHigherWeightComparator::new));
+
+		// --- 5-attr position chains (with support) ---
+		// higher support → higher volume → heavier box → smaller area → lower z
+		reg.add(new RegistryEntry(
+				List.of(PlacementComparatorAttribute.HIGHER_SUPPORT, PlacementComparatorAttribute.HIGHER_VOLUME,
+						PlacementComparatorAttribute.HIGHER_WEIGHT, PlacementComparatorAttribute.LOWER_AREA,
+						PlacementComparatorAttribute.LOWER_Z),
+				HigherSupportHigherVolumeHigherWeightLowerAreaLowerZComparator::new));
+
+		// higher support → lower z → larger area → higher volume → heavier box
+		reg.add(new RegistryEntry(
+				List.of(PlacementComparatorAttribute.HIGHER_SUPPORT, PlacementComparatorAttribute.LOWER_Z,
+						PlacementComparatorAttribute.HIGHER_AREA, PlacementComparatorAttribute.HIGHER_VOLUME,
+						PlacementComparatorAttribute.HIGHER_WEIGHT),
+				HigherSupportLowerZHigherAreaHigherVolumeHigherWeightComparator::new));
+
+		// --- 4-attr position chains ---
+		// higher support → higher volume → heavier box → lower z  (placement stability preset)
 		reg.add(new RegistryEntry(
 				List.of(PlacementComparatorAttribute.HIGHER_SUPPORT, PlacementComparatorAttribute.HIGHER_VOLUME,
 						PlacementComparatorAttribute.HIGHER_WEIGHT, PlacementComparatorAttribute.LOWER_Z),
 				HigherSupportHigherVolumeHigherWeightLowerZComparator::new));
 
-		// no-identical → high count → high weight → high pressure  (all-constraint fused)
+		// higher volume → heavier box → smaller area → lower z
+		reg.add(new RegistryEntry(
+				List.of(PlacementComparatorAttribute.HIGHER_VOLUME, PlacementComparatorAttribute.HIGHER_WEIGHT,
+						PlacementComparatorAttribute.LOWER_AREA, PlacementComparatorAttribute.LOWER_Z),
+				HigherVolumeHigherWeightLowerAreaLowerZComparator::new));
+
+		// lower z → larger area → higher volume → heavier box
+		reg.add(new RegistryEntry(
+				List.of(PlacementComparatorAttribute.LOWER_Z, PlacementComparatorAttribute.HIGHER_AREA,
+						PlacementComparatorAttribute.HIGHER_VOLUME, PlacementComparatorAttribute.HIGHER_WEIGHT),
+				LowerZHigherAreaHigherVolumeHigherWeightComparator::new));
+
+		// no-identical → high count → high load weight → high pressure  (constraint-only fused)
 		reg.add(new RegistryEntry(
 				List.of(PlacementComparatorAttribute.NO_IDENTICAL_CONSTRAINT, PlacementComparatorAttribute.HIGHER_MAX_LOAD_BOX_COUNT,
 						PlacementComparatorAttribute.HIGHER_MAX_LOAD_WEIGHT, PlacementComparatorAttribute.HIGHER_MAX_LOAD_PRESSURE),
 				NoIdenticalHigherCountHigherWeightHigherPressureComparator::new));
 
-		reg.sort((e1, e2) -> Integer.compare(e2.attributes().size(), e1.attributes().size()));
 		DEFAULT_REGISTRY = Collections.unmodifiableList(reg);
+		DEFAULT_REGISTRY_MAP = buildRegistryMap(reg);
+	}
+
+	private static Map<List<PlacementComparatorAttribute>, PlacementComparatorSupplier> buildRegistryMap(
+			List<RegistryEntry> entries) {
+		Map<List<PlacementComparatorAttribute>, PlacementComparatorSupplier> map =
+				new HashMap<>(entries.size() * 2);
+		for (RegistryEntry e : entries) map.put(e.attributes(), e.supplier());
+		return map;
 	}
 
 	// =========================================================================
 	// Immutable instance fields (compiled factory)
 	// =========================================================================
 
-	/** Ordered comparison dimensions for this compiled factory. */
-	private final List<AttrEntry> entries;
-
-	/** Per-instance registry used for optimized prefix matching during {@link #build()}. */
-	private final List<RegistryEntry> optimizedRegistry;
+	/** Attribute for each configured dimension (parallel to {@link #supplierKeys}). */
+	private final PlacementComparatorAttribute[] attrKeys;
+	/** Supplier for each configured dimension (parallel to {@link #attrKeys}). */
+	private final PlacementComparatorSupplier[] supplierKeys;
+	/** Registry for O(1) prefix lookup during {@link #buildFrom}. */
+	private final Map<List<PlacementComparatorAttribute>, PlacementComparatorSupplier> registry;
 
 	// =========================================================================
-	// Package-private constructor (used by Builder.compile())
+	// Package-private constructors (used by Builder.compile() and clone methods)
 	// =========================================================================
 
-	DefaultPlacementComparatorFactory(List<AttrEntry> entries, List<RegistryEntry> registry) {
-		List<RegistryEntry> sorted = new ArrayList<>(registry);
-		sorted.sort((e1, e2) -> Integer.compare(e2.attributes().size(), e1.attributes().size()));
-		this.optimizedRegistry = Collections.unmodifiableList(sorted);
-		this.entries = Collections.unmodifiableList(new ArrayList<>(entries));
+	/** Converts a list of entries + pre-built map into a compiled factory. No sorting. */
+	DefaultPlacementComparatorFactory(List<AttrEntry> entries,
+			Map<List<PlacementComparatorAttribute>, PlacementComparatorSupplier> registry) {
+		int n = entries.size();
+		this.attrKeys = new PlacementComparatorAttribute[n];
+		this.supplierKeys = new PlacementComparatorSupplier[n];
+		for (int i = 0; i < n; i++) {
+			AttrEntry e = entries.get(i);
+			attrKeys[i] = e.attribute();
+			supplierKeys[i] = e.supplier();
+		}
+		this.registry = registry;
+	}
+
+	/** Direct array constructor — arrays are used as-is (caller must not mutate them). */
+	private DefaultPlacementComparatorFactory(PlacementComparatorAttribute[] attrKeys,
+			PlacementComparatorSupplier[] supplierKeys,
+			Map<List<PlacementComparatorAttribute>, PlacementComparatorSupplier> registry) {
+		this.attrKeys = attrKeys;
+		this.supplierKeys = supplierKeys;
+		this.registry = registry;
 	}
 
 	// =========================================================================
@@ -158,13 +266,13 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	 */
 	public static Builder newFactory() {
 		Builder b = new Builder();
-		b.entries.add(new AttrEntry(PlacementComparatorAttribute.NO_IDENTICAL_CONSTRAINT,
+		b.trailingEntries.add(new AttrEntry(PlacementComparatorAttribute.NO_IDENTICAL_CONSTRAINT,
 				NoIdenticalConstraintComparator::new));
-		b.entries.add(new AttrEntry(PlacementComparatorAttribute.HIGHER_MAX_LOAD_BOX_COUNT,
+		b.trailingEntries.add(new AttrEntry(PlacementComparatorAttribute.HIGHER_MAX_LOAD_BOX_COUNT,
 				HigherMaxLoadBoxCountComparator::new));
-		b.entries.add(new AttrEntry(PlacementComparatorAttribute.HIGHER_MAX_LOAD_WEIGHT,
+		b.trailingEntries.add(new AttrEntry(PlacementComparatorAttribute.HIGHER_MAX_LOAD_WEIGHT,
 				HigherMaxLoadWeightComparator::new));
-		b.entries.add(new AttrEntry(PlacementComparatorAttribute.HIGHER_MAX_LOAD_PRESSURE,
+		b.trailingEntries.add(new AttrEntry(PlacementComparatorAttribute.HIGHER_MAX_LOAD_PRESSURE,
 				HigherMaxLoadPressureComparator::new));
 		return b;
 	}
@@ -280,18 +388,18 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	 * Builds and returns the configured comparator, skipping any entry whose attribute appears
 	 * in {@code disabled}.
 	 *
-	 * <p>Scans the per-instance {@link #optimizedRegistry} for the longest matching attribute
-	 * prefix in the active entry list. When a match is found the corresponding fused comparator
-	 * is used; the remaining suffix is chained via {@link AbstractChainedPlacementComparator#linkNext}.
-	 * When no prefix matches a plain per-dimension chain is produced.
+	 * <p>Uses the per-instance registry map for O(1) prefix lookup. Tries the longest prefix
+	 * first, falling back to shorter prefixes, then a plain per-dimension chain.
 	 *
 	 * @param disabled attributes to skip; must not be {@code null}
 	 * @return a non-null {@link PlacementComparator}; the no-op comparator if no active entries
 	 */
 	@Override
 	public PlacementComparator build(Collection<PlacementComparatorAttribute> disabled) {
-		List<AttrEntry> active = disabled.isEmpty() ? entries : filtered(disabled);
-		return buildFrom(active);
+		if (disabled.isEmpty()) return buildFrom(attrKeys, supplierKeys);
+		Set<String> disabledIds = new HashSet<>(disabled.size() * 2);
+		for (PlacementComparatorAttribute a : disabled) disabledIds.add(a.getId());
+		return buildFiltered(disabledIds);
 	}
 
 	// =========================================================================
@@ -300,69 +408,83 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 
 	/**
 	 * Returns a new compiled factory containing only the constraint entries whose type is active,
-	 * plus all position / size entries (which are never filtered), in their original order.
-	 * The clone inherits this factory's {@link #optimizedRegistry}.
+	 * plus all position / size entries, in their original order.
+	 * Returns {@code this} when all entries survive filtering (no allocation).
 	 *
 	 * @param weight    include weight-constraint entry if present
 	 * @param pressure  include pressure-constraint entry if present
 	 * @param count     include count-constraint entry if present
 	 * @param identical include identical-only-constraint entry if present
-	 * @return a new immutable {@link DefaultPlacementComparatorFactory}
+	 * @return a (possibly same) {@link DefaultPlacementComparatorFactory}
 	 */
 	public DefaultPlacementComparatorFactory withConstraints(boolean weight, boolean pressure,
 			boolean count, boolean identical) {
 		Set<String> available = buildAvailableSet(weight, pressure, count, identical);
-		List<AttrEntry> filtered = new ArrayList<>();
-		for (AttrEntry e : entries) {
-			if (!e.attribute().isSkippable(available)) {
-				filtered.add(e);
-			}
+		int n = 0;
+		for (PlacementComparatorAttribute a : attrKeys) if (!a.isSkippable(available)) n++;
+		if (n == attrKeys.length) return this;
+		PlacementComparatorAttribute[] fa = new PlacementComparatorAttribute[n];
+		PlacementComparatorSupplier[] fs = new PlacementComparatorSupplier[n];
+		int j = 0;
+		for (int i = 0; i < attrKeys.length; i++) {
+			if (!attrKeys[i].isSkippable(available)) { fa[j] = attrKeys[i]; fs[j] = supplierKeys[i]; j++; }
 		}
-		return new DefaultPlacementComparatorFactory(filtered, optimizedRegistry);
+		return new DefaultPlacementComparatorFactory(fa, fs, registry);
 	}
 
 	/**
-	 * Convenience method — builds a {@link PlacementComparator} for the given constraint profile.
-	 * Equivalent to {@code withConstraints(...).build()}.
+	 * Builds a {@link PlacementComparator} for the given constraint profile directly,
+	 * without creating an intermediate factory object.
 	 *
 	 * @return a configured, non-null {@link PlacementComparator}
 	 */
 	public PlacementComparator create(boolean weight, boolean pressure,
 			boolean count, boolean identical) {
-		return withConstraints(weight, pressure, count, identical).build();
+		Set<String> available = buildAvailableSet(weight, pressure, count, identical);
+		int n = 0;
+		for (PlacementComparatorAttribute a : attrKeys) if (!a.isSkippable(available)) n++;
+		if (n == attrKeys.length) return buildFrom(attrKeys, supplierKeys);
+		PlacementComparatorAttribute[] fa = new PlacementComparatorAttribute[n];
+		PlacementComparatorSupplier[] fs = new PlacementComparatorSupplier[n];
+		int j = 0;
+		for (int i = 0; i < attrKeys.length; i++) {
+			if (!attrKeys[i].isSkippable(available)) { fa[j] = attrKeys[i]; fs[j] = supplierKeys[i]; j++; }
+		}
+		return buildFrom(fa, fs);
 	}
 
 	/**
-	 * Produces a comparator for the given constraint profile by cloning the template via
-	 * {@link #withConstraints(boolean, boolean, boolean, boolean)} and calling {@link #build()}.
-	 *
-	 * @param weight    whether the weight constraint is active
-	 * @param pressure  whether the pressure constraint is active
-	 * @param count     whether the box-count constraint is active
-	 * @param identical whether the identical-only constraint is active
-	 * @return a configured, non-null {@link PlacementComparator}
+	 * Alias for {@link #create(boolean, boolean, boolean, boolean)}.
 	 */
 	public PlacementComparator newInstance(boolean weight, boolean pressure,
 			boolean count, boolean identical) {
-		return withConstraints(weight, pressure, count, identical).build();
+		return create(weight, pressure, count, identical);
 	}
 
 	/**
 	 * Returns a new factory with the matching attribute entries removed.
-	 * The current instance is not modified.
+	 * Returns {@code this} if the attribute is not present (no allocation).
 	 *
 	 * @param attribute the attribute whose entries to remove; must not be {@code null}
-	 * @return a new immutable factory without the matching entries
+	 * @return a (possibly same) factory without the matching entries
 	 */
 	public DefaultPlacementComparatorFactory withoutAttribute(PlacementComparatorAttribute attribute) {
-		List<AttrEntry> filtered = new ArrayList<>(entries);
-		filtered.removeIf(e -> e.attribute().getId().equals(attribute.getId()));
-		return new DefaultPlacementComparatorFactory(filtered, optimizedRegistry);
+		String id = attribute.getId();
+		int n = 0;
+		for (PlacementComparatorAttribute a : attrKeys) if (!a.getId().equals(id)) n++;
+		if (n == attrKeys.length) return this;
+		PlacementComparatorAttribute[] fa = new PlacementComparatorAttribute[n];
+		PlacementComparatorSupplier[] fs = new PlacementComparatorSupplier[n];
+		int j = 0;
+		for (int i = 0; i < attrKeys.length; i++) {
+			if (!attrKeys[i].getId().equals(id)) { fa[j] = attrKeys[i]; fs[j] = supplierKeys[i]; j++; }
+		}
+		return new DefaultPlacementComparatorFactory(fa, fs, registry);
 	}
 
 	/**
-	 * Returns a new factory with the same entries and registry as this one, but with an
-	 * additional registry entry appended. The current instance is not modified.
+	 * Returns a new factory with the same entries and registry plus one additional registry entry.
+	 * The current instance is not modified.
 	 *
 	 * @param attributes ordered list of attributes that form the match prefix
 	 * @param supplier   constructor reference or lambda that creates the fused comparator
@@ -371,55 +493,59 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	public DefaultPlacementComparatorFactory withAddedRegistryEntry(
 			List<PlacementComparatorAttribute> attributes,
 			PlacementComparatorSupplier supplier) {
-		List<RegistryEntry> extended = new ArrayList<>(optimizedRegistry);
-		extended.add(new RegistryEntry(attributes, supplier));
-		return new DefaultPlacementComparatorFactory(new ArrayList<>(entries), extended);
+		Map<List<PlacementComparatorAttribute>, PlacementComparatorSupplier> extended =
+				new HashMap<>(registry);
+		extended.put(List.copyOf(attributes), supplier);
+		return new DefaultPlacementComparatorFactory(attrKeys, supplierKeys, extended);
 	}
 
 	// =========================================================================
 	// Build internals
 	// =========================================================================
 
-	private List<AttrEntry> filtered(Collection<PlacementComparatorAttribute> disabled) {
-		Set<String> disabledIds = new HashSet<>(disabled.size() * 2);
-		for (PlacementComparatorAttribute a : disabled) disabledIds.add(a.getId());
-		List<AttrEntry> active = new ArrayList<>(entries.size());
-		for (AttrEntry e : entries) {
-			if (!disabledIds.contains(e.attribute().getId())) active.add(e);
+	/** Filters by a pre-built set of disabled IDs, then builds. */
+	private PlacementComparator buildFiltered(Set<String> disabledIds) {
+		int n = 0;
+		for (PlacementComparatorAttribute a : attrKeys) if (!disabledIds.contains(a.getId())) n++;
+		if (n == attrKeys.length) return buildFrom(attrKeys, supplierKeys);
+		PlacementComparatorAttribute[] fa = new PlacementComparatorAttribute[n];
+		PlacementComparatorSupplier[] fs = new PlacementComparatorSupplier[n];
+		int j = 0;
+		for (int i = 0; i < attrKeys.length; i++) {
+			if (!disabledIds.contains(attrKeys[i].getId())) { fa[j] = attrKeys[i]; fs[j] = supplierKeys[i]; j++; }
 		}
-		return active;
+		return buildFrom(fa, fs);
 	}
 
-	private PlacementComparator buildFrom(List<AttrEntry> active) {
-		if (active.isEmpty()) {
-			return PlacementComparator.noOp();
-		}
-
-		List<PlacementComparatorAttribute> attrs = new ArrayList<>(active.size());
-		List<PlacementComparatorSupplier> suppliers = new ArrayList<>(active.size());
-		for (AttrEntry e : active) {
-			attrs.add(e.attribute());
-			suppliers.add(e.supplier());
-		}
-
-		for (RegistryEntry entry : optimizedRegistry) {
-			List<PlacementComparatorAttribute> combo = entry.attributes();
-			if (attrs.size() >= combo.size() && attrs.subList(0, combo.size()).equals(combo)) {
-				PlacementComparator suffix = buildChain(suppliers, combo.size(), attrs.size());
-				PlacementComparator head = entry.supplier().get();
-				return link(head, suffix);
+	/**
+	 * Builds a comparator chain from the given parallel attribute/supplier arrays.
+	 *
+	 * <p>Registry lookup: tries the full attribute list as a map key, then progressively
+	 * shorter prefixes (longest-first). Each lookup is O(1) average. When a fused comparator
+	 * is found for a prefix, the remaining suffix is chained behind it. Falls back to a plain
+	 * per-dimension chain when no prefix matches.
+	 */
+	private PlacementComparator buildFrom(PlacementComparatorAttribute[] attrs,
+			PlacementComparatorSupplier[] suppliers) {
+		int len = attrs.length;
+		if (len == 0) return PlacementComparator.noOp();
+		List<PlacementComparatorAttribute> full = Arrays.asList(attrs);
+		for (int matchLen = len; matchLen >= 1; matchLen--) {
+			PlacementComparatorSupplier s = registry.get(
+					matchLen == len ? full : full.subList(0, matchLen));
+			if (s != null) {
+				PlacementComparator suffix = buildChain(suppliers, matchLen, len);
+				return link(s.get(), suffix);
 			}
 		}
-
-		return buildChain(suppliers, 0, attrs.size());
+		return buildChain(suppliers, 0, len);
 	}
 
 	private static PlacementComparator buildChain(
-			List<PlacementComparatorSupplier> suppliers, int start, int end) {
+			PlacementComparatorSupplier[] suppliers, int start, int end) {
 		PlacementComparator result = null;
 		for (int i = end - 1; i >= start; i--) {
-			PlacementComparator comp = suppliers.get(i).get();
-			result = link(comp, result);
+			result = link(suppliers[i].get(), result);
 		}
 		return result;
 	}
@@ -440,10 +566,10 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	private static Set<String> buildAvailableSet(boolean weight, boolean pressure,
 			boolean count, boolean identical) {
 		Set<String> available = new HashSet<>(4);
-		if (weight)    available.add("weight");
-		if (pressure)  available.add("pressure");
-		if (count)     available.add("count");
-		if (identical) available.add("identical");
+		if (weight)    available.add(PlacementComparatorAttribute.ID_WEIGHT);
+		if (pressure)  available.add(PlacementComparatorAttribute.ID_PRESSURE);
+		if (count)     available.add(PlacementComparatorAttribute.ID_COUNT);
+		if (identical) available.add(PlacementComparatorAttribute.ID_IDENTICAL);
 		return available;
 	}
 
@@ -452,24 +578,37 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	// =========================================================================
 
 	/**
-	 * Mutable builder that configures which comparison dimensions are included.
+	 * Mutable builder for {@link DefaultPlacementComparatorFactory}.
 	 *
-	 * <p>Returned by {@link #newFactory()}, {@link #newBuilder()}, and {@link #emptyFactory()}.
+	 * <p>Position and constraint entries may be added in any order via their respective fluent
+	 * methods; the resulting chain reflects that call order exactly.  The one exception is that
+	 * constraints pre-loaded by {@link DefaultPlacementComparatorFactory#newFactory()} are placed
+	 * in a separate <em>trailing</em> list that is always appended <em>after</em> any user-supplied
+	 * entries at {@link #compile()} time.  If the caller explicitly invokes a constraint method
+	 * (e.g. {@link #higherMaxLoadWeightIsBetter()}) those defaults are moved out of the trailing
+	 * list and inserted at the caller's chosen position.
+	 *
+	 * <p>Returned by {@link DefaultPlacementComparatorFactory#newFactory()},
+	 * {@link DefaultPlacementComparatorFactory#newBuilder()}, and
+	 * {@link DefaultPlacementComparatorFactory#emptyFactory()}.
 	 *
 	 * <p>Call {@link #compile()} to obtain an immutable {@link DefaultPlacementComparatorFactory}
-	 * that can be used repeatedly as a template (calling {@code create()} or {@code createBuilder()}
-	 * per packing run). Call {@link #build()} to obtain a {@link PlacementComparator} directly.
-	 *
-	 * <p>By default the builder uses the {@link #defaultRegistry() default registry}. To extend
-	 * it with custom fused comparators use {@link #addRegistryEntry}; to replace it entirely
-	 * use {@link #withRegistry}.
+	 * that can be reused as a template.  Call {@link #build()} to get a
+	 * {@link PlacementComparator} directly.
 	 */
 	public static final class Builder implements PlacementComparatorFactory {
 
+		/** User-specified entries in call order — may contain both positions and constraints. */
 		private final List<AttrEntry> entries = new ArrayList<>();
+		/**
+		 * Constraint entries pre-loaded by {@link DefaultPlacementComparatorFactory#newFactory()}.
+		 * Always appended <em>after</em> {@link #entries} at compile time.
+		 * Entries are removed here when the user explicitly calls the matching constraint method.
+		 */
+		private final List<AttrEntry> trailingEntries = new ArrayList<>();
 		/** {@code null} means "use DEFAULT_REGISTRY"; non-null is a custom/extended list. */
 		private List<RegistryEntry> registry;
-		/** Applied to a temp builder at {@link #compile()} time to add position/size entries. */
+		/** Applied to a temp builder at {@link #compile()} time; entries are inserted before trailing. */
 		private Consumer<Builder> positionConfigurer;
 
 		private Builder() {}
@@ -622,19 +761,22 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 		}
 
 		// =========================================================================
-		// Max-load weight limit  (replaceOrAdd semantics)
+		// Max-load weight limit
 		// =========================================================================
 
-		/** Prefer placements where the box allows a <b>higher max-load weight</b> on top. Unconstrained = unlimited. */
+		/**
+		 * Prefer placements where the box allows a <b>higher max-load weight</b> on top.
+		 * If a trailing default entry for this attribute exists it is replaced in-place here.
+		 */
 		public Builder higherMaxLoadWeightIsBetter() {
-			replaceOrAdd(new AttrEntry(PlacementComparatorAttribute.HIGHER_MAX_LOAD_WEIGHT,
+			promoteOrAdd(new AttrEntry(PlacementComparatorAttribute.HIGHER_MAX_LOAD_WEIGHT,
 					HigherMaxLoadWeightComparator::new));
 			return this;
 		}
 
 		/** Prefer placements where the box allows a <b>lower max-load weight</b> on top. */
 		public Builder lowerMaxLoadWeightIsBetter() {
-			replaceOrAdd(new AttrEntry(PlacementComparatorAttribute.LOWER_MAX_LOAD_WEIGHT,
+			promoteOrAdd(new AttrEntry(PlacementComparatorAttribute.LOWER_MAX_LOAD_WEIGHT,
 					LowerMaxLoadWeightComparator::new));
 			return this;
 		}
@@ -645,14 +787,14 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 
 		/** Prefer placements where the box tolerates a <b>higher max-load pressure</b> on top. */
 		public Builder higherMaxLoadPressureIsBetter() {
-			replaceOrAdd(new AttrEntry(PlacementComparatorAttribute.HIGHER_MAX_LOAD_PRESSURE,
+			promoteOrAdd(new AttrEntry(PlacementComparatorAttribute.HIGHER_MAX_LOAD_PRESSURE,
 					HigherMaxLoadPressureComparator::new));
 			return this;
 		}
 
 		/** Prefer placements where the box tolerates a <b>lower max-load pressure</b> on top. */
 		public Builder lowerMaxLoadPressureIsBetter() {
-			replaceOrAdd(new AttrEntry(PlacementComparatorAttribute.LOWER_MAX_LOAD_PRESSURE,
+			promoteOrAdd(new AttrEntry(PlacementComparatorAttribute.LOWER_MAX_LOAD_PRESSURE,
 					LowerMaxLoadPressureComparator::new));
 			return this;
 		}
@@ -663,14 +805,14 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 
 		/** Prefer placements where the box allows a <b>higher number of boxes</b> stacked on top. */
 		public Builder higherMaxLoadBoxCountIsBetter() {
-			replaceOrAdd(new AttrEntry(PlacementComparatorAttribute.HIGHER_MAX_LOAD_BOX_COUNT,
+			promoteOrAdd(new AttrEntry(PlacementComparatorAttribute.HIGHER_MAX_LOAD_BOX_COUNT,
 					HigherMaxLoadBoxCountComparator::new));
 			return this;
 		}
 
 		/** Prefer placements where the box allows a <b>lower number of boxes</b> on top. */
 		public Builder lowerMaxLoadBoxCountIsBetter() {
-			replaceOrAdd(new AttrEntry(PlacementComparatorAttribute.LOWER_MAX_LOAD_BOX_COUNT,
+			promoteOrAdd(new AttrEntry(PlacementComparatorAttribute.LOWER_MAX_LOAD_BOX_COUNT,
 					LowerMaxLoadBoxCountComparator::new));
 			return this;
 		}
@@ -681,17 +823,17 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 
 		/**
 		 * Prefer placements where the box has <b>no identical-only restriction</b>.
-		 * Fewer restrictions leave more future stacking options.
+		 * If a trailing default entry for this attribute exists it is replaced in-place here.
 		 */
 		public Builder noIdenticalConstraintIsBetter() {
-			replaceOrAdd(new AttrEntry(PlacementComparatorAttribute.NO_IDENTICAL_CONSTRAINT,
+			promoteOrAdd(new AttrEntry(PlacementComparatorAttribute.NO_IDENTICAL_CONSTRAINT,
 					NoIdenticalConstraintComparator::new));
 			return this;
 		}
 
 		/** Prefer placements where the box <b>has</b> the identical-only restriction. */
 		public Builder identicalConstraintIsBetter() {
-			replaceOrAdd(new AttrEntry(PlacementComparatorAttribute.IDENTICAL_CONSTRAINT,
+			promoteOrAdd(new AttrEntry(PlacementComparatorAttribute.IDENTICAL_CONSTRAINT,
 					IdenticalConstraintComparator::new));
 			return this;
 		}
@@ -701,8 +843,8 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 		// =========================================================================
 
 		/**
-		 * Returns a new builder containing only the constraint entries whose type is active,
-		 * plus all position / size entries (which are never filtered), in their original order.
+		 * Returns a new builder that keeps all user-specified entries and only those trailing
+		 * constraint entries whose type is currently active.
 		 *
 		 * @param weight    include weight-constraint entry if present
 		 * @param pressure  include pressure-constraint entry if present
@@ -715,9 +857,15 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 			Set<String> available = buildAvailableSet(weight, pressure, count, identical);
 			Builder clone = new Builder();
 			clone.registry = this.registry;
+			clone.positionConfigurer = this.positionConfigurer;
 			for (AttrEntry e : entries) {
 				if (!e.attribute().isSkippable(available)) {
 					clone.entries.add(e);
+				}
+			}
+			for (AttrEntry e : trailingEntries) {
+				if (!e.attribute().isSkippable(available)) {
+					clone.trailingEntries.add(e);
 				}
 			}
 			return clone;
@@ -725,13 +873,15 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 
 		/**
 		 * Removes all entries whose attribute ID matches that of the given attribute, in-place.
-		 * Returns {@code this}.
+		 * Applies to both {@code entries} and {@code trailingEntries}.
 		 *
 		 * @param attribute the attribute whose entries to remove; must not be {@code null}
 		 * @return {@code this}
 		 */
 		public Builder withoutAttribute(PlacementComparatorAttribute attribute) {
-			entries.removeIf(e -> e.attribute().getId().equals(attribute.getId()));
+			String id = attribute.getId();
+			entries.removeIf(e -> e.attribute().getId().equals(id));
+			trailingEntries.removeIf(e -> e.attribute().getId().equals(id));
 			return this;
 		}
 
@@ -778,10 +928,11 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 		}
 
 		/**
-		 * Sets a configurer that appends position / size dimensions (e.g. lower-z, higher-volume)
-		 * to the template after all constraint dimensions. Applied at {@link #compile()} time.
+		 * Sets a configurer that adds additional entries (typically position dimensions)
+		 * to the template.  Applied to a temporary builder at {@link #compile()} time;
+		 * resulting entries are inserted between {@link #entries} and {@link #trailingEntries}.
 		 *
-		 * @param configurer consumer that adds position dims to a temp builder; {@code null} to clear
+		 * @param configurer consumer that adds dims to a temp builder; {@code null} to clear
 		 * @return {@code this}
 		 */
 		public Builder withPositionDimensions(Consumer<Builder> configurer) {
@@ -794,9 +945,14 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 		// =========================================================================
 
 		/**
-		 * Builds and returns an immutable {@link DefaultPlacementComparatorFactory} from
-		 * the current configuration. The positionConfigurer (if set) is applied to a temporary
-		 * builder and its entries are appended after the constraint entries.
+		 * Builds an immutable {@link DefaultPlacementComparatorFactory}.
+		 *
+		 * <p>Compiled entry order:
+		 * <ol>
+		 *   <li>{@link #entries} — user-specified entries in call order</li>
+		 *   <li>configurer entries (from {@link #withPositionDimensions}, if set)</li>
+		 *   <li>{@link #trailingEntries} — pre-loaded defaults from {@link DefaultPlacementComparatorFactory#newFactory()}</li>
+		 * </ol>
 		 *
 		 * @return a compiled, immutable factory
 		 */
@@ -806,9 +962,12 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 				Builder temp = new Builder();
 				positionConfigurer.accept(temp);
 				toCompile.addAll(temp.entries);
+				toCompile.addAll(temp.trailingEntries);
 			}
-			List<RegistryEntry> reg = registry != null ? registry : DEFAULT_REGISTRY;
-			return new DefaultPlacementComparatorFactory(toCompile, reg);
+			toCompile.addAll(trailingEntries);
+			Map<List<PlacementComparatorAttribute>, PlacementComparatorSupplier> regMap =
+					registry == null ? DEFAULT_REGISTRY_MAP : buildRegistryMap(registry);
+			return new DefaultPlacementComparatorFactory(toCompile, regMap);
 		}
 
 		/**
@@ -821,8 +980,15 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 			return compile().build(disabled);
 		}
 
-		private void replaceOrAdd(AttrEntry entry) {
+		/**
+		 * Removes any matching entry from {@code trailingEntries} (pre-loaded defaults) and
+		 * appends (or replaces within {@code entries}) the given entry.
+		 * This ensures user-called constraint methods take the position in the chain where they
+		 * are called, rather than remaining at the end as trailing defaults.
+		 */
+		private void promoteOrAdd(AttrEntry entry) {
 			String id = entry.attribute().getId();
+			trailingEntries.removeIf(e -> e.attribute().getId().equals(id));
 			for (int i = 0; i < entries.size(); i++) {
 				if (entries.get(i).attribute().getId().equals(id)) {
 					entries.set(i, entry);
@@ -1264,6 +1430,476 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 			int c2 = b.getStackValue().isMaxLoadBoxCount()
 					? b.getStackValue().getMaxLoadBoxCount() : Integer.MAX_VALUE;
 			int r = Integer.compare(c1, c2);
+			if (r != 0) return r;
+			long w1 = a.getStackValue().isMaxLoadWeight()
+					? a.getStackValue().getMaxLoadWeight() : Long.MAX_VALUE;
+			long w2 = b.getStackValue().isMaxLoadWeight()
+					? b.getStackValue().getMaxLoadWeight() : Long.MAX_VALUE;
+			r = Long.compare(w1, w2);
+			if (r != 0) return r;
+			double p1 = a.getStackValue().isMaxLoadPressure()
+					? a.getStackValue().getMaxLoadPressure() : Double.MAX_VALUE;
+			double p2 = b.getStackValue().isMaxLoadPressure()
+					? b.getStackValue().getMaxLoadPressure() : Double.MAX_VALUE;
+			r = Double.compare(p1, p2);
+			return r != 0 ? r : chain(a, b);
+		}
+	}
+
+	// =========================================================================
+	// Fused comparators — position-only chains
+	// =========================================================================
+
+	/**
+	 * Fused comparator: higher volume → heavier box → smaller area → lower z.
+	 *
+	 * <p>Registered for {@code [HIGHER_VOLUME, HIGHER_WEIGHT, LOWER_AREA, LOWER_Z]}.
+	 * This is the default <em>position suffix</em> used by PlainPackager and
+	 * LargestAreaFitFirstPackager (placement) when no support is calculated.
+	 *
+	 * <pre>
+	 *  ┌──────────────────────────────────────────────────────┐
+	 *  │  Priority 1 — volume (higher is better)             │
+	 *  ├──────────────────────────────────────────────────────┤
+	 *  │  Priority 2 — box weight (higher is better)         │
+	 *  ├──────────────────────────────────────────────────────┤
+	 *  │  Priority 3 — footprint area (smaller is better)    │
+	 *  ├──────────────────────────────────────────────────────┤
+	 *  │  Priority 4 — z coordinate (lower is better)        │
+	 *  └──────────────────────────────────────────────────────┘
+	 * </pre>
+	 */
+	public static final class HigherVolumeHigherWeightLowerAreaLowerZComparator
+			extends AbstractChainedPlacementComparator {
+
+		public HigherVolumeHigherWeightLowerAreaLowerZComparator() {}
+
+		public HigherVolumeHigherWeightLowerAreaLowerZComparator(PlacementComparator next) {
+			super(next);
+		}
+
+		@Override
+		public int compare(Placement a, Placement b) {
+			int r = Long.compare(a.getStackValue().getVolume(), b.getStackValue().getVolume());
+			if (r != 0) return r;
+			r = Integer.compare(a.getWeight(), b.getWeight());
+			if (r != 0) return r;
+			r = Long.compare(b.getStackValue().getArea(), a.getStackValue().getArea());
+			if (r != 0) return r;
+			r = Integer.compare(b.getAbsoluteZ(), a.getAbsoluteZ());
+			return r != 0 ? r : chain(a, b);
+		}
+	}
+
+	/**
+	 * Fused comparator: lower z → larger area → higher volume → heavier box.
+	 *
+	 * <p>Registered for {@code [LOWER_Z, HIGHER_AREA, HIGHER_VOLUME, HIGHER_WEIGHT]}.
+	 * This is the default <em>first-placement</em> position suffix used by
+	 * LargestAreaFitFirstPackager and FastLargestAreaFitFirstPackager (no support).
+	 *
+	 * <pre>
+	 *  ┌──────────────────────────────────────────────────────┐
+	 *  │  Priority 1 — z coordinate (lower is better)        │
+	 *  ├──────────────────────────────────────────────────────┤
+	 *  │  Priority 2 — footprint area (larger is better)     │
+	 *  ├──────────────────────────────────────────────────────┤
+	 *  │  Priority 3 — volume (higher is better)             │
+	 *  ├──────────────────────────────────────────────────────┤
+	 *  │  Priority 4 — box weight (higher is better)         │
+	 *  └──────────────────────────────────────────────────────┘
+	 * </pre>
+	 */
+	public static final class LowerZHigherAreaHigherVolumeHigherWeightComparator
+			extends AbstractChainedPlacementComparator {
+
+		public LowerZHigherAreaHigherVolumeHigherWeightComparator() {}
+
+		public LowerZHigherAreaHigherVolumeHigherWeightComparator(PlacementComparator next) {
+			super(next);
+		}
+
+		@Override
+		public int compare(Placement a, Placement b) {
+			int r = Integer.compare(b.getAbsoluteZ(), a.getAbsoluteZ());
+			if (r != 0) return r;
+			r = Long.compare(a.getStackValue().getArea(), b.getStackValue().getArea());
+			if (r != 0) return r;
+			r = Long.compare(a.getStackValue().getVolume(), b.getStackValue().getVolume());
+			if (r != 0) return r;
+			r = Integer.compare(a.getWeight(), b.getWeight());
+			return r != 0 ? r : chain(a, b);
+		}
+	}
+
+	/**
+	 * Fused comparator: higher support → higher volume → heavier box → smaller area → lower z.
+	 *
+	 * <p>Registered for {@code [HIGHER_SUPPORT, HIGHER_VOLUME, HIGHER_WEIGHT, LOWER_AREA, LOWER_Z]}.
+	 * Position suffix used when support calculation is enabled (PlainPackager / LAFF placement).
+	 *
+	 * <pre>
+	 *  ┌──────────────────────────────────────────────────────┐
+	 *  │  Priority 1 — support ratio (higher is better)      │
+	 *  ├──────────────────────────────────────────────────────┤
+	 *  │  Priority 2 — volume (higher is better)             │
+	 *  ├──────────────────────────────────────────────────────┤
+	 *  │  Priority 3 — box weight (higher is better)         │
+	 *  ├──────────────────────────────────────────────────────┤
+	 *  │  Priority 4 — footprint area (smaller is better)    │
+	 *  ├──────────────────────────────────────────────────────┤
+	 *  │  Priority 5 — z coordinate (lower is better)        │
+	 *  └──────────────────────────────────────────────────────┘
+	 * </pre>
+	 */
+	public static final class HigherSupportHigherVolumeHigherWeightLowerAreaLowerZComparator
+			extends AbstractChainedPlacementComparator {
+
+		public HigherSupportHigherVolumeHigherWeightLowerAreaLowerZComparator() {}
+
+		public HigherSupportHigherVolumeHigherWeightLowerAreaLowerZComparator(PlacementComparator next) {
+			super(next);
+		}
+
+		@Override
+		public int compare(Placement a, Placement b) {
+			int r = compareSupportRatio(a, b);
+			if (r != 0) return r;
+			r = Long.compare(a.getStackValue().getVolume(), b.getStackValue().getVolume());
+			if (r != 0) return r;
+			r = Integer.compare(a.getWeight(), b.getWeight());
+			if (r != 0) return r;
+			r = Long.compare(b.getStackValue().getArea(), a.getStackValue().getArea());
+			if (r != 0) return r;
+			r = Integer.compare(b.getAbsoluteZ(), a.getAbsoluteZ());
+			return r != 0 ? r : chain(a, b);
+		}
+	}
+
+	/**
+	 * Fused comparator: higher support → lower z → larger area → higher volume → heavier box.
+	 *
+	 * <p>Registered for {@code [HIGHER_SUPPORT, LOWER_Z, HIGHER_AREA, HIGHER_VOLUME, HIGHER_WEIGHT]}.
+	 * First-placement position suffix when support calculation is enabled (LAFF / FastLAFF).
+	 *
+	 * <pre>
+	 *  ┌──────────────────────────────────────────────────────┐
+	 *  │  Priority 1 — support ratio (higher is better)      │
+	 *  ├──────────────────────────────────────────────────────┤
+	 *  │  Priority 2 — z coordinate (lower is better)        │
+	 *  ├──────────────────────────────────────────────────────┤
+	 *  │  Priority 3 — footprint area (larger is better)     │
+	 *  ├──────────────────────────────────────────────────────┤
+	 *  │  Priority 4 — volume (higher is better)             │
+	 *  ├──────────────────────────────────────────────────────┤
+	 *  │  Priority 5 — box weight (higher is better)         │
+	 *  └──────────────────────────────────────────────────────┘
+	 * </pre>
+	 */
+	public static final class HigherSupportLowerZHigherAreaHigherVolumeHigherWeightComparator
+			extends AbstractChainedPlacementComparator {
+
+		public HigherSupportLowerZHigherAreaHigherVolumeHigherWeightComparator() {}
+
+		public HigherSupportLowerZHigherAreaHigherVolumeHigherWeightComparator(PlacementComparator next) {
+			super(next);
+		}
+
+		@Override
+		public int compare(Placement a, Placement b) {
+			int r = compareSupportRatio(a, b);
+			if (r != 0) return r;
+			r = Integer.compare(b.getAbsoluteZ(), a.getAbsoluteZ());
+			if (r != 0) return r;
+			r = Long.compare(a.getStackValue().getArea(), b.getStackValue().getArea());
+			if (r != 0) return r;
+			r = Long.compare(a.getStackValue().getVolume(), b.getStackValue().getVolume());
+			if (r != 0) return r;
+			r = Integer.compare(a.getWeight(), b.getWeight());
+			return r != 0 ? r : chain(a, b);
+		}
+	}
+
+	// =========================================================================
+	// Fused comparators — full constraint + position chains
+	// =========================================================================
+
+	/**
+	 * Fused comparator for the standard PlainPackager / LAFF placement chain
+	 * (no support): higher volume → heavier box → smaller area → lower z → all four constraints.
+	 *
+	 * <p>Registered for {@code [HIGHER_VOLUME, HIGHER_WEIGHT, LOWER_AREA, LOWER_Z,
+	 * NO_IDENTICAL_CONSTRAINT, HIGHER_MAX_LOAD_BOX_COUNT, HIGHER_MAX_LOAD_WEIGHT,
+	 * HIGHER_MAX_LOAD_PRESSURE]}.
+	 *
+	 * <pre>
+	 *  ┌──────────────────────────────────────────────────────────────────────┐
+	 *  │  Priority 1 — volume (higher is better)                             │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 2 — box weight (higher is better)                         │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 3 — footprint area (smaller is better)                    │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 4 — z coordinate (lower is better)                        │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 5 — identical restriction (absence preferred)             │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 6 — max box count (higher is better)                      │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 7 — max load weight (higher is better)                    │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 8 — max load pressure (higher is better)                  │
+	 *  └──────────────────────────────────────────────────────────────────────┘
+	 * </pre>
+	 */
+	public static final class ConstraintsHigherVolumeHigherWeightLowerAreaLowerZComparator
+			extends AbstractChainedPlacementComparator {
+
+		public ConstraintsHigherVolumeHigherWeightLowerAreaLowerZComparator() {}
+
+		public ConstraintsHigherVolumeHigherWeightLowerAreaLowerZComparator(PlacementComparator next) {
+			super(next);
+		}
+
+		@Override
+		public int compare(Placement a, Placement b) {
+			int r = Long.compare(a.getStackValue().getVolume(), b.getStackValue().getVolume());
+			if (r != 0) return r;
+			r = Integer.compare(a.getWeight(), b.getWeight());
+			if (r != 0) return r;
+			r = Long.compare(b.getStackValue().getArea(), a.getStackValue().getArea());
+			if (r != 0) return r;
+			r = Integer.compare(b.getAbsoluteZ(), a.getAbsoluteZ());
+			if (r != 0) return r;
+			boolean aHas = a.getStackValue().isLoadIdenticalBoxOnly();
+			boolean bHas = b.getStackValue().isLoadIdenticalBoxOnly();
+			if (aHas != bHas) return aHas ? -1 : 1;
+			int c1 = a.getStackValue().isMaxLoadBoxCount()
+					? a.getStackValue().getMaxLoadBoxCount() : Integer.MAX_VALUE;
+			int c2 = b.getStackValue().isMaxLoadBoxCount()
+					? b.getStackValue().getMaxLoadBoxCount() : Integer.MAX_VALUE;
+			r = Integer.compare(c1, c2);
+			if (r != 0) return r;
+			long w1 = a.getStackValue().isMaxLoadWeight()
+					? a.getStackValue().getMaxLoadWeight() : Long.MAX_VALUE;
+			long w2 = b.getStackValue().isMaxLoadWeight()
+					? b.getStackValue().getMaxLoadWeight() : Long.MAX_VALUE;
+			r = Long.compare(w1, w2);
+			if (r != 0) return r;
+			double p1 = a.getStackValue().isMaxLoadPressure()
+					? a.getStackValue().getMaxLoadPressure() : Double.MAX_VALUE;
+			double p2 = b.getStackValue().isMaxLoadPressure()
+					? b.getStackValue().getMaxLoadPressure() : Double.MAX_VALUE;
+			r = Double.compare(p1, p2);
+			return r != 0 ? r : chain(a, b);
+		}
+	}
+
+	/**
+	 * Fused comparator for the LAFF / FastLAFF first-placement chain (no support):
+	 * lower z → larger area → higher volume → heavier box → all four constraints.
+	 *
+	 * <p>Registered for {@code [LOWER_Z, HIGHER_AREA, HIGHER_VOLUME, HIGHER_WEIGHT,
+	 * NO_IDENTICAL_CONSTRAINT, HIGHER_MAX_LOAD_BOX_COUNT, HIGHER_MAX_LOAD_WEIGHT,
+	 * HIGHER_MAX_LOAD_PRESSURE]}.
+	 *
+	 * <pre>
+	 *  ┌──────────────────────────────────────────────────────────────────────┐
+	 *  │  Priority 1 — z coordinate (lower is better)                        │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 2 — footprint area (larger is better)                     │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 3 — volume (higher is better)                             │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 4 — box weight (higher is better)                         │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 5 — identical restriction (absence preferred)             │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 6 — max box count (higher is better)                      │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 7 — max load weight (higher is better)                    │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 8 — max load pressure (higher is better)                  │
+	 *  └──────────────────────────────────────────────────────────────────────┘
+	 * </pre>
+	 */
+	public static final class ConstraintsLowerZHigherAreaHigherVolumeHigherWeightComparator
+			extends AbstractChainedPlacementComparator {
+
+		public ConstraintsLowerZHigherAreaHigherVolumeHigherWeightComparator() {}
+
+		public ConstraintsLowerZHigherAreaHigherVolumeHigherWeightComparator(PlacementComparator next) {
+			super(next);
+		}
+
+		@Override
+		public int compare(Placement a, Placement b) {
+			int r = Integer.compare(b.getAbsoluteZ(), a.getAbsoluteZ());
+			if (r != 0) return r;
+			r = Long.compare(a.getStackValue().getArea(), b.getStackValue().getArea());
+			if (r != 0) return r;
+			r = Long.compare(a.getStackValue().getVolume(), b.getStackValue().getVolume());
+			if (r != 0) return r;
+			r = Integer.compare(a.getWeight(), b.getWeight());
+			if (r != 0) return r;
+			boolean aHas = a.getStackValue().isLoadIdenticalBoxOnly();
+			boolean bHas = b.getStackValue().isLoadIdenticalBoxOnly();
+			if (aHas != bHas) return aHas ? -1 : 1;
+			int c1 = a.getStackValue().isMaxLoadBoxCount()
+					? a.getStackValue().getMaxLoadBoxCount() : Integer.MAX_VALUE;
+			int c2 = b.getStackValue().isMaxLoadBoxCount()
+					? b.getStackValue().getMaxLoadBoxCount() : Integer.MAX_VALUE;
+			r = Integer.compare(c1, c2);
+			if (r != 0) return r;
+			long w1 = a.getStackValue().isMaxLoadWeight()
+					? a.getStackValue().getMaxLoadWeight() : Long.MAX_VALUE;
+			long w2 = b.getStackValue().isMaxLoadWeight()
+					? b.getStackValue().getMaxLoadWeight() : Long.MAX_VALUE;
+			r = Long.compare(w1, w2);
+			if (r != 0) return r;
+			double p1 = a.getStackValue().isMaxLoadPressure()
+					? a.getStackValue().getMaxLoadPressure() : Double.MAX_VALUE;
+			double p2 = b.getStackValue().isMaxLoadPressure()
+					? b.getStackValue().getMaxLoadPressure() : Double.MAX_VALUE;
+			r = Double.compare(p1, p2);
+			return r != 0 ? r : chain(a, b);
+		}
+	}
+
+	/**
+	 * Fused comparator for the PlainPackager / LAFF placement chain with support:
+	 * higher support → higher volume → heavier box → smaller area → lower z → all four constraints.
+	 *
+	 * <p>Registered for {@code [HIGHER_SUPPORT, HIGHER_VOLUME, HIGHER_WEIGHT, LOWER_AREA, LOWER_Z,
+	 * NO_IDENTICAL_CONSTRAINT, HIGHER_MAX_LOAD_BOX_COUNT, HIGHER_MAX_LOAD_WEIGHT,
+	 * HIGHER_MAX_LOAD_PRESSURE]}.
+	 *
+	 * <pre>
+	 *  ┌──────────────────────────────────────────────────────────────────────┐
+	 *  │  Priority 1 — support ratio (higher is better)                      │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 2 — volume (higher is better)                             │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 3 — box weight (higher is better)                         │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 4 — footprint area (smaller is better)                    │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 5 — z coordinate (lower is better)                        │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 6 — identical restriction (absence preferred)             │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 7 — max box count (higher is better)                      │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 8 — max load weight (higher is better)                    │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 9 — max load pressure (higher is better)                  │
+	 *  └──────────────────────────────────────────────────────────────────────┘
+	 * </pre>
+	 */
+	public static final class ConstraintsHigherSupportHigherVolumeHigherWeightLowerAreaLowerZComparator
+			extends AbstractChainedPlacementComparator {
+
+		public ConstraintsHigherSupportHigherVolumeHigherWeightLowerAreaLowerZComparator() {}
+
+		public ConstraintsHigherSupportHigherVolumeHigherWeightLowerAreaLowerZComparator(PlacementComparator next) {
+			super(next);
+		}
+
+		@Override
+		public int compare(Placement a, Placement b) {
+			int r = compareSupportRatio(a, b);
+			if (r != 0) return r;
+			r = Long.compare(a.getStackValue().getVolume(), b.getStackValue().getVolume());
+			if (r != 0) return r;
+			r = Integer.compare(a.getWeight(), b.getWeight());
+			if (r != 0) return r;
+			r = Long.compare(b.getStackValue().getArea(), a.getStackValue().getArea());
+			if (r != 0) return r;
+			r = Integer.compare(b.getAbsoluteZ(), a.getAbsoluteZ());
+			if (r != 0) return r;
+			boolean aHas = a.getStackValue().isLoadIdenticalBoxOnly();
+			boolean bHas = b.getStackValue().isLoadIdenticalBoxOnly();
+			if (aHas != bHas) return aHas ? -1 : 1;
+			int c1 = a.getStackValue().isMaxLoadBoxCount()
+					? a.getStackValue().getMaxLoadBoxCount() : Integer.MAX_VALUE;
+			int c2 = b.getStackValue().isMaxLoadBoxCount()
+					? b.getStackValue().getMaxLoadBoxCount() : Integer.MAX_VALUE;
+			r = Integer.compare(c1, c2);
+			if (r != 0) return r;
+			long w1 = a.getStackValue().isMaxLoadWeight()
+					? a.getStackValue().getMaxLoadWeight() : Long.MAX_VALUE;
+			long w2 = b.getStackValue().isMaxLoadWeight()
+					? b.getStackValue().getMaxLoadWeight() : Long.MAX_VALUE;
+			r = Long.compare(w1, w2);
+			if (r != 0) return r;
+			double p1 = a.getStackValue().isMaxLoadPressure()
+					? a.getStackValue().getMaxLoadPressure() : Double.MAX_VALUE;
+			double p2 = b.getStackValue().isMaxLoadPressure()
+					? b.getStackValue().getMaxLoadPressure() : Double.MAX_VALUE;
+			r = Double.compare(p1, p2);
+			return r != 0 ? r : chain(a, b);
+		}
+	}
+
+	/**
+	 * Fused comparator for the LAFF / FastLAFF first-placement chain with support:
+	 * higher support → lower z → larger area → higher volume → heavier box → all four constraints.
+	 *
+	 * <p>Registered for {@code [HIGHER_SUPPORT, LOWER_Z, HIGHER_AREA, HIGHER_VOLUME, HIGHER_WEIGHT,
+	 * NO_IDENTICAL_CONSTRAINT, HIGHER_MAX_LOAD_BOX_COUNT, HIGHER_MAX_LOAD_WEIGHT,
+	 * HIGHER_MAX_LOAD_PRESSURE]}.
+	 *
+	 * <pre>
+	 *  ┌──────────────────────────────────────────────────────────────────────┐
+	 *  │  Priority 1 — support ratio (higher is better)                      │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 2 — z coordinate (lower is better)                        │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 3 — footprint area (larger is better)                     │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 4 — volume (higher is better)                             │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 5 — box weight (higher is better)                         │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 6 — identical restriction (absence preferred)             │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 7 — max box count (higher is better)                      │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 8 — max load weight (higher is better)                    │
+	 *  ├──────────────────────────────────────────────────────────────────────┤
+	 *  │  Priority 9 — max load pressure (higher is better)                  │
+	 *  └──────────────────────────────────────────────────────────────────────┘
+	 * </pre>
+	 */
+	public static final class ConstraintsHigherSupportLowerZHigherAreaHigherVolumeHigherWeightComparator
+			extends AbstractChainedPlacementComparator {
+
+		public ConstraintsHigherSupportLowerZHigherAreaHigherVolumeHigherWeightComparator() {}
+
+		public ConstraintsHigherSupportLowerZHigherAreaHigherVolumeHigherWeightComparator(PlacementComparator next) {
+			super(next);
+		}
+
+		@Override
+		public int compare(Placement a, Placement b) {
+			int r = compareSupportRatio(a, b);
+			if (r != 0) return r;
+			r = Integer.compare(b.getAbsoluteZ(), a.getAbsoluteZ());
+			if (r != 0) return r;
+			r = Long.compare(a.getStackValue().getArea(), b.getStackValue().getArea());
+			if (r != 0) return r;
+			r = Long.compare(a.getStackValue().getVolume(), b.getStackValue().getVolume());
+			if (r != 0) return r;
+			r = Integer.compare(a.getWeight(), b.getWeight());
+			if (r != 0) return r;
+			boolean aHas = a.getStackValue().isLoadIdenticalBoxOnly();
+			boolean bHas = b.getStackValue().isLoadIdenticalBoxOnly();
+			if (aHas != bHas) return aHas ? -1 : 1;
+			int c1 = a.getStackValue().isMaxLoadBoxCount()
+					? a.getStackValue().getMaxLoadBoxCount() : Integer.MAX_VALUE;
+			int c2 = b.getStackValue().isMaxLoadBoxCount()
+					? b.getStackValue().getMaxLoadBoxCount() : Integer.MAX_VALUE;
+			r = Integer.compare(c1, c2);
 			if (r != 0) return r;
 			long w1 = a.getStackValue().isMaxLoadWeight()
 					? a.getStackValue().getMaxLoadWeight() : Long.MAX_VALUE;
