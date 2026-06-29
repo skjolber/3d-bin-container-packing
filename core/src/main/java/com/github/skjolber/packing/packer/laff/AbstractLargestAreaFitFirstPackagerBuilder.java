@@ -7,15 +7,29 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
-public abstract class AbstractLargestAreaFitFirstPackagerBuilder<R extends Placement, B extends AbstractLargestAreaFitFirstPackagerBuilder<R, B>> {
+public abstract class AbstractLargestAreaFitFirstPackagerBuilder<B extends AbstractLargestAreaFitFirstPackagerBuilder<B>> {
+
+	// only applies if no placementControlsBuilderFactory is provided
+	protected boolean requireFullSupport;
+	protected boolean calculateSupport;
 
 	protected Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
 	
 	protected Comparator<BoxItemGroup> firstBoxItemGroupComparator;
 	protected Comparator<BoxItemGroup> boxItemGroupComparator;
 
-	protected PlacementControlsBuilderFactory<R> firstPlacementControlsBuilderFactory;
-	protected PlacementControlsBuilderFactory<R> placementControlsBuilderFactory;
+	protected PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory;
+	protected PlacementControlsBuilderFactory placementControlsBuilderFactory;
+	
+	public B withCalculateSupport(boolean calculateSupport) {
+		this.calculateSupport = calculateSupport;
+		return (B)this;
+	}
+	
+	public B withRequireFullSupport(boolean requireFullSupport) {
+		this.requireFullSupport = requireFullSupport;
+		return (B)this;
+	}
 	
 	public B withIntermediatePackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
 		this.intermediatePackagerResultComparator = comparator;
@@ -33,13 +47,13 @@ public abstract class AbstractLargestAreaFitFirstPackagerBuilder<R extends Place
 	}
 	
 	public B withPlacementControlsBuilderFactory(
-			PlacementControlsBuilderFactory<R> placementControlsBuilderFactory) {
+			PlacementControlsBuilderFactory placementControlsBuilderFactory) {
 		this.placementControlsBuilderFactory = placementControlsBuilderFactory;
 		return (B)this;
 	}
 	
 	public B withFirstPlacementControlsBuilderFactory(
-			PlacementControlsBuilderFactory<R> placementControlsBuilderFactory) {
+			PlacementControlsBuilderFactory placementControlsBuilderFactory) {
 		this.firstPlacementControlsBuilderFactory = placementControlsBuilderFactory;
 		return (B)this;
 	}

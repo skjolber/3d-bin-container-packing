@@ -58,8 +58,22 @@ export class Stackable {
 
 export class Box extends Stackable {
 
-    constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number) {
+    weight: number;
+    maxLoadWeight?: number;
+    maxLoadPressure?: number;
+    maxLoadBoxCount?: number;
+    maxLoadIdenticalOnly?: boolean;
+
+    constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number,
+                weight: number,
+                maxLoadWeight?: number, maxLoadPressure?: number,
+                maxLoadBoxCount?: number, maxLoadIdenticalOnly?: boolean) {
         super(name, id, step, dx, dy, dz);
+        this.weight = weight;
+        this.maxLoadWeight = maxLoadWeight;
+        this.maxLoadPressure = maxLoadPressure;
+        this.maxLoadBoxCount = maxLoadBoxCount;
+        this.maxLoadIdenticalOnly = maxLoadIdenticalOnly;
     }
     
 }
@@ -320,7 +334,12 @@ export class StackableRenderer {
                         y: stackPlacement.y,
                         z: stackPlacement.z
                     },
-                    step: boxStackable.step
+                    step: boxStackable.step,
+                    weight: boxStackable.weight,
+                    maxLoadWeight: boxStackable.maxLoadWeight,
+                    maxLoadPressure: boxStackable.maxLoadPressure,
+                    maxLoadBoxCount: boxStackable.maxLoadBoxCount,
+                    maxLoadIdenticalOnly: boxStackable.maxLoadIdenticalOnly,
                 }
             };
     

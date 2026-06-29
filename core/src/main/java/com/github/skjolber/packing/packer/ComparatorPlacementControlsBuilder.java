@@ -12,15 +12,14 @@ import com.github.skjolber.packing.api.packager.control.placement.PlacementContr
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.PointCalculator;
+import com.github.skjolber.packing.comparator.placement.PlacementComparator;
 
-public class ComparatorPlacementControlsBuilder implements PlacementControlsBuilder<Placement> {
+public class ComparatorPlacementControlsBuilder implements PlacementControlsBuilder {
 
-	protected Comparator<Placement> placementComparator;
+	protected PlacementComparator placementComparator;
 	protected Comparator<BoxItem> boxItemComparator;
 
 	protected BoxItemSource boxItems;
-	protected int boxItemsStartIndex = -1;
-	protected int boxItemsEndIndex = -1; // exclusive
 	
 	protected PointControls pointControls;
 	protected PointCalculator pointCalculator;
@@ -28,6 +27,13 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	protected Stack stack;
 	protected Order order;
 	
+	protected boolean maxLoadWeight;
+	protected boolean maxLoadPressure;
+	protected boolean maxLoadBoxCount;
+
+	protected boolean fullSupport;
+	protected boolean loadIdenticalBox;
+
 	public ComparatorPlacementControlsBuilder withOrder(Order order) {
 		this.order = order;
 		return this;
@@ -40,10 +46,8 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	}
 	
 	@Override
-	public ComparatorPlacementControlsBuilder withBoxItems(BoxItemSource boxItems, int offset, int length) {
+	public ComparatorPlacementControlsBuilder withBoxItems(BoxItemSource boxItems) {
 		this.boxItems = boxItems;
-		this.boxItemsStartIndex = offset;
-		this.boxItemsEndIndex = offset + length;
 		return this;
 	}
 	
@@ -64,8 +68,15 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 		return this;
 	}
 	
-	public ComparatorPlacementControlsBuilder withPlacementComparator(Comparator<Placement> intermediatePlacementResultComparator) {
+	public ComparatorPlacementControlsBuilder withPlacementComparator(PlacementComparator intermediatePlacementResultComparator) {
 		this.placementComparator = intermediatePlacementResultComparator;
+		return this;
+	}
+
+	/** Wraps an existing {@link java.util.Comparator} as a {@link PlacementComparator}. */
+	public ComparatorPlacementControlsBuilder withPlacementComparator(
+			java.util.Comparator<com.github.skjolber.packing.api.Placement> intermediatePlacementResultComparator) {
+		this.placementComparator = PlacementComparator.of(intermediatePlacementResultComparator);
 		return this;
 	}
 
@@ -75,8 +86,34 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 	}
 	
 	@Override
-	public PlacementControls<Placement> build() {
-		return new ComparatorPlacementControls(boxItems, boxItemsStartIndex, boxItemsEndIndex, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
+	public ComparatorPlacementControlsBuilder withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount) {
+		this.maxLoadWeight = maxLoadWeight;
+		this.maxLoadPressure = maxLoadPressure;
+		this.maxLoadBoxCount = maxLoadBoxCount;
+		return this;
+	}
+	
+	@Override
+	public PlacementControlsBuilder withStability(boolean calculateSupport, boolean fullSupport) {
+		this.fullSupport = fullSupport;
+		return this;
+	}
+	
+	@Override
+	public PlacementControls build() {
+		if(fullSupport) {
+			throw new IllegalStateException("Full support not supported");
+		}
+		if(maxLoadWeight || maxLoadPressure || maxLoadBoxCount || loadIdenticalBox) {
+			throw new IllegalStateException("Max load not supported");
+		}
+		return new ComparatorPlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
+	}
+
+	@Override
+	public PlacementControlsBuilder withLoadIdenticalBox(boolean loadIdenticalBox) {
+		this.loadIdenticalBox = loadIdenticalBox;
+		return this;
 	}
 
 }

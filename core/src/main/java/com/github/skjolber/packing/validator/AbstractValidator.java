@@ -1,13 +1,10 @@
 package com.github.skjolber.packing.validator;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -21,8 +18,8 @@ import com.github.skjolber.packing.api.validator.ValidatorResultBuilder;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.validator.reasons.BoxItemCountTooHighReason;
 import com.github.skjolber.packing.validator.reasons.BoxItemCountTooLowReason;
-import com.github.skjolber.packing.validator.reasons.BoxesIntersectReason;
 import com.github.skjolber.packing.validator.reasons.BoxOutsideContainerReason;
+import com.github.skjolber.packing.validator.reasons.BoxesIntersectReason;
 import com.github.skjolber.packing.validator.reasons.ContainerCountTooHighReason;
 import com.github.skjolber.packing.validator.reasons.TooFewBoxItemIdsReason;
 import com.github.skjolber.packing.validator.reasons.TooHighVolumeReason;

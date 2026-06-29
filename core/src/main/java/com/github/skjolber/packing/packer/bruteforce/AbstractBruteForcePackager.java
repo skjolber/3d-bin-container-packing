@@ -56,6 +56,12 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		@Override
 		protected void validate() {
 			super.validate();
+
+			for (BoxItem boxItem : items) {
+				if(boxItem.isMaxLoad()) {
+					throw new IllegalStateException("Max load not supported for brute force packager");
+				}
+			}
 			
 			for(ControlledContainerItem container : containers) {
 				if(container.hasControls()) {
@@ -85,7 +91,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
-				
 				AbstractBruteForceBoxItemPackagerAdapter adapter;
 				if(items != null && !items.isEmpty()) {
 					adapter = createBoxItemAdapter(items, new ContainerItemsCalculator(containers), interrupt);

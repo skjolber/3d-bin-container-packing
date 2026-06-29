@@ -1,11 +1,9 @@
-package com.github.skjolber.packing.comparator;
-
-import java.util.Comparator;
+package com.github.skjolber.packing.comparator.placement;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 
-public class LargestAreaPlacementComparator implements Comparator<Placement> {
+public class LargestAreaPlacementComparator implements PlacementComparator {
 
 	@Override
 	public int compare(Placement o1, Placement o2) {

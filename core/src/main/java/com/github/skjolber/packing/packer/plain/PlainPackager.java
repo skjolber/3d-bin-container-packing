@@ -21,6 +21,9 @@ import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
+import com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory;
+import com.github.skjolber.packing.comparator.placement.PlacementComparator;
+import com.github.skjolber.packing.comparator.placement.PlacementComparatorFactory;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.AnyOrderBoxItemGroupIterator;
@@ -35,6 +38,7 @@ import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
+import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFactory;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
@@ -63,7 +67,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		@Override
 		protected IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ControlledContainerItem containerItem,
 				PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
-			return PlainPackager.this.pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig);
+			return PlainPackager.this.pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		}
 
 		@Override
@@ -85,7 +89,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		@Override
 		protected IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order,
 				ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
-			return PlainPackager.this.packGroup(remainingBoxItemGroups, order, containerItem, interrupt, abortOnAnyBoxTooBig);
+			return PlainPackager.this.packGroup(remainingBoxItemGroups, order, containerItem, interrupt, abortOnAnyBoxTooBig, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		}
 		
 		@Override
@@ -139,9 +143,23 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 
 	public static class Builder {
 
+		// only applies if no placementControlsBuilderFactory is provided
+		protected boolean requireFullSupport;
+		protected boolean calculateSupport;
+		
 		protected Comparator<IntermediatePackagerResult> packagerResultComparator;
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
-		protected PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory;
+		protected PlacementControlsBuilderFactory placementControlsBuilderFactory;
+		
+		public Builder withCalculateSupport(boolean calculateSupport) {
+			this.calculateSupport = calculateSupport;
+			return this;
+		}
+		
+		public Builder withRequireFullSupport(boolean requireFullSupport) {
+			this.requireFullSupport = requireFullSupport;
+			return this;
+		}
 		
 		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
 			this.boxItemGroupComparator = comparator;
@@ -153,7 +171,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			return this;
 		}
 		
-		public Builder withPlacementControlsBuilderFactory(PlacementControlsBuilderFactory<Placement> factory) {
+		public Builder withPlacementControlsBuilderFactory(PlacementControlsBuilderFactory factory) {
 			this.placementControlsBuilderFactory = factory;
 			return this;
 		}
@@ -163,19 +181,18 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			consumer.accept(b);
 			
 			boolean requireFullSupport = b.requireFullSupport;
+			boolean calculateSupport = b.calculateSupport;
 			Comparator<BoxItem> boxItemComparator = b.boxItemComparator;
-			Comparator<Placement> placementComparator = b.placementComparator;
 			
 			if(boxItemComparator == null) {
 				boxItemComparator = VolumeThenWeightBoxItemComparator.getInstance();
 			}
-			if(boxItemComparator == null) {
-				placementComparator = new PlainPlacementComparator();
-			}
-			
-			if(placementControlsBuilderFactory == null) {
-				placementControlsBuilderFactory = new PlainPlacementControlsBuilderFactory(boxItemComparator, placementComparator, requireFullSupport);
-			}
+			PlacementComparatorFactory factory = b.comparatorFactory != null
+					? b.comparatorFactory
+					: DefaultPlacementComparatorFactory.newFactory()
+							.higherVolumeIsBetter().higherWeightIsBetter()
+							.lowerAreaIsBetter().lowerZIsBetter();
+			placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(factory, boxItemComparator, calculateSupport, requireFullSupport);
 			
 			return this;
 		}
@@ -183,8 +200,14 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		public static class PlacementControlsBuilderFactoryBuilder {
 
 			private boolean requireFullSupport;
+			private boolean calculateSupport;
 			private Comparator<BoxItem> boxItemComparator;
-			private Comparator<Placement> placementComparator; 
+			private PlacementComparatorFactory comparatorFactory;
+			
+			public PlacementControlsBuilderFactoryBuilder withCalculateSupport(boolean calculateSupport) {
+				this.calculateSupport = calculateSupport;
+				return this;
+			}
 			
 			public PlacementControlsBuilderFactoryBuilder withRequireFullSupport(boolean require) {
 				this.requireFullSupport = require;
@@ -196,11 +219,33 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 				return this;
 			}
 			
-			public PlacementControlsBuilderFactoryBuilder withPlacementComparator(Comparator<Placement> placementComparator) {
-				this.placementComparator = placementComparator;
+			/**
+			 * Wraps a fixed {@link PlacementComparator} via {@link PlacementComparatorFactory#of}
+			 * so it is used as-is for every packing run, ignoring any disabled attributes.
+			 */
+			public PlacementControlsBuilderFactoryBuilder withPlacementComparator(PlacementComparator placementComparator) {
+				this.comparatorFactory = PlacementComparatorFactory.of(placementComparator);
 				return this;
 			}
 
+			/**
+			 * Configures a {@link DefaultPlacementComparatorFactory.Builder} via a consumer.
+			 * The factory is used dynamically — per-run, only constraint dimensions that
+			 * are active for that run are included. Position dimensions added via the
+			 * consumer are always included.
+			 */
+			public PlacementControlsBuilderFactoryBuilder withPlacementComparatorFactory(Consumer<DefaultPlacementComparatorFactory.Builder> consumer) {
+				DefaultPlacementComparatorFactory.Builder f = DefaultPlacementComparatorFactory.newFactory();
+				consumer.accept(f);
+				this.comparatorFactory = f;
+				return this;
+			}
+
+			/** Sets a pre-configured {@link PlacementComparatorFactory} directly. */
+			public PlacementControlsBuilderFactoryBuilder withPlacementComparatorFactory(PlacementComparatorFactory factory) {
+				this.comparatorFactory = factory;
+				return this;
+			}
 		}
 		
 		public PlainPackager build() {
@@ -208,7 +253,16 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 				packagerResultComparator = new DefaultIntermediatePackagerResultComparator();
 			}
 			if(placementControlsBuilderFactory == null) {
-				placementControlsBuilderFactory = new PlainPlacementControlsBuilderFactory();
+				VolumeThenWeightBoxItemComparator boxItemComparator = new VolumeThenWeightBoxItemComparator();
+				DefaultPlacementComparatorFactory.Builder placementFactory = DefaultPlacementComparatorFactory.newFactory();
+				if(!requireFullSupport && calculateSupport) {
+					placementFactory.higherSupportIsBetter();
+				}
+				placementFactory.higherVolumeIsBetter()
+						.higherWeightIsBetter()
+						.lowerAreaIsBetter()
+						.lowerZIsBetter();
+				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementFactory, boxItemComparator, calculateSupport, requireFullSupport);
 			}
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
@@ -218,10 +272,10 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		
 	}
 
-	protected PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory;
+	protected PlacementControlsBuilderFactory placementControlsBuilderFactory;
 	protected Comparator<BoxItemGroup> boxItemGroupComparator;
 
-	public PlainPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<BoxItemGroup> boxItemGroupComparator, PlacementControlsBuilderFactory<Placement> placementControlsBuilderFactory) {
+	public PlainPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<BoxItemGroup> boxItemGroupComparator, PlacementControlsBuilderFactory placementControlsBuilderFactory) {
 		super(comparator);
 
 		this.placementControlsBuilderFactory = placementControlsBuilderFactory;
@@ -236,17 +290,18 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 	}
 	
 	@Override
-	protected PlacementControls<Placement> createControls(BoxItemSource boxItems, int offset, int length,
-			Order order, PointControls pointControls, Container container, PointCalculator pointCalculator,
-			Stack stack) {
+	protected PlacementControls createControls(BoxItemSource boxItems, Order order, PointControls pointControls,
+			Container container, PointCalculator pointCalculator, Stack stack, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean loadIdenticalBox) {
 		
 		return placementControlsBuilderFactory.createPlacementControlsBuilder()
 				.withPointCalculator(pointCalculator)
-				.withBoxItems(boxItems, offset, length)
+				.withBoxItems(boxItems)
 				.withPointControls(pointControls)
 				.withOrder(order)
 				.withStack(stack)
 				.withContainer(container)
+				.withMaxLoad(maxLoadWeight, maxLoadPressure, maxLoadBoxCount)
+				.withLoadIdenticalBox(loadIdenticalBox)
 				.build();
 	}
 

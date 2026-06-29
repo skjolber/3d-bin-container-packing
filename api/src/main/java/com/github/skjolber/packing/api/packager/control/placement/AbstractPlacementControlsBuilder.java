@@ -8,11 +8,9 @@ import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.PointCalculator;
 
-public abstract class AbstractPlacementControlsBuilder<R extends Placement> implements PlacementControlsBuilder<R> {
+public abstract class AbstractPlacementControlsBuilder implements PlacementControlsBuilder {
 
 	protected BoxItemSource boxItems;
-	protected int boxItemsStartIndex = -1;
-	protected int boxItemsEndIndex = -1; // exclusive
 	
 	protected PointControls pointControls;
 	protected PointCalculator pointCalculator;
@@ -20,39 +18,60 @@ public abstract class AbstractPlacementControlsBuilder<R extends Placement> impl
 	protected Stack stack;
 	protected Order order;
 	
-	public AbstractPlacementControlsBuilder<R> withOrder(Order order) {
+	protected boolean maxLoadWeight;
+	protected boolean maxLoadPressure;
+	protected boolean maxLoadBoxCount;
+	
+	protected boolean loadIdenticalBox;
+	
+	public AbstractPlacementControlsBuilder withOrder(Order order) {
 		this.order = order;
 		return this;
 	}
 	
 	@Override
-	public AbstractPlacementControlsBuilder<R> withPointControls(PointControls pointControls) {
+	public AbstractPlacementControlsBuilder withPointControls(PointControls pointControls) {
 		this.pointControls = pointControls;
 		return this;
 	}
 	
 	@Override
-	public AbstractPlacementControlsBuilder<R> withBoxItems(BoxItemSource boxItems, int offset, int length) {
+	public AbstractPlacementControlsBuilder withBoxItems(BoxItemSource boxItems) {
 		this.boxItems = boxItems;
-		this.boxItemsStartIndex = offset;
-		this.boxItemsEndIndex = offset + length;
 		return this;
 	}
 	
-	public AbstractPlacementControlsBuilder<R> withStack(Stack stack) {
+	public AbstractPlacementControlsBuilder withStack(Stack stack) {
 		this.stack = stack;
 		return this;
 	}
 	
+	public AbstractPlacementControlsBuilder withLoadIdenticalBox(boolean loadIdenticalBox) {
+		this.loadIdenticalBox = loadIdenticalBox;
+		return this;
+	}
+	
 	@Override
-	public AbstractPlacementControlsBuilder<R> withContainer(Container container) {
+	public AbstractPlacementControlsBuilder withContainer(Container container) {
 		this.container = container;
 		return this;
 	}
 
 	@Override
-	public AbstractPlacementControlsBuilder<R> withPointCalculator(PointCalculator pointCalculator) {
+	public AbstractPlacementControlsBuilder withPointCalculator(PointCalculator pointCalculator) {
 		this.pointCalculator = pointCalculator;
+		return this;
+	}
+	
+	protected boolean isMaxLoad() {
+		return maxLoadWeight || maxLoadPressure || maxLoadBoxCount;
+	}
+	
+	@Override
+	public AbstractPlacementControlsBuilder withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount) {
+		this.maxLoadWeight = maxLoadWeight;
+		this.maxLoadPressure = maxLoadPressure;
+		this.maxLoadBoxCount = maxLoadBoxCount;
 		return this;
 	}
 
