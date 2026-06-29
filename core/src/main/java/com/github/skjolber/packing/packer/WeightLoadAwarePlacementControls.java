@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.placement.PlacementComparator;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
-import com.github.skjolber.packing.packer.util.WeightLoadAwarePlacementUtil;
+import com.github.skjolber.packing.packer.util.WeightLoadAwarePlacementUtility;
 
 /**
  * Load aware placement controls which validates weight constraints only.
@@ -28,6 +28,6 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 
 	@Override
 	protected LoadPlacementUtility createUtil(Stack stack) {
-		return new WeightLoadAwarePlacementUtil(stack);
+		return new WeightLoadAwarePlacementUtility(stack);
 	}
 }

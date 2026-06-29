@@ -27,7 +27,7 @@ import com.github.skjolber.packing.comparator.placement.PlacementComparator;
  * <p>Three ready-to-use subclasses are provided, matching the three concrete
  * placement-controls classes:
  * <ul>
- *   <li>{@link WeightLoadAwarePlacementUtil} — weight only.</li>
+ *   <li>{@link WeightLoadAwarePlacementUtility} — weight only.</li>
  *   <li>{@link WeightPressureCountLoadAwarePlacementUtility} — weight, pressure, box-count.</li>
  *   <li>{@link WeightPressureCountIdenticalLoadAwarePlacementUtility} — weight, pressure,
  *       box-count, and identical-only restriction.</li>
@@ -141,8 +141,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	 *
 	 * @return total supported area, or {@code -1} if any load constraint is violated
 	 */
-	public long calculateSupportAndValidateSupporterLoad(BoxStackValue stackValue,
-			int absoluteX, int absoluteY, long weight) {
+	public long calculateSupportAndValidateSupporterLoad(BoxStackValue stackValue, int absoluteX, int absoluteY, long weight) {
 		int n = placementSupporters.size();
 		int newMaxX = absoluteX + stackValue.getDx() - 1;
 		int newMaxY = absoluteY + stackValue.getDy() - 1;
@@ -178,8 +177,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	 * @return effective placement weight (including the box's own weight), or
 	 *         {@code -1} if any constraint is violated
 	 */
-	public abstract long calculateSupporteeLoad(BoxStackValue sv,
-			int minX, int minY, int minZ, int maxX, int maxY);
+	public abstract long calculateSupporteeLoad(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY);
 
 	/**
 	 * Populates {@link #placementSupporters} with all supporters for the bounding
@@ -191,8 +189,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	public boolean populateSupporters(BoxStackValue sv, Point point) {
 		int minX = point.getMinX();
 		int minY = point.getMinY();
-		return populateSupporters(sv, minX, minY, point.getMinZ(),
-				minX + sv.getDx() - 1, minY + sv.getDy() - 1);
+		return populateSupporters(sv, minX, minY, point.getMinZ(), minX + sv.getDx() - 1, minY + sv.getDy() - 1);
 	}
 
 	/**
@@ -200,8 +197,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	 *
 	 * @return {@code false} if any supporter constraint is violated
 	 */
-	public abstract boolean populateSupporters(BoxStackValue sv,
-			int minX, int minY, int minZ, int maxX, int maxY);
+	public abstract boolean populateSupporters(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY);
 
 	// =========================================================================
 	// Placement-attempt helpers
@@ -246,8 +242,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	 *
 	 * @return a valid {@link Placement}, or {@code null} if any constraint fails
 	 */
-	public Placement getPlacementAtCandidate(Point point3d, BoxStackValue stackValue,
-			Placement candidate, int limitX, int limitY, int z, int limitMaxX, int limitMaxY) {
+	public Placement getPlacementAtCandidate(Point point3d, BoxStackValue stackValue, Placement candidate, int limitX, int limitY, int z, int limitMaxX, int limitMaxY) {
 		if (candidate.getAbsoluteEndZ() != z) {
 			return null;
 		}

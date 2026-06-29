@@ -11,15 +11,14 @@ import com.github.skjolber.packing.api.Stack;
  * (always returns {@code true}) because there are no box-count or
  * identical-only checks in this variant.
  */
-public class WeightLoadAwarePlacementUtil extends AbstractLoadWeightPlacementUtility {
+public class WeightLoadAwarePlacementUtility extends AbstractLoadWeightPlacementUtility {
 
-	public WeightLoadAwarePlacementUtil(Stack stack) {
+	public WeightLoadAwarePlacementUtility(Stack stack) {
 		super(stack);
 	}
 
 	@Override
-	public long calculateSupporteeLoad(BoxStackValue sv,
-			int minX, int minY, int minZ, int maxX, int maxY) {
+	public long calculateSupporteeLoad(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY) {
 		long weight = 0;
 		int z = minZ + sv.getDz();
 		int stackSize = stack.size();
@@ -54,8 +53,7 @@ public class WeightLoadAwarePlacementUtil extends AbstractLoadWeightPlacementUti
 	}
 
 	@Override
-	public boolean populateSupporters(BoxStackValue sv,
-			int minX, int minY, int minZ, int maxX, int maxY) {
+	public boolean populateSupporters(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY) {
 		placementSupporters.clear();
 		int z = minZ - 1;
 		for (int k = 0; k < pointSupporters.size(); k++) {

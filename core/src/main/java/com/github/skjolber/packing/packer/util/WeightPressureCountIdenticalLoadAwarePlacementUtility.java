@@ -18,8 +18,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementUtility extends Weigh
 	}
 
 	@Override
-	public long calculateSupporteeLoad(BoxStackValue sv,
-			int minX, int minY, int minZ, int maxX, int maxY) {
+	public long calculateSupporteeLoad(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY) {
 		long weight = 0;
 		int z = minZ + sv.getDz();
 		int stackSize = stack.size();
@@ -71,8 +70,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementUtility extends Weigh
 	}
 
 	@Override
-	public boolean populateSupporters(BoxStackValue sv,
-			int minX, int minY, int minZ, int maxX, int maxY) {
+	public boolean populateSupporters(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY) {
 		Box box = sv.getBox();
 		placementSupporters.clear();
 		int z = minZ - 1;

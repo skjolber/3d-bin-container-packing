@@ -16,8 +16,7 @@ public class WeightPressureCountLoadAwarePlacementUtility extends AbstractLoadWe
 	}
 
 	@Override
-	public long calculateSupporteeLoad(BoxStackValue sv,
-			int minX, int minY, int minZ, int maxX, int maxY) {
+	public long calculateSupporteeLoad(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY) {
 		long weight = 0;
 		int z = minZ + sv.getDz();
 		int stackSize = stack.size();
@@ -58,8 +57,7 @@ public class WeightPressureCountLoadAwarePlacementUtility extends AbstractLoadWe
 	}
 
 	@Override
-	public boolean populateSupporters(BoxStackValue sv,
-			int minX, int minY, int minZ, int maxX, int maxY) {
+	public boolean populateSupporters(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY) {
 		placementSupporters.clear();
 		int z = minZ - 1;
 		for (int k = 0; k < pointSupporters.size(); k++) {
@@ -82,8 +80,7 @@ public class WeightPressureCountLoadAwarePlacementUtility extends AbstractLoadWe
 	 * Checks whether placing a box on top of {@code candidate} would violate its
 	 * max-load box-count constraint, recursively through the support chain.
 	 */
-	protected boolean isWithinSupporteeBoxCount(Placement candidate, int count,
-			PlacementList supportees, int minX, int minY, int maxX, int maxY) {
+	protected boolean isWithinSupporteeBoxCount(Placement candidate, int count, PlacementList supportees, int minX, int minY, int maxX, int maxY) {
 		BoxStackValue sv = candidate.getStackValue();
 		if (sv.isMaxLoadBoxCount() && sv.getMaxLoadBoxCount() > count) {
 			return true;
