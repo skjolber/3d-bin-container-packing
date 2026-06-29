@@ -195,7 +195,7 @@ public class ContainerItem {
 	}	
 	
 	public boolean hasControls() {
-		return hasBoxItemControlsBuilderFactory() || hasBoxItemControlsBuilderFactory();
+		return hasPointControlsBuilderFactory() || hasBoxItemControlsBuilderFactory();
 	}
 	
 	public boolean hasInitialPoints() {

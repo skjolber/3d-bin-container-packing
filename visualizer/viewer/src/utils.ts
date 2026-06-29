@@ -71,8 +71,7 @@ export function computeLoads(placements: BoxPlacementEntry[]): Map<BoxPlacementE
     const totalCarried = (ts.weight || 0) + info.loadWeight;
     const depth = info.stackDepth + 1; // levels including this box
 
-    if (totalCarried === 0) continue;
-
+    // Do not early-return on totalCarried === 0; directCount/stackDepth still matter.
     // Find all supporters: boxes whose top face touches this box's bottom face
     const supporters: Array<{ bp: BoxPlacementEntry; area: number }> = [];
     let totalArea = 0;
