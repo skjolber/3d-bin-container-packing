@@ -28,12 +28,12 @@ import com.github.skjolber.packing.comparator.placement.PlacementComparator;
  * placement-controls classes:
  * <ul>
  *   <li>{@link WeightLoadAwarePlacementUtil} — weight only.</li>
- *   <li>{@link WeightPressureCountLoadAwarePlacementUtil} — weight, pressure, box-count.</li>
- *   <li>{@link WeightPressureCountIdenticalLoadAwarePlacementUtil} — weight, pressure,
+ *   <li>{@link WeightPressureCountLoadAwarePlacementUtility} — weight, pressure, box-count.</li>
+ *   <li>{@link WeightPressureCountIdenticalLoadAwarePlacementUtility} — weight, pressure,
  *       box-count, and identical-only restriction.</li>
  * </ul>
  */
-public abstract class AbstractLoadWeightPlacementUtil implements LoadWeightPlacementUtil {
+public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacementUtility {
 
 	protected final Stack stack;
 
@@ -44,7 +44,7 @@ public abstract class AbstractLoadWeightPlacementUtil implements LoadWeightPlace
 	protected long[] placementAreas;
 	protected long[] reliefWeights;
 
-	protected AbstractLoadWeightPlacementUtil(Stack stack) {
+	protected AbstractLoadWeightPlacementUtility(Stack stack) {
 		this.stack = stack;
 	}
 
@@ -148,7 +148,7 @@ public abstract class AbstractLoadWeightPlacementUtil implements LoadWeightPlace
 		int newMaxY = absoluteY + stackValue.getDy() - 1;
 		long totalOverlapArea = 0;
 		for (int i = 0; i < n; i++) {
-			placementAreas[i] = LoadWeightPlacementUtil.overlapArea(absoluteX, absoluteY, newMaxX, newMaxY, placementSupporters.get(i));
+			placementAreas[i] = LoadPlacementUtility.overlapArea(absoluteX, absoluteY, newMaxX, newMaxY, placementSupporters.get(i));
 			totalOverlapArea += placementAreas[i];
 		}
 		for (int i = 0; i < n; i++) {

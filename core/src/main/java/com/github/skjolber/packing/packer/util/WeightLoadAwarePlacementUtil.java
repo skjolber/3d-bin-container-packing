@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.Stack;
  * (always returns {@code true}) because there are no box-count or
  * identical-only checks in this variant.
  */
-public class WeightLoadAwarePlacementUtil extends AbstractLoadWeightPlacementUtil {
+public class WeightLoadAwarePlacementUtil extends AbstractLoadWeightPlacementUtility {
 
 	public WeightLoadAwarePlacementUtil(Stack stack) {
 		super(stack);
@@ -36,7 +36,7 @@ public class WeightLoadAwarePlacementUtil extends AbstractLoadWeightPlacementUti
 				continue;
 			}
 
-			long area = LoadWeightPlacementUtil.overlapArea(minX, minY, maxX, maxY, candidate);
+			long area = LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
 			long candidateWeight = candidate.getWeight();
 			for (PlacementLoad pl : candidate.getSupportees()) {
 				candidateWeight += pl.getWeight();

@@ -16,7 +16,7 @@ import com.github.skjolber.packing.comparator.placement.PlacementComparator;
  * <p>The static helper {@link #overlapArea} is provided here so callers do not
  * need to import the abstract implementation class.
  */
-public interface LoadWeightPlacementUtil {
+public interface LoadPlacementUtility {
 
 	/**
 	 * Returns the overlap area (in units²) between the axis-aligned rectangle

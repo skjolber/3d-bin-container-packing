@@ -16,14 +16,14 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.PointSource;
 import com.github.skjolber.packing.comparator.placement.PlacementComparator;
-import com.github.skjolber.packing.packer.util.LoadWeightPlacementUtil;
+import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 public abstract class AbstractLoadWeightComparatorPlacementControls extends AbstractComparatorPlacementControls {
 
 	protected boolean fullSupport;
 
 	/** Utility encapsulating variant load-constraint logic and shared mutable state. */
-	protected final LoadWeightPlacementUtil util;
+	protected final LoadPlacementUtility util;
 
 	protected AbstractLoadWeightComparatorPlacementControls(BoxItemSource boxItems, PointControls pointControls,
 			PointCalculator pointCalculator, Container container, Stack stack, Order order,
@@ -39,7 +39,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 	}
 
 	/** Factory method — subclasses return the appropriate utility variant. */
-	protected abstract LoadWeightPlacementUtil createUtil(Stack stack);
+	protected abstract LoadPlacementUtility createUtil(Stack stack);
 
 	/** Re-initializes internal arrays to hold at least {@code count} entries. */
 	public void initialize(int count) {
@@ -192,7 +192,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 			if (!candidate.intersects2D(minX, maxX, minY, maxY)) {
 				continue;
 			}
-			totalArea += LoadWeightPlacementUtil.overlapArea(minX, minY, maxX, maxY, candidate);
+			totalArea += LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
 		}
 
 		if (totalArea == 0) {
@@ -210,7 +210,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 			if (!candidate.intersects2D(minX, maxX, minY, maxY)) {
 				continue;
 			}
-			long area = LoadWeightPlacementUtil.overlapArea(minX, minY, maxX, maxY, candidate);
+			long area = LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
 			long weightShare = (weight * area) / totalArea;
 			candidate.addLoad(placement, area, weightShare);
 		}

@@ -15,8 +15,8 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.PointSource;
 import com.github.skjolber.packing.comparator.placement.PlacementComparator;
-import com.github.skjolber.packing.packer.util.LoadWeightPlacementUtil;
-import com.github.skjolber.packing.packer.util.WeightPressureCountIdenticalLoadAwarePlacementUtil;
+import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
+import com.github.skjolber.packing.packer.util.WeightPressureCountIdenticalLoadAwarePlacementUtility;
 
 /**
  * Load aware placement controls which validates weight, max-load pressure,
@@ -39,8 +39,8 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 	}
 
 	@Override
-	protected LoadWeightPlacementUtil createUtil(Stack stack) {
-		return new WeightPressureCountIdenticalLoadAwarePlacementUtil(stack);
+	protected LoadPlacementUtility createUtil(Stack stack) {
+		return new WeightPressureCountIdenticalLoadAwarePlacementUtility(stack);
 	}
 
 	/**
