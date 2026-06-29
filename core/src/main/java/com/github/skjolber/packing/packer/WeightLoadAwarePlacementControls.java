@@ -53,7 +53,7 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 				} else {
 					pointSupporters.clear();
 				}
-				populatePointSupportees(point3d);
+				populatePointSupportees(point3d, box.getMinimumDz(), box.getMaximumDz());
 				
 				for (BoxStackValue stackValue : box.getStackValues()) {
 					if(stackValue.getArea() > point3d.getArea()) {
@@ -144,7 +144,7 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 
 			for (Point point3d : points) {
 				populatePointSupporters(point3d);
-				populatePointSupportees(point3d);
+				populatePointSupportees(point3d, box.getMinimumDz(), box.getMaximumDz());
 
 				for (BoxStackValue stackValue : box.getStackValues()) {
 					if(stackValue.getArea() > point3d.getArea()) {

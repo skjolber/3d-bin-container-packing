@@ -230,14 +230,22 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 		}
 	}
 	
-	protected void populatePointSupportees(Point point) {
+	protected void populatePointSupportees(Point point, int minDz, int maxDz) {
 		pointSupportees.clear();
 		
+		int limitMinDz = point.getMinZ() + minDz;
+		int limitMaxDz = point.getMinZ() + maxDz;
+		
 		for (Placement candidate : stack.getPlacements()) {
-			if (candidate.getAbsoluteZ() <= point.getMinZ()) {
+			if (candidate.getAbsoluteZ() < limitMinDz) {
 				continue;
 			}
 			
+			if (candidate.getAbsoluteZ() > limitMaxDz) {
+				continue;
+			}
+
+			 
 			if(!point.intersectsXY(candidate)) {
 				continue;
 			}

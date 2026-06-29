@@ -522,6 +522,14 @@ public class Box {
 	protected long minimumPressure;
 	protected long maximumPressure;
 
+	protected int minimumDx;
+	protected int minimumDy;
+	protected int minimumDz;
+
+	protected int maximumDx;
+	protected int maximumDy;
+	protected int maximumDz;
+
 	protected final String id;
 	protected final String description;
 
@@ -545,6 +553,14 @@ public class Box {
 
 		this.minimumArea = getMinimumArea(stackValues);
 		this.maximumArea = getMaximumArea(stackValues);
+
+		this.minimumDx = getMinimumDx(stackValues);
+		this.minimumDy = getMinimumDy(stackValues);
+		this.minimumDz = getMinimumDz(stackValues);
+
+		this.maximumDx = getMaximumDx(stackValues);
+		this.maximumDy = getMaximumDy(stackValues);
+		this.maximumDz = getMaximumDz(stackValues);
 
 		this.minimumPressure = (weight * 1000L) / maximumArea.getArea();
 		this.maximumPressure = (weight * 1000L) / minimumArea.getArea();
@@ -750,6 +766,67 @@ public class Box {
 		}
 		return maxArea;
 	}
+	
+	public static int getMaximumDx(BoxStackValue[] rotations) {
+		int max = -1;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (max == -1 || boxStackValue.getDx() > max) {
+				max = boxStackValue.getDx();
+			}
+		}
+		return max;
+	}
+	
+	public static int getMaximumDy(BoxStackValue[] rotations) {
+		int max = -1;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (max == -1 || boxStackValue.getDy() > max) {
+				max = boxStackValue.getDy();
+			}
+		}
+		return max;
+	}
+	
+	public static int getMaximumDz(BoxStackValue[] rotations) {
+		int max = -1;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (max == -1 || boxStackValue.getDz() > max) {
+				max = boxStackValue.getDz();
+			}
+		}
+		return max;
+	}
+	
+	public static int getMinimumDx(BoxStackValue[] rotations) {
+		int min = -1;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (min == -1 || boxStackValue.getDx() < min) {
+				min = boxStackValue.getDx();
+			}
+		}
+		return min;
+	}	
+	
+	public static int getMinimumDy(BoxStackValue[] rotations) {
+		int min = -1;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (min == -1 || boxStackValue.getDy() < min) {
+				min = boxStackValue.getDy();
+			}
+		}
+		return min;
+	}
+	
+	public static int getMinimumDz(BoxStackValue[] rotations) {
+		int min = -1;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (min == -1 || boxStackValue.getDz() < min) {
+				min = boxStackValue.getDz();
+			}
+		}
+		return min;
+	}
+
 
 	@SuppressWarnings("unchecked")
 	public <T> T getProperty(String key) {
@@ -782,5 +859,21 @@ public class Box {
 	
 	public boolean isLoadIdenticalBoxOnly() {
 		return loadIdenticalBoxOnly;
+	}
+	
+	public int getMinimumDx() {
+		return minimumDx;
+	}
+	
+	public int getMinimumDy() {
+		return minimumDy;
+	}
+	
+	public int getMinimumDz() {
+		return minimumDz;
+	}
+	
+	public int getMaximumDz() {
+		return maximumDz;
 	}
 }
