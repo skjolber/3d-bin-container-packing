@@ -14,7 +14,7 @@
 	<packaging>pom</packaging>
 	<properties>
 		<swagger-annotations.version>2.2.50</swagger-annotations.version>
-	  	<spring.version>7.0.7</spring.version>
+	  	<spring.version>7.0.8</spring.version>
 		<httpclient5.version>5.6.1</httpclient5.version>
 		<open-api-generator.version>7.23.0</open-api-generator.version>
 		<jakarta.validation-api.version>3.1.1</jakarta.validation-api.version>
