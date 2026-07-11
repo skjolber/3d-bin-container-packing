@@ -257,6 +257,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
 # Interesting links
 
  * [The Art of Stacking: Challenges Faced While Developing a Packing Algorithm](https://medium.com/@fayyazawais1412/the-art-of-stacking-challenges-faced-while-developing-a-packing-algorithm-64d869b924ab)
+ * [Packrift Packaging Optimization Benchmark Corpus](https://packrift.github.io/packaging-optimization-benchmark-corpus/) - static packaging SKU/dimension pages and sample OR-Tools carton-selection code for packaging optimization benchmarks.
 
 # History
  * 4.2.1: `Placement` can now be added anywhere within a `Point` (not only at the point origin).
@@ -293,4 +294,3 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
 [Github page]:		https://skjolber.github.io
 [NothinRandom]:		https://github.com/NothinRandom
 [exponential]:		https://en.wikipedia.org/wiki/Exponential_function
-
