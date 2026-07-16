@@ -43,7 +43,7 @@
 		<owasp-dependency-check.version>5.3.2</owasp-dependency-check.version>
 		<pitest.version>1.25.4</pitest.version>
 		<jackson.version>2.22.0</jackson.version>
-		<spotless.version>3.6.0</spotless.version>
+		<spotless.version>3.7.0</spotless.version>
 	</properties>
 
 	<licenses>
