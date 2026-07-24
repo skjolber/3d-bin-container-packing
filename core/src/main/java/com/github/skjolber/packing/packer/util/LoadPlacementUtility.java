@@ -27,6 +27,9 @@ public interface LoadPlacementUtility {
 		int overlapMinY = Math.max(minY, candidate.getAbsoluteY());
 		int overlapMaxX = Math.min(maxX, candidate.getAbsoluteEndX());
 		int overlapMaxY = Math.min(maxY, candidate.getAbsoluteEndY());
+		if (overlapMaxX < overlapMinX || overlapMaxY < overlapMinY) {
+			return 0L;
+		}
 		return (long) (overlapMaxX - overlapMinX + 1) * (long) (overlapMaxY - overlapMinY + 1);
 	}
 
