@@ -6,6 +6,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.point.PointCalculator;
+import com.github.skjolber.packing.packer.AbstractPackager;
 
 public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 	
@@ -100,7 +101,7 @@ public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 		// find next best group
 		for (int l = 0; l < filteredBoxItemGroups.size(); l++) {
 			BoxItemGroup group = filteredBoxItemGroups.get(l);
-			if(bestBoxItemGroup == null || comparator.compare(bestBoxItemGroup, group) > 0) {
+			if(bestBoxItemGroup == null || comparator.compare(bestBoxItemGroup, group) == AbstractPackager.ARGUMENT_2_IS_BETTER) {
 				bestBoxItemGroup = group;
 				bestIndex = l;
 			}

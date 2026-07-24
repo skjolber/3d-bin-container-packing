@@ -3,7 +3,6 @@ package com.github.skjolber.packing.test.bouwkamp;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
@@ -22,6 +21,12 @@ public class BouwkampCodeConverter {
 		public Point clone(int maxX, int maxY, int maxZ) {
 			return new BouwkampPoint(minX,  minY,  minZ, maxX, maxY, maxZ);
 		}
+		
+		@Override
+		public boolean isSupportedXYPlane(int x, int y) {
+			return false;
+		}
+
 	}
 	
 	private boolean throwException;

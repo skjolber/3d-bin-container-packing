@@ -16,10 +16,16 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
+import com.github.skjolber.packing.api.packager.control.manifest.DefaultManifestControls;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
+import com.github.skjolber.packing.api.packager.control.point.DefaultPointControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
+import com.github.skjolber.packing.api.point.PointSource;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.MarkResetPointCalculator3D;
@@ -38,23 +44,28 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		super(comparator);
 	}
 
-	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean loadIdenticalBox) throws PackagerInterruptedException {
 		Container container = controlContainerItem.getContainer();
 
-		Stack stack = new Stack();
+		Stack stack = createStack();
 
 		DefaultBoxItemSource boxItemSource = new DefaultBoxItemSource(boxItems);
 
-		PointCalculator pointCalculator = createPointCalculator(boxItemSource);
+		PointCalculator pointCalculator = createPointCalculator(boxItemSource); 
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		if(controlContainerItem.hasInitialPoints()) {
 			pointCalculator.setPoints(controlContainerItem.getInitialPoints());
 			pointCalculator.clear();
 		}
 
-		ManifestControls manifestControls = controlContainerItem.createBoxItemControls(container, stack, boxItemSource, pointCalculator, null);
+		ManifestControls manifestControls = createBoxItemControls(container, stack, boxItemSource, pointCalculator, null, controlContainerItem.getBoxItemControlsBuilderFactory());
 
-		PointControls pointControls = controlContainerItem.createPointControls(container, stack, boxItemSource, pointCalculator);
+		PointControlsBuilderFactory pointControlsBuilderFactory = controlContainerItem.getPointControlsBuilderFactory();
+		if(pointControlsBuilderFactory == null) {
+			pointControlsBuilderFactory = new DefaultPointControlsBuilderFactory();
+		}
+
+		PointControls pointControls = createPointControls(container, stack, boxItemSource, pointCalculator, pointControlsBuilderFactory, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, loadIdenticalBox);
 		
 		// remove boxes which do not fit due to volume, weight or dimensions
 		List<BoxItem> removed = new ArrayList<>(boxItemSource.size());
@@ -93,7 +104,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
 
-		PlacementControls<I> placementControls = createControls(boxItemSource, 0, boxItemSource.size(), order, pointControls, container, pointCalculator, stack);
+		PlacementControls placementControls = createControls(boxItemSource, order, pointControls, container, pointCalculator, stack, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, loadIdenticalBox);
 
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !boxItemSource.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
@@ -104,9 +115,10 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			if(placement == null) {
 				break;
 			}
-			
+
 			stack.add(placement);
 			pointCalculator.add(placement.getPointIndex(), placement);
+			placementControls.accepted(placement);
 			
 			remainingLoadWeight -= placement.getBoxItem().getBox().getWeight();
 			remainingLoadVolume -= placement.getBoxItem().getBox().getVolume();
@@ -190,16 +202,46 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		return createIntermediatePackagerResult(controlContainerItem, stack);
 	}
 
+	protected Stack createStack() {
+		return new Stack();
+	}
+
+	protected ManifestControls createBoxItemControls(Container container, Stack stack, BoxItemSource boxItemSource,
+			PointCalculator pointCalculator, BoxItemGroupSource groups, ManifestControlsBuilderFactory manifestControlsBuilderFactory) {
+				
+		if(manifestControlsBuilderFactory == null) {
+			return new DefaultManifestControls(boxItemSource);
+		}
+		return manifestControlsBuilderFactory.createBoxItemControlsBuilder()
+				.withContainer(container)
+				.withStack(stack)
+				.withBoxItems(boxItemSource)
+				.withBoxItemGroups(groups)
+				.withPoints(pointCalculator)
+				.build();
+	}
+	
+	protected PointControls createPointControls(Container container, Stack stack, BoxItemSource boxItemSource, PointSource points, PointControlsBuilderFactory pointControlsBuilderFactory, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean loadIdenticalBox) {
+		return pointControlsBuilderFactory.createPointControlsBuilder()
+				.withContainer(container)
+				.withStack(stack)
+				.withBoxItems(boxItemSource)
+				.withPoints(points)
+				.withMaxLoad(maxLoadWeight, maxLoadPressure, maxLoadBoxCount)
+				.withLoadIdenticalBox(loadIdenticalBox)
+				.build();
+	}
+	
 	protected PointCalculator createPointCalculator(BoxItemSource boxItemSource) {
 		return new DefaultPointCalculator3D(false, boxItemSource);
 	}
 
-	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) {
 		ContainerItem containerItem = controlContainerItem;
 		Container container = containerItem.getContainer();
 		
-		Stack stack = new Stack();
-
+		Stack stack = createStack();
+		
 		PackagerBoxItems packagerBoxItems = new PackagerBoxItems(boxItemGroups);
 		BoxItemSource filteredBoxItems = packagerBoxItems.getFilteredBoxItems();
 
@@ -213,9 +255,14 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 
 		BoxItemGroupSource filteredBoxItemGroups = packagerBoxItems.getFilteredBoxItemGroups();
 
-		ManifestControls boxItemControls = controlContainerItem.createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups);
+		ManifestControls boxItemControls = createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups, controlContainerItem.getBoxItemControlsBuilderFactory());
 
-		PointControls pointControls = controlContainerItem.createPointControls(container, stack, filteredBoxItems, pointCalculator);
+		PointControlsBuilderFactory pointControlsBuilderFactory = controlContainerItem.getPointControlsBuilderFactory();
+		if(pointControlsBuilderFactory == null) {
+			pointControlsBuilderFactory = new DefaultPointControlsBuilderFactory();
+		}
+		
+		PointControls pointControls = createPointControls(container, stack, filteredBoxItems, pointCalculator, pointControlsBuilderFactory, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 						
 		List<BoxItemGroup> removedBoxItemGroups = new ArrayList<>();
 
@@ -263,7 +310,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		long maxBoxVolume = filteredBoxItems.getMaxVolume();
 		long maxBoxArea = filteredBoxItems.getMaxVolume();
 		
-		PlacementControls<I> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
+		PlacementControls placementControls = createControls(filteredBoxItems, order, pointControls, container, pointCalculator, stack, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 
 		groups:
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !pointCalculator.isEmpty() && boxItemGroupIterator.hasNext() && !filteredBoxItemGroups.isEmpty()) {
@@ -285,7 +332,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				if(placement == null) {
 					break;
 				}
-				
+
 				stack.add(placement);
 				pointCalculator.add(placement.getPointIndex(), placement);
 				
@@ -297,6 +344,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 
 				boxItemControls.accepted(placement.getBoxItem());
 				pointControls.accepted(placement.getBoxItem());
+				placementControls.accepted(placement);
 
 				if(!filteredBoxItemGroups.isEmpty()) {
 					// remove groups are too big according to total volume / weight
@@ -403,12 +451,13 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 					return createEmptyIntermediatePackagerResult();
 				}
 
-				List<BoxItem> removedBoxItems = new ArrayList<>();
 				// undo any work on this group
-				for(int i = markStackSize; i < stack.size(); i++) {
-					removedBoxItems.add(stack.getPlacements().get(i).getStackValue().getBox().getBoxItem());
-				}
-				if(!removedBoxItems.isEmpty()) {
+				List<Placement> removedBoxPlacements = stack.getPlacements().subList(markStackSize, stack.size());
+				if(!removedBoxPlacements.isEmpty()) {
+					List<BoxItem> removedBoxItems = new ArrayList<>();
+					for(Placement p : removedBoxPlacements) {
+						removedBoxItems.add(p.getStackValue().getBox().getBoxItem());
+					}
 					if(boxItemControls != null) {
 						boxItemControls.undo(removedBoxItems);
 					}
@@ -417,6 +466,8 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 					}
 					
 					removedBoxItems.clear();
+					
+					placementControls.undo(removedBoxPlacements);
 				}
 				
 				if(boxItemControls != null) {
@@ -471,12 +522,12 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			PointCalculator pointCalculator
 		);
 
-	protected abstract PlacementControls<I> createControls(
+	protected abstract PlacementControls createControls(
 			BoxItemSource boxItems,
-			int offset, int length,
-			Order order,
-			PointControls pointControls,
-			Container container, 
-			PointCalculator pointCalculator, Stack stack
+			Order order, PointControls pointControls,
+			Container container,
+			PointCalculator pointCalculator,
+			Stack stack,
+			boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount
 		);
 }
