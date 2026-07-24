@@ -21,29 +21,29 @@
 		<eclipse-collections.version>13.0.0</eclipse-collections.version>
 		<google-truth.version>1.4.5</google-truth.version>
 		<junit-quicktest.version>1.0</junit-quicktest.version>
-		<junit.version>6.0.3</junit.version>
+		<junit.version>6.1.0</junit.version>
 		<jmh.version>1.37</jmh.version>
 		<commons-io.version>2.22.0</commons-io.version>
 
 		<!-- plugins -->
 		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
 		<jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
-		<sonatype-plugin.version>0.10.0</sonatype-plugin.version>
-		<maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
+		<sonatype-plugin.version>0.11.0</sonatype-plugin.version>
+		<maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
 		<maven-source-plugin.version>3.4.0</maven-source-plugin.version>
 		<maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
 		<maven-release-plugin.version>3.3.1</maven-release-plugin.version>
 		<maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
-		<maven-dependency-plugin.version>3.10.0</maven-dependency-plugin.version>
-		<jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
+		<maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
+		<jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
 		<maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
 		<maven-shade-plugin.version>3.6.2</maven-shade-plugin.version>
-		<jqwik.version>1.9.3</jqwik.version>
+		<jqwik.version>1.10.1</jqwik.version>
 		<assertj.version>3.27.7</assertj.version>
 		<owasp-dependency-check.version>5.3.2</owasp-dependency-check.version>
-		<pitest.version>1.23.1</pitest.version>
-		<jackson.version>2.21.3</jackson.version>
-		<spotless.version>3.5.1</spotless.version>
+		<pitest.version>1.25.5</pitest.version>
+		<jackson.version>2.22.0</jackson.version>
+		<spotless.version>3.7.0</spotless.version>
 	</properties>
 
 	<licenses>
