@@ -84,7 +84,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 						// identical-only boxes may fit at inner positions supported by
 						// the corners of existing placements in the same z-plane
 						Placement p = util.findPlacementAtPointSupporters(point3d, stackValue, placementComparator);
-						if (p != null && (result == null || placementComparator.compare(result, p) > 0)) {
+						if (p != null && (result == null || placementComparator.compare(result, p) < 0)) {
 							result = p;
 						}
 					}
