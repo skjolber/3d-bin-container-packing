@@ -30,6 +30,8 @@ public class Placement implements Serializable {
 	 * Includes all boxes in the vertical stack above, adjusted for area-proportional distribution.
 	 */
 	protected long loadWeight;
+	
+	protected Object properties;
 
 	public Placement(BoxStackValue stackValue, int index, int x, int y, int z) {
 		super();
@@ -333,5 +335,14 @@ public class Placement implements Serializable {
 		return true;
 	}
 
+	public <T> T getProperties() {
+		return (T) properties;
+	}
+
+	public <T> void setProperties(T properties) {
+		this.properties = properties;
+	}
+
+	
 
 }

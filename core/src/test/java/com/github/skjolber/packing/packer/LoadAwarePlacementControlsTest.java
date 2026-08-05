@@ -14,6 +14,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.AbstractPlacementControls;
+import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
  * Unit tests for the utility methods that previously lived in
@@ -77,7 +78,7 @@ class LoadAwarePlacementControlsTest {
 		}
 
 		long testOverlapArea(int minX, int minY, int maxX, int maxY, Placement p) {
-			return overlapArea(minX, minY, maxX, maxY, p);
+			return LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, p);
 		}
 	}
 
