@@ -15,7 +15,7 @@ import com.github.skjolber.packing.api.validator.placement.PlacementValidatorBui
 
 public class ValidatorContainerItem extends ContainerItem {
 
-	public ManifestValidatorBuilderFactory manifestValidatorBuilderFactory;
+	protected ManifestValidatorBuilderFactory manifestValidatorBuilderFactory;
 	protected PlacementValidatorBuilderFactory placementValidatorBuilderFactory;
 
 	public ValidatorContainerItem(Container container, int count) {
