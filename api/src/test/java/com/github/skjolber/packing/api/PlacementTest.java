@@ -491,6 +491,363 @@ public class PlacementTest {
 	}
 
 	// -----------------------------------------------------------------------
+	// Stability with stack (isStableWithStack)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Single box on the floor with no supportees — trivially stable (CoM at centre
+	 * of own footprint, which equals the support region).
+	 */
+	@Test
+	public void testIsStableWithStack_floorBox_isStable() {
+		Placement a = makePlacement("A", 10, 10, 1, 20, 0, 0, 0);
+		assertThat(a.isStable()).isTrue();
+	}
+
+	/**
+	 * Floating box with no supporters is unstable.
+	 */
+	@Test
+	public void testIsStableWithStack_floatingNoSupporters_isUnstable() {
+		Placement a = makePlacement("A", 10, 10, 1, 20, 0, 0, 5);
+		assertThat(a.isStable()).isFalse();
+	}
+
+	/**
+	 * A directly below B, both perfectly aligned.  B is centred above A, so
+	 * the combined CoM is still centred — stable.
+	 *
+	 * <pre>
+	 *  z
+	 *  |
+	 *  2  +----------+
+	 *     |    B     |  weight=10, x=0..9, CoM x=4.5
+	 *  1  +----------+
+	 *     |    A     |  weight=20, x=0..9, CoM x=4.5
+	 *  0  +----------+
+	 * </pre>
+	 *
+	 * Combined CoM x = (20×4.5 + 10×4.5) / 30 = 4.5 → inside support [0..9]. Stable.
+	 */
+	@Test
+	public void testIsStableWithStack_centredStack_isStable() {
+		Placement a = makePlacement("A", 10, 10, 1, 20, 0, 0, 0);
+		Placement b = makePlacement("B", 10, 10, 1, 10, 0, 0, 1);
+		a.addLoad(b, 100L, b.getWeight());
+		assertThat(a.isStable()).isTrue();
+	}
+
+	/**
+	 * A (10×10, weight=20) sits on a pedestal P (2×10) so that A itself has a
+	 * narrow support region (x=[4..5]).  B (10×10, weight=80) is placed far to
+	 * the right on top of A.  The heavy B drags the combined CoM well outside
+	 * A's narrow support region → unstable.
+	 *
+	 * <pre>
+	 *  z
+	 *  |
+	 *  3          +----------+
+	 *             |    B     |  weight=80, x=8..17, CoM x=13
+	 *  2  +----------+
+	 *     |    A     |  weight=20, x=0..9, CoM x=4.5
+	 *  1      +--+
+	 *         | P|  pedestal 2×10, x=4..5
+	 *  0      +--+
+	 * </pre>
+	 *
+	 * Overlap A∩P in X: [4..5].  Combined CoM x = (20×9 + 80×26) / 100 = (180+2080)/100 = 22
+	 * (all ×2).  maxSupportX ×2 = 11.  22 > 11 → unstable.
+	 */
+	@Test
+	public void testIsStableWithStack_heavySupporteeOffCenter_isUnstable() {
+		Placement p = makePlacement("P",  2, 10, 1, 50, 4, 0, 0);
+		Placement a = makePlacement("A", 10, 10, 1, 20, 0, 0, 1);
+		Placement b = makePlacement("B", 10, 10, 1, 80, 8, 0, 2);
+		p.addLoad(a, 20L, a.getWeight());
+		a.addLoad(b, 20L, b.getWeight());
+		assertThat(a.isStable()).isFalse();
+	}
+
+	/**
+	 * A light off-centre supportee does not move the combined CoM enough to
+	 * topple the heavier base box.
+	 *
+	 * <pre>
+	 *  z
+	 *  |
+	 *  3          +----------+
+	 *             |    B     |  weight=5, x=8..17, CoM x=13
+	 *  2  +----------+
+	 *     |    A     |  weight=100, x=0..9, CoM x=4.5, supported by P over x=0..9
+	 *  1  +----------+
+	 *     |    P     |  pedestal 10×10
+	 *  0  +----------+
+	 * </pre>
+	 *
+	 * Combined CoM ×2 = (100000×9 + 5000×26) / 105000 ≈ 9.78 → inside support [0..9]. Stable.
+	 */
+	@Test
+	public void testIsStableWithStack_lightSupporteeOffCenter_isStable() {
+		Placement p = makePlacement("P", 10, 10, 1, 50, 0, 0, 0);
+		Placement a = makePlacement("A", 10, 10, 1, 100, 0, 0, 1);
+		Placement b = makePlacement("B", 10, 10, 1,   5, 8, 0, 2);
+		p.addLoad(a, 100L, a.getWeight());
+		a.addLoad(b, 20L, b.getWeight());
+		assertThat(a.isStable()).isTrue();
+	}
+
+	/**
+	 * Three-level stack: B is off-centre on pedestal P, and C is off-centre on B,
+	 * compounding the CoM shift. B is the box checked for stability.
+	 *
+	 * <pre>
+	 *  z
+	 *  |
+	 *  4       +----------+
+	 *          |    C     |  weight=50, x=6..15, CoM×2=22
+	 *  3    +----------+
+	 *       |    B     |    weight=5, x=3..12, CoM×2=15, supported by P over x=[4..9]
+	 *  2      +------+
+	 *         |  P   |      pedestal 6×10, x=4..9
+	 *  1  ????
+	 *  0      +------+
+	 * </pre>
+	 *
+	 * Overlap P∩B: [4..9] (6 units wide). B.supportedArea=60.
+	 * Overlap B∩C: [6..9] (4 units wide). C.supportedArea=40.
+	 * Share of C from B = 1000 × 40/40 = 1000.
+	 *
+	 * accumulateStackCoM(B, 1000):
+	 *   B: w=5000, com2x=2×3+10=16, com2y=10
+	 *   C: overlapArea(B∩C)=(9-6+1)×10=40, share=1000×40/40=1000
+	 *     sub(C,1000): w=50000, com2x=2×6+10=22
+	 *   total=55000, weightedX=5000×16+50000×22=80000+1100000=1180000
+	 *   com2x=1180000/55000≈21.45 → 21
+	 * B support bounding box: overlap P∩B maxX=9 → 2×9=18.
+	 * 21 > 18 → unstable.
+	 */
+	@Test
+	public void testIsStableWithStack_threeLevels_compoundedShift_isUnstable() {
+		Placement p = makePlacement("P",  6, 10, 1, 30, 4, 0, 0);
+		Placement b = makePlacement("B", 10, 10, 1,  5, 3, 0, 1);
+		Placement c = makePlacement("C", 10, 10, 1, 50, 6, 0, 2);
+		p.addLoad(b, 60L, b.getWeight());
+		b.addLoad(c, 40L, c.getWeight());
+		assertThat(b.isStable()).isFalse();
+	}
+
+	/**
+	 * isStable() and isStableWithStack() agree for a centred single-box stack,
+	 * and disagree when a heavy off-centre supportee tips the combined CoM.
+	 * The box under test (A) is elevated on a narrow pedestal so its support region
+	 * is restricted to x=[4..5].
+	 *
+	 * <pre>
+	 *  z
+	 *  |
+	 *  3          +----------+
+	 *             |    B     |  weight=80, x=8..17
+	 *  2  +----------+
+	 *     |    A     |  weight=20, x=0..9, supported by P over x=[4..5]
+	 *  1      +--+
+	 *         | P|  x=4..5
+	 *  0      +--+
+	 * </pre>
+	 */
+	@Test
+	public void testIsStableWithStack_vs_isStable_heavySupporteeOffCenter() {
+		Placement p = makePlacement("P",  2, 10, 1, 50, 4, 0, 0);
+		Placement a = makePlacement("A", 10, 10, 1, 20, 0, 0, 1);
+		Placement b = makePlacement("B", 10, 10, 1, 80, 8, 0, 2);
+		p.addLoad(a, 20L, a.getWeight());
+		a.addLoad(b, 20L, b.getWeight());
+
+		// A's own CoM ×2 = 9, support region ×2 = [8..11] → inside → stable
+		assertThat(a.isStableSupport()).isTrue();
+		// Combined CoM ×2 ≈ 22 > 11 → outside → unstable
+		assertThat(a.isStable()).isFalse();
+	}
+
+	/**
+	 * Split load: C (10×10) rests equally on A and B (each 5×10 side by side).
+	 * C itself has a centred box D on top.  Both A and B should be stable with stack.
+	 *
+	 * <pre>
+	 *  z
+	 *  |
+	 *  3  +----------+
+	 *     |    D     |  weight=10, x=0..9, CoM x=4.5
+	 *  2  +----------+
+	 *     |    C     |  weight=10, x=0..9, CoM x=4.5
+	 *  1  +----+----+
+	 *     | A  | B  |  weight=20 each, A x=0..4, B x=5..9
+	 *  0  +----+----+
+	 * </pre>
+	 *
+	 * Both combined CoMs sit at x=4.5, centred over each supporter's overlap region.
+	 */
+	@Test
+	public void testIsStableWithStack_splitLoad_centred_isStable() {
+		Placement a = makePlacement("A",  5, 10, 1, 20, 0, 0, 0);
+		Placement b = makePlacement("B",  5, 10, 1, 20, 5, 0, 0);
+		Placement c = makePlacement("C", 10, 10, 1, 10, 0, 0, 1);
+		Placement d = makePlacement("D", 10, 10, 1, 10, 0, 0, 2);
+
+		a.addLoad(c, 50L, 5L);
+		b.addLoad(c, 50L, 5L);
+		c.addLoad(d, 100L, d.getWeight());
+
+		assertThat(a.isStable()).isTrue();
+		assertThat(b.isStable()).isTrue();
+	}
+
+	// -----------------------------------------------------------------------
+	// Stability (isStable)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Box resting on the container floor (z == 0) with no supporters is stable.
+	 */
+	@Test
+	public void testIsStable_floorBox_noSupporters_isStable() {
+		Placement a = makePlacement("A", 10, 10, 1, 20, 0, 0, 0);
+		assertThat(a.isStableSupport()).isTrue();
+	}
+
+	/**
+	 * Box floating in mid-air (z > 0) with no supporters is unstable.
+	 */
+	@Test
+	public void testIsStable_floatingBox_noSupporters_isUnstable() {
+		Placement a = makePlacement("A", 10, 10, 1, 20, 0, 0, 5);
+		assertThat(a.isStableSupport()).isFalse();
+	}
+
+	/**
+	 * Box perfectly centred on a single supporter — CoM directly over the support
+	 * region.
+	 *
+	 * <pre>
+	 *  z
+	 *  |
+	 *  2  +----------+
+	 *     |    B     |  footprint 10×10, placed at (0,0)
+	 *  1  +----------+
+	 *     |    A     |  footprint 10×10, placed at (0,0)
+	 *  0  +----------+
+	 * </pre>
+	 *
+	 * B's CoM is at (5, 5). Support region is [0..10] × [0..10]. Stable.
+	 */
+	@Test
+	public void testIsStable_fullySupported_isStable() {
+		Placement a = makePlacement("A", 10, 10, 1, 20, 0, 0, 0);
+		Placement b = makePlacement("B", 10, 10, 1, 10, 0, 0, 1);
+		a.addLoad(b, 100L, b.getWeight());
+		assertThat(b.isStableSupport()).isTrue();
+	}
+
+	/**
+	 * Box B (10×10) placed so its CoM lands exactly inside the support region.
+	 * A covers x=0..9 (inclusive), B starts at x=4, CoM at x=4+5=9 — right at
+	 * the edge of A's support. Stable.
+	 *
+	 * <pre>
+	 *  z
+	 *  |
+	 *  2      +----------+
+	 *         |    B     |  x=4..13, CoM at x=9
+	 *  1  +----------+
+	 *     |    A     |  x=0..9
+	 *  0  +----------+
+	 * </pre>
+	 *
+	 * Overlap X: [4..9]. CoM x=9 == maxSupportX → stable (boundary is inclusive).
+	 */
+	@Test
+	public void testIsStable_halfOverhang_comAtEdge_isStable() {
+		Placement a = makePlacement("A", 10, 10, 1, 20, 0, 0, 0);
+		Placement b = makePlacement("B", 10, 10, 1, 10, 4, 0, 1);
+		a.addLoad(b, 60L, b.getWeight());
+		assertThat(b.isStableSupport()).isTrue();
+	}
+
+	/**
+	 * Box B overhangs more than half: CoM falls outside the support region.
+	 *
+	 * <pre>
+	 *  z
+	 *  |
+	 *  2           +----------+
+	 *              |    B     |  x=6..16, CoM at x=11
+	 *  1  +----------+
+	 *     |    A     |  x=0..10
+	 *  0  +----------+
+	 * </pre>
+	 *
+	 * Overlap X: [6..10]. CoM x=11 &gt; 10 → unstable.
+	 */
+	@Test
+	public void testIsStable_majorOverhang_comOutside_isUnstable() {
+		Placement a = makePlacement("A", 10, 10, 1, 20, 0, 0, 0);
+		Placement b = makePlacement("B", 10, 10, 1, 10, 6, 0, 1);
+		a.addLoad(b, 40L, b.getWeight());
+		assertThat(b.isStableSupport()).isFalse();
+	}
+
+	/**
+	 * Box C (10×10) is centred over two side-by-side supporters, each 5×10.
+	 * Together they fully cover C's footprint — CoM is well inside. Stable.
+	 *
+	 * <pre>
+	 *  z
+	 *  |
+	 *  2  +----+----+
+	 *     |    C    |  x=0..10, CoM at (5, 5)
+	 *  1  +----+----+
+	 *     | A  | B  |  A x=0..5, B x=5..10
+	 *  0  +----+----+
+	 * </pre>
+	 */
+	@Test
+	public void testIsStable_twoSideBySideSupporters_isStable() {
+		Placement a = makePlacement("A",  5, 10, 1, 20, 0, 0, 0);
+		Placement b = makePlacement("B",  5, 10, 1, 20, 5, 0, 0);
+		Placement c = makePlacement("C", 10, 10, 1, 10, 0, 0, 1);
+		a.addLoad(c, 50L, 5L);
+		b.addLoad(c, 50L, 5L);
+		assertThat(c.isStableSupport()).isTrue();
+	}
+
+	/**
+	 * Box C rests on two widely-separated point supports; its CoM falls in the
+	 * unsupported gap between them.  The union bounding box spans both, so the
+	 * CoM appears inside — this demonstrates that {@code isStable()} uses the
+	 * bounding-box approximation and returns {@code true} in this case.
+	 *
+	 * <pre>
+	 *  z
+	 *  |
+	 *  2  +----+----+----+
+	 *     |         C    |  x=0..12, CoM at x=6
+	 *  1  +--+      +--+
+	 *     |A |      |B |   A x=0..2, B x=10..12
+	 *  0  +--+      +--+
+	 * </pre>
+	 *
+	 * Bounding box of overlaps: [0..12] × [0..10].  CoM x=6 is inside → {@code true}.
+	 */
+	@Test
+	public void testIsStable_twoDistantSupporters_comInGap_boundingBoxTrue() {
+		Placement a = makePlacement("A",  2, 10, 1, 10,  0, 0, 0);
+		Placement b = makePlacement("B",  2, 10, 1, 10, 10, 0, 0);
+		Placement c = makePlacement("C", 12, 10, 1, 20,  0, 0, 1);
+		a.addLoad(c, 20L, 10L);
+		b.addLoad(c, 20L, 10L);
+		assertThat(c.isStableSupport()).isTrue();
+	}
+
+	// -----------------------------------------------------------------------
 	// Load pressure
 	// -----------------------------------------------------------------------
 

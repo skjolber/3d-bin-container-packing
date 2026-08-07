@@ -31,7 +31,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 		super(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 
 		this.fullSupport = fullSupport;
-		this.util = createUtil(stack);
+		this.util = createLoadPlacementUtility(stack);
 
 		int count = 0;
 		for (int i = 0; i < boxItems.size(); i++) count += boxItems.get(i).getCount();
@@ -39,7 +39,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 	}
 
 	/** Factory method — subclasses return the appropriate utility variant. */
-	protected abstract LoadPlacementUtility createUtil(Stack stack);
+	protected abstract LoadPlacementUtility createLoadPlacementUtility(Stack stack);
 
 	/** Re-initializes internal arrays to hold at least {@code count} entries. */
 	public void initialize(int count) {

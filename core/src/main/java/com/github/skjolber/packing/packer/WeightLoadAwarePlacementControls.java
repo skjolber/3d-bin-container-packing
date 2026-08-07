@@ -27,7 +27,7 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 	}
 
 	@Override
-	protected LoadPlacementUtility createUtil(Stack stack) {
+	protected LoadPlacementUtility createLoadPlacementUtility(Stack stack) {
 		return new WeightLoadAwarePlacementUtility(stack);
 	}
 }

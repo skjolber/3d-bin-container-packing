@@ -39,7 +39,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 	}
 
 	@Override
-	protected LoadPlacementUtility createUtil(Stack stack) {
+	protected LoadPlacementUtility createLoadPlacementUtility(Stack stack) {
 		return new WeightPressureCountIdenticalLoadAwarePlacementUtility(stack);
 	}
 
