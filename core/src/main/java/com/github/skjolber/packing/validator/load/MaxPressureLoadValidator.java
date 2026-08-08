@@ -5,7 +5,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
-import com.github.skjolber.packing.api.validator.placement.load.LoadValidator;
+import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadPressureReason;
 
 /**

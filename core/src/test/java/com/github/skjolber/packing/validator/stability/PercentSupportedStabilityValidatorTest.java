@@ -70,7 +70,7 @@ public class PercentSupportedStabilityValidatorTest {
 
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(List.of(a), reasons)).isTrue();
+		assertThat(validator.isValid(List.of(a), reasons)).isTrue();
 		assertThat(reasons).isEmpty();
 	}
 
@@ -91,7 +91,7 @@ public class PercentSupportedStabilityValidatorTest {
 
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(List.of(a, b), reasons)).isTrue();
+		assertThat(validator.isValid(List.of(a, b), reasons)).isTrue();
 		assertThat(reasons).isEmpty();
 	}
 
@@ -123,7 +123,7 @@ public class PercentSupportedStabilityValidatorTest {
 
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(List.of(a, b), reasons)).isTrue();
+		assertThat(validator.isValid(List.of(a, b), reasons)).isTrue();
 		assertThat(reasons).isEmpty();
 	}
 
@@ -144,7 +144,7 @@ public class PercentSupportedStabilityValidatorTest {
 
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(List.of(a, b), reasons)).isFalse();
+		assertThat(validator.isValid(List.of(a, b), reasons)).isFalse();
 		assertThat(reasons).hasSize(1);
 
 		InsufficientSupportAreaReason reason = (InsufficientSupportAreaReason) reasons.get(0);
@@ -169,7 +169,7 @@ public class PercentSupportedStabilityValidatorTest {
 
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(List.of(b), reasons)).isTrue();
+		assertThat(validator.isValid(List.of(b), reasons)).isTrue();
 		assertThat(reasons).isEmpty();
 	}
 
@@ -194,7 +194,7 @@ public class PercentSupportedStabilityValidatorTest {
 
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(List.of(supA, b, supC, c), reasons)).isFalse();
+		assertThat(validator.isValid(List.of(supA, b, supC, c), reasons)).isFalse();
 		assertThat(reasons).hasSize(1);
 		assertThat(((InsufficientSupportAreaReason) reasons.get(0)).getPlacement()).isSameAs(b);
 	}

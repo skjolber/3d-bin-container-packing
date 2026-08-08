@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.api.validator.placement.stability;
+package com.github.skjolber.packing.api.validator.placement;
 
 import java.util.List;
 
@@ -7,6 +7,6 @@ import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 
 public interface StabilityValidator {
 
-	boolean isStable(List<Placement> list, List<ValidatorResultReason> reasons);
+	boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons);
 	
 }

@@ -6,7 +6,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
-import com.github.skjolber.packing.api.validator.placement.stability.StabilityValidator;
+import com.github.skjolber.packing.api.validator.placement.StabilityValidator;
 import com.github.skjolber.packing.validator.stability.reasons.UnstableCenterOfGravityReason;
 
 /**
@@ -36,7 +36,7 @@ public class CenterOfGravitySupportStabilityValidator implements StabilityValida
 	 * @return {@code true} if every placement is stable under its own weight; {@code false} otherwise
 	 */
 	@Override
-	public boolean isStable(List<Placement> list, List<ValidatorResultReason> reasons) {
+	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
 
 		for(Placement placement : list) {

@@ -1,7 +1,10 @@
 package com.github.skjolber.packing.validator;
 
+import java.util.List;
+
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.validator.manifest.ManifestValidator;
 import com.github.skjolber.packing.api.validator.manifest.ManifestValidatorBuilderFactory;
 import com.github.skjolber.packing.api.validator.placement.PlacementValidator;
@@ -43,12 +46,13 @@ public class ValidatorContainerItem extends ContainerItem {
 				.build();
 	}
 	
-	public PlacementValidator createPlacementValidator(Container container) {
+	public PlacementValidator createPlacementValidator(Container container, List<Placement> placements) {
 		if(placementValidatorBuilderFactory == null) {
-			return new DefaultPlacementValidator(container);
+			placementValidatorBuilderFactory = new DefaultPlacementValidatorBuilderFactory(null);
 		}
 		return placementValidatorBuilderFactory.createPlacementValidatorBuilder()
 				.withContainer(container)
+				.withPlacements(placements)
 				.build();
 	}
 	

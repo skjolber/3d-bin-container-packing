@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.api.validator.placement.load;
+package com.github.skjolber.packing.api.validator.placement;
 
 import java.util.List;
 

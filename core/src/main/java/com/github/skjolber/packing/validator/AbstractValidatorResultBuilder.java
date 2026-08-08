@@ -11,10 +11,18 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.PackagerResultBuilder.ControlledContainerItemBuilder;
+import com.github.skjolber.packing.api.PackagerResultBuilder.ObstaclesBuilder;
+import com.github.skjolber.packing.api.PackagerResultBuilder.PointsBuilder;
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.validator.ValidatorResult;
 import com.github.skjolber.packing.api.validator.ValidatorResultBuilder;
 import com.github.skjolber.packing.api.validator.manifest.ManifestValidatorBuilderFactory;
 import com.github.skjolber.packing.api.validator.placement.PlacementValidatorBuilderFactory;
+import com.github.skjolber.packing.api.validator.placement.StabilityValidator;
+import com.github.skjolber.packing.validator.AbstractValidatorResultBuilder.DefaultPlacementValidatorBuilderFactoryBuilder;
 
 /**
  * {@linkplain ValidatorResult} builder scaffold.
@@ -39,6 +47,23 @@ public abstract class AbstractValidatorResultBuilder<B extends AbstractValidator
 	protected List<ValidatorContainerItem> containers;
 
 	protected PackagerResult packagerResult;
+	
+	public static class DefaultPlacementValidatorBuilderFactoryBuilder implements PlacementValidatorBuilderFactoryBuilder {
+
+		private StabilityValidator stabilityValidator;
+		
+		@Override
+		public PlacementValidatorBuilderFactoryBuilder withStabilityValidator(StabilityValidator stabilityValidator) {
+			this.stabilityValidator = stabilityValidator;
+			return this;
+		}
+		
+		public DefaultPlacementValidatorBuilderFactory build() {
+			return new DefaultPlacementValidatorBuilderFactory(stabilityValidator);
+		}
+
+	}
+	
 
 	public static class DefaultValidatorContainerItemBuilder implements ValidatorContainerItemBuilder {
 
@@ -47,19 +72,27 @@ public abstract class AbstractValidatorResultBuilder<B extends AbstractValidator
 		protected ManifestValidatorBuilderFactory manifestValidatorBuilderFactory;
 
 		@Override
-		public ValidatorContainerItemBuilder withManifestValidatorBuilderFactory(
-				ManifestValidatorBuilderFactory manifestValidatorBuilderFactory) {
+		public ValidatorContainerItemBuilder withManifestValidatorBuilderFactory(ManifestValidatorBuilderFactory manifestValidatorBuilderFactory) {
 			this.manifestValidatorBuilderFactory = manifestValidatorBuilderFactory;
 			return this;
 		}
 
 		@Override
-		public ValidatorContainerItemBuilder withPlacementValidatorBuilderFactory(
-				PlacementValidatorBuilderFactory placementValidatorBuilderFactory) {
+		public ValidatorContainerItemBuilder withPlacementValidatorBuilderFactory(PlacementValidatorBuilderFactory placementValidatorBuilderFactory) {
 			this.placementValidatorBuilderFactory = placementValidatorBuilderFactory;
 			return this;
 		}
+		
+		@Override
+		public ValidatorContainerItemBuilder withPlacementValidatorBuilderFactory(Consumer<PlacementValidatorBuilderFactoryBuilder> consumer) {
+			
+			DefaultPlacementValidatorBuilderFactoryBuilder builder = new DefaultPlacementValidatorBuilderFactoryBuilder();
+			consumer.accept(builder);
 
+			return withPlacementValidatorBuilderFactory(builder.build());
+		}
+
+		
 		@Override
 		public ValidatorContainerItemBuilder withContainerItem(ContainerItem containerItem) {
 			this.containerItem = containerItem;

@@ -54,7 +54,7 @@ public class FullySupportedStabilityValidatorTest {
 		List<Placement> placements = List.of(a);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(placements, reasons)).isTrue();
+		assertThat(validator.isValid(placements, reasons)).isTrue();
 		assertThat(reasons).isEmpty();
 	}
 
@@ -86,7 +86,7 @@ public class FullySupportedStabilityValidatorTest {
 		List<Placement> placements = List.of(a, b);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(placements, reasons)).isTrue();
+		assertThat(validator.isValid(placements, reasons)).isTrue();
 		assertThat(reasons).isEmpty();
 	}
 
@@ -118,7 +118,7 @@ public class FullySupportedStabilityValidatorTest {
 		List<Placement> placements = List.of(a, b);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(placements, reasons)).isFalse();
+		assertThat(validator.isValid(placements, reasons)).isFalse();
 		assertThat(reasons).hasSize(1);
 
 		InsufficientSupportAreaReason reason = (InsufficientSupportAreaReason) reasons.get(0);
@@ -152,7 +152,7 @@ public class FullySupportedStabilityValidatorTest {
 		List<Placement> placements = List.of(b);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(placements, reasons)).isFalse();
+		assertThat(validator.isValid(placements, reasons)).isFalse();
 		assertThat(reasons).hasSize(1);
 
 		InsufficientSupportAreaReason reason = (InsufficientSupportAreaReason) reasons.get(0);
@@ -192,7 +192,7 @@ public class FullySupportedStabilityValidatorTest {
 		List<Placement> placements = List.of(a, b, sup, c);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(placements, reasons)).isFalse();
+		assertThat(validator.isValid(placements, reasons)).isFalse();
 		assertThat(reasons).hasSize(1);
 		assertThat(((InsufficientSupportAreaReason) reasons.get(0)).getPlacement()).isSameAs(c);
 	}

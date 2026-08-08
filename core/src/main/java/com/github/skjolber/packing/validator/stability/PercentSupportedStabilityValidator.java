@@ -5,7 +5,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
-import com.github.skjolber.packing.api.validator.placement.stability.StabilityValidator;
+import com.github.skjolber.packing.api.validator.placement.StabilityValidator;
 import com.github.skjolber.packing.validator.stability.reasons.InsufficientSupportAreaReason;
 
 /**
@@ -62,7 +62,7 @@ public class PercentSupportedStabilityValidator implements StabilityValidator {
 	 * @return {@code true} if every placement meets the minimum support percentage; {@code false} otherwise
 	 */
 	@Override
-	public boolean isStable(List<Placement> list, List<ValidatorResultReason> reasons) {
+	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
 
 		for(Placement placement : list) {

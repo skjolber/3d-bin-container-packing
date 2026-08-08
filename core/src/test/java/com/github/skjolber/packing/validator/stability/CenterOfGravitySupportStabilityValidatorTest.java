@@ -49,7 +49,7 @@ public class CenterOfGravitySupportStabilityValidatorTest {
 		List<Placement> placements = List.of(a);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(placements, reasons)).isTrue();
+		assertThat(validator.isValid(placements, reasons)).isTrue();
 		assertThat(reasons).isEmpty();
 	}
 
@@ -67,7 +67,7 @@ public class CenterOfGravitySupportStabilityValidatorTest {
 		List<Placement> placements = List.of(b);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(placements, reasons)).isFalse();
+		assertThat(validator.isValid(placements, reasons)).isFalse();
 		assertThat(reasons).hasSize(1);
 
 		UnstableCenterOfGravityReason reason = (UnstableCenterOfGravityReason) reasons.get(0);
@@ -103,7 +103,7 @@ public class CenterOfGravitySupportStabilityValidatorTest {
 		List<Placement> placements = List.of(a, b);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(placements, reasons)).isTrue();
+		assertThat(validator.isValid(placements, reasons)).isTrue();
 		assertThat(reasons).isEmpty();
 	}
 
@@ -144,7 +144,7 @@ public class CenterOfGravitySupportStabilityValidatorTest {
 		// com2x = 2*0 + 10 = 10.  2*maxSupportX = 2*4 = 8.  10 > 8 → outside!
 		// Actually the CoG is OUTSIDE because the box overhangs the support — it's a
 		// cantilevered overhang, which CenterOfGravitySupportStabilityValidator flags.
-		assertThat(validator.isStable(placements, reasons)).isFalse();
+		assertThat(validator.isValid(placements, reasons)).isFalse();
 		assertThat(reasons).hasSize(1);
 	}
 
@@ -177,7 +177,7 @@ public class CenterOfGravitySupportStabilityValidatorTest {
 		List<Placement> placements = List.of(a, b);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(placements, reasons)).isTrue();
+		assertThat(validator.isValid(placements, reasons)).isTrue();
 		assertThat(reasons).isEmpty();
 	}
 
@@ -211,7 +211,7 @@ public class CenterOfGravitySupportStabilityValidatorTest {
 		List<Placement> placements = List.of(a, b);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(placements, reasons)).isFalse();
+		assertThat(validator.isValid(placements, reasons)).isFalse();
 		assertThat(reasons).hasSize(1);
 
 		UnstableCenterOfGravityReason reason = (UnstableCenterOfGravityReason) reasons.get(0);

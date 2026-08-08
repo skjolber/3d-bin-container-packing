@@ -53,7 +53,7 @@ public class CenterOfGravityStabilityValidatorTest {
 		List<Placement> placements = List.of(a);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(placements, reasons)).isTrue();
+		assertThat(validator.isValid(placements, reasons)).isTrue();
 		assertThat(reasons).isEmpty();
 	}
 
@@ -71,7 +71,7 @@ public class CenterOfGravityStabilityValidatorTest {
 		List<Placement> placements = List.of(b);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(placements, reasons)).isFalse();
+		assertThat(validator.isValid(placements, reasons)).isFalse();
 		assertThat(reasons).hasSize(1);
 
 		UnstableStackCenterOfGravityReason reason = (UnstableStackCenterOfGravityReason) reasons.get(0);
@@ -106,7 +106,7 @@ public class CenterOfGravityStabilityValidatorTest {
 		List<Placement> placements = List.of(a, b);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(placements, reasons)).isTrue();
+		assertThat(validator.isValid(placements, reasons)).isTrue();
 		assertThat(reasons).isEmpty();
 	}
 
@@ -156,7 +156,7 @@ public class CenterOfGravityStabilityValidatorTest {
 		assertThat(bOwnStable).isTrue();
 
 		// B's stack CoG (combined with heavy C) is outside A's support → fails
-		assertThat(validator.isStable(placements, reasons)).isFalse();
+		assertThat(validator.isValid(placements, reasons)).isFalse();
 
 		boolean bFound = reasons.stream()
 				.map(r -> ((UnstableStackCenterOfGravityReason) r).getPlacement())
@@ -196,7 +196,7 @@ public class CenterOfGravityStabilityValidatorTest {
 		List<Placement> placements = List.of(a, b, c);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
-		assertThat(validator.isStable(placements, reasons)).isTrue();
+		assertThat(validator.isValid(placements, reasons)).isTrue();
 		assertThat(reasons).isEmpty();
 	}
 }
