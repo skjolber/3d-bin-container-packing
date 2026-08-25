@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.api;
 
 import java.util.List;
+import java.util.Set;
 
 public class Container {
 
@@ -125,9 +126,11 @@ public class Container {
 	protected final String description;
 
 	protected final Stack stack;
+	
+	protected final Set<Dimension> moves;
 
 	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
-			int loadDz, int maxLoadWeight, Stack stack) {
+			int loadDz, int maxLoadWeight, Stack stack, Set<Dimension> move) {
 		this.id = id;
 		this.description = description;
 
@@ -148,8 +151,9 @@ public class Container {
 		this.dy = dy;
 		this.dz = dz;
 		this.volume = (long) dx * (long) dy * (long) dz;
-
+		
 		this.stack = stack;
+		this.moves = move;
 	}
 
 	public String getDescription() {

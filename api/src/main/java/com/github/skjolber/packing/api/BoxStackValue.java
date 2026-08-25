@@ -65,6 +65,17 @@ public class BoxStackValue {
 		protected int maxLoadBoxCount = -1;
 		protected boolean maxLoadIdenticalOnly = false;
 
+		protected int centerOfGravityX = -1;
+		protected int centerOfGravityY = -1;
+		protected int centerOfGravityZ = -1;
+
+		public  T withCenterOfGravityX(int x, int y, int z) {
+			this.centerOfGravityX = x;
+			this.centerOfGravityY = y;
+			this.centerOfGravityZ = z;
+			return (T) this;
+		}
+		
 		public T withBoxItem(BoxItem boxItem) {
 			this.boxItem = boxItem;
 			return (T) this;
@@ -139,8 +150,7 @@ public class BoxStackValue {
 	public static class Builder extends AbstractBuilder<Builder> {
 
 		public BoxStackValue build() {
-			return new BoxStackValue(dx, dy, dz, surfaces, index,
-					maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalOnly);
+			return new BoxStackValue(dx, dy, dz, surfaces, index, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalOnly, centerOfGravityX, centerOfGravityY, centerOfGravityZ);
 		}
 	}
 
@@ -150,6 +160,10 @@ public class BoxStackValue {
 	protected final int dy; // depth
 	protected final int dz; // height
 
+	protected int centerOfGravityX;
+	protected int centerOfGravityY;
+	protected int centerOfGravityZ;
+	
 	protected final long area;
 
 	protected final List<Surface> surfaces;
@@ -166,11 +180,11 @@ public class BoxStackValue {
 	protected final boolean loadIdenticalBoxOnly;
 
 	public BoxStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index) {
-		this(dx, dy, dz, surfaces, index, -1, -1.0, -1, false);
+		this(dx, dy, dz, surfaces, index, -1, -1.0, -1, false, dx / 2, dy / 2, dz / 2);
 	}
 
 	public BoxStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index,
-			long maxLoadWeight, double maxLoadPressure, int maxLoadBoxCount, boolean maxLoadIdenticalOnly) {
+			long maxLoadWeight, double maxLoadPressure, int maxLoadBoxCount, boolean maxLoadIdenticalOnly, int centerOfGravityX, int centerOfGravityY, int centerOfGravityZ) {
 		this.dx = dx;
 		this.dy = dy;
 		this.dz = dz;
@@ -184,6 +198,10 @@ public class BoxStackValue {
 		this.maxLoadPressure = maxLoadPressure;
 		this.maxLoadBoxCount = maxLoadBoxCount;
 		this.loadIdenticalBoxOnly = maxLoadIdenticalOnly;
+		
+		this.centerOfGravityX = centerOfGravityX;
+		this.centerOfGravityY = centerOfGravityY;
+		this.centerOfGravityZ = centerOfGravityZ;
 	}
 
 	protected BoxStackValue(BoxStackValue other) {
@@ -201,6 +219,10 @@ public class BoxStackValue {
 		this.maxLoadPressure = other.maxLoadPressure;
 		this.maxLoadBoxCount = other.maxLoadBoxCount;
 		this.loadIdenticalBoxOnly = other.loadIdenticalBoxOnly;
+		
+		this.centerOfGravityX = other.centerOfGravityX;
+		this.centerOfGravityY = other.centerOfGravityY;
+		this.centerOfGravityZ = other.centerOfGravityZ;
 	}
 
 	public int getDx() {
@@ -326,5 +348,16 @@ public class BoxStackValue {
 		return box.getWeight() / area;
 	}
 	
+	public int getCenterOfGravityX() {
+		return centerOfGravityX;
+	}
+	
+	public int getCenterOfGravityY() {
+		return centerOfGravityY;
+	}
+	
+	public int getCenterOfGravityZ() {
+		return centerOfGravityZ;
+	}
 	
 }

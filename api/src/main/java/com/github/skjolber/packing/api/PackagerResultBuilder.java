@@ -51,7 +51,6 @@ public interface PackagerResultBuilder {
 		ControlledBoxItemBuilder withBoxItem(Box box, int count);
 
 	}
-
 	
 	PackagerResultBuilder withBoxItems(BoxItem... items);
 
