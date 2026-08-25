@@ -12,6 +12,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.packer.bruteforce.LoadBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 
@@ -50,6 +51,7 @@ public class WeightConstraintBenchmarkState {
 
 	private PlainPackager plainPackager;
 	private LargestAreaFitFirstPackager laffPackager;
+	private LoadBruteForcePackager loadBruteForcePackager;
 
 	private List<ContainerItem> containers;
 	private List<BoxItem> items;
@@ -62,6 +64,7 @@ public class WeightConstraintBenchmarkState {
 	public void init() {
 		plainPackager = PlainPackager.newBuilder().build();
 		laffPackager = LargestAreaFitFirstPackager.newBuilder().build();
+		loadBruteForcePackager = LoadBruteForcePackager.newBuilder().build();
 
 		containers = ContainerItem.newListBuilder()
 				.withContainer(Container.newBuilder()
@@ -120,6 +123,7 @@ public class WeightConstraintBenchmarkState {
 	public void shutdown() {
 		plainPackager.close();
 		laffPackager.close();
+		loadBruteForcePackager.close();
 	}
 
 	public PlainPackager getPlainPackager() {
@@ -128,6 +132,10 @@ public class WeightConstraintBenchmarkState {
 
 	public LargestAreaFitFirstPackager getLaffPackager() {
 		return laffPackager;
+	}
+
+	public LoadBruteForcePackager getLoadBruteForcePackager() {
+		return loadBruteForcePackager;
 	}
 
 	public List<ContainerItem> getContainers() {

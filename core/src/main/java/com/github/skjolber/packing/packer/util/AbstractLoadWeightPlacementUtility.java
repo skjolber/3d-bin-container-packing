@@ -92,6 +92,23 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		}
 	}
 
+	@Override
+	public void populatePointSupportersAndSupportees(Point point, int dz) {
+		pointSupporters.clear();
+		pointSupportees.clear();
+		int supporterZ = point.getMinZ() - 1;
+		int supporteeZ = point.getMinZ() + dz;
+		for(Placement candidate : stack.getPlacements()) {
+			if(candidate.getAbsoluteEndZ() == supporterZ) {
+				if(point.intersectsXY(candidate)) {
+					pointSupporters.add(candidate);
+				}
+			} else if(candidate.getAbsoluteZ() == supporteeZ && point.intersectsXY(candidate)) {
+				pointSupportees.add(candidate);
+			}
+		}
+	}
+
 	// =========================================================================
 	// Shared instance helpers
 	// =========================================================================

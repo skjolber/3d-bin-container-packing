@@ -77,6 +77,17 @@ public class WeightConstraintBenchmark {
 		return packLaff(state).getContainers().size();
 	}
 
+	@Benchmark
+	public int loadBruteForcePackager(WeightConstraintBenchmarkState state) {
+		return state.getLoadBruteForcePackager()
+				.newResultBuilder()
+				.withContainerItems(state.getContainers())
+				.withMaxContainerCount(1)
+				.withBoxItems(state.getItems())
+				.build()
+				.getContainers().size();
+	}
+
 	/**
 	 * Packs the mixed weight-constraint scenario (two box types, different
 	 * {@code maxLoadWeight} limits) with PlainPackager.
@@ -120,4 +131,3 @@ public class WeightConstraintBenchmark {
 		new Runner(opt).run();
 	}
 }
-

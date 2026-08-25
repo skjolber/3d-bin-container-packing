@@ -140,8 +140,7 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 				continue;
 			}
 
-			utility.populatePointSupporters(point);
-			utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
+			utility.populatePointSupportersAndSupportees(point, stackValue.getDz());
 			long supportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
 			if(supportedArea == -1L) {
 				continue;

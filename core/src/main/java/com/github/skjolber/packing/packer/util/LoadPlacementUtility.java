@@ -49,6 +49,9 @@ public interface LoadPlacementUtility {
 	 */
 	void populatePointSupportees(Point point, int minDz, int maxDz);
 
+	/** Populates direct supporters and supportees in a single stack traversal. */
+	void populatePointSupportersAndSupportees(Point point, int dz);
+
 	/**
 	 * Attempts to place {@code sv} at the given point origin.
 	 *

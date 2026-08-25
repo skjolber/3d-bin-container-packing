@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.jmh.constraint;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -52,6 +53,11 @@ public class WeightConstraintBenchmarkTest {
 		assertTrue(result.isSuccess(), "Expected all boxes to fit in one container");
 		new DefaultPackagingResultVisualizerFactory(true)
 				.visualize(result.getContainers(), OUTPUT);
+	}
+
+	@Test
+	public void loadBruteForcePackager() {
+		assertEquals(1, benchmark.loadBruteForcePackager(state));
 	}
 
 	/** Two box types with different {@code maxLoadWeight} limits — both fit in one container. */
