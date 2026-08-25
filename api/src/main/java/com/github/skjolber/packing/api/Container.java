@@ -130,6 +130,11 @@ public class Container {
 	protected final Set<Dimension> moves;
 
 	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
+			int loadDz, int maxLoadWeight, Stack stack) {
+		this(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack, Set.of());
+	}
+
+	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
 			int loadDz, int maxLoadWeight, Stack stack, Set<Dimension> move) {
 		this.id = id;
 		this.description = description;
