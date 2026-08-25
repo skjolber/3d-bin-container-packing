@@ -57,9 +57,11 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		protected void validate() {
 			super.validate();
 
-			for (BoxItem boxItem : items) {
-				if(boxItem.isMaxLoad()) {
-					throw new IllegalStateException("Max load not supported for brute force packager");
+			if(!packager.supportsLoad()) {
+				for (BoxItem boxItem : items) {
+					if(boxItem.isMaxLoad()) {
+						throw new IllegalStateException("Max load not supported for brute force packager");
+					}
 				}
 			}
 			
@@ -111,6 +113,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				interrupt.close();
 			}
 		}
+	}
+
+	protected boolean supportsLoad() {
+		return false;
 	}
 
 	@Override

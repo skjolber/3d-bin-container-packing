@@ -42,6 +42,11 @@ public class EgyPackagerBenchmark {
 	}
 
 	@Benchmark
+	public int loadPackager(EgyPackagerState state) throws Exception {
+		return process(state.getLoadBruteForcePackager(), Long.MAX_VALUE);
+	}
+
+	@Benchmark
 	public int fastPackager(EgyPackagerState state) throws Exception {
 		return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
 	}

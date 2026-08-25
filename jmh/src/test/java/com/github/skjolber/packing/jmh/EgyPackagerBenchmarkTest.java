@@ -38,6 +38,11 @@ public class EgyPackagerBenchmarkTest {
 	}
 
 	@Test
+	public void loadPackager() throws Exception {
+		assertValid(state.getLoadBruteForcePackager(), Long.MAX_VALUE);
+	}
+
+	@Test
 	public void fastPackager() throws Exception {
 		assertValid(state.getFastBruteForcePackager(), Long.MAX_VALUE);
 	}
