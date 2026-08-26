@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.packer.plain;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -29,6 +30,7 @@ import com.github.skjolber.packing.iterator.FixedOrderBoxItemGroupIterator;
 import com.github.skjolber.packing.packer.AbstractBoxItemAdapter;
 import com.github.skjolber.packing.packer.AbstractBoxItemGroupAdapter;
 import com.github.skjolber.packing.packer.AbstractControlPackager;
+import com.github.skjolber.packing.packer.AbstractPackagerAdapterBuilder;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
@@ -36,6 +38,8 @@ import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerAdapter;
+import com.github.skjolber.packing.packer.PackagerAdapterBuilder;
+import com.github.skjolber.packing.packer.PackagerAdapterBuilderFactory;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
@@ -46,7 +50,7 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
-public class PlainPackager extends AbstractControlPackager<Placement, PlainPackager.PlainResultBuilder> {
+public class PlainPackager extends AbstractControlPackager<Placement, PlainPackager.PlainResultBuilder> implements PackagerAdapterBuilderFactory {
 	
 	public static Builder newBuilder() {
 		return new Builder();
@@ -136,6 +140,21 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			}
 		}
 	}
+	
+	
+	public class PlainPackagerAdapterBuilder extends AbstractPackagerAdapterBuilder {
+
+		@Override
+		public PackagerAdapter build() {
+			if(items != null && !items.isEmpty()) {
+				return new PlainBoxItemAdapter(items, order, calcultor, interrupt);
+			} else {
+				return new PlainBoxItemGroupAdapter(itemGroups, order, calcultor, interrupt);
+			}
+		}
+
+	}
+	
 
 	public static class Builder {
 
@@ -263,6 +282,11 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 	@Override
 	protected IntermediatePackagerResult createEmptyIntermediatePackagerResult() {
 		return EmptyIntermediatePackagerResult.EMPTY;
+	}
+
+	@Override
+	public PackagerAdapterBuilder newPackagerAdapterBuilder() {
+		return new PlainPackagerAdapterBuilder();
 	}
 
 }
