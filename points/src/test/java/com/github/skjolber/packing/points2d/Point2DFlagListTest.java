@@ -23,7 +23,6 @@ public class Point2DFlagListTest {
 	public void copyIntoClearsDestinationTail() {
 		Point2DFlagList source = list(1);
 		Point2DFlagList destination = list(3);
-		destination.clear();
 
 		source.copyInto(destination);
 

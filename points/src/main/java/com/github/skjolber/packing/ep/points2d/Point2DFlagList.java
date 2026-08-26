@@ -111,6 +111,7 @@ public class Point2DFlagList implements Iterable<Point> {
 
 	public void clear() {
 		Arrays.fill(flag, 0, size, false);
+		Arrays.fill(points, 0, points.length, null);
 		size = 0;
 	}
 
@@ -128,12 +129,15 @@ public class Point2DFlagList implements Iterable<Point> {
 	}
 
 	public void copyInto(Point2DFlagList destination) {
-		destination.ensureCapacity(size);
-
+		if(size < destination.size) {
+			Arrays.fill(destination.points, size, destination.size, null);
+			Arrays.fill(destination.flag, size, destination.size, false);
+		} else if(size > destination.size) {
+			destination.ensureCapacity(size);
+		}
 		System.arraycopy(points, 0, destination.points, 0, size);
 		System.arraycopy(flag, 0, destination.flag, 0, size);
-		Arrays.fill(destination.points, size, destination.points.length, null);
-		Arrays.fill(destination.flag, size, destination.flag.length, false);
+
 		destination.size = size;
 	}
 
