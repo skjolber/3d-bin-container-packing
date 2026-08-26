@@ -147,9 +147,7 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 
 	public void offset(int offset) {
 		move(offset);
-		for (int i = 0; i < offset; i++) {
-			flag[i] = true;
-		}
+		Arrays.fill(flag, 0, offset, true);
 	}
 
 	public void move(int offset) {
@@ -171,8 +169,6 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 		System.arraycopy(flag, 0, destination.flag, 0, size);
 		destination.size = size;
 
-		Arrays.fill(destination.flag, size, destination.flag.length, false);
-		Arrays.fill(destination.points, size, destination.points.length, null);
 	}
 
 	public Point[] getPoints() {
@@ -219,10 +215,8 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 	public void setAll(Point3DList add, int offset) {
 		System.arraycopy(add.getPoints(), 0, points, offset, add.size());
 		int limit = offset + add.size();
-		for (int i = offset; i < limit; i++) {
-			flag[i] = false;
-		}
-
+		
+		Arrays.fill(flag, offset, limit, false);
 	}
 
 	public void unflag(int i) {

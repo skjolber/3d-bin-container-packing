@@ -62,10 +62,11 @@ public class Point2DFlagList implements Iterable<Point> {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			SimplePoint2D[] nextPoints = new SimplePoint2D[size];
+			int capacity = Math.max(size, points.length + (points.length >> 1) + 1);
+			SimplePoint2D[] nextPoints = new SimplePoint2D[capacity];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 
-			boolean[] nextFlag = new boolean[size];
+			boolean[] nextFlag = new boolean[capacity];
 			System.arraycopy(this.flag, 0, nextFlag, 0, this.size);
 
 			this.points = nextPoints;
@@ -116,9 +117,7 @@ public class Point2DFlagList implements Iterable<Point> {
 
 	public void offset(int offset) {
 		move(offset);
-		for (int i = 0; i < offset; i++) {
-			flag[i] = true;
-		}
+		Arrays.fill(flag, 0, offset, true);
 	}
 
 	public void move(int offset) {
