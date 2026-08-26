@@ -98,8 +98,8 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 	}
 
 	public void reset() {
-		Arrays.fill(this.points, 0, size, null);
-		Arrays.fill(this.flag, 0, size, false);
+		Arrays.fill(points, 0, size, null);
+		Arrays.fill(flag, 0, size, false);
 		size = 0;
 	}
 
@@ -116,13 +116,21 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 	}
 
 	public void clear() {
+		Arrays.fill(points, 0, size, null);
 		Arrays.fill(flag, 0, size, false);
 		size = 0;
 	}
 
 	public int removeFlagged() {
-		int offset = 0;
 		int index = 0;
+		while(index < size && !flag[index]) {
+			index++;
+		}
+		if(index == size) {
+			return 0;
+		}
+		int previousSize = size;
+		int offset = index;
 		while (index < size) {
 			if(flag[index]) {
 				flag[index] = false;
@@ -132,6 +140,8 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 			}
 			index++;
 		}
+		Arrays.fill(points, offset, previousSize, null);
+		Arrays.fill(flag, offset, previousSize, false);
 		size = offset;
 
 		return index - offset;
@@ -147,9 +157,7 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 
 	public void offset(int offset) {
 		move(offset);
-		for (int i = 0; i < offset; i++) {
-			flag[i] = true;
-		}
+		Arrays.fill(flag, 0, offset, true);
 	}
 
 	public void move(int offset) {
@@ -165,14 +173,16 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 	}
 
 	public void copyInto(Point3DFlagList destination) {
-		destination.ensureCapacity(size);
-
+		if(size < destination.size) {
+			Arrays.fill(destination.points, size, destination.size, null);
+			Arrays.fill(destination.flag, size, destination.size, false);
+		} else if(size > destination.size) {
+			destination.ensureCapacity(size);
+		}
 		System.arraycopy(points, 0, destination.points, 0, size);
 		System.arraycopy(flag, 0, destination.flag, 0, size);
-		destination.size = size;
 
-		Arrays.fill(destination.flag, size, destination.flag.length, false);
-		Arrays.fill(destination.points, size, destination.points.length, null);
+		destination.size = size;
 	}
 
 	public Point[] getPoints() {
@@ -219,10 +229,8 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 	public void setAll(Point3DList add, int offset) {
 		System.arraycopy(add.getPoints(), 0, points, offset, add.size());
 		int limit = offset + add.size();
-		for (int i = offset; i < limit; i++) {
-			flag[i] = false;
-		}
-
+		
+		Arrays.fill(flag, offset, limit, false);
 	}
 
 	public void unflag(int i) {
@@ -412,6 +420,13 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 	}
 
 	public void setSize(int i) {
+		Arrays.fill(points, i, size, null);
+		Arrays.fill(flag, i, size, false);
+		this.size = i;
+	}
+	
+	public void resetWithoutFlags() {
+		Arrays.fill(points, 0, size, null);
 		this.size = 0;
 	}
 

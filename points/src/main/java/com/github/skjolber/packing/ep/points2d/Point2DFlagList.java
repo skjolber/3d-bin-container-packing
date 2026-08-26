@@ -62,10 +62,11 @@ public class Point2DFlagList implements Iterable<Point> {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			SimplePoint2D[] nextPoints = new SimplePoint2D[size];
+			int capacity = Math.max(size, points.length + (points.length >> 1) + 1);
+			SimplePoint2D[] nextPoints = new SimplePoint2D[capacity];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 
-			boolean[] nextFlag = new boolean[size];
+			boolean[] nextFlag = new boolean[capacity];
 			System.arraycopy(this.flag, 0, nextFlag, 0, this.size);
 
 			this.points = nextPoints;
@@ -91,10 +92,8 @@ public class Point2DFlagList implements Iterable<Point> {
 	}
 
 	public void reset() {
-		for (int i = 0; i < points.length; i++) {
-			points[i] = null;
-			flag[i] = false;
-		}
+		Arrays.fill(points, 0, points.length, null);
+		Arrays.fill(flag, 0, flag.length, false);
 		size = 0;
 	}
 
@@ -111,14 +110,14 @@ public class Point2DFlagList implements Iterable<Point> {
 	}
 
 	public void clear() {
+		Arrays.fill(flag, 0, size, false);
+		Arrays.fill(points, 0, size, null);
 		size = 0;
 	}
 
 	public void offset(int offset) {
 		move(offset);
-		for (int i = 0; i < offset; i++) {
-			flag[i] = true;
-		}
+		Arrays.fill(flag, 0, offset, true);
 	}
 
 	public void move(int offset) {
@@ -130,10 +129,15 @@ public class Point2DFlagList implements Iterable<Point> {
 	}
 
 	public void copyInto(Point2DFlagList destination) {
-		destination.ensureCapacity(size);
-
+		if(size < destination.size) {
+			Arrays.fill(destination.points, size, destination.size, null);
+			Arrays.fill(destination.flag, size, destination.size, false);
+		} else if(size > destination.size) {
+			destination.ensureCapacity(size);
+		}
 		System.arraycopy(points, 0, destination.points, 0, size);
 		System.arraycopy(flag, 0, destination.flag, 0, size);
+
 		destination.size = size;
 	}
 
@@ -145,6 +149,7 @@ public class Point2DFlagList implements Iterable<Point> {
 		if(index == size) {
 			return 0;
 		}
+		int previousSize = size;
 		int offset = index;
 		while (index < size) {
 			if(flag[index]) {
@@ -155,6 +160,8 @@ public class Point2DFlagList implements Iterable<Point> {
 			}
 			index++;
 		}
+		Arrays.fill(points, offset, previousSize, null);
+		Arrays.fill(flag, offset, previousSize, false);
 		size = offset;
 
 		return index - offset;
