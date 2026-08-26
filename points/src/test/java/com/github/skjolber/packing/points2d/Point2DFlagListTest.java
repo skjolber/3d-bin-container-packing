@@ -31,9 +31,8 @@ public class Point2DFlagListTest {
 	}
 
 	@Test
-	public void resetClearsReferencesAfterClear() {
+	public void resetClearsReferences() {
 		Point2DFlagList list = list(3);
-		list.clear();
 
 		list.reset();
 
