@@ -121,8 +121,14 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 	}
 
 	public int removeFlagged() {
-		int offset = 0;
 		int index = 0;
+		while(index < size && !flag[index]) {
+			index++;
+		}
+		if(index == size) {
+			return 0;
+		}
+		int offset = index;
 		while (index < size) {
 			if(flag[index]) {
 				flag[index] = false;

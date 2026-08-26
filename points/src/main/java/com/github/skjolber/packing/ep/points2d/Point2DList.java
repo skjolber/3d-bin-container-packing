@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.ep.points2d;
 
+import java.util.Arrays;
+
 import java.util.List;
 
 /**
@@ -35,9 +37,7 @@ public class Point2DList {
 	}
 
 	public void reset() {
-		for (int i = 0; i < points.length; i++) {
-			points[i] = null;
-		}
+		Arrays.fill(points, 0, size, null);
 		size = 0;
 	}
 

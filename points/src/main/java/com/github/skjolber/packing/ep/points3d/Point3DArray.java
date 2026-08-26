@@ -23,7 +23,8 @@ public class Point3DArray {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			SimplePoint3D[] nextPoints = new SimplePoint3D[size];
+			int capacity = Math.max(size, points.length + (points.length >> 1) + 1);
+			SimplePoint3D[] nextPoints = new SimplePoint3D[capacity];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.points.length);
 			this.points = nextPoints;
 		}

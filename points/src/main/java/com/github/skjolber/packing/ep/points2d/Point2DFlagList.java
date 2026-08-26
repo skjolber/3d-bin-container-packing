@@ -92,10 +92,8 @@ public class Point2DFlagList implements Iterable<Point> {
 	}
 
 	public void reset() {
-		for (int i = 0; i < points.length; i++) {
-			points[i] = null;
-			flag[i] = false;
-		}
+		Arrays.fill(points, 0, size, null);
+		Arrays.fill(flag, 0, size, false);
 		size = 0;
 	}
 
@@ -112,6 +110,7 @@ public class Point2DFlagList implements Iterable<Point> {
 	}
 
 	public void clear() {
+		Arrays.fill(flag, 0, size, false);
 		size = 0;
 	}
 
