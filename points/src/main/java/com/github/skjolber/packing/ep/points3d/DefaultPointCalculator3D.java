@@ -165,7 +165,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		// copy intensively used items to local variables
 		Point3DFlagList values = this.values;
 		Point3DFlagList otherValues = this.otherValues;
-		
+
 		ensureCapacity(values.size() + 1);
 		
 		int xx = placement.getAbsoluteEndX() + 1;
@@ -669,7 +669,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		this.values = otherValues;
 
 		// note: assumes already reset flags 
-		values.resetWithoutFlags();
+		values.setSize(0);
 		this.otherValues = values;
 	}
 
