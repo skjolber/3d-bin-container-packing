@@ -37,7 +37,7 @@ public class Point2DList {
 	}
 
 	public void reset() {
-		Arrays.fill(points, 0, size, null);
+		Arrays.fill(points, 0, points.length, null);
 		size = 0;
 	}
 
