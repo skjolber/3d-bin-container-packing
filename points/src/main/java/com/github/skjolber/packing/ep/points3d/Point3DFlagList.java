@@ -128,6 +128,7 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 		if(index == size) {
 			return 0;
 		}
+		int previousSize = size;
 		int offset = index;
 		while (index < size) {
 			if(flag[index]) {
@@ -138,6 +139,8 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 			}
 			index++;
 		}
+		Arrays.fill(points, offset, previousSize, null);
+		Arrays.fill(flag, offset, previousSize, false);
 		size = offset;
 
 		return index - offset;
@@ -171,8 +174,13 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 	public void copyInto(Point3DFlagList destination) {
 		destination.ensureCapacity(size);
 
+		int previousSize = destination.size;
 		System.arraycopy(points, 0, destination.points, 0, size);
 		System.arraycopy(flag, 0, destination.flag, 0, size);
+		if(size < previousSize) {
+			Arrays.fill(destination.points, size, previousSize, null);
+			Arrays.fill(destination.flag, size, previousSize, false);
+		}
 		destination.size = size;
 
 	}
