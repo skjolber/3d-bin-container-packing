@@ -422,7 +422,7 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 	public void setSize(int i) {
 		Arrays.fill(points, i, size, null);
 		Arrays.fill(flag, i, size, false);
-		this.size = 0;
+		this.size = i;
 	}
 	
 	public void resetWithoutFlags() {
