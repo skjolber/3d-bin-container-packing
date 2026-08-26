@@ -111,7 +111,7 @@ public class Point2DFlagList implements Iterable<Point> {
 
 	public void clear() {
 		Arrays.fill(flag, 0, size, false);
-		Arrays.fill(points, 0, points.length, null);
+		Arrays.fill(points, 0, size, null);
 		size = 0;
 	}
 
