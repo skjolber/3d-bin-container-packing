@@ -23,11 +23,24 @@ public class Point2DFlagListTest {
 	public void copyIntoClearsDestinationTail() {
 		Point2DFlagList source = list(1);
 		Point2DFlagList destination = list(3);
+		destination.clear();
 
 		source.copyInto(destination);
 
 		assertNull(destination.getPoints()[1]);
 		assertNull(destination.getPoints()[2]);
+	}
+
+	@Test
+	public void resetClearsReferencesAfterClear() {
+		Point2DFlagList list = list(3);
+		list.clear();
+
+		list.reset();
+
+		assertNull(list.getPoints()[0]);
+		assertNull(list.getPoints()[1]);
+		assertNull(list.getPoints()[2]);
 	}
 
 	private Point2DFlagList list(int size) {
