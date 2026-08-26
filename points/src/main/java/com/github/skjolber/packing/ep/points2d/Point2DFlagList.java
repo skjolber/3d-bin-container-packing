@@ -138,8 +138,14 @@ public class Point2DFlagList implements Iterable<Point> {
 	}
 
 	public int removeFlagged() {
-		int offset = 0;
 		int index = 0;
+		while(index < size && !flag[index]) {
+			index++;
+		}
+		if(index == size) {
+			return 0;
+		}
+		int offset = index;
 		while (index < size) {
 			if(flag[index]) {
 				flag[index] = false;
@@ -208,9 +214,7 @@ public class Point2DFlagList implements Iterable<Point> {
 	public void setAll(Point2DList add, int offset) {
 		System.arraycopy(add.getPoints(), 0, points, offset, add.size());
 		int limit = offset + add.size();
-		for (int i = offset; i < limit; i++) {
-			flag[i] = false;
-		}
+		Arrays.fill(flag, offset, limit, false);
 
 	}
 
