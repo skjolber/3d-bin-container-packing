@@ -247,7 +247,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	}
 
 	@Override
-	public void addLoad(Placement placement) {
+	public void addSupportersLoad(Placement placement) {
 		long totalArea = placement.getSupportedArea();
 		if(placement.getAbsoluteZ() == 0 || totalArea == 0) {
 			return;

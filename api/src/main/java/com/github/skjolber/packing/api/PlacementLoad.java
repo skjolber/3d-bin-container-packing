@@ -40,4 +40,9 @@ public class PlacementLoad {
 	public long getWeight() {
 		return weight;
 	}
+
+	public void removeLastSupportee() {
+		// TODO Auto-generated method stub
+		
+	}
 }

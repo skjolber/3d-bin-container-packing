@@ -66,7 +66,7 @@ public interface LoadPlacementUtility {
 	long getSupportedAreaAtPoint(Point point, BoxStackValue sv, boolean fullSupport);
 
 	/** Connects a validated placement to the cached set of direct supporters. */
-	void addLoad(Placement placement);
+	void addSupportersLoad(Placement placement);
 
 	/**
 	 * Scans all point-supporters for the best fully-supported placement of
