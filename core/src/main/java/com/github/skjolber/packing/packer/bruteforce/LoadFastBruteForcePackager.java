@@ -43,7 +43,7 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 	}
 
 	public LoadFastBruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
-		super(comparator);
+		super(comparator, null);
 	}
 
 	@Override

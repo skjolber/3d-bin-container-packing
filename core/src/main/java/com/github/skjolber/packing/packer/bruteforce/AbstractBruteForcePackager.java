@@ -6,6 +6,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.eclipse.collections.api.iterator.IntIterator;
+
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -17,6 +19,7 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
@@ -39,10 +42,46 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 public abstract class AbstractBruteForcePackager extends AbstractPackager<AbstractBruteForcePackager.BruteForcePackagerResultBuilder> {
 
+	@FunctionalInterface
+	public interface BruteForcePointFilter {
+
+		IntIterator getPoints(DefaultPointCalculator3D points, BoxStackValue stackValue);
+
+	}
+
+	protected static final BruteForcePointFilter DEFAULT_POINT_FILTER = (pointCalculator, stackValue) -> new IntIterator() {
+		private int index;
+		private int next = -1;
+
+		@Override
+		public boolean hasNext() {
+			while(next == -1 && index < pointCalculator.size()) {
+				int candidate = index++;
+				if(pointCalculator.get(candidate).fits3D(stackValue)) {
+					next = candidate;
+				}
+			}
+			return next != -1;
+		}
+
+		@Override
+		public int next() {
+			if(!hasNext()) {
+				return -1;
+			}
+			int result = next;
+			next = -1;
+			return result;
+		}
+	};
+
 	private static final Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
 	
-	public AbstractBruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
+	protected final BruteForcePointFilter pointFilter;
+
+	public AbstractBruteForcePackager(Comparator<IntermediatePackagerResult> comparator, BruteForcePointFilter pointFilter) {
 		super(comparator);
+		this.pointFilter = pointFilter;
 	}
 	
 	public class BruteForcePackagerResultBuilder extends AbstractPackagerResultBuilder<BruteForcePackagerResultBuilder> {
@@ -287,9 +326,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 
 		pointCalculatorStack.push();
 
-		int currentPointsCount = pointCalculatorStack.size();
-
-		for (int k = 0; k < currentPointsCount; k++) {
+		IntIterator pointIterator = pointFilter.getPoints(pointCalculatorStack, stackValue);
+		while(pointIterator.hasNext()) {
+			int k = pointIterator.next();
+			
 			Point point3d = pointCalculatorStack.get(k);
 
 			if(!point3d.fits3D(stackValue)) {

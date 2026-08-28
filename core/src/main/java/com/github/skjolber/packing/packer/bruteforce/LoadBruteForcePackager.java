@@ -1,8 +1,11 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import org.eclipse.collections.api.iterator.IntIterator;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -23,6 +26,7 @@ import com.github.skjolber.packing.packer.util.WeightLoadAwarePlacementUtility;
  * Brute-force packager which evaluates per-box load weight, pressure, box-count,
  * and identical-box constraints while exploring placements.
  */
+
 public class LoadBruteForcePackager extends BruteForcePackager {
 
 	public static Builder newBuilder() {
@@ -48,12 +52,19 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
-			return new LoadBruteForcePackager(comparator);
+			if(pointFilter == null) {
+				pointFilter = DEFAULT_POINT_FILTER;
+			}
+			return new LoadBruteForcePackager(comparator, pointFilter);
 		}
 	}
 
 	public LoadBruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
 		super(comparator);
+	}
+
+	public LoadBruteForcePackager(Comparator<IntermediatePackagerResult> comparator, BruteForcePackager.BruteForcePointFilter pointIndexSelector) {
+		super(comparator, pointIndexSelector);
 	}
 
 	@Override
@@ -130,8 +141,9 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 		}
 
 		pointCalculator.push();
-		int currentPointsCount = pointCalculator.size();
-		for (int k = 0; k < currentPointsCount; k++) {
+		IntIterator points = pointFilter.getPoints(pointCalculator, stackValue);
+		while(points.hasNext()) {
+			int k = points.next();
 			Point point = pointCalculator.get(k);
 			if(!point.fits3D(stackValue)) {
 				continue;

@@ -15,6 +15,7 @@ import java.util.TreeMap;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.eclipse.collections.api.iterator.IntIterator;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -22,6 +23,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
@@ -30,6 +32,32 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
+
+	@Test
+	void pointFilterIsConfigurable() {
+		BruteForcePackager.BruteForcePointFilter filter = (pointCalculator, stackValue) -> new IntIterator() {
+			private boolean available = true;
+
+			@Override
+			public boolean hasNext() {
+				return available;
+			}
+
+			@Override
+			public int next() {
+				available = false;
+				return 0;
+			}
+		};
+		BruteForcePackager packager = BruteForcePackager.newBuilder()
+				.withPointFilter(filter)
+				.build();
+		try {
+			assertThat(packager.pointFilter).isSameAs(filter);
+		} finally {
+			packager.close();
+		}
+	}
 
 	@Test
 	void testStackingSquaresOnSquare() {

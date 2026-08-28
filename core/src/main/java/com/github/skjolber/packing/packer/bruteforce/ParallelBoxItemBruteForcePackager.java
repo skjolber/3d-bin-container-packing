@@ -32,6 +32,9 @@ import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerException;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.packer.bruteforce.AbstractBruteForcePackager.BruteForcePointFilter;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePackagerBuilder;
+import com.github.skjolber.packing.packer.bruteforce.LoadBruteForcePackager.Builder;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -52,6 +55,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		protected int parallelizationCount = -1;
 		protected ExecutorService executorService;
 		protected Comparator<IntermediatePackagerResult> comparator;
+		protected BruteForcePointFilter pointFilter;
 
 		public ParallelBruteForcePackagerBuilder withThreads(int threads) {
 			if(threads < 1) {
@@ -88,7 +92,13 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 			return this;
 		}
+		
 
+		public ParallelBruteForcePackagerBuilder withPointFilter(BruteForcePointFilter pointFilter) {
+			this.pointFilter = pointFilter;
+			return this;
+		}
+		
 		public ParallelBoxItemBruteForcePackager build() {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
@@ -117,7 +127,12 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					}
 				}
 			}
-			return new ParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator);
+			
+			if(pointFilter == null) {
+				pointFilter = DEFAULT_POINT_FILTER;
+			}
+			
+			return new ParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter);
 		}
 	}
 
@@ -126,8 +141,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	private final ExecutorService executorService;
 
 	public ParallelBoxItemBruteForcePackager(ExecutorService executorService, int parallelizationCount, 
-			Comparator<IntermediatePackagerResult> comparator) {
-		super(comparator);
+			Comparator<IntermediatePackagerResult> comparator, BruteForcePointFilter pointFilter) {
+		super(comparator, pointFilter);
 
 		this.parallelizationCount = parallelizationCount;
 		this.executorService = executorService;

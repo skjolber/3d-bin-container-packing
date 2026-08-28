@@ -81,13 +81,18 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 					}
 				}
 			}
-			return new LoadParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator);
+			
+			if(pointFilter == null) {
+				pointFilter = DEFAULT_POINT_FILTER;
+			}
+			
+			return new LoadParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter);
 		}
 	}
 
 	public LoadParallelBoxItemBruteForcePackager(ExecutorService executorService, int parallelizationCount,
-			Comparator<IntermediatePackagerResult> comparator) {
-		super(executorService, parallelizationCount, comparator);
+			Comparator<IntermediatePackagerResult> comparator, BruteForcePointFilter pointFilter) {
+		super(executorService, parallelizationCount, comparator, pointFilter);
 	}
 
 	@Override
@@ -109,8 +114,7 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 			return Collections.emptyList();
 		}
 		if(loadPlacementUtility == null) {
-			return super.packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt,
-					minStackableAreaIndex, points, null);
+			return super.packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt, minStackableAreaIndex, points, null);
 		}
 
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
@@ -118,12 +122,10 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 			pointCalculator.setPoints(points);
 			pointCalculator.clear();
 		}
-		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(),
-				iterator.getMinBoxVolume(0));
+		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
 
 		loadPlacementUtility.initialize(placements.size());
-		return packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0,
-				interrupt, minStackableAreaIndex, Collections.emptyList(), loadPlacementUtility);
+		return packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt, minStackableAreaIndex, Collections.emptyList(), loadPlacementUtility);
 	}
 
 	private List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements,

@@ -1,16 +1,22 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+
+import org.eclipse.collections.api.iterator.IntIterator;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
@@ -42,6 +48,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 		protected Comparator<IntermediatePackagerResult> comparator;
 		protected List<Point> points;
+		protected BruteForcePointFilter pointFilter;
 		
 		public BruteForcePackagerBuilder withComparator(Comparator<IntermediatePackagerResult> comparator) {
 			this.comparator = comparator;
@@ -52,12 +59,20 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			this.points = points;
 			return this;
 		}
+
+		public BruteForcePackagerBuilder withPointFilter(BruteForcePointFilter pointFilter) {
+			this.pointFilter = pointFilter;
+			return this;
+		}
 		
 		public BruteForcePackager build() {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
-			return new BruteForcePackager(comparator);
+			if(pointFilter == null) {
+				pointFilter = DEFAULT_POINT_FILTER;
+			}
+			return new BruteForcePackager(comparator, pointFilter);
 		}
 	}
 	
@@ -107,12 +122,15 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
-		super(comparator);
+		this(comparator, DEFAULT_POINT_FILTER);
+	}
+
+	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator, BruteForcePointFilter pointFilter) {
+		super(comparator, pointFilter);
 	}
 
 	@Override
-	protected BruteForceGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt) {
+	protected BruteForceGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt) {
 		DefaultBoxItemGroupPermutationRotationIterator[] containerIterators = new DefaultBoxItemGroupPermutationRotationIterator[containerItemsCalculator.getContainerItemCount()];
 
 		for (int i = 0; i < containerItemsCalculator.getContainerItemCount(); i++) {

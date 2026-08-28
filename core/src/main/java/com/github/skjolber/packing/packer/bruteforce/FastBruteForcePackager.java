@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -23,6 +24,8 @@ import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.packer.bruteforce.AbstractBruteForcePackager.BruteForcePointFilter;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePackagerBuilder;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -54,12 +57,13 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			this.comparator = comparator;
 			return this;
 		}
-		
+
 		public FastBruteForcePackager build() {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
-			return new FastBruteForcePackager(comparator);
+			
+			return new FastBruteForcePackager(comparator, null);
 		}
 		
 	}
@@ -151,9 +155,9 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		
 		return new FastBruteForceAdapter(boxItems, defaultContainerItemsCalculator, containerIterators, interrupt);
 	}
-	
-	public FastBruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
-		super(comparator);
+
+	public FastBruteForcePackager(Comparator<IntermediatePackagerResult> comparator, BruteForcePointFilter pointFilter) {
+		super(comparator, pointFilter);
 	}
 
 	protected void clearStack(Stack stack, LoadPlacementUtility loadPlacementUtility) {
