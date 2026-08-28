@@ -45,6 +45,16 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	@FunctionalInterface
 	public interface BruteForcePointFilter {
 
+		/**
+		 * Get points for the stack value.
+		 * 
+		 * Implementations must return only indexes to points which actually can hold the target {@linkplain BoxStackValue}
+		 * 
+		 * @param points
+		 * @param stackValue
+		 * @return a list of indexes. 
+		 */
+		
 		IntIterator getPoints(DefaultPointCalculator3D points, BoxStackValue stackValue);
 
 	}
@@ -331,10 +341,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			int k = pointIterator.next();
 			
 			Point point3d = pointCalculatorStack.get(k);
-
-			if(!point3d.fits3D(stackValue)) {
-				continue;
-			}
 
 			placement.setPoint(point3d);
 

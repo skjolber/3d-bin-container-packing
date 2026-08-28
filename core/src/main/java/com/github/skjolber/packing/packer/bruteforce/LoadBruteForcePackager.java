@@ -145,9 +145,6 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 		while(points.hasNext()) {
 			int k = points.next();
 			Point point = pointCalculator.get(k);
-			if(!point.fits3D(stackValue)) {
-				continue;
-			}
 
 			utility.populatePointSupporters(point);
 			utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
