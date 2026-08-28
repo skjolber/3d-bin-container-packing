@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.comparator.placement;
 
-import java.util.Comparator;
-
 import com.github.skjolber.packing.api.Placement;
 
 /**
@@ -15,7 +13,6 @@ import com.github.skjolber.packing.api.Placement;
  * identical-only restriction) and position / physical dimensions (x/y/z, area, volume, weight,
  * support ratio). 
  *
- * <p>To wrap an existing {@link Comparator}&lt;{@link Placement}&gt; use {@link #of(Comparator)}.
  */
 public interface PlacementComparator {
 
@@ -30,18 +27,4 @@ public interface PlacementComparator {
 		return (a, b) -> 0;
 	}
 
-	/**
-	 * Wraps an arbitrary {@link Comparator}&lt;{@link Placement}&gt; as a {@link PlacementComparator}.
-	 *
-	 * <p>If the argument already implements {@link PlacementComparator} it is returned as-is.
-	 *
-	 * @param comparator the comparator to wrap; must not be {@code null}
-	 * @return a {@link PlacementComparator} delegating to {@code comparator}
-	 */
-	static PlacementComparator of(Comparator<Placement> comparator) {
-		if (comparator instanceof PlacementComparator) {
-			return (PlacementComparator) comparator;
-		}
-		return comparator::compare;
-	}
 }

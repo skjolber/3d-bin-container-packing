@@ -3,7 +3,6 @@ package com.github.skjolber.packing.api.packager.control.point;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilder;
 import com.github.skjolber.packing.api.point.PointSource;
 
 /**
@@ -24,7 +23,7 @@ public interface PointControlsBuilder {
 	
 	PointControlsBuilder withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount);
 		
-	PointControlsBuilder  withLoadIdenticalBox(boolean loadIdenticalBox);
+	PointControlsBuilder withLoadIdenticalBox(boolean loadIdenticalBox);
 
 	PointControlsBuilder withStability(boolean fullSupport);
 

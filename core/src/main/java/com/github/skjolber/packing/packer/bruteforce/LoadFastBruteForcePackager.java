@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -8,10 +7,10 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
-import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
@@ -53,16 +52,32 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 	}
 
 	@Override
+	protected void clearStack(Stack stack, LoadPlacementUtility loadPlacementUtility) {
+		setStackSize(stack, 0, loadPlacementUtility);
+	}
+
+	@Override
+	protected void setStackSize(Stack stack, int size, LoadPlacementUtility loadPlacementUtility) {
+		if(loadPlacementUtility != null) {
+			for(int i = stack.size() - 1; i >= size; i--) {
+				Placement placement = stack.getPlacements().get(i);
+				for(PlacementLoad supporter : placement.getSupporters()) {
+					supporter.getPlacement().removeLastSupportee();
+				}
+				placement.clearLoad();
+			}
+		}
+		stack.setSize(size);
+	}
+
+	@Override
 	public int packStackPlacement(FastPointCalculator3DStack pointCalculator, List<Placement> placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack, Container container, int placementIndex,
-			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad) {
-		LoadPlacementUtility utility = LoadBruteForcePackager.createLoadPlacementUtility(iterator, stack);
+			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad,
+			LoadPlacementUtility utility) {
 		if(utility == null) {
-			return super.packStackPlacement(pointCalculator, placements, iterator, stack, container, placementIndex, interrupt, minStackableAreaIndex, freeWeightLoad);
+			return super.packStackPlacement(pointCalculator, placements, iterator, stack, container, placementIndex, interrupt, minStackableAreaIndex, freeWeightLoad, null);
 		}
-
-		utility.initialize(placements.size());
-		rebuildLoad(stack, utility);
 
 		while (placementIndex < iterator.length()) {
 			if(interrupt.getAsBoolean()) {
@@ -74,11 +89,9 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 			if(box.getWeight() > freeWeightLoad) {
 				break;
 			}
-
 			int bestPointIndex = -1;
 			long bestSupportedArea = -1L;
-			int pointCount = pointCalculator.size();
-			for (int k = 0; k < pointCount; k++) {
+			for(int k = 0; k < pointCalculator.size(); k++) {
 				Point point = pointCalculator.get(k);
 				if(!point.fits3D(stackValue)) {
 					continue;
@@ -142,22 +155,8 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 		return placementIndex;
 	}
 
-	private static void rebuildLoad(Stack stack, LoadPlacementUtility utility) {
-		List<Placement> prefix = new ArrayList<>(stack.getPlacements());
-		stack.clear();
-		for (Placement placement : prefix) {
-			placement.clearLoad();
-		}
-		for (Placement placement : prefix) {
-			Point point = new DefaultPoint3D(placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ(), placement.getAbsoluteEndX(), placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
-			BoxStackValue stackValue = placement.getStackValue();
-			utility.populatePointSupporters(point);
-			utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
-			long supportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
-			placement.setIndex(stack.size());
-			placement.setSupportedArea(supportedArea);
-			stack.add(placement);
-			utility.addSupportersLoad(placement);
-		}
+	@Override
+	protected LoadPlacementUtility createLoadPlacementUtility(BoxItemPermutationRotationIterator iterator, Stack stack) {
+		return LoadBruteForcePackager.createLoadPlacementUtilityImpl(iterator, stack);
 	}
 }

@@ -32,6 +32,7 @@ import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerException;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
  * 
@@ -702,6 +703,11 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		return new ParallelGroupAdapter(items, itemGroups, containerItemsCalculator, runnables, iterators, parallelIterators, interrupts);
+	}
+
+	@Override
+	protected LoadPlacementUtility createLoadPlacementUtility(BoxItemPermutationRotationIterator iterator, Stack stack) {
+		return null;
 	}
 
 }

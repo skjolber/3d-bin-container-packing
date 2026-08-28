@@ -10,7 +10,10 @@ import com.github.skjolber.packing.api.BoxItemGroup;
  * 
  * @see <a href=
  *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
+ *      
+ * @param <B> builder
  */
+
 
 public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxItemGroupIteratorBuilder<B>>  {
 

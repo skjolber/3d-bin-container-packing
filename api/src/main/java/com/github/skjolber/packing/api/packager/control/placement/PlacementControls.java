@@ -36,10 +36,10 @@ public interface PlacementControls {
 	 * Notify box cannot be fitted, even it was previously accepted; usually because
 	 * fitting the whole group was not possible.
 	 * 
-	 * @param boxItems {@linkplain BoxItem}
+	 * @param placements placements
 	 */
 	
-	default void undo(List<Placement> boxItems) {
+	default void undo(List<Placement> placements) {
 		// no-op by default
 	}
 	
