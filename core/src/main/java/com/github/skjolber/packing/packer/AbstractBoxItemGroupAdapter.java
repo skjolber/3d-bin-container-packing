@@ -46,7 +46,7 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 		
 		for (BoxItemGroup boxItemGroup : boxItemGroups) {
 			for (BoxItem item : boxItemGroup.getItems()) {
-				if(item.isMaxLoad()) {
+if(item.isMaxLoad() || item.getBox().isLoadIdenticalBoxOnly()) {
 					Box box = item.getBox();	
 					maxLoadWeight |= box.isMaxLoadWeight();
 					maxLoadPressure |= box.isMaxLoadPressure();
