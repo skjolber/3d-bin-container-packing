@@ -265,22 +265,17 @@ public class Placement implements Serializable {
 	}
 	
 	public void removeLoad(Placement supportee) {
-		PlacementLoad toRemove = null;
-		for(PlacementLoad supporteeLink : supportees) {
+		for(int i = supportees.size() - 1; i >= 0; i--) {
+			PlacementLoad supporteeLink = supportees.get(i);
 			if(supporteeLink.getPlacement() == supportee) {
-				toRemove = supporteeLink;
+				supportees.remove(i);
+				supportee.removeSupporter(this);
+				propagateLoad(-supporteeLink.getWeight());
 				break;
 			}
 		}
-		
-		if(toRemove != null) {
-			supportees.remove(toRemove);
-			supportee.removeSupporter(this);
-			
-			propagateLoad(-toRemove.getWeight());
-		}
 	}
-	
+
 	public void clearLoad() {
 		supportees.clear();
 		supporters.clear();
@@ -341,6 +336,11 @@ public class Placement implements Serializable {
 
 	public <T> void setProperties(T properties) {
 		this.properties = properties;
+	}
+
+	public void removeLastSupportee() {
+		PlacementLoad supporteeLink = supportees.remove(supportees.size() - 1);
+		propagateLoad(-supporteeLink.getWeight());
 	}
 
 

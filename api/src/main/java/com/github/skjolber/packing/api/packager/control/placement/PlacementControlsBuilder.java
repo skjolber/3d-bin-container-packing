@@ -24,7 +24,7 @@ public interface PlacementControlsBuilder {
 
 	PlacementControlsBuilder withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount);
 
-	PlacementControlsBuilder withStability(boolean calculateSupport, boolean fullSupport);	
+	PlacementControlsBuilder withStability(boolean calculateSupport, boolean areaFullSupport);
 
 	PlacementControlsBuilder withLoadIdenticalBox(boolean loadIdenticalBox);
 

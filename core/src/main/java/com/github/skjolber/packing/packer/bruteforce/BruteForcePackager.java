@@ -4,20 +4,27 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.eclipse.collections.api.iterator.IntIterator;
+
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.FilteredReversedBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -32,6 +39,60 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 public class BruteForcePackager extends AbstractBruteForcePackager {
 
+	protected final BruteForcePointIteratorFilter pointFilter;
+	
+	// assumes packaging of a reversed permutation is the same as the permutation. Not recommended if using a pointFilter.
+	protected final boolean filterReversePermutations;
+
+	@FunctionalInterface
+	public interface BruteForcePointIteratorFilter {
+
+		/**
+		 * Get points for the stack value.Intended to guide the brute force search for a solution.
+		 *
+		 * Implementations must return only indexes to points which can hold the target {@linkplain BoxStackValue}.
+		 *
+		 * @param points the available points
+		 * @param stackValue the value to place
+		 * @return an iterator over point indexes
+		 */
+		IntIterator getPoints(DefaultPointCalculator3D points, BoxStackValue stackValue);
+	}
+
+	public static class DefaultPointFilter implements BruteForcePointIteratorFilter {
+
+		@Override
+		public IntIterator getPoints(DefaultPointCalculator3D pointCalculator, BoxStackValue stackValue) {
+			return new IntIterator() {
+				private int index;
+				private int next = -1;
+
+				@Override
+				public boolean hasNext() {
+					while(next == -1 && index < pointCalculator.size()) {
+						int candidate = index++;
+						if(pointCalculator.get(candidate).fits3D(stackValue)) {
+							next = candidate;
+						}
+					}
+					return next != -1;
+				}
+
+				@Override
+				public int next() {
+					if(!hasNext()) {
+						return -1;
+					}
+					int result = next;
+					next = -1;
+					return result;
+				}
+			};
+		}
+	}
+
+	protected static final BruteForcePointIteratorFilter DEFAULT_POINT_FILTER = new DefaultPointFilter();
+
 	public static BruteForcePackagerBuilder newBuilder() {
 		return new BruteForcePackagerBuilder();
 	}
@@ -40,6 +101,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 		protected Comparator<IntermediatePackagerResult> comparator;
 		protected List<Point> points;
+		protected BruteForcePointIteratorFilter pointFilter;
+		protected boolean filterReversePermutations = false;
 		
 		public BruteForcePackagerBuilder withComparator(Comparator<IntermediatePackagerResult> comparator) {
 			this.comparator = comparator;
@@ -50,12 +113,22 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			this.points = points;
 			return this;
 		}
+
+		public BruteForcePackagerBuilder withPointFilter(BruteForcePointIteratorFilter pointFilter) {
+			this.pointFilter = pointFilter;
+			return this;
+		}
 		
 		public BruteForcePackager build() {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
-			return new BruteForcePackager(comparator);
+			return new BruteForcePackager(comparator, pointFilter, filterReversePermutations);
+		}
+		
+		public BruteForcePackagerBuilder withSkipReversePermutations(boolean filterReversePermutations) {
+			this.filterReversePermutations = filterReversePermutations;
+			return this;
 		}
 	}
 	
@@ -76,7 +149,12 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
+			BoxItemPermutationRotationIterator iterator = containerIterators[i];
+			
+			if(filterReversePermutations && abortOnAnyBoxTooBig) {
+				iterator = new FilteredReversedBoxItemPermutationRotationIterator(iterator);
+			}
+			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter);
 		}
 		
 	}
@@ -99,18 +177,28 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return truncateToGroup(BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt));
+			BoxItemPermutationRotationIterator iterator = containerIterators[i];
+			
+			if(filterReversePermutations && abortOnAnyBoxTooBig) {
+				iterator = new FilteredReversedBoxItemPermutationRotationIterator(iterator);
+			}
+			return truncateToGroup(BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter));
 		}
 
 	}
 
-	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
+	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator, boolean filterReversePermutations) {
+		this(comparator, null, filterReversePermutations);
+	}
+
+	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator, BruteForcePointIteratorFilter pointFilter, boolean filterReversePermutations) {
 		super(comparator);
+		this.pointFilter = pointFilter;
+		this.filterReversePermutations = filterReversePermutations;
 	}
 
 	@Override
-	protected BruteForceGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt) {
+	protected BruteForceGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt) {
 		DefaultBoxItemGroupPermutationRotationIterator[] containerIterators = new DefaultBoxItemGroupPermutationRotationIterator[containerItemsCalculator.getContainerItemCount()];
 
 		for (int i = 0; i < containerItemsCalculator.getContainerItemCount(); i++) {
@@ -150,6 +238,11 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		}
 		
 		return new BruteForceAdapter(boxItems, containerItemsCalculator, containerIterators, interrupt);
+	}
+
+	@Override
+	protected LoadPlacementUtility createLoadPlacementUtility(BoxItemPermutationRotationIterator iterator, Stack stack) {
+		return null;
 	}
 
 }

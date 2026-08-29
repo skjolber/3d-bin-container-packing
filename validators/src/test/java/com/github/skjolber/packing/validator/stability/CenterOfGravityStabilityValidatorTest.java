@@ -30,13 +30,31 @@ public class CenterOfGravityStabilityValidatorTest {
 
 	private static Placement makePlacement(String id, int dx, int dy, int dz, int weight,
 			int x, int y, int z) {
+		return makePlacement(id, dx, dy, dz, weight, x, y, z, dx / 2, dy / 2, dz / 2);
+	}
+
+	private static Placement makePlacement(String id, int dx, int dy, int dz, int weight,
+			int x, int y, int z, int centerOfGravityX, int centerOfGravityY, int centerOfGravityZ) {
 		Box box = Box.newBuilder()
 				.withId(id)
 				.withSize(dx, dy, dz)
 				.withWeight(weight)
+				.withCenterOfGravity(centerOfGravityX, centerOfGravityY, centerOfGravityZ)
 				.withRotate2D()
 				.build();
 		return new Placement(box.getStackValues()[0], 0, x, y, z);
+	}
+
+	@Test
+	void testConfiguredStackCentersOfGravity() {
+		Placement a = makePlacement("A", 5, 10, 1, 20, 0, 0, 0);
+		Placement b = makePlacement("B", 10, 10, 1, 1, 0, 0, 1, 1, 5, 0);
+		Placement c = makePlacement("C", 10, 10, 1, 1000, 0, 0, 2, 1, 5, 0);
+
+		a.addLoad(b, 50L, b.getWeight());
+		b.addLoad(c, 100L, c.getWeight());
+
+		assertThat(validator.isValid(List.of(a, b, c), new ArrayList<>())).isTrue();
 	}
 
 	// -----------------------------------------------------------------------

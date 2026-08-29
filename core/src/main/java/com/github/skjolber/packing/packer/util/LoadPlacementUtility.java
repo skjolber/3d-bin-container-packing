@@ -58,6 +58,17 @@ public interface LoadPlacementUtility {
 	Placement getPlacementAtPoint(Point point, BoxStackValue sv, boolean fullSupport);
 
 	/**
+	 * Validates a placement at the point origin without allocating a
+	 * {@link Placement}.
+	 *
+	 * @return supported area, or {@code -1} when a load constraint fails
+	 */
+	long getSupportedAreaAtPoint(Point point, BoxStackValue sv, boolean fullSupport);
+
+	/** Connects a validated placement to the cached set of direct supporters. */
+	void addSupportersLoad(Placement placement);
+
+	/**
 	 * Scans all point-supporters for the best fully-supported placement of
 	 * {@code sv} at {@code point3d}, comparing candidates via {@code comparator}.
 	 *

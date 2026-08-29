@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.deadline;
+package com.github.skjolber.packing.api.interrupt;
 
 public class PositivePackagerInterruptSupplier implements PackagerInterruptSupplier {
 

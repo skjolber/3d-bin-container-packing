@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 
 public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapter implements PackagerAdapter {
 

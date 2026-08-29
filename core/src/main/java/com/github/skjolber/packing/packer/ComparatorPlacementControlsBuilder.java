@@ -73,13 +73,6 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 		return this;
 	}
 
-	/** Wraps an existing {@link java.util.Comparator} as a {@link PlacementComparator}. */
-	public ComparatorPlacementControlsBuilder withPlacementComparator(
-			java.util.Comparator<com.github.skjolber.packing.api.Placement> intermediatePlacementResultComparator) {
-		this.placementComparator = PlacementComparator.of(intermediatePlacementResultComparator);
-		return this;
-	}
-
 	public ComparatorPlacementControlsBuilder withBoxItemComparator(Comparator<BoxItem> boxItemComparator) {
 		this.boxItemComparator = boxItemComparator;
 		return this;

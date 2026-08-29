@@ -14,14 +14,15 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
+import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
 import com.github.skjolber.packing.api.validator.ValidatorResult;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.manifest.ManifestValidator;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.api.validator.placement.PlacementValidator;
 import com.github.skjolber.packing.api.validator.placement.StabilityValidator;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.validator.reasons.ValidatorInterruptedException;
 
 public class DefaultValidator extends AbstractValidator<DefaultValidator.DefaultValidatorResultBuilder> {
@@ -36,15 +37,15 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			}
 			long start = System.currentTimeMillis();
 
-			PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
+			PackagerInterruptSupplierBuilder interruptBuilder = PackagerInterruptSupplierBuilder.builder();
 			if(deadline != -1L) {
-				booleanSupplierBuilder.withDeadline(deadline);
+				interruptBuilder.withDeadline(deadline);
 			}
 			if(interrupt != null) {
-				booleanSupplierBuilder.withInterrupt(interrupt);
+				interruptBuilder.withInterrupt(new DefaultPackagerInterrupt(interrupt));
 			}
 
-			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
+			PackagerInterruptSupplier interrupt = interruptBuilder.build();
 			try {
 				List<ValidatorResultReason> reasons = new ArrayList<>();
 				boolean valid;

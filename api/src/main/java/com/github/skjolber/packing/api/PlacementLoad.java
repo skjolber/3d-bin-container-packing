@@ -40,4 +40,5 @@ public class PlacementLoad {
 	public long getWeight() {
 		return weight;
 	}
+
 }

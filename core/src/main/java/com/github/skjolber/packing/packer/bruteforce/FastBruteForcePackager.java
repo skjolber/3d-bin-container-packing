@@ -12,8 +12,8 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
@@ -22,6 +22,7 @@ import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container. This implementation tries all
@@ -34,6 +35,32 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
+	@FunctionalInterface
+	public interface FastBruteForceBoxStackValuePointComparator {
+
+		int compare(BoxStackValue stackValue, Point bestPoint, Point candidatePoint);
+		
+	}
+
+	public static class DefaultFastBruteForceBoxStackValuePointComparator implements FastBruteForceBoxStackValuePointComparator {
+
+		@Override
+		public int compare(BoxStackValue stackValue, Point bestPoint, Point candidatePoint) {
+			if(bestPoint.getArea() < candidatePoint.getArea()) {
+				return -1;
+			}
+			if(bestPoint.getMinZ() < candidatePoint.getMinZ()) {
+				return -1;
+			}
+			if(bestPoint.getArea() == candidatePoint.getArea() && bestPoint.getVolume() < candidatePoint.getVolume()) {
+				return -1;
+			}
+			return 1;
+		}
+	}
+
+	protected static final FastBruteForceBoxStackValuePointComparator DEFAULT_POINT_COMPARATOR = new DefaultFastBruteForceBoxStackValuePointComparator();
+
 	public static FastBruteForcePackagerBuilder newBuilder() {
 		return new FastBruteForcePackagerBuilder();
 	}
@@ -41,17 +68,24 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	public static class FastBruteForcePackagerBuilder {
 
 		protected Comparator<IntermediatePackagerResult> comparator;
+		protected FastBruteForceBoxStackValuePointComparator pointComparator = DEFAULT_POINT_COMPARATOR;
 		
 		public FastBruteForcePackagerBuilder withComparator(Comparator<IntermediatePackagerResult> comparator) {
 			this.comparator = comparator;
 			return this;
 		}
-		
+
+		public FastBruteForcePackagerBuilder withPointComparator(FastBruteForceBoxStackValuePointComparator pointComparator) {
+			this.pointComparator = pointComparator;
+			return this;
+		}
+
 		public FastBruteForcePackager build() {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
-			return new FastBruteForcePackager(comparator);
+			
+			return new FastBruteForcePackager(comparator, pointComparator);
 		}
 		
 	}
@@ -73,7 +107,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
+			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator);
 		}
 		
 	}
@@ -95,7 +129,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return truncateToGroup(FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt));
+			return truncateToGroup(FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator));
 		}
 		
 	}
@@ -143,15 +177,26 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		
 		return new FastBruteForceAdapter(boxItems, defaultContainerItemsCalculator, containerIterators, interrupt);
 	}
-	
-	public FastBruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
+
+	protected final FastBruteForceBoxStackValuePointComparator fastPointComparator;
+
+	public FastBruteForcePackager(Comparator<IntermediatePackagerResult> comparator, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		super(comparator);
+		this.fastPointComparator = pointComparator;
+	}
+
+	protected void clearStack(Stack stack, LoadPlacementUtility loadPlacementUtility) {
+		stack.clear();
+	}
+
+	protected void setStackSize(Stack stack, int size, LoadPlacementUtility loadPlacementUtility) {
+		stack.setSize(size);
 	}
 
 	public BruteForceIntermediatePackagerResult pack(FastPointCalculator3DStack pointCalculator,
 			List<Placement> stackPlacements, ControlledContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator,
-			PackagerInterruptSupplier interrupt) {
+			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		
 		Container holder = containerItem.getContainer().clone();
 		
@@ -163,6 +208,10 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		BruteForceIntermediatePackagerResult bestPermutationResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(), containerIndex, iterator);
 
 		long[] freeLoadWeights = calculateFreeLoadWeights(holder, iterator);
+		LoadPlacementUtility loadPlacementUtility = createLoadPlacementUtility(iterator, stack);
+		if(loadPlacementUtility != null) {
+			loadPlacementUtility.initialize(stackPlacements.size());
+		}
 		
 		// iterator over all permutations
 		permutations: 
@@ -189,7 +238,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 				pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), minStackableVolume);
 
-				int count = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, index, interrupt, minStackableAreaIndex, freeLoadWeights[index]);
+				int count = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, index, interrupt, minStackableAreaIndex, freeLoadWeights[index], loadPlacementUtility, pointComparator);
 				if(count == Integer.MIN_VALUE) {
 					return null; // timeout
 				}
@@ -215,12 +264,12 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 				if(rotationIndex == -1) {
 					// no more rotations, continue to next permutation
-					stack.clear();
+					clearStack(stack, loadPlacementUtility);
 					break;
 				}
 
 				pointCalculator.setStackSize(rotationIndex);
-				stack.setSize(rotationIndex);
+				setStackSize(stack, rotationIndex, loadPlacementUtility);
 
 				index = rotationIndex;
 			} while (true);
@@ -286,7 +335,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 	public int packStackPlacement(FastPointCalculator3DStack pointCalculator, List<Placement> placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack, Container container, int placementIndex,
-			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad) {
+			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad,
+			LoadPlacementUtility loadPlacementUtility, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		// pack as many items as possible from placementIndex
 
 		while (placementIndex < iterator.length()) {
@@ -300,27 +350,17 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(stackable.getWeight() > freeWeightLoad) {
 				break;
 			}
-
 			Placement placement = placements.get(placementIndex);
 
-			int pointCount = pointCalculator.size();
-
 			int bestPointIndex = -1;
-			for (int k = 0; k < pointCount; k++) {
-				Point point3d = pointCalculator.get(k);
-				if(!point3d.fits3D(stackValue)) {
+			for(int k = 0; k < pointCalculator.size(); k++) {
+				Point candidatePoint = pointCalculator.get(k);
+				if(!candidatePoint.fits3D(stackValue)) {
 					continue;
 				}
-
-				if(bestPointIndex != -1) {
-					Point bestPoint = pointCalculator.get(bestPointIndex);
-					if(bestPoint.getArea() < point3d.getArea()) {
-						continue;
-					} else if(bestPoint.getArea() == point3d.getArea() && bestPoint.getVolume() < point3d.getVolume()) {
-						continue;
-					}
+				if(bestPointIndex == -1 || pointComparator.compare(stackValue, pointCalculator.get(bestPointIndex), candidatePoint) > 0) {
+					bestPointIndex = k;
 				}
-				bestPointIndex = k;
 			}
 
 			if(bestPointIndex == -1) { // interrupted
@@ -356,4 +396,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		return placementIndex;
 	}
 
+	@Override
+	protected LoadPlacementUtility createLoadPlacementUtility(BoxItemPermutationRotationIterator iterator, Stack stack) {
+		return null;
+	}
 }

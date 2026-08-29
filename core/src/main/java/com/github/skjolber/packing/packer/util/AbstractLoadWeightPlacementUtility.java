@@ -210,30 +210,52 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	 * @return a valid {@link Placement}, or {@code null} if any constraint fails
 	 */
 	public Placement getPlacementAtPoint(Point point, BoxStackValue sv, boolean fullSupport) {
-		long weight = calculateSupporteeWeight(sv, point);
-		if (weight == -1L) {
+		long supportedArea = getSupportedAreaAtPoint(point, sv, fullSupport);
+		if(supportedArea == -1L) {
 			return null;
-		}
-
-		long supportedArea;
-		if (point.getMinZ() > 0) {
-			if (!populateSupporters(sv, point)) {
-				return null;
-			}
-			supportedArea = calculateSupportAndValidateSupporterLoad(sv, point.getMinX(), point.getMinY(), weight);
-			if (supportedArea == -1L) {
-				return null;
-			}
-			if (fullSupport && supportedArea != sv.getArea()) {
-				return null;
-			}
-		} else {
-			supportedArea = sv.getArea();
 		}
 
 		Placement placement = new Placement(sv, point);
 		placement.setSupportedArea(supportedArea);
 		return placement;
+	}
+
+	@Override
+	public long getSupportedAreaAtPoint(Point point, BoxStackValue sv, boolean fullSupport) {
+		long weight = calculateSupporteeWeight(sv, point);
+		if (weight == -1L) {
+			return -1L;
+		}
+
+		long supportedArea;
+		if (point.getMinZ() > 0) {
+			if (!populateSupporters(sv, point)) {
+				return -1L;
+			}
+			supportedArea = calculateSupportAndValidateSupporterLoad(sv, point.getMinX(), point.getMinY(), weight);
+			if (supportedArea == -1L) {
+				return -1L;
+			}
+			if (fullSupport && supportedArea != sv.getArea()) {
+				return -1L;
+			}
+		} else {
+			supportedArea = sv.getArea();
+		}
+
+		return supportedArea;
+	}
+
+	@Override
+	public void addSupportersLoad(Placement placement) {
+		long totalArea = placement.getSupportedArea();
+		if(placement.getAbsoluteZ() == 0 || totalArea == 0) {
+			return;
+		}
+		for(int i = 0; i < placementSupporters.size(); i++) {
+			long area = placementAreas[i];
+			placementSupporters.get(i).addLoad(placement, area, (placement.getWeight() * area) / totalArea);
+		}
 	}
 
 	/**

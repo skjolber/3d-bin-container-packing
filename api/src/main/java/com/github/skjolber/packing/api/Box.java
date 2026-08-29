@@ -63,7 +63,7 @@ public class Box {
 		
 		private BoxStackValue build() {
 			return new BoxStackValue(dx, dy, dz, surfaces, index,
-					maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalOnly);
+					maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalOnly, centerOfGravityX, centerOfGravityY, centerOfGravityZ);
 		}
 	}
 
@@ -132,9 +132,15 @@ public class Box {
 
 	public static class Builder extends AbstractBoxBuilder<Builder> {
 
+		protected int CENTER_OF_GRAVITY_MIDDLE = -1;
+
 		protected int dx = -1;
 		protected int dy = -1;
 		protected int dz = -1;
+		
+		protected int centerOfGravityX = -1;
+		protected int centerOfGravityY = -1;
+		protected int centerOfGravityZ = -1;
 		
 		protected Rotation rotation;
 
@@ -142,6 +148,14 @@ public class Box {
 		protected double maxLoadPressure = -1.0;
 		protected int maxLoadBoxCount = -1;
 		protected boolean maxLoadIdenticalOnly = false;
+
+		public Builder withCenterOfGravity(int x, int y, int z) {
+			this.centerOfGravityX = x;
+			this.centerOfGravityY = y;
+			this.centerOfGravityZ = z;
+
+			return this;
+		}
 
 		public Builder withSize(int dx, int dy, int dz) {
 			this.dx = dx;
@@ -165,6 +179,9 @@ public class Box {
 			return this;
 		}
 
+		protected boolean isCenterGravity() {
+			return centerOfGravityX == CENTER_OF_GRAVITY_MIDDLE && centerOfGravityY == CENTER_OF_GRAVITY_MIDDLE && centerOfGravityZ == CENTER_OF_GRAVITY_MIDDLE;
+		}
 
 		protected <T> T[] getStackValues() {
 
@@ -190,8 +207,8 @@ public class Box {
 			List<BoxStackValue> list = new ArrayList<>();
 
 			// dx, dy, dz
-
-			if (dx == dy && dx == dz) { // square 3d
+			
+			if (dx == dy && dx == dz && centerOfGravityX == centerOfGravityY && centerOfGravityX == centerOfGravityZ) { // square 3d
 				// all sides are equal
 
 				// z          y
@@ -210,9 +227,9 @@ public class Box {
 				//
 
 				if (rotation.is0() || rotation.is90()) {
-					list.add(newStackValue(dx, dy, dz, rotation.getSides(), list.size()));
+					list.add(newStackValue(dx, dy, dz, rotation.getSides(), list.size(), centerOfGravityX, centerOfGravityY, centerOfGravityZ));
 				}
-			} else if (dx == dy) {
+			} else if (dx == dy && centerOfGravityX == centerOfGravityY) {
 
 
 				// z               y
@@ -239,7 +256,7 @@ public class Box {
 				// add xz/yz and xy
 
 				if (rotation.isXY()) {
-					list.add(newStackValue(dx, dx, dz, rotation.getXYSurfaces(), list.size()));
+					list.add(newStackValue(dx, dx, dz, rotation.getXYSurfaces(), list.size(), centerOfGravityX, centerOfGravityX, centerOfGravityZ));
 				}
 				if (rotation.isXZ() || rotation.isYZ()) {
 
@@ -247,15 +264,14 @@ public class Box {
 					boolean ninety = rotation.isXZ90() || rotation.isYZ90();
 
 					if (zero) {
-						list.add(newStackValue(dx, dz, dx, rotation.getYZAndXZSurfaces0(), list.size()));
+						list.add(newStackValue(dx, dz, dx, rotation.getYZAndXZSurfaces0(), list.size(), centerOfGravityX, centerOfGravityZ, centerOfGravityX));
 					}
 					if (ninety) {
-						list.add(newStackValue(dz, dx, dx, rotation.getYZAndXZSurfaces90(), list.size()));
-
+						list.add(newStackValue(dz, dx, dx, rotation.getYZAndXZSurfaces90(), list.size(), centerOfGravityZ, centerOfGravityX, centerOfGravityX));
 					}
 
 				}
-			} else if (dz == dy) {
+			} else if (dz == dy && centerOfGravityZ == centerOfGravityY) {
 
 				// z           y
 				// |          / 
@@ -276,7 +292,7 @@ public class Box {
 				// add xz/xy and yz
 
 				if (rotation.isYZ()) {
-					list.add(newStackValue(dy, dy, dx, rotation.getYZSurfaces(), list.size()));
+					list.add(newStackValue(dy, dy, dx, rotation.getYZSurfaces(), list.size(), centerOfGravityY, centerOfGravityY, centerOfGravityX));
 				}
 				if (rotation.isXY() || rotation.isXZ()) {
 
@@ -284,14 +300,14 @@ public class Box {
 					boolean ninety = rotation.isXY90() || rotation.isXZ90();
 
 					if (zero) {
-						list.add(newStackValue(dx, dz, dz, rotation.getXYAndXZSurfaces0(), list.size()));
+						list.add(newStackValue(dx, dz, dz, rotation.getXYAndXZSurfaces0(), list.size(), centerOfGravityX, centerOfGravityZ, centerOfGravityZ));
 					}
 					if (ninety) {
-						list.add(newStackValue(dz, dx, dz, rotation.getXYAndXZSurfaces90(), list.size()));
+						list.add(newStackValue(dz, dx, dz, rotation.getXYAndXZSurfaces90(), list.size(), centerOfGravityZ, centerOfGravityX, centerOfGravityZ));
 					}
 				}
 
-			} else if (dx == dz) {
+			} else if (dx == dz && centerOfGravityX == centerOfGravityZ) {
 
 				//  
 				// z               y
@@ -316,17 +332,17 @@ public class Box {
 				// add xy/zy and xz
 
 				if (rotation.isXZ()) {
-					list.add(newStackValue(dx, dx, dy, rotation.getXZSurfaces(), list.size()));
+					list.add(newStackValue(dx, dx, dy, rotation.getXZSurfaces(), list.size(), centerOfGravityX, centerOfGravityX, centerOfGravityY));
 				}
 				if (rotation.isXY() || rotation.isYZ()) {
 					boolean zero = rotation.isXY0() || rotation.isYZ0();
 					boolean ninety = rotation.isXY90() || rotation.isYZ90();
 
 					if (zero) {
-						list.add(newStackValue(dx, dy, dx, rotation.getXYAndYZSurfaces0(), list.size()));
+						list.add(newStackValue(dx, dy, dx, rotation.getXYAndYZSurfaces0(), list.size(), centerOfGravityX, centerOfGravityY, centerOfGravityX));
 					}
 					if (ninety) {
-						list.add(newStackValue(dy, dx, dx, rotation.getXYAndYZSurfaces90(), list.size()));
+						list.add(newStackValue(dy, dx, dx, rotation.getXYAndYZSurfaces90(), list.size(), centerOfGravityY, centerOfGravityX, centerOfGravityX));
 					}
 				}
 			} else {
@@ -402,24 +418,24 @@ public class Box {
 
 
 				if (rotation.isXY0()) {
-					list.add(newStackValue(dx, dy, dz, rotation.getXY0Surfaces(), list.size()));
+					list.add(newStackValue(dx, dy, dz, rotation.getXY0Surfaces(), list.size(), centerOfGravityX, centerOfGravityY, centerOfGravityZ));
 				}
 				if (rotation.isXY90()) {
-					list.add(newStackValue(dy, dx, dz, rotation.getXY90Surfaces(), list.size()));
+					list.add(newStackValue(dy, dx, dz, rotation.getXY90Surfaces(), list.size(), centerOfGravityY, centerOfGravityX, centerOfGravityZ));
 				}
 
 				if (rotation.isXZ0()) {
-					list.add(newStackValue(dx, dz, dy, rotation.getXZ0Surfaces(), list.size()));
+					list.add(newStackValue(dx, dz, dy, rotation.getXZ0Surfaces(), list.size(), centerOfGravityX, centerOfGravityZ, centerOfGravityY));
 				}
 				if (rotation.isXZ90()) {
-					list.add(newStackValue(dz, dx, dy, rotation.getXZ90Surfaces(), list.size()));
+					list.add(newStackValue(dz, dx, dy, rotation.getXZ90Surfaces(), list.size(), centerOfGravityZ, centerOfGravityX, centerOfGravityY));
 				}
 
 				if (rotation.isYZ0()) {
-					list.add(newStackValue(dz, dy, dx, rotation.getYZ0Surfaces(), list.size()));
+					list.add(newStackValue(dz, dy, dx, rotation.getYZ0Surfaces(), list.size(), centerOfGravityZ, centerOfGravityY, centerOfGravityX));
 				}
 				if (rotation.isYZ90()) {
-					list.add(newStackValue(dy, dz, dx, rotation.getYZ90Surfaces(), list.size()));
+					list.add(newStackValue(dy, dz, dx, rotation.getYZ90Surfaces(), list.size(), centerOfGravityY, centerOfGravityZ, centerOfGravityX));
 				}
 			}
 
@@ -509,7 +525,11 @@ public class Box {
 		}
 
 		protected BoxStackValue newStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index) {
-			return new BoxStackValue(dx, dy, dz, surfaces, index, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalOnly);
+			return new BoxStackValue(dx, dy, dz, surfaces, index, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalOnly, dx / 2, dy / 2, dz / 2);
+		}
+		
+		protected BoxStackValue newStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index, int centerOfGravityX, int centerOfGravityY, int centerOfGravityZ) {
+			return new BoxStackValue(dx, dy, dz, surfaces, index, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalOnly, centerOfGravityX, centerOfGravityY, centerOfGravityZ);
 		}
 	}
 
@@ -876,4 +896,5 @@ public class Box {
 	public int getMaximumDz() {
 		return maximumDz;
 	}
+	
 }

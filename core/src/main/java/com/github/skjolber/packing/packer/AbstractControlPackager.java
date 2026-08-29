@@ -13,6 +13,7 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
@@ -26,7 +27,6 @@ import com.github.skjolber.packing.api.packager.control.point.PointControlsBuild
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.PointSource;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.MarkResetPointCalculator3D;
 import com.github.skjolber.packing.iterator.BoxItemGroupIterator;

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.api;
 
 import java.util.List;
+import java.util.Set;
 
 public class Container {
 
@@ -125,9 +126,16 @@ public class Container {
 	protected final String description;
 
 	protected final Stack stack;
+	
+	protected final Motion motion;
 
 	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
 			int loadDz, int maxLoadWeight, Stack stack) {
+		this(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack, null);
+	}
+
+	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
+			int loadDz, int maxLoadWeight, Stack stack, Motion motion) {
 		this.id = id;
 		this.description = description;
 
@@ -148,8 +156,9 @@ public class Container {
 		this.dy = dy;
 		this.dz = dz;
 		this.volume = (long) dx * (long) dy * (long) dz;
-
+		
 		this.stack = stack;
+		this.motion = motion;
 	}
 
 	public String getDescription() {
@@ -370,4 +379,7 @@ public class Container {
 		return "Container[" + (id != null ? id : "") + "[" + dx + "x" + dy + "x" + dz + "]";
 	}
 
+	public Motion getMotion() {
+		return motion;
+	}
 }

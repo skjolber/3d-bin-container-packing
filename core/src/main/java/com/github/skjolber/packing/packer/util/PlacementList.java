@@ -44,6 +44,13 @@ public class PlacementList {
 		size++;
 	}
 
+	public void addAll(PlacementList list) {
+		int count = list.size;
+		ensureAdditionalCapacity(count);
+		System.arraycopy(list.placements, 0, placements, size, count);
+		size += count;
+	}
+
 	public int size() {
 		return size;
 	}

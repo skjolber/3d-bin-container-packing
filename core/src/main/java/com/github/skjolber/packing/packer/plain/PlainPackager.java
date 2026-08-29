@@ -12,6 +12,9 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
+import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
@@ -24,8 +27,6 @@ import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupCompar
 import com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory;
 import com.github.skjolber.packing.comparator.placement.PlacementComparator;
 import com.github.skjolber.packing.comparator.placement.PlacementComparatorFactory;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.AnyOrderBoxItemGroupIterator;
 import com.github.skjolber.packing.iterator.BoxItemGroupIterator;
 import com.github.skjolber.packing.iterator.FixedOrderBoxItemGroupIterator;
