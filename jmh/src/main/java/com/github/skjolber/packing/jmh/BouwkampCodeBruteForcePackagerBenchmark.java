@@ -28,9 +28,14 @@ import com.github.skjolber.packing.packer.AbstractPackager;
 @Measurement(iterations = 1, time = 120, timeUnit = TimeUnit.SECONDS)
 public class BouwkampCodeBruteForcePackagerBenchmark {
 
-	//@Benchmark
+	@Benchmark
 	public int parallelPackager(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getParallelBruteForcePackager(), Long.MAX_VALUE);
+	}
+
+	@Benchmark
+	public int filteredParallelPackager(BouwkampCodeBruteForcePackagerState state) throws Exception {
+		return process(state.getFilteredParallelBruteForcePackager(), Long.MAX_VALUE);
 	}
 
 	@Benchmark
@@ -38,7 +43,12 @@ public class BouwkampCodeBruteForcePackagerBenchmark {
 		return process(state.getBruteForcePackager(), Long.MAX_VALUE);
 	}
 
-	//@Benchmark
+	@Benchmark
+	public int filteredPackager(BouwkampCodeBruteForcePackagerState state) throws Exception {
+		return process(state.getFilteredBruteForcePackager(), Long.MAX_VALUE);
+	}
+
+	@Benchmark
 	public int fastPackager(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
 	}
@@ -50,7 +60,7 @@ public class BouwkampCodeBruteForcePackagerBenchmark {
 			List<ContainerItem> containers = set.getContainers();
 			List<BoxItem> products = set.getProducts();
 
-			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withDeadline(deadline).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withInterruptDeadline(deadline).build();
 			if(build.isSuccess()) {
 				i++;
 			}

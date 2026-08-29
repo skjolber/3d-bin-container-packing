@@ -19,6 +19,7 @@ import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationItera
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.FilteredReversedBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
@@ -39,12 +40,15 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 public class BruteForcePackager extends AbstractBruteForcePackager {
 
 	protected final BruteForcePointIteratorFilter pointFilter;
+	
+	// assumes packaging of a reversed permutation is the same as the permutation. Not recommended if using a pointFilter.
+	protected final boolean filterReversePermutations;
 
 	@FunctionalInterface
 	public interface BruteForcePointIteratorFilter {
 
 		/**
-		 * Get points for the stack value.
+		 * Get points for the stack value.Intended to guide the brute force search for a solution.
 		 *
 		 * Implementations must return only indexes to points which can hold the target {@linkplain BoxStackValue}.
 		 *
@@ -98,6 +102,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		protected Comparator<IntermediatePackagerResult> comparator;
 		protected List<Point> points;
 		protected BruteForcePointIteratorFilter pointFilter;
+		protected boolean filterReversePermutations = false;
 		
 		public BruteForcePackagerBuilder withComparator(Comparator<IntermediatePackagerResult> comparator) {
 			this.comparator = comparator;
@@ -118,7 +123,12 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
-			return new BruteForcePackager(comparator, pointFilter);
+			return new BruteForcePackager(comparator, pointFilter, filterReversePermutations);
+		}
+		
+		public BruteForcePackagerBuilder withSkipReversePermutations(boolean filterReversePermutations) {
+			this.filterReversePermutations = filterReversePermutations;
+			return this;
 		}
 	}
 	
@@ -139,7 +149,12 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, pointFilter);
+			BoxItemPermutationRotationIterator iterator = containerIterators[i];
+			
+			if(filterReversePermutations && abortOnAnyBoxTooBig) {
+				iterator = new FilteredReversedBoxItemPermutationRotationIterator(iterator);
+			}
+			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter);
 		}
 		
 	}
@@ -162,18 +177,24 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return truncateToGroup(BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, pointFilter));
+			BoxItemPermutationRotationIterator iterator = containerIterators[i];
+			
+			if(filterReversePermutations && abortOnAnyBoxTooBig) {
+				iterator = new FilteredReversedBoxItemPermutationRotationIterator(iterator);
+			}
+			return truncateToGroup(BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter));
 		}
 
 	}
 
-	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
-		this(comparator, null);
+	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator, boolean filterReversePermutations) {
+		this(comparator, null, filterReversePermutations);
 	}
 
-	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator, BruteForcePointIteratorFilter pointFilter) {
+	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator, BruteForcePointIteratorFilter pointFilter, boolean filterReversePermutations) {
 		super(comparator);
 		this.pointFilter = pointFilter;
+		this.filterReversePermutations = filterReversePermutations;
 	}
 
 	@Override

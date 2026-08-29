@@ -59,7 +59,9 @@ public interface PackagerResultBuilder {
 
 	PackagerResultBuilder withOrder(Order order);
 
-	PackagerResultBuilder withDeadline(long deadline);
+	PackagerResultBuilder withInterruptDuration(long duration);
+
+	PackagerResultBuilder withInterruptDeadline(long deadline);
 
 	PackagerResultBuilder withInterrupt(PackagerInterruptSupplier interrupt);
 

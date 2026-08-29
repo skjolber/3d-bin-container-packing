@@ -127,15 +127,15 @@ public class Container {
 
 	protected final Stack stack;
 	
-	protected final Set<Dimension> moves;
+	protected final Motion motion;
 
 	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
 			int loadDz, int maxLoadWeight, Stack stack) {
-		this(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack, Set.of());
+		this(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack, null);
 	}
 
 	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
-			int loadDz, int maxLoadWeight, Stack stack, Set<Dimension> move) {
+			int loadDz, int maxLoadWeight, Stack stack, Motion motion) {
 		this.id = id;
 		this.description = description;
 
@@ -158,7 +158,7 @@ public class Container {
 		this.volume = (long) dx * (long) dy * (long) dz;
 		
 		this.stack = stack;
-		this.moves = move;
+		this.motion = motion;
 	}
 
 	public String getDescription() {
@@ -379,4 +379,7 @@ public class Container {
 		return "Container[" + (id != null ? id : "") + "[" + dx + "x" + dy + "x" + dz + "]";
 	}
 
+	public Motion getMotion() {
+		return motion;
+	}
 }

@@ -37,8 +37,18 @@ public class EgyPackagerBenchmark {
 	}
 
 	@Benchmark
+	public int filteredParallelPackager(EgyPackagerState state) throws Exception {
+		return process(state.getFilteredParallelBruteForcePackager(), Long.MAX_VALUE);
+	}
+
+	@Benchmark
 	public int packager(EgyPackagerState state) throws Exception {
 		return process(state.getBruteForcePackager(), Long.MAX_VALUE);
+	}
+
+	@Benchmark
+	public int filteredPackager(EgyPackagerState state) throws Exception {
+		return process(state.getFilteredBruteForcePackager(), Long.MAX_VALUE);
 	}
 
 	@Benchmark
@@ -58,7 +68,7 @@ public class EgyPackagerBenchmark {
 			List<ContainerItem> containers = set.getContainers();
 			List<BoxItem> products = set.getProducts();
 
-			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withDeadline(deadline).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withInterruptDeadline(deadline).build();
 			if(build.isSuccess()) {
 				i++;
 			}

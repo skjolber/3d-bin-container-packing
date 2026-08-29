@@ -56,11 +56,11 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 	}
 
 	public LoadBruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
-		super(comparator);
+		super(comparator, false);
 	}
 
 	public LoadBruteForcePackager(Comparator<IntermediatePackagerResult> comparator, BruteForcePackager.BruteForcePointIteratorFilter pointIndexSelector) {
-		super(comparator, pointIndexSelector);
+		super(comparator, pointIndexSelector, false);
 	}
 
 	@Override

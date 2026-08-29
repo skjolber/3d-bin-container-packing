@@ -255,7 +255,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		return (B) this;
 	}
 
-	public B withDeadline(long deadline) {
+	public B withInterruptDeadline(long deadline) {
 		this.deadline = deadline;
 		return (B) this;
 	}
@@ -305,6 +305,15 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			list.add(item);
 		}
 		return withBoxItemGroups(list);
+	}
+	
+	@Override
+	public B withInterruptDuration(long duration) {
+		if(duration != -1) {
+			return withInterruptDeadline(System.currentTimeMillis() + duration);
+		}
+		this.deadline = -1;
+		return (B)this;
 	}
 	
 }

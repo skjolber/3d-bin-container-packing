@@ -41,8 +41,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * | lower |  max load 5 -> rejected
 		 * +-------+
 		 */
-		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(10)
-				.withMaxLoadWeight(5).build();
+		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(10).withMaxLoadWeight(5).build();
 		PackagerResult result = pack(container(2), 2, 2, new BoxItem(box, 2));
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(2);
@@ -57,8 +56,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * | lower |  max load 5 -> accepted
 		 * +-------+
 		 */
-		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(5)
-				.withMaxLoadWeight(5).build();
+		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(5).withMaxLoadWeight(5).build();
 		PackagerResult result = pack(container(2), 1, 1, new BoxItem(box, 2));
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(1);
@@ -73,8 +71,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * | base|  max pressure 1 -> rejected
 		 * +-----+
 		 */
-		Box box = Box.newBuilder().withId("box").withSize(2, 5, 1).withWeight(11)
-				.withMaxLoadPressure(1).build();
+		Box box = Box.newBuilder().withId("box").withSize(2, 5, 1).withWeight(11).withMaxLoadPressure(1).build();
 		PackagerResult result = pack(container(2, 5, 2), 2, 2, new BoxItem(box, 2));
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(2);
@@ -89,8 +86,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * | base|  max pressure 1 -> accepted
 		 * +-----+
 		 */
-		Box box = Box.newBuilder().withId("box").withSize(2, 5, 1).withWeight(10)
-				.withMaxLoadPressure(1).build();
+		Box box = Box.newBuilder().withId("box").withSize(2, 5, 1).withWeight(10).withMaxLoadPressure(1).build();
 		PackagerResult result = pack(container(2, 5, 2), 1, 1, new BoxItem(box, 2));
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(1);
@@ -103,8 +99,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * +---+ #1
 		 * +---+ max one box above -> third needs another container
 		 */
-		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(1)
-				.withMaxLoadBoxCount(1).build();
+		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(1) .withMaxLoadBoxCount(1).build();
 		PackagerResult result = pack(container(3), 2, 2, new BoxItem(box, 3));
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(2);
@@ -118,8 +113,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * +---+ #1
 		 * +---+ max two boxes above -> accepted
 		 */
-		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(1)
-				.withMaxLoadBoxCount(2).build();
+		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(1).withMaxLoadBoxCount(2).build();
 		PackagerResult result = pack(container(3), 1, 1, new BoxItem(box, 3));
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(1);
@@ -134,10 +128,8 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * |  A  | identical-only -> rejected
 		 * +-----+
 		 */
-		Box first = Box.newBuilder().withId("first").withSize(10, 10, 1).withWeight(1)
-				.withMaxLoadIdenticalBoxCount(1).build();
-		Box second = Box.newBuilder().withId("second").withSize(10, 10, 1).withWeight(1)
-				.withMaxLoadIdenticalBoxCount(1).build();
+		Box first = Box.newBuilder().withId("first").withSize(10, 10, 1).withWeight(1).withMaxLoadIdenticalBoxCount(1).build();
+		Box second = Box.newBuilder().withId("second").withSize(10, 10, 1).withWeight(1).withMaxLoadIdenticalBoxCount(1).build();
 		PackagerResult result = pack(container(2), 2, 2, new BoxItem(first), new BoxItem(second));
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(2);
@@ -150,8 +142,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * +---+ A
 		 * +---+ A  two identical boxes above -> accepted
 		 */
-		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(1)
-				.withMaxLoadIdenticalBoxCount(2).build();
+		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(1).withMaxLoadIdenticalBoxCount(2).build();
 		PackagerResult result = pack(container(3), 1, 1, new BoxItem(box, 3));
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(1);
@@ -165,8 +156,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * +---+ load 6
 		 * +---+ load 9
 		 */
-		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(3)
-				.withMaxLoadWeight(20).build();
+		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(3).withMaxLoadWeight(20).build();
 		PackagerResult result = pack(container(4), 1, 1, new BoxItem(box, 4));
 		assertThat(placementsByHeight(result)).extracting(Placement::getLoadWeight)
 				.containsExactly(9L, 6L, 3L, 0L);
@@ -181,12 +171,9 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * |  LEFT  | RIGHT  | each carries load 5
 		 * +--------+--------+
 		 */
-		Box support = Box.newBuilder().withId("support").withSize(5, 10, 1).withWeight(1)
-				.withMaxLoadWeight(5).build();
-		Box top = Box.newBuilder().withId("top").withSize(10, 10, 1).withWeight(10)
-				.withMaxLoadWeight(0).build();
-		PackagerResult result = pack(container(10, 10, 2), 1, 1,
-				new BoxItem(support, 2), new BoxItem(top));
+		Box support = Box.newBuilder().withId("support").withSize(5, 10, 1).withWeight(1).withMaxLoadWeight(5).build();
+		Box top = Box.newBuilder().withId("top").withSize(10, 10, 1).withWeight(10).withMaxLoadWeight(0).build();
+		PackagerResult result = pack(container(10, 10, 2), 1, 1,new BoxItem(support, 2), new BoxItem(top));
 		assertThat(result.isSuccess()).isTrue();
 		List<Placement> placements = result.getContainers().get(0).getStack().getPlacements();
 		assertThat(placements).filteredOn(p -> p.getBox().getId().equals("support"))
@@ -202,8 +189,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * |   A   |   B   | same floor level: no carried load
 		 * +-------+-------+
 		 */
-		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(7)
-				.withMaxLoadWeight(0).build();
+		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(7).withMaxLoadWeight(0).build();
 		PackagerResult result = pack(container(20, 10, 1), 1, 1, new BoxItem(box, 2));
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers().get(0).getStack().getPlacements())
@@ -218,12 +204,10 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * +-------+ base(max 5)     +-------+ base(5)   +-------+ light
 		 * +-------+ light           +-------+ heavy     +-------+ heavy
 		 */
-		Box base = Box.newBuilder().withId("base").withSize(10, 10, 1).withWeight(1)
-				.withMaxLoadWeight(5).build();
+		Box base = Box.newBuilder().withId("base").withSize(10, 10, 1).withWeight(1).withMaxLoadWeight(5).build();
 		Box heavy = box("heavy", 10, 10, 1, 6);
 		Box light = box("light", 10, 10, 1, 4);
-		PackagerResult result = pack(container(3), 1, 1,
-				new BoxItem(base), new BoxItem(heavy), new BoxItem(light));
+		PackagerResult result = pack(container(3), 1, 1,new BoxItem(base), new BoxItem(heavy), new BoxItem(light));
 		List<Placement> placements = placementsByHeight(result);
 		assertThat(placements).extracting(p -> p.getBox().getId())
 				.containsExactlyInAnyOrder("heavy", "base", "light");
@@ -248,8 +232,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * |   B   |          |   B   |
 		 * +-------+          +-------+
 		 */
-		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(2)
-				.withMaxLoadWeight(2).build();
+		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(2).withMaxLoadWeight(2).build();
 		PackagerResult result = pack(container(2), 2, 2, new BoxItem(box, 4));
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(2);
