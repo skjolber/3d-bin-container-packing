@@ -32,7 +32,7 @@ import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerException;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.bruteforce.AbstractBruteForcePackager.BruteForcePointFilter;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePackagerBuilder;
 import com.github.skjolber.packing.packer.bruteforce.LoadBruteForcePackager.Builder;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
@@ -55,7 +55,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		protected int parallelizationCount = -1;
 		protected ExecutorService executorService;
 		protected Comparator<IntermediatePackagerResult> comparator;
-		protected BruteForcePointFilter pointFilter;
+		protected BruteForcePointIteratorFilter pointFilter;
 
 		public ParallelBruteForcePackagerBuilder withThreads(int threads) {
 			if(threads < 1) {
@@ -94,7 +94,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 		
 
-		public ParallelBruteForcePackagerBuilder withPointFilter(BruteForcePointFilter pointFilter) {
+		public ParallelBruteForcePackagerBuilder withPointFilter(BruteForcePointIteratorFilter pointFilter) {
 			this.pointFilter = pointFilter;
 			return this;
 		}
@@ -128,10 +128,6 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				}
 			}
 			
-			if(pointFilter == null) {
-				pointFilter = DEFAULT_POINT_FILTER;
-			}
-			
 			return new ParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter);
 		}
 	}
@@ -139,14 +135,16 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	private final ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService;
 	private final int parallelizationCount;
 	private final ExecutorService executorService;
+	protected final BruteForcePointIteratorFilter pointFilter;
 
 	public ParallelBoxItemBruteForcePackager(ExecutorService executorService, int parallelizationCount, 
-			Comparator<IntermediatePackagerResult> comparator, BruteForcePointFilter pointFilter) {
-		super(comparator, pointFilter);
+			Comparator<IntermediatePackagerResult> comparator, BruteForcePointIteratorFilter pointFilter) {
+		super(comparator);
 
 		this.parallelizationCount = parallelizationCount;
 		this.executorService = executorService;
 		this.executorCompletionService = new ExecutorCompletionService<BruteForceIntermediatePackagerResult>(executorService);
+		this.pointFilter = pointFilter;
 	}
 
 	private class RunnableAdapter implements Callable<BruteForceIntermediatePackagerResult> {
@@ -183,7 +181,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		@Override
 		public BruteForceIntermediatePackagerResult call() throws PackagerInterruptedException {
-			return ParallelBoxItemBruteForcePackager.this.pack(pointCalculator, placements, containerItem, containerIndex, iterator, interrupt);
+			return ParallelBoxItemBruteForcePackager.this.pack(pointCalculator, placements, containerItem, containerIndex, iterator, interrupt, pointFilter);
 		}
 	}
 
@@ -288,7 +286,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			// no need to split this job
 			// run with linear approach
 			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, containerItem, i, iterators[i],
-					interrupts[i]);
+					interrupts[i], pointFilter);
 		}
 
 		@Override
@@ -461,7 +459,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					containerItem,
 					i,
 					iterators[i],
-					interrupts[i]
+					interrupts[i],
+					pointFilter
 			));
 		}
 

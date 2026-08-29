@@ -1,10 +1,8 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 import org.eclipse.collections.api.iterator.IntIterator;
 
@@ -40,6 +38,57 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 public class BruteForcePackager extends AbstractBruteForcePackager {
 
+	protected final BruteForcePointIteratorFilter pointFilter;
+
+	@FunctionalInterface
+	public interface BruteForcePointIteratorFilter {
+
+		/**
+		 * Get points for the stack value.
+		 *
+		 * Implementations must return only indexes to points which can hold the target {@linkplain BoxStackValue}.
+		 *
+		 * @param points the available points
+		 * @param stackValue the value to place
+		 * @return an iterator over point indexes
+		 */
+		IntIterator getPoints(DefaultPointCalculator3D points, BoxStackValue stackValue);
+	}
+
+	public static class DefaultPointFilter implements BruteForcePointIteratorFilter {
+
+		@Override
+		public IntIterator getPoints(DefaultPointCalculator3D pointCalculator, BoxStackValue stackValue) {
+			return new IntIterator() {
+				private int index;
+				private int next = -1;
+
+				@Override
+				public boolean hasNext() {
+					while(next == -1 && index < pointCalculator.size()) {
+						int candidate = index++;
+						if(pointCalculator.get(candidate).fits3D(stackValue)) {
+							next = candidate;
+						}
+					}
+					return next != -1;
+				}
+
+				@Override
+				public int next() {
+					if(!hasNext()) {
+						return -1;
+					}
+					int result = next;
+					next = -1;
+					return result;
+				}
+			};
+		}
+	}
+
+	protected static final BruteForcePointIteratorFilter DEFAULT_POINT_FILTER = new DefaultPointFilter();
+
 	public static BruteForcePackagerBuilder newBuilder() {
 		return new BruteForcePackagerBuilder();
 	}
@@ -48,7 +97,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 		protected Comparator<IntermediatePackagerResult> comparator;
 		protected List<Point> points;
-		protected BruteForcePointFilter pointFilter;
+		protected BruteForcePointIteratorFilter pointFilter;
 		
 		public BruteForcePackagerBuilder withComparator(Comparator<IntermediatePackagerResult> comparator) {
 			this.comparator = comparator;
@@ -60,7 +109,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			return this;
 		}
 
-		public BruteForcePackagerBuilder withPointFilter(BruteForcePointFilter pointFilter) {
+		public BruteForcePackagerBuilder withPointFilter(BruteForcePointIteratorFilter pointFilter) {
 			this.pointFilter = pointFilter;
 			return this;
 		}
@@ -68,9 +117,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		public BruteForcePackager build() {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
-			}
-			if(pointFilter == null) {
-				pointFilter = DEFAULT_POINT_FILTER;
 			}
 			return new BruteForcePackager(comparator, pointFilter);
 		}
@@ -93,7 +139,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
+			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, pointFilter);
 		}
 		
 	}
@@ -116,17 +162,18 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return truncateToGroup(BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt));
+			return truncateToGroup(BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, pointFilter));
 		}
 
 	}
 
 	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
-		this(comparator, DEFAULT_POINT_FILTER);
+		this(comparator, null);
 	}
 
-	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator, BruteForcePointFilter pointFilter) {
-		super(comparator, pointFilter);
+	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator, BruteForcePointIteratorFilter pointFilter) {
+		super(comparator);
+		this.pointFilter = pointFilter;
 	}
 
 	@Override

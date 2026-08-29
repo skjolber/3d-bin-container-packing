@@ -34,16 +34,26 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 		}
 
 		@Override
+		public Builder withPointComparator(FastBruteForceBoxStackValuePointComparator pointComparator) {
+			this.pointComparator = pointComparator;
+			return this;
+		}
+
+		@Override
 		public LoadFastBruteForcePackager build() {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
-			return new LoadFastBruteForcePackager(comparator);
+			return new LoadFastBruteForcePackager(comparator, pointComparator);
 		}
 	}
 
 	public LoadFastBruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
-		super(comparator, null);
+		this(comparator, DEFAULT_POINT_COMPARATOR);
+	}
+
+	public LoadFastBruteForcePackager(Comparator<IntermediatePackagerResult> comparator, FastBruteForceBoxStackValuePointComparator pointComparator) {
+		super(comparator, pointComparator);
 	}
 
 	@Override
@@ -74,9 +84,9 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 	public int packStackPlacement(FastPointCalculator3DStack pointCalculator, List<Placement> placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack, Container container, int placementIndex,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad,
-			LoadPlacementUtility utility) {
+			LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		if(utility == null) {
-			return super.packStackPlacement(pointCalculator, placements, iterator, stack, container, placementIndex, interrupt, minStackableAreaIndex, freeWeightLoad, null);
+			return super.packStackPlacement(pointCalculator, placements, iterator, stack, container, placementIndex, interrupt, minStackableAreaIndex, freeWeightLoad, null, pointComparator);
 		}
 
 		while (placementIndex < iterator.length()) {
@@ -104,14 +114,8 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 					continue;
 				}
 
-				if(bestPointIndex != -1) {
-					Point bestPoint = pointCalculator.get(bestPointIndex);
-					if(bestPoint.getArea() < point.getArea()) {
-						continue;
-					}
-					if(bestPoint.getArea() == point.getArea() && bestPoint.getVolume() < point.getVolume()) {
-						continue;
-					}
+				if(bestPointIndex != -1 && pointComparator.compare(stackValue, pointCalculator.get(bestPointIndex), point) <= 0) {
+					continue;
 				}
 				bestPointIndex = k;
 				bestSupportedArea = supportedArea;

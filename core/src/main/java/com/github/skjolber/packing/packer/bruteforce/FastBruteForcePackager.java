@@ -3,7 +3,6 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -14,7 +13,6 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.api.point.PointSource;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
@@ -24,8 +22,6 @@ import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.bruteforce.AbstractBruteForcePackager.BruteForcePointFilter;
-import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePackagerBuilder;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -39,11 +35,31 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
-	public interface PointSourceFilter {
+	@FunctionalInterface
+	public interface FastBruteForceBoxStackValuePointComparator {
 
-		PointSource filter(PointSource pointSource, BoxStackValue stackValue);
+		int compare(BoxStackValue stackValue, Point bestPoint, Point candidatePoint);
 		
 	}
+
+	public static class DefaultFastBruteForceBoxStackValuePointComparator implements FastBruteForceBoxStackValuePointComparator {
+
+		@Override
+		public int compare(BoxStackValue stackValue, Point bestPoint, Point candidatePoint) {
+			if(bestPoint.getArea() < candidatePoint.getArea()) {
+				return -1;
+			}
+			if(bestPoint.getMinZ() < candidatePoint.getMinZ()) {
+				return -1;
+			}
+			if(bestPoint.getArea() == candidatePoint.getArea() && bestPoint.getVolume() < candidatePoint.getVolume()) {
+				return -1;
+			}
+			return 1;
+		}
+	}
+
+	protected static final FastBruteForceBoxStackValuePointComparator DEFAULT_POINT_COMPARATOR = new DefaultFastBruteForceBoxStackValuePointComparator();
 
 	public static FastBruteForcePackagerBuilder newBuilder() {
 		return new FastBruteForcePackagerBuilder();
@@ -52,9 +68,15 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	public static class FastBruteForcePackagerBuilder {
 
 		protected Comparator<IntermediatePackagerResult> comparator;
+		protected FastBruteForceBoxStackValuePointComparator pointComparator = DEFAULT_POINT_COMPARATOR;
 		
 		public FastBruteForcePackagerBuilder withComparator(Comparator<IntermediatePackagerResult> comparator) {
 			this.comparator = comparator;
+			return this;
+		}
+
+		public FastBruteForcePackagerBuilder withPointComparator(FastBruteForceBoxStackValuePointComparator pointComparator) {
+			this.pointComparator = pointComparator;
 			return this;
 		}
 
@@ -63,7 +85,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
 			
-			return new FastBruteForcePackager(comparator, null);
+			return new FastBruteForcePackager(comparator, pointComparator);
 		}
 		
 	}
@@ -85,7 +107,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
+			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator);
 		}
 		
 	}
@@ -107,7 +129,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return truncateToGroup(FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt));
+			return truncateToGroup(FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator));
 		}
 		
 	}
@@ -156,8 +178,11 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		return new FastBruteForceAdapter(boxItems, defaultContainerItemsCalculator, containerIterators, interrupt);
 	}
 
-	public FastBruteForcePackager(Comparator<IntermediatePackagerResult> comparator, BruteForcePointFilter pointFilter) {
-		super(comparator, pointFilter);
+	protected final FastBruteForceBoxStackValuePointComparator fastPointComparator;
+
+	public FastBruteForcePackager(Comparator<IntermediatePackagerResult> comparator, FastBruteForceBoxStackValuePointComparator pointComparator) {
+		super(comparator);
+		this.fastPointComparator = pointComparator;
 	}
 
 	protected void clearStack(Stack stack, LoadPlacementUtility loadPlacementUtility) {
@@ -171,7 +196,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	public BruteForceIntermediatePackagerResult pack(FastPointCalculator3DStack pointCalculator,
 			List<Placement> stackPlacements, ControlledContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator,
-			PackagerInterruptSupplier interrupt) {
+			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		
 		Container holder = containerItem.getContainer().clone();
 		
@@ -213,7 +238,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 				pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), minStackableVolume);
 
-				int count = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, index, interrupt, minStackableAreaIndex, freeLoadWeights[index], loadPlacementUtility);
+				int count = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, index, interrupt, minStackableAreaIndex, freeLoadWeights[index], loadPlacementUtility, pointComparator);
 				if(count == Integer.MIN_VALUE) {
 					return null; // timeout
 				}
@@ -311,7 +336,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	public int packStackPlacement(FastPointCalculator3DStack pointCalculator, List<Placement> placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack, Container container, int placementIndex,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad,
-			LoadPlacementUtility loadPlacementUtility) {
+			LoadPlacementUtility loadPlacementUtility, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		// pack as many items as possible from placementIndex
 
 		while (placementIndex < iterator.length()) {
@@ -329,20 +354,13 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 			int bestPointIndex = -1;
 			for(int k = 0; k < pointCalculator.size(); k++) {
-				Point point3d = pointCalculator.get(k);
-				if(!point3d.fits3D(stackValue)) {
+				Point candidatePoint = pointCalculator.get(k);
+				if(!candidatePoint.fits3D(stackValue)) {
 					continue;
 				}
-
-				if(bestPointIndex != -1) {
-					Point bestPoint = pointCalculator.get(bestPointIndex);
-					if(bestPoint.getArea() < point3d.getArea()) {
-						continue;
-					} else if(bestPoint.getArea() == point3d.getArea() && bestPoint.getVolume() < point3d.getVolume()) {
-						continue;
-					}
+				if(bestPointIndex == -1 || pointComparator.compare(stackValue, pointCalculator.get(bestPointIndex), candidatePoint) > 0) {
+					bestPointIndex = k;
 				}
-				bestPointIndex = k;
 			}
 
 			if(bestPointIndex == -1) { // interrupted

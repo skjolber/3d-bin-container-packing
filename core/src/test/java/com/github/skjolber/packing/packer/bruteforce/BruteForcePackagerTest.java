@@ -35,7 +35,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 
 	@Test
 	void pointFilterIsConfigurable() {
-		BruteForcePackager.BruteForcePointFilter filter = (pointCalculator, stackValue) -> new IntIterator() {
+		BruteForcePackager.BruteForcePointIteratorFilter filter = (pointCalculator, stackValue) -> new IntIterator() {
 			private boolean available = true;
 
 			@Override

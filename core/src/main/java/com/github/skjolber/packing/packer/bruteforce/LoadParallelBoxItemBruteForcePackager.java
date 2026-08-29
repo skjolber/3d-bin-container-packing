@@ -17,6 +17,7 @@ import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -82,16 +83,12 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 				}
 			}
 			
-			if(pointFilter == null) {
-				pointFilter = DEFAULT_POINT_FILTER;
-			}
-			
 			return new LoadParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter);
 		}
 	}
 
 	public LoadParallelBoxItemBruteForcePackager(ExecutorService executorService, int parallelizationCount,
-			Comparator<IntermediatePackagerResult> comparator, BruteForcePointFilter pointFilter) {
+			Comparator<IntermediatePackagerResult> comparator, BruteForcePointIteratorFilter pointFilter) {
 		super(executorService, parallelizationCount, comparator, pointFilter);
 	}
 
@@ -109,12 +106,12 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 	public List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack, Container container,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points,
-			LoadPlacementUtility loadPlacementUtility) throws PackagerInterruptedException {
+			LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter) throws PackagerInterruptedException {
 		if(placements.isEmpty()) {
 			return Collections.emptyList();
 		}
 		if(loadPlacementUtility == null) {
-			return super.packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt, minStackableAreaIndex, points, null);
+			return super.packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt, minStackableAreaIndex, points, null, pointFilter);
 		}
 
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
