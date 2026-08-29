@@ -53,7 +53,7 @@ public class CenterOfGravityStabilityValidator implements StabilityValidator {
 	 * and the weight of every box stacked above it (its supportees, recursively).
 	 *
 	 * <p>The effective centre of mass (CoM) is computed as the weighted average of
-	 * the geometric centres of this box and all boxes in its supportee sub-tree.
+	 * the configured centres of gravity of this box and all boxes in its supportee sub-tree.
 	 * When a box above is shared between multiple supporters (split load), its
 	 * contribution to this sub-tree is scaled by
 	 * {@code overlapArea / supportee.supportedArea}, matching the same proportion
@@ -103,29 +103,30 @@ public class CenterOfGravityStabilityValidator implements StabilityValidator {
 		long[] stack = accumulateStackCenterOfMass(placement, 1000L);
 		long totalWeight = stack[0];
 		if(totalWeight == 0) {
-			// Zero-weight stack: fall back to geometric centre (×2 integer arithmetic)
-			long com2x = 2L * placement.getAbsoluteX() + stackValue.getDx();
-			long com2y = 2L * placement.getAbsoluteY() + stackValue.getDy();
-			return com2x >= 2L * minSupportX && com2x <= 2L * maxSupportX
-					&& com2y >= 2L * minSupportY && com2y <= 2L * maxSupportY;
+			// A zero-weight stack has no weighted centre, so use this box's CoG.
+			long centerOfGravity2X = CenterOfGravitySupportStabilityValidator.getCenterOfGravity2X(placement, stackValue);
+			long centerOfGravity2Y = CenterOfGravitySupportStabilityValidator.getCenterOfGravity2Y(placement, stackValue);
+			return centerOfGravity2X >= 2L * minSupportX && centerOfGravity2X <= 2L * maxSupportX
+					&& centerOfGravity2Y >= 2L * minSupportY && centerOfGravity2Y <= 2L * maxSupportY;
 		}
 
-		// Effective CoM ×2 (scale of 1000 cancels in the ratio)
-		long com2x = stack[1] / totalWeight;
-		long com2y = stack[2] / totalWeight;
+		// The share scale cancels in the weighted average. Coordinates remain doubled.
+		long centerOfGravity2X = stack[1] / totalWeight;
+		long centerOfGravity2Y = stack[2] / totalWeight;
 
-		return com2x >= 2L * minSupportX && com2x <= 2L * maxSupportX && com2y >= 2L * minSupportY && com2y <= 2L * maxSupportY;
+		return centerOfGravity2X >= 2L * minSupportX && centerOfGravity2X <= 2L * maxSupportX
+				&& centerOfGravity2Y >= 2L * minSupportY && centerOfGravity2Y <= 2L * maxSupportY;
 	}
 	
 	protected static long[] accumulateStackCenterOfMass(Placement placement, long share) {
 		BoxStackValue stackValue = placement.getStackValue();
 		long w = (long) placement.getWeight() * share;
-		long com2x = 2L * placement.getAbsoluteX() + stackValue.getDx();
-		long com2y = 2L * placement.getAbsoluteY() + stackValue.getDy();
+		long centerOfGravity2X = CenterOfGravitySupportStabilityValidator.getCenterOfGravity2X(placement, stackValue);
+		long centerOfGravity2Y = CenterOfGravitySupportStabilityValidator.getCenterOfGravity2Y(placement, stackValue);
 
 		long totalWeight  = w;
-		long weightedComX = w * com2x;
-		long weightedComY = w * com2y;
+		long weightedComX = w * centerOfGravity2X;
+		long weightedComY = w * centerOfGravity2Y;
 
 		for(PlacementLoad supporteeLink : placement.getSupportees()) {
 			Placement supportee = supporteeLink.getPlacement();

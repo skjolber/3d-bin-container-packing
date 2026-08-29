@@ -17,8 +17,8 @@ import com.github.skjolber.packing.validator.stability.reasons.UnstableCenterOfG
  * ignored. For a stricter check that includes the full stack above each placement,
  * use {@link CenterOfGravityStabilityValidator}.
  *
- * <p>A box is considered stable when its centre of mass (CoM) — located at the
- * geometric centre of its XY footprint — lies within the axis-aligned bounding box
+	 * <p>A box is considered stable when its configured centre of mass (CoM) lies
+	 * within the axis-aligned bounding box
  * of the union of all support contact patches between this placement and its
  * supporters. A placement with no supporters is considered stable only when it
  * rests on the container floor ({@code z == 0}).
@@ -53,7 +53,7 @@ public class CenterOfGravitySupportStabilityValidator implements StabilityValida
 	 * Determines whether {@code placement} is stable given its current supporters,
 	 * considering only the box's own weight (not the stack above).
 	 *
-	 * <p>A box is considered stable when its geometric centre lies within the
+	 * <p>A box is considered stable when its configured centre of gravity lies within the
 	 * axis-aligned bounding box of the union of all support contact patches.
 	 *
 	 * @param placement the placement to check
@@ -72,9 +72,8 @@ public class CenterOfGravitySupportStabilityValidator implements StabilityValida
 			return true;
 		}
 
-		// Centre of mass ×2 to stay in integer arithmetic
-		int com2x = 2 * placement.getAbsoluteX() + stackValue.getDx();
-		int com2y = 2 * placement.getAbsoluteY() + stackValue.getDy();
+		long centerOfGravity2X = getCenterOfGravity2X(placement, stackValue);
+		long centerOfGravity2Y = getCenterOfGravity2Y(placement, stackValue);
 
 		int minSupportX = Integer.MAX_VALUE;
 		int maxSupportX = Integer.MIN_VALUE;
@@ -95,7 +94,23 @@ public class CenterOfGravitySupportStabilityValidator implements StabilityValida
 			if(overlapMaxY > maxSupportY) maxSupportY = overlapMaxY;
 		}
 
-		// CoM (×2) must lie within the support bounding box (×2)
-		return com2x >= 2 * minSupportX && com2x <= 2 * maxSupportX && com2y >= 2 * minSupportY && com2y <= 2 * maxSupportY;
+		return centerOfGravity2X >= 2L * minSupportX && centerOfGravity2X <= 2L * maxSupportX
+				&& centerOfGravity2Y >= 2L * minSupportY && centerOfGravity2Y <= 2L * maxSupportY;
+	}
+
+	static long getCenterOfGravity2X(Placement placement, BoxStackValue stackValue) {
+		int centerOfGravityX = stackValue.getCenterOfGravityX();
+		if(centerOfGravityX == -1) {
+			return 2L * placement.getAbsoluteX() + stackValue.getDx();
+		}
+		return 2L * (placement.getAbsoluteX() + centerOfGravityX);
+	}
+
+	static long getCenterOfGravity2Y(Placement placement, BoxStackValue stackValue) {
+		int centerOfGravityY = stackValue.getCenterOfGravityY();
+		if(centerOfGravityY == -1) {
+			return 2L * placement.getAbsoluteY() + stackValue.getDy();
+		}
+		return 2L * (placement.getAbsoluteY() + centerOfGravityY);
 	}
 }

@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.validator.stability.reasons.UnstableCenterOfGravityReason;
@@ -26,13 +27,37 @@ public class CenterOfGravitySupportStabilityValidatorTest {
 
 	private static Placement makePlacement(String id, int dx, int dy, int dz, int weight,
 			int x, int y, int z) {
+		return makePlacement(id, dx, dy, dz, weight, x, y, z, dx / 2, dy / 2, dz / 2);
+	}
+
+	private static Placement makePlacement(String id, int dx, int dy, int dz, int weight,
+			int x, int y, int z, int centerOfGravityX, int centerOfGravityY, int centerOfGravityZ) {
 		Box box = Box.newBuilder()
 				.withId(id)
 				.withSize(dx, dy, dz)
 				.withWeight(weight)
+				.withCenterOfGravity(centerOfGravityX, centerOfGravityY, centerOfGravityZ)
 				.withRotate2D()
 				.build();
 		return new Placement(box.getStackValues()[0], 0, x, y, z);
+	}
+
+	@Test
+	void testConfiguredCenterOfGravity() {
+		Placement supporter = makePlacement("A", 5, 10, 1, 20, 0, 0, 0);
+		Placement supported = makePlacement("B", 10, 10, 1, 10, 0, 0, 1, 2, 5, 0);
+		supporter.addLoad(supported, 50L, supported.getWeight());
+
+		assertThat(CenterOfGravitySupportStabilityValidator.isPlacementStableSupport(supported)).isTrue();
+	}
+
+	@Test
+	void testUnsetCenterOfGravityUsesGeometricCenter() {
+		BoxStackValue stackValue = new BoxStackValue(5, 7, 1, List.of(), 0, -1, -1.0, -1, false, -1, -1, -1);
+		Placement placement = new Placement(stackValue, 0, 3, 4, 0);
+
+		assertThat(CenterOfGravitySupportStabilityValidator.getCenterOfGravity2X(placement, stackValue)).isEqualTo(11);
+		assertThat(CenterOfGravitySupportStabilityValidator.getCenterOfGravity2Y(placement, stackValue)).isEqualTo(15);
 	}
 
 	// -----------------------------------------------------------------------
