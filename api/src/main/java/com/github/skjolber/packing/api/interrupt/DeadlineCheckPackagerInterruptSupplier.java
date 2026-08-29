@@ -1,25 +1,21 @@
-package com.github.skjolber.packing.deadline;
+package com.github.skjolber.packing.api.interrupt;
 
 import java.io.Closeable;
 import java.util.concurrent.ScheduledFuture;
-import java.util.function.BooleanSupplier;
 
-public class DelegateDeadlineCheckPackagerInterruptSupplier implements PackagerInterruptSupplier, Runnable, Closeable {
+public class DeadlineCheckPackagerInterruptSupplier implements PackagerInterruptSupplier, Runnable, Closeable {
 
 	// this is not entirely accurate for multi-threading, but close enough
 	// (should have been volatile)
 	protected boolean expired = false;
 	protected ScheduledFuture<?> future;
-	protected final BooleanSupplier delegate;
 	
-	public DelegateDeadlineCheckPackagerInterruptSupplier(BooleanSupplier delegate) {
-		super();
-		this.delegate = delegate;
+	public DeadlineCheckPackagerInterruptSupplier() {
 	}
 
 	@Override
 	public boolean getAsBoolean() {
-		return expired || delegate.getAsBoolean();
+		return expired;
 	}
 
 	@Override

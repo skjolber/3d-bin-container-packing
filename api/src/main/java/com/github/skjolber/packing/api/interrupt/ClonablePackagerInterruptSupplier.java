@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.deadline;
+package com.github.skjolber.packing.api.interrupt;
 
 public interface ClonablePackagerInterruptSupplier extends PackagerInterruptSupplier, Cloneable {
 

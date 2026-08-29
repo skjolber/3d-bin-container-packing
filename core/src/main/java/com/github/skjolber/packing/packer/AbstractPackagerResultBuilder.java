@@ -16,6 +16,7 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.Point;
@@ -32,7 +33,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 
 	protected long deadline = -1L;
 
-	protected BooleanSupplier interrupt;
+	protected PackagerInterruptSupplier interrupt;
 
 	protected int maxContainerCount = 1;
 
@@ -259,7 +260,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		return (B) this;
 	}
 
-	public B withInterrupt(BooleanSupplier interrupt) {
+	public B withInterrupt(PackagerInterruptSupplier interrupt) {
 		this.interrupt = interrupt;
 		return (B) this;
 	}

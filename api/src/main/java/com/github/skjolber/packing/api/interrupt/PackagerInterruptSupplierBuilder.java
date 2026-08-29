@@ -1,9 +1,8 @@
-package com.github.skjolber.packing.deadline;
+package com.github.skjolber.packing.api.interrupt;
 
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BooleanSupplier;
 
 public class PackagerInterruptSupplierBuilder {
 
@@ -11,7 +10,7 @@ public class PackagerInterruptSupplierBuilder {
 	public static final PositivePackagerInterruptSupplier POSITIVE = new PositivePackagerInterruptSupplier();
 
 	private long deadline = Long.MAX_VALUE;
-	private BooleanSupplier interrupt = null;
+	private PackagerInterruptSupplier interrupt;
 	private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
 
 	public static PackagerInterruptSupplierBuilder builder() {
@@ -23,7 +22,7 @@ public class PackagerInterruptSupplierBuilder {
 		return this;
 	}
 
-	public PackagerInterruptSupplierBuilder withInterrupt(BooleanSupplier interrupt) {
+	public PackagerInterruptSupplierBuilder withInterrupt(PackagerInterruptSupplier interrupt) {
 		this.interrupt = interrupt;
 		return this;
 	}
@@ -38,7 +37,7 @@ public class PackagerInterruptSupplierBuilder {
 		if(deadline == Long.MAX_VALUE || deadline == -1L) {
 			// no deadline
 			if(interrupt != null) {
-				return new DefaultPackagerInterrupt(interrupt);
+				return interrupt;
 			}
 			return NEGATIVE;
 		}
