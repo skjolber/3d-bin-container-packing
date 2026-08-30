@@ -9,7 +9,7 @@ import com.github.skjolber.packing.api.validator.ValidatorResultReason;
  */
 public class ExcessiveLoadWeightReason implements ValidatorResultReason {
 
-	private static final int CODE = 10;
+private static final int CODE = 14;
 
 	private final Placement placement;
 	private final long loadWeight;
