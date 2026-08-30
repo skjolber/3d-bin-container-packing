@@ -26,6 +26,9 @@ public class ControlledContainerItem extends ContainerItem {
 	
 	public ControlledContainerItem(ContainerItem containerItem) {
 		super(containerItem.getContainer(), containerItem.getCount());
+		this.manifestControlsBuilderFactory = containerItem.getBoxItemControlsBuilderFactory();
+		this.pointControlsBuilderFactory = containerItem.getPointControlsBuilderFactory();
+		this.initialPoints = containerItem.getInitialPoints();
 	}
 	
 
