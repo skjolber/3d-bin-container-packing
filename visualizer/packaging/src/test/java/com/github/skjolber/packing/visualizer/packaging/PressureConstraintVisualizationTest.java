@@ -38,7 +38,7 @@ public class PressureConstraintVisualizationTest extends AbstractPackagerTest {
 
 	private static final List<BoxItem> ITEMS = List.of(
 			new BoxItem(Box.newBuilder().withId("pBot")
-					.withSize(2, 5, 1).withWeight(11).withMaxLoadPressure(1).withRotate2D().build(), 8),
+					.withSize(2, 5, 1).withWeight(11).withMaxLoadPressure(1000).withRotate2D().build(), 8),
 			new BoxItem(Box.newBuilder().withId("pTop")
 					.withSize(2, 5, 1).withWeight(11).withRotate2D().build(), 8));
 
