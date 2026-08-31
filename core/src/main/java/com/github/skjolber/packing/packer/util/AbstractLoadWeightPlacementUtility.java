@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.packer.util;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
@@ -109,9 +110,8 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	protected boolean isWithinMaxLoadWeightAndPressure(Placement placement, long weight, long area) {
 		long effectiveWeight = weight - reliefWeights[placement.getIndex()];
 		BoxStackValue sv = placement.getStackValue();
-if ((double) effectiveWeight * 1000.0 > (double) area * sv.getMaxLoadPressure()) {
-				return false;
-			}
+		if (sv.isMaxLoadPressure() && Box.calculatePressure(area, effectiveWeight) > sv.getMaxLoadPressure()) {
+			return false;
 		}
 		if (sv.isMaxLoadWeight()) {
 			long existingWeight = 0;

@@ -317,7 +317,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 	 */
 	@Test
 	public void testAbovePressureLimit() {
-		Box bottom = Box.newBuilder().withSize(10, 10, 1).withWeight(0).withMaxLoadPressure(1).build();
+		Box bottom = Box.newBuilder().withSize(10, 10, 1).withWeight(0).withMaxLoadPressure(1000).build();
 		Placement bottomPlacement = new Placement(bottom.getStackValue(0), 0, 0, 0, 0);
 		pointCalculator.add(0, bottomPlacement);
 		stack.add(bottomPlacement);
@@ -345,7 +345,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 	 */
 	@Test
 	public void testBelowPressureLimit() {
-		Box bottom = Box.newBuilder().withSize(10, 10, 1).withWeight(0).withMaxLoadPressure(1).build();
+		Box bottom = Box.newBuilder().withSize(10, 10, 1).withWeight(0).withMaxLoadPressure(1000).build();
 		Placement bottomPlacement = new Placement(bottom.getStackValue(0), 0, 0, 0, 0);
 		pointCalculator.add(0, bottomPlacement);
 		stack.add(bottomPlacement);

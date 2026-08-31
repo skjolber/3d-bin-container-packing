@@ -79,7 +79,7 @@ public class CombinedConstraintBenchmarkState {
 
 		Box box = Box.newBuilder().withId("combined-box")
 				.withSize(10, 10, 1).withWeight(2)
-				.withMaxLoadWeight(100).withMaxLoadPressure(1).withMaxLoadBoxCount(4)
+				.withMaxLoadWeight(100).withMaxLoadPressure(1000).withMaxLoadBoxCount(4)
 				.build();
 		items = List.of(new BoxItem(box, 20));
 
@@ -119,11 +119,11 @@ public class CombinedConstraintBenchmarkState {
 
 		Box tight = Box.newBuilder().withId("combined-tight")
 				.withSize(10, 10, 1).withWeight(2)
-				.withMaxLoadWeight(8).withMaxLoadPressure(0.1).withMaxLoadBoxCount(4)
+				.withMaxLoadWeight(8).withMaxLoadPressure(100).withMaxLoadBoxCount(4)
 				.build();
 		Box generous = Box.newBuilder().withId("combined-generous")
 				.withSize(10, 10, 1).withWeight(2)
-				.withMaxLoadWeight(100).withMaxLoadPressure(1).withMaxLoadBoxCount(8)
+				.withMaxLoadWeight(100).withMaxLoadPressure(1000).withMaxLoadBoxCount(8)
 				.build();
 		items2 = List.of(new BoxItem(tight, 10), new BoxItem(generous, 10));
 	}

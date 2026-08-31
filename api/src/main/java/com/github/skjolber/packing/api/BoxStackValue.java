@@ -344,8 +344,7 @@ public class BoxStackValue {
 	}
 	
 	public long getPressure() {
-		// TODO optimize
-		return box.getWeight() / area;
+		return Box.calculatePressure(area, box.getWeight());
 	}
 	
 	public int getCenterOfGravityX() {

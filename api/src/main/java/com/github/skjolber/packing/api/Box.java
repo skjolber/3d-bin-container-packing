@@ -582,8 +582,8 @@ public class Box {
 		this.maximumDy = getMaximumDy(stackValues);
 		this.maximumDz = getMaximumDz(stackValues);
 
-		this.minimumPressure = (weight * 1000L) / maximumArea.getArea();
-		this.maximumPressure = (weight * 1000L) / minimumArea.getArea();
+		this.minimumPressure = calculatePressure(maximumArea.getArea(), weight);
+		this.maximumPressure = calculatePressure(minimumArea.getArea(), weight);
 
 		for (BoxStackValue boxStackValue : stackValues) {
 			boxStackValue.setBox(this);
@@ -765,6 +765,21 @@ public class Box {
 			}
 		}
 		return minimumArea;
+	}
+
+	/**
+	 * Calculate pressure using the packing API's fixed-point convention:
+	 * {@code weight × 1000 / area}.
+	 *
+	 * @param area area carrying the weight
+	 * @param weight weight applied to the area
+	 * @return pressure scaled by 1000, or {@code 0} when the area is zero
+	 */
+	public static long calculatePressure(long area, long weight) {
+		if(area == 0) {
+			return 0;
+		}
+		return (weight * 1000L) / area;
 	}
 
 	public static BoxStackValue getMinimumPressure(BoxStackValue[] rotations) {

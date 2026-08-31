@@ -73,7 +73,7 @@ public class PressureConstraintBenchmarkState {
 				.build();
 
 		Box box = Box.newBuilder().withId("pressure-box")
-				.withSize(10, 10, 1).withWeight(2).withMaxLoadPressure(1).build();
+				.withSize(10, 10, 1).withWeight(2).withMaxLoadPressure(1000).build();
 		items = List.of(new BoxItem(box, 20));
 
 		buildMixedScenario();
@@ -110,9 +110,9 @@ public class PressureConstraintBenchmarkState {
 				.build();
 
 		Box tight = Box.newBuilder().withId("pressure-tight")
-				.withSize(10, 10, 1).withWeight(3).withMaxLoadPressure(0.1).build();
+				.withSize(10, 10, 1).withWeight(3).withMaxLoadPressure(100).build();
 		Box generous = Box.newBuilder().withId("pressure-generous")
-				.withSize(10, 10, 1).withWeight(3).withMaxLoadPressure(1).build();
+				.withSize(10, 10, 1).withWeight(3).withMaxLoadPressure(1000).build();
 		items2 = List.of(new BoxItem(tight, 10), new BoxItem(generous, 10));
 	}
 

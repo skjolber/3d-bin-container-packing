@@ -2,6 +2,7 @@ package com.github.skjolber.packing.validator.load;
 
 import java.util.List;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
@@ -70,8 +71,9 @@ public class MaxPressureLoadValidator implements LoadValidator {
 				// weight attributed to this link (scaled by share/1000) including descendant load
 				long weightScaled = (long) supportee.getWeight() * share + WeightLoadValidator.accumulateWeight(supportee, share);
 
-				// pressure = (weight * 1000) / area, with the 1000 factor from share cancelling out
-				long linkPressure = weightScaled / contactArea;
+				// weightScaled already carries a ×1000 share scale, so remove that
+				// scale after calculating pressure.
+				long linkPressure = Box.calculatePressure(contactArea, weightScaled) / 1000L;
 				if(linkPressure > maxPressure) {
 					maxPressure = linkPressure;
 				}

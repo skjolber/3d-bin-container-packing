@@ -8,6 +8,12 @@ import org.junit.jupiter.api.Test;
 public class BoxTest {
 
 	@Test
+	public void testCalculatePressure() {
+		assertEquals(2500L, Box.calculatePressure(4, 10));
+		assertEquals(0L, Box.calculatePressure(0, 10));
+	}
+
+	@Test
 	public void testBuilder1() {
 
 		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withWeight(1).build();

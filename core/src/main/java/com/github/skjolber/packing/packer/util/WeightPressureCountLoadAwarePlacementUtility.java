@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.packer.util;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
@@ -34,11 +35,11 @@ public class WeightPressureCountLoadAwarePlacementUtility extends AbstractLoadWe
 			}
 
 			long area = LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
-long candidateWeight = candidate.getWeight() + candidate.getLoadWeight();
+			long candidateWeight = candidate.getWeight() + candidate.getLoadWeight();
 			long effectiveWeight = (candidateWeight * area) / (area + candidate.getSupportedArea());
 
 			if (sv.isMaxLoadPressure()) {
-if ((double) effectiveWeight * 1000.0 > sv.getMaxLoadPressure() * (double) area) {
+				if (Box.calculatePressure(area, effectiveWeight) > sv.getMaxLoadPressure()) {
 					return -1;
 				}
 			}

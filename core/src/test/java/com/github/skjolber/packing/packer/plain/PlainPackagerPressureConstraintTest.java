@@ -54,7 +54,7 @@ public class PlainPackagerPressureConstraintTest extends AbstractPackagerConstra
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			Box bot = Box.newBuilder().withId("bot")
-					.withSize(2, 5, 1).withWeight(11).withMaxLoadPressure(1).withRotate2D().build();
+					.withSize(2, 5, 1).withWeight(11).withMaxLoadPressure(1000).withRotate2D().build();
 			Box top = Box.newBuilder().withId("top")
 					.withSize(2, 5, 1).withWeight(11).withRotate2D().build();
 
@@ -98,7 +98,7 @@ public class PlainPackagerPressureConstraintTest extends AbstractPackagerConstra
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			Box bot = Box.newBuilder().withId("bot")
-					.withSize(2, 5, 1).withWeight(1).withMaxLoadPressure(1).withRotate2D().build();
+					.withSize(2, 5, 1).withWeight(1).withMaxLoadPressure(1000).withRotate2D().build();
 			Box top = Box.newBuilder().withId("top")
 					.withSize(2, 5, 1).withWeight(10).withRotate2D().build();
 
@@ -141,7 +141,7 @@ public class PlainPackagerPressureConstraintTest extends AbstractPackagerConstra
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			Box bot = Box.newBuilder().withId("bot")
-					.withSize(11, 5, 1).withWeight(1).withMaxLoadPressure(1).withRotate2D().build();
+					.withSize(11, 5, 1).withWeight(1).withMaxLoadPressure(1000).withRotate2D().build();
 			Box top = Box.newBuilder().withId("top")
 					.withSize(11, 5, 1).withWeight(11).withRotate2D().build();
 
@@ -192,7 +192,7 @@ public class PlainPackagerPressureConstraintTest extends AbstractPackagerConstra
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			Box a = Box.newBuilder().withId("A")
-					.withSize(2, 5, 1).withWeight(20).withMaxLoadPressure(1).withRotate2D().build();
+					.withSize(2, 5, 1).withWeight(20).withMaxLoadPressure(1000).withRotate2D().build();
 			Box b = Box.newBuilder().withId("B")
 					.withSize(2, 5, 1).withWeight(1).withRotate2D().build();
 			Box cc = Box.newBuilder().withId("C")

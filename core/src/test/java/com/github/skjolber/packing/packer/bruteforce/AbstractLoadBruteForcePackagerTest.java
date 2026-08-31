@@ -71,7 +71,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * | base|  max pressure 1 -> rejected
 		 * +-----+
 		 */
-		Box box = Box.newBuilder().withId("box").withSize(2, 5, 1).withWeight(11).withMaxLoadPressure(1).build();
+		Box box = Box.newBuilder().withId("box").withSize(2, 5, 1).withWeight(11).withMaxLoadPressure(1000).build();
 		PackagerResult result = pack(container(2, 5, 2), 2, 2, new BoxItem(box, 2));
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(2);
@@ -86,7 +86,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		 * | base|  max pressure 1 -> accepted
 		 * +-----+
 		 */
-		Box box = Box.newBuilder().withId("box").withSize(2, 5, 1).withWeight(10).withMaxLoadPressure(1).build();
+		Box box = Box.newBuilder().withId("box").withSize(2, 5, 1).withWeight(10).withMaxLoadPressure(1000).build();
 		PackagerResult result = pack(container(2, 5, 2), 1, 1, new BoxItem(box, 2));
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(1);

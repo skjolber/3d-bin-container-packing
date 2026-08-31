@@ -201,10 +201,7 @@ public class Placement implements Serializable {
 	 */
 	public long getLoadPressure() {
 		long area = stackValue.getArea();
-		if(area == 0) {
-			return 0;
-		}
-		return (loadWeight * 1000L) / area;
+		return Box.calculatePressure(area, loadWeight);
 	}
 
 	/**
