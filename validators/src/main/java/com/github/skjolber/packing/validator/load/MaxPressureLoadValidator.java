@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadPressureReason;
@@ -18,8 +19,11 @@ import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadPressureR
  *
  * <p>The load weight is computed independently by traversing the supportee graph — it does
  * not rely on the cached {@code loadWeight} field maintained by the placement graph.
- * The same proportional distribution as {@link WeightLoadValidator#accumulateWeight} is used;
- * pressure is then derived from the computed weight and the placement's top surface area.
+ * Pressure is evaluated per supportee contact area ({@link com.github.skjolber.packing.api.PlacementLoad#getArea()}):
+ * for each box resting directly on a placement, the proportional weight share (including
+ * recursively propagated load from above) is divided by that box's contact area to derive
+ * the pressure at that point. The maximum pressure across all supportee links is then
+ * compared against the configured limit.
  *
  * <p>When both weight and pressure constraints are set on a stack value, this validator
  * checks only the pressure limit. The {@link WeightLoadValidator} checks the weight limit
@@ -50,17 +54,31 @@ public class MaxPressureLoadValidator implements LoadValidator {
 				continue;
 			}
 
-			long area = stackValue.getArea();
-			if(area == 0) {
-				continue;
+			double maxLoadPressure = stackValue.getMaxLoadPressure();
+			long maxPressure = 0;
+
+			for(PlacementLoad pl : placement.getSupportees()) {
+				long contactArea = pl.getArea();
+				if(contactArea == 0) {
+					continue;
+				}
+
+				Placement supportee = pl.getPlacement();
+				long supporteeArea = supportee.getSupportedArea();
+				long share = (supporteeArea > 0) ? (1000L * contactArea) / supporteeArea : 1000L;
+
+				// weight attributed to this link (scaled by share/1000) including descendant load
+				long weightScaled = (long) supportee.getWeight() * share + WeightLoadValidator.accumulateWeight(supportee, share);
+
+				// pressure = (weight * 1000) / area, with the 1000 factor from share cancelling out
+				long linkPressure = weightScaled / contactArea;
+				if(linkPressure > maxPressure) {
+					maxPressure = linkPressure;
+				}
 			}
 
-			long loadWeight = WeightLoadValidator.accumulateWeight(placement, 1000L) / 1000L;
-			long loadPressure = (loadWeight * 1000L) / area;
-			double maxLoadPressure = stackValue.getMaxLoadPressure();
-
-			if(loadPressure > maxLoadPressure) {
-				reasons.add(new ExcessiveLoadPressureReason(placement, loadPressure, maxLoadPressure));
+			if(maxPressure > maxLoadPressure) {
+				reasons.add(new ExcessiveLoadPressureReason(placement, maxPressure, maxLoadPressure));
 				valid = false;
 			}
 		}
