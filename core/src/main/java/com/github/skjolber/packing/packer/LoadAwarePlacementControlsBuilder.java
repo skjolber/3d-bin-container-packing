@@ -178,7 +178,7 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 		PlacementComparator effectiveComparator = buildComparator(comparatorBuilderFactory, buildDisabledList());
 
 		if (maxLoadWeight || maxLoadPressure || maxLoadBoxCount || loadIdenticalBox) {
-			boolean maxLoadWeightOnly = maxLoadWeight && !maxLoadPressure && !maxLoadBoxCount;
+			boolean maxLoadWeightOnly = maxLoadWeight && !maxLoadPressure && !maxLoadBoxCount && !loadIdenticalBox;
 
 			if (maxLoadWeightOnly) {
 				return new WeightLoadAwarePlacementControls(boxItems, pointControls, pointCalculator,
