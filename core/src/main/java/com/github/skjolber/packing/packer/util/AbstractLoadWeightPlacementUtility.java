@@ -109,8 +109,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	protected boolean isWithinMaxLoadWeightAndPressure(Placement placement, long weight, long area) {
 		long effectiveWeight = weight - reliefWeights[placement.getIndex()];
 		BoxStackValue sv = placement.getStackValue();
-		if (sv.isMaxLoadPressure()) {
-			if ((double) effectiveWeight > (double) area * sv.getMaxLoadPressure()) {
+if ((double) effectiveWeight * 1000.0 > (double) area * sv.getMaxLoadPressure()) {
 				return false;
 			}
 		}
