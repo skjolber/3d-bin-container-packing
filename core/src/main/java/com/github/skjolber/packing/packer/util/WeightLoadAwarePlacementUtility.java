@@ -36,10 +36,7 @@ public class WeightLoadAwarePlacementUtility extends AbstractLoadWeightPlacement
 			}
 
 			long area = LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
-			long candidateWeight = candidate.getWeight();
-			for (PlacementLoad pl : candidate.getSupportees()) {
-				candidateWeight += pl.getWeight();
-			}
+long candidateWeight = candidate.getWeight() + candidate.getLoadWeight();
 			long effectiveWeight = (candidateWeight * area) / (area + candidate.getSupportedArea());
 
 			calculateRelifWeight(candidate, effectiveWeight);
