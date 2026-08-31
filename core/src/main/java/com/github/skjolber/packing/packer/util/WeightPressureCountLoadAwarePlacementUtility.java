@@ -38,7 +38,7 @@ long candidateWeight = candidate.getWeight() + candidate.getLoadWeight();
 			long effectiveWeight = (candidateWeight * area) / (area + candidate.getSupportedArea());
 
 			if (sv.isMaxLoadPressure()) {
-				if (sv.getMaxLoadPressure() * (double) area < (double) effectiveWeight) {
+if ((double) effectiveWeight * 1000.0 > sv.getMaxLoadPressure() * (double) area) {
 					return -1;
 				}
 			}
