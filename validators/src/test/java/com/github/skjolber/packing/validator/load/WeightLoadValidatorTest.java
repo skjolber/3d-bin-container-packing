@@ -135,7 +135,7 @@ public class WeightLoadValidatorTest {
 		assertThat(reason.getPlacement()).isSameAs(a);
 		assertThat(reason.getLoadWeight()).isEqualTo(10L);
 		assertThat(reason.getMaxLoadWeight()).isEqualTo(8L);
-		assertThat(reason.getCode()).isEqualTo(10);
+		assertThat(reason.getCode()).isEqualTo(14);
 	}
 
 	// -----------------------------------------------------------------------
