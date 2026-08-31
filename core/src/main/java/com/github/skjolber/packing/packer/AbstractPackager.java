@@ -12,13 +12,15 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
  *
  * Thread-safe implementation.
+ * 
+ *  @param <B> packager
  */
 
 public abstract class AbstractPackager<B extends PackagerResultBuilder> implements Packager<B> {
@@ -198,7 +200,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 					}
 					
 					if(result != null && !result.isEmpty()) {
-						if(best == null || intermediatePackagerResultComparator.compare(best, result) != ARGUMENT_1_IS_BETTER) {
+						if(best == null || intermediatePackagerResultComparator.compare(best, result) != ARGUMENT_1_IS_BETTER) { // we are going backwards so if equal, the candidate is the new best result
 							best = result;
 						}
 					}

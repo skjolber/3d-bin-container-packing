@@ -6,14 +6,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class Box {
 
 	public static Builder newBuilder() {
 		return new Builder();
 	}
-
-	public static class Builder {
+	
+	protected static abstract class AbstractBoxBuilder<T extends AbstractBoxBuilder<T>> {
 
 		protected Integer weight;
 
@@ -23,11 +24,138 @@ public class Box {
 		protected Map<String, Object> properties;
 		protected BoxItem boxItem;
 		
+		public T withId(String id) {
+			this.id = id;
+			return (T)this;
+		}
+		
+		public T withBoxItem(BoxItem boxItem) {
+			this.boxItem = boxItem;
+			return (T)this;
+		}
+
+		public T withDescription(String description) {
+			this.description = description;
+			return (T)this;
+		}
+
+		public T withProperty(String id, Object object) {
+			if (properties == null) {
+				properties = new HashMap<>();
+			}
+			properties.put(id, object);
+			return (T) this;
+		}
+
+		public T withProperties(Map<String, Object> properties) {
+			if (this.properties == null) {
+				this.properties = new HashMap<>();
+			}
+			this.properties.putAll(properties);
+			return (T) this;
+		}
+		
+		public abstract Box build();
+
+	}
+	
+	private static class StackValueBoxBuilder extends BoxStackValue.AbstractBuilder {
+		
+		private BoxStackValue build() {
+			return new BoxStackValue(dx, dy, dz, surfaces, index,
+					maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalOnly, centerOfGravityX, centerOfGravityY, centerOfGravityZ);
+		}
+	}
+
+	public static class LoadBoxBuilder extends AbstractBoxBuilder<LoadBoxBuilder> {
+		
+		protected List<BoxStackValue> stackValues;
+		
+		public LoadBoxBuilder() {
+			this(new ArrayList<>());
+		}
+		
+		public LoadBoxBuilder(List<BoxStackValue> stackValues) {
+			this.stackValues = stackValues;
+		}
+		
+		public LoadBoxBuilder withRotations(List<BoxStackValue> stackValues) {
+			this.stackValues = stackValues;
+			return this;
+		}
+
+		public LoadBoxBuilder withRotation(BoxStackValue stackValue) {
+			this.stackValues.add(stackValue);
+			return this;
+		}
+		
+		public LoadBoxBuilder withRotation(Consumer<BoxStackValue.AbstractBuilder> stackValue) {
+			StackValueBoxBuilder builder = new StackValueBoxBuilder();
+			stackValue.accept(builder);
+			this.stackValues.add(builder.build());
+			return this;
+		}
+
+		public LoadBoxBuilder withRotation2D(Consumer<BoxStackValue.AbstractBuilder> stackValue) {
+			StackValueBoxBuilder builder = new StackValueBoxBuilder();
+			stackValue.accept(builder);
+			this.stackValues.add(builder.build());
+			builder.withDimensions(builder.dy, builder.dx, builder.dz);
+			this.stackValues.add(builder.build());
+			return this;
+		}
+
+		@Override
+		public Box build() {
+			if (weight == null) {
+				throw new IllegalStateException("No weight");
+			}
+
+			if (properties == null) {
+				properties = Collections.emptyMap();
+			}
+			
+			if(stackValues.isEmpty()) {
+				throw new IllegalStateException("Expected at least one stack value");
+			}
+			
+			long volume = stackValues.get(0).getVolume();
+			for(int i = 1; i < stackValues.size(); i++) {
+				if(stackValues.get(i).getVolume() != volume) {
+					throw new IllegalStateException("Expected all stack values to have the same volume");
+				}
+			}
+
+			return new Box(id, description, volume, weight, stackValues.toArray(new BoxStackValue[stackValues.size()]), properties, boxItem);
+		}
+	}
+
+	public static class Builder extends AbstractBoxBuilder<Builder> {
+
+		protected int CENTER_OF_GRAVITY_MIDDLE = -1;
+
 		protected int dx = -1;
 		protected int dy = -1;
 		protected int dz = -1;
 		
+		protected int centerOfGravityX = -1;
+		protected int centerOfGravityY = -1;
+		protected int centerOfGravityZ = -1;
+		
 		protected Rotation rotation;
+
+		protected long maxLoadWeight  = -1;
+		protected double maxLoadPressure = -1.0;
+		protected int maxLoadBoxCount = -1;
+		protected boolean maxLoadIdenticalOnly = false;
+
+		public Builder withCenterOfGravity(int x, int y, int z) {
+			this.centerOfGravityX = x;
+			this.centerOfGravityY = y;
+			this.centerOfGravityZ = z;
+
+			return this;
+		}
 
 		public Builder withSize(int dx, int dy, int dz) {
 			this.dx = dx;
@@ -51,35 +179,8 @@ public class Box {
 			return this;
 		}
 
-		public Builder withBoxItem(BoxItem boxItem) {
-			this.boxItem = boxItem;
-			return (Builder) this;
-		}
-
-		public Builder withDescription(String description) {
-			this.description = description;
-			return (Builder) this;
-		}
-
-		public Builder withProperty(String id, Object object) {
-			if (properties == null) {
-				properties = new HashMap<>();
-			}
-			properties.put(id, object);
-			return (Builder) this;
-		}
-
-		public Builder withProperties(Map<String, Object> properties) {
-			if (this.properties == null) {
-				this.properties = new HashMap<>();
-			}
-			this.properties.putAll(properties);
-			return (Builder) this;
-		}
-
-		public Builder withId(String id) {
-			this.id = id;
-			return (Builder) this;
+		protected boolean isCenterGravity() {
+			return centerOfGravityX == CENTER_OF_GRAVITY_MIDDLE && centerOfGravityY == CENTER_OF_GRAVITY_MIDDLE && centerOfGravityZ == CENTER_OF_GRAVITY_MIDDLE;
 		}
 
 		protected <T> T[] getStackValues() {
@@ -106,8 +207,8 @@ public class Box {
 			List<BoxStackValue> list = new ArrayList<>();
 
 			// dx, dy, dz
-
-			if (dx == dy && dx == dz) { // square 3d
+			
+			if (dx == dy && dx == dz && centerOfGravityX == centerOfGravityY && centerOfGravityX == centerOfGravityZ) { // square 3d
 				// all sides are equal
 
 				// z          y
@@ -126,9 +227,9 @@ public class Box {
 				//
 
 				if (rotation.is0() || rotation.is90()) {
-					list.add(newStackValue(dx, dy, dz, rotation.getSides(), list.size()));
+					list.add(newStackValue(dx, dy, dz, rotation.getSides(), list.size(), centerOfGravityX, centerOfGravityY, centerOfGravityZ));
 				}
-			} else if (dx == dy) {
+			} else if (dx == dy && centerOfGravityX == centerOfGravityY) {
 
 
 				// z               y
@@ -155,7 +256,7 @@ public class Box {
 				// add xz/yz and xy
 
 				if (rotation.isXY()) {
-					list.add(newStackValue(dx, dx, dz, rotation.getXYSurfaces(), list.size()));
+					list.add(newStackValue(dx, dx, dz, rotation.getXYSurfaces(), list.size(), centerOfGravityX, centerOfGravityX, centerOfGravityZ));
 				}
 				if (rotation.isXZ() || rotation.isYZ()) {
 
@@ -163,15 +264,14 @@ public class Box {
 					boolean ninety = rotation.isXZ90() || rotation.isYZ90();
 
 					if (zero) {
-						list.add(newStackValue(dx, dz, dx, rotation.getYZAndXZSurfaces0(), list.size()));
+						list.add(newStackValue(dx, dz, dx, rotation.getYZAndXZSurfaces0(), list.size(), centerOfGravityX, centerOfGravityZ, centerOfGravityX));
 					}
 					if (ninety) {
-						list.add(newStackValue(dz, dx, dx, rotation.getYZAndXZSurfaces90(), list.size()));
-
+						list.add(newStackValue(dz, dx, dx, rotation.getYZAndXZSurfaces90(), list.size(), centerOfGravityZ, centerOfGravityX, centerOfGravityX));
 					}
 
 				}
-			} else if (dz == dy) {
+			} else if (dz == dy && centerOfGravityZ == centerOfGravityY) {
 
 				// z           y
 				// |          / 
@@ -192,7 +292,7 @@ public class Box {
 				// add xz/xy and yz
 
 				if (rotation.isYZ()) {
-					list.add(newStackValue(dy, dy, dx, rotation.getYZSurfaces(), list.size()));
+					list.add(newStackValue(dy, dy, dx, rotation.getYZSurfaces(), list.size(), centerOfGravityY, centerOfGravityY, centerOfGravityX));
 				}
 				if (rotation.isXY() || rotation.isXZ()) {
 
@@ -200,14 +300,14 @@ public class Box {
 					boolean ninety = rotation.isXY90() || rotation.isXZ90();
 
 					if (zero) {
-						list.add(newStackValue(dx, dz, dz, rotation.getXYAndXZSurfaces0(), list.size()));
+						list.add(newStackValue(dx, dz, dz, rotation.getXYAndXZSurfaces0(), list.size(), centerOfGravityX, centerOfGravityZ, centerOfGravityZ));
 					}
 					if (ninety) {
-						list.add(newStackValue(dz, dx, dz, rotation.getXYAndXZSurfaces90(), list.size()));
+						list.add(newStackValue(dz, dx, dz, rotation.getXYAndXZSurfaces90(), list.size(), centerOfGravityZ, centerOfGravityX, centerOfGravityZ));
 					}
 				}
 
-			} else if (dx == dz) {
+			} else if (dx == dz && centerOfGravityX == centerOfGravityZ) {
 
 				//  
 				// z               y
@@ -232,17 +332,17 @@ public class Box {
 				// add xy/zy and xz
 
 				if (rotation.isXZ()) {
-					list.add(newStackValue(dx, dx, dy, rotation.getXZSurfaces(), list.size()));
+					list.add(newStackValue(dx, dx, dy, rotation.getXZSurfaces(), list.size(), centerOfGravityX, centerOfGravityX, centerOfGravityY));
 				}
 				if (rotation.isXY() || rotation.isYZ()) {
 					boolean zero = rotation.isXY0() || rotation.isYZ0();
 					boolean ninety = rotation.isXY90() || rotation.isYZ90();
 
 					if (zero) {
-						list.add(newStackValue(dx, dy, dx, rotation.getXYAndYZSurfaces0(), list.size()));
+						list.add(newStackValue(dx, dy, dx, rotation.getXYAndYZSurfaces0(), list.size(), centerOfGravityX, centerOfGravityY, centerOfGravityX));
 					}
 					if (ninety) {
-						list.add(newStackValue(dy, dx, dx, rotation.getXYAndYZSurfaces90(), list.size()));
+						list.add(newStackValue(dy, dx, dx, rotation.getXYAndYZSurfaces90(), list.size(), centerOfGravityY, centerOfGravityX, centerOfGravityX));
 					}
 				}
 			} else {
@@ -318,24 +418,24 @@ public class Box {
 
 
 				if (rotation.isXY0()) {
-					list.add(newStackValue(dx, dy, dz, rotation.getXY0Surfaces(), list.size()));
+					list.add(newStackValue(dx, dy, dz, rotation.getXY0Surfaces(), list.size(), centerOfGravityX, centerOfGravityY, centerOfGravityZ));
 				}
 				if (rotation.isXY90()) {
-					list.add(newStackValue(dy, dx, dz, rotation.getXY90Surfaces(), list.size()));
+					list.add(newStackValue(dy, dx, dz, rotation.getXY90Surfaces(), list.size(), centerOfGravityY, centerOfGravityX, centerOfGravityZ));
 				}
 
 				if (rotation.isXZ0()) {
-					list.add(newStackValue(dx, dz, dy, rotation.getXZ0Surfaces(), list.size()));
+					list.add(newStackValue(dx, dz, dy, rotation.getXZ0Surfaces(), list.size(), centerOfGravityX, centerOfGravityZ, centerOfGravityY));
 				}
 				if (rotation.isXZ90()) {
-					list.add(newStackValue(dz, dx, dy, rotation.getXZ90Surfaces(), list.size()));
+					list.add(newStackValue(dz, dx, dy, rotation.getXZ90Surfaces(), list.size(), centerOfGravityZ, centerOfGravityX, centerOfGravityY));
 				}
 
 				if (rotation.isYZ0()) {
-					list.add(newStackValue(dz, dy, dx, rotation.getYZ0Surfaces(), list.size()));
+					list.add(newStackValue(dz, dy, dx, rotation.getYZ0Surfaces(), list.size(), centerOfGravityZ, centerOfGravityY, centerOfGravityX));
 				}
 				if (rotation.isYZ90()) {
-					list.add(newStackValue(dy, dz, dx, rotation.getYZ90Surfaces(), list.size()));
+					list.add(newStackValue(dy, dz, dx, rotation.getYZ90Surfaces(), list.size(), centerOfGravityY, centerOfGravityZ, centerOfGravityX));
 				}
 			}
 
@@ -349,6 +449,55 @@ public class Box {
 			this.weight = weight;
 
 			return this;
+		}
+
+		/**
+		 * Sets the same maximum load weight for all orientations.
+		 *
+		 * @param weight max weight that may rest on top, in the same unit as {@link #withWeight(int)}; -1 means no limit
+		 */
+		public Builder withMaxLoadWeight(long weight) {
+			this.maxLoadWeight = weight;
+			return (Builder) this;
+		}
+
+		/**
+		 * Sets the load limit as a pressure value (weight × 1000 / area), matching the
+		 * convention used by {@link Box#getMinimumPressure()} and {@link Box#getMaximumPressure()}.
+		 * Each orientation's weight limit is derived as: pressure × (dx × dy) / 1000,
+		 * so a box lying flat on a large face supports more weight than standing on a narrow face.
+		 * -1 means no limit.
+		 *
+		 * @param pressure max load pressure in (weight-unit × 1000) / area-unit
+		 */
+		public Builder withMaxLoadPressure(double pressure) {
+			this.maxLoadPressure = pressure;
+			return (Builder) this;
+		}
+
+		/**
+		 * Sets the maximum number of boxes of any type that may be placed on top of this box.
+		 * Applies to all orientations unless overridden per {@link BoxStackValue}.
+		 * -1 means no limit.
+		 *
+		 * @param count max number of boxes on top
+		 */
+		public Builder withMaxLoadBoxCount(int count) {
+			this.maxLoadBoxCount = count;
+			return (Builder) this;
+		}
+
+		/**
+		 * Sets the maximum number of boxes of the same type that may be placed on top of this box.
+		 * Applies to all orientations unless overridden per {@link BoxStackValue}.
+		 * -1 means no limit.
+		 *
+		 * @param count max number of same-type boxes on top
+		 */
+		public Builder withMaxLoadIdenticalBoxCount(int count) {
+			this.maxLoadBoxCount = count;
+			this.maxLoadIdenticalOnly = true;
+			return (Builder) this;
 		}
 
 		public Box build() {
@@ -376,7 +525,11 @@ public class Box {
 		}
 
 		protected BoxStackValue newStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index) {
-			return new BoxStackValue(dx, dy, dz, surfaces, index);
+			return new BoxStackValue(dx, dy, dz, surfaces, index, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalOnly, dx / 2, dy / 2, dz / 2);
+		}
+		
+		protected BoxStackValue newStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index, int centerOfGravityX, int centerOfGravityY, int centerOfGravityZ) {
+			return new BoxStackValue(dx, dy, dz, surfaces, index, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalOnly, centerOfGravityX, centerOfGravityY, centerOfGravityZ);
 		}
 	}
 
@@ -389,12 +542,25 @@ public class Box {
 	protected long minimumPressure;
 	protected long maximumPressure;
 
+	protected int minimumDx;
+	protected int minimumDy;
+	protected int minimumDz;
+
+	protected int maximumDx;
+	protected int maximumDy;
+	protected int maximumDz;
+
 	protected final String id;
 	protected final String description;
 
 	protected final Map<String, Object> properties;
 
 	protected BoxItem boxItem;
+	
+	protected boolean maxLoadWeight;
+	protected boolean maxLoadPressure;
+	protected boolean maxLoadBoxCount;
+	protected boolean loadIdenticalBoxOnly;
 
 	public Box(String id, String description, long volume, int weight, BoxStackValue[] stackValues,
 			Map<String, Object> properties, BoxItem boxItem) {
@@ -408,8 +574,16 @@ public class Box {
 		this.minimumArea = getMinimumArea(stackValues);
 		this.maximumArea = getMaximumArea(stackValues);
 
-		this.minimumPressure = (weight * 1000L) / maximumArea.getArea();
-		this.maximumPressure = (weight * 1000L) / minimumArea.getArea();
+		this.minimumDx = getMinimumDx(stackValues);
+		this.minimumDy = getMinimumDy(stackValues);
+		this.minimumDz = getMinimumDz(stackValues);
+
+		this.maximumDx = getMaximumDx(stackValues);
+		this.maximumDy = getMaximumDy(stackValues);
+		this.maximumDz = getMaximumDz(stackValues);
+
+		this.minimumPressure = calculatePressure(maximumArea.getArea(), weight);
+		this.maximumPressure = calculatePressure(minimumArea.getArea(), weight);
 
 		for (BoxStackValue boxStackValue : stackValues) {
 			boxStackValue.setBox(this);
@@ -417,6 +591,34 @@ public class Box {
 
 		this.properties = properties;
 		this.boxItem = boxItem;
+		
+		for (BoxStackValue boxStackValue : stackValues) {
+			if (boxStackValue.isMaxLoadWeight()) {
+				maxLoadWeight = true;
+				break;
+			}
+		}
+		
+		for (BoxStackValue boxStackValue : stackValues) {
+			if (boxStackValue.isMaxLoadPressure()) {
+				maxLoadPressure = true;
+				break;
+			}
+		}
+		
+		for (BoxStackValue boxStackValue : stackValues) {
+			if (boxStackValue.isMaxLoadBoxCount()) {
+				maxLoadBoxCount = true;
+				break;
+			}
+		}
+		
+		for (BoxStackValue boxStackValue : stackValues) {
+			if (boxStackValue.isLoadIdenticalBoxOnly()) {
+				loadIdenticalBoxOnly = true;
+				break;
+			}
+		}
 	}
 
 	public Box(Box box, List<BoxStackValue> stackValues) {
@@ -565,6 +767,21 @@ public class Box {
 		return minimumArea;
 	}
 
+	/**
+	 * Calculate pressure using the packing API's fixed-point convention:
+	 * {@code weight × 1000 / area}.
+	 *
+	 * @param area area carrying the weight
+	 * @param weight weight applied to the area
+	 * @return pressure scaled by 1000, or {@code 0} when the area is zero
+	 */
+	public static long calculatePressure(long area, long weight) {
+		if(area == 0) {
+			return 0;
+		}
+		return (weight * 1000L) / area;
+	}
+
 	public static BoxStackValue getMinimumPressure(BoxStackValue[] rotations) {
 		BoxStackValue minimumArea = null;
 		for (BoxStackValue boxStackValue : rotations) {
@@ -584,6 +801,67 @@ public class Box {
 		}
 		return maxArea;
 	}
+	
+	public static int getMaximumDx(BoxStackValue[] rotations) {
+		int max = -1;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (max == -1 || boxStackValue.getDx() > max) {
+				max = boxStackValue.getDx();
+			}
+		}
+		return max;
+	}
+	
+	public static int getMaximumDy(BoxStackValue[] rotations) {
+		int max = -1;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (max == -1 || boxStackValue.getDy() > max) {
+				max = boxStackValue.getDy();
+			}
+		}
+		return max;
+	}
+	
+	public static int getMaximumDz(BoxStackValue[] rotations) {
+		int max = -1;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (max == -1 || boxStackValue.getDz() > max) {
+				max = boxStackValue.getDz();
+			}
+		}
+		return max;
+	}
+	
+	public static int getMinimumDx(BoxStackValue[] rotations) {
+		int min = -1;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (min == -1 || boxStackValue.getDx() < min) {
+				min = boxStackValue.getDx();
+			}
+		}
+		return min;
+	}	
+	
+	public static int getMinimumDy(BoxStackValue[] rotations) {
+		int min = -1;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (min == -1 || boxStackValue.getDy() < min) {
+				min = boxStackValue.getDy();
+			}
+		}
+		return min;
+	}
+	
+	public static int getMinimumDz(BoxStackValue[] rotations) {
+		int min = -1;
+		for (BoxStackValue boxStackValue : rotations) {
+			if (min == -1 || boxStackValue.getDz() < min) {
+				min = boxStackValue.getDz();
+			}
+		}
+		return min;
+	}
+
 
 	@SuppressWarnings("unchecked")
 	public <T> T getProperty(String key) {
@@ -597,4 +875,41 @@ public class Box {
 	public BoxItem getBoxItem() {
 		return boxItem;
 	}
+	
+	public boolean isMaxLoadBoxCount() {
+		return maxLoadBoxCount;
+	}
+	
+	public boolean isMaxLoadPressure() {
+		return maxLoadPressure;
+	}
+	
+	public boolean isMaxLoadWeight() {
+		return maxLoadWeight;
+	}
+	
+	public boolean isMaxLoad() {
+		return maxLoadWeight || maxLoadPressure || maxLoadBoxCount;
+	}
+	
+	public boolean isLoadIdenticalBoxOnly() {
+		return loadIdenticalBoxOnly;
+	}
+	
+	public int getMinimumDx() {
+		return minimumDx;
+	}
+	
+	public int getMinimumDy() {
+		return minimumDy;
+	}
+	
+	public int getMinimumDz() {
+		return minimumDz;
+	}
+	
+	public int getMaximumDz() {
+		return maximumDz;
+	}
+	
 }

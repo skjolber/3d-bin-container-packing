@@ -41,8 +41,6 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 				2 * boxSize.getDy(),
 				2 * boxSize.getDz());
 
-		System.out.println("Test " + containerSize);
-		
 		runTest(containerSize, boxSize, count,
 				bruteForcePackager,
 				fastBruteForcePackager,

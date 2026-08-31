@@ -1,11 +1,18 @@
 package com.github.skjolber.packing.api;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 import org.junit.jupiter.api.Test;
 
 public class BoxTest {
+
+	@Test
+	public void testCalculatePressure() {
+		assertEquals(2500L, Box.calculatePressure(4, 10));
+		assertEquals(0L, Box.calculatePressure(0, 10));
+	}
 
 	@Test
 	public void testBuilder1() {
@@ -53,5 +60,15 @@ public class BoxTest {
 
 			}
 		}
+	}
+
+	@Test
+	public void testContainerClonePreservesMotion() {
+		Motion motion = new Motion();
+		Container container = new Container("id", "description", 1, 2, 3, 4, 1, 2, 3, 5, new Stack(), motion);
+
+		Container clone = container.clone();
+
+		assertSame(motion, clone.getMotion());
 	}
 }

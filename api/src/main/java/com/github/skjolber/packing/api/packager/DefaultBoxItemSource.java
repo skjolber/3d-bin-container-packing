@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 
 public class DefaultBoxItemSource implements BoxItemSource {
@@ -97,6 +98,10 @@ public class DefaultBoxItemSource implements BoxItemSource {
 	public BoxItemGroupSource getGroups() {
 		// no groups
 		return null;
+	}
+
+	public void add(BoxItem boxItem) {
+		values.add(boxItem);
 	}
 
 }

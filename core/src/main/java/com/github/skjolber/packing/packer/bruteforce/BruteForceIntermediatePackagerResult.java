@@ -12,6 +12,7 @@ import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
+import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 public class BruteForceIntermediatePackagerResult implements IntermediatePackagerResult {
 	
@@ -112,6 +113,42 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 			stackPlacement.setPoint(point3d);
 
 			stack.add(stackPlacement);
+		}
+
+		for (int i = 0; i < stack.size(); i++) {
+			Placement placement = stack.getPlacements().get(i);
+			placement.clearLoad();
+			placement.setIndex(i);
+		}
+		for (int i = 0; i < stack.size(); i++) {
+			addLoad(stack.getPlacements().get(i), stack.getPlacements(), i);
+		}
+	}
+
+	private static void addLoad(Placement placement, List<Placement> placements, int limit) {
+		if(placement.getAbsoluteZ() == 0) {
+			return;
+		}
+
+		long totalArea = 0;
+		for (int i = 0; i < limit; i++) {
+			Placement supporter = placements.get(i);
+			if(supporter.getAbsoluteEndZ() == placement.getAbsoluteZ() - 1 && supporter.intersects2D(placement)) {
+				totalArea += LoadPlacementUtility.overlapArea(placement.getAbsoluteX(), placement.getAbsoluteY(),
+						placement.getAbsoluteEndX(), placement.getAbsoluteEndY(), supporter);
+			}
+		}
+		if(totalArea == 0) {
+			return;
+		}
+
+		for (int i = 0; i < limit; i++) {
+			Placement supporter = placements.get(i);
+			if(supporter.getAbsoluteEndZ() == placement.getAbsoluteZ() - 1 && supporter.intersects2D(placement)) {
+				long area = LoadPlacementUtility.overlapArea(placement.getAbsoluteX(), placement.getAbsoluteY(),
+						placement.getAbsoluteEndX(), placement.getAbsoluteEndY(), supporter);
+				supporter.addLoad(placement, area, (placement.getWeight() * area) / totalArea);
+			}
 		}
 	}
 

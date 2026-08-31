@@ -4,7 +4,7 @@ import { Stats } from "stats-js";
 import { Color } from "three";
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { MemoryColorScheme, RandomColorScheme, StackPlacement, Box, Container, Point, StackableRenderer } from "./api";
-import { http } from "./utils";
+import { http, computeLoads } from "./utils";
 import { Font } from 'three/examples/jsm/loaders/FontLoader';
 import SupportingPlacementsView from "./SupportingPlacementsView";
 
@@ -225,11 +225,14 @@ class ThreeScene extends Component {
         }
       }
 
+      const loadInfos = computeLoads(allBoxPlacements);
+
       this.setState({
         hoveredData: {
           source: mesh.userData.source, // StackPlacement for the hovered box
           container: container,
           allBoxPlacements: allBoxPlacements,
+          loadInfos: allBoxPlacements.map(bp => loadInfos.get(bp)),
           currentStep: stepNumber,
         },
       });
@@ -373,7 +376,13 @@ class ThreeScene extends Component {
 
 
           if(stackable.type == "box") {
-            var box = new Box(stackable.name, stackable.id, stackable.step, stackable.dx, stackable.dy, stackable.dz);
+            var box = new Box(
+              stackable.name, stackable.id, stackable.step,
+              stackable.dx, stackable.dy, stackable.dz,
+              stackable.weight || 0,
+              stackable.maxLoadWeight, stackable.maxLoadPressure,
+              stackable.maxLoadBoxCount, stackable.maxLoadIdenticalOnly
+            );
             
             container.add(new StackPlacement(box, placement.step, placement.x, placement.y, placement.z, points));
           } else {
@@ -740,8 +749,13 @@ class ThreeScene extends Component {
                 {selectedBox.dimensions.dx} × {selectedBox.dimensions.dy} × {selectedBox.dimensions.dz}
               </div>
               <div>Step #{selectedBox.step}</div>
-            </div>
-          )}
+                {selectedBox.weight > 0 && <div>Weight: {selectedBox.weight}</div>}
+                {selectedBox.maxLoadWeight != null && <div>Max load weight: {selectedBox.maxLoadWeight}</div>}
+                {selectedBox.maxLoadPressure != null && <div>Max pressure: {selectedBox.maxLoadPressure}</div>}
+                {selectedBox.maxLoadBoxCount != null && <div>Max stack count: {selectedBox.maxLoadBoxCount}</div>}
+                {selectedBox.maxLoadIdenticalOnly === true && <div>Identical only</div>}
+              </div>
+            )}
         </div>
       {/* Supporting placements popup — shown in a separate floating window on hover */}
       <SupportingPlacementsView
