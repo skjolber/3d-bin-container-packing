@@ -26,6 +26,12 @@ public class ControlledContainerItem extends ContainerItem {
 	
 	public ControlledContainerItem(ContainerItem containerItem) {
 		super(containerItem.getContainer(), containerItem.getCount());
+		
+		if(containerItem instanceof ControlledContainerItem c) {
+			manifestControlsBuilderFactory = c.manifestControlsBuilderFactory;
+			pointControlsBuilderFactory = c.pointControlsBuilderFactory;
+			initialPoints = c.initialPoints;
+		}
 	}
 	
 

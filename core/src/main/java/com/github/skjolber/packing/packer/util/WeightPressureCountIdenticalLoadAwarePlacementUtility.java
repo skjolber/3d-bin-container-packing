@@ -45,8 +45,7 @@ if ((double) effectiveWeight * 1000.0 > sv.getMaxLoadPressure() * (double) area)
 				}
 			}
 			if (sv.isMaxLoadBoxCount()) {
-				if (!isWithinSupporteeBoxCount(candidate, sv.getMaxLoadBoxCount(),
-						pointSupportees, minX, minY, maxX, maxY)) {
+				if (!isWithinSupporteeBoxCount(candidate, sv.getMaxLoadBoxCount(), pointSupportees, minX, minY, maxX, maxY)) {
 					return -1;
 				}
 			}

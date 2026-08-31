@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Placement;
 
-public class ListPlacementComparator implements Comparator<Placement> {
+public class ListPlacementComparator implements PlacementComparator {
 
 	protected final Comparator<Placement>[] list;
 	
