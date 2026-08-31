@@ -73,9 +73,9 @@ public class CenterOfGravityStabilityValidator implements StabilityValidator {
 			return placement.getAbsoluteZ() == 0;
 		}
 
-		// Fast path: full footprint coverage — CoM is always within the support region.
+// Full footprint coverage guarantees stability only when no boxes above can shift the combined CoM.
 		BoxStackValue stackValue = placement.getStackValue();
-		if(placement.getSupportedArea() == stackValue.getArea()) {
+		if(placement.getSupportees().isEmpty() && placement.getSupportedArea() == stackValue.getArea()) {
 			return true;
 		}
 
