@@ -43,7 +43,7 @@ public class CombinedConstraintVisualizationTest extends AbstractPackagerTest {
 	private static final List<BoxItem> ITEMS = List.of(
 			new BoxItem(Box.newBuilder().withId("cBot")
 					.withSize(2, 5, 1).withWeight(1)
-					.withMaxLoadWeight(5).withMaxLoadPressure(0.5).withMaxLoadBoxCount(3)
+					.withMaxLoadWeight(5).withMaxLoadPressure(500).withMaxLoadBoxCount(3)
 					.withRotate2D().build(), 8),
 			new BoxItem(Box.newBuilder().withId("cTop")
 					.withSize(2, 5, 1).withWeight(10).withRotate2D().build(), 8));
