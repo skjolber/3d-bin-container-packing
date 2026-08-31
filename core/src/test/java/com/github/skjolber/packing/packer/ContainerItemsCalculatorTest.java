@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Motion;
 import com.github.skjolber.packing.api.Stack;
 
 public class ContainerItemsCalculatorTest {
@@ -265,6 +267,19 @@ public class ContainerItemsCalculatorTest {
 		assertEquals(containers.size(), 2);
 		assertEquals(containers.get(0), 1);
 		assertEquals(containers.get(1), 2);
+	}
+
+	@Test
+	public void testToContainerPreservesMotion() {
+		Motion motion = new Motion();
+		Container container = new Container("id", "description", 10, 10, 10, 1, 10, 10, 10, 100, new Stack(), motion);
+		ContainerItem containerItem = new ContainerItem(container, 1);
+
+		ContainerItemsCalculator calculator = create(List.of(containerItem));
+
+		Container result = calculator.toContainer(calculator.getContainerItem(0), new Stack());
+
+		assertSame(motion, result.getMotion());
 	}
 
 

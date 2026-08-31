@@ -359,7 +359,7 @@ public class ContainerItemsCalculator {
 				
 				container.getLoadDx(), container.getLoadDy(), container.getLoadDz(), 
 				
-				container.getMaxLoadWeight(), stack);
+				container.getMaxLoadWeight(), stack, container.getMotion());
 	}
 
 	protected Limit calculateMaxVolume(int maxCount) {

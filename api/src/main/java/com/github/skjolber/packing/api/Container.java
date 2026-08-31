@@ -283,7 +283,7 @@ public class Container {
 	@Override
 	public Container clone() {
 		return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight,
-				new Stack());
+				new Stack(), motion);
 	}
 
 	public int getLoadDx() {
