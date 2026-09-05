@@ -462,13 +462,13 @@ public class Box {
 		}
 
 		/**
-		 * Sets the load limit as a pressure value (weight × 1000 / area), matching the
+		 * Sets the load limit as a pressure value (weight / area), matching the
 		 * convention used by {@link Box#getMinimumPressure()} and {@link Box#getMaximumPressure()}.
-		 * Each orientation's weight limit is derived as: pressure × (dx × dy) / 1000,
+		 * Each orientation's weight limit is derived as: pressure × (dx × dy),
 		 * so a box lying flat on a large face supports more weight than standing on a narrow face.
 		 * -1 means no limit.
 		 *
-		 * @param pressure max load pressure in (weight-unit × 1000) / area-unit
+		 * @param pressure max load pressure in weight-unit / area-unit
 		 */
 		public Builder withMaxLoadPressure(double pressure) {
 			this.maxLoadPressure = pressure;
@@ -539,8 +539,8 @@ public class Box {
 
 	protected final BoxStackValue minimumArea;
 	protected final BoxStackValue maximumArea;
-	protected long minimumPressure;
-	protected long maximumPressure;
+	protected double minimumPressure;
+	protected double maximumPressure;
 
 	protected int minimumDx;
 	protected int minimumDy;
@@ -691,11 +691,11 @@ public class Box {
 		return builder.toString();
 	}
 
-	public long getMinimumPressure() {
+	public double getMinimumPressure() {
 		return minimumPressure;
 	}
 
-	public long getMaximumPressure() {
+	public double getMaximumPressure() {
 		return maximumPressure;
 	}
 
@@ -768,18 +768,29 @@ public class Box {
 	}
 
 	/**
-	 * Calculate pressure using the packing API's fixed-point convention:
-	 * {@code weight × 1000 / area}.
+	 * Calculates pressure as {@code weight / area}.
 	 *
 	 * @param area area carrying the weight
 	 * @param weight weight applied to the area
-	 * @return pressure scaled by 1000, or {@code 0} when the area is zero
+	 * @return pressure, or {@code 0.0} when the area is zero
 	 */
-	public static long calculatePressure(long area, long weight) {
+	public static double calculatePressure(long area, long weight) {
+		return calculatePressure(area, (double) weight);
+	}
+
+	/**
+	 * Calculates pressure as {@code weight / area} for a potentially fractional
+	 * weight, such as a load distributed across multiple supporters.
+	 *
+	 * @param area area carrying the weight
+	 * @param weight weight applied to the area
+	 * @return pressure, or {@code 0.0} when the area is zero
+	 */
+	public static double calculatePressure(long area, double weight) {
 		if(area == 0) {
-			return 0;
+			return 0.0;
 		}
-		return (weight * 1000L) / area;
+		return weight / area;
 	}
 
 	public static BoxStackValue getMinimumPressure(BoxStackValue[] rotations) {

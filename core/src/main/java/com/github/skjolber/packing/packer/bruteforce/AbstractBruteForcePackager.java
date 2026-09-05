@@ -64,7 +64,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 
 			if(!packager.supportsLoad()) {
 				for (BoxItem boxItem : items) {
-					if(boxItem.isMaxLoad()) {
+					if(boxItem.isMaxLoad() || boxItem.getBox().isLoadIdenticalBoxOnly()) {
 						throw new IllegalStateException("Max load not supported for brute force packager");
 					}
 				}

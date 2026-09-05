@@ -7,7 +7,7 @@ import com.github.skjolber.packing.api.validator.ValidatorResultReason;
  * Indicates that the load pressure on top of a placement exceeds the maximum
  * permitted by {@link com.github.skjolber.packing.api.BoxStackValue#getMaxLoadPressure()}.
  *
- * <p>Pressure is expressed as {@code loadWeight × 1000 / area}, matching the
+ * <p>Pressure is expressed as {@code loadWeight / area}, matching the
  * convention used by {@link com.github.skjolber.packing.api.Box#getMinimumPressure()}.
  */
 public class ExcessiveLoadPressureReason implements ValidatorResultReason {
@@ -15,7 +15,7 @@ public class ExcessiveLoadPressureReason implements ValidatorResultReason {
 	private static final int CODE = 11;
 
 	private final Placement placement;
-	private final long loadPressure;
+	private final double loadPressure;
 	private final double maxLoadPressure;
 
 	/**
@@ -25,7 +25,7 @@ public class ExcessiveLoadPressureReason implements ValidatorResultReason {
 	 * @param loadPressure the actual load pressure above the placement
 	 * @param maxLoadPressure the maximum load pressure permitted by the stack value
 	 */
-	public ExcessiveLoadPressureReason(Placement placement, long loadPressure, double maxLoadPressure) {
+	public ExcessiveLoadPressureReason(Placement placement, double loadPressure, double maxLoadPressure) {
 		this.placement = placement;
 		this.loadPressure = loadPressure;
 		this.maxLoadPressure = maxLoadPressure;
@@ -43,9 +43,9 @@ public class ExcessiveLoadPressureReason implements ValidatorResultReason {
 	/**
 	 * Returns the actual load pressure above the placement.
 	 *
-	 * @return actual load pressure ({@code loadWeight × 1000 / area})
+	 * @return actual load pressure ({@code loadWeight / area})
 	 */
-	public long getLoadPressure() {
+	public double getLoadPressure() {
 		return loadPressure;
 	}
 

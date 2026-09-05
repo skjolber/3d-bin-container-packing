@@ -40,7 +40,7 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 		boolean maxLoadIdenticalBoxCount = false;
 		
 		for (BoxItem item : boxItems) {
-if(item.isMaxLoad() || item.getBox().isLoadIdenticalBoxOnly()) {
+			if(item.isMaxLoad() || item.getBox().isLoadIdenticalBoxOnly()) {
 				Box box = item.getBox();	
 				maxLoadWeight |= box.isMaxLoadWeight();
 				maxLoadPressure |= box.isMaxLoadPressure();

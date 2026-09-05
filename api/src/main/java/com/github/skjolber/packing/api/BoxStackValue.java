@@ -108,7 +108,7 @@ public class BoxStackValue {
 		}
 
 		/**
-		 * Sets the max load as a pressure value (weight × 1000 / area), matching the
+		 * Sets the max load as a pressure value (weight / area), matching the
 		 * convention used by {@link Box#getMinimumPressure()} / {@link Box#getMaximumPressure()}.
 		 * Takes precedence over {@link #withMaxLoadWeight} when both are set.
 		 */
@@ -275,7 +275,7 @@ public class BoxStackValue {
 	}
 
 	/**
-	 * Maximum load pressure on top of this stack value (weight × 1000 / area),
+	 * Maximum load pressure on top of this stack value (weight / area),
 	 * matching the convention used by {@link Box#getMinimumPressure()}.
 	 * -1 means no limit.
 	 *
@@ -343,7 +343,7 @@ public class BoxStackValue {
 		return maxLoadBoxCount != -1;
 	}
 	
-	public long getPressure() {
+	public double getPressure() {
 		return Box.calculatePressure(area, box.getWeight());
 	}
 	

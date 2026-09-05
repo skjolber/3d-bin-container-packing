@@ -15,7 +15,7 @@ import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadPressureR
  * the limit set by {@link BoxStackValue#getMaxLoadPressure()}.
  *
  * <p>Only placements for which {@link BoxStackValue#isMaxLoadPressure()} returns {@code true}
- * are checked. Pressure is expressed as {@code loadWeight × 1000 / area}, matching the
+ * are checked. Pressure is expressed as {@code loadWeight / area}, matching the
  * convention used by {@link com.github.skjolber.packing.api.Box#getMinimumPressure()}.
  *
  * <p>The load weight is computed independently by traversing the supportee graph — it does
@@ -56,7 +56,7 @@ public class MaxPressureLoadValidator implements LoadValidator {
 			}
 
 			double maxLoadPressure = stackValue.getMaxLoadPressure();
-			long maxPressure = 0;
+			double maxPressure = 0.0;
 
 			for(PlacementLoad pl : placement.getSupportees()) {
 				long contactArea = pl.getArea();
@@ -66,14 +66,9 @@ public class MaxPressureLoadValidator implements LoadValidator {
 
 				Placement supportee = pl.getPlacement();
 				long supporteeArea = supportee.getSupportedArea();
-				long share = (supporteeArea > 0) ? (1000L * contactArea) / supporteeArea : 1000L;
-
-				// weight attributed to this link (scaled by share/1000) including descendant load
-				long weightScaled = (long) supportee.getWeight() * share + WeightLoadValidator.accumulateWeight(supportee, share);
-
-				// weightScaled already carries a ×1000 share scale, so remove that
-				// scale after calculating pressure.
-				long linkPressure = Box.calculatePressure(contactArea, weightScaled) / 1000L;
+				double share = supporteeArea > 0 ? (double) contactArea / supporteeArea : 1.0;
+				double weight = supportee.getWeight() * share + accumulateWeight(supportee, share);
+				double linkPressure = Box.calculatePressure(contactArea, weight);
 				if(linkPressure > maxPressure) {
 					maxPressure = linkPressure;
 				}
@@ -86,5 +81,19 @@ public class MaxPressureLoadValidator implements LoadValidator {
 		}
 
 		return valid;
+	}
+
+	private static double accumulateWeight(Placement placement, double share) {
+		double total = 0.0;
+		for(PlacementLoad supporteeLink : placement.getSupportees()) {
+			Placement supportee = supporteeLink.getPlacement();
+			long supporteeArea = supportee.getSupportedArea();
+			double supporteeShare = supporteeArea > 0
+					? share * supporteeLink.getArea() / supporteeArea
+					: share;
+			total += supportee.getWeight() * supporteeShare;
+			total += accumulateWeight(supportee, supporteeShare);
+		}
+		return total;
 	}
 }

@@ -194,12 +194,12 @@ public class Placement implements Serializable {
 
 	/**
 	 * Returns the load pressure on the top surface of this placement,
-	 * expressed as {@code loadWeight × 1000 / topArea}, matching the
+	 * expressed as {@code loadWeight / topArea}, matching the
 	 * convention used by {@link Box#getMinimumPressure()}.
 	 *
-	 * @return load pressure, or 0 if the area is zero
+	 * @return load pressure, or 0.0 if the area is zero
 	 */
-	public long getLoadPressure() {
+	public double getLoadPressure() {
 		long area = stackValue.getArea();
 		return Box.calculatePressure(area, loadWeight);
 	}

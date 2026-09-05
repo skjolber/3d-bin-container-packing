@@ -15,7 +15,7 @@ import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadPressureR
 /**
  * Unit tests for {@link MaxPressureLoadValidator}.
  *
- * <p>Pressure = {@code loadWeight × 1000 / footprintArea}, matching the convention used by
+	 * <p>Pressure = {@code loadWeight / footprintArea}, matching the convention used by
  * {@link com.github.skjolber.packing.api.Box#getMinimumPressure()}.
  *
  * <p>Coordinate system: X = width, Y = depth, Z = height.
@@ -68,8 +68,8 @@ public class MaxPressureLoadValidatorTest {
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Box A (10×10, area=100) has a pressure limit of 600.
-	 * Box B (weight=50) rests on A: pressure = 50 × 1000 / 100 = 500 ≤ 600 → valid.
+	 * Box A (10×10, area=100) has a pressure limit of 0.6.
+	 * Box B (weight=50) rests on A: pressure = 50 / 100 = 0.5 ≤ 0.6 → valid.
 	 *
 	 * <pre>
 	 *  z
@@ -77,13 +77,13 @@ public class MaxPressureLoadValidatorTest {
 	 *  2  +----------+
 	 *     |    B     |  weight=50
 	 *  1  +----------+
-	 *     |    A     |  10×10, maxPressure=600
+	 *     |    A     |  10×10, maxPressure=0.6
 	 *  0  +----------+
 	 * </pre>
 	 */
 	@Test
 	void testWithinLimit_valid() {
-		Placement a = makePlacementWithPressureLimit("A", 10, 10, 1, 20, 600.0, 0, 0, 0);
+		Placement a = makePlacementWithPressureLimit("A", 10, 10, 1, 20, 0.6, 0, 0, 0);
 		Placement b = makePlacement("B", 10, 10, 1, 50, 0, 0, 1);
 		a.addLoad(b, 100L, b.getWeight());
 
@@ -98,11 +98,11 @@ public class MaxPressureLoadValidatorTest {
 	// -----------------------------------------------------------------------
 
 	/**
-	 * B (weight=50) on A (10×10, maxPressure=500): pressure = 500 = limit → valid.
+	 * B (weight=50) on A (10×10, maxPressure=0.5): pressure = 0.5 = limit → valid.
 	 */
 	@Test
 	void testAtLimit_valid() {
-		Placement a = makePlacementWithPressureLimit("A", 10, 10, 1, 20, 500.0, 0, 0, 0);
+		Placement a = makePlacementWithPressureLimit("A", 10, 10, 1, 20, 0.5, 0, 0, 0);
 		Placement b = makePlacement("B", 10, 10, 1, 50, 0, 0, 1);
 		a.addLoad(b, 100L, b.getWeight());
 
@@ -117,11 +117,11 @@ public class MaxPressureLoadValidatorTest {
 	// -----------------------------------------------------------------------
 
 	/**
-	 * B (weight=50) on A (10×10, maxPressure=400): pressure = 500 > 400 → invalid.
+	 * B (weight=50) on A (10×10, maxPressure=0.4): pressure = 0.5 > 0.4 → invalid.
 	 */
 	@Test
 	void testExceedsLimit_invalid() {
-		Placement a = makePlacementWithPressureLimit("A", 10, 10, 1, 20, 400.0, 0, 0, 0);
+		Placement a = makePlacementWithPressureLimit("A", 10, 10, 1, 20, 0.4, 0, 0, 0);
 		Placement b = makePlacement("B", 10, 10, 1, 50, 0, 0, 1);
 		a.addLoad(b, 100L, b.getWeight());
 
@@ -132,8 +132,8 @@ public class MaxPressureLoadValidatorTest {
 
 		ExcessiveLoadPressureReason reason = (ExcessiveLoadPressureReason) reasons.get(0);
 		assertThat(reason.getPlacement()).isSameAs(a);
-		assertThat(reason.getLoadPressure()).isEqualTo(500L);   // 50 × 1000 / 100
-		assertThat(reason.getMaxLoadPressure()).isEqualTo(400.0);
+		assertThat(reason.getLoadPressure()).isEqualTo(0.5); // 50 / 100
+		assertThat(reason.getMaxLoadPressure()).isEqualTo(0.4);
 		assertThat(reason.getCode()).isEqualTo(11);
 	}
 
@@ -142,8 +142,8 @@ public class MaxPressureLoadValidatorTest {
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Small box A (2×5, area=10) with B (weight=10) on top: pressure = 10*1000/10 = 1000.
-	 * Limit = 999 → invalid.
+	 * Small box A (2×5, area=10) with B (weight=10) on top: pressure = 10/10 = 1.0.
+	 * Limit = 0.999 → invalid.
 	 *
 	 * <pre>
 	 *  z
@@ -151,13 +151,13 @@ public class MaxPressureLoadValidatorTest {
 	 *  2  +--+
 	 *     |B |  weight=10
 	 *  1  +--+
-	 *     |A |  2×5, maxPressure=999
+	 *     |A |  2×5, maxPressure=0.999
 	 *  0  +--+
 	 * </pre>
 	 */
 	@Test
 	void testSmallFootprintAmplifiesPressure_invalid() {
-		Placement a = makePlacementWithPressureLimit("A", 2, 5, 1, 5, 999.0, 0, 0, 0);
+		Placement a = makePlacementWithPressureLimit("A", 2, 5, 1, 5, 0.999, 0, 0, 0);
 		Placement b = makePlacement("B", 2, 5, 1, 10, 0, 0, 1);
 		a.addLoad(b, 10L, b.getWeight());
 
@@ -165,7 +165,7 @@ public class MaxPressureLoadValidatorTest {
 
 		assertThat(validator.isValid(List.of(a, b), reasons)).isFalse();
 		ExcessiveLoadPressureReason reason = (ExcessiveLoadPressureReason) reasons.get(0);
-		assertThat(reason.getLoadPressure()).isEqualTo(1000L);  // 10 × 1000 / 10
+		assertThat(reason.getLoadPressure()).isEqualTo(1.0); // 10 / 10
 	}
 
 	// -----------------------------------------------------------------------
@@ -174,12 +174,12 @@ public class MaxPressureLoadValidatorTest {
 
 	/**
 	 * Three-level stack: A (10×10) → B (weight=30) → C (weight=20).
-	 * Total load on A = 50; pressure = 50 × 1000 / 100 = 500.
-	 * Limit = 400 → invalid; limit = 500 → valid.
+	 * Total load on A = 50; pressure = 50 / 100 = 0.5.
+	 * Limit = 0.4 → invalid; limit = 0.5 → valid.
 	 */
 	@Test
 	void testMultiLevelAccumulation_exceedsLimit_invalid() {
-		Placement a = makePlacementWithPressureLimit("A", 10, 10, 1, 5, 400.0, 0, 0, 0);
+		Placement a = makePlacementWithPressureLimit("A", 10, 10, 1, 5, 0.4, 0, 0, 0);
 		Placement b = makePlacement("B", 10, 10, 1, 30, 0, 0, 1);
 		Placement c = makePlacement("C", 10, 10, 1, 20, 0, 0, 2);
 
@@ -190,12 +190,12 @@ public class MaxPressureLoadValidatorTest {
 
 		assertThat(validator.isValid(List.of(a, b, c), reasons)).isFalse();
 		ExcessiveLoadPressureReason reason = (ExcessiveLoadPressureReason) reasons.get(0);
-		assertThat(reason.getLoadPressure()).isEqualTo(500L);
+		assertThat(reason.getLoadPressure()).isEqualTo(0.5);
 	}
 
 	@Test
 	void testMultiLevelAccumulation_withinLimit_valid() {
-		Placement a = makePlacementWithPressureLimit("A", 10, 10, 1, 5, 500.0, 0, 0, 0);
+		Placement a = makePlacementWithPressureLimit("A", 10, 10, 1, 5, 0.5, 0, 0, 0);
 		Placement b = makePlacement("B", 10, 10, 1, 30, 0, 0, 1);
 		Placement c = makePlacement("C", 10, 10, 1, 20, 0, 0, 2);
 

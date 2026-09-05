@@ -10,8 +10,9 @@ public class BoxTest {
 
 	@Test
 	public void testCalculatePressure() {
-		assertEquals(2500L, Box.calculatePressure(4, 10));
-		assertEquals(0L, Box.calculatePressure(0, 10));
+		assertEquals(2.5, Box.calculatePressure(4, 10), 0.0);
+		assertEquals(0.0, Box.calculatePressure(0, 10), 0.0);
+		assertEquals(1.0 / 3.0, Box.calculatePressure(3, 1), 0.0);
 	}
 
 	@Test
