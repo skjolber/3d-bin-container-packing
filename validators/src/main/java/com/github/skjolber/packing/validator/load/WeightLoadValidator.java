@@ -50,7 +50,7 @@ public class WeightLoadValidator implements LoadValidator {
 				continue;
 			}
 
-			long loadWeight = accumulateWeight(placement, 1000L) / 1000L;
+			double loadWeight = accumulateWeight(placement, 1.0);
 			long maxLoadWeight = stackValue.getMaxLoadWeight();
 
 			if(loadWeight > maxLoadWeight) {
@@ -66,28 +66,27 @@ public class WeightLoadValidator implements LoadValidator {
 	 * Recursively accumulates the total weight resting on top of {@code placement},
 	 * proportionally attributing the weight of shared supportees.
 	 *
-	 * <p>The {@code share} parameter is a fixed-point multiplier (1000 at the root)
-	 * used to avoid integer truncation when distributing weight across multiple supporters.
+	 * <p>The {@code share} parameter is a fractional multiplier (1.0 at the root).
 	 * When a supportee is shared, its weight contribution to this placement is scaled by
 	 * {@code overlapArea / supportee.supportedArea}.
 	 *
 	 * @param placement the placement whose supportee weight to accumulate
-	 * @param share fixed-point multiplier for this subtree (1000 at root)
-	 * @return total accumulated weight above {@code placement}, scaled by the initial {@code share}
+	 * @param share fractional multiplier for this subtree (1.0 at root)
+	 * @return total accumulated weight above {@code placement}
 	 */
-	static long accumulateWeight(Placement placement, long share) {
-		long total = 0;
+	static double accumulateWeight(Placement placement, double share) {
+		double total = 0.0;
 
 		for(PlacementLoad supporteeLink : placement.getSupportees()) {
 			Placement supportee = supporteeLink.getPlacement();
 
 			// Weight of this supportee box, scaled by our share of its total supported area
 			long supporteeArea = supportee.getSupportedArea();
-			long supporteeShare = (supporteeArea > 0)
-					? (share * supporteeLink.getArea()) / supporteeArea
+			double supporteeShare = (supporteeArea > 0)
+					? share * supporteeLink.getArea() / supporteeArea
 					: share;
 
-			total += (long) supportee.getWeight() * supporteeShare;
+			total += supportee.getWeight() * supporteeShare;
 
 			// Recurse: add the weight of everything above the supportee, at the same proportion
 			total += accumulateWeight(supportee, supporteeShare);

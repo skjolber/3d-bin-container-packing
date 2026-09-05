@@ -208,9 +208,9 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.findFirst().orElseThrow();
 
 			// bottom bears the weight of top
-			assertThat(bottom.getLoadWeight()).isEqualTo(top.getWeight());
+			assertThat(bottom.getLoadWeight()).isEqualTo((double) top.getWeight());
 			// top has nothing above it
-			assertThat(top.getLoadWeight()).isEqualTo(0);
+			assertThat(top.getLoadWeight()).isEqualTo(0.0);
 		} finally {
 			packager.close();
 		}
@@ -268,11 +268,11 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 			Placement p2 = placementAt(placements, 2);
 
 			// p2 is topmost – nothing above it
-			assertThat(p2.getLoadWeight()).isEqualTo(0);
+			assertThat(p2.getLoadWeight()).isEqualTo(0.0);
 			// p1 bears p2's weight
-			assertThat(p1.getLoadWeight()).isEqualTo(p2.getWeight());
+			assertThat(p1.getLoadWeight()).isEqualTo((double) p2.getWeight());
 			// p0 bears p1.weight + p2.weight
-			assertThat(p0.getLoadWeight()).isEqualTo(p1.getWeight() + p2.getWeight());
+			assertThat(p0.getLoadWeight()).isEqualTo((double) (p1.getWeight() + p2.getWeight()));
 		} finally {
 			packager.close();
 		}

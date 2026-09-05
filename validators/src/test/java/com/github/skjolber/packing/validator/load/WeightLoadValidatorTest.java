@@ -133,7 +133,7 @@ public class WeightLoadValidatorTest {
 
 		ExcessiveLoadWeightReason reason = (ExcessiveLoadWeightReason) reasons.get(0);
 		assertThat(reason.getPlacement()).isSameAs(a);
-		assertThat(reason.getLoadWeight()).isEqualTo(10L);
+		assertThat(reason.getLoadWeight()).isEqualTo(10.0);
 		assertThat(reason.getMaxLoadWeight()).isEqualTo(8L);
 		assertThat(reason.getCode()).isEqualTo(14);
 	}
@@ -191,7 +191,7 @@ public class WeightLoadValidatorTest {
 
 		ExcessiveLoadWeightReason reason = (ExcessiveLoadWeightReason) reasons.get(0);
 		assertThat(reason.getPlacement()).isSameAs(a);
-		assertThat(reason.getLoadWeight()).isEqualTo(15L);
+		assertThat(reason.getLoadWeight()).isEqualTo(15.0);
 		assertThat(reason.getMaxLoadWeight()).isEqualTo(14L);
 	}
 
@@ -229,5 +229,23 @@ public class WeightLoadValidatorTest {
 		assertThat(validator.isValid(List.of(a, b, c), reasons)).isFalse();
 		assertThat(reasons).hasSize(1);
 		assertThat(((ExcessiveLoadWeightReason) reasons.get(0)).getPlacement()).isSameAs(a);
+	}
+
+	@Test
+	void testFractionalSplitLoadExceedsZeroLimit() {
+		Placement a = makePlacementWithWeightLimit("A", 1, 1, 1, 1, 0L, 0, 0, 0);
+		Placement b = makePlacementWithWeightLimit("B", 2, 1, 1, 1, 1L, 1, 0, 0);
+		Placement c = makePlacement("C", 3, 1, 1, 1, 0, 0, 1);
+
+		a.addLoad(c, 1L, 1.0 / 3.0);
+		b.addLoad(c, 2L, 2.0 / 3.0);
+
+		List<ValidatorResultReason> reasons = new ArrayList<>();
+
+		assertThat(validator.isValid(List.of(a, b, c), reasons)).isFalse();
+		assertThat(reasons).hasSize(1);
+		ExcessiveLoadWeightReason reason = (ExcessiveLoadWeightReason) reasons.get(0);
+		assertThat(reason.getPlacement()).isSameAs(a);
+		assertThat(reason.getLoadWeight()).isEqualTo(1.0 / 3.0);
 	}
 }

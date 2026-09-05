@@ -43,7 +43,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	protected PlacementList placementSupporters = new PlacementList();
 
 	protected long[] placementAreas;
-	protected long[] reliefWeights;
+	protected double[] reliefWeights;
 
 	protected AbstractLoadWeightPlacementUtility(Stack stack) {
 		this.stack = stack;
@@ -51,7 +51,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 
 	public void initialize(int count) {
 		placementAreas = new long[count];
-		reliefWeights = new long[count];
+		reliefWeights = new double[count];
 		pointSupportees.ensureAdditionalCapacity(count);
 		pointSupporters.ensureAdditionalCapacity(count);
 		placementSupporters.ensureAdditionalCapacity(count);
@@ -97,24 +97,24 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	// Shared instance helpers
 	// =========================================================================
 
-	protected void calculateRelifWeight(Placement placement, long reliefWeight) {
+	protected void calculateRelifWeight(Placement placement, double reliefWeight) {
 		long supportedArea = placement.getSupportedArea();
 		for (PlacementLoad placementLoad : placement.getSupporters()) {
 			Placement supporter = placementLoad.getPlacement();
-			long r = (reliefWeight * placementLoad.getArea()) / supportedArea;
+			double r = reliefWeight * placementLoad.getArea() / supportedArea;
 			this.reliefWeights[supporter.getIndex()] += r;
 			calculateRelifWeight(supporter, r);
 		}
 	}
 
-	protected boolean isWithinMaxLoadWeightAndPressure(Placement placement, long weight, long area) {
-		long effectiveWeight = weight - reliefWeights[placement.getIndex()];
+	protected boolean isWithinMaxLoadWeightAndPressure(Placement placement, double weight, long area) {
+		double effectiveWeight = weight - reliefWeights[placement.getIndex()];
 		BoxStackValue sv = placement.getStackValue();
 		if (sv.isMaxLoadPressure() && Box.calculatePressure(area, effectiveWeight) > sv.getMaxLoadPressure()) {
 			return false;
 		}
 		if (sv.isMaxLoadWeight()) {
-			long existingWeight = 0;
+			double existingWeight = 0.0;
 			for (PlacementLoad pl : placement.getSupportees()) {
 				existingWeight += pl.getWeight();
 			}
@@ -125,7 +125,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		long totalArea = placement.getSupportedArea();
 		if (totalArea > 0) {
 			for (PlacementLoad pl : placement.getSupporters()) {
-				long weightShare = (effectiveWeight * pl.getArea()) / totalArea;
+				double weightShare = effectiveWeight * pl.getArea() / totalArea;
 				if (!isWithinMaxLoadWeightAndPressure(pl.getPlacement(), weightShare, pl.getArea())) {
 					return false;
 				}
@@ -140,7 +140,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	 *
 	 * @return total supported area, or {@code -1} if any load constraint is violated
 	 */
-	public long calculateSupportAndValidateSupporterLoad(BoxStackValue stackValue, int absoluteX, int absoluteY, long weight) {
+	public long calculateSupportAndValidateSupporterLoad(BoxStackValue stackValue, int absoluteX, int absoluteY, double weight) {
 		int n = placementSupporters.size();
 		int newMaxX = absoluteX + stackValue.getDx() - 1;
 		int newMaxY = absoluteY + stackValue.getDy() - 1;
@@ -150,7 +150,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 			totalOverlapArea += placementAreas[i];
 		}
 		for (int i = 0; i < n; i++) {
-			long weightShare = (weight * placementAreas[i]) / totalOverlapArea;
+			double weightShare = weight * placementAreas[i] / totalOverlapArea;
 			if (!isWithinMaxLoadWeightAndPressure(placementSupporters.get(i), weightShare, placementAreas[i])) {
 				return -1;
 			}
@@ -158,7 +158,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		return totalOverlapArea;
 	}
 
-	public long calculateSupporteeWeight(BoxStackValue sv, Point point) {
+	public double calculateSupporteeWeight(BoxStackValue sv, Point point) {
 		int minX = point.getMinX();
 		int minY = point.getMinY();
 		return calculateSupporteeLoad(sv, minX, minY, point.getMinZ(), minX + sv.getDx() - 1, minY + sv.getDy() - 1);
@@ -176,7 +176,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	 * @return effective placement weight (including the box's own weight), or
 	 *         {@code -1} if any constraint is violated
 	 */
-	public abstract long calculateSupporteeLoad(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY);
+	public abstract double calculateSupporteeLoad(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY);
 
 	/**
 	 * Populates {@link #placementSupporters} with all supporters for the bounding
@@ -221,8 +221,8 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 
 	@Override
 	public long getSupportedAreaAtPoint(Point point, BoxStackValue sv, boolean fullSupport) {
-		long weight = calculateSupporteeWeight(sv, point);
-		if (weight == -1L) {
+		double weight = calculateSupporteeWeight(sv, point);
+		if (weight == -1.0) {
 			return -1L;
 		}
 
@@ -253,7 +253,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		}
 		for(int i = 0; i < placementSupporters.size(); i++) {
 			long area = placementAreas[i];
-			placementSupporters.get(i).addLoad(placement, area, (placement.getWeight() * area) / totalArea);
+			placementSupporters.get(i).addLoad(placement, area, (double) placement.getWeight() * area / totalArea);
 		}
 	}
 
@@ -279,8 +279,8 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		int maxX = x + stackValue.getDx() - 1;
 		int maxY = y + stackValue.getDy() - 1;
 
-		long weight = calculateSupporteeLoad(stackValue, x, y, point3d.getMinZ(), maxX, maxY);
-		if (weight == -1L) {
+		double weight = calculateSupporteeLoad(stackValue, x, y, point3d.getMinZ(), maxX, maxY);
+		if (weight == -1.0) {
 			return null;
 		}
 

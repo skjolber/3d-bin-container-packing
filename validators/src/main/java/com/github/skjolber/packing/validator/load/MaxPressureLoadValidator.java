@@ -67,7 +67,7 @@ public class MaxPressureLoadValidator implements LoadValidator {
 				Placement supportee = pl.getPlacement();
 				long supporteeArea = supportee.getSupportedArea();
 				double share = supporteeArea > 0 ? (double) contactArea / supporteeArea : 1.0;
-				double weight = supportee.getWeight() * share + accumulateWeight(supportee, share);
+				double weight = supportee.getWeight() * share + WeightLoadValidator.accumulateWeight(supportee, share);
 				double linkPressure = Box.calculatePressure(contactArea, weight);
 				if(linkPressure > maxPressure) {
 					maxPressure = linkPressure;
@@ -83,17 +83,4 @@ public class MaxPressureLoadValidator implements LoadValidator {
 		return valid;
 	}
 
-	private static double accumulateWeight(Placement placement, double share) {
-		double total = 0.0;
-		for(PlacementLoad supporteeLink : placement.getSupportees()) {
-			Placement supportee = supporteeLink.getPlacement();
-			long supporteeArea = supportee.getSupportedArea();
-			double supporteeShare = supporteeArea > 0
-					? share * supporteeLink.getArea() / supporteeArea
-					: share;
-			total += supportee.getWeight() * supporteeShare;
-			total += accumulateWeight(supportee, supporteeShare);
-		}
-		return total;
-	}
 }

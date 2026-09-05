@@ -159,7 +159,7 @@ public class CenterOfGravitySupportStabilityValidatorTest {
 		Placement b = makePlacement("B", 10, 10, 1, 10, 0, 0, 1);
 
 		// A covers the left half of B's footprint (area=50)
-		a.addLoad(b, 50L, b.getWeight() / 2);
+		a.addLoad(b, 50L, b.getWeight() / 2.0);
 
 		List<Placement> placements = List.of(a, b);
 		List<ValidatorResultReason> reasons = new ArrayList<>();

@@ -113,7 +113,7 @@ public class FullySupportedStabilityValidatorTest {
 		Placement a = makePlacement("A",  5, 10, 1, 0, 0, 0);
 		Placement b = makePlacement("B", 10, 10, 1, 0, 0, 1);
 
-		a.addLoad(b, 50L, b.getWeight() / 2);
+		a.addLoad(b, 50L, b.getWeight() / 2.0);
 
 		List<Placement> placements = List.of(a, b);
 		List<ValidatorResultReason> reasons = new ArrayList<>();
@@ -187,7 +187,7 @@ public class FullySupportedStabilityValidatorTest {
 		Placement c  = makePlacement("C", 10, 10, 1, 10, 0, 1);
 
 		a.addLoad(b, 100L, b.getWeight());     // B fully supported
-		sup.addLoad(c, 50L, c.getWeight() / 2); // C only half-supported
+		sup.addLoad(c, 50L, c.getWeight() / 2.0); // C only half-supported
 
 		List<Placement> placements = List.of(a, b, sup, c);
 		List<ValidatorResultReason> reasons = new ArrayList<>();

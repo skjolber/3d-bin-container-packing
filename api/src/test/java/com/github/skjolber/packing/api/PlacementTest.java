@@ -79,9 +79,9 @@ public class PlacementTest {
 		assertThat(c.getSupportees()).isEmpty();
 
 		// --- load propagation ---
-		assertThat(c.getLoadWeight()).isEqualTo(0);
-		assertThat(b.getLoadWeight()).isEqualTo(5);   // C's weight
-		assertThat(a.getLoadWeight()).isEqualTo(15);  // B.weight + C.weight
+		assertThat(c.getLoadWeight()).isEqualTo(0.0);
+		assertThat(b.getLoadWeight()).isEqualTo(5.0);   // C's weight
+		assertThat(a.getLoadWeight()).isEqualTo(15.0);  // B.weight + C.weight
 	}
 
 	// -----------------------------------------------------------------------
@@ -121,10 +121,10 @@ public class PlacementTest {
 		c.addLoad(d, area, d.getWeight());
 
 		// Verify all four levels
-		assertThat(d.getLoadWeight()).isEqualTo(0);
-		assertThat(c.getLoadWeight()).isEqualTo(5);   // D.weight
-		assertThat(b.getLoadWeight()).isEqualTo(15);  // C.weight + D.weight
-		assertThat(a.getLoadWeight()).isEqualTo(35);  // B.weight + C.weight + D.weight
+		assertThat(d.getLoadWeight()).isEqualTo(0.0);
+		assertThat(c.getLoadWeight()).isEqualTo(5.0);   // D.weight
+		assertThat(b.getLoadWeight()).isEqualTo(15.0);  // C.weight + D.weight
+		assertThat(a.getLoadWeight()).isEqualTo(35.0);  // B.weight + C.weight + D.weight
 	}
 
 	// -----------------------------------------------------------------------
@@ -166,9 +166,9 @@ public class PlacementTest {
 		assertThat(b.getSupportees()).hasSize(1);
 		assertThat(c.getSupportedArea()).isEqualTo(100L);
 
-		assertThat(c.getLoadWeight()).isEqualTo(0);
-		assertThat(a.getLoadWeight()).isEqualTo(5);
-		assertThat(b.getLoadWeight()).isEqualTo(5);
+		assertThat(c.getLoadWeight()).isEqualTo(0.0);
+		assertThat(a.getLoadWeight()).isEqualTo(5.0);
+		assertThat(b.getLoadWeight()).isEqualTo(5.0);
 	}
 
 	// -----------------------------------------------------------------------
@@ -215,11 +215,11 @@ public class PlacementTest {
 		b.addLoad(d, 50L, 5L);
 		c.addLoad(d, 50L, 5L);
 
-		assertThat(d.getLoadWeight()).isEqualTo(0);
-		assertThat(c.getLoadWeight()).isEqualTo(5);   // half of D
-		assertThat(b.getLoadWeight()).isEqualTo(5);   // half of D
+		assertThat(d.getLoadWeight()).isEqualTo(0.0);
+		assertThat(c.getLoadWeight()).isEqualTo(5.0);   // half of D
+		assertThat(b.getLoadWeight()).isEqualTo(5.0);   // half of D
 		// A bears B's own weight (20) + B's load share propagated from D (5)
-		assertThat(a.getLoadWeight()).isEqualTo(25);
+		assertThat(a.getLoadWeight()).isEqualTo(25.0);
 	}
 
 	// -----------------------------------------------------------------------
@@ -252,9 +252,9 @@ public class PlacementTest {
 		a.addLoad(c, 75L, 75L);
 		b.addLoad(c, 25L, 25L);
 
-		assertThat(c.getLoadWeight()).isEqualTo(0);
-		assertThat(a.getLoadWeight()).isEqualTo(75);
-		assertThat(b.getLoadWeight()).isEqualTo(25);
+		assertThat(c.getLoadWeight()).isEqualTo(0.0);
+		assertThat(a.getLoadWeight()).isEqualTo(75.0);
+		assertThat(b.getLoadWeight()).isEqualTo(25.0);
 		assertThat(c.getSupportedArea()).isEqualTo(100L);
 	}
 
@@ -292,8 +292,8 @@ public class PlacementTest {
 		b.addLoad(c, area, c.getWeight());
 
 		// Pre-condition
-		assertThat(a.getLoadWeight()).isEqualTo(15);
-		assertThat(b.getLoadWeight()).isEqualTo(5);
+		assertThat(a.getLoadWeight()).isEqualTo(15.0);
+		assertThat(b.getLoadWeight()).isEqualTo(5.0);
 
 		b.removeLoad(c);
 
@@ -302,8 +302,8 @@ public class PlacementTest {
 		assertThat(c.getSupporters()).isEmpty();
 
 		// Load has propagated back down
-		assertThat(b.getLoadWeight()).isEqualTo(0);
-		assertThat(a.getLoadWeight()).isEqualTo(10);
+		assertThat(b.getLoadWeight()).isEqualTo(0.0);
+		assertThat(a.getLoadWeight()).isEqualTo(10.0);
 	}
 
 	// -----------------------------------------------------------------------
@@ -344,9 +344,9 @@ public class PlacementTest {
 		c.addLoad(d, area, d.getWeight());
 
 		// Pre-condition
-		assertThat(a.getLoadWeight()).isEqualTo(35);
-		assertThat(b.getLoadWeight()).isEqualTo(15);
-		assertThat(c.getLoadWeight()).isEqualTo(5);
+		assertThat(a.getLoadWeight()).isEqualTo(35.0);
+		assertThat(b.getLoadWeight()).isEqualTo(15.0);
+		assertThat(c.getLoadWeight()).isEqualTo(5.0);
 
 		c.removeLoad(d);
 
@@ -355,9 +355,9 @@ public class PlacementTest {
 		assertThat(d.getSupporters()).isEmpty();
 
 		// Load reduced at all three levels below D
-		assertThat(c.getLoadWeight()).isEqualTo(0);
-		assertThat(b.getLoadWeight()).isEqualTo(10);
-		assertThat(a.getLoadWeight()).isEqualTo(30);
+		assertThat(c.getLoadWeight()).isEqualTo(0.0);
+		assertThat(b.getLoadWeight()).isEqualTo(10.0);
+		assertThat(a.getLoadWeight()).isEqualTo(30.0);
 	}
 
 	// -----------------------------------------------------------------------
@@ -393,18 +393,18 @@ public class PlacementTest {
 		a.addLoad(c, 50L, 5L);
 		b.addLoad(c, 50L, 5L);
 
-		assertThat(a.getLoadWeight()).isEqualTo(5);
-		assertThat(b.getLoadWeight()).isEqualTo(5);
+		assertThat(a.getLoadWeight()).isEqualTo(5.0);
+		assertThat(b.getLoadWeight()).isEqualTo(5.0);
 
 		a.removeLoad(c);
 
 		// A is no longer a supporter of C
 		assertThat(a.getSupportees()).isEmpty();
-		assertThat(a.getLoadWeight()).isEqualTo(0);
+		assertThat(a.getLoadWeight()).isEqualTo(0.0);
 
 		// removeSupporter propagates the removal through all remaining supporters of C,
 		// so B's load share is also unwound
-		assertThat(b.getLoadWeight()).isEqualTo(0);
+		assertThat(b.getLoadWeight()).isEqualTo(0.0);
 		assertThat(b.getSupportees()).hasSize(1);
 	}
 
@@ -443,7 +443,7 @@ public class PlacementTest {
 
 		assertThat(b.getSupportees()).isEmpty();
 		assertThat(b.getSupporters()).isEmpty();
-		assertThat(b.getLoadWeight()).isEqualTo(0);
+		assertThat(b.getLoadWeight()).isEqualTo(0.0);
 		assertThat(b.getSupportedArea()).isEqualTo(0);
 	}
 
@@ -487,7 +487,23 @@ public class PlacementTest {
 		assertThat(c.getSupportedArea()).isEqualTo(50L);
 
 		// A bears both boxes
-		assertThat(a.getLoadWeight()).isEqualTo(20L);
+		assertThat(a.getLoadWeight()).isEqualTo(20.0);
+	}
+
+	@Test
+	public void testFractionalLoadPropagation() {
+		Placement left = makePlacement("left", 1, 1, 1, 1, 0, 0, 0);
+		Placement right = makePlacement("right", 2, 1, 1, 1, 1, 0, 0);
+		Placement middle = makePlacement("middle", 3, 1, 1, 1, 0, 0, 1);
+		Placement top = makePlacement("top", 3, 1, 1, 1, 0, 0, 2);
+
+		left.addLoad(middle, 1L, 1.0 / 3.0);
+		right.addLoad(middle, 2L, 2.0 / 3.0);
+		middle.addLoad(top, 3L, top.getWeight());
+
+		assertThat(middle.getLoadWeight()).isEqualTo(1.0);
+		assertThat(left.getLoadWeight()).isEqualTo(2.0 / 3.0);
+		assertThat(right.getLoadWeight()).isEqualTo(4.0 / 3.0);
 	}
 
 }

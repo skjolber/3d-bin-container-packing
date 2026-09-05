@@ -8,13 +8,13 @@ public class PlacementLoad {
 	
 	private final Placement placement;
 	private final long area;
-	private final long weight;
+	private final double weight;
 
 	public PlacementLoad(Placement placement, long area) {
 		this(placement, area, 0);
 	}
 
-	public PlacementLoad(Placement placement, long area, long weight) {
+	public PlacementLoad(Placement placement, long area, double weight) {
 		this.placement = placement;
 		this.area = area;
 		this.weight = weight;
@@ -35,9 +35,9 @@ public class PlacementLoad {
 	}
 
 	/**
-	 * The proportional share of the weight that this supporter bears.
+	 * The proportional, potentially fractional share of the weight that this supporter bears.
 	 */
-	public long getWeight() {
+	public double getWeight() {
 		return weight;
 	}
 

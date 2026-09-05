@@ -159,7 +159,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		Box box = Box.newBuilder().withId("box").withSize(10, 10, 1).withWeight(3).withMaxLoadWeight(20).build();
 		PackagerResult result = pack(container(4), 1, 1, new BoxItem(box, 4));
 		assertThat(placementsByHeight(result)).extracting(Placement::getLoadWeight)
-				.containsExactly(9L, 6L, 3L, 0L);
+				.containsExactly(9.0, 6.0, 3.0, 0.0);
 	}
 
 	@Test
@@ -177,9 +177,9 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		assertThat(result.isSuccess()).isTrue();
 		List<Placement> placements = result.getContainers().get(0).getStack().getPlacements();
 		assertThat(placements).filteredOn(p -> p.getBox().getId().equals("support"))
-				.extracting(Placement::getLoadWeight).containsOnly(5L);
+				.extracting(Placement::getLoadWeight).containsOnly(5.0);
 		assertThat(placements).filteredOn(p -> p.getBox().getId().equals("top"))
-				.singleElement().extracting(Placement::getLoadWeight).isEqualTo(0L);
+				.singleElement().extracting(Placement::getLoadWeight).isEqualTo(0.0);
 	}
 
 	@Test
@@ -193,7 +193,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		PackagerResult result = pack(container(20, 10, 1), 1, 1, new BoxItem(box, 2));
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers().get(0).getStack().getPlacements())
-				.extracting(Placement::getLoadWeight).containsOnly(0L);
+				.extracting(Placement::getLoadWeight).containsOnly(0.0);
 	}
 
 	@Test
@@ -213,11 +213,11 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 				.containsExactlyInAnyOrder("heavy", "base", "light");
 		Placement basePlacement = placements.stream()
 				.filter(p -> p.getBox().getId().equals("base")).findFirst().orElseThrow();
-		assertThat(basePlacement.getLoadWeight()).isLessThanOrEqualTo(5L);
+		assertThat(basePlacement.getLoadWeight()).isLessThanOrEqualTo(5.0);
 		long weightAbove = 0;
 		for(int i = placements.size() - 1; i >= 0; i--) {
 			Placement placement = placements.get(i);
-			assertThat(placement.getLoadWeight()).isEqualTo(weightAbove);
+			assertThat(placement.getLoadWeight()).isEqualTo((double) weightAbove);
 			weightAbove += placement.getWeight();
 		}
 	}
@@ -239,7 +239,7 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		for (Container packed : result.getContainers()) {
 			assertThat(packed.getStack().getPlacements().stream()
 					.sorted(Comparator.comparingInt(Placement::getAbsoluteZ))
-					.map(Placement::getLoadWeight)).containsExactly(2L, 0L);
+					.map(Placement::getLoadWeight)).containsExactly(2.0, 0.0);
 		}
 	}
 

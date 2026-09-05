@@ -18,8 +18,8 @@ public class WeightLoadAwarePlacementUtility extends AbstractLoadWeightPlacement
 	}
 
 	@Override
-	public long calculateSupporteeLoad(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY) {
-		long weight = 0;
+	public double calculateSupporteeLoad(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY) {
+		double weight = 0.0;
 		int z = minZ + sv.getDz();
 		int stackSize = stack.size();
 		for (int i = 0; i < stackSize; i++) {
@@ -36,15 +36,15 @@ public class WeightLoadAwarePlacementUtility extends AbstractLoadWeightPlacement
 			}
 
 			long area = LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
-			long candidateWeight = candidate.getWeight() + candidate.getLoadWeight();
-			long effectiveWeight = (candidateWeight * area) / (area + candidate.getSupportedArea());
+			double candidateWeight = candidate.getWeight() + candidate.getLoadWeight();
+			double effectiveWeight = candidateWeight * area / (area + candidate.getSupportedArea());
 
 			calculateRelifWeight(candidate, effectiveWeight);
 			weight += effectiveWeight;
 		}
 
 		if (sv.isMaxLoadWeight() && weight > sv.getMaxLoadWeight()) {
-			return -1;
+			return -1.0;
 		}
 		return weight + sv.getBox().getWeight();
 	}

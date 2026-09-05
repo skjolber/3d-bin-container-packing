@@ -147,7 +147,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 			if(supporter.getAbsoluteEndZ() == placement.getAbsoluteZ() - 1 && supporter.intersects2D(placement)) {
 				long area = LoadPlacementUtility.overlapArea(placement.getAbsoluteX(), placement.getAbsoluteY(),
 						placement.getAbsoluteEndX(), placement.getAbsoluteEndY(), supporter);
-				supporter.addLoad(placement, area, (placement.getWeight() * area) / totalArea);
+				supporter.addLoad(placement, area, (double) placement.getWeight() * area / totalArea);
 			}
 		}
 	}

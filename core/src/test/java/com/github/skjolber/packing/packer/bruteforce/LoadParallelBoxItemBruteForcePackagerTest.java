@@ -63,7 +63,7 @@ class LoadParallelBoxItemBruteForcePackagerTest extends AbstractLoadBruteForcePa
 		long weightAbove = 0;
 		for(int i = placements.size() - 1; i >= 0; i--) {
 			Placement placement = placements.get(i);
-			assertThat(placement.getLoadWeight()).isEqualTo(weightAbove);
+			assertThat(placement.getLoadWeight()).isEqualTo((double) weightAbove);
 			weightAbove += placement.getWeight();
 		}
 	}

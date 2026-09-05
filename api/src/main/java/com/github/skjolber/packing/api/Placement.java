@@ -28,8 +28,9 @@ public class Placement implements Serializable {
 	/**
 	 * Total weight of all boxes resting on top of this placement.
 	 * Includes all boxes in the vertical stack above, adjusted for area-proportional distribution.
+	 * The value can be fractional when a box is shared by multiple supporters.
 	 */
-	protected long loadWeight;
+	protected double loadWeight;
 	
 	protected Object properties;
 
@@ -188,7 +189,7 @@ public class Placement implements Serializable {
 	 *
 	 * @return accumulated load weight, in the same units as {@link Box#getWeight()}
 	 */
-	public long getLoadWeight() {
+	public double getLoadWeight() {
 		return loadWeight;
 	}
 
@@ -232,7 +233,7 @@ public class Placement implements Serializable {
 	 * @param area the area shared between the two
 	 * @param weight the initial weight share of the supportee box itself
 	 */
-	public void addLoad(Placement supportee, long area, long weight) {
+	public void addLoad(Placement supportee, long area, double weight) {
 		addSupportee(new PlacementLoad(supportee, area, weight));
 		supportee.addSupporter(new PlacementLoad(this, area, weight));
 
@@ -249,13 +250,13 @@ public class Placement implements Serializable {
 		supportedArea += supporter.getArea();
 	}
 
-	protected void propagateLoad(long weightIncrement) {
+	protected void propagateLoad(double weightIncrement) {
 		this.loadWeight += weightIncrement;
 
 		if(!supporters.isEmpty()) {
 			for (int i = 0; i < supporters.size(); i++) {
 				PlacementLoad supporterLink = supporters.get(i);
-				long share = (weightIncrement * supporterLink.getArea()) / supportedArea;
+				double share = weightIncrement * supporterLink.getArea() / supportedArea;
 				supporterLink.getPlacement().propagateLoad(share);
 			}
 		}
@@ -277,7 +278,7 @@ public class Placement implements Serializable {
 		supportees.clear();
 		supporters.clear();
 		
-		loadWeight = 0;
+		loadWeight = 0.0;
 		supportedArea = 0;
 	}
 

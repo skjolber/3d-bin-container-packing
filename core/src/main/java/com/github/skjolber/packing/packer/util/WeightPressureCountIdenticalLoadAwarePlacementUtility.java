@@ -18,8 +18,8 @@ public class WeightPressureCountIdenticalLoadAwarePlacementUtility extends Weigh
 	}
 
 	@Override
-	public long calculateSupporteeLoad(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY) {
-		long weight = 0;
+	public double calculateSupporteeLoad(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY) {
+		double weight = 0.0;
 		int z = minZ + sv.getDz();
 		int stackSize = stack.size();
 		for (int i = 0; i < stackSize; i++) {
@@ -36,22 +36,22 @@ public class WeightPressureCountIdenticalLoadAwarePlacementUtility extends Weigh
 			}
 
 			long area = LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
-			long candidateWeight = candidate.getWeight() + candidate.getLoadWeight();
-			long effectiveWeight = (candidateWeight * area) / (area + candidate.getSupportedArea());
+			double candidateWeight = candidate.getWeight() + candidate.getLoadWeight();
+			double effectiveWeight = candidateWeight * area / (area + candidate.getSupportedArea());
 
 			if (sv.isMaxLoadPressure()) {
 				if (Box.calculatePressure(area, effectiveWeight) > sv.getMaxLoadPressure()) {
-					return -1;
+					return -1.0;
 				}
 			}
 			if (sv.isMaxLoadBoxCount()) {
 				if (!isWithinSupporteeBoxCount(candidate, sv.getMaxLoadBoxCount(), pointSupportees, minX, minY, maxX, maxY)) {
-					return -1;
+					return -1.0;
 				}
 			}
 			if (sv.isLoadIdenticalBoxOnly()) {
 				if (candidate.getBox() != sv.getBox()) {
-					return -1;
+					return -1.0;
 				}
 			}
 
@@ -60,7 +60,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementUtility extends Weigh
 		}
 
 		if (sv.isMaxLoadWeight() && weight > sv.getMaxLoadWeight()) {
-			return -1;
+			return -1.0;
 		}
 		return weight + sv.getBox().getWeight();
 	}

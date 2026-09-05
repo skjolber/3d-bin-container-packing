@@ -201,7 +201,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 
 		placement.setSupportedArea(0);
 
-		long weight = placement.getWeight();
+		double weight = placement.getWeight();
 		for (int i = 0; i < n; i++) {
 			Placement candidate = stackPlacements.get(i);
 			if (candidate.getAbsoluteEndZ() != supportZ) {
@@ -211,9 +211,8 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 				continue;
 			}
 			long area = LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
-			long weightShare = (weight * area) / totalArea;
+			double weightShare = weight * area / totalArea;
 			candidate.addLoad(placement, area, weightShare);
 		}
 	}
 }
-

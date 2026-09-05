@@ -266,8 +266,8 @@ public class PlainPackagerWeightConstraintTest extends AbstractPackagerConstrain
 			List<Placement> placements = result.getContainers().get(0).getStack().getPlacements();
 			Placement bot = placementAt(placements, 0);
 			Placement top = placementAt(placements, 1);
-			assertThat(bot.getLoadWeight()).isEqualTo(top.getWeight());
-			assertThat(top.getLoadWeight()).isEqualTo(0L);
+			assertThat(bot.getLoadWeight()).isEqualTo((double) top.getWeight());
+			assertThat(top.getLoadWeight()).isEqualTo(0.0);
 		} finally {
 			packager.close();
 		}

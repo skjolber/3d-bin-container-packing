@@ -12,7 +12,7 @@ public class ExcessiveLoadWeightReason implements ValidatorResultReason {
 private static final int CODE = 14;
 
 	private final Placement placement;
-	private final long loadWeight;
+	private final double loadWeight;
 	private final long maxLoadWeight;
 
 	/**
@@ -22,7 +22,7 @@ private static final int CODE = 14;
 	 * @param loadWeight the actual accumulated load weight above the placement
 	 * @param maxLoadWeight the maximum load weight permitted by the stack value
 	 */
-	public ExcessiveLoadWeightReason(Placement placement, long loadWeight, long maxLoadWeight) {
+	public ExcessiveLoadWeightReason(Placement placement, double loadWeight, long maxLoadWeight) {
 		this.placement = placement;
 		this.loadWeight = loadWeight;
 		this.maxLoadWeight = maxLoadWeight;
@@ -39,10 +39,11 @@ private static final int CODE = 14;
 
 	/**
 	 * Returns the actual accumulated load weight above the placement.
+	 * The value can be fractional when load is distributed across supporters.
 	 *
 	 * @return actual load weight
 	 */
-	public long getLoadWeight() {
+	public double getLoadWeight() {
 		return loadWeight;
 	}
 
