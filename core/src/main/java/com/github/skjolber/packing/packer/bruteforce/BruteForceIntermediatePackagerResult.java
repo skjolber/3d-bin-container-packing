@@ -1,6 +1,8 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
@@ -17,6 +19,7 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 public class BruteForceIntermediatePackagerResult implements IntermediatePackagerResult {
 	
 	public static final BruteForceIntermediatePackagerResult EMPTY = new BruteForceIntermediatePackagerResult(null, null, 0, null);
+	private static final Comparator<Placement> ABSOLUTE_Z_COMPARATOR = Comparator.comparingInt(Placement::getAbsoluteZ);
 
 	// work objects
 	private final Stack stack;
@@ -28,6 +31,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	private PermutationRotationState state;
 	private List<Point> points = Collections.emptyList();
 	private List<Placement> placements = Collections.emptyList();
+	private ArrayList<Placement> loadOrder;
 
 	private boolean dirty = true;
 
@@ -115,13 +119,25 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 			stack.add(stackPlacement);
 		}
 
-		for (int i = 0; i < stack.size(); i++) {
-			Placement placement = stack.getPlacements().get(i);
+		rebuildLoads(stack.getPlacements());
+	}
+
+	void rebuildLoads(List<Placement> placements) {
+		for (int i = 0; i < placements.size(); i++) {
+			Placement placement = placements.get(i);
 			placement.clearLoad();
 			placement.setIndex(i);
 		}
-		for (int i = 0; i < stack.size(); i++) {
-			addLoad(stack.getPlacements().get(i), stack.getPlacements(), i);
+
+		if(loadOrder == null) {
+			loadOrder = new ArrayList<>(placements.size());
+		} else {
+			loadOrder.clear();
+		}
+		loadOrder.addAll(placements);
+		loadOrder.sort(ABSOLUTE_Z_COMPARATOR);
+		for (int i = 0; i < loadOrder.size(); i++) {
+			addLoad(loadOrder.get(i), loadOrder, i);
 		}
 	}
 
@@ -172,6 +188,9 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		this.points = Collections.emptyList();
 		this.state = null;
 		this.placements = Collections.emptyList();
+		if(loadOrder != null) {
+			loadOrder.clear();
+		}
 		this.dirty = true;
 	}
 

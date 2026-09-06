@@ -45,7 +45,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementUtility extends Weigh
 				}
 			}
 			if (sv.isMaxLoadBoxCount()) {
-				if (!isWithinSupporteeBoxCount(candidate, sv.getMaxLoadBoxCount(), pointSupportees, minX, minY, maxX, maxY)) {
+				if (!isWithinSupporteeBoxCount(candidate, sv.getMaxLoadBoxCount())) {
 					return -1.0;
 				}
 			}

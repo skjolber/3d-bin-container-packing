@@ -99,9 +99,9 @@ public class CenterOfGravityStabilityValidator implements StabilityValidator {
 		}
 
 		// Accumulate weighted CoM of this box + the proportional share of every
-		// box above it. Values are scaled by 1000 to survive proportional division.
-		long[] stack = accumulateStackCenterOfMass(placement, 1000L);
-		long totalWeight = stack[0];
+		// box above it without rounding small support shares down to zero.
+		double[] stack = accumulateStackCenterOfMass(placement, 1.0);
+		double totalWeight = stack[0];
 		if(totalWeight == 0) {
 			// A zero-weight stack has no weighted centre, so use this box's CoG.
 			long centerOfGravity2X = CenterOfGravitySupportStabilityValidator.getCenterOfGravity2X(placement, stackValue);
@@ -110,23 +110,23 @@ public class CenterOfGravityStabilityValidator implements StabilityValidator {
 					&& centerOfGravity2Y >= 2L * minSupportY && centerOfGravity2Y <= 2L * maxSupportY;
 		}
 
-		// The share scale cancels in the weighted average. Coordinates remain doubled.
-		long centerOfGravity2X = stack[1] / totalWeight;
-		long centerOfGravity2Y = stack[2] / totalWeight;
+		// Coordinates remain doubled.
+		double centerOfGravity2X = stack[1] / totalWeight;
+		double centerOfGravity2Y = stack[2] / totalWeight;
 
 		return centerOfGravity2X >= 2L * minSupportX && centerOfGravity2X <= 2L * maxSupportX
 				&& centerOfGravity2Y >= 2L * minSupportY && centerOfGravity2Y <= 2L * maxSupportY;
 	}
 	
-	protected static long[] accumulateStackCenterOfMass(Placement placement, long share) {
+	protected static double[] accumulateStackCenterOfMass(Placement placement, double share) {
 		BoxStackValue stackValue = placement.getStackValue();
-		long w = (long) placement.getWeight() * share;
+		double w = placement.getWeight() * share;
 		long centerOfGravity2X = CenterOfGravitySupportStabilityValidator.getCenterOfGravity2X(placement, stackValue);
 		long centerOfGravity2Y = CenterOfGravitySupportStabilityValidator.getCenterOfGravity2Y(placement, stackValue);
 
-		long totalWeight  = w;
-		long weightedComX = w * centerOfGravity2X;
-		long weightedComY = w * centerOfGravity2Y;
+		double totalWeight  = w;
+		double weightedComX = w * centerOfGravity2X;
+		double weightedComY = w * centerOfGravity2Y;
 
 		for(PlacementLoad supporteeLink : placement.getSupportees()) {
 			Placement supportee = supporteeLink.getPlacement();
@@ -145,17 +145,14 @@ public class CenterOfGravityStabilityValidator implements StabilityValidator {
 			}
 
 			long overlapArea = (overlapMaxX - overlapMinX + 1) * (overlapMaxY - overlapMinY + 1);
-			long supporteeShare = (share * overlapArea) / supporteeArea;
-			if(supporteeShare == 0) {
-				continue;
-			}
+			double supporteeShare = share * overlapArea / supporteeArea;
 
-			long[] sub = accumulateStackCenterOfMass(supportee, supporteeShare);
+			double[] sub = accumulateStackCenterOfMass(supportee, supporteeShare);
 			totalWeight  += sub[0];
 			weightedComX += sub[1];
 			weightedComY += sub[2];
 		}
 
-		return new long[] { totalWeight, weightedComX, weightedComY };
+		return new double[] { totalWeight, weightedComX, weightedComY };
 	}
 }

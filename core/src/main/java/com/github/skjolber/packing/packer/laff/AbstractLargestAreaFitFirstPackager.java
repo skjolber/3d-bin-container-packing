@@ -511,7 +511,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 										filteredBoxItemGroups.remove(i);
 										i--;
 										
-										removedBoxItemGroups.add(boxItemGroup);
+										removedBoxItemGroups.add(g);
 									} else {
 										// remove all later groups than the first removed
 										while(i < filteredBoxItemGroups.size()) {
@@ -568,7 +568,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 								filteredBoxItemGroups.remove(i);
 								i--;
 								
-								removedBoxItemGroups.add(boxItemGroup);
+								removedBoxItemGroups.add(g);
 							} else {
 								// remove all later groups than the first removed
 								while(i < filteredBoxItemGroups.size()) {

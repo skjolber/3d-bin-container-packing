@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -27,6 +28,17 @@ import com.github.skjolber.packing.validator.reasons.ValidatorInterruptedExcepti
 
 public class DefaultValidator extends AbstractValidator<DefaultValidator.DefaultValidatorResultBuilder> {
 
+	private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
+
+	public DefaultValidator() {
+		scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, runnable -> {
+			Thread thread = new Thread(runnable, "packing-validator-deadline");
+			thread.setDaemon(true);
+			return thread;
+		});
+		scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
+	}
+
 	public class DefaultValidatorResultBuilder extends AbstractValidatorResultBuilder<DefaultValidatorResultBuilder> {
 		
 		public ValidatorResult build() {
@@ -38,6 +50,7 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			long start = System.currentTimeMillis();
 
 			PackagerInterruptSupplierBuilder interruptBuilder = PackagerInterruptSupplierBuilder.builder();
+			interruptBuilder.withScheduledThreadPoolExecutor(scheduledThreadPoolExecutor);
 			if(deadline != -1L) {
 				interruptBuilder.withDeadline(deadline);
 			}
@@ -47,6 +60,7 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 
 			PackagerInterruptSupplier interrupt = interruptBuilder.build();
 			try {
+				checkInterrupted(interrupt);
 				List<ValidatorResultReason> reasons = new ArrayList<>();
 				boolean valid;
 				if(items != null && !items.isEmpty()) {
@@ -79,17 +93,21 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 
 	private boolean validateBoxItems(List<BoxItem> items, Order order, int maxContainerCount, List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 		
+		checkInterrupted(interrupt);
 		if(!orderValidator.validate(items, order, result.getContainers())) {
 			return false;
 		}
 		
 		// validate first that the box items and containers are used in correct numbers
+		checkInterrupted(interrupt);
 		if(!containerCountValidator.validate(maxContainerCount, containers, result, reasons)) {
 			return false;
 		}
+		checkInterrupted(interrupt);
 		if(!boxCountValidator.validate(items, result, reasons)) {
 			return false;
 		}
+		checkInterrupted(interrupt);
 		if(!stackValidator.validate(containers, result, reasons)) {
 			return false;
 		}
@@ -99,17 +117,21 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 
 	public boolean validateBoxItemGroups(List<BoxItemGroup> itemGroups, Order order, int maxContainerCount, List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 
+		checkInterrupted(interrupt);
 		if(!orderValidator.validate(itemGroups, order, result)) {
 			return false;
 		}
 		
 		// validate first that the box items, groups and containers are used in correct numbers
+		checkInterrupted(interrupt);
 		if(!containerCountValidator.validate(maxContainerCount, containers, result, reasons)) {
 			return false;
 		}
+		checkInterrupted(interrupt);
 		if(!boxCountValidator.validateBoxItemGroupsCounts(itemGroups, result, reasons)) {
 			return false;
 		}
+		checkInterrupted(interrupt);
 		if(!stackValidator.validate(containers, result, reasons)) {
 			return false;
 		}
@@ -125,11 +147,13 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 		}		
 		
 		for (Container container : result.getContainers()) {
+			checkInterrupted(interrupt);
 			ValidatorContainerItem referenceItem = containersById.get(container.getId());
 			
 			if(referenceItem.hasManifestValidatorBuilderFactory()) {
 				List<Box> boxes = new ArrayList<>();
 				for (Placement placement : container.getStack()) {
+					checkInterrupted(interrupt);
 					boxes.add(placement.getBox());
 				}
 				ManifestValidator manifestValidator = referenceItem.createManifestValidator(referenceItem.getContainer());
@@ -148,9 +172,15 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 		return true;
 	}
 
+	protected void checkInterrupted(PackagerInterruptSupplier interrupt) throws ValidatorInterruptedException {
+		if(interrupt.getAsBoolean()) {
+			throw new ValidatorInterruptedException();
+		}
+	}
+
 	@Override
 	public void close() throws IOException {
-		// do nothing
+		scheduledThreadPoolExecutor.shutdownNow();
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.placement.PlacementComparator;
 import com.github.skjolber.packing.comparator.placement.VolumeWeightAreaMinZPlacementComparator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
+import com.github.skjolber.packing.packer.util.WeightPressureCountIdenticalLoadAwarePlacementUtility;
 
 /**
  * Tests for {@link WeightPressureCountIdenticalLoadAwarePlacementControls},
@@ -429,6 +432,22 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 
 		Placement placement = ctrl.getPlacement(0, boxItems.size());
 		assertNotNull(placement);
+	}
+
+	@Test
+	public void testBoxCountLimitWhenInsertedBelowExistingStack() {
+		Box box = Box.newBuilder().withSize(10, 10, 1).withWeight(0).withMaxLoadIdenticalBoxCount(1).build();
+		Placement middle = new Placement(box.getStackValue(0), 0, 0, 0, 1);
+		Placement top = new Placement(box.getStackValue(0), 0, 0, 0, 2);
+		middle.addLoad(top, 100L, top.getWeight());
+		stack.add(middle);
+		stack.add(top);
+
+		WeightPressureCountIdenticalLoadAwarePlacementUtility utility = new WeightPressureCountIdenticalLoadAwarePlacementUtility(stack);
+		utility.initialize(2);
+		utility.populatePointSupportees(new DefaultPoint3D(0, 0, 0, 9, 9, 9), 1, 1);
+
+		assertEquals(-1.0, utility.calculateSupporteeLoad(box.getStackValue(0), 0, 0, 0, 9, 9));
 	}
 
 	// --- Identical-box-only stacking tests (unique to this class) -----------------

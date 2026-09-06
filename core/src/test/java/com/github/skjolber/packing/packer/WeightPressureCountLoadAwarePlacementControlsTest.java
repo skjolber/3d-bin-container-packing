@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.placement.PlacementComparator;
 import com.github.skjolber.packing.comparator.placement.VolumeWeightAreaMinZPlacementComparator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
+import com.github.skjolber.packing.packer.util.WeightPressureCountLoadAwarePlacementUtility;
 
 /**
  * Tests for {@link WeightPressureCountLoadAwarePlacementControls}, which extends
@@ -432,6 +435,19 @@ public class WeightPressureCountLoadAwarePlacementControlsTest {
 		// would be 2nd level above bottom, within maxLoadBoxCount=2
 		Placement placement = ctrl.getPlacement(0, boxItems.size());
 		assertNotNull(placement);
+	}
+
+	@Test
+	public void testBoxCountLimitWhenInsertedBelowExistingBox() {
+		Box top = Box.newBuilder().withSize(10, 10, 1).withWeight(0).build();
+		stack.add(new Placement(top.getStackValue(0), 0, 0, 0, 1));
+
+		Box bottom = Box.newBuilder().withSize(10, 10, 1).withWeight(0).withMaxLoadBoxCount(0).build();
+		WeightPressureCountLoadAwarePlacementUtility utility = new WeightPressureCountLoadAwarePlacementUtility(stack);
+		utility.initialize(1);
+		utility.populatePointSupportees(new DefaultPoint3D(0, 0, 0, 9, 9, 9), 1, 1);
+
+		assertEquals(-1.0, utility.calculateSupporteeLoad(bottom.getStackValue(0), 0, 0, 0, 9, 9));
 	}
 
 	/**

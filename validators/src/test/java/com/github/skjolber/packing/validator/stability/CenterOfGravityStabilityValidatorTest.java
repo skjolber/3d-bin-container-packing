@@ -57,6 +57,20 @@ public class CenterOfGravityStabilityValidatorTest {
 		assertThat(validator.isValid(List.of(a, b, c), new ArrayList<>())).isTrue();
 	}
 
+	@Test
+	void testVerySmallSupportShareStillAffectsCenterOfGravity() {
+		Placement supporter = makePlacement("supporter", 1, 1, 1, 1, 0, 0, 0);
+		Placement placement = makePlacement("placement", 1, 1, 1, 1, 0, 0, 1, 0, 0, 0);
+		Placement otherSupporter = makePlacement("other-supporter", 2000, 1, 1, 1, 1, 0, 1);
+		Placement heavySupportee = makePlacement("heavy", 2001, 1, 1, 1_000_000, 0, 0, 2, 2000, 0, 0);
+
+		supporter.addLoad(placement, 1L, placement.getWeight());
+		placement.addLoad(heavySupportee, 1L, (double)heavySupportee.getWeight() / 2001.0);
+		otherSupporter.addLoad(heavySupportee, 2000L, (double)heavySupportee.getWeight() * 2000.0 / 2001.0);
+
+		assertThat(CenterOfGravityStabilityValidator.isPlacementStable(placement)).isFalse();
+	}
+
 	// -----------------------------------------------------------------------
 	// Floor placement: always stable
 	// -----------------------------------------------------------------------

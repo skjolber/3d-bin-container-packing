@@ -43,6 +43,11 @@ public class WeightPressureCountLoadAwarePlacementUtility extends AbstractLoadWe
 					return -1.0;
 				}
 			}
+			if (sv.isMaxLoadBoxCount()) {
+				if (!isWithinSupporteeBoxCount(candidate, sv.getMaxLoadBoxCount())) {
+					return -1.0;
+				}
+			}
 
 			calculateRelifWeight(candidate, effectiveWeight);
 			weight += effectiveWeight;
@@ -75,24 +80,17 @@ public class WeightPressureCountLoadAwarePlacementUtility extends AbstractLoadWe
 	}
 
 	/**
-	 * Checks whether placing a box on top of {@code candidate} would violate its
-	 * max-load box-count constraint, recursively through the support chain.
+	 * Checks whether {@code candidate} and the boxes above it fit within the
+	 * remaining box-count allowance of a new supporter below it.
 	 */
-	protected boolean isWithinSupporteeBoxCount(Placement candidate, int count, PlacementList supportees, int minX, int minY, int maxX, int maxY) {
-		BoxStackValue sv = candidate.getStackValue();
-		if (sv.isMaxLoadBoxCount() && sv.getMaxLoadBoxCount() > count) {
-			return true;
-		}
+	protected boolean isWithinSupporteeBoxCount(Placement candidate, int count) {
 		if (count <= 0) {
 			return false;
 		}
 		count--;
-		for (int k = 0; k < supportees.size(); k++) {
-			Placement p = supportees.get(k);
-			if (!p.intersects2D(minX, maxX, minY, maxY)) {
-				continue;
-			}
-			if (!isWithinSupporteeBoxCount(p, count, supportees, minX, minY, maxX, maxY)) {
+		for (int k = 0; k < candidate.getSupportees().size(); k++) {
+			PlacementLoad supportee = candidate.getSupportees().get(k);
+			if (!isWithinSupporteeBoxCount(supportee.getPlacement(), count)) {
 				return false;
 			}
 		}

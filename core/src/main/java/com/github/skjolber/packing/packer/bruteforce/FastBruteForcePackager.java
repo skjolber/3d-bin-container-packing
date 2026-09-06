@@ -277,7 +277,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(!bestPermutationResult.isEmpty()) {
 				// compare against other permutation's result
 
-				if(bestResult.isEmpty() || intermediatePackagerResultComparator.compare(bestResult, bestPermutationResult) == ARGUMENT_2_IS_BETTER) {
+				if(bestResult.isEmpty() || intermediatePackagerResultComparator.compare(bestResult, bestPermutationResult) < 0) {
 					// switch the two results for one another
 					BruteForceIntermediatePackagerResult tmp = bestResult;
 					bestResult = bestPermutationResult;

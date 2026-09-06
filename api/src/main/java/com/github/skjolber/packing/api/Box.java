@@ -794,13 +794,13 @@ public class Box {
 	}
 
 	public static BoxStackValue getMinimumPressure(BoxStackValue[] rotations) {
-		BoxStackValue minimumArea = null;
+		BoxStackValue maximumArea = null;
 		for (BoxStackValue boxStackValue : rotations) {
-			if (minimumArea == null || boxStackValue.getArea() < minimumArea.getArea()) {
-				minimumArea = boxStackValue;
+			if (maximumArea == null || boxStackValue.getArea() > maximumArea.getArea()) {
+				maximumArea = boxStackValue;
 			}
 		}
-		return minimumArea;
+		return maximumArea;
 	}
 
 	public static BoxStackValue getMaximumArea(BoxStackValue[] rotations) {

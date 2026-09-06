@@ -145,6 +145,10 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	protected final BruteForcePointIteratorFilter pointFilter;
 	protected final boolean filterReversePermutations;
 
+	private static final class LocalInterrupt {
+		private volatile boolean interrupted;
+	}
+
 	public ParallelBoxItemBruteForcePackager(ExecutorService executorService, int parallelizationCount,
 			Comparator<IntermediatePackagerResult> comparator, BruteForcePointIteratorFilter pointFilter) {
 		this(executorService, parallelizationCount, comparator, pointFilter, false);
@@ -209,6 +213,10 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			this.interrupt = interrupt;
 		}
 
+		public void setContainerIndex(int containerIndex) {
+			this.containerIndex = containerIndex;
+		}
+
 		@Override
 		public BruteForceIntermediatePackagerResult call() throws PackagerInterruptedException {
 			return ParallelBoxItemBruteForcePackager.this.pack(pointCalculator, placements, containerItem, containerIndex, iterator, interrupt, pointFilter);
@@ -247,8 +255,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 			
 			if(multithreaded) {
-				// interrupt needs not be accurate (i.e. atomic boolean)
-				Boolean[] localInterrupt = new Boolean[32]; // add padding to avoid false sharing
+				LocalInterrupt localInterrupt = new LocalInterrupt();
 
 				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
 				for (int j = 0; j < runnables.length; j++) {
@@ -257,6 +264,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					ControlledContainerItem containerItem = getContainerItem(i);
 					
 					runnableAdapter.setContainerItem(containerItem);
+					runnableAdapter.setContainerIndex(i);
 					BoxItemPermutationRotationIterator iterator = filterReversePermutations(parallelIterators[i].getIterator(j), abortOnAnyBoxTooBig);
 					if(iterator == null) {
 						continue;
@@ -265,7 +273,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 					PackagerInterruptSupplier interruptBooleanSupplier = interrupts[i];
 
-					PackagerInterruptSupplier booleanSupplier = () -> localInterrupt[15] != null || interruptBooleanSupplier.getAsBoolean();
+					PackagerInterruptSupplier booleanSupplier = () -> localInterrupt.interrupted || interruptBooleanSupplier.getAsBoolean();
 
 					runnableAdapter.setInterrupt(booleanSupplier);
 
@@ -280,29 +288,35 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 								Future<BruteForceIntermediatePackagerResult> future = executorCompletionService.take();
 								BruteForceIntermediatePackagerResult result = future.get();
 								if(result != null) {
-									if(best == null || intermediatePackagerResultComparator.compare(best, result) == ARGUMENT_2_IS_BETTER) {
+									if(best == null || intermediatePackagerResultComparator.compare(best, result) < 0) {
 										best = result;
 										
 										if(best.containsLastStackable()) { // will not match any better than this
 											// cancel others
-											localInterrupt[15] = Boolean.TRUE;
+											localInterrupt.interrupted = true;
 											// don't break, so we're waiting for all the remaining threads to finish
 										}
 									}
 								}
 							} catch (ExecutionException e1) {
 								Throwable cause = e1.getCause();
-								if(cause instanceof PackagerInterruptedException && localInterrupt[15]) {
-									continue;
+								if(cause instanceof PackagerInterruptedException) {
+									if(localInterrupt.interrupted) {
+										continue;
+									}
+									throw (PackagerInterruptedException)cause;
 								}
 								throw e1.getCause();
-							}								
+							}
 						} catch (InterruptedException e1) {
 							// ignore
-							localInterrupt[15] = Boolean.TRUE;
+							localInterrupt.interrupted = true;
 							return null;
+						} catch (PackagerInterruptedException e) {
+							localInterrupt.interrupted = true;
+							throw e;
 						} catch (Throwable e) {
-							localInterrupt[15] = Boolean.TRUE;
+							localInterrupt.interrupted = true;
 							throw new PackagerException(e);
 						}
 					}
@@ -420,8 +434,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 			
 			if(multithreaded) {
-				// interrupt needs not be accurate (i.e. atomic boolean)
-				Boolean[] localInterrupt = new Boolean[32]; // add padding to avoid false sharing
+				LocalInterrupt localInterrupt = new LocalInterrupt();
 
 				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
 				for (int j = 0; j < runnables.length; j++) {
@@ -430,6 +443,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					ControlledContainerItem containerItem = getContainerItem(i);
 					
 					runnableAdapter.setContainerItem(containerItem);
+					runnableAdapter.setContainerIndex(i);
 					BoxItemPermutationRotationIterator iterator = filterReversePermutations(parallelIterators[i].getIterator(j), abortOnAnyBoxTooBig);
 					if(iterator == null) {
 						continue;
@@ -438,7 +452,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 					PackagerInterruptSupplier interruptBooleanSupplier = interrupts[i];
 
-					PackagerInterruptSupplier booleanSupplier = () -> localInterrupt[15] != null || interruptBooleanSupplier.getAsBoolean();
+					PackagerInterruptSupplier booleanSupplier = () -> localInterrupt.interrupted || interruptBooleanSupplier.getAsBoolean();
 
 					runnableAdapter.setInterrupt(booleanSupplier);
 
@@ -455,29 +469,35 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 								// TODO can truncate be moved to thread?
 								BruteForceIntermediatePackagerResult result = truncateToGroup(future.get());
 								if(result != null) {
-									if(best == null || intermediatePackagerResultComparator.compare(best, result) == ARGUMENT_2_IS_BETTER) {
+									if(best == null || intermediatePackagerResultComparator.compare(best, result) < 0) {
 										best = result;
 										
 										if(best.containsLastStackable()) { // will not match any better than this
 											// cancel others
-											localInterrupt[15] = Boolean.TRUE;
+											localInterrupt.interrupted = true;
 											// don't break, so we're waiting for all the remaining threads to finish
 										}
 									}
 								}
 							} catch (ExecutionException e1) {
 								Throwable cause = e1.getCause();
-								if(cause instanceof PackagerInterruptedException && localInterrupt[15]) {
-									continue;
+								if(cause instanceof PackagerInterruptedException) {
+									if(localInterrupt.interrupted) {
+										continue;
+									}
+									throw (PackagerInterruptedException)cause;
 								}
 								throw e1.getCause();
-							}								
+							}
 						} catch (InterruptedException e1) {
 							// ignore
-							localInterrupt[15] = Boolean.TRUE;
+							localInterrupt.interrupted = true;
 							return null;
+						} catch (PackagerInterruptedException e) {
+							localInterrupt.interrupted = true;
+							throw e;
 						} catch (Throwable e) {
-							localInterrupt[15] = Boolean.TRUE;
+							localInterrupt.interrupted = true;
 							throw new PackagerException(e);
 						}
 					}

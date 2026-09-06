@@ -60,7 +60,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 
 			if (order == Order.NONE) {
 				if (result != null && boxItemComparator != null
-						&& boxItemComparator.compare(result.getBoxItem(), boxItem) != AbstractPackager.ARGUMENT_2_IS_BETTER) {
+						&& boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
 					continue;
 				}
 			}
@@ -122,7 +122,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 
 			if (order == Order.NONE) {
 				if (result != null && boxItemComparator != null
-						&& boxItemComparator.compare(result.getBoxItem(), boxItem) != AbstractPackager.ARGUMENT_2_IS_BETTER) {
+						&& boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
 					continue;
 				}
 			}

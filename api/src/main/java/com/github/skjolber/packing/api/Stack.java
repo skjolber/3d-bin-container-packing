@@ -40,8 +40,8 @@ public class Stack implements Serializable, Iterable<Placement> {
 		entries.clear();
 	}
 
-	public int getWeight() {
-		int weight = 0;
+	public long getWeight() {
+		long weight = 0;
 
 		for (Placement stackEntry : entries) {
 			weight += stackEntry.getStackValue().getBox().getWeight();

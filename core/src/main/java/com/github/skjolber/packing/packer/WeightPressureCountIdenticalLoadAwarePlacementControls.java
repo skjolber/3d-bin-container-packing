@@ -59,7 +59,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 
 			if (order == Order.NONE) {
 				if (result != null && boxItemComparator != null
-						&& boxItemComparator.compare(result.getBoxItem(), boxItem) != AbstractPackager.ARGUMENT_2_IS_BETTER) {
+						&& boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
 					continue;
 				}
 			}

@@ -169,7 +169,7 @@ public class Container {
 		return id;
 	}
 
-	public int getWeight() {
+	public long getWeight() {
 		return emptyWeight + stack.getWeight();
 	}
 
@@ -185,11 +185,11 @@ public class Container {
 		return emptyWeight;
 	}
 
-	public int getMaxWeight() {
-		return emptyWeight + maxLoadWeight;
+	public long getMaxWeight() {
+		return (long)emptyWeight + maxLoadWeight;
 	}
 
-	public int getLoadWeight() {
+	public long getLoadWeight() {
 		return stack.getWeight();
 	}
 

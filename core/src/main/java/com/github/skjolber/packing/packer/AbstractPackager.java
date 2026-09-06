@@ -182,7 +182,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 						if(loadVolume > container.getMaxLoadVolume()) {
 							continue;
 						}
-						int loadWeight = container.getLoadWeight();
+						long loadWeight = container.getLoadWeight();
 						if(loadWeight > container.getMaxLoadWeight()) {
 							continue;
 						}
@@ -200,7 +200,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 					}
 					
 					if(result != null && !result.isEmpty()) {
-						if(best == null || intermediatePackagerResultComparator.compare(best, result) != ARGUMENT_1_IS_BETTER) { // we are going backwards so if equal, the candidate is the new best result
+						if(best == null || intermediatePackagerResultComparator.compare(best, result) <= 0) { // we are going backwards so if equal, the candidate is the new best result
 							best = result;
 						}
 					}

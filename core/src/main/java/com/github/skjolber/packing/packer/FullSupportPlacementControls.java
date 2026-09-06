@@ -40,7 +40,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 				// a negative integer, zero, or a positive integer as the 
 				// first argument is less than, equal to, or greater than the
 			    // second.
-				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) != AbstractPackager.ARGUMENT_2_IS_BETTER) {
+				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
 					continue;
 				}
 			}
@@ -63,7 +63,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 							continue;
 						}
 						
-						if(result != null && placementComparator.compare(result, placementResult) != AbstractPackager.ARGUMENT_2_IS_BETTER) {
+						if(result != null && placementComparator.compare(result, placementResult) >= 0) {
 							continue;
 						}
 						
@@ -105,7 +105,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 				// a negative integer, zero, or a positive integer as the 
 				// first argument is less than, equal to, or greater than the
 			    // second.
-				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) != AbstractPackager.ARGUMENT_2_IS_BETTER) {
+				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
 					continue;
 				}
 			}

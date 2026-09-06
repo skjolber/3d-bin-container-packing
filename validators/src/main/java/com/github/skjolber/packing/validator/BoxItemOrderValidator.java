@@ -51,10 +51,14 @@ public class BoxItemOrderValidator {
 			for (Container container : containers) {
 				int index = -1;
 				for (Placement placement : container.getStack().getPlacements()) {
-					int currentIndex = map.get(placement.getBox().getId());
+					Integer currentIndex = map.get(placement.getBox().getId());
+					if(currentIndex == null) {
+						return false;
+					}
 					if(currentIndex < index) {
 						return false;
 					}
+					index = currentIndex;
 				}
 			}
 		}
@@ -117,10 +121,14 @@ public class BoxItemOrderValidator {
 			for (Container container : containers) {
 				int index = -1;
 				for (Placement placement : container.getStack().getPlacements()) {
-					int currentIndex = map.get(placement.getBox().getId());
+					Integer currentIndex = map.get(placement.getBox().getId());
+					if(currentIndex == null) {
+						return false;
+					}
 					if(currentIndex < index) {
 						return false;
 					}
+					index = currentIndex;
 				}
 			}
 		}

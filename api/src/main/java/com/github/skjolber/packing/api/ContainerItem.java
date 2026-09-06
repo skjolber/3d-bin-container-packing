@@ -129,6 +129,15 @@ public class ContainerItem {
 		this.count = count;
 	}
 
+	public ContainerItem(ContainerItem containerItem) {
+		this.container = containerItem.container;
+		this.count = containerItem.count;
+		this.index = containerItem.index;
+		this.manifestControlsBuilderFactory = containerItem.manifestControlsBuilderFactory;
+		this.pointControlsBuilderFactory = containerItem.pointControlsBuilderFactory;
+		this.initialPoints = containerItem.initialPoints;
+	}
+
 	public void setIndex(int index) {
 		this.index = index;
 	}

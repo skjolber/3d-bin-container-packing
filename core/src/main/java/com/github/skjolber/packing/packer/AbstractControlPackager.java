@@ -361,7 +361,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 								filteredBoxItemGroups.remove(i);
 								i--;
 								
-								removedBoxItemGroups.add(boxItemGroup);
+								removedBoxItemGroups.add(g);
 							} else {
 								// remove all later groups than the first removed
 								while(i < filteredBoxItemGroups.size()) {
@@ -408,7 +408,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 										filteredBoxItemGroups.remove(i);
 										i--;
 										
-										removedBoxItemGroups.add(boxItemGroup);
+										removedBoxItemGroups.add(g);
 									} else {
 										// remove all later groups than the first removed
 										while(i < filteredBoxItemGroups.size()) {

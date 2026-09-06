@@ -12,6 +12,7 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
+import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.DefaultXYPlanePoint3D;
@@ -32,6 +33,23 @@ import com.github.skjolber.packing.ep.points3d.DefaultXYPlanePoint3D;
  * support-area semantics are verified here.
  */
 class SupportPlacementControlsTest {
+
+	@Test
+	void acceptsNegativeComparatorValuesOtherThanMinusOne() {
+		DefaultPointCalculator3D calc = calculator(10, 10, 10);
+		Stack stack = new Stack();
+		DefaultBoxItemSource src = source(boxItem("small", 2, 2, 2), boxItem("large", 4, 4, 4));
+
+		SupportPlacementControls ctrl = new SupportPlacementControls(
+				src, new DefaultPointControls(calc), calc, container(10, 10, 10), stack, Order.NONE,
+				(reference, candidate) -> -2,
+				(reference, candidate) -> -2);
+
+		Placement result = ctrl.getPlacement(0, src.size());
+
+		assertThat(result).isNotNull();
+		assertThat(result.getBox().getId()).isEqualTo("large");
+	}
 
 	// -----------------------------------------------------------------------
 	// createPlacement – direct unit tests via TestableSupportControls
