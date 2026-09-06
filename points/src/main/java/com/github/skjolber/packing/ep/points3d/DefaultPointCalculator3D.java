@@ -669,7 +669,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		this.values = otherValues;
 
 		// note: assumes already reset flags 
-		values.setSize(0);
+		values.resetWithoutFlags();
 		this.otherValues = values;
 	}
 

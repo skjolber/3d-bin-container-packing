@@ -6,9 +6,7 @@ import java.util.function.BooleanSupplier;
 
 public class DelegateDeadlineCheckPackagerInterruptSupplier implements PackagerInterruptSupplier, Runnable, Closeable {
 
-	// this is not entirely accurate for multi-threading, but close enough
-	// (should have been volatile)
-	protected boolean expired = false;
+	protected volatile boolean expired = false;
 	protected ScheduledFuture<?> future;
 	protected final BooleanSupplier delegate;
 	

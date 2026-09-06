@@ -19,6 +19,7 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.validator.Validator;
 import com.github.skjolber.packing.api.validator.ValidatorResultBuilder;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.validator.reasons.BoxItemCountTooHighReason;
 import com.github.skjolber.packing.validator.reasons.BoxItemCountTooLowReason;
 import com.github.skjolber.packing.validator.reasons.BoxesIntersectReason;
@@ -29,6 +30,7 @@ import com.github.skjolber.packing.validator.reasons.TooHighVolumeReason;
 import com.github.skjolber.packing.validator.reasons.TooHighWeightReason;
 import com.github.skjolber.packing.validator.reasons.TooManyBoxItemIdsReason;
 import com.github.skjolber.packing.validator.reasons.TooManyContainerIdsReason;
+import com.github.skjolber.packing.validator.reasons.ValidatorInterruptedException;
 
 /**
  * 
@@ -38,6 +40,10 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 
 
 	protected boolean validateBoxItemCounts(List<BoxItem> items, PackagerResult result, List<ValidatorResultReason> reasons) {
+		Map<String, Integer> expectedCount = new HashMap<>();
+		for (BoxItem boxItem : items) {
+			expectedCount.merge(boxItem.getBox().getId(), boxItem.getCount(), Integer::sum);
+		}
 		
 		Map<String, Integer> resultCount = new HashMap<>();
 		for (Container container : result.getContainers()) {
@@ -46,6 +52,10 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 				Box box = placement.getBox();
 				
 				String id = box.getId();
+				if(!expectedCount.containsKey(id)) {
+					reasons.add(new TooManyBoxItemIdsReason(id + ": Not expected"));
+					return false;
+				}
 
 				Integer integer = resultCount.get(id);
 				if(integer == null) {
@@ -56,8 +66,8 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 			}
 		}
 		
-		for (BoxItem boxItem : items) {
-			String id = boxItem.getBox().getId();
+		for (Entry<String, Integer> entry : expectedCount.entrySet()) {
+			String id = entry.getKey();
 			
 			Integer count = resultCount.get(id);
 			
@@ -66,11 +76,11 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 				return false;
 			}
 
-			if(count < boxItem.getCount()) {
-				reasons.add(new BoxItemCountTooLowReason(id + ": Expected " + boxItem.getCount() + ", found " + count));
+			if(count < entry.getValue()) {
+				reasons.add(new BoxItemCountTooLowReason(id + ": Expected " + entry.getValue() + ", found " + count));
 				return false;
-			} else if(count > boxItem.getCount()) {
-				reasons.add(new BoxItemCountTooHighReason(id + ": Expected " + boxItem.getCount() + ", found " + count));
+			} else if(count > entry.getValue()) {
+				reasons.add(new BoxItemCountTooHighReason(id + ": Expected " + entry.getValue() + ", found " + count));
 				return false;
 			}
 		}
@@ -113,8 +123,10 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 		return true;
 	}
 	
-	protected boolean validateLoad(Map<String, ValidatorContainerItem> referenceContainersById, PackagerResult result, List<ValidatorResultReason> reasons) {
+	protected boolean validateLoad(Map<String, ValidatorContainerItem> referenceContainersById, PackagerResult result,
+			PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 		for (Container container : result.getContainers()) {
+			checkInterrupted(interrupt);
 			ValidatorContainerItem referenceContainerItem = referenceContainersById.get(container.getId());
 			if(referenceContainerItem == null) {
 				reasons.add(new TooManyContainerIdsReason("Unknown container " + container.getId()));
@@ -136,6 +148,7 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 			
 			List<Placement> placements = stack.getPlacements();
 			for (Placement placement : placements) {
+				checkInterrupted(interrupt);
 				if(!isInside(referenceContainer, placement)) {
 					reasons.add(new BoxOutsideContainerReason("Box " + placement.getBox().getId() + " not placed within load limits"));
 					return false;
@@ -144,8 +157,12 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 			
 			// check if boxes intersect
 			for(int i = 0; i < placements.size(); i++) {
+				checkInterrupted(interrupt);
 				Placement placement1 = placements.get(i);
 				for(int k = 0; k < placements.size(); k++) {
+					if((k & 63) == 0) {
+						checkInterrupted(interrupt);
+					}
 					if(i == k) {
 						continue;
 					}
@@ -160,6 +177,12 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 		}
 		
 		return true;
+	}
+
+	protected void checkInterrupted(PackagerInterruptSupplier interrupt) throws ValidatorInterruptedException {
+		if(interrupt.getAsBoolean()) {
+			throw new ValidatorInterruptedException();
+		}
 	}
 
 	private boolean isInside(Container container, Placement placement) {
@@ -190,14 +213,17 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 	protected boolean validateBoxItemGroupsCounts(List<BoxItemGroup> groups, PackagerResult result, List<ValidatorResultReason> reasons) {
 		
 		Map<String, BoxItemGroup> boxToGroup = new HashMap<>();
+		Set<String> expectedGroups = new HashSet<>();
 		
 		for (BoxItemGroup boxItemGroup : groups) {
+			expectedGroups.add(boxItemGroup.getId());
 			
 			for (BoxItem item: boxItemGroup.getItems()) {
 				boxToGroup.put(item.getBox().getId(), boxItemGroup);
 			}
 		}
 		
+		Set<String> consumedGroups = new HashSet<>();
 		for (Container container : result.getContainers()) {
 			Stack stack = container.getStack();
 
@@ -225,6 +251,10 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 
 			for (Entry<String, BoxItemGroup> entry : groupsInContainer.entrySet()) {
 				BoxItemGroup boxItemGroup = entry.getValue();
+				if(!consumedGroups.add(entry.getKey())) {
+					reasons.add(new TooManyBoxItemIdsReason("Group " + entry.getKey() + " found in multiple containers"));
+					return false;
+				}
 				
 				for (BoxItem boxItem : boxItemGroup.getItems()) {
 					Integer count = resultCount.remove(boxItem.getBox().getId());
@@ -249,6 +279,12 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 				reasons.add(new TooManyBoxItemIdsReason("Unexpectedly found " + resultCount.keySet()));
 				return false;
 			}
+		}
+		if(!consumedGroups.equals(expectedGroups)) {
+			Set<String> missing = new HashSet<>(expectedGroups);
+			missing.removeAll(consumedGroups);
+			reasons.add(new TooFewBoxItemIdsReason("Missing groups " + missing));
+			return false;
 		}
 				
 		return true;
