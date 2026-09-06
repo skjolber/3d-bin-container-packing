@@ -2,6 +2,7 @@ package com.github.skjolber.packing.points3d;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
@@ -36,5 +37,22 @@ public class DefaultPoint3DTest {
 		assertEquals(point.getMaxX(), clone.getMaxX());
 		assertEquals(point.getMaxY(), clone.getMaxY());
 		assertEquals(point.getMaxZ(), clone.getMaxZ());
+	}
+
+	@Test
+	public void testConstrainedEclipses() {
+		DefaultPoint3D candidate = new DefaultPoint3D(0, 0, 0, 4, 4, 4);
+		DefaultPoint3D largerX = new DefaultPoint3D(0, 0, 0, 9, 4, 4);
+		DefaultPoint3D largerY = new DefaultPoint3D(0, 0, 0, 4, 9, 4);
+		DefaultPoint3D largerZ = new DefaultPoint3D(0, 0, 0, 4, 4, 9);
+
+		assertTrue(largerX.eclipsesConstrainedX(candidate, 4));
+		assertFalse(candidate.eclipsesConstrainedX(largerX, 9));
+
+		assertTrue(largerY.eclipsesConstrainedY(candidate, 4));
+		assertFalse(candidate.eclipsesConstrainedY(largerY, 9));
+
+		assertTrue(largerZ.eclipsesConstrainedZ(candidate, 4));
+		assertFalse(candidate.eclipsesConstrainedZ(largerZ, 9));
 	}
 }

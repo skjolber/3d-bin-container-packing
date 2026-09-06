@@ -38,6 +38,10 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 
 
 	protected boolean validateBoxItemCounts(List<BoxItem> items, PackagerResult result, List<ValidatorResultReason> reasons) {
+		Map<String, Integer> expectedCount = new HashMap<>();
+		for (BoxItem boxItem : items) {
+			expectedCount.merge(boxItem.getBox().getId(), boxItem.getCount(), Integer::sum);
+		}
 		
 		Map<String, Integer> resultCount = new HashMap<>();
 		for (Container container : result.getContainers()) {
@@ -46,6 +50,10 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 				Box box = placement.getBox();
 				
 				String id = box.getId();
+				if(!expectedCount.containsKey(id)) {
+					reasons.add(new TooManyBoxItemIdsReason(id + ": Not expected"));
+					return false;
+				}
 
 				Integer integer = resultCount.get(id);
 				if(integer == null) {
@@ -56,8 +64,8 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 			}
 		}
 		
-		for (BoxItem boxItem : items) {
-			String id = boxItem.getBox().getId();
+		for (Entry<String, Integer> entry : expectedCount.entrySet()) {
+			String id = entry.getKey();
 			
 			Integer count = resultCount.get(id);
 			
@@ -66,11 +74,11 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 				return false;
 			}
 
-			if(count < boxItem.getCount()) {
-				reasons.add(new BoxItemCountTooLowReason(id + ": Expected " + boxItem.getCount() + ", found " + count));
+			if(count < entry.getValue()) {
+				reasons.add(new BoxItemCountTooLowReason(id + ": Expected " + entry.getValue() + ", found " + count));
 				return false;
-			} else if(count > boxItem.getCount()) {
-				reasons.add(new BoxItemCountTooHighReason(id + ": Expected " + boxItem.getCount() + ", found " + count));
+			} else if(count > entry.getValue()) {
+				reasons.add(new BoxItemCountTooHighReason(id + ": Expected " + entry.getValue() + ", found " + count));
 				return false;
 			}
 		}
@@ -190,14 +198,17 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 	protected boolean validateBoxItemGroupsCounts(List<BoxItemGroup> groups, PackagerResult result, List<ValidatorResultReason> reasons) {
 		
 		Map<String, BoxItemGroup> boxToGroup = new HashMap<>();
+		Set<String> expectedGroups = new HashSet<>();
 		
 		for (BoxItemGroup boxItemGroup : groups) {
+			expectedGroups.add(boxItemGroup.getId());
 			
 			for (BoxItem item: boxItemGroup.getItems()) {
 				boxToGroup.put(item.getBox().getId(), boxItemGroup);
 			}
 		}
 		
+		Set<String> consumedGroups = new HashSet<>();
 		for (Container container : result.getContainers()) {
 			Stack stack = container.getStack();
 
@@ -225,6 +236,10 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 
 			for (Entry<String, BoxItemGroup> entry : groupsInContainer.entrySet()) {
 				BoxItemGroup boxItemGroup = entry.getValue();
+				if(!consumedGroups.add(entry.getKey())) {
+					reasons.add(new TooManyBoxItemIdsReason("Group " + entry.getKey() + " found in multiple containers"));
+					return false;
+				}
 				
 				for (BoxItem boxItem : boxItemGroup.getItems()) {
 					Integer count = resultCount.remove(boxItem.getBox().getId());
@@ -249,6 +264,12 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 				reasons.add(new TooManyBoxItemIdsReason("Unexpectedly found " + resultCount.keySet()));
 				return false;
 			}
+		}
+		if(!consumedGroups.equals(expectedGroups)) {
+			Set<String> missing = new HashSet<>(expectedGroups);
+			missing.removeAll(consumedGroups);
+			reasons.add(new TooFewBoxItemIdsReason("Missing groups " + missing));
+			return false;
 		}
 				
 		return true;

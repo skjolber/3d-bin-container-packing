@@ -510,5 +510,25 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 		assertEquals(3, permutations[2]);
 	}
 
+	@Test
+	void testRemovePermutationsAfterPermutationChanged() {
+		Dimension container = new Dimension(null, 2, 1, 1);
+		List<BoxItem> products = new ArrayList<>();
+		products.add(new BoxItem(Box.newBuilder().withSize(1, 1, 1).withDescription("first").withWeight(1).build()));
+		products.add(new BoxItem(Box.newBuilder().withSize(1, 1, 1).withDescription("second").withWeight(1).build()));
+
+		BoxItemPermutationRotationIterator iterator = newBuilder()
+				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
+				.withBoxItems(products)
+				.withMaxLoadWeight(products.size())
+				.build();
+
+		assertEquals(0, iterator.nextPermutation());
+		iterator.removePermutations(1);
+
+		assertEquals(1, iterator.length());
+		assertEquals("first", iterator.getStackValue(0).getBox().getDescription());
+	}
+
 
 }

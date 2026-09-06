@@ -34,6 +34,12 @@ public class ControlledContainerItem extends ContainerItem {
 	
 	public ControlledContainerItem(ContainerItem containerItem) {
 		super(containerItem.getContainer(), containerItem.getCount());
+
+		if(containerItem instanceof ControlledContainerItem controlledContainerItem) {
+			this.manifestControlsBuilderFactory = controlledContainerItem.manifestControlsBuilderFactory;
+			this.pointControlsBuilderFactory = controlledContainerItem.pointControlsBuilderFactory;
+			this.initialPoints = controlledContainerItem.initialPoints;
+		}
 	}
 	
 	public void setInitialPoints(List<Point> points) {
@@ -94,7 +100,7 @@ public class ControlledContainerItem extends ContainerItem {
 	}	
 	
 	public boolean hasControls() {
-		return hasBoxItemControlsBuilderFactory() || hasBoxItemControlsBuilderFactory();
+		return hasPointControlsBuilderFactory() || hasBoxItemControlsBuilderFactory();
 	}
 	
 	public boolean hasInitialPoints() {

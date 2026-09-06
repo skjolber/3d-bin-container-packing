@@ -203,14 +203,15 @@ public class Point2DFlagList implements Iterable<Point> {
 	public boolean equals(Object obj) {
 		if(obj instanceof Point2DFlagList) {
 			Point2DFlagList other = (Point2DFlagList)obj;
-			if(other.size() == size) {
-				for (int i = 0; i < size; i++) {
-					if(!points[i].equals(other.get(i))) {
-						return false;
-					}
-					if(flag[i] != other.flag[i]) {
-						return false;
-					}
+			if(other.size() != size) {
+				return false;
+			}
+			for (int i = 0; i < size; i++) {
+				if(!points[i].equals(other.get(i))) {
+					return false;
+				}
+				if(flag[i] != other.flag[i]) {
+					return false;
 				}
 			}
 			return true;

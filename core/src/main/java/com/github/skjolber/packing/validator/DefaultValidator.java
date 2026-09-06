@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -24,6 +25,17 @@ import com.github.skjolber.packing.validator.reasons.ValidatorInterruptedExcepti
 
 public class DefaultValidator extends AbstractValidator<DefaultValidator.DefaultValidatorResultBuilder> {
 
+	private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
+
+	public DefaultValidator() {
+		scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, runnable -> {
+			Thread thread = new Thread(runnable, "packing-validator-deadline");
+			thread.setDaemon(true);
+			return thread;
+		});
+		scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
+	}
+
 	public class DefaultValidatorResultBuilder extends AbstractValidatorResultBuilder<DefaultValidatorResultBuilder> {
 		
 		public ValidatorResult build() {
@@ -35,6 +47,7 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			long start = System.currentTimeMillis();
 
 			PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
+			booleanSupplierBuilder.withScheduledThreadPoolExecutor(scheduledThreadPoolExecutor);
 			if(deadline != -1L) {
 				booleanSupplierBuilder.withDeadline(deadline);
 			}
@@ -44,6 +57,7 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
+				checkInterrupted(interrupt);
 				List<ValidatorResultReason> reasons = new ArrayList<>();
 				boolean valid;
 				if(items != null && !items.isEmpty()) {
@@ -71,6 +85,7 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 
 	private boolean validateBoxItems(List<BoxItem> items, Order order, int maxContainerCount, List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 		
+		checkInterrupted(interrupt);
 		if(!validateBoxItemOrder(items, order, result)) {
 			return false;
 		}
@@ -81,12 +96,15 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 		}
 		
 		// validate first that the box items and containers are used in correct numbers
+		checkInterrupted(interrupt);
 		if(!validateContainerItemCounts(maxContainerCount, containersById, result, reasons)) {
 			return false;
 		}
+		checkInterrupted(interrupt);
 		if(!validateBoxItemCounts(items, result, reasons)) {
 			return false;
 		}
+		checkInterrupted(interrupt);
 		if(!validateLoad(containersById, result, reasons)) {
 			return false;
 		}
@@ -131,10 +149,14 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			for (Container container : result.getContainers()) {
 				int index = -1;
 				for (Placement placement : container.getStack().getPlacements()) {
-					int currentIndex = map.get(placement.getBox().getId());
+					Integer currentIndex = map.get(placement.getBox().getId());
+					if(currentIndex == null) {
+						return false;
+					}
 					if(currentIndex < index) {
 						return false;
 					}
+					index = currentIndex;
 				}
 			}
 		}
@@ -143,6 +165,7 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 
 	public boolean validateBoxItemGroups(List<BoxItemGroup> itemGroups, Order order, int maxContainerCount, List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 
+		checkInterrupted(interrupt);
 		if(!validateBoxItemGroupOrder(itemGroups, order, result)) {
 			return false;
 		}
@@ -153,12 +176,15 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 		}
 		
 		// validate first that the box items, groups and containers are used in correct numbers
+		checkInterrupted(interrupt);
 		if(!validateContainerItemCounts(maxContainerCount, containersById, result, reasons)) {
 			return false;
 		}
+		checkInterrupted(interrupt);
 		if(!validateBoxItemGroupsCounts(itemGroups, result, reasons)) {
 			return false;
 		}
+		checkInterrupted(interrupt);
 		if(!validateLoad(containersById, result, reasons)) {
 			return false;
 		}
@@ -221,10 +247,14 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			for (Container container : containers) {
 				int index = -1;
 				for (Placement placement : container.getStack().getPlacements()) {
-					int currentIndex = map.get(placement.getBox().getId());
+					Integer currentIndex = map.get(placement.getBox().getId());
+					if(currentIndex == null) {
+						return false;
+					}
 					if(currentIndex < index) {
 						return false;
 					}
+					index = currentIndex;
 				}
 			}
 		}
@@ -233,11 +263,13 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 
 	protected boolean validate(Map<String, ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 		for (Container container : result.getContainers()) {
+			checkInterrupted(interrupt);
 			ValidatorContainerItem referenceItem = containers.get(container.getId());
 			
 			if(referenceItem.hasManifestValidatorBuilderFactory()) {
 				List<Box> boxes = new ArrayList<>();
 				for (Placement placement : container.getStack()) {
+					checkInterrupted(interrupt);
 					boxes.add(placement.getBox());
 				}
 				ManifestValidator manifestValidator = referenceItem.createManifestValidator(referenceItem.getContainer());
@@ -256,9 +288,15 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 		return true;
 	}
 
+	protected void checkInterrupted(PackagerInterruptSupplier interrupt) throws ValidatorInterruptedException {
+		if(interrupt.getAsBoolean()) {
+			throw new ValidatorInterruptedException();
+		}
+	}
+
 	@Override
 	public void close() throws IOException {
-		// do nothing
+		scheduledThreadPoolExecutor.shutdownNow();
 	}
 
 }

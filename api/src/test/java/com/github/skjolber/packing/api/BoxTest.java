@@ -1,11 +1,26 @@
 package com.github.skjolber.packing.api;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 import org.junit.jupiter.api.Test;
 
 public class BoxTest {
+
+	@Test
+	public void testMinimumPressureUsesMaximumArea() {
+		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withWeight(1).build();
+
+		assertSame(Box.getMaximumArea(box.getStackValues()), Box.getMinimumPressure(box.getStackValues()));
+	}
+
+	@Test
+	public void testLargeAggregateWeightsDoNotOverflow() {
+		Box box = Box.newBuilder().withSize(1, 1, 1).withWeight(1_500_000_000).build();
+
+		assertEquals(3_000_000_000L, new BoxItem(box, 2).getWeight());
+	}
 
 	@Test
 	public void testBuilder1() {
