@@ -198,7 +198,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 					}
 					
 					if(result != null && !result.isEmpty()) {
-						if(best == null || intermediatePackagerResultComparator.compare(best, result) != ARGUMENT_1_IS_BETTER) {
+						if(best == null || intermediatePackagerResultComparator.compare(best, result) <= 0) {
 							best = result;
 						}
 					}

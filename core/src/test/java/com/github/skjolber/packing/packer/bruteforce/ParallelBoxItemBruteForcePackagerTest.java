@@ -14,6 +14,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
@@ -33,6 +35,47 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 
 	private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory());
+
+	@Test
+	void propagatesExternalWorkerInterrupt() {
+		Thread callingThread = Thread.currentThread();
+		AtomicBoolean workerInterrupted = new AtomicBoolean();
+		PackagerInterruptSupplier interrupt = () -> {
+			if(Thread.currentThread() != callingThread) {
+				workerInterrupted.set(true);
+				return true;
+			}
+			return workerInterrupted.get();
+		};
+
+		ExecutorService executor = Executors.newFixedThreadPool(2);
+		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+				.withExecutorService(executor)
+				.withParallelizationCount(2)
+				.build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+			for (int i = 0; i < 5; i++) {
+				products.add(new BoxItem(Box.newBuilder().withId("box-" + i).withSize(1, 1, 1).withWeight(1).build()));
+			}
+			ContainerItem container = new ContainerItem(Container.newBuilder().withId("container").withSize(5, 1, 1).withMaxLoadWeight(100).build(), 1);
+
+			PackagerResult result = packager.newResultBuilder()
+					.withContainerItem(container)
+					.withBoxItems(products)
+					.withInterrupt(interrupt::getAsBoolean)
+					.build();
+
+			assertTrue(workerInterrupted.get());
+			assertTrue(result.isTimeout());
+		} finally {
+			try {
+				packager.close();
+			} finally {
+				executor.shutdownNow();
+			}
+		}
+	}
 
 	@Test
 	void testStackingSquaresOnSquare() {

@@ -23,7 +23,8 @@ public class Point3DArray {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			SimplePoint3D[] nextPoints = new SimplePoint3D[size];
+			int capacity = Math.max(size, points.length + (points.length >> 1) + 1);
+			SimplePoint3D[] nextPoints = new SimplePoint3D[capacity];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.points.length);
 			this.points = nextPoints;
 		}
@@ -57,6 +58,7 @@ public class Point3DArray {
 	}
 
 	public void clear() {
+		Arrays.fill(points, null);
 		size = 0;
 	}
 
@@ -72,26 +74,42 @@ public class Point3DArray {
 	 */
 	public int hashCode() {
 		int hashCode = 1;
-		for (int i = 0; i < size; i++) {
-			hashCode = 31 * hashCode + points[i].hashCode();
+		int remaining = size;
+		for (int i = 0; i < points.length && remaining > 0; i++) {
+			SimplePoint3D point = points[i];
+			if(point != null) {
+				hashCode = 31 * hashCode + i;
+				hashCode = 31 * hashCode + point.hashCode();
+				remaining--;
+			}
 		}
 		return hashCode;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if(obj instanceof Point3DList) {
-			Point3DList other = (Point3DList)obj;
-			if(other.size() == size) {
-				for (int i = 0; i < size; i++) {
-					if(!points[i].equals(other.get(i))) {
-						return false;
-					}
-				}
-			}
+		if(obj == this) {
 			return true;
 		}
-		return super.equals(obj);
+		if(obj instanceof Point3DArray) {
+			Point3DArray other = (Point3DArray)obj;
+			if(other.size() != size) {
+				return false;
+			}
+			int remaining = size;
+			for (int i = 0; i < points.length && remaining > 0; i++) {
+				SimplePoint3D point = points[i];
+				if(point == null) {
+					continue;
+				}
+				if(i >= other.points.length || !point.equals(other.points[i])) {
+					return false;
+				}
+				remaining--;
+			}
+			return remaining == 0;
+		}
+		return false;
 	}
 
 	public Point[] getPoints() {
