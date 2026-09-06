@@ -33,5 +33,17 @@ class ControlledContainerItemTest {
 		assertThat(result.getBoxItemControlsBuilderFactory()).isSameAs(manifestControls);
 		assertThat(result.getPointControlsBuilderFactory()).isSameAs(pointControls);
 		assertThat(result.getInitialPoints()).isSameAs(initialPoints);
+		assertThat(result.hasControls()).isTrue();
+	}
+
+	@Test
+	void pointControlsAloneCountsAsControls() {
+		ControlledContainerItem item = new ControlledContainerItem(Container.newBuilder()
+				.withSize(1, 1, 1)
+				.withMaxLoadWeight(1)
+				.build(), 1);
+		item.setPointControlsBuilderFactory(() -> null);
+
+		assertThat(item.hasControls()).isTrue();
 	}
 }

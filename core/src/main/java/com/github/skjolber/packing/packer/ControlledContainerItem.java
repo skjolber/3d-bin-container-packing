@@ -18,6 +18,4 @@ public class ControlledContainerItem extends ContainerItem {
 	public ControlledContainerItem(ContainerItem containerItem) {
 		super(containerItem);
 	}
-	
-
 }

@@ -8,16 +8,26 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.validator.reasons.BoxOutsideContainerReason;
 import com.github.skjolber.packing.validator.reasons.BoxesIntersectReason;
 import com.github.skjolber.packing.validator.reasons.TooHighVolumeReason;
 import com.github.skjolber.packing.validator.reasons.TooHighWeightReason;
 import com.github.skjolber.packing.validator.reasons.UnknownContainerIdReason;
+import com.github.skjolber.packing.validator.reasons.ValidatorInterruptedException;
 
 public class StackValidator {
 
 	public boolean validate(List<ValidatorContainerItem> containers, PackagerResult result, List<ValidatorResultReason> reasons) {
+		try {
+			return validate(containers, result, () -> false, reasons);
+		} catch (ValidatorInterruptedException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	public boolean validate(List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 		
 		Map<String, ValidatorContainerItem> referenceContainersById = new HashMap<>();
 		for (ValidatorContainerItem validatorContainerItem : containers) {
@@ -25,6 +35,7 @@ public class StackValidator {
 		}
 		
 		for (Container container : result.getContainers()) {
+			checkInterrupted(interrupt);
 			ValidatorContainerItem referenceContainerItem = referenceContainersById.get(container.getId());
 			if(referenceContainerItem == null) {
 				reasons.add(new UnknownContainerIdReason("Unknown container " + container.getId()));
@@ -46,6 +57,7 @@ public class StackValidator {
 			
 			List<Placement> placements = stack.getPlacements();
 			for (Placement placement : placements) {
+				checkInterrupted(interrupt);
 				if(!isInside(referenceContainer, placement)) {
 					reasons.add(new BoxOutsideContainerReason("Box " + placement.getBox().getId() + " not placed within load limits"));
 					return false;
@@ -54,8 +66,12 @@ public class StackValidator {
 			
 			// check if boxes intersect
 			for(int i = 0; i < placements.size(); i++) {
+				checkInterrupted(interrupt);
 				Placement placement1 = placements.get(i);
 				for(int k = 0; k < placements.size(); k++) {
+					if((k & 63) == 0) {
+						checkInterrupted(interrupt);
+					}
 					if(i == k) {
 						continue;
 					}
@@ -70,6 +86,12 @@ public class StackValidator {
 		}
 		
 		return true;
+	}
+
+	private void checkInterrupted(PackagerInterruptSupplier interrupt) throws ValidatorInterruptedException {
+		if(interrupt.getAsBoolean()) {
+			throw new ValidatorInterruptedException();
+		}
 	}
 
 	private boolean isInside(Container container, Placement placement) {

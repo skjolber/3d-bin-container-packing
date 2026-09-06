@@ -46,6 +46,10 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackager {
 
+	private static final class LocalInterrupt {
+		private volatile boolean interrupted;
+	}
+
 	public static ParallelBruteForcePackagerBuilder newBuilder() {
 		return new ParallelBruteForcePackagerBuilder();
 	}
@@ -144,10 +148,6 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	private final ExecutorService executorService;
 	protected final BruteForcePointIteratorFilter pointFilter;
 	protected final boolean filterReversePermutations;
-
-	private static final class LocalInterrupt {
-		private volatile boolean interrupted;
-	}
 
 	public ParallelBoxItemBruteForcePackager(ExecutorService executorService, int parallelizationCount,
 			Comparator<IntermediatePackagerResult> comparator, BruteForcePointIteratorFilter pointFilter) {

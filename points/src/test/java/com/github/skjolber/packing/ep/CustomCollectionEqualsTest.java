@@ -65,4 +65,22 @@ public class CustomCollectionEqualsTest {
 		assertNotEquals(first, new Point3DArray());
 		assertNotEquals(first, new Point3DList());
 	}
+
+	@Test
+	void sparsePoint3DArraysCompareOccupiedIndexes() {
+		Point3DArray first = new Point3DArray();
+		first.set(new DefaultPoint3D(0, 0, 0, 1, 1, 1), 0);
+		first.set(new DefaultPoint3D(2, 0, 0, 3, 1, 1), 2);
+		first.clear(0);
+
+		Point3DArray second = new Point3DArray();
+		second.set(new DefaultPoint3D(2, 0, 0, 3, 1, 1), 2);
+
+		Point3DArray differentIndex = new Point3DArray();
+		differentIndex.set(new DefaultPoint3D(2, 0, 0, 3, 1, 1), 1);
+
+		assertEquals(first, second);
+		assertEquals(first.hashCode(), second.hashCode());
+		assertNotEquals(first, differentIndex);
+	}
 }

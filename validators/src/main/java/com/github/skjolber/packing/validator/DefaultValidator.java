@@ -108,7 +108,7 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			return false;
 		}
 		checkInterrupted(interrupt);
-		if(!stackValidator.validate(containers, result, reasons)) {
+		if(!stackValidator.validate(containers, result, interrupt, reasons)) {
 			return false;
 		}
 
@@ -132,7 +132,7 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			return false;
 		}
 		checkInterrupted(interrupt);
-		if(!stackValidator.validate(containers, result, reasons)) {
+		if(!stackValidator.validate(containers, result, interrupt, reasons)) {
 			return false;
 		}
 

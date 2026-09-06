@@ -48,8 +48,9 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			return workerInterrupted.get();
 		};
 
+		ExecutorService executor = Executors.newFixedThreadPool(2);
 		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
-				.withExecutorService(Executors.newFixedThreadPool(2))
+				.withExecutorService(executor)
 				.withParallelizationCount(2)
 				.build();
 		try {
@@ -68,7 +69,11 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			assertTrue(workerInterrupted.get());
 			assertTrue(result.isTimeout());
 		} finally {
-			packager.close();
+			try {
+				packager.close();
+			} finally {
+				executor.shutdownNow();
+			}
 		}
 	}
 
@@ -79,8 +84,9 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(5, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
+		ExecutorService executor = Executors.newFixedThreadPool(2);
 		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
-				.withExecutorService(Executors.newFixedThreadPool(2))
+				.withExecutorService(executor)
 				.withParallelizationCount(4)
 				.withSkipReversePermutations(true)
 				.build();
@@ -96,7 +102,11 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			assertEquals(products.size(), result.get(0).getStack().size());
 			assertValid(result);
 		} finally {
-			packager.close();
+			try {
+				packager.close();
+			} finally {
+				executor.shutdownNow();
+			}
 		}
 	}
 

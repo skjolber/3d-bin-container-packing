@@ -19,7 +19,7 @@ import com.github.skjolber.packing.packer.Dimension;
 public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T extends AbstractBoxItemGroupIteratorBuilder>{
 
 	public abstract T newBuilder();
-	
+
 	@Test
 	void testPermutations() {
 		Dimension container = new Dimension(null, 9, 1, 1);
