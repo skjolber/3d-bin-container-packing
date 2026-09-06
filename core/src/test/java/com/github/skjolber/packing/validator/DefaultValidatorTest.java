@@ -2,10 +2,12 @@ package com.github.skjolber.packing.validator;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -56,6 +58,39 @@ public class DefaultValidatorTest {
 				.withDeadline(System.currentTimeMillis() - 1)
 				.build();
 		assertTrue(expired.isTimeout());
+	}
+
+	@Test
+	void testInterruptDuringLoadValidation() {
+		List<BoxItem> boxItems = new ArrayList<>();
+		Container resultContainer = container("container");
+		for (int i = 0; i < 4; i++) {
+			Box box = box("box-" + i);
+			boxItems.add(new BoxItem(box));
+			resultContainer.getStack().add(createPlacement(box.getStackValue(0), i, 0, 0));
+		}
+
+		AtomicInteger checks = new AtomicInteger();
+		ValidatorResult result = validator.newResultBuilder()
+				.withContainerItem(new ContainerItem(container("container"), 1))
+				.withPackagerResult(new PackagerResult(List.of(resultContainer), 0, false))
+				.withBoxItems(boxItems)
+				.withInterrupt(() -> checks.incrementAndGet() >= 8)
+				.build();
+
+		assertTrue(result.isTimeout());
+	}
+
+	@Test
+	void testDuplicateGroupIdsAreRejected() {
+		BoxItemGroup first = new BoxItemGroup("duplicate", List.of(new BoxItem(box("first"))));
+		BoxItemGroup second = new BoxItemGroup("duplicate", List.of(new BoxItem(box("second"))));
+
+		assertThrows(IllegalStateException.class, () -> validator.newResultBuilder()
+				.withContainerItem(new ContainerItem(container("container"), 1))
+				.withPackagerResult(new PackagerResult(List.of(container("container")), 0, false))
+				.withBoxItemGroups(List.of(first, second))
+				.build());
 	}
 
 	@Test

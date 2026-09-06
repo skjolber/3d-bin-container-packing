@@ -105,7 +105,7 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			return false;
 		}
 		checkInterrupted(interrupt);
-		if(!validateLoad(containersById, result, reasons)) {
+		if(!validateLoad(containersById, result, interrupt, reasons)) {
 			return false;
 		}
 
@@ -185,7 +185,7 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			return false;
 		}
 		checkInterrupted(interrupt);
-		if(!validateLoad(containersById, result, reasons)) {
+		if(!validateLoad(containersById, result, interrupt, reasons)) {
 			return false;
 		}
 
@@ -286,12 +286,6 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 		}
 		
 		return true;
-	}
-
-	protected void checkInterrupted(PackagerInterruptSupplier interrupt) throws ValidatorInterruptedException {
-		if(interrupt.getAsBoolean()) {
-			throw new ValidatorInterruptedException();
-		}
 	}
 
 	@Override

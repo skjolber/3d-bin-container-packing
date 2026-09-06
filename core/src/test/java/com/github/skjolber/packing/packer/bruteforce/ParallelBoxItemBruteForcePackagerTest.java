@@ -48,8 +48,9 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			return workerInterrupted.get();
 		};
 
+		ExecutorService executor = Executors.newFixedThreadPool(2);
 		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
-				.withExecutorService(Executors.newFixedThreadPool(2))
+				.withExecutorService(executor)
 				.withParallelizationCount(2)
 				.build();
 		try {
@@ -68,7 +69,11 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			assertTrue(workerInterrupted.get());
 			assertTrue(result.isTimeout());
 		} finally {
-			packager.close();
+			try {
+				packager.close();
+			} finally {
+				executor.shutdownNow();
+			}
 		}
 	}
 

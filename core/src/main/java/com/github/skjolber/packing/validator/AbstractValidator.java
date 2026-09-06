@@ -19,6 +19,7 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.validator.Validator;
 import com.github.skjolber.packing.api.validator.ValidatorResultBuilder;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
+import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.validator.reasons.BoxItemCountTooHighReason;
 import com.github.skjolber.packing.validator.reasons.BoxItemCountTooLowReason;
 import com.github.skjolber.packing.validator.reasons.BoxesIntersectReason;
@@ -29,6 +30,7 @@ import com.github.skjolber.packing.validator.reasons.TooHighVolumeReason;
 import com.github.skjolber.packing.validator.reasons.TooHighWeightReason;
 import com.github.skjolber.packing.validator.reasons.TooManyBoxItemIdsReason;
 import com.github.skjolber.packing.validator.reasons.TooManyContainerIdsReason;
+import com.github.skjolber.packing.validator.reasons.ValidatorInterruptedException;
 
 /**
  * 
@@ -121,8 +123,10 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 		return true;
 	}
 	
-	protected boolean validateLoad(Map<String, ValidatorContainerItem> referenceContainersById, PackagerResult result, List<ValidatorResultReason> reasons) {
+	protected boolean validateLoad(Map<String, ValidatorContainerItem> referenceContainersById, PackagerResult result,
+			PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 		for (Container container : result.getContainers()) {
+			checkInterrupted(interrupt);
 			ValidatorContainerItem referenceContainerItem = referenceContainersById.get(container.getId());
 			if(referenceContainerItem == null) {
 				reasons.add(new TooManyContainerIdsReason("Unknown container " + container.getId()));
@@ -144,6 +148,7 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 			
 			List<Placement> placements = stack.getPlacements();
 			for (Placement placement : placements) {
+				checkInterrupted(interrupt);
 				if(!isInside(referenceContainer, placement)) {
 					reasons.add(new BoxOutsideContainerReason("Box " + placement.getBox().getId() + " not placed within load limits"));
 					return false;
@@ -152,8 +157,12 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 			
 			// check if boxes intersect
 			for(int i = 0; i < placements.size(); i++) {
+				checkInterrupted(interrupt);
 				Placement placement1 = placements.get(i);
 				for(int k = 0; k < placements.size(); k++) {
+					if((k & 63) == 0) {
+						checkInterrupted(interrupt);
+					}
 					if(i == k) {
 						continue;
 					}
@@ -168,6 +177,12 @@ public abstract class AbstractValidator<B extends ValidatorResultBuilder> implem
 		}
 		
 		return true;
+	}
+
+	protected void checkInterrupted(PackagerInterruptSupplier interrupt) throws ValidatorInterruptedException {
+		if(interrupt.getAsBoolean()) {
+			throw new ValidatorInterruptedException();
+		}
 	}
 
 	private boolean isInside(Container container, Placement placement) {
