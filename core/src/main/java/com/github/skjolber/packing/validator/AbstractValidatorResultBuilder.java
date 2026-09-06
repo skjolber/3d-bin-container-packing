@@ -1,7 +1,9 @@
 package com.github.skjolber.packing.validator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
@@ -201,9 +203,13 @@ public abstract class AbstractValidatorResultBuilder<B extends AbstractValidator
 		}
 								
 		if(itemGroups != null) {
+			Set<String> groupIds = new HashSet<>();
 			for (BoxItemGroup boxItemGroup : itemGroups) {
 				if(boxItemGroup.getId() == null) {
 					throw new IllegalStateException("Expected all box item groups to have ids");
+				}
+				if(!groupIds.add(boxItemGroup.getId())) {
+					throw new IllegalStateException("Expected unique box item group ids, found duplicate " + boxItemGroup.getId());
 				}
 				if(boxItemGroup.isEmpty())  {
 					throw new IllegalStateException("Expected at least one box in each group");

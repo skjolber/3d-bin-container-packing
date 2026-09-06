@@ -463,15 +463,15 @@ public abstract class Point {
 	}
 	
 	public boolean eclipsesConstrainedX(Point point, int maxX) {
-		return minX <= point.getMinX() && maxX <= maxX && eclipsesY(point) && eclipsesZ(point);
+		return minX <= point.getMinX() && maxX <= this.maxX && eclipsesY(point) && eclipsesZ(point);
 	}
 
 	public boolean eclipsesConstrainedY(Point point, int maxY) {
-		return minY <= point.getMinY() && maxY <= maxY && eclipsesX(point) && eclipsesZ(point);
+		return minY <= point.getMinY() && maxY <= this.maxY && eclipsesX(point) && eclipsesZ(point);
 	}
 
-	public boolean eclipsesConstrainedZ(Point point, int maxX) {
-		return minZ <= point.getMinZ() && maxZ <= maxZ && eclipsesX(point) && eclipsesY(point);
+	public boolean eclipsesConstrainedZ(Point point, int maxZ) {
+		return minZ <= point.getMinZ() && maxZ <= this.maxZ && eclipsesX(point) && eclipsesY(point);
 	}
 
 	public boolean eclipsesMovedX(Point point, int x) {

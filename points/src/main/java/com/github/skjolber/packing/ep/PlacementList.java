@@ -95,11 +95,12 @@ public class PlacementList {
 	public boolean equals(Object obj) {
 		if(obj instanceof PlacementList) {
 			PlacementList other = (PlacementList)obj;
-			if(other.size() == size) {
-				for (int i = 0; i < size; i++) {
-					if(!placements[i].equals(other.get(i))) {
-						return false;
-					}
+			if(other.size() != size) {
+				return false;
+			}
+			for (int i = 0; i < size; i++) {
+				if(!placements[i].equals(other.get(i))) {
+					return false;
 				}
 			}
 			return true;

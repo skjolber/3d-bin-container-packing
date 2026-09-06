@@ -100,7 +100,7 @@ public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 		// find next best group
 		for (int l = 0; l < filteredBoxItemGroups.size(); l++) {
 			BoxItemGroup group = filteredBoxItemGroups.get(l);
-			if(bestBoxItemGroup == null || comparator.compare(bestBoxItemGroup, group) > 0) {
+			if(bestBoxItemGroup == null || comparator.compare(bestBoxItemGroup, group) < 0) {
 				bestBoxItemGroup = group;
 				bestIndex = l;
 			}

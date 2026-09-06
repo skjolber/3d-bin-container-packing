@@ -86,7 +86,7 @@ public class BoxItem implements Serializable {
 	}
 
 	public long getWeight() {
-		return count * box.getWeight();
+		return (long)count * box.getWeight();
 	}
 
 	public void setCount(int count) {

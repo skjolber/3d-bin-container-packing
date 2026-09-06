@@ -75,11 +75,12 @@ public class Point2DList {
 	public boolean equals(Object obj) {
 		if(obj instanceof Point2DList) {
 			Point2DList other = (Point2DList)obj;
-			if(other.size() == size) {
-				for (int i = 0; i < size; i++) {
-					if(!points[i].equals(other.get(i))) {
-						return false;
-					}
+			if(other.size() != size) {
+				return false;
+			}
+			for (int i = 0; i < size; i++) {
+				if(!points[i].equals(other.get(i))) {
+					return false;
 				}
 			}
 			return true;

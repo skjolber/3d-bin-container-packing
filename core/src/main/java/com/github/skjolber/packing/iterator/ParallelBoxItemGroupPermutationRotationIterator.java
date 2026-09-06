@@ -390,6 +390,12 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	}
 
 	@Override
+	public void removePermutations(List<Integer> removed) {
+		super.removePermutations(removed);
+		initiatePermutations();
+	}
+
+	@Override
 	public BoxStackValue getStackValue(int index) {
 		return super.getStackValue(PADDING + index);
 	}

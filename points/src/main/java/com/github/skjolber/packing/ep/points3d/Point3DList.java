@@ -85,11 +85,12 @@ public class Point3DList {
 	public boolean equals(Object obj) {
 		if(obj instanceof Point3DList) {
 			Point3DList other = (Point3DList)obj;
-			if(other.size() == size) {
-				for (int i = 0; i < size; i++) {
-					if(!points[i].equals(other.get(i))) {
-						return false;
-					}
+			if(other.size() != size) {
+				return false;
+			}
+			for (int i = 0; i < size; i++) {
+				if(!points[i].equals(other.get(i))) {
+					return false;
 				}
 			}
 			return true;

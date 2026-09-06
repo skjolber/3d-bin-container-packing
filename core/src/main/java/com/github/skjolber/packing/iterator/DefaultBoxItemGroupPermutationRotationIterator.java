@@ -104,7 +104,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			item.decrement();
 			
 			if(item.isEmpty()) {
-				stackableItems[i] = null;
+				stackableItems[permutations[i]] = null;
 			}
 		}
 		
