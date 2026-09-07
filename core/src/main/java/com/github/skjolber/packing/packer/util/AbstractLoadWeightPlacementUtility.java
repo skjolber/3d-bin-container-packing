@@ -1,5 +1,8 @@
 package com.github.skjolber.packing.packer.util;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
@@ -36,6 +39,12 @@ import com.github.skjolber.packing.comparator.placement.PlacementComparator;
  */
 public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacementUtility {
 
+	/*
+	 * Linear scans are faster for short stacks. Above this size, restricting the
+	 * scan to the relevant Z levels repays the index maintenance cost.
+	 */
+	private static final int MIN_INDEXED_STACK_SIZE = 32;
+
 	protected final Stack stack;
 
 	protected PlacementList pointSupportees = new PlacementList();
@@ -46,16 +55,34 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	protected long[] placementAreas;
 	protected double[] reliefWeights;
 
+	/*
+	 * Stack positions sorted by bottom and top Z. The stack is mutated in LIFO
+	 * order by the packagers, so insertions and removals are cheap while point
+	 * queries can be restricted to the relevant Z plane or range.
+	 */
+	private Placement[] indexedPlacements;
+	private int[] indexedMinZ;
+	private int[] indexedEndZ;
+	private int[] minZOrder;
+	private int[] endZOrder;
+	private int[] candidateIndexes;
+	private int indexedSize;
+
 	protected AbstractLoadWeightPlacementUtility(Stack stack) {
 		this.stack = stack;
 	}
 
 	public void initialize(int count) {
-		placementAreas = new long[count];
-		reliefWeights = new double[count];
-		pointSupportees.ensureAdditionalCapacity(count);
-		pointSupporters.ensureAdditionalCapacity(count);
-		placementSupporters.ensureAdditionalCapacity(count);
+		int capacity = count + stack.getPlacements().size();
+		placementAreas = new long[capacity];
+		reliefWeights = new double[capacity];
+		pointSupportees.ensureAdditionalCapacity(capacity);
+		pointSupporters.ensureAdditionalCapacity(capacity);
+		placementSupporters.ensureAdditionalCapacity(capacity);
+		if(indexedPlacements != null) {
+			Arrays.fill(indexedPlacements, 0, indexedSize, null);
+		}
+		indexedSize = 0;
 	}
 
 	// =========================================================================
@@ -64,12 +91,28 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 
 	public void populatePointSupporters(Point point) {
 		pointSupporters.clear();
-		int z = point.getMinZ() - 1;
-		for (Placement candidate : stack.getPlacements()) {
-			if (candidate.getAbsoluteEndZ() != z) {
-				continue;
+		List<Placement> placements = stack.getPlacements();
+		if(placements.size() < MIN_INDEXED_STACK_SIZE) {
+			int z = point.getMinZ() - 1;
+			for(int i = 0; i < placements.size(); i++) {
+				Placement candidate = placements.get(i);
+				if(candidate.getAbsoluteEndZ() == z && point.intersectsXY(candidate)) {
+					pointSupporters.add(candidate);
+				}
 			}
-			if (!point.intersectsXY(candidate)) {
+			return;
+		}
+
+		synchronizeStackIndex(placements);
+		int z = point.getMinZ() - 1;
+		int index = lowerBound(endZOrder, indexedEndZ, z);
+		while(index < indexedSize) {
+			int stackIndex = endZOrder[index++];
+			if(indexedEndZ[stackIndex] != z) {
+				break;
+			}
+			Placement candidate = indexedPlacements[stackIndex];
+			if(!point.intersectsXY(candidate)) {
 				continue;
 			}
 			pointSupporters.add(candidate);
@@ -80,18 +123,148 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		pointSupportees.clear();
 		int limitMinDz = point.getMinZ() + minDz;
 		int limitMaxDz = point.getMinZ() + maxDz;
-		for (Placement candidate : stack.getPlacements()) {
-			if (candidate.getAbsoluteZ() < limitMinDz) {
-				continue;
+		List<Placement> placements = stack.getPlacements();
+		if(placements.size() < MIN_INDEXED_STACK_SIZE) {
+			for(int i = 0; i < placements.size(); i++) {
+				Placement candidate = placements.get(i);
+				int z = candidate.getAbsoluteZ();
+				if(z >= limitMinDz && z <= limitMaxDz && point.intersectsXY(candidate)) {
+					pointSupportees.add(candidate);
+				}
 			}
-			if (candidate.getAbsoluteZ() > limitMaxDz) {
-				continue;
-			}
-			if (!point.intersectsXY(candidate)) {
-				continue;
-			}
-			pointSupportees.add(candidate);
+			return;
 		}
+
+		synchronizeStackIndex(placements);
+		int candidateCount = 0;
+		int index = lowerBound(minZOrder, indexedMinZ, limitMinDz);
+		while(index < indexedSize) {
+			int stackIndex = minZOrder[index++];
+			if(indexedMinZ[stackIndex] > limitMaxDz) {
+				break;
+			}
+			Placement candidate = indexedPlacements[stackIndex];
+			if(!point.intersectsXY(candidate)) {
+				continue;
+			}
+			candidateIndexes[candidateCount++] = stackIndex;
+		}
+
+		// Preserve stack insertion order so comparator tie handling and floating-point
+		// accumulation stay deterministic when the requested band spans Z levels.
+		if(limitMinDz != limitMaxDz) {
+			Arrays.sort(candidateIndexes, 0, candidateCount);
+		}
+		for(int i = 0; i < candidateCount; i++) {
+			pointSupportees.add(indexedPlacements[candidateIndexes[i]]);
+		}
+	}
+
+	private void ensureIndexCapacity(int requiredCapacity) {
+		if(indexedPlacements != null && requiredCapacity <= indexedPlacements.length) {
+			return;
+		}
+		int oldCapacity = indexedPlacements == null ? 0 : indexedPlacements.length;
+		int capacity = Math.max(requiredCapacity, oldCapacity + 16);
+		indexedPlacements = indexedPlacements == null ? new Placement[capacity] : Arrays.copyOf(indexedPlacements, capacity);
+		indexedMinZ = indexedMinZ == null ? new int[capacity] : Arrays.copyOf(indexedMinZ, capacity);
+		indexedEndZ = indexedEndZ == null ? new int[capacity] : Arrays.copyOf(indexedEndZ, capacity);
+		minZOrder = minZOrder == null ? new int[capacity] : Arrays.copyOf(minZOrder, capacity);
+		endZOrder = endZOrder == null ? new int[capacity] : Arrays.copyOf(endZOrder, capacity);
+		candidateIndexes = candidateIndexes == null ? new int[capacity] : Arrays.copyOf(candidateIndexes, capacity);
+	}
+
+	private void synchronizeStackIndex(List<Placement> placements) {
+		int stackSize = placements.size();
+		if(stackSize == indexedSize) {
+			if(stackSize == 0) {
+				return;
+			}
+			Placement tail = placements.get(stackSize - 1);
+			if(isIndexedPlacementUnchanged(stackSize - 1, tail)) {
+				return;
+			}
+		}
+
+		ensureIndexCapacity(stackSize);
+
+		int commonSize = Math.min(stackSize, indexedSize);
+		if(commonSize > 0 && !isIndexedPlacementUnchanged(commonSize - 1, placements.get(commonSize - 1))) {
+			commonSize = 0;
+			while(commonSize < stackSize && commonSize < indexedSize
+					&& isIndexedPlacementUnchanged(commonSize, placements.get(commonSize))) {
+				commonSize++;
+			}
+		}
+
+		while(indexedSize > commonSize) {
+			removeLastIndexedPlacement();
+		}
+		while(indexedSize < stackSize) {
+			addIndexedPlacement(placements.get(indexedSize));
+		}
+	}
+
+	private boolean isIndexedPlacementUnchanged(int index, Placement placement) {
+		return indexedPlacements[index] == placement && indexedMinZ[index] == placement.getAbsoluteZ()
+				&& indexedEndZ[index] == placement.getAbsoluteEndZ();
+	}
+
+	private void addIndexedPlacement(Placement placement) {
+		int stackIndex = indexedSize;
+		indexedPlacements[stackIndex] = placement;
+		indexedMinZ[stackIndex] = placement.getAbsoluteZ();
+		indexedEndZ[stackIndex] = placement.getAbsoluteEndZ();
+
+		insertOrdered(minZOrder, indexedMinZ, stackIndex);
+		insertOrdered(endZOrder, indexedEndZ, stackIndex);
+		indexedSize++;
+	}
+
+	private void removeLastIndexedPlacement() {
+		int stackIndex = indexedSize - 1;
+		removeOrdered(minZOrder, indexedMinZ, stackIndex);
+		removeOrdered(endZOrder, indexedEndZ, stackIndex);
+		indexedPlacements[stackIndex] = null;
+		indexedSize--;
+	}
+
+	private void insertOrdered(int[] order, int[] values, int stackIndex) {
+		int low = 0;
+		int high = indexedSize;
+		int value = values[stackIndex];
+		while(low < high) {
+			int middle = (low + high) >>> 1;
+			if(values[order[middle]] <= value) {
+				low = middle + 1;
+			} else {
+				high = middle;
+			}
+		}
+		System.arraycopy(order, low, order, low + 1, indexedSize - low);
+		order[low] = stackIndex;
+	}
+
+	private void removeOrdered(int[] order, int[] values, int stackIndex) {
+		int index = lowerBound(order, values, values[stackIndex]);
+		while(order[index] != stackIndex) {
+			index++;
+		}
+		System.arraycopy(order, index + 1, order, index, indexedSize - index - 1);
+	}
+
+	private int lowerBound(int[] order, int[] values, int value) {
+		int low = 0;
+		int high = indexedSize;
+		while(low < high) {
+			int middle = (low + high) >>> 1;
+			if(values[order[middle]] < value) {
+				low = middle + 1;
+			} else {
+				high = middle;
+			}
+		}
+		return low;
 	}
 
 	// =========================================================================
@@ -254,9 +427,71 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		if(placement.getAbsoluteZ() == 0 || totalArea == 0) {
 			return;
 		}
+		placement.setSupportedArea(0);
 		for(int i = 0; i < placementSupporters.size(); i++) {
 			long area = placementAreas[i];
 			placementSupporters.get(i).addLoad(placement, area, (double) placement.getWeight() * area / totalArea);
+		}
+	}
+
+	@Override
+	public void accepted(Placement placement) {
+		if(placement.getAbsoluteZ() == 0) {
+			return;
+		}
+
+		placementSupporters.clear();
+		int supportZ = placement.getAbsoluteZ() - 1;
+		int minX = placement.getAbsoluteX();
+		int maxX = placement.getAbsoluteEndX();
+		int minY = placement.getAbsoluteY();
+		int maxY = placement.getAbsoluteEndY();
+
+		long totalArea = 0L;
+		List<Placement> placements = stack.getPlacements();
+		if(placements.size() < MIN_INDEXED_STACK_SIZE) {
+			for(int i = 0; i < placements.size(); i++) {
+				Placement candidate = placements.get(i);
+				if(candidate.getAbsoluteEndZ() != supportZ || !candidate.intersects2D(minX, maxX, minY, maxY)) {
+					continue;
+				}
+				long area = LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
+				placementAreas[placementSupporters.size()] = area;
+				placementSupporters.add(candidate);
+				totalArea += area;
+			}
+			addAcceptedSupporterLoads(placement, totalArea);
+			return;
+		}
+
+		synchronizeStackIndex(placements);
+		int index = lowerBound(endZOrder, indexedEndZ, supportZ);
+		while(index < indexedSize) {
+			int stackIndex = endZOrder[index++];
+			if(indexedEndZ[stackIndex] != supportZ) {
+				break;
+			}
+			Placement candidate = indexedPlacements[stackIndex];
+			if(!candidate.intersects2D(minX, maxX, minY, maxY)) {
+				continue;
+			}
+			long area = LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
+			placementAreas[placementSupporters.size()] = area;
+			placementSupporters.add(candidate);
+			totalArea += area;
+		}
+
+		addAcceptedSupporterLoads(placement, totalArea);
+	}
+
+	private void addAcceptedSupporterLoads(Placement placement, long totalArea) {
+		if(totalArea != 0L) {
+			placement.setSupportedArea(0L);
+			double weight = placement.getWeight();
+			for(int i = 0; i < placementSupporters.size(); i++) {
+				long area = placementAreas[i];
+				placementSupporters.get(i).addLoad(placement, area, weight * area / totalArea);
+			}
 		}
 	}
 

@@ -17,6 +17,25 @@ import com.github.skjolber.packing.api.Placement;
 abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 
 	@Test
+	void packsMaximumContainerWeightPrefixWithLoadConstraints() {
+		Container container = Container.newBuilder()
+				.withSize(3, 1, 1)
+				.withMaxLoadWeight(2)
+				.build();
+		Box box = Box.newBuilder()
+				.withId("unit")
+				.withSize(1, 1, 1)
+				.withWeight(1)
+				.withMaxLoadWeight(10)
+				.build();
+
+		PackagerResult result = pack(container, 2, 2, new BoxItem(box, 3));
+
+		assertThat(result.isSuccess()).isTrue();
+		assertThat(result.getContainers()).extracting(c -> c.getStack().size()).containsExactly(2, 1);
+	}
+
+	@Test
 	void packsBoxesWithoutLoadConstraints() {
 		/*
 		 * +-----+

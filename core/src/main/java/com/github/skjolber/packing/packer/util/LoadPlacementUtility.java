@@ -69,6 +69,15 @@ public interface LoadPlacementUtility {
 	void addSupportersLoad(Placement placement);
 
 	/**
+	 * Connects an accepted placement to its direct supporters. Unlike
+	 * {@link #addSupportersLoad(Placement)}, this method must not assume that the
+	 * most recently validated candidate is still cached.
+	 */
+	default void accepted(Placement placement) {
+		addSupportersLoad(placement);
+	}
+
+	/**
 	 * Scans all point-supporters for the best fully-supported placement of
 	 * {@code sv} at {@code point3d}, comparing candidates via {@code comparator}.
 	 *

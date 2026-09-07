@@ -222,6 +222,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			// iterate over all rotations
 
 			bestPermutationResult.reset();
+			int maxPackableCount = getMaxPackableCount(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
 			pointCalculator.clearToSize(holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz());
 			if(containerItem.hasInitialPoints()) {
 				pointCalculator.setPoints(containerItem.getInitialPoints());
@@ -238,7 +239,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 				pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), minStackableVolume);
 
-				int count = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, index, interrupt, minStackableAreaIndex, freeLoadWeights[index], loadPlacementUtility, pointComparator);
+				int count = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, index, interrupt,
+						minStackableAreaIndex, freeLoadWeights[index], loadPlacementUtility, pointComparator, maxPackableCount);
 				if(count == Integer.MIN_VALUE) {
 					return null; // timeout
 				}
@@ -251,6 +253,12 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 					if(count == iterator.length()) {
 						return bestPermutationResult;
 					}
+				}
+				if(count >= maxPackableCount) {
+					// Rotations cannot change box volume or weight, so this is the
+					// longest feasible prefix for the current permutation.
+					clearStack(stack, loadPlacementUtility);
+					break;
 				}
 
 				// search for the next rotation which actually 
@@ -337,9 +345,18 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			BoxItemPermutationRotationIterator iterator, Stack stack, Container container, int placementIndex,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad,
 			LoadPlacementUtility loadPlacementUtility, FastBruteForceBoxStackValuePointComparator pointComparator) {
-		// pack as many items as possible from placementIndex
+		int maxPackableCount = getMaxPackableCount(iterator, container.getMaxLoadVolume(), container.getMaxLoadWeight());
+		return packStackPlacement(pointCalculator, placements, iterator, stack, container, placementIndex, interrupt,
+				minStackableAreaIndex, freeWeightLoad, loadPlacementUtility, pointComparator, maxPackableCount);
+	}
 
-		while (placementIndex < iterator.length()) {
+	protected int packStackPlacement(FastPointCalculator3DStack pointCalculator, List<Placement> placements,
+			BoxItemPermutationRotationIterator iterator, Stack stack, Container container, int placementIndex,
+			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad,
+			LoadPlacementUtility loadPlacementUtility, FastBruteForceBoxStackValuePointComparator pointComparator,
+			int maxPackableCount) {
+		// pack as many items as possible from placementIndex
+		while (placementIndex < maxPackableCount) {
 			if(interrupt.getAsBoolean()) {
 				// might have returned due to deadline
 				return Integer.MIN_VALUE;
@@ -380,7 +397,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 			placementIndex++;
 
-			if(placementIndex < iterator.length()) {
+			if(placementIndex < maxPackableCount) {
 				// check whether minimum point volume and area should be adjusted 
 				boolean minArea = placementIndex == minStackableAreaIndex;
 				if(minArea) {

@@ -107,11 +107,26 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 			BoxItemPermutationRotationIterator iterator, Stack stack, Container container,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points,
 			LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter) throws PackagerInterruptedException {
+		int maxPackableCount = placements.isEmpty() ? 0 : getMaxPackableCount(iterator, container.getMaxLoadVolume(), container.getMaxLoadWeight());
+		return packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt, minStackableAreaIndex,
+				points, loadPlacementUtility, pointFilter, maxPackableCount);
+	}
+
+	@Override
+	protected List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements,
+			BoxItemPermutationRotationIterator iterator, Stack stack, Container container,
+			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points,
+			LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter,
+			int maxPackableCount) throws PackagerInterruptedException {
 		if(placements.isEmpty()) {
 			return Collections.emptyList();
 		}
 		if(loadPlacementUtility == null) {
-			return super.packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt, minStackableAreaIndex, points, null, pointFilter);
+			return super.packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt,
+					minStackableAreaIndex, points, null, pointFilter, maxPackableCount);
+		}
+		if(maxPackableCount == 0) {
+			return Collections.emptyList();
 		}
 
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
@@ -122,15 +137,19 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
 
 		loadPlacementUtility.initialize(placements.size());
-		return packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt, minStackableAreaIndex, Collections.emptyList(), loadPlacementUtility);
+		return packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt, minStackableAreaIndex, Collections.emptyList(), maxPackableCount,
+				loadPlacementUtility);
 	}
 
 	private List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight, int placementIndex,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> best,
-			LoadPlacementUtility utility) throws PackagerInterruptedException {
+			int maxPackableCount, LoadPlacementUtility utility) throws PackagerInterruptedException {
 		if(interrupt.getAsBoolean()) {
 			throw new PackagerInterruptedException();
+		}
+		if(best.size() >= maxPackableCount) {
+			return best;
 		}
 
 		BoxStackValue stackValue = iterator.getStackValue(placementIndex);
@@ -163,7 +182,7 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 			placement.setSupportedArea(supportedArea);
 
 			pointCalculator.add(k, placement);
-			if(placementIndex + 1 >= iterator.length()) {
+			if(placementIndex + 1 >= maxPackableCount) {
 				best = pointCalculator.getPoints();
 				break;
 			}
@@ -182,16 +201,16 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 
 			List<Point> result = packStackPlacement(pointCalculator, placements, iterator, stack,
 					maxLoadWeight - stackValue.getBox().getWeight(), placementIndex + 1, interrupt,
-					nextMinStackableAreaIndex, best, utility);
+					nextMinStackableAreaIndex, best, maxPackableCount, utility);
 
 			for(PlacementLoad placementLoad : placement.getSupporters()) {
 				placementLoad.getPlacement().removeLastSupportee();
 			}
 			placement.clearLoad();
-			stack.remove(placement);
+			stack.remove(stack.size() - 1);
 
 			if(result != null) {
-				if(result.size() >= iterator.length()) {
+				if(result.size() >= maxPackableCount) {
 					best = result;
 					break;
 				}

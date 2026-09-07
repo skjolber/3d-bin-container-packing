@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.Comparator;
-import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -171,47 +170,6 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 
 	@Override
 	public void accepted(Placement placement) {
-		int z = placement.getAbsoluteZ();
-		if (z == 0) return;
-
-		int minX = placement.getAbsoluteX();
-		int maxX = placement.getAbsoluteEndX();
-		int minY = placement.getAbsoluteY();
-		int maxY = placement.getAbsoluteEndY();
-		int supportZ = z - 1;
-
-		long totalArea = 0;
-		List<Placement> stackPlacements = stack.getPlacements();
-		int n = stackPlacements.size();
-		for (int i = 0; i < n; i++) {
-			Placement candidate = stackPlacements.get(i);
-			if (candidate.getAbsoluteEndZ() != supportZ) {
-				continue;
-			}
-			if (!candidate.intersects2D(minX, maxX, minY, maxY)) {
-				continue;
-			}
-			totalArea += LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
-		}
-
-		if (totalArea == 0) {
-			return;
-		}
-
-		placement.setSupportedArea(0);
-
-		double weight = placement.getWeight();
-		for (int i = 0; i < n; i++) {
-			Placement candidate = stackPlacements.get(i);
-			if (candidate.getAbsoluteEndZ() != supportZ) {
-				continue;
-			}
-			if (!candidate.intersects2D(minX, maxX, minY, maxY)) {
-				continue;
-			}
-			long area = LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
-			double weightShare = weight * area / totalArea;
-			candidate.addLoad(placement, area, weightShare);
-		}
+		util.accepted(placement);
 	}
 }
