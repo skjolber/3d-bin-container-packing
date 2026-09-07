@@ -1,7 +1,9 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.RandomAccess;
 
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
@@ -9,6 +11,22 @@ import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.Point3DFlagList;
 
 public class PointCalculator3DStack extends DefaultPointCalculator3D {
+
+	private class BestPointList extends AbstractList<Point> implements RandomAccess {
+
+		@Override
+		public Point get(int index) {
+			if(index < 0 || index >= bestStackIndex) {
+				throw new IndexOutOfBoundsException(index);
+			}
+			return bestPoints[index];
+		}
+
+		@Override
+		public int size() {
+			return bestStackIndex;
+		}
+	}
 
 	protected static class StackItem {
 		
@@ -22,9 +40,13 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 
 	protected List<StackItem> stackItems = new ArrayList<>();
 	protected int stackIndex = 0;
+	protected final Point[] bestPoints;
+	protected final List<Point> bestPointList = new BestPointList();
+	protected int bestStackIndex;
 
 	public PointCalculator3DStack(int maxStackDepth) {
 		super(true, maxStackDepth);
+		this.bestPoints = new Point[maxStackDepth];
 
 		for (int i = 0; i < maxStackDepth; i++) {
 			stackItems.add(new StackItem());
@@ -109,6 +131,27 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		return list;
 	}
 
+	protected void resetBest() {
+		bestStackIndex = 0;
+	}
+
+	protected void updateBest() {
+		if(stackIndex > bestStackIndex) {
+			for(int i = 0; i < stackIndex; i++) {
+				bestPoints[i] = stackItems.get(i + 1).point;
+			}
+			bestStackIndex = stackIndex;
+		}
+	}
+
+	protected int getBestStackIndex() {
+		return bestStackIndex;
+	}
+
+	protected List<Point> getBestPoints() {
+		return bestPointList;
+	}
+
 	public void reset(int dx, int dy, int dz) {
 		setSize(dx, dy, dz);
 
@@ -122,6 +165,7 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		stackItem.values.add(createContainerPoint());
 
 		placements.setSize(0);
+		bestStackIndex = 0;
 		
 		loadCurrent();
 	}

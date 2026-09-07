@@ -59,6 +59,25 @@ class BruteForceIntermediatePackagerResultTest {
 	}
 
 	@Test
+	void preservesAReusablePointPath() {
+		Box first = box("first", 2, 2, 2, 3);
+		Box second = box("second", 3, 3, 3, 5);
+		DefaultBoxItemPermutationRotationIterator iterator = iterator(first, second);
+		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(
+				new ControlledContainerItem(Container.newBuilder().withSize(10, 10, 10).withMaxLoadWeight(1000).build(), 1),
+				new Stack(), 0, iterator);
+		List<Point> reusablePoints = new ArrayList<>(List.of(
+				new DefaultPoint3D(0, 0, 0, 9, 9, 9),
+				new DefaultPoint3D(2, 0, 0, 9, 9, 9)));
+
+		result.setStateFromReusablePoints(reusablePoints, iterator.getState(), List.of(new Placement(), new Placement()));
+		reusablePoints.clear();
+
+		assertThat(result.getSize()).isEqualTo(2);
+		assertThat(result.getLoadVolume()).isEqualTo(first.getVolume() + second.getVolume());
+	}
+
+	@Test
 	void rebuildsLoadsIndependentOfPlacementOrder() {
 		Placement bottom = placement("bottom", 2, 0);
 		Placement middle = placement("middle", 3, 1);

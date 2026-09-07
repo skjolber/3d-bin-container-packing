@@ -67,6 +67,56 @@ class BruteForcePackagerBoundsTest {
 		}
 	}
 
+	@Test
+	void keepsRecursivePointSnapshotsInTheCalculator() throws Exception {
+		Box unit = Box.newBuilder().withId("unit").withSize(1, 1, 1).withWeight(1).build();
+		BoxItemPermutationRotationIterator iterator = iterator(List.of(new BoxItem(unit, 3)));
+		Container container = Container.newBuilder().withSize(2, 1, 1).withMaxLoadWeight(100).build();
+		CountingPointCalculator pointCalculator = new CountingPointCalculator(4);
+
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			List<Point> result = packager.packStackPlacement(pointCalculator,
+					AbstractBruteForcePackager.getPlacements(3), iterator, new Stack(), container,
+					() -> false, iterator.getMinStackableAreaIndex(0), null, null, null);
+			List<Point> filteredResult = packager.packStackPlacement(pointCalculator,
+					AbstractBruteForcePackager.getPlacements(3), iterator, new Stack(), container,
+					() -> false, iterator.getMinStackableAreaIndex(0), null, null,
+					BruteForcePackager.DEFAULT_POINT_FILTER);
+
+			assertThat(result).hasSize(2);
+			assertThat(filteredResult).hasSize(2);
+			assertThat(pointCalculator.getPointsCalls).isZero();
+		}
+	}
+
+	@Test
+	void returnsPointsIndependentOfLaterCalculatorSearches() throws Exception {
+		Box unit = Box.newBuilder().withId("unit").withSize(1, 1, 1).withWeight(1).build();
+		BoxItemPermutationRotationIterator iterator = iterator(List.of(new BoxItem(unit, 3)));
+		Box tooDeep = Box.newBuilder().withId("too-deep").withSize(2, 2, 1).withWeight(1).build();
+		BoxItemPermutationRotationIterator noFitIterator = iterator(List.of(new BoxItem(tooDeep)));
+		PointCalculator3DStack pointCalculator = new PointCalculator3DStack(4);
+
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			List<Point> first = packager.packStackPlacement(pointCalculator,
+					AbstractBruteForcePackager.getPlacements(3), iterator, new Stack(),
+					Container.newBuilder().withSize(2, 1, 1).withMaxLoadWeight(100).build(),
+					() -> false, iterator.getMinStackableAreaIndex(0), null, null, null);
+			List<Point> empty = packager.packStackPlacement(pointCalculator,
+					AbstractBruteForcePackager.getPlacements(1), noFitIterator, new Stack(),
+					Container.newBuilder().withSize(4, 1, 1).withMaxLoadWeight(100).build(),
+					() -> false, noFitIterator.getMinStackableAreaIndex(0), null, null, null);
+			List<Point> second = packager.packStackPlacement(pointCalculator,
+					AbstractBruteForcePackager.getPlacements(3), iterator, new Stack(),
+					Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(100).build(),
+					() -> false, iterator.getMinStackableAreaIndex(0), null, null, null);
+
+			assertThat(first).hasSize(2);
+			assertThat(empty).isEmpty();
+			assertThat(second).hasSize(1);
+		}
+	}
+
 	private static BoxItem item(String id, int dx, int dy, int dz, int weight) {
 		return new BoxItem(Box.newBuilder().withId(id).withSize(dx, dy, dz).withWeight(weight).build(), 1);
 	}
@@ -87,6 +137,21 @@ class BruteForcePackagerBoundsTest {
 		public IntIterator getPoints(DefaultPointCalculator3D pointCalculator, com.github.skjolber.packing.api.BoxStackValue stackValue) {
 			calls++;
 			return super.getPoints(pointCalculator, stackValue);
+		}
+	}
+
+	private static class CountingPointCalculator extends PointCalculator3DStack {
+
+		private int getPointsCalls;
+
+		private CountingPointCalculator(int maxStackDepth) {
+			super(maxStackDepth);
+		}
+
+		@Override
+		public List<Point> getPoints() {
+			getPointsCalls++;
+			return super.getPoints();
 		}
 	}
 }

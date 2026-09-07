@@ -74,8 +74,8 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 			com.github.skjolber.packing.api.Container container, PackagerInterruptSupplier interrupt,
 			int minStackableAreaIndex, List<Point> points, LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter) throws PackagerInterruptedException {
 		int maxPackableCount = placements.isEmpty() ? 0 : getMaxPackableCount(iterator, container.getMaxLoadVolume(), container.getMaxLoadWeight());
-		return packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt, minStackableAreaIndex,
-				points, loadPlacementUtility, pointFilter, maxPackableCount);
+		return preservePoints(packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt,
+				minStackableAreaIndex, points, loadPlacementUtility, pointFilter, maxPackableCount));
 	}
 
 	@Override
@@ -84,6 +84,7 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 			com.github.skjolber.packing.api.Container container, PackagerInterruptSupplier interrupt,
 			int minStackableAreaIndex, List<Point> points, LoadPlacementUtility loadPlacementUtility,
 			BruteForcePointIteratorFilter pointFilter, int maxPackableCount) throws PackagerInterruptedException {
+		pointCalculator.resetBest();
 		if(placements.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -105,11 +106,13 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 
 		loadPlacementUtility.initialize(placements.size());
 		if(pointFilter == null) {
-			return packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt, minStackableAreaIndex, Collections.emptyList(), maxPackableCount,
-					loadPlacementUtility);
+			packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt,
+					minStackableAreaIndex, maxPackableCount, loadPlacementUtility);
+		} else {
+			packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt,
+					minStackableAreaIndex, maxPackableCount, loadPlacementUtility, pointFilter);
 		}
-		return packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt, minStackableAreaIndex, Collections.emptyList(), maxPackableCount,
-				loadPlacementUtility, pointFilter);
+		return pointCalculator.getBestPoints();
 	}
 
 	@Override
@@ -142,23 +145,21 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 		return new WeightPressureCountIdenticalLoadAwarePlacementUtility(stack);
 	}
 
-	private List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
-			int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> best, int maxPackableCount, LoadPlacementUtility utility)
+	private void packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
+			int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility)
 			throws PackagerInterruptedException {
 		if(interrupt.getAsBoolean()) {
 			throw new PackagerInterruptedException();
 		}
-		if(best.size() >= maxPackableCount) {
-			return best;
+		if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
+			return;
 		}
 
 		BoxStackValue stackValue = iterator.getStackValue(placementIndex);
 		if(stackValue.getBox().getWeight() > maxLoadWeight) {
-			return null;
+			return;
 		}
-		if(pointCalculator.getStackIndex() > best.size()) {
-			best = pointCalculator.getPoints();
-		}
+		pointCalculator.updateBest();
 
 		pointCalculator.push();
 		int currentPointsCount = pointCalculator.size();
@@ -173,41 +174,32 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 			if(supportedArea == -1L) {
 				continue;
 			}
-			List<Point> result = attemptPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight, placementIndex, interrupt, minStackableAreaIndex, best, maxPackableCount, utility,
+			attemptPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight, placementIndex, interrupt, minStackableAreaIndex, maxPackableCount, utility,
 					stackValue, k, point, supportedArea, null);
-			if(result != null) {
-				if(result.size() >= maxPackableCount) {
-					best = result;
-					break;
-				}
-				if(best.size() < result.size()) {
-					best = result;
-				}
+			if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
+				break;
 			}
 			pointCalculator.redo();
 		}
 		pointCalculator.pop();
-		return best;
 	}
 
-	private List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
-			int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> best, int maxPackableCount, LoadPlacementUtility utility,
+	private void packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
+			int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility,
 			BruteForcePointIteratorFilter pointFilter) throws PackagerInterruptedException {
 		if(interrupt.getAsBoolean()) {
 			throw new PackagerInterruptedException();
 		}
-		if(best.size() >= maxPackableCount) {
-			return best;
+		if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
+			return;
 		}
 
 		BoxStackValue stackValue = iterator.getStackValue(placementIndex);
 		if(stackValue.getBox().getWeight() > maxLoadWeight) {
-			return null;
+			return;
 		}
 
-		if(pointCalculator.getStackIndex() > best.size()) {
-			best = pointCalculator.getPoints();
-		}
+		pointCalculator.updateBest();
 
 		pointCalculator.push();
 		IntIterator points = pointFilter.getPoints(pointCalculator, stackValue);
@@ -221,26 +213,19 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 				continue;
 			}
 
-			List<Point> result = attemptPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight, placementIndex, interrupt, minStackableAreaIndex, best, maxPackableCount, utility,
+			attemptPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight, placementIndex, interrupt, minStackableAreaIndex, maxPackableCount, utility,
 					stackValue, k, point, supportedArea, pointFilter);
 
-			if(result != null) {
-				if(result.size() >= maxPackableCount) {
-					best = result;
-					break;
-				}
-				if(best.size() < result.size()) {
-					best = result;
-				}
+			if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
+				break;
 			}
 			pointCalculator.redo();
 		}
 		pointCalculator.pop();
-		return best;
 	}
 
-	private List<Point> attemptPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
-			int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> best, int maxPackableCount, LoadPlacementUtility utility, BoxStackValue stackValue,
+	private void attemptPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
+			int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility, BoxStackValue stackValue,
 			int pointIndex, Point point, long supportedArea, BruteForcePointIteratorFilter pointFilter) throws PackagerInterruptedException {
 		Placement placement = placements.get(placementIndex);
 		placement.setStackValue(stackValue);
@@ -249,7 +234,8 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 		placement.setSupportedArea(supportedArea);
 		pointCalculator.add(pointIndex, placement);
 		if(placementIndex + 1 >= maxPackableCount) {
-			return pointCalculator.getPoints();
+			pointCalculator.updateBest();
+			return;
 		}
 
 		stack.add(placement);
@@ -263,20 +249,18 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 			nextMinStackableAreaIndex = minStackableAreaIndex;
 		}
 
-		List<Point> result;
 		if(pointFilter == null) {
-			result = packStackPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight - stackValue.getBox().getWeight(), placementIndex + 1, interrupt,
-					nextMinStackableAreaIndex, best, maxPackableCount, utility);
+			packStackPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight - stackValue.getBox().getWeight(), placementIndex + 1, interrupt,
+					nextMinStackableAreaIndex, maxPackableCount, utility);
 		} else {
-			result = packStackPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight - stackValue.getBox().getWeight(), placementIndex + 1, interrupt,
-					nextMinStackableAreaIndex, best, maxPackableCount, utility, pointFilter);
+			packStackPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight - stackValue.getBox().getWeight(), placementIndex + 1, interrupt,
+					nextMinStackableAreaIndex, maxPackableCount, utility, pointFilter);
 		}
 		for(PlacementLoad placementLoad : placement.getSupporters()) {
 			placementLoad.getPlacement().removeLastSupportee();
 		}
 		placement.clearLoad();
 		stack.remove(stack.size() - 1);
-		return result;
 	}
 
 }

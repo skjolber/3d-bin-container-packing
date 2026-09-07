@@ -108,8 +108,8 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points,
 			LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter) throws PackagerInterruptedException {
 		int maxPackableCount = placements.isEmpty() ? 0 : getMaxPackableCount(iterator, container.getMaxLoadVolume(), container.getMaxLoadWeight());
-		return packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt, minStackableAreaIndex,
-				points, loadPlacementUtility, pointFilter, maxPackableCount);
+		return preservePoints(packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt,
+				minStackableAreaIndex, points, loadPlacementUtility, pointFilter, maxPackableCount));
 	}
 
 	@Override
@@ -118,6 +118,7 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points,
 			LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter,
 			int maxPackableCount) throws PackagerInterruptedException {
+		pointCalculator.resetBest();
 		if(placements.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -137,28 +138,27 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
 
 		loadPlacementUtility.initialize(placements.size());
-		return packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt, minStackableAreaIndex, Collections.emptyList(), maxPackableCount,
-				loadPlacementUtility);
+		packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt,
+				minStackableAreaIndex, maxPackableCount, loadPlacementUtility);
+		return pointCalculator.getBestPoints();
 	}
 
-	private List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements,
+	private void packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight, int placementIndex,
-			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> best,
+			PackagerInterruptSupplier interrupt, int minStackableAreaIndex,
 			int maxPackableCount, LoadPlacementUtility utility) throws PackagerInterruptedException {
 		if(interrupt.getAsBoolean()) {
 			throw new PackagerInterruptedException();
 		}
-		if(best.size() >= maxPackableCount) {
-			return best;
+		if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
+			return;
 		}
 
 		BoxStackValue stackValue = iterator.getStackValue(placementIndex);
 		if(stackValue.getBox().getWeight() > maxLoadWeight) {
-			return null;
+			return;
 		}
-		if(pointCalculator.getStackIndex() > best.size()) {
-			best = pointCalculator.getPoints();
-		}
+		pointCalculator.updateBest();
 
 		pointCalculator.push();
 		int currentPointsCount = pointCalculator.size();
@@ -183,7 +183,7 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 
 			pointCalculator.add(k, placement);
 			if(placementIndex + 1 >= maxPackableCount) {
-				best = pointCalculator.getPoints();
+				pointCalculator.updateBest();
 				break;
 			}
 
@@ -199,9 +199,9 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 				nextMinStackableAreaIndex = minStackableAreaIndex;
 			}
 
-			List<Point> result = packStackPlacement(pointCalculator, placements, iterator, stack,
+			packStackPlacement(pointCalculator, placements, iterator, stack,
 					maxLoadWeight - stackValue.getBox().getWeight(), placementIndex + 1, interrupt,
-					nextMinStackableAreaIndex, best, maxPackableCount, utility);
+					nextMinStackableAreaIndex, maxPackableCount, utility);
 
 			for(PlacementLoad placementLoad : placement.getSupporters()) {
 				placementLoad.getPlacement().removeLastSupportee();
@@ -209,18 +209,11 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 			placement.clearLoad();
 			stack.remove(stack.size() - 1);
 
-			if(result != null) {
-				if(result.size() >= maxPackableCount) {
-					best = result;
-					break;
-				}
-				if(best.size() < result.size()) {
-					best = result;
-				}
+			if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
+				break;
 			}
 			pointCalculator.redo();
 		}
 		pointCalculator.pop();
-		return best;
 	}
 }

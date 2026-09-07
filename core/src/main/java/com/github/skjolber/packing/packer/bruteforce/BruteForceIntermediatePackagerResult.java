@@ -31,6 +31,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	// state
 	private PermutationRotationState state;
 	private List<Point> points = Collections.emptyList();
+	private ArrayList<Point> pointBuffer;
 	private List<Placement> placements = Collections.emptyList();
 	private ArrayList<Placement> loadOrder;
 
@@ -167,6 +168,25 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 
 	public void setState(List<Point> items, PermutationRotationState state, List<Placement> placements) {
 		this.points = items;
+		setState(state, placements);
+	}
+
+	void setStateFromReusablePoints(List<Point> items, PermutationRotationState state, List<Placement> placements) {
+		int size = items.size();
+		if(pointBuffer == null) {
+			pointBuffer = new ArrayList<>(size);
+		} else {
+			pointBuffer.clear();
+			pointBuffer.ensureCapacity(size);
+		}
+		for(int i = 0; i < size; i++) {
+			pointBuffer.add(items.get(i));
+		}
+		this.points = pointBuffer;
+		setState(state, placements);
+	}
+
+	private void setState(PermutationRotationState state, List<Placement> placements) {
 		this.state = state;
 		this.placements = placements;
 		calculateWeightAndVolume();
@@ -175,6 +195,9 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 
 	public void reset() {
 		this.points = Collections.emptyList();
+		if(pointBuffer != null) {
+			pointBuffer.clear();
+		}
 		this.state = null;
 		this.placements = Collections.emptyList();
 		if(loadOrder != null) {
