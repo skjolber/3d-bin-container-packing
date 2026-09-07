@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { isSameBoxItem } from './utils';
 
 const MAX_DIM = 640;
 const CANVAS_PADDING = 24;
@@ -39,6 +40,28 @@ function findSupportingBoxes(hoveredSource, allBoxPlacements) {
         // X-axis footprint overlap
         if (placement.x + stackable.dx <= hoveredX || placement.x >= hoveredX + hoveredDx) continue;
         // Y-axis footprint overlap
+        if (placement.y + stackable.dy <= hoveredY || placement.y >= hoveredY + hoveredDy) continue;
+        results.push(bp);
+    }
+    return results;
+}
+
+/**
+ * Return boxes whose bottom face rests directly on the hovered box. These are
+ * the boxes contributing the first level of load to it.
+ */
+function findLoadedBoxes(hoveredSource, allBoxPlacements) {
+    const hoveredTopZ = hoveredSource.z + hoveredSource.stackable.dz;
+    const hoveredX = hoveredSource.x;
+    const hoveredY = hoveredSource.y;
+    const hoveredDx = hoveredSource.stackable.dx;
+    const hoveredDy = hoveredSource.stackable.dy;
+    const results = [];
+    for (const bp of allBoxPlacements) {
+        if (bp.isHovered) continue;
+        const { placement, stackable } = bp;
+        if (Math.abs(placement.z - hoveredTopZ) > 0.5) continue;
+        if (placement.x + stackable.dx <= hoveredX || placement.x >= hoveredX + hoveredDx) continue;
         if (placement.y + stackable.dy <= hoveredY || placement.y >= hoveredY + hoveredDy) continue;
         results.push(bp);
     }
@@ -257,11 +280,13 @@ function SupportingPlacementsView({ hoveredData }) {
 
     // Find hovered box index and load info
     const hoveredIdx = allBoxPlacements.findIndex(bp => bp.isHovered);
+    const hoveredBp = hoveredIdx >= 0 ? allBoxPlacements[hoveredIdx] : null;
     const hoveredLoadInfo = loadInfos && hoveredIdx >= 0 ? loadInfos[hoveredIdx] : null;
     const hoveredStackable = source.stackable;
 
     // Find supporting boxes (parallel to allBoxPlacements)
     const supporting = findSupportingBoxes(source, allBoxPlacements);
+    const loadedBoxes = findLoadedBoxes(source, allBoxPlacements);
 
     const rowStyle = { display: 'flex', justifyContent: 'space-between', gap: '12px', fontSize: '12px', padding: '1px 0' };
     const labelStyle = { color: '#aaa' };
@@ -349,6 +374,10 @@ function SupportingPlacementsView({ hoveredData }) {
                             <span style={valueStyle}>{fmt(hoveredLoadInfo.loadWeight)}</span>
                         </div>
                         <div style={rowStyle}>
+                            <span style={labelStyle}>Load pressure</span>
+                            <span style={valueStyle}>{fmt(hoveredLoadInfo.loadPressure)}</span>
+                        </div>
+                        <div style={rowStyle}>
                             <span style={labelStyle}>Direct boxes on top</span>
                             <span style={valueStyle}>{hoveredLoadInfo.directCount}</span>
                         </div>
@@ -356,6 +385,38 @@ function SupportingPlacementsView({ hoveredData }) {
                             <span style={labelStyle}>Stack depth above</span>
                             <span style={valueStyle}>{hoveredLoadInfo.stackDepth}</span>
                         </div>
+                        <div style={rowStyle}>
+                            <span style={labelStyle}>Load boxes</span>
+                            <span style={valueStyle}>{hoveredLoadInfo.loadBoxCount}</span>
+                        </div>
+                        {hoveredLoadInfo.loadBoxCount > 0 && (
+                            <div style={rowStyle}>
+                                <span style={labelStyle}>Identical load boxes</span>
+                                <span style={{ ...valueStyle, color: hoveredLoadInfo.nonIdenticalLoadBoxCount === 0 ? '#81c784' : '#ef5350' }}>
+                                    {hoveredLoadInfo.identicalLoadBoxCount} / {hoveredLoadInfo.loadBoxCount}
+                                </span>
+                            </div>
+                        )}
+                    </>
+                )}
+                {loadedBoxes.length > 0 && (
+                    <>
+                        <div style={dividerStyle} />
+                        <div style={{ ...sectionHeadStyle, color: '#81c784' }}>Direct load boxes ({loadedBoxes.length})</div>
+                        {loadedBoxes.map((bp, i) => {
+                            const s = bp.stackable;
+                            const identical = hoveredBp ? isSameBoxItem(hoveredBp, bp) : false;
+                            return (
+                                <div key={i} style={{ ...rowStyle, marginBottom: '2px' }}>
+                                    <span style={{ color: bp.color, fontWeight: 'bold' }}>
+                                        {s.id || s.name || `Box ${i}`}
+                                    </span>
+                                    <span style={{ ...valueStyle, color: identical ? '#81c784' : '#ef5350' }}>
+                                        {identical ? 'identical' : 'different'}
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </>
                 )}
                 {supporting.length > 0 && (

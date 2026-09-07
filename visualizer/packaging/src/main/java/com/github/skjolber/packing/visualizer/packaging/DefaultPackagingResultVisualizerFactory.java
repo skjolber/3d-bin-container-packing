@@ -1,9 +1,12 @@
 package com.github.skjolber.packing.visualizer.packaging;
 
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
@@ -30,6 +33,7 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 	public PackagingResultVisualizer visualize(List<Container> inputContainers) {
 		
 		boolean calculatePoints = this.calculatePoints;
+		Map<Object, Integer> boxItemKeys = new IdentityHashMap<>();
 		
 		int step = 0;
 		PackagingResultVisualizer visualization = new PackagingResultVisualizer();
@@ -71,10 +75,13 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 				boxVisualization.setDx(stackValue.getDx());
 				boxVisualization.setDy(stackValue.getDy());
 				boxVisualization.setDz(stackValue.getDz());
-				
+
+				BoxItem boxItem = placement.getBoxItem();
+				Object boxItemIdentity = boxItem != null ? boxItem : box;
+				boxVisualization.setBoxItemKey(boxItemKeys.computeIfAbsent(boxItemIdentity, key -> boxItemKeys.size()));
 				boxVisualization.setWeight(box.getWeight());
-			
-			if(stackValue.isMaxLoadBoxCount()) {
+
+				if(stackValue.isMaxLoadBoxCount()) {
 					boxVisualization.setMaxLoadBoxCount(stackValue.getMaxLoadBoxCount());
 				}
 				if(stackValue.isMaxLoadWeight()) {

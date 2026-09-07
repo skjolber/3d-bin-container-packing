@@ -78,24 +78,26 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 						continue;
 					}
 
-					Placement placement = util.getPlacementAtPoint(point3d, stackValue, fullSupport);
+					long supportedArea = util.getSupportedAreaAtPoint(point3d, stackValue, fullSupport);
 
-					if (placement == null && stackValue.isLoadIdenticalBoxOnly()) {
+					if (supportedArea == -1L && stackValue.isLoadIdenticalBoxOnly()) {
 						// identical-only boxes may fit at inner positions supported by
 						// the corners of existing placements in the same z-plane
 						Placement p = util.findPlacementAtPointSupporters(point3d, stackValue, placementComparator);
-						if (p != null && (result == null || placementComparator.compare(result, p) < 0)) {
-							result = p;
+						if (p != null) {
+							result = selectPlacement(result, p);
 						}
 					}
 
-					if (placement == null) {
+					if (supportedArea == -1L) {
 						continue;
 					}
-					if (result != null && placementComparator.compare(result, placement) >= 0) {
-						continue;
-					}
-					result = placement;
+
+					Placement placement = acquirePlacement();
+					placement.setStackValue(stackValue);
+					placement.setPoint(point3d);
+					placement.setSupportedArea(supportedArea);
+					result = selectPlacement(result, placement);
 				}
 			}
 

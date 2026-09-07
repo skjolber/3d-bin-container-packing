@@ -79,14 +79,16 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 						continue;
 					}
 
-					Placement placement = util.getPlacementAtPoint(point3d, stackValue, fullSupport);
-					if (placement == null) {
+					long supportedArea = util.getSupportedAreaAtPoint(point3d, stackValue, fullSupport);
+					if (supportedArea == -1L) {
 						continue;
 					}
-					if (result != null && placementComparator.compare(result, placement) >= 0) {
-						continue;
-					}
-					result = placement;
+
+					Placement placement = acquirePlacement();
+					placement.setStackValue(stackValue);
+					placement.setPoint(point3d);
+					placement.setSupportedArea(supportedArea);
+					result = selectPlacement(result, placement);
 				}
 			}
 
@@ -145,10 +147,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 					if (placement == null) {
 						continue;
 					}
-					if (result != null && placementComparator.compare(result, placement) >= 0) {
-						continue;
-					}
-					result = placement;
+					result = selectPlacement(result, placement);
 				}
 			}
 

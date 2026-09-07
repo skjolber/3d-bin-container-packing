@@ -383,6 +383,7 @@ class ThreeScene extends Component {
               stackable.maxLoadWeight, stackable.maxLoadPressure,
               stackable.maxLoadBoxCount, stackable.maxLoadIdenticalOnly
             );
+            box.boxItemKey = stackable.boxItemKey;
             
             container.add(new StackPlacement(box, placement.step, placement.x, placement.y, placement.z, points));
           } else {

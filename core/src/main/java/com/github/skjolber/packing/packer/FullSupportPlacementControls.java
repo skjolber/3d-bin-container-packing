@@ -63,11 +63,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 							continue;
 						}
 						
-						if(result != null && placementComparator.compare(result, placementResult) >= 0) {
-							continue;
-						}
-						
-						result = placementResult;						
+						result = selectPlacement(result, placementResult);
 					}
 				} 
 			}
@@ -159,11 +155,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 						
 						Placement placement = createPlacement(stackValue, point3d.getIndex(), x, y, point3d.getMinZ());
 						
-						if(result != null && placementComparator.compare(result, placement) >= 0) {
-							continue;
-						}
-						
-						result = placement;
+						result = selectPlacement(result, placement);
 					}
 				} 
 			}
@@ -180,13 +172,17 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 	}
 
 	protected Placement createPlacement(BoxStackValue stackValue, int index, int x, int y, int z) {
-		Placement placement = new Placement(stackValue, index, x, y, z);
+		Placement placement = acquirePlacement();
+		placement.setStackValue(stackValue);
+		placement.setPoint(index, x, y, z);
 		placement.setSupportedArea(stackValue.getArea());
 		return placement;
 	}
 	
 	protected Placement createPlacement(BoxStackValue stackValue, Point point) {
-		Placement placement = new Placement(stackValue, point);
+		Placement placement = acquirePlacement();
+		placement.setStackValue(stackValue);
+		placement.setPoint(point);
 		placement.setSupportedArea(stackValue.getArea());
 		return placement;
 	}

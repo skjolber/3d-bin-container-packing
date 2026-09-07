@@ -68,11 +68,7 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 						continue;
 					}
 					
-					if(result != null && placementComparator.compare(result, placementResult) >= 0) {
-						continue;
-					}
-					
-					result = placementResult;
+					result = selectPlacement(result, placementResult);
 				} 
 			}
 			
@@ -88,7 +84,9 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 	}
 
 	protected Placement createPlacement(Point point, BoxStackValue stackValue) {
-		Placement placement = new Placement(stackValue, point);
+		Placement placement = acquirePlacement();
+		placement.setStackValue(stackValue);
+		placement.setPoint(point);
 		if(point.getMinZ() == 0 || point.isSupportedXYPlane(stackValue)) {
 			placement.setSupportedArea(stackValue.getArea());
 		} else {

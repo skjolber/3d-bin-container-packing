@@ -41,6 +41,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	protected PlacementList pointSupportees = new PlacementList();
 	protected PlacementList pointSupporters = new PlacementList();
 	protected PlacementList placementSupporters = new PlacementList();
+	private Placement recyclablePlacement;
 
 	protected long[] placementAreas;
 	protected double[] reliefWeights;
@@ -214,7 +215,9 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 			return null;
 		}
 
-		Placement placement = new Placement(sv, point);
+		Placement placement = acquirePlacement();
+		placement.setStackValue(sv);
+		placement.setPoint(point);
 		placement.setSupportedArea(supportedArea);
 		return placement;
 	}
@@ -293,7 +296,9 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 			return null;
 		}
 
-		Placement placement = new Placement(stackValue, point3d.getIndex(), x, y, point3d.getMinZ());
+		Placement placement = acquirePlacement();
+		placement.setStackValue(stackValue);
+		placement.setPoint(point3d.getIndex(), x, y, point3d.getMinZ());
 		placement.setSupportedArea(stackValue.getArea());
 		return placement;
 	}
@@ -329,10 +334,27 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 				continue;
 			}
 			if (best != null && comparator.compare(best, p) >= 0) {
+				recyclablePlacement = p;
 				continue;
+			}
+			if(best != null) {
+				recyclablePlacement = best;
 			}
 			best = p;
 		}
 		return best;
+	}
+
+	private Placement acquirePlacement() {
+		Placement placement = recyclablePlacement;
+		if(placement == null) {
+			return new Placement();
+		}
+
+		recyclablePlacement = null;
+		placement.clearLoad();
+		placement.setProperties(null);
+		placement.setIndex(0);
+		return placement;
 	}
 }

@@ -100,10 +100,12 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 				break;
 			}
 			int bestPointIndex = -1;
-			long bestSupportedArea = -1L;
 			for(int k = 0; k < pointCalculator.size(); k++) {
 				Point point = pointCalculator.get(k);
 				if(!point.fits3D(stackValue)) {
+					continue;
+				}
+				if(bestPointIndex != -1 && pointComparator.compare(stackValue, pointCalculator.get(bestPointIndex), point) <= 0) {
 					continue;
 				}
 
@@ -114,11 +116,7 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 					continue;
 				}
 
-				if(bestPointIndex != -1 && pointComparator.compare(stackValue, pointCalculator.get(bestPointIndex), point) <= 0) {
-					continue;
-				}
 				bestPointIndex = k;
-				bestSupportedArea = supportedArea;
 			}
 
 			if(bestPointIndex == -1) {
@@ -130,7 +128,7 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 			// so repopulate its caches for the selected point before adding the load.
 			utility.populatePointSupporters(point);
 			utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
-			bestSupportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
+			long bestSupportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
 
 			Placement placement = placements.get(placementIndex);
 			placement.clearLoad();

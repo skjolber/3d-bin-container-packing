@@ -4,6 +4,8 @@ public class BoxVisualizer extends StackableVisualizer {
 
 	private String type = "box";
 
+	/** Per-result identity key; equal values represent the same box-item type. */
+	protected Integer boxItemKey;
 	protected long weight;
 	protected Long maxLoadWeight;
 	protected Double maxLoadPressure;
@@ -16,6 +18,14 @@ public class BoxVisualizer extends StackableVisualizer {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	public Integer getBoxItemKey() {
+		return boxItemKey;
+	}
+
+	public void setBoxItemKey(Integer boxItemKey) {
+		this.boxItemKey = boxItemKey;
 	}
 
 	public long getWeight() {

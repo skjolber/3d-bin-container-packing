@@ -58,6 +58,7 @@ export class Stackable {
 
 export class Box extends Stackable {
 
+    boxItemKey?: number;
     weight: number;
     maxLoadWeight?: number;
     maxLoadPressure?: number;
@@ -335,6 +336,7 @@ export class StackableRenderer {
                         z: stackPlacement.z
                     },
                     step: boxStackable.step,
+                    boxItemKey: boxStackable.boxItemKey,
                     weight: boxStackable.weight,
                     maxLoadWeight: boxStackable.maxLoadWeight,
                     maxLoadPressure: boxStackable.maxLoadPressure,
@@ -441,4 +443,3 @@ export class StackableRenderer {
 
 	}
 }    
-

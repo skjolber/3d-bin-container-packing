@@ -1814,11 +1814,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	@Override
 	public Iterator<Point> iterator() {
-		for (Point point : values) {
-			if(point.getIndex() == -1) {
-				throw new RuntimeException(point.toString());
-			}
-		}
 		return values.iterator();
 	}
 	

@@ -3,14 +3,21 @@ package com.github.skjolber.packing.packer;
 import static com.github.skjolber.packing.packer.PlacementControlsTestSupport.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 
 /**
@@ -28,6 +35,21 @@ import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 class ComparatorPlacementControlsTest {
 
 	@Test
+	void reusesDiscardedPlacementCandidates() {
+		DefaultPointCalculator3D calc = calculator(10, 10, 10);
+		Stack stack = new Stack();
+		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withWeight(1).build();
+		DefaultBoxItemSource src = source(new BoxItem(box));
+		TrackingComparatorPlacementControls ctrl = new TrackingComparatorPlacementControls(src, calc, stack);
+
+		Placement result = ctrl.getPlacement(0, src.size());
+
+		assertThat(result).isNotNull();
+		assertThat(ctrl.candidateCount).isEqualTo(box.getStackValues().length);
+		assertThat(ctrl.candidates).hasSize(2);
+	}
+
+	@Test
 	void acceptsNegativeComparatorValuesOtherThanMinusOne() {
 		DefaultPointCalculator3D calc = calculator(10, 10, 10);
 		Stack stack = new Stack();
@@ -42,6 +64,25 @@ class ComparatorPlacementControlsTest {
 
 		assertThat(result).isNotNull();
 		assertThat(result.getBox().getId()).isEqualTo("large");
+	}
+
+	private static class TrackingComparatorPlacementControls extends ComparatorPlacementControls {
+
+		private final Set<Placement> candidates = Collections.newSetFromMap(new IdentityHashMap<>());
+		private int candidateCount;
+
+		private TrackingComparatorPlacementControls(DefaultBoxItemSource source, DefaultPointCalculator3D pointCalculator, Stack stack) {
+			super(source, new DefaultPointControls(pointCalculator), pointCalculator, container(10, 10, 10), stack, Order.NONE,
+					(reference, candidate) -> -1, (reference, candidate) -> 0);
+		}
+
+		@Override
+		protected Placement createPlacement(Point point, BoxStackValue stackValue) {
+			Placement placement = super.createPlacement(point, stackValue);
+			candidateCount++;
+			candidates.add(placement);
+			return placement;
+		}
 	}
 
 	// -----------------------------------------------------------------------

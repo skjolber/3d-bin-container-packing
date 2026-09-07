@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
@@ -33,7 +34,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	private List<Placement> placements = Collections.emptyList();
 	private ArrayList<Placement> loadOrder;
 
-	private boolean dirty = true;
+	private boolean stackDirty = true;
 
 	private long loadVolume;
 	private int loadWeight;
@@ -46,17 +47,18 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	}
 	
 	public void calculateWeightAndVolume() {
-		
 		long loadVolume = 0;
 		int loadWeight = 0;
 
-		List<BoxStackValue> list = iterator.get(state, points.size());
-
-		for(BoxStackValue v : list) {
-			Box box = v.getBox();
+		if(state != null) {
+			int[] permutations = state.getPermutations();
+			BoxItem[] boxItems = iterator.getBoxItems();
+			for(int i = 0; i < points.size(); i++) {
+				Box box = boxItems[permutations[i]].getBox();
 			
-			loadVolume += box.getVolume();
-			loadWeight += box.getWeight();
+				loadVolume += box.getVolume();
+				loadWeight += box.getWeight();
+			}
 		}
 
 		this.loadVolume = loadVolume;
@@ -65,26 +67,9 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 
 
 	public void calculateLoad() {
-		if(dirty) {
-			dirty = false;
-			
+		if(stackDirty) {
 			calculateStack();
-			
-			long loadVolume = 0;
-			int loadWeight = 0;
-
-			for (int i = 0; i < points.size(); i++) {
-				Placement stackPlacement = placements.get(i);
-				
-				BoxStackValue v = stackPlacement.getStackValue();
-				Box box = v.getBox();
-				
-				loadVolume += box.getVolume();
-				loadWeight += box.getWeight();
-			}
-
-			this.loadVolume = loadVolume;
-			this.loadWeight = loadWeight;
+			stackDirty = false;
 		}
 	}
 	
@@ -97,6 +82,9 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 
 	public void calculateStack() {
 		stack.clear();
+		if(points.isEmpty()) {
+			return;
+		}
 
 		int[] permutations = state.getPermutations();
 		
@@ -181,7 +169,8 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		this.points = items;
 		this.state = state;
 		this.placements = placements;
-		this.dirty = true;
+		calculateWeightAndVolume();
+		this.stackDirty = true;
 	}
 
 	public void reset() {
@@ -191,7 +180,9 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		if(loadOrder != null) {
 			loadOrder.clear();
 		}
-		this.dirty = true;
+		this.loadVolume = 0;
+		this.loadWeight = 0;
+		this.stackDirty = true;
 	}
 
 	@Override
@@ -208,12 +199,10 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	}
 
 	public long getLoadVolume() {
-		calculateLoad();
 		return loadVolume;
 	}
 
 	public int getLoadWeight() {
-		calculateLoad();
 		return loadWeight;
 	}
 
@@ -222,7 +211,6 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	}
 
 	public int getWeight() {
-		calculateLoad();
 		return loadWeight + containerItem.getContainer().getEmptyWeight();
 	}
 
@@ -235,7 +223,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	}
 
 	public void markDirty() {
-		this.dirty = true;
+		this.stackDirty = true;
 	}
 
 	public int getContainerItemIndex() {
@@ -247,7 +235,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	}
 	
 	public boolean isDirty() {
-		return dirty;
+		return stackDirty;
 	}
 
 	public void trimToSize(int size) {
@@ -257,7 +245,8 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		if(!stack.isEmpty()) {
 			stack.setSize(size);
 		}
-		dirty = true;
+		calculateWeightAndVolume();
+		stackDirty = true;
 	}
 
 }
