@@ -19,7 +19,7 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 public class BruteForceIntermediatePackagerResult implements IntermediatePackagerResult {
 	
-	public static final BruteForceIntermediatePackagerResult EMPTY = new BruteForceIntermediatePackagerResult(null, null, 0, null);
+	public static final BruteForceIntermediatePackagerResult EMPTY = new BruteForceIntermediatePackagerResult(null, null, 0, null, false);
 	private static final Comparator<Placement> ABSOLUTE_Z_COMPARATOR = Comparator.comparingInt(Placement::getAbsoluteZ);
 	private static final Placement[] EMPTY_PLACEMENTS = new Placement[0];
 	private static final byte STACK_DIRTY = 1;
@@ -30,6 +30,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	private final ControlledContainerItem containerItem;
 	private final BoxItemPermutationRotationIterator iterator;
 	private final int index;
+	private final boolean calculateLoads;
 
 	// state
 	private PermutationRotationState state;
@@ -44,10 +45,15 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	private int loadWeight;
 
 	public BruteForceIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack, int index, BoxItemPermutationRotationIterator iterator) {
+		this(containerItem, stack, index, iterator, true);
+	}
+
+	BruteForceIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack, int index, BoxItemPermutationRotationIterator iterator, boolean calculateLoads) {
 		this.containerItem = containerItem;
 		this.stack = stack;
 		this.iterator = iterator;
 		this.index = index;
+		this.calculateLoads = calculateLoads;
 	}
 	
 	public void calculateWeightAndVolume() {
@@ -111,7 +117,9 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 			stack.add(stackPlacement);
 		}
 
-		rebuildLoads(stack.getPlacements());
+		if(calculateLoads) {
+			rebuildLoads(stack.getPlacements());
+		}
 	}
 
 	void rebuildLoads(List<Placement> placements) {
@@ -258,6 +266,10 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	
 	public BoxItemPermutationRotationIterator getIterator() {
 		return iterator;
+	}
+
+	boolean isCalculateLoads() {
+		return calculateLoads;
 	}
 	
 	public boolean isDirty() {

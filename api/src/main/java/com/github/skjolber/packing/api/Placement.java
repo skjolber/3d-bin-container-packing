@@ -23,8 +23,8 @@ public class Placement implements Serializable {
 	// Box-load tracking
 	// -----------------------------------------------------------------------
 
-	protected List<PlacementLoad> supporters = new ArrayList<>(4);
-	protected List<PlacementLoad> supportees = new ArrayList<>(4);
+	protected List<PlacementLoad> supporters;
+	protected List<PlacementLoad> supportees;
 	/**
 	 * Total weight of all boxes resting on top of this placement.
 	 * Includes all boxes in the vertical stack above, adjusted for area-proportional distribution.
@@ -211,6 +211,9 @@ public class Placement implements Serializable {
 	 * @return list of supportees
 	 */
 	public List<PlacementLoad> getSupportees() {
+		if(supportees == null) {
+			supportees = new ArrayList<>(4);
+		}
 		return supportees;
 	}
 
@@ -220,6 +223,9 @@ public class Placement implements Serializable {
 	 * @return list of supporters
 	 */
 	public List<PlacementLoad> getSupporters() {
+		if(supporters == null) {
+			supporters = new ArrayList<>(4);
+		}
 		return supporters;
 	}
 
@@ -241,11 +247,11 @@ public class Placement implements Serializable {
 	}
 	
 	protected void addSupportee(PlacementLoad supporter) {
-		this.supportees.add(supporter);
+		getSupportees().add(supporter);
 	}
 
 	protected void addSupporter(PlacementLoad supporter) {
-		this.supporters.add(supporter);
+		getSupporters().add(supporter);
 		
 		supportedArea += supporter.getArea();
 	}
@@ -253,7 +259,7 @@ public class Placement implements Serializable {
 	protected void propagateLoad(double weightIncrement) {
 		this.loadWeight += weightIncrement;
 
-		if(!supporters.isEmpty()) {
+		if(supporters != null && !supporters.isEmpty()) {
 			for (int i = 0; i < supporters.size(); i++) {
 				PlacementLoad supporterLink = supporters.get(i);
 				double share = weightIncrement * supporterLink.getArea() / supportedArea;
@@ -263,6 +269,9 @@ public class Placement implements Serializable {
 	}
 	
 	public void removeLoad(Placement supportee) {
+		if(supportees == null) {
+			return;
+		}
 		for(int i = supportees.size() - 1; i >= 0; i--) {
 			PlacementLoad supporteeLink = supportees.get(i);
 			if(supporteeLink.getPlacement() == supportee) {
@@ -275,14 +284,21 @@ public class Placement implements Serializable {
 	}
 
 	public void clearLoad() {
-		supportees.clear();
-		supporters.clear();
+		if(supportees != null) {
+			supportees.clear();
+		}
+		if(supporters != null) {
+			supporters.clear();
+		}
 		
 		loadWeight = 0.0;
 		supportedArea = 0;
 	}
 
 	public void removeSupporter(Placement placement) {
+		if(supporters == null) {
+			return;
+		}
 		for(int i = 0; i < supporters.size(); i++) {
 			PlacementLoad supporterLink = supporters.get(i);
 			if(supporterLink.getPlacement() == placement) {
@@ -319,9 +335,11 @@ public class Placement implements Serializable {
 		}
 		
 		levels++;
-		for (PlacementLoad placementLoad : supporters) {
-			if(!placementLoad.getPlacement().isWithinMaxLoadBoxCount(levels)) {
-				return false;
+		if(supporters != null) {
+			for (PlacementLoad placementLoad : supporters) {
+				if(!placementLoad.getPlacement().isWithinMaxLoadBoxCount(levels)) {
+					return false;
+				}
 			}
 		}
 		
@@ -337,6 +355,7 @@ public class Placement implements Serializable {
 	}
 
 	public void removeLastSupportee() {
+		List<PlacementLoad> supportees = getSupportees();
 		PlacementLoad supporteeLink = supportees.remove(supportees.size() - 1);
 		propagateLoad(-supporteeLink.getWeight());
 	}

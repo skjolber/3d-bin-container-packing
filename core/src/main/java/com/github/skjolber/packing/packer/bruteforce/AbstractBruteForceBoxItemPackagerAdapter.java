@@ -61,7 +61,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 
 	protected BruteForceIntermediatePackagerResult copy(ControlledContainerItem peek, IntermediatePackagerResult result, int index) {
 		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
-			return new BruteForceIntermediatePackagerResult(peek, result.getStack(), index, bruteForceResult.getIterator());
+			return new BruteForceIntermediatePackagerResult(peek, result.getStack(), index, bruteForceResult.getIterator(), bruteForceResult.isCalculateLoads());
 		}
 		throw new IllegalStateException();
 	}
