@@ -184,28 +184,45 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		return iterator.length();
 	}
 
+	protected static boolean canPackAll(BoxItemPermutationRotationIterator iterator, long maxLoadVolume, long maxLoadWeight) {
+		long loadVolume = 0L;
+		long loadWeight = 0L;
+		for (int i = 0; i < iterator.length(); i++) {
+			BoxStackValue stackValue = iterator.getStackValue(i);
+			long volume = stackValue.getBox().getVolume();
+			long weight = stackValue.getBox().getWeight();
+			if(volume > maxLoadVolume - loadVolume || weight > maxLoadWeight - loadWeight) {
+				return false;
+			}
+			loadVolume += volume;
+			loadWeight += weight;
+		}
+		return true;
+	}
+
 	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ControlledContainerItem containerItem, int index,
 			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter) throws PackagerInterruptedException {
 
-		Container holder = containerItem.getContainer().clone();
+		Container holder = containerItem.getContainer().clone(iterator.length());
 		
 		Stack stack = holder.getStack();
 		
-		BruteForceIntermediatePackagerResult bestResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(), index, iterator, supportsLoad());
+		BruteForceIntermediatePackagerResult bestResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), index, iterator, supportsLoad());
 		
 		// optimization: compare pack results by looking only at count within the same permutation 
-		BruteForceIntermediatePackagerResult bestPermutationResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(), index, iterator, supportsLoad());
+		BruteForceIntermediatePackagerResult bestPermutationResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), index, iterator, supportsLoad());
 
 		LoadPlacementUtility utility = createLoadPlacementUtility(iterator, stack);
 
 		// iterator over all permutations
+		boolean allItemsFit = canPackAll(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
 		do {
 			if(interrupt.getAsBoolean()) {
 				throw new PackagerInterruptedException();
 			}
 			// iterate over all rotations
 			bestPermutationResult.reset();
-			int maxPackableCount = getMaxPackableCount(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
+			int maxPackableCount = allItemsFit ? iterator.length() : getMaxPackableCount(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
 
 			do {
 				int minStackableAreaIndex = iterator.getMinStackableAreaIndex(0);

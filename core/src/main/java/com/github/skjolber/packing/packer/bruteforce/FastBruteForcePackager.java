@@ -199,14 +199,14 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			BoxItemPermutationRotationIterator iterator,
 			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		
-		Container holder = containerItem.getContainer().clone();
+		Container holder = containerItem.getContainer().clone(iterator.length());
 		
 		Stack stack = holder.getStack();
 		
-		BruteForceIntermediatePackagerResult bestResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(), containerIndex, iterator, supportsLoad());
+		BruteForceIntermediatePackagerResult bestResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), containerIndex, iterator, supportsLoad());
 		
 		// optimization: compare pack results by looking only at count within the same permutation 
-		BruteForceIntermediatePackagerResult bestPermutationResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(), containerIndex, iterator, supportsLoad());
+		BruteForceIntermediatePackagerResult bestPermutationResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), containerIndex, iterator, supportsLoad());
 
 		long[] freeLoadWeights = calculateFreeLoadWeights(holder, iterator);
 		LoadPlacementUtility loadPlacementUtility = createLoadPlacementUtility(iterator, stack);
@@ -214,6 +214,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			loadPlacementUtility.initialize(iterator.length());
 		}
 		
+		boolean allItemsFit = canPackAll(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
+
 		// iterator over all permutations
 		permutations: 
 		do {
@@ -223,7 +225,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			// iterate over all rotations
 
 			bestPermutationResult.reset();
-			int maxPackableCount = getMaxPackableCount(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
+			int maxPackableCount = allItemsFit ? iterator.length() : getMaxPackableCount(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
 			pointCalculator.clearToSize(holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz());
 			if(containerItem.hasInitialPoints()) {
 				pointCalculator.setPoints(containerItem.getInitialPoints());
