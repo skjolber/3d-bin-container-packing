@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -19,6 +20,31 @@ import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 
 public class DefaultPointCalculator3DTest {
+
+	private static class ContainerPlacementPointCalculator3D extends DefaultPointCalculator3D {
+
+		public ContainerPlacementPointCalculator3D() {
+			super(true, 1);
+		}
+
+		public Placement getContainerPlacement() {
+			return containerPlacement;
+		}
+	}
+
+	@Test
+	public void testReuseContainerPlacementForSameSize() {
+		ContainerPlacementPointCalculator3D calculator = new ContainerPlacementPointCalculator3D();
+
+		calculator.clearToSize(10, 20, 30);
+		Placement containerPlacement = calculator.getContainerPlacement();
+
+		calculator.clearToSize(10, 20, 30);
+		assertThat(calculator.getContainerPlacement()).isSameAs(containerPlacement);
+
+		calculator.clearToSize(10, 20, 31);
+		assertThat(calculator.getContainerPlacement()).isNotSameAs(containerPlacement);
+	}
 	
 	private Placement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, -1);

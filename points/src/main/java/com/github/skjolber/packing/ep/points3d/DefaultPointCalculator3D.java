@@ -79,9 +79,20 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	public void setSize(int dx, int dy, int dz) {
-		this.containerMaxX = dx - 1;
-		this.containerMaxY = dy - 1;
-		this.containerMaxZ = dz - 1;
+		int containerMaxX = dx - 1;
+		int containerMaxY = dy - 1;
+		int containerMaxZ = dz - 1;
+
+		if(containerPlacement != null &&
+				this.containerMaxX == containerMaxX &&
+				this.containerMaxY == containerMaxY &&
+				this.containerMaxZ == containerMaxZ) {
+			return;
+		}
+
+		this.containerMaxX = containerMaxX;
+		this.containerMaxY = containerMaxY;
+		this.containerMaxZ = containerMaxZ;
 
 		this.containerPlacement = createContainerPlacement();
 	}
