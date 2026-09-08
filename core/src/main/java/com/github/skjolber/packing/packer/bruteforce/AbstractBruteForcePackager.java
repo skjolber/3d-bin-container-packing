@@ -136,14 +136,18 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, ContainerItemsCalculator defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt);
 
-	static Placement[] getPlacements(int size) {
+	static Placement[] getPlacements(int size, boolean load) {
 		// each box will at most have a single placement with a space (and its remainder).
 		Placement[] placements = new Placement[size];
 
 		for (int i = 0; i < size; i++) {
-			placements[i] = new Placement();
+			placements[i] = new Placement(load);
 		}
 		return placements;
+	}
+
+	static Placement[] getPlacements(int size) {
+		return getPlacements(size, false);
 	}
 
 	static int removeFirstPlacements(Placement[] placements, int size, int count) {

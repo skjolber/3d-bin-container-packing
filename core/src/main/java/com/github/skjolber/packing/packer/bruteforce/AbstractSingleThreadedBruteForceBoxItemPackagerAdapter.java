@@ -20,7 +20,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 	protected int stackPlacementCount;
 	protected final PackagerInterruptSupplier interrupt;
 
-	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
+	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt, boolean load) {
 		super(boxItems, packagerContainerItems);
 		this.interrupt = interrupt;
 		this.containerIterators = containerIterators;
@@ -36,7 +36,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 			count += stackableItem.getCount();
 		}
 		
-		this.stackPlacements = BruteForcePackager.getPlacements(count);
+		this.stackPlacements = BruteForcePackager.getPlacements(count, load);
 		this.stackPlacementCount = count;
 	}
 	

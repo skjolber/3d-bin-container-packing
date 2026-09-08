@@ -2,6 +2,7 @@ package com.github.skjolber.packing.api;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import com.github.skjolber.packing.api.point.Point;
 
@@ -35,6 +36,10 @@ public class Placement implements Serializable {
 	protected Object properties;
 
 	public Placement(BoxStackValue stackValue, int index, int x, int y, int z) {
+		this(stackValue, index, x, y, z, true);
+	}
+
+	public Placement(BoxStackValue stackValue, int index, int x, int y, int z, boolean load) {
 		super();
 		this.stackValue = stackValue;
 		this.pointIndex = index;
@@ -42,13 +47,32 @@ public class Placement implements Serializable {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		if(load) {
+			initializeLoad();
+		}
 	}
 
 	public Placement(BoxStackValue stackValue, Point point) {
-		this(stackValue, point.getIndex(), point.getMinX(), point.getMinY(), point.getMinZ());
+		this(stackValue, point, true);
+	}
+
+	public Placement(BoxStackValue stackValue, Point point, boolean load) {
+		this(stackValue, point.getIndex(), point.getMinX(), point.getMinY(), point.getMinZ(), load);
 	}
 
 	public Placement() {
+		this(true);
+	}
+
+	public Placement(boolean load) {
+		if(load) {
+			initializeLoad();
+		}
+	}
+
+	private void initializeLoad() {
+		supporters = new ArrayList<>(4);
+		supportees = new ArrayList<>(4);
 	}
 
 	public BoxStackValue getStackValue() {
@@ -211,10 +235,7 @@ public class Placement implements Serializable {
 	 * @return list of supportees
 	 */
 	public List<PlacementLoad> getSupportees() {
-		if(supportees == null) {
-			supportees = new ArrayList<>(4);
-		}
-		return supportees;
+		return supportees != null ? supportees : Collections.emptyList();
 	}
 
 	/**
@@ -223,10 +244,7 @@ public class Placement implements Serializable {
 	 * @return list of supporters
 	 */
 	public List<PlacementLoad> getSupporters() {
-		if(supporters == null) {
-			supporters = new ArrayList<>(4);
-		}
-		return supporters;
+		return supporters != null ? supporters : Collections.emptyList();
 	}
 
 	
@@ -247,11 +265,11 @@ public class Placement implements Serializable {
 	}
 	
 	protected void addSupportee(PlacementLoad supporter) {
-		getSupportees().add(supporter);
+		supportees.add(supporter);
 	}
 
 	protected void addSupporter(PlacementLoad supporter) {
-		getSupporters().add(supporter);
+		supporters.add(supporter);
 		
 		supportedArea += supporter.getArea();
 	}
@@ -355,7 +373,6 @@ public class Placement implements Serializable {
 	}
 
 	public void removeLastSupportee() {
-		List<PlacementLoad> supportees = getSupportees();
 		PlacementLoad supporteeLink = supportees.remove(supportees.size() - 1);
 		propagateLoad(-supporteeLink.getWeight());
 	}

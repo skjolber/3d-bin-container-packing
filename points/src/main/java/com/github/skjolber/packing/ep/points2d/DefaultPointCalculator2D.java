@@ -86,7 +86,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 		BoxStackValue stackValue = new BoxStackValue(dx, dy, dz, null, -1);
 		
-		this.containerPlacement = new Placement(stackValue, new DefaultPoint2D(0, 0, 0, dx - 1, dy - 1, dz - 1));
+		this.containerPlacement = new Placement(stackValue, new DefaultPoint2D(0, 0, 0, dx - 1, dy - 1, dz - 1), false);
 	}
 
 	private DefaultXYSupportPoint2D createContainerPoint() {

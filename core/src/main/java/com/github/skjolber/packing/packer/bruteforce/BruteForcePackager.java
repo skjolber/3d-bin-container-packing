@@ -138,7 +138,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		
 		public BruteForceAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems,
 				BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-			super(boxItems, packagerContainerItems, containerIterators, interrupt);
+			super(boxItems, packagerContainerItems, containerIterators, interrupt, BruteForcePackager.this.supportsLoad());
 			
 			this.pointCalculator =  new PointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.reset(1, 1, 1);
@@ -166,7 +166,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		public BruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
 				ContainerItemsCalculator packagerContainerItems,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-			super(boxItems, boxItemGroups, packagerContainerItems, containerIterators, interrupt);
+			super(boxItems, boxItemGroups, packagerContainerItems, containerIterators, interrupt, BruteForcePackager.this.supportsLoad());
 			
 			this.pointCalculator =  new PointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.reset(1, 1, 1);

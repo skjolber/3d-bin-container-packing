@@ -97,7 +97,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		public FastBruteForceAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems,
 				BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-			super(boxItems, packagerContainerItems, containerIterators, interrupt);
+			super(boxItems, packagerContainerItems, containerIterators, interrupt, FastBruteForcePackager.this.supportsLoad());
 			
 			this.pointCalculator = new FastPointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.clearToSize(1, 1, 1);
@@ -119,7 +119,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		public FastBruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-			super(boxItems, boxItemGroups, packagerContainerItems, containerIterators, interrupt);
+			super(boxItems, boxItemGroups, packagerContainerItems, containerIterators, interrupt, FastBruteForcePackager.this.supportsLoad());
 			
 			this.pointCalculator = new FastPointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.clearToSize(1, 1, 1);

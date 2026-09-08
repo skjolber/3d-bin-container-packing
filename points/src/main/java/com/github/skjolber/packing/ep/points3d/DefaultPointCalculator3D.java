@@ -89,7 +89,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	private Placement createContainerPlacement() {
 		BoxStackValue value = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, containerMaxZ + 1, null, -1);
 		
-		return new Placement(value, new DefaultPoint3D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ));
+		return new Placement(value, new DefaultPoint3D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ), false);
 	}
 	
 	public boolean add(Point point, Placement placement) {

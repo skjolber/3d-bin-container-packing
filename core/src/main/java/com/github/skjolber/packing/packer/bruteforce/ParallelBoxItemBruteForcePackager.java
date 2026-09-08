@@ -191,7 +191,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		private int containerIndex;
 
 		public RunnableAdapter(int placementsCount, int maxIteratorLength, long minStackableItemVolume, long minStackableArea) {
-			this.placements = getPlacements(placementsCount);
+			this.placements = getPlacements(placementsCount, supportsLoad());
 			this.placementCount = placementsCount;
 
 			this.pointCalculator = new PointCalculator3DStack(maxIteratorLength + 1);

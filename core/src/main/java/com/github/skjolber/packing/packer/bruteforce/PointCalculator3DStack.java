@@ -33,7 +33,7 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		
 		protected Point3DFlagList values = new Point3DFlagList();
 		protected Point3DFlagList otherValues = new Point3DFlagList();
-		protected Placement stackPlacement = new Placement();
+		protected Placement stackPlacement = new Placement(false);
 		protected SimplePoint3D point;
 		protected long minVolumeLimit;
 		protected long minAreaLimit;
