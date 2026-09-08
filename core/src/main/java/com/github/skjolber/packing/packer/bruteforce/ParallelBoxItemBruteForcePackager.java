@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -185,16 +184,26 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		private ControlledContainerItem containerItem;
 		private BoxItemPermutationRotationIterator iterator;
-		private List<Placement> placements;
+		private final Placement[] placements;
+		private int placementCount;
 		private PointCalculator3DStack pointCalculator;
 		private PackagerInterruptSupplier interrupt;
 		private int containerIndex;
 
 		public RunnableAdapter(int placementsCount, int maxIteratorLength, long minStackableItemVolume, long minStackableArea) {
 			this.placements = getPlacements(placementsCount);
+			this.placementCount = placementsCount;
 
 			this.pointCalculator = new PointCalculator3DStack(maxIteratorLength + 1);
 			this.pointCalculator.reset(1, 1, 1);
+		}
+
+		public void removeFirstPlacements(int size) {
+			placementCount = BruteForcePackager.removeFirstPlacements(placements, size, placementCount);
+		}
+
+		public void clearPlacements() {
+			placementCount = 0;
 		}
 
 		public void setContainerItem(ControlledContainerItem containerItem) {
@@ -219,7 +228,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		@Override
 		public BruteForceIntermediatePackagerResult call() throws PackagerInterruptedException {
-			return ParallelBoxItemBruteForcePackager.this.pack(pointCalculator, placements, containerItem, containerIndex, iterator, interrupt, pointFilter);
+			return ParallelBoxItemBruteForcePackager.this.pack(pointCalculator, placements, placementCount, containerItem, containerIndex, iterator, interrupt, pointFilter);
 		}
 	}
 
@@ -337,7 +346,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			// no need to split this job
 			// run with linear approach
 			BoxItemPermutationRotationIterator iterator = filterReversePermutations(iterators[i], abortOnAnyBoxTooBig);
-			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, containerItem, i, iterator,
+			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, runnables[0].placementCount, containerItem, i, iterator,
 					interrupts[i], pointFilter);
 		}
 
@@ -376,11 +385,11 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					removeInventory(p);
 	
 					for (RunnableAdapter runner : runnables) {
-						runner.placements = runner.placements.subList(size, runner.placements.size());
+						runner.removeFirstPlacements(size);
 					}
 				} else {
 					for (RunnableAdapter runner : runnables) {
-						runner.placements = Collections.emptyList();
+						runner.clearPlacements();
 					}
 					for(int i = 0; i < boxesRemaining.length; i++) {
 						boxesRemaining[i] = 0;
@@ -522,6 +531,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			return truncateToGroup(ParallelBoxItemBruteForcePackager.this.pack(
 					runnables[0].pointCalculator,
 					runnables[0].placements,
+					runnables[0].placementCount,
 					containerItem,
 					i,
 					iterator,
@@ -602,11 +612,11 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					removeInventory(p);
 	
 					for (RunnableAdapter runner : runnables) {
-						runner.placements = runner.placements.subList(p.size(), runner.placements.size());
+						runner.removeFirstPlacements(p.size());
 					}
 				} else {
 					for (RunnableAdapter runner : runnables) {
-						runner.placements = Collections.emptyList();
+						runner.clearPlacements();
 					}
 					for(int i = 0; i < boxesRemaining.length; i++) {
 						boxesRemaining[i] = 0;

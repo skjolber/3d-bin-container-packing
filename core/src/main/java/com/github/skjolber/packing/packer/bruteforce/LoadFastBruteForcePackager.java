@@ -10,7 +10,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
-import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
@@ -81,7 +81,7 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 	}
 
 	@Override
-	public int packStackPlacement(FastPointCalculator3DStack pointCalculator, List<Placement> placements,
+	public int packStackPlacement(FastPointCalculator3DStack pointCalculator, Placement[] placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack, Container container, int placementIndex,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad,
 			LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator) {
@@ -91,7 +91,7 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 	}
 
 	@Override
-	protected int packStackPlacement(FastPointCalculator3DStack pointCalculator, List<Placement> placements,
+	protected int packStackPlacement(FastPointCalculator3DStack pointCalculator, Placement[] placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack, Container container, int placementIndex,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad,
 			LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator,
@@ -113,7 +113,7 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 			}
 			int bestPointIndex = -1;
 			for(int k = 0; k < pointCalculator.size(); k++) {
-				Point point = pointCalculator.get(k);
+				SimplePoint3D point = pointCalculator.get(k);
 				if(!point.fits3D(stackValue)) {
 					continue;
 				}
@@ -135,14 +135,14 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 				break;
 			}
 
-			Point point = pointCalculator.get(bestPointIndex);
+			SimplePoint3D point = pointCalculator.get(bestPointIndex);
 			// Candidate evaluation leaves the utility primed for the last point checked,
 			// so repopulate its caches for the selected point before adding the load.
 			utility.populatePointSupporters(point);
 			utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
 			long bestSupportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
 
-			Placement placement = placements.get(placementIndex);
+			Placement placement = placements[placementIndex];
 			placement.clearLoad();
 			placement.setStackValue(stackValue);
 			placement.setPoint(point);

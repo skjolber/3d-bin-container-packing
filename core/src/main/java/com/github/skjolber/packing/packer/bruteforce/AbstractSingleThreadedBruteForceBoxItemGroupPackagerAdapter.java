@@ -19,7 +19,8 @@ import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter extends AbstractBruteForceBoxItemGroupsPackagerAdapter {
 
 	protected final BoxItemGroupPermutationRotationIterator[] containerIterators;
-	protected List<Placement> stackPlacements;
+	protected final Placement[] stackPlacements;
+	protected int stackPlacementCount;
 	protected PackagerInterruptSupplier interrupt;
 	
 	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems, BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
@@ -34,6 +35,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 		}
 		
 		this.stackPlacements = BruteForcePackager.getPlacements(count);
+		this.stackPlacementCount = count;
 	}
 	
 	protected int getMaxIteratorLength() {
@@ -53,7 +55,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 			Stack stack = bruteForceResult.getStack();
 			
 			int size = stack.size();
-			if(stackPlacements.size() > size) {
+			if(stackPlacementCount > size) {
 				// this result does not consume all placements
 				// remove consumed items from the iterators
 	
@@ -107,11 +109,11 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 				}
 				
 				boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());
-				stackPlacements = stackPlacements.subList(p.size(), this.stackPlacements.size());
+				stackPlacementCount = BruteForcePackager.removeFirstPlacements(stackPlacements, p.size(), stackPlacementCount);
 				
 				return container;
 			} else {
-				stackPlacements = Collections.emptyList();
+				stackPlacementCount = 0;
 				boxItemGroups = Collections.emptyList();
 				
 				return packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
@@ -123,7 +125,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 
 	@Override
 	public int countRemainingBoxes() {
-		return stackPlacements.size();
+		return stackPlacementCount;
 	}
 
 

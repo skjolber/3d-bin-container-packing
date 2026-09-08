@@ -40,7 +40,7 @@ class BruteForcePackagerBoundsTest {
 		BoxItemPermutationRotationIterator iterator = iterator(List.of(new BoxItem(unit, 3)));
 		Container container = Container.newBuilder().withSize(2, 1, 1).withMaxLoadWeight(100).build();
 		PointCalculator3DStack pointCalculator = new PointCalculator3DStack(4);
-		List<Placement> placements = AbstractBruteForcePackager.getPlacements(3);
+		Placement[] placements = AbstractBruteForcePackager.getPlacements(3);
 		CountingPointFilter pointFilter = new CountingPointFilter();
 
 		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {

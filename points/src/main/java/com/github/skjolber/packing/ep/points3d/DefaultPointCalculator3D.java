@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
@@ -62,7 +60,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	protected CustomIntYComparator yyComparator = new CustomIntYComparator();
 	protected CustomIntZComparator zzComparator = new CustomIntZComparator();
 	
-	protected List<SimplePoint3D> initialPoints = Collections.emptyList();
+	protected Point3DList initialPoints;
 
 	public DefaultPointCalculator3D(boolean immutablePoints, BoxItemSource boxItemSource) {
 		this.immutablePoints = immutablePoints;
@@ -1604,11 +1602,13 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		values.clear();
 		placements.clear();
 
-		if(initialPoints.isEmpty()) {
+		Point3DList initialPoints = this.initialPoints;
+		if(initialPoints == null || initialPoints.isEmpty()) {
 			SimplePoint3D origin = createContainerPoint();
 			values.add(origin);
 		} else {
-			for (SimplePoint3D simplePoint3D : initialPoints) {
+			for (int i = 0; i < initialPoints.size(); i++) {
+				SimplePoint3D simplePoint3D = initialPoints.get(i);
 				SimplePoint3D clone = simplePoint3D.clone();
 				clone.setIndex(values.size());
 				values.add(clone);
@@ -1620,7 +1620,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	public void setPoints(List<Point> points) {
 		// transform coordinates to internal representation, i.e. with support etc
-		initialPoints = new ArrayList<>(points.size());
+		Point3DList initialPoints = prepareInitialPoints(points.size());
 		
 		for(Point p: points) {
 			if(p.getMaxX() > containerMaxX) {
@@ -1664,7 +1664,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	// set points, but limit to a specific box
 	public boolean setPoints(List<Point> points, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		// transform coordinates to internal representation, i.e. with support etc
-		initialPoints = new ArrayList<>(points.size());
+		Point3DList initialPoints = prepareInitialPoints(points.size());
 		
 		for(Point p: points) {
 			
@@ -1731,6 +1731,16 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		}
 		
 		return !initialPoints.isEmpty();
+	}
+
+	private Point3DList prepareInitialPoints(int size) {
+		if(initialPoints == null) {
+			initialPoints = new Point3DList(size);
+		} else {
+			initialPoints.reset();
+			initialPoints.ensureCapacity(size);
+		}
+		return initialPoints;
 	}
 
 	protected SimplePoint3D createContainerPoint() {
@@ -1867,7 +1877,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	public void clearInitialPoints() {
-		initialPoints.clear();
+		if(initialPoints != null) {
+			initialPoints.reset();
+		}
 	}
 	
 	@Override

@@ -13,6 +13,7 @@ import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
@@ -69,23 +70,23 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 	}
 
 	@Override
-	public List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements,
+	public List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack,
 			com.github.skjolber.packing.api.Container container, PackagerInterruptSupplier interrupt,
 			int minStackableAreaIndex, List<Point> points, LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter) throws PackagerInterruptedException {
-		int maxPackableCount = placements.isEmpty() ? 0 : getMaxPackableCount(iterator, container.getMaxLoadVolume(), container.getMaxLoadWeight());
+		int maxPackableCount = placements.length == 0 ? 0 : getMaxPackableCount(iterator, container.getMaxLoadVolume(), container.getMaxLoadWeight());
 		return preservePoints(packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt,
 				minStackableAreaIndex, points, loadPlacementUtility, pointFilter, maxPackableCount));
 	}
 
 	@Override
-	protected List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements,
+	protected List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack,
 			com.github.skjolber.packing.api.Container container, PackagerInterruptSupplier interrupt,
 			int minStackableAreaIndex, List<Point> points, LoadPlacementUtility loadPlacementUtility,
 			BruteForcePointIteratorFilter pointFilter, int maxPackableCount) throws PackagerInterruptedException {
 		pointCalculator.resetBest();
-		if(placements.isEmpty()) {
+		if(placements.length == 0) {
 			return Collections.emptyList();
 		}
 
@@ -104,7 +105,7 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 		}
 		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
 
-		loadPlacementUtility.initialize(placements.size());
+		loadPlacementUtility.initialize(iterator.length());
 		if(pointFilter == null) {
 			packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt,
 					minStackableAreaIndex, maxPackableCount, loadPlacementUtility);
@@ -145,7 +146,7 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 		return new WeightPressureCountIdenticalLoadAwarePlacementUtility(stack);
 	}
 
-	private void packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
+	private void packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
 			int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility)
 			throws PackagerInterruptedException {
 		if(interrupt.getAsBoolean()) {
@@ -164,7 +165,7 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 		pointCalculator.push();
 		int currentPointsCount = pointCalculator.size();
 		for(int k = 0; k < currentPointsCount; k++) {
-			Point point = pointCalculator.get(k);
+			SimplePoint3D point = pointCalculator.get(k);
 			if(!point.fits3D(stackValue)) {
 				continue;
 			}
@@ -184,7 +185,7 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 		pointCalculator.pop();
 	}
 
-	private void packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
+	private void packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
 			int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility,
 			BruteForcePointIteratorFilter pointFilter) throws PackagerInterruptedException {
 		if(interrupt.getAsBoolean()) {
@@ -205,7 +206,7 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 		IntIterator points = pointFilter.getPoints(pointCalculator, stackValue);
 		while(points.hasNext()) {
 			int k = points.next();
-			Point point = pointCalculator.get(k);
+			SimplePoint3D point = pointCalculator.get(k);
 			utility.populatePointSupporters(point);
 			utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
 			long supportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
@@ -224,10 +225,10 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 		pointCalculator.pop();
 	}
 
-	private void attemptPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
+	private void attemptPlacement(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
 			int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility, BoxStackValue stackValue,
-			int pointIndex, Point point, long supportedArea, BruteForcePointIteratorFilter pointFilter) throws PackagerInterruptedException {
-		Placement placement = placements.get(placementIndex);
+			int pointIndex, SimplePoint3D point, long supportedArea, BruteForcePointIteratorFilter pointFilter) throws PackagerInterruptedException {
+		Placement placement = placements[placementIndex];
 		placement.setStackValue(stackValue);
 		placement.setPoint(point);
 		placement.setIndex(stack.size());

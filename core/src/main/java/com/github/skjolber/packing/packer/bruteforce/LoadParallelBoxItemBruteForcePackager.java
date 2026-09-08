@@ -14,6 +14,7 @@ import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
@@ -103,23 +104,23 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 	}
 
 	@Override
-	public List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements,
+	public List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack, Container container,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points,
 			LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter) throws PackagerInterruptedException {
-		int maxPackableCount = placements.isEmpty() ? 0 : getMaxPackableCount(iterator, container.getMaxLoadVolume(), container.getMaxLoadWeight());
+		int maxPackableCount = placements.length == 0 ? 0 : getMaxPackableCount(iterator, container.getMaxLoadVolume(), container.getMaxLoadWeight());
 		return preservePoints(packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt,
 				minStackableAreaIndex, points, loadPlacementUtility, pointFilter, maxPackableCount));
 	}
 
 	@Override
-	protected List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements,
+	protected List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack, Container container,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points,
 			LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter,
 			int maxPackableCount) throws PackagerInterruptedException {
 		pointCalculator.resetBest();
-		if(placements.isEmpty()) {
+		if(placements.length == 0) {
 			return Collections.emptyList();
 		}
 		if(loadPlacementUtility == null) {
@@ -137,13 +138,13 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 		}
 		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
 
-		loadPlacementUtility.initialize(placements.size());
+		loadPlacementUtility.initialize(iterator.length());
 		packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt,
 				minStackableAreaIndex, maxPackableCount, loadPlacementUtility);
 		return pointCalculator.getBestPoints();
 	}
 
-	private void packStackPlacement(PointCalculator3DStack pointCalculator, List<Placement> placements,
+	private void packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements,
 			BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight, int placementIndex,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex,
 			int maxPackableCount, LoadPlacementUtility utility) throws PackagerInterruptedException {
@@ -163,7 +164,7 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 		pointCalculator.push();
 		int currentPointsCount = pointCalculator.size();
 		for(int k = 0; k < currentPointsCount; k++) {
-			Point point = pointCalculator.get(k);
+			SimplePoint3D point = pointCalculator.get(k);
 			if(!point.fits3D(stackValue)) {
 				continue;
 			}
@@ -175,7 +176,7 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 				continue;
 			}
 
-			Placement placement = placements.get(placementIndex);
+			Placement placement = placements[placementIndex];
 			placement.setStackValue(stackValue);
 			placement.setPoint(point);
 			placement.setIndex(stack.size());

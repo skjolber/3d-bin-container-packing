@@ -50,10 +50,12 @@ class BruteForceIntermediatePackagerResultTest {
 		List<Point> points = new ArrayList<>(List.of(
 				new DefaultPoint3D(0, 0, 0, 9, 9, 9),
 				new DefaultPoint3D(2, 0, 0, 9, 9, 9)));
-		result.setState(points, iterator.getState(), List.of(new Placement(), new Placement()));
+		result.setState(points, iterator.getState(), new Placement[] {new Placement(), new Placement()}, 2);
+		assertThat(result.containsLastStackable()).isTrue();
 
 		result.trimToSize(1);
 
+		assertThat(result.containsLastStackable()).isFalse();
 		assertThat(result.getLoadVolume()).isEqualTo(first.getVolume());
 		assertThat(result.getLoadWeight()).isEqualTo(first.getWeight());
 	}
@@ -70,11 +72,28 @@ class BruteForceIntermediatePackagerResultTest {
 				new DefaultPoint3D(0, 0, 0, 9, 9, 9),
 				new DefaultPoint3D(2, 0, 0, 9, 9, 9)));
 
-		result.setStateFromReusablePoints(reusablePoints, iterator.getState(), List.of(new Placement(), new Placement()));
+		result.setStateFromReusablePoints(reusablePoints, iterator.getState(), new Placement[] {new Placement(), new Placement()}, 2);
 		reusablePoints.clear();
 
 		assertThat(result.getSize()).isEqualTo(2);
 		assertThat(result.getLoadVolume()).isEqualTo(first.getVolume() + second.getVolume());
+	}
+
+	@Test
+	void doesNotTreatAContainerFilteredIteratorAsTheLastStackable() {
+		Box first = box("first", 2, 2, 2, 3);
+		DefaultBoxItemPermutationRotationIterator iterator = iterator(first);
+		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(
+				new ControlledContainerItem(Container.newBuilder().withSize(10, 10, 10).withMaxLoadWeight(1000).build(), 1),
+				new Stack(), 0, iterator);
+
+		result.setState(
+				List.of(new DefaultPoint3D(0, 0, 0, 9, 9, 9)),
+				iterator.getState(),
+				new Placement[] {new Placement(), new Placement()},
+				2);
+
+		assertThat(result.containsLastStackable()).isFalse();
 	}
 
 	@Test
@@ -103,7 +122,7 @@ class BruteForceIntermediatePackagerResultTest {
 		DefaultBoxItemPermutationRotationIterator iterator = iterator(box);
 		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(
 				new ControlledContainerItem(container, 1), stack, 0, iterator);
-		result.setState(List.of(new DefaultPoint3D(0, 0, 0, 9, 9, 9)), iterator.getState(), List.of(new Placement()));
+		result.setState(List.of(new DefaultPoint3D(0, 0, 0, 9, 9, 9)), iterator.getState(), new Placement[] {new Placement()}, 1);
 		return result;
 	}
 

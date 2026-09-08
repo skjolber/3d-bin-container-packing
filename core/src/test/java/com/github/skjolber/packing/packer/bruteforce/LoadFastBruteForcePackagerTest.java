@@ -2,7 +2,6 @@ package com.github.skjolber.packing.packer.bruteforce;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -41,7 +40,7 @@ class LoadFastBruteForcePackagerTest extends AbstractLoadBruteForcePackagerTest 
 			pointCalculator.clear();
 			CountingLoadPlacementUtility utility = new CountingLoadPlacementUtility();
 
-			int count = packager.packStackPlacement(pointCalculator, new ArrayList<>(List.of(new Placement())),
+			int count = packager.packStackPlacement(pointCalculator, new Placement[] {new Placement()},
 					iterator, new Stack(), container, 0, () -> false, 0, 100, utility,
 					(stackValue, bestPoint, candidatePoint) -> 0);
 

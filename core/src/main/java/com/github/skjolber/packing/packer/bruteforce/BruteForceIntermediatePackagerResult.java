@@ -21,6 +21,9 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	
 	public static final BruteForceIntermediatePackagerResult EMPTY = new BruteForceIntermediatePackagerResult(null, null, 0, null);
 	private static final Comparator<Placement> ABSOLUTE_Z_COMPARATOR = Comparator.comparingInt(Placement::getAbsoluteZ);
+	private static final Placement[] EMPTY_PLACEMENTS = new Placement[0];
+	private static final byte STACK_DIRTY = 1;
+	private static final byte CONTAINS_LAST_STACKABLE = 1 << 1;
 
 	// work objects
 	private final Stack stack;
@@ -32,10 +35,10 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	private PermutationRotationState state;
 	private List<Point> points = Collections.emptyList();
 	private ArrayList<Point> pointBuffer;
-	private List<Placement> placements = Collections.emptyList();
+	private Placement[] placements = EMPTY_PLACEMENTS;
 	private ArrayList<Placement> loadOrder;
 
-	private boolean stackDirty = true;
+	private byte flags = STACK_DIRTY;
 
 	private long loadVolume;
 	private int loadWeight;
@@ -68,9 +71,9 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 
 
 	public void calculateLoad() {
-		if(stackDirty) {
+		if((flags & STACK_DIRTY) != 0) {
 			calculateStack();
-			stackDirty = false;
+			flags &= ~STACK_DIRTY;
 		}
 	}
 	
@@ -92,7 +95,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		List<BoxStackValue> list = iterator.get(state, points.size());
 		
 		for (int i = 0; i < points.size(); i++) {
-			Placement stackPlacement = placements.get(i);
+			Placement stackPlacement = placements[i];
 
 			BoxStackValue value = list.get(i);
 			
@@ -166,12 +169,12 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		return state;
 	}
 
-	public void setState(List<Point> items, PermutationRotationState state, List<Placement> placements) {
+	public void setState(List<Point> items, PermutationRotationState state, Placement[] placements, int placementCount) {
 		this.points = items;
-		setState(state, placements);
+		setState(state, placements, placementCount);
 	}
 
-	void setStateFromReusablePoints(List<Point> items, PermutationRotationState state, List<Placement> placements) {
+	void setStateFromReusablePoints(List<Point> items, PermutationRotationState state, Placement[] placements, int placementCount) {
 		int size = items.size();
 		if(pointBuffer == null) {
 			pointBuffer = new ArrayList<>(size);
@@ -183,14 +186,14 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 			pointBuffer.add(items.get(i));
 		}
 		this.points = pointBuffer;
-		setState(state, placements);
+		setState(state, placements, placementCount);
 	}
 
-	private void setState(PermutationRotationState state, List<Placement> placements) {
+	private void setState(PermutationRotationState state, Placement[] placements, int placementCount) {
 		this.state = state;
 		this.placements = placements;
 		calculateWeightAndVolume();
-		this.stackDirty = true;
+		this.flags = (byte)(STACK_DIRTY | (placementCount == points.size() ? CONTAINS_LAST_STACKABLE : 0));
 	}
 
 	public void reset() {
@@ -199,13 +202,13 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 			pointBuffer.clear();
 		}
 		this.state = null;
-		this.placements = Collections.emptyList();
+		this.placements = EMPTY_PLACEMENTS;
 		if(loadOrder != null) {
 			loadOrder.clear();
 		}
 		this.loadVolume = 0;
 		this.loadWeight = 0;
-		this.stackDirty = true;
+		this.flags = STACK_DIRTY;
 	}
 
 	@Override
@@ -214,7 +217,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	}
 
 	public boolean containsLastStackable() {
-		return placements.size() == points.size();
+		return (flags & CONTAINS_LAST_STACKABLE) != 0;
 	}
 
 	public int getSize() {
@@ -246,7 +249,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	}
 
 	public void markDirty() {
-		this.stackDirty = true;
+		this.flags |= STACK_DIRTY;
 	}
 
 	public int getContainerItemIndex() {
@@ -258,10 +261,13 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	}
 	
 	public boolean isDirty() {
-		return stackDirty;
+		return (flags & STACK_DIRTY) != 0;
 	}
 
 	public void trimToSize(int size) {
+		if(size < points.size()) {
+			flags &= ~CONTAINS_LAST_STACKABLE;
+		}
 		while (size < points.size()) {
 			points.remove(points.size() - 1);
 		}
@@ -269,7 +275,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 			stack.setSize(size);
 		}
 		calculateWeightAndVolume();
-		stackDirty = true;
+		flags |= STACK_DIRTY;
 	}
 
 }
