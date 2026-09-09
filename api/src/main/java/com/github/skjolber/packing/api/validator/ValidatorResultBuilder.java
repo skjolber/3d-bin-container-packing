@@ -9,16 +9,28 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.PackagerResultBuilder.ControlledContainerItemBuilder;
+import com.github.skjolber.packing.api.PackagerResultBuilder.ObstaclesBuilder;
+import com.github.skjolber.packing.api.PackagerResultBuilder.PointsBuilder;
 import com.github.skjolber.packing.api.validator.manifest.ManifestValidatorBuilderFactory;
 import com.github.skjolber.packing.api.validator.placement.PlacementValidatorBuilderFactory;
+import com.github.skjolber.packing.api.validator.placement.StabilityValidator;
 
 public interface ValidatorResultBuilder {
 
+	public static interface PlacementValidatorBuilderFactoryBuilder {
+
+		PlacementValidatorBuilderFactoryBuilder withStabilityValidator(StabilityValidator stabilityValidator);
+	}
+	
+	
 	public static interface ValidatorContainerItemBuilder {
 
-		public ValidatorContainerItemBuilder withManifestValidatorBuilderFactory(ManifestValidatorBuilderFactory manifestValidatorBuilderFactory);
+		ValidatorContainerItemBuilder withManifestValidatorBuilderFactory(ManifestValidatorBuilderFactory manifestValidatorBuilderFactory);
 
-		public ValidatorContainerItemBuilder withPlacementValidatorBuilderFactory(PlacementValidatorBuilderFactory placementValidatorBuilderFactory) ;
+		ValidatorContainerItemBuilder withPlacementValidatorBuilderFactory(PlacementValidatorBuilderFactory placementValidatorBuilderFactory) ;
+
+		ValidatorContainerItemBuilder withPlacementValidatorBuilderFactory(Consumer<PlacementValidatorBuilderFactoryBuilder> consumer) ;
 
 		ValidatorContainerItemBuilder withContainerItem(ContainerItem containerItem);
 		

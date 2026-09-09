@@ -42,6 +42,16 @@ and
 </dependency>
 ```
 
+Add the optional result validators separately when needed:
+
+```xml
+<dependency>
+    <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+    <artifactId>validators</artifactId>
+    <version>${3d-bin-container-packing.version}</version>
+</dependency>
+```
+
 </details>
 
 or
@@ -293,4 +303,3 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
 [Github page]:		https://skjolber.github.io
 [NothinRandom]:		https://github.com/NothinRandom
 [exponential]:		https://en.wikipedia.org/wiki/Exponential_function
-

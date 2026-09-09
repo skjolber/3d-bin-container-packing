@@ -95,7 +95,7 @@ public class DefaultPointCalculator1D implements PointCalculator {
 
 		BoxStackValue stackValue = new BoxStackValue(dx, dy, dz, null, -1);
 		
-		this.containerPlacement = new Placement(stackValue, new Point1D(0, 0, 0, dx - 1, dy - 1, dz - 1));
+		this.containerPlacement = new Placement(stackValue, new Point1D(0, 0, 0, dx - 1, dy - 1, dz - 1), false);
 	}
 
 	private Point1D createContainerPoint() {

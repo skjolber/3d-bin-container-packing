@@ -1,14 +1,13 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
@@ -17,10 +16,11 @@ import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 
 	protected final BoxItemPermutationRotationIterator[] containerIterators;
-	protected List<Placement> stackPlacements;
+	protected final Placement[] stackPlacements;
+	protected int stackPlacementCount;
 	protected final PackagerInterruptSupplier interrupt;
 
-	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
+	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt, boolean load) {
 		super(boxItems, packagerContainerItems);
 		this.interrupt = interrupt;
 		this.containerIterators = containerIterators;
@@ -36,7 +36,8 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 			count += stackableItem.getCount();
 		}
 		
-		this.stackPlacements = BruteForcePackager.getPlacements(count);
+		this.stackPlacements = BruteForcePackager.getPlacements(count, load);
+		this.stackPlacementCount = count;
 	}
 	
 	protected int getMaxIteratorLength() {
@@ -58,7 +59,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 			Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
 						
 			int size = stack.size();
-			if(stackPlacements.size() > size) {
+			if(stackPlacementCount > size) {
 				// this result does not consume all placements
 				// remove consumed items from the iterators
 	
@@ -77,9 +78,9 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 					it.removePermutations(p);
 				}
 				
-				stackPlacements = stackPlacements.subList(size, this.stackPlacements.size());
+				stackPlacementCount = BruteForcePackager.removeFirstPlacements(stackPlacements, size, stackPlacementCount);
 			} else {
-				stackPlacements = Collections.emptyList();
+				stackPlacementCount = 0;
 			}
 	
 			return container;
@@ -90,7 +91,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 
 	@Override
 	public int countRemainingBoxes() {
-		return stackPlacements.size();
+		return stackPlacementCount;
 	}
 
 }

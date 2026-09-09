@@ -17,9 +17,9 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.packer.AbstractPackager;
 
 @Fork(value = 1, warmups = 1, jvmArgsPrepend = "-XX:-RestrictContended")
@@ -34,8 +34,18 @@ public class BouwkampCodeBruteForcePackagerBenchmark {
 	}
 
 	@Benchmark
+	public int filteredParallelPackager(BouwkampCodeBruteForcePackagerState state) throws Exception {
+		return process(state.getFilteredParallelBruteForcePackager(), Long.MAX_VALUE);
+	}
+
+	@Benchmark
 	public int packager(BouwkampCodeBruteForcePackagerState state) throws Exception {
 		return process(state.getBruteForcePackager(), Long.MAX_VALUE);
+	}
+
+	@Benchmark
+	public int filteredPackager(BouwkampCodeBruteForcePackagerState state) throws Exception {
+		return process(state.getFilteredBruteForcePackager(), Long.MAX_VALUE);
 	}
 
 	@Benchmark
@@ -50,7 +60,7 @@ public class BouwkampCodeBruteForcePackagerBenchmark {
 			List<ContainerItem> containers = set.getContainers();
 			List<BoxItem> products = set.getProducts();
 
-			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withDeadline(deadline).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withInterruptDeadline(deadline).build();
 			if(build.isSuccess()) {
 				i++;
 			}

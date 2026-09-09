@@ -37,7 +37,9 @@ public class BouwkampCodeBruteForcePackagerState {
 	private ExecutorService pool2;
 
 	private List<BenchmarkSet> parallelBruteForcePackager = new ArrayList<>();
+	private List<BenchmarkSet> filteredParallelBruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> bruteForcePackager = new ArrayList<>();
+	private List<BenchmarkSet> filteredBruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> plainPackager = new ArrayList<>();
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 
@@ -73,8 +75,10 @@ public class BouwkampCodeBruteForcePackagerState {
 				List<BoxItem> stackableItems3D = BouwkampConverter.getStackableItems3D(bkpLine);
 
 				ParallelBoxItemBruteForcePackager parallelPackager = ParallelBoxItemBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16).build();
+				ParallelBoxItemBruteForcePackager filteredParallelPackager = ParallelBoxItemBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16).withSkipReversePermutations(true).build();
 
 				BruteForcePackager packager = BruteForcePackager.newBuilder().build();
+				BruteForcePackager filteredPackager = BruteForcePackager.newBuilder().withSkipReversePermutations(true).build();
 
 				PlainPackager plainPackager = PlainPackager.newBuilder().build();
 
@@ -82,6 +86,7 @@ public class BouwkampCodeBruteForcePackagerState {
 
 				// single-threaded
 				this.bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D, containers));
+				this.filteredBruteForcePackager.add(new BenchmarkSet(filteredPackager, stackableItems3D, containers));
 
 				this.plainPackager.add(new BenchmarkSet(plainPackager, stackableItems3D, containers));
 
@@ -89,6 +94,7 @@ public class BouwkampCodeBruteForcePackagerState {
 
 				// multi-threaded
 				this.parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D, containers));
+				this.filteredParallelBruteForcePackager.add(new BenchmarkSet(filteredParallelPackager, stackableItems3D, containers));
 			}
 		}
 	}
@@ -102,7 +108,13 @@ public class BouwkampCodeBruteForcePackagerState {
 		for (BenchmarkSet benchmarkSet : parallelBruteForcePackager) {
 			benchmarkSet.getPackager().close();
 		}
+		for (BenchmarkSet benchmarkSet : filteredParallelBruteForcePackager) {
+			benchmarkSet.getPackager().close();
+		}
 		for (BenchmarkSet benchmarkSet : bruteForcePackager) {
+			benchmarkSet.getPackager().close();
+		}
+		for (BenchmarkSet benchmarkSet : filteredBruteForcePackager) {
 			benchmarkSet.getPackager().close();
 		}
 		for (BenchmarkSet benchmarkSet : plainPackager) {
@@ -123,8 +135,16 @@ public class BouwkampCodeBruteForcePackagerState {
 		return bruteForcePackager;
 	}
 
+	public List<BenchmarkSet> getFilteredBruteForcePackager() {
+		return filteredBruteForcePackager;
+	}
+
 	public List<BenchmarkSet> getParallelBruteForcePackager() {
 		return parallelBruteForcePackager;
+	}
+
+	public List<BenchmarkSet> getFilteredParallelBruteForcePackager() {
+		return filteredParallelBruteForcePackager;
 	}
 
 	public List<BenchmarkSet> getPlainPackager() {

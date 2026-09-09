@@ -8,7 +8,6 @@ import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerAdapter;
 
 public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractPackagerAdapter {
 
@@ -62,7 +61,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 
 	protected BruteForceIntermediatePackagerResult copy(ControlledContainerItem peek, IntermediatePackagerResult result, int index) {
 		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
-			return new BruteForceIntermediatePackagerResult(peek, result.getStack(), index, bruteForceResult.getIterator());
+			return new BruteForceIntermediatePackagerResult(peek, result.getStack(), index, bruteForceResult.getIterator(), bruteForceResult.isCalculateLoads());
 		}
 		throw new IllegalStateException();
 	}

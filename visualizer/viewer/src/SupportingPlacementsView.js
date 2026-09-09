@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { isSameBoxItem } from './utils';
 
 const MAX_DIM = 640;
 const CANVAS_PADDING = 24;
@@ -39,6 +40,28 @@ function findSupportingBoxes(hoveredSource, allBoxPlacements) {
         // X-axis footprint overlap
         if (placement.x + stackable.dx <= hoveredX || placement.x >= hoveredX + hoveredDx) continue;
         // Y-axis footprint overlap
+        if (placement.y + stackable.dy <= hoveredY || placement.y >= hoveredY + hoveredDy) continue;
+        results.push(bp);
+    }
+    return results;
+}
+
+/**
+ * Return boxes whose bottom face rests directly on the hovered box. These are
+ * the boxes contributing the first level of load to it.
+ */
+function findLoadedBoxes(hoveredSource, allBoxPlacements) {
+    const hoveredTopZ = hoveredSource.z + hoveredSource.stackable.dz;
+    const hoveredX = hoveredSource.x;
+    const hoveredY = hoveredSource.y;
+    const hoveredDx = hoveredSource.stackable.dx;
+    const hoveredDy = hoveredSource.stackable.dy;
+    const results = [];
+    for (const bp of allBoxPlacements) {
+        if (bp.isHovered) continue;
+        const { placement, stackable } = bp;
+        if (Math.abs(placement.z - hoveredTopZ) > 0.5) continue;
+        if (placement.x + stackable.dx <= hoveredX || placement.x >= hoveredX + hoveredDx) continue;
         if (placement.y + stackable.dy <= hoveredY || placement.y >= hoveredY + hoveredDy) continue;
         results.push(bp);
     }
@@ -234,6 +257,7 @@ function drawTopDown(canvas, container, allBoxPlacements, hoveredSource) {
  * Props:
  *   hoveredData  – { source: StackPlacement, container: Container,
  *                    allBoxPlacements: [{placement, stackable, color, isHovered}],
+ *                    loadInfos: LoadInfo[],
  *                    currentStep: number }
  */
 function SupportingPlacementsView({ hoveredData }) {
@@ -249,10 +273,28 @@ function SupportingPlacementsView({ hoveredData }) {
 
     if (!hoveredData) return null;
 
-    const { source, container, allBoxPlacements } = hoveredData;
+    const { source, container, allBoxPlacements, loadInfos } = hoveredData;
     if (!source || !container) return null;
 
     const { W: canvasW, H: canvasH } = canvasDimensions(container);
+
+    // Find hovered box index and load info
+    const hoveredIdx = allBoxPlacements.findIndex(bp => bp.isHovered);
+    const hoveredBp = hoveredIdx >= 0 ? allBoxPlacements[hoveredIdx] : null;
+    const hoveredLoadInfo = loadInfos && hoveredIdx >= 0 ? loadInfos[hoveredIdx] : null;
+    const hoveredStackable = source.stackable;
+
+    // Find supporting boxes (parallel to allBoxPlacements)
+    const supporting = findSupportingBoxes(source, allBoxPlacements);
+    const loadedBoxes = findLoadedBoxes(source, allBoxPlacements);
+
+    const rowStyle = { display: 'flex', justifyContent: 'space-between', gap: '12px', fontSize: '12px', padding: '1px 0' };
+    const labelStyle = { color: '#aaa' };
+    const valueStyle = { color: '#fff', fontWeight: 'bold' };
+    const sectionHeadStyle = { color: '#42a5f5', fontWeight: 'bold', marginTop: '6px', fontSize: '12px' };
+    const dividerStyle = { borderTop: '1px solid #2a3a4a', margin: '4px 0' };
+
+    function fmt(v) { return v != null ? (Number.isInteger(v) ? v : v.toFixed(1)) : '–'; }
 
     return (
         <div
@@ -277,6 +319,138 @@ function SupportingPlacementsView({ hoveredData }) {
                 height={canvasH}
                 style={{ display: 'block' }}
             />
+
+            {/* Load info text section */}
+            <div style={{ padding: '4px 6px', color: '#ccc', fontFamily: 'monospace' }}>
+                <div style={sectionHeadStyle}>
+                    {hoveredStackable.id || hoveredStackable.name || 'Box'}
+                </div>
+                {hoveredStackable.name && hoveredStackable.id && (
+                    <div style={{ ...rowStyle }}>
+                        <span style={labelStyle}>Name</span>
+                        <span style={valueStyle}>{hoveredStackable.name}</span>
+                    </div>
+                )}
+                <div style={rowStyle}>
+                    <span style={labelStyle}>Dimensions (dx×dy×dz)</span>
+                    <span style={valueStyle}>{hoveredStackable.dx}×{hoveredStackable.dy}×{hoveredStackable.dz}</span>
+                </div>
+                {hoveredStackable.weight > 0 && (
+                    <div style={rowStyle}>
+                        <span style={labelStyle}>Weight</span>
+                        <span style={valueStyle}>{fmt(hoveredStackable.weight)}</span>
+                    </div>
+                )}
+                {hoveredStackable.maxLoadWeight != null && (
+                    <div style={rowStyle}>
+                        <span style={labelStyle}>Max load weight</span>
+                        <span style={valueStyle}>{fmt(hoveredStackable.maxLoadWeight)}</span>
+                    </div>
+                )}
+                {hoveredStackable.maxLoadPressure != null && (
+                    <div style={rowStyle}>
+                        <span style={labelStyle}>Max pressure</span>
+                        <span style={valueStyle}>{fmt(hoveredStackable.maxLoadPressure)}</span>
+                    </div>
+                )}
+                {hoveredStackable.maxLoadBoxCount != null && (
+                    <div style={rowStyle}>
+                        <span style={labelStyle}>Max stack count</span>
+                        <span style={valueStyle}>{fmt(hoveredStackable.maxLoadBoxCount)}</span>
+                    </div>
+                )}
+                {hoveredStackable.maxLoadIdenticalOnly === true && (
+                    <div style={rowStyle}>
+                        <span style={labelStyle}>Identical only</span>
+                        <span style={valueStyle}>yes</span>
+                    </div>
+                )}
+                {hoveredLoadInfo && (
+                    <>
+                        <div style={dividerStyle} />
+                        <div style={{ ...sectionHeadStyle, color: '#81c784' }}>Actual load (step {hoveredData.currentStep})</div>
+                        <div style={rowStyle}>
+                            <span style={labelStyle}>Load weight</span>
+                            <span style={valueStyle}>{fmt(hoveredLoadInfo.loadWeight)}</span>
+                        </div>
+                        <div style={rowStyle}>
+                            <span style={labelStyle}>Load pressure</span>
+                            <span style={valueStyle}>{fmt(hoveredLoadInfo.loadPressure)}</span>
+                        </div>
+                        <div style={rowStyle}>
+                            <span style={labelStyle}>Direct boxes on top</span>
+                            <span style={valueStyle}>{hoveredLoadInfo.directCount}</span>
+                        </div>
+                        <div style={rowStyle}>
+                            <span style={labelStyle}>Stack depth above</span>
+                            <span style={valueStyle}>{hoveredLoadInfo.stackDepth}</span>
+                        </div>
+                        <div style={rowStyle}>
+                            <span style={labelStyle}>Load boxes</span>
+                            <span style={valueStyle}>{hoveredLoadInfo.loadBoxCount}</span>
+                        </div>
+                        {hoveredLoadInfo.loadBoxCount > 0 && (
+                            <div style={rowStyle}>
+                                <span style={labelStyle}>Identical load boxes</span>
+                                <span style={{ ...valueStyle, color: hoveredLoadInfo.nonIdenticalLoadBoxCount === 0 ? '#81c784' : '#ef5350' }}>
+                                    {hoveredLoadInfo.identicalLoadBoxCount} / {hoveredLoadInfo.loadBoxCount}
+                                </span>
+                            </div>
+                        )}
+                    </>
+                )}
+                {loadedBoxes.length > 0 && (
+                    <>
+                        <div style={dividerStyle} />
+                        <div style={{ ...sectionHeadStyle, color: '#81c784' }}>Direct load boxes ({loadedBoxes.length})</div>
+                        {loadedBoxes.map((bp, i) => {
+                            const s = bp.stackable;
+                            const identical = hoveredBp ? isSameBoxItem(hoveredBp, bp) : false;
+                            return (
+                                <div key={i} style={{ ...rowStyle, marginBottom: '2px' }}>
+                                    <span style={{ color: bp.color, fontWeight: 'bold' }}>
+                                        {s.id || s.name || `Box ${i}`}
+                                    </span>
+                                    <span style={{ ...valueStyle, color: identical ? '#81c784' : '#ef5350' }}>
+                                        {identical ? 'identical' : 'different'}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </>
+                )}
+                {supporting.length > 0 && (
+                    <>
+                        <div style={dividerStyle} />
+                        <div style={sectionHeadStyle}>Supporters ({supporting.length})</div>
+                        {supporting.map((bp, i) => {
+                            const idx = allBoxPlacements.indexOf(bp);
+                            const li = loadInfos && idx >= 0 ? loadInfos[idx] : null;
+                            const s = bp.stackable;
+                            return (
+                                <div key={i} style={{ marginBottom: '3px' }}>
+                                    <div style={{ color: bp.color, fontWeight: 'bold', fontSize: '12px' }}>
+                                        {s.id || s.name || `Box ${i}`}
+                                        {s.name && s.id ? ` – ${s.name}` : ''}
+                                    </div>
+                                    {s.weight > 0 && (
+                                        <div style={rowStyle}>
+                                            <span style={labelStyle}>Weight</span>
+                                            <span style={valueStyle}>{fmt(s.weight)}</span>
+                                        </div>
+                                    )}
+                                    {li && (
+                                        <div style={rowStyle}>
+                                            <span style={labelStyle}>Load weight / depth</span>
+                                            <span style={valueStyle}>{fmt(li.loadWeight)} / {li.stackDepth}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </>
+                )}
+            </div>
         </div>
     );
 }

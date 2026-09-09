@@ -80,10 +80,6 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			List<Placement> placements = fits.getStack().getPlacements();
 			
-			for(Placement p : placements) {
-				System.out.println(p.getStackValue().getBox().getId() + " " + p.getAbsoluteX() + "x" + p.getAbsoluteY() + "x" + p.getAbsoluteZ()); 
-			}
-	
 			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
 			assertThat(placements.get(1)).isAt(1, 0, 0).hasBoxItemId("B");
 			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemId("C");

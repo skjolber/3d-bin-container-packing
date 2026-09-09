@@ -12,6 +12,8 @@ import com.github.skjolber.packing.api.BoxStackValue;
  * 
  * @see <a href=
  *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
+ *      
+ * @param <B> builder
  */
 
 public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIteratorBuilder<B>> {

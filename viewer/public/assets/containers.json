@@ -1,0 +1,712 @@
+{
+  "containers" : [ {
+    "step" : 0,
+    "plugins" : [ ],
+    "id" : null,
+    "name" : "constraint-container",
+    "dx" : 20,
+    "dy" : 20,
+    "dz" : 5,
+    "loadDx" : 20,
+    "loadDy" : 20,
+    "loadDz" : 5,
+    "stack" : {
+      "step" : 1,
+      "plugins" : [ ],
+      "placements" : [ {
+        "step" : 2,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 0,
+        "z" : 0,
+        "stackable" : {
+          "step" : 2,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 1,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 4
+        }, {
+          "x" : 0,
+          "y" : 10,
+          "z" : 0,
+          "dx" : 20,
+          "dy" : 10,
+          "dz" : 5
+        }, {
+          "x" : 10,
+          "y" : 0,
+          "z" : 0,
+          "dx" : 10,
+          "dy" : 20,
+          "dz" : 5
+        } ]
+      }, {
+        "step" : 3,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 10,
+        "z" : 0,
+        "stackable" : {
+          "step" : 3,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 1,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 4
+        }, {
+          "x" : 10,
+          "y" : 0,
+          "z" : 0,
+          "dx" : 10,
+          "dy" : 20,
+          "dz" : 5
+        } ]
+      }, {
+        "step" : 4,
+        "plugins" : [ ],
+        "x" : 10,
+        "y" : 0,
+        "z" : 0,
+        "stackable" : {
+          "step" : 4,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 1,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 4
+        }, {
+          "x" : 10,
+          "y" : 10,
+          "z" : 0,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 5
+        } ]
+      }, {
+        "step" : 5,
+        "plugins" : [ ],
+        "x" : 10,
+        "y" : 10,
+        "z" : 0,
+        "stackable" : {
+          "step" : 5,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 1,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 4
+        } ]
+      }, {
+        "step" : 6,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 0,
+        "z" : 1,
+        "stackable" : {
+          "step" : 6,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 2,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 3
+        }, {
+          "x" : 0,
+          "y" : 10,
+          "z" : 1,
+          "dx" : 20,
+          "dy" : 10,
+          "dz" : 4
+        }, {
+          "x" : 10,
+          "y" : 0,
+          "z" : 1,
+          "dx" : 10,
+          "dy" : 20,
+          "dz" : 4
+        } ]
+      }, {
+        "step" : 7,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 10,
+        "z" : 1,
+        "stackable" : {
+          "step" : 7,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 2,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 3
+        }, {
+          "x" : 10,
+          "y" : 0,
+          "z" : 1,
+          "dx" : 10,
+          "dy" : 20,
+          "dz" : 4
+        } ]
+      }, {
+        "step" : 8,
+        "plugins" : [ ],
+        "x" : 10,
+        "y" : 0,
+        "z" : 1,
+        "stackable" : {
+          "step" : 8,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 2,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 3
+        }, {
+          "x" : 10,
+          "y" : 10,
+          "z" : 1,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 4
+        } ]
+      }, {
+        "step" : 9,
+        "plugins" : [ ],
+        "x" : 10,
+        "y" : 10,
+        "z" : 1,
+        "stackable" : {
+          "step" : 9,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 2,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 3
+        } ]
+      }, {
+        "step" : 10,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 0,
+        "z" : 2,
+        "stackable" : {
+          "step" : 10,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 3,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 2
+        }, {
+          "x" : 0,
+          "y" : 10,
+          "z" : 2,
+          "dx" : 20,
+          "dy" : 10,
+          "dz" : 3
+        }, {
+          "x" : 10,
+          "y" : 0,
+          "z" : 2,
+          "dx" : 10,
+          "dy" : 20,
+          "dz" : 3
+        } ]
+      }, {
+        "step" : 11,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 10,
+        "z" : 2,
+        "stackable" : {
+          "step" : 11,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 3,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 2
+        }, {
+          "x" : 10,
+          "y" : 0,
+          "z" : 2,
+          "dx" : 10,
+          "dy" : 20,
+          "dz" : 3
+        } ]
+      }, {
+        "step" : 12,
+        "plugins" : [ ],
+        "x" : 10,
+        "y" : 0,
+        "z" : 2,
+        "stackable" : {
+          "step" : 12,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 3,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 2
+        }, {
+          "x" : 10,
+          "y" : 10,
+          "z" : 2,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 3
+        } ]
+      }, {
+        "step" : 13,
+        "plugins" : [ ],
+        "x" : 10,
+        "y" : 10,
+        "z" : 2,
+        "stackable" : {
+          "step" : 13,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 3,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 2
+        } ]
+      }, {
+        "step" : 14,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 0,
+        "z" : 3,
+        "stackable" : {
+          "step" : 14,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 4,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 1
+        }, {
+          "x" : 0,
+          "y" : 10,
+          "z" : 3,
+          "dx" : 20,
+          "dy" : 10,
+          "dz" : 2
+        }, {
+          "x" : 10,
+          "y" : 0,
+          "z" : 3,
+          "dx" : 10,
+          "dy" : 20,
+          "dz" : 2
+        } ]
+      }, {
+        "step" : 15,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 10,
+        "z" : 3,
+        "stackable" : {
+          "step" : 15,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 4,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 1
+        }, {
+          "x" : 10,
+          "y" : 0,
+          "z" : 3,
+          "dx" : 10,
+          "dy" : 20,
+          "dz" : 2
+        } ]
+      }, {
+        "step" : 16,
+        "plugins" : [ ],
+        "x" : 10,
+        "y" : 0,
+        "z" : 3,
+        "stackable" : {
+          "step" : 16,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 4,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 1
+        }, {
+          "x" : 10,
+          "y" : 10,
+          "z" : 3,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 2
+        } ]
+      }, {
+        "step" : 17,
+        "plugins" : [ ],
+        "x" : 10,
+        "y" : 10,
+        "z" : 3,
+        "stackable" : {
+          "step" : 17,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 4,
+          "dx" : 20,
+          "dy" : 20,
+          "dz" : 1
+        } ]
+      }, {
+        "step" : 18,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 0,
+        "z" : 4,
+        "stackable" : {
+          "step" : 18,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 10,
+          "z" : 4,
+          "dx" : 20,
+          "dy" : 10,
+          "dz" : 1
+        }, {
+          "x" : 10,
+          "y" : 0,
+          "z" : 4,
+          "dx" : 10,
+          "dy" : 20,
+          "dz" : 1
+        } ]
+      }, {
+        "step" : 19,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 10,
+        "z" : 4,
+        "stackable" : {
+          "step" : 19,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 10,
+          "y" : 0,
+          "z" : 4,
+          "dx" : 10,
+          "dy" : 20,
+          "dz" : 1
+        } ]
+      }, {
+        "step" : 20,
+        "plugins" : [ ],
+        "x" : 10,
+        "y" : 0,
+        "z" : 4,
+        "stackable" : {
+          "step" : 20,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 10,
+          "y" : 10,
+          "z" : 4,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1
+        } ]
+      }, {
+        "step" : 21,
+        "plugins" : [ ],
+        "x" : 10,
+        "y" : 10,
+        "z" : 4,
+        "stackable" : {
+          "step" : 21,
+          "plugins" : [ ],
+          "id" : "weight-box",
+          "name" : null,
+          "dx" : 10,
+          "dy" : 10,
+          "dz" : 1,
+          "type" : "box",
+          "weight" : 5,
+          "maxLoadWeight" : 100,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ ]
+      } ]
+    },
+    "type" : "container"
+  } ]
+}

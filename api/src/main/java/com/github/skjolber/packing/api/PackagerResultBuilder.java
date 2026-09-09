@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.Point;
@@ -42,15 +43,27 @@ public interface PackagerResultBuilder {
 		ObstaclesBuilder withObstacle(int x, int y, int z, int dx, int dy, int dz);
 	}
 	
+	public static interface ControlledBoxItemBuilder {
+
+		ControlledBoxItemBuilder withPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory);
+
+		ControlledBoxItemBuilder withBoxItem(BoxItem boxItem);
+		
+		ControlledBoxItemBuilder withBoxItem(Box box, int count);
+
+	}
+	
 	PackagerResultBuilder withBoxItems(BoxItem... items);
 
 	PackagerResultBuilder withBoxItems(List<BoxItem> items);
 
 	PackagerResultBuilder withOrder(Order order);
 
-	PackagerResultBuilder withDeadline(long deadline);
+	PackagerResultBuilder withInterruptDuration(long duration);
 
-	PackagerResultBuilder withInterrupt(BooleanSupplier interrupt);
+	PackagerResultBuilder withInterruptDeadline(long deadline);
+
+	PackagerResultBuilder withInterrupt(PackagerInterruptSupplier interrupt);
 
 	PackagerResultBuilder withMaxContainerCount(int maxResults);
 

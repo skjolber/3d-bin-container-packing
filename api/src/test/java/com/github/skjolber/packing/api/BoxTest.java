@@ -9,6 +9,13 @@ import org.junit.jupiter.api.Test;
 public class BoxTest {
 
 	@Test
+	public void testCalculatePressure() {
+		assertEquals(2.5, Box.calculatePressure(4, 10), 0.0);
+		assertEquals(0.0, Box.calculatePressure(0, 10), 0.0);
+		assertEquals(1.0 / 3.0, Box.calculatePressure(3, 1), 0.0);
+	}
+
+	@Test
 	public void testMinimumPressureUsesMaximumArea() {
 		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withWeight(1).build();
 
@@ -18,8 +25,12 @@ public class BoxTest {
 	@Test
 	public void testLargeAggregateWeightsDoNotOverflow() {
 		Box box = Box.newBuilder().withSize(1, 1, 1).withWeight(1_500_000_000).build();
-
 		assertEquals(3_000_000_000L, new BoxItem(box, 2).getWeight());
+
+		Stack stack = new Stack();
+		stack.add(new Placement(box.getStackValue(0), 0, 0, 0, 0));
+		stack.add(new Placement(box.getStackValue(0), 0, 1, 0, 0));
+		assertEquals(3_000_000_000L, stack.getWeight());
 	}
 
 	@Test
@@ -68,5 +79,15 @@ public class BoxTest {
 
 			}
 		}
+	}
+
+	@Test
+	public void testContainerClonePreservesMotion() {
+		Motion motion = new Motion();
+		Container container = new Container("id", "description", 1, 2, 3, 4, 1, 2, 3, 5, new Stack(), motion);
+
+		Container clone = container.clone();
+
+		assertSame(motion, clone.getMotion());
 	}
 }

@@ -116,5 +116,9 @@ public class BoxItem implements Serializable {
 	public BoxItemGroup getGroup() {
 		return group;
 	}
+	
+	public boolean isMaxLoad() {
+		return box.isMaxLoad();		
+	}
 
 }

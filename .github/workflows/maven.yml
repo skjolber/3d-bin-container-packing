@@ -19,20 +19,20 @@ jobs:
         java: [ 25]
     name: Java ${{ matrix.java }} build
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - name: Set up Java
-      uses: actions/setup-java@v5
+      uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5.3.0
       with:
         java-version: ${{ matrix.java }}
         distribution: liberica
     - name: Restore cache
-      uses: skjolber/maven-cache-github-action@v3.1.2
+      uses: skjolber/maven-cache-github-action@c4a30022e05fa8a86dde82cd8c1e49420d4a45dd # v3.1.2
       with:
         step: restore
     - name: Build with Maven
       run: mvn verify
     - name: Restore cache
-      uses: skjolber/maven-cache-github-action@v3.1.2
+      uses: skjolber/maven-cache-github-action@c4a30022e05fa8a86dde82cd8c1e49420d4a45dd # v3.1.2
       with:
         step: restore
 

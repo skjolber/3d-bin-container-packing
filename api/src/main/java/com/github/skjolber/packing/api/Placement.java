@@ -1,7 +1,9 @@
 package com.github.skjolber.packing.api;
 
 import java.io.Serializable;
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import com.github.skjolber.packing.api.point.Point;
 
 public class Placement implements Serializable {
@@ -14,8 +16,30 @@ public class Placement implements Serializable {
 	protected int z;
 	
 	protected int pointIndex;
+	protected int index;
+
+	protected long supportedArea;
+
+	// -----------------------------------------------------------------------
+	// Box-load tracking
+	// -----------------------------------------------------------------------
+
+	protected List<PlacementLoad> supporters;
+	protected List<PlacementLoad> supportees;
+	/**
+	 * Total weight of all boxes resting on top of this placement.
+	 * Includes all boxes in the vertical stack above, adjusted for area-proportional distribution.
+	 * The value can be fractional when a box is shared by multiple supporters.
+	 */
+	protected double loadWeight;
+	
+	protected Object properties;
 
 	public Placement(BoxStackValue stackValue, int index, int x, int y, int z) {
+		this(stackValue, index, x, y, z, true);
+	}
+
+	public Placement(BoxStackValue stackValue, int index, int x, int y, int z, boolean load) {
 		super();
 		this.stackValue = stackValue;
 		this.pointIndex = index;
@@ -23,13 +47,32 @@ public class Placement implements Serializable {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		if(load) {
+			initializeLoad();
+		}
 	}
 
 	public Placement(BoxStackValue stackValue, Point point) {
-		this(stackValue, point.getIndex(), point.getMinX(), point.getMinY(), point.getMinZ());
+		this(stackValue, point, true);
+	}
+
+	public Placement(BoxStackValue stackValue, Point point, boolean load) {
+		this(stackValue, point.getIndex(), point.getMinX(), point.getMinY(), point.getMinZ(), load);
 	}
 
 	public Placement() {
+		this(true);
+	}
+
+	public Placement(boolean load) {
+		if(load) {
+			initializeLoad();
+		}
+	}
+
+	private void initializeLoad() {
+		supporters = new ArrayList<>(4);
+		supportees = new ArrayList<>(4);
 	}
 
 	public BoxStackValue getStackValue() {
@@ -104,6 +147,13 @@ public class Placement implements Serializable {
 	public long getVolume() {
 		return stackValue.getBox().getVolume();
 	}
+	
+	public boolean intersects2D(int placementX, int placementEndX, int placementY, int placementEndY) {
+		return !(
+				placementEndX < x || placementX > getAbsoluteEndX() || 
+				placementEndY < y || placementY > getAbsoluteEndY()
+				);
+	}
 
 	public boolean intersects2D(Placement placement) {
 		return !(
@@ -156,5 +206,176 @@ public class Placement implements Serializable {
 	public int getPointIndex() {
 		return pointIndex;
 	}
+	
+	/**
+	 * Total weight of all boxes resting on top of this placement.
+	 * Includes all boxes in the vertical stack above, adjusted for area-proportional distribution.
+	 *
+	 * @return accumulated load weight, in the same units as {@link Box#getWeight()}
+	 */
+	public double getLoadWeight() {
+		return loadWeight;
+	}
+
+	/**
+	 * Returns the load pressure on the top surface of this placement,
+	 * expressed as {@code loadWeight / topArea}, matching the
+	 * convention used by {@link Box#getMinimumPressure()}.
+	 *
+	 * @return load pressure, or 0.0 if the area is zero
+	 */
+	public double getLoadPressure() {
+		long area = stackValue.getArea();
+		return Box.calculatePressure(area, loadWeight);
+	}
+
+	/**
+	 * Returns the list of placements that are directly supported by this placement.
+	 *
+	 * @return list of supportees
+	 */
+	public List<PlacementLoad> getSupportees() {
+		return supportees != null ? supportees : Collections.emptyList();
+	}
+
+	/**
+	 * Returns the list of placements that are directly supporting this placement.
+	 *
+	 * @return list of supporters
+	 */
+	public List<PlacementLoad> getSupporters() {
+		return supporters != null ? supporters : Collections.emptyList();
+	}
+
+	
+	/**
+	 * Records that {@code supportee} is resting on top of this placement.
+	 * Sets up a two-way relationship and propagates weight and stack levels 
+	 * down through the support graph.
+	 *
+	 * @param supportee the placement resting on top
+	 * @param area the area shared between the two
+	 * @param weight the initial weight share of the supportee box itself
+	 */
+	public void addLoad(Placement supportee, long area, double weight) {
+		addSupportee(new PlacementLoad(supportee, area, weight));
+		supportee.addSupporter(new PlacementLoad(this, area, weight));
+
+		propagateLoad(weight);
+	}
+	
+	protected void addSupportee(PlacementLoad supporter) {
+		supportees.add(supporter);
+	}
+
+	protected void addSupporter(PlacementLoad supporter) {
+		supporters.add(supporter);
+		
+		supportedArea += supporter.getArea();
+	}
+
+	protected void propagateLoad(double weightIncrement) {
+		this.loadWeight += weightIncrement;
+
+		if(supporters != null && !supporters.isEmpty()) {
+			for (int i = 0; i < supporters.size(); i++) {
+				PlacementLoad supporterLink = supporters.get(i);
+				double share = weightIncrement * supporterLink.getArea() / supportedArea;
+				supporterLink.getPlacement().propagateLoad(share);
+			}
+		}
+	}
+	
+	public void removeLoad(Placement supportee) {
+		if(supportees == null) {
+			return;
+		}
+		for(int i = supportees.size() - 1; i >= 0; i--) {
+			PlacementLoad supporteeLink = supportees.get(i);
+			if(supporteeLink.getPlacement() == supportee) {
+				supportees.remove(i);
+				supportee.removeSupporter(this);
+				propagateLoad(-supporteeLink.getWeight());
+				break;
+			}
+		}
+	}
+
+	public void clearLoad() {
+		if(supportees != null) {
+			supportees.clear();
+		}
+		if(supporters != null) {
+			supporters.clear();
+		}
+		
+		loadWeight = 0.0;
+		supportedArea = 0;
+	}
+
+	public void removeSupporter(Placement placement) {
+		if(supporters == null) {
+			return;
+		}
+		for(int i = 0; i < supporters.size(); i++) {
+			PlacementLoad supporterLink = supporters.get(i);
+			if(supporterLink.getPlacement() == placement) {
+				supporters.remove(i);
+				supportedArea -= supporterLink.getArea();
+				
+				propagateLoad(-supporterLink.getWeight());
+				break;
+			}
+		}
+	}
+
+	public long getSupportedArea() {
+		return supportedArea;
+	}
+
+	public void setSupportedArea(long supportedArea) {
+		this.supportedArea = supportedArea;
+	}
+	
+	public void setIndex(int index) {
+		this.index = index;
+	}
+	
+	public int getIndex() {
+		return index;
+	}
+
+	public boolean isWithinMaxLoadBoxCount(int levels) {
+		if(stackValue.isMaxLoadBoxCount()) {
+			if(stackValue.getMaxLoadBoxCount() < levels) {
+				return false;
+			}
+		}
+		
+		levels++;
+		if(supporters != null) {
+			for (PlacementLoad placementLoad : supporters) {
+				if(!placementLoad.getPlacement().isWithinMaxLoadBoxCount(levels)) {
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+
+	public <T> T getProperties() {
+		return (T) properties;
+	}
+
+	public <T> void setProperties(T properties) {
+		this.properties = properties;
+	}
+
+	public void removeLastSupportee() {
+		PlacementLoad supporteeLink = supportees.remove(supportees.size() - 1);
+		propagateLoad(-supporteeLink.getWeight());
+	}
+
 
 }

@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.packer.AbstractPackager;
 
 public class EgyPackagerBenchmarkTest {
@@ -38,6 +38,11 @@ public class EgyPackagerBenchmarkTest {
 	}
 
 	@Test
+	public void loadPackager() throws Exception {
+		assertValid(state.getLoadBruteForcePackager(), Long.MAX_VALUE);
+	}
+
+	@Test
 	public void fastPackager() throws Exception {
 		assertValid(state.getFastBruteForcePackager(), Long.MAX_VALUE);
 	}
@@ -48,7 +53,7 @@ public class EgyPackagerBenchmarkTest {
 			List<ContainerItem> containers = set.getContainers();
 			List<BoxItem> products = set.getProducts();
 
-			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withDeadline(deadline).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withInterruptDeadline(deadline).build();
 			assertTrue(build.isSuccess());
 		}
 	}

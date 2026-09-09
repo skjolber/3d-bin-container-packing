@@ -32,7 +32,7 @@ public class DefaultXSupportPoint2D extends SimplePoint2D implements XSupportPoi
 				+ ", xSupportMinX=" + getXSupportMinX() + ", xSupportMaxX=" + getXSupportMaxX() + "]";
 	}
 
-	public Point2D clone(int maxX, int maxY) {
+	public SimplePoint2D clone(int maxX, int maxY) {
 		return new DefaultXSupportPoint2D(minX, minY, minZ, maxX, maxY, maxZ, xSupport);
 	}
 
