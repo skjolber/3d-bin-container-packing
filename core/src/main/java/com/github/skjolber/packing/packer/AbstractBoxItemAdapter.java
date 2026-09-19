@@ -14,6 +14,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter implements PackagerAdapter {
 
 	protected List<BoxItem> remainingBoxItems;
+	protected final List<BoxItem> initialBoxItems;
 	protected final PackagerInterruptSupplier interrupt;
 	protected final Order order;
 	
@@ -22,8 +23,9 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	protected final boolean maxLoadBoxCount;
 	protected final boolean maxLoadIdenticalBoxCount;
 
-	public AbstractBoxItemAdapter(List<BoxItem> boxItems, Order order, ContainerItemsCalculator packagerContainerItems, PackagerInterruptSupplier interrupt) {
-		super(packagerContainerItems);
+	public AbstractBoxItemAdapter(List<BoxItem> boxItems, Order order, List<ControlledContainerItem> containers, PackagerInterruptSupplier interrupt) {
+		super(containers);
+		this.initialBoxItems = copyBoxItems(boxItems);
 		
 		this.order = order;
 		
@@ -57,6 +59,29 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 		this.remainingBoxItems = boxClones;
 		this.interrupt = interrupt;
 	}
+
+	protected AbstractBoxItemAdapter(AbstractBoxItemAdapter source) {
+		super(source);
+		this.initialBoxItems = copyBoxItems(source.initialBoxItems);
+		this.remainingBoxItems = copyBoxItems(source.remainingBoxItems);
+		this.interrupt = source.interrupt;
+		this.order = source.order;
+		this.maxLoadWeight = source.maxLoadWeight;
+		this.maxLoadPressure = source.maxLoadPressure;
+		this.maxLoadBoxCount = source.maxLoadBoxCount;
+		this.maxLoadIdenticalBoxCount = source.maxLoadIdenticalBoxCount;
+	}
+
+	@Override
+	protected void resetState() {
+		remainingBoxItems = copyBoxItems(initialBoxItems);
+		for(int i = 0; i < remainingBoxItems.size(); i++) {
+			remainingBoxItems.get(i).setIndex(i);
+		}
+	}
+
+	@Override
+	public abstract PackagerAdapter fork();
 
 	@Override
 	public IntermediatePackagerResult attempt(int index, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
@@ -105,12 +130,35 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	}
 
 	@Override
+	public long estimateMinimumCost(ContainerItemsCostCalculator calculator, int maxCount) {
+		return calculator.getMinimumCost(packagerContainerItems, remainingBoxItems, maxCount);
+	}
+
+	@Override
 	public int countRemainingBoxes() {
 		int count = 0;
 		for(BoxItem boxItem : remainingBoxItems) {
 			count += boxItem.getCount();
 		}
 		return count;
+	}
+
+	@Override
+	public long getRemainingVolume() {
+		long volume = 0L;
+		for(BoxItem boxItem : remainingBoxItems) {
+			volume = Math.addExact(volume, boxItem.getVolume());
+		}
+		return volume;
+	}
+
+	@Override
+	public long getRemainingWeight() {
+		long weight = 0L;
+		for(BoxItem boxItem : remainingBoxItems) {
+			weight = Math.addExact(weight, boxItem.getWeight());
+		}
+		return weight;
 	}
 
 	protected abstract IntermediatePackagerResult pack(

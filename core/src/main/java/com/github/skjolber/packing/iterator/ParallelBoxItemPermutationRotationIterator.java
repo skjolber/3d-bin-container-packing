@@ -20,6 +20,19 @@ public class ParallelBoxItemPermutationRotationIterator extends DefaultBoxItemPe
 		this.iterator = iterator;
 	}
 
+	private ParallelBoxItemPermutationRotationIterator(ParallelBoxItemPermutationRotationIterator source,
+			ParallelBoxItemPermutationRotationIteratorList parent) {
+		super(source);
+		this.iterator = parent;
+		this.lastPermutation = source.lastPermutation == null ? null : source.lastPermutation.clone();
+		this.lastPermutationMaxIndex = source.lastPermutationMaxIndex;
+		this.checkLastPermutation = source.checkLastPermutation;
+	}
+
+	public ParallelBoxItemPermutationRotationIterator fork(ParallelBoxItemPermutationRotationIteratorList parent) {
+		return new ParallelBoxItemPermutationRotationIterator(this, parent);
+	}
+
 	public void setPermutations(int[] permutations) {
 		this.permutations = permutations;
 	}

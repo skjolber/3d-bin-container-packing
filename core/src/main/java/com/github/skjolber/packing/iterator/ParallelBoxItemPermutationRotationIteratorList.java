@@ -136,6 +136,19 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 		calculate();
 	}
 
+	private ParallelBoxItemPermutationRotationIteratorList(ParallelBoxItemPermutationRotationIteratorList source) {
+		this.parallelizationCount = source.parallelizationCount;
+		this.frequencies = source.frequencies.clone();
+		this.workUnits = new ParallelBoxItemPermutationRotationIterator[source.workUnits.length];
+		for(int i = 0; i < workUnits.length; i++) {
+			workUnits[i] = source.workUnits[i].fork(this);
+		}
+	}
+
+	public ParallelBoxItemPermutationRotationIteratorList fork() {
+		return new ParallelBoxItemPermutationRotationIteratorList(this);
+	}
+
 	private BoxItem[] clone(BoxItem[] boxItems) {
 		BoxItem[] result = new BoxItem[boxItems.length];
 		for(int i = 0; i < boxItems.length; i++) {

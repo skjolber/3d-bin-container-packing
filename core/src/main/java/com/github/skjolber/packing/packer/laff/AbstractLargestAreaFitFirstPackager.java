@@ -38,7 +38,6 @@ import com.github.skjolber.packing.packer.AbstractBoxItemAdapter;
 import com.github.skjolber.packing.packer.AbstractBoxItemGroupAdapter;
 import com.github.skjolber.packing.packer.AbstractControlPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
@@ -57,9 +56,23 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter {
 
 		public PlainBoxItemAdapter(List<BoxItem> boxItems, Order order,
-				ContainerItemsCalculator packagerContainerItems,
+				List<ControlledContainerItem> containers,
 				PackagerInterruptSupplier interrupt) {
-			super(boxItems, order, packagerContainerItems, interrupt);
+			super(boxItems, order, containers, interrupt);
+		}
+
+		private PlainBoxItemAdapter(PlainBoxItemAdapter source) {
+			super(source);
+		}
+
+		@Override
+		public PackagerAdapter fork() {
+			return new PlainBoxItemAdapter(this);
+		}
+
+		@Override
+		protected PlainBoxItemAdapter fresh(List<ControlledContainerItem> containers) {
+			return new PlainBoxItemAdapter(copyBoxItems(initialBoxItems), order, containers, interrupt);
 		}
 
 		@Override
@@ -80,9 +93,23 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		public PlainBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups,
 				Order order,
-				ContainerItemsCalculator packagerContainerItems, 
+				List<ControlledContainerItem> containers,
 				PackagerInterruptSupplier interrupt) {
-			super(boxItemGroups, packagerContainerItems, order, interrupt);
+			super(boxItemGroups, containers, order, interrupt);
+		}
+
+		private PlainBoxItemGroupAdapter(PlainBoxItemGroupAdapter source) {
+			super(source);
+		}
+
+		@Override
+		public PackagerAdapter fork() {
+			return new PlainBoxItemGroupAdapter(this);
+		}
+
+		@Override
+		protected PlainBoxItemGroupAdapter fresh(List<ControlledContainerItem> containers) {
+			return new PlainBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), order, containers, interrupt);
 		}
 
 		@Override
@@ -123,9 +150,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			try {
 				PackagerAdapter adapter;
 				if(items != null && !items.isEmpty()) {
-					adapter = new PlainBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
+					adapter = new PlainBoxItemAdapter(items, order, containers, interrupt);
 				} else {
-					adapter = new PlainBoxItemGroupAdapter(itemGroups, order, new ContainerItemsCalculator(containers), interrupt);
+					adapter = new PlainBoxItemGroupAdapter(itemGroups, order, containers, interrupt);
 				}
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 				

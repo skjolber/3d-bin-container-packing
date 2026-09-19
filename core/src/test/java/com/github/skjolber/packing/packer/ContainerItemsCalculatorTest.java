@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.ArrayList;
@@ -10,12 +11,69 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Motion;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
+import com.github.skjolber.packing.cost.LinearBucketWeightContainerCostCalculator;
 
 public class ContainerItemsCalculatorTest {
+
+	@Test
+	public void clonedCalculatorHasIndependentContainerInventory() {
+		Container container = Container.newBuilder()
+				.withMaxLoadWeight(100)
+				.withSize(10, 10, 10)
+				.build();
+		ContainerItemsCalculator original = create(ContainerItem.newListBuilder()
+				.withContainer(container, 2)
+				.build());
+		ContainerItemsCalculator clone = original.clone();
+
+		assertNotSame(original.getContainerItem(0), clone.getContainerItem(0));
+		assertEquals(0, clone.getContainerItem(0).getIndex());
+		clone.getContainerItem(0).decrement();
+		assertEquals(2, original.getContainerItem(0).getCount());
+		assertEquals(1, clone.getContainerItem(0).getCount());
+		assertEquals(1000L, clone.calculateMaxVolume(1).getValue().longValue());
+	}
+
+	@Test
+	public void resetRestoresInitialCountsWithoutReplacingItems() {
+		Container container = Container.newBuilder()
+				.withMaxLoadWeight(100)
+				.withSize(10, 10, 10)
+				.build();
+		ContainerItemsCalculator calculator = create(ContainerItem.newListBuilder()
+				.withContainer(container, 2)
+				.withContainer(container, 1)
+				.build());
+		ControlledContainerItem first = calculator.getContainerItem(0);
+		ControlledContainerItem second = calculator.getContainerItem(1);
+		first.decrement();
+		second.decrement();
+
+		ContainerItemsCalculator clone = calculator.clone();
+		clone.reset();
+		assertEquals(2, clone.getContainerItem(0).getCount());
+		assertEquals(1, clone.getContainerItem(1).getCount());
+		assertEquals(1, first.getCount());
+		assertEquals(0, second.getCount());
+
+		calculator.reset();
+		assertSame(first, calculator.getContainerItem(0));
+		assertSame(second, calculator.getContainerItem(1));
+		assertEquals(2, first.getCount());
+		assertEquals(1, second.getCount());
+
+		first.setCount(4);
+		first.mark();
+		first.decrement();
+		calculator.reset();
+		assertEquals(4, first.getCount());
+	}
 
 	@Test
 	public void testSingleContainer() {
@@ -280,6 +338,73 @@ public class ContainerItemsCalculatorTest {
 		Container result = calculator.toContainer(calculator.getContainerItem(0), new Stack());
 
 		assertSame(motion, result.getMotion());
+	}
+
+	@Test
+	public void estimateUsesTheNextCostEffectiveContainerAfterInventoryIsExhausted() {
+		Container cheap = Container.newBuilder().withSize(2, 1, 1).withMaxLoadWeight(2).build();
+		Container next = Container.newBuilder().withSize(2, 1, 1).withMaxLoadWeight(2).build();
+		ContainerItemsCalculator calculator = create(ContainerItem.newListBuilder()
+				.withContainer(cheap, 2, new FixedContainerCostCalculator(1, 2, null, 0))
+				.withContainer(next, 2, new FixedContainerCostCalculator(3, 2, null, 0))
+				.build());
+		BoxItem boxes = new BoxItem(Box.newBuilder().withSize(1, 1, 1).withWeight(1).build(), 6);
+
+		ContainerItemsCostCalculator estimate = new EstimatingContainerItemsCostCalculator();
+		ContainerItemsCostCalculator exact = new ExactContainerItemsCostCalculator();
+		assertEquals(5, estimate.getMinimumCost(calculator, List.of(boxes), 3));
+		assertEquals(5, exact.getMinimumCost(calculator, List.of(boxes), 3));
+		assertEquals(Long.MAX_VALUE, estimate.getMinimumCost(calculator, List.of(boxes), 2));
+		assertEquals(Long.MAX_VALUE, exact.getMinimumCost(calculator, List.of(boxes), 2));
+		calculator.getContainerItem(0).decrement();
+		assertEquals(7, estimate.getMinimumCost(calculator, List.of(boxes), 3));
+		assertEquals(7, exact.getMinimumCost(calculator, List.of(boxes), 3));
+	}
+
+	@Test
+	public void exactCostAssignsWholeBoxesAndGroups() {
+		Container small = Container.newBuilder().withSize(3, 1, 1).withMaxLoadWeight(3).build();
+		Container large = Container.newBuilder().withSize(4, 1, 1).withMaxLoadWeight(4).build();
+		ContainerItemsCalculator calculator = create(ContainerItem.newListBuilder()
+				.withContainer(small, 2, new FixedContainerCostCalculator(2, 3, null, 0))
+				.withContainer(large, 1, new FixedContainerCostCalculator(5, 4, null, 0))
+				.build());
+		BoxItem boxes = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withWeight(2).build(), 2);
+		BoxItemGroup group = new BoxItemGroup("pair", List.of(boxes));
+
+		ContainerItemsCostCalculator estimate = new EstimatingContainerItemsCostCalculator();
+		ContainerItemsCostCalculator exact = new ExactContainerItemsCostCalculator();
+		assertEquals(2, estimate.getMinimumCost(calculator, List.of(boxes), 2));
+		assertEquals(4, exact.getMinimumCost(calculator, List.of(boxes), 2));
+		assertEquals(2, estimate.getGroupMinimumCost(calculator, List.of(group), 2));
+		assertEquals(5, exact.getGroupMinimumCost(calculator, List.of(group), 2));
+	}
+
+	@Test
+	public void exactCostRejectsContainersThatCannotFitTheBoxDimensions() {
+		Container cheap = Container.newBuilder().withSize(1, 2, 2).withMaxLoadWeight(4).build();
+		Container fitting = Container.newBuilder().withSize(2, 2, 1).withMaxLoadWeight(4).build();
+		ContainerItemsCalculator calculator = create(ContainerItem.newListBuilder()
+				.withContainer(cheap, 1, new FixedContainerCostCalculator(1, 4, null, 0))
+				.withContainer(fitting, 1, new FixedContainerCostCalculator(5, 4, null, 0))
+				.build());
+		BoxItem box = new BoxItem(Box.newBuilder().withSize(2, 2, 1).withWeight(1).build(), 1);
+
+		assertEquals(1, new EstimatingContainerItemsCostCalculator().getMinimumCost(calculator, List.of(box), 1));
+		assertEquals(5, new ExactContainerItemsCostCalculator().getMinimumCost(calculator, List.of(box), 1));
+	}
+
+	@Test
+	public void exactCostPricesTheAssignedLoadWeight() {
+		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
+		ContainerItemsCalculator calculator = create(ContainerItem.newListBuilder()
+				.withContainer(container, 1, new LinearBucketWeightContainerCostCalculator(0, 0, 1, 10, 1, 1, null, 0))
+				.withContainer(container, 1, new FixedContainerCostCalculator(5, 1, null, 0))
+				.build());
+		BoxItem box = new BoxItem(Box.newBuilder().withSize(1, 1, 1).withWeight(1).build(), 1);
+
+		assertEquals(0, new EstimatingContainerItemsCostCalculator().getMinimumCost(calculator, List.of(box), 1));
+		assertEquals(5, new ExactContainerItemsCostCalculator().getMinimumCost(calculator, List.of(box), 1));
 	}
 
 

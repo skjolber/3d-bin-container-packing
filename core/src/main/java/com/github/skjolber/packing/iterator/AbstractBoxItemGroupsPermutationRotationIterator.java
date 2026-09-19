@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.iterator;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
@@ -14,6 +15,24 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 		super(boxMatrix);
 		this.groupsMatrix = groupsMatrix;
 		this.excludedBoxItemGroups = excluded;
+	}
+
+	protected record GroupState(BoxItemGroup[] groups, BoxItem[] boxes) {}
+
+	protected static GroupState copyGroupState(AbstractBoxItemGroupsPermutationRotationIterator source) {
+		BoxItem[] boxes = copyBoxItems(source.stackableItems);
+		BoxItemGroup[] groups = new BoxItemGroup[source.groupsMatrix.length];
+		for(int i = 0; i < groups.length; i++) {
+			BoxItemGroup group = source.groupsMatrix[i];
+			if(group != null) {
+				List<BoxItem> items = new ArrayList<>(group.size());
+				for(BoxItem item : group.getItems()) {
+					items.add(boxes[item.getIndex()]);
+				}
+				groups[i] = new BoxItemGroup(group.getId(), items, group.getIndex());
+			}
+		}
+		return new GroupState(groups, boxes);
 	}
 	
 	protected int getBoxCount() {

@@ -11,6 +11,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 
 class ControlledContainerItemTest {
@@ -24,15 +25,18 @@ class ControlledContainerItemTest {
 		ManifestControlsBuilderFactory manifestControls = () -> null;
 		PointControlsBuilderFactory pointControls = () -> null;
 		List<Point> initialPoints = List.of(new DefaultPoint3D(0, 0, 0, 9, 9, 9));
+		FixedContainerCostCalculator costCalculator = new FixedContainerCostCalculator(10, 1_000, "cost", 0);
 		source.setBoxItemControlsBuilderFactory(manifestControls);
 		source.setPointControlsBuilderFactory(pointControls);
 		source.setInitialPoints(initialPoints);
+		source.setCostCalculator(costCalculator);
 
 		ControlledContainerItem result = new ControlledContainerItem(source);
 
 		assertThat(result.getBoxItemControlsBuilderFactory()).isSameAs(manifestControls);
 		assertThat(result.getPointControlsBuilderFactory()).isSameAs(pointControls);
 		assertThat(result.getInitialPoints()).isSameAs(initialPoints);
+		assertThat(result.getCostCalculator()).isSameAs(costCalculator);
 		assertThat(result.hasControls()).isTrue();
 	}
 

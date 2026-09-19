@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
+import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
@@ -20,6 +21,10 @@ public interface PackagerResultBuilder {
 		ControlledContainerItemBuilder withContainerItem(ContainerItem containerItem);
 		
 		ControlledContainerItemBuilder withContainerItem(Container container, int count);
+
+		default ControlledContainerItemBuilder withCostCalculator(ContainerCostCalculator costCalculator) {
+			throw new UnsupportedOperationException("Container cost is not supported by this result builder");
+		}
 		
 		ControlledContainerItemBuilder withPoints(List<Point> points);
 		

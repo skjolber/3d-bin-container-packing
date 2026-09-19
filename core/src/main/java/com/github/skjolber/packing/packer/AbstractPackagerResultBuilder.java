@@ -17,6 +17,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.Point;
@@ -100,6 +101,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		protected PointControlsBuilderFactory pointControlsBuilderFactory;
 		protected List<Point> points;
 		protected List<Point> obstacles;
+		protected ContainerCostCalculator costCalculator;
 
 		public ControlledContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier) {
 			this.boxItemControlsBuilderFactory = supplier;
@@ -119,6 +121,12 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		
 		public ControlledContainerItemBuilder withContainerItem(Container container, int count) {
 			this.containerItem = new ContainerItem(container, count);
+			return this;
+		}
+
+		@Override
+		public ControlledContainerItemBuilder withCostCalculator(ContainerCostCalculator costCalculator) {
+			this.costCalculator = costCalculator;
 			return this;
 		}
 
@@ -152,6 +160,9 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 
 			packContainerItem.setBoxItemControlsBuilderFactory(boxItemControlsBuilderFactory);
 			packContainerItem.setPointControlsBuilderFactory(pointControlsBuilderFactory);
+			if(costCalculator != null) {
+				packContainerItem.setCostCalculator(costCalculator);
+			}
 			return packContainerItem;
 		}
 

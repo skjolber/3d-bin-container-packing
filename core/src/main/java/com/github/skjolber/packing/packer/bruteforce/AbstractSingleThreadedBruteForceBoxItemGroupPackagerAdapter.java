@@ -11,20 +11,21 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter extends AbstractBruteForceBoxItemGroupsPackagerAdapter {
 
-	protected final BoxItemGroupPermutationRotationIterator[] containerIterators;
-	protected final Placement[] stackPlacements;
+	protected BoxItemGroupPermutationRotationIterator[] containerIterators;
+	protected Placement[] stackPlacements;
 	protected int stackPlacementCount;
 	protected PackagerInterruptSupplier interrupt;
 	
-	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems, BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt, boolean load) {
-		super(boxItems, packagerContainerItems, boxItemGroups);
+	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ControlledContainerItem> containers, BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt, boolean load) {
+		super(boxItems, containers, boxItemGroups);
 		this.interrupt = interrupt;
 		this.containerIterators = containerIterators;
 		
@@ -36,6 +37,17 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 		
 		this.stackPlacements = BruteForcePackager.getPlacements(count, load);
 		this.stackPlacementCount = count;
+	}
+
+	protected AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter source, boolean load) {
+		super(source);
+		this.interrupt = source.interrupt;
+		this.containerIterators = new BoxItemGroupPermutationRotationIterator[source.containerIterators.length];
+		for(int i = 0; i < containerIterators.length; i++) {
+			this.containerIterators[i] = ((DefaultBoxItemGroupPermutationRotationIterator) source.containerIterators[i]).fork();
+		}
+		this.stackPlacementCount = source.stackPlacementCount;
+		this.stackPlacements = BruteForcePackager.getPlacements(stackPlacementCount, load);
 	}
 	
 	protected int getMaxIteratorLength() {

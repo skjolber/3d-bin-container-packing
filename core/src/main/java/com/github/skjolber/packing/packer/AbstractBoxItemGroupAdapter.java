@@ -16,16 +16,18 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapter implements PackagerAdapter {
 
 	private List<BoxItemGroup> remainingBoxItemGroups;
-	private final PackagerInterruptSupplier interrupt;
-	private final Order order;
+	protected final List<BoxItemGroup> initialBoxItemGroups;
+	protected final PackagerInterruptSupplier interrupt;
+	protected final Order order;
 
 	protected final boolean maxLoadWeight;
 	protected final boolean maxLoadPressure;
 	protected final boolean maxLoadBoxCount;
 	protected final boolean maxLoadIdenticalBoxCount;
 	
-	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems, Order order, PackagerInterruptSupplier interrupt) {
-		super(packagerContainerItems);
+	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, List<ControlledContainerItem> containers, Order order, PackagerInterruptSupplier interrupt) {
+		super(containers);
+		this.initialBoxItemGroups = copyBoxItemGroups(boxItemGroups);
 		
 		List<BoxItemGroup> groupClones = new LinkedList<>();
 		for (BoxItemGroup boxItemGroup : boxItemGroups) {
@@ -62,6 +64,34 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 		this.maxLoadIdenticalBoxCount = maxLoadIdenticalBoxCount;
 		
 	}
+
+	protected AbstractBoxItemGroupAdapter(AbstractBoxItemGroupAdapter source) {
+		super(source);
+		this.initialBoxItemGroups = copyBoxItemGroups(source.initialBoxItemGroups);
+		this.remainingBoxItemGroups = copyBoxItemGroups(source.remainingBoxItemGroups);
+		for(BoxItemGroup group : remainingBoxItemGroups) {
+			group.mark();
+		}
+		this.interrupt = source.interrupt;
+		this.order = source.order;
+		this.maxLoadWeight = source.maxLoadWeight;
+		this.maxLoadPressure = source.maxLoadPressure;
+		this.maxLoadBoxCount = source.maxLoadBoxCount;
+		this.maxLoadIdenticalBoxCount = source.maxLoadIdenticalBoxCount;
+	}
+
+	@Override
+	protected void resetState() {
+		List<BoxItemGroup> groups = new LinkedList<>(copyBoxItemGroups(initialBoxItemGroups));
+		for(int i = 0; i < groups.size(); i++) {
+			groups.get(i).setIndex(i);
+			groups.get(i).mark();
+		}
+		remainingBoxItemGroups = groups;
+	}
+
+	@Override
+	public abstract PackagerAdapter fork();
 
 	@Override
 	public IntermediatePackagerResult attempt(int index, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
@@ -102,6 +132,11 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 	public List<Integer> getContainers(int maxCount) {
 		return packagerContainerItems.getGroupContainers(remainingBoxItemGroups, maxCount);
 	}
+
+	@Override
+	public long estimateMinimumCost(ContainerItemsCostCalculator calculator, int maxCount) {
+		return calculator.getGroupMinimumCost(packagerContainerItems, remainingBoxItemGroups, maxCount);
+	}
 	
 	@Override
 	public int countRemainingBoxes() {
@@ -110,6 +145,29 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 			count += group.getBoxCount();
 		}
 		return count;
+	}
+
+	@Override
+	public int getMaximumContainerCount(int requestedLimit) {
+		return super.getMaximumContainerCount(Math.min(requestedLimit, remainingBoxItemGroups.size()));
+	}
+
+	@Override
+	public long getRemainingVolume() {
+		long volume = 0L;
+		for(BoxItemGroup group : remainingBoxItemGroups) {
+			volume = Math.addExact(volume, group.getVolume());
+		}
+		return volume;
+	}
+
+	@Override
+	public long getRemainingWeight() {
+		long weight = 0L;
+		for(BoxItemGroup group : remainingBoxItemGroups) {
+			weight = Math.addExact(weight, group.getWeight());
+		}
+		return weight;
 	}
 	
 	@Override

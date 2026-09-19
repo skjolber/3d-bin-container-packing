@@ -14,7 +14,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 
-public class ContainerItemsCalculator {
+public class ContainerItemsCalculator implements Cloneable {
 
 	public static class Limit {
 		
@@ -57,12 +57,28 @@ public class ContainerItemsCalculator {
 			items.get(i).setIndex(i);
 		}
 		this.containerItems = items;
-		
+
 		containerItemsSortedByWeight = new ArrayList<>(items);
 		containerItemsSortedByVolume = new ArrayList<>(items);
 		
 		Collections.sort(containerItemsSortedByWeight, ContainerItem.MAX_LOAD_WEIGHT_COMPARATOR);
 		Collections.sort(containerItemsSortedByVolume, ContainerItem.MAX_LOAD_VOLUME_COMPARATOR);
+	}
+
+	@Override
+	public ContainerItemsCalculator clone() {
+		List<ControlledContainerItem> copies = new ArrayList<>(containerItems.size());
+		for(ControlledContainerItem item : containerItems) {
+			copies.add(new ControlledContainerItem(item));
+		}
+		return new ContainerItemsCalculator(copies);
+	}
+
+	/** Restore each container item's count to its reset count. */
+	public void reset() {
+		for(ControlledContainerItem item : containerItems) {
+			item.reset();
+		}
 	}
 
 	/**
@@ -76,14 +92,19 @@ public class ContainerItemsCalculator {
 	public List<Integer> getContainers(List<BoxItem> boxes, int maxCount) {
 		long totalVolume = 0;
 		long totalWeight = 0;
-
+		int boxCount = 0;
 		for (BoxItem box : boxes) {
 			// volume
 			totalVolume += box.getVolume();
 
 			// weight
 			totalWeight += box.getWeight();
+
+			boxCount += box.getCount();
 		}
+
+		// set a more realistic max; no more than one container per box
+		maxCount = Math.min(maxCount, boxCount);
 		
 		if(maxCount == 1) {
 			List<Integer> result = new ArrayList<>(getContainerItemCount());
@@ -190,14 +211,14 @@ public class ContainerItemsCalculator {
 		return result;
 	}
 
-	public List<Integer> getGroupContainers(List<BoxItemGroup> boxes, int maxCount) {
+	public List<Integer> getGroupContainers(List<BoxItemGroup> groups, int maxCount) {
 		long totalBoxVolume = 0;
 		long totalBoxWeight = 0;
 
 		long minGroupVolume = Long.MAX_VALUE;
 		long minGroupWeight = Long.MAX_VALUE;
 
-		for (BoxItemGroup group : boxes) {
+		for (BoxItemGroup group : groups) {
 			// volume
 			for (BoxItem boxItem : group.getItems()) {
 
@@ -218,6 +239,9 @@ public class ContainerItemsCalculator {
 			}
 		}
 
+		// no more than one container per group
+		maxCount = Math.min(maxCount, groups.size());
+
 		if(maxCount == 1) {
 			List<Integer> list = new ArrayList<>(getContainerItemCount());
 
@@ -237,7 +261,7 @@ public class ContainerItemsCalculator {
 					continue;
 				}
 				
-				for (BoxItemGroup group : boxes) {
+				for (BoxItemGroup group : groups) {
 					if(!c.canLoad(group)) {
 						continue containers;
 					}
@@ -299,7 +323,7 @@ public class ContainerItemsCalculator {
 
 			}
 
-			if(!canLoadAtLeastOneGroup(container, boxes)) {
+			if(!canLoadAtLeastOneGroup(container, groups)) {
 				continue;
 			}
 			list.add(i);
@@ -307,7 +331,7 @@ public class ContainerItemsCalculator {
 
 		return list;
 	}
-	
+
 	protected boolean canLoadAtLeastOneBox(Container containerBox, Iterable<BoxItem> boxes) {
 		for (BoxItem boxItem : boxes) {
 			Box box = boxItem.getBox();
@@ -413,6 +437,33 @@ public class ContainerItemsCalculator {
 		}
 		
 		return new Limit(weight, includedContainerIndexes, minLoadWeight);
+	}
+
+	protected boolean hasMaxVolumeCapacity(int maxCount, long target) {
+		return hasCapacity(containerItemsSortedByVolume, maxCount, target, true);
+	}
+
+	protected boolean hasMaxWeightCapacity(int maxCount, long target) {
+		return hasCapacity(containerItemsSortedByWeight, maxCount, target, false);
+	}
+
+	private static boolean hasCapacity(List<ControlledContainerItem> items, int maxCount, long target, boolean volume) {
+		long total = 0;
+		for(int i = items.size() - 1; i >= 0 && maxCount > 0; i--) {
+			ControlledContainerItem item = items.get(i);
+			if(!item.isAvailable()) {
+				continue;
+			}
+			long capacity = volume ? item.getContainer().getMaxLoadVolume() : item.getContainer().getMaxLoadWeight();
+			int count = Math.min(maxCount, item.getCount());
+			long remaining = target - total;
+			if(remaining <= 0 || capacity > 0 && count >= 1 + (remaining - 1) / capacity) {
+				return true;
+			}
+			total += capacity * count;
+			maxCount -= count;
+		}
+		return total >= target;
 	}
 
 	public int getContainerItemCount() {

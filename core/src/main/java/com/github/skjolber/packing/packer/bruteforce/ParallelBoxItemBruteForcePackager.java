@@ -27,7 +27,6 @@ import com.github.skjolber.packing.iterator.FilteredReversedBoxItemPermutationRo
 import com.github.skjolber.packing.iterator.ParallelBoxItemGroupPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.ParallelBoxItemPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerException;
@@ -180,6 +179,16 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		return new FilteredReversedBoxItemPermutationRotationIterator(iterator);
 	}
 
+	private PackagerInterruptSupplier[] forkInterrupts(PackagerInterruptSupplier[] source) {
+		PackagerInterruptSupplier[] copy = source.clone();
+		for(int i = 0; i < copy.length; i++) {
+			if(copy[i] instanceof ClonablePackagerInterruptSupplier clonable) {
+				copy[i] = (PackagerInterruptSupplier) clonable.clone();
+			}
+		}
+		return copy;
+	}
+
 	private class RunnableAdapter implements Callable<BruteForceIntermediatePackagerResult> {
 
 		private ControlledContainerItem containerItem;
@@ -196,6 +205,10 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 			this.pointCalculator = new PointCalculator3DStack(maxIteratorLength + 1);
 			this.pointCalculator.reset(1, 1, 1);
+		}
+
+		public RunnableAdapter fork(int maxIteratorLength) {
+			return new RunnableAdapter(placementCount, maxIteratorLength, 0L, 0L);
 		}
 
 		public void removeFirstPlacements(int size) {
@@ -234,18 +247,60 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 	private class ParallelAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 
-		private final RunnableAdapter[] runnables; // per thread
-		private final ParallelBoxItemPermutationRotationIteratorList[] parallelIterators; // per container
-		private final DefaultBoxItemPermutationRotationIterator[] iterators; // per container
-		private final PackagerInterruptSupplier[] interrupts;
+		private RunnableAdapter[] runnables; // per thread
+		private ParallelBoxItemPermutationRotationIteratorList[] parallelIterators; // per container
+		private DefaultBoxItemPermutationRotationIterator[] iterators; // per container
+		private PackagerInterruptSupplier[] interrupts;
+		private final PackagerInterruptSupplier sourceInterrupt;
 
-		protected ParallelAdapter(List<BoxItem> boxItems, ContainerItemsCalculator packagerContainerItems, RunnableAdapter[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators, ParallelBoxItemPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
-			super(boxItems, packagerContainerItems);
+		protected ParallelAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers, RunnableAdapter[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators, ParallelBoxItemPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts, PackagerInterruptSupplier sourceInterrupt) {
+			super(boxItems, containers);
 
 			this.runnables = runnables;
 			this.parallelIterators = parallelIterators;
 			this.iterators = iterators;
 			this.interrupts = interrupts;
+			this.sourceInterrupt = sourceInterrupt;
+		}
+
+		private ParallelAdapter(ParallelAdapter source) {
+			super(source);
+			this.sourceInterrupt = source.sourceInterrupt;
+			this.iterators = new DefaultBoxItemPermutationRotationIterator[source.iterators.length];
+			this.parallelIterators = new ParallelBoxItemPermutationRotationIteratorList[source.parallelIterators.length];
+			int maxIteratorLength = 0;
+			for(int i = 0; i < iterators.length; i++) {
+				iterators[i] = source.iterators[i].fork();
+				parallelIterators[i] = source.parallelIterators[i].fork();
+				maxIteratorLength = Math.max(maxIteratorLength, iterators[i].length());
+			}
+			this.runnables = new RunnableAdapter[source.runnables.length];
+			for(int i = 0; i < runnables.length; i++) {
+				runnables[i] = source.runnables[i].fork(maxIteratorLength);
+			}
+			this.interrupts = forkInterrupts(source.interrupts);
+		}
+
+		@Override
+		protected ParallelAdapter fresh(List<ControlledContainerItem> containers) {
+			return createBoxItemAdapter(copyBoxItems(initialBoxItems), containers, sourceInterrupt);
+		}
+
+		@Override
+		public ParallelAdapter fork() {
+			return new ParallelAdapter(this);
+		}
+
+		@Override
+		protected void resetState() {
+			ParallelAdapter restarted = fresh(packagerContainerItems.getContainerItems());
+			boxes = restarted.boxes;
+			boxesRemaining = restarted.boxesRemaining;
+			boxItems = restarted.boxItems;
+			runnables = restarted.runnables;
+			parallelIterators = restarted.parallelIterators;
+			iterators = restarted.iterators;
+			interrupts = restarted.interrupts;
 		}
 
 		@Override
@@ -413,18 +468,61 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 	private class ParallelGroupAdapter extends AbstractBruteForceBoxItemGroupsPackagerAdapter {
 
-		private final RunnableAdapter[] runnables; // per thread
-		private final ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators; // per container
-		private final DefaultBoxItemGroupPermutationRotationIterator[] iterators; // per container
-		private final PackagerInterruptSupplier[] interrupts;
+		private RunnableAdapter[] runnables; // per thread
+		private ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators; // per container
+		private DefaultBoxItemGroupPermutationRotationIterator[] iterators; // per container
+		private PackagerInterruptSupplier[] interrupts;
+		private final PackagerInterruptSupplier sourceInterrupt;
 
 		protected ParallelGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
-				ContainerItemsCalculator packagerContainerItems, RunnableAdapter[] runnables, DefaultBoxItemGroupPermutationRotationIterator[] iterators, ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts) {
-			super(boxItems, packagerContainerItems, boxItemGroups);
+				List<ControlledContainerItem> containers, RunnableAdapter[] runnables, DefaultBoxItemGroupPermutationRotationIterator[] iterators, ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts, PackagerInterruptSupplier sourceInterrupt) {
+			super(boxItems, containers, boxItemGroups);
 			this.runnables = runnables;
 			this.parallelIterators = parallelIterators;
 			this.iterators = iterators;
 			this.interrupts = interrupts;
+			this.sourceInterrupt = sourceInterrupt;
+		}
+
+		private ParallelGroupAdapter(ParallelGroupAdapter source) {
+			super(source);
+			this.sourceInterrupt = source.sourceInterrupt;
+			this.iterators = new DefaultBoxItemGroupPermutationRotationIterator[source.iterators.length];
+			this.parallelIterators = new ParallelBoxItemGroupPermutationRotationIteratorList[source.parallelIterators.length];
+			int maxIteratorLength = 0;
+			for(int i = 0; i < iterators.length; i++) {
+				iterators[i] = source.iterators[i].fork();
+				parallelIterators[i] = source.parallelIterators[i].fork();
+				maxIteratorLength = Math.max(maxIteratorLength, iterators[i].length());
+			}
+			this.runnables = new RunnableAdapter[source.runnables.length];
+			for(int i = 0; i < runnables.length; i++) {
+				runnables[i] = source.runnables[i].fork(maxIteratorLength);
+			}
+			this.interrupts = forkInterrupts(source.interrupts);
+		}
+
+		@Override
+		protected ParallelGroupAdapter fresh(List<ControlledContainerItem> containers) {
+			return createBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), containers, sourceInterrupt);
+		}
+
+		@Override
+		public ParallelGroupAdapter fork() {
+			return new ParallelGroupAdapter(this);
+		}
+
+		@Override
+		protected void resetState() {
+			ParallelGroupAdapter restarted = fresh(packagerContainerItems.getContainerItems());
+			boxes = restarted.boxes;
+			boxesRemaining = restarted.boxesRemaining;
+			boxItems = restarted.boxItems;
+			boxItemGroups = restarted.boxItemGroups;
+			runnables = restarted.runnables;
+			parallelIterators = restarted.parallelIterators;
+			iterators = restarted.iterators;
+			interrupts = restarted.interrupts;
 		}
 
 		@Override
@@ -669,10 +767,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	}
 
 	@Override
-	protected AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, ContainerItemsCalculator defaultContainerItemsCalculator,
+	protected ParallelAdapter createBoxItemAdapter(List<BoxItem> items, List<ControlledContainerItem> containerItems,
 			PackagerInterruptSupplier interrupt) {
-		
-		List<ControlledContainerItem> containerItems = defaultContainerItemsCalculator.getContainerItems();
 		
 		ParallelBoxItemPermutationRotationIteratorList[] parallelIterators = new ParallelBoxItemPermutationRotationIteratorList[containerItems.size()];
 		DefaultBoxItemPermutationRotationIterator[] iterators = new DefaultBoxItemPermutationRotationIterator[containerItems.size()];
@@ -726,14 +822,12 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 		}
 
-		return new ParallelAdapter(items, defaultContainerItemsCalculator, runnables, iterators, parallelIterators, interrupts);
+		return new ParallelAdapter(items, containerItems, runnables, iterators, parallelIterators, interrupts, interrupt);
 	}
 
 	@Override
 	protected ParallelGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt) {
-
-		List<ControlledContainerItem> containerItems = containerItemsCalculator.getContainerItems();
+			List<ControlledContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators = new ParallelBoxItemGroupPermutationRotationIteratorList[containerItems.size()];
 		DefaultBoxItemGroupPermutationRotationIterator[] iterators = new DefaultBoxItemGroupPermutationRotationIterator[containerItems.size()];
@@ -792,7 +886,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 		}
 
-		return new ParallelGroupAdapter(items, itemGroups, containerItemsCalculator, runnables, iterators, parallelIterators, interrupts);
+		return new ParallelGroupAdapter(items, itemGroups, containerItems, runnables, iterators, parallelIterators, interrupts, interrupt);
 	}
 
 	@Override

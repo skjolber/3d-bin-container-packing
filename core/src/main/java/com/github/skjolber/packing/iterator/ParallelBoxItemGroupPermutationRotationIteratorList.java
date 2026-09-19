@@ -129,6 +129,32 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 
 		calculate();
 	}
+
+	private ParallelBoxItemGroupPermutationRotationIteratorList(ParallelBoxItemGroupPermutationRotationIteratorList source) {
+		this.frequencies = source.frequencies.clone();
+		this.workUnitIndex = source.workUnitIndex;
+		this.boxMatrix = AbstractBoxItemPermutationRotationIterator.copyBoxItems(source.boxMatrix);
+		this.groupsMatrix = new BoxItemGroup[source.groupsMatrix.length];
+		for(int i = 0; i < groupsMatrix.length; i++) {
+			BoxItemGroup group = source.groupsMatrix[i];
+			if(group != null) {
+				List<BoxItem> items = new ArrayList<>(group.size());
+				for(BoxItem item : group.getItems()) {
+					items.add(boxMatrix[item.getIndex()]);
+				}
+				groupsMatrix[i] = new BoxItemGroup(group.getId(), items, group.getIndex());
+			}
+		}
+		this.excluded = new ArrayList<>(source.excluded);
+		this.workUnits = new ParallelBoxItemGroupPermutationRotationIterator[source.workUnits.length];
+		for(int i = 0; i < workUnits.length; i++) {
+			workUnits[i] = source.workUnits[i].fork();
+		}
+	}
+
+	public ParallelBoxItemGroupPermutationRotationIteratorList fork() {
+		return new ParallelBoxItemGroupPermutationRotationIteratorList(this);
+	}
 	
 	private void calculate() {
 		int count = workUnits[0].getBoxCount();

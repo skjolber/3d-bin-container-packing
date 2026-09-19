@@ -91,6 +91,22 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 
 		initiatePermutation(count);
 	}
+
+	protected DefaultBoxItemGroupPermutationRotationIterator(DefaultBoxItemGroupPermutationRotationIterator source) {
+		this(source, copyGroupState(source));
+	}
+
+	private DefaultBoxItemGroupPermutationRotationIterator(DefaultBoxItemGroupPermutationRotationIterator source, GroupState state) {
+		super(state.groups(), state.boxes(), new ArrayList<>(source.excludedBoxItemGroups));
+		this.rotations = source.rotations.clone();
+		this.reset = source.reset.clone();
+		this.permutations = source.permutations.clone();
+		this.minBoxVolume = source.minBoxVolume.clone();
+	}
+
+	public DefaultBoxItemGroupPermutationRotationIterator fork() {
+		return new DefaultBoxItemGroupPermutationRotationIterator(this);
+	}
 	
 	public BoxStackValue getStackValue(int index) {
 		return stackableItems[permutations[index]].getBox().getStackValue(rotations[index]);
