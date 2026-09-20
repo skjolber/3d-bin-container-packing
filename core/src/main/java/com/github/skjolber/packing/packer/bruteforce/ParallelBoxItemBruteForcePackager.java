@@ -253,8 +253,11 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		private PackagerInterruptSupplier[] interrupts;
 		private final PackagerInterruptSupplier sourceInterrupt;
 
-		protected ParallelAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers, RunnableAdapter[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators, ParallelBoxItemPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts, PackagerInterruptSupplier sourceInterrupt) {
-			super(boxItems, containers);
+		protected ParallelAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers, int containerCount,
+				RunnableAdapter[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators,
+				ParallelBoxItemPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts,
+				PackagerInterruptSupplier sourceInterrupt) {
+			super(boxItems, containers, containerCount);
 
 			this.runnables = runnables;
 			this.parallelIterators = parallelIterators;
@@ -282,8 +285,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		@Override
-		protected ParallelAdapter fresh(List<ControlledContainerItem> containers) {
-			return createBoxItemAdapter(copyBoxItems(initialBoxItems), containers, sourceInterrupt);
+		protected ParallelAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+			return createBoxItemAdapter(copyBoxItems(initialBoxItems), containers, containerCount, sourceInterrupt);
 		}
 
 		@Override
@@ -293,7 +296,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		@Override
 		protected void resetState() {
-			ParallelAdapter restarted = fresh(packagerContainerItems.getContainerItems());
+			ParallelAdapter restarted = fresh(packagerContainerItems.getContainerItems(), packagerContainerItems.getContainerCount());
 			boxes = restarted.boxes;
 			boxesRemaining = restarted.boxesRemaining;
 			boxItems = restarted.boxItems;
@@ -464,6 +467,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 			return count;
 		}
+
 	}
 
 	private class ParallelGroupAdapter extends AbstractBruteForceBoxItemGroupsPackagerAdapter {
@@ -475,8 +479,11 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		private final PackagerInterruptSupplier sourceInterrupt;
 
 		protected ParallelGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
-				List<ControlledContainerItem> containers, RunnableAdapter[] runnables, DefaultBoxItemGroupPermutationRotationIterator[] iterators, ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts, PackagerInterruptSupplier sourceInterrupt) {
-			super(boxItems, containers, boxItemGroups);
+				List<ControlledContainerItem> containers, int containerCount, RunnableAdapter[] runnables,
+				DefaultBoxItemGroupPermutationRotationIterator[] iterators,
+				ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators,
+				PackagerInterruptSupplier[] interrupts, PackagerInterruptSupplier sourceInterrupt) {
+			super(boxItems, containers, containerCount, boxItemGroups);
 			this.runnables = runnables;
 			this.parallelIterators = parallelIterators;
 			this.iterators = iterators;
@@ -503,8 +510,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		@Override
-		protected ParallelGroupAdapter fresh(List<ControlledContainerItem> containers) {
-			return createBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), containers, sourceInterrupt);
+		protected ParallelGroupAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+			return createBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), containers, containerCount, sourceInterrupt);
 		}
 
 		@Override
@@ -514,7 +521,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		@Override
 		protected void resetState() {
-			ParallelGroupAdapter restarted = fresh(packagerContainerItems.getContainerItems());
+			ParallelGroupAdapter restarted = fresh(packagerContainerItems.getContainerItems(), packagerContainerItems.getContainerCount());
 			boxes = restarted.boxes;
 			boxesRemaining = restarted.boxesRemaining;
 			boxItems = restarted.boxItems;
@@ -768,7 +775,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 	@Override
 	protected ParallelAdapter createBoxItemAdapter(List<BoxItem> items, List<ControlledContainerItem> containerItems,
-			PackagerInterruptSupplier interrupt) {
+			int containerCount, PackagerInterruptSupplier interrupt) {
 		
 		ParallelBoxItemPermutationRotationIteratorList[] parallelIterators = new ParallelBoxItemPermutationRotationIteratorList[containerItems.size()];
 		DefaultBoxItemPermutationRotationIterator[] iterators = new DefaultBoxItemPermutationRotationIterator[containerItems.size()];
@@ -822,12 +829,12 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 		}
 
-		return new ParallelAdapter(items, containerItems, runnables, iterators, parallelIterators, interrupts, interrupt);
+		return new ParallelAdapter(items, containerItems, containerCount, runnables, iterators, parallelIterators, interrupts, interrupt);
 	}
 
 	@Override
 	protected ParallelGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			List<ControlledContainerItem> containerItems, PackagerInterruptSupplier interrupt) {
+			List<ControlledContainerItem> containerItems, int containerCount, PackagerInterruptSupplier interrupt) {
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators = new ParallelBoxItemGroupPermutationRotationIteratorList[containerItems.size()];
 		DefaultBoxItemGroupPermutationRotationIterator[] iterators = new DefaultBoxItemGroupPermutationRotationIterator[containerItems.size()];
@@ -886,7 +893,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 		}
 
-		return new ParallelGroupAdapter(items, itemGroups, containerItems, runnables, iterators, parallelIterators, interrupts, interrupt);
+		return new ParallelGroupAdapter(items, itemGroups, containerItems, containerCount, runnables, iterators, parallelIterators, interrupts, interrupt);
 	}
 
 	@Override

@@ -29,6 +29,7 @@ import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
+import com.github.skjolber.packing.packer.strategy.ContainerResult;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -101,20 +102,20 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			try {
 			PackagerAdapter adapter;
 			if(items != null && !items.isEmpty()) {
-					adapter = createBoxItemAdapter(items, containers, interrupt);
+					adapter = createBoxItemAdapter(items, containers, maxContainerCount, interrupt);
 			} else {
-					adapter = createBoxItemGroupAdapter(itemGroups, containers, interrupt);
+					adapter = createBoxItemGroupAdapter(itemGroups, containers, maxContainerCount, interrupt);
 				}
-				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
+				ContainerResult packList = packAdapter(interrupt, adapter);
 								
 				long duration = System.currentTimeMillis() - start;
 				if(packList == null) {
-					return new PackagerResult(Collections.emptyList(), duration, true);
+					return new PackagerResult(Collections.emptyList(), duration, false, -1);
 				}
-				return new PackagerResult(packList, duration, false);
+				return new PackagerResult(packList.getPackList(), duration, false, packList.getCost());
 			} catch (PackagerInterruptedException e) {
 				long duration = System.currentTimeMillis() - start;
-				return new PackagerResult(Collections.emptyList(), duration, true);
+				return new PackagerResult(Collections.emptyList(), duration, true, -1);
 			} finally {
 				interrupt.close();
 			}
@@ -131,10 +132,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	}
 
 	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, List<ControlledContainerItem> containers,
-			PackagerInterruptSupplier interrupt);
+			int containerCount, PackagerInterruptSupplier interrupt);
 
 	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, List<ControlledContainerItem> containers,
-			PackagerInterruptSupplier interrupt);
+			int containerCount, PackagerInterruptSupplier interrupt);
 
 	static Placement[] getPlacements(int size, boolean load) {
 		// each box will at most have a single placement with a space (and its remainder).

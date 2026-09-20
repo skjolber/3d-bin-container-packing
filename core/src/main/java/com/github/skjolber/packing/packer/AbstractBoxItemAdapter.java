@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
@@ -23,8 +24,9 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	protected final boolean maxLoadBoxCount;
 	protected final boolean maxLoadIdenticalBoxCount;
 
-	public AbstractBoxItemAdapter(List<BoxItem> boxItems, Order order, List<ControlledContainerItem> containers, PackagerInterruptSupplier interrupt) {
-		super(containers);
+	public AbstractBoxItemAdapter(List<BoxItem> boxItems, Order order, List<ControlledContainerItem> containers,
+			int containerCount, PackagerInterruptSupplier interrupt) {
+		super(containers, containerCount);
 		this.initialBoxItems = copyBoxItems(boxItems);
 		
 		this.order = order;
@@ -94,7 +96,7 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 			}
 		}				
 	}
-	
+
 	@Override
 	public ControlledContainerItem getContainerItem(int index) {
 		return packagerContainerItems.getContainerItem(index);
@@ -125,13 +127,13 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	}
 
 	@Override
-	public List<Integer> getContainers(int maxCount) {
-		return packagerContainerItems.getContainers(remainingBoxItems, maxCount);
+	public List<Integer> getContainers() {
+		return packagerContainerItems.getContainers(remainingBoxItems);
 	}
 
 	@Override
-	public long estimateMinimumCost(ContainerItemsCostCalculator calculator, int maxCount) {
-		return calculator.getMinimumCost(packagerContainerItems, remainingBoxItems, maxCount);
+	public List<BoxItem> getRemainingBoxItems() {
+		return remainingBoxItems;
 	}
 
 	@Override
@@ -159,6 +161,16 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 			weight = Math.addExact(weight, boxItem.getWeight());
 		}
 		return weight;
+	}
+
+	@Override
+	public int countRemainingBoxItemGroups() {
+		return -1;
+	}
+
+	@Override
+	public List<BoxItemGroup> getRemainingBoxItemGroups() {
+		return null;
 	}
 
 	protected abstract IntermediatePackagerResult pack(

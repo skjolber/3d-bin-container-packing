@@ -44,6 +44,7 @@ import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.packer.strategy.ContainerResult;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -57,8 +58,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		public PlainBoxItemAdapter(List<BoxItem> boxItems, Order order,
 				List<ControlledContainerItem> containers,
-				PackagerInterruptSupplier interrupt) {
-			super(boxItems, order, containers, interrupt);
+				int containerCount, PackagerInterruptSupplier interrupt) {
+			super(boxItems, order, containers, containerCount, interrupt);
 		}
 
 		private PlainBoxItemAdapter(PlainBoxItemAdapter source) {
@@ -71,8 +72,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		}
 
 		@Override
-		protected PlainBoxItemAdapter fresh(List<ControlledContainerItem> containers) {
-			return new PlainBoxItemAdapter(copyBoxItems(initialBoxItems), order, containers, interrupt);
+		protected PlainBoxItemAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+			return new PlainBoxItemAdapter(copyBoxItems(initialBoxItems), order, containers, containerCount, interrupt);
 		}
 
 		@Override
@@ -94,8 +95,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		public PlainBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups,
 				Order order,
 				List<ControlledContainerItem> containers,
-				PackagerInterruptSupplier interrupt) {
-			super(boxItemGroups, containers, order, interrupt);
+				int containerCount, PackagerInterruptSupplier interrupt) {
+			super(boxItemGroups, containers, containerCount, order, interrupt);
 		}
 
 		private PlainBoxItemGroupAdapter(PlainBoxItemGroupAdapter source) {
@@ -108,8 +109,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		}
 
 		@Override
-		protected PlainBoxItemGroupAdapter fresh(List<ControlledContainerItem> containers) {
-			return new PlainBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), order, containers, interrupt);
+		protected PlainBoxItemGroupAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+			return new PlainBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), order, containers, containerCount, interrupt);
 		}
 
 		@Override
@@ -150,17 +151,20 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			try {
 				PackagerAdapter adapter;
 				if(items != null && !items.isEmpty()) {
-					adapter = new PlainBoxItemAdapter(items, order, containers, interrupt);
+					adapter = new PlainBoxItemAdapter(items, order, containers, maxContainerCount, interrupt);
 				} else {
-					adapter = new PlainBoxItemGroupAdapter(itemGroups, order, containers, interrupt);
+					adapter = new PlainBoxItemGroupAdapter(itemGroups, order, containers, maxContainerCount, interrupt);
 				}
-				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
+				ContainerResult packList = packAdapter(interrupt, adapter);
 				
 				long duration = System.currentTimeMillis() - start;
-				return new PackagerResult(packList, duration, false);
+				if(packList == null) {
+					return new PackagerResult(Collections.emptyList(), duration, false, -1);
+				}
+				return new PackagerResult(packList.getPackList(), duration, false, packList.getCost());
 			} catch (PackagerInterruptedException e) {
 				long duration = System.currentTimeMillis() - start;
-				return new PackagerResult(Collections.emptyList(), duration, true);
+				return new PackagerResult(Collections.emptyList(), duration, true, -1);
 			} finally {
 				interrupt.close();
 			}

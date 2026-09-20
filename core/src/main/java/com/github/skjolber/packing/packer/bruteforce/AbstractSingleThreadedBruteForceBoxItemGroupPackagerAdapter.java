@@ -24,8 +24,10 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 	protected int stackPlacementCount;
 	protected PackagerInterruptSupplier interrupt;
 	
-	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ControlledContainerItem> containers, BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt, boolean load) {
-		super(boxItems, containers, boxItemGroups);
+	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups,
+			List<ControlledContainerItem> containers, int containerCount, BoxItemGroupPermutationRotationIterator[] containerIterators,
+			PackagerInterruptSupplier interrupt, boolean load) {
+		super(boxItems, containers, containerCount, boxItemGroups);
 		this.interrupt = interrupt;
 		this.containerIterators = containerIterators;
 		

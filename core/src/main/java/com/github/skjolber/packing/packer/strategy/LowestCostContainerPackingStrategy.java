@@ -18,7 +18,7 @@ import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /** Plans and executes container packing using the lowest observed cost. */
-public class LowestCostContainerPackingStrategy implements ContainerPackingStrategy {
+public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 
 	private final Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
 
@@ -121,19 +121,21 @@ public class LowestCostContainerPackingStrategy implements ContainerPackingStrat
 	 * later choices reflect the boxes which were actually packed.
 	 */
 	@Override
-	public List<Container> pack(int limit, PackagerInterruptSupplier interrupt, PackagerAdapter adapter) throws PackagerInterruptedException {
+	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerAdapter adapter) throws PackagerInterruptedException {
 		List<Container> containerPackResults = new ArrayList<>();
+
+		int limit = adapter.getMaxContainerCount();
 
 		while(containerPackResults.size() < limit) {
 			int remainingBoxCount = adapter.countRemainingBoxes();
 			if(remainingBoxCount == 0) {
-				return containerPackResults;
+				return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containerPackResults);
 			}
 
 			int remainingContainerCount = Math.min(limit - containerPackResults.size(), remainingBoxCount);
-			List<Integer> containerItemIndexes = adapter.getContainers(remainingContainerCount);
+			List<Integer> containerItemIndexes = adapter.getContainers();
 			if(containerItemIndexes.isEmpty()) {
-				return Collections.emptyList();
+				return null;
 			}
 
 			List<CostPacking> packings = new ArrayList<>(containerItemIndexes.size());
@@ -175,13 +177,13 @@ public class LowestCostContainerPackingStrategy implements ContainerPackingStrat
 			} catch(PackagerInterruptedException e) {
 				if(completed != null) {
 					containerPackResults.add(adapter.accept(completed.result));
-					return containerPackResults;
+					return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containerPackResults);
 				}
 				throw e;
 			}
 
 			if(packings.isEmpty()) {
-				return Collections.emptyList();
+				return null;
 			}
 
 			List<CostPacking> plan;
@@ -190,7 +192,7 @@ public class LowestCostContainerPackingStrategy implements ContainerPackingStrat
 			} catch(PackagerInterruptedException e) {
 				if(completed != null) {
 					containerPackResults.add(adapter.accept(completed.result));
-					return containerPackResults;
+					return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containerPackResults);
 				}
 				throw e;
 			}
@@ -198,7 +200,7 @@ public class LowestCostContainerPackingStrategy implements ContainerPackingStrat
 
 			containerPackResults.add(adapter.accept(selected.result));
 			if(adapter.countRemainingBoxes() == 0) {
-				return containerPackResults;
+				return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containerPackResults);
 			}
 		}
 

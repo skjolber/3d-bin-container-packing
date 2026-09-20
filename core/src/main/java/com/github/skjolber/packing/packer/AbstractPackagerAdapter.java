@@ -13,27 +13,25 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 
 	protected final ContainerItemsCalculator packagerContainerItems;
 	protected final ContainerItemsCalculator initialContainerItems;
-	protected final boolean containerCost;
 
-	public AbstractPackagerAdapter(List<ControlledContainerItem> containers) {
-		this.packagerContainerItems = new ContainerItemsCalculator(containers);
+	public AbstractPackagerAdapter(List<ControlledContainerItem> containers, int containerCount) {
+		this.packagerContainerItems = new ContainerItemsCalculator(containers, containerCount);
 		this.initialContainerItems = packagerContainerItems.clone();
-		this.containerCost = hasContainerCost(packagerContainerItems);
 	}
 
 	protected AbstractPackagerAdapter(AbstractPackagerAdapter source) {
 		this.packagerContainerItems = source.packagerContainerItems.clone();
 		this.initialContainerItems = source.initialContainerItems.clone();
-		this.containerCost = source.containerCost;
 	}
 
 	@Override
 	public PackagerAdapter fresh() {
-		return fresh(initialContainerItems.clone().getContainerItems());
+		ContainerItemsCalculator containers = initialContainerItems.clone();
+		return fresh(containers.getContainerItems(), containers.getContainerCount());
 	}
 
 	/** Create a new adapter using a calculator no longer used by another branch. */
-	protected abstract AbstractPackagerAdapter fresh(List<ControlledContainerItem> containers);
+	protected abstract AbstractPackagerAdapter fresh(List<ControlledContainerItem> containers, int containerCount);
 
 	@Override
 	public void reset() {
@@ -60,38 +58,8 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 	}
 
 	@Override
-	public boolean hasContainerCost() {
-		return containerCost;
-	}
-
-	private static boolean hasContainerCost(ContainerItemsCalculator containers) {
-		boolean anyCostCalculator = false;
-		boolean allCostCalculators = true;
-		for(ControlledContainerItem item : containers.getContainerItems()) {
-			anyCostCalculator |= item.hasCostCalculator();
-			allCostCalculators &= item.hasCostCalculator();
-		}
-		if(anyCostCalculator && !allCostCalculators) {
-			throw new IllegalArgumentException("Expected either none or all containers to have a cost calculator");
-		}
-		return anyCostCalculator;
-	}
-
-	@Override
-	public int getMaximumContainerCount(int requestedLimit) {
-		int maximum = Math.min(requestedLimit, countRemainingBoxes());
-		if(maximum <= 0) {
-			return 0;
-		}
-		int available = 0;
-		for(int i = 0; i < packagerContainerItems.getContainerItemCount(); i++) {
-			int count = packagerContainerItems.getContainerItem(i).getCount();
-			if(count >= maximum - available) {
-				return maximum;
-			}
-			available += count;
-		}
-		return available;
+	public ContainerItemsCalculator getContainerItemsCalculator() {
+		return packagerContainerItems;
 	}
 
 	@Override
@@ -130,5 +98,17 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 	}
 	
 	protected abstract IntermediatePackagerResult copy(ControlledContainerItem peek, IntermediatePackagerResult result, int index);
-	
+
+	public int getMaxContainerCount() {
+		int count = packagerContainerItems.getContainerCount();
+
+		int groups = countRemainingBoxItemGroups();
+		if(groups != -1) {
+			count = Math.min(count, groups);
+		} else {
+			count = Math.min(count, countRemainingBoxes());
+		}
+		return count;
+	}
+
 }

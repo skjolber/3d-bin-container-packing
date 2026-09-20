@@ -3,7 +3,6 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.packer.ContainerItemsCostCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 
 public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
@@ -12,8 +11,8 @@ public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter extends Abs
 	protected final List<BoxItemGroup> initialBoxItemGroups;
 
 	public AbstractBruteForceBoxItemGroupsPackagerAdapter(List<BoxItem> boxItems,
-			List<ControlledContainerItem> containers, List<BoxItemGroup> boxItemGroups) {
-		super(boxItems, containers);
+			List<ControlledContainerItem> containers, int containerCount, List<BoxItemGroup> boxItemGroups) {
+		super(boxItems, containers, containerCount);
 		this.initialBoxItemGroups = copyBoxItemGroups(boxItemGroups);
 		
 		this.boxItemGroups = boxItemGroups;
@@ -26,13 +25,13 @@ public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter extends Abs
 	}
 
 	@Override
-	public int getMaximumContainerCount(int requestedLimit) {
-		return super.getMaximumContainerCount(Math.min(requestedLimit, boxItemGroups.size()));
+	public List<BoxItemGroup> getRemainingBoxItemGroups() {
+		return boxItemGroups;
 	}
 
 	@Override
-	public long estimateMinimumCost(ContainerItemsCostCalculator calculator, int maxCount) {
-		return calculator.getGroupMinimumCost(packagerContainerItems, boxItemGroups, maxCount);
+	public int countRemainingBoxItemGroups() {
+		return boxItemGroups.size();
 	}
 
 

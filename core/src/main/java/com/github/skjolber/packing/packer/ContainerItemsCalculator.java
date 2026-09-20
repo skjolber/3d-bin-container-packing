@@ -13,6 +13,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 
 public class ContainerItemsCalculator implements Cloneable {
 
@@ -45,21 +46,25 @@ public class ContainerItemsCalculator implements Cloneable {
 	protected final List<ControlledContainerItem> containerItems;
 	protected final List<ControlledContainerItem> containerItemsSortedByWeight;
 	protected final List<ControlledContainerItem> containerItemsSortedByVolume;
+	protected int containerCount;
+	protected final int resetContainerCount;
 	
-	/**
-	 * Create new instance
-	 * 
-	 * @param items container items.
-	 */
+	protected long cost;
+
+	public ContainerItemsCalculator(List<ControlledContainerItem> items, int containerCount) {
+		this(items, containerCount, containerCount);
+	}
 	
-	public ContainerItemsCalculator(List<ControlledContainerItem> items) {
+	public ContainerItemsCalculator(List<ControlledContainerItem> items, int containerCount, int resetContainerCount) {
 		for(int i = 0; i < items.size(); i++) {
 			items.get(i).setIndex(i);
 		}
 		this.containerItems = items;
+		this.containerCount = containerCount;
+		this.resetContainerCount = resetContainerCount;
 
-		containerItemsSortedByWeight = new ArrayList<>(items);
-		containerItemsSortedByVolume = new ArrayList<>(items);
+		this.containerItemsSortedByWeight = new ArrayList<>(items);
+		this.containerItemsSortedByVolume = new ArrayList<>(items);
 		
 		Collections.sort(containerItemsSortedByWeight, ContainerItem.MAX_LOAD_WEIGHT_COMPARATOR);
 		Collections.sort(containerItemsSortedByVolume, ContainerItem.MAX_LOAD_VOLUME_COMPARATOR);
@@ -71,7 +76,9 @@ public class ContainerItemsCalculator implements Cloneable {
 		for(ControlledContainerItem item : containerItems) {
 			copies.add(new ControlledContainerItem(item));
 		}
-		return new ContainerItemsCalculator(copies);
+		ContainerItemsCalculator clone = new ContainerItemsCalculator(copies, containerCount, resetContainerCount);
+		clone.cost = cost;
+		return clone;
 	}
 
 	/** Restore each container item's count to its reset count. */
@@ -79,16 +86,30 @@ public class ContainerItemsCalculator implements Cloneable {
 		for(ControlledContainerItem item : containerItems) {
 			item.reset();
 		}
+		containerCount = resetContainerCount;
+		cost = 0;
 	}
 
 	/**
-	 * Return a list of containers which can potentially hold the boxes within the provided count
+	 * Return container indexes which can potentially hold the boxes using the
+	 * remaining container count.
 	 *
-	 * @param boxes    list of boxes
-	 * @param maxCount maximum number of possible containers
+	 * @param boxes list of boxes
 	 * @return list of containers
 	 */
 	
+	public List<Integer> getContainers(List<BoxItem> boxes) {
+		return getContainers(boxes, containerCount);
+	}
+
+	/**
+	 * Return eligible container indexes for a search using at most
+	 * {@code maxCount} of the remaining containers.
+	 *
+	 * @param boxes list of boxes
+	 * @param maxCount maximum number of containers for this query
+	 * @return list of container indexes
+	 */
 	public List<Integer> getContainers(List<BoxItem> boxes, int maxCount) {
 		long totalVolume = 0;
 		long totalWeight = 0;
@@ -104,12 +125,12 @@ public class ContainerItemsCalculator implements Cloneable {
 		}
 
 		// set a more realistic max; no more than one container per box
-		maxCount = Math.min(maxCount, boxCount);
+		maxCount = Math.min(Math.min(containerCount, maxCount), boxCount);
 		
 		if(maxCount == 1) {
-			List<Integer> result = new ArrayList<>(getContainerItemCount());
+			List<Integer> result = new ArrayList<>(containerItems.size());
 
-			for (int i = 0; i < getContainerItemCount(); i++) {
+			for (int i = 0; i < containerItems.size(); i++) {
 				ContainerItem item = getContainerItem(i);
 				if(!item.isAvailable()) {
 					continue;
@@ -164,9 +185,9 @@ public class ContainerItemsCalculator implements Cloneable {
 			}
 		}
 
-		List<Integer> result = new ArrayList<>(getContainerItemCount());
-		for (int i = 0; i < getContainerItemCount(); i++) {
-			ContainerItem item = getContainerItem(i);
+		List<Integer> result = new ArrayList<>(containerItems.size());
+		for (int i = 0; i < containerItems.size(); i++) {
+			ContainerItem item = containerItems.get(i);
 
 			if(!item.isAvailable()) {
 				continue;
@@ -211,6 +232,18 @@ public class ContainerItemsCalculator implements Cloneable {
 		return result;
 	}
 
+	public List<Integer> getGroupContainers(List<BoxItemGroup> groups) {
+		return getGroupContainers(groups, containerCount);
+	}
+
+	/**
+	 * Return eligible container indexes for a search using at most
+	 * {@code maxCount} of the remaining containers.
+	 *
+	 * @param groups list of box-item groups
+	 * @param maxCount maximum number of containers for this query
+	 * @return list of container indexes
+	 */
 	public List<Integer> getGroupContainers(List<BoxItemGroup> groups, int maxCount) {
 		long totalBoxVolume = 0;
 		long totalBoxWeight = 0;
@@ -239,16 +272,16 @@ public class ContainerItemsCalculator implements Cloneable {
 			}
 		}
 
-		// no more than one container per group
-		maxCount = Math.min(maxCount, groups.size());
+		// at least one container per group
+		maxCount = Math.min(Math.min(containerCount, maxCount), groups.size());
 
 		if(maxCount == 1) {
-			List<Integer> list = new ArrayList<>(getContainerItemCount());
+			List<Integer> list = new ArrayList<>(containerItems.size());
 
 			// check if everything can fit in the same container
 			containers: 
-			for (int i = 0; i < getContainerItemCount(); i++) {
-				ContainerItem item = getContainerItem(i);
+			for (int i = 0; i < containerItems.size(); i++) {
+				ContainerItem item = containerItems.get(i);
 				if(!item.isAvailable()) {
 					continue;
 				}
@@ -365,10 +398,11 @@ public class ContainerItemsCalculator implements Cloneable {
 
 	public Container toContainer(ContainerItem item, Stack stack) {
 		item.decrement();
+		containerCount--;
 
 		Container container = item.getContainer();
 		
-		return new Container(container.getId(), container.getDescription(), 
+		Container result = new Container(container.getId(), container.getDescription(),
 				container.getDx(), container.getDy(), container.getDz(), 
 				
 				container.getEmptyWeight(), 
@@ -376,6 +410,13 @@ public class ContainerItemsCalculator implements Cloneable {
 				container.getLoadDx(), container.getLoadDy(), container.getLoadDz(), 
 				
 				container.getMaxLoadWeight(), stack, container.getMotion());
+
+		ContainerCostCalculator costCalculator = item.getCostCalculator();
+		if(costCalculator != null) {
+			cost += costCalculator.calculateCost(result.getLoadWeight());
+		}
+
+		return result;
 	}
 
 	protected Limit calculateMaxVolume(int maxCount) {
@@ -469,13 +510,35 @@ public class ContainerItemsCalculator implements Cloneable {
 	public int getContainerItemCount() {
 		return containerItems.size();
 	}
-	
+
+	/** Return the number of containers which can still be accepted. */
+	public int getContainerCount() {
+		return containerCount;
+	}
+
 	public ControlledContainerItem getContainerItem(int index) {
 		return containerItems.get(index);
 	}
-	
+
 	public List<ControlledContainerItem> getContainerItems() {
 		return containerItems;
+	}
+
+	public boolean hasCost() {
+		boolean anyCostCalculator = false;
+		boolean allCostCalculators = true;
+		for(ControlledContainerItem item : containerItems) {
+			anyCostCalculator |= item.hasCostCalculator();
+			allCostCalculators &= item.hasCostCalculator();
+		}
+		if(anyCostCalculator && !allCostCalculators) {
+			throw new IllegalArgumentException("Expected either none or all containers to have a cost calculator");
+		}
+		return anyCostCalculator;
+	}
+
+	public long getCost() {
+		return cost;
 	}
 
 }

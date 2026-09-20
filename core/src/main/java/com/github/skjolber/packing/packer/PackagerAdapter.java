@@ -2,6 +2,8 @@ package com.github.skjolber.packing.packer;
 
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 
@@ -17,7 +19,7 @@ public interface PackagerAdapter {
 
 	Container accept(IntermediatePackagerResult result);
 
-	List<Integer> getContainers(int maxCount);
+	List<Integer> getContainers();
 
 	/** Creates an independent adapter at the start of the same packaging operation. */
 	PackagerAdapter fresh();
@@ -32,24 +34,21 @@ public interface PackagerAdapter {
 	/** Restore this adapter to the start of the same packaging operation. */
 	void reset();
 
-	boolean hasContainerCost();
-
 	long getRemainingVolume();
 
 	long getRemainingWeight();
 
-	/**
-	 * Safe lower bound for packing the remaining boxes within {@code maxCount}
-	 * containers. Adapters without a cost estimator may return zero.
-	 */
-	default long estimateMinimumCost(ContainerItemsCostCalculator calculator, int maxCount) {
-		return 0;
-	}
+	ContainerItemsCalculator getContainerItemsCalculator();
+
+	List<BoxItem> getRemainingBoxItems();
+
+	List<BoxItemGroup> getRemainingBoxItemGroups();
 	
 	ContainerItem getContainerItem(int index);
 	
 	int countRemainingBoxes();
 
-	/** Maximum useful search depth, bounded by available containers and packing units. */
-	int getMaximumContainerCount(int requestedLimit);
+	int countRemainingBoxItemGroups();
+
+	int getMaxContainerCount();
 }

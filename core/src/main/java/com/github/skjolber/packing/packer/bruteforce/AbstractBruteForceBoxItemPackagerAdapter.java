@@ -4,9 +4,9 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.ContainerItemsCostCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
@@ -18,8 +18,9 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 	protected BoxItem[] boxItems;
 	protected final List<BoxItem> initialBoxItems;
 
-	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers) {
-		super(containers);
+	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers,
+			int containerCount) {
+		super(containers, containerCount);
 		this.initialBoxItems = copyBoxItems(boxItems);
 		
 		this.boxes = new Box[boxItems.size()];
@@ -46,7 +47,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 			}
 		}
 	}
-	
+
 	@Override
 	public ControlledContainerItem getContainerItem(int index) {
 		return packagerContainerItems.getContainerItem(index);
@@ -65,16 +66,12 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 	}
 
 	@Override
-	public List<Integer> getContainers(int maxCount) {
-		return packagerContainerItems.getContainers(getRemainingBoxItems(), maxCount);
+	public List<Integer> getContainers() {
+		return packagerContainerItems.getContainers(getRemainingBoxItems());
 	}
 
 	@Override
-	public long estimateMinimumCost(ContainerItemsCostCalculator calculator, int maxCount) {
-		return calculator.getMinimumCost(packagerContainerItems, getRemainingBoxItems(), maxCount);
-	}
-
-	private List<BoxItem> getRemainingBoxItems() {
+	public List<BoxItem> getRemainingBoxItems() {
 		List<BoxItem> remainingBoxItems = new ArrayList<>(boxItems.length);
 		for(int i = 0; i < boxItems.length; i++) {
 			BoxItem boxItem = boxItems[i];
@@ -109,4 +106,15 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 		}
 		throw new IllegalStateException();
 	}
+
+	@Override
+	public int countRemainingBoxItemGroups() {
+		return -1;
+	}
+
+	@Override
+	public List<BoxItemGroup> getRemainingBoxItemGroups() {
+		return null;
+	}
+
 }

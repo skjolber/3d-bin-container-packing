@@ -1,11 +1,11 @@
 package com.github.skjolber.packing.packer.strategy;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
@@ -15,7 +15,7 @@ import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /** Packs containers in their preference order. */
-public class OrderedContainerPackingStrategy implements ContainerPackingStrategy {
+public class OrderedContainerPackingStrategy implements ContainerStrategy {
 	@FunctionalInterface
 	public interface SingleContainerPacker {
 		IntermediatePackagerResult packSingle(List<Integer> indexes, PackagerAdapter adapter,
@@ -72,7 +72,7 @@ public class OrderedContainerPackingStrategy implements ContainerPackingStrategy
 				IntermediatePackagerResult bestResult = null;
 				int bestIndex = Integer.MAX_VALUE;
 
-				do {
+			do {
 					int mid = iterator.next();
 					int nextContainerItemIndex = containerItemIndexes.get(mid);
 					
@@ -136,14 +136,22 @@ public class OrderedContainerPackingStrategy implements ContainerPackingStrategy
 	}
 
 	@Override
-	public List<Container> pack(int limit, PackagerInterruptSupplier interrupt, PackagerAdapter adapter) throws PackagerInterruptedException {
+	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerAdapter adapter) throws PackagerInterruptedException {
+		int limit = adapter.getMaxContainerCount();
+
 		List<Container> containerPackResults = new ArrayList<>();
 
 		do {
 			// is it possible to fit the remaining boxes a single container?
 			int maxContainers = limit - containerPackResults.size();
 			if(maxContainers > 1) {
-				List<Integer> containerItemIndexes = adapter.getContainers(1);
+				List<BoxItemGroup> groups = adapter.getRemainingBoxItemGroups();
+				List<Integer> containerItemIndexes;
+				if(groups != null) {
+					containerItemIndexes = adapter.getContainerItemsCalculator().getGroupContainers(groups, 1);
+				} else {
+					containerItemIndexes = adapter.getContainerItemsCalculator().getContainers(adapter.getRemainingBoxItems(), 1);
+				}
 				if(!containerItemIndexes.isEmpty()) {
 	
 					IntermediatePackagerResult result = singleContainerPacker.packSingle(containerItemIndexes, adapter, interrupt);
@@ -151,7 +159,7 @@ public class OrderedContainerPackingStrategy implements ContainerPackingStrategy
 						containerPackResults.add(adapter.accept(result));
 	
 						// positive result
-						return containerPackResults;
+						return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containerPackResults);
 					}
 					
 					// TODO any way to reuse partial results as the current best result?
@@ -159,9 +167,9 @@ public class OrderedContainerPackingStrategy implements ContainerPackingStrategy
 			}
 
 			// one or more containers
-			List<Integer> containerItemIndexes = adapter.getContainers(maxContainers);
+			List<Integer> containerItemIndexes = adapter.getContainers();
 			if(containerItemIndexes.isEmpty()) {
-				return Collections.emptyList();
+				return null;
 			}
 
 			// the best container is the one which can hold the most box groups
@@ -212,7 +220,7 @@ public class OrderedContainerPackingStrategy implements ContainerPackingStrategy
 					if(best != null && best.getStack().size() == adapter.countRemainingBoxes()) {
 						containerPackResults.add(adapter.accept(best));
 
-						return containerPackResults;
+						return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containerPackResults);
 					}
 					throw e;
 				}
@@ -220,13 +228,13 @@ public class OrderedContainerPackingStrategy implements ContainerPackingStrategy
 
 			if(best == null) {
 				// negative result
-				return Collections.emptyList();
+				return null;
 			}
 
 			containerPackResults.add(adapter.accept(best));
 			
 			if(adapter.countRemainingBoxes() == 0) {
-				return containerPackResults;
+				return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containerPackResults);
 			}
 			
 		} while (containerPackResults.size() < limit);

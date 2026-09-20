@@ -95,8 +95,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		private final FastPointCalculator3DStack pointCalculator;
 
 		public FastBruteForceAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers,
-				BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-			super(boxItems, containers, containerIterators, interrupt, FastBruteForcePackager.this.supportsLoad());
+				int containerCount, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
+			super(boxItems, containers, containerCount, containerIterators, interrupt, FastBruteForcePackager.this.supportsLoad());
 			
 			this.pointCalculator = new FastPointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.clearToSize(1, 1, 1);
@@ -109,8 +109,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		@Override
-		protected FastBruteForceAdapter fresh(List<ControlledContainerItem> containers) {
-			return createBoxItemAdapter(copyBoxItems(initialBoxItems), containers, interrupt);
+		protected FastBruteForceAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+			return createBoxItemAdapter(copyBoxItems(initialBoxItems), containers, containerCount, interrupt);
 		}
 
 		@Override
@@ -120,7 +120,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		@Override
 		protected void resetState() {
-			FastBruteForceAdapter restarted = fresh(packagerContainerItems.getContainerItems());
+			FastBruteForceAdapter restarted = fresh(packagerContainerItems.getContainerItems(), packagerContainerItems.getContainerCount());
 			boxes = restarted.boxes;
 			boxesRemaining = restarted.boxesRemaining;
 			boxItems = restarted.boxItems;
@@ -144,9 +144,9 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		private final FastPointCalculator3DStack pointCalculator;
 
-		public FastBruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ControlledContainerItem> containers,
+		public FastBruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ControlledContainerItem> containers, int containerCount,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-			super(boxItems, boxItemGroups, containers, containerIterators, interrupt, FastBruteForcePackager.this.supportsLoad());
+			super(boxItems, boxItemGroups, containers, containerCount, containerIterators, interrupt, FastBruteForcePackager.this.supportsLoad());
 			
 			this.pointCalculator = new FastPointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.clearToSize(1, 1, 1);
@@ -159,8 +159,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		@Override
-		protected FastBruteForceGroupAdapter fresh(List<ControlledContainerItem> containers) {
-			return createBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), containers, interrupt);
+		protected FastBruteForceGroupAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+			return createBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), containers, containerCount, interrupt);
 		}
 
 		@Override
@@ -170,7 +170,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		@Override
 		protected void resetState() {
-			FastBruteForceGroupAdapter restarted = fresh(packagerContainerItems.getContainerItems());
+			FastBruteForceGroupAdapter restarted = fresh(packagerContainerItems.getContainerItems(), packagerContainerItems.getContainerCount());
 			boxes = restarted.boxes;
 			boxesRemaining = restarted.boxesRemaining;
 			boxItems = restarted.boxItems;
@@ -193,7 +193,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 	@Override
 	protected FastBruteForceGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			List<ControlledContainerItem> containers, PackagerInterruptSupplier interrupt) {
+			List<ControlledContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
 		DefaultBoxItemGroupPermutationRotationIterator[] containerIterators = new DefaultBoxItemGroupPermutationRotationIterator[containers.size()];
 
 		for (int i = 0; i < containers.size(); i++) {
@@ -212,12 +212,12 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		for (BoxItemGroup boxItemGroup : itemGroups) {
 			boxItems.addAll(boxItemGroup.getItems());
 		}
-		return new FastBruteForceGroupAdapter(boxItems, itemGroups, containers, containerIterators, interrupt);
+		return new FastBruteForceGroupAdapter(boxItems, itemGroups, containers, containerCount, containerIterators, interrupt);
 	}
 
 	@Override
 	protected FastBruteForceAdapter createBoxItemAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers,
-			PackagerInterruptSupplier interrupt) {
+			int containerCount, PackagerInterruptSupplier interrupt) {
 		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[containers.size()];
 
 		for (int i = 0; i < containers.size(); i++) {
@@ -232,7 +232,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 					.build();
 		}
 		
-		return new FastBruteForceAdapter(boxItems, containers, containerIterators, interrupt);
+		return new FastBruteForceAdapter(boxItems, containers, containerCount, containerIterators, interrupt);
 	}
 
 	protected final FastBruteForceBoxStackValuePointComparator fastPointComparator;

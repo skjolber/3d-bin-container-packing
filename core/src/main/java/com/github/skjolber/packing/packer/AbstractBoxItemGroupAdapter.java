@@ -15,7 +15,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 
 public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapter implements PackagerAdapter {
 
-	private List<BoxItemGroup> remainingBoxItemGroups;
+	protected List<BoxItemGroup> remainingBoxItemGroups;
 	protected final List<BoxItemGroup> initialBoxItemGroups;
 	protected final PackagerInterruptSupplier interrupt;
 	protected final Order order;
@@ -25,8 +25,9 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 	protected final boolean maxLoadBoxCount;
 	protected final boolean maxLoadIdenticalBoxCount;
 	
-	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, List<ControlledContainerItem> containers, Order order, PackagerInterruptSupplier interrupt) {
-		super(containers);
+	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, List<ControlledContainerItem> containers,
+			int containerCount, Order order, PackagerInterruptSupplier interrupt) {
+		super(containers, containerCount);
 		this.initialBoxItemGroups = copyBoxItemGroups(boxItemGroups);
 		
 		List<BoxItemGroup> groupClones = new LinkedList<>();
@@ -129,15 +130,15 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 	}
 
 	@Override
-	public List<Integer> getContainers(int maxCount) {
-		return packagerContainerItems.getGroupContainers(remainingBoxItemGroups, maxCount);
+	public List<Integer> getContainers() {
+		return packagerContainerItems.getGroupContainers(remainingBoxItemGroups);
 	}
 
 	@Override
-	public long estimateMinimumCost(ContainerItemsCostCalculator calculator, int maxCount) {
-		return calculator.getGroupMinimumCost(packagerContainerItems, remainingBoxItemGroups, maxCount);
+	public List<BoxItemGroup> getRemainingBoxItemGroups() {
+		return remainingBoxItemGroups;
 	}
-	
+
 	@Override
 	public int countRemainingBoxes() {
 		int count = 0;
@@ -145,11 +146,6 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 			count += group.getBoxCount();
 		}
 		return count;
-	}
-
-	@Override
-	public int getMaximumContainerCount(int requestedLimit) {
-		return super.getMaximumContainerCount(Math.min(requestedLimit, remainingBoxItemGroups.size()));
 	}
 
 	@Override
@@ -169,10 +165,21 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 		}
 		return weight;
 	}
-	
+
 	@Override
 	public ControlledContainerItem getContainerItem(int index) {
 		return packagerContainerItems.getContainerItem(index);
+	}
+
+
+	@Override
+	public List<BoxItem> getRemainingBoxItems() {
+		return null;
+	}
+
+	@Override
+	public int countRemainingBoxItemGroups() {
+		return remainingBoxItemGroups.size();
 	}
 
 	protected abstract IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig);

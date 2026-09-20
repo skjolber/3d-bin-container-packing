@@ -12,9 +12,10 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
-import com.github.skjolber.packing.packer.strategy.ContainerPackingStrategy;
-import com.github.skjolber.packing.packer.strategy.ContainerPackingStrategyFactory;
-import com.github.skjolber.packing.packer.strategy.DefaultContainerPackingStrategyFactory;
+import com.github.skjolber.packing.packer.strategy.ContainerStrategy;
+import com.github.skjolber.packing.packer.strategy.ContainerStrategyFactory;
+import com.github.skjolber.packing.packer.strategy.ContainerResult;
+import com.github.skjolber.packing.packer.strategy.DefaultContainerStrategyFactory;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -30,25 +31,24 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	public static final int ARGUMENT_2_IS_BETTER = -1;
 
 	protected final Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
-	private volatile ContainerPackingStrategyFactory containerPackingStrategyFactory;
+	private volatile ContainerStrategyFactory containerPackingStrategyFactory;
 	
 	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Integer.MAX_VALUE);
 
 	public AbstractPackager(Comparator<IntermediatePackagerResult> comparator) {
 		this.intermediatePackagerResultComparator = comparator;
-		this.containerPackingStrategyFactory = new DefaultContainerPackingStrategyFactory(comparator,
+		this.containerPackingStrategyFactory = new DefaultContainerStrategyFactory(comparator,
 				this::createEmptyIntermediatePackagerResult);
 	}
 
 	/** Configure before using this packager concurrently. */
-	public void setContainerPackingStrategyFactory(ContainerPackingStrategyFactory factory) {
+	public void setContainerPackingStrategyFactory(ContainerStrategyFactory factory) {
 		this.containerPackingStrategyFactory = Objects.requireNonNull(factory);
 	}
 
-	public List<Container> packAdapter(int limit, PackagerInterruptSupplier interrupt, PackagerAdapter adapter) throws PackagerInterruptedException {
-		ContainerPackingStrategy strategy = Objects.requireNonNull(containerPackingStrategyFactory.create(adapter.hasContainerCost()),
-				"Container packing strategy factory returned null");
-		return strategy.pack(limit, interrupt, adapter);
+	public ContainerResult packAdapter(PackagerInterruptSupplier interrupt, PackagerAdapter adapter) throws PackagerInterruptedException {
+		ContainerStrategy strategy = containerPackingStrategyFactory.create(adapter.getContainerItemsCalculator(), adapter.getRemainingBoxItems(), adapter.getRemainingBoxItemGroups());
+		return strategy.pack(interrupt, adapter);
 	}
 
 	public void close() {
