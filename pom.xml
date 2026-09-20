@@ -12,6 +12,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>17</java.version>
+		<test.forkCount>1</test.forkCount>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 
@@ -27,7 +28,6 @@
 
 		<!-- plugins -->
 		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
-		<jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
 		<sonatype-plugin.version>0.11.0</sonatype-plugin.version>
 		<maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
 		<maven-source-plugin.version>3.4.0</maven-source-plugin.version>
@@ -244,7 +244,7 @@
 	</modules>
 
 	<build>
-		<defaultGoal>clean test</defaultGoal>
+		<defaultGoal>test</defaultGoal>
 		<!--
 		<extensions>
 			<extension>
@@ -270,7 +270,7 @@
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>${maven-surefire-plugin.version}</version>
 					<configuration>
-						<forkCount>1.5C</forkCount>
+						<forkCount>${test.forkCount}</forkCount>
 						<reuseForks>true</reuseForks>
 						<redirectTestOutputToFile>true</redirectTestOutputToFile>
 					</configuration>
@@ -545,6 +545,14 @@
 	</build>
 
 	<profiles>
+		<profile>
+			<id>dev</id>
+			<properties>
+				<jacoco.skip>true</jacoco.skip>
+				<maven.javadoc.skip>true</maven.javadoc.skip>
+				<maven.source.skip>true</maven.source.skip>
+			</properties>
+		</profile>
 		<profile>
 			<!-- mvn -P release release:perform -->
 			<id>release</id>
