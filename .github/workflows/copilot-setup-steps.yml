@@ -40,7 +40,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Install dependencies (Maven example)
-      run: mvn install -DskipTests # Install dependencies but skip tests during setup
+      run: ./mvnw -B -ntp -Pdev install -DskipTests # Compile tests and install dependencies during setup
     - name: Setup node
       uses: actions/setup-node@v7
       with:
