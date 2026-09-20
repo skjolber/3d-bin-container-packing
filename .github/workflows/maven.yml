@@ -30,7 +30,7 @@ jobs:
       with:
         step: restore
     - name: Build with Maven
-      run: mvn verify
+      run: ./mvnw -B -ntp -Dtest.forkCount=1.5C verify
     - name: Restore cache
       uses: skjolber/maven-cache-github-action@v3.1.2
       with:
