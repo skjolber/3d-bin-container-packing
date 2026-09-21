@@ -48,7 +48,7 @@ public class BoxCountValidatorTest {
 	}
 
 	private PackagerResult result(Container... containers) {
-		return new PackagerResult(List.of(containers), 0L, false);
+		return new PackagerResult(List.of(containers), 0L, false, -1);
 	}
 
 	private Box box(String id) {

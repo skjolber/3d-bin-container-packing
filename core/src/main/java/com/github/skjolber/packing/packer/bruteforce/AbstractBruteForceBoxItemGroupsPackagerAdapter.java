@@ -3,6 +3,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.packer.BoxItemGroupsContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 
 public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
@@ -12,7 +13,7 @@ public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter extends Abs
 
 	public AbstractBruteForceBoxItemGroupsPackagerAdapter(List<BoxItem> boxItems,
 			List<ControlledContainerItem> containers, int containerCount, List<BoxItemGroup> boxItemGroups) {
-		super(boxItems, containers, containerCount);
+		super(boxItems, new BoxItemGroupsContainerItemsCalculator(containers, containerCount, boxItemGroups));
 		this.initialBoxItemGroups = copyBoxItemGroups(boxItemGroups);
 		
 		this.boxItemGroups = boxItemGroups;

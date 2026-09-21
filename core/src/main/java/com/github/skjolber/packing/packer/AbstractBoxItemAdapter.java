@@ -24,9 +24,8 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	protected final boolean maxLoadBoxCount;
 	protected final boolean maxLoadIdenticalBoxCount;
 
-	public AbstractBoxItemAdapter(List<BoxItem> boxItems, Order order, List<ControlledContainerItem> containers,
-			int containerCount, PackagerInterruptSupplier interrupt) {
-		super(containers, containerCount);
+	public AbstractBoxItemAdapter(List<BoxItem> boxItems, Order order, List<ControlledContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
+		super(boxItems, containers, containerCount);
 		this.initialBoxItems = copyBoxItems(boxItems);
 		
 		this.order = order;

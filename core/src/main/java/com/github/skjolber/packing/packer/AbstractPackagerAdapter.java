@@ -14,8 +14,16 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 	protected final ContainerItemsCalculator packagerContainerItems;
 	protected final ContainerItemsCalculator initialContainerItems;
 
+	public AbstractPackagerAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers, int containerCount) {
+		this(new BoxItemsContainerItemsCalculator(containers, containerCount, boxItems));
+	}
+
 	public AbstractPackagerAdapter(List<ControlledContainerItem> containers, int containerCount) {
-		this.packagerContainerItems = new ContainerItemsCalculator(containers, containerCount);
+		this(new ContainerItemsCalculator(containers, containerCount));
+	}
+
+	protected AbstractPackagerAdapter(ContainerItemsCalculator containerItemsCalculator) {
+		this.packagerContainerItems = containerItemsCalculator;
 		this.initialContainerItems = packagerContainerItems.clone();
 	}
 

@@ -194,7 +194,7 @@ class BruteForceContainerStrategyTest {
 	}
 
 	@Test
-	void lowestPriceControlsPrunesAnExpensiveContainerBeforeAttempt() throws PackagerInterruptedException {
+	void lowestCostControlsPrunesAnExpensiveContainerBeforeAttempt() throws PackagerInterruptedException {
 		Container cheap = Container.newBuilder().withId("cheap").withSize(1, 1, 1).withMaxLoadWeight(1).build();
 		Container expensive = Container.newBuilder().withId("expensive").withSize(1, 1, 1).withMaxLoadWeight(1).build();
 		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
@@ -202,14 +202,14 @@ class BruteForceContainerStrategyTest {
 		List<Integer> attempts = new ArrayList<>();
 		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts, new int[1]);
 
-		ContainerResult result = new BruteForceContainerStrategy(new LowestPriceControls()).pack(() -> false, source);
+		ContainerResult result = new BruteForceContainerStrategy(new LowestCostControls()).pack(() -> false, source);
 
 		assertEquals(List.of("cheap"), result.getPackList().stream().map(Container::getId).toList());
 		assertEquals(1, attempts.size());
 	}
 
 	@Test
-	void lowestPriceControlsUsesNextContainerMinimumBeforeDescending() throws PackagerInterruptedException {
+	void lowestCostControlsUsesNextContainerMinimumBeforeDescending() throws PackagerInterruptedException {
 		Container cheap = Container.newBuilder().withId("cheap").withSize(1, 1, 1).withMaxLoadWeight(1).build();
 		Container expensive = Container.newBuilder().withId("expensive").withSize(1, 1, 1).withMaxLoadWeight(1).build();
 		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
@@ -219,7 +219,7 @@ class BruteForceContainerStrategyTest {
 		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts, new int[1],
 				2, new ArrayList<>(), queries);
 
-		ContainerResult result = new BruteForceContainerStrategy(new LowestPriceControls()).pack(() -> false, source);
+		ContainerResult result = new BruteForceContainerStrategy(new LowestCostControls()).pack(() -> false, source);
 
 		assertEquals(List.of("cheap", "cheap"), result.getPackList().stream().map(Container::getId).toList());
 		assertEquals(List.of(2, 1), attempts);

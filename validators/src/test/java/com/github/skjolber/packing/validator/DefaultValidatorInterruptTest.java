@@ -56,7 +56,7 @@ public class DefaultValidatorInterruptTest {
 		return validator.newResultBuilder()
 				.withContainerItems(List.of(new ContainerItem(container, 1)))
 				.withMaxContainerCount(1)
-				.withPackagerResult(new PackagerResult(List.of(container), 0L, false))
+				.withPackagerResult(new PackagerResult(List.of(container), 0L, false, -1))
 				.withBoxItems(List.of(new BoxItem(box)));
 	}
 }

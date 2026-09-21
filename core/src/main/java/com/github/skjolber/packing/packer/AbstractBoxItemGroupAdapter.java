@@ -27,7 +27,7 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 	
 	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, List<ControlledContainerItem> containers,
 			int containerCount, Order order, PackagerInterruptSupplier interrupt) {
-		super(containers, containerCount);
+		super(new BoxItemGroupsContainerItemsCalculator(containers, containerCount, boxItemGroups));
 		this.initialBoxItemGroups = copyBoxItemGroups(boxItemGroups);
 		
 		List<BoxItemGroup> groupClones = new LinkedList<>();

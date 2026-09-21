@@ -107,7 +107,7 @@ public class BruteForceContainerStrategy implements ContainerStrategy {
 				if(!controls.result(new ContainerResult(branch.getContainerItemsCalculator().getCost(), packed))) {
 					break;
 				}
-			} else if(packed.size() < maxLength) {
+			} else if(packed.size() < maxLength && ContainerAllocationPlanner.canAllocate(branch, interrupt)) {
 				List<Integer> containerIndexes = branch.getContainers();
 				if(!containerIndexes.isEmpty()) {
 					branches.addLast(branch);

@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
@@ -95,10 +94,10 @@ public class ContainerItemsCalculator implements Cloneable {
 	 * remaining container count.
 	 *
 	 * @param boxes list of boxes
-	 * @return list of containers
+	 * @return eligible containers and their box-item fit records
 	 */
 	
-	public List<Integer> getContainers(List<BoxItem> boxes) {
+	public ContainerItemsResult getContainers(List<BoxItem> boxes) {
 		return getContainers(boxes, containerCount);
 	}
 
@@ -108,9 +107,9 @@ public class ContainerItemsCalculator implements Cloneable {
 	 *
 	 * @param boxes list of boxes
 	 * @param maxCount maximum number of containers for this query
-	 * @return list of container indexes
+	 * @return eligible containers and their box-item fit records
 	 */
-	public List<Integer> getContainers(List<BoxItem> boxes, int maxCount) {
+	public ContainerItemsResult getContainers(List<BoxItem> boxes, int maxCount) {
 		long totalVolume = 0;
 		long totalWeight = 0;
 		int boxCount = 0;
@@ -126,6 +125,8 @@ public class ContainerItemsCalculator implements Cloneable {
 
 		// set a more realistic max; no more than one container per box
 		maxCount = Math.min(Math.min(containerCount, maxCount), boxCount);
+
+		boolean[][] fits = new boolean[boxes.size()][containerItems.size()];
 		
 		if(maxCount == 1) {
 			List<Integer> result = new ArrayList<>(containerItems.size());
@@ -146,26 +147,27 @@ public class ContainerItemsCalculator implements Cloneable {
 					continue;
 				}
 
-				if(!canLoadAll(container, boxes)) {
+				recordBoxFits(boxes, i, fits);
+				if(!canLoadAll(fits, i)) {
 					continue;
 				}
 				result.add(i);
 			}
-			return result;
+			return new ContainerItemsResult(result, fits, containerItems.size());
 		}
 
 		// sanity check - exact values for volume
 		Limit totalAvailableVolume = calculateMaxVolume(maxCount);
 		if(totalAvailableVolume.value.compareTo(BigInteger.valueOf(totalVolume)) < 0) {
 			// constrained by volume
-			return Collections.emptyList();
+			return new ContainerItemsResult(Collections.emptyList(), fits, containerItems.size());
 		}
 
 		// sanity check - exact values for weight
 		Limit totalAvailableWeight = calculateMaxWeight(maxCount);
 		if(totalAvailableWeight.value.compareTo(BigInteger.valueOf(totalWeight)) < 0) {
 			// constrained by weight
-			return Collections.emptyList();
+			return new ContainerItemsResult(Collections.emptyList(), fits, containerItems.size());
 		}
 
 		long minVolume = Long.MAX_VALUE;
@@ -223,16 +225,17 @@ public class ContainerItemsCalculator implements Cloneable {
 			}
 
 			// must be able to load at least one
-			if(!canLoadAtLeastOneBox(container, boxes)) {
+			recordBoxFits(boxes, i, fits);
+			if(!canLoadAtLeastOne(fits, i)) {
 				continue;
 			}
 			result.add(i);
 		}
 
-		return result;
+		return new ContainerItemsResult(result, fits, containerItems.size());
 	}
 
-	public List<Integer> getGroupContainers(List<BoxItemGroup> groups) {
+	public ContainerItemsResult getGroupContainers(List<BoxItemGroup> groups) {
 		return getGroupContainers(groups, containerCount);
 	}
 
@@ -242,9 +245,9 @@ public class ContainerItemsCalculator implements Cloneable {
 	 *
 	 * @param groups list of box-item groups
 	 * @param maxCount maximum number of containers for this query
-	 * @return list of container indexes
+	 * @return eligible containers and their group fit records
 	 */
-	public List<Integer> getGroupContainers(List<BoxItemGroup> groups, int maxCount) {
+	public ContainerItemsResult getGroupContainers(List<BoxItemGroup> groups, int maxCount) {
 		long totalBoxVolume = 0;
 		long totalBoxWeight = 0;
 
@@ -275,6 +278,8 @@ public class ContainerItemsCalculator implements Cloneable {
 		// at least one container per group
 		maxCount = Math.min(Math.min(containerCount, maxCount), groups.size());
 
+		boolean[][] fits = new boolean[groups.size()][containerItems.size()];
+
 		if(maxCount == 1) {
 			List<Integer> list = new ArrayList<>(containerItems.size());
 
@@ -294,28 +299,27 @@ public class ContainerItemsCalculator implements Cloneable {
 					continue;
 				}
 				
-				for (BoxItemGroup group : groups) {
-					if(!c.canLoad(group)) {
-						continue containers;
-					}
+				recordGroupFits(groups, i, fits);
+				if(!canLoadAll(fits, i)) {
+					continue containers;
 				}
 				list.add(i);
 			}
-			return list;
+			return new ContainerItemsResult(list, fits, containerItems.size());
 		}
 
 		// sanity check - exact values for volume
 		Limit totalAvailableVolume = calculateMaxVolume(maxCount);
 		if(totalAvailableVolume.value.compareTo(BigInteger.valueOf(totalBoxVolume)) < 0) {
 			// constrained by volume
-			return Collections.emptyList();
+			return new ContainerItemsResult(Collections.emptyList(), fits, containerItems.size());
 		}
 
 		// sanity check - exact values for weight
 		Limit totalAvailableWeight = calculateMaxWeight(maxCount);
 		if(totalAvailableWeight.value.compareTo(BigInteger.valueOf(totalBoxWeight)) < 0) {
 			// constrained by weight
-			return Collections.emptyList();
+			return new ContainerItemsResult(Collections.emptyList(), fits, containerItems.size());
 		}
 
 		List<Integer> list = new ArrayList<>(getContainerItemCount());
@@ -356,41 +360,161 @@ public class ContainerItemsCalculator implements Cloneable {
 
 			}
 
-			if(!canLoadAtLeastOneGroup(container, groups)) {
+			recordGroupFits(groups, i, fits);
+			if(!canLoadAtLeastOne(fits, i)) {
 				continue;
 			}
 			list.add(i);
 		}
 
-		return list;
+		return new ContainerItemsResult(list, fits, containerItems.size());
 	}
 
-	protected boolean canLoadAtLeastOneBox(Container containerBox, Iterable<BoxItem> boxes) {
-		for (BoxItem boxItem : boxes) {
-			Box box = boxItem.getBox();
-			if(containerBox.canLoad(box)) {
-				return true;
-			}
-		}
-		return false;
+	/**
+	 * Return whether the available inventory has enough aggregate volume and
+	 * weight and every remaining box-item type can be loaded by at least one
+	 * container type.
+	 *
+	 * @param boxItems remaining box items from this packaging operation
+	 * @return {@code true} if every non-empty box item has an available container
+	 */
+	public boolean isFeasible(List<BoxItem> boxItems) {
+		return isFeasible(boxItems, containerCount, null);
 	}
-	
-	protected boolean canLoadAll(Container containerBox, Iterable<BoxItem> boxes) {
-		for (BoxItem box : boxes) {
-			if(!containerBox.canLoad(box)) {
+
+	/** Check box-item feasibility using at most {@code maxCount} containers. */
+	public boolean isFeasible(List<BoxItem> boxItems, int maxCount) {
+		return isFeasible(boxItems, maxCount, null);
+	}
+
+	/**
+	 * Check box-item feasibility using at most {@code maxCount} containers while
+	 * ignoring excluded container-item indexes.
+	 */
+	public boolean isFeasible(List<BoxItem> boxItems, int maxCount, boolean[] excluded) {
+		long totalVolume = 0;
+		long totalWeight = 0;
+		int boxCount = 0;
+		for(BoxItem boxItem : boxItems) {
+			if(boxItem.isEmpty()) {
+				continue;
+			}
+			totalVolume += boxItem.getVolume();
+			totalWeight += boxItem.getWeight();
+			boxCount += boxItem.getCount();
+		}
+		if(!hasCapacity(maxCount, boxCount, totalVolume, totalWeight, excluded)) {
+			return false;
+		}
+		for(BoxItem boxItem : boxItems) {
+			if(boxItem.isEmpty()) {
+				continue;
+			}
+			boolean match = false;
+			for(int containerItemIndex = 0; containerItemIndex < containerItems.size(); containerItemIndex++) {
+				if(!isExcluded(containerItemIndex, excluded)
+						&& containerItems.get(containerItemIndex).isAvailable()
+						&& canLoad(boxItem, containerItemIndex)) {
+					match = true;
+					break;
+				}
+			}
+			if(!match) {
 				return false;
 			}
 		}
 		return true;
 	}
-	
-	protected boolean canLoadAtLeastOneGroup(Container containerBox, List<BoxItemGroup> boxes) {
-		for (BoxItemGroup group : boxes) {
-			for (BoxItem boxItem : group.getItems()) {
-				Box box = boxItem.getBox();
-				if(containerBox.canLoad(box)) {
-					return true;
+
+	/**
+	 * Return whether the available inventory has enough aggregate volume and
+	 * weight and every remaining box-item group can be loaded by at least one
+	 * container type.
+	 *
+	 * @param groups remaining groups from this packaging operation
+	 * @return {@code true} if every non-empty group has an available container
+	 */
+	public boolean isGroupFeasible(List<BoxItemGroup> groups) {
+		return isGroupFeasible(groups, containerCount, null);
+	}
+
+	/** Check box-item-group feasibility using at most {@code maxCount} containers. */
+	public boolean isGroupFeasible(List<BoxItemGroup> groups, int maxCount) {
+		return isGroupFeasible(groups, maxCount, null);
+	}
+
+	/**
+	 * Check box-item-group feasibility using at most {@code maxCount} containers
+	 * while ignoring excluded container-item indexes.
+	 */
+	public boolean isGroupFeasible(List<BoxItemGroup> groups, int maxCount, boolean[] excluded) {
+		long totalVolume = 0;
+		long totalWeight = 0;
+		int groupCount = 0;
+		for(BoxItemGroup group : groups) {
+			if(group.isEmpty()) {
+				continue;
+			}
+			totalVolume += group.getVolume();
+			totalWeight += group.getWeight();
+			groupCount++;
+		}
+		if(!hasCapacity(maxCount, groupCount, totalVolume, totalWeight, excluded)) {
+			return false;
+		}
+		for(BoxItemGroup group : groups) {
+			if(group.isEmpty()) {
+				continue;
+			}
+			boolean match = false;
+			for(int containerItemIndex = 0; containerItemIndex < containerItems.size(); containerItemIndex++) {
+				if(!isExcluded(containerItemIndex, excluded)
+						&& containerItems.get(containerItemIndex).isAvailable()
+						&& canLoad(group, containerItemIndex)) {
+					match = true;
+					break;
 				}
+			}
+			if(!match) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private void recordBoxFits(List<BoxItem> boxes, int containerItemIndex, boolean[][] fits) {
+		for(int boxItemIndex = 0; boxItemIndex < boxes.size(); boxItemIndex++) {
+			fits[boxItemIndex][containerItemIndex] = canLoad(boxes.get(boxItemIndex), containerItemIndex);
+		}
+	}
+
+	private void recordGroupFits(List<BoxItemGroup> groups, int containerItemIndex, boolean[][] fits) {
+		for(int groupIndex = 0; groupIndex < groups.size(); groupIndex++) {
+			fits[groupIndex][containerItemIndex] = canLoad(groups.get(groupIndex), containerItemIndex);
+		}
+	}
+
+	public boolean canLoad(BoxItem boxItem, int containerItemIndex) {
+		return containerItems.get(containerItemIndex).getContainer().canLoad(boxItem.getBox());
+	}
+
+	public boolean canLoad(BoxItemGroup group, int containerItemIndex) {
+		return containerItems.get(containerItemIndex).getContainer().canLoad(group);
+	}
+
+	private static boolean canLoadAll(boolean[][] fits, int containerItemIndex) {
+		for(boolean[] itemFits : fits) {
+			if(!itemFits[containerItemIndex]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private static boolean canLoadAtLeastOne(boolean[][] fits, int containerItemIndex) {
+		for(boolean[] itemFits : fits) {
+			if(itemFits[containerItemIndex]) {
+				return true;
 			}
 		}
 		return false;
@@ -481,18 +605,37 @@ public class ContainerItemsCalculator implements Cloneable {
 	}
 
 	protected boolean hasMaxVolumeCapacity(int maxCount, long target) {
-		return hasCapacity(containerItemsSortedByVolume, maxCount, target, true);
+		return hasMaxVolumeCapacity(maxCount, target, null);
 	}
 
 	protected boolean hasMaxWeightCapacity(int maxCount, long target) {
-		return hasCapacity(containerItemsSortedByWeight, maxCount, target, false);
+		return hasMaxWeightCapacity(maxCount, target, null);
 	}
 
-	private static boolean hasCapacity(List<ControlledContainerItem> items, int maxCount, long target, boolean volume) {
+	protected boolean hasCapacity(int maxCount, int unitCount, long totalVolume, long totalWeight,
+			boolean[] excluded) {
+		if(unitCount == 0) {
+			return true;
+		}
+		maxCount = Math.min(Math.min(containerCount, maxCount), unitCount);
+		return maxCount > 0 && hasMaxVolumeCapacity(maxCount, totalVolume, excluded)
+				&& hasMaxWeightCapacity(maxCount, totalWeight, excluded);
+	}
+
+	protected boolean hasMaxVolumeCapacity(int maxCount, long target, boolean[] excluded) {
+		return hasCapacity(containerItemsSortedByVolume, maxCount, target, true, excluded);
+	}
+
+	protected boolean hasMaxWeightCapacity(int maxCount, long target, boolean[] excluded) {
+		return hasCapacity(containerItemsSortedByWeight, maxCount, target, false, excluded);
+	}
+
+	private static boolean hasCapacity(List<ControlledContainerItem> items, int maxCount, long target,
+			boolean volume, boolean[] excluded) {
 		long total = 0;
 		for(int i = items.size() - 1; i >= 0 && maxCount > 0; i--) {
 			ControlledContainerItem item = items.get(i);
-			if(!item.isAvailable()) {
+			if(!item.isAvailable() || isExcluded(item.getIndex(), excluded)) {
 				continue;
 			}
 			long capacity = volume ? item.getContainer().getMaxLoadVolume() : item.getContainer().getMaxLoadWeight();
@@ -505,6 +648,21 @@ public class ContainerItemsCalculator implements Cloneable {
 			maxCount -= count;
 		}
 		return total >= target;
+	}
+
+	protected static boolean isExcluded(int containerItemIndex, boolean[] excluded) {
+		return excluded != null && containerItemIndex < excluded.length && excluded[containerItemIndex];
+	}
+
+	protected static boolean hasExclusions(boolean[] excluded) {
+		if(excluded != null) {
+			for(boolean value : excluded) {
+				if(value) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public int getContainerItemCount() {

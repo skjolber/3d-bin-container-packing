@@ -72,7 +72,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 				IntermediatePackagerResult bestResult = null;
 				int bestIndex = Integer.MAX_VALUE;
 
-			do {
+				do {
 					int mid = iterator.next();
 					int nextContainerItemIndex = containerItemIndexes.get(mid);
 					

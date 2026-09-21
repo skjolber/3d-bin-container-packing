@@ -56,9 +56,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter {
 
-		public PlainBoxItemAdapter(List<BoxItem> boxItems, Order order,
-				List<ControlledContainerItem> containers,
-				int containerCount, PackagerInterruptSupplier interrupt) {
+		public PlainBoxItemAdapter(List<BoxItem> boxItems, Order order, List<ControlledContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
 			super(boxItems, order, containers, containerCount, interrupt);
 		}
 

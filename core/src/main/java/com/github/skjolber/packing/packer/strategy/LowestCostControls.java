@@ -14,26 +14,25 @@ import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.strategy.BruteForceContainerStrategy.Controls;
 
 /**
- * Selects the lowest-price complete packing, breaking ties in favor of fewer
+ * Selects the lowest-cost complete packing, breaking ties in favor of fewer
  * containers. Branches are skipped when the minimum possible additional cost
  * cannot improve the best result.
  */
-public final class LowestPriceControls implements Controls {
+public final class LowestCostControls implements Controls {
 
 	private final ContainerItemsCostCalculator costCalculator;
 	private ContainerResult best;
 
-	public LowestPriceControls() {
+	public LowestCostControls() {
 		this(new EstimatingContainerItemsCostCalculator());
 	}
 
-	public LowestPriceControls(ContainerItemsCostCalculator costCalculator) {
+	public LowestCostControls(ContainerItemsCostCalculator costCalculator) {
 		this.costCalculator = Objects.requireNonNull(costCalculator);
 	}
 
 	@Override
-	public boolean attempt(List<Container> containers, PackagerAdapter state,
-			List<Integer> availableContainerIndexes, int selectedContainerIndex) {
+	public boolean attempt(List<Container> containers, PackagerAdapter state, List<Integer> availableContainerIndexes, int selectedContainerIndex) {
 		if(best == null) {
 			return true;
 		}
@@ -84,8 +83,7 @@ public final class LowestPriceControls implements Controls {
 		return cost;
 	}
 
-	private static boolean canImprove(long currentCost, long minimumAdditionalCost,
-			int minimumContainers, long bestCost, int bestCount) {
+	private static boolean canImprove(long currentCost, long minimumAdditionalCost, int minimumContainers, long bestCost, int bestCount) {
 		if(currentCost > bestCost) {
 			return false;
 		}

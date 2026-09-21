@@ -6,6 +6,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
+import com.github.skjolber.packing.packer.BoxItemsContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
@@ -20,7 +21,12 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 
 	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers,
 			int containerCount) {
-		super(containers, containerCount);
+		this(boxItems, new BoxItemsContainerItemsCalculator(containers, containerCount, boxItems));
+	}
+
+	protected AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems,
+			ContainerItemsCalculator containerItemsCalculator) {
+		super(containerItemsCalculator);
 		this.initialBoxItems = copyBoxItems(boxItems);
 		
 		this.boxes = new Box[boxItems.size()];

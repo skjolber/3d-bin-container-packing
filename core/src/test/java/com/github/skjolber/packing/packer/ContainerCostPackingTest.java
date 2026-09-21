@@ -31,7 +31,7 @@ import com.github.skjolber.packing.packer.strategy.BruteForceContainerStrategy;
 import com.github.skjolber.packing.packer.strategy.ContainerResult;
 import com.github.skjolber.packing.packer.strategy.ContainerStrategy;
 import com.github.skjolber.packing.packer.strategy.LowestCostContainersComparator;
-import com.github.skjolber.packing.packer.strategy.LowestPriceControls;
+import com.github.skjolber.packing.packer.strategy.LowestCostControls;
 
 class ContainerCostPackingTest {
 
@@ -55,7 +55,7 @@ class ContainerCostPackingTest {
 		};
 		try {
 			useStrategyFactory(packager,
-					() -> new BruteForceContainerStrategy(new LowestPriceControls(calculator)));
+					() -> new BruteForceContainerStrategy(new LowestCostControls(calculator)));
 			PackagerResult result = packager.newResultBuilder().withContainerItems(planContainers())
 					.withMaxContainerCount(2).withBoxItems(twoBoxes())
 					.build();
@@ -94,7 +94,7 @@ class ContainerCostPackingTest {
 		ContainerStrategy strategy = (interrupt, adapter) -> {
 			assertThat(adapter.countRemainingBoxes()).isEqualTo(2);
 			assertThat(adapter.getRemainingBoxItemGroups()).hasSize(1);
-			assertThat(adapter.getContainerItemsCalculator().getContainerCount()).isEqualTo(1000);
+			assertThat(adapter.getContainerItemsCalculator().getContainerCount()).isEqualTo(1);
 			assertThat(adapter.getMaxContainerCount()).isEqualTo(1);
 			return new BruteForceContainerStrategy().pack(interrupt, adapter);
 		};
@@ -346,7 +346,7 @@ class ContainerCostPackingTest {
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			useStrategyFactory(packager,
-					() -> new BruteForceContainerStrategy(new LowestPriceControls()));
+					() -> new BruteForceContainerStrategy(new LowestCostControls()));
 			PackagerResult result = packager.newResultBuilder()
 					.withContainerItems(planContainers())
 					.withMaxContainerCount(2)
@@ -374,7 +374,7 @@ class ContainerCostPackingTest {
 					.withContainer(large, 1, cost(80, 2))
 					.build();
 			useStrategyFactory(packager,
-					() -> new BruteForceContainerStrategy(new LowestPriceControls()));
+					() -> new BruteForceContainerStrategy(new LowestCostControls()));
 			PackagerResult result = packager.newResultBuilder()
 					.withContainerItems(containers)
 					.withMaxContainerCount(2)
@@ -402,7 +402,7 @@ class ContainerCostPackingTest {
 					.withContainer(fixed, 1, cost(5, 1))
 					.build();
 			useStrategyFactory(packager,
-					() -> new BruteForceContainerStrategy(new LowestPriceControls()));
+					() -> new BruteForceContainerStrategy(new LowestCostControls()));
 			PackagerResult result = packager.newResultBuilder()
 					.withContainerItems(containers)
 					.withBoxItems(boxItem())
@@ -429,7 +429,7 @@ class ContainerCostPackingTest {
 				assertThat(estimateMinimumCost(calculator, branch, 1)).isEqualTo(40);
 				assertThat(estimateMinimumCost(calculator, adapter, 2)).isEqualTo(80);
 				assertThat(estimateMinimumCost(calculator, branch.fresh(), 2)).isEqualTo(80);
-				return new BruteForceContainerStrategy(new LowestPriceControls(calculator)).pack(interrupt, adapter);
+				return new BruteForceContainerStrategy(new LowestCostControls(calculator)).pack(interrupt, adapter);
 			};
 			useStrategy(packager, strategy);
 			useStrategy(bruteForce, strategy);
