@@ -18,35 +18,47 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
 public class OrderedContainerPackingStrategy implements ContainerStrategy {
 	@FunctionalInterface
 	public interface SingleContainerPacker {
-		IntermediatePackagerResult packSingle(List<Integer> indexes, PackagerAdapter adapter,
-				PackagerInterruptSupplier interrupt) throws PackagerInterruptedException;
+		IntermediatePackagerResult packSingle(List<ContainerItem> containerItems, PackagerAdapter adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException;
 	}
 
 	private final Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
 	private final Supplier<IntermediatePackagerResult> emptyResultSupplier;
 	private final SingleContainerPacker singleContainerPacker;
+	private final boolean allocationFeasibilityCheck;
 
 	public OrderedContainerPackingStrategy(Comparator<IntermediatePackagerResult> comparator,
 			Supplier<IntermediatePackagerResult> emptyResultSupplier) {
-		this(comparator, emptyResultSupplier, null);
+		this(comparator, emptyResultSupplier, null, true);
 	}
 
-	public OrderedContainerPackingStrategy(Comparator<IntermediatePackagerResult> comparator,
-			Supplier<IntermediatePackagerResult> emptyResultSupplier, SingleContainerPacker singleContainerPacker) {
+	public OrderedContainerPackingStrategy(Comparator<IntermediatePackagerResult> comparator, Supplier<IntermediatePackagerResult> emptyResultSupplier, SingleContainerPacker singleContainerPacker) {
+		this(comparator, emptyResultSupplier, singleContainerPacker, true);
+	}
+
+	private OrderedContainerPackingStrategy(Comparator<IntermediatePackagerResult> comparator, Supplier<IntermediatePackagerResult> emptyResultSupplier, SingleContainerPacker singleContainerPacker, boolean allocationFeasibilityCheck) {
 		this.intermediatePackagerResultComparator = comparator;
 		this.emptyResultSupplier = emptyResultSupplier;
 		this.singleContainerPacker = singleContainerPacker == null ? this::packSingle : singleContainerPacker;
+		this.allocationFeasibilityCheck = allocationFeasibilityCheck;
+	}
+
+	/**
+	 * Create a variant for callers which have already proven that remaining
+	 * inventory can allocate every remaining unit.
+	 */
+	OrderedContainerPackingStrategy withoutAllocationFeasibilityCheck() {
+		return new OrderedContainerPackingStrategy(intermediatePackagerResultComparator, emptyResultSupplier, singleContainerPacker, false);
 	}
 
 	// pack in single container
-	public IntermediatePackagerResult packSingle(List<Integer> containerItemIndexes, PackagerAdapter adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
-		if(containerItemIndexes.size() <= 2) {
-			for (int i = 0; i < containerItemIndexes.size(); i++) {
+	public IntermediatePackagerResult packSingle(List<ContainerItem> containerItems, PackagerAdapter adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+		if(containerItems.size() <= 2) {
+			for (int i = 0; i < containerItems.size(); i++) {
 				if(interrupt.getAsBoolean()) {
 					throw new PackagerInterruptedException();
 				}
 
-				Integer containerItemIndex = containerItemIndexes.get(i);
+				int containerItemIndex = containerItems.get(i).getIndex();
 				
 				IntermediatePackagerResult result = adapter.attempt(containerItemIndex, null, true);
 				if(result.isEmpty()) {
@@ -62,19 +74,19 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 			// while the search finds a baseline, we really need to check all the containers
 			// at a lower index before the optional container is located.
 			
-			IntermediatePackagerResult[] results = new IntermediatePackagerResult[containerItemIndexes.get(containerItemIndexes.size() - 1) + 1];
+			IntermediatePackagerResult[] results = new IntermediatePackagerResult[containerItems.get(containerItems.size() - 1).getIndex() + 1];
 
 			BinarySearchIterator iterator = new BinarySearchIterator();
 
 			search: do {
-				iterator.reset(containerItemIndexes.size() - 1, 0);
+				iterator.reset(containerItems.size() - 1, 0);
 
 				IntermediatePackagerResult bestResult = null;
 				int bestIndex = Integer.MAX_VALUE;
 
 				do {
 					int mid = iterator.next();
-					int nextContainerItemIndex = containerItemIndexes.get(mid);
+					int nextContainerItemIndex = containerItems.get(mid).getIndex();
 					
 					IntermediatePackagerResult result = null;
 					
@@ -106,24 +118,24 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 					}
 				} while (iterator.hasNext());
 				
-				for (int i = 0; i < containerItemIndexes.size(); i++) {
-					Integer nextContainerItemIndex = containerItemIndexes.get(i);
+				for (int i = 0; i < containerItems.size(); i++) {
+					int nextContainerItemIndex = containerItems.get(i).getIndex();
 					if(results[nextContainerItemIndex] != null) {
 						if(!results[nextContainerItemIndex].isEmpty()) {
 							// remove containers at lower indexes; we already have a better match
-							while (containerItemIndexes.size() > i) {
-								containerItemIndexes.remove(containerItemIndexes.size() - 1);
+							while (containerItems.size() > i) {
+								containerItems.remove(containerItems.size() - 1);
 							}
 							break;
 						}
 						
 						// remove container which could not fit all the items
-						containerItemIndexes.remove(i);
+						containerItems.remove(i);
 						i--;
 					}
 				}
 				// halt when not more containers to check
-			} while (!containerItemIndexes.isEmpty());
+			} while (!containerItems.isEmpty());
 
 			// return the best, if any
 			for (final IntermediatePackagerResult result : results) {
@@ -142,19 +154,25 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 		List<Container> containerPackResults = new ArrayList<>();
 
 		do {
+			// Avoid trying candidate containers when the remaining items cannot be
+			// assigned to the remaining inventory within the container limit.
+			if(allocationFeasibilityCheck && !ContainerAllocationPlanner.canAllocate(adapter, interrupt)) {
+				return null;
+			}
+
 			// is it possible to fit the remaining boxes a single container?
 			int maxContainers = limit - containerPackResults.size();
 			if(maxContainers > 1) {
 				List<BoxItemGroup> groups = adapter.getRemainingBoxItemGroups();
-				List<Integer> containerItemIndexes;
+				List<ContainerItem> containerItems;
 				if(groups != null) {
-					containerItemIndexes = adapter.getContainerItemsCalculator().getGroupContainers(groups, 1);
+					containerItems = adapter.getContainerItemsCalculator().getGroupContainers(groups, 1);
 				} else {
-					containerItemIndexes = adapter.getContainerItemsCalculator().getContainers(adapter.getRemainingBoxItems(), 1);
+					containerItems = adapter.getContainerItemsCalculator().getContainers(adapter.getRemainingBoxItems(), 1);
 				}
-				if(!containerItemIndexes.isEmpty()) {
+				if(!containerItems.isEmpty()) {
 	
-					IntermediatePackagerResult result = singleContainerPacker.packSingle(containerItemIndexes, adapter, interrupt);
+					IntermediatePackagerResult result = singleContainerPacker.packSingle(containerItems, adapter, interrupt);
 					if(!result.isEmpty()) {
 						containerPackResults.add(adapter.accept(result));
 	

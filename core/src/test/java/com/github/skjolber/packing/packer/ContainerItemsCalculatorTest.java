@@ -18,6 +18,9 @@ import com.github.skjolber.packing.api.Motion;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
 import com.github.skjolber.packing.cost.LinearBucketWeightContainerCostCalculator;
+import com.github.skjolber.packing.packer.strategy.ContainerItemsCostCalculator;
+import com.github.skjolber.packing.packer.strategy.EstimatingContainerItemsCostCalculator;
+import com.github.skjolber.packing.packer.strategy.ExactContainerItemsCostCalculator;
 
 public class ContainerItemsCalculatorTest {
 
@@ -100,13 +103,13 @@ public class ContainerItemsCalculatorTest {
 		List<BoxItem> boxes = new ArrayList<>();
 		boxes.add(boxItem);
 		
-		List<Integer> containers = calculator.getContainers(boxes);
+		List<Integer> containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 1);
 		assertEquals(containers.get(0), 0);
 		
 		calculator = create(items, 10);
-		containers = calculator.getContainers(boxes);
+		containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 1);
 		assertEquals(containers.get(0), 0);
@@ -137,14 +140,14 @@ public class ContainerItemsCalculatorTest {
 		List<BoxItem> boxes = new ArrayList<>();
 		boxes.add(boxItem);
 		
-		List<Integer> containers = calculator.getContainers(boxes);
+		List<Integer> containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 2);
 		assertEquals(containers.get(0), 0);
 		assertEquals(containers.get(1), 1);
 		
 		calculator = create(items, 10);
-		containers = calculator.getContainers(boxes);
+		containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 2);
 		assertEquals(containers.get(0), 0);
@@ -168,12 +171,12 @@ public class ContainerItemsCalculatorTest {
 		List<BoxItem> boxes = new ArrayList<>();
 		boxes.add(boxItem);
 		
-		List<Integer> containers = calculator.getContainers(boxes);
+		List<Integer> containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 0);
 
 		calculator = create(items, 10);
-		containers = calculator.getContainers(boxes);
+		containers = calculator.getContainers(boxes).getContainerIndexes();
 		assertEquals(containers.size(), 0);
 	}
 	
@@ -194,12 +197,12 @@ public class ContainerItemsCalculatorTest {
 		List<BoxItem> boxes = new ArrayList<>();
 		boxes.add(boxItem);
 		
-		List<Integer> containers = calculator.getContainers(boxes);
+		List<Integer> containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 0);
 
 		calculator = create(items, 10);
-		containers = calculator.getContainers(boxes);
+		containers = calculator.getContainers(boxes).getContainerIndexes();
 		assertEquals(containers.size(), 0);
 	}
 	
@@ -225,13 +228,13 @@ public class ContainerItemsCalculatorTest {
 		List<BoxItem> boxes = new ArrayList<>();
 		boxes.add(boxItem);
 		
-		List<Integer> containers = calculator.getContainers(boxes);
+		List<Integer> containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 1);
 		assertEquals(containers.get(0), 1);
 		
 		calculator = create(items, 10);
-		containers = calculator.getContainers(boxes);
+		containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 2);
 	}
@@ -259,13 +262,13 @@ public class ContainerItemsCalculatorTest {
 		List<BoxItem> boxes = new ArrayList<>();
 		boxes.add(boxItem);
 		
-		List<Integer> containers = calculator.getContainers(boxes);
+		List<Integer> containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 1);
 		assertEquals(containers.get(0), 1);
 		
 		calculator = create(items, 10);
-		containers = calculator.getContainers(boxes);
+		containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 2);
 		assertEquals(containers.get(0), 0);
@@ -287,7 +290,7 @@ public class ContainerItemsCalculatorTest {
 		products.add(new BoxItem(Box.newBuilder().withDescription("B").withSize(4, 2, 1).withRotate3D().withWeight(1).build(), 1));
 		products.add(new BoxItem(Box.newBuilder().withDescription("C").withSize(6, 2, 1).withRotate3D().withWeight(1).build(), 1));
 
-		List<Integer> indexes = calculator.getContainers(products);
+		List<Integer> indexes = calculator.getContainers(products).getContainerIndexes();
 		assertEquals(2, indexes.size());
 		
 		ControlledContainerItem first = calculator.getContainerItem(indexes.get(0));
@@ -300,7 +303,7 @@ public class ContainerItemsCalculatorTest {
 		
 		List<BoxItem> products2 = products.subList(0, 2);
 		
-		List<Integer> indexes2 = calculator.getContainers(products2);
+		List<Integer> indexes2 = calculator.getContainers(products2).getContainerIndexes();
 		assertEquals(0, indexes2.size());
 	}
 	
@@ -331,7 +334,7 @@ public class ContainerItemsCalculatorTest {
 		List<BoxItem> boxes = new ArrayList<>();
 		boxes.add(boxItem);
 		
-		List<Integer> containers = calculator.getContainers(boxes);
+		List<Integer> containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 2);
 		assertEquals(containers.get(0), 1);

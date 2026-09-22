@@ -129,10 +129,10 @@ public class ContainerItemsCalculator implements Cloneable {
 		boolean[][] fits = new boolean[boxes.size()][containerItems.size()];
 		
 		if(maxCount == 1) {
-			List<Integer> result = new ArrayList<>(containerItems.size());
+			List<ContainerItem> result = new ArrayList<>(containerItems.size());
 
 			for (int i = 0; i < containerItems.size(); i++) {
-				ContainerItem item = getContainerItem(i);
+				ControlledContainerItem item = getContainerItem(i);
 				if(!item.isAvailable()) {
 					continue;
 				}
@@ -151,7 +151,7 @@ public class ContainerItemsCalculator implements Cloneable {
 				if(!canLoadAll(fits, i)) {
 					continue;
 				}
-				result.add(i);
+				result.add(item);
 			}
 			return new ContainerItemsResult(result, fits, containerItems.size());
 		}
@@ -187,9 +187,9 @@ public class ContainerItemsCalculator implements Cloneable {
 			}
 		}
 
-		List<Integer> result = new ArrayList<>(containerItems.size());
+		List<ContainerItem> result = new ArrayList<>(containerItems.size());
 		for (int i = 0; i < containerItems.size(); i++) {
-			ContainerItem item = containerItems.get(i);
+			ControlledContainerItem item = containerItems.get(i);
 
 			if(!item.isAvailable()) {
 				continue;
@@ -229,7 +229,7 @@ public class ContainerItemsCalculator implements Cloneable {
 			if(!canLoadAtLeastOne(fits, i)) {
 				continue;
 			}
-			result.add(i);
+			result.add(item);
 		}
 
 		return new ContainerItemsResult(result, fits, containerItems.size());
@@ -281,12 +281,12 @@ public class ContainerItemsCalculator implements Cloneable {
 		boolean[][] fits = new boolean[groups.size()][containerItems.size()];
 
 		if(maxCount == 1) {
-			List<Integer> list = new ArrayList<>(containerItems.size());
+			List<ContainerItem> list = new ArrayList<>(containerItems.size());
 
 			// check if everything can fit in the same container
 			containers: 
 			for (int i = 0; i < containerItems.size(); i++) {
-				ContainerItem item = containerItems.get(i);
+				ControlledContainerItem item = containerItems.get(i);
 				if(!item.isAvailable()) {
 					continue;
 				}
@@ -303,7 +303,7 @@ public class ContainerItemsCalculator implements Cloneable {
 				if(!canLoadAll(fits, i)) {
 					continue containers;
 				}
-				list.add(i);
+				list.add(item);
 			}
 			return new ContainerItemsResult(list, fits, containerItems.size());
 		}
@@ -322,9 +322,9 @@ public class ContainerItemsCalculator implements Cloneable {
 			return new ContainerItemsResult(Collections.emptyList(), fits, containerItems.size());
 		}
 
-		List<Integer> list = new ArrayList<>(getContainerItemCount());
+		List<ContainerItem> list = new ArrayList<>(getContainerItemCount());
 		for (int i = 0; i < getContainerItemCount(); i++) {
-			ContainerItem item = getContainerItem(i);
+			ControlledContainerItem item = getContainerItem(i);
 				
 			if(!item.isAvailable()) {
 				continue;
@@ -364,7 +364,7 @@ public class ContainerItemsCalculator implements Cloneable {
 			if(!canLoadAtLeastOne(fits, i)) {
 				continue;
 			}
-			list.add(i);
+			list.add(item);
 		}
 
 		return new ContainerItemsResult(list, fits, containerItems.size());
@@ -604,11 +604,11 @@ public class ContainerItemsCalculator implements Cloneable {
 		return new Limit(weight, includedContainerIndexes, minLoadWeight);
 	}
 
-	protected boolean hasMaxVolumeCapacity(int maxCount, long target) {
+	public boolean hasMaxVolumeCapacity(int maxCount, long target) {
 		return hasMaxVolumeCapacity(maxCount, target, null);
 	}
 
-	protected boolean hasMaxWeightCapacity(int maxCount, long target) {
+	public boolean hasMaxWeightCapacity(int maxCount, long target) {
 		return hasMaxWeightCapacity(maxCount, target, null);
 	}
 

@@ -1,10 +1,11 @@
-package com.github.skjolber.packing.packer;
+package com.github.skjolber.packing.packer.strategy;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 
 /**
  * Cheap, safe lower bound based on total weight and volume. Each dimension is

@@ -73,7 +73,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 
 	@Override
 	public List<Integer> getContainers() {
-		return packagerContainerItems.getContainers(getRemainingBoxItems());
+		return packagerContainerItems.getContainers(getRemainingBoxItems()).getContainerIndexes();
 	}
 
 	@Override

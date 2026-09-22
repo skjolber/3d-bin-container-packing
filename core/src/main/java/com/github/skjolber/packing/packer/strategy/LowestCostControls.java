@@ -8,8 +8,6 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.ContainerItemsCostCalculator;
-import com.github.skjolber.packing.packer.EstimatingContainerItemsCostCalculator;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.strategy.BruteForceContainerStrategy.Controls;
 

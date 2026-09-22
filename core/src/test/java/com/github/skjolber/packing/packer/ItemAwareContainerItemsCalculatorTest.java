@@ -149,7 +149,7 @@ class ItemAwareContainerItemsCalculatorTest {
 		ContainerItemsResult boxes = calculator.getContainers(
 				List.of(new BoxItem(small), new BoxItem(large)));
 
-		assertThat(boxes).containsExactly(0, 1);
+		assertThat(boxes).extracting(ContainerItem::getIndex).containsExactly(0, 1);
 		assertThat(boxes.getContainerIndexes()).containsExactly(0, 1);
 		assertThat(boxes.getItemCount()).isEqualTo(2);
 		assertThat(boxes.getContainerItemCount()).isEqualTo(2);
@@ -166,7 +166,7 @@ class ItemAwareContainerItemsCalculatorTest {
 		BoxItemGroup pair = new BoxItemGroup("pair", List.of(new BoxItem(small, 2)));
 		ContainerItemsResult groups = calculator.getGroupContainers(List.of(pair));
 
-		assertThat(groups).containsExactly(1);
+		assertThat(groups).extracting(ContainerItem::getIndex).containsExactly(1);
 		assertThat(groups.hasContainer(0)).isTrue();
 		assertThat(groups.canLoad(0, 0)).isFalse();
 		assertThat(groups.canLoad(0, 1)).isTrue();

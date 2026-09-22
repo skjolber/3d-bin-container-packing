@@ -127,7 +127,7 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 
 	@Override
 	public List<Integer> getContainers() {
-		return packagerContainerItems.getContainers(remainingBoxItems);
+		return packagerContainerItems.getContainers(remainingBoxItems).getContainerIndexes();
 	}
 
 	@Override

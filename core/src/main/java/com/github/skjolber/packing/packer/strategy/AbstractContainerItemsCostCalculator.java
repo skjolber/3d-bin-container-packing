@@ -1,10 +1,12 @@
-package com.github.skjolber.packing.packer;
+package com.github.skjolber.packing.packer.strategy;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
+import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ControlledContainerItem;
 
 abstract class AbstractContainerItemsCostCalculator implements ContainerItemsCostCalculator {
 

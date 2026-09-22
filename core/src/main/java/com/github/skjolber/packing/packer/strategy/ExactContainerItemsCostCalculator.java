@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer;
+package com.github.skjolber.packing.packer.strategy;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -9,6 +9,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 
 /**
  * Finds the least expensive assignment of whole boxes or groups to available
