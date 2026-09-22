@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.strategy;
+package com.github.skjolber.packing.packer.strategy.cost;
 
 import java.util.Comparator;
 import java.util.List;

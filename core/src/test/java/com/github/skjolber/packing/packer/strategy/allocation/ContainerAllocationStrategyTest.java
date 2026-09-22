@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.strategy;
+package com.github.skjolber.packing.packer.strategy.allocation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,8 +21,10 @@ import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.packer.strategy.ContainerAllocationPlanner.Allocation;
-import com.github.skjolber.packing.packer.strategy.ContainerAllocationPlanner.Objective;
+import com.github.skjolber.packing.packer.strategy.ContainerResult;
+import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Allocation;
+import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Objective;
+import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerStrategy;
 
 class ContainerAllocationStrategyTest {
 

@@ -1,14 +1,27 @@
-package com.github.skjolber.packing.packer.strategy;
+package com.github.skjolber.packing.packer.strategy.bruteforce;
 
 import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.packer.PackagerAdapter;
+import com.github.skjolber.packing.packer.strategy.ContainerResult;
 
 /** Selects a complete packing using the fewest containers. */
 public final class FewestContainersControls implements BruteForceContainerStrategy.Controls {
 
 	private ContainerResult best;
+
+	private FewestContainersControls(ContainerResult best) {
+		this.best = best;
+	}
+
+	public FewestContainersControls() {
+	}
+
+	@Override
+	public FewestContainersControls clone() {
+		return new FewestContainersControls(best);
+	}
 
 	@Override
 	public boolean attempt(List<Container> containers, PackagerAdapter state,

@@ -27,13 +27,13 @@ import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.packer.strategy.BruteForceContainerStrategy;
+import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerStrategy;
 import com.github.skjolber.packing.packer.strategy.ContainerResult;
 import com.github.skjolber.packing.packer.strategy.ContainerStrategy;
-import com.github.skjolber.packing.packer.strategy.ContainerItemsCostCalculator;
-import com.github.skjolber.packing.packer.strategy.EstimatingContainerItemsCostCalculator;
-import com.github.skjolber.packing.packer.strategy.LowestCostContainersComparator;
-import com.github.skjolber.packing.packer.strategy.LowestCostControls;
+import com.github.skjolber.packing.packer.strategy.bruteforce.LowestCostControls;
+import com.github.skjolber.packing.packer.strategy.cost.ContainerItemsCostCalculator;
+import com.github.skjolber.packing.packer.strategy.cost.EstimatingContainerItemsCostCalculator;
+import com.github.skjolber.packing.packer.strategy.cost.LowestCostContainersComparator;
 
 class ContainerCostPackingTest {
 
@@ -625,6 +625,13 @@ class ContainerCostPackingTest {
 
 		private ComparisonControls(Comparator<List<Container>> comparator) {
 			this.comparator = comparator;
+		}
+
+		@Override
+		public ComparisonControls clone() {
+			ComparisonControls copy = new ComparisonControls(comparator);
+			copy.best = best;
+			return copy;
 		}
 
 		@Override

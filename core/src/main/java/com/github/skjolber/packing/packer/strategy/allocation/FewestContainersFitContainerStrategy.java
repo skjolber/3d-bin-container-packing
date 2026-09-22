@@ -1,6 +1,6 @@
-package com.github.skjolber.packing.packer.strategy;
+package com.github.skjolber.packing.packer.strategy.allocation;
 
-import com.github.skjolber.packing.packer.strategy.ContainerAllocationPlanner.Objective;
+import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Objective;
 
 /**
  * Selects containers from an item-to-container allocation using the fewest

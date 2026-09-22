@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.strategy;
+package com.github.skjolber.packing.packer.strategy.bruteforce;
 
 import java.util.List;
 import java.util.Objects;
@@ -9,7 +9,10 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.PackagerAdapter;
-import com.github.skjolber.packing.packer.strategy.BruteForceContainerStrategy.Controls;
+import com.github.skjolber.packing.packer.strategy.ContainerResult;
+import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerStrategy.Controls;
+import com.github.skjolber.packing.packer.strategy.cost.ContainerItemsCostCalculator;
+import com.github.skjolber.packing.packer.strategy.cost.EstimatingContainerItemsCostCalculator;
 
 /**
  * Selects the lowest-cost complete packing, breaking ties in favor of fewer
@@ -27,6 +30,16 @@ public final class LowestCostControls implements Controls {
 
 	public LowestCostControls(ContainerItemsCostCalculator costCalculator) {
 		this.costCalculator = Objects.requireNonNull(costCalculator);
+	}
+
+	private LowestCostControls(ContainerItemsCostCalculator costCalculator, ContainerResult best) {
+		this.costCalculator = costCalculator;
+		this.best = best;
+	}
+
+	@Override
+	public LowestCostControls clone() {
+		return new LowestCostControls(costCalculator, best);
 	}
 
 	@Override

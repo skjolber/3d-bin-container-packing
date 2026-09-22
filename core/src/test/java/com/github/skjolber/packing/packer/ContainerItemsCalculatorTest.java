@@ -18,9 +18,9 @@ import com.github.skjolber.packing.api.Motion;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
 import com.github.skjolber.packing.cost.LinearBucketWeightContainerCostCalculator;
-import com.github.skjolber.packing.packer.strategy.ContainerItemsCostCalculator;
-import com.github.skjolber.packing.packer.strategy.EstimatingContainerItemsCostCalculator;
-import com.github.skjolber.packing.packer.strategy.ExactContainerItemsCostCalculator;
+import com.github.skjolber.packing.packer.strategy.cost.ContainerItemsCostCalculator;
+import com.github.skjolber.packing.packer.strategy.cost.EstimatingContainerItemsCostCalculator;
+import com.github.skjolber.packing.packer.strategy.cost.ExactContainerItemsCostCalculator;
 
 public class ContainerItemsCalculatorTest {
 

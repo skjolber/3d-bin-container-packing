@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.strategy;
+package com.github.skjolber.packing.packer.strategy.allocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,8 +8,10 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.strategy.ContainerAllocationPlanner.Allocation;
-import com.github.skjolber.packing.packer.strategy.ContainerAllocationPlanner.Objective;
+import com.github.skjolber.packing.packer.strategy.ContainerResult;
+import com.github.skjolber.packing.packer.strategy.ContainerStrategy;
+import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Allocation;
+import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Objective;
 
 /**
  * Executes a container allocation plan one container at a time.

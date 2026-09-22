@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.strategy;
+package com.github.skjolber.packing.packer.strategy.allocation;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -19,7 +19,7 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
  * inventory and the remaining container limit. It deliberately does not claim
  * that the assigned items have a feasible 3D placement.
  */
-final class ContainerAllocationPlanner {
+public final class ContainerAllocationPlanner {
 
 	enum Objective {
 		FEASIBLE,
@@ -188,7 +188,7 @@ final class ContainerAllocationPlanner {
 	 * keeps the check usable by custom adapters while production adapters receive
 	 * the full allocation test.
 	 */
-	static boolean canAllocate(PackagerAdapter adapter, PackagerInterruptSupplier interrupt)
+	public static boolean canAllocate(PackagerAdapter adapter, PackagerInterruptSupplier interrupt)
 			throws PackagerInterruptedException {
 		ContainerItemsCalculator calculator = adapter.getContainerItemsCalculator();
 		int maxCount = adapter.getMaxContainerCount();

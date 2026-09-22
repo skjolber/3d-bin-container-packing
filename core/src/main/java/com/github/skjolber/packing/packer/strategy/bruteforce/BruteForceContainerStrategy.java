@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.strategy;
+package com.github.skjolber.packing.packer.strategy.bruteforce;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -12,6 +12,9 @@ import com.github.skjolber.packing.iterator.ContainerItemPermutationIterator;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.packer.strategy.ContainerResult;
+import com.github.skjolber.packing.packer.strategy.ContainerStrategy;
+import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner;
 
 /**
  * Explores every available sequence of container types up to the container
@@ -24,6 +27,12 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
 public class BruteForceContainerStrategy implements ContainerStrategy {
 
 	public interface Controls {
+		/**
+		 * Create an independent snapshot for a parallel search branch. Mutable
+		 * result state must not be shared between branches.
+		 */
+		Controls clone();
+
 		/**
 		 * Check whether to attempt packaging the selected container.
 		 *

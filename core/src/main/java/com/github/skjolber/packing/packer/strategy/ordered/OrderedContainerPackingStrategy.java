@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.strategy;
+package com.github.skjolber.packing.packer.strategy.ordered;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -13,6 +13,9 @@ import com.github.skjolber.packing.iterator.BinarySearchIterator;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.packer.strategy.ContainerResult;
+import com.github.skjolber.packing.packer.strategy.ContainerStrategy;
+import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner;
 
 /** Packs containers in their preference order. */
 public class OrderedContainerPackingStrategy implements ContainerStrategy {
@@ -46,7 +49,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 	 * Create a variant for callers which have already proven that remaining
 	 * inventory can allocate every remaining unit.
 	 */
-	OrderedContainerPackingStrategy withoutAllocationFeasibilityCheck() {
+	public OrderedContainerPackingStrategy withoutAllocationFeasibilityCheck() {
 		return new OrderedContainerPackingStrategy(intermediatePackagerResultComparator, emptyResultSupplier, singleContainerPacker, false);
 	}
 

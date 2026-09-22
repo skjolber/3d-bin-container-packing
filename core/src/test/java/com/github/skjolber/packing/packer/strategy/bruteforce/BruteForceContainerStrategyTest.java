@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.strategy;
+package com.github.skjolber.packing.packer.strategy.bruteforce;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,6 +21,7 @@ import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.packer.strategy.ContainerResult;
 
 class BruteForceContainerStrategyTest {
 
@@ -256,6 +257,13 @@ class BruteForceContainerStrategyTest {
 		private TestControls(Comparator<List<Container>> comparator, AttemptFilter attemptFilter) {
 			this.comparator = comparator;
 			this.attemptFilter = attemptFilter;
+		}
+
+		@Override
+		public TestControls clone() {
+			TestControls copy = new TestControls(comparator, attemptFilter);
+			copy.best = best;
+			return copy;
 		}
 
 		@Override
