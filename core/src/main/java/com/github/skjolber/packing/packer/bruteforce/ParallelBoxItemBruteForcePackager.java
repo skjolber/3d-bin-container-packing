@@ -455,7 +455,21 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				}
 				return container;
 			} else {
-				throw new IllegalStateException();
+				Stack stack = result.getStack();
+				Container container = packagerContainerItems.toContainer(resolveContainerItem(result), stack);
+				List<Integer> permutations = getLocalIndexes(stack);
+
+				for (ParallelBoxItemPermutationRotationIteratorList iterator : parallelIterators) {
+					iterator.removePermutations(permutations);
+				}
+				for (DefaultBoxItemPermutationRotationIterator iterator : iterators) {
+					iterator.removePermutations(permutations);
+				}
+				removeInventory(permutations);
+				for (RunnableAdapter runner : runnables) {
+					runner.removeFirstPlacements(permutations.size());
+				}
+				return container;
 			}
 		}
 
@@ -729,7 +743,22 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				}
 				return container;
 			} else {
-				throw new IllegalStateException();
+				Stack stack = result.getStack();
+				AcceptedGroups accepted = getAcceptedGroups(stack);
+				Container container = packagerContainerItems.toContainer(resolveContainerItem(result), stack);
+
+				for (ParallelBoxItemGroupPermutationRotationIteratorList iterator : parallelIterators) {
+					iterator.removeGroups(accepted.groupIndexes());
+				}
+				for (DefaultBoxItemGroupPermutationRotationIterator iterator : iterators) {
+					iterator.removeGroups(accepted.groupIndexes());
+				}
+				boxItemGroups = boxItemGroups.subList(accepted.groupIndexes().size(), boxItemGroups.size());
+				removeInventory(accepted.localIndexes());
+				for (RunnableAdapter runner : runnables) {
+					runner.removeFirstPlacements(accepted.localIndexes().size());
+				}
+				return container;
 			}
 		}
 

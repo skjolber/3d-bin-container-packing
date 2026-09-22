@@ -5,6 +5,8 @@ import java.util.List;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.BoxItemsContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
@@ -21,7 +23,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 
 	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers,
 			int containerCount) {
-		this(boxItems, new BoxItemsContainerItemsCalculator(containers, containerCount, boxItems));
+		this(initializeGlobalIndexes(boxItems), new BoxItemsContainerItemsCalculator(containers, containerCount, boxItems));
 	}
 
 	protected AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems,
@@ -69,6 +71,28 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 				boxItems[remove] = null;
 			}
 		}
+	}
+
+	/** Translate placements from another adapter to this adapter's local iterator indexes. */
+	protected List<Integer> getLocalIndexes(Stack stack) {
+		List<Integer> indexes = new ArrayList<>(stack.size());
+		for(Placement placement : stack.getPlacements()) {
+			BoxItem source = (BoxItem) placement.getStackValue().getBox().getBoxItem();
+			int globalIndex = source.getGlobalIndex();
+			int localIndex = getLocalIndex(globalIndex);
+			indexes.add(localIndex);
+		}
+		return indexes;
+	}
+
+	protected int getLocalIndex(int globalIndex) {
+		for(int i = 0; i < boxItems.length; i++) {
+			BoxItem boxItem = boxItems[i];
+			if(boxItem != null && boxItem.getGlobalIndex() == globalIndex) {
+				return i;
+			}
+		}
+		throw new IllegalArgumentException("Result contains unknown box item global index " + globalIndex);
 	}
 
 	@Override

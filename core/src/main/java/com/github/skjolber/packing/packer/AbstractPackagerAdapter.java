@@ -58,7 +58,7 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 	}
 
 	/** Assign stable identities once, before any iterator starts changing local indexes. */
-	protected static List<BoxItem> initializeGlobalIndexes(List<BoxItem> items) {
+	public static List<BoxItem> initializeGlobalIndexes(List<BoxItem> items) {
 		int next = 0;
 		for(BoxItem item : items) {
 			if(item.getGlobalIndex() != -1) {
@@ -73,7 +73,7 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 		return items;
 	}
 
-	protected static List<BoxItemGroup> initializeGlobalIndexesForGroups(List<BoxItemGroup> groups) {
+	public static List<BoxItemGroup> initializeGlobalIndexesForGroups(List<BoxItemGroup> groups) {
 		List<BoxItem> items = new ArrayList<>();
 		for(BoxItemGroup group : groups) {
 			items.addAll(group.getItems());
@@ -93,6 +93,22 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 	@Override
 	public ContainerItemsCalculator getContainerItemsCalculator() {
 		return packagerContainerItems;
+	}
+
+	/** Resolve a result's container selection against this adapter's inventory. */
+	protected ControlledContainerItem resolveContainerItem(IntermediatePackagerResult result) {
+		if(result == null || result.getContainerItem() == null) {
+			throw new IllegalArgumentException("Missing container item");
+		}
+		int containerIndex = result.getContainerItem().getIndex();
+		if(containerIndex < 0 || containerIndex >= packagerContainerItems.getContainerItemCount()) {
+			throw new IllegalArgumentException("Unknown container item index " + containerIndex);
+		}
+		ControlledContainerItem containerItem = packagerContainerItems.getContainerItem(containerIndex);
+		if(!containerItem.isAvailable()) {
+			throw new IllegalStateException("Container item index " + containerIndex + " is no longer available");
+		}
+		return containerItem;
 	}
 
 	@Override

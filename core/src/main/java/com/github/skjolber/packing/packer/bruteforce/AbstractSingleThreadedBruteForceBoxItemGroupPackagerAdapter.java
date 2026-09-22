@@ -133,7 +133,17 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 				return packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
 			}
 		} else {
-			throw new IllegalStateException(); // TODO
+			Stack stack = result.getStack();
+			AcceptedGroups accepted = getAcceptedGroups(stack);
+			Container container = packagerContainerItems.toContainer(resolveContainerItem(result), stack);
+
+			removeInventory(accepted.localIndexes());
+			for (BoxItemGroupPermutationRotationIterator iterator : containerIterators) {
+				iterator.removeGroups(accepted.groupIndexes());
+			}
+			boxItemGroups = boxItemGroups.subList(accepted.groupIndexes().size(), boxItemGroups.size());
+			stackPlacementCount = BruteForcePackager.removeFirstPlacements(stackPlacements, accepted.localIndexes().size(), stackPlacementCount);
+			return container;
 		}
 	}
 

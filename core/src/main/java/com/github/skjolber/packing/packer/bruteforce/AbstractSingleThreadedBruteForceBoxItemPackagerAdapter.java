@@ -98,7 +98,16 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 	
 			return container;
 		} else {
-			throw new IllegalStateException();
+			Stack stack = result.getStack();
+			Container container = packagerContainerItems.toContainer(resolveContainerItem(result), stack);
+			List<Integer> permutations = getLocalIndexes(stack);
+
+			removeInventory(permutations);
+			for (BoxItemPermutationRotationIterator iterator : containerIterators) {
+				iterator.removePermutations(permutations);
+			}
+			stackPlacementCount = BruteForcePackager.removeFirstPlacements(stackPlacements, permutations.size(), stackPlacementCount);
+			return container;
 		}
 	}
 

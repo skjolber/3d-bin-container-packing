@@ -23,6 +23,7 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackager;
+import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
@@ -102,8 +103,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			try {
 			PackagerAdapter adapter;
 			if(items != null && !items.isEmpty()) {
+					AbstractPackagerAdapter.initializeGlobalIndexes(items);
 					adapter = createBoxItemAdapter(items, containers, maxContainerCount, interrupt);
 			} else {
+					AbstractPackagerAdapter.initializeGlobalIndexesForGroups(itemGroups);
 					adapter = createBoxItemGroupAdapter(itemGroups, containers, maxContainerCount, interrupt);
 				}
 				ContainerResult packList = packAdapter(interrupt, adapter);

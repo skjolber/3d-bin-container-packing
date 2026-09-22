@@ -17,6 +17,10 @@ public interface PackagerAdapter {
 	
 	IntermediatePackagerResult peek(int containerIndex, IntermediatePackagerResult existing);
 
+	/**
+	 * Accept a result produced during the same packaging operation. The result
+	 * may originate from a different packager adapter implementation.
+	 */
 	Container accept(IntermediatePackagerResult result);
 
 	List<Integer> getContainers();

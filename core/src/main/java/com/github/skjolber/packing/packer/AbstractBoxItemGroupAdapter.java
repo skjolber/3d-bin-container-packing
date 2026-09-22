@@ -107,13 +107,12 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 
 	@Override
 	public Container accept(IntermediatePackagerResult result) {
-		Container container = packagerContainerItems.toContainer(result.getContainerItem(), result.getStack());
+		Container container = packagerContainerItems.toContainer(resolveContainerItem(result), result.getStack());
 
 		Stack stack = container.getStack();
 
 		for (Placement stackPlacement : stack.getPlacements()) {
-			BoxItem boxItem = (BoxItem) stackPlacement.getStackValue().getBox().getBoxItem();
-			
+			BoxItem boxItem = findRemainingBoxItem(((BoxItem) stackPlacement.getStackValue().getBox().getBoxItem()).getGlobalIndex());
 			boxItem.decrementResetCount();
 			boxItem.reset();
 		}
@@ -127,6 +126,17 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 		this.remainingBoxItemGroups = remainingBoxItems;
 
 		return container;
+	}
+
+	private BoxItem findRemainingBoxItem(int globalIndex) {
+		for(BoxItemGroup group : remainingBoxItemGroups) {
+			for(BoxItem boxItem : group.getItems()) {
+				if(boxItem.getGlobalIndex() == globalIndex) {
+					return boxItem;
+				}
+			}
+		}
+		throw new IllegalArgumentException("Result contains unknown box item global index " + globalIndex);
 	}
 
 	@Override
