@@ -61,7 +61,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 						List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
 						Box boxClone = new Box(box, boundRotations);
 						
-						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset));
+						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset, item.getGlobalIndex()));
 						
 						offset++;
 					}
@@ -80,7 +80,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 				groupIndex[loadableItemGroup.getIndex()] = loadableItemGroup;
 				for (int k = 0; k < loadableItemGroup.size(); k++) {
 					BoxItem item = loadableItemGroup.get(k);
-					boxIndex[item.getIndex()] = item;
+					boxIndex[item.getLocalIndex()] = item;
 				}
 			}
 			
@@ -111,7 +111,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 				
 				for(int l = 0; l < groupsMatrixClone[k].size(); l++) {
 					BoxItem item =  groupsMatrixClone[k].get(l);
-					boxMatrixClone[item.getIndex()] = item;
+					boxMatrixClone[item.getLocalIndex()] = item;
 				}
 			}
 			
@@ -140,7 +140,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 			if(group != null) {
 				List<BoxItem> items = new ArrayList<>(group.size());
 				for(BoxItem item : group.getItems()) {
-					items.add(boxMatrix[item.getIndex()]);
+					items.add(boxMatrix[item.getLocalIndex()]);
 				}
 				groupsMatrix[i] = new BoxItemGroup(group.getId(), items, group.getIndex());
 			}
@@ -214,7 +214,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 		        for(int k = 0; k < group.size(); k++) {
 		        	BoxItem item = (BoxItem)group.get(k);
 		        	
-		        	int index = item.getIndex();
+					int index = item.getLocalIndex();
 		        	
 		            if(frequencies[index] == 0) {
 		                continue;
@@ -441,7 +441,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 			BoxItemGroup boxItemGroup = groupsMatrix[i];
 			for (BoxItem boxItem : boxItemGroup.getItems()) {
 				count += boxItem.getCount();
-				boxMatrix[boxItem.getIndex()] = null;
+				boxMatrix[boxItem.getLocalIndex()] = null;
 			}
 			groupsMatrix[i] = null;
 		}

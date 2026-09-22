@@ -105,7 +105,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 
 			BoxStackValue value = list.get(i);
 			
-			if(value.getBox().getBoxItem().getIndex() != permutations[i]) {
+			if(value.getBox().getBoxItem().getLocalIndex() != permutations[i]) {
 				throw new RuntimeException();
 			}
 			

@@ -70,8 +70,8 @@ class ItemAwareContainerItemsCalculatorTest {
 		assertThat(calculator.canLoad(0, 0)).isTrue();
 		assertThat(calculator.canLoad(1, 0)).isFalse();
 		assertThat(calculator.canLoad(1, 1)).isTrue();
-		smallItems.setIndex(0);
-		largeItem.setIndex(1);
+		smallItems.setLocalIndex(0);
+		largeItem.setLocalIndex(1);
 		assertThat(calculator.isFeasible(List.of(smallItems, largeItem))).isFalse();
 		assertThat(calculator.isFeasible(List.of(smallItems))).isTrue();
 

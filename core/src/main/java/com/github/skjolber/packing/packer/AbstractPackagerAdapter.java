@@ -52,9 +52,34 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 	protected static List<BoxItem> copyBoxItems(List<BoxItem> items) {
 		List<BoxItem> copies = new ArrayList<>(items.size());
 		for(BoxItem item : items) {
-			copies.add(new BoxItem(item.getBox().clone(), item.getCount(), item.getIndex()));
+			copies.add(new BoxItem(item.getBox().clone(), item.getCount(), item.getLocalIndex(), item.getGlobalIndex()));
 		}
 		return copies;
+	}
+
+	/** Assign stable identities once, before any iterator starts changing local indexes. */
+	protected static List<BoxItem> initializeGlobalIndexes(List<BoxItem> items) {
+		int next = 0;
+		for(BoxItem item : items) {
+			if(item.getGlobalIndex() != -1) {
+				next = Math.max(next, item.getGlobalIndex() + 1);
+			}
+		}
+		for(BoxItem item : items) {
+			if(item.getGlobalIndex() == -1) {
+				item.setGlobalIndex(next++);
+			}
+		}
+		return items;
+	}
+
+	protected static List<BoxItemGroup> initializeGlobalIndexesForGroups(List<BoxItemGroup> groups) {
+		List<BoxItem> items = new ArrayList<>();
+		for(BoxItemGroup group : groups) {
+			items.addAll(group.getItems());
+		}
+		initializeGlobalIndexes(items);
+		return groups;
 	}
 
 	protected static List<BoxItemGroup> copyBoxItemGroups(List<BoxItemGroup> groups) {

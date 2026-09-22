@@ -16,7 +16,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 		
 		// update indexes
 		for(int i = 0; i < values.size(); i++) {
-			values.get(i).setIndex(i);
+			values.get(i).setLocalIndex(i);
 		}
 	}
 	
@@ -41,7 +41,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 
 			// update indexes
 			for(int i = index; i < values.size(); i++) {
-				values.get(i).setIndex(i);
+				values.get(i).setLocalIndex(i);
 			}
 		}
 		return !values.isEmpty();
@@ -53,7 +53,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 		
 		// update indexes
 		for(int i = index; i < values.size(); i++) {
-			values.get(i).setIndex(i);
+			values.get(i).setLocalIndex(i);
 		}
 		
 		return remove;
@@ -84,7 +84,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 		if(firstEmptyIndex != -1) {
 			// update indexes
 			for(int i = firstEmptyIndex; i < values.size(); i++) {
-				values.get(i).setIndex(i);
+				values.get(i).setLocalIndex(i);
 			}
 		}
 	}

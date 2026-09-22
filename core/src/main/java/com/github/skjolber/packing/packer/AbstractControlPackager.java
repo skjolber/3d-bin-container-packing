@@ -123,7 +123,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			remainingLoadWeight -= placement.getBoxItem().getBox().getWeight();
 			remainingLoadVolume -= placement.getBoxItem().getBox().getVolume();
 			
-			boxItemSource.decrement(placement.getBoxItem().getIndex(), 1);
+			boxItemSource.decrement(placement.getBoxItem().getLocalIndex(), 1);
 
 			manifestControls.accepted(placement.getBoxItem());
 			pointControls.accepted(placement.getBoxItem());
@@ -340,7 +340,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				remainingLoadVolume -= placement.getBoxItem().getBox().getVolume();
 				
 				// decrement box item without deleting the whole group
-				packagerBoxItems.decrement(placement.getBoxItem().getIndex());
+				packagerBoxItems.decrement(placement.getBoxItem().getLocalIndex());
 
 				boxItemControls.accepted(placement.getBoxItem());
 				pointControls.accepted(placement.getBoxItem());

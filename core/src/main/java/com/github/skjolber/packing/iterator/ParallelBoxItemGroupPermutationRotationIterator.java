@@ -38,7 +38,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 						List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
 						Box boxClone = new Box(box, boundRotations);
 						
-						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset));
+						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset, item.getGlobalIndex()));
 						
 						offset++;
 					}
@@ -57,7 +57,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 				groupIndex[loadableItemGroup.getIndex()] = loadableItemGroup;
 				for (int k = 0; k < loadableItemGroup.size(); k++) {
 					BoxItem item = loadableItemGroup.get(k);
-					boxIndex[item.getIndex()] = item;
+					boxIndex[item.getLocalIndex()] = item;
 				}
 			}
 			
@@ -212,7 +212,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 				for (BoxItem loadableItem : loadableItemGroup.getItems()) {
 					BoxItem indexedStackableItem = (BoxItem)loadableItem;
 					for(int k = 0; k < indexedStackableItem.getCount(); k++) {
-						permutations[i] = indexedStackableItem.getIndex();
+						permutations[i] = indexedStackableItem.getLocalIndex();
 								
 						i++;
 					}
@@ -362,7 +362,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 			for (BoxItem loadableItem : loadableItemGroup.getItems()) {
 				BoxItem indexedStackableItem = (BoxItem)loadableItem;
 				for(int k = 0; k < indexedStackableItem.getCount(); k++) {
-					permutations[i] = indexedStackableItem.getIndex();
+					permutations[i] = indexedStackableItem.getLocalIndex();
 							
 					i++;
 				}

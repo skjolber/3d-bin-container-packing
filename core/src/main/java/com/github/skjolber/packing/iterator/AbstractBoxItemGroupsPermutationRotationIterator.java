@@ -27,7 +27,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 			if(group != null) {
 				List<BoxItem> items = new ArrayList<>(group.size());
 				for(BoxItem item : group.getItems()) {
-					items.add(boxes[item.getIndex()]);
+					items.add(boxes[item.getLocalIndex()]);
 				}
 				groups[i] = new BoxItemGroup(group.getId(), items, group.getIndex());
 			}
@@ -132,7 +132,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 			BoxItemGroup boxItemGroup = groupsMatrix[i];
 			for (BoxItem boxItem : boxItemGroup.getItems()) {
 				count += boxItem.getCount();
-				stackableItems[boxItem.getIndex()] = null;
+				stackableItems[boxItem.getLocalIndex()] = null;
 			}
 			groupsMatrix[i] = null;
 		}

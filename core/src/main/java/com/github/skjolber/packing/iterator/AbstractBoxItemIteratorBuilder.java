@@ -78,7 +78,7 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 			}
 			Box clonedBox = new Box(box, cloned);
 
-			results[i] = new BoxItem(clonedBox, item.getCount(), i);
+			results[i] = new BoxItem(clonedBox, item.getCount(), i, item.getGlobalIndex());
 		}
 		return results;
 	}

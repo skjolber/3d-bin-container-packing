@@ -25,7 +25,7 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	protected final boolean maxLoadIdenticalBoxCount;
 
 	public AbstractBoxItemAdapter(List<BoxItem> boxItems, Order order, List<ControlledContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
-		super(boxItems, containers, containerCount);
+		super(initializeGlobalIndexes(boxItems), containers, containerCount);
 		this.initialBoxItems = copyBoxItems(boxItems);
 		
 		this.order = order;
@@ -33,7 +33,7 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 		List<BoxItem> boxClones = new ArrayList<>(boxItems.size());
 		for (BoxItem item : boxItems) {
 			BoxItem clone = item.clone();
-			clone.setIndex(boxClones.size());
+			clone.setLocalIndex(boxClones.size());
 			boxClones.add(clone);
 		}
 		
@@ -77,7 +77,7 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	protected void resetState() {
 		remainingBoxItems = copyBoxItems(initialBoxItems);
 		for(int i = 0; i < remainingBoxItems.size(); i++) {
-			remainingBoxItems.get(i).setIndex(i);
+			remainingBoxItems.get(i).setLocalIndex(i);
 		}
 	}
 

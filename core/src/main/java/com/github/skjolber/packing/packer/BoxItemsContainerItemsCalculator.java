@@ -112,7 +112,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 			if(boxItem.isEmpty()) {
 				continue;
 			}
-			int boxItemIndex = boxItem.getIndex();
+			int boxItemIndex = boxItem.getLocalIndex();
 			if(boxItemIndex < 0 || boxItemIndex >= fits.length) {
 				return super.isFeasible(boxItems, maxCount, excluded);
 			}
@@ -139,7 +139,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 
 	@Override
 	public boolean canLoad(BoxItem boxItem, int containerItemIndex) {
-		int boxItemIndex = boxItem.getIndex();
+		int boxItemIndex = boxItem.getLocalIndex();
 		if(boxItemIndex >= 0 && boxItemIndex < fits.length) {
 			return fits[boxItemIndex][containerItemIndex];
 		}

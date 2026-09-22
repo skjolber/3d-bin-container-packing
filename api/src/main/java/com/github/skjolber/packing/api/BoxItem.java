@@ -14,7 +14,10 @@ public class BoxItem implements Serializable {
 
 	protected int count;
 	protected final Box box;
-	protected int index = -1;
+	/** Dense, mutable position used by iterator implementations. */
+	protected int localIndex = -1;
+	/** Immutable identity of this box item within one packaging operation. */
+	protected int globalIndex = -1;
 
 	protected int resetCount;
 	protected BoxItemGroup group;
@@ -32,11 +35,16 @@ public class BoxItem implements Serializable {
 		box.setBoxItem(this);
 	}
 
-	public BoxItem(Box box, int count, int index) {
+	public BoxItem(Box box, int count, int localIndex) {
+		this(box, count, localIndex, -1);
+	}
+
+	public BoxItem(Box box, int count, int localIndex, int globalIndex) {
 		super();
 		this.box = box;
 		this.count = count;
-		this.index = index;
+		this.localIndex = localIndex;
+		this.globalIndex = globalIndex;
 
 		this.resetCount = count;
 		box.setBoxItem(this);
@@ -52,7 +60,7 @@ public class BoxItem implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("%dx%s #%d", count, box, index);
+		return String.format("%dx%s #%d", count, box, localIndex);
 	}
 
 	public boolean decrement() {
@@ -70,15 +78,31 @@ public class BoxItem implements Serializable {
 	}
 
 	public BoxItem clone() {
-		return new BoxItem(box, count, index);
+		return new BoxItem(box, count, localIndex, globalIndex);
 	}
 
-	public void setIndex(int index) {
-		this.index = index;
+	/**
+	 * Set the dense index used by the current iterator or {@code BoxItemSource}.
+	 * This is not an operation-wide identity and may change after filtering.
+	 */
+	public void setLocalIndex(int localIndex) {
+		this.localIndex = localIndex;
 	}
 
-	public int getIndex() {
-		return index;
+	/**
+	 * Return the dense index used by the current iterator or {@code BoxItemSource}.
+	 * This is not an operation-wide identity and may change after filtering.
+	 */
+	public int getLocalIndex() {
+		return localIndex;
+	}
+
+	public int getGlobalIndex() {
+		return globalIndex;
+	}
+
+	public void setGlobalIndex(int globalIndex) {
+		this.globalIndex = globalIndex;
 	}
 
 	public long getVolume() {
