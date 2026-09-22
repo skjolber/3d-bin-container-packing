@@ -18,6 +18,9 @@ with
     
 Bugs, feature suggestions and help requests can be filed with the [issue-tracker].
 
+See [FEATURES.md](FEATURES.md) for a capability overview, including known
+limitations and non-goals.
+
 ## Build from source
 
 Use JDK 25 and the included Maven wrapper (Maven 3.9.12). Library sources target Java 17.
@@ -172,7 +175,9 @@ Packager packager = BruteForcePackager
     .build();
 ```
 
-See also the `ParallelBoxItemBruteForcePackager` and `FastBruteForcePackager` packagers.
+See also the `ParallelBoxItemBruteForcePackager` and `FastBruteForcePackager`
+packagers. A `BruteForcePointIteratorFilter` can rank fitting points and use a
+different point limit at each placement step.
 
 Using a deadline is recommended whenever brute-forcing in a real-time application.
 
