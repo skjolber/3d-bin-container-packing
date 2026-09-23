@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -19,10 +20,14 @@ import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
 import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackager;
+import com.github.skjolber.packing.packer.AbstractPackagerAdapterBuilder;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
+import com.github.skjolber.packing.packer.PackagerAdapter;
+import com.github.skjolber.packing.packer.PackagerAdapterBuilder;
+import com.github.skjolber.packing.packer.PackagerAdapterBuilderFactory;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /**
@@ -36,12 +41,25 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
  * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
  */
 
-public abstract class AbstractBruteForcePackager extends AbstractPackager<AbstractBruteForcePackager.BruteForcePackagerResultBuilder> {
+public abstract class AbstractBruteForcePackager extends AbstractPackager<AbstractBruteForcePackager.BruteForcePackagerResultBuilder> implements PackagerAdapterBuilderFactory {
 
 	private static final Logger LOGGER = Logger.getLogger(AbstractBruteForcePackager.class.getName());
 	
 	public AbstractBruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
 		super(comparator);
+	}
+	
+	public class BruteForcePackagerAdapterBuilder extends AbstractPackagerAdapterBuilder {
+
+		@Override
+		public PackagerAdapter build() {
+			if(items != null && !items.isEmpty()) {
+				return createBoxItemAdapter(items, calcultor, interrupt);
+			} else {
+				return createBoxItemGroupAdapter(itemGroups, calcultor, interrupt);
+			}
+		}
+		
 	}
 	
 	public class BruteForcePackagerResultBuilder extends AbstractPackagerResultBuilder<BruteForcePackagerResultBuilder> {
@@ -86,12 +104,14 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
 				
-				AbstractBruteForceBoxItemPackagerAdapter adapter;
-				if(items != null && !items.isEmpty()) {
-					adapter = createBoxItemAdapter(items, new ContainerItemsCalculator(containers), interrupt);
-				} else {
-					adapter = createBoxItemGroupAdapter(itemGroups, new ContainerItemsCalculator(containers), interrupt);
-				}
+				PackagerAdapter adapter = newPackagerAdapterBuilder()
+					.withBoxItemGroups(itemGroups)
+					.withContainerItemsCalculator(new ContainerItemsCalculator(containers))
+					.withBoxItems(items)
+					.withOrder(order)
+					.withInterrupt(interrupt)
+					.build();
+				
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 								
 				long duration = System.currentTimeMillis() - start;
@@ -113,10 +133,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		return new BruteForcePackagerResultBuilder().withPackager(this);
 	}
 
-	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, ContainerItemsCalculator defaultContainerItemsCalculator,
+	public abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, ContainerItemsCalculator defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt);
 
-	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, ContainerItemsCalculator defaultContainerItemsCalculator,
+	public abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, ContainerItemsCalculator defaultContainerItemsCalculator,
 			PackagerInterruptSupplier interrupt);
 
 	static List<Placement> getPlacements(int size) {
@@ -344,5 +364,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	@Override
 	protected BruteForceIntermediatePackagerResult createEmptyIntermediatePackagerResult() {
 		return BruteForceIntermediatePackagerResult.EMPTY;
+	}
+	
+	@Override
+	public PackagerAdapterBuilder newPackagerAdapterBuilder() {
+		return null;
 	}
 }
