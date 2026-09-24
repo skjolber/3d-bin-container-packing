@@ -19,24 +19,17 @@ public class BruteForceIntermediatePackagerResultComparator extends DefaultInter
 			BruteForceIntermediatePackagerResult br1 = (BruteForceIntermediatePackagerResult)r1;
 			BruteForceIntermediatePackagerResult br2 = (BruteForceIntermediatePackagerResult)r2;
 			
-			if(br1.isDirty()) {
-				br1.calculateWeightAndVolume();
-			}
-			if(br2.isDirty()) {
-				br2.calculateWeightAndVolume();
-			}
-			
 			// load volume - more is better
-			if(br1.getVolume() > br2.getVolume()) {
+			if(br1.getLoadVolume() > br2.getLoadVolume()) {
 				return ARGUMENT_1_IS_BETTER;
-			} else if(br1.getVolume() < br2.getVolume()) {
+			} else if(br1.getLoadVolume() < br2.getLoadVolume()) {
 				return ARGUMENT_2_IS_BETTER;
 			}
 
 			// load weight - more is better
-			if(br1.getWeight() > br2.getWeight()) {
+			if(br1.getLoadWeight() > br2.getLoadWeight()) {
 				return ARGUMENT_1_IS_BETTER;
-			} else if(br1.getWeight() < br2.getWeight()) {
+			} else if(br1.getLoadWeight() < br2.getLoadWeight()) {
 				return ARGUMENT_2_IS_BETTER;
 			}
 

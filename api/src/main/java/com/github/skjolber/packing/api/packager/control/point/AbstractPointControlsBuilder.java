@@ -4,6 +4,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilder;
 import com.github.skjolber.packing.api.point.PointSource;
 
 /**
@@ -20,7 +21,20 @@ public abstract class AbstractPointControlsBuilder<B extends AbstractPointContro
 	protected BoxItemSource items;
 	protected PointSource points;
 	protected BoxItemGroupSource groups;
+	
+	protected boolean maxLoadWeight;
+	protected boolean maxLoadPressure;
+	protected boolean maxLoadBoxCount;
+	protected boolean loadIdenticalBox;
+	
+	protected boolean fullSupport;
 
+	@Override
+	public PointControlsBuilder withStability(boolean fullSupport) {
+		this.fullSupport = fullSupport;
+		return (B)this;
+	}
+	
 	public B withBoxItemGroups(BoxItemGroupSource groups) {
 		this.groups = groups;
 		return (B)this;
@@ -44,6 +58,22 @@ public abstract class AbstractPointControlsBuilder<B extends AbstractPointContro
 	public B withStack(Stack stack) {
 		this.stack = stack;
 		return (B)this;
+	}
+	
+	public B withMaxLoad(boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount) {
+		this.maxLoadWeight = maxLoadWeight;
+		this.maxLoadPressure = maxLoadPressure;
+		this.maxLoadBoxCount = maxLoadBoxCount;
+		return (B)this;
+	}
+	
+	public B withLoadIdenticalBox(boolean loadIdenticalBox) {
+		this.loadIdenticalBox = loadIdenticalBox;
+		return (B)this;
+	}
+	
+	protected boolean isMaxLoad() {
+		return maxLoadWeight || maxLoadPressure || maxLoadBoxCount;
 	}
 	
 	public abstract PointControls build();

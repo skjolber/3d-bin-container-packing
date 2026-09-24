@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.api.point;
 
-import java.util.Comparator;
 import java.util.Objects;
 
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -14,8 +13,15 @@ import com.github.skjolber.packing.api.Placement;
  */
 
 public abstract class Point {
+	
+	@FunctionalInterface
+	public interface PointComparator {
 
-	public static final Comparator<Point> X_COMPARATOR = new Comparator<Point>() {
+		int compare(Point candidate, Point best);
+		
+	}
+
+	public static final PointComparator X_COMPARATOR = new PointComparator() {
 
 		@Override
 		public int compare(Point o1, Point o2) {
@@ -28,7 +34,7 @@ public abstract class Point {
 		}
 	};
 
-	public static final Comparator<Point> Y_COMPARATOR = new Comparator<Point>() {
+	public static final PointComparator Y_COMPARATOR = new PointComparator() {
 
 		@Override
 		public int compare(Point o1, Point o2) {
@@ -42,7 +48,7 @@ public abstract class Point {
 		}
 	};
 
-	public static final Comparator<Point> Z_COMPARATOR = new Comparator<Point>() {
+	public static final PointComparator Z_COMPARATOR = new PointComparator() {
 
 		@Override
 		public int compare(Point o1, Point o2) {
@@ -56,7 +62,7 @@ public abstract class Point {
 		}
 	};
 
-	public static final Comparator<Point> COMPARATOR_X_THEN_Y_THEN_Z = new Comparator<Point>() {
+	public static final PointComparator COMPARATOR_X_THEN_Y_THEN_Z = new PointComparator() {
 
 		@Override
 		public int compare(Point o1, Point o2) {
@@ -95,7 +101,7 @@ public abstract class Point {
 		}
 	};
 
-	public static final Comparator<Point> COMPARATOR_X_THEN_Y = new Comparator<Point>() {
+	public static final PointComparator COMPARATOR_X_THEN_Y = new PointComparator() {
 
 		@Override
 		public int compare(Point o1, Point o2) {
@@ -115,7 +121,7 @@ public abstract class Point {
 		}
 	};
 
-	public static final Comparator<Point> COMPARATOR_Y_THEN_Z_THEN_X = new Comparator<Point>() {
+	public static final PointComparator COMPARATOR_Y_THEN_Z_THEN_X = new PointComparator() {
 
 		@Override
 		public int compare(Point o1, Point o2) {
@@ -153,7 +159,7 @@ public abstract class Point {
 		}
 	};
 
-	public static final Comparator<Point> COMPARATOR_Z_THEN_X_THEN_Y = new Comparator<Point>() {
+	public static final PointComparator COMPARATOR_Z_THEN_X_THEN_Y = new PointComparator() {
 
 		@Override
 		public int compare(Point o1, Point o2) {
@@ -191,7 +197,7 @@ public abstract class Point {
 		}
 	};
 
-	public static final Comparator<Point> COMPARATOR = new Comparator<Point>() {
+	public static final PointComparator COMPARATOR = new PointComparator() {
 
 		@Override
 		public int compare(Point o1, Point o2) {
@@ -312,6 +318,10 @@ public abstract class Point {
 	public boolean intersects(Placement p) {
 		return !(p.getAbsoluteEndX() < minX || p.getAbsoluteX() > maxX || p.getAbsoluteEndY() < minY || p.getAbsoluteY() > maxY || p.getAbsoluteEndZ() < minZ || p.getAbsoluteZ() > maxZ);
 	}
+	
+	public boolean intersectsXY(Placement p) {
+		return !(p.getAbsoluteEndX() < minX || p.getAbsoluteX() > maxX || p.getAbsoluteEndY() < minY || p.getAbsoluteY() > maxY);
+	}
 
 	public boolean intersects(Point point) {
 		return !(point.getMaxX() < minX || point.getMinX() > maxX || point.getMaxY() < minY || point.getMinY() > maxY || point.getMaxZ() < minZ || point.getMinZ() > maxZ);
@@ -401,16 +411,22 @@ public abstract class Point {
 		return false;
 	}
 
-	public boolean fitsInXZPlane(Placement point) {
-		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowsMinX(point.getAbsoluteX(), point.getAbsoluteEndX());
+	public boolean fitsInXZPlane(Placement placement) {
+		return 
+				minX <= placement.getAbsoluteX() && placement.getAbsoluteEndX() <= maxX &&
+				minZ <= placement.getAbsoluteZ() && placement.getAbsoluteEndZ() <= maxZ;
 	}
 
-	public boolean fitsInXYPlane(Placement point) {
-		return swallowsMinY(point.getAbsoluteY(), point.getAbsoluteEndY()) && swallowsMinX(point.getAbsoluteX(), point.getAbsoluteEndX());
+	public boolean fitsInXYPlane(Placement placement) {
+		return 
+				minX <= placement.getAbsoluteX() && placement.getAbsoluteEndX() <= maxX &&
+				minY <= placement.getAbsoluteY() && placement.getAbsoluteEndY() <= maxY;
 	}
 
-	public boolean fitsInYZPlane(Placement point) {
-		return swallowsMinZ(point.getAbsoluteZ(), point.getAbsoluteEndZ()) && swallowsMinY(point.getAbsoluteY(), point.getAbsoluteEndY());
+	public boolean fitsInYZPlane(Placement placement) {
+		return 
+				minY <= placement.getAbsoluteY() && placement.getAbsoluteEndY() <= maxY &&
+				minZ <= placement.getAbsoluteZ() && placement.getAbsoluteEndZ() <= maxZ;
 	}
 	
 	public boolean fits3D(Placement placement) {
@@ -570,5 +586,10 @@ public abstract class Point {
 				&& minY == other.minY && minZ == other.minZ;
 	}
 	
-	
+	public abstract boolean isSupportedXYPlane(int x, int y);
+
+	public boolean isSupportedXYPlane(BoxStackValue stackValue) {
+		return isSupportedXYPlane(minX + stackValue.getDx() - 1, minY + stackValue.getDy() - 1);
+	}
+
 }

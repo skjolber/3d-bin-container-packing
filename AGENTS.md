@@ -1,3 +1,8 @@
+# Source code
+
+## Formatting
+Line length 200.
+
 # Building and testing
 
 Run commands from the repository root. Use JDK 25, matching CI and the

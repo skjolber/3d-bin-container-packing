@@ -58,7 +58,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 				}
 				Box clonedBox = new Box(box, cloned);
 				
-				included[i] = new BoxItem(clonedBox, boxItem.getCount(), i);
+				included[i] = new BoxItem(clonedBox, boxItem.getCount(), i, boxItem.getGlobalIndex());
 			}
 
 			return new DefaultBoxItemPermutationRotationIterator(included, excluded);
@@ -84,6 +84,19 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 		this.minBoxVolume = new long[count];
 
 		initiatePermutation(count);
+	}
+
+	protected DefaultBoxItemPermutationRotationIterator(DefaultBoxItemPermutationRotationIterator source) {
+		super(copyBoxItems(source.stackableItems));
+		this.excluded = new ArrayList<>(source.excluded);
+		this.rotations = source.rotations.clone();
+		this.reset = source.reset.clone();
+		this.permutations = source.permutations.clone();
+		this.minBoxVolume = source.minBoxVolume.clone();
+	}
+
+	public DefaultBoxItemPermutationRotationIterator fork() {
+		return new DefaultBoxItemPermutationRotationIterator(this);
 	}
 	
 	public BoxStackValue getStackValue(int index) {

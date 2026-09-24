@@ -18,6 +18,9 @@ with
     
 Bugs, feature suggestions and help requests can be filed with the [issue-tracker].
 
+See [FEATURES.md](FEATURES.md) for a capability overview, including known
+limitations and non-goals.
+
 ## Build from source
 
 Use JDK 25 and the included Maven wrapper (Maven 3.9.12). Library sources target Java 17.
@@ -50,6 +53,16 @@ and
 <dependency>
     <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
     <artifactId>core</artifactId>
+    <version>${3d-bin-container-packing.version}</version>
+</dependency>
+```
+
+Add the optional result validators separately when needed:
+
+```xml
+<dependency>
+    <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+    <artifactId>validators</artifactId>
     <version>${3d-bin-container-packing.version}</version>
 </dependency>
 ```
@@ -162,7 +175,9 @@ Packager packager = BruteForcePackager
     .build();
 ```
 
-See also the `ParallelBoxItemBruteForcePackager` and `FastBruteForcePackager` packagers.
+See also the `ParallelBoxItemBruteForcePackager` and `FastBruteForcePackager`
+packagers. A `BruteForcePointIteratorFilter` can rank fitting points and use a
+different point limit at each placement step.
 
 Using a deadline is recommended whenever brute-forcing in a real-time application.
 
@@ -305,4 +320,3 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
 [Github page]:		https://skjolber.github.io
 [NothinRandom]:		https://github.com/NothinRandom
 [exponential]:		https://en.wikipedia.org/wiki/Exponential_function
-

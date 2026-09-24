@@ -2,8 +2,6 @@ package com.github.skjolber.packing.ep.points3d;
 
 import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
 
-import com.github.skjolber.packing.api.point.Point;
-
 public class CustomIntZComparator implements IntComparator {
 
 	private static final long serialVersionUID = 1L;
@@ -12,8 +10,8 @@ public class CustomIntZComparator implements IntComparator {
 
 	@Override
 	public int compare(int value1, int value2) {
-		Point o1 = values.get(value1);
-		Point o2 = values.get(value2);
+		SimplePoint3D o1 = values.get(value1);
+		SimplePoint3D o2 = values.get(value2);
 
 		if(o1.getMinX() < o2.getMinX()) {
 			return -1;

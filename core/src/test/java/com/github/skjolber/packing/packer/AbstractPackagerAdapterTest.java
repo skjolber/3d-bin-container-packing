@@ -104,6 +104,10 @@ public class AbstractPackagerAdapterTest {
 			containerItems.add(new ControlledContainerItem(containerItem));
 		}
 		
-		return new ContainerItemsCalculator(containerItems);
+		int containerCount = 0;
+		for(ControlledContainerItem item : containerItems) {
+			containerCount += item.getCount();
+		}
+		return new ContainerItemsCalculator(containerItems, containerCount);
 	}
 }

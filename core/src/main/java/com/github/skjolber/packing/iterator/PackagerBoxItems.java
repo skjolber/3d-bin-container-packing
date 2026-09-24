@@ -46,7 +46,7 @@ public class PackagerBoxItems {
 
 			// update indexes
 			for(int i = startIndex; i < values.size(); i++) {
-				values.get(i).setIndex(i);
+				values.get(i).setLocalIndex(i);
 			}
 			
 			return group;
@@ -179,7 +179,7 @@ public class PackagerBoxItems {
 		
 		// update indexes
 		for(int i = 0; i < values.size(); i++) {
-			values.get(i).setIndex(i);
+			values.get(i).setLocalIndex(i);
 		}
 
 	}
@@ -203,7 +203,7 @@ public class PackagerBoxItems {
 
 			// update indexes
 			for(int i = index; i < values.size(); i++) {
-				values.get(i).setIndex(i);
+				values.get(i).setLocalIndex(i);
 			}
 		}
 	}
@@ -230,7 +230,7 @@ public class PackagerBoxItems {
 		}
 		// update indexes
 		for(int i = 0; i < values.size(); i++) {
-			values.get(i).setIndex(i);
+			values.get(i).setLocalIndex(i);
 		}
 	}
 
@@ -253,7 +253,7 @@ public class PackagerBoxItems {
 		
 		// update indexes
 		for(int i = 0; i < values.size(); i++) {
-			values.get(i).setIndex(i);
+			values.get(i).setLocalIndex(i);
 		}
 	}
 }

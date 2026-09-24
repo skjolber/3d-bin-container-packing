@@ -32,7 +32,7 @@ public class DefaultYSupportPoint2D extends SimplePoint2D implements YSupportPoi
 				+ ", ySupportMinY=" + getYSupportMinY() + ", ySupportMaxY=" + getYSupportMaxY() + "]";
 	}
 
-	public Point2D clone(int maxX, int maxY) {
+	public SimplePoint2D clone(int maxX, int maxY) {
 		return new DefaultYSupportPoint2D(minX, minY, minZ, maxX, maxY, maxZ, ySupport);
 	}
 	

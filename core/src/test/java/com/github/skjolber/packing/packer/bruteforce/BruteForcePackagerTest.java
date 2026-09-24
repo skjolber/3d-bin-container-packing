@@ -15,6 +15,7 @@ import java.util.TreeMap;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.eclipse.collections.api.iterator.IntIterator;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -22,6 +23,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
@@ -30,6 +32,32 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
+
+	@Test
+	void pointFilterIsConfigurable() {
+		BruteForcePackager.BruteForcePointIteratorFilter filter = (pointCalculator, stackValue) -> new IntIterator() {
+			private boolean available = true;
+
+			@Override
+			public boolean hasNext() {
+				return available;
+			}
+
+			@Override
+			public int next() {
+				available = false;
+				return 0;
+			}
+		};
+		BruteForcePackager packager = BruteForcePackager.newBuilder()
+				.withPointFilter(filter)
+				.build();
+		try {
+			assertThat(packager.pointFilter).isSameAs(filter);
+		} finally {
+			packager.close();
+		}
+	}
 
 	@Test
 	void testStackingSquaresOnSquare() {
@@ -201,14 +229,14 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	public void testSimpleImperfectSquaredRectangles() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimpleImperfectSquaredRectangles(9));
+		pack(directory.getSimpleImperfectSquaredRectangles(9), false);
 	}
 
 	@Test
 	public void testSimpleImperfectSquaredSquares() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimpleImperfectSquaredSquares(9));
+		pack(directory.getSimpleImperfectSquaredSquares(9), false);
 	}
 
 	@Disabled // takes too long
@@ -216,28 +244,51 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	public void testSimplePerfectSquaredRectangles() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimplePerfectSquaredRectangles(9));
+		pack(directory.getSimplePerfectSquaredRectangles(9), false);
 	}
 
-	protected void pack(List<BouwkampCodes> codes) {
+	@Test
+	public void testSimpleImperfectSquaredRectanglesSkipReverse() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimpleImperfectSquaredRectangles(9), true);
+	}
+
+	@Test
+	public void testSimpleImperfectSquaredSquaresReverse() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimpleImperfectSquaredSquares(9), true);
+	}
+
+	@Disabled // takes too long
+	@Test
+	public void testSimplePerfectSquaredRectanglesReverse() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimplePerfectSquaredRectangles(9), true);
+	}
+
+	
+	protected void pack(List<BouwkampCodes> codes, boolean skipReverse) {
 		for (BouwkampCodes bouwkampCodes : codes) {
 			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
 				long timestamp = System.currentTimeMillis();
 				System.out.println("Package " + bouwkampCode.getName() + " " + bouwkampCodes.getSource());
-				pack(bouwkampCode);
+				pack(bouwkampCode, skipReverse);
 				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.currentTimeMillis() - timestamp));
 			}
 		}
 	}
 
-	protected void pack(BouwkampCode bouwkampCode) {
+	protected void pack(BouwkampCode bouwkampCode, boolean skipReverse) {
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withId("Container").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(100)
 						.withStack(new ValidatingStack()).build())
 				.build();
 
-		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
+		BruteForcePackager packager = BruteForcePackager.newBuilder().withSkipReversePermutations(skipReverse).build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	

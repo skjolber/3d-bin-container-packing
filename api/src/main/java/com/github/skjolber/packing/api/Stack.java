@@ -9,9 +9,14 @@ public class Stack implements Serializable, Iterable<Placement> {
 
 	private static final long serialVersionUID = 1L;
 
-	protected final List<Placement> entries = new ArrayList<>();
+	protected final List<Placement> entries;
 
 	public Stack() {
+		this(0);
+	}
+
+	public Stack(int initialCapacity) {
+		entries = new ArrayList<>(initialCapacity);
 	}
 
 	public void addAll(List<Placement> placements) {
@@ -40,8 +45,8 @@ public class Stack implements Serializable, Iterable<Placement> {
 		entries.clear();
 	}
 
-	public int getWeight() {
-		int weight = 0;
+	public long getWeight() {
+		long weight = 0;
 
 		for (Placement stackEntry : entries) {
 			weight += stackEntry.getStackValue().getBox().getWeight();

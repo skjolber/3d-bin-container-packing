@@ -1,9 +1,12 @@
 package com.github.skjolber.packing.visualizer.packaging;
 
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
@@ -30,6 +33,7 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 	public PackagingResultVisualizer visualize(List<Container> inputContainers) {
 		
 		boolean calculatePoints = this.calculatePoints;
+		Map<Object, Integer> boxItemKeys = new IdentityHashMap<>();
 		
 		int step = 0;
 		PackagingResultVisualizer visualization = new PackagingResultVisualizer();
@@ -57,7 +61,9 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			DefaultPointCalculator3D pointCalculator = new DefaultPointCalculator3D(true, stack.getPlacements().size());
 			pointCalculator.clearToSize(inputContainer.getDx(), inputContainer.getDy(), inputContainer.getDz());
 			
-			for (Placement placement : stack.getPlacements()) {
+			List<Placement> placements = stack.getPlacements();
+			for (int i = 0; i < placements.size(); i++) {
+				Placement placement = placements.get(i);
 				Box box = placement.getStackValue().getBox();
 				BoxVisualizer boxVisualization = new BoxVisualizer();
 				boxVisualization.setId(box.getId());
@@ -70,6 +76,24 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 				boxVisualization.setDy(stackValue.getDy());
 				boxVisualization.setDz(stackValue.getDz());
 
+				BoxItem boxItem = placement.getBoxItem();
+				Object boxItemIdentity = boxItem != null ? boxItem : box;
+				boxVisualization.setBoxItemKey(boxItemKeys.computeIfAbsent(boxItemIdentity, key -> boxItemKeys.size()));
+				boxVisualization.setWeight(box.getWeight());
+
+				if(stackValue.isMaxLoadBoxCount()) {
+					boxVisualization.setMaxLoadBoxCount(stackValue.getMaxLoadBoxCount());
+				}
+				if(stackValue.isMaxLoadWeight()) {
+					boxVisualization.setMaxLoadWeight(stackValue.getMaxLoadWeight());
+				}
+				if(stackValue.isMaxLoadPressure()) {
+					boxVisualization.setMaxLoadPressure(stackValue.getMaxLoadPressure());
+				}
+				if(stackValue.isLoadIdenticalBoxOnly()) {
+					boxVisualization.setMaxLoadIdenticalOnly(stackValue.isLoadIdenticalBoxOnly());
+				}
+				
 				StackPlacementVisualizer stackPlacement = new StackPlacementVisualizer();
 				stackPlacement.setX(placement.getAbsoluteX());
 				stackPlacement.setY(placement.getAbsoluteY());

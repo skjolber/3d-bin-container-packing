@@ -24,6 +24,30 @@ import com.github.skjolber.packing.packer.AbstractPackagerTest;
 public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTest {
 
 	@Test
+	void packsMaximumWeightPrefixBeforeMovingToNextContainer() {
+		Container container = Container.newBuilder()
+				.withSize(3, 1, 1)
+				.withMaxLoadWeight(2)
+				.build();
+		Box box = Box.newBuilder()
+				.withId("unit")
+				.withSize(1, 1, 1)
+				.withWeight(1)
+				.build();
+
+		try(AbstractBruteForcePackager packager = createPackager()) {
+			PackagerResult result = packager.newResultBuilder()
+					.withContainerItem(new ContainerItem(container, 2))
+					.withMaxContainerCount(2)
+					.withBoxItems(new BoxItem(box, 3))
+					.build();
+
+			assertThat(result.isSuccess()).isTrue();
+			assertThat(result.getContainers()).extracting(c -> c.getStack().size()).containsExactly(2, 1);
+		}
+	}
+
+	@Test
 	public void testImpossible1() throws Exception {
 		Container container = Container.newBuilder()
 			.withDescription("1")
