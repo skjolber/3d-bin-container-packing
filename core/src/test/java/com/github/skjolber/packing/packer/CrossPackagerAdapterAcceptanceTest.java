@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 
@@ -32,6 +33,43 @@ class CrossPackagerAdapterAcceptanceTest {
 		assertThat(source.countRemainingBoxes()).isEqualTo(1);
 	}
 
+	@Test
+	void freshForkAndResetKeepAdapterStateIndependent() {
+		BoxItem item = new BoxItem(box("item"));
+		TestAdapter adapter = new TestAdapter(item);
+		TestAdapter fresh = (TestAdapter) adapter.fresh();
+		TestAdapter fork = (TestAdapter) adapter.fork();
+
+		Stack stack = new Stack();
+		stack.add(new Placement(item.getBox().getStackValue(0), 0, 0, 0, 0));
+		fresh.accept(new DefaultIntermediatePackagerResult(fresh.getContainerItem(0), stack));
+		fork.accept(new DefaultIntermediatePackagerResult(fork.getContainerItem(0), stack));
+
+		assertThat(fresh.countRemainingBoxes()).isZero();
+		assertThat(fork.countRemainingBoxes()).isZero();
+		assertThat(adapter.countRemainingBoxes()).isEqualTo(1);
+
+		fresh.reset();
+		assertThat(fresh.countRemainingBoxes()).isEqualTo(1);
+		assertThat(fresh.getContainerItem(0).getCount()).isEqualTo(1);
+
+		fork.reset();
+		assertThat(fork.countRemainingBoxes()).isEqualTo(1);
+		assertThat(fork.getContainerItem(0).getCount()).isEqualTo(1);
+	}
+
+	@Test
+	void rejectsDuplicateGlobalBoxItemIndexes() {
+		BoxItem first = new BoxItem(box("first"));
+		BoxItem second = new BoxItem(box("second"));
+		first.setGlobalIndex(2);
+		second.setGlobalIndex(2);
+
+		assertThatThrownBy(() -> AbstractPackagerAdapter.initializeGlobalIndexes(List.of(first, second)))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Duplicate box item global index 2");
+	}
+
 	private static Box box(String id) {
 		return Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build();
 	}
@@ -39,19 +77,25 @@ class CrossPackagerAdapterAcceptanceTest {
 	private static final class TestAdapter extends AbstractBoxItemAdapter {
 
 		private TestAdapter(BoxItem item) {
-			super(List.of(item), Order.CRONOLOGICAL,
-					List.of(new ControlledContainerItem(Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build(), 1)),
-					1, () -> false);
+			this(item, List.of(new ControlledContainerItem(Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build(), 1)), 1);
+		}
+
+		private TestAdapter(BoxItem item, List<ControlledContainerItem> containers, int containerCount) {
+			super(List.of(item), Order.CRONOLOGICAL, containers, containerCount, () -> false);
+		}
+
+		private TestAdapter(TestAdapter source) {
+			super(source);
 		}
 
 		@Override
 		public PackagerAdapter fork() {
-			throw new UnsupportedOperationException();
+			return new TestAdapter(this);
 		}
 
 		@Override
 		protected TestAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
-			throw new UnsupportedOperationException();
+			return new TestAdapter(copyBoxItems(initialBoxItems).get(0), containers, containerCount);
 		}
 
 		@Override

@@ -3,10 +3,21 @@ package com.github.skjolber.packing.api;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
 public class BoxTest {
+
+	@Test
+	void globalBoxItemIndexIsImmutableAfterAssignment() {
+		BoxItem item = new BoxItem(Box.newBuilder().withSize(1, 1, 1).withWeight(1).build());
+
+		item.setGlobalIndex(3);
+		item.setGlobalIndex(3);
+
+		assertThrows(IllegalStateException.class, () -> item.setGlobalIndex(4));
+	}
 
 	@Test
 	public void testCalculatePressure() {

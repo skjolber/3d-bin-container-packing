@@ -102,6 +102,12 @@ public class BoxItem implements Serializable {
 	}
 
 	public void setGlobalIndex(int globalIndex) {
+		if(globalIndex < 0) {
+			throw new IllegalArgumentException("Expected a non-negative global index");
+		}
+		if(this.globalIndex != -1 && this.globalIndex != globalIndex) {
+			throw new IllegalStateException("Global index is immutable once assigned");
+		}
 		this.globalIndex = globalIndex;
 	}
 

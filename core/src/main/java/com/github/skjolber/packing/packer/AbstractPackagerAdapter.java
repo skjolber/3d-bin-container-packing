@@ -1,8 +1,10 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
@@ -60,8 +62,12 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 	/** Assign stable identities once, before any iterator starts changing local indexes. */
 	public static List<BoxItem> initializeGlobalIndexes(List<BoxItem> items) {
 		int next = 0;
+		Set<Integer> assigned = new HashSet<>(items.size());
 		for(BoxItem item : items) {
 			if(item.getGlobalIndex() != -1) {
+				if(!assigned.add(item.getGlobalIndex())) {
+					throw new IllegalArgumentException("Duplicate box item global index " + item.getGlobalIndex());
+				}
 				next = Math.max(next, item.getGlobalIndex() + 1);
 			}
 		}
