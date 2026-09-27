@@ -45,7 +45,7 @@ custom objectives, optional early-stop goals, and best-so-far results on
 interruption. It searches the extreme-point space without lossy point filtering;
 it does not support load constraints or box-item groups.
 One search can retain separate minimum-X/Y/Z layouts and named custom-objective
-winners alongside the primary result, with pruning that respects all objectives.
+winners with equal standing, with pruning that respects all objectives.
 Each named objective supports its own predicate and comparator; early goal
 termination requires all goals to be met. Single-objective searches use a
 specialized implementation without multi-objective bookkeeping.

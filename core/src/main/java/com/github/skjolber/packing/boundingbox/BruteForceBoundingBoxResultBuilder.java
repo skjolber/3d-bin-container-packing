@@ -1,9 +1,8 @@
 package com.github.skjolber.packing.boundingbox;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.function.Predicate;
@@ -19,6 +18,8 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilde
  * Per-operation settings for bounding-box search. The container's
  * load dimensions and load weight are upper bounds, not the objective. All
  * supplied boxes must be placed. Input inventories and indexes are not changed.
+ * Objectives are registered by name and have equal standing. If none are registered,
+ * a minimum-volume objective named {@code default} is used for that build only.
  *
  * <p>This operation is sequential and intended for small assemblies. It searches
  * the extreme-point placement space, not arbitrary coordinates.
@@ -32,10 +33,7 @@ public class BruteForceBoundingBoxResultBuilder {
 	protected final boolean load;
 	protected List<BoxItem> items;
 	protected Container container;
-	protected BoundingBoxComparator comparator = BoundingBox.MIN_VOLUME;
-	protected Map<String, BoundingBoxObjective> additionalObjectives = new LinkedHashMap<>();
-	protected Predicate<BoundingBox> goal;
-	protected boolean explicitObjectives;
+	protected List<BoundingBoxObjective> objectives;
 	protected PackagerInterruptSupplier interrupt;
 	protected long deadline = -1;
 
@@ -44,8 +42,9 @@ public class BruteForceBoundingBoxResultBuilder {
 		this.load = load;
 	}
 
+	/** Retain the input list directly. Do not modify it or its items while this builder/search is in use. */
 	public BruteForceBoundingBoxResultBuilder withBoxItems(List<BoxItem> items) {
-		this.items = List.copyOf(items);
+		this.items = Objects.requireNonNull(items);
 		return this;
 	}
 
@@ -59,25 +58,23 @@ public class BruteForceBoundingBoxResultBuilder {
 		return this;
 	}
 
-	/** Normal comparator convention: negative means the first envelope is preferred. */
+	/**
+	 * Configure the comparator of the objective named {@code default}, preserving its goal.
+	 * Adds that objective if absent. Negative means the first envelope is preferred.
+	 */
 	public BruteForceBoundingBoxResultBuilder withComparator(BoundingBoxComparator comparator) {
-		checkImplicitObjective();
-		this.comparator = Objects.requireNonNull(comparator);
-		return this;
+		BoundingBoxObjective objective = findObjective("default");
+		return withObjective("default", objective == null ? null : objective.goal(), comparator);
 	}
 
 	/**
-	 * Register a first-class objective. The first call replaces the implicit primary
-	 * objective; subsequent calls add objectives. Duplicate names replace in place.
-	 * Results are returned by name; legacy primary getters refer to the first objective.
+	 * Register an objective, replacing an existing objective of the same name in place.
+	 * Other objectives are unchanged. All objectives have equal standing.
+	 * The objective is retained directly and must not be modified after registration.
 	 */
 	public BruteForceBoundingBoxResultBuilder withObjective(BoundingBoxObjective objective) {
 		validateObjective(objective);
-		if(!explicitObjectives) {
-			additionalObjectives.clear();
-			explicitObjectives = true;
-		}
-		additionalObjectives.put(objective.name(), objective);
+		registerObjective(objective);
 		return this;
 	}
 
@@ -85,53 +82,40 @@ public class BruteForceBoundingBoxResultBuilder {
 		return withObjective(new BoundingBoxObjective(name, goal, comparator));
 	}
 
-	/** Add an independent objective with its own stopping goal. */
-	public BruteForceBoundingBoxResultBuilder withAdditionalObjective(String name, Predicate<BoundingBox> goal, BoundingBoxComparator comparator) {
-		BoundingBoxObjective objective = new BoundingBoxObjective(name, goal, comparator);
-		validateObjective(objective);
-		if(!explicitObjectives && name.equals("primary")) {
-			throw new IllegalArgumentException("The name primary is reserved for the implicit objective");
-		}
-		additionalObjectives.put(name, objective);
-		return this;
-	}
-
 	/** Add an objective which optimizes until exhaustion or interruption. */
-	public BruteForceBoundingBoxResultBuilder withAdditionalObjective(String name, BoundingBoxComparator comparator) {
-		return withAdditionalObjective(name, null, comparator);
+	public BruteForceBoundingBoxResultBuilder withObjective(String name, BoundingBoxComparator comparator) {
+		return withObjective(name, null, comparator);
 	}
 
 	/** Retain minimum width under the objective name {@code x}. */
 	public BruteForceBoundingBoxResultBuilder withMinimumX() {
-		return withAdditionalObjective("x", BoundingBox.MIN_X);
+		return withObjective("x", BoundingBox.MIN_X);
 	}
 
 	/** Retain minimum depth under the objective name {@code y}. */
 	public BruteForceBoundingBoxResultBuilder withMinimumY() {
-		return withAdditionalObjective("y", BoundingBox.MIN_Y);
+		return withObjective("y", BoundingBox.MIN_Y);
 	}
 
 	/** Retain minimum height under the objective name {@code z}. */
 	public BruteForceBoundingBoxResultBuilder withMinimumZ() {
-		return withAdditionalObjective("z", BoundingBox.MIN_Z);
+		return withObjective("z", BoundingBox.MIN_Z);
 	}
 
-	/** Retain all three independent dimension minima, in addition to the primary result. */
+	/** Register the three independent dimension objectives named x, y and z. */
 	public BruteForceBoundingBoxResultBuilder withMinimumDimensions() {
 		return withMinimumX().withMinimumY().withMinimumZ();
 	}
 
 	/**
-	 * Retain the first complete layout satisfying the implicit primary goal, even
-	 * if a previous layout ranked better under the comparator. A null goal searches
-	 * to exhaustion or interruption. Called only for complete layouts.
-	 * Search stops early only after every objective reaches its own goal.
-	 * Use withObjective instead when configuring explicitly named objectives.
+	 * Configure the goal of the objective named {@code default}, preserving its comparator.
+	 * Adds that objective with minimum-volume ordering if absent. A goal accepts the first
+	 * matching complete layout, even if a previous layout ranked better. A null goal
+	 * optimizes until exhaustion or interruption. Search stops early only when all goals are met.
 	 */
 	public BruteForceBoundingBoxResultBuilder withGoal(Predicate<BoundingBox> goal) {
-		checkImplicitObjective();
-		this.goal = goal;
-		return this;
+		BoundingBoxObjective objective = findObjective("default");
+		return withObjective("default", goal, objective == null ? BoundingBox.MIN_VOLUME : objective.comparator());
 	}
 
 	public BruteForceBoundingBoxResultBuilder withInterrupt(PackagerInterruptSupplier interrupt) {
@@ -160,17 +144,19 @@ public class BruteForceBoundingBoxResultBuilder {
 		PackagerInterruptSupplier operationInterrupt = PackagerInterruptSupplierBuilder.builder()
 				.withScheduledThreadPoolExecutor(scheduler).withDeadline(deadline).withInterrupt(interrupt).build();
 		try {
-			List<BoundingBoxObjective> objectives = new java.util.ArrayList<>();
-			if(!explicitObjectives) {
-				objectives.add(new BoundingBoxObjective("primary", goal, comparator));
+			BoundingBoxObjective single = null;
+			if(objectives == null || objectives.isEmpty()) {
+				// A fallback only for an unconfigured builder; it is not inserted alongside named objectives.
+				single = new BoundingBoxObjective("default", null, BoundingBox.MIN_VOLUME);
+			} else if(objectives.size() == 1) {
+				single = objectives.get(0);
 			}
-			objectives.addAll(additionalObjectives.values());
 			BruteForceBoundingBoxSearch search;
-			if(objectives.size() == 1) {
-				search = load ? new LoadBruteForceBoundingBoxSearch(items, container, objectives.get(0), operationInterrupt)
-						: new SingleObjectiveBruteForceBoundingBoxSearch(items, container, objectives.get(0), operationInterrupt, false);
+			if(single != null) {
+				search = load ? new LoadBruteForceBoundingBoxSearch(items, container, single, operationInterrupt)
+						: new SingleObjectiveBruteForceBoundingBoxSearch(items, container, single, operationInterrupt, false);
 			} else {
-				search = new MultiObjectiveBruteForceBoundingBoxSearch(items, container, objectives, operationInterrupt, load);
+				search = new MultiObjectiveBruteForceBoundingBoxSearch(items, container, objectives.toArray(BoundingBoxObjective[]::new), operationInterrupt, load);
 			}
 			return search.pack(start);
 		} finally {
@@ -178,10 +164,30 @@ public class BruteForceBoundingBoxResultBuilder {
 		}
 	}
 
-	protected void checkImplicitObjective() {
-		if(explicitObjectives) {
-			throw new IllegalStateException("Configure the comparator and goal via withObjective for explicitly named objectives");
+	/** Small objective lists do not need a second, name-indexed collection. */
+	protected void registerObjective(BoundingBoxObjective objective) {
+		if(objectives == null) {
+			objectives = new ArrayList<>(4);
+		} else {
+			for(int i = 0; i < objectives.size(); i++) {
+				if(objectives.get(i).name().equals(objective.name())) {
+					objectives.set(i, objective);
+					return;
+				}
+			}
 		}
+		objectives.add(objective);
+	}
+
+	protected BoundingBoxObjective findObjective(String name) {
+		if(objectives != null) {
+			for(BoundingBoxObjective objective : objectives) {
+				if(objective.name().equals(name)) {
+					return objective;
+				}
+			}
+		}
+		return null;
 	}
 
 	protected void validateObjective(BoundingBoxObjective objective) {

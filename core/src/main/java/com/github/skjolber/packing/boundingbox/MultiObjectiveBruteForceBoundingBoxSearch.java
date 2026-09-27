@@ -22,12 +22,21 @@ public class MultiObjectiveBruteForceBoundingBoxSearch extends AbstractBruteForc
 
 	public MultiObjectiveBruteForceBoundingBoxSearch(List<BoxItem> items, Container container, List<BoundingBoxObjective> objectives,
 			PackagerInterruptSupplier interrupt, boolean load) {
+		this(items, container, objectives.toArray(BoundingBoxObjective[]::new), interrupt, load);
+	}
+
+	/**
+	 * Retain the inventory, container and objective array directly. Do not change
+	 * them or their contents after construction or while the search is running.
+	 */
+	protected MultiObjectiveBruteForceBoundingBoxSearch(List<BoxItem> items, Container container, BoundingBoxObjective[] objectives,
+			PackagerInterruptSupplier interrupt, boolean load) {
 		super(items, container, interrupt, load);
-		this.objectives = objectives.toArray(BoundingBoxObjective[]::new);
-		winners = new BoundingBoxLayout[objectives.size()];
-		reached = new boolean[objectives.size()];
-		improvements = new boolean[objectives.size()];
-		remainingGoals = objectives.size();
+		this.objectives = objectives;
+		winners = new BoundingBoxLayout[objectives.length];
+		reached = new boolean[objectives.length];
+		improvements = new boolean[objectives.length];
+		remainingGoals = objectives.length;
 	}
 
 	@Override
@@ -83,7 +92,7 @@ public class MultiObjectiveBruteForceBoundingBoxSearch extends AbstractBruteForc
 			if(bounds == null) {
 				bounds = new BoundingBox(dx, dy, dz);
 			}
-			// Objectives winning the same candidate share one immutable search snapshot.
+			// Objectives winning the same candidate share one independent search snapshot.
 			BoundingBoxLayout layout = new BoundingBoxLayout(bounds, createSnapshot());
 			for(int i = 0; i < objectives.length; i++) {
 				if(improvements[i]) {
@@ -96,13 +105,19 @@ public class MultiObjectiveBruteForceBoundingBoxSearch extends AbstractBruteForc
 
 	@Override
 	protected BruteForceBoundingBoxResult result(Termination termination, long duration) {
-		Map<String, BoundingBoxLayout> results = new LinkedHashMap<>();
-		Set<String> goals = new LinkedHashSet<>();
+		Map<String, BoundingBoxLayout> results = Map.of();
+		Set<String> goals = Set.of();
 		for(int i = 0; i < objectives.length; i++) {
 			if(winners[i] != null) {
+				if(results.isEmpty()) {
+					results = new LinkedHashMap<>(objectives.length);
+				}
 				results.put(objectives[i].name(), winners[i]);
 			}
 			if(reached[i]) {
+				if(goals.isEmpty()) {
+					goals = new LinkedHashSet<>(objectives.length);
+				}
 				goals.add(objectives[i].name());
 			}
 		}

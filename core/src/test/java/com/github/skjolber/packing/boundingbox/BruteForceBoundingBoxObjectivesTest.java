@@ -44,7 +44,7 @@ class BruteForceBoundingBoxObjectivesTest {
 			assertThat(result.getTermination()).isEqualTo(Termination.INTERRUPTED);
 			assertThat(result.getReachedGoals()).containsExactly("accepted");
 			assertThat(result.getObjectiveResults().keySet()).containsExactly("accepted", "pending");
-			assertThat(result.getResults()).hasSize(1);
+			assertThat(result.getResults()).hasSize(2);
 			assertLayouts(result, 2);
 		}
 	}
@@ -65,9 +65,7 @@ class BruteForceBoundingBoxObjectivesTest {
 			BruteForceBoundingBoxResult result = builder.build();
 			assertThat(result.getTermination()).isEqualTo(Termination.GOAL_REACHED);
 			assertThat(result.getReachedGoals()).containsExactly("a", "b");
-			assertThat(result.getResults()).hasSize(1);
-			assertThatThrownBy(() -> builder.withGoal(bounds -> true)).isInstanceOf(IllegalStateException.class);
-			assertThatThrownBy(() -> builder.withComparator(BoundingBox.MIN_VOLUME)).isInstanceOf(IllegalStateException.class);
+			assertThat(result.getResults()).hasSize(2);
 			assertThatThrownBy(() -> builder.withObjective(" ", null, BoundingBox.MIN_X)).isInstanceOf(IllegalArgumentException.class);
 			assertThatThrownBy(() -> builder.withObjective("x", null, null)).isInstanceOf(NullPointerException.class);
 		}
@@ -102,8 +100,6 @@ class BruteForceBoundingBoxObjectivesTest {
 				assertThat(result.getObjectiveResults().get("y").getBoundingBox().dy()).isEqualTo(1);
 				assertThat(result.getObjectiveResults().get("z").getBoundingBox().dz()).isEqualTo(1);
 				assertThat(xCalls.get()).isPositive();
-				assertThatThrownBy(() -> result.getObjectiveResults().clear()).isInstanceOf(UnsupportedOperationException.class);
-				assertThatThrownBy(() -> result.getReachedGoals().clear()).isInstanceOf(UnsupportedOperationException.class);
 			}
 		}
 	}
@@ -133,7 +129,7 @@ class BruteForceBoundingBoxObjectivesTest {
 
 	/*
 	 * Explicit single objective ----> specialized search ----> same winner
-	 * Implicit primary objective --> legacy shorthand ------> same winner
+	 * Implicit default objective --> legacy shorthand ------> same winner
 	 */
 	@Test
 	void explicitSingleObjectiveMatchesTheSingleObjectiveSpecialization() {
@@ -142,10 +138,10 @@ class BruteForceBoundingBoxObjectivesTest {
 					.withContainer(container(5, 4, 3)).withObjective("volume", bounds -> bounds.getVolume() == 9, BoundingBox.MIN_VOLUME).build();
 			BruteForceBoundingBoxResult implicit = search.newResultBuilder().withBoxItems(item(3, 2, 1), item(2, 1, 1))
 					.withContainer(container(5, 4, 3)).withGoal(bounds -> bounds.getVolume() == 9).build();
-			assertThat(explicit.getBoundingBox()).isEqualTo(implicit.getBoundingBox());
+			assertThat(explicit.getObjectiveResults().get("volume").getBoundingBox()).isEqualTo(implicit.getObjectiveResults().get("default").getBoundingBox());
 			assertThat(explicit.getTermination()).isEqualTo(Termination.GOAL_REACHED);
 			assertThat(explicit.getReachedGoals()).containsExactly("volume");
-			assertThat(explicit.getAdditionalResults()).isEmpty();
+			assertThat(explicit.getObjectiveResults().keySet()).containsExactly("volume");
 		}
 	}
 
@@ -161,23 +157,21 @@ class BruteForceBoundingBoxObjectivesTest {
 	 *      1 x 3 x 2        3 x 1 x 2        3 x 2 x 1
 	 *
 	 * All volumes are 6. Axis ties use the usual volume/surface/dimension order.
-	 * Primary and minimum Z select the same retained layout, not two copies.
+	 * Default and minimum Z select the same retained layout, not two copies.
 	 */
 	@Test
 	void returnsSeparateDimensionWinnersAndSharesCoincidentSnapshots() {
 		BoxItem item = new BoxItem(Box.newBuilder().withSize(3, 2, 1).withRotate3D().withWeight(1).build());
 		try(BruteForceBoundingBox search = new BruteForceBoundingBox()) {
 			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(item).withContainer(container(3, 3, 3))
-					.withMinimumDimensions().build();
-			assertThat(result.getAdditionalResults().keySet()).containsExactly("x", "y", "z");
-			assertThat(result.getBoundingBox()).isEqualTo(new BoundingBox(3, 2, 1));
-			assertThat(result.getAdditionalResults().get("x").getBoundingBox()).isEqualTo(new BoundingBox(1, 3, 2));
-			assertThat(result.getAdditionalResults().get("y").getBoundingBox()).isEqualTo(new BoundingBox(3, 1, 2));
-			assertThat(result.getAdditionalResults().get("z").getStack()).isSameAs(result.getStack());
-			assertThat(result.getResults()).hasSize(3);
-			assertThat(result.getResults().get(0).getStack()).isSameAs(result.getStack());
-			assertThatThrownBy(() -> result.getAdditionalResults().clear()).isInstanceOf(UnsupportedOperationException.class);
-			assertThatThrownBy(() -> result.getResults().clear()).isInstanceOf(UnsupportedOperationException.class);
+					.withObjective("default", BoundingBox.MIN_VOLUME).withMinimumDimensions().build();
+			assertThat(result.getObjectiveResults().keySet()).containsExactly("default", "x", "y", "z");
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new BoundingBox(3, 2, 1));
+			assertThat(result.getObjectiveResults().get("x").getBoundingBox()).isEqualTo(new BoundingBox(1, 3, 2));
+			assertThat(result.getObjectiveResults().get("y").getBoundingBox()).isEqualTo(new BoundingBox(3, 1, 2));
+			assertThat(result.getObjectiveResults().get("z").getStack()).isSameAs(result.getObjectiveResults().get("default").getStack());
+			assertThat(result.getResults()).hasSize(4);
+			assertThat(result.getResults()).containsExactlyElementsOf(result.getObjectiveResults().values());
 			assertLayouts(result, 1);
 		}
 	}
@@ -194,15 +188,15 @@ class BruteForceBoundingBoxObjectivesTest {
 	 *
 	 * Bounds: 5 x 3 x 1, volume 15          Bounds: 3 x 3 x 2, volume 18
 	 *
-	 * A primary volume winner must not exclude the narrower, larger-volume winner.
+	 * A default volume winner must not exclude the narrower, larger-volume winner.
 	 */
 	@Test
 	void keepsLargerVolumeWhenItImprovesAnotherObjective() {
 		try(BruteForceBoundingBox search = new BruteForceBoundingBox()) {
 			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(item(3, 3, 1), item(2, 2, 1))
-					.withContainer(container(5, 3, 2)).withMinimumX().build();
-			assertThat(result.getBoundingBox()).isEqualTo(new BoundingBox(5, 3, 1));
-			assertThat(result.getAdditionalResults().get("x").getBoundingBox()).isEqualTo(new BoundingBox(3, 3, 2));
+					.withContainer(container(5, 3, 2)).withObjective("default", BoundingBox.MIN_VOLUME).withMinimumX().build();
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new BoundingBox(5, 3, 1));
+			assertThat(result.getObjectiveResults().get("x").getBoundingBox()).isEqualTo(new BoundingBox(3, 3, 2));
 			assertLayouts(result, 2);
 		}
 	}
@@ -228,14 +222,15 @@ class BruteForceBoundingBoxObjectivesTest {
 		Map<String, BoundingBoxComparator> objectives = Map.of("x", BoundingBox.MIN_X, "y", BoundingBox.MIN_Y, "z", BoundingBox.MIN_Z);
 		try(BruteForceBoundingBox search = new BruteForceBoundingBox()) {
 			for(List<BoxItem> items : cases) {
-				BruteForceBoundingBoxResult multi = search.newResultBuilder().withBoxItems(items).withContainer(container(5, 3, 3)).withMinimumDimensions().build();
+				BruteForceBoundingBoxResult multi = search.newResultBuilder().withBoxItems(items).withContainer(container(5, 3, 3))
+						.withObjective("default", BoundingBox.MIN_VOLUME).withMinimumDimensions().build();
 				for(var entry : objectives.entrySet()) {
 					BruteForceBoundingBoxResult single = search.newResultBuilder().withBoxItems(items).withContainer(container(5, 3, 3))
 							.withComparator(entry.getValue()).withGoal(bounds -> false).build();
-					assertThat(multi.getAdditionalResults().get(entry.getKey()).getBoundingBox()).isEqualTo(single.getBoundingBox());
+					assertThat(multi.getObjectiveResults().get(entry.getKey()).getBoundingBox()).isEqualTo(single.getObjectiveResults().get("default").getBoundingBox());
 				}
 				BruteForceBoundingBoxResult single = search.newResultBuilder().withBoxItems(items).withContainer(container(5, 3, 3)).withGoal(bounds -> false).build();
-				assertThat(multi.getBoundingBox()).isEqualTo(single.getBoundingBox());
+				assertThat(multi.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(single.getObjectiveResults().get("default").getBoundingBox());
 			}
 		}
 	}
@@ -260,7 +255,7 @@ class BruteForceBoundingBoxObjectivesTest {
 		try(BruteForceBoundingBox search = new BruteForceBoundingBox()) {
 			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(item(1, 1, 1),
 					new BoxItem(Box.newBuilder().withSize(2, 1, 1).withRotate3D().withWeight(1).build()))
-					.withContainer(container(3, 3, 3)).withMinimumDimensions()
+					.withContainer(container(3, 3, 3)).withObjective("default", BoundingBox.MIN_VOLUME).withMinimumDimensions()
 					.withGoal(bounds -> { visited.incrementAndGet(); return false; }).build();
 			assertThat(visited.get()).isEqualTo(18);
 			assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
@@ -273,7 +268,7 @@ class BruteForceBoundingBoxObjectivesTest {
 	 *                       |
 	 *             +---------+---------+
 	 *             v                   v
-	 *        primary: volume 8    largest: volume 12
+	 *        default: volume 8    largest: volume 12
 	 *
 	 * An arbitrary additional comparator must disable unsafe volume-only pruning.
 	 */
@@ -281,14 +276,14 @@ class BruteForceBoundingBoxObjectivesTest {
 	void supportsNamedCustomObjectivesAndReplacement() {
 		try(BruteForceBoundingBox search = new BruteForceBoundingBox()) {
 			BruteForceBoundingBoxResultBuilder builder = search.newResultBuilder().withBoxItems(item(3, 2, 1), item(2, 1, 1))
-					.withContainer(container(5, 4, 3)).withAdditionalObjective("largest", BoundingBox.MIN_VOLUME).withMinimumX()
-					.withAdditionalObjective("largest", (left, right) -> Long.compare(right.getVolume(), left.getVolume()));
+					.withContainer(container(5, 4, 3)).withObjective("default", BoundingBox.MIN_VOLUME).withObjective("largest", BoundingBox.MIN_VOLUME).withMinimumX()
+					.withObjective("largest", (left, right) -> Long.compare(right.getVolume(), left.getVolume()));
 			BruteForceBoundingBoxResult result = builder.build();
-			assertThat(result.getBoundingBox().getVolume()).isEqualTo(8);
-			assertThat(result.getAdditionalResults().get("largest").getBoundingBox().getVolume()).isEqualTo(12);
-			assertThat(result.getAdditionalResults().keySet()).containsExactly("largest", "x");
-			assertThatThrownBy(() -> builder.withAdditionalObjective(" ", BoundingBox.MIN_X)).isInstanceOf(IllegalArgumentException.class);
-			assertThatThrownBy(() -> builder.withAdditionalObjective("null", null)).isInstanceOf(NullPointerException.class);
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox().getVolume()).isEqualTo(8);
+			assertThat(result.getObjectiveResults().get("largest").getBoundingBox().getVolume()).isEqualTo(12);
+			assertThat(result.getObjectiveResults().keySet()).containsExactly("default", "largest", "x");
+			assertThatThrownBy(() -> builder.withObjective(" ", BoundingBox.MIN_X)).isInstanceOf(IllegalArgumentException.class);
+			assertThatThrownBy(() -> builder.withObjective("null", null)).isInstanceOf(NullPointerException.class);
 			assertLayouts(result, 2);
 		}
 	}
@@ -299,22 +294,22 @@ class BruteForceBoundingBoxObjectivesTest {
 	 *       volume 12 found ---> volume 9 satisfies stopping goal
 	 *              |                           |
 	 *              v                           v
-	 *       additional winner             primary result
+	 *       additional winner             default result
 	 *       remains volume 12             is goal layout 9
 	 *
-	 * The primary goal is frozen at 9; the other objectives continue to exhaustion.
+	 * The default goal is frozen at 9; the other objectives continue to exhaustion.
 	 */
 	@Test
-	void retainsAdditionalWinnersWhenTheGoalOverridesThePrimaryObjective() {
+	void retainsAdditionalWinnersWhenTheGoalOverridesTheDefaultObjective() {
 		BoundingBoxComparator largest = (left, right) -> Long.compare(right.getVolume(), left.getVolume());
 		try(BruteForceBoundingBox search = new BruteForceBoundingBox()) {
 			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(item(3, 2, 1), item(2, 1, 1))
-					.withContainer(container(5, 4, 3)).withComparator(largest).withAdditionalObjective("largest", largest)
+					.withContainer(container(5, 4, 3)).withComparator(largest).withObjective("largest", largest)
 					.withMinimumDimensions().withGoal(bounds -> bounds.getVolume() == 9).build();
 			assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
-			assertThat(result.getReachedGoals()).containsExactly("primary");
-			assertThat(result.getBoundingBox().getVolume()).isEqualTo(9);
-			assertThat(result.getAdditionalResults().get("largest").getBoundingBox().getVolume()).isGreaterThanOrEqualTo(12);
+			assertThat(result.getReachedGoals()).containsExactly("default");
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox().getVolume()).isEqualTo(9);
+			assertThat(result.getObjectiveResults().get("largest").getBoundingBox().getVolume()).isGreaterThanOrEqualTo(12);
 			assertLayouts(result, 2);
 		}
 	}
@@ -332,20 +327,20 @@ class BruteForceBoundingBoxObjectivesTest {
 		AtomicBoolean stop = new AtomicBoolean();
 		try(BruteForceBoundingBox search = new BruteForceBoundingBox()) {
 			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(item(3, 2, 1), item(2, 1, 1))
-					.withContainer(container(5, 4, 3)).withMinimumDimensions()
+					.withContainer(container(5, 4, 3)).withObjective("default", BoundingBox.MIN_VOLUME).withMinimumDimensions()
 					.withGoal(bounds -> { stop.set(true); return false; }).withInterrupt(stop::get).build();
 			assertThat(result.getTermination()).isEqualTo(Termination.INTERRUPTED);
-			assertThat(result.getAdditionalResults()).hasSize(3);
-			assertThat(result.getResults()).hasSize(1);
+			assertThat(result.getObjectiveResults()).hasSize(4);
+			assertThat(result.getResults()).hasSize(4);
 			assertLayouts(result, 2);
 			BruteForceBoundingBoxResult expired = search.newResultBuilder().withBoxItems(item(1, 1, 1)).withContainer(container(2, 2, 2))
-					.withMinimumDimensions().withInterruptDeadline(0).build();
+					.withObjective("default", BoundingBox.MIN_VOLUME).withMinimumDimensions().withInterruptDeadline(0).build();
 			assertThat(expired.getResults()).isEmpty();
-			assertThat(expired.getAdditionalResults()).isEmpty();
+			assertThat(expired.getObjectiveResults()).isEmpty();
 			BruteForceBoundingBoxResult impossible = search.newResultBuilder().withBoxItems(item(2, 2, 2)).withContainer(container(1, 1, 1))
-					.withMinimumDimensions().build();
+					.withObjective("default", BoundingBox.MIN_VOLUME).withMinimumDimensions().build();
 			assertThat(impossible.getResults()).isEmpty();
-			assertThat(impossible.getAdditionalResults()).isEmpty();
+			assertThat(impossible.getObjectiveResults()).isEmpty();
 			assertLayouts(result, 2); // Later operations cannot mutate saved results.
 		}
 	}
@@ -374,9 +369,9 @@ class BruteForceBoundingBoxObjectivesTest {
 				.withMaxLoadWeight(2).withMaxLoadPressure(2).withMaxLoadIdenticalBoxCount(2).build(), 3);
 		try(LoadBruteForceBoundingBox search = new LoadBruteForceBoundingBox()) {
 			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(item).withContainer(container(3, 1, 3))
-					.withMinimumDimensions().build();
-			assertThat(result.getAdditionalResults().get("x").getBoundingBox()).isEqualTo(new BoundingBox(1, 1, 3));
-			assertThat(result.getAdditionalResults().get("z").getBoundingBox()).isEqualTo(new BoundingBox(3, 1, 1));
+					.withObjective("default", BoundingBox.MIN_VOLUME).withMinimumDimensions().build();
+			assertThat(result.getObjectiveResults().get("x").getBoundingBox()).isEqualTo(new BoundingBox(1, 1, 3));
+			assertThat(result.getObjectiveResults().get("z").getBoundingBox()).isEqualTo(new BoundingBox(3, 1, 1));
 			assertLayouts(result, 3);
 			for(BoundingBoxLayout layout : result.getResults()) {
 				List<Placement> placements = layout.getStack().getPlacements();
@@ -411,13 +406,13 @@ class BruteForceBoundingBoxObjectivesTest {
 		BoxItem item = new BoxItem(Box.newBuilder().withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(0).build(), 3);
 		try(LoadBruteForceBoundingBox search = new LoadBruteForceBoundingBox()) {
 			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(item).withContainer(container(3, 1, 3))
-					.withMinimumDimensions().withAdditionalObjective("checked", (left, right) -> {
+					.withObjective("default", BoundingBox.MIN_VOLUME).withMinimumDimensions().withObjective("checked", (left, right) -> {
 						assertThat(left.dz()).isEqualTo(1);
 						assertThat(right.dz()).isEqualTo(1);
 						return BoundingBox.MIN_VOLUME.compare(left, right);
 					}).build();
 			assertLayouts(result, 3);
-			assertThat(result.getAdditionalResults().values()).allSatisfy(layout -> assertThat(layout.getBoundingBox().dz()).isEqualTo(1));
+			assertThat(result.getObjectiveResults().values()).allSatisfy(layout -> assertThat(layout.getBoundingBox().dz()).isEqualTo(1));
 		}
 	}
 

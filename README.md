@@ -200,8 +200,9 @@ try (BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
         .build();
 
     if (result.isSuccess()) {
-        BoundingBox bounds = result.getBoundingBox();
-        Stack assembly = result.getStack();
+        BoundingBoxLayout layout = result.getObjectiveResults().get("default");
+        BoundingBox bounds = layout.getBoundingBox();
+        Stack assembly = layout.getStack();
     }
 }
 ```
@@ -227,30 +228,32 @@ try (BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
     BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
         .withBoxItems(items)
         .withContainer(searchLimits)
-        .withMinimumDimensions() // additional objectives named "x", "y", "z"
+        .withMinimumDimensions() // objectives named "x", "y", "z"
         .withInterruptDuration(1000)
         .build();
 
     if (result.isSuccess()) {
-        BoundingBoxLayout narrowest = result.getAdditionalResults().get("x");
-        BoundingBoxLayout shallowest = result.getAdditionalResults().get("y");
-        BoundingBoxLayout lowest = result.getAdditionalResults().get("z");
-        List<BoundingBoxLayout> alternatives = result.getResults();
+        BoundingBoxLayout narrowest = result.getObjectiveResults().get("x");
+        BoundingBoxLayout shallowest = result.getObjectiveResults().get("y");
+        BoundingBoxLayout lowest = result.getObjectiveResults().get("z");
+        Collection<BoundingBoxLayout> alternatives = result.getResults();
     }
 }
 ```
 
-The primary result still minimizes volume by default. Use `withMinimumX()`,
+When no objectives are registered, the search minimizes volume under the name `"default"`. Use `withMinimumX()`,
 `withMinimumY()` or `withMinimumZ()` individually, or register a named custom
-ordering with `withAdditionalObjective(name, comparator)`. The built-in
+ordering with `withObjective(name, comparator)`. The built-in
 `BoundingBox.MIN_X`, `MIN_Y` and `MIN_Z` compare the corresponding dimension
 first and use `MIN_VOLUME` to break ties. Reusing a name replaces its objective.
 
-`getAdditionalResults()` maps each registered name to its winner. `getResults()`
-returns the primary layout followed by the additional winners, omitting repeated
-references to the same saved layout. These are objective winners, not every
-candidate or a complete Pareto frontier. Collections are unmodifiable, but stacks
-are mutable and can be shared between winning objectives; do not mutate them.
+`getObjectiveResults()` maps every objective name to its winner, with no primary
+or secondary result. `getResults()` is a values view of that same map, in registration
+order; objectives may share the same saved layout, so repeated references are possible.
+These are objective winners, not every candidate or a complete Pareto frontier.
+The result retains its constructor collections directly, without defensive copies
+or unmodifiable wrappers. Do not modify those arguments after construction, or
+mutate the returned collections, layouts or shared stacks.
 
 Pruning must rule out improvements for every objective; larger-volume branches
 can still improve width, depth or height. Built-in comparisons use primitive
@@ -271,18 +274,21 @@ var widthLayout = result.getObjectiveResults().get("width");
 var reachedGoals = result.getReachedGoals();
 ```
 
-The first `withObjective` call replaces the implicit primary objective. All
-registered objectives are independent: each retains its first goal-satisfying
+Every `withObjective` call adds an objective, or replaces the objective with the
+same name without changing its position. It never clears other objectives.
+The dimension helpers register only their named axis objectives, without adding
+a volume objective. Register one explicitly if wanted. All objectives are independent:
+each retains its first goal-satisfying
 layout, and the search stops with `GOAL_REACHED` only after **all** goals are met,
 possibly by different layouts. Until a goal is met, its comparator selects the
 best-so-far layout. Negative comparator results mean better.
 
 A null predicate keeps optimizing until exhaustion or interruption, so it
-prevents early goal termination. `withGoal` configures only the implicit primary
-objective; `withAdditionalObjective(name, predicate, comparator)` adds an
-independent objective without replacing it. The dimension convenience methods
-have null predicates. Do not mix `withComparator`/`withGoal` with explicitly
-named objectives; configure those through `withObjective` instead.
+prevents early goal termination. `withGoal` and `withComparator` configure the
+ordinary objective named `"default"`, adding it if absent and preserving its other
+setting. They may be combined with named objectives in any order. There is no
+reserved objective name or primary/additional distinction. The dimension
+convenience methods have null predicates.
 
 An interrupted search retains all winners and reports which goals were met.
 Only objectives without an acceptance predicate are guaranteed optimal on

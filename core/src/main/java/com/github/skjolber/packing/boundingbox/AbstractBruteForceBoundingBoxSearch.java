@@ -66,12 +66,13 @@ public abstract class AbstractBruteForceBoundingBoxSearch implements BruteForceB
 		return result(termination, (System.nanoTime() - start) / 1_000_000L);
 	}
 
-	protected boolean prepare() throws PackagerInterruptedException {
+	protected boolean prepare() {
 		long remainingVolume = container.getMaxLoadVolume();
 		long remainingWeight = container.getMaxLoadWeight();
 		// Reject impossible complete assemblies before allocating per-physical-box buffers.
+		// These bounded inventory/rotation scans do not poll; pack checks before
+		// preparation and again before entering the combinatorial search.
 		for(BoxItem item : items) {
-			checkInterrupt();
 			long volume = item.getBox().getVolume();
 			long weight = item.getBox().getWeight();
 			if(item.getCount() > remainingVolume / volume || (weight != 0 && item.getCount() > remainingWeight / weight)) {
@@ -83,7 +84,6 @@ public abstract class AbstractBruteForceBoundingBoxSearch implements BruteForceB
 
 		BoxItem[] matrix = new BoxItem[items.size()];
 		for(int index = 0; index < matrix.length; index++) {
-			checkInterrupt();
 			BoxItem item = items.get(index);
 			List<BoxStackValue> rotations = new ArrayList<>();
 			for(BoxStackValue original : item.getBox().getStackValues()) {
@@ -124,7 +124,6 @@ public abstract class AbstractBruteForceBoundingBoxSearch implements BruteForceB
 	}
 
 	protected boolean place(int depth, int dx, int dy, int dz) throws PackagerInterruptedException {
-		checkInterrupt();
 		BoxStackValue value = values[depth];
 		Placement placement = placements[depth];
 		placement.setStackValue(value);
@@ -135,6 +134,7 @@ public abstract class AbstractBruteForceBoundingBoxSearch implements BruteForceB
 		try {
 			int pointCount = points.size();
 			for(int index = 0; index < pointCount; index++) {
+				// Each candidate can expand an entire recursive placement subtree.
 				checkInterrupt();
 				SimplePoint3D point = points.get(index);
 				if(!point.fits3D(value)) {

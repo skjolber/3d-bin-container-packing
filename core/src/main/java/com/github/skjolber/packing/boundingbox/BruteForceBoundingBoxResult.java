@@ -1,19 +1,15 @@
 package com.github.skjolber.packing.boundingbox;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import com.github.skjolber.packing.api.Stack;
-
 /**
- * The primary assembly, any requested additional objective winners, and the
- * reason the search stopped. Only complete layouts are retained. An unsuccessful
- * result has an empty stack, no bounding box and empty result collections.
+ * Equally ranked objective winners and the reason the search stopped.
+ * Only complete layouts are retained. An unsuccessful result has no winners.
  * An interrupted search retains each objective's best complete layout so far.
+ * Collections and layouts are shared without defensive copies or wrappers;
+ * callers must not modify them.
  */
 public class BruteForceBoundingBoxResult {
 
@@ -28,75 +24,48 @@ public class BruteForceBoundingBoxResult {
 
 	protected final Map<String, BoundingBoxLayout> objectiveResults;
 	protected final Set<String> reachedGoals;
-	protected final Stack stack;
-	protected final BoundingBox boundingBox;
 	protected final Termination termination;
 	protected final long duration;
-	protected final Map<String, BoundingBoxLayout> additionalResults;
-	protected final List<BoundingBoxLayout> results;
 
+	/**
+	 * Retain the supplied collections directly, without copying or wrapping them.
+	 * Neither the collections nor their layouts/stacks may be changed after being
+	 * passed to this constructor. The map's iteration order is preserved and gives
+	 * no objective priority over another.
+	 *
+	 * @param objectiveResults named complete layouts, possibly sharing layout instances
+	 * @param reachedGoals names of objectives whose predicates accepted their layouts
+	 * @param termination reason the search stopped
+	 * @param duration operation duration in milliseconds
+	 */
 	protected BruteForceBoundingBoxResult(Map<String, BoundingBoxLayout> objectiveResults, Set<String> reachedGoals, Termination termination, long duration) {
-		this.objectiveResults = Collections.unmodifiableMap(new LinkedHashMap<>(objectiveResults));
-		this.reachedGoals = Collections.unmodifiableSet(new LinkedHashSet<>(reachedGoals));
-		Map<String, BoundingBoxLayout> additionalResults = new LinkedHashMap<>(objectiveResults);
-		BoundingBoxLayout primary = null;
-		if(!additionalResults.isEmpty()) {
-			String first = additionalResults.keySet().iterator().next();
-			primary = additionalResults.remove(first);
-		}
-		this.stack = primary == null ? new Stack() : primary.getStack();
-		this.boundingBox = primary == null ? null : primary.getBoundingBox();
+		this.objectiveResults = objectiveResults;
+		this.reachedGoals = reachedGoals;
 		this.termination = termination;
 		this.duration = duration;
-		this.additionalResults = Collections.unmodifiableMap(new LinkedHashMap<>(additionalResults));
-		LinkedHashSet<BoundingBoxLayout> layouts = new LinkedHashSet<>();
-		if(primary != null) {
-			layouts.add(primary);
-		}
-		layouts.addAll(additionalResults.values());
-		this.results = List.copyOf(layouts);
 	}
 
-	/** All named objective winners in registration order, including the first objective. */
+	/** All named objective winners in registration order. Do not modify the map or its layouts. */
 	public Map<String, BoundingBoxLayout> getObjectiveResults() {
 		return objectiveResults;
 	}
 
-	/** Names of objectives whose own predicates have accepted their retained layouts. */
+	/** Names of objectives whose predicates accepted their retained layouts. Do not modify the set. */
 	public Set<String> getReachedGoals() {
 		return reachedGoals;
 	}
 
 	/**
-	 * Named objective winners, in registration order. Empty when no complete layout
-	 * was found. Winners are best-so-far when a goal or interruption ends the search.
-	 * The map is unmodifiable; objectives can share the same layout instance.
+	 * A view of all objective winners in registration order, without copying or deduplication.
+	 * Objectives winning the same candidate share a layout, so repeated references are possible.
+	 * This is not a history of candidates or a Pareto frontier. Do not modify the view or its layouts.
 	 */
-	public Map<String, BoundingBoxLayout> getAdditionalResults() {
-		return additionalResults;
-	}
-
-	/**
-	 * Primary result followed by additional winners, omitting repeated references
-	 * to the same retained layout. Different layouts can have identical bounds.
-	 * This is not a history of candidates or a Pareto frontier.
-	 */
-	public List<BoundingBoxLayout> getResults() {
-		return results;
-	}
-
-	/** Primary placements, independent of search state but possibly shared with an additional winner. */
-	public Stack getStack() {
-		return stack;
-	}
-
-	/** @return the primary envelope, or {@code null} if no complete arrangement was found */
-	public BoundingBox getBoundingBox() {
-		return boundingBox;
+	public Collection<BoundingBoxLayout> getResults() {
+		return objectiveResults.values();
 	}
 
 	public boolean isSuccess() {
-		return boundingBox != null;
+		return !objectiveResults.isEmpty();
 	}
 
 	public Termination getTermination() {

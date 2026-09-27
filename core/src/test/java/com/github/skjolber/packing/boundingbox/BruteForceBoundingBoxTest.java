@@ -129,8 +129,8 @@ class BruteForceBoundingBoxTest {
 
 			assertThat(first.getTermination()).isEqualTo(Termination.GOAL_REACHED);
 			assertThat(best.getTermination()).isEqualTo(Termination.EXHAUSTED);
-			assertThat(best.getBoundingBox()).isEqualTo(new BoundingBox(4, 2, 1));
-			assertThat(best.getBoundingBox().getVolume()).isLessThan(first.getBoundingBox().getVolume());
+			assertThat(best.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new BoundingBox(4, 2, 1));
+			assertThat(best.getObjectiveResults().get("default").getBoundingBox().getVolume()).isLessThan(first.getObjectiveResults().get("default").getBoundingBox().getVolume());
 			assertLayout(best, 2, 8);
 			assertLayout(first, 2, 8); // A later operation must not mutate the first result.
 		}
@@ -234,7 +234,7 @@ class BruteForceBoundingBoxTest {
 
 			assertThat(visited.get()).isGreaterThan(1);
 			assertThat(result.getTermination()).isEqualTo(Termination.GOAL_REACHED);
-			assertThat(result.getBoundingBox()).isEqualTo(new BoundingBox(4, 2, 1));
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new BoundingBox(4, 2, 1));
 			assertLayout(result, 4, 8);
 		}
 	}
@@ -279,7 +279,7 @@ class BruteForceBoundingBoxTest {
 
 			assertThat(visited.get()).isGreaterThan(1);
 			assertThat(result.getTermination()).isEqualTo(Termination.GOAL_REACHED);
-			assertThat(result.getBoundingBox().getVolume()).isEqualTo(9);
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox().getVolume()).isEqualTo(9);
 			assertLayout(result, 2, 8);
 		}
 	}
@@ -316,7 +316,7 @@ class BruteForceBoundingBoxTest {
 					.withComparator((left, right) -> Long.compare(right.getVolume(), left.getVolume())).build();
 
 			assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
-			assertThat(result.getBoundingBox().getVolume()).isEqualTo(12);
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox().getVolume()).isEqualTo(12);
 			assertLayout(result, 2, 8);
 		}
 	}
@@ -359,7 +359,7 @@ class BruteForceBoundingBoxTest {
 		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
 			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
 					.withBoxItems(repeated).withContainer(container(4, 4, 4)).build();
-			assertThat(result.getBoundingBox()).isEqualTo(new BoundingBox(2, 2, 2));
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new BoundingBox(2, 2, 2));
 			assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
 			assertLayout(result, 2, 8);
 		}
@@ -394,7 +394,7 @@ class BruteForceBoundingBoxTest {
 		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
 			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
 					.withBoxItems(repeated).withContainer(container(4000, 4000, 4000)).build();
-			assertThat(result.getBoundingBox()).isEqualTo(new BoundingBox(2000, 2000, 2000));
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new BoundingBox(2000, 2000, 2000));
 			assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
 			assertLayout(result, 2, 8_000_000_000L);
 		}
@@ -479,8 +479,8 @@ class BruteForceBoundingBoxTest {
 					.withBoxItems(item(1, 1, 1)).withContainer(container(2, 2, 2)).withInterruptDeadline(0).build();
 			assertThat(result.getTermination()).isEqualTo(Termination.INTERRUPTED);
 			assertThat(result.isSuccess()).isFalse();
-			assertThat(result.getBoundingBox()).isNull();
-			assertThat(result.getStack().isEmpty()).isTrue();
+			assertThat(result.getObjectiveResults()).isEmpty();
+			assertThat(result.getResults()).isEmpty();
 		}
 	}
 
@@ -545,8 +545,8 @@ class BruteForceBoundingBoxTest {
 						.withGoal(bounds -> { throw new AssertionError("No complete layout can exist"); }).build();
 				assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
 				assertThat(result.isSuccess()).isFalse();
-				assertThat(result.getBoundingBox()).isNull();
-				assertThat(result.getStack().isEmpty()).isTrue();
+				assertThat(result.getObjectiveResults()).isEmpty();
+				assertThat(result.getResults()).isEmpty();
 			}
 			// Volume and weight fit, but two 2x2 squares cannot fit in a 3x3 footprint.
 			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
@@ -591,9 +591,9 @@ class BruteForceBoundingBoxTest {
 		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
 			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
 					.withBoxItems(original).withContainer(container).build();
-			assertThat(result.getBoundingBox()).isEqualTo(new BoundingBox(1, 2, 2));
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new BoundingBox(1, 2, 2));
 			assertLayout(result, 2, 4);
-			for(Placement placement : result.getStack()) {
+			for(Placement placement : result.getObjectiveResults().get("default").getStack()) {
 				assertThat(placement.getBoxItem()).isSameAs(original);
 				assertThat(placement.getStackValue()).isIn((Object[]) original.getBox().getStackValues());
 			}
@@ -686,11 +686,19 @@ class BruteForceBoundingBoxTest {
 				BoundingBox expected = enumerateCoordinates(boxes, container, new ArrayList<>(), null);
 				BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
 						.withBoxItems(items).withContainer(container).build();
-				assertThat(result.getBoundingBox()).isEqualTo(expected);
+				if(expected == null) {
+					assertThat(result.getObjectiveResults()).isEmpty();
+				} else {
+					assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(expected);
+				}
 				assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
 				BruteForceBoundingBoxResult withoutPruning = boundingBox.newResultBuilder()
 						.withBoxItems(items).withContainer(container).withGoal(bounds -> false).build();
-				assertThat(withoutPruning.getBoundingBox()).isEqualTo(expected);
+				if(expected == null) {
+					assertThat(withoutPruning.getObjectiveResults()).isEmpty();
+				} else {
+					assertThat(withoutPruning.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(expected);
+				}
 				if(result.isSuccess()) {
 					long volume = 0;
 					for(Box box : boxes) {
@@ -731,11 +739,11 @@ class BruteForceBoundingBoxTest {
 
 	private static void assertLayout(BruteForceBoundingBoxResult result, int count, long volume) {
 		assertThat(result.isSuccess()).isTrue();
-		Stack stack = result.getStack();
+		Stack stack = result.getObjectiveResults().get("default").getStack();
 		assertThat(stack.size()).isEqualTo(count);
 		assertThat(stack.getVolume()).isEqualTo(volume);
 		assertThat(stack.getWeight()).isEqualTo(count);
-		assertThat(bounds(stack.getPlacements())).isEqualTo(result.getBoundingBox());
+		assertThat(bounds(stack.getPlacements())).isEqualTo(result.getObjectiveResults().get("default").getBoundingBox());
 		for(int i = 0; i < count; i++) {
 			Placement placement = stack.getPlacements().get(i);
 			assertThat(placement.getIndex()).isEqualTo(i);

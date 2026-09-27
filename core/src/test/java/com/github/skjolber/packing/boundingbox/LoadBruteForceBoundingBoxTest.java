@@ -61,7 +61,7 @@ class LoadBruteForceBoundingBoxTest {
 			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 1, 3)).build();
 			assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
 			assertValid(result);
-			for(Placement placement : result.getStack()) {
+			for(Placement placement : result.getObjectiveResults().get("default").getStack()) {
 				assertThat(placement.getLoadWeight()).isEqualTo(2 - placement.getAbsoluteZ());
 				assertThat(placement.getBoxItem()).isSameAs(boxes);
 			}
@@ -101,7 +101,7 @@ class LoadBruteForceBoundingBoxTest {
 			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 1, 3))
 					.withGoal(bounds -> { throw new AssertionError("Invalid loads must not reach the goal"); }).build();
 			assertThat(result.isSuccess()).isFalse();
-			assertThat(result.getStack().isEmpty()).isTrue();
+			assertThat(result.getResults()).isEmpty();
 			assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
 		}
 	}
@@ -187,7 +187,7 @@ class LoadBruteForceBoundingBoxTest {
 			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(base, tops).withContainer(container(2, 1, 2)).build();
 			assertValid(result);
 			Placement bottom = null;
-			for(Placement placement : result.getStack().getPlacements()) {
+			for(Placement placement : result.getObjectiveResults().get("default").getStack().getPlacements()) {
 				if(placement.getBoxItem() == base) {
 					bottom = placement;
 					break;
@@ -273,7 +273,7 @@ class LoadBruteForceBoundingBoxTest {
 					.withGoal(bounds -> true).build();
 			assertThat(result.getTermination()).isEqualTo(Termination.GOAL_REACHED);
 			assertValid(result);
-			for(Placement placement : result.getStack().getPlacements()) {
+			for(Placement placement : result.getObjectiveResults().get("default").getStack().getPlacements()) {
 				if(placement.getAbsoluteZ() == 0) {
 					assertThat(placement.getStackValue()).isSameAs(strong);
 				}
@@ -332,7 +332,7 @@ class LoadBruteForceBoundingBoxTest {
 					}).build();
 			assertThat(goals.get()).isPositive();
 			assertValid(result);
-			assertThat(result.getBoundingBox()).isEqualTo(new BoundingBox(3, 1, 1));
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new BoundingBox(3, 1, 1));
 			search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 1, 3)).build();
 			assertValid(result);
 		}
@@ -391,7 +391,7 @@ class LoadBruteForceBoundingBoxTest {
 		try(LoadBruteForceBoundingBox search = new LoadBruteForceBoundingBox()) {
 			BruteForceBoundingBoxResult best = search.newResultBuilder().withBoxItems(boxes).withContainer(container(3, 3, 3))
 					.withComparator((left, right) -> Integer.compare(right.dz(), left.dz())).build();
-			assertThat(best.getBoundingBox().dz()).isEqualTo(3);
+			assertThat(best.getObjectiveResults().get("default").getBoundingBox().dz()).isEqualTo(3);
 			assertValid(best);
 			BruteForceBoundingBoxResult stopped = search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 2, 3))
 					.withGoal(bounds -> { interrupt.set(true); return false; }).withInterrupt(interrupt::get).build();
@@ -468,7 +468,8 @@ class LoadBruteForceBoundingBoxTest {
 			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(cube, rotated).withContainer(container(3, 3, 3))
 					.withGoal(bounds -> { leaves.incrementAndGet(); return false; }).build();
 			assertThat(leaves.get()).isEqualTo(2 * rotated.getBox().getStackValues().length * 3);
-			assertThat(result.getBoundingBox()).isEqualTo(geometric.newResultBuilder().withBoxItems(cube, rotated).withContainer(container(3, 3, 3)).build().getBoundingBox());
+			BruteForceBoundingBoxResult geometricResult = geometric.newResultBuilder().withBoxItems(cube, rotated).withContainer(container(3, 3, 3)).build();
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(geometricResult.getObjectiveResults().get("default").getBoundingBox());
 			assertValid(result);
 		}
 	}
@@ -589,7 +590,11 @@ class LoadBruteForceBoundingBoxTest {
 				}
 				BoundingBox expected = enumerateCoordinates(boxes, limits, new ArrayList<>(), null);
 				BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(items).withContainer(limits).build();
-				assertThat(result.getBoundingBox()).isEqualTo(expected);
+				if(expected == null) {
+					assertThat(result.getObjectiveResults()).isEmpty();
+				} else {
+					assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(expected);
+				}
 				assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
 				if(expected != null) {
 					assertValid(result);
@@ -806,7 +811,7 @@ class LoadBruteForceBoundingBoxTest {
 
 	private static void assertValid(BruteForceBoundingBoxResult result) {
 		assertThat(result.isSuccess()).isTrue();
-		assertValid(result.getStack());
+		assertValid(result.getObjectiveResults().get("default").getStack());
 	}
 
 	private static void assertValid(Stack stack) {

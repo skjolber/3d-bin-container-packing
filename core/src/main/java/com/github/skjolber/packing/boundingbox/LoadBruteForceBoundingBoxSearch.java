@@ -10,7 +10,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 public class LoadBruteForceBoundingBoxSearch extends SingleObjectiveBruteForceBoundingBoxSearch {
 	protected LoadBruteForceBoundingBoxSearch(List<BoxItem> items, Container container, BoundingBoxComparator comparator,
 			Predicate<BoundingBox> goal, PackagerInterruptSupplier interrupt) {
-		this(items, container, new BoundingBoxObjective("primary", goal, comparator), interrupt);
+		this(items, container, new BoundingBoxObjective("default", goal, comparator), interrupt);
 	}
 
 	protected LoadBruteForceBoundingBoxSearch(List<BoxItem> items, Container container, BoundingBoxObjective objective, PackagerInterruptSupplier interrupt) {

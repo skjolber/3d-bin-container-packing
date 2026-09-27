@@ -12,6 +12,7 @@ public class BoundingBoxLayout {
 	protected final BoundingBox boundingBox;
 	protected final Stack stack;
 
+	/** Retain both arguments directly; neither they nor the stack placements may be modified after construction. */
 	protected BoundingBoxLayout(BoundingBox boundingBox, Stack stack) {
 		this.boundingBox = boundingBox;
 		this.stack = stack;
