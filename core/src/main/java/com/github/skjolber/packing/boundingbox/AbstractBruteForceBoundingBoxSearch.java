@@ -154,8 +154,10 @@ public abstract class AbstractBruteForceBoundingBoxSearch implements BruteForceB
 						return true;
 					}
 				} else {
-					points.setMinimumAreaAndVolumeLimit(minAreas[depth + 1], minVolumes[depth + 1]);
 					points.add(index, placement);
+					// Filtering for the next box can remove/reindex the selected point.
+					// Consume that point first, then filter the remaining free space.
+					points.setMinimumAreaAndVolumeLimit(minAreas[depth + 1], minVolumes[depth + 1]);
 					if(place(depth + 1, nextDx, nextDy, nextDz)) {
 						return true;
 					}

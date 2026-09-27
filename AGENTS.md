@@ -11,6 +11,7 @@ Line length 200.
    * Do not use streams instead of a for-loop
    * Check arguments in builders etc, not in constructors etc on the critical path
  * Use ASCII art to explain stacking unit tests
+ * Use one line per builder method.
  
 
 # Building and testing

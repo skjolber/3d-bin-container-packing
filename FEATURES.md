@@ -98,6 +98,9 @@ Controls are extension points, not guarantees that every packager implements
 every policy. Select a packager and controls combination that supports the
 constraint being enforced, then validate the result when correctness matters.
 
+See [Writing your own placement controls](DEVELOPER.md#writing-your-own-placement-controls)
+for implementation guidance and factory wiring.
+
 ## Validation
 
 The optional `validators` module can validate a packing result independently of

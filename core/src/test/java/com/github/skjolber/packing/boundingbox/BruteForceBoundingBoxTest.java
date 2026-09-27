@@ -26,6 +26,30 @@ import com.github.skjolber.packing.boundingbox.BruteForceBoundingBoxResult.Termi
 class BruteForceBoundingBoxTest {
 
 	/*
+	 * Six rotating 2 x 1 x 1 bars can fill this 6 x 2 x 1 floor:
+	 *
+	 *       +---------+---------+---------+
+	 *       |    A    |    A    |    A    |
+	 *       +---------+---------+---------+
+	 *       |    A    |    A    |    A    |
+	 *       +---------+---------+---------+
+	 *
+	 * Other rotations change the remaining minimum area. Applying the next
+	 * box's minimum before consuming the selected point used to remove/reindex
+	 * that point and crash during exhaustive traversal.
+	 */
+	@Test
+	void consumesSelectedPointBeforeFilteringForTheNextRotation() {
+		BoxItem bars = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withRotate3D().withWeight(1).build(), 6);
+		try(BruteForceBoundingBox search = new BruteForceBoundingBox()) {
+			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(bars).withContainer(container(6, 3, 3)).build();
+			assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox().getVolume()).isEqualTo(12);
+			assertLayout(result, 6, 12);
+		}
+	}
+
+	/*
 	 * A standalone search owns its deadline scheduler; no packager is needed.
 	 * One unit cube fits inside a 2 x 2 x 2 container.
 	 *
