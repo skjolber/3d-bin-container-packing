@@ -39,6 +39,32 @@ Brute-force packagers remove duplicate rotations and can skip reverse-equivalent
 permutations. They remain exponential in the number of independently ordered
 boxes; use an interrupt deadline for production requests.
 
+`BruteForceBoundingBox` in `com.github.skjolber.packing.boundingbox` provides standalone best-bounding-box search for
+complete geometric assemblies: minimum volume and surface area by default,
+custom objectives, optional early-stop goals, and best-so-far results on
+interruption. It searches the extreme-point space without lossy point filtering;
+it does not support load constraints or box-item groups.
+One search can retain separate minimum-X/Y/Z layouts and named custom-objective
+winners alongside the primary result, with pruning that respects all objectives.
+Each named objective supports its own predicate and comparator; early goal
+termination requires all goals to be met. Single-objective searches use a
+specialized implementation without multi-objective bookkeeping.
+
+`LoadBruteForceBoundingBox` adds orientation-specific load weight, contact
+pressure, stack-depth and identical-item constraints. It returns complete support
+graphs and distributed load weights, while retaining the same objectives, goals
+and interruption behavior. Neither bounding-box variant enforces stability.
+
+`VirtualBoxPackager` provides rectangular-assembly preprocessing around packagers:
+filled factor grids for repeated items, bounded multi-objective brute-force
+assembly of small similar inventories, alternative layouts, expansion back to
+original identities, and ungrouped fallback. Optional ungrouped comparison
+retains the better result. Selective splitting reuses operation-local cached
+layouts and obeys refinement and delegate-item limits. Load-aware assembly and
+expanded physical-load validation include cross-assembly contacts and rebuild
+support graphs; invalid packings trigger refinement or fallback.
+Unsupported controls and groups pass directly to the delegate.
+
 ## Container selection and allocation
 
 - Ordered selection for the supplied container order.

@@ -1,0 +1,185 @@
+package com.github.skjolber.packing.virtualbox;
+
+import static org.assertj.core.api.Assertions.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.Test;
+import com.github.skjolber.packing.api.*;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
+import com.github.skjolber.packing.boundingbox.BoundingBox;
+
+class VirtualBoxLayoutTest {
+	static BoxItem item(int x, int y, int z, int count) {
+		return new BoxItem(Box.newBuilder().withSize(x, y, z).withRotation(Rotation.newBuilder().withBottomAtZeroDegrees().build()).withWeight(1).build(), count);
+	}
+
+	static Container container(int x, int y, int z) {
+		return Container.newBuilder().withSize(x, y, z).withMaxLoadWeight(100_000).build();
+	}
+
+	/*
+	 * Six cubes become one filled rectangle, without enumerating permutations:
+	 *
+	 *       +-----+-----+-----+
+	 *       |  A  |  A  |  A  |
+	 *       +-----+-----+-----+
+	 *       |  A  |  A  |  A  |
+	 *       +-----+-----+-----+
+	 */
+	@Test
+	void gridContainsEntireInventoryAndMatchesContainer() {
+		BoxItem item = item(1, 1, 1, 6);
+		var layouts = new GridVirtualBoxLayoutGenerator().generate(item, List.of(container(3, 2, 1)), 8, () -> false);
+		assertThat(layouts).hasSize(1);
+		assertThat(layouts.get(0).getBoundingBox()).isEqualTo(new BoundingBox(3, 2, 1));
+		assertThat(layouts.get(0).getPlacements()).hasSize(6).allMatch(p -> p.item() == item);
+		assertFilled(layouts);
+		VirtualBox virtual = VirtualBox.of(layouts);
+		assertThat(virtual.toBoxItem(12).getCount()).isEqualTo(1);
+		assertThat(virtual.toBoxItem(12).getGlobalIndex()).isEqualTo(12);
+		assertThat(virtual.getWeight()).isEqualTo(6);
+		assertThat(item.getCount()).isEqualTo(6);
+		assertThat(item.getBox().getBoxItem()).isSameAs(item);
+		assertThatThrownBy(() -> layouts.get(0).getPlacements().clear()).isInstanceOf(UnsupportedOperationException.class);
+	}
+
+	/*
+	 * The alternatives consume the SAME six cubes:
+	 *
+	 *     [ A A A ]          [ A A ]
+	 *     [ A A A ]    or    [ A A ]
+	 *                        [ A A ]
+	 *
+	 * They are stack values of one count-one item, not two separate items.
+	 */
+	@Test
+	void alternativesRemainExclusiveAndBounded() {
+		BoxItem item = item(1, 1, 1, 6);
+		var layouts = new GridVirtualBoxLayoutGenerator().generate(item, List.of(container(3, 3, 2)), 2, () -> false);
+		assertThat(layouts).hasSize(2);
+		BoxItem virtual = VirtualBox.of(layouts).toBoxItem(0);
+		assertThat(virtual.getCount()).isEqualTo(1);
+		assertThat(virtual.getBox().getStackValues()).hasSize(2);
+		assertThat(virtual.getVolume()).isEqualTo(6);
+		assertFilled(layouts);
+	}
+
+	/*
+	 * Five cubes have only line grids; a 3 x 2 floor cannot hold a whole line.
+	 * No count is rounded up and no sixth cube is invented.
+	 */
+	@Test
+	void primeCountDoesNotInventBoxes() {
+		assertThat(new GridVirtualBoxLayoutGenerator().generate(item(1, 1, 1, 5), List.of(container(3, 2, 1)), 8, () -> false)).isEmpty();
+	}
+
+	/*
+	 * Two fixed 2 x 1 x 1 boxes fit a 4 x 1 x 1 line.
+	 * Turning that line into 1 x 4 x 1 would rotate its contents illegally.
+	 */
+	@Test
+	void doesNotInventRotationsAndHonorsLoadWeightLimits() {
+		BoxItem item = item(2, 1, 1, 2);
+		var generator = new GridVirtualBoxLayoutGenerator();
+		assertThat(generator.generate(item, List.of(container(1, 4, 1)), 8, () -> false)).isEmpty();
+		Container light = Container.newBuilder().withSize(4, 1, 1).withMaxLoadWeight(1).build();
+		assertThat(generator.generate(item, List.of(light), 8, () -> false)).isEmpty();
+	}
+
+	/*
+	 * A: 3 x 2 x 1       B: 1 x 2 x 1
+	 *
+	 *       +-----------------+-----+
+	 *       |        A        |  B  |
+	 *       |                 |     |
+	 *       +-----------------+-----+
+	 *
+	 * Mixed items fill one 4 x 2 x 1 virtual box.
+	 */
+	@Test
+	void bruteForceBuildsFilledMixedAssemblyWithOriginalIdentities() {
+		BoxItem a = item(3, 2, 1, 1), b = item(1, 2, 1, 1);
+		var layouts = new BruteForceVirtualBoxLayoutGenerator(4, 8)
+				.generate(List.of(a, b), List.of(container(4, 2, 1)), () -> false);
+		assertThat(layouts).hasSize(1);
+		assertThat(layouts.get(0).getPlacements()).extracting(VirtualBoxPlacement::item).containsExactlyInAnyOrder(a, b);
+		assertFilled(layouts);
+		assertThat(a.getBox().getBoxItem()).isSameAs(a);
+		assertThat(b.getBox().getBoxItem()).isSameAs(b);
+	}
+
+	/*
+	 * A 2 x 2 square plus a unit square cannot fill a rectangle:
+	 * area 5 requires 5 x 1 or 1 x 5, neither of which admits the larger square.
+	 *
+	 * Best-so-far envelopes are not automatically usable virtual boxes.
+	 */
+	@Test
+	void rejectsHollowBestSoFarLayouts() {
+		BoxItem a = item(2, 2, 1, 1), b = item(1, 1, 1, 1);
+		var generator = new BruteForceVirtualBoxLayoutGenerator(4, 8);
+		// Filled area 5 would require a 5 x 1 or 1 x 5 rectangle, impossible for A.
+		assertThat(generator.generate(List.of(a, b), List.of(container(3, 3, 1)), () -> false)).isEmpty();
+	}
+
+	/*
+	 * A rotating domino plus a cube has three filled length-three orientations.
+	 * Width and height objectives can therefore contribute different layouts.
+	 */
+	@Test
+	void retainsMultipleObjectiveLayouts() {
+		BoxItem a = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withRotate3D().withWeight(1).build());
+		BoxItem b = item(1, 1, 1, 1);
+		var layouts = new BruteForceVirtualBoxLayoutGenerator(3, 8)
+				.generate(List.of(a, b), List.of(container(3, 3, 3)), () -> false);
+		assertThat(layouts.size()).isGreaterThanOrEqualTo(2);
+		assertFilled(layouts);
+	}
+
+	/*
+	 * Work limit / expired deadline / interrupt
+	 *                      |
+	 *                      v
+	 *              no partial virtual box
+	 */
+	@Test
+	void respectsPhysicalCountDeadlineAndCancellation() {
+		BoxItem item = item(1, 1, 1, 5);
+		var generator = new BruteForceVirtualBoxLayoutGenerator(4, 8);
+		assertThat(generator.generate(List.of(item), List.of(container(5, 1, 1)), () -> false)).isEmpty();
+		BoxItem small = item(1, 1, 1, 2);
+		var expired = PackagerInterruptSupplierBuilder.builder().withDeadline(0).build();
+		assertThat(generator.generate(List.of(small), List.of(container(2, 1, 1)), expired)).isEmpty();
+		assertThat(generator.generate(List.of(small), List.of(container(2, 1, 1)), () -> true)).isEmpty();
+		AtomicInteger checks = new AtomicInteger();
+		var grids = new GridVirtualBoxLayoutGenerator().generate(item(1, 1, 1, 1000), List.of(container(10, 10, 10)), 8,
+				() -> checks.incrementAndGet() > 10);
+		assertThat(grids).isEmpty();
+	}
+
+	/*
+	 * Identical dimensions do not make A and B the same inventory.
+	 */
+	@Test
+	void rejectsAlternativesWithDifferentOriginalInventories() {
+		var generator = new GridVirtualBoxLayoutGenerator();
+		var a = generator.generate(item(1, 1, 1, 2), List.of(container(2, 1, 1)), 1, () -> false);
+		var b = generator.generate(item(1, 1, 1, 2), List.of(container(2, 1, 1)), 1, () -> false);
+		assertThatThrownBy(() -> VirtualBox.of(List.of(a.get(0), b.get(0)))).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	static void assertFilled(List<VirtualBoxLayout> layouts) {
+		for(var layout : layouts) {
+			long volume = 0;
+			List<Placement> placements = new ArrayList<>();
+			for(var child : layout.getPlacements()) {
+				Placement next = new Placement(child.stackValue(), -1, child.x(), child.y(), child.z(), false);
+				assertThat(placements).noneMatch(next::intersects);
+				placements.add(next);
+				volume += child.stackValue().getVolume();
+			}
+			assertThat(volume).isEqualTo(layout.getBoundingBox().getVolume());
+		}
+	}
+}

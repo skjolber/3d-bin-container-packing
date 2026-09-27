@@ -3,6 +3,16 @@
 ## Formatting
 Line length 200.
 
+## Java code
+
+ * Improved performance translates to better results in real life
+   * Do not use Comparator. Rather create custom XXXComparator interfaces.
+     * Do not inline optimizations that check instance checks on known static comparators 
+   * Do not use streams instead of a for-loop
+   * Check arguments in builders etc, not in constructors etc on the critical path
+ * Use ASCII art to explain stacking unit tests
+ 
+
 # Building and testing
 
 Run commands from the repository root. Use JDK 25, matching CI and the
