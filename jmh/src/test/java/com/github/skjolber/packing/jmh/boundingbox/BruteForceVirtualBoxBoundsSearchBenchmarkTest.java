@@ -16,17 +16,17 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
-import com.github.skjolber.packing.boundingbox.BoundingBox;
-import com.github.skjolber.packing.boundingbox.BoundingBoxLayout;
-import com.github.skjolber.packing.boundingbox.BruteForceBoundingBoxResult;
-import com.github.skjolber.packing.boundingbox.BruteForceBoundingBoxResult.Termination;
+import com.github.skjolber.packing.virtualbox.VirtualBoxLayout;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBounds;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsResult;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsResult.Termination;
 import com.github.skjolber.packing.validator.load.IdenticalBoxOnlyLoadValidator;
 import com.github.skjolber.packing.validator.load.MaxBoxCountLoadValidator;
 import com.github.skjolber.packing.validator.load.MaxPressureLoadValidator;
 import com.github.skjolber.packing.validator.load.WeightLoadValidator;
 
 /** Fixture correctness tests, not performance measurements. Never invokes an @Benchmark method. */
-class BruteForceBoundingBoxSearchBenchmarkTest {
+class BruteForceVirtualBoxBoundsSearchBenchmarkTest {
 
 	/*
 	 * Every fixture has a filled floor arrangement. For boxCount = 4:
@@ -59,7 +59,7 @@ class BruteForceBoundingBoxSearchBenchmarkTest {
 	}
 
 	protected void verify(String workload, int count, boolean load) {
-		BruteForceBoundingBoxSearchState state = new BruteForceBoundingBoxSearchState();
+		BruteForceVirtualBoxBoundsSearchState state = new BruteForceVirtualBoxBoundsSearchState();
 		state.workload = workload;
 		state.boxCount = count;
 		state.load = load;
@@ -71,22 +71,22 @@ class BruteForceBoundingBoxSearchBenchmarkTest {
 			state.interrupt = stop;
 			assertNotSame(state.newSingleObjectiveSearch(), state.newSingleObjectiveSearch());
 
-			BruteForceBoundingBoxResult single = state.newSingleObjectiveSearch().pack(System.nanoTime());
+			VirtualBoxBoundsResult single = state.newSingleObjectiveSearch().pack(System.nanoTime());
 			assertEquals(Termination.EXHAUSTED, single.getTermination());
 			assertValid(single, state);
 
-			BruteForceBoundingBoxResult multiSingle = state.newSingleObjectiveViaMultiSearch().pack(System.nanoTime());
+			VirtualBoxBoundsResult multiSingle = state.newSingleObjectiveViaMultiSearch().pack(System.nanoTime());
 			assertEquals(Termination.EXHAUSTED, multiSingle.getTermination());
 			assertValid(multiSingle, state);
 			assertEquals(single.getObjectiveResults().get("volume").getBoundingBox(), multiSingle.getObjectiveResults().get("volume").getBoundingBox());
 
-			BruteForceBoundingBoxResult multi = state.newVolumeAndAxesSearch().pack(System.nanoTime());
+			VirtualBoxBoundsResult multi = state.newVolumeAndAxesSearch().pack(System.nanoTime());
 			assertEquals(Termination.EXHAUSTED, multi.getTermination());
 			assertEquals(List.of("volume", "x", "y", "z"), new ArrayList<>(multi.getObjectiveResults().keySet()));
 			assertValid(multi, state);
 			assertEquals(single.getObjectiveResults().get("volume").getBoundingBox(), multi.getObjectiveResults().get("volume").getBoundingBox());
 
-			BruteForceBoundingBoxResult goal = state.newFilledGoalSearch().pack(System.nanoTime());
+			VirtualBoxBoundsResult goal = state.newFilledGoalSearch().pack(System.nanoTime());
 			assertEquals(Termination.GOAL_REACHED, goal.getTermination());
 			assertValid(goal, state);
 			assertEquals(state.volume, goal.getObjectiveResults().get("volume").getBoundingBox().getVolume());
@@ -106,10 +106,10 @@ class BruteForceBoundingBoxSearchBenchmarkTest {
 		}
 	}
 
-	protected void assertValid(BruteForceBoundingBoxResult result, BruteForceBoundingBoxSearchState state) {
+	protected void assertValid(VirtualBoxBoundsResult result, BruteForceVirtualBoxBoundsSearchState state) {
 		assertTrue(result.isSuccess());
-		for(BoundingBoxLayout layout : result.getResults()) {
-			List<Placement> placements = layout.getStack().getPlacements();
+		for(VirtualBoxLayout layout : result.getResults()) {
+			List<Placement> placements = layout.getPlacements();
 			assertEquals(state.boxCount, placements.size());
 			Map<BoxItem, Integer> counts = new IdentityHashMap<>();
 			int dx = 0, dy = 0, dz = 0;
@@ -126,7 +126,7 @@ class BruteForceBoundingBoxSearchBenchmarkTest {
 					assertFalse(placement.intersects3D(placements.get(j)));
 				}
 			}
-			assertEquals(new BoundingBox(dx, dy, dz), layout.getBoundingBox());
+			assertEquals(new VirtualBoxBounds(dx, dy, dz), layout.getBoundingBox());
 			assertEquals(state.items.size(), counts.size());
 			for(BoxItem item : state.items) {
 				assertEquals(item.getCount(), counts.get(item).intValue());

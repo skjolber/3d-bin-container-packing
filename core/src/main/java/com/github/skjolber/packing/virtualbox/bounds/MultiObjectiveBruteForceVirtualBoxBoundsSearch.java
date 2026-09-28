@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.boundingbox;
+package com.github.skjolber.packing.virtualbox.bounds;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -10,30 +10,31 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.boundingbox.BruteForceBoundingBoxResult.Termination;
+import com.github.skjolber.packing.virtualbox.VirtualBoxLayout;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsResult.Termination;
 
 /** A single traversal collecting independent winners for equally ranked objectives. */
-public class MultiObjectiveBruteForceBoundingBoxSearch extends AbstractBruteForceBoundingBoxSearch {
-	protected final BoundingBoxObjective[] objectives;
-	protected final BoundingBoxLayout[] winners;
+public class MultiObjectiveBruteForceVirtualBoxBoundsSearch extends AbstractBruteForceVirtualBoxBoundsSearch {
+	protected final VirtualBoxBoundsObjective[] objectives;
+	protected final VirtualBoxLayout[] winners;
 	protected final boolean[] reached;
 	protected final boolean[] improvements;
 	protected int remainingGoals;
 
-	public MultiObjectiveBruteForceBoundingBoxSearch(List<BoxItem> items, Container container, List<BoundingBoxObjective> objectives,
+	public MultiObjectiveBruteForceVirtualBoxBoundsSearch(List<BoxItem> items, Container container, List<VirtualBoxBoundsObjective> objectives,
 			PackagerInterruptSupplier interrupt, boolean load) {
-		this(items, container, objectives.toArray(BoundingBoxObjective[]::new), interrupt, load);
+		this(items, container, objectives.toArray(VirtualBoxBoundsObjective[]::new), interrupt, load);
 	}
 
 	/**
 	 * Retain the inventory, container and objective array directly. Do not change
 	 * them or their contents after construction or while the search is running.
 	 */
-	protected MultiObjectiveBruteForceBoundingBoxSearch(List<BoxItem> items, Container container, BoundingBoxObjective[] objectives,
+	protected MultiObjectiveBruteForceVirtualBoxBoundsSearch(List<BoxItem> items, Container container, VirtualBoxBoundsObjective[] objectives,
 			PackagerInterruptSupplier interrupt, boolean load) {
 		super(items, container, interrupt, load);
 		this.objectives = objectives;
-		winners = new BoundingBoxLayout[objectives.length];
+		winners = new VirtualBoxLayout[objectives.length];
 		reached = new boolean[objectives.length];
 		improvements = new boolean[objectives.length];
 		remainingGoals = objectives.length;
@@ -62,17 +63,17 @@ public class MultiObjectiveBruteForceBoundingBoxSearch extends AbstractBruteForc
 		if(!isValidLayout()) {
 			return false;
 		}
-		BoundingBox bounds = null;
+		VirtualBoxBounds bounds = null;
 		boolean anyImproves = false;
 		for(int i = 0; i < objectives.length; i++) {
 			improvements[i] = false;
 			if(reached[i]) {
 				continue;
 			}
-			BoundingBoxObjective objective = objectives[i];
+			VirtualBoxBoundsObjective objective = objectives[i];
 			if(objective.goal() != null) {
 				if(bounds == null) {
-					bounds = new BoundingBox(dx, dy, dz);
+					bounds = new VirtualBoxBounds(dx, dy, dz);
 				}
 				if(objective.goal().test(bounds)) {
 					reached[i] = true;
@@ -90,10 +91,10 @@ public class MultiObjectiveBruteForceBoundingBoxSearch extends AbstractBruteForc
 		}
 		if(anyImproves) {
 			if(bounds == null) {
-				bounds = new BoundingBox(dx, dy, dz);
+				bounds = new VirtualBoxBounds(dx, dy, dz);
 			}
 			// Objectives winning the same candidate share one independent search snapshot.
-			BoundingBoxLayout layout = new BoundingBoxLayout(bounds, createSnapshot());
+			VirtualBoxLayout layout = new VirtualBoxLayout(bounds, createSnapshot().getPlacements());
 			for(int i = 0; i < objectives.length; i++) {
 				if(improvements[i]) {
 					winners[i] = layout;
@@ -104,8 +105,8 @@ public class MultiObjectiveBruteForceBoundingBoxSearch extends AbstractBruteForc
 	}
 
 	@Override
-	protected BruteForceBoundingBoxResult result(Termination termination, long duration) {
-		Map<String, BoundingBoxLayout> results = Map.of();
+	protected VirtualBoxBoundsResult result(Termination termination, long duration) {
+		Map<String, VirtualBoxLayout> results = Map.of();
 		Set<String> goals = Set.of();
 		for(int i = 0; i < objectives.length; i++) {
 			if(winners[i] != null) {
@@ -121,6 +122,6 @@ public class MultiObjectiveBruteForceBoundingBoxSearch extends AbstractBruteForc
 				goals.add(objectives[i].name());
 			}
 		}
-		return new BruteForceBoundingBoxResult(results, goals, termination, duration);
+		return new VirtualBoxBoundsResult(results, goals, termination, duration);
 	}
 }

@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.virtualbox;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,10 +7,10 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
-import com.github.skjolber.packing.boundingbox.BoundingBox;
-import com.github.skjolber.packing.boundingbox.BoundingBoxComparator;
-import com.github.skjolber.packing.boundingbox.BruteForceBoundingBox;
-import com.github.skjolber.packing.boundingbox.LoadBruteForceBoundingBox;
+import com.github.skjolber.packing.virtualbox.bounds.BruteForceVirtualBoxBoundsGenerator;
+import com.github.skjolber.packing.virtualbox.bounds.LoadBruteForceVirtualBoxBoundsGenerator;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBounds;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsComparator;
 
 /** Bounded, layout search, including internal load constraints, for small mixed or repeated inventories. */
 public class BruteForceVirtualBoxLayoutGenerator {
@@ -61,8 +60,8 @@ public class BruteForceVirtualBoxLayoutGenerator {
 			return List.of();
 		}
 		final long totalVolume = volume;
-		Map<BoundingBox, VirtualBoxLayout> layouts = new LinkedHashMap<>();
-		try(BruteForceBoundingBox search = load ? new LoadBruteForceBoundingBox() : new BruteForceBoundingBox()) {
+		Map<VirtualBoxBounds, VirtualBoxLayout> layouts = new LinkedHashMap<>();
+		try(BruteForceVirtualBoxBoundsGenerator search = load ? new LoadBruteForceVirtualBoxBoundsGenerator() : new BruteForceVirtualBoxBoundsGenerator()) {
 			for(Container container : containers) {
 				if(interrupt.getAsBoolean()) {
 					break;
@@ -71,30 +70,26 @@ public class BruteForceVirtualBoxLayoutGenerator {
 					continue;
 				}
 				// Filled assemblies rank ahead of hollow envelopes even when an axis goal is unreachable.
-				BoundingBoxComparator xOrder = filledFirst(totalVolume, BoundingBox.MIN_X);
-				BoundingBoxComparator yOrder = filledFirst(totalVolume, BoundingBox.MIN_Y);
-				BoundingBoxComparator zOrder = filledFirst(totalVolume, BoundingBox.MIN_Z);
+				VirtualBoxBoundsComparator xOrder = filledFirst(totalVolume, VirtualBoxBounds.MIN_X);
+				VirtualBoxBoundsComparator yOrder = filledFirst(totalVolume, VirtualBoxBounds.MIN_Y);
+				VirtualBoxBoundsComparator zOrder = filledFirst(totalVolume, VirtualBoxBounds.MIN_Z);
 				int xTarget = minimumExtent(volume, container.getLoadDy(), container.getLoadDz());
 				int yTarget = minimumExtent(volume, container.getLoadDx(), container.getLoadDz());
 				int zTarget = minimumExtent(volume, container.getLoadDx(), container.getLoadDy());
 				var result = search.newResultBuilder().withBoxItems(items).withContainer(container)
-						.withObjective("filled", b -> b.getVolume() == totalVolume, BoundingBox.MIN_VOLUME)
+						.withObjective("filled", b -> b.getVolume() == totalVolume, VirtualBoxBounds.MIN_VOLUME)
 						.withObjective("x", b -> b.getVolume() == totalVolume && b.dx() <= xTarget, xOrder)
 						.withObjective("y", b -> b.getVolume() == totalVolume && b.dy() <= yTarget, yOrder)
 						.withObjective("z", b -> b.getVolume() == totalVolume && b.dz() <= zTarget, zOrder)
 						.withInterrupt(interrupt::getAsBoolean).build();
 				for(var layout : result.getResults()) {
-					BoundingBox bounds = layout.getBoundingBox();
+					VirtualBoxBounds bounds = layout.getBoundingBox();
 					// Goals are stopping criteria, not hard filters. Check every best-so-far result.
 					if(bounds.getVolume() != totalVolume || layouts.containsKey(bounds)) {
 						continue;
 					}
-					List<VirtualBoxPlacement> placements = new ArrayList<>();
-					for(var placement : layout.getStack().getPlacements()) {
-						var value = placement.getStackValue();
-						placements.add(new VirtualBoxPlacement(originals.get(value.getBox()), value, placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ()));
-					}
-					layouts.put(bounds, new VirtualBoxLayout(bounds, placements));
+					// Search snapshots already retain original box identities and relative coordinates.
+					layouts.put(bounds, layout);
 					if(layouts.size() == maxLayouts) {
 						return List.copyOf(layouts.values());
 					}
@@ -104,7 +99,7 @@ public class BruteForceVirtualBoxLayoutGenerator {
 		return List.copyOf(layouts.values());
 	}
 
-	protected BoundingBoxComparator filledFirst(long volume, BoundingBoxComparator tieBreaker) {
+	protected VirtualBoxBoundsComparator filledFirst(long volume, VirtualBoxBoundsComparator tieBreaker) {
 		return (left, right) -> {
 			int comparison = Boolean.compare(right.getVolume() == volume, left.getVolume() == volume);
 			return comparison != 0 ? comparison : tieBreaker.compare(left, right);

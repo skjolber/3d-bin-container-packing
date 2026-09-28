@@ -3,27 +3,23 @@ package com.github.skjolber.packing.virtualbox;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
-import com.github.skjolber.packing.boundingbox.BoundingBoxLoadSupport;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsLoadSupport;
 
 /**
  * Validates loads on physical boxes, never on aggregate box approximations.
  * Does not imply stability or full support. One instance is reusable within an operation.
  */
 public class VirtualBoxLoadValidator {
-	protected final BoundingBoxLoadSupport support;
+	
+	protected final VirtualBoxBoundsLoadSupport support;
 
 	public VirtualBoxLoadValidator(PackagerInterruptSupplier interrupt) {
-		support = new BoundingBoxLoadSupport(interrupt);
+		support = new VirtualBoxBoundsLoadSupport(interrupt);
 	}
 
 	public boolean isValid(VirtualBoxLayout layout) throws PackagerInterruptedException {
-		Placement[] placements = new Placement[layout.getPlacements().size()];
-		for(int i = 0; i < placements.length; i++) {
-			VirtualBoxPlacement child = layout.getPlacements().get(i);
-			placements[i] = new Placement(child.stackValue(), -1, child.x(), child.y(), child.z(), false);
-		}
-		return support.isValidLayout(placements);
+		return support.isValidLayout(layout.getPlacements().toArray(Placement[]::new));
 	}
 
 	/** Return a container with a rebuilt physical support graph, or null if any load constraint fails. */

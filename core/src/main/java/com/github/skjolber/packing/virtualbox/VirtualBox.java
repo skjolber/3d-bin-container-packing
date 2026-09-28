@@ -6,6 +6,7 @@ import java.util.Map;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.Placement;
 
 /**
  * Alternative filled layouts of exactly the same original inventory. A packing
@@ -52,8 +53,8 @@ public class VirtualBox {
 
 	protected static Map<BoxItem, Integer> inventory(VirtualBoxLayout layout) {
 		Map<BoxItem, Integer> result = new IdentityHashMap<>();
-		for(VirtualBoxPlacement placement : layout.getPlacements()) {
-			result.merge(placement.item(), 1, Integer::sum);
+		for(Placement placement : layout.getPlacements()) {
+			result.merge(placement.getBoxItem(), 1, Integer::sum);
 		}
 		return result;
 	}

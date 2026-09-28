@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.boundingbox;
+package com.github.skjolber.packing.virtualbox.bounds;
 
 /**
  * Bounding-box search respecting each orientation's load weight, contact
@@ -12,7 +12,7 @@ package com.github.skjolber.packing.boundingbox;
  * groups and obstacles are unsupported; full support and stability are not
  * enforced. Close this reusable component after all operations finish.</p>
  */
-public class LoadBruteForceBoundingBox extends BruteForceBoundingBox {
+public class LoadBruteForceVirtualBoxBoundsGenerator extends BruteForceVirtualBoxBoundsGenerator {
 
 	@Override
 	protected boolean supportsLoad() {

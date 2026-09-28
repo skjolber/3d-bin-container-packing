@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.boundingbox;
+package com.github.skjolber.packing.virtualbox.bounds;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -16,14 +16,16 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.boundingbox.BruteForceBoundingBoxResult.Termination;
+import com.github.skjolber.packing.virtualbox.bounds.BruteForceVirtualBoxBoundsGenerator;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsResult;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsResult.Termination;
 
 /*
  * Diagram conventions: schematic views, with the viewing plane and dimensions
  * stated per test. Gaps belong to the rectangular envelope, not to box volume.
  * Labels distinguish illustrative candidates, rejected layouts and asserted results.
  */
-class BruteForceBoundingBoxTest {
+class BruteForceVirtualBoxBoundsGeneratorTest {
 
 	/*
 	 * Six rotating 2 x 1 x 1 bars can fill this 6 x 2 x 1 floor:
@@ -41,8 +43,8 @@ class BruteForceBoundingBoxTest {
 	@Test
 	void consumesSelectedPointBeforeFilteringForTheNextRotation() {
 		BoxItem bars = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withRotate3D().withWeight(1).build(), 6);
-		try(BruteForceBoundingBox search = new BruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(bars).withContainer(container(6, 3, 3)).build();
+		try(BruteForceVirtualBoxBoundsGenerator search = new BruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = search.newResultBuilder().withBoxItems(bars).withContainer(container(6, 3, 3)).build();
 			assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
 			assertThat(result.getObjectiveResults().get("default").getBoundingBox().getVolume()).isEqualTo(12);
 			assertLayout(result, 6, 12);
@@ -73,8 +75,8 @@ class BruteForceBoundingBoxTest {
 	 */
 	@Test
 	void supportsFutureDeadlinesWithoutAPackager() {
-		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+		try(BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = boundingBox.newResultBuilder()
 					.withBoxItems(item(1, 1, 1)).withContainer(container(2, 2, 2))
 					.withInterruptDuration(60_000).build();
 			assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
@@ -87,7 +89,7 @@ class BruteForceBoundingBoxTest {
 	 *
 	 *     +-------------------------+
 	 *     |                         |
-	 *     |  BruteForceBoundingBox  |
+	 *     |  BruteForceVirtualBoxBounds  |
 	 *     |          OPEN           |
 	 *     |                         |
 	 *     +-------------------------+
@@ -109,7 +111,7 @@ class BruteForceBoundingBoxTest {
 	 */
 	@Test
 	void rejectsNewOperationsAfterClose() {
-		BruteForceBoundingBox boundingBox = new BruteForceBoundingBox();
+		BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator();
 		boundingBox.close();
 		assertThatThrownBy(boundingBox::newResultBuilder)
 				.isInstanceOf(IllegalStateException.class).hasMessageContaining("closed");
@@ -145,15 +147,15 @@ class BruteForceBoundingBoxTest {
 	void improvesBoundingVolumeAfterTheFirstCompletePacking() {
 		List<BoxItem> items = List.of(item(3, 2, 1), item(2, 1, 1));
 		Container container = container(5, 4, 3);
-		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult first = boundingBox.newResultBuilder()
+		try(BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult first = boundingBox.newResultBuilder()
 					.withBoxItems(items).withContainer(container).withGoal(bounds -> true).build();
-			BruteForceBoundingBoxResult best = boundingBox.newResultBuilder()
+			VirtualBoxBoundsResult best = boundingBox.newResultBuilder()
 					.withBoxItems(items).withContainer(container).build();
 
 			assertThat(first.getTermination()).isEqualTo(Termination.GOAL_REACHED);
 			assertThat(best.getTermination()).isEqualTo(Termination.EXHAUSTED);
-			assertThat(best.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new BoundingBox(4, 2, 1));
+			assertThat(best.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new VirtualBoxBounds(4, 2, 1));
 			assertThat(best.getObjectiveResults().get("default").getBoundingBox().getVolume()).isLessThan(first.getObjectiveResults().get("default").getBoundingBox().getVolume());
 			assertLayout(best, 2, 8);
 			assertLayout(first, 2, 8); // A later operation must not mutate the first result.
@@ -205,8 +207,8 @@ class BruteForceBoundingBoxTest {
 		BoxItem unit = item(1, 1, 1);
 		BoxItem rotating = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withRotate3D().withWeight(1).build());
 		AtomicInteger layouts = new AtomicInteger();
-		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+		try(BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = boundingBox.newResultBuilder()
 					.withBoxItems(unit, rotating).withContainer(container(3, 3, 3))
 					.withGoal(bounds -> {
 						layouts.incrementAndGet();
@@ -248,8 +250,8 @@ class BruteForceBoundingBoxTest {
 	void reachesAFilledRectangularAssemblyGoal() {
 		BoxItem repeated = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withWeight(1).build(), 4);
 		AtomicInteger visited = new AtomicInteger();
-		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+		try(BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = boundingBox.newResultBuilder()
 					.withBoxItems(repeated).withContainer(container(4, 4, 4))
 					.withGoal(bounds -> {
 						visited.incrementAndGet();
@@ -258,7 +260,7 @@ class BruteForceBoundingBoxTest {
 
 			assertThat(visited.get()).isGreaterThan(1);
 			assertThat(result.getTermination()).isEqualTo(Termination.GOAL_REACHED);
-			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new BoundingBox(4, 2, 1));
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new VirtualBoxBounds(4, 2, 1));
 			assertLayout(result, 4, 8);
 		}
 	}
@@ -292,8 +294,8 @@ class BruteForceBoundingBoxTest {
 	@Test
 	void acceptsGoalEvenWhenItIsWorseThanAnEarlierLayout() {
 		AtomicInteger visited = new AtomicInteger();
-		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+		try(BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = boundingBox.newResultBuilder()
 					.withBoxItems(item(3, 2, 1), item(2, 1, 1)).withContainer(container(5, 4, 3))
 					.withComparator((left, right) -> Long.compare(right.getVolume(), left.getVolume()))
 					.withGoal(bounds -> {
@@ -334,8 +336,8 @@ class BruteForceBoundingBoxTest {
 	 */
 	@Test
 	void supportsCustomObjectivesWithoutVolumePruning() {
-		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+		try(BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = boundingBox.newResultBuilder()
 					.withBoxItems(item(3, 2, 1), item(2, 1, 1)).withContainer(container(5, 4, 3))
 					.withComparator((left, right) -> Long.compare(right.getVolume(), left.getVolume())).build();
 
@@ -380,10 +382,10 @@ class BruteForceBoundingBoxTest {
 	@Test
 	void prefersCompactSurfaceAreaAmongEqualVolumeLayouts() {
 		BoxItem repeated = new BoxItem(Box.newBuilder().withSize(2, 2, 1).withWeight(1).build(), 2);
-		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+		try(BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = boundingBox.newResultBuilder()
 					.withBoxItems(repeated).withContainer(container(4, 4, 4)).build();
-			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new BoundingBox(2, 2, 2));
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new VirtualBoxBounds(2, 2, 2));
 			assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
 			assertLayout(result, 2, 8);
 		}
@@ -415,10 +417,10 @@ class BruteForceBoundingBoxTest {
 	@Test
 	void handlesVolumesLargerThanIntegerRange() {
 		BoxItem repeated = new BoxItem(Box.newBuilder().withSize(2000, 2000, 1000).withWeight(1).build(), 2);
-		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+		try(BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = boundingBox.newResultBuilder()
 					.withBoxItems(repeated).withContainer(container(4000, 4000, 4000)).build();
-			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new BoundingBox(2000, 2000, 2000));
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new VirtualBoxBounds(2000, 2000, 2000));
 			assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
 			assertLayout(result, 2, 8_000_000_000L);
 		}
@@ -460,8 +462,8 @@ class BruteForceBoundingBoxTest {
 	@Test
 	void retainsTheBestCompleteLayoutWhenInterrupted() {
 		AtomicBoolean stop = new AtomicBoolean();
-		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+		try(BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = boundingBox.newResultBuilder()
 					.withBoxItems(item(3, 2, 1), item(2, 1, 1)).withContainer(container(5, 4, 3))
 					.withGoal(bounds -> {
 						stop.set(true);
@@ -498,8 +500,8 @@ class BruteForceBoundingBoxTest {
 	 */
 	@Test
 	void expiredDeadlineReturnsNoLayoutWithoutSearching() {
-		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+		try(BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = boundingBox.newResultBuilder()
 					.withBoxItems(item(1, 1, 1)).withContainer(container(2, 2, 2)).withInterruptDeadline(0).build();
 			assertThat(result.getTermination()).isEqualTo(Termination.INTERRUPTED);
 			assertThat(result.isSuccess()).isFalse();
@@ -561,10 +563,10 @@ class BruteForceBoundingBoxTest {
 	 */
 	@Test
 	void neverReturnsAPartialAssembly() {
-		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
+		try(BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator()) {
 			for(Container container : List.of(container(2, 2, 1), container(1, 4, 1),
 					Container.newBuilder().withSize(4, 4, 4).withMaxLoadWeight(1).build())) {
-				BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+				VirtualBoxBoundsResult result = boundingBox.newResultBuilder()
 						.withBoxItems(item(2, 2, 1), item(1, 1, 1)).withContainer(container)
 						.withGoal(bounds -> { throw new AssertionError("No complete layout can exist"); }).build();
 				assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
@@ -573,7 +575,7 @@ class BruteForceBoundingBoxTest {
 				assertThat(result.getResults()).isEmpty();
 			}
 			// Volume and weight fit, but two 2x2 squares cannot fit in a 3x3 footprint.
-			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+			VirtualBoxBoundsResult result = boundingBox.newResultBuilder()
 					.withBoxItems(new BoxItem(Box.newBuilder().withSize(2, 2, 1).withWeight(1).build(), 2))
 					.withContainer(container(3, 3, 1)).build();
 			assertThat(result.isSuccess()).isFalse();
@@ -612,12 +614,12 @@ class BruteForceBoundingBoxTest {
 	void respectsLoadDimensionsAndPreservesInputIdentitiesAndOrientationIndexes() {
 		BoxItem original = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withRotate3D().withWeight(1).build(), 2, 17, 41);
 		Container container = Container.newBuilder().withSize(9, 9, 9).withLoadSize(1, 2, 2).withMaxLoadWeight(10).build();
-		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+		try(BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = boundingBox.newResultBuilder()
 					.withBoxItems(original).withContainer(container).build();
-			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new BoundingBox(1, 2, 2));
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new VirtualBoxBounds(1, 2, 2));
 			assertLayout(result, 2, 4);
-			for(Placement placement : result.getObjectiveResults().get("default").getStack()) {
+			for(Placement placement : result.getObjectiveResults().get("default").getPlacements()) {
 				assertThat(placement.getBoxItem()).isSameAs(original);
 				assertThat(placement.getStackValue()).isIn((Object[]) original.getBox().getStackValues());
 			}
@@ -645,13 +647,13 @@ class BruteForceBoundingBoxTest {
 	 *
 	 * The 2 x 2 x 2 container could also fit the boxes side by side, but that
 	 * does not make it safe to ignore their declared constraints.
-	 * BruteForceBoundingBox rejects the constrained input with IllegalArgumentException.
-	 * Use LoadBruteForceBoundingBox when these constraints must be evaluated.
+	 * BruteForceVirtualBoxBounds rejects the constrained input with IllegalArgumentException.
+	 * Use LoadBruteForceVirtualBoxBounds when these constraints must be evaluated.
 	 */
 	@Test
 	void rejectsLoadConstraintsRatherThanIgnoringThem() {
 		BoxItem constrained = new BoxItem(Box.newBuilder().withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(0).build(), 2);
-		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
+		try(BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator()) {
 			assertThatThrownBy(() -> boundingBox.newResultBuilder()
 					.withBoxItems(constrained).withContainer(container(2, 2, 2)).build())
 					.isInstanceOf(IllegalArgumentException.class).hasMessageContaining("load constraints");
@@ -699,7 +701,7 @@ class BruteForceBoundingBoxTest {
 				List.of(new BoxItem(Box.newBuilder().withSize(2, 1, 1).withRotate3D().withWeight(1).build(), 3)),
 				List.of(item(2, 2, 1), item(2, 2, 1), item(2, 2, 1)));
 		Container container = container(3, 3, 2);
-		try(BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
+		try(BruteForceVirtualBoxBoundsGenerator boundingBox = new BruteForceVirtualBoxBoundsGenerator()) {
 			for(List<BoxItem> items : cases) {
 				List<Box> boxes = new ArrayList<>();
 				for(BoxItem item : items) {
@@ -707,8 +709,8 @@ class BruteForceBoundingBoxTest {
 						boxes.add(item.getBox());
 					}
 				}
-				BoundingBox expected = enumerateCoordinates(boxes, container, new ArrayList<>(), null);
-				BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+				VirtualBoxBounds expected = enumerateCoordinates(boxes, container, new ArrayList<>(), null);
+				VirtualBoxBoundsResult result = boundingBox.newResultBuilder()
 						.withBoxItems(items).withContainer(container).build();
 				if(expected == null) {
 					assertThat(result.getObjectiveResults()).isEmpty();
@@ -716,7 +718,7 @@ class BruteForceBoundingBoxTest {
 					assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(expected);
 				}
 				assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
-				BruteForceBoundingBoxResult withoutPruning = boundingBox.newResultBuilder()
+				VirtualBoxBoundsResult withoutPruning = boundingBox.newResultBuilder()
 						.withBoxItems(items).withContainer(container).withGoal(bounds -> false).build();
 				if(expected == null) {
 					assertThat(withoutPruning.getObjectiveResults()).isEmpty();
@@ -735,10 +737,10 @@ class BruteForceBoundingBoxTest {
 	}
 
 	// Deliberately independent of point calculators, iterators, and search pruning.
-	private BoundingBox enumerateCoordinates(List<Box> boxes, Container container, List<Placement> placed, BoundingBox best) {
+	private VirtualBoxBounds enumerateCoordinates(List<Box> boxes, Container container, List<Placement> placed, VirtualBoxBounds best) {
 		if(placed.size() == boxes.size()) {
-			BoundingBox candidate = bounds(placed);
-			return best == null || BoundingBox.MIN_VOLUME.compare(candidate, best) < 0 ? candidate : best;
+			VirtualBoxBounds candidate = bounds(placed);
+			return best == null || VirtualBoxBounds.MIN_VOLUME.compare(candidate, best) < 0 ? candidate : best;
 		}
 		for(BoxStackValue value : boxes.get(placed.size()).getStackValues()) {
 			for(int x = 0; x <= container.getLoadDx() - value.getDx(); x++) {
@@ -761,9 +763,12 @@ class BruteForceBoundingBoxTest {
 		return best;
 	}
 
-	private static void assertLayout(BruteForceBoundingBoxResult result, int count, long volume) {
+	private static void assertLayout(VirtualBoxBoundsResult result, int count, long volume) {
 		assertThat(result.isSuccess()).isTrue();
-		Stack stack = result.getObjectiveResults().get("default").getStack();
+		Stack stack = new Stack();
+		for(Placement placement : result.getObjectiveResults().get("default").getPlacements()) {
+			stack.add(placement);
+		}
 		assertThat(stack.size()).isEqualTo(count);
 		assertThat(stack.getVolume()).isEqualTo(volume);
 		assertThat(stack.getWeight()).isEqualTo(count);
@@ -777,14 +782,14 @@ class BruteForceBoundingBoxTest {
 		}
 	}
 
-	private static BoundingBox bounds(List<Placement> placements) {
+	private static VirtualBoxBounds bounds(List<Placement> placements) {
 		int dx = 0, dy = 0, dz = 0;
 		for(Placement placement : placements) {
 			dx = Math.max(dx, placement.getAbsoluteEndX() + 1);
 			dy = Math.max(dy, placement.getAbsoluteEndY() + 1);
 			dz = Math.max(dz, placement.getAbsoluteEndZ() + 1);
 		}
-		return new BoundingBox(dx, dy, dz);
+		return new VirtualBoxBounds(dx, dy, dz);
 	}
 
 	private static BoxItem item(int dx, int dy, int dz) {

@@ -33,7 +33,7 @@ Remember to disable CPU turbo / boost in BIOS, and close active programs competi
 
 ### Bounding-box search
 
-`BruteForceBoundingBoxSearchBenchmark` measures complete, fresh one-shot searches
+`BruteForceVirtualBoxBoundsSearchBenchmark` measures complete, fresh one-shot searches
 in microseconds per operation:
 
 | Method | Work |
@@ -77,7 +77,7 @@ Build using the repository's Maven wrapper:
 For example, compare the single-objective implementations on one input:
 
 ```sh
-java -jar jmh/target/benchmark.jar '.*BruteForceBoundingBoxSearchBenchmark.singleObjective.*' \
+java -jar jmh/target/benchmark.jar '.*BruteForceVirtualBoxBoundsSearchBenchmark.singleObjective.*' \
   -p workload=rotated -p boxCount=6 -p load=false -prof gc -rf json -rff /tmp/bounding-box-jmh.json
 ```
 
@@ -101,5 +101,4 @@ Benchmarks can be executed as standalone programs (using `main(..)` method) dire
 ## Writing a benchmark
 Once a potential hotspot is identified, capture the initial state by writing a baseline benchmark. If missing, add unit tests, so you're sure to be comparing apples to apples. Also add a (as close as possible) no-operation / pass-through benchmark to sanity-check the upper limit on your results. Please note that this will need to be submitted in its own PR.
 
-Then add alternative implementations and their corresponding benchmarks. The benchmarks you want to compare go into the same class file (so that the visualizer presents them together). 
-
+Then add alternative implementations and their corresponding benchmarks. The benchmarks you want to compare go into the same class file (so that the visualizer presents them together).

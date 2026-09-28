@@ -1,7 +1,9 @@
-package com.github.skjolber.packing.boundingbox;
+package com.github.skjolber.packing.virtualbox.bounds;
 
 /** One-shot search of complete assemblies within the supplied container limits. */
-public interface BruteForceBoundingBoxSearch {
+public interface VirtualBoxBoundsSearch {
+	
 	/** Execute the search. The start time uses {@link System#nanoTime()}. */
-	BruteForceBoundingBoxResult pack(long start);
+	VirtualBoxBoundsResult pack(long start);
+	
 }

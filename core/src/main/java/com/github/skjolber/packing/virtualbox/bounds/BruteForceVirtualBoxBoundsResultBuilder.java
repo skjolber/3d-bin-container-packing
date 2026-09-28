@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.boundingbox;
+package com.github.skjolber.packing.virtualbox.bounds;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,36 +24,36 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilde
  * <p>This operation is sequential and intended for small assemblies. It searches
  * the extreme-point placement space, not arbitrary coordinates.
  * Groups, obstacles and existing placements are not supported. Per-box load
- * constraints are supported when created by {@link LoadBruteForceBoundingBox}.
+ * constraints are supported when created by {@link LoadBruteForceVirtualBoxBoundsGenerator}.
  * No full-support/stability constraint is implied.</p>
  */
-public class BruteForceBoundingBoxResultBuilder {
+public class BruteForceVirtualBoxBoundsResultBuilder {
 
 	protected final ScheduledThreadPoolExecutor scheduler;
 	protected final boolean load;
 	protected List<BoxItem> items;
 	protected Container container;
-	protected List<BoundingBoxObjective> objectives;
+	protected List<VirtualBoxBoundsObjective> objectives;
 	protected PackagerInterruptSupplier interrupt;
 	protected long deadline = -1;
 
-	protected BruteForceBoundingBoxResultBuilder(ScheduledThreadPoolExecutor scheduler, boolean load) {
+	protected BruteForceVirtualBoxBoundsResultBuilder(ScheduledThreadPoolExecutor scheduler, boolean load) {
 		this.scheduler = scheduler;
 		this.load = load;
 	}
 
 	/** Retain the input list directly. Do not modify it or its items while this builder/search is in use. */
-	public BruteForceBoundingBoxResultBuilder withBoxItems(List<BoxItem> items) {
+	public BruteForceVirtualBoxBoundsResultBuilder withBoxItems(List<BoxItem> items) {
 		this.items = Objects.requireNonNull(items);
 		return this;
 	}
 
-	public BruteForceBoundingBoxResultBuilder withBoxItems(BoxItem... items) {
+	public BruteForceVirtualBoxBoundsResultBuilder withBoxItems(BoxItem... items) {
 		return withBoxItems(Arrays.asList(items));
 	}
 
 	/** Supply an empty container defining the search limits. */
-	public BruteForceBoundingBoxResultBuilder withContainer(Container container) {
+	public BruteForceVirtualBoxBoundsResultBuilder withContainer(Container container) {
 		this.container = Objects.requireNonNull(container);
 		return this;
 	}
@@ -62,8 +62,8 @@ public class BruteForceBoundingBoxResultBuilder {
 	 * Configure the comparator of the objective named {@code default}, preserving its goal.
 	 * Adds that objective if absent. Negative means the first envelope is preferred.
 	 */
-	public BruteForceBoundingBoxResultBuilder withComparator(BoundingBoxComparator comparator) {
-		BoundingBoxObjective objective = findObjective("default");
+	public BruteForceVirtualBoxBoundsResultBuilder withComparator(VirtualBoxBoundsComparator comparator) {
+		VirtualBoxBoundsObjective objective = findObjective("default");
 		return withObjective("default", objective == null ? null : objective.goal(), comparator);
 	}
 
@@ -72,38 +72,38 @@ public class BruteForceBoundingBoxResultBuilder {
 	 * Other objectives are unchanged. All objectives have equal standing.
 	 * The objective is retained directly and must not be modified after registration.
 	 */
-	public BruteForceBoundingBoxResultBuilder withObjective(BoundingBoxObjective objective) {
+	public BruteForceVirtualBoxBoundsResultBuilder withObjective(VirtualBoxBoundsObjective objective) {
 		validateObjective(objective);
 		registerObjective(objective);
 		return this;
 	}
 
-	public BruteForceBoundingBoxResultBuilder withObjective(String name, Predicate<BoundingBox> goal, BoundingBoxComparator comparator) {
-		return withObjective(new BoundingBoxObjective(name, goal, comparator));
+	public BruteForceVirtualBoxBoundsResultBuilder withObjective(String name, Predicate<VirtualBoxBounds> goal, VirtualBoxBoundsComparator comparator) {
+		return withObjective(new VirtualBoxBoundsObjective(name, goal, comparator));
 	}
 
 	/** Add an objective which optimizes until exhaustion or interruption. */
-	public BruteForceBoundingBoxResultBuilder withObjective(String name, BoundingBoxComparator comparator) {
+	public BruteForceVirtualBoxBoundsResultBuilder withObjective(String name, VirtualBoxBoundsComparator comparator) {
 		return withObjective(name, null, comparator);
 	}
 
 	/** Retain minimum width under the objective name {@code x}. */
-	public BruteForceBoundingBoxResultBuilder withMinimumX() {
-		return withObjective("x", BoundingBox.MIN_X);
+	public BruteForceVirtualBoxBoundsResultBuilder withMinimumX() {
+		return withObjective("x", VirtualBoxBounds.MIN_X);
 	}
 
 	/** Retain minimum depth under the objective name {@code y}. */
-	public BruteForceBoundingBoxResultBuilder withMinimumY() {
-		return withObjective("y", BoundingBox.MIN_Y);
+	public BruteForceVirtualBoxBoundsResultBuilder withMinimumY() {
+		return withObjective("y", VirtualBoxBounds.MIN_Y);
 	}
 
 	/** Retain minimum height under the objective name {@code z}. */
-	public BruteForceBoundingBoxResultBuilder withMinimumZ() {
-		return withObjective("z", BoundingBox.MIN_Z);
+	public BruteForceVirtualBoxBoundsResultBuilder withMinimumZ() {
+		return withObjective("z", VirtualBoxBounds.MIN_Z);
 	}
 
 	/** Register the three independent dimension objectives named x, y and z. */
-	public BruteForceBoundingBoxResultBuilder withMinimumDimensions() {
+	public BruteForceVirtualBoxBoundsResultBuilder withMinimumDimensions() {
 		return withMinimumX().withMinimumY().withMinimumZ();
 	}
 
@@ -113,24 +113,24 @@ public class BruteForceBoundingBoxResultBuilder {
 	 * matching complete layout, even if a previous layout ranked better. A null goal
 	 * optimizes until exhaustion or interruption. Search stops early only when all goals are met.
 	 */
-	public BruteForceBoundingBoxResultBuilder withGoal(Predicate<BoundingBox> goal) {
-		BoundingBoxObjective objective = findObjective("default");
-		return withObjective("default", goal, objective == null ? BoundingBox.MIN_VOLUME : objective.comparator());
+	public BruteForceVirtualBoxBoundsResultBuilder withGoal(Predicate<VirtualBoxBounds> goal) {
+		VirtualBoxBoundsObjective objective = findObjective("default");
+		return withObjective("default", goal, objective == null ? VirtualBoxBounds.MIN_VOLUME : objective.comparator());
 	}
 
-	public BruteForceBoundingBoxResultBuilder withInterrupt(PackagerInterruptSupplier interrupt) {
+	public BruteForceVirtualBoxBoundsResultBuilder withInterrupt(PackagerInterruptSupplier interrupt) {
 		this.interrupt = interrupt;
 		return this;
 	}
 
 	/** Epoch-millisecond deadline shared with any other work in the caller's operation. */
-	public BruteForceBoundingBoxResultBuilder withInterruptDeadline(long deadline) {
+	public BruteForceVirtualBoxBoundsResultBuilder withInterruptDeadline(long deadline) {
 		this.deadline = deadline;
 		return this;
 	}
 
 	/** Set a deadline relative to this call, matching the ordinary result builder. */
-	public BruteForceBoundingBoxResultBuilder withInterruptDuration(long duration) {
+	public BruteForceVirtualBoxBoundsResultBuilder withInterruptDuration(long duration) {
 		if(duration < -1) {
 			throw new IllegalArgumentException("Expected a non-negative duration or -1");
 		}
@@ -138,25 +138,25 @@ public class BruteForceBoundingBoxResultBuilder {
 		return this;
 	}
 
-	public BruteForceBoundingBoxResult build() {
+	public VirtualBoxBoundsResult build() {
 		long start = System.nanoTime();
 		validate();
 		PackagerInterruptSupplier operationInterrupt = PackagerInterruptSupplierBuilder.builder()
 				.withScheduledThreadPoolExecutor(scheduler).withDeadline(deadline).withInterrupt(interrupt).build();
 		try {
-			BoundingBoxObjective single = null;
+			VirtualBoxBoundsObjective single = null;
 			if(objectives == null || objectives.isEmpty()) {
 				// A fallback only for an unconfigured builder; it is not inserted alongside named objectives.
-				single = new BoundingBoxObjective("default", null, BoundingBox.MIN_VOLUME);
+				single = new VirtualBoxBoundsObjective("default", null, VirtualBoxBounds.MIN_VOLUME);
 			} else if(objectives.size() == 1) {
 				single = objectives.get(0);
 			}
-			BruteForceBoundingBoxSearch search;
+			VirtualBoxBoundsSearch search;
 			if(single != null) {
-				search = load ? new LoadBruteForceBoundingBoxSearch(items, container, single, operationInterrupt)
-						: new SingleObjectiveBruteForceBoundingBoxSearch(items, container, single, operationInterrupt, false);
+				search = load ? new LoadBruteForceVirtualBoxBoundsSearch(items, container, single, operationInterrupt)
+						: new SingleObjectiveBruteForceVirtualBoxBoundsSearch(items, container, single, operationInterrupt, false);
 			} else {
-				search = new MultiObjectiveBruteForceBoundingBoxSearch(items, container, objectives.toArray(BoundingBoxObjective[]::new), operationInterrupt, load);
+				search = new MultiObjectiveBruteForceVirtualBoxBoundsSearch(items, container, objectives.toArray(VirtualBoxBoundsObjective[]::new), operationInterrupt, load);
 			}
 			return search.pack(start);
 		} finally {
@@ -165,7 +165,7 @@ public class BruteForceBoundingBoxResultBuilder {
 	}
 
 	/** Small objective lists do not need a second, name-indexed collection. */
-	protected void registerObjective(BoundingBoxObjective objective) {
+	protected void registerObjective(VirtualBoxBoundsObjective objective) {
 		if(objectives == null) {
 			objectives = new ArrayList<>(4);
 		} else {
@@ -179,9 +179,9 @@ public class BruteForceBoundingBoxResultBuilder {
 		objectives.add(objective);
 	}
 
-	protected BoundingBoxObjective findObjective(String name) {
+	protected VirtualBoxBoundsObjective findObjective(String name) {
 		if(objectives != null) {
-			for(BoundingBoxObjective objective : objectives) {
+			for(VirtualBoxBoundsObjective objective : objectives) {
 				if(objective.name().equals(name)) {
 					return objective;
 				}
@@ -190,7 +190,7 @@ public class BruteForceBoundingBoxResultBuilder {
 		return null;
 	}
 
-	protected void validateObjective(BoundingBoxObjective objective) {
+	protected void validateObjective(VirtualBoxBoundsObjective objective) {
 		Objects.requireNonNull(objective);
 		Objects.requireNonNull(objective.name());
 		Objects.requireNonNull(objective.comparator());
@@ -203,7 +203,7 @@ public class BruteForceBoundingBoxResultBuilder {
 		if(items == null || items.isEmpty() || container == null) {
 			throw new IllegalStateException("Expected box items and a container");
 		}
-		BoundingBox.validateDimensions(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
+		VirtualBoxBounds.validateDimensions(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		if(container.getMaxLoadWeight() < 0 || !container.getStack().isEmpty()) {
 			throw new IllegalArgumentException("Expected an empty container with a non-negative load weight");
 		}
@@ -227,7 +227,7 @@ public class BruteForceBoundingBoxResultBuilder {
 				throw new IllegalArgumentException("Bounding-box search does not support box-item groups");
 			}
 			for(BoxStackValue value : box.getStackValues()) {
-				BoundingBox.validateDimensions(value.getDx(), value.getDy(), value.getDz());
+				VirtualBoxBounds.validateDimensions(value.getDx(), value.getDy(), value.getDz());
 				if(value.getVolume() != box.getVolume()) {
 					throw new IllegalArgumentException("Expected all box orientations to have the box volume");
 				}

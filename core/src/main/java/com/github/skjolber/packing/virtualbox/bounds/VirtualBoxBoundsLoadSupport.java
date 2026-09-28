@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.boundingbox;
+package com.github.skjolber.packing.virtualbox.bounds;
 
 import java.util.List;
 import java.util.Map;
@@ -13,11 +13,11 @@ import com.github.skjolber.packing.packer.PackagerInterruptedException;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /** Complete-layout load checks using O(n) reusable storage and O(n²) work per candidate. */
-public class BoundingBoxLoadSupport {
+public class VirtualBoxBoundsLoadSupport {
 
 	protected final PackagerInterruptSupplier interrupt;
 
-	public BoundingBoxLoadSupport(PackagerInterruptSupplier interrupt) {
+	public VirtualBoxBoundsLoadSupport(PackagerInterruptSupplier interrupt) {
 		this.interrupt = interrupt;
 	}
 

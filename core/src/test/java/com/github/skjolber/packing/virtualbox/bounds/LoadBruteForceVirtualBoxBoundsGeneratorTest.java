@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.boundingbox;
+package com.github.skjolber.packing.virtualbox.bounds;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.offset;
@@ -18,19 +18,23 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
-import com.github.skjolber.packing.boundingbox.BruteForceBoundingBoxResult.Termination;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
 import com.github.skjolber.packing.validator.load.IdenticalBoxOnlyLoadValidator;
 import com.github.skjolber.packing.validator.load.MaxBoxCountLoadValidator;
 import com.github.skjolber.packing.validator.load.MaxPressureLoadValidator;
 import com.github.skjolber.packing.validator.load.WeightLoadValidator;
+import com.github.skjolber.packing.virtualbox.bounds.BruteForceVirtualBoxBoundsGenerator;
+import com.github.skjolber.packing.virtualbox.bounds.LoadBruteForceVirtualBoxBoundsGenerator;
+import com.github.skjolber.packing.virtualbox.bounds.LoadBruteForceVirtualBoxBoundsSearch;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsResult;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsResult.Termination;
 
 /*
  * Diagram conventions: schematic side views, with height increasing upwards
  * and depth one unit unless stated otherwise. W is a box's own weight;
  * load means weight resting on top, excluding the box's own weight.
  */
-class LoadBruteForceBoundingBoxTest {
+class LoadBruteForceVirtualBoxBoundsGeneratorTest {
 
 	/*
 	 * Three unit cubes, each weighing 1 and allowing load 2.
@@ -57,11 +61,11 @@ class LoadBruteForceBoundingBoxTest {
 	@Test
 	void accumulatesWeightThroughTheEntireTower() {
 		BoxItem boxes = new BoxItem(unit().withMaxLoadWeight(2).build(), 3, 7, 19);
-		try(LoadBruteForceBoundingBox search = new LoadBruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 1, 3)).build();
+		try(LoadBruteForceVirtualBoxBoundsGenerator search = new LoadBruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 1, 3)).build();
 			assertThat(result.getTermination()).isEqualTo(Termination.EXHAUSTED);
 			assertValid(result);
-			for(Placement placement : result.getObjectiveResults().get("default").getStack()) {
+			for(Placement placement : result.getObjectiveResults().get("default").getPlacements()) {
 				assertThat(placement.getLoadWeight()).isEqualTo(2 - placement.getAbsoluteZ());
 				assertThat(placement.getBoxItem()).isSameAs(boxes);
 			}
@@ -97,8 +101,8 @@ class LoadBruteForceBoundingBoxTest {
 	@Test
 	void rejectsAnOverloadedTowerWithoutCallingTheGoal() {
 		BoxItem boxes = new BoxItem(unit().withMaxLoadWeight(1).build(), 3);
-		try(LoadBruteForceBoundingBox search = new LoadBruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 1, 3))
+		try(LoadBruteForceVirtualBoxBoundsGenerator search = new LoadBruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 1, 3))
 					.withGoal(bounds -> { throw new AssertionError("Invalid loads must not reach the goal"); }).build();
 			assertThat(result.isSuccess()).isFalse();
 			assertThat(result.getResults()).isEmpty();
@@ -137,10 +141,10 @@ class LoadBruteForceBoundingBoxTest {
 	 */
 	@Test
 	void checksPressureIncludingIndirectLoad() {
-		try(LoadBruteForceBoundingBox search = new LoadBruteForceBoundingBox()) {
+		try(LoadBruteForceVirtualBoxBoundsGenerator search = new LoadBruteForceVirtualBoxBoundsGenerator()) {
 			for(int count : new int[] {2, 3}) {
 				BoxItem boxes = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withWeight(1).withMaxLoadPressure(0.5).build(), count);
-				BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(boxes).withContainer(container(2, 1, count)).build();
+				VirtualBoxBoundsResult result = search.newResultBuilder().withBoxItems(boxes).withContainer(container(2, 1, count)).build();
 				assertThat(result.isSuccess()).isEqualTo(count == 2);
 				if(result.isSuccess()) {
 					assertValid(result);
@@ -179,15 +183,15 @@ class LoadBruteForceBoundingBoxTest {
 	 */
 	@Test
 	void checksStackDepthRatherThanTheNumberOfDirectSupportees() {
-		try(LoadBruteForceBoundingBox search = new LoadBruteForceBoundingBox()) {
+		try(LoadBruteForceVirtualBoxBoundsGenerator search = new LoadBruteForceVirtualBoxBoundsGenerator()) {
 			BoxItem tower = new BoxItem(unit().withMaxLoadBoxCount(1).build(), 3);
 			assertThat(search.newResultBuilder().withBoxItems(tower).withContainer(container(1, 1, 3)).build().isSuccess()).isFalse();
 			BoxItem base = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withWeight(1).withMaxLoadBoxCount(1).build());
 			BoxItem tops = new BoxItem(unit().withMaxLoadBoxCount(0).build(), 2);
-			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(base, tops).withContainer(container(2, 1, 2)).build();
+			VirtualBoxBoundsResult result = search.newResultBuilder().withBoxItems(base, tops).withContainer(container(2, 1, 2)).build();
 			assertValid(result);
 			Placement bottom = null;
-			for(Placement placement : result.getObjectiveResults().get("default").getStack().getPlacements()) {
+			for(Placement placement : result.getObjectiveResults().get("default").getPlacements()) {
 				if(placement.getBoxItem() == base) {
 					bottom = placement;
 					break;
@@ -230,11 +234,11 @@ class LoadBruteForceBoundingBoxTest {
 	 */
 	@Test
 	void identicalMeansTheSameItemNotMatchingDimensionsOrIds() {
-		try(LoadBruteForceBoundingBox search = new LoadBruteForceBoundingBox()) {
+		try(LoadBruteForceVirtualBoxBoundsGenerator search = new LoadBruteForceVirtualBoxBoundsGenerator()) {
 			BoxItem identical = new BoxItem(unit().withId("same").withMaxLoadIdenticalBoxCount(-1).build(), 3);
 			assertValid(search.newResultBuilder().withBoxItems(identical).withContainer(container(1, 1, 3)).build());
 			BoxItem different = new BoxItem(unit().withId("same").withMaxLoadIdenticalBoxCount(-1).build());
-			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(identical, different).withContainer(container(1, 1, 4)).build();
+			VirtualBoxBoundsResult result = search.newResultBuilder().withBoxItems(identical, different).withContainer(container(1, 1, 4)).build();
 			assertThat(result.isSuccess()).isFalse();
 		}
 	}
@@ -268,12 +272,12 @@ class LoadBruteForceBoundingBoxTest {
 		BoxStackValue fragile = BoxStackValue.newBuilder().withDimensions(1, 1, 1).withMaxLoadWeight(0).withIndex(13).build();
 		BoxStackValue strong = BoxStackValue.newBuilder().withDimensions(1, 1, 1).withMaxLoadWeight(1).withIndex(29).build();
 		BoxItem boxes = new BoxItem(new Box(unit().build(), List.of(fragile, strong)), 2);
-		try(LoadBruteForceBoundingBox search = new LoadBruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 1, 2))
+		try(LoadBruteForceVirtualBoxBoundsGenerator search = new LoadBruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 1, 2))
 					.withGoal(bounds -> true).build();
 			assertThat(result.getTermination()).isEqualTo(Termination.GOAL_REACHED);
 			assertValid(result);
-			for(Placement placement : result.getObjectiveResults().get("default").getStack().getPlacements()) {
+			for(Placement placement : result.getObjectiveResults().get("default").getPlacements()) {
 				if(placement.getAbsoluteZ() == 0) {
 					assertThat(placement.getStackValue()).isSameAs(strong);
 				}
@@ -323,8 +327,8 @@ class LoadBruteForceBoundingBoxTest {
 	void onlyCallsGoalOnValidAssembliesAndKeepsAnIndependentSnapshot() {
 		BoxItem boxes = new BoxItem(unit().withMaxLoadWeight(0).build(), 3);
 		AtomicInteger goals = new AtomicInteger();
-		try(LoadBruteForceBoundingBox search = new LoadBruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(boxes).withContainer(container(3, 1, 3))
+		try(LoadBruteForceVirtualBoxBoundsGenerator search = new LoadBruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = search.newResultBuilder().withBoxItems(boxes).withContainer(container(3, 1, 3))
 					.withGoal(bounds -> {
 						assertThat(bounds.dz()).isEqualTo(1);
 						goals.incrementAndGet();
@@ -332,7 +336,7 @@ class LoadBruteForceBoundingBoxTest {
 					}).build();
 			assertThat(goals.get()).isPositive();
 			assertValid(result);
-			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new BoundingBox(3, 1, 1));
+			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(new VirtualBoxBounds(3, 1, 1));
 			search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 1, 3)).build();
 			assertValid(result);
 		}
@@ -388,16 +392,16 @@ class LoadBruteForceBoundingBoxTest {
 	void supportsCustomObjectivesAndRetainsLoadGraphOnInterruption() {
 		BoxItem boxes = new BoxItem(unit().withMaxLoadWeight(3).build(), 3);
 		AtomicBoolean interrupt = new AtomicBoolean();
-		try(LoadBruteForceBoundingBox search = new LoadBruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult best = search.newResultBuilder().withBoxItems(boxes).withContainer(container(3, 3, 3))
+		try(LoadBruteForceVirtualBoxBoundsGenerator search = new LoadBruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult best = search.newResultBuilder().withBoxItems(boxes).withContainer(container(3, 3, 3))
 					.withComparator((left, right) -> Integer.compare(right.dz(), left.dz())).build();
 			assertThat(best.getObjectiveResults().get("default").getBoundingBox().dz()).isEqualTo(3);
 			assertValid(best);
-			BruteForceBoundingBoxResult stopped = search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 2, 3))
+			VirtualBoxBoundsResult stopped = search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 2, 3))
 					.withGoal(bounds -> { interrupt.set(true); return false; }).withInterrupt(interrupt::get).build();
 			assertThat(stopped.getTermination()).isEqualTo(Termination.INTERRUPTED);
 			assertValid(stopped);
-			BruteForceBoundingBoxResult expired = search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 1, 3))
+			VirtualBoxBoundsResult expired = search.newResultBuilder().withBoxItems(boxes).withContainer(container(1, 1, 3))
 					.withInterruptDeadline(0).build();
 			assertThat(expired.getTermination()).isEqualTo(Termination.INTERRUPTED);
 			assertThat(expired.isSuccess()).isFalse();
@@ -464,11 +468,11 @@ class LoadBruteForceBoundingBoxTest {
 		BoxItem cube = new BoxItem(unit().build());
 		BoxItem rotated = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withWeight(1).withRotate3D().build());
 		AtomicInteger leaves = new AtomicInteger();
-		try(LoadBruteForceBoundingBox search = new LoadBruteForceBoundingBox(); BruteForceBoundingBox geometric = new BruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(cube, rotated).withContainer(container(3, 3, 3))
+		try(LoadBruteForceVirtualBoxBoundsGenerator search = new LoadBruteForceVirtualBoxBoundsGenerator(); BruteForceVirtualBoxBoundsGenerator geometric = new BruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = search.newResultBuilder().withBoxItems(cube, rotated).withContainer(container(3, 3, 3))
 					.withGoal(bounds -> { leaves.incrementAndGet(); return false; }).build();
 			assertThat(leaves.get()).isEqualTo(2 * rotated.getBox().getStackValues().length * 3);
-			BruteForceBoundingBoxResult geometricResult = geometric.newResultBuilder().withBoxItems(cube, rotated).withContainer(container(3, 3, 3)).build();
+			VirtualBoxBoundsResult geometricResult = geometric.newResultBuilder().withBoxItems(cube, rotated).withContainer(container(3, 3, 3)).build();
 			assertThat(result.getObjectiveResults().get("default").getBoundingBox()).isEqualTo(geometricResult.getObjectiveResults().get("default").getBoundingBox());
 			assertValid(result);
 		}
@@ -533,8 +537,8 @@ class LoadBruteForceBoundingBoxTest {
 		BoxItem supports = new BoxItem(unit().withMaxLoadWeight(1).build(), 2);
 		BoxItem bridge = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withWeight(2).withMaxLoadWeight(0).build());
 		AtomicInteger leaves = new AtomicInteger();
-		try(LoadBruteForceBoundingBox search = new LoadBruteForceBoundingBox()) {
-			BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(supports, bridge).withContainer(container(2, 1, 2))
+		try(LoadBruteForceVirtualBoxBoundsGenerator search = new LoadBruteForceVirtualBoxBoundsGenerator()) {
+			VirtualBoxBoundsResult result = search.newResultBuilder().withBoxItems(supports, bridge).withContainer(container(2, 1, 2))
 					.withGoal(bounds -> { leaves.incrementAndGet(); return false; }).build();
 			// [support, support, bridge] and [support, bridge, support]. The latter
 			// temporarily overloads its first supporter, before the last one shares it.
@@ -580,7 +584,7 @@ class LoadBruteForceBoundingBoxTest {
 				List.of(new BoxItem(Box.newBuilder().withSize(2, 1, 1).withWeight(1).withMaxLoadBoxCount(0).build()),
 						new BoxItem(unit().withMaxLoadPressure(0.5).build(), 2)));
 		Container limits = container(3, 1, 2);
-		try(LoadBruteForceBoundingBox search = new LoadBruteForceBoundingBox()) {
+		try(LoadBruteForceVirtualBoxBoundsGenerator search = new LoadBruteForceVirtualBoxBoundsGenerator()) {
 			for(List<BoxItem> items : cases) {
 				List<Box> boxes = new ArrayList<>();
 				for(BoxItem item : items) {
@@ -588,8 +592,8 @@ class LoadBruteForceBoundingBoxTest {
 						boxes.add(item.getBox());
 					}
 				}
-				BoundingBox expected = enumerateCoordinates(boxes, limits, new ArrayList<>(), null);
-				BruteForceBoundingBoxResult result = search.newResultBuilder().withBoxItems(items).withContainer(limits).build();
+				VirtualBoxBounds expected = enumerateCoordinates(boxes, limits, new ArrayList<>(), null);
+				VirtualBoxBoundsResult result = search.newResultBuilder().withBoxItems(items).withContainer(limits).build();
 				if(expected == null) {
 					assertThat(result.getObjectiveResults()).isEmpty();
 				} else {
@@ -605,7 +609,7 @@ class LoadBruteForceBoundingBoxTest {
 
 	// Enumerate arbitrary integer coordinates, without extreme points, search
 	// pruning or the production numeric load evaluator. Validate a fresh graph.
-	private static BoundingBox enumerateCoordinates(List<Box> boxes, Container limits, List<Placement> placed, BoundingBox best) {
+	private static VirtualBoxBounds enumerateCoordinates(List<Box> boxes, Container limits, List<Placement> placed, VirtualBoxBounds best) {
 		if(placed.size() == boxes.size()) {
 			for(Placement placement : placed) {
 				placement.clearLoad();
@@ -643,8 +647,8 @@ class LoadBruteForceBoundingBoxTest {
 					|| !new MaxBoxCountLoadValidator().isValid(placed, reasons) || !new IdenticalBoxOnlyLoadValidator().isValid(placed, reasons)) {
 				return best;
 			}
-			BoundingBox candidate = new BoundingBox(dx, dy, dz);
-			return best == null || BoundingBox.MIN_VOLUME.compare(candidate, best) < 0 ? candidate : best;
+			VirtualBoxBounds candidate = new VirtualBoxBounds(dx, dy, dz);
+			return best == null || VirtualBoxBounds.MIN_VOLUME.compare(candidate, best) < 0 ? candidate : best;
 		}
 		for(BoxStackValue value : boxes.get(placed.size()).getStackValues()) {
 			for(int x = 0; x <= limits.getLoadDx() - value.getDx(); x++) {
@@ -701,7 +705,7 @@ class LoadBruteForceBoundingBoxTest {
 		Placement left = at(supports, 0, 0);
 		Placement above = at(bridge, 0, 1);
 		Placement right = at(supports, 1, 0);
-		LoadBruteForceBoundingBoxSearch state = state(left, above, right);
+		LoadBruteForceVirtualBoxBoundsSearch state = state(left, above, right);
 		assertThat(state.isValidLayout()).isTrue();
 		Stack snapshot = state.createSnapshot();
 		assertValid(snapshot);
@@ -712,7 +716,7 @@ class LoadBruteForceBoundingBoxTest {
 		// An incomplete support graph would reject this bridge (2 > 1).
 		BoxItem heavy = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withWeight(2).build());
 		assertThat(state(left, at(heavy, 0, 1)).isValidLayout()).isFalse();
-		LoadBruteForceBoundingBoxSearch shared = state(left, at(heavy, 0, 1), right);
+		LoadBruteForceVirtualBoxBoundsSearch shared = state(left, at(heavy, 0, 1), right);
 		assertThat(shared.isValidLayout()).isTrue();
 		assertValid(shared.createSnapshot());
 	}
@@ -745,7 +749,7 @@ class LoadBruteForceBoundingBoxTest {
 	void checksContactPressureRatherThanAveragingOverTheWholeTop() throws PackagerInterruptedException {
 		BoxItem base = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withWeight(1).withMaxLoadPressure(1).build());
 		BoxItem top = new BoxItem(unit().withWeight(2).build());
-		LoadBruteForceBoundingBoxSearch state = state(at(base, 0, 0), at(top, 0, 1));
+		LoadBruteForceVirtualBoxBoundsSearch state = state(at(base, 0, 0), at(top, 0, 1));
 		assertThat(state.isValidLayout()).isFalse(); // 2/1, not 2/2
 		state.placements[1].setPoint(0, 2, 0, 0);
 		assertThat(state.isValidLayout()).isTrue(); // No stale load survives a different layout.
@@ -788,8 +792,8 @@ class LoadBruteForceBoundingBoxTest {
 		assertThat(state(at(same, 0, 0), middle, at(foreign, 0, 2)).isValidLayout()).isFalse();
 	}
 
-	private static LoadBruteForceBoundingBoxSearch state(Placement... placements) {
-		LoadBruteForceBoundingBoxSearch state = new LoadBruteForceBoundingBoxSearch(List.of(), container(4, 4, 4), BoundingBox.MIN_VOLUME, null, () -> false);
+	private static LoadBruteForceVirtualBoxBoundsSearch state(Placement... placements) {
+		LoadBruteForceVirtualBoxBoundsSearch state = new LoadBruteForceVirtualBoxBoundsSearch(List.of(), container(4, 4, 4), VirtualBoxBounds.MIN_VOLUME, null, () -> false);
 		state.placements = placements;
 		for(Placement placement : placements) {
 			state.originalValues.put(placement.getStackValue(), placement.getStackValue());
@@ -809,13 +813,16 @@ class LoadBruteForceBoundingBoxTest {
 		return Container.newBuilder().withSize(dx, dy, dz).withMaxLoadWeight(100).build();
 	}
 
-	private static void assertValid(BruteForceBoundingBoxResult result) {
+	private static void assertValid(VirtualBoxBoundsResult result) {
 		assertThat(result.isSuccess()).isTrue();
-		assertValid(result.getObjectiveResults().get("default").getStack());
+		assertValid(result.getObjectiveResults().get("default").getPlacements());
 	}
 
 	private static void assertValid(Stack stack) {
-		List<Placement> placements = stack.getPlacements();
+		assertValid(stack.getPlacements());
+	}
+
+	private static void assertValid(List<Placement> placements) {
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 		assertThat(new WeightLoadValidator().isValid(placements, reasons)).as("%s", reasons).isTrue();
 		assertThat(new MaxPressureLoadValidator().isValid(placements, reasons)).as("%s", reasons).isTrue();

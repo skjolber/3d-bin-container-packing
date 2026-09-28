@@ -12,11 +12,11 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
-import com.github.skjolber.packing.boundingbox.BoundingBox;
-import com.github.skjolber.packing.boundingbox.BoundingBoxObjective;
-import com.github.skjolber.packing.boundingbox.BruteForceBoundingBoxSearch;
-import com.github.skjolber.packing.boundingbox.MultiObjectiveBruteForceBoundingBoxSearch;
-import com.github.skjolber.packing.boundingbox.SingleObjectiveBruteForceBoundingBoxSearch;
+import com.github.skjolber.packing.virtualbox.bounds.MultiObjectiveBruteForceVirtualBoxBoundsSearch;
+import com.github.skjolber.packing.virtualbox.bounds.SingleObjectiveBruteForceVirtualBoxBoundsSearch;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBounds;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsObjective;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsSearch;
 
 /**
  * Fixed inputs, original identities and objectives reused across invocations.
@@ -24,7 +24,7 @@ import com.github.skjolber.packing.boundingbox.SingleObjectiveBruteForceBounding
  * Thread scope avoids sharing mutable inventory across benchmark workers.
  */
 @State(Scope.Thread)
-public class BruteForceBoundingBoxSearchState {
+public class BruteForceVirtualBoxBoundsSearchState {
 
 	@Param({"identical", "mixed", "rotated"})
 	public String workload;
@@ -38,10 +38,10 @@ public class BruteForceBoundingBoxSearchState {
 	protected List<BoxItem> items;
 	protected Container container;
 	protected long volume;
-	protected BoundingBoxObjective volumeObjective;
-	protected BoundingBoxObjective filledObjective;
-	protected List<BoundingBoxObjective> singleObjective;
-	protected List<BoundingBoxObjective> volumeAndAxes;
+	protected VirtualBoxBoundsObjective volumeObjective;
+	protected VirtualBoxBoundsObjective filledObjective;
+	protected List<VirtualBoxBoundsObjective> singleObjective;
+	protected List<VirtualBoxBoundsObjective> volumeAndAxes;
 	protected PackagerInterruptSupplier interrupt = () -> false;
 
 	@Setup(Level.Trial)
@@ -68,13 +68,13 @@ public class BruteForceBoundingBoxSearchState {
 		for(BoxItem item : items) {
 			volume += item.getBox().getVolume() * item.getCount();
 		}
-		volumeObjective = new BoundingBoxObjective("volume", null, BoundingBox.MIN_VOLUME);
-		filledObjective = new BoundingBoxObjective("volume", bounds -> bounds.getVolume() == volume, BoundingBox.MIN_VOLUME);
+		volumeObjective = new VirtualBoxBoundsObjective("volume", null, VirtualBoxBounds.MIN_VOLUME);
+		filledObjective = new VirtualBoxBoundsObjective("volume", bounds -> bounds.getVolume() == volume, VirtualBoxBounds.MIN_VOLUME);
 		singleObjective = List.of(volumeObjective);
 		volumeAndAxes = List.of(volumeObjective,
-				new BoundingBoxObjective("x", null, BoundingBox.MIN_X),
-				new BoundingBoxObjective("y", null, BoundingBox.MIN_Y),
-				new BoundingBoxObjective("z", null, BoundingBox.MIN_Z));
+				new VirtualBoxBoundsObjective("x", null, VirtualBoxBounds.MIN_X),
+				new VirtualBoxBoundsObjective("y", null, VirtualBoxBounds.MIN_Y),
+				new VirtualBoxBoundsObjective("z", null, VirtualBoxBounds.MIN_Z));
 	}
 
 	protected Box box(String id, int dx, int dy, boolean rotate) {
@@ -88,19 +88,19 @@ public class BruteForceBoundingBoxSearchState {
 		return builder.build();
 	}
 
-	public BruteForceBoundingBoxSearch newSingleObjectiveSearch() {
-		return new SingleObjectiveBruteForceBoundingBoxSearch(items, container, volumeObjective, interrupt, load);
+	public VirtualBoxBoundsSearch newSingleObjectiveSearch() {
+		return new SingleObjectiveBruteForceVirtualBoxBoundsSearch(items, container, volumeObjective, interrupt, load);
 	}
 
-	public BruteForceBoundingBoxSearch newSingleObjectiveViaMultiSearch() {
-		return new MultiObjectiveBruteForceBoundingBoxSearch(items, container, singleObjective, interrupt, load);
+	public VirtualBoxBoundsSearch newSingleObjectiveViaMultiSearch() {
+		return new MultiObjectiveBruteForceVirtualBoxBoundsSearch(items, container, singleObjective, interrupt, load);
 	}
 
-	public BruteForceBoundingBoxSearch newVolumeAndAxesSearch() {
-		return new MultiObjectiveBruteForceBoundingBoxSearch(items, container, volumeAndAxes, interrupt, load);
+	public VirtualBoxBoundsSearch newVolumeAndAxesSearch() {
+		return new MultiObjectiveBruteForceVirtualBoxBoundsSearch(items, container, volumeAndAxes, interrupt, load);
 	}
 
-	public BruteForceBoundingBoxSearch newFilledGoalSearch() {
-		return new SingleObjectiveBruteForceBoundingBoxSearch(items, container, filledObjective, interrupt, load);
+	public VirtualBoxBoundsSearch newFilledGoalSearch() {
+		return new SingleObjectiveBruteForceVirtualBoxBoundsSearch(items, container, filledObjective, interrupt, load);
 	}
 }

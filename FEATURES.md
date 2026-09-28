@@ -39,7 +39,7 @@ Brute-force packagers remove duplicate rotations and can skip reverse-equivalent
 permutations. They remain exponential in the number of independently ordered
 boxes; use an interrupt deadline for production requests.
 
-`BruteForceBoundingBox` in `com.github.skjolber.packing.boundingbox` provides standalone best-bounding-box search for
+`BruteForceVirtualBoxBounds` in `com.github.skjolber.packing.boundingbox` provides standalone best-bounding-box search for
 complete geometric assemblies: minimum volume and surface area by default,
 custom objectives, optional early-stop goals, and best-so-far results on
 interruption. It searches the extreme-point space without lossy point filtering;
@@ -50,7 +50,7 @@ Each named objective supports its own predicate and comparator; early goal
 termination requires all goals to be met. Single-objective searches use a
 specialized implementation without multi-objective bookkeeping.
 
-`LoadBruteForceBoundingBox` adds orientation-specific load weight, contact
+`LoadBruteForceVirtualBoxBounds` adds orientation-specific load weight, contact
 pressure, stack-depth and identical-item constraints. It returns complete support
 graphs and distributed load weights, while retaining the same objectives, goals
 and interruption behavior. Neither bounding-box variant enforces stability.

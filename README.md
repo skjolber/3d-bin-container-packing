@@ -183,7 +183,7 @@ Using a deadline is recommended whenever brute-forcing in a real-time applicatio
 
 ### Best bounding box
 
-`BruteForceBoundingBox` in `com.github.skjolber.packing.boundingbox` searches for a compact assembly
+`BruteForceVirtualBoxBounds` in `com.github.skjolber.packing.boundingbox` searches for a compact assembly
 of **all** supplied boxes inside one empty container's load dimensions and weight
 limit. This is useful for constructing virtual boxes before a larger packing operation.
 
@@ -191,8 +191,8 @@ limit. This is useful for constructing virtual boxes before a larger packing ope
 long totalBoxVolume = items.stream()
     .mapToLong(item -> item.getBox().getVolume() * item.getCount()).sum();
 
-try (BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
-    BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+try (BruteForceVirtualBoxBounds boundingBox = new BruteForceVirtualBoxBounds()) {
+    BruteForceVirtualBoxBoundsResult result = boundingBox.newResultBuilder()
         .withBoxItems(items)
         .withContainer(searchLimits)
         .withGoal(bounds -> bounds.getVolume() == totalBoxVolume)
@@ -200,9 +200,9 @@ try (BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
         .build();
 
     if (result.isSuccess()) {
-        BoundingBoxLayout layout = result.getObjectiveResults().get("default");
-        BoundingBox bounds = layout.getBoundingBox();
-        Stack assembly = layout.getStack();
+        VirtualBoxLayout layout = result.getObjectiveResults().get("default");
+        VirtualBoxBounds bounds = layout.getBoundingBox();
+        List<Placement> assembly = layout.getPlacements();
     }
 }
 ```
@@ -224,8 +224,8 @@ Retain additional arrangements for later virtual-box packing without repeating
 the permutation/rotation search:
 
 ```java
-try (BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
-    BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+try (BruteForceVirtualBoxBounds boundingBox = new BruteForceVirtualBoxBounds()) {
+    BruteForceVirtualBoxBoundsResult result = boundingBox.newResultBuilder()
         .withBoxItems(items)
         .withContainer(searchLimits)
         .withMinimumDimensions() // objectives named "x", "y", "z"
@@ -233,10 +233,10 @@ try (BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
         .build();
 
     if (result.isSuccess()) {
-        BoundingBoxLayout narrowest = result.getObjectiveResults().get("x");
-        BoundingBoxLayout shallowest = result.getObjectiveResults().get("y");
-        BoundingBoxLayout lowest = result.getObjectiveResults().get("z");
-        Collection<BoundingBoxLayout> alternatives = result.getResults();
+        VirtualBoxLayout narrowest = result.getObjectiveResults().get("x");
+        VirtualBoxLayout shallowest = result.getObjectiveResults().get("y");
+        VirtualBoxLayout lowest = result.getObjectiveResults().get("z");
+        Collection<VirtualBoxLayout> alternatives = result.getResults();
     }
 }
 ```
@@ -244,7 +244,7 @@ try (BruteForceBoundingBox boundingBox = new BruteForceBoundingBox()) {
 When no objectives are registered, the search minimizes volume under the name `"default"`. Use `withMinimumX()`,
 `withMinimumY()` or `withMinimumZ()` individually, or register a named custom
 ordering with `withObjective(name, comparator)`. The built-in
-`BoundingBox.MIN_X`, `MIN_Y` and `MIN_Z` compare the corresponding dimension
+`VirtualBoxBounds.MIN_X`, `MIN_Y` and `MIN_Z` compare the corresponding dimension
 first and use `MIN_VOLUME` to break ties. Reusing a name replaces its objective.
 
 `getObjectiveResults()` maps every objective name to its winner, with no primary
@@ -258,7 +258,7 @@ mutate the returned collections, layouts or shared stacks.
 Pruning must rule out improvements for every objective; larger-volume branches
 can still improve width, depth or height. Built-in comparisons use primitive
 extents, and a candidate improving several objectives is snapshotted only once.
-The same API works with `LoadBruteForceBoundingBox`, including valid support
+The same API works with `LoadBruteForceVirtualBoxBounds`, including valid support
 graphs for every retained layout.
 
 Objectives can each supply their own acceptance predicate and comparator:
@@ -267,8 +267,8 @@ Objectives can each supply their own acceptance predicate and comparator:
 var result = boundingBox.newResultBuilder()
         .withBoxItems(items)
         .withContainer(limits)
-        .withObjective("width", bounds -> bounds.dx() <= targetWidth, BoundingBox.MIN_X)
-        .withObjective("height", bounds -> bounds.dz() <= targetHeight, BoundingBox.MIN_Z)
+        .withObjective("width", bounds -> bounds.dx() <= targetWidth, VirtualBoxBounds.MIN_X)
+        .withObjective("height", bounds -> bounds.dz() <= targetHeight, VirtualBoxBounds.MIN_Z)
         .build();
 var widthLayout = result.getObjectiveResults().get("width");
 var reachedGoals = result.getReachedGoals();
@@ -294,12 +294,12 @@ An interrupted search retains all winners and reports which goals were met.
 Only objectives without an acceptance predicate are guaranteed optimal on
 `EXHAUSTED`; accepted objectives remain frozen at their goal layouts.
 Single-objective operations automatically use a specialized implementation of
-`BruteForceBoundingBoxSearch`, preserving the original bounding-box fast path.
+`BruteForceVirtualBoxBoundsSearch`, preserving the original bounding-box fast path.
 
-Orderings implement `BoundingBoxComparator`. They can override primitive
+Orderings implement `VirtualBoxBoundsComparator`. They can override primitive
 dimension comparison and a conservative `canImprove(...)` branch bound.
 Unknown orderings default to no pruning; search does not identify comparator
-singletons or classes. `BoundingBox.of(...)` is the checked factory for callers
+singletons or classes. `VirtualBoxBounds.of(...)` is the checked factory for callers
 outside a search; constructors assume dimensions have already been validated.
 
 This sequential operation explores all permutations, rotations and extreme-point
@@ -309,12 +309,12 @@ geometric only: box-item groups, obstacles, existing placements,
 per-box load constraints and stability validation are not supported. Ordinary
 packing is unchanged. Keep the assembly size small and set a deadline.
 
-For load-constrained assemblies, use `LoadBruteForceBoundingBox` with the same
+For load-constrained assemblies, use `LoadBruteForceVirtualBoxBounds` with the same
 result-builder API:
 
 ```java
-try (LoadBruteForceBoundingBox boundingBox = new LoadBruteForceBoundingBox()) {
-    BruteForceBoundingBoxResult result = boundingBox.newResultBuilder()
+try (LoadBruteForceVirtualBoxBounds boundingBox = new LoadBruteForceVirtualBoxBounds()) {
+    BruteForceVirtualBoxBoundsResult result = boundingBox.newResultBuilder()
         .withBoxItems(items)
         .withContainer(searchLimits)
         .withGoal(bounds -> bounds.getVolume() == totalBoxVolume)
@@ -421,8 +421,10 @@ when aggregation is enabled.
 
 The standalone `GridVirtualBoxLayoutGenerator` and
 `BruteForceVirtualBoxLayoutGenerator` expose the same layout-generation steps.
-`VirtualBoxLayout` retains fixed relative placements and `VirtualBox` turns
-equivalent filled layouts into a count-one item. Expansion mappings use
+`VirtualBoxLayout` retains a `List<Placement>` whose coordinates are relative to
+the virtual box origin. The list and its placements are shared and must not be
+modified; expansion creates separate placements at container coordinates.
+`VirtualBox` turns equivalent filled layouts into a count-one item. Expansion mappings use
 operation-global item indexes and stack-value indexes, not IDs or mutable local
 indexes; custom delegate implementations must preserve those indexes.
 

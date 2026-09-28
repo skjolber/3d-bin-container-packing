@@ -7,9 +7,47 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.*;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
-import com.github.skjolber.packing.boundingbox.BoundingBox;
+import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBounds;
 
 class VirtualBoxLayoutTest {
+	/*
+	 * Relative coordinates stay unchanged when validating a shared layout:
+	 *
+	 *       +---------+
+	 *       |    A    |    z = 1
+	 *       +---------+
+	 *       |    A    |    z = 0
+	 *       +---------+
+	 *
+	 * Validation computes loads separately; it must not mutate the reusable placements.
+	 */
+	@Test
+	void retainsPhysicalPlacementsWithoutMutatingThemDuringValidation() throws PackagerInterruptedException {
+		BoxItem item = item(1, 1, 1, 2);
+		BoxStackValue value = item.getBox().getStackValue(0);
+		Placement lower = new Placement(value, -1, 0, 0, 0, false);
+		Placement upper = new Placement(value, -1, 0, 0, 1, false);
+		List<Placement> placements = new ArrayList<>(List.of(lower, upper));
+		VirtualBoxLayout layout = new VirtualBoxLayout(new VirtualBoxBounds(1, 1, 2), placements);
+		assertThat(layout.getPlacements()).isSameAs(placements);
+		VirtualBoxLoadValidator validator = new VirtualBoxLoadValidator(() -> false);
+		assertThat(validator.isValid(layout)).isTrue();
+		assertThat(validator.isValid(layout)).isTrue();
+		assertThat(layout.getPlacements().get(0)).isSameAs(lower);
+		assertThat(layout.getPlacements().get(1)).isSameAs(upper);
+		assertThat(lower.getAbsoluteZ()).isZero();
+		assertThat(upper.getAbsoluteZ()).isEqualTo(1);
+		for(Placement placement : placements) {
+			assertThat(placement.getBoxItem()).isSameAs(item);
+			assertThat(placement.getStackValue()).isSameAs(value);
+			assertThat(placement.getLoadWeight()).isZero();
+			assertThat(placement.getSupporters()).isEmpty();
+			assertThat(placement.getSupportees()).isEmpty();
+		}
+		assertThat(VirtualBox.of(List.of(layout)).getWeight()).isEqualTo(2);
+	}
+
 	static BoxItem item(int x, int y, int z, int count) {
 		return new BoxItem(Box.newBuilder().withSize(x, y, z).withRotation(Rotation.newBuilder().withBottomAtZeroDegrees().build()).withWeight(1).build(), count);
 	}
@@ -32,8 +70,8 @@ class VirtualBoxLayoutTest {
 		BoxItem item = item(1, 1, 1, 6);
 		var layouts = new GridVirtualBoxLayoutGenerator().generate(item, List.of(container(3, 2, 1)), 8, () -> false);
 		assertThat(layouts).hasSize(1);
-		assertThat(layouts.get(0).getBoundingBox()).isEqualTo(new BoundingBox(3, 2, 1));
-		assertThat(layouts.get(0).getPlacements()).hasSize(6).allMatch(p -> p.item() == item);
+		assertThat(layouts.get(0).getBoundingBox()).isEqualTo(new VirtualBoxBounds(3, 2, 1));
+		assertThat(layouts.get(0).getPlacements()).hasSize(6).allMatch(p -> p.getBoxItem() == item);
 		assertFilled(layouts);
 		VirtualBox virtual = VirtualBox.of(layouts);
 		assertThat(virtual.toBoxItem(12).getCount()).isEqualTo(1);
@@ -41,7 +79,6 @@ class VirtualBoxLayoutTest {
 		assertThat(virtual.getWeight()).isEqualTo(6);
 		assertThat(item.getCount()).isEqualTo(6);
 		assertThat(item.getBox().getBoxItem()).isSameAs(item);
-		assertThatThrownBy(() -> layouts.get(0).getPlacements().clear()).isInstanceOf(UnsupportedOperationException.class);
 	}
 
 	/*
@@ -103,7 +140,7 @@ class VirtualBoxLayoutTest {
 		var layouts = new BruteForceVirtualBoxLayoutGenerator(4, 8)
 				.generate(List.of(a, b), List.of(container(4, 2, 1)), () -> false);
 		assertThat(layouts).hasSize(1);
-		assertThat(layouts.get(0).getPlacements()).extracting(VirtualBoxPlacement::item).containsExactlyInAnyOrder(a, b);
+		assertThat(layouts.get(0).getPlacements()).extracting(Placement::getBoxItem).containsExactlyInAnyOrder(a, b);
 		assertFilled(layouts);
 		assertThat(a.getBox().getBoxItem()).isSameAs(a);
 		assertThat(b.getBox().getBoxItem()).isSameAs(b);
@@ -174,10 +211,9 @@ class VirtualBoxLayoutTest {
 			long volume = 0;
 			List<Placement> placements = new ArrayList<>();
 			for(var child : layout.getPlacements()) {
-				Placement next = new Placement(child.stackValue(), -1, child.x(), child.y(), child.z(), false);
-				assertThat(placements).noneMatch(next::intersects);
-				placements.add(next);
-				volume += child.stackValue().getVolume();
+				assertThat(placements).noneMatch(child::intersects);
+				placements.add(child);
+				volume += child.getStackValue().getVolume();
 			}
 			assertThat(volume).isEqualTo(layout.getBoundingBox().getVolume());
 		}

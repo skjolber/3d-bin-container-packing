@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.boundingbox;
+package com.github.skjolber.packing.virtualbox.bounds;
 
 import java.util.function.Predicate;
 
@@ -10,18 +10,18 @@ import java.util.function.Predicate;
  * goal termination of the overall search. Callbacks see only valid complete layouts.
  * Objective arguments are validated when registered with a result builder.
  */
-public class BoundingBoxObjective {
+public class VirtualBoxBoundsObjective {
 	protected final String name;
-	protected final Predicate<BoundingBox> goal;
-	protected final BoundingBoxComparator comparator;
+	protected final Predicate<VirtualBoxBounds> goal;
+	protected final VirtualBoxBoundsComparator comparator;
 
-	public BoundingBoxObjective(String name, Predicate<BoundingBox> goal, BoundingBoxComparator comparator) {
+	public VirtualBoxBoundsObjective(String name, Predicate<VirtualBoxBounds> goal, VirtualBoxBoundsComparator comparator) {
 		this.name = name;
 		this.goal = goal;
 		this.comparator = comparator;
 	}
 
 	public String name() { return name; }
-	public Predicate<BoundingBox> goal() { return goal; }
-	public BoundingBoxComparator comparator() { return comparator; }
+	public Predicate<VirtualBoxBounds> goal() { return goal; }
+	public VirtualBoxBoundsComparator comparator() { return comparator; }
 }

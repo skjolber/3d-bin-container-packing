@@ -9,6 +9,7 @@ import java.util.Map;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 
 /**
@@ -62,7 +63,6 @@ public class VirtualBoxLayoutCache {
 		}
 		List<BoxItem> subset = new ArrayList<>();
 		Map<BoxStackValue, BoxStackValue> originalValues = new IdentityHashMap<>();
-		Map<BoxItem, BoxItem> originalItems = new IdentityHashMap<>();
 		long count = 0;
 		for(int i = 0; i < inventory.length; i += 2) {
 			BoxItem original = originals.get(inventory[i]);
@@ -72,7 +72,6 @@ public class VirtualBoxLayoutCache {
 			for(int j = 0; j < values.length; j++) {
 				originalValues.put(values[j], source[j]);
 			}
-			originalItems.put(copy, original);
 			subset.add(copy);
 			count += copy.getCount();
 		}
@@ -86,10 +85,10 @@ public class VirtualBoxLayoutCache {
 		}
 		List<VirtualBoxLayout> restored = new ArrayList<>(generated.size());
 		for(VirtualBoxLayout layout : generated) {
-			List<VirtualBoxPlacement> placements = new ArrayList<>(layout.getPlacements().size());
-			for(VirtualBoxPlacement placement : layout.getPlacements()) {
-				placements.add(new VirtualBoxPlacement(originalItems.get(placement.item()), originalValues.get(placement.stackValue()),
-						placement.x(), placement.y(), placement.z()));
+			List<Placement> placements = new ArrayList<>(layout.getPlacements().size());
+			for(Placement placement : layout.getPlacements()) {
+				placements.add(new Placement(originalValues.get(placement.getStackValue()), -1,
+						placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ(), false));
 			}
 			restored.add(new VirtualBoxLayout(layout.getBoundingBox(), placements));
 		}

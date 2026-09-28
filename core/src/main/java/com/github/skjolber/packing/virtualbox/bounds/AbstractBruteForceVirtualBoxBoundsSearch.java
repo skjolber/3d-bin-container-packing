@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.boundingbox;
+package com.github.skjolber.packing.virtualbox.bounds;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -15,11 +15,11 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.boundingbox.BruteForceBoundingBoxResult.Termination;
 import com.github.skjolber.packing.packer.bruteforce.PointCalculator3DStack;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsResult.Termination;
 
 /** Operation-local exhaustive search; intentionally separate from the first-fit packing hot path. */
-public abstract class AbstractBruteForceBoundingBoxSearch implements BruteForceBoundingBoxSearch {
+public abstract class AbstractBruteForceVirtualBoxBoundsSearch implements VirtualBoxBoundsSearch {
 
 	protected final List<BoxItem> items;
 	protected final Container container;
@@ -31,17 +31,17 @@ public abstract class AbstractBruteForceBoundingBoxSearch implements BruteForceB
 	protected BoxStackValue[] values;
 	protected long[] minAreas;
 	protected long[] minVolumes;
-	protected final BoundingBoxLoadSupport loadSupport;
+	protected final VirtualBoxBoundsLoadSupport loadSupport;
 
-	protected AbstractBruteForceBoundingBoxSearch(List<BoxItem> items, Container container, PackagerInterruptSupplier interrupt, boolean load) {
+	protected AbstractBruteForceVirtualBoxBoundsSearch(List<BoxItem> items, Container container, PackagerInterruptSupplier interrupt, boolean load) {
 		this.items = items;
 		this.container = container;
 		this.interrupt = interrupt;
-		this.loadSupport = load ? new BoundingBoxLoadSupport(interrupt) : null;
+		this.loadSupport = load ? new VirtualBoxBoundsLoadSupport(interrupt) : null;
 	}
 
 	@Override
-	public BruteForceBoundingBoxResult pack(long start) {
+	public VirtualBoxBoundsResult pack(long start) {
 		Termination termination = Termination.EXHAUSTED;
 		try {
 			checkInterrupt();
@@ -176,7 +176,7 @@ public abstract class AbstractBruteForceBoundingBoxSearch implements BruteForceB
 
 	protected abstract boolean cannotImprove(int dx, int dy, int dz);
 
-	protected abstract BruteForceBoundingBoxResult result(Termination termination, long duration);
+	protected abstract VirtualBoxBoundsResult result(Termination termination, long duration);
 
 	protected boolean isValidLayout() throws PackagerInterruptedException {
 		return loadSupport == null || loadSupport.isValidLayout(placements, originalValues);

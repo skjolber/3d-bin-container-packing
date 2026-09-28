@@ -11,8 +11,8 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
-import com.github.skjolber.packing.boundingbox.BruteForceBoundingBoxResult;
-import com.github.skjolber.packing.boundingbox.BruteForceBoundingBoxSearch;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsResult;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsSearch;
 
 /**
  * Complete one-shot searches, including construction, preparation and result snapshots.
@@ -25,37 +25,37 @@ import com.github.skjolber.packing.boundingbox.BruteForceBoundingBoxSearch;
 @Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-public class BruteForceBoundingBoxSearchBenchmark {
+public class BruteForceVirtualBoxBoundsSearchBenchmark {
 
 	/** Construction-only baseline, without preparation or traversal. */
 	@Benchmark
-	public BruteForceBoundingBoxSearch constructSingleObjective(BruteForceBoundingBoxSearchState state) {
+	public VirtualBoxBoundsSearch constructSingleObjective(BruteForceVirtualBoxBoundsSearchState state) {
 		return state.newSingleObjectiveSearch();
 	}
 
 	@Benchmark
-	public BruteForceBoundingBoxResult singleObjectiveExhaustive(BruteForceBoundingBoxSearchState state) {
+	public VirtualBoxBoundsResult singleObjectiveExhaustive(BruteForceVirtualBoxBoundsSearchState state) {
 		long start = System.nanoTime();
 		return state.newSingleObjectiveSearch().pack(start);
 	}
 
 	/** Same objective and stopping rules as singleObjectiveExhaustive; only the search implementation differs. */
 	@Benchmark
-	public BruteForceBoundingBoxResult singleObjectiveViaMultiExhaustive(BruteForceBoundingBoxSearchState state) {
+	public VirtualBoxBoundsResult singleObjectiveViaMultiExhaustive(BruteForceVirtualBoxBoundsSearchState state) {
 		long start = System.nanoTime();
 		return state.newSingleObjectiveViaMultiSearch().pack(start);
 	}
 
 	/** All four objectives are optimized in one traversal. */
 	@Benchmark
-	public BruteForceBoundingBoxResult volumeAndAxesExhaustive(BruteForceBoundingBoxSearchState state) {
+	public VirtualBoxBoundsResult volumeAndAxesExhaustive(BruteForceVirtualBoxBoundsSearchState state) {
 		long start = System.nanoTime();
 		return state.newVolumeAndAxesSearch().pack(start);
 	}
 
 	/** Stop at a complete rectangular assembly with no unused bounding volume. */
 	@Benchmark
-	public BruteForceBoundingBoxResult filledVolumeGoal(BruteForceBoundingBoxSearchState state) {
+	public VirtualBoxBoundsResult filledVolumeGoal(BruteForceVirtualBoxBoundsSearchState state) {
 		long start = System.nanoTime();
 		return state.newFilledGoalSearch().pack(start);
 	}

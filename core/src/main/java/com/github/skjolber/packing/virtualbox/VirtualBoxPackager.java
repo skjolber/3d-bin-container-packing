@@ -17,6 +17,7 @@ import com.github.skjolber.packing.api.PackagerResultBuilder;
  * Invalid expanded results trigger refinement or fallback, never an unchecked success.
  */
 public class VirtualBoxPackager implements Packager<VirtualBoxPackagerResultBuilder> {
+	
 	protected final Packager<? extends PackagerResultBuilder> delegate;
 	protected final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
 	protected boolean closed;

@@ -1,31 +1,31 @@
-package com.github.skjolber.packing.boundingbox;
+package com.github.skjolber.packing.virtualbox.bounds;
 
 /**
  * Dimensions of an origin-anchored rectangular envelope around a complete packing.
  * Equality of envelope and content volumes identifies a filled rectangular assembly.
  * Search builders validate input dimensions once; search-node construction is unchecked.
  */
-public class BoundingBox {
-	public static final BoundingBoxComparator MIN_VOLUME = new MinimumVolumeBoundingBoxComparator();
-	public static final BoundingBoxComparator MIN_X = new MinimumXBoundingBoxComparator();
-	public static final BoundingBoxComparator MIN_Y = new MinimumYBoundingBoxComparator();
-	public static final BoundingBoxComparator MIN_Z = new MinimumZBoundingBoxComparator();
+public class VirtualBoxBounds {
+	public static final VirtualBoxBoundsComparator MIN_VOLUME = new MinimumVolumeVirtualBoxBoundsComparator();
+	public static final VirtualBoxBoundsComparator MIN_X = new MinimumXVirtualBoxBoundsComparator();
+	public static final VirtualBoxBoundsComparator MIN_Y = new MinimumYVirtualBoxBoundsComparator();
+	public static final VirtualBoxBoundsComparator MIN_Z = new MinimumZVirtualBoxBoundsComparator();
 
 	protected final int dx;
 	protected final int dy;
 	protected final int dz;
 
 	/** Construct already validated, positive dimensions whose volume fits in a long. */
-	public BoundingBox(int dx, int dy, int dz) {
+	public VirtualBoxBounds(int dx, int dy, int dz) {
 		this.dx = dx;
 		this.dy = dy;
 		this.dz = dz;
 	}
 
 	/** Checked factory for callers outside a validated search. */
-	public static BoundingBox of(int dx, int dy, int dz) {
+	public static VirtualBoxBounds of(int dx, int dy, int dz) {
 		validateDimensions(dx, dy, dz);
-		return new BoundingBox(dx, dy, dz);
+		return new VirtualBoxBounds(dx, dy, dz);
 	}
 
 	public static void validateDimensions(int dx, int dy, int dz) {
@@ -47,7 +47,7 @@ public class BoundingBox {
 
 	@Override
 	public boolean equals(Object object) {
-		return object instanceof BoundingBox other && dx == other.dx && dy == other.dy && dz == other.dz;
+		return object instanceof VirtualBoxBounds other && dx == other.dx && dy == other.dy && dz == other.dz;
 	}
 
 	@Override
@@ -57,6 +57,6 @@ public class BoundingBox {
 
 	@Override
 	public String toString() {
-		return "BoundingBox[dx=" + dx + ", dy=" + dy + ", dz=" + dz + "]";
+		return "VirtualBoxBounds[dx=" + dx + ", dy=" + dy + ", dz=" + dz + "]";
 	}
 }

@@ -96,9 +96,10 @@ public class VirtualBoxPacking {
 					if(value.getDx() != bounds.dx() || value.getDy() != bounds.dy() || value.getDz() != bounds.dz()) {
 						throw new IllegalStateException("Delegate changed a virtual box orientation");
 					}
-					for(VirtualBoxPlacement child : layout.getPlacements()) {
-						append(expanded, remaining, child.item(), child.stackValue(),
-								(long) placement.getAbsoluteX() + child.x(), (long) placement.getAbsoluteY() + child.y(), (long) placement.getAbsoluteZ() + child.z());
+					for(Placement child : layout.getPlacements()) {
+						append(expanded, remaining, child.getBoxItem(), child.getStackValue(),
+								(long) placement.getAbsoluteX() + child.getAbsoluteX(), (long) placement.getAbsoluteY() + child.getAbsoluteY(),
+								(long) placement.getAbsoluteZ() + child.getAbsoluteZ());
 					}
 				}
 			}

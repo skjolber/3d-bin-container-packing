@@ -1,8 +1,9 @@
-package com.github.skjolber.packing.boundingbox;
+package com.github.skjolber.packing.virtualbox.bounds;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import com.github.skjolber.packing.virtualbox.VirtualBoxLayout;
 
 /**
  * Equally ranked objective winners and the reason the search stopped.
@@ -11,7 +12,7 @@ import java.util.Set;
  * Collections and layouts are shared without defensive copies or wrappers;
  * callers must not modify them.
  */
-public class BruteForceBoundingBoxResult {
+public class VirtualBoxBoundsResult {
 
 	public enum Termination {
 		/** Every candidate was visited or safely excluded; no acceptable goal stopped the search. */
@@ -22,14 +23,14 @@ public class BruteForceBoundingBoxResult {
 		INTERRUPTED
 	}
 
-	protected final Map<String, BoundingBoxLayout> objectiveResults;
+	protected final Map<String, VirtualBoxLayout> objectiveResults;
 	protected final Set<String> reachedGoals;
 	protected final Termination termination;
 	protected final long duration;
 
 	/**
 	 * Retain the supplied collections directly, without copying or wrapping them.
-	 * Neither the collections nor their layouts/stacks may be changed after being
+	 * Neither the collections nor their layouts/placements may be changed after being
 	 * passed to this constructor. The map's iteration order is preserved and gives
 	 * no objective priority over another.
 	 *
@@ -38,7 +39,7 @@ public class BruteForceBoundingBoxResult {
 	 * @param termination reason the search stopped
 	 * @param duration operation duration in milliseconds
 	 */
-	protected BruteForceBoundingBoxResult(Map<String, BoundingBoxLayout> objectiveResults, Set<String> reachedGoals, Termination termination, long duration) {
+	protected VirtualBoxBoundsResult(Map<String, VirtualBoxLayout> objectiveResults, Set<String> reachedGoals, Termination termination, long duration) {
 		this.objectiveResults = objectiveResults;
 		this.reachedGoals = reachedGoals;
 		this.termination = termination;
@@ -46,7 +47,7 @@ public class BruteForceBoundingBoxResult {
 	}
 
 	/** All named objective winners in registration order. Do not modify the map or its layouts. */
-	public Map<String, BoundingBoxLayout> getObjectiveResults() {
+	public Map<String, VirtualBoxLayout> getObjectiveResults() {
 		return objectiveResults;
 	}
 
@@ -60,7 +61,7 @@ public class BruteForceBoundingBoxResult {
 	 * Objectives winning the same candidate share a layout, so repeated references are possible.
 	 * This is not a history of candidates or a Pareto frontier. Do not modify the view or its layouts.
 	 */
-	public Collection<BoundingBoxLayout> getResults() {
+	public Collection<VirtualBoxLayout> getResults() {
 		return objectiveResults.values();
 	}
 

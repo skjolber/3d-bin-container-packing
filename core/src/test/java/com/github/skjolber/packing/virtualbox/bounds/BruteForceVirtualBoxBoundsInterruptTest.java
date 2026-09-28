@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.boundingbox;
+package com.github.skjolber.packing.virtualbox.bounds;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,22 +11,25 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.boundingbox.BruteForceBoundingBoxResult.Termination;
+import com.github.skjolber.packing.virtualbox.bounds.SingleObjectiveBruteForceVirtualBoxBoundsSearch;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsObjective;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsResult;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBoundsResult.Termination;
 
-class BruteForceBoundingBoxInterruptTest {
+class BruteForceVirtualBoxBoundsInterruptTest {
 
 	@Test
 	void inventoryAndRotationPreparationDoNotPollInterrupts() {
 		AtomicInteger checks = new AtomicInteger();
-		SingleObjectiveBruteForceBoundingBoxSearch search = new SingleObjectiveBruteForceBoundingBoxSearch(
-				items(), container(), new BoundingBoxObjective("volume", null, BoundingBox.MIN_VOLUME),
+		SingleObjectiveBruteForceVirtualBoxBoundsSearch search = new SingleObjectiveBruteForceVirtualBoxBoundsSearch(
+				items(), container(), new VirtualBoxBoundsObjective("volume", null, VirtualBoxBounds.MIN_VOLUME),
 				() -> { checks.incrementAndGet(); return true; }, false);
 		assertThat(search.prepare()).isTrue();
 		search.prepareRotation();
 		assertThat(checks.get()).isZero();
 
 		// The operation entry still rejects an already interrupted request.
-		BruteForceBoundingBoxResult result = search.pack(System.nanoTime());
+		VirtualBoxBoundsResult result = search.pack(System.nanoTime());
 		assertThat(checks.get()).isEqualTo(1);
 		assertThat(result.getTermination()).isEqualTo(Termination.INTERRUPTED);
 		assertThat(result.getResults()).isEmpty();
@@ -35,8 +38,8 @@ class BruteForceBoundingBoxInterruptTest {
 	@Test
 	void interruptionDuringPreparationStopsBeforePlacementSearch() {
 		AtomicBoolean stop = new AtomicBoolean();
-		SingleObjectiveBruteForceBoundingBoxSearch search = new SingleObjectiveBruteForceBoundingBoxSearch(
-				items(), container(), new BoundingBoxObjective("volume", null, BoundingBox.MIN_VOLUME), stop::get, false) {
+		SingleObjectiveBruteForceVirtualBoxBoundsSearch search = new SingleObjectiveBruteForceVirtualBoxBoundsSearch(
+				items(), container(), new VirtualBoxBoundsObjective("volume", null, VirtualBoxBounds.MIN_VOLUME), stop::get, false) {
 			@Override
 			protected boolean prepare() {
 				boolean prepared = super.prepare();
@@ -44,7 +47,7 @@ class BruteForceBoundingBoxInterruptTest {
 				return prepared;
 			}
 		};
-		BruteForceBoundingBoxResult result = search.pack(System.nanoTime());
+		VirtualBoxBoundsResult result = search.pack(System.nanoTime());
 		assertThat(result.getTermination()).isEqualTo(Termination.INTERRUPTED);
 		assertThat(result.getResults()).isEmpty();
 	}

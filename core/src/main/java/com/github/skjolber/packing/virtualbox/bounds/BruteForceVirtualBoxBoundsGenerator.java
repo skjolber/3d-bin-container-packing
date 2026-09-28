@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.boundingbox;
+package com.github.skjolber.packing.virtualbox.bounds;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -11,21 +11,21 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  * result builders. Close after all operations finish to release the deadline
  * scheduler. This component does not create or configure a packager.</p>
  */
-public class BruteForceBoundingBox implements AutoCloseable {
+public class BruteForceVirtualBoxBoundsGenerator implements AutoCloseable {
 
 	protected final ScheduledThreadPoolExecutor scheduler;
 
-	public BruteForceBoundingBox() {
+	public BruteForceVirtualBoxBoundsGenerator() {
 		scheduler = new ScheduledThreadPoolExecutor(1);
 		scheduler.setRemoveOnCancelPolicy(true);
 	}
 
 	/** @return an independent builder for one bounding-box search */
-	public BruteForceBoundingBoxResultBuilder newResultBuilder() {
+	public BruteForceVirtualBoxBoundsResultBuilder newResultBuilder() {
 		if(scheduler.isShutdown()) {
 			throw new IllegalStateException("Bounding-box search is closed");
 		}
-		return new BruteForceBoundingBoxResultBuilder(scheduler, supportsLoad());
+		return new BruteForceVirtualBoxBoundsResultBuilder(scheduler, supportsLoad());
 	}
 
 	protected boolean supportsLoad() {

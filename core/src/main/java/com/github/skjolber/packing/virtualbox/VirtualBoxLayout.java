@@ -1,28 +1,32 @@
 package com.github.skjolber.packing.virtualbox;
 
 import java.util.List;
-import com.github.skjolber.packing.boundingbox.BoundingBox;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBounds;
 
 /**
- * A filled rectangular assembly. Coordinates and the placement list are immutable;
- * referenced original box items and orientations must not be modified during use.
- * Layouts are constructed by the grid and brute-force generators.
+ * A rectangular envelope and its physical placements. Bounding-box search results
+ * may contain empty space; virtual-box generators retain only filled envelopes. Placement coordinates are
+ * relative to the virtual box origin. The list, placements, original box items
+ * and orientations must not be modified during use.
+ * Load-aware search results retain the complete support graph between placements.
  */
 public class VirtualBoxLayout {
-	protected final BoundingBox bounds;
-	protected final List<VirtualBoxPlacement> placements;
+	
+	protected final VirtualBoxBounds bounds;
+	protected final List<Placement> placements;
 
-	protected VirtualBoxLayout(BoundingBox bounds, List<VirtualBoxPlacement> placements) {
+	/** Retain the arguments directly; callers must not modify them or their contents after construction. */
+	public VirtualBoxLayout(VirtualBoxBounds bounds, List<Placement> placements) {
 		this.bounds = bounds;
-		this.placements = List.copyOf(placements);
-		// Generators already guarantee bounds, non-overlap and a filled envelope.
+		this.placements = placements;
 	}
 
-	public BoundingBox getBoundingBox() {
+	public VirtualBoxBounds getBoundingBox() {
 		return bounds;
 	}
 
-	public List<VirtualBoxPlacement> getPlacements() {
+	public List<Placement> getPlacements() {
 		return placements;
 	}
 }

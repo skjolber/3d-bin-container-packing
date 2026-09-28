@@ -1,14 +1,14 @@
-package com.github.skjolber.packing.boundingbox;
+package com.github.skjolber.packing.virtualbox.bounds;
 
 /** Volume, then surface area, then height, depth and width. */
-public class MinimumVolumeBoundingBoxComparator implements BoundingBoxComparator {
+public class MinimumVolumeVirtualBoxBoundsComparator implements VirtualBoxBoundsComparator {
 	@Override
-	public int compare(BoundingBox left, BoundingBox right) {
+	public int compare(VirtualBoxBounds left, VirtualBoxBounds right) {
 		return compare(left.dx(), left.dy(), left.dz(), right);
 	}
 
 	@Override
-	public int compare(int dx, int dy, int dz, BoundingBox other) {
+	public int compare(int dx, int dy, int dz, VirtualBoxBounds other) {
 		int comparison = Long.compare((long) dx * dy * dz, other.getVolume());
 		if(comparison != 0) {
 			return comparison;
@@ -27,7 +27,7 @@ public class MinimumVolumeBoundingBoxComparator implements BoundingBoxComparator
 	}
 
 	@Override
-	public boolean canImprove(int dx, int dy, int dz, BoundingBox best) {
+	public boolean canImprove(int dx, int dy, int dz, VirtualBoxBounds best) {
 		return (long) dx * dy * dz <= best.getVolume();
 	}
 }

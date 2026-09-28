@@ -7,19 +7,20 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.boundingbox.BoundingBox;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBounds;
 
 /** Enumerates factor grids without searching permutations or allocating every candidate's placements. */
 public class GridVirtualBoxLayoutGenerator {
 	protected static class Grid {
-		protected final BoundingBox bounds;
+		protected final VirtualBoxBounds bounds;
 		protected final BoxStackValue value;
 		protected final int columns;
 		protected final int rows;
 		protected final int layers;
 		protected final int matchingAxes;
 
-		protected Grid(BoundingBox bounds, BoxStackValue value, int columns, int rows, int layers, int matchingAxes) {
+		protected Grid(VirtualBoxBounds bounds, BoxStackValue value, int columns, int rows, int layers, int matchingAxes) {
 			this.bounds = bounds;
 			this.value = value;
 			this.columns = columns;
@@ -28,7 +29,7 @@ public class GridVirtualBoxLayoutGenerator {
 			this.matchingAxes = matchingAxes;
 		}
 
-		protected BoundingBox bounds() { return bounds; }
+		protected VirtualBoxBounds bounds() { return bounds; }
 		protected BoxStackValue value() { return value; }
 		protected int columns() { return columns; }
 		protected int rows() { return rows; }
@@ -45,7 +46,7 @@ public class GridVirtualBoxLayoutGenerator {
 		@Override
 		public int compare(Grid left, Grid right) {
 			int comparison = Integer.compare(right.matchingAxes(), left.matchingAxes());
-			return comparison != 0 ? comparison : BoundingBox.MIN_VOLUME.compare(left.bounds(), right.bounds());
+			return comparison != 0 ? comparison : VirtualBoxBounds.MIN_VOLUME.compare(left.bounds(), right.bounds());
 		}
 	}
 
@@ -95,7 +96,7 @@ public class GridVirtualBoxLayoutGenerator {
 					if(matches < 0) {
 						continue;
 					}
-					BoundingBox bounds = new BoundingBox((int) dx, (int) dy, (int) dz);
+					VirtualBoxBounds bounds = new VirtualBoxBounds((int) dx, (int) dy, (int) dz);
 					boolean duplicate = false;
 					for(Grid grid : best) {
 						if(grid.bounds().equals(bounds)) {
@@ -149,14 +150,14 @@ public class GridVirtualBoxLayoutGenerator {
 	protected static List<VirtualBoxLayout> materialize(BoxItem item, List<Grid> grids, BooleanSupplier interrupt) {
 		List<VirtualBoxLayout> result = new ArrayList<>();
 		for(Grid grid : grids) {
-			List<VirtualBoxPlacement> placements = new ArrayList<>();
+			List<Placement> placements = new ArrayList<>(item.getCount());
 			for(int z = 0; z < grid.layers(); z++) {
 				for(int y = 0; y < grid.rows(); y++) {
 					for(int x = 0; x < grid.columns(); x++) {
 						if(interrupt.getAsBoolean()) {
 							return List.copyOf(result);
 						}
-						placements.add(new VirtualBoxPlacement(item, grid.value(), x * grid.value().getDx(), y * grid.value().getDy(), z * grid.value().getDz()));
+						placements.add(new Placement(grid.value(), -1, x * grid.value().getDx(), y * grid.value().getDy(), z * grid.value().getDz(), false));
 					}
 				}
 			}
