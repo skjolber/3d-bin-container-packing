@@ -69,13 +69,13 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 	}
 
 	@Override
-	public boolean add(int index, List<Placement> batch) {
+	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume, boolean applyRemainingLimits) {
 		stackItems[stackIndex].point = values.get(index);
 		stackItems[stackIndex].batch = true;
 		// Preserve space for subsequent ordinary search steps without changing
 		// the single-placement insertion path.
 		placements.ensureAdditionalCapacity(batch.size() + stackItems.length);
-		return super.add(index, batch);
+		return super.addBatch(index, batch, remainingMinimumArea, remainingMinimumVolume, applyRemainingLimits);
 	}
 
 	public Placement push() {

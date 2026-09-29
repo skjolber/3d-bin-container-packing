@@ -106,4 +106,53 @@ class PointCalculator3DBatchStackTest {
 				.withWeight(1)
 				.build().getStackValue(0), -1, x, y, z, false);
 	}
+
+	/* Two children are one undo frame, regardless of which batch overload is used. */
+	@Test
+	void recursiveRemainingMinimaOverloadCheckpointsOnce() {
+		PointCalculator3DStack calculator = new PointCalculator3DStack(3);
+		calculator.reset(4, 2, 3);
+		calculator.setMinimumAreaAndVolumeLimit(4, 8);
+		var origin = calculator.get(0);
+		List<Placement> children = List.of(placement(0, 0, 0), placement(1, 0, 0));
+		calculator.push();
+		calculator.add(origin, children, 2, 3);
+		assertThat(calculator.getPoints()).containsExactly(origin);
+		assertThat(calculator.getPlacements()).hasSize(2);
+		assertThat(calculator.getMinAreaLimit()).isEqualTo(2);
+		assertThat(calculator.getMinVolumeLimit()).isEqualTo(3);
+		calculator.redo();
+		assertThat(calculator.getPlacements()).isEmpty();
+		assertThat(calculator.getMinAreaLimit()).isEqualTo(4);
+		assertThat(calculator.getMinVolumeLimit()).isEqualTo(8);
+		calculator.add(0, children, 1, 1);
+		calculator.pop();
+		assertThat(calculator.getPlacements()).isEmpty();
+		assertThat(calculator.size()).isEqualTo(1);
+	}
+
+	@Test
+	void fastRemainingMinimaOverloadCheckpointsOnceAndRecoversFromFailure() {
+		FastPointCalculator3DStack calculator = new FastPointCalculator3DStack(3);
+		calculator.clearToSize(4, 2, 3);
+		calculator.setMinimumAreaAndVolumeLimit(4, 8);
+		var origin = calculator.get(0);
+		Placement a = placement(0, 0, 0);
+		Placement b = placement(1, 0, 0);
+		calculator.add(origin, List.of(a, b), 2, 3);
+		assertThat(calculator.getPoints()).containsExactly(origin);
+		assertThat(calculator.getPlacements()).hasSize(2);
+		assertThat(calculator.getMinVolumeLimit()).isEqualTo(3);
+		calculator.setStackSize(0);
+		assertThat(calculator.getPlacements()).isEmpty();
+		assertThat(calculator.getMinAreaLimit()).isEqualTo(4);
+		assertThat(calculator.getMinVolumeLimit()).isEqualTo(8);
+		assertThatThrownBy(() -> calculator.add(0, List.of(a, a), 0, 0)).isInstanceOf(IllegalArgumentException.class);
+		assertThat(calculator.getPlacements()).isEmpty();
+		assertThat(calculator.getPoints()).isEmpty();
+		assertThat(calculator.size()).isEqualTo(1);
+		assertThat(calculator.getMinAreaLimit()).isEqualTo(4);
+		calculator.add(0, List.of(a, b), 1, 1);
+		assertThat(calculator.getPlacements()).hasSize(2);
+	}
 }

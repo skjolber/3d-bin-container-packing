@@ -195,6 +195,81 @@ class DefaultPointCalculator3DBatchTest {
 		return false;
 	}
 
+	/*
+	 * Two dominoes leave a unit gap needed by the NEXT item, not this batch:
+	 *
+	 *       +-------+-------+---+
+	 *       |   A   |   B   | C |
+	 *       +-------+-------+---+
+	 *
+	 * Child-only minima discard C's space permanently. Remaining-item minima
+	 * must participate before either domino is inserted.
+	 */
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void preservesSpaceForSmallerRemainingItem(boolean immutable) {
+		List<Placement> batch = List.of(placement(2, 1, 1, 0, 0, 0), placement(2, 1, 1, 2, 0, 0));
+		DefaultPointCalculator3D unsafe = calculator(immutable, 5, 1, 1);
+		assertThat(unsafe.add(0, batch)).isFalse();
+		unsafe.setMinimumAreaAndVolumeLimit(1, 1);
+		assertThat(unsafe.isEmpty()).isTrue();
+
+		DefaultPointCalculator3D safe = calculator(immutable, 5, 1, 1);
+		assertThat(safe.add(safe.get(0), batch, 1, 1)).isTrue();
+		assertThat(safe.getMinAreaLimit()).isEqualTo(1);
+		assertThat(safe.getMinVolumeLimit()).isEqualTo(1);
+		assertThat(safe.findPoint(4, 0, 0)).isGreaterThanOrEqualTo(0);
+		Placement remaining = placement(1, 1, 1, 4, 0, 0);
+		assertThat(safe.add(safe.findPoint(4, 0, 0), List.of(remaining), Long.MAX_VALUE, Long.MAX_VALUE)).isFalse();
+		assertThat(safe.getPlacements()).hasSize(3);
+	}
+
+	/*
+	 *       +---+---+-----------+
+	 *       | A | B |   next    |
+	 *       +---+---+-----------+
+	 *
+	 * The next box is larger: inserting A must not filter out B's smaller space.
+	 * Only after B is inserted may the remaining-item limits be installed.
+	 */
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void appliesLargerRemainingLimitsOnlyAfterWholeBatch(boolean immutable) {
+		DefaultPointCalculator3D calculator = calculator(immutable, 4, 1, 1);
+		List<Placement> batch = List.of(placement(1, 1, 1, 0, 0, 0), placement(1, 1, 1, 1, 0, 0));
+		assertThat(calculator.add(0, batch, 2, 2)).isTrue();
+		assertThat(calculator.getPlacements()).containsExactlyElementsOf(batch);
+		assertThat(calculator.getMinAreaLimit()).isEqualTo(2);
+		assertThat(calculator.getMinVolumeLimit()).isEqualTo(2);
+		assertThat(calculator.findPoint(2, 0, 0)).isGreaterThanOrEqualTo(0);
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void remainingMinimaAreIndependentAndMarkResetRestoresThem(boolean immutable) {
+		MarkResetPointCalculator3D calculator = new MarkResetPointCalculator3D(immutable, 4);
+		calculator.clearToSize(6, 4, 6);
+		calculator.setMinimumAreaAndVolumeLimit(4, 8);
+		List<String> before = geometry(calculator);
+		calculator.mark();
+		List<Placement> batch = List.of(placement(1, 1, 4, 1, 1, 0), placement(2, 1, 1, 2, 1, 0));
+		DefaultPointCalculator3D reference = calculator(immutable, 6, 4, 6);
+		reference.setMinimumAreaAndVolumeLimit(1, 1);
+		for(Placement child : batch) {
+			assertThat(reference.addObstacle(child)).isTrue();
+		}
+		reference.setMinimumAreaAndVolumeLimit(2, 1);
+		calculator.add(0, batch, 2, 1);
+		assertThat(geometry(calculator)).containsExactlyElementsOf(geometry(reference));
+		calculator.reset();
+		assertThat(calculator.getPlacements()).isEmpty();
+		assertThat(calculator.getMinAreaLimit()).isEqualTo(4);
+		assertThat(calculator.getMinVolumeLimit()).isEqualTo(8);
+		assertThat(geometry(calculator)).containsExactlyElementsOf(before);
+		assertThatThrownBy(() -> calculator.add(0, batch, -1, 1)).isInstanceOf(IllegalArgumentException.class);
+		assertThat(geometry(calculator)).containsExactlyElementsOf(before);
+	}
+
 	protected static List<String> geometry(DefaultPointCalculator3D calculator) {
 		List<String> result = new ArrayList<>();
 		for(Point point : calculator.getAll()) {

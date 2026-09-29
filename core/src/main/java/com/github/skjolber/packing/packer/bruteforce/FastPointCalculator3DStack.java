@@ -53,7 +53,7 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 	}
 
 	@Override
-	public boolean add(int index, List<Placement> batch) {
+	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume, boolean applyRemainingLimits) {
 		StackItem frame = stackItems[stackSize];
 		frame.point = values.get(index);
 		frame.placementCount = placements.size();
@@ -62,7 +62,7 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		values.copyInto(frame.values);
 		placements.ensureAdditionalCapacity(batch.size() + stackItems.length);
 		try {
-			boolean result = super.add(index, batch);
+			boolean result = super.addBatch(index, batch, remainingMinimumArea, remainingMinimumVolume, applyRemainingLimits);
 			stackSize++;
 			return result;
 		} catch(RuntimeException e) {

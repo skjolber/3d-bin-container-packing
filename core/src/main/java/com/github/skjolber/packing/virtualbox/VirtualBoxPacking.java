@@ -54,6 +54,33 @@ public class VirtualBoxPacking {
 		return items;
 	}
 
+	/**
+	 * Resolve a delegate's orientation to a shared, prepared layout, or null for an
+	 * ordinary item. Uses operation-global indexes and therefore survives cloning
+	 * and local reindexing. Finish constructing this mapping before sharing it with
+	 * workers; neither the mapping nor its layouts may be modified during packing.
+	 */
+	public VirtualBoxLayout getLayout(BoxStackValue value) {
+		int globalIndex = value.getBox().getBoxItem().getGlobalIndex();
+		if(globalIndex < 0 || globalIndex >= entries.size()) {
+			throw new IllegalStateException("Delegate did not preserve operation-global box item indexes");
+		}
+		VirtualBox virtualBox = entries.get(globalIndex).virtualBox();
+		if(virtualBox == null) {
+			return null;
+		}
+		int layoutIndex = value.getIndex();
+		if(layoutIndex < 0 || layoutIndex >= virtualBox.getLayouts().size()) {
+			throw new IllegalStateException("Delegate did not preserve virtual layout indexes");
+		}
+		VirtualBoxLayout layout = virtualBox.getLayouts().get(layoutIndex);
+		var bounds = layout.getBoundingBox();
+		if(value.getDx() != bounds.dx() || value.getDy() != bounds.dy() || value.getDz() != bounds.dz()) {
+			throw new IllegalStateException("Delegate changed a virtual box orientation");
+		}
+		return layout;
+	}
+
 	protected boolean hasVirtualBoxes() {
 		for(Entry entry : entries) {
 			if(entry.virtualBox() != null) {
@@ -77,25 +104,13 @@ public class VirtualBoxPacking {
 			Container expanded = container.clone();
 			for(Placement placement : container.getStack().getPlacements()) {
 				BoxStackValue value = placement.getStackValue();
-				int globalIndex = value.getBox().getBoxItem().getGlobalIndex();
-				if(globalIndex < 0 || globalIndex >= entries.size()) {
-					throw new IllegalStateException("Delegate did not preserve operation-global box item indexes");
-				}
-				Entry entry = entries.get(globalIndex);
-				if(entry.virtualBox() == null) {
+				VirtualBoxLayout layout = getLayout(value);
+				if(layout == null) {
+					Entry entry = entries.get(value.getBox().getBoxItem().getGlobalIndex());
 					BoxStackValue originalValue = findOriginal(entry.original(), value);
 					append(expanded, remaining, entry.original(), originalValue,
 							placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ());
 				} else {
-					int layoutIndex = value.getIndex();
-					if(layoutIndex < 0 || layoutIndex >= entry.virtualBox().getLayouts().size()) {
-						throw new IllegalStateException("Delegate did not preserve virtual layout indexes");
-					}
-					VirtualBoxLayout layout = entry.virtualBox().getLayouts().get(layoutIndex);
-					var bounds = layout.getBoundingBox();
-					if(value.getDx() != bounds.dx() || value.getDy() != bounds.dy() || value.getDz() != bounds.dz()) {
-						throw new IllegalStateException("Delegate changed a virtual box orientation");
-					}
 					for(Placement child : layout.getPlacements()) {
 						append(expanded, remaining, child.getBoxItem(), child.getStackValue(),
 								(long) placement.getAbsoluteX() + child.getAbsoluteX(), (long) placement.getAbsoluteY() + child.getAbsoluteY(),

@@ -165,12 +165,41 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	 * @throws IllegalArgumentException if the batch is empty or a placement does not fit
 	 */
 	public boolean add(int index, List<Placement> batch) {
+		return addBatch(index, batch, Long.MAX_VALUE, Long.MAX_VALUE, false);
+	}
+
+	/** See {@link #add(int, List, long, long)}. Resolves the live point before filtering. */
+	public boolean add(Point point, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
+		return add(point.getIndex() == -1 ? values.getIndex(point, 0) : point.getIndex(), batch, remainingMinimumArea, remainingMinimumVolume);
+	}
+
+	/**
+	 * Insert a batch without pruning space required by smaller remaining items.
+	 * During insertion each limit is the smaller of the batch minimum and the
+	 * corresponding remaining-item minimum. After insertion, the remaining-item
+	 * limits are installed. Use zero to disable a limit, or {@link Long#MAX_VALUE}
+	 * for both limits when no items remain. Limits cannot recover previously pruned
+	 * space: earlier insertions must also use safe remaining-item limits.
+	 *
+	 * Coordinates, ownership and rollback requirements are the same as for
+	 * {@link #add(int, List)}. A false return means no usable free points remain,
+	 * not that insertion failed.
+	 */
+	public boolean add(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
+		if(remainingMinimumArea < 0 || remainingMinimumVolume < 0) {
+			throw new IllegalArgumentException("Expected non-negative remaining minima");
+		}
+		return addBatch(index, batch, remainingMinimumArea, remainingMinimumVolume, true);
+	}
+
+	/** Shared batch entry point so stack calculators checkpoint either overload exactly once. */
+	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume, boolean applyRemainingLimits) {
 		if(batch.isEmpty()) {
 			throw new IllegalArgumentException("Expected at least one placement");
 		}
 		SimplePoint3D source = values.get(index);
-		long minimumArea = Long.MAX_VALUE;
-		long minimumVolume = Long.MAX_VALUE;
+		long minimumArea = remainingMinimumArea;
+		long minimumVolume = remainingMinimumVolume;
 		for(Placement placement : batch) {
 			if(!source.fits3D(placement)) {
 				throw new IllegalArgumentException("Batch placement is outside the selected free space");
@@ -199,6 +228,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			// once, not one search step per physical placement.
 			add(source, currentIndex, placement, xy, xz, yz);
 			source = null;
+		}
+		if(applyRemainingLimits) {
+			setMinimumAreaAndVolumeLimit(remainingMinimumArea, remainingMinimumVolume);
 		}
 		return !values.isEmpty();
 	}

@@ -38,6 +38,7 @@ public class VirtualBox {
 			}
 		}
 		for(VirtualBoxLayout layout : layouts) {
+			layout.prepare();
 			Map<BoxItem, Integer> candidate = inventory(layout);
 			if(candidate.size() != inventory.size()) {
 				throw new IllegalArgumentException("Layouts must contain the same original inventory");
