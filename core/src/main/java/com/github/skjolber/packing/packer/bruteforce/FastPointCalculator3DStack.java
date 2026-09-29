@@ -18,6 +18,7 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		// adding a point might affect any index in the values array
 		protected Point3DFlagList values = new Point3DFlagList();
 
+		protected int placementCount;
 		protected long minVolumeLimit;
 		protected long minAreaLimit;
 	}
@@ -41,6 +42,7 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 
 		StackItem stackItem = stackItems[stackSize];
 		stackItem.point = point3d;
+		stackItem.placementCount = placements.size();
 		stackItem.minVolumeLimit = minVolumeLimit;
 		stackItem.minAreaLimit = minAreaLimit;
 		values.copyInto(stackItem.values);
@@ -48,6 +50,27 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		stackSize++;
 
 		return super.add(index, placement);
+	}
+
+	@Override
+	public boolean add(int index, List<Placement> batch) {
+		StackItem frame = stackItems[stackSize];
+		frame.point = values.get(index);
+		frame.placementCount = placements.size();
+		frame.minAreaLimit = minAreaLimit;
+		frame.minVolumeLimit = minVolumeLimit;
+		values.copyInto(frame.values);
+		placements.ensureAdditionalCapacity(batch.size() + stackItems.length);
+		try {
+			boolean result = super.add(index, batch);
+			stackSize++;
+			return result;
+		} catch(RuntimeException e) {
+			// This subclass already owns a checkpoint: restore it on invalid input.
+			placements.setSize(frame.placementCount);
+			reload();
+			throw e;
+		}
 	}
 
 	public List<Point> getPoints() {
@@ -69,7 +92,7 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		if(stackSize != size) {
 			stackSize = size;
 
-			placements.setSize(size);
+			placements.setSize(stackItems[size].placementCount);
 
 			reload();
 		}

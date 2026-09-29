@@ -139,6 +139,84 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		return add(point, index, placement, supportedXYPlane, supportedXZPlane, supportedYZPlane);
 	}
 	
+
+	/** See {@link #add(int, List)}. Resolves the selected point before filtering. */
+	public boolean add(Point point, List<Placement> batch) {
+		return add(point.getIndex() == -1 ? values.getIndex(point, 0) : point.getIndex(), batch);
+	}
+
+	/**
+	 * Insert an arrangement into one initially selected free-space point. Placements
+	 * use absolute coordinates, must not overlap and must all fit the selected point.
+	 * They are inserted in list order and retained directly, without copying or moving
+	 * them. Callers must not mutate them while the calculator uses them.
+	 *
+	 * The minimum area and volume are calculated independently from the entire batch,
+	 * installed before insertion and left installed afterward. Lowering these limits
+	 * later cannot recover previously discarded free space, including space useful to
+	 * smaller future boxes.
+	 *
+	 * No overlap preflight or rollback snapshot is made. Invalid overlapping input can
+	 * fail after partial insertion; callers requiring rollback must use a checkpoint.
+	 *
+	 * @param index live point index before filtering
+	 * @param batch non-empty, prevalidated arrangement
+	 * @return whether free points remain after all placements have been inserted
+	 * @throws IllegalArgumentException if the batch is empty or a placement does not fit
+	 */
+	public boolean add(int index, List<Placement> batch) {
+		if(batch.isEmpty()) {
+			throw new IllegalArgumentException("Expected at least one placement");
+		}
+		SimplePoint3D source = values.get(index);
+		long minimumArea = Long.MAX_VALUE;
+		long minimumVolume = Long.MAX_VALUE;
+		for(Placement placement : batch) {
+			if(!source.fits3D(placement)) {
+				throw new IllegalArgumentException("Batch placement is outside the selected free space");
+			}
+			BoxStackValue value = placement.getStackValue();
+			minimumArea = Math.min(minimumArea, value.getArea());
+			minimumVolume = Math.min(minimumVolume, value.getVolume());
+		}
+		placements.ensureAdditionalCapacity(batch.size());
+		setMinimumAreaAndVolumeLimit(minimumArea, minimumVolume);
+		// The source contains every child, so it survives minimum filtering, but
+		// its numeric index may change when earlier points are removed.
+		int currentIndex = values.getIndex(source, 0);
+		for(Placement placement : batch) {
+			if(source == null) {
+				currentIndex = findContainingPoint(placement);
+				if(currentIndex == -1) {
+					throw new IllegalArgumentException("No free space contains the next batch placement");
+				}
+				source = values.get(currentIndex);
+			}
+			boolean xy = source.getMinZ() == placement.getAbsoluteZ() && source.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY());
+			boolean xz = source.getMinY() == placement.getAbsoluteY() && source.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
+			boolean yz = source.getMinX() == placement.getAbsoluteX() && source.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
+			// Bypass single-placement entry points: stack subclasses record a batch
+			// once, not one search step per physical placement.
+			add(source, currentIndex, placement, xy, xz, yz);
+			source = null;
+		}
+		return !values.isEmpty();
+	}
+
+	/** Current points are sorted by minimum X. */
+	protected int findContainingPoint(Placement placement) {
+		for(int i = 0; i < values.size(); i++) {
+			SimplePoint3D point = values.get(i);
+			if(point.getMinX() > placement.getAbsoluteX()) {
+				break;
+			}
+			if(point.fits3D(placement)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
 	public boolean addObstacle(Placement placement) {
 		// find a point which holds the placement
 		for(int i = 0; i < values.size(); i++) {

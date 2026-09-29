@@ -35,6 +35,8 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		protected Point3DFlagList otherValues = new Point3DFlagList();
 		protected Placement stackPlacement = new Placement(false);
 		protected SimplePoint3D point;
+		protected int placementCount;
+		protected boolean batch;
 		protected long minVolumeLimit;
 		protected long minAreaLimit;
 	}
@@ -66,9 +68,20 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		return super.add(index, placement);
 	}
 
+	@Override
+	public boolean add(int index, List<Placement> batch) {
+		stackItems[stackIndex].point = values.get(index);
+		stackItems[stackIndex].batch = true;
+		// Preserve space for subsequent ordinary search steps without changing
+		// the single-placement insertion path.
+		placements.ensureAdditionalCapacity(batch.size() + stackItems.length);
+		return super.add(index, batch);
+	}
+
 	public Placement push() {
 		StackItem currentStackItem = stackItems[stackIndex];
 		// save current state
+		currentStackItem.placementCount = placements.size();
 		currentStackItem.minAreaLimit = minAreaLimit;
 		currentStackItem.minVolumeLimit = minVolumeLimit;
 
@@ -79,6 +92,7 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		// clone current state
 		// make sure to overwrite everything, no clear is performed
 		nextStackItem.point = null;
+		nextStackItem.batch = false;
 		nextStackItem.values.copyFrom(currentStackItem.values);
 		nextStackItem.otherValues.copyFrom(currentStackItem.otherValues);
 
@@ -100,7 +114,14 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		StackItem nextStackItem = stackItems[stackIndex];
 		nextStackItem.point = null;
 		
-		placements.setSize(stackIndex);
+		placements.setSize(currentStackItem.placementCount);
+		if(nextStackItem.batch) {
+			// Batch minima belong to that arrangement. Keep ordinary insertion's
+			// existing next-item filtering behavior unchanged.
+			minAreaLimit = currentStackItem.minAreaLimit;
+			minVolumeLimit = currentStackItem.minVolumeLimit;
+			nextStackItem.batch = false;
+		}
 
 		nextStackItem.values.copyFrom(currentStackItem.values);
 		nextStackItem.otherValues.copyFrom(currentStackItem.otherValues);
@@ -120,7 +141,7 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		this.minAreaLimit = stackItem.minAreaLimit;
 		this.minVolumeLimit = stackItem.minVolumeLimit;
 		
-		placements.setSize(stackIndex);
+		placements.setSize(stackItem.placementCount);
 	}
 
 	public List<Point> getPoints() {
@@ -163,6 +184,7 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		stackItem.values.clear();
 		stackItem.otherValues.clear();
 		stackItem.point = null;
+		stackItem.placementCount = 0;
 
 		stackItem.values.add(createContainerPoint());
 
