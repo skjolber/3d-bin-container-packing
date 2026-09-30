@@ -32,6 +32,7 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 	protected int maxSearches = 8;
 	protected double dimensionDifference = 0.25;
 	protected boolean bruteForce = true;
+	protected boolean aggregation = true;
 	protected boolean compareUngrouped;
 	protected int maxRefinements = 4;
 	protected int maxDelegateBoxes = Integer.MAX_VALUE;
@@ -69,6 +70,17 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 
 	public VirtualBoxPackagerResultBuilder withBruteForce(boolean enabled) {
 		bruteForce = enabled;
+		return this;
+	}
+
+	/**
+	 * Enable filled-envelope preprocessing (default true). Disable when custom
+	 * delegate controls require original physical boxes or child surfaces. Disabled
+	 * operations are forwarded unchanged, without layout preparation, refinement or
+	 * expansion; preprocessing limits such as maxDelegateBoxes do not apply.
+	 */
+	public VirtualBoxPackagerResultBuilder withAggregation(boolean enabled) {
+		aggregation = enabled;
 		return this;
 	}
 
@@ -176,6 +188,8 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 	}
 
 	protected PackagerResult attempt(VirtualBoxPacking packing, PackagerInterruptSupplier stop, long start) {
+		// Filled envelopes are ordinary count-one delegate items. Keep expansion
+		// outside the delegate's search/point loops, including the no-load path.
 		PackagerResult result = configured(stop).withBoxItems(packing.getItems()).build();
 		return packing.expand(result, items, start, requiresLoadValidation(), stop);
 	}
@@ -199,7 +213,7 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 	}
 
 	protected boolean supportsAggregation() {
-		if(!itemGroups.isEmpty() || order != Order.NONE) {
+		if(!aggregation || !itemGroups.isEmpty() || order != Order.NONE) {
 			return false;
 		}
 		Map<Box, Boolean> distinct = new IdentityHashMap<>();

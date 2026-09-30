@@ -11,6 +11,14 @@ import com.github.skjolber.packing.api.PackagerResultBuilder;
  * delegate before wrapping it. Inventory-dependent custom controls must not assume
  * that delegate input boxes are the original boxes.
  *
+ * Without physical load constraints, each filled rectangular layout is packed as
+ * one ordinary envelope: one inventory item and one point-calculator insertion.
+ * Physical children are expanded only after a successful delegate attempt. No
+ * batch insertion, worker child placements or load-contact metadata is needed on
+ * this path. Controls requiring original child surfaces must disable aggregation
+ * with {@link VirtualBoxPackagerResultBuilder#withAggregation(boolean)}; a filled
+ * envelope alone does not preserve those control semantics.
+ *
  * Groups, ordered inputs, controlled containers and existing
  * placements bypass aggregation and are handed directly to the delegate.
  * Load-constrained assemblies are checked internally and again after expansion.

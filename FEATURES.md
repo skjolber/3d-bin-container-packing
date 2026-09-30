@@ -65,6 +65,13 @@ expanded physical-load validation include cross-assembly contacts and rebuild
 support graphs; invalid packings trigger refinement or fallback.
 Unsupported controls and groups pass directly to the delegate.
 
+Without load constraints, filled virtual boxes use one ordinary envelope
+insertion each; children are expanded only after a successful delegate attempt.
+This path does not prepare physical load contacts or use batch point insertion.
+Use `withAggregation(false)` when custom delegate controls need physical child
+surfaces or original input items. It bypasses preprocessing and forwards the
+operation directly, retaining the delegate's normal result semantics.
+
 ## Container selection and allocation
 
 - Ordered selection for the supplied container order.
