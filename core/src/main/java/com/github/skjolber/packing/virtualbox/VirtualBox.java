@@ -10,7 +10,8 @@ import com.github.skjolber.packing.api.Placement;
 
 /**
  * Alternative filled layouts of exactly the same original inventory. A packing
- * selects one layout, never all alternatives. Every delegate item has count one.
+ * selects one layout per placed copy, never all alternatives. Equal virtual boxes may be
+ * passed to the delegate as one item with a count greater than one.
  */
 public class VirtualBox {
 	protected final List<VirtualBoxLayout> layouts;
@@ -39,13 +40,13 @@ public class VirtualBox {
 					grids = false;
 					break;
 				}
-				if(grid.value.getBox().getBoxItem() != first.value.getBox().getBoxItem() || grid.placements.size() != first.placements.size()) {
+				if(grid.value.getBox().getBoxItem() != first.value.getBox().getBoxItem() || grid.count != first.count) {
 					throw new IllegalArgumentException("Layouts must contain the same original inventory");
 				}
 				grid.prepare();
 			}
 			if(grids) {
-				return new VirtualBox(layouts, (int) ((long) first.placements.size() * first.value.getBox().getWeight()));
+				return new VirtualBox(layouts, (int) ((long) first.count * first.value.getBox().getWeight()));
 			}
 		}
 		Map<BoxItem, Integer> inventory = inventory(layouts.get(0));
@@ -92,12 +93,20 @@ public class VirtualBox {
 
 	/** Create operation-local inventory. Stack-value indexes identify layouts, including after cloning. */
 	public BoxItem toBoxItem(int globalIndex) {
+		return toBoxItem(globalIndex, 1);
+	}
+
+	/**
+	 * Create operation-local inventory for {@code count} interchangeable copies of this virtual box.
+	 * A counted item lets permutation searches treat equal blocks as identical boxes.
+	 */
+	public BoxItem toBoxItem(int globalIndex, int count) {
 		BoxStackValue[] values = new BoxStackValue[layouts.size()];
 		for(int i = 0; i < values.length; i++) {
 			var bounds = layouts.get(i).getBoundingBox();
 			values[i] = BoxStackValue.newBuilder().withDimensions(bounds.dx(), bounds.dy(), bounds.dz()).withIndex(i).build();
 		}
 		Box box = new Box(null, "Virtual box", layouts.get(0).getBoundingBox().getVolume(), weight, values, Map.of(), null);
-		return new BoxItem(box, 1, -1, globalIndex);
+		return new BoxItem(box, count, -1, globalIndex);
 	}
 }

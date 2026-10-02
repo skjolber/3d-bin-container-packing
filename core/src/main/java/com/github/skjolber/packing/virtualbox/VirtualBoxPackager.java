@@ -12,7 +12,9 @@ import com.github.skjolber.packing.api.PackagerResultBuilder;
  * that delegate input boxes are the original boxes.
  *
  * Without physical load constraints, each filled rectangular layout is packed as
- * one ordinary envelope: one inventory item and one point-calculator insertion.
+ * one ordinary envelope: one point-calculator insertion per placed envelope. Equal
+ * envelopes of the same original item share one delegate inventory item whose
+ * count is the number of copies.
  * Physical children are expanded only after a successful delegate attempt. No
  * batch insertion, worker child placements or load-contact metadata is needed on
  * this path. Controls requiring original child surfaces must disable aggregation

@@ -44,7 +44,12 @@ public class VirtualBoxPacking {
 	}
 
 	protected void add(VirtualBox virtualBox) {
-		items.add(virtualBox.toBoxItem(entries.size()));
+		add(virtualBox, 1);
+	}
+
+	/** Equal blocks share one counted delegate item; each placement expands to the same layouts. */
+	protected void add(VirtualBox virtualBox, int count) {
+		items.add(virtualBox.toBoxItem(entries.size(), count));
 		entries.add(new Entry(null, virtualBox));
 	}
 

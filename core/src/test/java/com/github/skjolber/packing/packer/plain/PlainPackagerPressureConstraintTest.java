@@ -211,4 +211,67 @@ public class PlainPackagerPressureConstraintTest extends AbstractPackagerConstra
 			packager.close();
 		}
 	}
+
+	// -----------------------------------------------------------------------
+	// P-5  Pressure accumulates with existing load
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Each of B and C is light enough on its own, but together they exceed A's
+	 * pressure limit. The check must include the load A already carries, not
+	 * only the weight being added.
+	 *
+	 * <pre>
+	 *  z |
+	 *  3 +----+   C (w=6)  A would carry 6 + 6 = 12 &gt; maxLoadPressure×area = 1×10 = 10  ✗ rejected
+	 *    |  C |
+	 *  2 +----+
+	 *    |  B |   B (w=6)  A carries 6 ≤ 10  ✓
+	 *  1 +----+
+	 *    |  A |   2×5 base (area=10), maxLoadPressure=1  → maxWeight=10
+	 *  0 +----+
+	 *      0 2  x
+	 *
+	 *  container-1: [ A, B ]
+	 *  container-2: [ C ]
+	 * </pre>
+	 */
+	@Test
+	void pressureIncludesExistingLoad() {
+		Container c = container(2, 5, 3);
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			Box a = Box.newBuilder()
+					.withId("A")
+					.withSize(2, 5, 1)
+					.withWeight(20)
+					.withMaxLoadPressure(1.0)
+					.withRotate2D()
+					.build();
+			Box b = Box.newBuilder()
+					.withId("B")
+					.withSize(2, 5, 1)
+					.withWeight(6)
+					.withRotate2D()
+					.build();
+			Box cc = Box.newBuilder()
+					.withId("C")
+					.withSize(2, 5, 1)
+					.withWeight(6)
+					.withRotate2D()
+					.build();
+
+			PackagerResult result = packager.newResultBuilder()
+					.withContainerItem(new ContainerItem(c, 2))
+					.withMaxContainerCount(2)
+					.withBoxItems(List.of(new BoxItem(a, 1), new BoxItem(b, 1), new BoxItem(cc, 1)))
+					.build();
+
+			assertContainers(result, 2);
+			assertStackSize(result, 0, 2);  // A + one of B, C
+			assertStackSize(result, 1, 1);  // the other
+		} finally {
+			packager.close();
+		}
+	}
 }

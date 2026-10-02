@@ -89,3 +89,4 @@ release.properties
 apm_modules/
 
 .agents
+.claude

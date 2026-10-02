@@ -83,18 +83,20 @@ public class PressureConstraintBenchmarkState {
 	 * Scenario 2: two box types with different {@code maxLoadPressure} limits
 	 * in the same 20×20×5 container.
 	 * <ul>
-	 *   <li><b>tight</b>: w=3, maxLoadPressure=0.1 — area=100, maxWeight=10; 3&lt;10 ✓</li>
-	 *   <li><b>generous</b>: w=3, maxLoadPressure=1 — area=100, maxWeight=100; 3&lt;100 ✓</li>
+	 *   <li><b>tight</b>: w=3, maxLoadPressure=0.15 — area=100, maxWeight=15</li>
+	 *   <li><b>generous</b>: w=3, maxLoadPressure=1 — area=100, maxWeight=100</li>
 	 * </ul>
-	 * The packager evaluates two different pressure limits per placement candidate.
+	 * The container is filled exactly, so a bottom box carries the four boxes above it:
+	 * 4×3 = 12, which is within both limits wherever each type is placed. The packager
+	 * evaluates two different pressure limits per placement candidate.
 	 *
 	 * <pre>
 	 *   z
-	 *   5 +----------+  tight: 3 ≤ 0.1×100 = 10  ✓   generous: 3 ≤ 1×100 = 100  ✓
+	 *   5 +----------+  bottom box carries 4×3 = 12:  tight: 12 ≤ 0.15×100 = 15  ✓   generous: 12 ≤ 1×100 = 100  ✓
 	 *   4 +----------+
 	 *   3 +----------+
 	 *   2 +----------+
-	 *   1 +----------+  tight: maxLoadPressure=0.1  /  generous: maxLoadPressure=1
+	 *   1 +----------+  tight: maxLoadPressure=0.15  /  generous: maxLoadPressure=1
 	 *   0
 	 *       0        10 x  (10×10 base, area=100; ×4 columns — 2 tight, 2 generous)
 	 * </pre>
@@ -110,7 +112,7 @@ public class PressureConstraintBenchmarkState {
 				.build();
 
 		Box tight = Box.newBuilder().withId("pressure-tight")
-				.withSize(10, 10, 1).withWeight(3).withMaxLoadPressure(0.1).build();
+				.withSize(10, 10, 1).withWeight(3).withMaxLoadPressure(0.15).build();
 		Box generous = Box.newBuilder().withId("pressure-generous")
 				.withSize(10, 10, 1).withWeight(3).withMaxLoadPressure(1.0).build();
 		items2 = List.of(new BoxItem(tight, 10), new BoxItem(generous, 10));

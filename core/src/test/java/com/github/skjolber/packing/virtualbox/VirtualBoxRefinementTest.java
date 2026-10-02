@@ -92,39 +92,103 @@ class VirtualBoxRefinementTest {
 	 *                 /     \
 	 *              A x 2   A x 2
 	 *                 \     /
-	 *               same cache key
+	 *            one node, two copies
 	 *
-	 * Both children use one generated layout collection. Refining a child again
-	 * preserves exactly four original boxes.
+	 * Both children use one generated layout collection and become a single node
+	 * with two copies. The next refinement splits both copies at once.
 	 */
 	@Test
-	void identicalChildrenReuseOperationLocalLayouts() {
+	void identicalChildrenBecomeOneNodeAndSplitTogether() {
 		BoxItem original = item(1, 1, 1, 4);
-		List<Container> containers = List.of(container(4, 2, 1));
+		List<ContainerItem> containers = List.of(new ContainerItem(container(4, 2, 1), 1));
 		CountingGrids grids = new CountingGrids();
-		VirtualBoxPacking packing = new VirtualBoxPacking();
-		packing.add(VirtualBox.of(grids.generate(original, containers, 8, () -> false)));
-		VirtualBoxLayoutCache cache = new VirtualBoxLayoutCache(List.of(original), containers, grids, 100, 8);
-		VirtualBoxPlan plan = new VirtualBoxPlan(List.of(original), packing, cache, 10);
+		VirtualBoxLayoutCache cache = new VirtualBoxLayoutCache(List.of(original), containers, 1, grids, 100, 8);
+		VirtualBoxPlan plan = new VirtualBoxPlan(List.of(original), cache, 10);
+		plan.add(0, () -> false);
 		assertThat(plan.refine(() -> false)).isTrue();
 		assertThat(grids.calls).isEqualTo(2); // initial four-box grid plus one two-box grid
-		assertThat(plan.frontier.get(0).virtualBox.getLayouts().get(0)).isSameAs(plan.frontier.get(1).virtualBox.getLayouts().get(0));
+		assertThat(plan.frontier).hasSize(1);
+		assertThat(plan.frontier.get(0).copies).isEqualTo(2);
+		assertThat(plan.delegateCount()).isEqualTo(2);
 		assertThat(cache.cached.size()).isEqualTo(2);
+		// Two equal blocks: one counted delegate item, not two permutable types
+		VirtualBoxPacking merged = plan.packing();
+		assertThat(merged.getItems()).hasSize(1);
+		assertThat(merged.getItems().get(0).getCount()).isEqualTo(2);
+		// Both [A A] copies split into singletons, which need no geometry search
 		assertThat(plan.refine(() -> false)).isTrue();
-		assertThat(grids.calls).isEqualTo(2); // singleton children need no geometry search
-		long count = 0;
-		for(var node : plan.frontier) {
-			count += node.count;
-		}
-		assertThat(count).isEqualTo(4);
-		assertThat(original.getCount()).isEqualTo(4);
-		// Finish the tree: [A A] + [A] + [A] becomes one original A entry, count four.
-		assertThat(plan.refine(() -> false)).isTrue();
+		assertThat(grids.calls).isEqualTo(2);
 		VirtualBoxPacking plain = plan.packing();
 		assertThat(plain.hasVirtualBoxes()).isFalse();
 		assertThat(plain.getItems()).hasSize(1);
 		assertThat(plain.getItems().get(0).getCount()).isEqualTo(4);
+		assertThat(original.getCount()).isEqualTo(4);
 		assertThat(plan.refine(() -> false)).isFalse();
+	}
+
+	/*
+	 * Eight cubes, containers holding four: two copies of a 2 x 2 block.
+	 *
+	 *       [A A]   [A A]          [A A]   [A A]
+	 *       [A A]   [A A]   -->    [A A]   ----- + [A A]
+	 *
+	 * Splitting both copies would need four delegate items; the limit is three,
+	 * so only one copy is split.
+	 */
+	@Test
+	void delegateLimitSplitsOnlySomeCopies() {
+		BoxItem original = item(1, 1, 1, 8);
+		List<ContainerItem> containers = List.of(new ContainerItem(container(2, 2, 1), 2));
+		VirtualBoxPlan plan = new VirtualBoxPlan(List.of(original), new VirtualBoxLayoutCache(List.of(original), containers, 2, new CountingGrids(), 100, 8), 3);
+		plan.add(0, () -> false);
+		assertThat(plan.frontier).hasSize(1);
+		assertThat(plan.frontier.get(0).copies).isEqualTo(2);
+		assertThat(plan.refine(() -> false)).isTrue();
+		assertThat(plan.delegateCount()).isEqualTo(3);
+		assertThat(plan.frontier).extracting(node -> node.count).containsExactly(4, 2);
+		assertThat(plan.frontier).extracting(node -> node.copies).containsExactly(1, 2);
+		assertThat(plan.refine(() -> false)).isFalse();
+	}
+
+	/*
+	 * 10,000 cubes in containers holding two: 5,000 equal blocks are one node,
+	 * not 5,000 nodes, so planning and refinement stay linear in the number of items.
+	 */
+	@Test
+	void manyEqualBlocksAreOneNode() {
+		BoxItem original = item(1, 1, 1, 10_000);
+		List<ContainerItem> containers = List.of(new ContainerItem(container(2, 1, 1), 10_000));
+		VirtualBoxPlan plan = new VirtualBoxPlan(List.of(original),
+				new VirtualBoxLayoutCache(List.of(original), containers, 10_000, new CountingGrids(), 10_000, 8), Integer.MAX_VALUE);
+		plan.add(0, () -> false);
+		assertThat(plan.frontier).hasSize(1);
+		assertThat(plan.frontier.get(0).copies).isEqualTo(5_000);
+		assertThat(plan.delegateCount()).isEqualTo(5_000);
+		assertThat(plan.refine(() -> false)).isTrue();
+		assertThat(plan.frontier).hasSize(1);
+		assertThat(plan.frontier.get(0).virtualBox).isNull();
+		assertThat(plan.frontier.get(0).count).isEqualTo(10_000);
+	}
+
+	/*
+	 * The parent fits only the long container A. Its halves rank better in the square
+	 * container B, but must keep a layout which fits A:
+	 *
+	 *   A: [A A A A A A A A]  -->  [A A A A] + [A A A A]     (B: 2 x 2 holds a half, not the parent)
+	 */
+	@Test
+	void refinedChildrenKeepALayoutFittingTheParentContainer() {
+		BoxItem original = item(1, 1, 1, 8);
+		Container a = container(8, 1, 1);
+		Container b = container(2, 2, 1);
+		List<ContainerItem> containers = List.of(new ContainerItem(a, 1), new ContainerItem(b, 1));
+		VirtualBoxPlan plan = new VirtualBoxPlan(List.of(original), new VirtualBoxLayoutCache(List.of(original), containers, 2, new CountingGrids(), 100, 1), 10);
+		plan.add(0, () -> false);
+		assertThat(plan.refine(() -> false)).isTrue();
+		assertThat(plan.frontier).hasSize(1);
+		List<VirtualBoxLayout> layouts = plan.frontier.get(0).virtualBox.getLayouts();
+		assertThat(layouts).anyMatch(layout -> layout.getBoundingBox().dx() <= 8 && layout.getBoundingBox().dy() <= 1 && layout.getBoundingBox().dz() <= 1);
+		assertThat(layouts).anyMatch(layout -> layout.getBoundingBox().equals(VirtualBoxBounds.of(2, 2, 1)));
 	}
 
 	/*
@@ -133,12 +197,10 @@ class VirtualBoxRefinementTest {
 	@Test
 	void cancellationDoesNotCommitAPartialSplit() {
 		BoxItem original = item(1, 1, 1, 4);
-		List<Container> containers = List.of(container(4, 1, 1));
+		List<ContainerItem> containers = List.of(new ContainerItem(container(4, 1, 1), 1));
 		CountingGrids grids = new CountingGrids();
-		VirtualBoxPacking packing = new VirtualBoxPacking();
-		packing.add(VirtualBox.of(grids.generate(original, containers, 8, () -> false)));
-		VirtualBoxPlan plan = new VirtualBoxPlan(List.of(original), packing,
-				new VirtualBoxLayoutCache(List.of(original), containers, grids, 100, 8), 10);
+		VirtualBoxPlan plan = new VirtualBoxPlan(List.of(original), new VirtualBoxLayoutCache(List.of(original), containers, 1, grids, 100, 8), 10);
+		plan.add(0, () -> false);
 		assertThat(plan.refine(() -> true)).isFalse();
 		assertThat(plan.frontier).hasSize(1);
 		assertThat(grids.calls).isEqualTo(1);

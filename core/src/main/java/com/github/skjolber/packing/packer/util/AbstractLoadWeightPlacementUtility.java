@@ -281,10 +281,15 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		}
 	}
 
-	protected boolean isWithinMaxLoadWeightAndPressure(Placement placement, double weight, long area) {
+	/**
+	 * Validates an additional {@code weight} transferred onto {@code placement} through one contact
+	 * of {@code area}, which already carries {@code contactWeight}. Pressure is evaluated per
+	 * contact, like the pressure validator; weight is evaluated over all supportees.
+	 */
+	protected boolean isWithinMaxLoadWeightAndPressure(Placement placement, double weight, long area, double contactWeight) {
 		double effectiveWeight = weight - reliefWeights[placement.getIndex()];
 		BoxStackValue sv = placement.getStackValue();
-		if (sv.isMaxLoadPressure() && Box.calculatePressure(area, effectiveWeight) > sv.getMaxLoadPressure()) {
+		if (sv.isMaxLoadPressure() && Box.calculatePressure(area, contactWeight + effectiveWeight) > sv.getMaxLoadPressure()) {
 			return false;
 		}
 		if (sv.isMaxLoadWeight()) {
@@ -298,9 +303,12 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		}
 		long totalArea = placement.getSupportedArea();
 		if (totalArea > 0) {
+			// existing load passed down by this placement, shared by contact area
+			double carried = placement.getWeight() + placement.getLoadWeight();
 			for (PlacementLoad pl : placement.getSupporters()) {
 				double weightShare = effectiveWeight * pl.getArea() / totalArea;
-				if (!isWithinMaxLoadWeightAndPressure(pl.getPlacement(), weightShare, pl.getArea())) {
+				double carriedShare = carried * pl.getArea() / totalArea;
+				if (!isWithinMaxLoadWeightAndPressure(pl.getPlacement(), weightShare, pl.getArea(), carriedShare)) {
 					return false;
 				}
 			}
@@ -325,7 +333,8 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		}
 		for (int i = 0; i < n; i++) {
 			double weightShare = weight * placementAreas[i] / totalOverlapArea;
-			if (!isWithinMaxLoadWeightAndPressure(placementSupporters.get(i), weightShare, placementAreas[i])) {
+			// a new contact carries no existing load
+			if (!isWithinMaxLoadWeightAndPressure(placementSupporters.get(i), weightShare, placementAreas[i], 0.0)) {
 				return -1;
 			}
 		}

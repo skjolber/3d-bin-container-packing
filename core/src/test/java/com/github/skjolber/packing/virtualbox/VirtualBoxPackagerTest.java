@@ -139,17 +139,24 @@ class VirtualBoxPackagerTest {
 	}
 
 	/*
-	 * Eight boxes exceed a grid limit of four and a search limit of three.
-	 * Nothing is truncated: all eight go to the delegate.
+	 * Eight boxes exceed a grid limit of four. They are split into two equal rows,
+	 * handed to the delegate as one item with count two:
+	 *
+	 *       +---+---+---+---+
+	 *       | A | A | A | A |
+	 *       +---+---+---+---+
+	 *       | A | A | A | A |
+	 *       +---+---+---+---+
 	 */
 	@Test
-	void oversizedAssembliesRemainUngrouped() throws IOException {
+	void oversizedAssembliesAreSplitIntoEqualBlocks() throws IOException {
 		try(PlainPackager delegate = PlainPackager.newBuilder().build(); RecordingPackager recording = new RecordingPackager(delegate);
 				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
 			BoxItem a = item(1, 1, 1, 8);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(4, 2, 1), 1))
 					.withMaxGridBoxes(4).build();
-			assertThat(recording.counts).containsExactly(8);
+			assertThat(recording.counts).containsExactly(2);
+			assertThat(recording.types).containsExactly(1);
 			assertValid(result, List.of(a));
 		}
 	}
@@ -229,16 +236,22 @@ class VirtualBoxPackagerTest {
 
 	/*
 	 * Prime-sized item cannot become a whole grid in a 3 x 2 floor.
-	 * Delegate still receives all five cubes and packs them without aggregation.
+	 * It is split into a full row and a line:
+	 *
+	 *       +---+---+---+
+	 *       | A | A |   |
+	 *       +---+---+---+
+	 *       | A | A | A |
+	 *       +---+---+---+
 	 */
 	@Test
-	void noUsableGridFallsBackWithoutLosingInventory() throws IOException {
+	void primeCountIsSplitIntoRowAndLine() throws IOException {
 		try(PlainPackager delegate = PlainPackager.newBuilder().build(); RecordingPackager recording = new RecordingPackager(delegate);
 				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
 			BoxItem a = item(1, 1, 1, 5);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(3, 2, 1), 1))
 					.build();
-			assertThat(recording.counts).containsExactly(5);
+			assertThat(recording.counts).containsExactly(2);
 			assertValid(result, List.of(a));
 		}
 	}
@@ -279,21 +292,18 @@ class VirtualBoxPackagerTest {
 	}
 
 	/*
-	 * Load-limited items use validated grids and expanded support graphs.
-	 * Chronological input remains unaggregated.
+	 * Chronological input remains unaggregated:
+	 *
+	 *       [ A ] [ A ] [ A ]   three delegate boxes, not one envelope
 	 */
 	@Test
-	void loadConstraintsAreValidatedAndOrderedInputsBypassAggregation() throws IOException {
+	void orderedInputsBypassAggregation() throws IOException {
 		try(PlainPackager delegate = PlainPackager.newBuilder().build(); RecordingPackager recording = new RecordingPackager(delegate);
 				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
-			BoxItem load = new BoxItem(Box.newBuilder().withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(0).build(), 2);
-			PackagerResult result = wrapper.newResultBuilder().withBoxItems(load).withContainerItems(new ContainerItem(container(2, 1, 1), 1)).build();
-			assertThat(result.isSuccess()).isTrue();
-			assertThat(recording.counts).containsExactly(1);
 			BoxItem ordered = item(1, 1, 1, 3);
 			wrapper.newResultBuilder().withBoxItems(ordered).withOrder(Order.CRONOLOGICAL)
 					.withContainerItems(new ContainerItem(container(3, 1, 1), 1)).build();
-			assertThat(recording.counts).containsExactly(1, 3);
+			assertThat(recording.counts).containsExactly(3);
 		}
 	}
 
@@ -366,6 +376,90 @@ class VirtualBoxPackagerTest {
 	}
 
 	/*
+	 * 40 boxes (2 x 1 x 1) need three 6 x 3 x 2 containers. The whole count forms no
+	 * fitting grid, so it is split into container-sized blocks:
+	 *
+	 *       +-----------+   +-----------+   +-------+
+	 *       | 3 x 3 x 2 |   | 3 x 3 x 2 |   | A A A |
+	 *       +-----------+   +-----------+   | A     |
+	 *                                       +-------+
+	 *
+	 * Brute force receives four boxes of three types instead of 40 loose boxes:
+	 * the two equal 18-box blocks as one item with count two, a row of three and one loose box.
+	 */
+	@Test
+	void multiContainerCountsBecomeContainerSizedBlocks() throws IOException {
+		try(BruteForcePackager delegate = BruteForcePackager.newBuilder().build(); RecordingPackager recording = new RecordingPackager(delegate);
+				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
+			BoxItem a = item(2, 1, 1, 40);
+			PackagerResult result = wrapper.newResultBuilder()
+					.withBoxItems(a)
+					.withContainerItems(new ContainerItem(container(6, 3, 2), 3))
+					.withMaxContainerCount(3)
+					.withInterruptDuration(60_000)
+					.build();
+			assertThat(recording.counts).containsExactly(4);
+			assertThat(recording.types).containsExactly(3);
+			assertThat(result.size()).isEqualTo(3);
+			assertValid(result, List.of(a));
+		}
+	}
+
+	/*
+	 * One large container (6 x 3 x 2, holds 18) and three small ones (4 x 3 x 2, hold 12).
+	 * Blocks of 18 would need two large containers, so 36 boxes become three blocks of 12:
+	 *
+	 *       +-----------+   +-----------+   +-----------+
+	 *       | 2 x 3 x 2 |   | 2 x 3 x 2 |   | 2 x 3 x 2 |
+	 *       +-----------+   +-----------+   +-----------+
+	 *
+	 * The first delegate attempt succeeds. Refinement is disabled to show that no
+	 * retry or ungrouped fallback is needed; blocks of 18 would only fit the single large container.
+	 */
+	@Test
+	void blocksFitTheAvailableContainers() throws IOException {
+		try(BruteForcePackager delegate = BruteForcePackager.newBuilder().build(); RecordingPackager recording = new RecordingPackager(delegate);
+				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
+			BoxItem a = item(2, 1, 1, 36);
+			PackagerResult result = wrapper.newResultBuilder()
+					.withBoxItems(a)
+					.withContainerItems(new ContainerItem(container(6, 3, 2), 1), new ContainerItem(container(4, 3, 2), 3))
+					.withMaxContainerCount(4)
+					.withMaxRefinements(0)
+					.withInterruptDuration(60_000)
+					.build();
+			assertThat(recording.counts).containsExactly(3);
+			assertThat(recording.types).containsExactly(1);
+			assertThat(result.size()).isEqualTo(3);
+			assertValid(result, List.of(a));
+		}
+	}
+
+	/*
+	 * Two full containers are the volume lower bound; refinement cannot improve it.
+	 *
+	 *       +-------+   +-------+
+	 *       | A A A |   | A A A |
+	 *       +-------+   +-------+
+	 */
+	@Test
+	void resultAtLowerBoundIsNotRefined() throws IOException {
+		try(BruteForcePackager delegate = BruteForcePackager.newBuilder().build(); RecordingPackager recording = new RecordingPackager(delegate);
+				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
+			BoxItem a = item(1, 1, 1, 6);
+			PackagerResult result = wrapper.newResultBuilder()
+					.withBoxItems(a)
+					.withContainerItems(new ContainerItem(container(3, 1, 1), 2))
+					.withMaxContainerCount(2)
+					.withInterruptDuration(60_000)
+					.build();
+			assertThat(result.size()).isEqualTo(2);
+			assertThat(recording.counts).containsExactly(2);
+			assertValid(result, List.of(a));
+		}
+	}
+
+	/*
 	 * Wrapper lifetime is separate from delegate lifetime.
 	 */
 	@Test
@@ -403,6 +497,7 @@ class VirtualBoxPackagerTest {
 	protected static class RecordingPackager implements Packager<RecordingPackager.RecordingBuilder> {
 		protected final Packager<?> delegate;
 		protected final List<Integer> counts = new ArrayList<>();
+		protected final List<Integer> types = new ArrayList<>();
 		protected final List<Integer> groupCounts = new ArrayList<>();
 		protected boolean failFirst;
 		protected int failAttempt = -1;
@@ -420,6 +515,7 @@ class VirtualBoxPackagerTest {
 					count += item.getCount();
 				}
 				counts.add(count);
+				types.add(items.size());
 				groupCounts.add(itemGroups.size());
 				beforeAttempt.run();
 				if((failFirst && counts.size() == 1) || counts.size() == failAttempt) {

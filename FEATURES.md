@@ -40,10 +40,13 @@ permutations. They remain exponential in the number of independently ordered
 boxes; use an interrupt deadline for production requests.
 
 `VirtualBoxPackager` provides rectangular-assembly preprocessing around packagers:
-filled factor grids for repeated items, alternative layouts, expansion back to
-original identities, and ungrouped fallback. Optional ungrouped comparison
-retains the better result. Selective splitting reuses operation-local cached
-layouts and obeys refinement and delegate-item limits. Grids check internal loads
+filled factor grids for repeated items, container-sized grid blocks for counts
+which do not fit as one grid (respecting available containers and costs), equal
+blocks passed as one counted item, alternative layouts with at least one per
+fitting container type, expansion back to original identities, and ungrouped fallback. Optional ungrouped comparison
+retains the better result. Selective splitting halves grids along an axis, splits all equal copies at
+once, reuses operation-local cached layouts, stops at the container-count lower
+bound and obeys refinement and delegate-item limits. Grids check internal loads
 analytically, without permutation searches or mutable contact graphs. Any box load
 constraint bypasses aggregation for the whole operation, leaving the original
 inventory and physical load handling to a load-aware delegate. The wrapper does

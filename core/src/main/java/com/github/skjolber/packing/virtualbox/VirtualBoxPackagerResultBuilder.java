@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
@@ -18,8 +19,10 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilde
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 
 /**
- * Per-operation virtual-box settings. Identical boxes form direct rectangular grids.
- * Selective refinement reuses operation-local layouts without permutation searches.
+ * Per-operation virtual-box settings. Identical boxes form direct rectangular grids,
+ * split into container-sized blocks when the whole count does not fit. Equal blocks
+ * are handed to the delegate as one counted item. Selective refinement splits grids
+ * along an axis and reuses operation-local layouts without permutation searches.
  * Ungrouped fallback is attempted when aggregation and refinement fail.
  */
 public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuilder<VirtualBoxPackagerResultBuilder> {
@@ -37,13 +40,20 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 		this.scheduler = scheduler;
 	}
 
-	/** Bound the number of alternative layouts (delegate stack values) per virtual box. */
+	/**
+	 * Bound the number of alternative layouts (delegate stack values) per virtual box.
+	 * Each container type which can hold the assembly keeps one layout of its own, even
+	 * if there are more such container types than this limit.
+	 */
 	public VirtualBoxPackagerResultBuilder withMaxLayouts(int count) {
 		maxLayouts = positive(count);
 		return this;
 	}
 
-	/** Bound the physical size of a directly constructed grid. Larger items remain ungrouped. */
+	/**
+	 * Bound the physical size of a directly constructed grid. Larger items, and items
+	 * whose whole count does not fit a container, are split into container-sized grids.
+	 */
 	public VirtualBoxPackagerResultBuilder withMaxGridBoxes(int count) {
 		maxGridBoxes = positive(count);
 		return this;
@@ -121,7 +131,8 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 				return best;
 			}
 			// Refinement is useful after failure or when container count/cost may improve.
-			for(int i = 0; i < maxRefinements && shouldRefine(best) && !stop.getAsBoolean(); i++) {
+			long finalContainerCount = getFinalContainerCount();
+			for(int i = 0; i < maxRefinements && shouldRefine(best, finalContainerCount) && !stop.getAsBoolean(); i++) {
 				if(!plan.refine(stop)) {
 					break;
 				}
@@ -155,7 +166,7 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 	}
 
 	protected PackagerResult attempt(VirtualBoxPacking packing, PackagerInterruptSupplier stop, long start) {
-		// Filled envelopes are ordinary count-one delegate items. Keep expansion
+		// Filled envelopes are ordinary delegate items; equal envelopes share one counted item. Keep expansion
 		// outside the delegate's search/point loops, including the no-load path.
 		PackagerResult result = configured(stop).withBoxItems(packing.getItems()).build();
 		return packing.expand(result, items, start);
@@ -197,35 +208,44 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 	}
 
 	protected VirtualBoxPlan prepare(PackagerInterruptSupplier stop) {
-		VirtualBoxPacking result = new VirtualBoxPacking();
-		List<Container> limits = new ArrayList<>();
+		List<ContainerItem> available = new ArrayList<>();
 		for(ContainerItem item : containers) {
 			if(item.getCount() > 0) {
-				limits.add(item.getContainer());
+				available.add(item);
 			}
 		}
-		GridVirtualBoxLayoutGenerator grids = new GridVirtualBoxLayoutGenerator();
-		for(BoxItem item : items) {
+		GridVirtualBoxLayoutGenerator grids = new GridVirtualBoxLayoutGenerator(getMinimumDimension());
+		VirtualBoxLayoutCache cache = new VirtualBoxLayoutCache(items, available, maxContainerCount, grids, maxGridBoxes, maxLayouts);
+		VirtualBoxPlan plan = new VirtualBoxPlan(items, cache, maxDelegateBoxes);
+		for(int i = 0; i < items.size(); i++) {
 			if(stop.getAsBoolean()) {
 				break;
 			}
-			List<VirtualBoxLayout> layouts = List.of();
-			if(item.getCount() > 1 && item.getCount() <= maxGridBoxes) {
-				layouts = grids.generate(item, limits, maxLayouts, stop::getAsBoolean);
-			}
-			if(layouts.isEmpty()) {
-				result.add(item);
-			} else {
-				result.add(VirtualBox.of(layouts));
-			}
+			plan.add(i, stop);
 		}
-		VirtualBoxLayoutCache cache = new VirtualBoxLayoutCache(items, limits, grids, maxGridBoxes, maxLayouts);
-		return new VirtualBoxPlan(items, result, cache, maxDelegateBoxes);
+		return plan;
 	}
 
-	protected boolean shouldRefine(PackagerResult best) {
-		if(!best.isSuccess() || best.size() > 1) {
+	/** Leftover space shorter than every box dimension cannot be used by any item. */
+	protected int getMinimumDimension() {
+		int minimum = Integer.MAX_VALUE;
+		for(BoxItem item : items) {
+			for(BoxStackValue value : item.getBox().getStackValues()) {
+				minimum = Math.min(minimum, Math.min(value.getDx(), Math.min(value.getDy(), value.getDz())));
+			}
+		}
+		return minimum == Integer.MAX_VALUE ? 1 : minimum;
+	}
+
+	/**
+	 * @param finalContainerCount container count which no refinement can improve, or -1 if unknown
+	 */
+	protected boolean shouldRefine(PackagerResult best, long finalContainerCount) {
+		if(!best.isSuccess()) {
 			return true;
+		}
+		if(best.size() > 1) {
+			return best.size() != finalContainerCount;
 		}
 		if(best.getCost() >= 0) {
 			for(ContainerItem item : containers) {
@@ -235,6 +255,43 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Container count at which refinement cannot improve a result, or -1 if there is none.
+	 * A result is compared by cost, then container count, then total container volume.
+	 * Without costs, and with equal container volumes, a result using the volume and weight
+	 * lower bound of containers cannot be improved.
+	 */
+	protected long getFinalContainerCount() {
+		long maxVolume = 0;
+		long maxWeight = 0;
+		long containerVolume = -1;
+		for(ContainerItem item : containers) {
+			if(item.hasCostCalculator()) {
+				return -1;
+			}
+			if(item.getCount() > 0) {
+				Container container = item.getContainer();
+				if(containerVolume != -1 && containerVolume != container.getVolume()) {
+					return -1;
+				}
+				containerVolume = container.getVolume();
+				maxVolume = Math.max(maxVolume, container.getMaxLoadVolume());
+				maxWeight = Math.max(maxWeight, container.getMaxLoadWeight());
+			}
+		}
+		long volume = 0;
+		long weight = 0;
+		for(BoxItem item : items) {
+			volume += item.getBox().getVolume() * item.getCount();
+			weight += (long) item.getBox().getWeight() * item.getCount();
+		}
+		long count = maxVolume <= 0 ? 1 : (volume + maxVolume - 1) / maxVolume;
+		if(maxWeight > 0) {
+			count = Math.max(count, (weight + maxWeight - 1) / maxWeight);
+		}
+		return count;
 	}
 
 	protected static boolean better(PackagerResult candidate, PackagerResult best) {
