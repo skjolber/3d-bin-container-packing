@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.virtualbox;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,8 +18,8 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilde
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 
 /**
- * Per-operation virtual-box settings. Direct grids are preferred; small remaining
- * inventories can be assembled with bounding-box search. Selective refinement reuses operation-local layouts.
+ * Per-operation virtual-box settings. Identical boxes form direct rectangular grids.
+ * Selective refinement reuses operation-local layouts without permutation searches.
  * Ungrouped fallback is attempted when aggregation and refinement fail.
  */
 public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuilder<VirtualBoxPackagerResultBuilder> {
@@ -28,10 +27,6 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 	protected final ScheduledThreadPoolExecutor scheduler;
 	protected int maxLayouts = 8;
 	protected int maxGridBoxes = 10_000;
-	protected int maxSearchBoxes = 6;
-	protected int maxSearches = 8;
-	protected double dimensionDifference = 0.25;
-	protected boolean bruteForce = true;
 	protected boolean aggregation = true;
 	protected boolean compareUngrouped;
 	protected int maxRefinements = 4;
@@ -54,25 +49,6 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 		return this;
 	}
 
-	/** Bound physical boxes per brute-force assembly; this is not the number of item types. */
-	public VirtualBoxPackagerResultBuilder withMaxSearchBoxes(int count) {
-		if(count < 2) {
-			throw new IllegalArgumentException("Expected at least two boxes");
-		}
-		maxSearchBoxes = count;
-		return this;
-	}
-
-	public VirtualBoxPackagerResultBuilder withMaxSearches(int count) {
-		maxSearches = positive(count);
-		return this;
-	}
-
-	public VirtualBoxPackagerResultBuilder withBruteForce(boolean enabled) {
-		bruteForce = enabled;
-		return this;
-	}
-
 	/**
 	 * Enable filled-envelope preprocessing (default true). Disable when custom
 	 * delegate controls require original physical boxes or child surfaces. Disabled
@@ -81,15 +57,6 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 	 */
 	public VirtualBoxPackagerResultBuilder withAggregation(boolean enabled) {
 		aggregation = enabled;
-		return this;
-	}
-
-	/** Maximum relative difference in sorted dimensions when clustering distinct items, from zero to one. */
-	public VirtualBoxPackagerResultBuilder withMaximumDimensionDifference(double ratio) {
-		if(!Double.isFinite(ratio) || ratio < 0 || ratio > 1) {
-			throw new IllegalArgumentException("Expected a dimension difference from zero to one");
-		}
-		dimensionDifference = ratio;
 		return this;
 	}
 
@@ -129,7 +96,7 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 	public PackagerResult build() {
 		validate();
 		long start = System.nanoTime();
-		// One deadline supplier spans preprocessing, every layout search and both
+		// One deadline supplier spans preprocessing, refinement and all
 		// delegate attempts. Borrowed views prevent nested builders from closing it.
 		try(PackagerInterruptSupplier stop = PackagerInterruptSupplierBuilder.builder()
 				.withScheduledThreadPoolExecutor(scheduler).withDeadline(deadline)
@@ -191,7 +158,7 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 		// Filled envelopes are ordinary count-one delegate items. Keep expansion
 		// outside the delegate's search/point loops, including the no-load path.
 		PackagerResult result = configured(stop).withBoxItems(packing.getItems()).build();
-		return packing.expand(result, items, start, requiresLoadValidation(), stop);
+		return packing.expand(result, items, start);
 	}
 
 	protected PackagerResultBuilder configured(PackagerInterruptSupplier stop) {
@@ -203,15 +170,6 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 				.withOrder(order).withInterruptDeadline(-1).withInterrupt(stop::getAsBoolean);
 	}
 
-	protected boolean requiresLoadValidation() {
-		for(BoxItem item : items) {
-			if(item.getBox().isMaxLoad() || item.getBox().isLoadIdenticalBoxOnly()) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	protected boolean supportsAggregation() {
 		if(!aggregation || !itemGroups.isEmpty() || order != Order.NONE) {
 			return false;
@@ -221,7 +179,10 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 			if(item.getCount() <= 0 || item.getBox().getWeight() < 0 || item.getBox().getVolume() <= 0) {
 				throw new IllegalArgumentException("Expected positive inventory and non-negative weights");
 			}
-			if(item.getGroup() != null
+			// An envelope cannot represent physical support areas, depth or identity.
+			// Bypass the whole operation, including unconstrained items that might
+			// otherwise be aggregated and placed on top of a constrained original.
+			if(item.getBox().isMaxLoad() || item.getBox().isLoadIdenticalBoxOnly() || item.getGroup() != null
 					|| distinct.put(item.getBox(), Boolean.TRUE) != null) {
 				return false;
 			}
@@ -244,7 +205,6 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 			}
 		}
 		GridVirtualBoxLayoutGenerator grids = new GridVirtualBoxLayoutGenerator();
-		List<BoxItem> remaining = new ArrayList<>();
 		for(BoxItem item : items) {
 			if(stop.getAsBoolean()) {
 				break;
@@ -254,56 +214,12 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 				layouts = grids.generate(item, limits, maxLayouts, stop::getAsBoolean);
 			}
 			if(layouts.isEmpty()) {
-				remaining.add(item);
+				result.add(item);
 			} else {
 				result.add(VirtualBox.of(layouts));
 			}
 		}
-		BruteForceVirtualBoxLayoutGenerator search = new BruteForceVirtualBoxLayoutGenerator(maxSearchBoxes, maxLayouts);
-		boolean[] used = new boolean[remaining.size()];
-		int searches = 0;
-		for(int i = 0; i < remaining.size(); i++) {
-			if(stop.getAsBoolean()) {
-				break;
-			}
-			if(used[i]) {
-				continue;
-			}
-			BoxItem first = remaining.get(i);
-			List<BoxItem> subset = new ArrayList<>();
-			subset.add(first);
-			List<Integer> indexes = new ArrayList<>();
-			indexes.add(i);
-			int count = first.getCount();
-			if(bruteForce && count <= maxSearchBoxes && searches < maxSearches) {
-				for(int j = i + 1; j < remaining.size(); j++) {
-					if(stop.getAsBoolean()) {
-						break;
-					}
-					BoxItem candidate = remaining.get(j);
-					if(!used[j] && candidate.getCount() <= maxSearchBoxes - count && similar(first, candidate)) {
-						subset.add(candidate);
-						indexes.add(j);
-						count += candidate.getCount();
-					}
-				}
-				if(count > 1) {
-					searches++;
-					List<VirtualBoxLayout> layouts = search.generate(subset, limits, stop);
-					if(!layouts.isEmpty()) {
-						result.add(VirtualBox.of(layouts));
-						for(int index : indexes) {
-							used[index] = true;
-						}
-						continue;
-					}
-				}
-			}
-			used[i] = true;
-			result.add(first);
-		}
-		VirtualBoxLayoutCache cache = new VirtualBoxLayoutCache(items, limits, grids, bruteForce ? search : null,
-				maxGridBoxes, maxLayouts, Math.max(0, maxSearches - searches));
+		VirtualBoxLayoutCache cache = new VirtualBoxLayoutCache(items, limits, grids, maxGridBoxes, maxLayouts);
 		return new VirtualBoxPlan(items, result, cache, maxDelegateBoxes);
 	}
 
@@ -319,21 +235,6 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 			}
 		}
 		return false;
-	}
-
-	protected boolean similar(BoxItem a, BoxItem b) {
-		var av = a.getBox().getStackValue(0);
-		var bv = b.getBox().getStackValue(0);
-		int[] left = {av.getDx(), av.getDy(), av.getDz()};
-		int[] right = {bv.getDx(), bv.getDy(), bv.getDz()};
-		Arrays.sort(left);
-		Arrays.sort(right);
-		for(int i = 0; i < 3; i++) {
-			if(Math.abs((long) left[i] - right[i]) > dimensionDifference * Math.max(left[i], right[i])) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	protected static boolean better(PackagerResult candidate, PackagerResult best) {

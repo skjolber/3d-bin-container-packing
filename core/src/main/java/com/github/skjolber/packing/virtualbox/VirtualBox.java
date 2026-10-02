@@ -16,15 +16,37 @@ public class VirtualBox {
 	protected final List<VirtualBoxLayout> layouts;
 	protected final int weight;
 
+	/** Retain layouts directly; callers must not change the list or its contents during use. */
 	protected VirtualBox(List<VirtualBoxLayout> layouts, int weight) {
-		this.layouts = List.copyOf(layouts);
+		this.layouts = layouts;
 		this.weight = weight;
 	}
 
-	/** Validate equivalent inventory and aggregate weight once, outside placement construction. */
+	/**
+	 * Validate equivalent inventory and aggregate weight once, outside placement construction.
+	 * The list, layouts and original inventory are borrowed and must not be modified during use.
+	 */
 	public static VirtualBox of(List<VirtualBoxLayout> layouts) {
 		if(layouts.isEmpty()) {
 			throw new IllegalArgumentException("Expected at least one layout");
+		}
+		// Grid generation already proves geometry, identity, count and weight bounds.
+		// Compare this metadata instead of recounting every child into identity maps.
+		if(layouts.get(0) instanceof GridVirtualBoxLayoutGenerator.GridLayout first) {
+			boolean grids = true;
+			for(VirtualBoxLayout layout : layouts) {
+				if(!(layout instanceof GridVirtualBoxLayoutGenerator.GridLayout grid)) {
+					grids = false;
+					break;
+				}
+				if(grid.value.getBox().getBoxItem() != first.value.getBox().getBoxItem() || grid.placements.size() != first.placements.size()) {
+					throw new IllegalArgumentException("Layouts must contain the same original inventory");
+				}
+				grid.prepare();
+			}
+			if(grids) {
+				return new VirtualBox(layouts, (int) ((long) first.placements.size() * first.value.getBox().getWeight()));
+			}
 		}
 		Map<BoxItem, Integer> inventory = inventory(layouts.get(0));
 		long totalWeight = 0;

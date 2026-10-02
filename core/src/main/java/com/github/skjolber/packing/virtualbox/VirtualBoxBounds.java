@@ -1,16 +1,11 @@
-package com.github.skjolber.packing.virtualbox.bounds;
+package com.github.skjolber.packing.virtualbox;
 
 /**
  * Dimensions of an origin-anchored rectangular envelope around a complete packing.
  * Equality of envelope and content volumes identifies a filled rectangular assembly.
- * Search builders validate input dimensions once; search-node construction is unchecked.
+ * Layout preparation validates dimensions once; construction is unchecked.
  */
 public class VirtualBoxBounds {
-	public static final VirtualBoxBoundsComparator MIN_VOLUME = new MinimumVolumeVirtualBoxBoundsComparator();
-	public static final VirtualBoxBoundsComparator MIN_X = new MinimumXVirtualBoxBoundsComparator();
-	public static final VirtualBoxBoundsComparator MIN_Y = new MinimumYVirtualBoxBoundsComparator();
-	public static final VirtualBoxBoundsComparator MIN_Z = new MinimumZVirtualBoxBoundsComparator();
-
 	protected final int dx;
 	protected final int dy;
 	protected final int dz;
@@ -22,7 +17,7 @@ public class VirtualBoxBounds {
 		this.dz = dz;
 	}
 
-	/** Checked factory for callers outside a validated search. */
+	/** Checked factory for callers outside a prepared layout. */
 	public static VirtualBoxBounds of(int dx, int dy, int dz) {
 		validateDimensions(dx, dy, dz);
 		return new VirtualBoxBounds(dx, dy, dz);

@@ -8,10 +8,48 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBounds;
 
-/** Enumerates factor grids without searching permutations or allocating every candidate's placements. */
+/**
+ * Fast rectangular assembly of copies of one original box item. For each allowed
+ * orientation, enumerates integer factor triples {@code columns * rows * layers = count}.
+ * Every cell uses that same orientation: no gaps, mixed items, invented rotations or
+ * rounded-up inventory. Prime counts can therefore only form lines.
+ *
+ * <p>Candidates must fit at least one supplied container, including its weight limit.
+ * Ranking prefers the most exactly matched container axes, then the smallest surface
+ * area, height, depth and width. All candidates have the same volume. Only the best
+ * {@code maxLayouts} distinct envelopes are materialized; factor lists are reused
+ * across orientations. This is bounded preprocessing, not a permutation search.
+ *
+ * <p>Internal load constraints are checked here in constant time per candidate.
+ * Each column has full-face contacts; its bottom box carries the greatest weight,
+ * contact pressure and number of boxes above it. Identical-item constraints hold by
+ * construction. No mutable load graph is needed to decide whether a grid is valid.
+ * These checks cover the grid alone, not loads from other packed items. The wrapper
+ * bypasses aggregation for load-constrained operations; these layouts must not be
+ * treated as load-aware envelope boxes.
+ *
+ * <p>Returned layouts borrow original box items and orientations. Do not modify those
+ * objects, the returned lists or their placements during use. Placement lists contain
+ * geometry only; there is no per-layout contact graph or physical search state.
+ */
 public class GridVirtualBoxLayoutGenerator {
+	/** Generated geometry is valid by construction; do not repeat arbitrary-layout overlap checks. */
+	protected static class GridLayout extends VirtualBoxLayout {
+		protected final BoxStackValue value;
+
+		protected GridLayout(Grid grid, List<Placement> placements) {
+			super(grid.bounds, placements);
+			value = grid.value;
+		}
+
+		@Override
+		protected void prepareGeometry() {
+			// Factor grids are filled and non-overlapping by construction.
+		}
+
+	}
+
 	protected static class Grid {
 		protected final VirtualBoxBounds bounds;
 		protected final BoxStackValue value;
@@ -46,7 +84,21 @@ public class GridVirtualBoxLayoutGenerator {
 		@Override
 		public int compare(Grid left, Grid right) {
 			int comparison = Integer.compare(right.matchingAxes(), left.matchingAxes());
-			return comparison != 0 ? comparison : VirtualBoxBounds.MIN_VOLUME.compare(left.bounds(), right.bounds());
+			if(comparison != 0) {
+				return comparison;
+			}
+			VirtualBoxBounds a = left.bounds, b = right.bounds;
+			comparison = Long.compare((long) a.dx() * a.dy() + (long) a.dx() * a.dz() + (long) a.dy() * a.dz(),
+					(long) b.dx() * b.dy() + (long) b.dx() * b.dz() + (long) b.dy() * b.dz());
+			if(comparison != 0) {
+				return comparison;
+			}
+			comparison = Integer.compare(a.dz(), b.dz());
+			if(comparison != 0) {
+				return comparison;
+			}
+			comparison = Integer.compare(a.dy(), b.dy());
+			return comparison != 0 ? comparison : Integer.compare(a.dx(), b.dx());
 		}
 	}
 
@@ -60,27 +112,44 @@ public class GridVirtualBoxLayoutGenerator {
 	 * container dimensions, then compact envelopes. No additional rotations are invented.
 	 */
 	public List<VirtualBoxLayout> generate(BoxItem item, List<Container> containers, int maxLayouts, BooleanSupplier interrupt) {
-		if(item.getCount() <= 0 || maxLayouts <= 0) {
+		return generate(item, item.getCount(), containers, maxLayouts, interrupt);
+	}
+
+	/**
+	 * Generate a subset of the original count, for selective refinement. The original
+	 * item and its orientations are retained unchanged; no cloned inventory is needed.
+	 * On interruption, return only layouts whose placements have been completed.
+	 */
+	public List<VirtualBoxLayout> generate(BoxItem item, int count, List<Container> containers, int maxLayouts, BooleanSupplier interrupt) {
+		if(count <= 0 || count > item.getCount() || maxLayouts <= 0) {
 			throw new IllegalArgumentException("Expected positive count and layout limit");
 		}
 		if(item.getGroup() != null) {
 			throw new IllegalArgumentException("Virtual layouts do not support box-item groups");
 		}
-		if(item.getWeight() > Integer.MAX_VALUE || item.getBox().getWeight() < 0) {
+		long weight = (long) count * item.getBox().getWeight();
+		if(weight > Integer.MAX_VALUE || item.getBox().getWeight() < 0 || containers.isEmpty() || interrupt.getAsBoolean()) {
 			return List.of();
 		}
 		List<Grid> best = new ArrayList<>();
-		List<Integer> columns = divisors(item.getCount());
+		List<Integer> columns = divisors(count);
+		List<List<Integer>> rows = new ArrayList<>(columns.size());
+		for(int x : columns) {
+			rows.add(divisors(count / x));
+		}
 		for(BoxStackValue value : item.getBox().getStackValues()) {
-			if(value.getVolume() <= 0 || value.getVolume() != item.getBox().getVolume()) {
+			VirtualBoxBounds.validateDimensions(value.getDx(), value.getDy(), value.getDz());
+			if(value.getVolume() <= 0 || value.getVolume() != item.getBox().getVolume()
+					|| value.getVolume() > Long.MAX_VALUE / count) {
 				throw new IllegalArgumentException("Expected positive, equal-volume orientations");
 			}
-			for(int x : columns) {
-				for(int y : divisors(item.getCount() / x)) {
+			for(int columnIndex = 0; columnIndex < columns.size(); columnIndex++) {
+				int x = columns.get(columnIndex);
+				for(int y : rows.get(columnIndex)) {
 					if(interrupt.getAsBoolean()) {
-						return materialize(item, best, interrupt);
+						return materialize(count, best, interrupt);
 					}
-					int z = item.getCount() / x / y;
+					int z = count / x / y;
 					if(!fitsLoad(value, z)) {
 						continue;
 					}
@@ -88,7 +157,7 @@ public class GridVirtualBoxLayoutGenerator {
 					int matches = -1;
 					for(Container container : containers) {
 						if(dx <= container.getLoadDx() && dy <= container.getLoadDy() && dz <= container.getLoadDz()
-								&& item.getWeight() <= container.getMaxLoadWeight()) {
+									&& weight <= container.getMaxLoadWeight()) {
 							matches = Math.max(matches, (dx == container.getLoadDx() ? 1 : 0)
 									+ (dy == container.getLoadDy() ? 1 : 0) + (dz == container.getLoadDz() ? 1 : 0));
 						}
@@ -119,7 +188,7 @@ public class GridVirtualBoxLayoutGenerator {
 				}
 			}
 		}
-		return materialize(item, best, interrupt);
+		return materialize(count, best, interrupt);
 	}
 
 	/**
@@ -147,24 +216,22 @@ public class GridVirtualBoxLayoutGenerator {
 		return result;
 	}
 
-	protected static List<VirtualBoxLayout> materialize(BoxItem item, List<Grid> grids, BooleanSupplier interrupt) {
-		List<VirtualBoxLayout> result = new ArrayList<>();
+	protected static List<VirtualBoxLayout> materialize(int count, List<Grid> grids, BooleanSupplier interrupt) {
+		List<VirtualBoxLayout> result = new ArrayList<>(grids.size());
 		for(Grid grid : grids) {
-			List<Placement> placements = new ArrayList<>(item.getCount());
+			List<Placement> placements = new ArrayList<>(count);
 			for(int z = 0; z < grid.layers(); z++) {
 				for(int y = 0; y < grid.rows(); y++) {
 					for(int x = 0; x < grid.columns(); x++) {
 						if(interrupt.getAsBoolean()) {
-							return List.copyOf(result);
+							return result;
 						}
 						placements.add(new Placement(grid.value(), -1, x * grid.value().getDx(), y * grid.value().getDy(), z * grid.value().getDz(), false));
 					}
 				}
 			}
-			VirtualBoxLayout layout = new VirtualBoxLayout(grid.bounds(), placements);
-
-			result.add(layout);
+			result.add(new GridLayout(grid, placements));
 		}
-		return List.copyOf(result);
+		return result;
 	}
 }

@@ -21,8 +21,9 @@ import com.github.skjolber.packing.api.PackagerResultBuilder;
  *
  * Groups, ordered inputs, controlled containers and existing
  * placements bypass aggregation and are handed directly to the delegate.
- * Load-constrained assemblies are checked internally and again after expansion.
- * Invalid expanded results trigger refinement or fallback, never an unchecked success.
+ * Any box load constraint also bypasses aggregation for the entire operation.
+ * Use a load-aware delegate to enforce these constraints on the original boxes.
+ * This wrapper does not validate loads or rebuild physical support graphs.
  */
 public class VirtualBoxPackager implements Packager<VirtualBoxPackagerResultBuilder> {
 	

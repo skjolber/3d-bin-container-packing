@@ -7,8 +7,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.*;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBounds;
 
 class VirtualBoxLayoutTest {
 	/*
@@ -20,10 +18,10 @@ class VirtualBoxLayoutTest {
 	 *       |    A    |    z = 0
 	 *       +---------+
 	 *
-	 * Validation computes loads separately; it must not mutate the reusable placements.
+	 * Geometry preparation must not mutate the reusable placements.
 	 */
 	@Test
-	void retainsPhysicalPlacementsWithoutMutatingThemDuringValidation() throws PackagerInterruptedException {
+	void retainsPhysicalPlacementsWithoutMutatingThemDuringPreparation() {
 		BoxItem item = item(1, 1, 1, 2);
 		BoxStackValue value = item.getBox().getStackValue(0);
 		Placement lower = new Placement(value, -1, 0, 0, 0, false);
@@ -31,9 +29,8 @@ class VirtualBoxLayoutTest {
 		List<Placement> placements = new ArrayList<>(List.of(lower, upper));
 		VirtualBoxLayout layout = new VirtualBoxLayout(new VirtualBoxBounds(1, 1, 2), placements);
 		assertThat(layout.getPlacements()).isSameAs(placements);
-		VirtualBoxLoadValidator validator = new VirtualBoxLoadValidator(() -> false);
-		assertThat(validator.isValid(layout)).isTrue();
-		assertThat(validator.isValid(layout)).isTrue();
+		layout.prepare();
+		layout.prepare();
 		assertThat(layout.getPlacements().get(0)).isSameAs(lower);
 		assertThat(layout.getPlacements().get(1)).isSameAs(upper);
 		assertThat(lower.getAbsoluteZ()).isZero();
@@ -125,70 +122,19 @@ class VirtualBoxLayoutTest {
 	}
 
 	/*
-	 * A: 3 x 2 x 1       B: 1 x 2 x 1
-	 *
-	 *       +-----------------+-----+
-	 *       |        A        |  B  |
-	 *       |                 |     |
-	 *       +-----------------+-----+
-	 *
-	 * Mixed items fill one 4 x 2 x 1 virtual box.
-	 */
-	@Test
-	void bruteForceBuildsFilledMixedAssemblyWithOriginalIdentities() {
-		BoxItem a = item(3, 2, 1, 1), b = item(1, 2, 1, 1);
-		var layouts = new BruteForceVirtualBoxLayoutGenerator(4, 8)
-				.generate(List.of(a, b), List.of(container(4, 2, 1)), () -> false);
-		assertThat(layouts).hasSize(1);
-		assertThat(layouts.get(0).getPlacements()).extracting(Placement::getBoxItem).containsExactlyInAnyOrder(a, b);
-		assertFilled(layouts);
-		assertThat(a.getBox().getBoxItem()).isSameAs(a);
-		assertThat(b.getBox().getBoxItem()).isSameAs(b);
-	}
-
-	/*
-	 * A 2 x 2 square plus a unit square cannot fill a rectangle:
-	 * area 5 requires 5 x 1 or 1 x 5, neither of which admits the larger square.
-	 *
-	 * Best-so-far envelopes are not automatically usable virtual boxes.
-	 */
-	@Test
-	void rejectsHollowBestSoFarLayouts() {
-		BoxItem a = item(2, 2, 1, 1), b = item(1, 1, 1, 1);
-		var generator = new BruteForceVirtualBoxLayoutGenerator(4, 8);
-		// Filled area 5 would require a 5 x 1 or 1 x 5 rectangle, impossible for A.
-		assertThat(generator.generate(List.of(a, b), List.of(container(3, 3, 1)), () -> false)).isEmpty();
-	}
-
-	/*
-	 * A rotating domino plus a cube has three filled length-three orientations.
-	 * Width and height objectives can therefore contribute different layouts.
-	 */
-	@Test
-	void retainsMultipleObjectiveLayouts() {
-		BoxItem a = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withRotate3D().withWeight(1).build());
-		BoxItem b = item(1, 1, 1, 1);
-		var layouts = new BruteForceVirtualBoxLayoutGenerator(3, 8)
-				.generate(List.of(a, b), List.of(container(3, 3, 3)), () -> false);
-		assertThat(layouts.size()).isGreaterThanOrEqualTo(2);
-		assertFilled(layouts);
-	}
-
-	/*
-	 * Work limit / expired deadline / interrupt
+	 * Expired deadline / interrupt
 	 *                      |
 	 *                      v
 	 *              no partial virtual box
 	 */
 	@Test
-	void respectsPhysicalCountDeadlineAndCancellation() {
-		BoxItem item = item(1, 1, 1, 5);
-		var generator = new BruteForceVirtualBoxLayoutGenerator(4, 8);
-		assertThat(generator.generate(List.of(item), List.of(container(5, 1, 1)), () -> false)).isEmpty();
+	void respectsDeadlineAndCancellation() {
+		var generator = new GridVirtualBoxLayoutGenerator();
 		BoxItem small = item(1, 1, 1, 2);
-		var expired = PackagerInterruptSupplierBuilder.builder().withDeadline(0).build();
-		assertThat(generator.generate(List.of(small), List.of(container(2, 1, 1)), expired)).isEmpty();
-		assertThat(generator.generate(List.of(small), List.of(container(2, 1, 1)), () -> true)).isEmpty();
+		try(var expired = PackagerInterruptSupplierBuilder.builder().withDeadline(0).build()) {
+			assertThat(generator.generate(small, List.of(container(2, 1, 1)), 8, expired::getAsBoolean)).isEmpty();
+		}
+		assertThat(generator.generate(small, List.of(container(2, 1, 1)), 8, () -> true)).isEmpty();
 		AtomicInteger checks = new AtomicInteger();
 		var grids = new GridVirtualBoxLayoutGenerator().generate(item(1, 1, 1, 1000), List.of(container(10, 10, 10)), 8,
 				() -> checks.incrementAndGet() > 10);

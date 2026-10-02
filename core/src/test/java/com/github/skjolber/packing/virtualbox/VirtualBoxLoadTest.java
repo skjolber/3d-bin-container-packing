@@ -1,23 +1,32 @@
 package com.github.skjolber.packing.virtualbox;
 
-import static org.assertj.core.api.Assertions.*;
-import static com.github.skjolber.packing.virtualbox.VirtualBoxLayoutTest.*;
-import static com.github.skjolber.packing.virtualbox.VirtualBoxPackagerTest.assertValid;
+import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.virtualbox.VirtualBoxLayoutTest.container;
+import static com.github.skjolber.packing.virtualbox.VirtualBoxLayoutTest.item;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.junit.jupiter.api.Test;
-import com.github.skjolber.packing.api.*;
+
+import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.validator.load.*;
+import com.github.skjolber.packing.validator.load.IdenticalBoxOnlyLoadValidator;
+import com.github.skjolber.packing.validator.load.MaxBoxCountLoadValidator;
+import com.github.skjolber.packing.validator.load.MaxPressureLoadValidator;
+import com.github.skjolber.packing.validator.load.WeightLoadValidator;
 import com.github.skjolber.packing.virtualbox.VirtualBoxPackagerTest.RecordingPackager;
 
 class VirtualBoxLoadTest {
 	/*
-	 * Three identical cubes:
-	 *
 	 *             +-------+    top carries 0
 	 *             |   A   |
 	 *             +-------+    middle carries 1
@@ -26,127 +35,131 @@ class VirtualBoxLoadTest {
 	 *             |   A   |
 	 *             +-------+
 	 *
-	 * Grid checks and expanded physical support graph agree on weight, pressure and depth.
+	 * The delegate gets three real boxes and builds the physical load graph itself.
 	 */
 	@Test
-	void expandsAValidTowerWithOriginalLoadGraph() throws IOException {
-		BoxItem a = new BoxItem(Box.newBuilder().withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(2)
-				.withMaxLoadPressure(2).withMaxLoadIdenticalBoxCount(2).build(), 3);
-		try(PlainPackager delegate = PlainPackager.newBuilder().build(); VirtualBoxPackager wrapper = new VirtualBoxPackager(delegate)) {
-			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(1, 1, 3), 1)).build();
-			assertValid(result, List.of(a));
+	void preservesTheDelegatesPhysicalLoadGraph() throws IOException {
+		BoxItem original = new BoxItem(Box.newBuilder()
+				.withSize(1, 1, 1)
+				.withWeight(1)
+				.withMaxLoadWeight(2)
+				.withMaxLoadPressure(2)
+				.withMaxLoadIdenticalBoxCount(2)
+				.build(), 3);
+		try(PlainPackager delegate = PlainPackager.newBuilder().build();
+				RecordingPackager recording = new RecordingPackager(delegate);
+				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
+			PackagerResult result = wrapper.newResultBuilder()
+					.withBoxItems(original)
+					.withContainerItems(new ContainerItem(container(1, 1, 3), 1))
+					.build();
+			assertThat(recording.counts).containsExactly(3);
+			assertThat(result.isSuccess()).isTrue();
+			assertThat(result.get(0).getStack().getPlacements()).hasSize(3);
 			assertLoads(result);
 			for(Placement placement : result.get(0).getStack().getPlacements()) {
 				assertThat(placement.getLoadWeight()).isEqualTo(2 - placement.getAbsoluteZ());
 			}
+			assertThat(original.getCount()).isEqualTo(3);
 		}
 	}
 
 	/*
-	 * The same three-cube column is forbidden by any one of:
-	 * max weight 1, max pressure 1, or max depth 1.
+	 *       +-------+-------+-------+-------+
+	 *       |   U   |   U   |   U   |   C   |
+	 *       +-------+-------+-------+-------+
+	 *
+	 * A constrained singleton C prevents aggregation of unconstrained U too:
+	 * otherwise U's envelope could conceal its physical load on C.
 	 */
 	@Test
-	void gridRejectsEachInternalLoadViolation() {
-		List<Box> boxes = List.of(
-				Box.newBuilder().withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(1).build(),
-				Box.newBuilder().withSize(1, 1, 1).withWeight(1).withMaxLoadPressure(1).build(),
-				Box.newBuilder().withSize(1, 1, 1).withWeight(1).withMaxLoadBoxCount(1).build());
+	void everyLoadConstraintBypassesTheWholeOperation() throws IOException {
+		List<Box> boxes = new ArrayList<>(constrainedBoxes());
+		boxes.add(Box.newBuilder()
+				.withSize(1, 1, 1)
+				.withWeight(1)
+				.withMaxLoadIdenticalBoxCount(-1)
+				.build());
 		for(Box box : boxes) {
-			assertThat(new GridVirtualBoxLayoutGenerator().generate(new BoxItem(box, 3), List.of(container(1, 1, 3)), 8, () -> false)).isEmpty();
-		}
-	}
-
-	/*
-	 * A is an internally valid two-box floor; B is put on top by the first delegate attempt.
-	 *
-	 *             +---------------+
-	 *             |       B       |
-	 *             +-------+-------+
-	 *             |   A   |   A   |    A permits no load
-	 *             +-------+-------+
-	 *
-	 * Reject the expanded result, then retry ungrouped. B can support the loose A boxes.
-	 */
-	@Test
-	void externalLoadViolationTriggersUngroupedFallback() throws IOException {
-		BoxItem a = new BoxItem(Box.newBuilder().withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(0).build(), 2);
-		BoxItem b = item(2, 1, 1, 1);
-		try(PlainPackager delegate = PlainPackager.newBuilder().build(); RecordingPackager recording = new RecordingPackager(delegate);
-				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
-			recording.stackFirst = true;
-			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(2, 2, 2), 1))
-					.withBruteForce(false).withMaxRefinements(0).build();
-			assertThat(recording.counts).containsExactly(2, 3);
-			assertValid(result, List.of(a, b));
-			assertLoads(result);
-		}
-	}
-
-	/*
-	 *      +-------+-------+
-	 *      |   T   |   T   |    T cannot support another box
-	 *      +-------+-------+
-	 *      |       B       |    B carries weight 2
-	 *      +---------------+
-	 *
-	 * Mixed brute-force assembly accepts B's limit 2, but rejects limit 1.
-	 */
-	@Test
-	void mixedLayoutSearchUsesLoadAwareBoundingBoxes() {
-		for(int limit : new int[] {1, 2}) {
-			BoxItem base = new BoxItem(Box.newBuilder().withSize(2, 1, 1).withWeight(1).withMaxLoadWeight(limit).build());
-			BoxItem tops = new BoxItem(Box.newBuilder().withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(0).build(), 2);
-			var layouts = new BruteForceVirtualBoxLayoutGenerator(4, 8).generate(List.of(base, tops), List.of(container(2, 1, 2)), () -> false);
-			if(limit == 1) {
-				assertThat(layouts).isEmpty();
-			} else {
-				assertThat(layouts).isNotEmpty();
-				assertFilled(layouts);
+			BoxItem unconstrained = item(1, 1, 1, 3);
+			BoxItem constrained = new BoxItem(box);
+			try(PlainPackager delegate = PlainPackager.newBuilder().build();
+					RecordingPackager recording = new RecordingPackager(delegate);
+					VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
+				VirtualBoxPackagerResultBuilder operation = new VirtualBoxPackagerResultBuilder(recording, wrapper.scheduler) {
+					@Override
+					protected VirtualBoxPlan prepare(PackagerInterruptSupplier stop) {
+						throw new AssertionError("Load-constrained operations must not build virtual boxes");
+					}
+				};
+				PackagerResult result = operation
+						.withBoxItems(unconstrained, constrained)
+						.withContainerItems(new ContainerItem(container(4, 1, 1), 1))
+						.withMaxDelegateBoxes(1)
+						.withCompareUngrouped(true)
+						.build();
+				assertThat(recording.counts).containsExactly(4);
+				assertThat(result.isSuccess()).isTrue();
+				assertThat(result.get(0).getStack().getPlacements()).hasSize(4);
+				assertLoads(result);
+				assertThat(unconstrained.getCount()).isEqualTo(3);
+				assertThat(constrained.getCount()).isEqualTo(1);
 			}
 		}
 	}
 
 	/*
-	 * Distinct box items of identical dimensions remain distinct types:
-	 *
-	 *             +-------+
-	 *             |   B   |     not identical to A
-	 *             +-------+
-	 *             |   A   |     only identical items allowed
-	 *             +-------+
+	 *       +-------+
+	 *       |   A   |      Three-high packing exceeds weight/pressure/depth 1.
+	 *       +-------+
+	 *       |   A   |      The delegate must reject it during placement.
+	 *       +-------+
+	 *       |   A   |      There is no post-pack rejection or wrapper retry.
+	 *       +-------+
 	 */
 	@Test
-	void expandedValidationRejectsDifferentIdentities() throws PackagerInterruptedException {
-		BoxItem a = new BoxItem(Box.newBuilder().withSize(1, 1, 1).withWeight(1).withMaxLoadIdenticalBoxCount(1).build());
-		BoxItem b = item(1, 1, 1, 1);
-		Container container = container(1, 1, 2);
-		container.getStack().add(new Placement(a.getBox().getStackValue(0), -1, 0, 0, 0, false));
-		container.getStack().add(new Placement(b.getBox().getStackValue(0), -1, 0, 0, 1, false));
-		assertThat(new VirtualBoxLoadValidator(() -> false).validate(container)).isNull();
+	void delegateRejectsImpossibleLoadsWithoutWrapperRetries() throws IOException {
+		for(Box box : constrainedBoxes()) {
+			try(PlainPackager delegate = PlainPackager.newBuilder().build();
+					RecordingPackager recording = new RecordingPackager(delegate);
+					VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
+				PackagerResult result = wrapper.newResultBuilder()
+						.withBoxItems(new BoxItem(box, 3))
+						.withContainerItems(new ContainerItem(container(1, 1, 3), 1))
+						.withCompareUngrouped(true)
+						.build();
+				assertThat(result.isSuccess()).as("weight=%s pressure=%s count=%s", box.isMaxLoadWeight(), box.isMaxLoadPressure(), box.isMaxLoadBoxCount()).isFalse();
+				assertThat(recording.counts).containsExactly(3);
+			}
+		}
 	}
 
-	/*
-	 * Reusing a validator for a smaller container must not retain old supporters:
-	 *
-	 *       [ A ]               [ A ]
-	 *       [ A ]     --->      floor only
-	 *       [ A ]
-	 */
+	/* Standalone grid construction also excludes internally overloaded towers. */
 	@Test
-	void reusedValidationBuffersHandleDifferentAssemblySizes() throws PackagerInterruptedException {
-		BoxItem a = item(1, 1, 1, 3);
-		VirtualBoxLoadValidator validator = new VirtualBoxLoadValidator(() -> false);
-		Container tower = container(1, 1, 3);
-		for(int z = 0; z < 3; z++) {
-			tower.getStack().add(new Placement(a.getBox().getStackValue(0), -1, 0, 0, z, false));
+	void gridRejectsEachInternalLoadViolation() {
+		for(Box box : constrainedBoxes()) {
+			assertThat(new GridVirtualBoxLayoutGenerator().generate(new BoxItem(box, 3),
+					List.of(container(1, 1, 3)), 8, () -> false)).isEmpty();
 		}
-		assertThat(validator.validate(tower).getStack().getPlacements().get(0).getLoadWeight()).isEqualTo(2);
-		Container single = container(1, 1, 1);
-		single.getStack().add(new Placement(a.getBox().getStackValue(0), -1, 0, 0, 0, false));
-		Placement result = validator.validate(single).getStack().getPlacements().get(0);
-		assertThat(result.getLoadWeight()).isZero();
-		assertThat(result.getSupportees()).isEmpty();
+	}
+
+	protected static List<Box> constrainedBoxes() {
+		return List.of(
+				Box.newBuilder()
+						.withSize(1, 1, 1)
+						.withWeight(1)
+						.withMaxLoadWeight(1)
+						.build(),
+				Box.newBuilder()
+						.withSize(1, 1, 1)
+						.withWeight(1)
+						.withMaxLoadPressure(1)
+						.build(),
+				Box.newBuilder()
+						.withSize(1, 1, 1)
+						.withWeight(1)
+						.withMaxLoadBoxCount(1)
+						.build());
 	}
 
 	protected static void assertLoads(PackagerResult result) {

@@ -7,22 +7,18 @@ import java.util.Map;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 
-/** Coarse-to-fine inventory partition. Nodes retain their children; every delegate attempt gets fresh inventory. */
+/** Coarse-to-fine grid partition. Each node contains copies of one original item; attempts get fresh inventory. */
 public class VirtualBoxPlan {
 	protected static class Node {
-		protected final int[] inventory;
+		protected final int originalIndex;
 		protected final VirtualBox virtualBox;
-		protected final long count;
+		protected final int count;
 		protected List<Node> children;
 
-		protected Node(int[] inventory, VirtualBox virtualBox) {
-			this.inventory = inventory;
+		protected Node(int originalIndex, int count, VirtualBox virtualBox) {
+			this.originalIndex = originalIndex;
+			this.count = count;
 			this.virtualBox = virtualBox;
-			long total = 0;
-			for(int i = 1; i < inventory.length; i += 2) {
-				total += inventory[i];
-			}
-			count = total;
 		}
 
 		protected long delegateCount() { return virtualBox == null ? count : 1; }
@@ -31,7 +27,6 @@ public class VirtualBoxPlan {
 	protected final List<BoxItem> originals;
 	protected final VirtualBoxLayoutCache cache;
 	protected final List<Node> frontier = new ArrayList<>();
-	protected final List<Node> roots;
 	protected final int maxDelegateBoxes;
 
 	protected VirtualBoxPlan(List<BoxItem> originals, VirtualBoxPacking initial, VirtualBoxLayoutCache cache, int maxDelegateBoxes) {
@@ -43,27 +38,15 @@ public class VirtualBoxPlan {
 			indexes.put(originals.get(i), i);
 		}
 		for(VirtualBoxPacking.Entry entry : initial.entries) {
-			int[] inventory;
-			if(entry.virtualBox() == null) {
-				inventory = new int[] {indexes.get(entry.original()), entry.original().getCount()};
-			} else {
-				Map<BoxItem, Integer> counts = VirtualBox.inventory(entry.virtualBox().getLayouts().get(0));
-				int[] sorted = new int[counts.size()];
-				int p = 0;
-				for(BoxItem item : counts.keySet()) {
-					sorted[p++] = indexes.get(item);
-				}
-				java.util.Arrays.sort(sorted);
-				inventory = new int[sorted.length * 2];
-				for(int i = 0; i < sorted.length; i++) {
-					inventory[2 * i] = sorted[i];
-					inventory[2 * i + 1] = counts.get(originals.get(sorted[i]));
-				}
-				cache.put(inventory, entry.virtualBox().getLayouts());
+			VirtualBox virtual = entry.virtualBox();
+			BoxItem original = virtual == null ? entry.original() : virtual.getLayouts().get(0).getPlacements().get(0).getBoxItem();
+			int index = indexes.get(original);
+			int count = virtual == null ? original.getCount() : virtual.getLayouts().get(0).getPlacements().size();
+			if(virtual != null) {
+				cache.put(index, count, virtual.getLayouts());
 			}
-			frontier.add(new Node(inventory, entry.virtualBox()));
+			frontier.add(new Node(index, count, virtual));
 		}
-		roots = List.copyOf(frontier);
 	}
 
 	protected long delegateCount() {
@@ -81,9 +64,7 @@ public class VirtualBoxPlan {
 			if(node.virtualBox != null) {
 				result.add(node.virtualBox);
 			} else {
-				for(int i = 0; i < node.inventory.length; i += 2) {
-					physicalCounts[node.inventory[i]] += node.inventory[i + 1];
-				}
+				physicalCounts[node.originalIndex] += node.count;
 			}
 		}
 		// Reunite loose children of the same original item. Separate cloned entries
@@ -99,7 +80,7 @@ public class VirtualBoxPlan {
 	/**
 	 * Split the largest remaining compound, breaking ties in registration order.
 	 * Counts are divided, never rounded up. A child that cannot form a rectangle
-	 * becomes ordinary inventory. No child search is repeated for an equal key.
+	 * becomes ordinary inventory. Grid generation is not repeated for an equal key.
 	 */
 	protected boolean refine(PackagerInterruptSupplier stop) {
 		long currentCount = delegateCount();
@@ -118,22 +99,8 @@ public class VirtualBoxPlan {
 				return false;
 			}
 			if(node.children == null) {
-				List<Integer> left = new ArrayList<>(), right = new ArrayList<>();
-				long remaining = node.count / 2;
-				for(int i = 0; i < node.inventory.length; i += 2) {
-					int count = node.inventory[i + 1];
-					int first = (int) Math.min(remaining, count);
-					if(first > 0) {
-						left.add(node.inventory[i]);
-						left.add(first);
-						remaining -= first;
-					}
-					if(first < count) {
-						right.add(node.inventory[i]);
-						right.add(count - first);
-					}
-				}
-				node.children = List.of(child(left, stop), child(right, stop));
+				int left = node.count / 2;
+				node.children = List.of(child(node.originalIndex, left, stop), child(node.originalIndex, node.count - left, stop));
 			}
 			long nextCount = currentCount - node.delegateCount();
 			for(Node child : node.children) {
@@ -149,12 +116,8 @@ public class VirtualBoxPlan {
 		return false;
 	}
 
-	protected Node child(List<Integer> inventory, PackagerInterruptSupplier stop) {
-		int[] counts = new int[inventory.size()];
-		for(int i = 0; i < counts.length; i++) {
-			counts[i] = inventory.get(i);
-		}
-		List<VirtualBoxLayout> layouts = cache.get(counts, stop);
-		return new Node(counts, layouts.isEmpty() ? null : VirtualBox.of(layouts));
+	protected Node child(int originalIndex, int count, PackagerInterruptSupplier stop) {
+		List<VirtualBoxLayout> layouts = cache.get(originalIndex, count, stop);
+		return new Node(originalIndex, count, layouts.isEmpty() ? null : VirtualBox.of(layouts));
 	}
 }

@@ -10,8 +10,6 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
 
 /** Attempt-local inventory and expansion mapping; independent of delegate cloning and local reindexing. */
 public class VirtualBoxPacking {
@@ -90,7 +88,7 @@ public class VirtualBoxPacking {
 		return false;
 	}
 
-	protected PackagerResult expand(PackagerResult packed, List<BoxItem> originals, long start, boolean load, PackagerInterruptSupplier interrupt) {
+	protected PackagerResult expand(PackagerResult packed, List<BoxItem> originals, long start) {
 		if(!packed.isSuccess()) {
 			return new PackagerResult(List.of(), elapsed(start), packed.isTimeout(), packed.getCost());
 		}
@@ -99,7 +97,6 @@ public class VirtualBoxPacking {
 			remaining.put(item, item.getCount());
 		}
 		List<Container> containers = new ArrayList<>();
-		VirtualBoxLoadValidator validator = load ? new VirtualBoxLoadValidator(interrupt) : null;
 		for(Container container : packed.getContainers()) {
 			Container expanded = container.clone();
 			for(Placement placement : container.getStack().getPlacements()) {
@@ -120,16 +117,6 @@ public class VirtualBoxPacking {
 			}
 			if(expanded.getLoadWeight() > expanded.getMaxLoadWeight()) {
 				throw new IllegalStateException("Expanded container exceeds its weight limit");
-			}
-			if(validator != null) {
-				try {
-					expanded = validator.validate(expanded);
-				} catch(PackagerInterruptedException e) {
-					return new PackagerResult(List.of(), elapsed(start), true);
-				}
-				if(expanded == null) {
-					return new PackagerResult(List.of(), elapsed(start), false);
-				}
 			}
 			containers.add(expanded);
 		}

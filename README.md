@@ -181,160 +181,6 @@ different point limit at each placement step.
 
 Using a deadline is recommended whenever brute-forcing in a real-time application.
 
-### Best bounding box
-
-`BruteForceVirtualBoxBounds` in `com.github.skjolber.packing.boundingbox` searches for a compact assembly
-of **all** supplied boxes inside one empty container's load dimensions and weight
-limit. This is useful for constructing virtual boxes before a larger packing operation.
-
-```java
-long totalBoxVolume = items.stream()
-    .mapToLong(item -> item.getBox().getVolume() * item.getCount()).sum();
-
-try (BruteForceVirtualBoxBounds boundingBox = new BruteForceVirtualBoxBounds()) {
-    BruteForceVirtualBoxBoundsResult result = boundingBox.newResultBuilder()
-        .withBoxItems(items)
-        .withContainer(searchLimits)
-        .withGoal(bounds -> bounds.getVolume() == totalBoxVolume)
-        .withInterruptDuration(1000)
-        .build();
-
-    if (result.isSuccess()) {
-        VirtualBoxLayout layout = result.getObjectiveResults().get("default");
-        VirtualBoxBounds bounds = layout.getBoundingBox();
-        List<Placement> assembly = layout.getPlacements();
-    }
-}
-```
-
-The example stops at a filled rectangular assembly. Without `withGoal`, search
-continues to exhaustion or interruption, minimizing bounding volume, then surface
-area, then height, depth and width. `withComparator` replaces this ordering (negative
-means better). A goal is tested on every complete candidate and returns the first
-matching layout, even if another layout ranked better under the comparator.
-
-The result distinguishes `EXHAUSTED`, `GOAL_REACHED` and `INTERRUPTED`. Interruption
-retains the best complete layout found; unsuccessful results never contain a
-partial assembly. Bounding boxes can contain gaps unless a filled-envelope goal
-is satisfied. Returned placements retain the input box identities and orientations.
-
-#### Multiple objectives in one search
-
-Retain additional arrangements for later virtual-box packing without repeating
-the permutation/rotation search:
-
-```java
-try (BruteForceVirtualBoxBounds boundingBox = new BruteForceVirtualBoxBounds()) {
-    BruteForceVirtualBoxBoundsResult result = boundingBox.newResultBuilder()
-        .withBoxItems(items)
-        .withContainer(searchLimits)
-        .withMinimumDimensions() // objectives named "x", "y", "z"
-        .withInterruptDuration(1000)
-        .build();
-
-    if (result.isSuccess()) {
-        VirtualBoxLayout narrowest = result.getObjectiveResults().get("x");
-        VirtualBoxLayout shallowest = result.getObjectiveResults().get("y");
-        VirtualBoxLayout lowest = result.getObjectiveResults().get("z");
-        Collection<VirtualBoxLayout> alternatives = result.getResults();
-    }
-}
-```
-
-When no objectives are registered, the search minimizes volume under the name `"default"`. Use `withMinimumX()`,
-`withMinimumY()` or `withMinimumZ()` individually, or register a named custom
-ordering with `withObjective(name, comparator)`. The built-in
-`VirtualBoxBounds.MIN_X`, `MIN_Y` and `MIN_Z` compare the corresponding dimension
-first and use `MIN_VOLUME` to break ties. Reusing a name replaces its objective.
-
-`getObjectiveResults()` maps every objective name to its winner, with no primary
-or secondary result. `getResults()` is a values view of that same map, in registration
-order; objectives may share the same saved layout, so repeated references are possible.
-These are objective winners, not every candidate or a complete Pareto frontier.
-The result retains its constructor collections directly, without defensive copies
-or unmodifiable wrappers. Do not modify those arguments after construction, or
-mutate the returned collections, layouts or shared stacks.
-
-Pruning must rule out improvements for every objective; larger-volume branches
-can still improve width, depth or height. Built-in comparisons use primitive
-extents, and a candidate improving several objectives is snapshotted only once.
-The same API works with `LoadBruteForceVirtualBoxBounds`, including valid support
-graphs for every retained layout.
-
-Objectives can each supply their own acceptance predicate and comparator:
-
-```java
-var result = boundingBox.newResultBuilder()
-        .withBoxItems(items)
-        .withContainer(limits)
-        .withObjective("width", bounds -> bounds.dx() <= targetWidth, VirtualBoxBounds.MIN_X)
-        .withObjective("height", bounds -> bounds.dz() <= targetHeight, VirtualBoxBounds.MIN_Z)
-        .build();
-var widthLayout = result.getObjectiveResults().get("width");
-var reachedGoals = result.getReachedGoals();
-```
-
-Every `withObjective` call adds an objective, or replaces the objective with the
-same name without changing its position. It never clears other objectives.
-The dimension helpers register only their named axis objectives, without adding
-a volume objective. Register one explicitly if wanted. All objectives are independent:
-each retains its first goal-satisfying
-layout, and the search stops with `GOAL_REACHED` only after **all** goals are met,
-possibly by different layouts. Until a goal is met, its comparator selects the
-best-so-far layout. Negative comparator results mean better.
-
-A null predicate keeps optimizing until exhaustion or interruption, so it
-prevents early goal termination. `withGoal` and `withComparator` configure the
-ordinary objective named `"default"`, adding it if absent and preserving its other
-setting. They may be combined with named objectives in any order. There is no
-reserved objective name or primary/additional distinction. The dimension
-convenience methods have null predicates.
-
-An interrupted search retains all winners and reports which goals were met.
-Only objectives without an acceptance predicate are guaranteed optimal on
-`EXHAUSTED`; accepted objectives remain frozen at their goal layouts.
-Single-objective operations automatically use a specialized implementation of
-`BruteForceVirtualBoxBoundsSearch`, preserving the original bounding-box fast path.
-
-Orderings implement `VirtualBoxBoundsComparator`. They can override primitive
-dimension comparison and a conservative `canImprove(...)` branch bound.
-Unknown orderings default to no pruning; search does not identify comparator
-singletons or classes. `VirtualBoxBounds.of(...)` is the checked factory for callers
-outside a search; constructors assume dimensions have already been validated.
-
-This sequential operation explores all permutations, rotations and extreme-point
-choices, with safe volume pruning for the default objective. It is independent of
-packager configuration and does not enumerate arbitrary coordinates. It is
-geometric only: box-item groups, obstacles, existing placements,
-per-box load constraints and stability validation are not supported. Ordinary
-packing is unchanged. Keep the assembly size small and set a deadline.
-
-For load-constrained assemblies, use `LoadBruteForceVirtualBoxBounds` with the same
-result-builder API:
-
-```java
-try (LoadBruteForceVirtualBoxBounds boundingBox = new LoadBruteForceVirtualBoxBounds()) {
-    BruteForceVirtualBoxBoundsResult result = boundingBox.newResultBuilder()
-        .withBoxItems(items)
-        .withContainer(searchLimits)
-        .withGoal(bounds -> bounds.getVolume() == totalBoxVolume)
-        .withInterruptDuration(1000)
-        .build();
-}
-```
-
-This variant checks orientation-specific maximum load weight, contact pressure,
-stack depth (`maxLoadBoxCount`) and identical-item-only restrictions. Identical
-means the same input `BoxItem`, not merely similar dimensions or matching IDs.
-Only valid complete assemblies are considered for the objective and goal.
-Returned placements include independent supporter/supportee links and distributed
-load weights, including fractional weights shared between multiple supports.
-
-Load checks use the complete assembly so that supports placed later can relieve
-earlier loads. Reusable O(n) buffers avoid creating support graphs for rejected
-candidates; validation costs O(n²) per complete candidate that needs checking.
-This does not add group, obstacle, full-support or stability constraints.
-
 ### Virtual-box preprocessing
 
 `VirtualBoxPackager` in `com.github.skjolber.packing.virtualbox` wraps a packager
@@ -352,7 +198,6 @@ try (BruteForcePackager delegate = BruteForcePackager.newBuilder().build();
         .withContainerItems(containers)
         .withMaxContainerCount(3)
         .withMaxLayouts(8)
-        .withMaxSearchBoxes(6)
         .withMaxRefinements(4)
         .withMaxDelegateBoxes(20)
         .withInterruptDuration(1000)
@@ -368,27 +213,23 @@ Preprocessing first constructs factor grids for entire repeated box items:
 dimensions, then compact envelopes. Only permitted original orientations are
 used. Default limits are 10,000 physical boxes per grid and eight layouts.
 
-Remaining small items with similar sorted dimensions can be assembled by
-multi-objective bounding-box search. Defaults are six physical boxes per search,
-eight searches, and the operation's shared deadline/interrupt supplier.
-`withMaximumDimensionDifference(0.25)` allows up to a 25% difference, relative
-to the larger dimension, along each sorted axis. Set `withBruteForce(false)`
-to use only direct grids. Every retained assembly must be completely filled;
-hollow best-so-far bounding boxes are discarded, even after interruption.
+Distinct item types are not combined, even if their dimensions match. This keeps
+preprocessing cheap and preserves original identical-item semantics. Grids that
+cannot fit remain ordinary inventory; refinement can try smaller grids.
 
-Preprocessing, layout searches and delegate attempts share one supplier created
+Preprocessing, refinement and delegate attempts share one supplier created
 by `PackagerInterruptSupplierBuilder`, using `withInterruptDeadline(...)` or
 `withInterruptDuration(...)` and any caller-provided interrupt. There are no
-separate preprocessing/search budgets or reserved time slices. Fallback is
+separate preprocessing budgets or reserved time slices. Fallback is
 attempted only while the shared operation deadline has not expired. Set
-`withMaxGridBoxes(1).withBruteForce(false)` to disable aggregation.
+`withAggregation(false)` to disable aggregation.
 
 Aggregation can reduce packing flexibility. The wrapper selectively splits a
 large virtual box after failure, or when a successful result might use fewer or
 cheaper containers. Four refinement steps are allowed by default;
 `withMaxRefinements(0)` disables them. Each split preserves original counts,
 reuses unchanged assemblies, and retains the best valid packing found so far.
-Layouts and unsuccessful layout searches are cached by original inventory and
+Layouts and unsuccessful grid generations are cached by original inventory and
 counts within the operation; repeated child inventories reuse the same layouts.
 The delegate's outer packing search is restarted with fresh inventory.
 
@@ -405,22 +246,25 @@ also try ungrouped packing after success, retaining lower reported cost, then
 fewer containers, then less container volume. This costs another packing
 attempt and is disabled by default.
 
-Load-constrained inputs use load-aware bounding-box search. Direct grids check
-the maximum weight, pressure and depth of each identical column. After every
-delegate attempt, the complete expanded physical packing is validated again,
-including loads crossing virtual-box boundaries. Valid results receive rebuilt
-support graphs; invalid results trigger refinement or fallback. Use a load-aware
-delegate for the best chance of finding valid alternatives. This is validation
-and retry, not a guarantee that an arbitrary delegate explores every load-valid
-packing. It does not add stability or full-support requirements.
+The standalone grid generator checks internal weight, pressure and stack-depth
+limits before constructing placements. An envelope cannot safely represent loads
+between assemblies, physical stack depth or original box identities. Consequently,
+if any input box has a load constraint, the wrapper bypasses aggregation for the
+whole operation and forwards the original inventory to the delegate. Use a
+load-aware delegate to enforce those constraints during packing. There is no
+post-pack load validation, graph rebuilding or load-validation retry; virtual-box
+refinement and delegate-item limits do not apply to this bypass path.
 
 Groups, chronological ordering, controlled containers, initial points/obstacles,
 motion and existing placements bypass aggregation and retain the delegate's
 ordinary behavior. Delegate-specific callbacks must tolerate synthetic boxes
 when aggregation is enabled.
 
-The standalone `GridVirtualBoxLayoutGenerator` and
-`BruteForceVirtualBoxLayoutGenerator` expose the same layout-generation steps.
+The standalone `GridVirtualBoxLayoutGenerator` exposes the same fast generation.
+It checks each candidate's internal load limits analytically before creating
+placements. Generated grids skip general overlap validation and do not allocate
+contact graphs or physical search state. Refinement reuses
+original orientations without cloning boxes or remapping child placements.
 `VirtualBoxLayout` retains a `List<Placement>` whose coordinates are relative to
 the virtual box origin. The list and its placements are shared and must not be
 modified; expansion creates separate placements at container coordinates.

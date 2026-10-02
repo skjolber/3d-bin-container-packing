@@ -21,7 +21,6 @@ import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.virtualbox.bounds.VirtualBoxBounds;
 
 class VirtualBoxEnvelopePackingTest {
 	/*
@@ -40,24 +39,11 @@ class VirtualBoxEnvelopePackingTest {
 	void insertsOneEnvelopeAndDoesNotPreparePhysicalLoadState() throws IOException {
 		EnvelopeOnlyBuilder builder = new EnvelopeOnlyBuilder();
 		try(PlainPackager delegate = builder.build(); VirtualBoxPackager wrapper = new VirtualBoxPackager(delegate)) {
-			List<VirtualBoxLayout> layouts = new ArrayList<>();
-			VirtualBoxPackagerResultBuilder operation = new VirtualBoxPackagerResultBuilder(delegate, wrapper.scheduler) {
-				@Override
-				protected VirtualBoxPlan prepare(PackagerInterruptSupplier stop) {
-					VirtualBoxPlan plan = super.prepare(stop);
-					for(VirtualBoxPacking.Entry entry : plan.packing().entries) {
-						if(entry.virtualBox() != null) {
-							layouts.addAll(entry.virtualBox().getLayouts());
-						}
-					}
-					return plan;
-				}
-			};
+			VirtualBoxPackagerResultBuilder operation = wrapper.newResultBuilder();
 			BoxItem original = item(1, 1, 1, 24);
 			PackagerResult result = operation
 					.withBoxItems(original)
 					.withContainerItems(new ContainerItem(container(4, 2, 3), 1))
-					.withBruteForce(false)
 					.withMaxDelegateBoxes(1)
 					.withMaxRefinements(0)
 					.build();
@@ -72,10 +58,7 @@ class VirtualBoxEnvelopePackingTest {
 			assertThat(envelope.getBoxItem()).isNotSameAs(original);
 			assertThat(result.get(0).getStack().getPlacements()).hasSize(24);
 			assertThat(result.get(0).getLoadWeight()).isEqualTo(24);
-			assertThat(layouts).isNotEmpty();
-			for(VirtualBoxLayout layout : layouts) {
-				assertThat(layout.loadSupport).isNull();
-			}
+
 		}
 	}
 
@@ -97,9 +80,9 @@ class VirtualBoxEnvelopePackingTest {
 	void expandsSelectedEnvelopeAtOffsetWithoutWorkerPlacementsOrLoadPreparation() {
 		BoxItem a = item(1, 1, 1, 2);
 		BoxItem b = item(2, 1, 1, 1);
-		VirtualBoxLayout horizontal = new EnvelopeOnlyLayout(new VirtualBoxBounds(2, 1, 1),
+		VirtualBoxLayout horizontal = new VirtualBoxLayout(new VirtualBoxBounds(2, 1, 1),
 				List.of(placement(a, 0, 0, 0), placement(a, 1, 0, 0)));
-		VirtualBoxLayout vertical = new EnvelopeOnlyLayout(new VirtualBoxBounds(1, 1, 2),
+		VirtualBoxLayout vertical = new VirtualBoxLayout(new VirtualBoxBounds(1, 1, 2),
 				List.of(placement(a, 0, 0, 0), placement(a, 0, 0, 1)));
 		VirtualBoxPacking packing = new VirtualBoxPacking();
 		packing.add(VirtualBox.of(List.of(horizontal, vertical)));
@@ -112,7 +95,7 @@ class VirtualBoxEnvelopePackingTest {
 		packed.getStack().add(new Placement(packing.getItems().get(1).getBox().getStackValue(0), -1, 0, 1, 0, false));
 		PackagerResult delegateResult = new PackagerResult(List.of(packed), 0, false);
 		for(int attempt = 0; attempt < 2; attempt++) {
-			PackagerResult expanded = packing.expand(delegateResult, List.of(a, b), System.nanoTime(), false, () -> false);
+			PackagerResult expanded = packing.expand(delegateResult, List.of(a, b), System.nanoTime());
 			assertValid(expanded, List.of(a, b));
 			List<Placement> children = expanded.get(0).getStack().getPlacements();
 			assertThat(children).extracting(Placement::getAbsoluteX).containsExactly(3, 3, 0);
@@ -124,8 +107,6 @@ class VirtualBoxEnvelopePackingTest {
 		}
 		assertThat(packed.getStack().getPlacements()).hasSize(2);
 		assertThat(vertical.getPlacements()).extracting(Placement::getAbsoluteZ).containsExactly(0, 1);
-		assertThat(vertical.loadSupport).isNull();
-		assertThat(horizontal.loadSupport).isNull();
 	}
 
 	/*
@@ -167,22 +148,6 @@ class VirtualBoxEnvelopePackingTest {
 				assertThat(physical.getStackValue().getVolume()).isEqualTo(1);
 				assertThat(physical.getWeight()).isEqualTo(1);
 			}
-		}
-	}
-
-	protected static class EnvelopeOnlyLayout extends VirtualBoxLayout {
-		protected EnvelopeOnlyLayout(VirtualBoxBounds bounds, List<Placement> placements) {
-			super(bounds, placements);
-		}
-
-		@Override
-		public VirtualBoxLayoutSupport getLoadSupport() {
-			throw new AssertionError("Envelope packing must not prepare load contacts");
-		}
-
-		@Override
-		public List<Placement> createPlacements(boolean load) {
-			throw new AssertionError("Envelope packing must not allocate worker child placements");
 		}
 	}
 

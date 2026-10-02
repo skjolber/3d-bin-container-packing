@@ -21,7 +21,7 @@ class VirtualBoxPackagerTest {
 	/*
 	 * One scheduled deadline spans the entire operation:
 	 *
-	 *       grid/search ----> grouped attempt ----> ungrouped attempt
+	 *       grid -------> grouped attempt ----> ungrouped attempt
 	 *            |                  |                      |
 	 *            +------------------+----------------------+
 	 *                               |
@@ -42,12 +42,12 @@ class VirtualBoxPackagerTest {
 				assertThat(wrapper.scheduler.getQueue()).hasSize(1);
 				scheduled.add(wrapper.scheduler.getQueue().peek());
 			};
-			BoxItem a = item(3, 2, 1, 1), b = item(1, 2, 1, 1);
+			BoxItem a = item(1, 1, 1, 2), b = item(1, 2, 1, 1);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b)
 					.withContainerItems(new ContainerItem(container(4, 2, 1), 1))
-					.withMaximumDimensionDifference(1).withCompareUngrouped(true).withInterruptDuration(60_000).withInterrupt(interrupt).build();
+					.withCompareUngrouped(true).withInterruptDuration(60_000).withInterrupt(interrupt).build();
 			assertValid(result, List.of(a, b));
-			assertThat(recording.counts).containsExactly(1, 2);
+			assertThat(recording.counts).containsExactly(2, 3);
 			assertThat(scheduled).hasSize(2);
 			assertThat(scheduled.get(0)).isSameAs(scheduled.get(1));
 			assertThat(wrapper.scheduler.getQueue()).isEmpty();
@@ -111,7 +111,7 @@ class VirtualBoxPackagerTest {
 				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
 			BoxItem a = item(1, 1, 1, 4), b = item(2, 1, 1, 1);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(3, 2, 1), 1))
-					.withBruteForce(false).withMaxRefinements(0).build();
+					.withMaxRefinements(0).build();
 			assertThat(recording.counts).containsExactly(2, 5);
 			assertValid(result, List.of(a, b));
 		}
@@ -131,7 +131,7 @@ class VirtualBoxPackagerTest {
 				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
 			BoxItem a = item(1, 1, 1, 4), b = item(2, 1, 1, 1);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(3, 2, 1), 2))
-					.withMaxContainerCount(2).withBruteForce(false).withMaxRefinements(0).withCompareUngrouped(true).build();
+					.withMaxContainerCount(2).withMaxRefinements(0).withCompareUngrouped(true).build();
 			assertThat(recording.counts).containsExactly(2, 5);
 			assertThat(result.size()).isEqualTo(1);
 			assertValid(result, List.of(a, b));
@@ -148,7 +148,7 @@ class VirtualBoxPackagerTest {
 				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
 			BoxItem a = item(1, 1, 1, 8);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(4, 2, 1), 1))
-					.withMaxGridBoxes(4).withMaxSearchBoxes(3).build();
+					.withMaxGridBoxes(4).build();
 			assertThat(recording.counts).containsExactly(8);
 			assertValid(result, List.of(a));
 		}
@@ -173,7 +173,7 @@ class VirtualBoxPackagerTest {
 				item.setLocalIndex(17);
 				ContainerItem container = new ContainerItem(container(4, 2, 3), 1);
 				PackagerResult result = wrapper.newResultBuilder().withBoxItems(item).withContainerItems(container)
-						.withBruteForce(false).build();
+						.build();
 				assertThat(recording.counts).containsExactly(1);
 				assertValid(result, List.of(item));
 				assertThat(item.getCount()).isEqualTo(24);
@@ -186,22 +186,22 @@ class VirtualBoxPackagerTest {
 	}
 
 	/*
-	 * Original A and B form one filled mixed box:
+	 * Distinct original A and B remain separate delegate items:
 	 *
 	 *       +-----------------+-----+
 	 *       |        A        |  B  |
 	 *       +-----------------+-----+
 	 *
-	 * The delegate receives one box; the caller receives A and B.
+	 * The delegate receives both boxes; no mixed-item layout search is performed.
 	 */
 	@Test
-	void bruteForceAssemblyIsUsedByWrapper() throws IOException {
+	void distinctItemsAreNotCombined() throws IOException {
 		try(PlainPackager delegate = PlainPackager.newBuilder().build(); RecordingPackager recording = new RecordingPackager(delegate);
 				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
 			BoxItem a = item(3, 2, 1, 1), b = item(1, 2, 1, 1);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(4, 2, 1), 1))
-					.withMaximumDimensionDifference(1).build();
-			assertThat(recording.counts).containsExactly(1);
+					.build();
+			assertThat(recording.counts).containsExactly(2);
 			assertValid(result, List.of(a, b));
 		}
 	}
@@ -220,7 +220,7 @@ class VirtualBoxPackagerTest {
 			recording.failFirst = true;
 			BoxItem a = item(1, 1, 1, 4);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(4, 1, 1), 1))
-					.withBruteForce(false).withMaxRefinements(0).build();
+					.withMaxRefinements(0).build();
 			assertThat(recording.counts).containsExactly(1, 4);
 			assertValid(result, List.of(a));
 			assertThat(a.getCount()).isEqualTo(4);
@@ -237,7 +237,7 @@ class VirtualBoxPackagerTest {
 				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
 			BoxItem a = item(1, 1, 1, 5);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(3, 2, 1), 1))
-					.withBruteForce(false).build();
+					.build();
 			assertThat(recording.counts).containsExactly(5);
 			assertValid(result, List.of(a));
 		}
@@ -257,7 +257,7 @@ class VirtualBoxPackagerTest {
 		try(PlainPackager delegate = PlainPackager.newBuilder().build(); VirtualBoxPackager wrapper = new VirtualBoxPackager(delegate)) {
 			BoxItem a = item(1, 1, 1, 2), b = item(1, 1, 1, 2);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(4, 1, 1), 1))
-					.withBruteForce(false).build();
+					.build();
 			assertValid(result, List.of(a, b));
 			assertThat(result.get(0).getStack().getPlacements()).extracting(Placement::getAbsoluteX).containsExactlyInAnyOrder(0, 1, 2, 3);
 		}
@@ -272,7 +272,7 @@ class VirtualBoxPackagerTest {
 		try(PlainPackager delegate = PlainPackager.newBuilder().build(); VirtualBoxPackager wrapper = new VirtualBoxPackager(delegate)) {
 			BoxItem a = item(1, 1, 1, 2), b = item(1, 1, 1, 2);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(2, 1, 1), 2))
-					.withMaxContainerCount(2).withBruteForce(false).build();
+					.withMaxContainerCount(2).build();
 			assertValid(result, List.of(a, b));
 			assertThat(result.size()).isEqualTo(2);
 		}
@@ -321,7 +321,7 @@ class VirtualBoxPackagerTest {
 				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
 			BoxItem a = item(1, 1, 1, 4);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(4, 1, 1), 1))
-					.withMaxGridBoxes(1).withBruteForce(false).build();
+					.withMaxGridBoxes(1).build();
 			assertThat(recording.counts).containsExactly(4);
 			assertValid(result, List.of(a));
 		}
@@ -359,7 +359,7 @@ class VirtualBoxPackagerTest {
 				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
 			BoxItem a = item(1, 1, 1, 4);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(4, 1, 1), 1))
-					.withBruteForce(false).withCompareUngrouped(true).build();
+					.withCompareUngrouped(true).build();
 			assertThat(recording.counts).containsExactly(1, 4);
 			assertValid(result, List.of(a));
 		}
