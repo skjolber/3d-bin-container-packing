@@ -1,7 +1,7 @@
 # Core Module
 
 ## Purpose
-The main algorithmic engine. Implements all packager strategies (LAFF, brute-force, plain), box permutation/rotation iterators, deadline management for time-bounded packing, and placement validation.
+The main algorithmic engine. Implements all packager strategies (LAFF, brute-force, plain), box permutation/rotation iterators, and deadline management for time-bounded packing.
 
 ## Key Packages
 - `com.github.skjolber.packing.packer.laff` — Largest Area Fit First: `LargestAreaFitFirstPackager`, `FastLargestAreaFitFirstPackager`
@@ -10,7 +10,6 @@ The main algorithmic engine. Implements all packager strategies (LAFF, brute-for
 - `com.github.skjolber.packing.iterator` — `BoxItemPermutationRotationIterator`, `BoxItemGroupPermutationRotationIterator`, `FilteredBoxItemsPermutationRotationIterator`
 - `com.github.skjolber.packing.deadline` — `DeadlineCheckPackagerInterruptSupplier`, `PackagerInterruptSupplierBuilder`
 - `com.github.skjolber.packing.comparator` — Result comparators for selecting the best packing
-- `com.github.skjolber.packing.validator` — Runtime placement correctness checks
 
 ## Architecture Notes
 - All packagers implement `Packager<B>` from **api**.
@@ -28,4 +27,4 @@ The main algorithmic engine. Implements all packager strategies (LAFF, brute-for
 | Scope   | Artifact |
 |---------|----------|
 | compile | api, points |
-| test    | test module, junit-jupiter, assertj-core, jqwik, junit-quickcheck |
+| test    | test module, validators, junit-jupiter, assertj-core, jqwik, junit-quickcheck |

@@ -1,7 +1,5 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
@@ -62,7 +60,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	protected CustomIntYComparator yyComparator = new CustomIntYComparator();
 	protected CustomIntZComparator zzComparator = new CustomIntZComparator();
 	
-	protected List<SimplePoint3D> initialPoints = Collections.emptyList();
+	protected Point3DList initialPoints;
 
 	public DefaultPointCalculator3D(boolean immutablePoints, BoxItemSource boxItemSource) {
 		this.immutablePoints = immutablePoints;
@@ -81,9 +79,20 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	public void setSize(int dx, int dy, int dz) {
-		this.containerMaxX = dx - 1;
-		this.containerMaxY = dy - 1;
-		this.containerMaxZ = dz - 1;
+		int containerMaxX = dx - 1;
+		int containerMaxY = dy - 1;
+		int containerMaxZ = dz - 1;
+
+		if(containerPlacement != null &&
+				this.containerMaxX == containerMaxX &&
+				this.containerMaxY == containerMaxY &&
+				this.containerMaxZ == containerMaxZ) {
+			return;
+		}
+
+		this.containerMaxX = containerMaxX;
+		this.containerMaxY = containerMaxY;
+		this.containerMaxZ = containerMaxZ;
 
 		this.containerPlacement = createContainerPlacement();
 	}
@@ -91,7 +100,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	private Placement createContainerPlacement() {
 		BoxStackValue value = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, containerMaxZ + 1, null, -1);
 		
-		return new Placement(value, new DefaultPoint3D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ));
+		return new Placement(value, new DefaultPoint3D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ), false);
 	}
 	
 	public boolean add(Point point, Placement placement) {
@@ -130,6 +139,116 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		return add(point, index, placement, supportedXYPlane, supportedXZPlane, supportedYZPlane);
 	}
 	
+
+	/** See {@link #add(int, List)}. Resolves the selected point before filtering. */
+	public boolean add(Point point, List<Placement> batch) {
+		return add(point.getIndex() == -1 ? values.getIndex(point, 0) : point.getIndex(), batch);
+	}
+
+	/**
+	 * Insert an arrangement into one initially selected free-space point. Placements
+	 * use absolute coordinates, must not overlap and must all fit the selected point.
+	 * They are inserted in list order and retained directly, without copying or moving
+	 * them. Callers must not mutate them while the calculator uses them.
+	 *
+	 * The minimum area and volume are calculated independently from the entire batch,
+	 * installed before insertion and left installed afterward. Lowering these limits
+	 * later cannot recover previously discarded free space, including space useful to
+	 * smaller future boxes.
+	 *
+	 * No overlap preflight or rollback snapshot is made. Invalid overlapping input can
+	 * fail after partial insertion; callers requiring rollback must use a checkpoint.
+	 *
+	 * @param index live point index before filtering
+	 * @param batch non-empty, prevalidated arrangement
+	 * @return whether free points remain after all placements have been inserted
+	 * @throws IllegalArgumentException if the batch is empty or a placement does not fit
+	 */
+	public boolean add(int index, List<Placement> batch) {
+		return addBatch(index, batch, Long.MAX_VALUE, Long.MAX_VALUE, false);
+	}
+
+	/** See {@link #add(int, List, long, long)}. Resolves the live point before filtering. */
+	public boolean add(Point point, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
+		return add(point.getIndex() == -1 ? values.getIndex(point, 0) : point.getIndex(), batch, remainingMinimumArea, remainingMinimumVolume);
+	}
+
+	/**
+	 * Insert a batch without pruning space required by smaller remaining items.
+	 * During insertion each limit is the smaller of the batch minimum and the
+	 * corresponding remaining-item minimum. After insertion, the remaining-item
+	 * limits are installed. Use zero to disable a limit, or {@link Long#MAX_VALUE}
+	 * for both limits when no items remain. Limits cannot recover previously pruned
+	 * space: earlier insertions must also use safe remaining-item limits.
+	 *
+	 * Coordinates, ownership and rollback requirements are the same as for
+	 * {@link #add(int, List)}. A false return means no usable free points remain,
+	 * not that insertion failed.
+	 */
+	public boolean add(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
+		if(remainingMinimumArea < 0 || remainingMinimumVolume < 0) {
+			throw new IllegalArgumentException("Expected non-negative remaining minima");
+		}
+		return addBatch(index, batch, remainingMinimumArea, remainingMinimumVolume, true);
+	}
+
+	/** Shared batch entry point so stack calculators checkpoint either overload exactly once. */
+	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume, boolean applyRemainingLimits) {
+		if(batch.isEmpty()) {
+			throw new IllegalArgumentException("Expected at least one placement");
+		}
+		SimplePoint3D source = values.get(index);
+		long minimumArea = remainingMinimumArea;
+		long minimumVolume = remainingMinimumVolume;
+		for(Placement placement : batch) {
+			if(!source.fits3D(placement)) {
+				throw new IllegalArgumentException("Batch placement is outside the selected free space");
+			}
+			BoxStackValue value = placement.getStackValue();
+			minimumArea = Math.min(minimumArea, value.getArea());
+			minimumVolume = Math.min(minimumVolume, value.getVolume());
+		}
+		placements.ensureAdditionalCapacity(batch.size());
+		setMinimumAreaAndVolumeLimit(minimumArea, minimumVolume);
+		// The source contains every child, so it survives minimum filtering, but
+		// its numeric index may change when earlier points are removed.
+		int currentIndex = values.getIndex(source, 0);
+		for(Placement placement : batch) {
+			if(source == null) {
+				currentIndex = findContainingPoint(placement);
+				if(currentIndex == -1) {
+					throw new IllegalArgumentException("No free space contains the next batch placement");
+				}
+				source = values.get(currentIndex);
+			}
+			boolean xy = source.getMinZ() == placement.getAbsoluteZ() && source.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY());
+			boolean xz = source.getMinY() == placement.getAbsoluteY() && source.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
+			boolean yz = source.getMinX() == placement.getAbsoluteX() && source.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
+			// Bypass single-placement entry points: stack subclasses record a batch
+			// once, not one search step per physical placement.
+			add(source, currentIndex, placement, xy, xz, yz);
+			source = null;
+		}
+		if(applyRemainingLimits) {
+			setMinimumAreaAndVolumeLimit(remainingMinimumArea, remainingMinimumVolume);
+		}
+		return !values.isEmpty();
+	}
+
+	/** Current points are sorted by minimum X. */
+	protected int findContainingPoint(Placement placement) {
+		for(int i = 0; i < values.size(); i++) {
+			SimplePoint3D point = values.get(i);
+			if(point.getMinX() > placement.getAbsoluteX()) {
+				break;
+			}
+			if(point.fits3D(placement)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
 	public boolean addObstacle(Placement placement) {
 		// find a point which holds the placement
 		for(int i = 0; i < values.size(); i++) {
@@ -1604,11 +1723,13 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		values.clear();
 		placements.clear();
 
-		if(initialPoints.isEmpty()) {
+		Point3DList initialPoints = this.initialPoints;
+		if(initialPoints == null || initialPoints.isEmpty()) {
 			SimplePoint3D origin = createContainerPoint();
 			values.add(origin);
 		} else {
-			for (SimplePoint3D simplePoint3D : initialPoints) {
+			for (int i = 0; i < initialPoints.size(); i++) {
+				SimplePoint3D simplePoint3D = initialPoints.get(i);
 				SimplePoint3D clone = simplePoint3D.clone();
 				clone.setIndex(values.size());
 				values.add(clone);
@@ -1620,7 +1741,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	public void setPoints(List<Point> points) {
 		// transform coordinates to internal representation, i.e. with support etc
-		initialPoints = new ArrayList<>(points.size());
+		Point3DList initialPoints = prepareInitialPoints(points.size());
 		
 		for(Point p: points) {
 			if(p.getMaxX() > containerMaxX) {
@@ -1664,7 +1785,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	// set points, but limit to a specific box
 	public boolean setPoints(List<Point> points, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		// transform coordinates to internal representation, i.e. with support etc
-		initialPoints = new ArrayList<>(points.size());
+		Point3DList initialPoints = prepareInitialPoints(points.size());
 		
 		for(Point p: points) {
 			
@@ -1731,6 +1852,16 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		}
 		
 		return !initialPoints.isEmpty();
+	}
+
+	private Point3DList prepareInitialPoints(int size) {
+		if(initialPoints == null) {
+			initialPoints = new Point3DList(size);
+		} else {
+			initialPoints.reset();
+			initialPoints.ensureCapacity(size);
+		}
+		return initialPoints;
 	}
 
 	protected SimplePoint3D createContainerPoint() {
@@ -1814,11 +1945,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	@Override
 	public Iterator<Point> iterator() {
-		for (Point point : values) {
-			if(point.getIndex() == -1) {
-				throw new RuntimeException(point.toString());
-			}
-		}
 		return values.iterator();
 	}
 	
@@ -1872,7 +1998,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	public void clearInitialPoints() {
-		initialPoints.clear();
+		if(initialPoints != null) {
+			initialPoints.reset();
+		}
 	}
 	
 	@Override

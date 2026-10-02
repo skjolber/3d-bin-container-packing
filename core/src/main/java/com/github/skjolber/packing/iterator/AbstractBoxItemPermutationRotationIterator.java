@@ -22,6 +22,16 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 		this.stackableItems = matrix;
 	}
 
+	protected static BoxItem[] copyBoxItems(BoxItem[] source) {
+		BoxItem[] copy = new BoxItem[source.length];
+		for(int i = 0; i < source.length; i++) {
+			if(source[i] != null) {
+				copy[i] = source[i].clone();
+			}
+		}
+		return copy;
+	}
+
 	/**
 	 * Get number of box items within the constraints.
 	 *

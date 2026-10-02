@@ -25,7 +25,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
@@ -63,11 +63,44 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			PackagerResult result = packager.newResultBuilder()
 					.withContainerItem(container)
 					.withBoxItems(products)
-					.withInterrupt(interrupt::getAsBoolean)
+					.withInterrupt(interrupt)
 					.build();
 
 			assertTrue(workerInterrupted.get());
 			assertTrue(result.isTimeout());
+		} finally {
+			try {
+				packager.close();
+			} finally {
+				executor.shutdownNow();
+			}
+		}
+	}
+
+	@Test
+	void testSkipReversePermutationsInParallel() {
+		List<ContainerItem> containerItems = ContainerItem
+				.newListBuilder()
+				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(5, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
+				.build();
+
+		ExecutorService executor = Executors.newFixedThreadPool(2);
+		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+				.withExecutorService(executor)
+				.withParallelizationCount(4)
+				.withSkipReversePermutations(true)
+				.build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+			for (int i = 0; i < 5; i++) {
+				products.add(new BoxItem(Box.newBuilder().withId(String.valueOf((char)('A' + i))).withSize(1, 1, 1).withWeight(1).build(), 1));
+			}
+
+			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+
+			assertTrue(result.isSuccess());
+			assertEquals(products.size(), result.get(0).getStack().size());
+			assertValid(result);
 		} finally {
 			try {
 				packager.close();
@@ -262,35 +295,56 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 	public void testSimpleImperfectSquaredRectangles() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimpleImperfectSquaredRectangles(9));
+		pack(directory.getSimpleImperfectSquaredRectangles(9), false);
 	}
 
 	@Test
 	public void testSimpleImperfectSquaredSquares() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimpleImperfectSquaredSquares(9));
+		pack(directory.getSimpleImperfectSquaredSquares(9), false);
 	}
 
 	@Test
 	public void testSimplePerfectSquaredRectangles() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimplePerfectSquaredRectangles(9));
+		pack(directory.getSimplePerfectSquaredRectangles(9), false);
+	}
+	
+	@Test
+	public void testSimpleImperfectSquaredRectanglesSkipReverse() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimpleImperfectSquaredRectangles(9), true);
 	}
 
-	protected void pack(List<BouwkampCodes> codes) {
+	@Test
+	public void testSimpleImperfectSquaredSquaresSkipReverse() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimpleImperfectSquaredSquares(9), true);
+	}
+
+	@Test
+	public void testSimplePerfectSquaredRectanglesSkipReverse() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimplePerfectSquaredRectangles(9), true);
+	}
+
+	protected void pack(List<BouwkampCodes> codes, boolean skipReverse) {
 		for (BouwkampCodes bouwkampCodes : codes) {
 			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
 				System.out.println("Package " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder());
 				long timestamp = System.currentTimeMillis();
-				pack(bouwkampCode);
+				pack(bouwkampCode, skipReverse);
 				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.currentTimeMillis() - timestamp));
 			}
 		}
 	}
 
-	protected void pack(BouwkampCode bouwkampCode) {
+	protected void pack(BouwkampCode bouwkampCode, boolean skipReverse) {
 		List<ContainerItem> containerItems = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(100)
@@ -300,6 +354,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
 				//.withExecutorService(Executors.newSingleThreadExecutor())
 				.withParallelizationCount(4)
+				.withSkipReversePermutations(skipReverse)
 				.build();
 
 		try {

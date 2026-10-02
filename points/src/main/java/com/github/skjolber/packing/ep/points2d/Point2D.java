@@ -147,7 +147,7 @@ public abstract class Point2D extends Point {
 		return "Point2D [" + minX + "x" + minY + " " + maxX + "x" + maxY + "]";
 	}
 
-	public abstract Point2D clone(int maxX, int maxY);
+	public abstract SimplePoint2D clone(int maxX, int maxY);
 
 	public boolean eclipses(Point2D point) {
 		return minY <= point.getMinY() &&

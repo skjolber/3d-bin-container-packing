@@ -8,8 +8,10 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
+import com.github.skjolber.packing.packer.strategy.ContainerResult;
+import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
 
 public abstract class DefaultControlsPackagerResultBuilder extends AbstractPackagerResultBuilder<DefaultControlsPackagerResultBuilder> {
 	
@@ -39,25 +41,28 @@ public abstract class DefaultControlsPackagerResultBuilder extends AbstractPacka
 		try {
 			PackagerAdapter adapter;
 			if(items != null && !items.isEmpty()) {
-				adapter = createDefaultBoxItemAdapter(items, order, new ContainerItemsCalculator(containers), interrupt);
+				adapter = createDefaultBoxItemAdapter(items, order, containers, maxContainerCount, interrupt);
 			} else {
-				adapter = createDefaultBoxItemGroupAdapter(itemGroups, order, new ContainerItemsCalculator(containers), interrupt);
+				adapter = createDefaultBoxItemGroupAdapter(itemGroups, order, containers, maxContainerCount, interrupt);
 			}
-			List<Container> packList = packager.packAdapter(maxContainerCount, interrupt, adapter);
+			ContainerResult result = packager.packAdapter(interrupt, adapter);
 			
 			long duration = System.currentTimeMillis() - start;
-			return new PackagerResult(packList, duration, false);
+			if(result == null) {
+				return new PackagerResult(Collections.emptyList(), duration, false, -1);
+			}
+			return new PackagerResult(result.getPackList(), duration, false, result.getCost());
 		} catch (PackagerInterruptedException e) {
 			long duration = System.currentTimeMillis() - start;
-			return new PackagerResult(Collections.emptyList(), duration, true);
+			return new PackagerResult(Collections.emptyList(), duration, true, -1);
 		} finally {
 			interrupt.close();
 		}
 	}
 
 	protected abstract PackagerAdapter createDefaultBoxItemAdapter(List<BoxItem> items, Order order,
-			ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt);
+			List<ControlledContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt);
 
 	protected abstract PackagerAdapter createDefaultBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, Order order,
-			ContainerItemsCalculator containerItemsCalculator, PackagerInterruptSupplier interrupt);
+			List<ControlledContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt);
 }

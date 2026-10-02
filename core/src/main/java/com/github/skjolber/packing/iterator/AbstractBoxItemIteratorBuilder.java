@@ -12,6 +12,8 @@ import com.github.skjolber.packing.api.BoxStackValue;
  * 
  * @see <a href=
  *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
+ *      
+ * @param <B> builder
  */
 
 public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIteratorBuilder<B>> {
@@ -76,7 +78,7 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 			}
 			Box clonedBox = new Box(box, cloned);
 
-			results[i] = new BoxItem(clonedBox, item.getCount(), i);
+			results[i] = new BoxItem(clonedBox, item.getCount(), i, item.getGlobalIndex());
 		}
 		return results;
 	}

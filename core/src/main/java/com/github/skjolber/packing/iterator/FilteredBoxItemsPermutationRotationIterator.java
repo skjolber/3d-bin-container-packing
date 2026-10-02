@@ -156,7 +156,7 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 		
 		int offset = 0;
 		for(int i = 0; i < this.permutations.length; i++) {
-			if(this.permutations[i] == mutableBoxItem.getIndex() && count > 0) {
+			if(this.permutations[i] == mutableBoxItem.getLocalIndex() && count > 0) {
 				count--;
 			} else {
 				permutations[offset] = this.permutations[i];

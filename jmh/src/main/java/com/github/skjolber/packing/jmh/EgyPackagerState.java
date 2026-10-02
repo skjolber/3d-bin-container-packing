@@ -24,6 +24,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.LoadBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.generator.Item;
@@ -44,7 +45,10 @@ public class EgyPackagerState {
 	private ExecutorService pool2;
 
 	private List<BenchmarkSet> parallelBruteForcePackager = new ArrayList<>();
+	private List<BenchmarkSet> filteredParallelBruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> bruteForcePackager = new ArrayList<>();
+	private List<BenchmarkSet> filteredBruteForcePackager = new ArrayList<>();
+	private List<BenchmarkSet> loadBruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> plainPackager = new ArrayList<>();
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 
@@ -84,8 +88,13 @@ public class EgyPackagerState {
 	public void init() {
 		ParallelBoxItemBruteForcePackager parallelPackager = ParallelBoxItemBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16)
 				.build();
+		ParallelBoxItemBruteForcePackager filteredParallelPackager = ParallelBoxItemBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16)
+				.withSkipReversePermutations(true)
+				.build();
 
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
+		BruteForcePackager filteredPackager = BruteForcePackager.newBuilder().withSkipReversePermutations(true).build();
+		LoadBruteForcePackager loadPackager = LoadBruteForcePackager.newBuilder().build();
 
 		PlainPackager plainPackager = PlainPackager.newBuilder().build();
 
@@ -93,6 +102,8 @@ public class EgyPackagerState {
 
 		// single-threaded
 		this.bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D, containers));
+		this.filteredBruteForcePackager.add(new BenchmarkSet(filteredPackager, stackableItems3D, containers));
+		this.loadBruteForcePackager.add(new BenchmarkSet(loadPackager, stackableItems3D, containers));
 
 		this.plainPackager.add(new BenchmarkSet(plainPackager, stackableItems3D, containers));
 
@@ -100,6 +111,7 @@ public class EgyPackagerState {
 
 		// multi-threaded
 		this.parallelBruteForcePackager.add(new BenchmarkSet(parallelPackager, stackableItems3D, containers));
+		this.filteredParallelBruteForcePackager.add(new BenchmarkSet(filteredParallelPackager, stackableItems3D, containers));
 	}
 
 	public static Container getContainer(List<Item> items) {
@@ -134,7 +146,7 @@ public class EgyPackagerState {
 					.withContainerItems(containers)
 					.withMaxContainerCount(1)
 					.withBoxItems(stackableItems3D)
-					.withDeadline(System.currentTimeMillis() + 5000)
+					.withInterruptDeadline(System.currentTimeMillis() + 5000)
 					.build();
 			if(build.isSuccess()) {
 				System.out.println("Got container " + volume + " from " + originalVolume);
@@ -162,7 +174,16 @@ public class EgyPackagerState {
 		for (BenchmarkSet benchmarkSet : parallelBruteForcePackager) {
 			benchmarkSet.getPackager().close();
 		}
+		for (BenchmarkSet benchmarkSet : filteredParallelBruteForcePackager) {
+			benchmarkSet.getPackager().close();
+		}
 		for (BenchmarkSet benchmarkSet : bruteForcePackager) {
+			benchmarkSet.getPackager().close();
+		}
+		for (BenchmarkSet benchmarkSet : filteredBruteForcePackager) {
+			benchmarkSet.getPackager().close();
+		}
+		for (BenchmarkSet benchmarkSet : loadBruteForcePackager) {
 			benchmarkSet.getPackager().close();
 		}
 		for (BenchmarkSet benchmarkSet : plainPackager) {
@@ -183,8 +204,20 @@ public class EgyPackagerState {
 		return bruteForcePackager;
 	}
 
+	public List<BenchmarkSet> getFilteredBruteForcePackager() {
+		return filteredBruteForcePackager;
+	}
+
+	public List<BenchmarkSet> getLoadBruteForcePackager() {
+		return loadBruteForcePackager;
+	}
+
 	public List<BenchmarkSet> getParallelBruteForcePackager() {
 		return parallelBruteForcePackager;
+	}
+
+	public List<BenchmarkSet> getFilteredParallelBruteForcePackager() {
+		return filteredParallelBruteForcePackager;
 	}
 
 	public List<BenchmarkSet> getPlainPackager() {

@@ -43,7 +43,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 						List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
 						Box boxClone = new Box(box, boundRotations);
 						
-						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset));
+						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset, item.getGlobalIndex()));
 						
 						offset++;
 					}
@@ -62,7 +62,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 				groupIndex[loadableItemGroup.getIndex()] = loadableItemGroup;
 				for (int k = 0; k < loadableItemGroup.size(); k++) {
 					BoxItem item = loadableItemGroup.get(k);
-					boxIndex[item.getIndex()] = item;
+					boxIndex[item.getLocalIndex()] = item;
 				}
 			}
 			
@@ -90,6 +90,22 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 		this.minBoxVolume = new long[count];
 
 		initiatePermutation(count);
+	}
+
+	protected DefaultBoxItemGroupPermutationRotationIterator(DefaultBoxItemGroupPermutationRotationIterator source) {
+		this(source, copyGroupState(source));
+	}
+
+	private DefaultBoxItemGroupPermutationRotationIterator(DefaultBoxItemGroupPermutationRotationIterator source, GroupState state) {
+		super(state.groups(), state.boxes(), new ArrayList<>(source.excludedBoxItemGroups));
+		this.rotations = source.rotations.clone();
+		this.reset = source.reset.clone();
+		this.permutations = source.permutations.clone();
+		this.minBoxVolume = source.minBoxVolume.clone();
+	}
+
+	public DefaultBoxItemGroupPermutationRotationIterator fork() {
+		return new DefaultBoxItemGroupPermutationRotationIterator(this);
 	}
 	
 	public BoxStackValue getStackValue(int index) {
@@ -257,7 +273,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			for (BoxItem loadableItem : loadableItemGroup.getItems()) {
 				BoxItem indexedStackableItem = (BoxItem)loadableItem;
 				for(int k = 0; k < indexedStackableItem.getCount(); k++) {
-					permutations[i] = indexedStackableItem.getIndex();
+					permutations[i] = indexedStackableItem.getLocalIndex();
 							
 					i++;
 				}
@@ -300,7 +316,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 				for (BoxItem loadableItem : loadableItemGroup.getItems()) {
 					BoxItem indexedStackableItem = (BoxItem)loadableItem;
 					for(int k = 0; k < indexedStackableItem.getCount(); k++) {
-						permutations[i] = indexedStackableItem.getIndex();
+						permutations[i] = indexedStackableItem.getLocalIndex();
 								
 						i++;
 					}

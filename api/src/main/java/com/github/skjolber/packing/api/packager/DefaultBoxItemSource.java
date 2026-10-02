@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 
 public class DefaultBoxItemSource implements BoxItemSource {
@@ -15,7 +16,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 		
 		// update indexes
 		for(int i = 0; i < values.size(); i++) {
-			values.get(i).setIndex(i);
+			values.get(i).setLocalIndex(i);
 		}
 	}
 	
@@ -40,7 +41,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 
 			// update indexes
 			for(int i = index; i < values.size(); i++) {
-				values.get(i).setIndex(i);
+				values.get(i).setLocalIndex(i);
 			}
 		}
 		return !values.isEmpty();
@@ -52,7 +53,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 		
 		// update indexes
 		for(int i = index; i < values.size(); i++) {
-			values.get(i).setIndex(i);
+			values.get(i).setLocalIndex(i);
 		}
 		
 		return remove;
@@ -83,7 +84,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 		if(firstEmptyIndex != -1) {
 			// update indexes
 			for(int i = firstEmptyIndex; i < values.size(); i++) {
-				values.get(i).setIndex(i);
+				values.get(i).setLocalIndex(i);
 			}
 		}
 	}
@@ -97,6 +98,10 @@ public class DefaultBoxItemSource implements BoxItemSource {
 	public BoxItemGroupSource getGroups() {
 		// no groups
 		return null;
+	}
+
+	public void add(BoxItem boxItem) {
+		values.add(boxItem);
 	}
 
 }

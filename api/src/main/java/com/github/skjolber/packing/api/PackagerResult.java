@@ -15,11 +15,17 @@ public class PackagerResult {
 	protected final long duration;
 	protected final List<Container> containers;
 	protected final boolean timeout;
+	protected final long cost;
 
 	public PackagerResult(List<Container> containers, long duration, boolean timeout) {
+		this(containers, duration, timeout, -1);
+	}
+
+	public PackagerResult(List<Container> containers, long duration, boolean timeout, long cost) {
 		this.containers = containers != null ? containers : Collections.emptyList();
 		this.duration = duration;
 		this.timeout = timeout;
+		this.cost = cost;
 	}
 
 	/**
@@ -50,6 +56,10 @@ public class PackagerResult {
 
 	public boolean isTimeout() {
 		return timeout;
+	}
+
+	public long getCost() {
+		return cost;
 	}
 
 }

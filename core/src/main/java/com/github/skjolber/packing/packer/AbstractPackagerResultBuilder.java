@@ -16,6 +16,8 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.Point;
@@ -32,7 +34,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 
 	protected long deadline = -1L;
 
-	protected BooleanSupplier interrupt;
+	protected PackagerInterruptSupplier interrupt;
 
 	protected int maxContainerCount = 1;
 
@@ -99,6 +101,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		protected PointControlsBuilderFactory pointControlsBuilderFactory;
 		protected List<Point> points;
 		protected List<Point> obstacles;
+		protected ContainerCostCalculator costCalculator;
 
 		public ControlledContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier) {
 			this.boxItemControlsBuilderFactory = supplier;
@@ -118,6 +121,12 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		
 		public ControlledContainerItemBuilder withContainerItem(Container container, int count) {
 			this.containerItem = new ContainerItem(container, count);
+			return this;
+		}
+
+		@Override
+		public ControlledContainerItemBuilder withCostCalculator(ContainerCostCalculator costCalculator) {
+			this.costCalculator = costCalculator;
 			return this;
 		}
 
@@ -151,6 +160,9 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 
 			packContainerItem.setBoxItemControlsBuilderFactory(boxItemControlsBuilderFactory);
 			packContainerItem.setPointControlsBuilderFactory(pointControlsBuilderFactory);
+			if(costCalculator != null) {
+				packContainerItem.setCostCalculator(costCalculator);
+			}
 			return packContainerItem;
 		}
 
@@ -254,12 +266,12 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		return (B) this;
 	}
 
-	public B withDeadline(long deadline) {
+	public B withInterruptDeadline(long deadline) {
 		this.deadline = deadline;
 		return (B) this;
 	}
 
-	public B withInterrupt(BooleanSupplier interrupt) {
+	public B withInterrupt(PackagerInterruptSupplier interrupt) {
 		this.interrupt = interrupt;
 		return (B) this;
 	}
@@ -304,6 +316,15 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			list.add(item);
 		}
 		return withBoxItemGroups(list);
+	}
+	
+	@Override
+	public B withInterruptDuration(long duration) {
+		if(duration != -1) {
+			return withInterruptDeadline(System.currentTimeMillis() + duration);
+		}
+		this.deadline = -1;
+		return (B)this;
 	}
 	
 }

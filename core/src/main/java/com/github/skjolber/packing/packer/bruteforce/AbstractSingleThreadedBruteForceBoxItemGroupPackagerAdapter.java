@@ -9,21 +9,25 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter extends AbstractBruteForceBoxItemGroupsPackagerAdapter {
 
-	protected final BoxItemGroupPermutationRotationIterator[] containerIterators;
-	protected List<Placement> stackPlacements;
+	protected BoxItemGroupPermutationRotationIterator[] containerIterators;
+	protected Placement[] stackPlacements;
+	protected int stackPlacementCount;
 	protected PackagerInterruptSupplier interrupt;
 	
-	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, ContainerItemsCalculator packagerContainerItems, BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-		super(boxItems, packagerContainerItems, boxItemGroups);
+	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups,
+			List<ControlledContainerItem> containers, int containerCount, BoxItemGroupPermutationRotationIterator[] containerIterators,
+			PackagerInterruptSupplier interrupt, boolean load) {
+		super(boxItems, containers, containerCount, boxItemGroups);
 		this.interrupt = interrupt;
 		this.containerIterators = containerIterators;
 		
@@ -33,7 +37,19 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 			count += stackableItem.getCount();
 		}
 		
-		this.stackPlacements = BruteForcePackager.getPlacements(count);
+		this.stackPlacements = BruteForcePackager.getPlacements(count, load);
+		this.stackPlacementCount = count;
+	}
+
+	protected AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter source, boolean load) {
+		super(source);
+		this.interrupt = source.interrupt;
+		this.containerIterators = new BoxItemGroupPermutationRotationIterator[source.containerIterators.length];
+		for(int i = 0; i < containerIterators.length; i++) {
+			this.containerIterators[i] = ((DefaultBoxItemGroupPermutationRotationIterator) source.containerIterators[i]).fork();
+		}
+		this.stackPlacementCount = source.stackPlacementCount;
+		this.stackPlacements = BruteForcePackager.getPlacements(stackPlacementCount, load);
 	}
 	
 	protected int getMaxIteratorLength() {
@@ -53,7 +69,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 			Stack stack = bruteForceResult.getStack();
 			
 			int size = stack.size();
-			if(stackPlacements.size() > size) {
+			if(stackPlacementCount > size) {
 				// this result does not consume all placements
 				// remove consumed items from the iterators
 	
@@ -107,23 +123,33 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 				}
 				
 				boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());
-				stackPlacements = stackPlacements.subList(p.size(), this.stackPlacements.size());
+				stackPlacementCount = BruteForcePackager.removeFirstPlacements(stackPlacements, p.size(), stackPlacementCount);
 				
 				return container;
 			} else {
-				stackPlacements = Collections.emptyList();
+				stackPlacementCount = 0;
 				boxItemGroups = Collections.emptyList();
 				
 				return packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
 			}
 		} else {
-			throw new IllegalStateException(); // TODO
+			Stack stack = result.getStack();
+			AcceptedGroups accepted = getAcceptedGroups(stack);
+			Container container = packagerContainerItems.toContainer(resolveContainerItem(result), stack);
+
+			removeInventory(accepted.localIndexes());
+			for (BoxItemGroupPermutationRotationIterator iterator : containerIterators) {
+				iterator.removeGroups(accepted.groupIndexes());
+			}
+			boxItemGroups = boxItemGroups.subList(accepted.groupIndexes().size(), boxItemGroups.size());
+			stackPlacementCount = BruteForcePackager.removeFirstPlacements(stackPlacements, accepted.localIndexes().size(), stackPlacementCount);
+			return container;
 		}
 	}
 
 	@Override
 	public int countRemainingBoxes() {
-		return stackPlacements.size();
+		return stackPlacementCount;
 	}
 
 

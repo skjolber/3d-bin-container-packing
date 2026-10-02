@@ -189,6 +189,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		assertEquals("first", iterator.getStackValue(0).getBox().getDescription());
 	}
 
+
 	@Test
 	void testNextPermutationMaxIndexGroup1() {
 		Dimension container = new Dimension(null, 9, 1, 1);

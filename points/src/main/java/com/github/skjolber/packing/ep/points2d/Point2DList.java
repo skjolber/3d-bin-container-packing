@@ -13,7 +13,15 @@ import java.util.List;
 public class Point2DList {
 
 	private int size = 0;
-	private Point2D[] points = new Point2D[16];
+	private SimplePoint2D[] points;
+
+	public Point2DList() {
+		this(16);
+	}
+
+	public Point2DList(int initialSize) {
+		points = new SimplePoint2D[initialSize];
+	}
 
 	public void ensureAdditionalCapacity(int count) {
 		ensureCapacity(size + count);
@@ -21,13 +29,13 @@ public class Point2DList {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			Point2D[] nextPoints = new Point2D[size];
+			SimplePoint2D[] nextPoints = new SimplePoint2D[size];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 			this.points = nextPoints;
 		}
 	}
 
-	public void add(Point2D point) {
+	public void add(SimplePoint2D point) {
 		points[size] = point;
 		size++;
 	}
@@ -37,11 +45,11 @@ public class Point2DList {
 	}
 
 	public void reset() {
-		Arrays.fill(points, 0, points.length, null);
+		Arrays.fill(points, 0, size, null);
 		size = 0;
 	}
 
-	public Point2D get(int i) {
+	public SimplePoint2D get(int i) {
 		return points[i];
 	}
 
@@ -88,7 +96,7 @@ public class Point2DList {
 		return super.equals(obj);
 	}
 
-	public Point2D[] getPoints() {
+	public SimplePoint2D[] getPoints() {
 		return points;
 	}
 
