@@ -1191,6 +1191,11 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	/** Prefers lower support ratio. */
 	public static final class LowerSupportComparator extends AbstractChainedPlacementComparator {
 		@Override
+		public boolean prefersHigherSupportedArea() {
+			return false;
+		}
+
+		@Override
 		public boolean usesSupportedArea() {
 			return true;
 		}

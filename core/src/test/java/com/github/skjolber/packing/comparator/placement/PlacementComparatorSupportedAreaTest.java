@@ -53,4 +53,34 @@ public class PlacementComparatorSupportedAreaTest {
 
 		assertThat(comparator.usesSupportedArea()).isTrue();
 	}
+
+	@Test
+	public void higherSupportComparatorPrefersHigherSupportedArea() {
+		PlacementComparator comparator = DefaultPlacementComparatorFactory.newFactory()
+				.higherSupportIsBetter()
+				.higherVolumeIsBetter()
+				.higherWeightIsBetter()
+				.lowerAreaIsBetter()
+				.lowerZIsBetter()
+				.build(List.of());
+
+		assertThat(comparator.prefersHigherSupportedArea()).isTrue();
+	}
+
+	@Test
+	public void lowerSupportComparatorDoesNotPreferHigherSupportedArea() {
+		PlacementComparator comparator = DefaultPlacementComparatorFactory.newFactory()
+				.lowerZIsBetter()
+				.lowerSupportIsBetter()
+				.build(List.of());
+
+		assertThat(comparator.prefersHigherSupportedArea()).isFalse();
+	}
+
+	@Test
+	public void unknownComparatorDoesNotPreferHigherSupportedArea() {
+		PlacementComparator comparator = (a, b) -> 0;
+
+		assertThat(comparator.prefersHigherSupportedArea()).isFalse();
+	}
 }

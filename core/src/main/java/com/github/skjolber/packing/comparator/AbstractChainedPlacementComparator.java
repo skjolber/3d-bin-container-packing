@@ -50,6 +50,15 @@ public abstract class AbstractChainedPlacementComparator implements PlacementCom
 		return next != null && next.usesSupportedArea();
 	}
 
+	/**
+	 * A chain step which does not read the supported area, or prefers higher support, keeps the
+	 * property of the rest of the chain.
+	 */
+	@Override
+	public boolean prefersHigherSupportedArea() {
+		return next == null || next.prefersHigherSupportedArea();
+	}
+
 	protected final int chain(Placement a, Placement b) {
 		return next != null ? next.compare(a, b) : 0;
 	}

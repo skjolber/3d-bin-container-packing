@@ -11,6 +11,11 @@ public class LargestAreaPlacementComparator implements PlacementComparator {
 	}
 
 	@Override
+	public boolean prefersHigherSupportedArea() {
+		return true;
+	}
+
+	@Override
 	public int compare(Placement o1, Placement o2) {
 		
 		// ****************************************

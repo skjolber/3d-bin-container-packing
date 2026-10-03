@@ -24,13 +24,17 @@ import com.github.skjolber.packing.comparator.placement.PlacementComparator;
 
 public class SupportPlacementControls extends AbstractComparatorPlacementControls {
 
+	protected final StackSupportIndex supportIndex = new StackSupportIndex();
+
+	// whether candidates can be compared assuming full support before calculating their support
+	protected final boolean skipBySupport;
+
 	public SupportPlacementControls(BoxItemSource boxItems, PointControls pointControls,
 			PointCalculator pointCalculator, Container container, Stack stack, Order order,
 			PlacementComparator placementComparator, Comparator<BoxItem> boxItemComparator) {
 		super(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
+		this.skipBySupport = placementComparator != null && placementComparator.prefersHigherSupportedArea();
 	}
-
-	protected final StackSupportIndex supportIndex = new StackSupportIndex();
 
 	public Placement getPlacement(int offset, int length) {
 		Placement result = null;
@@ -65,6 +69,11 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 						continue;
 					}
 					
+					if(result != null && skipBySupport) {
+						result = selectPlacementIfSupported(result, point3d, stackValue);
+						continue;
+					}
+
 					Placement placementResult = createPlacement(point3d, stackValue);
 					if(placementResult == null) {
 						continue;
@@ -83,6 +92,26 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 			}			
 		}
 		return result;
+	}
+
+	/**
+	 * Compare the candidate assuming full support first, and calculate its support only if it could
+	 * be selected. Same result as calculating the support of every candidate, as the comparator never
+	 * prefers less support.
+	 */
+	private Placement selectPlacementIfSupported(Placement result, Point point, BoxStackValue stackValue) {
+		Placement placement = acquirePlacement();
+		placement.setStackValue(stackValue);
+		placement.setPoint(point);
+		placement.setSupportedArea(stackValue.getArea());
+		if(placementComparator.compare(result, placement) >= 0) {
+			recyclePlacement(placement);
+			return result;
+		}
+		if(point.getMinZ() != 0 && !point.isSupportedXYPlane(stackValue)) {
+			placement.setSupportedArea(supportIndex.calculateAreaSupport(stack.getPlacements(), point.getMinX(), point.getMinY(), point.getMinZ(), stackValue));
+		}
+		return selectPlacement(result, placement);
 	}
 
 	protected Placement createPlacement(Point point, BoxStackValue stackValue) {

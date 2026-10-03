@@ -17,6 +17,11 @@ public class SupportDelegateComparator implements PlacementComparator {
 	}
 
 	@Override
+	public boolean prefersHigherSupportedArea() {
+		return delegate.prefersHigherSupportedArea();
+	}
+
+	@Override
 	public int compare(Placement referenceResult, Placement potentiallyBetterResult) {
 
 		// higher support is better

@@ -10,6 +10,11 @@ public class VolumeWeightAreaMinZPlacementComparator implements PlacementCompara
 	}
 
 	@Override
+	public boolean prefersHigherSupportedArea() {
+		return true;
+	}
+
+	@Override
 	public int compare(Placement o1, Placement o2) {
 		int result = Long.compare(o1.getStackValue().getVolume(), o2.getStackValue().getVolume());
 		if(result != 0) {
