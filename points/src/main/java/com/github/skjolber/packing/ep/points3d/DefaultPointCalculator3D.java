@@ -847,14 +847,16 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		final int pointMinX = point.getMinX();
 		final long pointVolume = point.getVolume();
 		final long pointArea = point.getArea();
-		final int size = otherValues.size();
-		
-		// otherValues is sorted by x
-		for (int index = 0; index < size; index++) {
+		final Point3DFlagList otherValues = this.otherValues;
+
+		// otherValues is sorted by x. Scan backwards: an eclipsing point is most often
+		// one of the last merged points. The result does not depend on the scan order.
+		int index = otherValues.size() - 1;
+		while (index >= 0 && otherValues.get(index).getMinX() > pointMinX) {
+			index--;
+		}
+		for (; index >= 0; index--) {
 			SimplePoint3D otherValue = otherValues.get(index);
-			if (otherValue.getMinX() > pointMinX) {
-				return false;
-			}
 			if(pointVolume <= otherValue.getVolume() && pointArea <= otherValue.getArea()) {
 				if(otherValue.eclipses(point)) {
 					// discard 
