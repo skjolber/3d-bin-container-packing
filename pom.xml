@@ -42,6 +42,7 @@
 		<assertj.version>3.27.7</assertj.version>
 		<owasp-dependency-check.version>5.3.2</owasp-dependency-check.version>
 		<pitest.version>1.25.9</pitest.version>
+		<pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
 		<jackson.version>2.22.1</jackson.version>
 		<spotless.version>3.9.0</spotless.version>
 	</properties>
@@ -461,6 +462,14 @@
 					<groupId>org.pitest</groupId>
 					<artifactId>pitest-maven</artifactId>
 					<version>${pitest.version}</version>
+					<dependencies>
+						<!-- tests use JUnit 5 -->
+						<dependency>
+							<groupId>org.pitest</groupId>
+							<artifactId>pitest-junit5-plugin</artifactId>
+							<version>${pitest-junit5-plugin.version}</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>com.diffplug.spotless</groupId>

@@ -78,8 +78,12 @@ Source of truth is `open-api/3d-api.yaml`. Never hand-edit generated sources.
 
 ### PiTest — mutation testing
 ```bash
-mvn test-compile org.pitest:pitest-maven:mutationCoverage -pl <module> -am
+./mvnw -B -ntp -Pdev test-compile org.pitest:pitest-maven:mutationCoverage -pl <module> -am -DfailWhenNoMutations=false
 ```
+`-DfailWhenNoMutations=false` is needed because `-am` also runs PIT on upstream modules.
+Narrow a run with `-DtargetClasses=<pattern> -DtargetTests=<pattern>` (for example
+`-DtargetClasses='com.github.skjolber.packing.ep.points2d.*'`); a whole module takes long.
+JUnit 5 support comes from `pitest-junit5-plugin` in the root POM.
 
 ### OWASP Dependency Check
 ```bash
@@ -106,6 +110,7 @@ mvn dependency-check:check -pl <module>
 | `maven-surefire-plugin.version` | Surefire |
 | `spotless.version` | Spotless formatter |
 | `pitest.version` | PiTest mutation testing |
+| `pitest-junit5-plugin.version` | PiTest JUnit 5 test discovery |
 
 ## Release to Maven Central
 
