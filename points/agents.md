@@ -5,14 +5,19 @@ Manages free-space bookkeeping during packing. Tracks 2D and 3D points that repr
 
 ## Key Packages
 - `com.github.skjolber.packing.ep.points2d` — 2D point types: `Point2D`, `DefaultPoint2D`, `XSupportPoint2D`, `YSupportPoint2D`, `Point2DList`, `Point2DFlagList`
-- `com.github.skjolber.packing.ep.points3d` — 3D point types: `Point3D`, `DefaultPoint3D`, plane-specific variants (`XYPlanePoint3D`, `XZPlanePoint3D`, `YZPlanePoint3D`)
-- Calculator strategies: `DefaultPointCalculator2D`, `MarkResetPointCalculator2D`
+- `com.github.skjolber.packing.ep.points3d` — 3D points: `SimplePoint3D` with a single final implementation `DefaultPoint3D`, whose optional xy/xz/yz plane placements record supporting surfaces; calculators `DefaultPointCalculator3D`, `MarkResetPointCalculator3D`
+- `com.github.skjolber.packing.ep` — `PlacementList`, shared with core
 
 ## Architecture Notes
 - Depends only on **api**; no dependency on **core**.
 - Uses **Eclipse Collections** for performance-optimized list operations — prefer these over standard `java.util` collections.
 - `Point2DFlagList` uses bitmask flags to avoid object allocation in hot paths.
-- Plane-specific 3D variants encode which container walls support a placement, enabling smarter candidate filtering.
+- The supporting planes of a 3D point enable smarter candidate filtering.
+
+## Performance
+- Keep `DefaultPoint3D` the only `SimplePoint3D` implementation: calls on points in the calculator loops must stay monomorphic to be inlined.
+- `DefaultPointCalculator3D.add` is split into `classify`, `moveX/Y/Z` and `merge`; changes that grow these hot methods have repeatedly measured slower even when they removed work. Measure every change.
+- Behavior is pinned by golden masters (`PointCalculatorGoldenMasterTest` here, `PackagerGoldenMasterTest` in core): optimizations must keep their checksums. Benchmarks: `jmh` module, `PointsBenchmark3D` (including `points3DRecorded`, a large-order replay), `TychoBenchmark`, `EgyPackagerBenchmark`, `BouwkampCodeBruteForcePackagerBenchmark`.
 
 ## Testing
 - JUnit 5, AssertJ, jQwik (property-based tests verify point calculator invariants)

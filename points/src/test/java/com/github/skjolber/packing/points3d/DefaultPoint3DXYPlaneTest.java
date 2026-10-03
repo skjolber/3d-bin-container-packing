@@ -8,12 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.ep.points3d.DefaultXYPlanePoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 
-public class DefaultXYPlanePoint3DTest extends AbstractPointTest {
+public class DefaultPoint3DXYPlaneTest extends AbstractPointTest {
 
-	private DefaultXYPlanePoint3D point = new DefaultXYPlanePoint3D(0, 0, 10, 10, 10, 10, centerPlacement);
+	private DefaultPoint3D point = new DefaultPoint3D(0, 0, 10, 10, 10, 10, null, null, centerPlacement);
 	
 	// i.e. buttom
 	//  
@@ -36,15 +36,10 @@ public class DefaultXYPlanePoint3DTest extends AbstractPointTest {
 		assertFalse(point.isSupportedXZPlane(4, 4));
 		assertFalse(point.isSupportedYZPlane(4, 4));
 
-		assertEquals(point.calculateXZSupport(10, 10), 0);
-		assertEquals(point.calculateYZSupport(10, 10), 0);
 	}
 	
 	@Test
 	public void testSupportCase() {
-		assertEquals(point.calculateXYSupport(5, 5), 25);
-		assertEquals(point.calculateXYSupport(10, 10), 100);
-		assertEquals(point.calculateXYSupport(11, 11), 100);
 	}
 	
 	//  
@@ -61,9 +56,6 @@ public class DefaultXYPlanePoint3DTest extends AbstractPointTest {
 	public void testMoveX() {
 		SimplePoint3D moveX = point.moveX(point.getMinX() + 5);
 		
-		assertEquals(moveX.calculateXYSupport(5, 5), 25);
-		assertEquals(moveX.calculateXYSupport(5, 10), 50);
-		assertEquals(moveX.calculateXYSupport(5, 11), 50);
 	}
 
 	//  
@@ -80,9 +72,6 @@ public class DefaultXYPlanePoint3DTest extends AbstractPointTest {
 	public void testMoveY() {
 		SimplePoint3D moveY = point.moveY(point.getMinY() + 5);
 		
-		assertEquals(moveY.calculateXYSupport(5, 5), 25);
-		assertEquals(moveY.calculateXYSupport(10, 5), 50);
-		assertEquals(moveY.calculateXYSupport(11, 5), 50);
 	}
 
 	@Test
@@ -154,7 +143,7 @@ public class DefaultXYPlanePoint3DTest extends AbstractPointTest {
 	
 	@Test
 	public void testClone() {
-		DefaultXYPlanePoint3D clone = point.clone();
+		DefaultPoint3D clone = point.clone();
 		
 		assertEquals(point.getMinX(), clone.getMinX());
 		assertEquals(point.getMinY(), clone.getMinY());

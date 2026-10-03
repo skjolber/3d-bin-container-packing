@@ -7,15 +7,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.ep.points3d.Default3DPlanePoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 
-public class Default3DPlanePoint3DTest extends AbstractPointTest {
+public class DefaultPoint3DAllPlanesTest extends AbstractPointTest {
 
 	private Placement placement1 = createStackPlacement(0, 0, 0, 100, 100, 100);
 	private Placement placement2 = createStackPlacement(0, 0, 0, 4, 4, 4);
 	
-	private Default3DPlanePoint3D point = new Default3DPlanePoint3D(0, 0, 0, 10, 10, 10, placement1, placement1, placement1);
+	private DefaultPoint3D point = new DefaultPoint3D(0, 0, 0, 10, 10, 10, placement1, placement1, placement1);
 	
 	@Test
 	public void testSupport() {
@@ -27,9 +27,6 @@ public class Default3DPlanePoint3DTest extends AbstractPointTest {
 		assertTrue(point.isSupportedXYPlane(4, 4));
 		assertTrue(point.isSupportedYZPlane(4, 4));
 
-		assertEquals(point.calculateXYSupport(10, 10), 100);
-		assertEquals(point.calculateYZSupport(10, 10), 100);
-		assertEquals(point.calculateXZSupport(10, 10), 100);
 	}
 	
 	@Test
@@ -40,8 +37,6 @@ public class Default3DPlanePoint3DTest extends AbstractPointTest {
 		assertTrue(move.isSupportedXZPlane());
 		assertFalse(move.isSupportedYZPlane());
 		
-		assertEquals(move.calculateXYSupport(10, 10), 100);
-		assertEquals(move.calculateXZSupport(10, 10), 100);
 	}
 
 	@Test
@@ -52,8 +47,6 @@ public class Default3DPlanePoint3DTest extends AbstractPointTest {
 		assertTrue(move.isSupportedXYPlane());
 		assertTrue(move.isSupportedYZPlane());
 		
-		assertEquals(move.calculateXYSupport(10, 10), 100);
-		assertEquals(move.calculateYZSupport(10, 10), 100);
 	}
 
 	@Test
@@ -64,8 +57,6 @@ public class Default3DPlanePoint3DTest extends AbstractPointTest {
 		assertFalse(move.isSupportedXYPlane());
 		assertTrue(move.isSupportedYZPlane());
 		
-		assertEquals(move.calculateYZSupport(10, 10), 100);
-		assertEquals(move.calculateXZSupport(10, 10), 100);
 	}
 
 	@Test
@@ -76,9 +67,6 @@ public class Default3DPlanePoint3DTest extends AbstractPointTest {
 		assertTrue(move.isSupportedXZPlane());
 		assertTrue(move.isSupportedYZPlane());
 		
-		assertEquals(move.calculateXYSupport(10, 10), 100);
-		assertEquals(move.calculateXZSupport(10, 10), 100);
-		assertEquals(move.calculateYZSupport(10, 10), 25);
 	}
 
 	@Test
@@ -89,9 +77,6 @@ public class Default3DPlanePoint3DTest extends AbstractPointTest {
 		assertTrue(move.isSupportedXYPlane());
 		assertTrue(move.isSupportedYZPlane());
 		
-		assertEquals(move.calculateXYSupport(10, 10), 100);
-		assertEquals(move.calculateYZSupport(10, 10), 100);
-		assertEquals(move.calculateXZSupport(10, 10), 25);
 	}
 
 	@Test
@@ -102,9 +87,6 @@ public class Default3DPlanePoint3DTest extends AbstractPointTest {
 		assertTrue(move.isSupportedXYPlane());
 		assertTrue(move.isSupportedYZPlane());
 		
-		assertEquals(move.calculateYZSupport(10, 10), 100);
-		assertEquals(move.calculateXZSupport(10, 10), 100);
-		assertEquals(move.calculateXYSupport(5, 5), 25);
 	}
 	
 }

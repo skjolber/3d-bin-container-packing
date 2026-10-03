@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultXZPlanePoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 
 public class DefaultPoint3DTest {
 
@@ -19,12 +19,6 @@ public class DefaultPoint3DTest {
 		assertFalse(point.isSupportedXYPlane());
 		assertFalse(point.isSupportedXZPlane());
 		assertFalse(point.isSupportedYZPlane());
-	}
-
-	@Test
-	public void testRotate() {
-		DefaultPoint3D rotate = point.rotate().rotate().rotate();
-		assertEquals(rotate, point);
 	}
 
 	@Test

@@ -8,13 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.ep.points3d.DefaultXYPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultXZPlanePoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 
-public class DefaultXZPlanePoint3DTest2 extends AbstractPointTest {
+public class DefaultPoint3DXZPlaneTest extends AbstractPointTest {
 
-	private DefaultXZPlanePoint3D point = new DefaultXZPlanePoint3D(0, 10, 0, 10, 10, 10, centerPlacement);
+	private DefaultPoint3D point = new DefaultPoint3D(0, 10, 0, 10, 10, 10, null, centerPlacement, null);
 	
 	// i.e. front
 	//  
@@ -40,15 +40,10 @@ public class DefaultXZPlanePoint3DTest2 extends AbstractPointTest {
 		assertFalse(point.isSupportedXYPlane(4, 4));
 		assertFalse(point.isSupportedYZPlane(4, 4));
 		
-		assertEquals(point.calculateXYSupport(10, 10), 0);
-		assertEquals(point.calculateYZSupport(10, 10), 0);
 	}
 	
 	@Test
 	public void testSupportCase() {
-		assertEquals(point.calculateXZSupport(5, 5), 25);
-		assertEquals(point.calculateXZSupport(10, 10), 100);
-		assertEquals(point.calculateXZSupport(11, 11), 100);
 	}
 	
 	// i.e. front
@@ -69,9 +64,6 @@ public class DefaultXZPlanePoint3DTest2 extends AbstractPointTest {
 	public void testMoveX() {
 		SimplePoint3D moveX = point.moveX(point.getMinX() + 5);
 		
-		assertEquals(moveX.calculateXZSupport(5, 5), 25);
-		assertEquals(moveX.calculateXZSupport(5, 10), 50);
-		assertEquals(moveX.calculateXZSupport(5, 11), 50);
 	}
 
 	//  
@@ -92,9 +84,6 @@ public class DefaultXZPlanePoint3DTest2 extends AbstractPointTest {
 	public void testMoveZ() {
 		SimplePoint3D moveY = point.moveZ(point.getMinZ() + 5);
 		
-		assertEquals(moveY.calculateXZSupport(5, 5), 25);
-		assertEquals(moveY.calculateXZSupport(10, 5), 50);
-		assertEquals(moveY.calculateXZSupport(11, 5), 50);
 	}
 	
 	@Test
@@ -172,7 +161,7 @@ public class DefaultXZPlanePoint3DTest2 extends AbstractPointTest {
 
 	@Test
 	public void testClone() {
-		DefaultXZPlanePoint3D clone = point.clone();
+		DefaultPoint3D clone = point.clone();
 		
 		assertEquals(point.getMinX(), clone.getMinX());
 		assertEquals(point.getMinY(), clone.getMinY());

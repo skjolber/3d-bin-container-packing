@@ -15,7 +15,7 @@ import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
-import com.github.skjolber.packing.ep.points3d.DefaultXYPlanePoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 
 /**
  * Unit tests for {@link SupportPlacementControls}.
@@ -121,7 +121,7 @@ class SupportPlacementControlsTest {
 		BoxStackValue sv = box.getStackValues()[0];
 
 		// XY-plane-supported point at z=1: xyPlane placement covers x=0..9, y=0..9
-		DefaultXYPlanePoint3D xyPoint = new DefaultXYPlanePoint3D(0, 0, 1, 9, 9, 9, base);
+		DefaultPoint3D xyPoint = new DefaultPoint3D(0, 0, 1, 9, 9, 9, null, null, base);
 		xyPoint.setIndex(0);
 
 		Placement result = ctrl.testCreatePlacement(xyPoint, sv);
