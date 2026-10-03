@@ -20,6 +20,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTest {
 
@@ -42,7 +43,7 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 					.withBoxItems(new BoxItem(box, 3))
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(c -> c.getStack().size()).containsExactly(2, 1);
 		}
 	}

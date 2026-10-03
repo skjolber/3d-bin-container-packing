@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
+import com.github.skjolber.packing.test.assertj.PlacementsAssert;
 import com.github.skjolber.packing.validator.stability.reasons.InsufficientSupportAreaReason;
 
 /**
@@ -68,10 +69,7 @@ public class PercentSupportedStabilityValidatorTest {
 		PercentSupportedStabilityValidator validator = new PercentSupportedStabilityValidator(100);
 		Placement a = makePlacement("A", 10, 10, 1, 0, 0, 0);
 
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(List.of(a), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of(a)).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -89,10 +87,7 @@ public class PercentSupportedStabilityValidatorTest {
 		Placement b = makePlacement("B", 10, 10, 1, 0, 0, 1);
 		a.addLoad(b, 100L, b.getWeight());
 
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(List.of(a, b), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of(a, b)).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -121,10 +116,7 @@ public class PercentSupportedStabilityValidatorTest {
 		Placement b = makePlacement("B", 10, 10, 1, 0, 0, 1);
 		a.addLoad(b, 50L, b.getWeight());
 
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(List.of(a, b), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of(a, b)).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -167,10 +159,7 @@ public class PercentSupportedStabilityValidatorTest {
 		PercentSupportedStabilityValidator validator = new PercentSupportedStabilityValidator(0);
 		Placement b = makePlacement("B", 10, 10, 1, 0, 0, 1);
 
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(List.of(b), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of(b)).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------

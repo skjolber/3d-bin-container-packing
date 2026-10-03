@@ -27,6 +27,7 @@ import com.github.skjolber.packing.packer.AbstractPackagerTest;
 import com.github.skjolber.packing.packer.plain.heavy.HeavyItemsBestBoxItemComparator;
 import com.github.skjolber.packing.packer.plain.heavy.HeavyItemsOnGroundLevelPlacementComparator;
 import com.github.skjolber.packing.packer.plain.heavy.HeavyItemsOnGroundLevelPointControls;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 public class PlainPackagerTest extends AbstractPackagerTest {
 
@@ -554,7 +555,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withBoxItemGroups(cloneGroups(groups))
 					.withOrder(Order.CRONOLOGICAL)
 					.build();
-			assertTrue(result.isSuccess());
+			PackagerResultAssert.assertThat(result).isSuccess();
 
 			List<Container> containers = result.getContainers();
 			assertEquals(2, containers.size());
@@ -835,7 +836,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withBoxItemGroups(cloneGroups(groups))
 					.withOrder(Order.CRONOLOGICAL)
 					.build();
-			assertTrue(result.isSuccess());
+			PackagerResultAssert.assertThat(result).isSuccess();
 
 			List<Container> containers = result.getContainers();
 			assertEquals(2, containers.size());
@@ -906,7 +907,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withBoxItemGroups(cloneGroups(groups))
 					.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING)
 					.build();
-			assertTrue(result.isSuccess());
+			PackagerResultAssert.assertThat(result).isSuccess();
 
 			List<Container> containers = result.getContainers();
 			assertEquals(2, containers.size());

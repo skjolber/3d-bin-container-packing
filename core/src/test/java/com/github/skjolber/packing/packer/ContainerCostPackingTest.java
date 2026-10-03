@@ -27,13 +27,14 @@ import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerStrategy;
 import com.github.skjolber.packing.packer.strategy.ContainerResult;
 import com.github.skjolber.packing.packer.strategy.ContainerStrategy;
+import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerStrategy;
 import com.github.skjolber.packing.packer.strategy.bruteforce.LowestCostControls;
 import com.github.skjolber.packing.packer.strategy.cost.ContainerItemsCostCalculator;
 import com.github.skjolber.packing.packer.strategy.cost.EstimatingContainerItemsCostCalculator;
 import com.github.skjolber.packing.packer.strategy.cost.LowestCostContainersComparator;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 class ContainerCostPackingTest {
 
@@ -61,7 +62,7 @@ class ContainerCostPackingTest {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(planContainers())
 					.withMaxContainerCount(2).withBoxItems(twoBoxes())
 					.build();
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(estimates).hasPositiveValue();
 		} finally {
 			packager.close();
@@ -250,7 +251,7 @@ class ContainerCostPackingTest {
 					.withBoxItems(boxItem())
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).singleElement()
 					.extracting(Container::getId).isEqualTo("cheap");
 		} finally {
@@ -268,7 +269,7 @@ class ContainerCostPackingTest {
 					.withBoxItems(twoBoxes())
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
 					.containsExactly("small", "small");
 		} finally {
@@ -286,7 +287,7 @@ class ContainerCostPackingTest {
 					.withBoxItems(twoBoxes())
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
 					.containsExactly("small", "small");
 		} finally {
@@ -308,7 +309,7 @@ class ContainerCostPackingTest {
 					.withBoxItems(boxItem())
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).singleElement()
 					.extracting(Container::getId).isEqualTo("medium");
 			assertThat(comparisons).hasValue(2);
@@ -335,7 +336,7 @@ class ContainerCostPackingTest {
 					.withBoxItems(twoBoxes())
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
 					.containsExactly("small", "small");
 		} finally {
@@ -355,7 +356,7 @@ class ContainerCostPackingTest {
 					.withBoxItems(twoBoxes())
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
 					.containsExactly("small", "small");
 		} finally {
@@ -383,7 +384,7 @@ class ContainerCostPackingTest {
 					.withBoxItems(twoBoxes())
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
 					.containsExactly("large");
 		} finally {
@@ -410,7 +411,7 @@ class ContainerCostPackingTest {
 					.withBoxItems(boxItem())
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
 					.containsExactly("fixed");
 		} finally {
@@ -440,7 +441,7 @@ class ContainerCostPackingTest {
 					.withMaxContainerCount(2)
 					.withBoxItems(twoBoxes())
 					.build();
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			PackagerResult grouped = bruteForce.newResultBuilder()
 					.withContainerItems(planContainers())
 					.withMaxContainerCount(2)
@@ -472,7 +473,7 @@ class ContainerCostPackingTest {
 					.withBoxItems(twoBoxes())
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
 					.containsExactly("small", "small");
 			assertThat(comparisons.get()).isGreaterThanOrEqualTo(2);
@@ -499,8 +500,7 @@ class ContainerCostPackingTest {
 					.withBoxItems(twoBoxes())
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
-			assertThat(result.getContainers()).hasSize(2);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
 		} finally {
 			packager.close();
 		}
@@ -519,8 +519,7 @@ class ContainerCostPackingTest {
 							new BoxItemGroup("second", List.of(boxItem())))
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
-			assertThat(result.getContainers()).hasSize(2);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
 		} finally {
 			packager.close();
 		}
@@ -587,7 +586,7 @@ class ContainerCostPackingTest {
 					.withBoxItems(twoBoxes())
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
 					.containsExactly("second", "first");
 		} finally {
@@ -665,7 +664,7 @@ class ContainerCostPackingTest {
 					.withBoxItems(boxItem())
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).singleElement()
 					.extracting(Container::getId).isEqualTo("controlled");
 		} finally {

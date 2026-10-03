@@ -9,10 +9,11 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.ep.PlacementList;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.ep.PlacementList;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
+import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
 class AbstractLoadWeightPlacementUtilityTest {
 
@@ -85,11 +86,9 @@ class AbstractLoadWeightPlacementUtilityTest {
 		utility.initialize(33);
 		utility.accepted(top);
 
-		assertThat(top.getSupportedArea()).isEqualTo(4L);
-		assertThat(top.getSupporters()).hasSize(1);
-		assertThat(top.getSupporters().get(0).getPlacement()).isSameAs(floor);
-		assertThat(floor.getSupportees()).hasSize(1);
-		assertThat(floor.getSupportees().get(0).getPlacement()).isSameAs(top);
+		StackPlacementAssert.assertThat(top).hasSupportedArea(4L);
+		StackPlacementAssert.assertThat(top).isSupportedBy(floor);
+		StackPlacementAssert.assertThat(floor).supports(top);
 	}
 
 	private static Point point(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {

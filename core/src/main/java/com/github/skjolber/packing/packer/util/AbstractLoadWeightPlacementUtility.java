@@ -56,6 +56,12 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	protected long[] placementAreas;
 	protected double[] reliefWeights;
 
+	// scratch for validating a candidate: new weight flowing through each reachable placement (by index)
+	private double[] flowWeights;
+	private boolean[] flowReached;
+	private Placement[] flowPlacements;
+	private int flowSize;
+
 	/*
 	 * Stack positions sorted by bottom and top Z. The stack is mutated in LIFO
 	 * order by the packagers, so insertions and removals are cheap while point
@@ -77,6 +83,10 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		int capacity = count + stack.getPlacements().size();
 		placementAreas = new long[capacity];
 		reliefWeights = new double[capacity];
+		flowWeights = new double[capacity];
+		flowReached = new boolean[capacity];
+		flowPlacements = new Placement[capacity];
+		flowSize = 0;
 		pointSupportees.ensureAdditionalCapacity(capacity);
 		pointSupporters.ensureAdditionalCapacity(capacity);
 		placementSupporters.ensureAdditionalCapacity(capacity);
@@ -283,43 +293,15 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	}
 
 	/**
-	 * Validates an additional {@code weight} transferred onto {@code placement} through one contact
-	 * of {@code area}, which already carries {@code contactWeight}. Pressure is evaluated per
-	 * contact, like the pressure validator; weight is evaluated over all supportees.
-	 */
-	protected boolean isWithinMaxLoadWeightAndPressure(Placement placement, double weight, long area, double contactWeight) {
-		double effectiveWeight = weight - reliefWeights[placement.getIndex()];
-		BoxStackValue sv = placement.getStackValue();
-		if (sv.isMaxLoadPressure() && Box.calculatePressure(area, contactWeight + effectiveWeight) > sv.getMaxLoadPressure()) {
-			return false;
-		}
-		if (sv.isMaxLoadWeight()) {
-			double existingWeight = 0.0;
-			for (PlacementLoad pl : placement.getSupportees()) {
-				existingWeight += pl.getWeight();
-			}
-			if (effectiveWeight + existingWeight > sv.getMaxLoadWeight()) {
-				return false;
-			}
-		}
-		long totalArea = placement.getSupportedArea();
-		if (totalArea > 0) {
-			// existing load passed down by this placement, shared by contact area
-			double carried = placement.getWeight() + placement.getLoadWeight();
-			for (PlacementLoad pl : placement.getSupporters()) {
-				double weightShare = effectiveWeight * pl.getArea() / totalArea;
-				double carriedShare = carried * pl.getArea() / totalArea;
-				if (!isWithinMaxLoadWeightAndPressure(pl.getPlacement(), weightShare, pl.getArea(), carriedShare)) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * Calculates total overlap area of all {@link #placementSupporters} and validates
-	 * load constraints in a single pass using cached per-supporter areas.
+	 * Calculates the total overlap area of all {@link #placementSupporters} and validates the load
+	 * constraints of every placement below which would carry part of {@code weight}.
+	 * <p>
+	 * The weight is spread over the support graph by contact area, summing the shares arriving
+	 * through different paths. For each reached placement, the new load is its current load
+	 * ({@link Placement#getLoadWeight()}, the total weight above it) plus the new weight flowing
+	 * through it, less its relief (weight above the candidate which is shifted onto the candidate,
+	 * see {@link #calculateRelifWeight(Placement, double)}). Weight limits are checked per placement,
+	 * pressure limits per contact.
 	 *
 	 * @return total supported area, or {@code -1} if any load constraint is violated
 	 */
@@ -332,14 +314,91 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 			placementAreas[i] = LoadPlacementUtility.overlapArea(absoluteX, absoluteY, newMaxX, newMaxY, placementSupporters.get(i));
 			totalOverlapArea += placementAreas[i];
 		}
-		for (int i = 0; i < n; i++) {
-			double weightShare = weight * placementAreas[i] / totalOverlapArea;
-			// a new contact carries no existing load
-			if (!isWithinMaxLoadWeightAndPressure(placementSupporters.get(i), weightShare, placementAreas[i], 0.0)) {
+		try {
+			for (int i = 0; i < n; i++) {
+				Placement supporter = placementSupporters.get(i);
+				double weightShare = weight * placementAreas[i] / totalOverlapArea;
+				// a new contact carries no existing load
+				if (!isWithinMaxLoadPressure(supporter, placementAreas[i], weightShare)) {
+					return -1;
+				}
+				addFlow(supporter, weightShare);
+			}
+			if(!validateFlow()) {
 				return -1;
 			}
+			return totalOverlapArea;
+		} finally {
+			clearFlow();
 		}
-		return totalOverlapArea;
+	}
+
+	private static boolean isWithinMaxLoadPressure(Placement placement, long area, double contactWeight) {
+		BoxStackValue sv = placement.getStackValue();
+		return !sv.isMaxLoadPressure() || Box.calculatePressure(area, contactWeight) <= sv.getMaxLoadPressure();
+	}
+
+	private void addFlow(Placement placement, double weight) {
+		int index = placement.getIndex();
+		if(!flowReached[index]) {
+			flowReached[index] = true;
+			flowPlacements[flowSize++] = placement;
+		}
+		flowWeights[index] += weight;
+	}
+
+	/**
+	 * Process reached placements top-down, so that all the weight arriving at a placement is known
+	 * before it is checked and passed on: a supporter always lies strictly below its supportee.
+	 */
+	private boolean validateFlow() {
+		int processed = 0;
+		while (processed < flowSize) {
+			// pick the highest remaining placement
+			int highest = processed;
+			for (int i = processed + 1; i < flowSize; i++) {
+				if(flowPlacements[i].getAbsoluteZ() > flowPlacements[highest].getAbsoluteZ()) {
+					highest = i;
+				}
+			}
+			Placement placement = flowPlacements[highest];
+			flowPlacements[highest] = flowPlacements[processed];
+			flowPlacements[processed] = placement;
+			processed++;
+
+			int index = placement.getIndex();
+			double flow = flowWeights[index];
+			double net = flow - reliefWeights[index];
+
+			BoxStackValue sv = placement.getStackValue();
+			if (sv.isMaxLoadWeight() && placement.getLoadWeight() + net > sv.getMaxLoadWeight()) {
+				return false;
+			}
+
+			long totalArea = placement.getSupportedArea();
+			if (totalArea > 0) {
+				// existing load passed down by this placement, shared by contact area
+				double carried = placement.getWeight() + placement.getLoadWeight();
+				for (PlacementLoad pl : placement.getSupporters()) {
+					long area = pl.getArea();
+					if (!isWithinMaxLoadPressure(pl.getPlacement(), area, (carried + net) * area / totalArea)) {
+						return false;
+					}
+					addFlow(pl.getPlacement(), flow * area / totalArea);
+				}
+			}
+		}
+		return true;
+	}
+
+	private void clearFlow() {
+		for (int i = 0; i < flowSize; i++) {
+			int index = flowPlacements[i].getIndex();
+			flowWeights[index] = 0.0;
+			flowReached[index] = false;
+			flowPlacements[i] = null;
+		}
+		flowSize = 0;
 	}
 
 	public double calculateSupporteeWeight(BoxStackValue sv, Point point) {

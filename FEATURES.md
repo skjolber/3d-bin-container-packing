@@ -82,8 +82,9 @@ not prove a globally minimum-cost packing for arbitrary inputs.
   container.
 - Point and placement controls for packager-specific candidate-point and
   placement decisions.
-- Optional load constraints: supported weight, pressure, supported box count,
-  and identical-box-only stacking.
+- Optional load constraints: supported weight (the total weight resting on a
+  box, through all levels above it), pressure, supported box count, and
+  identical-box-only stacking.
 - Optional stability checks: full support, minimum support percentage,
   centre-of-gravity support, and stack centre of gravity.
 - Deadlines and custom interruption suppliers for cancellable packing and

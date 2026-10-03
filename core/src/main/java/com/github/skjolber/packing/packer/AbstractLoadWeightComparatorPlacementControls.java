@@ -21,6 +21,15 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 
 	protected boolean fullSupport;
 
+	/**
+	 * Whether candidates can be compared before calculating support and load: true when the comparator
+	 * does not read the supported area. Then only candidates which would be selected are validated.
+	 */
+	protected final boolean validateSelectedOnly;
+
+	// the point (for the current box) for which supporters and supportees are populated, if any
+	protected Point populatedPoint;
+
 	/** Utility encapsulating variant load-constraint logic and shared mutable state. */
 	protected final LoadPlacementUtility util;
 
@@ -30,6 +39,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 		super(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 
 		this.fullSupport = fullSupport;
+		this.validateSelectedOnly = placementComparator != null && !placementComparator.usesSupportedArea();
 		this.util = createLoadPlacementUtility(stack);
 
 		int count = 0;
@@ -65,11 +75,10 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 			}
 
 			PointSource points = pointControls.getPoints(boxItem);
+			// supportees depend on the box height
+			populatedPoint = null;
 
 			for (Point point3d : points) {
-				util.populatePointSupporters(point3d);
-				util.populatePointSupportees(point3d, box.getMinimumDz(), box.getMaximumDz());
-
 				for (BoxStackValue stackValue : box.getStackValues()) {
 					if (stackValue.getArea() > point3d.getArea()) {
 						continue;
@@ -78,6 +87,12 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 						continue;
 					}
 
+					if(validateSelectedOnly) {
+						result = selectValidPlacement(result, point3d, stackValue, box);
+						continue;
+					}
+
+					populate(point3d, box);
 					long supportedArea = util.getSupportedAreaAtPoint(point3d, stackValue, fullSupport);
 					if (supportedArea == -1L) {
 						continue;
@@ -108,6 +123,44 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 			return null;
 		}
 		return getFullySupportedPlacement(offset, length);
+	}
+
+	/**
+	 * Compare the candidate with the current best first, and calculate its support and load only if
+	 * it would be selected. Same result as validating every candidate, as the comparator does not
+	 * read the supported area and ties keep the current best.
+	 */
+	protected Placement selectValidPlacement(Placement result, Point point3d, BoxStackValue stackValue, Box box) {
+		Placement placement = acquirePlacement();
+		placement.setStackValue(stackValue);
+		placement.setPoint(point3d);
+		if(result != null && placementComparator.compare(result, placement) >= 0) {
+			recyclePlacement(placement);
+			return result;
+		}
+		populate(point3d, box);
+		long supportedArea = util.getSupportedAreaAtPoint(point3d, stackValue, fullSupport);
+		if (supportedArea == -1L) {
+			recyclePlacement(placement);
+			return result;
+		}
+		placement.setSupportedArea(supportedArea);
+		if(result != null) {
+			recyclePlacement(result);
+		}
+		return placement;
+	}
+
+	/**
+	 * Populate the supporters and supportees of a point, once per point and box, and only for points
+	 * where a candidate is validated.
+	 */
+	protected void populate(Point point3d, Box box) {
+		if(populatedPoint != point3d) {
+			util.populatePointSupporters(point3d);
+			util.populatePointSupportees(point3d, box.getMinimumDz(), box.getMaximumDz());
+			populatedPoint = point3d;
+		}
 	}
 
 	/**

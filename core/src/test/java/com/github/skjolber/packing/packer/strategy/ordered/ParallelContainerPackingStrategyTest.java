@@ -13,6 +13,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 class ParallelContainerPackingStrategyTest {
 
@@ -34,7 +35,7 @@ class ParallelContainerPackingStrategyTest {
 					.withBoxItems(new BoxItem(box, 2))
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).singleElement().extracting(Container::getId).isEqualTo("large");
 		} finally {
 			packager.close();

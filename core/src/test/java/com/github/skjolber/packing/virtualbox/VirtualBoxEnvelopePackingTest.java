@@ -21,6 +21,7 @@ import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 class VirtualBoxEnvelopePackingTest {
 	/*
@@ -136,7 +137,7 @@ class VirtualBoxEnvelopePackingTest {
 					.build();
 			// Direct delegation retains the delegate's usual inventory-cloning
 			// semantics; there is deliberately no wrapper expansion/remapping.
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.get(0).getStack().getPlacements()).hasSize(4)
 					.extracting(Placement::getAbsoluteX).containsExactlyInAnyOrder(0, 1, 2, 3);
 			assertThat(result.get(0).getLoadWeight()).isEqualTo(4);

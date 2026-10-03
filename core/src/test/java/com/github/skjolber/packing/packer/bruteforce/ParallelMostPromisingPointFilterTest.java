@@ -15,6 +15,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 class ParallelMostPromisingPointFilterTest {
 
@@ -45,7 +46,7 @@ class ParallelMostPromisingPointFilterTest {
 							new BoxItem(Box.newBuilder().withId("three").withSize(3, 1, 1).withWeight(1).build())))
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(invocations).hasValueGreaterThanOrEqualTo(3);
 			assertThat(invokedOnWorker).isTrue();
 		} finally {

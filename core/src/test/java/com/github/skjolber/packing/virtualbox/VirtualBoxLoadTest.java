@@ -19,6 +19,8 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
+import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 import com.github.skjolber.packing.validator.load.IdenticalBoxOnlyLoadValidator;
 import com.github.skjolber.packing.validator.load.MaxBoxCountLoadValidator;
 import com.github.skjolber.packing.validator.load.MaxPressureLoadValidator;
@@ -54,11 +56,11 @@ class VirtualBoxLoadTest {
 					.withContainerItems(new ContainerItem(container(1, 1, 3), 1))
 					.build();
 			assertThat(recording.counts).containsExactly(3);
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.get(0).getStack().getPlacements()).hasSize(3);
 			assertLoads(result);
 			for(Placement placement : result.get(0).getStack().getPlacements()) {
-				assertThat(placement.getLoadWeight()).isEqualTo(2 - placement.getAbsoluteZ());
+				StackPlacementAssert.assertThat(placement).hasLoadWeight(2 - placement.getAbsoluteZ());
 			}
 			assertThat(original.getCount()).isEqualTo(3);
 		}
@@ -99,7 +101,7 @@ class VirtualBoxLoadTest {
 						.withCompareUngrouped(true)
 						.build();
 				assertThat(recording.counts).containsExactly(4);
-				assertThat(result.isSuccess()).isTrue();
+				PackagerResultAssert.assertThat(result).isSuccess();
 				assertThat(result.get(0).getStack().getPlacements()).hasSize(4);
 				assertLoads(result);
 				assertThat(unconstrained.getCount()).isEqualTo(3);

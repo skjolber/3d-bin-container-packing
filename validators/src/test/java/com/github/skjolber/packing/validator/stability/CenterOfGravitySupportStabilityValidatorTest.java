@@ -11,6 +11,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
+import com.github.skjolber.packing.test.assertj.PlacementsAssert;
 import com.github.skjolber.packing.validator.stability.reasons.UnstableCenterOfGravityReason;
 
 /**
@@ -72,10 +73,7 @@ public class CenterOfGravitySupportStabilityValidatorTest {
 		Placement a = makePlacement("A", 10, 10, 1, 10, 0, 0, 0);
 
 		List<Placement> placements = List.of(a);
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(placements, reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(placements).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -126,10 +124,7 @@ public class CenterOfGravitySupportStabilityValidatorTest {
 		a.addLoad(b, 100L, b.getWeight());
 
 		List<Placement> placements = List.of(a, b);
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(placements, reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(placements).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -200,10 +195,7 @@ public class CenterOfGravitySupportStabilityValidatorTest {
 		a.addLoad(b, 16L, b.getWeight());
 
 		List<Placement> placements = List.of(a, b);
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(placements, reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(placements).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------

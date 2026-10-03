@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
+import com.github.skjolber.packing.test.assertj.PlacementsAssert;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadPressureReason;
 
 /**
@@ -57,10 +58,7 @@ public class MaxPressureLoadValidatorTest {
 		Placement b = makePlacement("B", 10, 10, 1, 50, 0, 0, 1);
 		a.addLoad(b, 100L, b.getWeight());
 
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(List.of(a, b), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of(a, b)).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -87,10 +85,7 @@ public class MaxPressureLoadValidatorTest {
 		Placement b = makePlacement("B", 10, 10, 1, 50, 0, 0, 1);
 		a.addLoad(b, 100L, b.getWeight());
 
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(List.of(a, b), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of(a, b)).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -106,10 +101,7 @@ public class MaxPressureLoadValidatorTest {
 		Placement b = makePlacement("B", 10, 10, 1, 50, 0, 0, 1);
 		a.addLoad(b, 100L, b.getWeight());
 
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(List.of(a, b), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of(a, b)).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -202,9 +194,6 @@ public class MaxPressureLoadValidatorTest {
 		a.addLoad(b, 100L, b.getWeight());
 		b.addLoad(c, 100L, c.getWeight());
 
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(List.of(a, b, c), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of(a, b, c)).isAcceptedBy(validator);
 	}
 }

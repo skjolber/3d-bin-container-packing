@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
+import com.github.skjolber.packing.test.assertj.PlacementsAssert;
 import com.github.skjolber.packing.validator.stability.reasons.InsufficientSupportAreaReason;
 
 /**
@@ -52,10 +53,7 @@ public class FullySupportedStabilityValidatorTest {
 		Placement a = makePlacement("A", 10, 10, 1, 0, 0, 0);
 
 		List<Placement> placements = List.of(a);
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(placements, reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(placements).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -84,10 +82,7 @@ public class FullySupportedStabilityValidatorTest {
 		a.addLoad(b, 100L, b.getWeight());
 
 		List<Placement> placements = List.of(a, b);
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(placements, reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(placements).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------

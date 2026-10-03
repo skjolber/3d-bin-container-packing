@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
+import com.github.skjolber.packing.test.assertj.PlacementsAssert;
 import com.github.skjolber.packing.validator.stability.reasons.UnstableStackCenterOfGravityReason;
 
 /**
@@ -83,10 +84,7 @@ public class CenterOfGravityStabilityValidatorTest {
 		Placement a = makePlacement("A", 10, 10, 1, 10, 0, 0, 0);
 
 		List<Placement> placements = List.of(a);
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(placements, reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(placements).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -136,10 +134,7 @@ public class CenterOfGravityStabilityValidatorTest {
 		a.addLoad(b, 100L, b.getWeight());
 
 		List<Placement> placements = List.of(a, b);
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(placements, reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(placements).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -226,9 +221,6 @@ public class CenterOfGravityStabilityValidatorTest {
 		b.addLoad(c, 100L, c.getWeight());
 
 		List<Placement> placements = List.of(a, b, c);
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(placements, reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(placements).isAcceptedBy(validator);
 	}
 }

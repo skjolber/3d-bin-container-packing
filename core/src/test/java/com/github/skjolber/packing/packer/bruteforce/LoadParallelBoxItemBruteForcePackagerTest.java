@@ -14,6 +14,8 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
+import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
 class LoadParallelBoxItemBruteForcePackagerTest extends AbstractLoadBruteForcePackagerTest {
 
@@ -58,12 +60,12 @@ class LoadParallelBoxItemBruteForcePackagerTest extends AbstractLoadBruteForcePa
 		List<Placement> placements = result.getContainers().get(0).getStack().getPlacements().stream()
 				.sorted(Comparator.comparingInt(Placement::getAbsoluteZ)).toList();
 
-		assertThat(result.isSuccess()).isTrue();
+		PackagerResultAssert.assertThat(result).isSuccess();
 		assertThat(placements).hasSize(5);
 		long weightAbove = 0;
 		for(int i = placements.size() - 1; i >= 0; i--) {
 			Placement placement = placements.get(i);
-			assertThat(placement.getLoadWeight()).isEqualTo((double) weightAbove);
+			StackPlacementAssert.assertThat(placement).hasLoadWeight((double) weightAbove);
 			weightAbove += placement.getWeight();
 		}
 	}

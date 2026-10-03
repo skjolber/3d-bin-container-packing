@@ -9,6 +9,7 @@ import java.util.function.BooleanSupplier;
 import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.*;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.virtualbox.VirtualBoxPackagerTest.RecordingPackager;
 
 class VirtualBoxRefinementTest {
@@ -63,7 +64,7 @@ class VirtualBoxRefinementTest {
 				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(item(1, 1, 1, 4), item(2, 1, 1, 1))
 					.withContainerItems(new ContainerItem(container(3, 2, 1), 1)).withMaxDelegateBoxes(2).build();
-			assertThat(result.isSuccess()).isFalse();
+			PackagerResultAssert.assertThat(result).isNotSuccess();
 			assertThat(recording.counts).containsExactly(2);
 		}
 	}

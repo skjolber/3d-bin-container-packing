@@ -16,6 +16,7 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.ControlledContainerItem;
+import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
 class BruteForceIntermediatePackagerResultTest {
 
@@ -105,9 +106,9 @@ class BruteForceIntermediatePackagerResultTest {
 
 		result.rebuildLoads(List.of(middle, top, bottom));
 
-		assertThat(top.getLoadWeight()).isZero();
-		assertThat(middle.getLoadWeight()).isEqualTo(5.0);
-		assertThat(bottom.getLoadWeight()).isEqualTo(8.0);
+		StackPlacementAssert.assertThat(top).hasLoadWeight(0);
+		StackPlacementAssert.assertThat(middle).hasLoadWeight(5.0);
+		StackPlacementAssert.assertThat(bottom).hasLoadWeight(8.0);
 		assertThat(middle.getSupporters()).singleElement()
 				.extracting(load -> load.getPlacement()).isSameAs(bottom);
 	}

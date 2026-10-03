@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
+import com.github.skjolber.packing.test.assertj.PlacementsAssert;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadBoxCountReason;
 
 /**
@@ -59,10 +60,7 @@ public class MaxBoxCountLoadValidatorTest {
 		a.addLoad(b, 100L, b.getWeight());
 		b.addLoad(c, 100L, c.getWeight());
 
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(List.of(a, b, c), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of(a, b, c)).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -76,10 +74,7 @@ public class MaxBoxCountLoadValidatorTest {
 	void testConstrainedNothingOnTop_valid() {
 		Placement a = makePlacementWithBoxCountLimit("A", 10, 10, 1, 10, 2, 0, 0, 0);
 
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(List.of(a), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of(a)).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -110,10 +105,7 @@ public class MaxBoxCountLoadValidatorTest {
 		a.addLoad(b, 100L, b.getWeight());
 		b.addLoad(c, 100L, c.getWeight());
 
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(List.of(a, b, c), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of(a, b, c)).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------

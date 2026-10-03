@@ -1173,6 +1173,11 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 
 	/** Prefers higher support ratio ({@code supportedArea / (dx × dy)}). */
 	public static final class HigherSupportComparator extends AbstractChainedPlacementComparator {
+		@Override
+		public boolean usesSupportedArea() {
+			return true;
+		}
+
 		public HigherSupportComparator() {}
 		public HigherSupportComparator(PlacementComparator next) { super(next); }
 
@@ -1185,6 +1190,11 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 
 	/** Prefers lower support ratio. */
 	public static final class LowerSupportComparator extends AbstractChainedPlacementComparator {
+		@Override
+		public boolean usesSupportedArea() {
+			return true;
+		}
+
 		public LowerSupportComparator() {}
 		public LowerSupportComparator(PlacementComparator next) { super(next); }
 
@@ -1371,6 +1381,11 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	 */
 	public static final class HigherSupportHigherVolumeHigherWeightLowerZComparator
 			extends AbstractChainedPlacementComparator {
+		@Override
+		public boolean usesSupportedArea() {
+			return true;
+		}
+
 
 		public HigherSupportHigherVolumeHigherWeightLowerZComparator() {}
 
@@ -1554,6 +1569,11 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	 */
 	public static final class HigherSupportHigherVolumeHigherWeightLowerAreaLowerZComparator
 			extends AbstractChainedPlacementComparator {
+		@Override
+		public boolean usesSupportedArea() {
+			return true;
+		}
+
 
 		public HigherSupportHigherVolumeHigherWeightLowerAreaLowerZComparator() {}
 
@@ -1598,6 +1618,11 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	 */
 	public static final class HigherSupportLowerZHigherAreaHigherVolumeHigherWeightComparator
 			extends AbstractChainedPlacementComparator {
+		@Override
+		public boolean usesSupportedArea() {
+			return true;
+		}
+
 
 		public HigherSupportLowerZHigherAreaHigherVolumeHigherWeightComparator() {}
 
@@ -1798,6 +1823,11 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	 */
 	public static final class ConstraintsHigherSupportHigherVolumeHigherWeightLowerAreaLowerZComparator
 			extends AbstractChainedPlacementComparator {
+		@Override
+		public boolean usesSupportedArea() {
+			return true;
+		}
+
 
 		public ConstraintsHigherSupportHigherVolumeHigherWeightLowerAreaLowerZComparator() {}
 
@@ -1873,6 +1903,11 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	 */
 	public static final class ConstraintsHigherSupportLowerZHigherAreaHigherVolumeHigherWeightComparator
 			extends AbstractChainedPlacementComparator {
+		@Override
+		public boolean usesSupportedArea() {
+			return true;
+		}
+
 
 		public ConstraintsHigherSupportLowerZHigherAreaHigherVolumeHigherWeightComparator() {}
 

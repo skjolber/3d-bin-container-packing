@@ -18,6 +18,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 class BruteForcePointLimitTest {
 
@@ -76,7 +77,7 @@ class BruteForcePointLimitTest {
 					.withBoxItems(new BoxItem(box, 3))
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(invocations).hasValueGreaterThanOrEqualTo(3);
 		} finally {
 			packager.close();

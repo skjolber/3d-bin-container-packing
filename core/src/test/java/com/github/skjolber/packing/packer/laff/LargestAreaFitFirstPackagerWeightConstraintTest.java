@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer.laff;
 
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +13,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.packer.AbstractPackagerConstraintTest;
+import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
 /**
  * LargestAreaFitFirstPackager integration tests for the {@code maxLoadWeight}
@@ -210,8 +210,8 @@ public class LargestAreaFitFirstPackagerWeightConstraintTest extends AbstractPac
 			List<Placement> placements = result.getContainers().get(0).getStack().getPlacements();
 			Placement bot = placementAt(placements, 0);
 			Placement top = placementAt(placements, 1);
-			assertThat(bot.getLoadWeight()).isEqualTo((double) top.getWeight());
-			assertThat(top.getLoadWeight()).isEqualTo(0.0);
+			StackPlacementAssert.assertThat(bot).hasLoadWeight((double) top.getWeight());
+			StackPlacementAssert.assertThat(top).hasLoadWeight(0.0);
 		} finally {
 			packager.close();
 		}

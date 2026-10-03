@@ -11,6 +11,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
+import com.github.skjolber.packing.test.assertj.PlacementsAssert;
 import com.github.skjolber.packing.validator.load.reasons.NonIdenticalLoadBoxReason;
 
 /**
@@ -73,10 +74,7 @@ public class IdenticalBoxOnlyLoadValidatorTest {
 
 		a.addLoad(b, 100L, b.getWeight());
 
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(List.of(a, b), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of(a, b)).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -91,10 +89,7 @@ public class IdenticalBoxOnlyLoadValidatorTest {
 		BoxItem itemA = makeIdenticalOnlyBoxItem("A", 10, 10, 1, 20);
 		Placement a = makePlacement(itemA, 0, 0, 0);
 
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(List.of(a), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of(a)).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------
@@ -123,10 +118,7 @@ public class IdenticalBoxOnlyLoadValidatorTest {
 
 		a.addLoad(b, 100L, b.getWeight());
 
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-
-		assertThat(validator.isValid(List.of(a, b), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of(a, b)).isAcceptedBy(validator);
 	}
 
 	// -----------------------------------------------------------------------

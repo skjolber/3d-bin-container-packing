@@ -16,6 +16,7 @@ import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 class VirtualBoxPackagerTest {
 	/*
@@ -67,7 +68,7 @@ class VirtualBoxPackagerTest {
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(item(1, 1, 1, 4))
 					.withContainerItems(new ContainerItem(container(4, 1, 1), 1)).withInterruptDuration(60_000).build();
 			assertThat(result.isTimeout()).isTrue();
-			assertThat(result.isSuccess()).isFalse();
+			PackagerResultAssert.assertThat(result).isNotSuccess();
 			assertThat(recording.counts).containsExactly(1);
 		}
 	}
@@ -88,7 +89,7 @@ class VirtualBoxPackagerTest {
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a)
 					.withContainerItem(c -> c.withContainerItem(container(4, 1, 1), 1).withPoints(p -> p.withPoint(2, 0, 0, 2, 1, 1))).build();
 			assertThat(recording.counts).containsExactly(2);
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.get(0).getStack().getPlacements()).extracting(Placement::getAbsoluteX).containsExactlyInAnyOrder(2, 3);
 		}
 	}
@@ -317,7 +318,7 @@ class VirtualBoxPackagerTest {
 			BoxItemGroup group = new BoxItemGroup("group", List.of(item(1, 1, 1, 2)));
 			PackagerResult result = wrapper.newResultBuilder().withBoxItemGroups(List.of(group))
 					.withContainerItems(new ContainerItem(container(2, 1, 1), 1)).build();
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(recording.groupCounts).containsExactly(1);
 		}
 	}
@@ -474,7 +475,7 @@ class VirtualBoxPackagerTest {
 	}
 
 	protected static void assertValid(PackagerResult result, List<BoxItem> originals) {
-		assertThat(result.isSuccess()).isTrue();
+		PackagerResultAssert.assertThat(result).isSuccess();
 		Map<BoxItem, Integer> counts = new IdentityHashMap<>();
 		for(Container container : result.getContainers()) {
 			assertThat(container.fitsInside(container.getStack())).isTrue();

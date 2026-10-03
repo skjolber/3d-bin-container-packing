@@ -15,6 +15,8 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
+import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
 /**
  * Integration tests for {@link PlainPackager} verifying that per-box
@@ -82,9 +84,9 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withBoxItems(items)
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			// B (weight=10) cannot stack on A (maxLoadWeight=5) → 2 separate containers
-			assertThat(result.getContainers()).hasSize(2);
+			PackagerResultAssert.assertThat(result).hasContainerCount(2);
 			for (Container c : result.getContainers()) {
 				assertThat(c.getStack().size()).isEqualTo(1);
 			}
@@ -139,8 +141,7 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withBoxItems(items)
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
-			assertThat(result.getContainers()).hasSize(1);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
 			assertThat(result.getContainers().get(0).getStack().size()).isEqualTo(2);
 		} finally {
 			packager.close();
@@ -193,8 +194,7 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withBoxItems(items)
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
-			assertThat(result.getContainers()).hasSize(1);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
 
 			List<Placement> placements = result.getContainers().get(0).getStack().getPlacements();
 			assertThat(placements).hasSize(2);
@@ -208,9 +208,9 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.findFirst().orElseThrow();
 
 			// bottom bears the weight of top
-			assertThat(bottom.getLoadWeight()).isEqualTo((double) top.getWeight());
+			StackPlacementAssert.assertThat(bottom).hasLoadWeight((double) top.getWeight());
 			// top has nothing above it
-			assertThat(top.getLoadWeight()).isEqualTo(0.0);
+			StackPlacementAssert.assertThat(top).hasLoadWeight(0.0);
 		} finally {
 			packager.close();
 		}
@@ -257,8 +257,7 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withBoxItems(items)
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
-			assertThat(result.getContainers()).hasSize(1);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
 
 			List<Placement> placements = result.getContainers().get(0).getStack().getPlacements();
 			assertThat(placements).hasSize(3);
@@ -268,11 +267,11 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 			Placement p2 = placementAt(placements, 2);
 
 			// p2 is topmost – nothing above it
-			assertThat(p2.getLoadWeight()).isEqualTo(0.0);
+			StackPlacementAssert.assertThat(p2).hasLoadWeight(0.0);
 			// p1 bears p2's weight
-			assertThat(p1.getLoadWeight()).isEqualTo((double) p2.getWeight());
+			StackPlacementAssert.assertThat(p1).hasLoadWeight((double) p2.getWeight());
 			// p0 bears p1.weight + p2.weight
-			assertThat(p0.getLoadWeight()).isEqualTo((double) (p1.getWeight() + p2.getWeight()));
+			StackPlacementAssert.assertThat(p0).hasLoadWeight((double) (p1.getWeight() + p2.getWeight()));
 		} finally {
 			packager.close();
 		}
@@ -330,9 +329,9 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withBoxItems(items)
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			// only 1 box on top allowed → 2 boxes per container
-			assertThat(result.getContainers()).hasSize(2);
+			PackagerResultAssert.assertThat(result).hasContainerCount(2);
 			assertThat(result.getContainers().get(0).getStack().size()).isEqualTo(2);
 			assertThat(result.getContainers().get(1).getStack().size()).isEqualTo(1);
 		} finally {
@@ -387,8 +386,7 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withBoxItems(items)
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
-			assertThat(result.getContainers()).hasSize(1);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
 			assertThat(result.getContainers().get(0).getStack().size()).isEqualTo(3);
 		} finally {
 			packager.close();
@@ -444,9 +442,9 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withBoxItems(items)
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			// maxLoadBoxCount=2: 2 boxes on top allowed → 3 boxes per column
-			assertThat(result.getContainers()).hasSize(2);
+			PackagerResultAssert.assertThat(result).hasContainerCount(2);
 			assertThat(result.getContainers().get(0).getStack().size()).isEqualTo(3);
 			assertThat(result.getContainers().get(1).getStack().size()).isEqualTo(1);
 		} finally {
@@ -510,8 +508,7 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withBoxItems(items)
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
-			assertThat(result.getContainers()).hasSize(1);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
 			assertThat(result.getContainers().get(0).getStack().size()).isEqualTo(4);
 		} finally {
 			packager.close();
@@ -564,8 +561,7 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withBoxItems(items)
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
-			assertThat(result.getContainers()).hasSize(1);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
 			assertThat(result.getContainers().get(0).getStack().size()).isEqualTo(4);
 		} finally {
 			packager.close();
@@ -620,9 +616,9 @@ public class PlainPackagerLoadTest extends AbstractPackagerTest {
 					.withBoxItems(items)
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			// Weight check prevents stacking even though box count allows it
-			assertThat(result.getContainers()).hasSize(2);
+			PackagerResultAssert.assertThat(result).hasContainerCount(2);
 			for (Container c : result.getContainers()) {
 				assertThat(c.getStack().size()).isEqualTo(1);
 			}

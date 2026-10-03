@@ -11,6 +11,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
+import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
 /**
  * Unit tests for {@link FullSupportPlacementControls}.
@@ -63,7 +64,7 @@ class FullSupportPlacementControlsTest {
 
 		assertThat(result).isNotNull();
 		assertThat(result.getAbsoluteZ()).isEqualTo(0);
-		assertThat(result.getSupportedArea()).isEqualTo(result.getStackValue().getArea()); // full
+		StackPlacementAssert.assertThat(result).hasSupportedArea(result.getStackValue().getArea()); // full
 	}
 
 	// -----------------------------------------------------------------------
@@ -104,7 +105,7 @@ class FullSupportPlacementControlsTest {
 
 		assertThat(result).isNotNull();
 		assertThat(result.getAbsoluteZ()).isGreaterThan(0);
-		assertThat(result.getSupportedArea()).isEqualTo(result.getStackValue().getArea());
+		StackPlacementAssert.assertThat(result).hasSupportedArea(result.getStackValue().getArea());
 	}
 
 	// -----------------------------------------------------------------------
@@ -146,7 +147,7 @@ class FullSupportPlacementControlsTest {
 
 		assertThat(result).isNotNull();
 		assertThat(result.getAbsoluteZ()).isGreaterThan(0);
-		assertThat(result.getSupportedArea()).isEqualTo(result.getStackValue().getArea());
+		StackPlacementAssert.assertThat(result).hasSupportedArea(result.getStackValue().getArea());
 	}
 
 	// -----------------------------------------------------------------------
@@ -288,7 +289,7 @@ class FullSupportPlacementControlsTest {
 
 		assertThat(result).isNotNull();
 		assertThat(result.getAbsoluteZ()).isEqualTo(5);
-		assertThat(result.getSupportedArea()).isEqualTo(result.getStackValue().getArea());
+		StackPlacementAssert.assertThat(result).hasSupportedArea(result.getStackValue().getArea());
 	}
 
 	// -----------------------------------------------------------------------

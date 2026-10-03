@@ -15,6 +15,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
+import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
 class GridVirtualBoxLayoutGeneratorTest {
 
@@ -47,8 +48,7 @@ class GridVirtualBoxLayoutGeneratorTest {
 		VirtualBoxLayout layout = layouts.get(0);
 		assertThat(layout.prepared).isTrue();
 		for(Placement placement : layout.getPlacements()) {
-			assertThat(placement.getSupporters()).isEmpty();
-			assertThat(placement.getSupportees()).isEmpty();
+			StackPlacementAssert.assertThat(placement).isUnsupported().supportsNothing();
 		}
 	}
 

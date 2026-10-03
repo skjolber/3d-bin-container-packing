@@ -15,6 +15,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
+import com.github.skjolber.packing.test.assertj.PlacementsAssert;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadBoxCountReason;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadWeightReason;
 
@@ -271,9 +272,7 @@ public class DefaultLoadValidatorBuilderTest {
 	@Test
 	void testComposite_empty_alwaysValid() {
 		CompositeLoadValidator composite = new CompositeLoadValidator(List.of());
-		List<ValidatorResultReason> reasons = new ArrayList<>();
-		assertThat(composite.isValid(List.of(), reasons)).isTrue();
-		assertThat(reasons).isEmpty();
+		PlacementsAssert.assertThat(List.of()).isAcceptedBy(composite);
 	}
 
 	// -----------------------------------------------------------------------

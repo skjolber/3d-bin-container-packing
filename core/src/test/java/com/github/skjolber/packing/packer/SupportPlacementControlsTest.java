@@ -14,8 +14,9 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
+import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
 /**
  * Unit tests for {@link SupportPlacementControls}.
@@ -86,7 +87,7 @@ class SupportPlacementControlsTest {
 
 		Placement p = ctrl.testCreatePlacement(floorPoint, sv);
 
-		assertThat(p.getSupportedArea()).isEqualTo(sv.getArea()); // 10×10 = 100
+		StackPlacementAssert.assertThat(p).hasSupportedArea(sv.getArea()); // 10×10 = 100
 	}
 
 	/**
@@ -126,7 +127,7 @@ class SupportPlacementControlsTest {
 
 		Placement result = ctrl.testCreatePlacement(xyPoint, sv);
 
-		assertThat(result.getSupportedArea()).isEqualTo(sv.getArea()); // 10×10 = 100
+		StackPlacementAssert.assertThat(result).hasSupportedArea(sv.getArea()); // 10×10 = 100
 	}
 
 	/**
@@ -206,7 +207,7 @@ class SupportPlacementControlsTest {
 
 		assertThat(result).isNotNull();
 		long expectedArea = result.getStackValue().getArea();
-		assertThat(result.getSupportedArea()).isEqualTo(expectedArea);
+		StackPlacementAssert.assertThat(result).hasSupportedArea(expectedArea);
 	}
 
 	/**
@@ -240,7 +241,7 @@ class SupportPlacementControlsTest {
 
 		assertThat(result).isNotNull();
 		assertThat(result.getAbsoluteZ()).isGreaterThan(0); // stacked, not on floor
-		assertThat(result.getSupportedArea()).isEqualTo(result.getStackValue().getArea());
+		StackPlacementAssert.assertThat(result).hasSupportedArea(result.getStackValue().getArea());
 	}
 
 	/**

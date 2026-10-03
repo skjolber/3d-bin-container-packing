@@ -25,6 +25,7 @@ import com.github.skjolber.packing.packer.strategy.ContainerResult;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Allocation;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Objective;
 import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerStrategy;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 class ContainerAllocationStrategyTest {
 
@@ -42,7 +43,7 @@ class ContainerAllocationStrategyTest {
 					.withBoxItems(new BoxItem(box("cube", 1), 2))
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).singleElement()
 					.extracting(Container::getId).isEqualTo("large");
 		} finally {
@@ -66,7 +67,7 @@ class ContainerAllocationStrategyTest {
 					.withBoxItems(new BoxItem(box("cube", 1), 2))
 					.build();
 
-			assertThat(result.isSuccess()).isTrue();
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
 					.containsExactly("small", "small");
 			assertThat(result.getCost()).isEqualTo(20);

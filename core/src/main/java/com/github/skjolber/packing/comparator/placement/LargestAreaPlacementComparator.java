@@ -6,6 +6,11 @@ import com.github.skjolber.packing.api.Placement;
 public class LargestAreaPlacementComparator implements PlacementComparator {
 
 	@Override
+	public boolean usesSupportedArea() {
+		return false;
+	}
+
+	@Override
 	public int compare(Placement o1, Placement o2) {
 		
 		// ****************************************

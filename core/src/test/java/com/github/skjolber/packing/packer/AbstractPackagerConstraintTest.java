@@ -1,13 +1,12 @@
 package com.github.skjolber.packing.packer;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.impl.ValidatingStack;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 /**
  * Shared utilities for packager constraint integration tests.
@@ -43,13 +42,11 @@ public abstract class AbstractPackagerConstraintTest {
 
 	/** Asserts that the result succeeded and used the expected number of containers. */
 	protected void assertContainers(PackagerResult result, int expectedCount) {
-		assertThat(result.isSuccess()).isTrue();
-		assertThat(result.getContainers()).hasSize(expectedCount);
+		PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(expectedCount);
 	}
 
 	/** Asserts the stack size (number of placed boxes) inside a specific container. */
 	protected void assertStackSize(PackagerResult result, int containerIndex, int expectedSize) {
-		assertThat(result.getContainers().get(containerIndex).getStack().size())
-				.isEqualTo(expectedSize);
+		PackagerResultAssert.assertThat(result).hasStackSize(containerIndex, expectedSize);
 	}
 }

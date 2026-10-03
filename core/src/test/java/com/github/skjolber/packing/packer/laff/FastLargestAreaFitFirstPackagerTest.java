@@ -25,6 +25,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
@@ -73,7 +74,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", products);
 
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItemGroups(Arrays.asList(boxItemGroup1)).build();
-			assertTrue(result.isSuccess());
+			PackagerResultAssert.assertThat(result).isSuccess();
 			Container fits = result.get(0);
 	
 			assertNotNull(fits);
@@ -448,7 +449,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		products.add(new BoxItem(Box.newBuilder().withId("C").withSize(6, 2, 1).withRotate3D().withWeight(1).build(), 1));
 
 		PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withMaxContainerCount(2).withBoxItems(clone(products)).build();
-		assertTrue(result.isSuccess());
+		PackagerResultAssert.assertThat(result).isSuccess();
 		assertEquals(result.getContainers().size(), 2);
 		
 		assertValidUsingValidator(containerItems, 2, result, products);

@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.*;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
+import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
 class VirtualBoxLayoutTest {
 	/*
@@ -38,9 +39,8 @@ class VirtualBoxLayoutTest {
 		for(Placement placement : placements) {
 			assertThat(placement.getBoxItem()).isSameAs(item);
 			assertThat(placement.getStackValue()).isSameAs(value);
-			assertThat(placement.getLoadWeight()).isZero();
-			assertThat(placement.getSupporters()).isEmpty();
-			assertThat(placement.getSupportees()).isEmpty();
+			StackPlacementAssert.assertThat(placement).hasLoadWeight(0);
+			StackPlacementAssert.assertThat(placement).isUnsupported().supportsNothing();
 		}
 		assertThat(VirtualBox.of(List.of(layout)).getWeight()).isEqualTo(2);
 	}

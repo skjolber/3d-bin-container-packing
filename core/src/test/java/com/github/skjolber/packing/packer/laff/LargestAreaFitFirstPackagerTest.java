@@ -22,6 +22,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.test.assertj.StackAssert;
 
 public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
@@ -43,7 +44,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertTrue(result.isSuccess());
+			PackagerResultAssert.assertThat(result).isSuccess();
 			Container fits = result.get(0);
 	
 			assertNotNull(fits);
@@ -85,7 +86,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", products);
 
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItemGroups(Arrays.asList(boxItemGroup1)).build();
-			assertTrue(result.isSuccess());
+			PackagerResultAssert.assertThat(result).isSuccess();
 			Container fits = result.get(0);
 	
 			assertNotNull(fits);
@@ -373,7 +374,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 					new BoxItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 20));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertTrue(result.isSuccess());
+			PackagerResultAssert.assertThat(result).isSuccess();
 			Container pack = result.get(0);
 			assertNotNull(pack);
 			

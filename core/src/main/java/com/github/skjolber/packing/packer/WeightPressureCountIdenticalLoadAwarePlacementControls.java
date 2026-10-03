@@ -65,11 +65,10 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 			}
 
 			PointSource points = pointControls.getPoints(boxItem);
+			// supportees depend on the box height
+			populatedPoint = null;
 
 			for (Point point3d : points) {
-				util.populatePointSupporters(point3d);
-				util.populatePointSupportees(point3d, box.getMinimumDz(), box.getMaximumDz());
-
 				for (BoxStackValue stackValue : box.getStackValues()) {
 					if (stackValue.getArea() > point3d.getArea()) {
 						continue;
@@ -78,6 +77,14 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 						continue;
 					}
 
+					// identical-only stack values fall back to other positions when the point fails,
+					// and those could be selected, so they are always validated
+					if(validateSelectedOnly && !stackValue.isLoadIdenticalBoxOnly()) {
+						result = selectValidPlacement(result, point3d, stackValue, box);
+						continue;
+					}
+
+					populate(point3d, box);
 					long supportedArea = util.getSupportedAreaAtPoint(point3d, stackValue, fullSupport);
 
 					if (supportedArea == -1L && stackValue.isLoadIdenticalBoxOnly()) {

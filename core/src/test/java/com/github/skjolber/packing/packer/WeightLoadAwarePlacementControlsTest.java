@@ -146,11 +146,13 @@ public class WeightLoadAwarePlacementControlsTest {
 		
 		Placement wholeButtom = new Placement(bottom.getStackValue(0), 0, 0, 0, 0);
 		pointCalculator.add(0, wholeButtom);
+		wholeButtom.setIndex(stack.size());
 		stack.add(wholeButtom);
 
 		Box wholeLevel2 = Box.newBuilder().withSize(10, 10, 1).withWeight(1).withId("Second").build();
 		Placement wholeLevel2Placement = new Placement(wholeLevel2.getStackValue(0), stack.size(), 0, 0, 1);
 		pointCalculator.add(pointCalculator.findPoint(0, 0, 1), wholeLevel2Placement);
+		wholeLevel2Placement.setIndex(stack.size());
 		stack.add(wholeLevel2Placement);
 		wholeButtom.addLoad(wholeLevel2Placement, 100, wholeLevel2.getWeight());
 

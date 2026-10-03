@@ -41,6 +41,15 @@ public abstract class AbstractChainedPlacementComparator implements PlacementCom
 	 * @param b the second placement
 	 * @return the result of the next comparator in the chain, or 0
 	 */
+	/**
+	 * A chain step does not read the supported area unless it overrides this method; the rest of the
+	 * chain is asked.
+	 */
+	@Override
+	public boolean usesSupportedArea() {
+		return next != null && next.usesSupportedArea();
+	}
+
 	protected final int chain(Placement a, Placement b) {
 		return next != null ? next.compare(a, b) : 0;
 	}

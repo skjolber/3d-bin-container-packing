@@ -27,6 +27,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.impl.ValidatingStack;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
@@ -98,7 +99,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 
-			assertTrue(result.isSuccess());
+			PackagerResultAssert.assertThat(result).isSuccess();
 			assertEquals(products.size(), result.get(0).getStack().size());
 			assertValid(result);
 		} finally {

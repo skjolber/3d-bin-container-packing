@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer.plain;
 
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +13,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.packer.AbstractPackagerConstraintTest;
+import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
 /**
  * PlainPackager integration tests for the {@code maxLoadWeight} box constraint.
@@ -175,6 +175,59 @@ public class PlainPackagerWeightConstraintTest extends AbstractPackagerConstrain
 	}
 
 	// -----------------------------------------------------------------------
+	// W-3b Chain-weight propagation — load on the box above counts too
+	// -----------------------------------------------------------------------
+
+	/**
+	 * The bottom box carries the weight of every box above it, not only the box directly on top.
+	 * <p>
+	 * A is heaviest so it is placed on the floor first; B, C and D are identical. B and C put
+	 * 2+2=4 on A. D would put a third 2 on A, 6 &gt; 5, so D is rejected although the box
+	 * directly on A (B) weighs only 2.
+	 *
+	 * <pre>
+	 *  z |
+	 *  4 +----------+
+	 *    |   D w=2  |   ← D (w=2) REJECTED — A would bear 2+2+2=6 &gt; 5
+	 *  3 +----------+
+	 *    |   C w=2  |
+	 *  2 +----------+
+	 *    |   B w=2  |
+	 *  1 +----------+
+	 *    |   A w=10 |   maxLoadWeight = 5
+	 *  0 +----------+
+	 *      0       10  x
+	 *
+	 *  container-1: [ A, B, C ]
+	 *  container-2: [ D ]
+	 * </pre>
+	 */
+	@Test
+	void chainWeightPropagatesThreeLevelsDown() {
+		Container c = container(10, 10, 4);
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			List<BoxItem> items = new ArrayList<>();
+			items.add(new BoxItem(Box.newBuilder().withId("A")
+					.withSize(10, 10, 1).withWeight(10).withMaxLoadWeight(5).build(), 1));
+			items.add(new BoxItem(Box.newBuilder().withId("light")
+					.withSize(10, 10, 1).withWeight(2).build(), 3));
+
+			PackagerResult result = packager.newResultBuilder()
+					.withContainerItem(new ContainerItem(c, 2))
+					.withMaxContainerCount(2)
+					.withBoxItems(items)
+					.build();
+
+			assertContainers(result, 2);
+			assertStackSize(result, 0, 3);
+			assertStackSize(result, 1, 1);
+		} finally {
+			packager.close();
+		}
+	}
+
+	// -----------------------------------------------------------------------
 	// W-4  Two side-by-side columns track weight independently
 	// -----------------------------------------------------------------------
 
@@ -266,8 +319,8 @@ public class PlainPackagerWeightConstraintTest extends AbstractPackagerConstrain
 			List<Placement> placements = result.getContainers().get(0).getStack().getPlacements();
 			Placement bot = placementAt(placements, 0);
 			Placement top = placementAt(placements, 1);
-			assertThat(bot.getLoadWeight()).isEqualTo((double) top.getWeight());
-			assertThat(top.getLoadWeight()).isEqualTo(0.0);
+			StackPlacementAssert.assertThat(bot).hasLoadWeight((double) top.getWeight());
+			StackPlacementAssert.assertThat(top).hasLoadWeight(0.0);
 		} finally {
 			packager.close();
 		}

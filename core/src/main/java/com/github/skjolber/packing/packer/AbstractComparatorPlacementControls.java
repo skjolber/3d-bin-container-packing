@@ -51,6 +51,13 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 	}
 
 	/**
+	 * Retain a placement which is no longer a candidate, for reuse by {@link #acquirePlacement()}.
+	 */
+	protected void recyclePlacement(Placement placement) {
+		recyclablePlacement = placement;
+	}
+
+	/**
 	 * Selects the better placement and retains the loser for the next candidate.
 	 */
 	protected Placement selectPlacement(Placement current, Placement candidate) {
