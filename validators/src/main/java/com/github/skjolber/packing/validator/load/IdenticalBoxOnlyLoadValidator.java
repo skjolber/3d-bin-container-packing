@@ -1,6 +1,9 @@
 package com.github.skjolber.packing.validator.load;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -50,7 +53,7 @@ public class IdenticalBoxOnlyLoadValidator implements LoadValidator {
 
 			BoxItem requiredBoxItem = placement.getBoxItem();
 
-			if(!checkSupporteesIdentical(placement, requiredBoxItem, reasons)) {
+			if(!checkSupporteesIdentical(placement, requiredBoxItem, reasons, Collections.newSetFromMap(new IdentityHashMap<>()))) {
 				valid = false;
 			}
 		}
@@ -66,14 +69,19 @@ public class IdenticalBoxOnlyLoadValidator implements LoadValidator {
 	 * @param placement the placement whose supportees are to be validated
 	 * @param requiredBoxItem the box item that all supportees must match
 	 * @param reasons the list to collect violation reasons into
+	 * @param visited supportees already checked; each is checked (and reported) once, as one can be
+	 *        reached through several paths (and walking every path grows exponentially)
 	 * @return {@code true} if all supportees are identical; {@code false} otherwise
 	 */
 	private boolean checkSupporteesIdentical(Placement placement, BoxItem requiredBoxItem,
-			List<ValidatorResultReason> reasons) {
+			List<ValidatorResultReason> reasons, Set<Placement> visited) {
 		boolean valid = true;
 
 		for(PlacementLoad load : placement.getSupportees()) {
 			Placement supportee = load.getPlacement();
+			if(!visited.add(supportee)) {
+				continue;
+			}
 			BoxItem supporteeBoxItem = supportee.getBoxItem();
 
 			if(supporteeBoxItem != requiredBoxItem) {
@@ -81,7 +89,7 @@ public class IdenticalBoxOnlyLoadValidator implements LoadValidator {
 				valid = false;
 			}
 
-			if(!checkSupporteesIdentical(supportee, requiredBoxItem, reasons)) {
+			if(!checkSupporteesIdentical(supportee, requiredBoxItem, reasons, visited)) {
 				valid = false;
 			}
 		}

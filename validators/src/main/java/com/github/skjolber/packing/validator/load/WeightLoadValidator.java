@@ -1,6 +1,8 @@
 package com.github.skjolber.packing.validator.load;
 
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
@@ -42,6 +44,7 @@ public class WeightLoadValidator implements LoadValidator {
 	@Override
 	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
+		Map<Placement, Double> weightAbove = new IdentityHashMap<>();
 
 		for(Placement placement : list) {
 			BoxStackValue stackValue = placement.getStackValue();
@@ -50,7 +53,7 @@ public class WeightLoadValidator implements LoadValidator {
 				continue;
 			}
 
-			double loadWeight = accumulateWeight(placement, 1.0);
+			double loadWeight = accumulateWeight(placement, 1.0, weightAbove);
 			long maxLoadWeight = stackValue.getMaxLoadWeight();
 
 			if(loadWeight > maxLoadWeight) {
@@ -63,35 +66,43 @@ public class WeightLoadValidator implements LoadValidator {
 	}
 
 	/**
-	 * Recursively accumulates the total weight resting on top of {@code placement},
-	 * proportionally attributing the weight of shared supportees.
-	 *
-	 * <p>The {@code share} parameter is a fractional multiplier (1.0 at the root).
+	 * Accumulates the total weight resting on top of {@code placement}, proportionally attributing
+	 * the weight of shared supportees.
+	 * <p>
 	 * When a supportee is shared, its weight contribution to this placement is scaled by
 	 * {@code overlapArea / supportee.supportedArea}.
 	 *
 	 * @param placement the placement whose supportee weight to accumulate
-	 * @param share fractional multiplier for this subtree (1.0 at root)
-	 * @return total accumulated weight above {@code placement}
+	 * @param share fractional multiplier (1.0 for the placement itself)
+	 * @return total accumulated weight above {@code placement}, times {@code share}
 	 */
 	static double accumulateWeight(Placement placement, double share) {
-		double total = 0.0;
+		return accumulateWeight(placement, share, new IdentityHashMap<>());
+	}
 
+	/**
+	 * @param weightAbove the total weight above each placement visited so far; each placement is
+	 *        calculated once, as one can be reached through several paths (and walking every path
+	 *        grows exponentially with the stack height)
+	 */
+	static double accumulateWeight(Placement placement, double share, Map<Placement, Double> weightAbove) {
+		return share * weightAbove(placement, weightAbove);
+	}
+
+	private static double weightAbove(Placement placement, Map<Placement, Double> weightAbove) {
+		Double known = weightAbove.get(placement);
+		if(known != null) {
+			return known;
+		}
+		double total = 0.0;
 		for(PlacementLoad supporteeLink : placement.getSupportees()) {
 			Placement supportee = supporteeLink.getPlacement();
-
-			// Weight of this supportee box, scaled by our share of its total supported area
+			// weight of this supportee box and everything above it, scaled by our share of its total supported area
 			long supporteeArea = supportee.getSupportedArea();
-			double supporteeShare = (supporteeArea > 0)
-					? share * supporteeLink.getArea() / supporteeArea
-					: share;
-
-			total += supportee.getWeight() * supporteeShare;
-
-			// Recurse: add the weight of everything above the supportee, at the same proportion
-			total += accumulateWeight(supportee, supporteeShare);
+			double supporteeShare = (supporteeArea > 0) ? (double) supporteeLink.getArea() / supporteeArea : 1.0;
+			total += (supportee.getWeight() + weightAbove(supportee, weightAbove)) * supporteeShare;
 		}
-
+		weightAbove.put(placement, total);
 		return total;
 	}
 }

@@ -1,6 +1,8 @@
 package com.github.skjolber.packing.validator.stability;
 
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
@@ -119,8 +121,22 @@ public class CenterOfGravityStabilityValidator implements StabilityValidator {
 	}
 	
 	protected static double[] accumulateStackCenterOfMass(Placement placement, double share) {
+		double[] mass = stackCenterOfMass(placement, new IdentityHashMap<>());
+		return new double[] { mass[0] * share, mass[1] * share, mass[2] * share };
+	}
+
+	/**
+	 * The weight and the weighted doubled centre (x, y) of a placement plus its proportional share of
+	 * every box above it. Each placement is calculated once, as one can be reached through several
+	 * paths (and walking every path grows exponentially with the stack height).
+	 */
+	private static double[] stackCenterOfMass(Placement placement, Map<Placement, double[]> masses) {
+		double[] known = masses.get(placement);
+		if(known != null) {
+			return known;
+		}
 		BoxStackValue stackValue = placement.getStackValue();
-		double w = placement.getWeight() * share;
+		double w = placement.getWeight();
 		long centerOfGravity2X = CenterOfGravitySupportStabilityValidator.getCenterOfGravity2X(placement, stackValue);
 		long centerOfGravity2Y = CenterOfGravitySupportStabilityValidator.getCenterOfGravity2Y(placement, stackValue);
 
@@ -145,14 +161,16 @@ public class CenterOfGravityStabilityValidator implements StabilityValidator {
 			}
 
 			long overlapArea = (overlapMaxX - overlapMinX + 1) * (overlapMaxY - overlapMinY + 1);
-			double supporteeShare = share * overlapArea / supporteeArea;
+			double supporteeShare = (double) overlapArea / supporteeArea;
 
-			double[] sub = accumulateStackCenterOfMass(supportee, supporteeShare);
-			totalWeight  += sub[0];
-			weightedComX += sub[1];
-			weightedComY += sub[2];
+			double[] sub = stackCenterOfMass(supportee, masses);
+			totalWeight  += sub[0] * supporteeShare;
+			weightedComX += sub[1] * supporteeShare;
+			weightedComY += sub[2] * supporteeShare;
 		}
 
-		return new double[] { totalWeight, weightedComX, weightedComY };
+		double[] mass = new double[] { totalWeight, weightedComX, weightedComY };
+		masses.put(placement, mass);
+		return mass;
 	}
 }

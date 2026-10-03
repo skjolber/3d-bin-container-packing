@@ -1,6 +1,8 @@
 package com.github.skjolber.packing.validator.load;
 
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
@@ -34,6 +36,7 @@ public class MaxBoxCountLoadValidator implements LoadValidator {
 	@Override
 	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
+		Map<Placement, Integer> depths = new IdentityHashMap<>();
 
 		for(Placement placement : list) {
 			BoxStackValue stackValue = placement.getStackValue();
@@ -42,7 +45,7 @@ public class MaxBoxCountLoadValidator implements LoadValidator {
 				continue;
 			}
 
-			int depth = supporteeDepth(placement);
+			int depth = supporteeDepth(placement, depths);
 			int maxLoadBoxCount = stackValue.getMaxLoadBoxCount();
 
 			if(depth > maxLoadBoxCount) {
@@ -60,21 +63,28 @@ public class MaxBoxCountLoadValidator implements LoadValidator {
 	 * A placement with no supportees has depth 0.
 	 *
 	 * @param placement the placement whose supportee depth to measure
+	 * @param depths the depth of each placement measured so far; each placement is measured once, as
+	 *        one can be reached through several paths (and walking every path grows exponentially)
 	 * @return depth of the supportee subtree (0 if no boxes are on top)
 	 */
-	private int supporteeDepth(Placement placement) {
+	private int supporteeDepth(Placement placement, Map<Placement, Integer> depths) {
 		List<PlacementLoad> supportees = placement.getSupportees();
 		if(supportees.isEmpty()) {
 			return 0;
 		}
+		Integer known = depths.get(placement);
+		if(known != null) {
+			return known;
+		}
 
 		int max = 0;
 		for(PlacementLoad load : supportees) {
-			int depth = 1 + supporteeDepth(load.getPlacement());
+			int depth = 1 + supporteeDepth(load.getPlacement(), depths);
 			if(depth > max) {
 				max = depth;
 			}
 		}
+		depths.put(placement, max);
 		return max;
 	}
 }

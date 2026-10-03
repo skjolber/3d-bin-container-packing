@@ -1,6 +1,8 @@
 package com.github.skjolber.packing.validator.load;
 
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -47,6 +49,7 @@ public class MaxPressureLoadValidator implements LoadValidator {
 	@Override
 	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
+		Map<Placement, Double> weightAbove = new IdentityHashMap<>();
 
 		for(Placement placement : list) {
 			BoxStackValue stackValue = placement.getStackValue();
@@ -67,7 +70,7 @@ public class MaxPressureLoadValidator implements LoadValidator {
 				Placement supportee = pl.getPlacement();
 				long supporteeArea = supportee.getSupportedArea();
 				double share = supporteeArea > 0 ? (double) contactArea / supporteeArea : 1.0;
-				double weight = supportee.getWeight() * share + WeightLoadValidator.accumulateWeight(supportee, share);
+				double weight = supportee.getWeight() * share + WeightLoadValidator.accumulateWeight(supportee, share, weightAbove);
 				double linkPressure = Box.calculatePressure(contactArea, weight);
 				if(linkPressure > maxPressure) {
 					maxPressure = linkPressure;
