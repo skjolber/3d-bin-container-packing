@@ -652,7 +652,52 @@ public class Box {
 		for (int i = 0; i < stackValues.length; i++) {
 			stackValues[i] = this.stackValues[i].clone();
 		}
-		return new Box(id, description, volume, weight, stackValues, properties, boxItem);
+		return new Box(this, stackValues);
+	}
+
+	/**
+	 * Copy with cloned stack values (in the same order), without recalculating the derived values.
+	 */
+	private Box(Box box, BoxStackValue[] stackValues) {
+		this.id = box.id;
+		this.description = box.description;
+		this.volume = box.volume;
+		this.weight = box.weight;
+		this.stackValues = stackValues;
+
+		this.minimumArea = stackValues[indexOf(box.stackValues, box.minimumArea)];
+		this.maximumArea = stackValues[indexOf(box.stackValues, box.maximumArea)];
+
+		this.minimumDx = box.minimumDx;
+		this.minimumDy = box.minimumDy;
+		this.minimumDz = box.minimumDz;
+		this.maximumDx = box.maximumDx;
+		this.maximumDy = box.maximumDy;
+		this.maximumDz = box.maximumDz;
+
+		this.minimumPressure = box.minimumPressure;
+		this.maximumPressure = box.maximumPressure;
+
+		for (BoxStackValue boxStackValue : stackValues) {
+			boxStackValue.setBox(this);
+		}
+
+		this.properties = box.properties;
+		this.boxItem = box.boxItem;
+
+		this.maxLoadWeight = box.maxLoadWeight;
+		this.maxLoadPressure = box.maxLoadPressure;
+		this.maxLoadBoxCount = box.maxLoadBoxCount;
+		this.loadIdenticalBoxOnly = box.loadIdenticalBoxOnly;
+	}
+
+	private static int indexOf(BoxStackValue[] stackValues, BoxStackValue stackValue) {
+		for (int i = 0; i < stackValues.length; i++) {
+			if(stackValues[i] == stackValue) {
+				return i;
+			}
+		}
+		throw new IllegalStateException();
 	}
 
 	public BoxStackValue getStackValue(int index) {

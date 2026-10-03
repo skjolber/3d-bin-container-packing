@@ -10,6 +10,11 @@ import com.github.skjolber.packing.api.BoxItem;
 public class DefaultBoxItemSource implements BoxItemSource {
 
 	protected List<BoxItem> values;
+
+	// minimum area and volume of the box items, recalculated after items are added or removed
+	private boolean minimumsValid;
+	private long minArea;
+	private long minVolume;
 	
 	public DefaultBoxItemSource(List<BoxItem> values) {
 		this.values = new ArrayList<>(values);
@@ -38,6 +43,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 		BoxItem boxItem = values.get(index);
 		if(!boxItem.decrement(count)) {
 			values.remove(index);
+			minimumsValid = false;
 
 			// update indexes
 			for(int i = index; i < values.size(); i++) {
@@ -50,6 +56,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 	@Override
 	public BoxItem remove(int index) {
 		BoxItem remove = values.remove(index);
+		minimumsValid = false;
 		
 		// update indexes
 		for(int i = index; i < values.size(); i++) {
@@ -61,6 +68,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 
 	public void setValues(List<BoxItem> values) {
 		this.values = values;
+		minimumsValid = false;
 	}
 	
 	public boolean isEmpty() {
@@ -72,6 +80,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 		for(int i = 0; i < values.size(); i++) {
 			if(values.get(i).isEmpty()) {
 				values.remove(i);
+				minimumsValid = false;
 				
 				if(firstEmptyIndex == -1) {
 					firstEmptyIndex = i;
@@ -102,6 +111,40 @@ public class DefaultBoxItemSource implements BoxItemSource {
 
 	public void add(BoxItem boxItem) {
 		values.add(boxItem);
+		minimumsValid = false;
 	}
 
+
+	@Override
+	public long getMinArea() {
+		if(!minimumsValid) {
+			calculateMinimums();
+		}
+		return minArea;
+	}
+
+	@Override
+	public long getMinVolume() {
+		if(!minimumsValid) {
+			calculateMinimums();
+		}
+		return minVolume;
+	}
+
+	private void calculateMinimums() {
+		long minArea = Integer.MAX_VALUE;
+		long minVolume = Integer.MAX_VALUE;
+		for (int i = 0; i < values.size(); i++) {
+			Box box = values.get(i).getBox();
+			if(box.getMinimumArea() < minArea) {
+				minArea = box.getMinimumArea();
+			}
+			if(box.getVolume() < minVolume) {
+				minVolume = box.getVolume();
+			}
+		}
+		this.minArea = minArea;
+		this.minVolume = minVolume;
+		this.minimumsValid = true;
+	}
 }
