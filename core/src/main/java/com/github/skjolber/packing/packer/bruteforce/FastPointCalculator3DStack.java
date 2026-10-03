@@ -16,7 +16,7 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		protected SimplePoint3D point;
 
 		// adding a point might affect any index in the values array
-		protected Point3DFlagList values = new Point3DFlagList();
+		protected Point3DFlagList values;
 
 		protected int placementCount;
 		protected long minVolumeLimit;
@@ -25,6 +25,8 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 
 	private int stackSize = 0;
 	private final StackItem[] stackItems;
+	/** frame which takes the input list of the next add(..) as its snapshot, instead of a copy */
+	private StackItem snapshot;
 
 	public FastPointCalculator3DStack(int capacity) {
 		super(true, capacity);
@@ -43,7 +45,9 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		stackItem.placementCount = placements.size();
 		stackItem.minVolumeLimit = minVolumeLimit;
 		stackItem.minAreaLimit = minAreaLimit;
-		values.copyInto(stackItem.values);
+		// add(..) writes a new output list and only flags its input temporarily:
+		// keep the input list itself as the snapshot (see saveValues)
+		snapshot = stackItem;
 
 		stackSize++;
 
@@ -52,11 +56,16 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 
 	@Override
 	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
+		snapshot = null;
 		StackItem frame = frame();
 		frame.point = values.get(index);
 		frame.placementCount = placements.size();
 		frame.minAreaLimit = minAreaLimit;
 		frame.minVolumeLimit = minVolumeLimit;
+		// a batch makes several insertions, so take an explicit copy before the first
+		if(frame.values == null) {
+			frame.values = new Point3DFlagList();
+		}
 		values.copyInto(frame.values);
 		placements.ensureAdditionalCapacity(batch.size() + stackItems.length);
 		try {
@@ -71,6 +80,26 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		}
 	}
 
+	@Override
+	protected void saveValues(Point3DFlagList values, Point3DFlagList otherValues) {
+		StackItem frame = snapshot;
+		if(frame == null) {
+			super.saveValues(values, otherValues);
+			return;
+		}
+		snapshot = null;
+		// the frame keeps the input; its previous snapshot becomes the next output buffer
+		Point3DFlagList spare = frame.values;
+		if(spare == null) {
+			spare = new Point3DFlagList(values.getCapacity());
+		} else {
+			spare.resetWithoutFlags();
+		}
+		frame.values = values;
+		this.values = otherValues;
+		this.otherValues = spare;
+	}
+
 	public List<Point> getPoints() {
 		List<Point> results = new ArrayList<Point>(stackSize);
 		for (int i = 0; i < stackSize; i++) {
@@ -82,6 +111,7 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 	@Override
 	public void clearToSize(int dx, int dy, int dz) {
 		stackSize = 0;
+		snapshot = null;
 
 		super.clearToSize(dx, dy, dz);
 	}

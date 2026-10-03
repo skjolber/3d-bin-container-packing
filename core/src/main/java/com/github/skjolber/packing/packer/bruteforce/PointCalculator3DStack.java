@@ -4,6 +4,7 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.RandomAccess;
+import java.util.function.Predicate;
 
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
@@ -29,10 +30,19 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		}
 	}
 
+	/**
+	 * A search level. Points are immutable, and add(..) only flags its input list temporarily,
+	 * so a new level reads its parent's list directly instead of copying it ("shared"). The
+	 * level's own two buffers hold the output of its add(..), and a copy if the shared list
+	 * must be modified otherwise (copy-on-write).
+	 */
 	protected static class StackItem {
 		
 		protected Point3DFlagList values = new Point3DFlagList();
 		protected Point3DFlagList otherValues = new Point3DFlagList();
+		/** current values are the parent level's list, which must not be modified */
+		protected boolean shared;
+		protected Point3DFlagList parentValues;
 		protected Placement stackPlacement = new Placement(false);
 		protected SimplePoint3D point;
 		protected int placementCount;
@@ -92,15 +102,15 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 			stackItems[stackIndex] = nextStackItem;
 		}
 
-		// clone current state
-		// make sure to overwrite everything, no clear is performed
+		// share the current values instead of copying them
 		nextStackItem.point = null;
 		nextStackItem.batch = false;
-		nextStackItem.values.copyFrom(currentStackItem.values);
-		nextStackItem.otherValues.copyFrom(currentStackItem.otherValues);
+		nextStackItem.parentValues = this.values;
+		nextStackItem.shared = true;
+		nextStackItem.otherValues.resetWithoutFlags();
 
 		// set the current stack item as working variables
-		this.values = nextStackItem.values;
+		this.values = nextStackItem.parentValues;
 		this.otherValues = nextStackItem.otherValues;
 
 		return nextStackItem.stackPlacement;
@@ -126,8 +136,13 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 			nextStackItem.batch = false;
 		}
 
-		nextStackItem.values.copyFrom(currentStackItem.values);
-		nextStackItem.otherValues.copyFrom(currentStackItem.otherValues);
+		if(!nextStackItem.shared) {
+			// discard this level's values, and share the parent's again
+			nextStackItem.values.resetWithoutFlags();
+			nextStackItem.shared = true;
+		}
+		this.values = nextStackItem.parentValues;
+		this.otherValues = nextStackItem.otherValues;
 	}
 
 	public void pop() {
@@ -139,7 +154,7 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 	private void loadCurrent() {
 		StackItem stackItem = stackItems[stackIndex];
 
-		this.values = stackItem.values;
+		this.values = stackItem.shared ? stackItem.parentValues : stackItem.values;
 		this.otherValues = stackItem.otherValues;
 		this.minAreaLimit = stackItem.minAreaLimit;
 		this.minVolumeLimit = stackItem.minVolumeLimit;
@@ -186,6 +201,7 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 
 		stackItem.values.clear();
 		stackItem.otherValues.clear();
+		stackItem.shared = false;
 		stackItem.point = null;
 		stackItem.placementCount = 0;
 
@@ -200,12 +216,74 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 	@Override
 	protected void saveValues(Point3DFlagList values, Point3DFlagList otherValues) {
 		// override because of the way the stack works, 
-		super.saveValues(values, otherValues);
-
 		StackItem stackItem = stackItems[stackIndex];
+		if(stackItem.shared) {
+			// the input belongs to the parent level: keep it, and use this level's spare buffer as next output
+			Point3DFlagList spare = stackItem.values;
+			spare.resetWithoutFlags();
+			stackItem.values = otherValues;
+			stackItem.otherValues = spare;
+			stackItem.shared = false;
+			this.values = otherValues;
+			this.otherValues = spare;
+			return;
+		}
+		super.saveValues(values, otherValues);
 
 		stackItem.values = otherValues;
 		stackItem.otherValues = values;
+	}
+
+	/** Copy-on-write: make the current values this level's own before modifying them. */
+	protected void ensureOwnValues() {
+		StackItem stackItem = stackItems[stackIndex];
+		if(stackItem.shared) {
+			values.copyInto(stackItem.values);
+			values = stackItem.values;
+			stackItem.shared = false;
+		}
+	}
+
+	@Override
+	public void setMinimumAreaAndVolumeLimit(long area, long volume) {
+		if(minAreaLimit != area || minVolumeLimit != volume) {
+			ensureOwnValues();
+		}
+		super.setMinimumAreaAndVolumeLimit(area, volume);
+	}
+
+	@Override
+	public void setMinimumAreaLimit(long min) {
+		if(minAreaLimit != min) {
+			ensureOwnValues();
+		}
+		super.setMinimumAreaLimit(min);
+	}
+
+	@Override
+	public void setMinimumVolumeLimit(long min) {
+		if(minVolumeLimit != min) {
+			ensureOwnValues();
+		}
+		super.setMinimumVolumeLimit(min);
+	}
+
+	@Override
+	public void remove(int index) {
+		ensureOwnValues();
+		super.remove(index);
+	}
+
+	@Override
+	public void remove(Predicate<Point> test) {
+		ensureOwnValues();
+		super.remove(test);
+	}
+
+	@Override
+	public void clear() {
+		ensureOwnValues();
+		super.clear();
 	}
 
 }
