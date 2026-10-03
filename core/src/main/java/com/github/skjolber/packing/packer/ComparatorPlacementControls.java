@@ -26,6 +26,7 @@ public class ComparatorPlacementControls extends AbstractComparatorPlacementCont
 
 	public Placement getPlacement(int offset, int length) {
 		Placement result = null;
+		resetPointBounds();
 		
 		// max volume and weight should already be accounted for by packager
 		
@@ -48,6 +49,9 @@ public class ComparatorPlacementControls extends AbstractComparatorPlacementCont
 			PointSource points = pointControls.getPoints(boxItem);
 
 			for (BoxStackValue stackValue : box.getStackValues()) {
+				if(!canFitAny(points, stackValue)) {
+					continue;
+				}
 				for (Point point3d : points) {
 					if(stackValue.getArea() > point3d.getArea()) {
 						continue;

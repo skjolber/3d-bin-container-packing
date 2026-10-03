@@ -93,8 +93,8 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		this.containerPlacement = new Placement(stackValue, new DefaultPoint2D(0, 0, 0, dx - 1, dy - 1, dz - 1), false);
 	}
 
-	private DefaultXYSupportPoint2D createContainerPoint() {
-		DefaultXYSupportPoint2D point = new DefaultXYSupportPoint2D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ, containerPlacement, containerPlacement);
+	private DefaultPoint2D createContainerPoint() {
+		DefaultPoint2D point = new DefaultPoint2D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ, containerPlacement, containerPlacement);
 		point.setIndex(0);
 		return point;
 	}
@@ -1244,11 +1244,11 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				throw new IllegalArgumentException();
 			}
 			if(yzPlane && xzPlane) {
-				initialPoints.add(new DefaultXYSupportPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement));
+				initialPoints.add(new DefaultPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement));
 			} else if(xzPlane) {
-				initialPoints.add(new DefaultXSupportPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement));
+				initialPoints.add(new DefaultPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, null));
 			} else if(yzPlane) {
-				initialPoints.add(new DefaultYSupportPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement));
+				initialPoints.add(new DefaultPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), null, containerPlacement));
 			} else {
 				initialPoints.add(new DefaultPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ()));
 			}
@@ -1306,11 +1306,11 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			int limitedMaxZ = Math.min(p.getMaxZ(), maxZ);
 			
 			if(yzPlane && xzPlane) {
-				initialPoints.add(new DefaultXYSupportPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement, containerPlacement));
+				initialPoints.add(new DefaultPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement, containerPlacement));
 			} else if(xzPlane) {
-				initialPoints.add(new DefaultXSupportPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement));
+				initialPoints.add(new DefaultPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement, null));
 			} else if(yzPlane) {
-				initialPoints.add(new DefaultYSupportPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement));
+				initialPoints.add(new DefaultPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, null, containerPlacement));
 			} else {
 				initialPoints.add(new DefaultPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ));
 			}

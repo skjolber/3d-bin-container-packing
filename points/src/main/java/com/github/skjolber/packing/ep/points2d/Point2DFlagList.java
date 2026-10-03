@@ -225,30 +225,72 @@ public class Point2DFlagList implements Iterable<Point> {
 	}
 
 	/**
-	 * Stable sort of the first {@code maxSize} points (flags are not moved). Insertion sort for short
-	 * ranges, otherwise merge sort with a reused scratch array, so sorting does not allocate.
+	 * Stable sort of the first {@code maxSize} points (flags are not moved), without allocation.
+	 * New points are added at the front of an otherwise sorted list, so the sorted tail is found
+	 * first; then only the front is sorted and merged into the tail. The result is the same as
+	 * for any stable sort.
 	 */
 	public void sort(Point2DComparator comparator, int maxSize) {
-		if(maxSize < INSERTION_SORT_LIMIT) {
-			insertionSort(comparator, 0, maxSize);
+		SimplePoint2D[] points = this.points;
+		int tailStart = maxSize - 1;
+		while (tailStart > 0 && comparator.compare(points[tailStart - 1], points[tailStart]) <= 0) {
+			tailStart--;
+		}
+		if(tailStart <= 0) {
 			return;
 		}
 		if(scratch == null || scratch.length < maxSize) {
 			scratch = new SimplePoint2D[Math.max(maxSize, points.length)];
 		}
-		mergeSort(comparator, 0, maxSize);
+		if(tailStart < INSERTION_SORT_LIMIT) {
+			insertionSort(comparator, 0, tailStart);
+		} else {
+			mergeSort(comparator, 0, tailStart);
+		}
+		merge(comparator, 0, tailStart, maxSize);
 	}
 
+	/** Stable binary insertion sort: one comparison per halving, and block moves. */
 	private void insertionSort(Point2DComparator comparator, int from, int to) {
 		SimplePoint2D[] points = this.points;
 		for (int i = from + 1; i < to; i++) {
 			SimplePoint2D key = points[i];
-			int j = i - 1;
-			while (j >= from && comparator.compare(points[j], key) > 0) {
-				points[j + 1] = points[j];
-				j--;
+			if(comparator.compare(points[i - 1], key) <= 0) {
+				continue;
 			}
-			points[j + 1] = key;
+			// insert after equal elements, for stability
+			int left = from;
+			int right = i - 1;
+			while (left < right) {
+				int mid = (left + right) >>> 1;
+				if(comparator.compare(key, points[mid]) < 0) {
+					right = mid;
+				} else {
+					left = mid + 1;
+				}
+			}
+			System.arraycopy(points, left, points, left + 1, i - left);
+			points[left] = key;
+		}
+	}
+
+	/** Merge the sorted ranges [from, mid) and [mid, to), taking from the left on ties. */
+	private void merge(Point2DComparator comparator, int from, int mid, int to) {
+		SimplePoint2D[] points = this.points;
+		SimplePoint2D[] scratch = this.scratch;
+		System.arraycopy(points, from, scratch, from, mid - from);
+		int left = from;
+		int right = mid;
+		int target = from;
+		while (left < mid && right < to) {
+			if(comparator.compare(points[right], scratch[left]) < 0) {
+				points[target++] = points[right++];
+			} else {
+				points[target++] = scratch[left++];
+			}
+		}
+		while (left < mid) {
+			points[target++] = scratch[left++];
 		}
 	}
 
@@ -260,27 +302,8 @@ public class Point2DFlagList implements Iterable<Point> {
 		int mid = (from + to) >>> 1;
 		mergeSort(comparator, from, mid);
 		mergeSort(comparator, mid, to);
-
-		SimplePoint2D[] points = this.points;
-		if(comparator.compare(points[mid - 1], points[mid]) <= 0) {
-			// already in order
-			return;
-		}
-		SimplePoint2D[] scratch = this.scratch;
-		System.arraycopy(points, from, scratch, from, mid - from);
-		int left = from;
-		int right = mid;
-		int target = from;
-		while (left < mid && right < to) {
-			// take from the left on ties, for stability
-			if(comparator.compare(points[right], scratch[left]) < 0) {
-				points[target++] = points[right++];
-			} else {
-				points[target++] = scratch[left++];
-			}
-		}
-		while (left < mid) {
-			points[target++] = scratch[left++];
+		if(comparator.compare(points[mid - 1], points[mid]) > 0) {
+			merge(comparator, from, mid, to);
 		}
 	}
 	

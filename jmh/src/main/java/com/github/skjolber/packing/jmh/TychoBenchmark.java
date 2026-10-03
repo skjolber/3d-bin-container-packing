@@ -262,6 +262,11 @@ public class TychoBenchmark {
 	}
 
 	@Benchmark
+	public int fastLargestAreaFitFirstPackager(TychoPackagerState state) throws Exception {
+		return process(state.getFastLargestAreaFitFirstPackager(), Long.MAX_VALUE);
+	}
+
+	@Benchmark
 	public int plainPackager(TychoPackagerState state) throws Exception {
 		return process(state.getPlainPackager(), Long.MAX_VALUE);
 	}
