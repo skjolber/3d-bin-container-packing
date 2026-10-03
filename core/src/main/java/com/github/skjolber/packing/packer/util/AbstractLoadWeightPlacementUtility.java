@@ -782,12 +782,15 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	 */
 	public Placement findPlacementAtPointSupporters(Point point3d, BoxStackValue stackValue, PlacementComparator comparator) {
 		int z = point3d.getMinZ() - 1;
-		int limitX = point3d.getMaxX() - stackValue.getDx();
-		int limitY = point3d.getMaxY() - stackValue.getDy();
-		int limitMaxX = point3d.getMinX() + stackValue.getDx();
-		int limitMaxY = point3d.getMinY() + stackValue.getDy();
+		// the last start which keeps the box within the point
+		int limitX = point3d.getMaxX() - stackValue.getDx() + 1;
+		int limitY = point3d.getMaxY() - stackValue.getDy() + 1;
+		// a supporter must at least reach the end of the box placed at the point origin
+		int limitMaxX = point3d.getMinX() + stackValue.getDx() - 1;
+		int limitMaxY = point3d.getMinY() + stackValue.getDy() - 1;
 
-		if (z <= 0 || limitX <= 0 || limitY <= 0) {
+		if (z < 0) {
+			// on the floor: always fully supported at the point origin
 			return null;
 		}
 
