@@ -59,12 +59,28 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 						continue;
 					}
 					
-					if(point3d.getMinZ() == 0 || point3d.isSupportedXYPlane(stackValue) || supportIndex.isFullSupport(stack.getPlacements(), point3d.getMinX(), point3d.getMinY(), point3d.getMinZ(), stackValue) ) {
+					if(point3d.getMinZ() == 0 || point3d.isSupportedXYPlane(stackValue)) {
 						Placement placementResult = createPlacement(stackValue, point3d);
 						if(placementResult == null) {
 							continue;
 						}
 						
+						result = selectPlacement(result, placementResult);
+					} else {
+						// a valid candidate is fully supported: compare it first, and check the
+						// support only if it would be selected
+						Placement placementResult = createPlacement(stackValue, point3d);
+						if(placementResult == null) {
+							continue;
+						}
+						if(result != null && placementComparator.compare(result, placementResult) >= 0) {
+							recyclePlacement(placementResult);
+							continue;
+						}
+						if(!supportIndex.isFullSupport(stack.getPlacements(), point3d.getMinX(), point3d.getMinY(), point3d.getMinZ(), stackValue)) {
+							recyclePlacement(placementResult);
+							continue;
+						}
 						result = selectPlacement(result, placementResult);
 					}
 				} 
