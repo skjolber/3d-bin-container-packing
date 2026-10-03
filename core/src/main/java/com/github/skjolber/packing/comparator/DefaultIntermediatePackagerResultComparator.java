@@ -18,16 +18,21 @@ public class DefaultIntermediatePackagerResultComparator implements Comparator<I
 		Stack o2 = r2.getStack();
 		
 		// load volume - more is better
-		if(o1.getVolume() > o2.getVolume()) {
+		// (stack volume and weight are sums over all placements: read each once)
+		long volume1 = o1.getVolume();
+		long volume2 = o2.getVolume();
+		if(volume1 > volume2) {
 			return ARGUMENT_1_IS_BETTER;
-		} else if(o1.getVolume() < o2.getVolume()) {
+		} else if(volume1 < volume2) {
 			return ARGUMENT_2_IS_BETTER;
 		}
 
 		// load weight - more is better
-		if(o1.getWeight() > o2.getWeight()) {
+		long weight1 = o1.getWeight();
+		long weight2 = o2.getWeight();
+		if(weight1 > weight2) {
 			return ARGUMENT_1_IS_BETTER;
-		} else if(o1.getWeight() < o2.getWeight()) {
+		} else if(weight1 < weight2) {
 			return ARGUMENT_2_IS_BETTER;
 		}
 
