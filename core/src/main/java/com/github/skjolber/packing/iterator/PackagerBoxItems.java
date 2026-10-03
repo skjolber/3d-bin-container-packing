@@ -151,7 +151,7 @@ public class PackagerBoxItems {
 	public int getFirstBoxItemIndexForGroup(int groupIndex) {
 		int index = 0;
 		for(int i = 0; i < groupIndex; i++) {
-			index += groups.get(index).size();
+			index += groups.get(i).size();
 		}
 		return index;
 	}
@@ -221,7 +221,7 @@ public class PackagerBoxItems {
 					i = startIndex - 1;				
 				} else {
 					values.remove(i);
-					System.arraycopy(boxToGroupIndexes, i + 1, boxToGroupIndexes, i, values.size() - i - 1);
+					System.arraycopy(boxToGroupIndexes, i + 1, boxToGroupIndexes, i, values.size() - i);
 					i--;
 					
 					groups.get(groupIndex).removeEmpty();

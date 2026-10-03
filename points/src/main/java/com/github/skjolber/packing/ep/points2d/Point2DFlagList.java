@@ -2,7 +2,6 @@ package com.github.skjolber.packing.ep.points2d;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -46,6 +45,9 @@ public class Point2DFlagList implements Iterable<Point> {
 	private int size = 0;
 	private SimplePoint2D[] points = new SimplePoint2D[16];
 	private boolean[] flag = new boolean[16];
+	private SimplePoint2D[] scratch;
+
+	private static final int INSERTION_SORT_LIMIT = 32;
 
 	public Point2DFlagList() {
 		this(16);
@@ -77,10 +79,6 @@ public class Point2DFlagList implements Iterable<Point> {
 	public void add(SimplePoint2D point) {
 		points[size] = point;
 		size++;
-	}
-
-	public void sort(Comparator<SimplePoint2D> comparator) {
-		Arrays.sort(points, 0, size, comparator);
 	}
 
 	public int size() {
@@ -226,8 +224,64 @@ public class Point2DFlagList implements Iterable<Point> {
 
 	}
 
-	public void sort(Comparator<Point2D> comparator, int maxSize) {
-		Arrays.sort(points, 0, maxSize, comparator);
+	/**
+	 * Stable sort of the first {@code maxSize} points (flags are not moved). Insertion sort for short
+	 * ranges, otherwise merge sort with a reused scratch array, so sorting does not allocate.
+	 */
+	public void sort(Point2DComparator comparator, int maxSize) {
+		if(maxSize < INSERTION_SORT_LIMIT) {
+			insertionSort(comparator, 0, maxSize);
+			return;
+		}
+		if(scratch == null || scratch.length < maxSize) {
+			scratch = new SimplePoint2D[Math.max(maxSize, points.length)];
+		}
+		mergeSort(comparator, 0, maxSize);
+	}
+
+	private void insertionSort(Point2DComparator comparator, int from, int to) {
+		SimplePoint2D[] points = this.points;
+		for (int i = from + 1; i < to; i++) {
+			SimplePoint2D key = points[i];
+			int j = i - 1;
+			while (j >= from && comparator.compare(points[j], key) > 0) {
+				points[j + 1] = points[j];
+				j--;
+			}
+			points[j + 1] = key;
+		}
+	}
+
+	private void mergeSort(Point2DComparator comparator, int from, int to) {
+		if(to - from < INSERTION_SORT_LIMIT) {
+			insertionSort(comparator, from, to);
+			return;
+		}
+		int mid = (from + to) >>> 1;
+		mergeSort(comparator, from, mid);
+		mergeSort(comparator, mid, to);
+
+		SimplePoint2D[] points = this.points;
+		if(comparator.compare(points[mid - 1], points[mid]) <= 0) {
+			// already in order
+			return;
+		}
+		SimplePoint2D[] scratch = this.scratch;
+		System.arraycopy(points, from, scratch, from, mid - from);
+		int left = from;
+		int right = mid;
+		int target = from;
+		while (left < mid && right < to) {
+			// take from the left on ties, for stability
+			if(comparator.compare(points[right], scratch[left]) < 0) {
+				points[target++] = points[right++];
+			} else {
+				points[target++] = scratch[left++];
+			}
+		}
+		while (left < mid) {
+			points[target++] = scratch[left++];
+		}
 	}
 	
 	@Override

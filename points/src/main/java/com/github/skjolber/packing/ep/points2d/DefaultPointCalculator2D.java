@@ -80,6 +80,10 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 	@SuppressWarnings("unchecked")
 	public void setSize(int dx, int dy, int dz) {
+		if(containerPlacement != null && containerMaxX == dx - 1 && containerMaxY == dy - 1 && containerMaxZ == dz - 1) {
+			// unchanged: keep the container placement, as the 3D calculator does
+			return;
+		}
 		this.containerMaxX = dx - 1;
 		this.containerMaxY = dy - 1;
 		this.containerMaxZ = dz - 1;
@@ -1145,7 +1149,10 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				values.flag(i);
 			}
 		}
-		values.removeFlagged();
+		if(values.removeFlagged() > 0) {
+			// keep point indexes in sync: placements refer to points by index
+			updateIndexes(values);
+		}
 	}
 
 	private boolean canMoveX(Point2D p, int xx) {
@@ -1169,6 +1176,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	public void remove(int index) {
 		values.flag(index);
 		values.removeFlagged();
+		updateIndexes(values);
 	}
 
 	@Override
@@ -1361,6 +1369,8 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				values.flag(i);
 			}
 		}
-		values.removeFlagged();
+		if(values.removeFlagged() > 0) {
+			updateIndexes(values);
+		}
 	}
 }

@@ -14,7 +14,6 @@ import com.github.skjolber.packing.api.Placement;
  * 
  */
 
-@SuppressWarnings("unchecked")
 public class PlacementList {
 
 	private int size = 0;
@@ -40,7 +39,7 @@ public class PlacementList {
 
 	public void ensureCapacity(int size) {
 		if(placements.length < size) {
-			int nextSize = size + 16;
+			int nextSize = Math.max(size + 16, placements.length + (placements.length >> 1));
 			Placement[] nextPoints = new Placement[nextSize];
 			System.arraycopy(this.placements, 0, nextPoints, 0, this.size);
 			this.placements = nextPoints;
@@ -93,19 +92,22 @@ public class PlacementList {
 
 	@Override
 	public boolean equals(Object obj) {
-		if(obj instanceof PlacementList) {
-			PlacementList other = (PlacementList)obj;
-			if(other.size() != size) {
-				return false;
-			}
-			for (int i = 0; i < size; i++) {
-				if(!placements[i].equals(other.get(i))) {
-					return false;
-				}
-			}
+		if (this == obj) {
 			return true;
 		}
-		return super.equals(obj);
+		if (!(obj instanceof PlacementList)) {
+			return false;
+		}
+		PlacementList other = (PlacementList) obj;
+		if (other.size() != size) {
+			return false;
+		}
+		for (int i = 0; i < size; i++) {
+			if (!placements[i].equals(other.get(i))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public Placement[] getPlacements() {
@@ -144,10 +146,12 @@ public class PlacementList {
 		return list;
 	}
 
-	public void addAll(PlacementList placements) {
-		for(int i = 0; i < placements.size; i++) {
-			add(placements.placements[i]);
-		}
+	/** Append all placements of {@code list}, growing capacity as needed. The list may be this list. */
+	public void addAll(PlacementList list) {
+		int count = list.size;
+		ensureAdditionalCapacity(count);
+		System.arraycopy(list.placements, 0, placements, size, count);
+		size += count;
 	}
 
 	public int getCapacity() {

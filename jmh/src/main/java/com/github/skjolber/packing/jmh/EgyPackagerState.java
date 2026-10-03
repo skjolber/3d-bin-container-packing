@@ -1,9 +1,7 @@
 package com.github.skjolber.packing.jmh;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -56,14 +54,12 @@ public class EgyPackagerState {
 	private static List<ContainerItem> containers;
 
 	static {
-		Path path = Paths.get("src", "main", "resources", "egy.json");
-
-		if(!Files.exists(path)) {
-			path = Paths.get("jmh", "src", "main", "resources", "egy.json");
-		}
-
-		try {
-			List<Item> items = ItemIO.read(path);
+		// load from the classpath, independent of the working directory
+		try (InputStream in = EgyPackagerState.class.getResourceAsStream("/egy.json")) {
+			if(in == null) {
+				throw new IOException("Resource egy.json not found");
+			}
+			List<Item> items = ItemIO.read(in);
 
 			containers = ContainerItem.newListBuilder().withContainer(getContainer(items)).build();
 

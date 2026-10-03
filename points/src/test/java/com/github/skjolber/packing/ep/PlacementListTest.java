@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.util;
+package com.github.skjolber.packing.ep;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

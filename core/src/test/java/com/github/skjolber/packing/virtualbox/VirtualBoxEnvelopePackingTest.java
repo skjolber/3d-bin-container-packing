@@ -165,7 +165,7 @@ class VirtualBoxEnvelopePackingTest {
 		}
 
 		@Override
-		protected boolean addBatch(int index, List<Placement> batch, long area, long volume, boolean applyRemainingLimits) {
+		protected boolean addBatch(int index, List<Placement> batch, long area, long volume) {
 			throw new AssertionError("Envelope packing must use single-placement insertion");
 		}
 	}

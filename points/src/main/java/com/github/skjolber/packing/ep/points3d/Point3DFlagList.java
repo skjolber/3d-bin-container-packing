@@ -64,10 +64,12 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			SimplePoint3D[] nextPoints = new SimplePoint3D[size];
+			// grow geometrically, so that a growing point count does not reallocate on every add
+			int capacity = Math.max(size, points.length + (points.length >> 1) + 1);
+			SimplePoint3D[] nextPoints = new SimplePoint3D[capacity];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 
-			boolean[] nextFlag = new boolean[size];
+			boolean[] nextFlag = new boolean[capacity];
 			System.arraycopy(this.flag, 0, nextFlag, 0, this.size);
 
 			this.points = nextPoints;

@@ -29,10 +29,8 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 	public FastPointCalculator3DStack(int capacity) {
 		super(true, capacity);
 
+		// frames are created on first use: most searches use few frames per calculator
 		stackItems = new StackItem[capacity];
-		for (int i = 0; i < capacity; i++) {
-			stackItems[i] = new StackItem();
-		}
 	}
 
 	@Override
@@ -40,7 +38,7 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		// copy state before it is updated
 		SimplePoint3D point3d = values.get(index);
 
-		StackItem stackItem = stackItems[stackSize];
+		StackItem stackItem = frame();
 		stackItem.point = point3d;
 		stackItem.placementCount = placements.size();
 		stackItem.minVolumeLimit = minVolumeLimit;
@@ -53,8 +51,8 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 	}
 
 	@Override
-	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume, boolean applyRemainingLimits) {
-		StackItem frame = stackItems[stackSize];
+	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
+		StackItem frame = frame();
 		frame.point = values.get(index);
 		frame.placementCount = placements.size();
 		frame.minAreaLimit = minAreaLimit;
@@ -62,7 +60,7 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		values.copyInto(frame.values);
 		placements.ensureAdditionalCapacity(batch.size() + stackItems.length);
 		try {
-			boolean result = super.addBatch(index, batch, remainingMinimumArea, remainingMinimumVolume, applyRemainingLimits);
+			boolean result = super.addBatch(index, batch, remainingMinimumArea, remainingMinimumVolume);
 			stackSize++;
 			return result;
 		} catch(RuntimeException e) {
@@ -86,6 +84,15 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		stackSize = 0;
 
 		super.clearToSize(dx, dy, dz);
+	}
+
+	private StackItem frame() {
+		StackItem frame = stackItems[stackSize];
+		if(frame == null) {
+			frame = new StackItem();
+			stackItems[stackSize] = frame;
+		}
+		return frame;
 	}
 
 	public void setStackSize(int size) {

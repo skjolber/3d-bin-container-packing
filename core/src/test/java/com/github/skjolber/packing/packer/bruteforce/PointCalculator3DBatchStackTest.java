@@ -27,7 +27,7 @@ class PointCalculator3DBatchStackTest {
 		calculator.push();
 		Placement a = placement(0, 0, 0);
 		Placement b = placement(1, 0, 0);
-		calculator.add(origin, List.of(a, b));
+		calculator.add(origin, List.of(a, b), 1, 1);
 		assertThat(calculator.getPoints()).containsExactly(origin);
 		assertThat(calculator.getMinAreaLimit()).isEqualTo(1);
 		calculator.push();
@@ -41,7 +41,7 @@ class PointCalculator3DBatchStackTest {
 		assertThat(calculator.getPlacements()).isEmpty();
 		assertThat(calculator.getMinAreaLimit()).isEqualTo(4);
 		assertThat(calculator.getMinVolumeLimit()).isEqualTo(4);
-		calculator.add(0, List.of(a, b));
+		calculator.add(0, List.of(a, b), 1, 1);
 		calculator.pop();
 		assertThat(calculator.getPlacements()).isEmpty();
 		calculator.reset(4, 2, 3);
@@ -68,7 +68,7 @@ class PointCalculator3DBatchStackTest {
 		var origin = calculator.get(0);
 		Placement a = placement(0, 0, 0);
 		Placement b = placement(1, 0, 0);
-		calculator.add(origin, List.of(a, b));
+		calculator.add(origin, List.of(a, b), 1, 1);
 		assertThat(calculator.getPoints()).containsExactly(origin);
 		calculator.add(calculator.findPoint(0, 0, 1), placement(0, 0, 1));
 		assertThat(calculator.getPlacements()).hasSize(3);
@@ -80,7 +80,7 @@ class PointCalculator3DBatchStackTest {
 		assertThat(calculator.getMinAreaLimit()).isEqualTo(4);
 		assertThat(calculator.getMinVolumeLimit()).isEqualTo(4);
 		assertThat(calculator.getPoints()).isEmpty();
-		calculator.add(0, List.of(a, b));
+		calculator.add(0, List.of(a, b), 1, 1);
 		assertThat(calculator.getPlacements()).hasSize(2);
 	}
 
@@ -90,13 +90,13 @@ class PointCalculator3DBatchStackTest {
 		calculator.clearToSize(2, 2, 2);
 		calculator.setMinimumAreaAndVolumeLimit(2, 2);
 		Placement child = placement(0, 0, 0);
-		assertThatThrownBy(() -> calculator.add(0, List.of(child, child))).isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> calculator.add(0, List.of(child, child), 1, 1)).isInstanceOf(IllegalArgumentException.class);
 		assertThat(calculator.getPlacements()).isEmpty();
 		assertThat(calculator.getPoints()).isEmpty();
 		assertThat(calculator.size()).isEqualTo(1);
 		assertThat(calculator.getMinAreaLimit()).isEqualTo(2);
 		assertThat(calculator.getMinVolumeLimit()).isEqualTo(2);
-		calculator.add(0, List.of(child));
+		calculator.add(0, List.of(child), 1, 1);
 		assertThat(calculator.getPlacements()).containsExactly(child);
 	}
 
@@ -107,7 +107,7 @@ class PointCalculator3DBatchStackTest {
 				.build().getStackValue(0), -1, x, y, z, false);
 	}
 
-	/* Two children are one undo frame, regardless of which batch overload is used. */
+	/* Two children are one undo frame, also with remaining-item limits above the batch minima. */
 	@Test
 	void recursiveRemainingMinimaOverloadCheckpointsOnce() {
 		PointCalculator3DStack calculator = new PointCalculator3DStack(3);

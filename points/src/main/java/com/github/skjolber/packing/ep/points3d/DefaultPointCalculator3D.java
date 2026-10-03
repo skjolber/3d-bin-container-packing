@@ -104,10 +104,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 	
 	public boolean add(Point point, Placement placement) {
-		if(point.getIndex() == -1) {
-			return add(values.getIndex(point, 0), placement);
-		} 
-		return add(point.getIndex(), placement);
+		return add(indexOf(point), placement);
 	}
 	
 	public boolean add(Point point, Placement placement, int filteredIndex, int filteredSize) {
@@ -125,12 +122,33 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			
 			return add(values.getIndex(point, filteredIndex), placement);
 		} 
-		return add(point.getIndex(), placement);
+		return add(indexOf(point), placement);
 	}
 
 	public boolean add(int index, Placement placement) {
-		SimplePoint3D point = values.get(index);
-		
+		return insert(values.get(index), index, placement);
+	}
+
+	/**
+	 * Resolve the current index of a free point. Points are shared between stack levels,
+	 * so a stored index is only trusted if it still refers to the same point. Points which
+	 * are not current free points are located by their coordinates.
+	 */
+	protected int indexOf(Point point) {
+		int index = point.getIndex();
+		if(index >= 0 && index < values.size() && values.get(index) == point) {
+			return index;
+		}
+		for(int i = 0; i < values.size(); i++) {
+			if(values.get(i) == point) {
+				return i;
+			}
+		}
+		return values.getIndex(point, 0);
+	}
+
+	/** Insert at a point which contains the placement, deriving the supported planes from the point. */
+	protected boolean insert(SimplePoint3D point, int index, Placement placement) {
 		// check supported planes when placement is not placed at point
 		boolean supportedXYPlane = point.getMinZ() == placement.getAbsoluteZ() && point.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY());
 		boolean supportedXZPlane = point.getMinY() == placement.getAbsoluteY() && point.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
@@ -138,11 +156,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		
 		return add(point, index, placement, supportedXYPlane, supportedXZPlane, supportedYZPlane);
 	}
-	
 
-	/** See {@link #add(int, List)}. Resolves the selected point before filtering. */
-	public boolean add(Point point, List<Placement> batch) {
-		return add(point.getIndex() == -1 ? values.getIndex(point, 0) : point.getIndex(), batch);
+	/** See {@link #add(int, List, long, long)}. Resolves the selected point before filtering. */
+	public boolean add(Point point, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
+		return add(indexOf(point), batch, remainingMinimumArea, remainingMinimumVolume);
 	}
 
 	/**
@@ -151,56 +168,46 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	 * They are inserted in list order and retained directly, without copying or moving
 	 * them. Callers must not mutate them while the calculator uses them.
 	 *
-	 * The minimum area and volume are calculated independently from the entire batch,
-	 * installed before insertion and left installed afterward. Lowering these limits
-	 * later cannot recover previously discarded free space, including space useful to
-	 * smaller future boxes.
+	 * During insertion each limit is the smaller of the batch minimum and the
+	 * corresponding remaining-item minimum, so the batch never prunes space which
+	 * smaller remaining items need. After insertion, the remaining-item limits are
+	 * installed. Use zero to disable a limit, or {@link Long#MAX_VALUE} for both limits
+	 * when no items remain. Limits cannot recover previously pruned space: earlier
+	 * insertions must also use safe remaining-item limits.
+	 *
+	 * Children are inserted with {@link #add(SimplePoint3D, int, Placement, boolean, boolean, boolean)},
+	 * not {@link #add(int, Placement)}; subclasses which hook single insertions must also
+	 * override {@link #addBatch(int, List, long, long)}.
 	 *
 	 * No overlap preflight or rollback snapshot is made. Invalid overlapping input can
 	 * fail after partial insertion; callers requiring rollback must use a checkpoint.
+	 * A false return means no usable free points remain, not that insertion failed.
 	 *
 	 * @param index live point index before filtering
 	 * @param batch non-empty, prevalidated arrangement
+	 * @param remainingMinimumArea smallest area of the remaining items
+	 * @param remainingMinimumVolume smallest volume of the remaining items
 	 * @return whether free points remain after all placements have been inserted
-	 * @throws IllegalArgumentException if the batch is empty or a placement does not fit
-	 */
-	public boolean add(int index, List<Placement> batch) {
-		return addBatch(index, batch, Long.MAX_VALUE, Long.MAX_VALUE, false);
-	}
-
-	/** See {@link #add(int, List, long, long)}. Resolves the live point before filtering. */
-	public boolean add(Point point, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
-		return add(point.getIndex() == -1 ? values.getIndex(point, 0) : point.getIndex(), batch, remainingMinimumArea, remainingMinimumVolume);
-	}
-
-	/**
-	 * Insert a batch without pruning space required by smaller remaining items.
-	 * During insertion each limit is the smaller of the batch minimum and the
-	 * corresponding remaining-item minimum. After insertion, the remaining-item
-	 * limits are installed. Use zero to disable a limit, or {@link Long#MAX_VALUE}
-	 * for both limits when no items remain. Limits cannot recover previously pruned
-	 * space: earlier insertions must also use safe remaining-item limits.
-	 *
-	 * Coordinates, ownership and rollback requirements are the same as for
-	 * {@link #add(int, List)}. A false return means no usable free points remain,
-	 * not that insertion failed.
+	 * @throws IllegalArgumentException if the batch is empty, a placement does not fit or a limit is negative
 	 */
 	public boolean add(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
 		if(remainingMinimumArea < 0 || remainingMinimumVolume < 0) {
 			throw new IllegalArgumentException("Expected non-negative remaining minima");
 		}
-		return addBatch(index, batch, remainingMinimumArea, remainingMinimumVolume, true);
-	}
-
-	/** Shared batch entry point so stack calculators checkpoint either overload exactly once. */
-	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume, boolean applyRemainingLimits) {
 		if(batch.isEmpty()) {
 			throw new IllegalArgumentException("Expected at least one placement");
 		}
+		return addBatch(index, batch, remainingMinimumArea, remainingMinimumVolume);
+	}
+
+	/** Shared batch entry point so stack calculators checkpoint exactly once per batch. */
+	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
 		SimplePoint3D source = values.get(index);
 		long minimumArea = remainingMinimumArea;
 		long minimumVolume = remainingMinimumVolume;
-		for(Placement placement : batch) {
+		int batchSize = batch.size();
+		for(int i = 0; i < batchSize; i++) {
+			Placement placement = batch.get(i);
 			if(!source.fits3D(placement)) {
 				throw new IllegalArgumentException("Batch placement is outside the selected free space");
 			}
@@ -208,12 +215,16 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			minimumArea = Math.min(minimumArea, value.getArea());
 			minimumVolume = Math.min(minimumVolume, value.getVolume());
 		}
-		placements.ensureAdditionalCapacity(batch.size());
-		setMinimumAreaAndVolumeLimit(minimumArea, minimumVolume);
-		// The source contains every child, so it survives minimum filtering, but
-		// its numeric index may change when earlier points are removed.
-		int currentIndex = values.getIndex(source, 0);
-		for(Placement placement : batch) {
+		placements.ensureAdditionalCapacity(batchSize);
+		int currentIndex = index;
+		if(minimumArea != minAreaLimit || minimumVolume != minVolumeLimit) {
+			setMinimumAreaAndVolumeLimit(minimumArea, minimumVolume);
+			// The source contains every child, so it survives minimum filtering, but
+			// earlier points may have been removed: its index can only decrease.
+			currentIndex = indexOf(source, Math.min(index, values.size() - 1));
+		}
+		for(int i = 0; i < batchSize; i++) {
+			Placement placement = batch.get(i);
 			if(source == null) {
 				currentIndex = findContainingPoint(placement);
 				if(currentIndex == -1) {
@@ -221,47 +232,55 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				}
 				source = values.get(currentIndex);
 			}
-			boolean xy = source.getMinZ() == placement.getAbsoluteZ() && source.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY());
-			boolean xz = source.getMinY() == placement.getAbsoluteY() && source.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
-			boolean yz = source.getMinX() == placement.getAbsoluteX() && source.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
 			// Bypass single-placement entry points: stack subclasses record a batch
 			// once, not one search step per physical placement.
-			add(source, currentIndex, placement, xy, xz, yz);
+			insert(source, currentIndex, placement);
 			source = null;
 		}
-		if(applyRemainingLimits) {
-			setMinimumAreaAndVolumeLimit(remainingMinimumArea, remainingMinimumVolume);
-		}
+		setMinimumAreaAndVolumeLimit(remainingMinimumArea, remainingMinimumVolume);
 		return !values.isEmpty();
 	}
 
-	/** Current points are sorted by minimum X. */
+	/** Index of the given point, searching downwards from {@code fromIndex}. */
+	protected int indexOf(SimplePoint3D point, int fromIndex) {
+		for(int i = fromIndex; i >= 0; i--) {
+			if(values.get(i) == point) {
+				return i;
+			}
+		}
+		throw new IllegalStateException("Cannot locate point");
+	}
+
+	/**
+	 * Find a point which contains the placement, preferring a point whose minimum corner
+	 * is the placement's corner so that its supported planes are known. Current points
+	 * are sorted by minimum X.
+	 */
 	protected int findContainingPoint(Placement placement) {
+		int containing = -1;
 		for(int i = 0; i < values.size(); i++) {
 			SimplePoint3D point = values.get(i);
 			if(point.getMinX() > placement.getAbsoluteX()) {
 				break;
 			}
 			if(point.fits3D(placement)) {
-				return i;
+				if(point.getMinX() == placement.getAbsoluteX() && point.getMinY() == placement.getAbsoluteY() && point.getMinZ() == placement.getAbsoluteZ()) {
+					return i;
+				}
+				if(containing == -1) {
+					containing = i;
+				}
 			}
 		}
-		return -1;
+		return containing;
 	}
 
 	public boolean addObstacle(Placement placement) {
 		// find a point which holds the placement
 		for(int i = 0; i < values.size(); i++) {
 			SimplePoint3D point = values.get(i);
-			
 			if(point.fits3D(placement)) {
-				// check supported planes when placement is not placed at point
-				boolean supportedXYPlane = point.getMinZ() == placement.getAbsoluteZ() && point.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY());
-				boolean supportedXZPlane = point.getMinY() == placement.getAbsoluteY() && point.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
-				boolean supportedYZPlane = point.getMinX() == placement.getAbsoluteX() && point.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
-				
-				add(point, i, placement, supportedXYPlane, supportedXZPlane, supportedYZPlane);
-				
+				insert(point, i, placement);
 				return true;
 			}
 		}
@@ -335,10 +354,17 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			pointIndex = 0;
 		}
 
+		// loop invariants: placement bounds are computed from the stack value on every call
+		final int placementX = placement.getAbsoluteX();
+		final int placementY = placement.getAbsoluteY();
+		final int placementZ = placement.getAbsoluteZ();
+		final int placementEndY = yy - 1;
+		final int placementEndZ = zz - 1;
+
 		for (int i = pointIndex; i < endIndex; i++) {
 			SimplePoint3D point = values.get(i);
 
-			if(point.getMinY() > placement.getAbsoluteEndY() || point.getMinZ() > placement.getAbsoluteEndZ()) {
+			if(point.getMinY() > placementEndY || point.getMinZ() > placementEndZ) {
 				// 
 				// |
 				// |
@@ -370,7 +396,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			// ---------------------------
 			//
 
-			boolean swallowed = point.getMinX() >= placement.getAbsoluteX() && point.getMinY() >= placement.getAbsoluteY() && point.getMinZ() >= placement.getAbsoluteZ();
+			boolean swallowed = point.getMinX() >= placementX && point.getMinY() >= placementY && point.getMinZ() >= placementZ;
 			if(swallowed ) {
 				// 
 				// |
@@ -1058,6 +1084,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	public void remove(int index) {
 		values.flag(index);
 		values.removeFlagged();
+		updateIndexes(values);
 	}
 	
 	protected void removeEclipsed(int limit) {
@@ -1106,11 +1133,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	protected void constrainFloatingMaxWithClone(Placement placement, int limit) {
-		/*
-		addXX.ensureAdditionalCapacity(limit);
-		addYY.ensureAdditionalCapacity(limit);
-		addZZ.ensureAdditionalCapacity(limit);
-		*/
+		// each examined point can add at most one clone per direction
+		addedXX.ensureAdditionalCapacity(limit);
+		addedYY.ensureAdditionalCapacity(limit);
+		addedZZ.ensureAdditionalCapacity(limit);
 
 		for (int i = 0; i < limit; i++) {
 			SimplePoint3D point = values.get(i);
@@ -1320,6 +1346,11 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	protected void constrainFloatingMax(Placement placement, int limit) {
 
 		Point3DFlagList values = this.values;
+
+		// each examined point can add at most one clone per direction
+		addedXX.ensureAdditionalCapacity(limit);
+		addedYY.ensureAdditionalCapacity(limit);
+		addedZZ.ensureAdditionalCapacity(limit);
 
 		long minAreaLimit = this.minAreaLimit;
 		long minVolumeLimit = this.minVolumeLimit;
@@ -2010,7 +2041,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				values.flag(i);
 			}
 		}
-		values.removeFlagged();
+		if(values.removeFlagged() > 0) {
+			updateIndexes(values);
+		}
 	}
 
 }

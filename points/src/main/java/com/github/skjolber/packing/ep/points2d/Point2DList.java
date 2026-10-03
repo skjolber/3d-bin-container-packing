@@ -29,7 +29,8 @@ public class Point2DList {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			SimplePoint2D[] nextPoints = new SimplePoint2D[size];
+			int capacity = Math.max(size, points.length + (points.length >> 1) + 1);
+			SimplePoint2D[] nextPoints = new SimplePoint2D[capacity];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 			this.points = nextPoints;
 		}

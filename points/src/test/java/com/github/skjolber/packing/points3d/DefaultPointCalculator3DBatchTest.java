@@ -14,6 +14,7 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.MarkResetPointCalculator3D;
+import com.github.skjolber.packing.points.ValidatingPointCalculator3D;
 
 class DefaultPointCalculator3DBatchTest {
 
@@ -30,17 +31,24 @@ class DefaultPointCalculator3DBatchTest {
 	 *     | A |   B   |
 	 *     +---+-------+
 	 *
-	 * Area and volume minima must be calculated independently.
+	 * Area and volume minima must be calculated independently: insertion uses area 1
+	 * and volume 2, then the larger remaining-item limits are installed.
 	 */
 	@ParameterizedTest
 	@ValueSource(booleans = {false, true})
 	void usesIndependentFixedMinimaAndRetainsAbsolutePlacements(boolean immutable) {
 		DefaultPointCalculator3D calculator = calculator(immutable, 6, 4, 6);
-		calculator.setMinimumAreaAndVolumeLimit(10, 50);
 		List<Placement> batch = List.of(placement(1, 1, 4, 1, 1, 0), placement(2, 1, 1, 2, 1, 0));
-		assertThat(calculator.add(calculator.get(0), batch)).isTrue();
-		assertThat(calculator.getMinAreaLimit()).isEqualTo(1);
-		assertThat(calculator.getMinVolumeLimit()).isEqualTo(2);
+		assertThat(calculator.add(calculator.get(0), batch, 10, 50)).isTrue();
+		assertThat(calculator.getMinAreaLimit()).isEqualTo(10);
+		assertThat(calculator.getMinVolumeLimit()).isEqualTo(50);
+		DefaultPointCalculator3D reference = calculator(immutable, 6, 4, 6);
+		reference.setMinimumAreaAndVolumeLimit(1, 2);
+		for(Placement child : batch) {
+			assertThat(reference.addObstacle(child)).isTrue();
+		}
+		reference.setMinimumAreaAndVolumeLimit(10, 50);
+		assertThat(geometry(calculator)).containsExactlyElementsOf(geometry(reference));
 		assertThat(calculator.getPlacements()).containsExactlyElementsOf(batch);
 		assertThat(calculator.getPlacements().get(0)).isSameAs(batch.get(0));
 		assertThat(batch.get(0).getAbsoluteX()).isEqualTo(1);
@@ -72,7 +80,7 @@ class DefaultPointCalculator3DBatchTest {
 		calculator.clear();
 		Point source = calculator.get(1);
 		List<Placement> batch = List.of(placement(2, 1, 1, 2, 0, 0), placement(2, 1, 1, 4, 0, 0));
-		assertThat(calculator.add(source, batch)).isTrue();
+		assertThat(calculator.add(source, batch, 2, 2)).isTrue();
 		assertThat(calculator.getPlacements()).containsExactlyElementsOf(batch);
 		assertThat(calculator.getMinAreaLimit()).isEqualTo(2);
 		assertThat(calculator.getMinVolumeLimit()).isEqualTo(2);
@@ -115,7 +123,7 @@ class DefaultPointCalculator3DBatchTest {
 		DefaultPointCalculator3D sequential = calculator(immutable, 6, 4, 4);
 		DefaultPointCalculator3D unfiltered = calculator(immutable, 6, 4, 4);
 		sequential.setMinimumAreaAndVolumeLimit(2, 3);
-		batch.add(0, children);
+		batch.add(0, children, 2, 3);
 		for(int i = 0; i < children.size(); i++) {
 			assertThat(sequential.addObstacle(children.get(i))).isTrue();
 			assertThat(unfiltered.addObstacle(children.get(i))).isTrue();
@@ -138,11 +146,17 @@ class DefaultPointCalculator3DBatchTest {
 	void returnsFalseOnlyAfterWholeBatchFillsContainer(boolean immutable) {
 		DefaultPointCalculator3D calculator = calculator(immutable, 2, 1, 1);
 		List<Placement> batch = List.of(placement(1, 1, 1, 0, 0, 0), placement(1, 1, 1, 1, 0, 0));
-		assertThat(calculator.add(0, batch)).isFalse();
+		assertThat(calculator.add(0, batch, 1, 1)).isFalse();
 		assertThat(calculator.isEmpty()).isTrue();
 		assertThat(calculator.getPlacements()).containsExactlyElementsOf(batch);
 	}
 
+	/*
+	 *       +-------+-------+
+	 *       |   A   |       |   a batch of one behaves like a single insertion
+	 *       |   A   |       |
+	 *       +-------+-------+
+	 */
 	@ParameterizedTest
 	@ValueSource(booleans = {false, true})
 	void singleElementBatchMatchesExistingInsertion(boolean immutable) {
@@ -151,18 +165,25 @@ class DefaultPointCalculator3DBatchTest {
 		DefaultPointCalculator3D single = calculator(immutable, 4, 4, 4);
 		single.setMinimumAreaAndVolumeLimit(4, 4);
 		single.add(0, child);
-		assertThat(batch.add(0, List.of(child))).isTrue();
+		assertThat(batch.add(0, List.of(child), 4, 4)).isTrue();
 		assertThat(geometry(batch)).containsExactlyElementsOf(geometry(single));
 	}
 
+	/*
+	 *       +---+---+---+---+ +---+
+	 *       | A |   |   |   | | B |   B is outside the 4 x 4 x 4 container
+	 *       +---+---+---+---+ +---+
+	 *
+	 * Neither an empty batch nor a batch with B changes points or limits.
+	 */
 	@ParameterizedTest
 	@ValueSource(booleans = {false, true})
 	void rejectsEmptyOrOutsideInputBeforeChangingState(boolean immutable) {
 		DefaultPointCalculator3D calculator = calculator(immutable, 4, 4, 4);
 		calculator.setMinimumAreaAndVolumeLimit(3, 3);
 		List<String> before = geometry(calculator);
-		assertThatThrownBy(() -> calculator.add(0, List.of())).isInstanceOf(IllegalArgumentException.class);
-		assertThatThrownBy(() -> calculator.add(0, List.of(placement(1, 1, 1, 0, 0, 0), placement(1, 1, 1, 4, 0, 0))))
+		assertThatThrownBy(() -> calculator.add(0, List.of(), 3, 3)).isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> calculator.add(0, List.of(placement(1, 1, 1, 0, 0, 0), placement(1, 1, 1, 4, 0, 0)), 3, 3))
 				.isInstanceOf(IllegalArgumentException.class);
 		assertThat(calculator.getMinAreaLimit()).isEqualTo(3);
 		assertThat(calculator.getMinVolumeLimit()).isEqualTo(3);
@@ -170,6 +191,12 @@ class DefaultPointCalculator3DBatchTest {
 		assertThat(geometry(calculator)).containsExactlyElementsOf(before);
 	}
 
+	/*
+	 *     mark          batch            reset
+	 *   +-------+     +-+-+---+        +-------+
+	 *   |       | --> |A|B|   |  -->   |       |
+	 *   +-------+     +-+-+---+        +-------+
+	 */
 	@ParameterizedTest
 	@ValueSource(booleans = {false, true})
 	void markResetRestoresBatchAndPreviousLimits(boolean immutable) {
@@ -178,7 +205,7 @@ class DefaultPointCalculator3DBatchTest {
 		calculator.setMinimumAreaAndVolumeLimit(4, 8);
 		List<String> before = geometry(calculator);
 		calculator.mark();
-		calculator.add(0, List.of(placement(1, 1, 1, 0, 0, 0), placement(1, 1, 1, 1, 0, 0)));
+		calculator.add(0, List.of(placement(1, 1, 1, 0, 0, 0), placement(1, 1, 1, 1, 0, 0)), 1, 1);
 		calculator.reset();
 		assertThat(calculator.getPlacements()).isEmpty();
 		assertThat(calculator.getMinAreaLimit()).isEqualTo(4);
@@ -202,18 +229,13 @@ class DefaultPointCalculator3DBatchTest {
 	 *       |   A   |   B   | C |
 	 *       +-------+-------+---+
 	 *
-	 * Child-only minima discard C's space permanently. Remaining-item minima
-	 * must participate before either domino is inserted.
+	 * Child-only minima would discard C's space permanently. Remaining-item minima
+	 * participate before either domino is inserted.
 	 */
 	@ParameterizedTest
 	@ValueSource(booleans = {false, true})
 	void preservesSpaceForSmallerRemainingItem(boolean immutable) {
 		List<Placement> batch = List.of(placement(2, 1, 1, 0, 0, 0), placement(2, 1, 1, 2, 0, 0));
-		DefaultPointCalculator3D unsafe = calculator(immutable, 5, 1, 1);
-		assertThat(unsafe.add(0, batch)).isFalse();
-		unsafe.setMinimumAreaAndVolumeLimit(1, 1);
-		assertThat(unsafe.isEmpty()).isTrue();
-
 		DefaultPointCalculator3D safe = calculator(immutable, 5, 1, 1);
 		assertThat(safe.add(safe.get(0), batch, 1, 1)).isTrue();
 		assertThat(safe.getMinAreaLimit()).isEqualTo(1);
@@ -244,6 +266,22 @@ class DefaultPointCalculator3DBatchTest {
 		assertThat(calculator.findPoint(2, 0, 0)).isGreaterThanOrEqualTo(0);
 	}
 
+	/*
+	 * Front view (y = 1), as in the first test:
+	 *
+	 *     +---+
+	 *     | A |
+	 *     +---+
+	 *     | A |         remaining items: area 2, volume 1
+	 *     +---+         insertion limits: area 1 (A), volume 1
+	 *     | A |
+	 *     +---+-------+
+	 *     | A |   B   |
+	 *     +---+-------+
+	 *
+	 * The result matches sequential obstacles with the same limits; reset restores
+	 * the marked points and limits.
+	 */
 	@ParameterizedTest
 	@ValueSource(booleans = {false, true})
 	void remainingMinimaAreIndependentAndMarkResetRestoresThem(boolean immutable) {
@@ -268,6 +306,89 @@ class DefaultPointCalculator3DBatchTest {
 		assertThat(geometry(calculator)).containsExactlyElementsOf(before);
 		assertThatThrownBy(() -> calculator.add(0, batch, -1, 1)).isInstanceOf(IllegalArgumentException.class);
 		assertThat(geometry(calculator)).containsExactlyElementsOf(before);
+	}
+
+	/*
+	 * Three equal free points share the minimum corner (1, 0, 0); a small point before
+	 * them is removed by the batch limits, shifting the indexes:
+	 *
+	 *   +-+ +---------------------------+
+	 *   |s| | source (last of three)    |
+	 *   +-+ +---------------------------+
+	 *
+	 * The source must be found by identity, not by its (shared) coordinates.
+	 */
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void findsSourceSharingItsCornerWithOtherPoints(boolean immutable) {
+		DefaultPointCalculator3D calculator = calculator(immutable, 8, 4, 8);
+		calculator.setPoints(List.of(
+				new DefaultPoint3D(0, 0, 0, 0, 0, 0),
+				new DefaultPoint3D(1, 0, 0, 4, 3, 4),
+				new DefaultPoint3D(1, 0, 0, 4, 3, 4),
+				new DefaultPoint3D(1, 0, 0, 4, 3, 4)));
+		calculator.clear();
+		assertThat(calculator.size()).isEqualTo(4);
+		Point source = calculator.get(3);
+		List<Placement> batch = List.of(placement(2, 2, 2, 1, 0, 0), placement(2, 2, 2, 3, 0, 0));
+		calculator.add(source, batch, 2, 2);
+		assertThat(calculator.getPlacements()).containsExactlyElementsOf(batch);
+	}
+
+	/*
+	 * A point whose stored index is stale (as after pop or redo on a stack calculator)
+	 * still identifies the point to insert at:
+	 *
+	 *   index 0          index 1
+	 *   +-+              +---------+
+	 *   | |              | source  |   source.getIndex() == 0
+	 *   +-+              +---------+
+	 */
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void ignoresStaleStoredIndex(boolean immutable) {
+		DefaultPointCalculator3D calculator = calculator(immutable, 8, 4, 4);
+		calculator.setPoints(List.of(new DefaultPoint3D(0, 0, 0, 0, 0, 0), new DefaultPoint3D(2, 0, 0, 7, 3, 3)));
+		calculator.clear();
+		Point source = calculator.get(1);
+		source.setIndex(0);
+		List<Placement> batch = List.of(placement(2, 1, 1, 2, 0, 0));
+		calculator.add(source, batch, 1, 1);
+		assertThat(calculator.getPlacements()).containsExactlyElementsOf(batch);
+	}
+
+	/*
+	 * Front view of a 6 x 7 x 7 container with floating children, which split
+	 * many points at once:
+	 *
+	 *     +-----------+
+	 *     |       F   |
+	 *     |   D  E    |
+	 *     | A A A A A |
+	 *     |       B   |
+	 *     +-----------+
+	 *
+	 * The clone buffers must grow; previously the fourth child overflowed them.
+	 */
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void floatingChildrenDoNotOverflowBuffers(boolean immutable) {
+		ValidatingPointCalculator3D calculator = new ValidatingPointCalculator3D(immutable, 16);
+		calculator.clearToSize(6, 7, 7);
+		List<Placement> batch = List.of(
+				placement(6, 3, 1, 0, 0, 2),
+				placement(1, 2, 6, 5, 5, 0),
+				placement(2, 4, 1, 3, 0, 6),
+				placement(1, 3, 3, 1, 4, 3),
+				placement(1, 2, 2, 4, 2, 3),
+				placement(1, 1, 7, 4, 4, 0));
+		calculator.add(0, batch, 1, 4);
+		assertThat(calculator.getPlacements()).containsExactlyElementsOf(batch);
+		for(Point point : calculator.getAll()) {
+			for(Placement child : batch) {
+				assertThat(point.fits3D(child)).isFalse();
+			}
+		}
 	}
 
 	protected static List<String> geometry(DefaultPointCalculator3D calculator) {

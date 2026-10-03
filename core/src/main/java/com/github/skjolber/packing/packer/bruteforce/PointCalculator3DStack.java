@@ -52,9 +52,8 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		this.stackItems = new StackItem[maxStackDepth];
 		this.bestPoints = new SimplePoint3D[maxStackDepth];
 
-		for (int i = 0; i < maxStackDepth; i++) {
-			stackItems[i] = new StackItem();
-		}
+		// deeper levels are created on first push: most searches use few levels per calculator
+		stackItems[0] = new StackItem();
 
 		values.copyInto(stackItems[0].values);
 
@@ -69,13 +68,13 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 	}
 
 	@Override
-	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume, boolean applyRemainingLimits) {
+	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
 		stackItems[stackIndex].point = values.get(index);
 		stackItems[stackIndex].batch = true;
 		// Preserve space for subsequent ordinary search steps without changing
 		// the single-placement insertion path.
 		placements.ensureAdditionalCapacity(batch.size() + stackItems.length);
-		return super.addBatch(index, batch, remainingMinimumArea, remainingMinimumVolume, applyRemainingLimits);
+		return super.addBatch(index, batch, remainingMinimumArea, remainingMinimumVolume);
 	}
 
 	public Placement push() {
@@ -88,6 +87,10 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		stackIndex++;
 
 		StackItem nextStackItem = stackItems[stackIndex];
+		if(nextStackItem == null) {
+			nextStackItem = new StackItem();
+			stackItems[stackIndex] = nextStackItem;
+		}
 
 		// clone current state
 		// make sure to overwrite everything, no clear is performed

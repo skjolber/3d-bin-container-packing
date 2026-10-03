@@ -35,12 +35,12 @@ public class DefaultPoint2D extends SimplePoint2D {
 
 	@Override
 	public SimplePoint2D moveX(int x, Placement ySupport) {
-		return new DefaultYSupportPoint2D(x, minY, minZ, maxY, maxY, maxZ, ySupport);
+		return new DefaultYSupportPoint2D(x, minY, minZ, maxX, maxY, maxZ, ySupport);
 	}
 
 	@Override
 	public SimplePoint2D moveY(int y, Placement xSupport) {
-		return new DefaultXSupportPoint2D(minX, y, minZ, maxX, maxX, maxZ, xSupport);
+		return new DefaultXSupportPoint2D(minX, y, minZ, maxX, maxY, maxZ, xSupport);
 	}
 
 	@Override
