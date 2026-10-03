@@ -24,6 +24,8 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 		super(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 	}
 
+	protected final StackSupportIndex supportIndex = new StackSupportIndex();
+
 	public Placement getPlacement(int offset, int length) {
 		Placement result = null;
 		
@@ -57,7 +59,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 						continue;
 					}
 					
-					if(point3d.getMinZ() == 0 || point3d.isSupportedXYPlane(stackValue) || isFullSupport(stack.getPlacements(), point3d.getMinX(), point3d.getMinY(), point3d.getMinZ(), stackValue) ) {
+					if(point3d.getMinZ() == 0 || point3d.isSupportedXYPlane(stackValue) || supportIndex.isFullSupport(stack.getPlacements(), point3d.getMinX(), point3d.getMinY(), point3d.getMinZ(), stackValue) ) {
 						Placement placementResult = createPlacement(stackValue, point3d);
 						if(placementResult == null) {
 							continue;
@@ -149,7 +151,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 							y = point3d.getMinY();
 						}
 						
-						if(!isFullSupport(stack.getPlacements(), x, y, point3d.getMinZ(), stackValue) ) {
+						if(!supportIndex.isFullSupport(stack.getPlacements(), x, y, point3d.getMinZ(), stackValue) ) {
 							continue;
 						}
 						

@@ -136,6 +136,31 @@ public class PackagerGoldenMasterTest {
 		}
 	}
 
+	private static final long[] EXPECTED_PLAIN_SUPPORT = {
+		8313349620969690254L, -3018918483099753949L, 1104796578355283254L, 6330087534530794951L,
+		324288235842717778L, 7475620767755938904L, 4469331435551308345L, -8567859255327857506L,
+		1042620184816567544L, -6812826950630383200L, 2L, -5598021915169739785L,
+	};
+	private static final long[] EXPECTED_PLAIN_FULL_SUPPORT = {
+		7540344805314906826L, 2562583992216401456L, 4611678950995132222L, 6330087534530794951L,
+		6427231848685324706L, 7475620767755938904L, 4469331435551308345L, -8567859255327857506L,
+		-4572262393676727746L, 9199315560691006402L, 2L, 6934468580461683793L,
+	};
+
+	@Test
+	public void plainPackagerSupport() throws IOException {
+		try (PlainPackager packager = PlainPackager.newBuilder().withCalculateSupport(true).build()) {
+			check("EXPECTED_PLAIN_SUPPORT", EXPECTED_PLAIN_SUPPORT, seed -> pack(packager, seed, 40, 2, false));
+		}
+	}
+
+	@Test
+	public void plainPackagerFullSupport() throws IOException {
+		try (PlainPackager packager = PlainPackager.newBuilder().withRequireFullSupport(true).build()) {
+			check("EXPECTED_PLAIN_FULL_SUPPORT", EXPECTED_PLAIN_FULL_SUPPORT, seed -> pack(packager, seed, 40, 2, false));
+		}
+	}
+
 	@Test
 	public void plainPackager() throws IOException {
 		try (PlainPackager packager = PlainPackager.newBuilder().build()) {

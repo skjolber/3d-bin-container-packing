@@ -267,6 +267,16 @@ public class TychoBenchmark {
 	}
 
 	@Benchmark
+	public int plainSupportPackager(TychoPackagerState state) throws Exception {
+		return process(state.getPlainSupportPackager(), Long.MAX_VALUE);
+	}
+
+	@Benchmark
+	public int plainFullSupportPackager(TychoPackagerState state) throws Exception {
+		return process(state.getPlainFullSupportPackager(), Long.MAX_VALUE);
+	}
+
+	@Benchmark
 	public int plainPackager(TychoPackagerState state) throws Exception {
 		return process(state.getPlainPackager(), Long.MAX_VALUE);
 	}

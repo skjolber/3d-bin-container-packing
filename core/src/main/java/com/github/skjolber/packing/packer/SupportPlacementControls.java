@@ -30,6 +30,8 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 		super(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 	}
 
+	protected final StackSupportIndex supportIndex = new StackSupportIndex();
+
 	public Placement getPlacement(int offset, int length) {
 		Placement result = null;
 		
@@ -90,7 +92,7 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 		if(point.getMinZ() == 0 || point.isSupportedXYPlane(stackValue)) {
 			placement.setSupportedArea(stackValue.getArea());
 		} else {
-			placement.setSupportedArea(calculateAreaSupport(stack.getPlacements(), point.getMinX(), point.getMinY(), point.getMinZ(), stackValue));
+			placement.setSupportedArea(supportIndex.calculateAreaSupport(stack.getPlacements(), point.getMinX(), point.getMinY(), point.getMinZ(), stackValue));
 		}
 		return placement;
 	}

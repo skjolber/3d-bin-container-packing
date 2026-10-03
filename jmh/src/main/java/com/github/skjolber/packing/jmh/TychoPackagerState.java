@@ -40,6 +40,8 @@ public class TychoPackagerState {
 	private List<BenchmarkSet> plainPackager = new ArrayList<>();
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> fastLargestAreaFitFirstPackager = new ArrayList<>();
+	private List<BenchmarkSet> plainSupportPackager = new ArrayList<>();
+	private List<BenchmarkSet> plainFullSupportPackager = new ArrayList<>();
 
 	private List<BoxItem> stackableItems3D;
 
@@ -73,6 +75,16 @@ public class TychoPackagerState {
 
 		this.plainPackager.add(new BenchmarkSet(plainPackager, stackableItems3D, containers));
 
+		PlainPackager plainSupportPackager = PlainPackager.newBuilder()
+				.withCalculateSupport(true)
+				.build();
+		this.plainSupportPackager.add(new BenchmarkSet(plainSupportPackager, stackableItems3D, containers));
+
+		PlainPackager plainFullSupportPackager = PlainPackager.newBuilder()
+				.withRequireFullSupport(true)
+				.build();
+		this.plainFullSupportPackager.add(new BenchmarkSet(plainFullSupportPackager, stackableItems3D, containers));
+
 		FastLargestAreaFitFirstPackager fastLargestAreaFitFirstPackager = FastLargestAreaFitFirstPackager.newBuilder().build();
 		this.fastLargestAreaFitFirstPackager.add(new BenchmarkSet(fastLargestAreaFitFirstPackager, stackableItems3D, containers));
 		this.fastBruteForcePackager.add(new BenchmarkSet(fastPackager, stackableItems3D, containers));
@@ -98,6 +110,12 @@ public class TychoPackagerState {
 		for (BenchmarkSet benchmarkSet : fastLargestAreaFitFirstPackager) {
 			benchmarkSet.getPackager().close();
 		}
+		for (BenchmarkSet benchmarkSet : plainSupportPackager) {
+			benchmarkSet.getPackager().close();
+		}
+		for (BenchmarkSet benchmarkSet : plainFullSupportPackager) {
+			benchmarkSet.getPackager().close();
+		}
 		for (BenchmarkSet benchmarkSet : fastBruteForcePackager) {
 			benchmarkSet.getPackager().close();
 		}
@@ -119,6 +137,14 @@ public class TychoPackagerState {
 
 	public List<BenchmarkSet> getFastLargestAreaFitFirstPackager() {
 		return fastLargestAreaFitFirstPackager;
+	}
+
+	public List<BenchmarkSet> getPlainSupportPackager() {
+		return plainSupportPackager;
+	}
+
+	public List<BenchmarkSet> getPlainFullSupportPackager() {
+		return plainFullSupportPackager;
 	}
 
 	public List<BenchmarkSet> getPlainPackager() {
