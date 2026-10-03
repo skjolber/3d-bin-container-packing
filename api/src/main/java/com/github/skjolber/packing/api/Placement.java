@@ -32,6 +32,10 @@ public class Placement implements Serializable {
 	 * The value can be fractional when a box is shared by multiple supporters.
 	 */
 	protected double loadWeight;
+
+	// scratch for propagateLoad(double)
+	private transient double pendingLoad;
+	private transient boolean pendingLoadQueued;
 	
 	protected Object properties;
 
@@ -274,18 +278,74 @@ public class Placement implements Serializable {
 		supportedArea += supporter.getArea();
 	}
 
+	/**
+	 * Add a weight change to this placement, and spread it down the support graph, shared between
+	 * supporters by contact area.
+	 * <p>
+	 * A placement which supports several placements can be reached through several paths (for example
+	 * with staggered stacking), and walking every path grows exponentially with the stack height.
+	 * So placements with a single supportee are updated right away (they are reached once), while
+	 * placements with several supportees are queued and updated once all of their shares have
+	 * arrived, highest first.
+	 */
 	protected void propagateLoad(double weightIncrement) {
 		this.loadWeight += weightIncrement;
 
-		if(supporters != null && !supporters.isEmpty()) {
-			for (int i = 0; i < supporters.size(); i++) {
-				PlacementLoad supporterLink = supporters.get(i);
-				double share = weightIncrement * supporterLink.getArea() / supportedArea;
-				supporterLink.getPlacement().propagateLoad(share);
+		List<Placement> pending = spreadLoad(weightIncrement, null);
+		if(pending == null) {
+			return;
+		}
+		int processed = 0;
+		while (processed < pending.size()) {
+			// supporters lie strictly below their supportees: the highest queued placement has
+			// received all of its shares
+			int highest = processed;
+			for (int i = processed + 1; i < pending.size(); i++) {
+				if(pending.get(i).z > pending.get(highest).z) {
+					highest = i;
+				}
 			}
+			Placement next = pending.get(highest);
+			pending.set(highest, pending.get(processed));
+			processed++;
+
+			double increment = next.pendingLoad;
+			next.pendingLoad = 0.0;
+			next.pendingLoadQueued = false;
+			next.loadWeight += increment;
+			pending = next.spreadLoad(increment, pending);
 		}
 	}
-	
+
+	/**
+	 * @return the queue of placements with several supportees, or null if none so far
+	 */
+	private List<Placement> spreadLoad(double increment, List<Placement> pending) {
+		if(supporters == null) {
+			return pending;
+		}
+		for (int i = 0; i < supporters.size(); i++) {
+			PlacementLoad supporterLink = supporters.get(i);
+			Placement supporter = supporterLink.getPlacement();
+			double share = increment * supporterLink.getArea() / supportedArea;
+			if(supporter.supportees.size() == 1) {
+				// reached only from this placement
+				supporter.loadWeight += share;
+				pending = supporter.spreadLoad(share, pending);
+			} else {
+				if(!supporter.pendingLoadQueued) {
+					supporter.pendingLoadQueued = true;
+					if(pending == null) {
+						pending = new ArrayList<>();
+					}
+					pending.add(supporter);
+				}
+				supporter.pendingLoad += share;
+			}
+		}
+		return pending;
+	}
+
 	public void removeLoad(Placement supportee) {
 		if(supportees == null) {
 			return;

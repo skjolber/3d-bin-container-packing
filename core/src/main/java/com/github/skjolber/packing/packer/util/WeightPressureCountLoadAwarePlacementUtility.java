@@ -20,10 +20,7 @@ public class WeightPressureCountLoadAwarePlacementUtility extends AbstractLoadWe
 	public double calculateSupporteeLoad(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY) {
 		double weight = 0.0;
 		int z = minZ + sv.getDz();
-		int stackSize = stack.size();
-		for (int i = 0; i < stackSize; i++) {
-			reliefWeights[i] = 0;
-		}
+		resetReliefWeights();
 
 		for (int k = 0; k < pointSupportees.size(); k++) {
 			Placement candidate = pointSupportees.get(k);
@@ -71,28 +68,10 @@ public class WeightPressureCountLoadAwarePlacementUtility extends AbstractLoadWe
 			if (!candidate.intersects2D(minX, maxX, minY, maxY)) {
 				continue;
 			}
-			if (!candidate.isWithinMaxLoadBoxCount(1)) {
+			if (!isWithinMaxLoadBoxCount(candidate, 1)) {
 				return false;
 			}
 			placementSupporters.add(candidate);
-		}
-		return true;
-	}
-
-	/**
-	 * Checks whether {@code candidate} and the boxes above it fit within the
-	 * remaining box-count allowance of a new supporter below it.
-	 */
-	protected boolean isWithinSupporteeBoxCount(Placement candidate, int count) {
-		if (count <= 0) {
-			return false;
-		}
-		count--;
-		for (int k = 0; k < candidate.getSupportees().size(); k++) {
-			PlacementLoad supportee = candidate.getSupportees().get(k);
-			if (!isWithinSupporteeBoxCount(supportee.getPlacement(), count)) {
-				return false;
-			}
 		}
 		return true;
 	}

@@ -21,10 +21,7 @@ public class WeightLoadAwarePlacementUtility extends AbstractLoadWeightPlacement
 	public double calculateSupporteeLoad(BoxStackValue sv, int minX, int minY, int minZ, int maxX, int maxY) {
 		double weight = 0.0;
 		int z = minZ + sv.getDz();
-		int stackSize = stack.size();
-		for (int i = 0; i < stackSize; i++) {
-			reliefWeights[i] = 0;
-		}
+		resetReliefWeights();
 
 		for (int k = 0; k < pointSupportees.size(); k++) {
 			Placement candidate = pointSupportees.get(k);

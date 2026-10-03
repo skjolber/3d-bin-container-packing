@@ -62,6 +62,20 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	private Placement[] flowPlacements;
 	private int flowSize;
 
+	// relief weight entries in use (by index), so that only those need to be reset
+	private int[] reliefTouched;
+	private boolean[] reliefTouchedMark;
+	private int reliefTouchedSize;
+	// scratch for spreading relief: placements to process and their pending share
+	private Placement[] reliefQueue;
+	private double[] reliefPending;
+	private boolean[] reliefQueued;
+
+	// scratch for box count checks: the depth each placement (by index) was checked at, in the current check
+	private int[] visitDepth;
+	private int[] visitStamp;
+	private int stamp;
+
 	/*
 	 * Stack positions sorted by bottom and top Z. The stack is mutated in LIFO
 	 * order by the packagers, so insertions and removals are cheap while point
@@ -87,6 +101,15 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		flowReached = new boolean[capacity];
 		flowPlacements = new Placement[capacity];
 		flowSize = 0;
+		reliefTouched = new int[capacity];
+		reliefTouchedMark = new boolean[capacity];
+		reliefTouchedSize = 0;
+		reliefQueue = new Placement[capacity];
+		reliefPending = new double[capacity];
+		reliefQueued = new boolean[capacity];
+		visitDepth = new int[capacity];
+		visitStamp = new int[capacity];
+		stamp = 0;
 		pointSupportees.ensureAdditionalCapacity(capacity);
 		pointSupporters.ensureAdditionalCapacity(capacity);
 		placementSupporters.ensureAdditionalCapacity(capacity);
@@ -282,14 +305,152 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	// Shared instance helpers
 	// =========================================================================
 
-	protected void calculateRelifWeight(Placement placement, double reliefWeight) {
-		long supportedArea = placement.getSupportedArea();
-		for (PlacementLoad placementLoad : placement.getSupporters()) {
-			Placement supporter = placementLoad.getPlacement();
-			double r = reliefWeight * placementLoad.getArea() / supportedArea;
-			this.reliefWeights[supporter.getIndex()] += r;
-			calculateRelifWeight(supporter, r);
+	private void nextStamp() {
+		stamp++;
+		if(stamp == 0) {
+			Arrays.fill(visitStamp, 0);
+			stamp = 1;
 		}
+	}
+
+	/**
+	 * Same as {@link Placement#isWithinMaxLoadBoxCount(int)}: whether, for every path down the support
+	 * graph, each placement at distance {@code i} allows at least {@code levels + i} boxes on top.
+	 * <p>
+	 * Each placement is checked once per depth instead of once per path: a placement reached again at
+	 * the same or a lower depth has already been checked against a stricter limit, together with
+	 * everything below it.
+	 */
+	protected boolean isWithinMaxLoadBoxCount(Placement placement, int levels) {
+		nextStamp();
+		return isWithinMaxLoadBoxCountVisit(placement, levels);
+	}
+
+	private boolean isWithinMaxLoadBoxCountVisit(Placement placement, int levels) {
+		// only a placement with several supportees can be reached through several paths
+		if(placement.getSupportees().size() > 1) {
+			int index = placement.getIndex();
+			if(visitStamp[index] == stamp && visitDepth[index] >= levels) {
+				return true;
+			}
+			visitStamp[index] = stamp;
+			visitDepth[index] = levels;
+		}
+
+		BoxStackValue sv = placement.getStackValue();
+		if(sv.isMaxLoadBoxCount() && sv.getMaxLoadBoxCount() < levels) {
+			return false;
+		}
+		List<PlacementLoad> supporters = placement.getSupporters();
+		for (int i = 0; i < supporters.size(); i++) {
+			if(!isWithinMaxLoadBoxCountVisit(supporters.get(i).getPlacement(), levels + 1)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Whether every path up the support graph from {@code candidate} (including it) has fewer than
+	 * {@code count} placements, i.e. at most {@code count} boxes would rest on a box below the candidate.
+	 * <p>
+	 * Each placement is checked once per remaining count instead of once per path: a placement reached
+	 * again with the same or a higher remaining count has already been checked against a stricter limit.
+	 */
+	protected boolean isWithinSupporteeBoxCount(Placement candidate, int count) {
+		nextStamp();
+		return isWithinSupporteeBoxCountVisit(candidate, count);
+	}
+
+	private boolean isWithinSupporteeBoxCountVisit(Placement placement, int count) {
+		if (count <= 0) {
+			return false;
+		}
+		// only a placement with several supporters can be reached through several paths
+		if(placement.getSupporters().size() > 1) {
+			int index = placement.getIndex();
+			// visitDepth holds the remaining count the placement was checked with; lower is stricter
+			if(visitStamp[index] == stamp && visitDepth[index] <= count) {
+				return true;
+			}
+			visitStamp[index] = stamp;
+			visitDepth[index] = count;
+		}
+
+		List<PlacementLoad> supportees = placement.getSupportees();
+		for (int k = 0; k < supportees.size(); k++) {
+			if (!isWithinSupporteeBoxCountVisit(supportees.get(k).getPlacement(), count - 1)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/** Reset the relief weights from the previous candidate. */
+	protected void resetReliefWeights() {
+		for (int i = 0; i < reliefTouchedSize; i++) {
+			int index = reliefTouched[i];
+			reliefWeights[index] = 0;
+			reliefTouchedMark[index] = false;
+		}
+		reliefTouchedSize = 0;
+	}
+
+	/**
+	 * Add relief for {@code reliefWeight} which no longer rests on the supporters of {@code placement}
+	 * (it is shifted onto the candidate), spread down the support graph by contact area.
+	 * <p>
+	 * The relief is spread top-down, once per placement rather than once per path: a placement can
+	 * be reached through several paths, and walking every path grows exponentially with the height.
+	 */
+	protected void calculateRelifWeight(Placement placement, double reliefWeight) {
+		int queueSize = 0;
+		queueSize = spreadRelief(placement, reliefWeight, queueSize);
+
+		int processed = 0;
+		while (processed < queueSize) {
+			// supporters lie strictly below their supportees: process the highest placement first,
+			// so that all of its share has arrived
+			int highest = processed;
+			for (int i = processed + 1; i < queueSize; i++) {
+				if(reliefQueue[i].getAbsoluteZ() > reliefQueue[highest].getAbsoluteZ()) {
+					highest = i;
+				}
+			}
+			Placement supporter = reliefQueue[highest];
+			reliefQueue[highest] = reliefQueue[processed];
+			reliefQueue[processed] = null;
+			processed++;
+
+			int index = supporter.getIndex();
+			double relief = reliefPending[index];
+			reliefPending[index] = 0;
+			reliefQueued[index] = false;
+
+			if(!reliefTouchedMark[index]) {
+				reliefTouchedMark[index] = true;
+				reliefTouched[reliefTouchedSize++] = index;
+			}
+			reliefWeights[index] += relief;
+
+			queueSize = spreadRelief(supporter, relief, queueSize);
+		}
+	}
+
+	private int spreadRelief(Placement placement, double relief, int queueSize) {
+		long supportedArea = placement.getSupportedArea();
+		List<PlacementLoad> supporters = placement.getSupporters();
+		for (int i = 0; i < supporters.size(); i++) {
+			PlacementLoad placementLoad = supporters.get(i);
+			Placement supporter = placementLoad.getPlacement();
+			int index = supporter.getIndex();
+			if(!reliefQueued[index]) {
+				reliefQueued[index] = true;
+				reliefQueue[queueSize++] = supporter;
+			}
+			reliefPending[index] += relief * placementLoad.getArea() / supportedArea;
+		}
+		return queueSize;
 	}
 
 	/**
