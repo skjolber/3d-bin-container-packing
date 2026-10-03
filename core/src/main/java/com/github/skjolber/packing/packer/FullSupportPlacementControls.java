@@ -135,13 +135,16 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 					// check viable inner points in the same plane
 					// use the corners of underlying placements
 					int z = point3d.getMinZ() - 1;
-					int minX = point3d.getMaxX() - stackValue.getDx();
-					int minY = point3d.getMaxY() - stackValue.getDy();
+					// the last start which keeps the box within the point
+					int minX = point3d.getMaxX() - stackValue.getDx() + 1;
+					int minY = point3d.getMaxY() - stackValue.getDy() + 1;
 
-					int minMaxX = point3d.getMinX() + stackValue.getDx();
-					int minMaxY = point3d.getMinY() + stackValue.getDy();
+					// a placement below must at least reach the end of the box placed at the point origin
+					int minMaxX = point3d.getMinX() + stackValue.getDx() - 1;
+					int minMaxY = point3d.getMinY() + stackValue.getDy() - 1;
 
-					if(z <= 0 || minX <= 0 || minY <= 0) {
+					if(z < 0) {
+						// on the floor: always fully supported at the point origin
 						continue;
 					}
 					
