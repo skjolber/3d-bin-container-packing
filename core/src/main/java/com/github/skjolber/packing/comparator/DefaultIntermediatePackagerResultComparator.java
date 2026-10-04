@@ -1,16 +1,21 @@
 package com.github.skjolber.packing.comparator;
 
-import java.util.Comparator;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 
-public class DefaultIntermediatePackagerResultComparator implements Comparator<IntermediatePackagerResult> {
+public class DefaultIntermediatePackagerResultComparator implements IntermediatePackagerResultComparator {
 
 	public static final int ARGUMENT_1_IS_BETTER = 1;
 	public static final int ARGUMENT_2_IS_BETTER = -1;
 	
+	@Override
+	public boolean prefersHigherLoadVolume() {
+		return true;
+	}
+
 	@Override
 	public int compare(IntermediatePackagerResult r1, IntermediatePackagerResult r2) {
 

@@ -471,6 +471,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Brute-force packagers no longer reduce the counts of the box items passed in when packing uses several containers
         * Packing with several container types no longer gives up when each box fits only some of the types (the feasibility check used box indexes which change during packing)
         * Brute-force packing of box item groups over three or more containers no longer fails with a `NullPointerException`
+        * Brute force skips permutations and containers which cannot load more than the best result so far, when the result comparator compares load volume first (`IntermediatePackagerResultComparator.prefersHigherLoadVolume()`); results are unchanged
      * Breaking changes:
         * Validators moved to a separate `validators` artifact (package `com.github.skjolber.packing.validator`)
         * Interrupts / deadlines moved from `core` (`com.github.skjolber.packing.deadline`) to `api` (`com.github.skjolber.packing.api.interrupt`)

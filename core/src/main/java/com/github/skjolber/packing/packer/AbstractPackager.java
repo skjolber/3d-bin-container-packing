@@ -16,6 +16,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
@@ -36,12 +37,15 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	public static final int ARGUMENT_2_IS_BETTER = -1;
 
 	protected final Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
+	/** Whether results with less load volume always compare worse, see {@link IntermediatePackagerResultComparator#prefersHigherLoadVolume()} */
+	protected final boolean prefersHigherLoadVolume;
 	private volatile ContainerStrategyFactory containerStrategyFactory;
 	
 	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Integer.MAX_VALUE);
 
 	public AbstractPackager(Comparator<IntermediatePackagerResult> comparator) {
 		this.intermediatePackagerResultComparator = comparator;
+		this.prefersHigherLoadVolume = comparator instanceof IntermediatePackagerResultComparator c && c.prefersHigherLoadVolume();
 		this.containerStrategyFactory = new DefaultContainerStrategyFactory(comparator,
 				this::createEmptyIntermediatePackagerResult);
 	}

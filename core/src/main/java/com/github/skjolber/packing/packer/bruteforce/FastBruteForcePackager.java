@@ -142,7 +142,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator);
+			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator, best);
 		}
 		
 	}
@@ -181,7 +181,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return truncateToGroup(FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator));
+			return truncateToGroup(FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator, best));
 		}
 		
 	}
@@ -249,6 +249,17 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator,
 			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator) {
+		return pack(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, pointComparator, null);
+	}
+
+	/**
+	 * @param best the best result so far, or null. When results with less load volume always compare worse,
+	 *        returns an empty result if no result can load more than {@code best}.
+	 */
+	public BruteForceIntermediatePackagerResult pack(FastPointCalculator3DStack pointCalculator,
+			Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int containerIndex,
+			BoxItemPermutationRotationIterator iterator,
+			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator, IntermediatePackagerResult best) {
 		
 		Container holder = containerItem.getContainer().clone(iterator.length());
 		
@@ -267,6 +278,12 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		
 		boolean allItemsFit = canPackAll(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
 
+		// results with less load volume than the best result so far are never selected
+		long minLoadVolume = getMinLoadVolume(best);
+		if(minLoadVolume > 0L && getMaxLoadVolume(iterator, holder, allItemsFit) < minLoadVolume) {
+			return bestResult;
+		}
+
 		// iterator over all permutations
 		permutations: 
 		do {
@@ -277,80 +294,86 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 			bestPermutationResult.reset();
 			int maxPackableCount = allItemsFit ? iterator.length() : getMaxPackableCount(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
-			pointCalculator.clearToSize(holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz());
-			if(containerItem.hasInitialPoints()) {
-				pointCalculator.setPoints(containerItem.getInitialPoints());
-				pointCalculator.clear();
-			}
-			
-			int index = 0;
-
-			do {
-				// attempt to limit the number of points created
-				// by calculating the minimum point volume and area
-				int minStackableAreaIndex = iterator.getMinStackableAreaIndex(index);
-				long minStackableVolume = iterator.getMinBoxVolume(index);
-
-				pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), minStackableVolume);
-
-				int count = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, index, interrupt,
-						minStackableAreaIndex, freeLoadWeights[index], loadPlacementUtility, pointComparator, maxPackableCount);
-				if(count == Integer.MIN_VALUE) {
-					return null; // timeout
+			int size;
+			if(!allItemsFit && prefersHigherLoadVolume && getLoadVolume(iterator, maxPackableCount) < Math.max(minLoadVolume, bestResult.getLoadVolume())) {
+				// no rotation of this permutation can load more than the best result
+				size = maxPackableCount;
+			} else {
+				pointCalculator.clearToSize(holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz());
+				if(containerItem.hasInitialPoints()) {
+					pointCalculator.setPoints(containerItem.getInitialPoints());
+					pointCalculator.clear();
 				}
+			
+				int index = 0;
 
-				// continue search, but see if this is the best fit so far
-				// higher count implies higher volume and weight
-				// since the items are the same within each permutation
-				if(count > bestPermutationResult.getSize()) {
-					bestPermutationResult.setState(pointCalculator.getPoints(), iterator.getState(), stackPlacements, stackPlacementCount);
-					if(count == iterator.length()) {
-						return bestPermutationResult;
+				do {
+					// attempt to limit the number of points created
+					// by calculating the minimum point volume and area
+					int minStackableAreaIndex = iterator.getMinStackableAreaIndex(index);
+					long minStackableVolume = iterator.getMinBoxVolume(index);
+
+					pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), minStackableVolume);
+
+					int count = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, index, interrupt,
+							minStackableAreaIndex, freeLoadWeights[index], loadPlacementUtility, pointComparator, maxPackableCount);
+					if(count == Integer.MIN_VALUE) {
+						return null; // timeout
+					}
+
+					// continue search, but see if this is the best fit so far
+					// higher count implies higher volume and weight
+					// since the items are the same within each permutation
+					if(count > bestPermutationResult.getSize()) {
+						bestPermutationResult.setState(pointCalculator.getPoints(), iterator.getState(), stackPlacements, stackPlacementCount);
+						if(count == iterator.length()) {
+							return bestPermutationResult;
+						}
+					}
+					if(count >= maxPackableCount) {
+						// Rotations cannot change box volume or weight, so this is the
+						// longest feasible prefix for the current permutation.
+						clearStack(stack, loadPlacementUtility);
+						break;
+					}
+
+					// search for the next rotation which actually 
+					// has a chance of affecting the result.
+					// i.e. if we have four boxes, and two boxes could be placed with the 
+					// current rotations, and the new rotation only changes the rotation of box 4,
+					// then we know that attempting to stack again will not work since box
+					// 3 will still remain in the same rotation (which could not be placed)
+
+					int rotationIndex = iterator.nextRotation(count);
+
+					if(rotationIndex == -1) {
+						// no more rotations, continue to next permutation
+						clearStack(stack, loadPlacementUtility);
+						break;
+					}
+
+					pointCalculator.setStackSize(rotationIndex);
+					setStackSize(stack, rotationIndex, loadPlacementUtility);
+
+					index = rotationIndex;
+				} while (true);
+
+				if(!bestPermutationResult.isEmpty()) {
+					// compare against other permutation's result
+
+					if(bestResult.isEmpty() || intermediatePackagerResultComparator.compare(bestResult, bestPermutationResult) < 0) {
+						// switch the two results for one another
+						BruteForceIntermediatePackagerResult tmp = bestResult;
+						bestResult = bestPermutationResult;
+						bestPermutationResult = tmp;
 					}
 				}
-				if(count >= maxPackableCount) {
-					// Rotations cannot change box volume or weight, so this is the
-					// longest feasible prefix for the current permutation.
-					clearStack(stack, loadPlacementUtility);
-					break;
-				}
-
-				// search for the next rotation which actually 
-				// has a chance of affecting the result.
-				// i.e. if we have four boxes, and two boxes could be placed with the 
-				// current rotations, and the new rotation only changes the rotation of box 4,
-				// then we know that attempting to stack again will not work since box
-				// 3 will still remain in the same rotation (which could not be placed)
-
-				int rotationIndex = iterator.nextRotation(count);
-
-				if(rotationIndex == -1) {
-					// no more rotations, continue to next permutation
-					clearStack(stack, loadPlacementUtility);
-					break;
-				}
-
-				pointCalculator.setStackSize(rotationIndex);
-				setStackSize(stack, rotationIndex, loadPlacementUtility);
-
-				index = rotationIndex;
-			} while (true);
-
-			if(!bestPermutationResult.isEmpty()) {
-				// compare against other permutation's result
-
-				if(bestResult.isEmpty() || intermediatePackagerResultComparator.compare(bestResult, bestPermutationResult) < 0) {
-					// switch the two results for one another
-					BruteForceIntermediatePackagerResult tmp = bestResult;
-					bestResult = bestPermutationResult;
-					bestPermutationResult = tmp;
-				}
+				size = bestPermutationResult.getSize();
 			}
 
 			// get the next permutation
 			// make sure there is actually free weight available
 			// at the next index
-			int size = bestPermutationResult.getSize();
 			do {
 				int permutationIndex = iterator.nextPermutation(size);
 	

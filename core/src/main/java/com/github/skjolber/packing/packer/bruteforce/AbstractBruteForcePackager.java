@@ -156,6 +156,38 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		return iterator.length();
 	}
 
+	/**
+	 * @return the load volume a result must exceed to be selected over {@code best}, or 0
+	 */
+	protected long getMinLoadVolume(IntermediatePackagerResult best) {
+		if(best == null || !prefersHigherLoadVolume || best.isEmpty()) {
+			return 0L;
+		}
+		return best.getLoadVolume();
+	}
+
+	/**
+	 * @return an upper bound for the load volume of any result for the container
+	 */
+	protected static long getMaxLoadVolume(BoxItemPermutationRotationIterator iterator, Container holder, boolean allItemsFit) {
+		long volume = getLoadVolume(iterator, iterator.length());
+		if(allItemsFit) {
+			return volume;
+		}
+		return Math.min(volume, holder.getMaxLoadVolume());
+	}
+
+	/**
+	 * @return the volume of the first {@code count} boxes of the current permutation
+	 */
+	protected static long getLoadVolume(BoxItemPermutationRotationIterator iterator, int count) {
+		long volume = 0L;
+		for (int i = 0; i < count; i++) {
+			volume += iterator.getStackValue(i).getBox().getVolume();
+		}
+		return volume;
+	}
+
 	protected static boolean canPackAll(BoxItemPermutationRotationIterator iterator, long maxLoadVolume, long maxLoadWeight) {
 		long loadVolume = 0L;
 		long loadWeight = 0L;
@@ -174,6 +206,16 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 
 	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int index,
 			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter) throws PackagerInterruptedException {
+		return pack(pointCalculator, stackPlacements, stackPlacementCount, containerItem, index, iterator, interrupt, pointFilter, null);
+	}
+
+	/**
+	 * @param best the best result so far, or null. When results with less load volume always compare worse,
+	 *        returns an empty result if no result can load more than {@code best}.
+	 */
+	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int index,
+			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, IntermediatePackagerResult best)
+			throws PackagerInterruptedException {
 
 		Container holder = containerItem.getContainer().clone(iterator.length());
 		
@@ -188,6 +230,12 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 
 		// iterator over all permutations
 		boolean allItemsFit = canPackAll(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
+
+		// results with less load volume than the best result so far are never selected
+		long minLoadVolume = getMinLoadVolume(best);
+		if(minLoadVolume > 0L && getMaxLoadVolume(iterator, holder, allItemsFit) < minLoadVolume) {
+			return bestResult;
+		}
 		do {
 			if(interrupt.getAsBoolean()) {
 				throw new PackagerInterruptedException();
@@ -195,6 +243,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			// iterate over all rotations
 			bestPermutationResult.reset();
 			int maxPackableCount = allItemsFit ? iterator.length() : getMaxPackableCount(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
+			if(!allItemsFit && prefersHigherLoadVolume && getLoadVolume(iterator, maxPackableCount) < Math.max(minLoadVolume, bestResult.getLoadVolume())) {
+				// no rotation of this permutation can load more than the best result
+				if(iterator.nextPermutation(maxPackableCount) == -1) {
+					break;
+				}
+				continue;
+			}
 
 			do {
 				int minStackableAreaIndex = iterator.getMinStackableAreaIndex(0);

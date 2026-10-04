@@ -17,4 +17,11 @@ public interface IntermediatePackagerResult {
 	
 	boolean isEmpty();
 
+	/**
+	 * @return the total volume of the packed boxes
+	 */
+	default long getLoadVolume() {
+		return getStack().getVolume();
+	}
+
 }

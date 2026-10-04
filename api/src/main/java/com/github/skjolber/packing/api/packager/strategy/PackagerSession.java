@@ -23,7 +23,8 @@ public interface PackagerSession {
 	 * Pack as many of the remaining boxes as possible into a container. The session is not changed.
 	 *
 	 * @param containerIndex the container type
-	 * @param best the best result so far, if any; the attempt may stop early if it cannot do better
+	 * @param best the best result so far, or null. If not null, the session may return an empty result instead of a
+	 *        result with less load volume than {@code best} (see {@link IntermediatePackagerResult#getLoadVolume()})
 	 * @param abortOnAnyBoxTooBig whether to give up (return an empty result) if some remaining box does not fit the container
 	 * @return the result, possibly empty
 	 * @throws PackagerInterruptedException if the packaging operation is interrupted

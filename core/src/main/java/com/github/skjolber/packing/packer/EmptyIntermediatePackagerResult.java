@@ -19,6 +19,11 @@ public class EmptyIntermediatePackagerResult implements IntermediatePackagerResu
 	}
 
 	@Override
+	public long getLoadVolume() {
+		return 0L;
+	}
+
+	@Override
 	public boolean isEmpty() {
 		return true;
 	}

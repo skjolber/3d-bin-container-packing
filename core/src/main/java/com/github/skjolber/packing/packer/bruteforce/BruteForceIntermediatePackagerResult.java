@@ -229,6 +229,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		return points.size();
 	}
 
+	@Override
 	public long getLoadVolume() {
 		return loadVolume;
 	}

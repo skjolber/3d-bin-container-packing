@@ -11,6 +11,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
@@ -28,6 +29,8 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 	private final Supplier<IntermediatePackagerResult> emptyResultSupplier;
 	private final SingleContainerPacker singleContainerPacker;
 	private final boolean allocationFeasibilityCheck;
+	/** Whether to pass the best result to attempts, see {@link PackagerSession#attempt(int, IntermediatePackagerResult, boolean)} */
+	private final boolean bestResultHints;
 
 	public OrderedContainerPackingStrategy(Comparator<IntermediatePackagerResult> comparator,
 			Supplier<IntermediatePackagerResult> emptyResultSupplier) {
@@ -43,6 +46,8 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 		this.emptyResultSupplier = emptyResultSupplier;
 		this.singleContainerPacker = singleContainerPacker == null ? this::packSingle : singleContainerPacker;
 		this.allocationFeasibilityCheck = allocationFeasibilityCheck;
+		// a session may drop results with less load volume than the best result
+		this.bestResultHints = comparator instanceof IntermediatePackagerResultComparator c && c.prefersHigherLoadVolume();
 	}
 
 	/**
@@ -99,7 +104,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 					}
 
 					if(result == null) {
-						result = session.attempt(nextContainerItemIndex, bestResult, true);
+						result = session.attempt(nextContainerItemIndex, bestResultHints ? bestResult : null, true);
 					}
 					if(!result.isEmpty() && result.getStack().size() == session.countRemainingBoxes()) {
 						results[nextContainerItemIndex] = result;
@@ -225,10 +230,10 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 						result = session.peek(nextContainerItemIndex, best);
 						
 						if(result == null) {
-							result = session.attempt(nextContainerItemIndex, best, maxContainers == 1);
+							result = session.attempt(nextContainerItemIndex, bestResultHints ? best : null, maxContainers == 1);
 						}
 					} else {
-						result = session.attempt(nextContainerItemIndex, best, maxContainers == 1);
+						result = session.attempt(nextContainerItemIndex, bestResultHints ? best : null, maxContainers == 1);
 					}
 					
 					if(result != null && !result.isEmpty()) {
