@@ -30,6 +30,32 @@ class LoadParallelBoxItemBruteForcePackagerTest extends AbstractLoadBruteForcePa
 				.build();
 	}
 
+	@Test
+	void usesThePointFilterWithLoadConstraints() {
+		CountingPointFilter pointFilter = new CountingPointFilter();
+		executorService = Executors.newFixedThreadPool(2);
+		try (LoadParallelBoxItemBruteForcePackager packager = LoadParallelBoxItemBruteForcePackager.newBuilder()
+				.withExecutorService(executorService)
+				.withParallelizationCount(2)
+				.withPointFilter(pointFilter)
+				.build()) {
+			PackagerResultAssert.assertThat(packColumn(packager)).isSuccess();
+		}
+		assertThat(pointFilter.getCount()).isPositive();
+	}
+
+	@Test
+	void builderKeepsSkipReversePermutations() {
+		executorService = Executors.newFixedThreadPool(2);
+		try (LoadParallelBoxItemBruteForcePackager packager = LoadParallelBoxItemBruteForcePackager.newBuilder()
+				.withExecutorService(executorService)
+				.withParallelizationCount(2)
+				.withSkipReversePermutations(true)
+				.build()) {
+			assertThat(packager.filterReversePermutations).isTrue();
+		}
+	}
+
 	@AfterEach
 	void shutdownExecutor() {
 		if(executorService != null) {

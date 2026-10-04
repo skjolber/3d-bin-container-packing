@@ -58,11 +58,17 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 		}
 
 		@Override
+		public Builder withSkipReversePermutations(boolean filterReversePermutations) {
+			this.filterReversePermutations = filterReversePermutations;
+			return this;
+		}
+
+		@Override
 		public LoadBruteForcePackager build() {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
-			LoadBruteForcePackager packager = new LoadBruteForcePackager(comparator, pointFilter);
+			LoadBruteForcePackager packager = new LoadBruteForcePackager(comparator, pointFilter, filterReversePermutations);
 			if(containerStrategyFactory != null) {
 				packager.setContainerStrategyFactory(containerStrategyFactory);
 			}
@@ -75,7 +81,12 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 	}
 
 	public LoadBruteForcePackager(Comparator<IntermediatePackagerResult> comparator, BruteForcePackager.BruteForcePointIteratorFilter pointIndexSelector) {
-		super(comparator, pointIndexSelector, false);
+		this(comparator, pointIndexSelector, false);
+	}
+
+	public LoadBruteForcePackager(Comparator<IntermediatePackagerResult> comparator, BruteForcePackager.BruteForcePointIteratorFilter pointIndexSelector,
+			boolean filterReversePermutations) {
+		super(comparator, pointIndexSelector, filterReversePermutations);
 	}
 
 	@Override

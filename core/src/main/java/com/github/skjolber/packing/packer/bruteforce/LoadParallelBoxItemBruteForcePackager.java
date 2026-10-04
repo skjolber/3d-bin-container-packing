@@ -51,6 +51,12 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 		}
 
 		@Override
+		public Builder withSkipReversePermutations(boolean filterReversePermutations) {
+			super.withSkipReversePermutations(filterReversePermutations);
+			return this;
+		}
+
+		@Override
 		public Builder withParallelizationCount(int parallelizationCount) {
 			super.withParallelizationCount(parallelizationCount);
 			return this;
@@ -95,7 +101,7 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 				}
 			}
 			
-			LoadParallelBoxItemBruteForcePackager packager = new LoadParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter);
+			LoadParallelBoxItemBruteForcePackager packager = new LoadParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter, filterReversePermutations);
 			if(containerStrategyFactory != null) {
 				packager.setContainerStrategyFactory(containerStrategyFactory);
 			}
@@ -105,7 +111,12 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 
 	public LoadParallelBoxItemBruteForcePackager(ExecutorService executorService, int parallelizationCount,
 			Comparator<IntermediatePackagerResult> comparator, BruteForcePointIteratorFilter pointFilter) {
-		super(executorService, parallelizationCount, comparator, pointFilter);
+		this(executorService, parallelizationCount, comparator, pointFilter, false);
+	}
+
+	public LoadParallelBoxItemBruteForcePackager(ExecutorService executorService, int parallelizationCount,
+			Comparator<IntermediatePackagerResult> comparator, BruteForcePointIteratorFilter pointFilter, boolean filterReversePermutations) {
+		super(executorService, parallelizationCount, comparator, pointFilter, filterReversePermutations);
 	}
 
 	@Override
@@ -154,8 +165,7 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
 
 		loadPlacementUtility.initialize(iterator.length());
-		// the point filter is not used with load constraints
-		search(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), interrupt, minStackableAreaIndex, maxPackableCount, loadPlacementUtility, null);
+		search(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), interrupt, minStackableAreaIndex, maxPackableCount, loadPlacementUtility, pointFilter);
 		return pointCalculator.getBestPoints();
 	}
 

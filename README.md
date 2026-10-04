@@ -467,6 +467,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * `MarkResetPointCalculator2D.reset()` restores points which were constrained in place (mutable mode)
         * Supported areas no longer overflow for large dimensions (contact areas above the `int` range, e.g. with 1/10000 inch units)
         * The brute-force placement search is iterative: packing many boxes no longer fails with a stack overflow
+        * The load-aware brute-force builders apply `withSkipReversePermutations(..)`, and `LoadParallelBoxItemBruteForcePackager` uses its point filter when boxes have load constraints
      * Breaking changes:
         * Validators moved to a separate `validators` artifact (package `com.github.skjolber.packing.validator`)
         * Interrupts / deadlines moved from `core` (`com.github.skjolber.packing.deadline`) to `api` (`com.github.skjolber.packing.api.interrupt`)

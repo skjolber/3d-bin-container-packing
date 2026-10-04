@@ -275,6 +275,22 @@ abstract class AbstractLoadBruteForcePackagerTest extends AbstractBruteForcePack
 		return Box.newBuilder().withId(id).withSize(dx, dy, dz).withWeight(weight).build();
 	}
 
+	/**
+	 * Two boxes in a column, the lower box carrying the upper:
+	 *
+	 * <pre>
+	 *   [b]
+	 *   [a]
+	 * </pre>
+	 */
+	protected static PackagerResult packColumn(AbstractBruteForcePackager packager) {
+		Box box = Box.newBuilder().withId("box").withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(1).build();
+		return packager.newResultBuilder()
+				.withContainerItem(new ContainerItem(container(1, 1, 2), 1))
+				.withBoxItems(new BoxItem(box, 2))
+				.build();
+	}
+
 	protected static Container container(int dz) {
 		return container(10, 10, dz);
 	}
