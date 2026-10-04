@@ -17,8 +17,12 @@ import com.github.skjolber.packing.api.Stack;
 public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalculator {
 
 	private final boolean[][] fits;
-	/** Fit record row by box item global index (local indexes change when packaging filters box items), or -1 */
-	private final int[] rowsByGlobalIndex;
+	/**
+	 * Box item global indexes in ascending order, and their fit record rows. Local indexes change when packaging
+	 * filters box items, global indexes do not (but can be sparse).
+	 */
+	private final int[] sortedGlobalIndexes;
+	private final int[] rowsBySortedGlobalIndex;
 	private final int[] fittingContainerItemCounts;
 	private final long resetRemainingVolume;
 	private final long resetRemainingWeight;
@@ -33,7 +37,9 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 		this.resetRemainingVolume = remainingVolume;
 		this.resetRemainingWeight = remainingWeight;
 		this.fits = new boolean[boxItems.size()][containerItems.size()];
-		this.rowsByGlobalIndex = getRowsByGlobalIndex(boxItems);
+		this.sortedGlobalIndexes = new int[boxItems.size()];
+		this.rowsBySortedGlobalIndex = new int[boxItems.size()];
+		indexRows(boxItems, sortedGlobalIndexes, rowsBySortedGlobalIndex);
 		this.fittingContainerItemCounts = new int[boxItems.size()];
 		for(int boxItemIndex = 0; boxItemIndex < boxItems.size(); boxItemIndex++) {
 			BoxItem boxItem = boxItems.get(boxItemIndex);
@@ -58,33 +64,32 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 		this.resetRemainingWeight = source.resetRemainingWeight;
 		// Immutable for the lifetime of the packaging operation; forks can share it.
 		this.fits = source.fits;
-		this.rowsByGlobalIndex = source.rowsByGlobalIndex;
+		this.sortedGlobalIndexes = source.sortedGlobalIndexes;
+		this.rowsBySortedGlobalIndex = source.rowsBySortedGlobalIndex;
 		this.fittingContainerItemCounts = source.fittingContainerItemCounts.clone();
 	}
 
-	private static int[] getRowsByGlobalIndex(List<BoxItem> boxItems) {
-		int maxGlobalIndex = -1;
-		for(BoxItem boxItem : boxItems) {
-			maxGlobalIndex = Math.max(maxGlobalIndex, boxItem.getGlobalIndex());
-		}
-		int[] rows = new int[maxGlobalIndex + 1];
-		Arrays.fill(rows, -1);
+	private static void indexRows(List<BoxItem> boxItems, int[] sortedGlobalIndexes, int[] rows) {
+		long[] keys = new long[boxItems.size()];
 		for(int row = 0; row < boxItems.size(); row++) {
-			int globalIndex = boxItems.get(row).getGlobalIndex();
-			if(globalIndex >= 0) {
-				rows[globalIndex] = row;
-			}
+			// global index in the high bits, row in the low bits
+			keys[row] = ((long)boxItems.get(row).getGlobalIndex() << 32) | row;
 		}
-		return rows;
+		Arrays.sort(keys);
+		for(int i = 0; i < keys.length; i++) {
+			sortedGlobalIndexes[i] = (int)(keys[i] >> 32);
+			rows[i] = (int)keys[i];
+		}
 	}
 
 	/** @return the fit record row of the box item, or -1 if unknown */
 	private int getRow(BoxItem boxItem) {
 		int globalIndex = boxItem.getGlobalIndex();
-		if(globalIndex >= 0 && globalIndex < rowsByGlobalIndex.length) {
-			return rowsByGlobalIndex[globalIndex];
+		if(globalIndex < 0) {
+			return -1;
 		}
-		return -1;
+		int index = Arrays.binarySearch(sortedGlobalIndexes, globalIndex);
+		return index >= 0 ? rowsBySortedGlobalIndex[index] : -1;
 	}
 
 	@Override
