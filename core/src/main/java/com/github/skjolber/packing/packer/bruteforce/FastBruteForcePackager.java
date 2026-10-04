@@ -129,7 +129,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		@Override
 		protected FastBruteForceSession fresh(List<ContainerItem> containers, int containerCount) {
-			return createBoxItemSession(copyBoxItems(initialBoxItems), containers, containerCount, interrupt);
+			return createBoxItemSession(copyInitialBoxItems(), containers, containerCount, interrupt);
 		}
 
 		@Override

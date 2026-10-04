@@ -468,6 +468,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Supported areas no longer overflow for large dimensions (contact areas above the `int` range, e.g. with 1/10000 inch units)
         * The brute-force placement search is iterative: packing many boxes no longer fails with a stack overflow
         * The load-aware brute-force builders apply `withSkipReversePermutations(..)`, and `LoadParallelBoxItemBruteForcePackager` uses its point filter when boxes have load constraints
+        * Brute-force packagers no longer reduce the counts of the box items passed in when packing uses several containers
      * Breaking changes:
         * Validators moved to a separate `validators` artifact (package `com.github.skjolber.packing.validator`)
         * Interrupts / deadlines moved from `core` (`com.github.skjolber.packing.deadline`) to `api` (`com.github.skjolber.packing.api.interrupt`)
@@ -476,6 +477,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Decision-making interfaces are in `api`, so that custom behaviour only needs `api`: `PlacementComparator`, `PlacementComparatorFactory` and `PlacementComparatorAttribute` (`com.github.skjolber.packing.api.packager.control.placement`), and `IntermediatePackagerResult` and `IntermediatePackagerResultComparator`, moved from `core` to `com.github.skjolber.packing.api.packager`
         * Container strategies are in `api` (`com.github.skjolber.packing.api.packager.strategy`): `ContainerStrategy`, `ContainerStrategyFactory`, `ContainerResult` and `ContainerItemsResult`. `PackagerAdapter` is renamed to `PackagerSession` (without `reset()`; use `fresh()`), strategies see the containers as a `ContainerInventory`, and `PackagerInterruptedException` moved to `com.github.skjolber.packing.api.interrupt`
         * Configure a container strategy with the packager builders' `withContainerStrategyFactory(..)`; `AbstractPackager.setContainerPackingStrategyFactory(..)` is removed
+        * Packagers create sessions with `AbstractPackager.createSession(PackagerInput, ..)`; subclasses implement `newSession(..)`, and each session works on its own copies of the boxes and containers. `DefaultControlsPackagerResultBuilder` is removed
         * `ControlledContainerItem` removed: `ContainerItem` now holds the per-container controls (manifest and point controls, initial points, cost); `PackagerResultBuilder.ControlledContainerItemBuilder` renamed to `ContainerItemBuilder`
         * `PlainPlacement*` and `LargestAreaFitFirstPlacementControlsBuilder` removed (use the default placement controls with a placement comparator factory)
         * Points: a single `DefaultPoint3D` / `DefaultPoint2D` implementation replaces the plane- and support-specific point classes

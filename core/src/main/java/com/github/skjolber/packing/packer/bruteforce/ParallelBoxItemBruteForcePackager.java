@@ -305,7 +305,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		@Override
 		protected ParallelSession fresh(List<ContainerItem> containers, int containerCount) {
-			return createBoxItemSession(copyBoxItems(initialBoxItems), containers, containerCount, sourceInterrupt);
+			return createBoxItemSession(copyInitialBoxItems(), containers, containerCount, sourceInterrupt);
 		}
 
 		@Override

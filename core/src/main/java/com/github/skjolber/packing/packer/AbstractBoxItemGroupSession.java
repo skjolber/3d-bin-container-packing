@@ -32,7 +32,8 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 	public AbstractBoxItemGroupSession(List<BoxItemGroup> boxItemGroups, List<ContainerItem> containers,
 			int containerCount, Order order, PackagerInterruptSupplier interrupt) {
 		super(new BoxItemGroupsContainerItemsCalculator(containers, containerCount, initializeGlobalIndexesForGroups(boxItemGroups)));
-		this.initialBoxItemGroups = copyBoxItemGroups(boxItemGroups);
+		// the session owns the groups (see AbstractPackager#createSession) and packs clones of them
+		this.initialBoxItemGroups = boxItemGroups;
 		
 		List<BoxItemGroup> groupClones = new LinkedList<>();
 		for (BoxItemGroup boxItemGroup : boxItemGroups) {
@@ -72,7 +73,7 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 
 	protected AbstractBoxItemGroupSession(AbstractBoxItemGroupSession source) {
 		super(source);
-		this.initialBoxItemGroups = copyBoxItemGroups(source.initialBoxItemGroups);
+		this.initialBoxItemGroups = source.initialBoxItemGroups;
 		this.remainingBoxItemGroups = copyBoxItemGroups(source.remainingBoxItemGroups);
 		for(BoxItemGroup group : remainingBoxItemGroups) {
 			group.mark();

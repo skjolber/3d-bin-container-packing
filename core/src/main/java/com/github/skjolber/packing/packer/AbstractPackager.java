@@ -52,18 +52,20 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	}
 
 	/**
-	 * Create a session for a packaging operation.
+	 * Create a session for a packaging operation. Sessions for the same input are independent of one another.
 	 *
 	 * @param input the boxes and containers, supported by this packager (see {@link #supports(PackagerInput)})
 	 * @param interrupt interrupt for the session's packing attempts
 	 * @return a session at the start of the packaging operation
 	 */
 	public PackagerSession createSession(PackagerInput input, PackagerInterruptSupplier interrupt) {
-		return newSession(input, interrupt);
+		// sessions count down boxes and containers as containers are accepted
+		AbstractPackagerSession.initializeGlobalIndexes(input);
+		return newSession(input.withCopies(), interrupt);
 	}
 
 	/**
-	 * @param input the boxes and containers
+	 * @param input the boxes and containers, which belong to the new session
 	 * @param interrupt interrupt for the session's packing attempts
 	 * @return a session at the start of the packaging operation
 	 */

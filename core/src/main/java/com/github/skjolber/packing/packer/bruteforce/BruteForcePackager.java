@@ -425,7 +425,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 		@Override
 		protected BruteForceSession fresh(List<ContainerItem> containers, int containerCount) {
-			return createBoxItemSession(copyBoxItems(initialBoxItems), containers, containerCount, interrupt);
+			return createBoxItemSession(copyInitialBoxItems(), containers, containerCount, interrupt);
 		}
 
 		@Override

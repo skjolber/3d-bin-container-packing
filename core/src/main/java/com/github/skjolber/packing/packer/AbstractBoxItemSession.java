@@ -30,7 +30,8 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 
 	public AbstractBoxItemSession(List<BoxItem> boxItems, Order order, List<ContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
 		super(initializeGlobalIndexes(boxItems), containers, containerCount);
-		this.initialBoxItems = copyBoxItems(boxItems);
+		// the session owns the box items (see AbstractPackager#createSession) and packs clones of them
+		this.initialBoxItems = boxItems;
 		
 		this.order = order;
 		
@@ -67,7 +68,7 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 
 	protected AbstractBoxItemSession(AbstractBoxItemSession source) {
 		super(source);
-		this.initialBoxItems = copyBoxItems(source.initialBoxItems);
+		this.initialBoxItems = source.initialBoxItems;
 		this.remainingBoxItems = copyBoxItems(source.remainingBoxItems);
 		this.interrupt = source.interrupt;
 		this.order = source.order;

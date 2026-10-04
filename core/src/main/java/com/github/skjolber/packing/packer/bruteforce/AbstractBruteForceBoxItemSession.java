@@ -19,7 +19,10 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 	protected Box[] boxes;
 	protected int[] boxesRemaining;
 	protected BoxItem[] boxItems;
-	protected final List<BoxItem> initialBoxItems;
+	/** The initial count, local index and global index of each box item, for fresh sessions. */
+	protected final int[] initialCounts;
+	protected final int[] initialLocalIndexes;
+	protected final int[] globalIndexes;
 
 	public AbstractBruteForceBoxItemSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 			int containerCount) {
@@ -29,23 +32,30 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 	protected AbstractBruteForceBoxItemSession(List<BoxItem> boxItems,
 			ContainerItemsCalculator containerItemsCalculator) {
 		super(containerItemsCalculator);
-		this.initialBoxItems = copyBoxItems(boxItems);
 		
 		this.boxes = new Box[boxItems.size()];
 		this.boxesRemaining = new int[boxItems.size()];
 		this.boxItems = new BoxItem[boxItems.size()];
+		this.initialCounts = new int[boxItems.size()];
+		this.initialLocalIndexes = new int[boxItems.size()];
+		this.globalIndexes = new int[boxItems.size()];
 		
 		for(int i = 0; i < boxItems.size(); i++) {
 			BoxItem boxItem = boxItems.get(i);
 			this.boxItems[i] = boxItem;
 			this.boxes[i] = boxItem.getBox();
 			this.boxesRemaining[i] = boxItem.getCount();
+			this.initialCounts[i] = boxItem.getCount();
+			this.initialLocalIndexes[i] = boxItem.getLocalIndex();
+			this.globalIndexes[i] = boxItem.getGlobalIndex();
 		}
 	} 
 
 	protected AbstractBruteForceBoxItemSession(AbstractBruteForceBoxItemSession source) {
 		super(source);
-		this.initialBoxItems = copyBoxItems(source.initialBoxItems);
+		this.initialCounts = source.initialCounts;
+		this.initialLocalIndexes = source.initialLocalIndexes;
+		this.globalIndexes = source.globalIndexes;
 		this.boxes = source.boxes.clone();
 		this.boxesRemaining = source.boxesRemaining.clone();
 		this.boxItems = new BoxItem[source.boxItems.length];
@@ -54,6 +64,15 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 				boxItems[i] = source.boxItems[i].clone();
 			}
 		}
+	}
+
+	/** @return copies of the box items at the start of the packaging operation */
+	protected List<BoxItem> copyInitialBoxItems() {
+		List<BoxItem> copies = new ArrayList<>(boxes.length);
+		for(int i = 0; i < boxes.length; i++) {
+			copies.add(new BoxItem(boxes[i].clone(), initialCounts[i], initialLocalIndexes[i], globalIndexes[i]));
+		}
+		return copies;
 	}
 
 	@Override

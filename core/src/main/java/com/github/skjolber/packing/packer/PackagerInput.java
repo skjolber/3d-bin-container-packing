@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.packer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
@@ -30,6 +31,20 @@ public class PackagerInput {
 		this.containerItems = containerItems;
 		this.maxContainerCount = maxContainerCount;
 		this.order = order;
+	}
+
+	/**
+	 * @return the same input with copies of the container items and boxes, so that a session can change their counts
+	 */
+	public PackagerInput withCopies() {
+		List<ContainerItem> containerItemCopies = new ArrayList<>(containerItems.size());
+		for(ContainerItem containerItem : containerItems) {
+			containerItemCopies.add(new ContainerItem(containerItem));
+		}
+		if(hasBoxItems()) {
+			return new PackagerInput(AbstractPackagerSession.copyBoxItems(boxItems), null, containerItemCopies, maxContainerCount, order);
+		}
+		return new PackagerInput(null, AbstractPackagerSession.copyBoxItemGroups(boxItemGroups), containerItemCopies, maxContainerCount, order);
 	}
 
 	/** @return true if packing box items, false if packing box item groups */

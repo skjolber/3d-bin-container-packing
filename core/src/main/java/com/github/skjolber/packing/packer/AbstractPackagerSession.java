@@ -45,7 +45,7 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 	/** Create a new session using a calculator no longer used by another branch. */
 	protected abstract AbstractPackagerSession fresh(List<ContainerItem> containers, int containerCount);
 
-	protected static List<BoxItem> copyBoxItems(List<BoxItem> items) {
+	public static List<BoxItem> copyBoxItems(List<BoxItem> items) {
 		List<BoxItem> copies = new ArrayList<>(items.size());
 		for(BoxItem item : items) {
 			copies.add(new BoxItem(item.getBox().clone(), item.getCount(), item.getLocalIndex(), item.getGlobalIndex()));
@@ -80,6 +80,15 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 		return items;
 	}
 
+	/** Assign stable identities to the input's box items, so that sessions for the same input agree on them. */
+	public static void initializeGlobalIndexes(PackagerInput input) {
+		if(input.hasBoxItems()) {
+			initializeGlobalIndexes(input.getBoxItems());
+		} else {
+			initializeGlobalIndexesForGroups(input.getBoxItemGroups());
+		}
+	}
+
 	public static List<BoxItemGroup> initializeGlobalIndexesForGroups(List<BoxItemGroup> groups) {
 		List<BoxItem> items = new ArrayList<>();
 		for(BoxItemGroup group : groups) {
@@ -89,7 +98,7 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 		return groups;
 	}
 
-	protected static List<BoxItemGroup> copyBoxItemGroups(List<BoxItemGroup> groups) {
+	public static List<BoxItemGroup> copyBoxItemGroups(List<BoxItemGroup> groups) {
 		List<BoxItemGroup> copies = new ArrayList<>(groups.size());
 		for(BoxItemGroup group : groups) {
 			copies.add(new BoxItemGroup(group.getId(), copyBoxItems(group.getItems()), group.getIndex()));
