@@ -72,13 +72,13 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 				continue;
 			}
 			
-			List<BoxStackValue> cloned = new ArrayList<>(boundRotations.size());
+			List<BoxStackValue> copied = new ArrayList<>(boundRotations.size());
 			for(BoxStackValue v : boundRotations) {
-				cloned.add(v.copy());
+				copied.add(v.copy());
 			}
-			Box clonedBox = new Box(box, cloned);
+			Box copiedBox = new Box(box, copied);
 
-			results[i] = new BoxItem(clonedBox, item.getCount(), i, item.getGlobalIndex());
+			results[i] = new BoxItem(copiedBox, item.getCount(), i, item.getGlobalIndex());
 		}
 		return results;
 	}

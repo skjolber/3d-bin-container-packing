@@ -12,7 +12,7 @@ import java.util.List;
  * packing run) should use {@link #build(Collection)}.
  *
  * <p>The canonical implementation is {@code com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory}, which provides
- * fluent builder methods for adding dimensions, constraint-based cloning via
+ * fluent builder methods for adding dimensions, constraint-based copying via
  * {@code withConstraints}, and an optimized-comparator registry.
  */
 public interface PlacementComparatorFactory {

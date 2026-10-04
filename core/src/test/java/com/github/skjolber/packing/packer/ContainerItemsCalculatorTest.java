@@ -33,16 +33,16 @@ public class ContainerItemsCalculatorTest {
 		ContainerItemsCalculator original = create(ContainerItem.newListBuilder()
 				.withContainer(container, 2)
 				.build());
-		ContainerItemsCalculator clone = original.copy();
+		ContainerItemsCalculator copy = original.copy();
 
-		assertNotSame(original.getContainerItem(0), clone.getContainerItem(0));
-		assertEquals(0, clone.getContainerItem(0).getIndex());
-		clone.toContainer(clone.getContainerItem(0), new Stack());
+		assertNotSame(original.getContainerItem(0), copy.getContainerItem(0));
+		assertEquals(0, copy.getContainerItem(0).getIndex());
+		copy.toContainer(copy.getContainerItem(0), new Stack());
 		assertEquals(2, original.getContainerItem(0).getCount());
-		assertEquals(1, clone.getContainerItem(0).getCount());
+		assertEquals(1, copy.getContainerItem(0).getCount());
 		assertEquals(2, original.getContainerCount());
-		assertEquals(1, clone.getContainerCount());
-		assertEquals(1000L, clone.calculateMaxVolume(1).getValue().longValue());
+		assertEquals(1, copy.getContainerCount());
+		assertEquals(1000L, copy.calculateMaxVolume(1).getValue().longValue());
 	}
 
 	@Test
@@ -60,11 +60,11 @@ public class ContainerItemsCalculatorTest {
 		first.decrement();
 		second.decrement();
 
-		ContainerItemsCalculator clone = calculator.copy();
-		clone.reset();
-		assertEquals(3, clone.getContainerCount());
-		assertEquals(2, clone.getContainerItem(0).getCount());
-		assertEquals(1, clone.getContainerItem(1).getCount());
+		ContainerItemsCalculator copy = calculator.copy();
+		copy.reset();
+		assertEquals(3, copy.getContainerCount());
+		assertEquals(2, copy.getContainerItem(0).getCount());
+		assertEquals(1, copy.getContainerItem(1).getCount());
 		assertEquals(1, first.getCount());
 		assertEquals(0, second.getCount());
 

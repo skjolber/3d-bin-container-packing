@@ -26,7 +26,7 @@ public class MarkResetPointCalculator2D extends DefaultPointCalculator2D {
 
 	public void mark() {
 		// mutable points are constrained in place, so the mark needs its own copies
-		this.markValues = values.copy(!cloneOnConstrain);
+		this.markValues = values.copy(!copyOnConstrain);
 
 		this.markMinAreaLimit = minAreaLimit;
 

@@ -42,19 +42,19 @@ public class PermutationBoxItemValue {
 		this.minVolumeLimit = minVolumeLimit;
 	}
 	
-	public PermutationBoxItemValue(PermutationBoxItemValue clone) {
-		// clone working object in order to improve performance
-		this.index = clone.index;
-		this.count = clone.count;
-		this.values = new PermutationRotation[clone.values.length];
-		this.boxItem = clone.boxItem.copy();
+	public PermutationBoxItemValue(PermutationBoxItemValue copy) {
+		// copy working object in order to improve performance
+		this.index = copy.index;
+		this.count = copy.count;
+		this.values = new PermutationRotation[copy.values.length];
+		this.boxItem = copy.boxItem.copy();
 		for (int i = 0; i < values.length; i++) {
-			PermutationRotation permutationRotation = clone.values[i];
+			PermutationRotation permutationRotation = copy.values[i];
 			values[i] = new PermutationRotation(permutationRotation.getBoxItem().copy(), permutationRotation.getBoxStackValue().copy());
 			
 		}
-		this.minAreaLimit = clone.minAreaLimit;
-		this.minVolumeLimit = clone.minVolumeLimit;
+		this.minAreaLimit = copy.minAreaLimit;
+		this.minVolumeLimit = copy.minVolumeLimit;
 
 	}
 

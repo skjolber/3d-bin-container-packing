@@ -180,7 +180,7 @@ public class GridVirtualBoxLayoutGenerator {
 
 	/**
 	 * Generate a subset of the original count, for partitions and selective refinement.
-	 * The original item and its orientations are retained unchanged; no cloned inventory
+	 * The original item and its orientations are retained unchanged; no copied inventory
 	 * is needed. On interruption, return the layouts ranked so far.
 	 */
 	public List<VirtualBoxLayout> generate(BoxItem item, int count, List<Container> containers, int maxLayouts, BooleanSupplier interrupt) {

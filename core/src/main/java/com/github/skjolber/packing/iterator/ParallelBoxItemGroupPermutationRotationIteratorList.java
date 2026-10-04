@@ -59,9 +59,9 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 						Box box = item.getBox();
 						
 						List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
-						Box boxClone = new Box(box, boundRotations);
+						Box boxCopy = new Box(box, boundRotations);
 						
-						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset, item.getGlobalIndex()));
+						loadableItems.add(new BoxItem(boxCopy, item.getCount(), offset, item.getGlobalIndex()));
 						
 						offset++;
 					}
@@ -101,25 +101,25 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 		workUnits = new ParallelBoxItemGroupPermutationRotationIterator[parallelizationCount];
 		for (int i = 0; i < parallelizationCount; i++) {
 
-			// clone working variables so threads are less of the same
+			// copy working variables so threads are less of the same
 			// memory area as one another
-			BoxItem[] boxMatrixClone = new BoxItem[boxItems.length];			
+			BoxItem[] boxMatrixCopy = new BoxItem[boxItems.length];			
 
-			BoxItemGroup[] groupsMatrixClone = new BoxItemGroup[boxItemGroups.length];
-			for(int k = 0; k < groupsMatrixClone.length; k++) {
+			BoxItemGroup[] groupsMatrixCopy = new BoxItemGroup[boxItemGroups.length];
+			for(int k = 0; k < groupsMatrixCopy.length; k++) {
 				if(boxItemGroups[k] == null) {
 					// excluded, i.e. does not fit the container
 					continue;
 				}
-				groupsMatrixClone[k] = boxItemGroups[k].copy();
+				groupsMatrixCopy[k] = boxItemGroups[k].copy();
 				
-				for(int l = 0; l < groupsMatrixClone[k].size(); l++) {
-					BoxItem item =  groupsMatrixClone[k].get(l);
-					boxMatrixClone[item.getLocalIndex()] = item;
+				for(int l = 0; l < groupsMatrixCopy[k].size(); l++) {
+					BoxItem item =  groupsMatrixCopy[k].get(l);
+					boxMatrixCopy[item.getLocalIndex()] = item;
 				}
 			}
 			
-			workUnits[i] = new ParallelBoxItemGroupPermutationRotationIterator(groupsMatrixClone, boxMatrixClone, excluded);
+			workUnits[i] = new ParallelBoxItemGroupPermutationRotationIterator(groupsMatrixCopy, boxMatrixCopy, excluded);
 			if(workUnits[i].preventOptmisation() != -1L) {
 				throw new RuntimeException();
 			}

@@ -368,7 +368,7 @@ class DefaultPointCalculator3DBatchTest {
 	 *     |       B   |
 	 *     +-----------+
 	 *
-	 * The clone buffers must grow; previously the fourth child overflowed them.
+	 * The copy buffers must grow; previously the fourth child overflowed them.
 	 */
 	@ParameterizedTest
 	@ValueSource(booleans = {false, true})

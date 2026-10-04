@@ -59,8 +59,8 @@ public class DefaultPointCalculator3DTest {
 	
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testSinglePoint(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testSinglePoint(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 		assertThat(ep.getAll()).hasSize(3);
@@ -104,8 +104,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testSinglePointCornercase(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testSinglePointCornercase(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 0, 0, 0));
 		assertThat(ep.getAll()).hasSize(3);
@@ -117,8 +117,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testSinglePointCoveringAllX(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testSinglePointCoveringAllX(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 99, 9, 9));
 
@@ -137,8 +137,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testSinglePointCoveringAllY(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testSinglePointCoveringAllY(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 99, 9));
 
@@ -157,8 +157,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testSinglePointCoveringAllZ(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testSinglePointCoveringAllZ(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 99));
 		assertThat(ep.getAll()).hasSize(2);
@@ -176,8 +176,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testSinglePointCoveringWholeContainer(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testSinglePointCoveringWholeContainer(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 99, 99, 99));
 		assertThat(ep.getAll()).hasSize(0);
@@ -185,8 +185,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testStackInXDirection(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testStackInXDirection(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -260,8 +260,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testStackInXDirectionWithIntermediate(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testStackInXDirectionWithIntermediate(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 0));
 
@@ -276,8 +276,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testStackInZDirection(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testStackInZDirection(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -360,8 +360,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testStackInYDirection(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testStackInYDirection(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -380,8 +380,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testStackEqualItemsInXDirection(boolean clone) throws InterruptedException {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testStackEqualItemsInXDirection(boolean copy) throws InterruptedException {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -453,8 +453,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testStackEqualItemsInYDirection(boolean clone) throws InterruptedException {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testStackEqualItemsInYDirection(boolean copy) throws InterruptedException {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -519,8 +519,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testStackEqualItemsInZDirection(boolean clone) throws InterruptedException {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testStackEqualItemsInZDirection(boolean copy) throws InterruptedException {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -569,8 +569,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testStackHigherItemsInXDirection(boolean clone) throws InterruptedException {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testStackHigherItemsInXDirection(boolean copy) throws InterruptedException {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -629,8 +629,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testStackHigherItemsInYDirection(boolean clone) throws InterruptedException {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testStackHigherItemsInYDirection(boolean copy) throws InterruptedException {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -683,8 +683,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testStackHigherItemsInZDirection(boolean clone) throws InterruptedException {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testStackHigherItemsInZDirection(boolean copy) throws InterruptedException {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(0, 0, 0, 9, 9, 9));
 
@@ -695,8 +695,8 @@ public class DefaultPointCalculator3DTest {
 	
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testInitialPointOneLevelUp(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testInitialPointOneLevelUp(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.setSize(100, 100, 100);
 		
 		Point levelPoint = new DefaultPoint3D(0, 0, 20, 99, 99, 99);
@@ -749,8 +749,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneMiddle(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testObstacleInXYPlaneMiddle(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 50, 0, 54, 54, 4));
 		assertThat(ep.getAll()).hasSize(5); // i.e. not below
@@ -853,8 +853,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneX(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testObstacleInXYPlaneX(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 0, 0, 54, 54, 4));
 		assertThat(ep.getAll()).hasSize(4); // i.e. not below
@@ -942,8 +942,8 @@ public class DefaultPointCalculator3DTest {
 	
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneY(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testObstacleInXYPlaneY(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(0, 50, 0, 54, 54, 4));
 		assertThat(ep.getAll()).hasSize(4); // i.e. not below
@@ -1029,8 +1029,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testTwoObstacleInXYPlaneX(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testTwoObstacleInXYPlaneX(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 0, 0, 54, 24, 4));
 		ep.addObstacle(createStackPlacement(50, 75, 0, 54, 99, 4));
@@ -1122,8 +1122,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneTop(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testObstacleInXYPlaneTop(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 50, 0, 54, 99, 4));
 		assertThat(ep.getAll()).hasSize(4); // i.e. not below
@@ -1186,8 +1186,8 @@ public class DefaultPointCalculator3DTest {
 	
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneRight(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testObstacleInXYPlaneRight(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 50, 0, 99, 54, 4));
 		assertThat(ep.getAll()).hasSize(4); // i.e. not below
@@ -1260,8 +1260,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInMiddleAir(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testObstacleInMiddleAir(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 50, 5, 54, 54, 9));
 		assertThat(ep.getAll()).hasSize(6); // i.e. not below
@@ -1369,8 +1369,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneCorner(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testObstacleInXYPlaneCorner(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(0, 50, 0, 54, 99, 4));
 		assertThat(ep.getAll()).hasSize(3); // i.e. not below
@@ -1433,8 +1433,8 @@ public class DefaultPointCalculator3DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testOffsetInXYPlaneMiddle(boolean clone) {
-		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(clone, 16);
+	public void testOffsetInXYPlaneMiddle(boolean copy) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(50, 50, 0, 54, 54, 4));
 		assertThat(ep.getAll()).hasSize(5); // i.e. not below

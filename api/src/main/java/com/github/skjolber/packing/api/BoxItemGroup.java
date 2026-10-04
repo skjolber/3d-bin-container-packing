@@ -34,10 +34,10 @@ public class BoxItemGroup {
 		}
 	}
 
-	public BoxItemGroup(BoxItemGroup clone) {
-		this.id = clone.id;
-		this.items = new ArrayList<>(clone.items);
-		this.index = clone.index;
+	public BoxItemGroup(BoxItemGroup copy) {
+		this.id = copy.id;
+		this.items = new ArrayList<>(copy.items);
+		this.index = copy.index;
 		for (BoxItem boxItem : items) {
 			boxItem.setGroup(this);
 		}

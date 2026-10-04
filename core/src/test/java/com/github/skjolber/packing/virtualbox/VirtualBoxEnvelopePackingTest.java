@@ -74,7 +74,7 @@ class VirtualBoxEnvelopePackingTest {
 	 *       |   B   |                 (0, 1, 0)
 	 *       +-------+
 	 *
-	 * Only final expansion translates the relative children. Delegate cloning
+	 * Only final expansion translates the relative children. Delegate copying
 	 * and local reindexing must not change the selected layout or original identities.
 	 */
 	@Test
@@ -89,9 +89,9 @@ class VirtualBoxEnvelopePackingTest {
 		packing.add(VirtualBox.of(List.of(horizontal, vertical)));
 		packing.add(b);
 		BoxItem item = packing.getItems().get(0);
-		BoxItem clone = new BoxItem(item.getBox().copy(), 1, 91, item.getGlobalIndex());
+		BoxItem copy = new BoxItem(item.getBox().copy(), 1, 91, item.getGlobalIndex());
 		Container packed = container(5, 3, 4);
-		Placement envelope = new Placement(clone.getBox().getStackValue(1), -1, 3, 1, 1, false);
+		Placement envelope = new Placement(copy.getBox().getStackValue(1), -1, 3, 1, 1, false);
 		packed.getStack().add(envelope);
 		packed.getStack().add(new Placement(packing.getItems().get(1).getBox().getStackValue(0), -1, 0, 1, 0, false));
 		PackagerResult delegateResult = new PackagerResult(List.of(packed), 0, false);
@@ -135,7 +135,7 @@ class VirtualBoxEnvelopePackingTest {
 					.withContainerItems(new ContainerItem(container(4, 1, 1), 1))
 					.withMaxDelegateBoxes(1)
 					.build();
-			// Direct delegation retains the delegate's usual inventory-cloning
+			// Direct delegation retains the delegate's usual inventory-copying
 			// semantics; there is deliberately no wrapper expansion/remapping.
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.get(0).getStack().getPlacements()).hasSize(4)

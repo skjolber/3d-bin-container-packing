@@ -91,7 +91,7 @@ public class VirtualBox {
 		return weight;
 	}
 
-	/** Create operation-local inventory. Stack-value indexes identify layouts, including after cloning. */
+	/** Create operation-local inventory. Stack-value indexes identify layouts, including after copying. */
 	public BoxItem toBoxItem(int globalIndex) {
 		return toBoxItem(globalIndex, 1);
 	}

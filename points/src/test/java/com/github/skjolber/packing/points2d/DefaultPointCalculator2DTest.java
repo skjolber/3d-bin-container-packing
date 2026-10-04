@@ -1207,8 +1207,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneMiddle(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneMiddle(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 50, 0, 54, 54, 4));
 		assertThat(ep.getAll()).hasSize(4); // i.e. not below
@@ -1282,8 +1282,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneX(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneX(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 0, 0, 54, 54, 4));
 		assertThat(ep.getAll()).hasSize(3);
@@ -1324,8 +1324,8 @@ public class DefaultPointCalculator2DTest {
 	
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneY(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneY(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(0, 50, 0, 54, 54, 4));
 		assertThat(ep.getAll()).hasSize(3); // no left (x=0), no z in 2D
@@ -1355,8 +1355,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testTwoObstacleInXYPlaneX(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testTwoObstacleInXYPlaneX(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 0, 0, 54, 24, 4));
 		ep.addObstacle(createStackPlacement(50, 75, 0, 54, 99, 4));
@@ -1436,8 +1436,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneTop(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneTop(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 50, 0, 54, 99, 4));
 		assertThat(ep.getAll()).hasSize(3); // no above (y=99), no z in 2D
@@ -1489,8 +1489,8 @@ public class DefaultPointCalculator2DTest {
 	
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneRight(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneRight(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 50, 0, 99, 54, 4));
 		assertThat(ep.getAll()).hasSize(3);
@@ -1552,8 +1552,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInMiddleAir(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInMiddleAir(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 50, 5, 54, 54, 9));
 		assertThat(ep.getAll()).hasSize(4); // same as middle in 2D (z is irrelevant)
@@ -1604,8 +1604,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneCorner(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneCorner(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(0, 50, 0, 54, 99, 4));
 		assertThat(ep.getAll()).hasSize(2); // i.e. not below
@@ -1652,8 +1652,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testOffsetInXYPlaneMiddle(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testOffsetInXYPlaneMiddle(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(50, 50, 0, 54, 54, 4));
 		assertThat(ep.getAll()).hasSize(4); // i.e. not below
@@ -1729,8 +1729,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneMiddleZeroZ(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneMiddleZeroZ(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.addObstacle(createStackPlacement(50, 50, 54, 54));
 		assertThat(ep.getAll()).hasSize(4);
@@ -1752,8 +1752,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneXZeroZ(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneXZeroZ(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.addObstacle(createStackPlacement(50, 0, 54, 54));
 		assertThat(ep.getAll()).hasSize(3);
@@ -1771,8 +1771,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneYZeroZ(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneYZeroZ(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.addObstacle(createStackPlacement(0, 50, 54, 54));
 		assertThat(ep.getAll()).hasSize(3);

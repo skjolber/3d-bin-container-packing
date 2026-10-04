@@ -90,7 +90,7 @@ public class VirtualBoxPlan {
 				result.add(node.virtualBox, node.copies);
 			}
 		}
-		// Loose boxes of the same original item are one entry. Separate cloned entries
+		// Loose boxes of the same original item are one entry. Separate copied entries
 		// would change identical-item load semantics and increase permutation work.
 		for(Node node : frontier) {
 			if(node.virtualBox == null) {

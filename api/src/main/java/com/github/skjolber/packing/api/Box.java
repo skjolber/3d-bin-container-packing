@@ -655,7 +655,7 @@ public class Box {
 	}
 
 	/**
-	 * Copy with cloned stack values (in the same order), without recalculating the derived values.
+	 * Copy with copied stack values (in the same order), without recalculating the derived values.
 	 */
 	private Box(Box box, BoxStackValue[] stackValues) {
 		this.id = box.id;

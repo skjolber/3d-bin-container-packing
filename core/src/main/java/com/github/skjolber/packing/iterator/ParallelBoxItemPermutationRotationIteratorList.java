@@ -92,13 +92,13 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 					continue;
 				}
 				
-				List<BoxStackValue> cloned = new ArrayList<>(boundRotations.size());
+				List<BoxStackValue> copied = new ArrayList<>(boundRotations.size());
 				for(BoxStackValue v : boundRotations) {
-					cloned.add(v.copy());
+					copied.add(v.copy());
 				}
-				Box clonedBox = new Box(box, cloned);
+				Box copiedBox = new Box(box, copied);
 				
-				included[i] = new BoxItem(clonedBox, boxItem.getCount(), i, boxItem.getGlobalIndex());
+				included[i] = new BoxItem(copiedBox, boxItem.getCount(), i, boxItem.getGlobalIndex());
 			}
 
 			return new ParallelBoxItemPermutationRotationIteratorList(included, excluded, parallelizationCount);
@@ -123,10 +123,10 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 		workUnits = new ParallelBoxItemPermutationRotationIterator[parallelizationCount];
 		for (int i = 0; i < parallelizationCount; i++) {
 			
-			// clone working variables so threads are less of the same
+			// copy working variables so threads are less of the same
 			// memory area as one another
-			BoxItem[] clone = copy(boxItems);
-			workUnits[i] = new ParallelBoxItemPermutationRotationIterator(clone, this);
+			BoxItem[] copy = copy(boxItems);
+			workUnits[i] = new ParallelBoxItemPermutationRotationIterator(copy, this);
 		}
 
 		calculate();
@@ -153,13 +153,13 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 			if(boxItem != null) {
 				Box box = boxItem.getBox();
 				
-				List<BoxStackValue> cloned = new ArrayList<>(boxItems.length);
+				List<BoxStackValue> copied = new ArrayList<>(boxItems.length);
 				for(BoxStackValue v : box.getStackValues()) {
-					cloned.add(v.copy());
+					copied.add(v.copy());
 				}
-				Box clonedBox = new Box(box, cloned);
+				Box copiedBox = new Box(box, copied);
 				
-				result[i] = new BoxItem(clonedBox, boxItem.getCount(), i, boxItem.getGlobalIndex());
+				result[i] = new BoxItem(copiedBox, boxItem.getCount(), i, boxItem.getGlobalIndex());
 			}
 		}
 		return result;

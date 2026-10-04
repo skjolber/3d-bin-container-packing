@@ -83,9 +83,9 @@ class VirtualBoxLayoutPreparationTest {
 		packing.add(item(2, 2, 2, 1));
 		packing.add(VirtualBox.of(List.of(horizontal, vertical)));
 		BoxItem delegate = packing.getItems().get(1);
-		BoxItem cloned = new BoxItem(delegate.getBox().copy(), 1, 73, delegate.getGlobalIndex());
-		assertThat(packing.getLayout(cloned.getBox().getStackValue(0))).isSameAs(horizontal);
-		assertThat(packing.getLayout(cloned.getBox().getStackValue(1))).isSameAs(vertical);
+		BoxItem copied = new BoxItem(delegate.getBox().copy(), 1, 73, delegate.getGlobalIndex());
+		assertThat(packing.getLayout(copied.getBox().getStackValue(0))).isSameAs(horizontal);
+		assertThat(packing.getLayout(copied.getBox().getStackValue(1))).isSameAs(vertical);
 		assertThat(packing.getLayout(packing.getItems().get(0).getBox().getStackValue(0))).isNull();
 		assertThat(vertical.getPlacements().get(1).getAbsoluteZ()).isEqualTo(1);
 	}

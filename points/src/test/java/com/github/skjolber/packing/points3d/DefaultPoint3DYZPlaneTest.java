@@ -178,15 +178,15 @@ public class DefaultPoint3DYZPlaneTest extends AbstractPointTest {
 
 	@Test
 	public void testCopy() {
-		DefaultPoint3D clone = point.copy();
+		DefaultPoint3D copy = point.copy();
 		
-		assertEquals(point.getMinX(), clone.getMinX());
-		assertEquals(point.getMinY(), clone.getMinY());
-		assertEquals(point.getMinZ(), clone.getMinZ());
-		assertEquals(point.getMaxX(), clone.getMaxX());
-		assertEquals(point.getMaxY(), clone.getMaxY());
-		assertEquals(point.getMaxZ(), clone.getMaxZ());
+		assertEquals(point.getMinX(), copy.getMinX());
+		assertEquals(point.getMinY(), copy.getMinY());
+		assertEquals(point.getMinZ(), copy.getMinZ());
+		assertEquals(point.getMaxX(), copy.getMaxX());
+		assertEquals(point.getMaxY(), copy.getMaxY());
+		assertEquals(point.getMaxZ(), copy.getMaxZ());
 		
-		assertSame(point.getYZPlane(), clone.getYZPlane());
+		assertSame(point.getYZPlane(), copy.getYZPlane());
 	}
 }

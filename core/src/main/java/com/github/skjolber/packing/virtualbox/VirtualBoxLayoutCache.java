@@ -59,7 +59,7 @@ public class VirtualBoxLayoutCache {
 		if(count <= 1 || count > maxGridBoxes || stop.getAsBoolean()) {
 			return null;
 		}
-		// Reuse original orientations and identities: no box clones or placement remapping.
+		// Reuse original orientations and identities: no box copies or placement remapping.
 		List<VirtualBoxLayout> layouts = grids.generate(originals.get(originalIndex), count, containers, maxLayouts, stop::getAsBoolean);
 		if(stop.getAsBoolean()) {
 			return null;

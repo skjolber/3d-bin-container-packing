@@ -552,7 +552,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				b.withBoxItemControlsBuilderFactory(MaxFireHazardBoxItemGroupsPerContainerManifestControls.newFactory(1));
 			})
 					.withMaxContainerCount(5)
-					.withBoxItemGroups(cloneGroups(groups))
+					.withBoxItemGroups(copyGroups(groups))
 					.withOrder(Order.CRONOLOGICAL)
 					.build();
 			PackagerResultAssert.assertThat(result).isSuccess();
@@ -833,7 +833,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				b.withContainerItem(new ContainerItem(container1, 5));
 			})
 					.withMaxContainerCount(5)
-					.withBoxItemGroups(cloneGroups(groups))
+					.withBoxItemGroups(copyGroups(groups))
 					.withOrder(Order.CRONOLOGICAL)
 					.build();
 			PackagerResultAssert.assertThat(result).isSuccess();
@@ -904,7 +904,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				b.withContainerItem(new ContainerItem(container1, 5));
 			})
 					.withMaxContainerCount(5)
-					.withBoxItemGroups(cloneGroups(groups))
+					.withBoxItemGroups(copyGroups(groups))
 					.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING)
 					.build();
 			PackagerResultAssert.assertThat(result).isSuccess();

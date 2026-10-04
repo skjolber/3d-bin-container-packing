@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 
-/** Attempt-local inventory and expansion mapping; independent of delegate cloning and local reindexing. */
+/** Attempt-local inventory and expansion mapping; independent of delegate copying and local reindexing. */
 public class VirtualBoxPacking {
 	protected static class Entry {
 		protected final BoxItem original;
@@ -37,7 +37,7 @@ public class VirtualBoxPacking {
 
 	protected void add(BoxItem original, int count) {
 		int index = entries.size();
-		// A BoxItem clone alone rebinds the original Box's back-reference.
+		// A BoxItem copy alone rebinds the original Box's back-reference.
 		Box copy = original.getBox().copy();
 		items.add(new BoxItem(copy, count, -1, index));
 		entries.add(new Entry(original, null));
@@ -59,7 +59,7 @@ public class VirtualBoxPacking {
 
 	/**
 	 * Resolve a delegate's orientation to a shared, prepared layout, or null for an
-	 * ordinary item. Uses operation-global indexes and therefore survives cloning
+	 * ordinary item. Uses operation-global indexes and therefore survives copying
 	 * and local reindexing. Finish constructing this mapping before sharing it with
 	 * workers; neither the mapping nor its layouts may be modified during packing.
 	 */

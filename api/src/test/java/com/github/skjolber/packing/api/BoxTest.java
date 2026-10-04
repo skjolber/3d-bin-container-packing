@@ -97,9 +97,9 @@ public class BoxTest {
 		Motion motion = new Motion();
 		Container container = new Container("id", "description", 1, 2, 3, 4, 1, 2, 3, 5, new Stack(), motion);
 
-		Container clone = container.copy();
+		Container copy = container.copy();
 
-		assertSame(motion, clone.getMotion());
+		assertSame(motion, copy.getMotion());
 	}
 	@Test
 	void copyCopiesDerivedValues() {
@@ -112,27 +112,27 @@ public class BoxTest {
 				.withMaxLoadBoxCount(4)
 				.build();
 
-		Box clone = box.copy();
+		Box copy = box.copy();
 
-		assertEquals(box.getId(), clone.getId());
-		assertEquals(box.getVolume(), clone.getVolume());
-		assertEquals(box.getWeight(), clone.getWeight());
-		assertEquals(box.getStackValues().length, clone.getStackValues().length);
-		assertEquals(box.getMinimumArea(), clone.getMinimumArea());
-		assertEquals(box.getMaximumArea(), clone.getMaximumArea());
-		assertEquals(box.getMinimumDx(), clone.getMinimumDx());
-		assertEquals(box.getMinimumDy(), clone.getMinimumDy());
-		assertEquals(box.getMinimumDz(), clone.getMinimumDz());
-		assertEquals(box.getMaximumDz(), clone.getMaximumDz());
-		assertEquals(box.getMinimumPressure(), clone.getMinimumPressure(), 0.0);
-		assertEquals(box.getMaximumPressure(), clone.getMaximumPressure(), 0.0);
-		assertEquals(box.isMaxLoadWeight(), clone.isMaxLoadWeight());
-		assertEquals(box.isMaxLoadBoxCount(), clone.isMaxLoadBoxCount());
-		assertEquals(box.isMaxLoadPressure(), clone.isMaxLoadPressure());
-		assertEquals(box.isLoadIdenticalBoxOnly(), clone.isLoadIdenticalBoxOnly());
-		for(int i = 0; i < clone.getStackValues().length; i++) {
-			// the clone's stack values belong to the clone
-			assertSame(clone, clone.getStackValues()[i].getBox());
+		assertEquals(box.getId(), copy.getId());
+		assertEquals(box.getVolume(), copy.getVolume());
+		assertEquals(box.getWeight(), copy.getWeight());
+		assertEquals(box.getStackValues().length, copy.getStackValues().length);
+		assertEquals(box.getMinimumArea(), copy.getMinimumArea());
+		assertEquals(box.getMaximumArea(), copy.getMaximumArea());
+		assertEquals(box.getMinimumDx(), copy.getMinimumDx());
+		assertEquals(box.getMinimumDy(), copy.getMinimumDy());
+		assertEquals(box.getMinimumDz(), copy.getMinimumDz());
+		assertEquals(box.getMaximumDz(), copy.getMaximumDz());
+		assertEquals(box.getMinimumPressure(), copy.getMinimumPressure(), 0.0);
+		assertEquals(box.getMaximumPressure(), copy.getMaximumPressure(), 0.0);
+		assertEquals(box.isMaxLoadWeight(), copy.isMaxLoadWeight());
+		assertEquals(box.isMaxLoadBoxCount(), copy.isMaxLoadBoxCount());
+		assertEquals(box.isMaxLoadPressure(), copy.isMaxLoadPressure());
+		assertEquals(box.isLoadIdenticalBoxOnly(), copy.isLoadIdenticalBoxOnly());
+		for(int i = 0; i < copy.getStackValues().length; i++) {
+			// the copy's stack values belong to the copy
+			assertSame(copy, copy.getStackValues()[i].getBox());
 			assertSame(box, box.getStackValues()[i].getBox());
 		}
 	}

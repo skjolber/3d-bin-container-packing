@@ -76,9 +76,9 @@ public class ContainerItemsCalculator implements ContainerInventory {
 		for(ContainerItem item : containerItems) {
 			copies.add(new ContainerItem(item));
 		}
-		ContainerItemsCalculator clone = new ContainerItemsCalculator(copies, containerCount, resetContainerCount);
-		clone.cost = cost;
-		return clone;
+		ContainerItemsCalculator copy = new ContainerItemsCalculator(copies, containerCount, resetContainerCount);
+		copy.cost = cost;
+		return copy;
 	}
 
 	/** Restore each container item's count to its reset count. */

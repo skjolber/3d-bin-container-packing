@@ -48,13 +48,13 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 					continue;
 				}
 				
-				List<BoxStackValue> cloned = new ArrayList<>(boundRotations.size());
+				List<BoxStackValue> copied = new ArrayList<>(boundRotations.size());
 				for(BoxStackValue v : boundRotations) {
-					cloned.add(v.copy());
+					copied.add(v.copy());
 				}
-				Box clonedBox = new Box(box, cloned);
+				Box copiedBox = new Box(box, copied);
 				
-				included[i] = new BoxItem(clonedBox, boxItem.getCount(), i, boxItem.getGlobalIndex());
+				included[i] = new BoxItem(copiedBox, boxItem.getCount(), i, boxItem.getGlobalIndex());
 			}
 
 			return new DefaultBoxItemPermutationRotationIterator(included, excluded);

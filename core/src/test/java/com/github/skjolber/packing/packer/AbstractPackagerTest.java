@@ -176,7 +176,7 @@ public abstract class AbstractPackagerTest {
 		return results;
 	}
 
-	public List<BoxItemGroup> cloneGroups(List<BoxItemGroup> groups) {
+	public List<BoxItemGroup> copyGroups(List<BoxItemGroup> groups) {
 		List<BoxItemGroup> results = new ArrayList<>();
 		
 		for (BoxItemGroup boxItemGroup : groups) {

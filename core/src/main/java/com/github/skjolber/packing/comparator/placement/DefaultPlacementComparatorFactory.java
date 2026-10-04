@@ -40,7 +40,7 @@ import com.github.skjolber.packing.comparator.AbstractChainedPlacementComparator
  *         .lowerZIsBetter()
  *         .compile();
  *
- * // Per-run: clone with only active constraints:
+ * // Per-run: copy with only active constraints:
  * PlacementComparator cmp = template.newInstance(true, false, true, false);
  * // → produces: higherCount → higherWeight → lowerZ
  * </pre>
@@ -228,7 +228,7 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	private final Map<List<PlacementComparatorAttribute>, PlacementComparatorSupplier> registry;
 
 	// =========================================================================
-	// Package-private constructors (used by Builder.compile() and clone methods)
+	// Package-private constructors (used by Builder.compile() and copy methods)
 	// =========================================================================
 
 	/** Converts a list of entries + pre-built map into a compiled factory. No sorting. */
@@ -407,7 +407,7 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	}
 
 	// =========================================================================
-	// Clone with constraint parameters
+	// Copy with constraint parameters
 	// =========================================================================
 
 	/**
@@ -843,7 +843,7 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 		}
 
 		// =========================================================================
-		// Clone with constraint parameters
+		// Copy with constraint parameters
 		// =========================================================================
 
 		/**
@@ -859,20 +859,20 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 		public Builder withConstraints(boolean weight, boolean pressure,
 				boolean count, boolean identical) {
 			Set<String> available = buildAvailableSet(weight, pressure, count, identical);
-			Builder clone = new Builder();
-			clone.registry = this.registry;
-			clone.positionConfigurer = this.positionConfigurer;
+			Builder copy = new Builder();
+			copy.registry = this.registry;
+			copy.positionConfigurer = this.positionConfigurer;
 			for (AttrEntry e : entries) {
 				if (!e.attribute().isSkippable(available)) {
-					clone.entries.add(e);
+					copy.entries.add(e);
 				}
 			}
 			for (AttrEntry e : trailingEntries) {
 				if (!e.attribute().isSkippable(available)) {
-					clone.trailingEntries.add(e);
+					copy.trailingEntries.add(e);
 				}
 			}
-			return clone;
+			return copy;
 		}
 
 		/**

@@ -314,21 +314,21 @@ public class Point2DFlagList implements Iterable<Point> {
 		return iterator;
 	}
 
-	public Point2DFlagList copy(boolean clonePoints) {
-		Point2DFlagList clone = new Point2DFlagList(points.length);
+	public Point2DFlagList copy(boolean copyPoints) {
+		Point2DFlagList copy = new Point2DFlagList(points.length);
 
-		clone.size = size;
+		copy.size = size;
 
-		System.arraycopy(flag, 0, clone.flag, 0, flag.length);
-		if(clonePoints) {
+		System.arraycopy(flag, 0, copy.flag, 0, flag.length);
+		if(copyPoints) {
 			for(int i = 0; i < size; i++) {
-				clone.points[i] = points[i].copy();
+				copy.points[i] = points[i].copy();
 			}
 		} else {
-			System.arraycopy(points, 0, clone.points, 0, points.length);
+			System.arraycopy(points, 0, copy.points, 0, points.length);
 		}
 		
-		return clone;
+		return copy;
 	}
 
 

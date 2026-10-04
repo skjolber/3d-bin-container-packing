@@ -376,7 +376,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		} else {
 			// Constrain max values to the new placement
 			if(immutablePoints) {
-				constrainFloatingMaxWithClone(placement, endIndex);
+				constrainFloatingMaxWithCopy(placement, endIndex);
 			} else {
 				constrainFloatingMax(placement, endIndex);
 			}
@@ -934,8 +934,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			if(immutablePoints) {
 				long area = (placement.getAbsoluteX() - point.getMinX()) * (long)point.getDy();
 				if(area >= minAreaLimit) {
-					SimplePoint3D clone = point.copy(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
-					constrainXX.set(clone, i);
+					SimplePoint3D copy = point.copy(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+					constrainXX.set(copy, i);
 				}
 			} else {
 				point.setMaxX(placement.getAbsoluteX() - 1);
@@ -972,8 +972,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			
 			if(immutablePoints) {
 				// area is same as before, so not necessary to constrain
-				SimplePoint3D clone = point.copy(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
-				constrainZZ.set(clone, i);
+				SimplePoint3D copy = point.copy(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+				constrainZZ.set(copy, i);
 			} else {
 				point.setMaxZ(placement.getAbsoluteZ() - 1);
 				constrainZZ.set(point, i);
@@ -1011,8 +1011,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			if(immutablePoints) {
 				long area = (placement.getAbsoluteY() - point.getMinY()) * (long)point.getDx();
 				if(area >= minAreaLimit) {
-					SimplePoint3D clone = point.copy(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
-					constrainYY.set(clone, i);
+					SimplePoint3D copy = point.copy(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+					constrainYY.set(copy, i);
 				}
 			} else {
 				point.setMaxY(placement.getAbsoluteY() - 1);
@@ -1157,8 +1157,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		}
 	}
 
-	protected void constrainFloatingMaxWithClone(Placement placement, int limit) {
-		// each examined point can add at most one clone per direction
+	protected void constrainFloatingMaxWithCopy(Placement placement, int limit) {
+		// each examined point can add at most one copy per direction
 		addedXX.ensureAdditionalCapacity(limit);
 		addedYY.ensureAdditionalCapacity(limit);
 		addedZZ.ensureAdditionalCapacity(limit);
@@ -1247,8 +1247,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			addX: if(point.getMinX() < placement.getAbsoluteX()) {
 				if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
 					// is the point now eclipsed by current points?
-					long cloneVolume = (long)point.getDy() * (long)point.getDz() * (placement.getAbsoluteX() - point.getMinX());
-					int cloneMaxX = placement.getAbsoluteX() - 1;
+					long copyVolume = (long)point.getDy() * (long)point.getDz() * (placement.getAbsoluteX() - point.getMinX());
+					int copyMaxX = placement.getAbsoluteX() - 1;
 
 					for (int j = 0; j < i - 1; j++) {
 						if(values.isFlag(j)) {
@@ -1259,8 +1259,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 							break;
 						}
 
-						if(point3d.getVolume() >= cloneVolume) {
-							if(point3d.eclipsesConstrainedX(point, cloneMaxX)) {
+						if(point3d.getVolume() >= copyVolume) {
+							if(point3d.eclipsesConstrainedX(point, copyMaxX)) {
 								break addX;
 							}
 						}
@@ -1270,25 +1270,25 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					for (int j = 0; j < addedXX.size(); j++) {
 						SimplePoint3D point3d = addedXX.get(j);
 
-						if(point3d.getVolume() >= cloneVolume) {
-							if(point3d.eclipsesConstrainedX(point, cloneMaxX)) {
+						if(point3d.getVolume() >= copyVolume) {
+							if(point3d.eclipsesConstrainedX(point, copyMaxX)) {
 								break addX;
 							}
 						}
 					}
 
-					SimplePoint3D clone = point.copy(cloneMaxX, point.getMaxY(), point.getMaxZ());
+					SimplePoint3D copy = point.copy(copyMaxX, point.getMaxY(), point.getMaxZ());
 
-					addedXX.add(clone);
-					constrainXX.set(clone, i);
+					addedXX.add(copy);
+					constrainXX.set(copy, i);
 				}
 			}
 
 			addY: if(point.getMinY() < placement.getAbsoluteY()) {
 				if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
 					// is the point now eclipsed by current points?
-					long cloneVolume = (long)point.getDx() * (long)point.getDz() * (placement.getAbsoluteY() - point.getMinY());
-					int cloneMaxY = placement.getAbsoluteY() - 1;
+					long copyVolume = (long)point.getDx() * (long)point.getDz() * (placement.getAbsoluteY() - point.getMinY());
+					int copyMaxY = placement.getAbsoluteY() - 1;
 
 					for (int j = 0; j < i - 1; j++) {
 						if(values.isFlag(j)) {
@@ -1299,8 +1299,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 							break;
 						}
 
-						if(point3d.getVolume() >= cloneVolume) {
-							if(point3d.eclipsesConstrainedY(point, cloneMaxY)) {
+						if(point3d.getVolume() >= copyVolume) {
+							if(point3d.eclipsesConstrainedY(point, copyMaxY)) {
 								break addY;
 							}
 						}
@@ -1310,17 +1310,17 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					for (int j = 0; j < addedYY.size(); j++) {
 						SimplePoint3D point3d = addedYY.get(j);
 
-						if(point3d.getVolume() >= cloneVolume) {
-							if(point3d.eclipsesConstrainedY(point, cloneMaxY)) {
+						if(point3d.getVolume() >= copyVolume) {
+							if(point3d.eclipsesConstrainedY(point, copyMaxY)) {
 								break addY;
 							}
 						}
 					}
 
-					SimplePoint3D clone = point.copy(point.getMaxX(), cloneMaxY, point.getMaxZ());
+					SimplePoint3D copy = point.copy(point.getMaxX(), copyMaxY, point.getMaxZ());
 
-					addedYY.add(clone);
-					constrainYY.set(clone, i);
+					addedYY.add(copy);
+					constrainYY.set(copy, i);
 				}
 			}
 
@@ -1328,8 +1328,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				if(!isConstrainedAtMaxZ(point, placement.getAbsoluteZ() - 1)) {
 					// is the point now eclipsed by current points?
 					
-					long cloneVolume = point.getArea() * (placement.getAbsoluteZ() - point.getMinZ());
-					int cloneMaxZ = placement.getAbsoluteZ() - 1;
+					long copyVolume = point.getArea() * (placement.getAbsoluteZ() - point.getMinZ());
+					int copyMaxZ = placement.getAbsoluteZ() - 1;
 					
 					for (int j = 0; j < i - 1; j++) {
 						if(values.isFlag(j)) {
@@ -1340,8 +1340,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 							break;
 						}
 
-						if(point3d.getVolume() >= cloneVolume) {
-							if(point3d.eclipsesConstrainedZ(point, cloneMaxZ)) {
+						if(point3d.getVolume() >= copyVolume) {
+							if(point3d.eclipsesConstrainedZ(point, copyMaxZ)) {
 								break addZ;
 							}
 						}
@@ -1351,16 +1351,16 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					for (int j = 0; j < addedZZ.size(); j++) {
 						SimplePoint3D point3d = addedZZ.get(j);
 
-						if(point3d.getVolume() >= cloneVolume) {
-							if(point3d.eclipsesConstrainedZ(point, cloneMaxZ)) {
+						if(point3d.getVolume() >= copyVolume) {
+							if(point3d.eclipsesConstrainedZ(point, copyMaxZ)) {
 								break addZ;
 							}
 						}
 					}
-					SimplePoint3D clone = point.copy(point.getMaxX(), point.getMaxY(), cloneMaxZ);
+					SimplePoint3D copy = point.copy(point.getMaxX(), point.getMaxY(), copyMaxZ);
 
-					addedZZ.add(clone);
-					constrainZZ.set(clone, i);
+					addedZZ.add(copy);
+					constrainZZ.set(copy, i);
 				}
 			}
 			values.flag(i);
@@ -1372,7 +1372,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 		Point3DFlagList values = this.values;
 
-		// each examined point can add at most one clone per direction
+		// each examined point can add at most one copy per direction
 		addedXX.ensureAdditionalCapacity(limit);
 		addedYY.ensureAdditionalCapacity(limit);
 		addedZZ.ensureAdditionalCapacity(limit);
@@ -1640,23 +1640,23 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			// fall through: must add multiple points
 
 			if(point.getMinX() < placement.getAbsoluteX() &&!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
-				SimplePoint3D clone = point.copy(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
-				constrainXX.set(clone, i);
-				addedXX.add(clone);
+				SimplePoint3D copy = point.copy(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+				constrainXX.set(copy, i);
+				addedXX.add(copy);
 				splitXX = true;
 			}
 			
 			if(point.getMinY() < placement.getAbsoluteY() && !isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
-				SimplePoint3D clone = point.copy(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
-				constrainYY.set(clone, i);
-				addedYY.add(clone);
+				SimplePoint3D copy = point.copy(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+				constrainYY.set(copy, i);
+				addedYY.add(copy);
 				splitYY = true;
 			}
 
 			if(point.getMinZ() < placement.getAbsoluteZ() &&!isConstrainedAtMaxZ(point, placement.getAbsoluteZ() - 1)) {
-				SimplePoint3D clone = point.copy(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
-				constrainZZ.set(clone, i);
-				addedZZ.add(clone);
+				SimplePoint3D copy = point.copy(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+				constrainZZ.set(copy, i);
+				addedZZ.add(copy);
 				splitZZ = true;
 			}
 			values.flag(i);
@@ -1786,9 +1786,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		} else {
 			for (int i = 0; i < initialPoints.size(); i++) {
 				SimplePoint3D simplePoint3D = initialPoints.get(i);
-				SimplePoint3D clone = simplePoint3D.copy();
-				clone.setIndex(values.size());
-				values.add(clone);
+				SimplePoint3D copy = simplePoint3D.copy();
+				copy.setIndex(values.size());
+				values.add(copy);
 			}
 		}
 		minAreaLimit = 0;

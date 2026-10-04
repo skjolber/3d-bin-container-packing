@@ -41,9 +41,9 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 						Box box = item.getBox();
 						
 						List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
-						Box boxClone = new Box(box, boundRotations);
+						Box boxCopy = new Box(box, boundRotations);
 						
-						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset, item.getGlobalIndex()));
+						loadableItems.add(new BoxItem(boxCopy, item.getCount(), offset, item.getGlobalIndex()));
 						
 						offset++;
 					}

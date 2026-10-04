@@ -973,7 +973,7 @@ class PlacementComparatorBuilderTest {
 	}
 
 	// =========================================================================
-	// withConstraints() — clone with active constraint flags
+	// withConstraints() — copy with active constraint flags
 	// =========================================================================
 
 	/**
@@ -982,7 +982,7 @@ class PlacementComparatorBuilderTest {
 	 * <pre>
 	 *  newBuilder()                   ← pre-loads 4 constraint entries
 	 *  .withConstraints(false, false, false, false)
-	 *  → no constraint entries in clone → noOp
+	 *  → no constraint entries in copy → noOp
 	 *
 	 *  A: maxWeight=500  B: maxWeight=100  → compare returns 0
 	 * </pre>
@@ -1000,7 +1000,7 @@ class PlacementComparatorBuilderTest {
 	 * <pre>
 	 *  newBuilder()                          ← pre-loads [identical, count, weight, pressure]
 	 *  .withConstraints(true, false, false, false)
-	 *  → clone contains only weight entry
+	 *  → copy contains only weight entry
 	 *
 	 *  A: maxWeight=500  B: maxWeight=100  → A preferred (weight active)
 	 *  A: maxPressure=9.0  B: maxPressure=0.5  → tie (pressure not active)
@@ -1023,7 +1023,7 @@ class PlacementComparatorBuilderTest {
 	 *            entries: [identical, count, weight, pressure, lowerZ]
 	 *
 	 *  withConstraints(false, false, false, false)
-	 *  → clone: [lowerZ]   (position entries always included)
+	 *  → copy: [lowerZ]   (position entries always included)
 	 *
 	 *  A: z=1   B: z=8  → z decides (constraint entries absent but position fires)
 	 * </pre>
@@ -1038,27 +1038,27 @@ class PlacementComparatorBuilderTest {
 	}
 
 	/**
-	 * {@code withConstraints} produces an independent clone; modifying the clone does not
+	 * {@code withConstraints} produces an independent copy; modifying the copy does not
 	 * affect the template and vice-versa.
 	 *
 	 * <pre>
 	 *  Template: newBuilder()  (4 constraint entries)
-	 *  Clone A:  withConstraints(weight=true, rest=false)  → [weight]
-	 *  Clone B:  withConstraints(count=true,  rest=false)  → [count]
-	 *  Modifying clone A does not affect clone B.
+	 *  Copy A:  withConstraints(weight=true, rest=false)  → [weight]
+	 *  Copy B:  withConstraints(count=true,  rest=false)  → [count]
+	 *  Modifying copy A does not affect copy B.
 	 * </pre>
 	 */
 	@Test
 	void withConstraints_returnsIndependentCopy() {
 		DefaultPlacementComparatorFactory.Builder template = DefaultPlacementComparatorFactory.newFactory();
-		DefaultPlacementComparatorFactory.Builder cloneA = template.withConstraints(true, false, false, false);
-		DefaultPlacementComparatorFactory.Builder cloneB = template.withConstraints(false, false, true, false);
+		DefaultPlacementComparatorFactory.Builder copyA = template.withConstraints(true, false, false, false);
+		DefaultPlacementComparatorFactory.Builder copyB = template.withConstraints(false, false, true, false);
 
-		// Append a position dim to clone A — must not affect clone B
-		cloneA.lowerZIsBetter();
+		// Append a position dim to copy A — must not affect copy B
+		copyA.lowerZIsBetter();
 
-		PlacementComparator cmpA = cloneA.build();
-		PlacementComparator cmpB = cloneB.build();
+		PlacementComparator cmpA = copyA.build();
+		PlacementComparator cmpB = copyB.build();
 
 		// cmpA has weight + lowerZ; count tie → z decides
 		assertThat(cmpA.compare(p(5, 5, 1, 0, 0, 1, 1), p(5, 5, 1, 0, 0, 8, 1))).isPositive();

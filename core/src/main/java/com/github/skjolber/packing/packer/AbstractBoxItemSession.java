@@ -30,16 +30,16 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 
 	public AbstractBoxItemSession(List<BoxItem> boxItems, Order order, List<ContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
 		super(initializeGlobalIndexes(boxItems), containers, containerCount);
-		// the session owns the box items (see AbstractPackager#createSession) and packs clones of them
+		// the session owns the box items (see AbstractPackager#createSession) and packs copies of them
 		this.initialBoxItems = boxItems;
 		
 		this.order = order;
 		
-		List<BoxItem> boxClones = new ArrayList<>(boxItems.size());
+		List<BoxItem> boxCopies = new ArrayList<>(boxItems.size());
 		for (BoxItem item : boxItems) {
-			BoxItem clone = item.copy();
-			clone.setLocalIndex(boxClones.size());
-			boxClones.add(clone);
+			BoxItem copy = item.copy();
+			copy.setLocalIndex(boxCopies.size());
+			boxCopies.add(copy);
 		}
 		
 		boolean maxLoadWeight = false;
@@ -62,7 +62,7 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 		this.maxLoadBoxCount = maxLoadBoxCount;
 		this.maxLoadIdenticalBoxCount = maxLoadIdenticalBoxCount;
 		
-		this.remainingBoxItems = boxClones;
+		this.remainingBoxItems = boxCopies;
 		this.interrupt = interrupt;
 	}
 
