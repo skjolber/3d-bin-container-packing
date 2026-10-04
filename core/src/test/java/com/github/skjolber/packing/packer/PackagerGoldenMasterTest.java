@@ -18,7 +18,11 @@ import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.ClosestVolumeAndAreaPointFilter;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.LoadBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.LoadParallelBoxItemBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
@@ -97,10 +101,10 @@ public class PackagerGoldenMasterTest {
 		-3000234718410066959L, -1304404878125705941L, 2L, 2L,
 	};
 
-	static final int LOAD_NONE = 0;
-	static final int LOAD_WEIGHT = 1;
-	static final int LOAD_WEIGHT_PRESSURE_COUNT = 2;
-	static final int LOAD_IDENTICAL = 3;
+	public static final int LOAD_NONE = 0;
+	public static final int LOAD_WEIGHT = 1;
+	public static final int LOAD_WEIGHT_PRESSURE_COUNT = 2;
+	public static final int LOAD_IDENTICAL = 3;
 
 	@Test
 	public void plainPackagerLoadWeight() throws IOException {
@@ -205,6 +209,116 @@ public class PackagerGoldenMasterTest {
 		}
 	}
 
+	/*
+	 * Brute-force variants: point filter, groups, load limits and the parallel packagers. The parallel
+	 * packagers select among equally good results in thread completion order, so only a summary of their
+	 * results is deterministic.
+	 */
+
+	private static final long[] EXPECTED_BRUTE_FORCE_POINT_FILTER = {
+		7843580046106859895L, 2440287871093439682L, -4516682763885846808L, 6039731108546513903L,
+		8728185113305420136L, -2358077914062050043L, 1839652993381982561L, -7810854047523803376L,
+		-372242133089036785L, -7004518245045586089L, -8521740760356600005L, -473978201621490708L,
+	};
+
+	private static final long[] EXPECTED_BRUTE_FORCE_GROUPS = {
+		7843580046106859895L, 2440287864107926838L, 2548309615160605511L, 6039731106805676818L,
+		5330130213954713715L, -2358077914062050043L, 9015769085271897720L, -5934595884552817430L,
+		1746508692343909076L, -7004518245045586089L, -2105154166812315596L, -738026494876541206L,
+	};
+
+	private static final long[] EXPECTED_LOAD_BRUTE_FORCE_WEIGHT = {
+		-1560624090259993544L, 2440287864107926838L, 4657213197540965501L, 6039731106805676818L,
+		6854638827737156533L, -2358077914062050043L, 9015769088129271694L, -5934595884496482649L,
+		1746508692343909076L, -7004518245045586089L, -2105154166812315596L, -738026494876541206L,
+	};
+
+	private static final long[] EXPECTED_LOAD_BRUTE_FORCE = {
+		-1560624090259993544L, 3990204954788621529L, -6268159047462828399L, 6039731106828764843L,
+		6854638827737156533L, 4174926516148258215L, -4681298428429779372L, -5934595884472471103L,
+		1746508692343909076L, -7004518245045586089L, -8521740758384882670L, -8280268140199339607L,
+	};
+
+	private static final long[] EXPECTED_LOAD_BRUTE_FORCE_IDENTICAL = {
+		-1560624090258174402L, 5413079661044550367L, -6268159047462828399L, 4933539009470205692L,
+		6854638827737156533L, -2354905164612236164L, -4681298428429779372L, -1280305952004183045L,
+		1917409172158508868L, -8396266801244388856L, -8445515327695668177L, -8280268140199339607L,
+	};
+
+	private static final long[] EXPECTED_LOAD_BRUTE_FORCE_POINT_FILTER = {
+		-1560624090259993544L, 3990204961774134373L, -4516682763660507684L, 6039731108546513903L,
+		8728185108150325914L, 4174926516148258215L, 1941286900968525406L, -7810854047523803376L,
+		-372242133089036785L, -7004518245045586089L, -8521740758384882670L, -473978201621490708L,
+	};
+
+	private static final long[] EXPECTED_PARALLEL_BRUTE_FORCE = {
+		53359L, 38364L, 40409L, 45924L,
+		43878L, 59469L, 56247L, 44435L,
+		70689L, 56280L, 41583L, 49457L,
+	};
+
+	private static final long[] EXPECTED_LOAD_PARALLEL_BRUTE_FORCE = {
+		53359L, 38364L, 40409L, 45924L,
+		43878L, 59469L, 56247L, 44435L,
+		70689L, 56280L, 41583L, 49457L,
+	};
+
+	@Test
+	public void bruteForcePackagerPointFilter() throws IOException {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().withPointFilter(new ClosestVolumeAndAreaPointFilter()).build()) {
+			check("EXPECTED_BRUTE_FORCE_POINT_FILTER", EXPECTED_BRUTE_FORCE_POINT_FILTER, seed -> pack(packager, seed, 5, 1, false));
+		}
+	}
+
+	@Test
+	public void bruteForcePackagerGroups() throws IOException {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			check("EXPECTED_BRUTE_FORCE_GROUPS", EXPECTED_BRUTE_FORCE_GROUPS, seed -> pack(packager, seed, 5, 1, true));
+		}
+	}
+
+	@Test
+	public void loadBruteForcePackagerWeight() throws IOException {
+		try (LoadBruteForcePackager packager = LoadBruteForcePackager.newBuilder().build()) {
+			check("EXPECTED_LOAD_BRUTE_FORCE_WEIGHT", EXPECTED_LOAD_BRUTE_FORCE_WEIGHT, seed -> pack(packager, seed, 5, 1, false, LOAD_WEIGHT));
+		}
+	}
+
+	@Test
+	public void loadBruteForcePackager() throws IOException {
+		try (LoadBruteForcePackager packager = LoadBruteForcePackager.newBuilder().build()) {
+			check("EXPECTED_LOAD_BRUTE_FORCE", EXPECTED_LOAD_BRUTE_FORCE, seed -> pack(packager, seed, 5, 1, false, LOAD_WEIGHT_PRESSURE_COUNT));
+		}
+	}
+
+	@Test
+	public void loadBruteForcePackagerIdentical() throws IOException {
+		try (LoadBruteForcePackager packager = LoadBruteForcePackager.newBuilder().build()) {
+			check("EXPECTED_LOAD_BRUTE_FORCE_IDENTICAL", EXPECTED_LOAD_BRUTE_FORCE_IDENTICAL, seed -> pack(packager, seed, 5, 1, false, LOAD_IDENTICAL));
+		}
+	}
+
+	@Test
+	public void loadBruteForcePackagerPointFilter() throws IOException {
+		try (LoadBruteForcePackager packager = LoadBruteForcePackager.newBuilder().withPointFilter(new ClosestVolumeAndAreaPointFilter()).build()) {
+			check("EXPECTED_LOAD_BRUTE_FORCE_POINT_FILTER", EXPECTED_LOAD_BRUTE_FORCE_POINT_FILTER, seed -> pack(packager, seed, 5, 1, false, LOAD_WEIGHT_PRESSURE_COUNT));
+		}
+	}
+
+	@Test
+	public void parallelBruteForcePackager() throws IOException {
+		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).build()) {
+			check("EXPECTED_PARALLEL_BRUTE_FORCE", EXPECTED_PARALLEL_BRUTE_FORCE, seed -> packSummary(packager, seed, 5, 1, false));
+		}
+	}
+
+	@Test
+	public void loadParallelBruteForcePackager() throws IOException {
+		try (LoadParallelBoxItemBruteForcePackager packager = LoadParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).build()) {
+			check("EXPECTED_LOAD_PARALLEL_BRUTE_FORCE", EXPECTED_LOAD_PARALLEL_BRUTE_FORCE, seed -> packSummary(packager, seed, 5, 1, false, LOAD_WEIGHT_PRESSURE_COUNT));
+		}
+	}
+
 	private interface Run {
 		long run(long seed);
 	}
@@ -229,7 +343,7 @@ public class PackagerGoldenMasterTest {
 	 * @param maxBoxes maximum number of box items (brute force is exponential: keep small)
 	 * @param maxCount maximum count per box item
 	 */
-	protected static long pack(Packager<?> packager, long seed, int maxBoxes, int maxCount, boolean groups) {
+	public static long pack(Packager<?> packager, long seed, int maxBoxes, int maxCount, boolean groups) {
 		return pack(packager, seed, maxBoxes, maxCount, groups, LOAD_NONE);
 	}
 
@@ -237,7 +351,7 @@ public class PackagerGoldenMasterTest {
 	 * @param load which load limits to give the boxes; drawn from a separate random sequence, so
 	 *        that boxes are otherwise the same as without load limits
 	 */
-	protected static long pack(Packager<?> packager, long seed, int maxBoxes, int maxCount, boolean groups, int load) {
+	public static long pack(Packager<?> packager, long seed, int maxBoxes, int maxCount, boolean groups, int load) {
 		Random random = new Random(seed);
 		List<BoxItem> items = createItems(random, new Random(seed * 31 + 7), maxBoxes, maxCount, load);
 		List<ContainerItem> containers = createContainers(random);
@@ -265,6 +379,29 @@ public class PackagerGoldenMasterTest {
 			}
 		}
 		return hash;
+	}
+
+	/**
+	 * Checksum of the result summary: success, and the number of boxes, loaded volume and weight per container.
+	 */
+	protected static long packSummary(Packager<?> packager, long seed, int maxBoxes, int maxCount, boolean groups, int load) {
+		Random random = new Random(seed);
+		List<BoxItem> items = createItems(random, new Random(seed * 31 + 7), maxBoxes, maxCount, load);
+		List<ContainerItem> containers = createContainers(random);
+
+		PackagerResult result = build(packager, items, containers, groups);
+		long hash = result.isSuccess() ? 1 : 2;
+		for(int c = 0; c < result.size(); c++) {
+			Container packed = result.get(c);
+			hash = hash * 31 + packed.getStack().size();
+			hash = hash * 31 + packed.getStack().getVolume();
+			hash = hash * 31 + packed.getStack().getWeight();
+		}
+		return hash;
+	}
+
+	protected static long packSummary(Packager<?> packager, long seed, int maxBoxes, int maxCount, boolean groups) {
+		return packSummary(packager, seed, maxBoxes, maxCount, groups, LOAD_NONE);
 	}
 
 	/** Random boxes; the load limits are drawn from {@code loadRandom}, so boxes are otherwise the same for all load modes. */

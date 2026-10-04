@@ -56,6 +56,7 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 	protected final SimplePoint3D[] bestPoints;
 	protected final List<Point> bestPointList = new BestPointList();
 	protected int bestStackIndex;
+	private BruteForceSearchFrames searchFrames;
 
 	public PointCalculator3DStack(int maxStackDepth) {
 		super(true, maxStackDepth);
@@ -187,6 +188,14 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 
 	protected int getBestStackIndex() {
 		return bestStackIndex;
+	}
+
+	/** Per-level state for the placement search, created on first use. */
+	BruteForceSearchFrames getSearchFrames() {
+		if(searchFrames == null) {
+			searchFrames = new BruteForceSearchFrames(stackItems.length);
+		}
+		return searchFrames;
 	}
 
 	protected List<Point> getBestPoints() {

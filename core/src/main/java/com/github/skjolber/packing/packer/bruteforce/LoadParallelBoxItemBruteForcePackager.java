@@ -8,17 +8,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
@@ -44,6 +41,12 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 		@Override
 		public Builder withThreads(int threads) {
 			super.withThreads(threads);
+			return this;
+		}
+
+		@Override
+		public Builder withPointFilter(BruteForcePointIteratorFilter pointFilter) {
+			super.withPointFilter(pointFilter);
 			return this;
 		}
 
@@ -151,82 +154,9 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
 
 		loadPlacementUtility.initialize(iterator.length());
-		packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt,
-				minStackableAreaIndex, maxPackableCount, loadPlacementUtility);
+		// the point filter is not used with load constraints
+		search(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), interrupt, minStackableAreaIndex, maxPackableCount, loadPlacementUtility, null);
 		return pointCalculator.getBestPoints();
 	}
 
-	private void packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements,
-			BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight, int placementIndex,
-			PackagerInterruptSupplier interrupt, int minStackableAreaIndex,
-			int maxPackableCount, LoadPlacementUtility utility) throws PackagerInterruptedException {
-		if(interrupt.getAsBoolean()) {
-			throw new PackagerInterruptedException();
-		}
-		if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
-			return;
-		}
-
-		BoxStackValue stackValue = iterator.getStackValue(placementIndex);
-		if(stackValue.getBox().getWeight() > maxLoadWeight) {
-			return;
-		}
-		pointCalculator.updateBest();
-
-		pointCalculator.push();
-		int currentPointsCount = pointCalculator.size();
-		for(int k = 0; k < currentPointsCount; k++) {
-			SimplePoint3D point = pointCalculator.get(k);
-			if(!point.fits3D(stackValue)) {
-				continue;
-			}
-
-			utility.populatePointSupporters(point);
-			utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
-			long supportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
-			if(supportedArea == -1L) {
-				continue;
-			}
-
-			Placement placement = placements[placementIndex];
-			placement.setStackValue(stackValue);
-			placement.setPoint(point);
-			placement.setIndex(stack.size());
-			placement.setSupportedArea(supportedArea);
-
-			pointCalculator.add(k, placement);
-			if(placementIndex + 1 >= maxPackableCount) {
-				pointCalculator.updateBest();
-				break;
-			}
-
-			stack.add(placement);
-			utility.addSupportersLoad(placement);
-
-			int nextMinStackableAreaIndex;
-			if(placementIndex == minStackableAreaIndex) {
-				nextMinStackableAreaIndex = iterator.getMinStackableAreaIndex(placementIndex + 1);
-				pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(nextMinStackableAreaIndex).getArea(), iterator.getMinBoxVolume(placementIndex + 1));
-			} else {
-				pointCalculator.setMinimumVolumeLimit(iterator.getMinBoxVolume(placementIndex + 1));
-				nextMinStackableAreaIndex = minStackableAreaIndex;
-			}
-
-			packStackPlacement(pointCalculator, placements, iterator, stack,
-					maxLoadWeight - stackValue.getBox().getWeight(), placementIndex + 1, interrupt,
-					nextMinStackableAreaIndex, maxPackableCount, utility);
-
-			for(PlacementLoad placementLoad : placement.getSupporters()) {
-				placementLoad.getPlacement().removeLastSupportee();
-			}
-			placement.clearLoad();
-			stack.remove(stack.size() - 1);
-
-			if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
-				break;
-			}
-			pointCalculator.redo();
-		}
-		pointCalculator.pop();
-	}
 }

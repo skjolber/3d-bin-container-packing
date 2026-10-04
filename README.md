@@ -333,7 +333,7 @@ The algorithm tries to skip combinations which will obviously not yield a (bette
  
 There is also a parallel version `ParallelBruteForcePackager` of the brute-force packager, for those wishing to use it on a multi-core system.
 
-Note that the algorithm is recursive on the number of boxes, so do not attempt this with many boxes (it will likely not complete in time anyhow).
+Do not attempt this with many boxes of different sizes: the number of combinations grows exponentially, so it will likely not complete in time. The search itself is not recursive, so many identical boxes do not exhaust the thread stack.
 
 </details> 
 
@@ -466,6 +466,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * The full-support fallback no longer skips positions at the edge of a point
         * `MarkResetPointCalculator2D.reset()` restores points which were constrained in place (mutable mode)
         * Supported areas no longer overflow for large dimensions (contact areas above the `int` range, e.g. with 1/10000 inch units)
+        * The brute-force placement search is iterative: packing many boxes no longer fails with a stack overflow
      * Breaking changes:
         * Validators moved to a separate `validators` artifact (package `com.github.skjolber.packing.validator`)
         * Interrupts / deadlines moved from `core` (`com.github.skjolber.packing.deadline`) to `api` (`com.github.skjolber.packing.api.interrupt`)
