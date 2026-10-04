@@ -11,9 +11,13 @@ Microbenchmark suite using the OpenJDK JMH framework. Measures throughput and la
 ## Architecture Notes
 - `@State(Scope.Benchmark)` classes set up packagers and test data once per benchmark run.
 - `BouwkampConverter` bridges test-module Bouwkamp codes into JMH benchmark inputs.
-- The Maven Shade plugin produces a fat JAR (`benchmarks.jar`) for running benchmarks in isolation.
+- The Maven Shade plugin produces a fat JAR (`benchmark.jar`) for running benchmarks in isolation.
 - JMH requires that benchmark methods are **not** inlined by the JIT — annotate with `@Benchmark`, never call them directly.
 - Output JSON results can be visualised at https://jmh.morethan.io.
+
+## Experiments
+See [EXPERIMENTS.md](EXPERIMENTS.md) for optimizations which were measured and did not work,
+and how changes were measured (CPU boost off, interleaved A/B on a busy machine).
 
 ## Running Benchmarks
 ```bash
@@ -21,10 +25,10 @@ Microbenchmark suite using the OpenJDK JMH framework. Measures throughput and la
 mvn package -pl jmh -am -DskipTests
 
 # Run all benchmarks
-java -jar jmh/target/benchmarks.jar
+java -jar jmh/target/benchmark.jar
 
 # Run a specific benchmark with custom settings
-java -jar jmh/target/benchmarks.jar PackagerBenchmark -f 1 -wi 3 -i 5 -rf json -rff results.json
+java -jar jmh/target/benchmark.jar PackagerBenchmark -f 1 -wi 3 -i 5 -rf json -rff results.json
 ```
 
 ## Dependencies
