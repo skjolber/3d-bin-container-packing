@@ -511,6 +511,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * `PackagerSession.attempt(index, best, ..)` may return an empty result instead of a result with less load volume than `best`; strategies which pass the best result so far must handle this
         * Packagers create sessions with `AbstractPackager.createSession(PackagerInput, ..)`; subclasses implement `newSession(..)`, and each session works on its own copies of the boxes and containers. `DefaultControlsPackagerResultBuilder` is removed
         * `ControlledContainerItem` removed: `ContainerItem` now holds the per-container controls (manifest and point controls, initial points, cost); `PackagerResultBuilder.ControlledContainerItemBuilder` renamed to `ContainerItemBuilder`
+        * Builder options which had no effect removed: `withPoints(..)` on the brute-force packager builders and `withFirstBoxItemGroupComparator(..)` on the LAFF builders
         * `PlainPlacement*` and `LargestAreaFitFirstPlacementControlsBuilder` removed (use the default placement controls with a placement comparator factory)
         * Points: a single `DefaultPoint3D` / `DefaultPoint2D` implementation replaces the plane- and support-specific point classes
         * The module descriptors export all public packages

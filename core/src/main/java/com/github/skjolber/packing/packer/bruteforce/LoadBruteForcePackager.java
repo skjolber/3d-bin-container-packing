@@ -46,12 +46,6 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 		}
 
 		@Override
-		public Builder withPoints(List<Point> points) {
-			this.points = points;
-			return this;
-		}
-
-		@Override
 		public Builder withPointFilter(BruteForcePointIteratorFilter pointFilter) {
 			this.pointFilter = pointFilter;
 			return this;

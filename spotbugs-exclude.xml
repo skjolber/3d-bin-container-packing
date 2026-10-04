@@ -16,6 +16,10 @@
 	<Match>
 		<Bug pattern="CT_CONSTRUCTOR_THROW"/>
 	</Match>
+	<!-- protected fields, so that users can extend the classes -->
+	<Match>
+		<Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD,UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD"/>
+	</Match>
 	<!-- internal iterators in hot loops, always used with hasNext() -->
 	<Match>
 		<Bug pattern="IT_NO_SUCH_ELEMENT"/>

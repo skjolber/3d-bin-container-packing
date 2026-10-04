@@ -126,7 +126,7 @@ public class Points2DRecordedState {
 		@Override
 		public FastLargestAreaFitFirstPackager build() {
 			try (FastLargestAreaFitFirstPackager defaults = super.build()) {
-				return new FastLargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, firstBoxItemGroupComparator, placementControlsBuilderFactory,
+				return new FastLargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory,
 						firstPlacementControlsBuilderFactory) {
 					@Override
 					protected PointCalculator createPointCalculator(BoxItemSource source) {

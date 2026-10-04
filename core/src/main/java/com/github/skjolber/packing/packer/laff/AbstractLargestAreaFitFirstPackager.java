@@ -143,16 +143,14 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 	protected PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory;
 	
 	protected Comparator<BoxItemGroup> boxItemGroupComparator;
-	protected Comparator<BoxItemGroup> firstBoxItemGroupComparator;
 	
-	public AbstractLargestAreaFitFirstPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<BoxItemGroup> boxItemGroupComparator, Comparator<BoxItemGroup> firstBoxItemGroupComparator, PlacementControlsBuilderFactory placementControlsBuilderFactory, PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory) {
+	public AbstractLargestAreaFitFirstPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<BoxItemGroup> boxItemGroupComparator, PlacementControlsBuilderFactory placementControlsBuilderFactory, PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory) {
 		super(comparator);
 
 		this.firstPlacementControlsBuilderFactory = firstPlacementControlsBuilderFactory;
 		this.placementControlsBuilderFactory = placementControlsBuilderFactory;
 		
 		this.boxItemGroupComparator = boxItemGroupComparator;
-		this.firstBoxItemGroupComparator = firstBoxItemGroupComparator;
 	}
 
 	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) throws PackagerInterruptedException {

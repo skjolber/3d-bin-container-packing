@@ -39,9 +39,6 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = new LargestAreaBoxItemGroupComparator();
 			}
-			if(firstBoxItemGroupComparator == null) {
-				firstBoxItemGroupComparator = new LargestAreaBoxItemGroupComparator();
-			}
 			if(firstPlacementControlsBuilderFactory == null) {
 				LargestAreaBoxItemComparator firstBoxItemComparator = new LargestAreaBoxItemComparator();
 				DefaultPlacementComparatorFactory.Builder firstFactory = DefaultPlacementComparatorFactory.newFactory();
@@ -66,7 +63,7 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 						.lowerZIsBetter();
 				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementFactory, boxItemComparator, calculateSupport, requireFullSupport);
 			}
-			FastLargestAreaFitFirstPackager packager = new FastLargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, firstBoxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
+			FastLargestAreaFitFirstPackager packager = new FastLargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
 			if(containerStrategyFactory != null) {
 				packager.setContainerStrategyFactory(containerStrategyFactory);
 			}
@@ -77,12 +74,10 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 	public FastLargestAreaFitFirstPackager(
 			Comparator<IntermediatePackagerResult> comparator,
 			Comparator<BoxItemGroup> boxItemGroupComparator,
-			Comparator<BoxItemGroup> firstBoxItemGroupComparator, 
 			PlacementControlsBuilderFactory placementControlsBuilderFactory,
 			PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory) {
 		super(comparator, 
 				boxItemGroupComparator, 
-				firstBoxItemGroupComparator, 
 				placementControlsBuilderFactory,
 				firstPlacementControlsBuilderFactory
 				);

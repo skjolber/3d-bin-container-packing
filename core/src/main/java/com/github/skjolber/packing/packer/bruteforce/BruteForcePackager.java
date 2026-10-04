@@ -356,7 +356,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	public static class BruteForcePackagerBuilder {
 
 		protected Comparator<IntermediatePackagerResult> comparator;
-		protected List<Point> points;
 		protected BruteForcePointIteratorFilter pointFilter;
 		protected boolean filterReversePermutations = false;
 		protected ContainerStrategyFactory containerStrategyFactory;
@@ -376,11 +375,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		 */
 		public BruteForcePackagerBuilder withContainerStrategyFactory(ContainerStrategyFactory factory) {
 			this.containerStrategyFactory = Objects.requireNonNull(factory);
-			return this;
-		}
-
-		public BruteForcePackagerBuilder withPoints(List<Point> points) {
-			this.points = points;
 			return this;
 		}
 

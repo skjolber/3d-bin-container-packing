@@ -38,8 +38,6 @@ public class DefaultPointCalculator1D implements PointCalculator {
 
 	protected long minAreaLimit = 0;
 
-	protected Point1D initialPoint;
-	
 	protected BooleanFunction<Placement> adder;
 	
 	public DefaultPointCalculator1D(BoxItemSource boxItemSource, Dimension dimension) {

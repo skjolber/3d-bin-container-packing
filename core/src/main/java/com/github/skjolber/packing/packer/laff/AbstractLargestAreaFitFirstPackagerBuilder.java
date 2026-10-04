@@ -17,7 +17,6 @@ public abstract class AbstractLargestAreaFitFirstPackagerBuilder<B extends Abstr
 
 	protected Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
 	
-	protected Comparator<BoxItemGroup> firstBoxItemGroupComparator;
 	protected Comparator<BoxItemGroup> boxItemGroupComparator;
 
 	protected PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory;
@@ -53,10 +52,6 @@ public abstract class AbstractLargestAreaFitFirstPackagerBuilder<B extends Abstr
 		return (B)this;
 	}
 	
-	public B withFirstBoxItemGroupComparator(Comparator<BoxItemGroup> boxItemGroupComparator) {
-		this.firstBoxItemGroupComparator = boxItemGroupComparator;
-		return (B)this;
-	}
 
 	public B withBoxItemGroupComparator(Comparator<BoxItemGroup> boxItemGroupComparator) {
 		this.boxItemGroupComparator = boxItemGroupComparator;

@@ -10,7 +10,6 @@ import com.github.skjolber.packing.api.packager.control.placement.PlacementContr
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.LargestAreaBoxItemComparator;
-import com.github.skjolber.packing.comparator.LargestAreaBoxItemGroupComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
 import com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory;
@@ -40,9 +39,6 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
 			}
-			if(firstBoxItemGroupComparator == null) {
-				firstBoxItemGroupComparator = new LargestAreaBoxItemGroupComparator();
-			}
 			if(placementControlsBuilderFactory == null) {
 				VolumeThenWeightBoxItemComparator boxItemComparator = new VolumeThenWeightBoxItemComparator();
 				DefaultPlacementComparatorFactory.Builder placementFactory = DefaultPlacementComparatorFactory.newFactory();
@@ -67,7 +63,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 						.higherWeightIsBetter();
 				firstPlacementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(firstFactory, firstBoxItemComparator, calculateSupport, requireFullSupport);
 			}
-			LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, firstBoxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
+			LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
 			if(containerStrategyFactory != null) {
 				packager.setContainerStrategyFactory(containerStrategyFactory);
 			}
@@ -78,13 +74,11 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 	public LargestAreaFitFirstPackager(
 			Comparator<IntermediatePackagerResult> comparator,
 			Comparator<BoxItemGroup> boxItemGroupComparator,
-			Comparator<BoxItemGroup> firstBoxItemGroupComparator, 
 			PlacementControlsBuilderFactory placementControlsBuilderFactory,
 			PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory
 			) {
 		super(comparator,
 				boxItemGroupComparator, 
-				firstBoxItemGroupComparator, 
 				placementControlsBuilderFactory,
 				firstPlacementControlsBuilderFactory
 				);
