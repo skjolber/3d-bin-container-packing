@@ -135,6 +135,9 @@ if(result.isSuccess()) {
 }
 ```
 
+The placements (`match.getStack().getPlacements()`) refer to copies of the input boxes; identify them by
+`placement.getStackValue().getBox().getId()`.
+
 Use a maximum number of containers:
 
 ```java
@@ -148,7 +151,8 @@ PackagerResult result = packager
     .build();
 ```
 
-Note that all `packager` instances are thread-safe.
+Note that all `packager` instances are thread-safe. Packing works on copies of the input boxes and containers, so boxes
+can be shared between threads; it only assigns global indexes to box items which have none.
 
 ### Plain packager
 A simple packager
