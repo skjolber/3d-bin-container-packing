@@ -30,7 +30,9 @@ import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
  * cannot load more. Accepted results are accepted by every packager's session, keeping them in sync.
  * <p>
  * Each packager's session has its own interrupt. Except for the first packager, an interrupt which is not
- * the session's interrupt means the packager's budget is used up: the packager is not used any more.
+ * the session's interrupt means the packager's budget is used up: the packager is not used any more. Likewise, a
+ * packager whose session cannot accept a result (for example box item groups packed out of order) is not used any
+ * more. The first packager still in use answers the questions about the remaining boxes and containers.
  */
 public class CompositePackagerSession implements PackagerSession {
 
@@ -76,7 +78,7 @@ public class CompositePackagerSession implements PackagerSession {
 
 	@Override
 	public IntermediatePackagerResult attempt(int containerIndex, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
-		int remainingBoxes = sessions[0].countRemainingBoxes();
+		int remainingBoxes = primary().countRemainingBoxes();
 
 		IntermediatePackagerResult selected = null;
 		int selectedStage = -1;
@@ -88,7 +90,7 @@ public class CompositePackagerSession implements PackagerSession {
 			try {
 				result = sessions[i].attempt(containerIndex, hints ? getHint(best, selected) : null, abortOnAnyBoxTooBig);
 			} catch(PackagerInterruptedException e) {
-				if(i == 0 || interrupt.getAsBoolean()) {
+				if(i == 0 || i == getPrimaryIndex() || interrupt.getAsBoolean()) {
 					throw e;
 				}
 				// the packager's budget is used up; its session is not used any more
@@ -128,8 +130,8 @@ public class CompositePackagerSession implements PackagerSession {
 			stage = compositeResult.getStage();
 			result = sessions[stage].peek(containerIndex, compositeResult.getDelegate());
 		} else {
-			stage = 0;
-			result = sessions[0].peek(containerIndex, existing);
+			stage = getPrimaryIndex();
+			result = sessions[stage].peek(containerIndex, existing);
 		}
 		if(result == null) {
 			return null;
@@ -150,14 +152,19 @@ public class CompositePackagerSession implements PackagerSession {
 			container = sessions[owner].accept(delegate);
 		} else {
 			// the result is still valid, but its session is not used any more
-			container = sessions[0].accept(new DefaultIntermediatePackagerResult(delegate.getContainerItem(), delegate.getStack()));
-			owner = 0;
+			owner = getPrimaryIndex();
+			container = sessions[owner].accept(new DefaultIntermediatePackagerResult(delegate.getContainerItem(), delegate.getStack()));
 		}
 		// the other sessions remove the same boxes and container
 		IntermediatePackagerResult accepted = new DefaultIntermediatePackagerResult(delegate.getContainerItem(), container.getStack());
 		for(int i = 0; i < sessions.length; i++) {
 			if(i != owner && active[i]) {
-				sessions[i].accept(accepted);
+				try {
+					sessions[i].accept(accepted);
+				} catch(IllegalArgumentException e) {
+					// the packager cannot continue from this result
+					active[i] = false;
+				}
 			}
 		}
 		return container;
@@ -165,7 +172,7 @@ public class CompositePackagerSession implements PackagerSession {
 
 	@Override
 	public List<Integer> getContainers() {
-		return sessions[0].getContainers();
+		return primary().getContainers();
 	}
 
 	@Override
@@ -192,47 +199,61 @@ public class CompositePackagerSession implements PackagerSession {
 
 	@Override
 	public long getRemainingVolume() {
-		return sessions[0].getRemainingVolume();
+		return primary().getRemainingVolume();
 	}
 
 	@Override
 	public long getRemainingWeight() {
-		return sessions[0].getRemainingWeight();
+		return primary().getRemainingWeight();
 	}
 
 	@Override
 	public ContainerInventory getContainerInventory() {
-		return sessions[0].getContainerInventory();
+		return primary().getContainerInventory();
 	}
 
 	@Override
 	public List<BoxItem> getRemainingBoxItems() {
-		return sessions[0].getRemainingBoxItems();
+		return primary().getRemainingBoxItems();
 	}
 
 	@Override
 	public List<BoxItemGroup> getRemainingBoxItemGroups() {
-		return sessions[0].getRemainingBoxItemGroups();
+		return primary().getRemainingBoxItemGroups();
 	}
 
 	@Override
 	public ContainerItem getContainerItem(int index) {
-		return sessions[0].getContainerItem(index);
+		return primary().getContainerItem(index);
 	}
 
 	@Override
 	public int countRemainingBoxes() {
-		return sessions[0].countRemainingBoxes();
+		return primary().countRemainingBoxes();
 	}
 
 	@Override
 	public int countRemainingBoxItemGroups() {
-		return sessions[0].countRemainingBoxItemGroups();
+		return primary().countRemainingBoxItemGroups();
 	}
 
 	@Override
 	public int getMaxContainerCount() {
-		return sessions[0].getMaxContainerCount();
+		return primary().getMaxContainerCount();
+	}
+
+	/** @return the index of the first packager still in use, or 0 if none */
+	protected int getPrimaryIndex() {
+		for(int i = 0; i < active.length; i++) {
+			if(active[i]) {
+				return i;
+			}
+		}
+		return 0;
+	}
+
+	protected PackagerSession primary() {
+		return sessions[getPrimaryIndex()];
 	}
 
 	/** @return whether the packager is still used, i.e. its budget is not used up */

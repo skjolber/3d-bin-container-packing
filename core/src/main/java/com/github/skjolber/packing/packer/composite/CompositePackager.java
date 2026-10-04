@@ -30,7 +30,8 @@ import com.github.skjolber.packing.packer.PackagerInput;
  * <li>Improvement: for each container the container strategy attempts, the packagers are tried in order until one
  * packs all remaining boxes (see {@link CompositePackagerSession}). A costly packager therefore runs only where the
  * cheaper packagers did not pack all remaining boxes, and it only needs to find results which load more than theirs.
- * Without container costs, the improvement uses at most as many containers as the baseline.</li>
+ * Without container costs, the improvement uses at most as many containers as the baseline (if the result comparator
+ * prefers fewer containers).</li>
  * </ol>
  * The better of the improvement and the baseline is returned. If the improvement is interrupted, the baseline is
  * returned.
@@ -252,10 +253,11 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 	}
 
 	/**
-	 * Without container costs, more containers than the baseline are never better.
+	 * Without container costs, more containers than the baseline are not better, if the result comparator says so
+	 * (see {@link PackagerResultComparator#prefersFewerContainers()}).
 	 */
 	protected PackagerInput getImprovementInput(PackagerInput input, PackagerResult baseline) {
-		if(baseline == null || !baseline.isSuccess() || baseline.size() >= input.getMaxContainerCount()) {
+		if(!packagerResultComparator.prefersFewerContainers() || baseline == null || !baseline.isSuccess() || baseline.size() >= input.getMaxContainerCount()) {
 			return input;
 		}
 		for(ContainerItem containerItem : input.getContainerItems()) {

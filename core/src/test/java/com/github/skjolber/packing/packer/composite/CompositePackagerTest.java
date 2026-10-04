@@ -173,6 +173,29 @@ public class CompositePackagerTest {
 	}
 
 	@Test
+	public void packsBoxItemGroupsWhichFitOneContainerType() throws Exception {
+		// The first group fits only the big container. Plain may pack the groups out of order, which brute force
+		// does not; a packager which cannot continue from an accepted result is not used any more.
+		//
+		//   big: [long  ]      small: [c]
+		//
+		List<ContainerItem> containers = List.of(new ContainerItem(container("small", 1, 1), 1), new ContainerItem(container("big", 2, 1), 1));
+		List<BoxItemGroup> groups = List.of(
+				new BoxItemGroup("long", List.of(new BoxItem(Box.newBuilder().withId("long").withSize(2, 1, 1).withWeight(1).build(), 1))),
+				new BoxItemGroup("cube", List.of(new BoxItem(Box.newBuilder().withId("cube").withSize(1, 1, 1).withWeight(1).build(), 1))));
+		try (CompositePackager packager = CompositePackager.newBuilder()
+				.withPackager(PlainPackager.newBuilder().build())
+				.withPackager(FastBruteForcePackager.newBuilder().build())
+				.build()) {
+			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItemGroups(groups).withMaxContainerCount(2).withInterruptDuration(INTERRUPT_DURATION).build();
+
+			assertThat(result.getContainers())
+					.extracting(c -> c.getId() + ":" + c.getStack().getPlacements().get(0).getStackValue().getBox().getId())
+					.containsExactlyInAnyOrder("big:long", "small:cube");
+		}
+	}
+
+	@Test
 	public void skipsPackagersWhichDoNotSupportTheInput() throws Exception {
 		// brute force does not support box order
 		List<ContainerItem> containers = List.of(new ContainerItem(container("row", 2, 1), 1));

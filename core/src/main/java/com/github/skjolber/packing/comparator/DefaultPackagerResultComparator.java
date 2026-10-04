@@ -9,6 +9,11 @@ import com.github.skjolber.packing.api.PackagerResultComparator;
 public class DefaultPackagerResultComparator implements PackagerResultComparator {
 
 	@Override
+	public boolean prefersFewerContainers() {
+		return true;
+	}
+
+	@Override
 	public int compare(PackagerResult a, PackagerResult b) {
 		if(a.isSuccess() != b.isSuccess()) {
 			return a.isSuccess() ? 1 : -1;
