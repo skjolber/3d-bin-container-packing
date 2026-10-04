@@ -5,6 +5,7 @@ import java.util.List;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
+import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.StabilityValidator;
 import com.github.skjolber.packing.validator.stability.reasons.UnstableCenterOfGravityReason;
@@ -23,7 +24,7 @@ import com.github.skjolber.packing.validator.stability.reasons.UnstableCenterOfG
  * supporters. A placement with no supporters is considered stable only when it
  * rests on the container floor ({@code z == 0}).
  *
- * @see Placement#getSupporters()
+ * @see SupportGraph
  */
 public class CenterOfGravitySupportStabilityValidator implements StabilityValidator {
 
@@ -39,8 +40,9 @@ public class CenterOfGravitySupportStabilityValidator implements StabilityValida
 	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
 
+		SupportGraph graph = new SupportGraph(list);
 		for(Placement placement : list) {
-			if(!isPlacementStableSupport(placement)) {
+			if(!isPlacementStableSupport(graph, placement)) {
 				reasons.add(new UnstableCenterOfGravityReason(placement));
 				valid = false;
 			}
@@ -56,11 +58,12 @@ public class CenterOfGravitySupportStabilityValidator implements StabilityValida
 	 * <p>A box is considered stable when its configured centre of gravity lies within the
 	 * axis-aligned bounding box of the union of all support contact patches.
 	 *
+	 * @param graph the support graph of the placements
 	 * @param placement the placement to check
 	 * @return {@code true} if the centre of mass is within the support region
 	 */
-	public static boolean isPlacementStableSupport(Placement placement) {
-		List<PlacementLoad> supporters = placement.getSupporters();
+	public static boolean isPlacementStableSupport(SupportGraph graph, Placement placement) {
+		List<PlacementLoad> supporters = graph.getSupporters(placement);
 
 		if(supporters.isEmpty()) {
 			return placement.getAbsoluteZ() == 0;
@@ -68,7 +71,7 @@ public class CenterOfGravitySupportStabilityValidator implements StabilityValida
 
 		// Fast path: full footprint coverage guarantees the CoM is within the support region.
 		BoxStackValue stackValue = placement.getStackValue();
-		if(placement.getSupportedArea() >= stackValue.getArea()) {
+		if(graph.getSupportedArea(placement) >= stackValue.getArea()) {
 			return true;
 		}
 

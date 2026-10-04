@@ -9,6 +9,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
+import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.validator.load.reasons.NonIdenticalLoadBoxReason;
@@ -27,7 +28,7 @@ import com.github.skjolber.packing.validator.load.reasons.NonIdenticalLoadBoxRea
  * violations at any level above the constrained placement are detected.
  *
  * @see BoxStackValue#isLoadIdenticalBoxOnly()
- * @see Placement#getSupportees()
+ * @see SupportGraph
  */
 public class IdenticalBoxOnlyLoadValidator implements LoadValidator {
 
@@ -44,6 +45,7 @@ public class IdenticalBoxOnlyLoadValidator implements LoadValidator {
 	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
 
+		SupportGraph graph = new SupportGraph(list);
 		for(Placement placement : list) {
 			BoxStackValue stackValue = placement.getStackValue();
 
@@ -53,7 +55,7 @@ public class IdenticalBoxOnlyLoadValidator implements LoadValidator {
 
 			BoxItem requiredBoxItem = placement.getBoxItem();
 
-			if(!checkSupporteesIdentical(placement, requiredBoxItem, reasons, Collections.newSetFromMap(new IdentityHashMap<>()))) {
+			if(!checkSupporteesIdentical(graph, placement, placement, requiredBoxItem, reasons, Collections.newSetFromMap(new IdentityHashMap<>()))) {
 				valid = false;
 			}
 		}
@@ -66,6 +68,7 @@ public class IdenticalBoxOnlyLoadValidator implements LoadValidator {
 	 * {@link BoxItem} as {@code requiredBoxItem}. Adds a {@link NonIdenticalLoadBoxReason}
 	 * for each violation found and returns {@code false} if any violation was detected.
 	 *
+	 * @param constrained the placement with the identical-box-only constraint, reported as the constrained placement
 	 * @param placement the placement whose supportees are to be validated
 	 * @param requiredBoxItem the box item that all supportees must match
 	 * @param reasons the list to collect violation reasons into
@@ -73,11 +76,11 @@ public class IdenticalBoxOnlyLoadValidator implements LoadValidator {
 	 *        reached through several paths (and walking every path grows exponentially)
 	 * @return {@code true} if all supportees are identical; {@code false} otherwise
 	 */
-	private boolean checkSupporteesIdentical(Placement placement, BoxItem requiredBoxItem,
+	private boolean checkSupporteesIdentical(SupportGraph graph, Placement constrained, Placement placement, BoxItem requiredBoxItem,
 			List<ValidatorResultReason> reasons, Set<Placement> visited) {
 		boolean valid = true;
 
-		for(PlacementLoad load : placement.getSupportees()) {
+		for(PlacementLoad load : graph.getSupportees(placement)) {
 			Placement supportee = load.getPlacement();
 			if(!visited.add(supportee)) {
 				continue;
@@ -85,11 +88,11 @@ public class IdenticalBoxOnlyLoadValidator implements LoadValidator {
 			BoxItem supporteeBoxItem = supportee.getBoxItem();
 
 			if(supporteeBoxItem != requiredBoxItem) {
-				reasons.add(new NonIdenticalLoadBoxReason(placement, supportee, requiredBoxItem, supporteeBoxItem));
+				reasons.add(new NonIdenticalLoadBoxReason(constrained, supportee, requiredBoxItem, supporteeBoxItem));
 				valid = false;
 			}
 
-			if(!checkSupporteesIdentical(supportee, requiredBoxItem, reasons, visited)) {
+			if(!checkSupporteesIdentical(graph, constrained, supportee, requiredBoxItem, reasons, visited)) {
 				valid = false;
 			}
 		}

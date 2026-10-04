@@ -7,6 +7,7 @@ import java.util.Map;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
+import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadBoxCountReason;
@@ -21,7 +22,7 @@ import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadBoxCountR
  * {@link Placement#isWithinMaxLoadBoxCount(int)}.
  *
  * @see BoxStackValue#getMaxLoadBoxCount()
- * @see Placement#getSupportees()
+ * @see SupportGraph
  */
 public class MaxBoxCountLoadValidator implements LoadValidator {
 
@@ -38,6 +39,7 @@ public class MaxBoxCountLoadValidator implements LoadValidator {
 		boolean valid = true;
 		Map<Placement, Integer> depths = new IdentityHashMap<>();
 
+		SupportGraph graph = new SupportGraph(list);
 		for(Placement placement : list) {
 			BoxStackValue stackValue = placement.getStackValue();
 
@@ -45,7 +47,7 @@ public class MaxBoxCountLoadValidator implements LoadValidator {
 				continue;
 			}
 
-			int depth = supporteeDepth(placement, depths);
+			int depth = supporteeDepth(graph, placement, depths);
 			int maxLoadBoxCount = stackValue.getMaxLoadBoxCount();
 
 			if(depth > maxLoadBoxCount) {
@@ -67,8 +69,8 @@ public class MaxBoxCountLoadValidator implements LoadValidator {
 	 *        one can be reached through several paths (and walking every path grows exponentially)
 	 * @return depth of the supportee subtree (0 if no boxes are on top)
 	 */
-	private int supporteeDepth(Placement placement, Map<Placement, Integer> depths) {
-		List<PlacementLoad> supportees = placement.getSupportees();
+	private int supporteeDepth(SupportGraph graph, Placement placement, Map<Placement, Integer> depths) {
+		List<PlacementLoad> supportees = graph.getSupportees(placement);
 		if(supportees.isEmpty()) {
 			return 0;
 		}
@@ -79,7 +81,7 @@ public class MaxBoxCountLoadValidator implements LoadValidator {
 
 		int max = 0;
 		for(PlacementLoad load : supportees) {
-			int depth = 1 + supporteeDepth(load.getPlacement(), depths);
+			int depth = 1 + supporteeDepth(graph, load.getPlacement(), depths);
 			if(depth > max) {
 				max = depth;
 			}

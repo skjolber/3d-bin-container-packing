@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.test.assertj.PlacementsAssert;
 import com.github.skjolber.packing.validator.stability.reasons.UnstableStackCenterOfGravityReason;
@@ -69,7 +70,7 @@ public class CenterOfGravityStabilityValidatorTest {
 		placement.addLoad(heavySupportee, 1L, (double)heavySupportee.getWeight() / 2001.0);
 		otherSupporter.addLoad(heavySupportee, 2000L, (double)heavySupportee.getWeight() * 2000.0 / 2001.0);
 
-		assertThat(CenterOfGravityStabilityValidator.isPlacementStable(placement)).isFalse();
+		assertThat(CenterOfGravityStabilityValidator.isPlacementStable(new SupportGraph(List.of(supporter, placement, otherSupporter, heavySupportee)), placement)).isFalse();
 	}
 
 	// -----------------------------------------------------------------------
@@ -179,7 +180,7 @@ public class CenterOfGravityStabilityValidatorTest {
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 
 		// B's own CoG is within A's support → CenterOfGravitySupportStabilityValidator passes B
-		boolean bOwnStable = CenterOfGravitySupportStabilityValidator.isPlacementStableSupport(b);
+		boolean bOwnStable = CenterOfGravitySupportStabilityValidator.isPlacementStableSupport(new SupportGraph(placements), b);
 		assertThat(bOwnStable).isTrue();
 
 		// B's stack CoG (combined with heavy C) is outside A's support → fails

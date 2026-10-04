@@ -8,6 +8,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
+import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadPressureReason;
@@ -33,7 +34,7 @@ import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadPressureR
  * independently.
  *
  * @see BoxStackValue#getMaxLoadPressure()
- * @see Placement#getSupportees()
+ * @see SupportGraph
  */
 public class MaxPressureLoadValidator implements LoadValidator {
 
@@ -49,6 +50,7 @@ public class MaxPressureLoadValidator implements LoadValidator {
 	@Override
 	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
+		SupportGraph graph = new SupportGraph(list);
 		Map<Placement, Double> weightAbove = new IdentityHashMap<>();
 
 		for(Placement placement : list) {
@@ -61,16 +63,16 @@ public class MaxPressureLoadValidator implements LoadValidator {
 			double maxLoadPressure = stackValue.getMaxLoadPressure();
 			double maxPressure = 0.0;
 
-			for(PlacementLoad pl : placement.getSupportees()) {
+			for(PlacementLoad pl : graph.getSupportees(placement)) {
 				long contactArea = pl.getArea();
 				if(contactArea == 0) {
 					continue;
 				}
 
 				Placement supportee = pl.getPlacement();
-				long supporteeArea = supportee.getSupportedArea();
+				long supporteeArea = graph.getSupportedArea(supportee);
 				double share = supporteeArea > 0 ? (double) contactArea / supporteeArea : 1.0;
-				double weight = supportee.getWeight() * share + WeightLoadValidator.accumulateWeight(supportee, share, weightAbove);
+				double weight = supportee.getWeight() * share + WeightLoadValidator.accumulateWeight(graph, supportee, share, weightAbove);
 				double linkPressure = Box.calculatePressure(contactArea, weight);
 				if(linkPressure > maxPressure) {
 					maxPressure = linkPressure;

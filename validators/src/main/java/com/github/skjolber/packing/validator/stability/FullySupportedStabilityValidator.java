@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.StabilityValidator;
 import com.github.skjolber.packing.validator.stability.reasons.InsufficientSupportAreaReason;
@@ -16,7 +17,7 @@ import com.github.skjolber.packing.validator.stability.reasons.InsufficientSuppo
  * <p>This is the strictest area-based stability criterion. For a more relaxed check,
  * use {@link PercentSupportedStabilityValidator} with a threshold below 100%.
  *
- * @see Placement#getSupportedArea()
+ * @see SupportGraph
  * @see BoxStackValue#getArea()
  */
 public class FullySupportedStabilityValidator implements StabilityValidator {
@@ -33,6 +34,7 @@ public class FullySupportedStabilityValidator implements StabilityValidator {
 	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
 
+		SupportGraph graph = new SupportGraph(list);
 		for(Placement placement : list) {
 			if(placement.getAbsoluteZ() == 0) {
 				// Resting on the container floor — unconditionally supported.
@@ -40,7 +42,7 @@ public class FullySupportedStabilityValidator implements StabilityValidator {
 			}
 
 			long area = placement.getStackValue().getArea();
-			long supportedArea = placement.getSupportedArea();
+			long supportedArea = graph.getSupportedArea(placement);
 
 			if(supportedArea < area) {
 				reasons.add(new InsufficientSupportAreaReason(placement, supportedArea, area));

@@ -217,68 +217,12 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			List<Placement> placements = inputContainer.getStack().getPlacements();
 			LoadValidator loadValidator = new DefaultLoadValidatorBuilder().withContainer(inputContainer).withPlacements(placements).build();
 			if(loadValidator != null) {
-				// the load validators walk the support graph, which only packagers with load limits record:
-				// validate copies linked from the geometry instead, so that every result is validated the same way
-				List<Placement> linked = createSupportGraph(placements);
-				for (int i = 0; i < placements.size(); i++) {
-					references.put(linked.get(i), references.get(placements.get(i)));
-				}
 				List<ValidatorResultReason> reasons = new ArrayList<>();
-				loadValidator.isValid(linked, reasons);
+				loadValidator.isValid(placements, reasons);
 				addReasons(visualization, references, reasons);
 			}
 		}
 		return visualization;
-	}
-
-	/**
-	 * Copy placements, and link each copy to the copies it rests on (the top of the one touches the bottom of the other,
-	 * and their footprints overlap). Each box's weight is shared between its supporters by contact area.
-	 *
-	 * @return the linked copies, in the same order
-	 */
-	protected static List<Placement> createSupportGraph(List<Placement> placements) {
-		List<Placement> copies = new ArrayList<>(placements.size());
-		for (Placement placement : placements) {
-			copies.add(new Placement(placement.getStackValue(), placement.getPointIndex(), placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ()));
-		}
-
-		// link bottom-up, so that the weight of each box propagates through the links below it
-		List<Placement> byZ = new ArrayList<>(copies);
-		for (int i = 1; i < byZ.size(); i++) {
-			Placement placement = byZ.get(i);
-			int j = i - 1;
-			while (j >= 0 && byZ.get(j).getAbsoluteZ() > placement.getAbsoluteZ()) {
-				byZ.set(j + 1, byZ.get(j));
-				j--;
-			}
-			byZ.set(j + 1, placement);
-		}
-
-		List<Placement> supporters = new ArrayList<>();
-		List<Long> areas = new ArrayList<>();
-		for (Placement supportee : byZ) {
-			supporters.clear();
-			areas.clear();
-			long totalArea = 0;
-			for (Placement supporter : copies) {
-				if(supporter.getAbsoluteEndZ() + 1 != supportee.getAbsoluteZ()) {
-					continue;
-				}
-				long dx = Math.min(supporter.getAbsoluteEndX(), supportee.getAbsoluteEndX()) - Math.max(supporter.getAbsoluteX(), supportee.getAbsoluteX()) + 1;
-				long dy = Math.min(supporter.getAbsoluteEndY(), supportee.getAbsoluteEndY()) - Math.max(supporter.getAbsoluteY(), supportee.getAbsoluteY()) + 1;
-				if(dx > 0 && dy > 0) {
-					supporters.add(supporter);
-					areas.add(dx * dy);
-					totalArea += dx * dy;
-				}
-			}
-			for (int i = 0; i < supporters.size(); i++) {
-				long area = areas.get(i);
-				supporters.get(i).addLoad(supportee, area, (double)supportee.getWeight() * area / totalArea);
-			}
-		}
-		return copies;
 	}
 
 	protected void addReasons(PackagingResultVisualizer visualization, Map<Placement, PlacementReferenceVisualizer> references, List<ValidatorResultReason> reasons) {

@@ -50,7 +50,7 @@ public class SupportGraphValidatorsTest {
 	}
 
 	/**
-	 * A box reached through two paths is reported once.
+	 * A box reached through two paths is reported once (per constrained box).
 	 *
 	 * <pre>
 	 *  z |
@@ -73,16 +73,14 @@ public class SupportGraphValidatorsTest {
 		Placement left = new Placement(identical.getBox().getStackValue(0), 0, 0, 0, 1);
 		Placement right = new Placement(identical.getBox().getStackValue(0), 0, 10, 0, 1);
 		Placement top = new Placement(other.getBox().getStackValue(0), 0, 5, 0, 2);
-		bottom.addLoad(left, 50, 1);
-		bottom.addLoad(right, 50, 1);
-		left.addLoad(top, 50, 0.5);
-		right.addLoad(top, 50, 0.5);
 
 		List<ValidatorResultReason> reasons = new ArrayList<>();
-		new IdenticalBoxOnlyLoadValidator().isValid(List.of(bottom), reasons);
+		new IdenticalBoxOnlyLoadValidator().isValid(List.of(bottom, left, right, top), reasons);
 
-		assertThat(reasons).hasSize(1);
-		assertThat(reasons.get(0)).isInstanceOf(NonIdenticalLoadBoxReason.class);
+		// left and right are identical-only too, and carry the other box directly
+		assertThat(reasons).hasSize(3);
+		assertThat(reasons).allMatch(reason -> reason instanceof NonIdenticalLoadBoxReason r && r.getOffendingPlacement() == top);
+		assertThat(reasons).filteredOn(reason -> ((NonIdenticalLoadBoxReason)reason).getConstrainedPlacement() == bottom).hasSize(1);
 	}
 
 	/** Bricks of 2x1x1 of the same box item; odd rows are shifted by half a brick. */

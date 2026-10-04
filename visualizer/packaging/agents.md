@@ -12,8 +12,7 @@ Converts packed containers into the JSON format of `visualizer/api`, for the vie
 ## Validation
 Results are validated, and invalid results are still visualized: the reasons are logged, the result is marked `valid: false`, and each
 placement lists the reasons which concern it (the viewer outlines those boxes in red).
-- The boxes' load limits are always validated. The load validators walk the support graph, which only packagers with load limits
-  record, so the factory validates copies of the placements linked from the geometry (`createSupportGraph`).
+- The boxes' load limits are always validated (the load validators are chosen from the limits present).
 - `visualize(result, validator.newResultBuilder().withContainerItems(..).withBoxItems(..).withMaxContainerCount(..))` also validates
   the result against the input (box and container counts, intersections, ...).
 

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.test.assertj.PlacementsAssert;
 import com.github.skjolber.packing.validator.stability.reasons.UnstableCenterOfGravityReason;
@@ -49,7 +50,7 @@ public class CenterOfGravitySupportStabilityValidatorTest {
 		Placement supported = makePlacement("B", 10, 10, 1, 10, 0, 0, 1, 2, 5, 0);
 		supporter.addLoad(supported, 50L, supported.getWeight());
 
-		assertThat(CenterOfGravitySupportStabilityValidator.isPlacementStableSupport(supported)).isTrue();
+		assertThat(CenterOfGravitySupportStabilityValidator.isPlacementStableSupport(new SupportGraph(List.of(supporter, supported)), supported)).isTrue();
 	}
 
 	@Test

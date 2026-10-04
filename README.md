@@ -500,8 +500,11 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Brute-force packing of box item groups no longer fails when a group does not fit some container types (the volume and weight check was inverted). Groups are packed in order: a container takes the remaining groups up to the first which does not fit it
         * Packing works on copies of the boxes and containers: result placements refer to copies of the input boxes (match them by id), and boxes can be shared between threads
         * Brute force skips permutations and containers which cannot load more than the best result so far, when the result comparator compares load volume first (`IntermediatePackagerResultComparator.prefersHigherLoadVolume()`); results are unchanged
+        * The load and stability validators find which boxes rest on which from the placements' positions and loading order (`SupportGraph`), instead of the support links recorded by the packager. Results from packagers without load limits or support, and hand-made results, are now validated too (previously they passed without being checked). A box placed later, under an overhang, does not carry the boxes already above it
+        * `NonIdenticalLoadBoxReason` names the box with the identical-box-only limit as the constrained placement (previously the box directly below the offending box)
      * Breaking changes:
         * Validators moved to a separate `validators` artifact (package `com.github.skjolber.packing.validator`)
+        * `CenterOfGravityStabilityValidator.isPlacementStable(..)` and `CenterOfGravitySupportStabilityValidator.isPlacementStableSupport(..)` take a `SupportGraph`
         * Interrupts / deadlines moved from `core` (`com.github.skjolber.packing.deadline`) to `api` (`com.github.skjolber.packing.api.interrupt`)
         * `PackagerException` moved from `core` (`com.github.skjolber.packing.packer`) to `api` (`com.github.skjolber.packing.api`); `ParallelBruteForcePackagerException` now extends it
         * `PlacementComparator` now compares two `Placement`s (`compare(a, b)`, positive when `a` is better). Comparators are built by a `PlacementComparatorFactory`, by default `DefaultPlacementComparatorFactory` in `core`

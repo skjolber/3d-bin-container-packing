@@ -113,6 +113,9 @@ the packager. It covers, among other checks:
 - manifest rules;
 - interruption and diagnostic failure reasons.
 
+Load and stability rules use the placements' positions and loading order to find
+which boxes rest on which, so results from any packager can be validated.
+
 ## Integration and tooling
 
 - Java API module with builder-based model and result APIs.

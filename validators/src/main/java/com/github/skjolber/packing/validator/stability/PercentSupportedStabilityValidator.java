@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.StabilityValidator;
 import com.github.skjolber.packing.validator.stability.reasons.InsufficientSupportAreaReason;
@@ -23,7 +24,7 @@ import com.github.skjolber.packing.validator.stability.reasons.InsufficientSuppo
  * is equivalent to constructing this validator with {@code minPercent = 100} but
  * produces a more descriptive reason type.
  *
- * @see Placement#getSupportedArea()
+ * @see SupportGraph
  * @see BoxStackValue#getArea()
  */
 public class PercentSupportedStabilityValidator implements StabilityValidator {
@@ -65,6 +66,7 @@ public class PercentSupportedStabilityValidator implements StabilityValidator {
 	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
 
+		SupportGraph graph = new SupportGraph(list);
 		for(Placement placement : list) {
 			if(placement.getAbsoluteZ() == 0) {
 				// Resting on the container floor — unconditionally 100% supported.
@@ -72,7 +74,7 @@ public class PercentSupportedStabilityValidator implements StabilityValidator {
 			}
 
 			long area = placement.getStackValue().getArea();
-			long supportedArea = placement.getSupportedArea();
+			long supportedArea = graph.getSupportedArea(placement);
 
 			int actualPercent = (area == 0) ? 100 : (int)(supportedArea * 100L / area);
 
