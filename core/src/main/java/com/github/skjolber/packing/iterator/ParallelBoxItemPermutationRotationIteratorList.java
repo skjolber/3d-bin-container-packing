@@ -64,10 +64,6 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 			if(dx == -1 || dy == -1 || dz == -1) {
 				throw new IllegalStateException();
 			}
-
-			if(maxLoadWeight == -1) {
-				throw new IllegalStateException();
-			}
 			if(parallelizationCount == -1) {
 				throw new IllegalStateException();
 			}

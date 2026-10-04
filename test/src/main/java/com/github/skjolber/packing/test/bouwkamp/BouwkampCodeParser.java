@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 public class BouwkampCodeParser {
 
 	public BouwkampCodes parse(String resource) throws IOException {
-		try (InputStream is = getClass().getResourceAsStream(resource)) {
+		try (InputStream is = BouwkampCodeParser.class.getResourceAsStream(resource)) {
 			return new BouwkampCodes(parse(is, StandardCharsets.UTF_8), resource);
 		}
 	}

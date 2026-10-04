@@ -376,12 +376,8 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 					}
 
 					if(!removedBoxItemGroups.isEmpty()) {
-						if(boxItemControls != null) {
-							boxItemControls.filteredGroups(removedBoxItemGroups);
-						}
-						if(pointControls != null) {
-							pointControls.filteredGroups(removedBoxItemGroups);
-						}
+						boxItemControls.filteredGroups(removedBoxItemGroups);
+						pointControls.filteredGroups(removedBoxItemGroups);
 						removedBoxItemGroups.clear();
 					}
 					
@@ -423,12 +419,8 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 							}				
 						}
 						if(!removedBoxItemGroups.isEmpty()) {
-							if(boxItemControls != null) {
-								boxItemControls.filteredGroups(removedBoxItemGroups);
-							}
-							if(pointControls != null) {
-								pointControls.filteredGroups(removedBoxItemGroups);
-							}
+							boxItemControls.filteredGroups(removedBoxItemGroups);
+							pointControls.filteredGroups(removedBoxItemGroups);
 							removedBoxItemGroups.clear();
 						}
 					}
@@ -460,24 +452,16 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 					for(Placement p : removedBoxPlacements) {
 						removedBoxItems.add(p.getStackValue().getBox().getBoxItem());
 					}
-					if(boxItemControls != null) {
-						boxItemControls.undo(removedBoxItems);
-					}
-					if(pointControls != null) {
-						pointControls.undo(removedBoxItems);
-					}
+					boxItemControls.undo(removedBoxItems);
+					pointControls.undo(removedBoxItems);
 					
 					removedBoxItems.clear();
 					
 					placementControls.undo(removedBoxPlacements);
 				}
 				
-				if(boxItemControls != null) {
-					boxItemControls.attemptFailure(boxItemGroup);
-				}
-				if(pointControls != null) {
-					pointControls.attemptFailure(boxItemGroup);
-				}
+				boxItemControls.attemptFailure(boxItemGroup);
+				pointControls.attemptFailure(boxItemGroup);
 				
 				stack.setSize(markStackSize);
 				
@@ -502,12 +486,8 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			
 			// successfully stacked group
 			boxItemGroup.reset();
-			if(boxItemControls != null) {
-				boxItemControls.attemptSuccess(boxItemGroup);
-			}
-			if(pointControls != null) {
-				pointControls.attemptSuccess(boxItemGroup);
-			}
+			boxItemControls.attemptSuccess(boxItemGroup);
+			pointControls.attemptSuccess(boxItemGroup);
 		}
 		
 		return createIntermediatePackagerResult(controlContainerItem, stack);

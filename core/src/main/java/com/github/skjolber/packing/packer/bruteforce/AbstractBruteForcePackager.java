@@ -49,7 +49,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		super(comparator);
 	}
 	
-	public class BruteForcePackagerResultBuilder extends AbstractPackagerResultBuilder<BruteForcePackagerResultBuilder> {
+	public static class BruteForcePackagerResultBuilder extends AbstractPackagerResultBuilder<BruteForcePackagerResultBuilder> {
 	
 		private AbstractBruteForcePackager packager;
 	
@@ -304,9 +304,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			}
 		} while (true);
 
-		if(bestResult != null) {
-			bestResult.markDirty();
-		}
+		bestResult.markDirty();
 
 		return bestResult;
 	}

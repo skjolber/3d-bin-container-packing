@@ -23,10 +23,6 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 			if(dx == -1 || dy == -1 || dz == -1) {
 				throw new IllegalStateException();
 			}
-
-			if(maxLoadWeight == -1) {
-				throw new IllegalStateException();
-			}
 			
 			BoxItem[] included = new BoxItem[boxItems.size()];
 			List<BoxItem> excluded = new ArrayList<>(boxItems.size());

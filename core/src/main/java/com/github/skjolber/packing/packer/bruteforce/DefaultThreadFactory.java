@@ -7,14 +7,14 @@ public class DefaultThreadFactory implements ThreadFactory {
 
 	private final ThreadGroup group;
 	private final AtomicInteger threadNumber = new AtomicInteger(1);
-	private final String namePrefix = "3d-packaging-thread-";
+	private static final String NAME_PREFIX = "3d-packaging-thread-";
 
 	public DefaultThreadFactory() {
 		group = Thread.currentThread().getThreadGroup();
 	}
 
 	public Thread newThread(Runnable r) {
-		Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+		Thread t = new Thread(group, r, NAME_PREFIX + threadNumber.getAndIncrement(), 0);
 		if(t.isDaemon()) {
 			t.setDaemon(false);
 		}

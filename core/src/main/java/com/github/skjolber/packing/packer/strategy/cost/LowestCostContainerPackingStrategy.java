@@ -30,7 +30,6 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 
 	protected static class CostPacking {
 
-		private final int containerIndex;
 		private final IntermediatePackagerResult result;
 		private final long cost;
 		private final int availableCount;
@@ -38,8 +37,7 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 		private final long weight;
 		private final int count;
 
-		public CostPacking(int containerIndex, IntermediatePackagerResult result, long cost, int availableCount) {
-			this.containerIndex = containerIndex;
+		public CostPacking(IntermediatePackagerResult result, long cost, int availableCount) {
 			this.result = result;
 			this.cost = cost;
 			this.availableCount = availableCount;
@@ -170,7 +168,7 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 						throw new IllegalStateException("Container cost must be non-negative for index " + containerIndex);
 					}
 
-					CostPacking packing = new CostPacking(containerIndex, result, cost, Math.min(containerItem.getCount(), remainingContainerCount));
+					CostPacking packing = new CostPacking(result, cost, Math.min(containerItem.getCount(), remainingContainerCount));
 					packings.add(packing);
 					if(packing.count == remainingBoxCount && (completed == null || cost < completed.cost)) {
 						completed = packing;

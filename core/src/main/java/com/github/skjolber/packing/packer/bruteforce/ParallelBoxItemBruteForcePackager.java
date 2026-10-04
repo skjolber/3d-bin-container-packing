@@ -131,9 +131,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				if(threads == -1) {
 					threads = Runtime.getRuntime().availableProcessors();
 				}
-				if(executorService == null) {
-					executorService = Executors.newFixedThreadPool(threads);
-				}
+				executorService = Executors.newFixedThreadPool(threads);
 				if(parallelizationCount == -1) {
 					parallelizationCount = 16 * threads;
 				}

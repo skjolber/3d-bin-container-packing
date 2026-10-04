@@ -90,8 +90,8 @@ JUnit 5 support comes from `pitest-junit5-plugin` in the root POM.
 ./mvnw -B -ntp -Pdev,spotbugs -DskipTests -Dmaven.build.cache.enabled=false clean verify -pl api,points,validators,core -am
 ```
 The `spotbugs` profile runs the `check` goal at `verify` (effort max, threshold low) and writes
-`<module>/target/spotbugsXml.xml`; it reports but does not fail the build. `spotbugs-exclude.xml` in the root
-excludes findings which are by design (mutable inputs and outputs are not copied, no serialization).
+`<module>/target/spotbugsXml.xml`; the build fails on findings. `spotbugs-exclude.xml` in the root excludes
+findings which are by design or reviewed (mutable inputs and outputs are not copied, no serialization, extension points).
 Use `clean`: Moditect fails on an already modular JAR otherwise.
 
 ### OWASP Dependency Check

@@ -3,7 +3,6 @@ package com.github.skjolber.packing.comparator;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
 
 public class LargestAreaBoxItemComparator implements Comparator<BoxItem> {
 
@@ -35,19 +34,6 @@ public class LargestAreaBoxItemComparator implements Comparator<BoxItem> {
 		}
 
 		return 0;
-	}
-	
-	private BoxItem getMaximumArea(BoxItemGroup boxItemGroup) {
-		BoxItem best = null;
-		for(int i = 0; i < boxItemGroup.size(); i++) {
-			BoxItem boxItem = boxItemGroup.get(i);
-			
-			long maximumArea = boxItem.getBox().getMaximumArea();
-			if(best == null || best.getBox().getMaximumArea() < maximumArea) {
-				best = boxItem;
-			}
-		}
-		return best;
 	}
 	
 }

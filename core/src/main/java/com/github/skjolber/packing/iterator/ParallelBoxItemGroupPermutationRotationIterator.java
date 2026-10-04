@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
 
 public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBoxItemGroupsPermutationRotationIterator {
 	
-	protected final int PADDING = 16;
+	protected static final int PADDING = 16;
 	
 	public static Builder newBuilder() {
 		return new Builder();

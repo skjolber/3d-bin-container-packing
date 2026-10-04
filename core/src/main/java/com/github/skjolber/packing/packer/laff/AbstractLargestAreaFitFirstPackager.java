@@ -575,12 +575,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					}
 					
 					if(!removedBoxItemGroups.isEmpty()) {
-						if(boxItemControls != null) {
-							boxItemControls.filteredGroups(removedBoxItemGroups);
-						}
-						if(pointControls != null) {
-							pointControls.filteredGroups(removedBoxItemGroups);
-						}
+						boxItemControls.filteredGroups(removedBoxItemGroups);
+						pointControls.filteredGroups(removedBoxItemGroups);
 						removedBoxItemGroups.clear();
 					}
 					

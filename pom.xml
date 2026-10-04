@@ -568,7 +568,7 @@
 			</properties>
 		</profile>
 		<profile>
-			<!-- static analysis: mvn -P spotbugs verify; reports in target/spotbugsXml.xml (does not fail the build) -->
+			<!-- static analysis: mvn -P spotbugs verify; fails on findings, reports in target/spotbugsXml.xml -->
 			<id>spotbugs</id>
 			<build>
 				<plugins>
@@ -580,7 +580,7 @@
 							<effort>Max</effort>
 							<threshold>Low</threshold>
 							<xmlOutput>true</xmlOutput>
-							<failOnError>false</failOnError>
+							<failOnError>true</failOnError>
 							<excludeFilterFile>${maven.multiModuleProjectDirectory}/spotbugs-exclude.xml</excludeFilterFile>
 						</configuration>
 						<executions>
