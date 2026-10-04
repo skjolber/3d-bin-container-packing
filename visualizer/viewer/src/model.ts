@@ -107,6 +107,9 @@ export class StackPlacement {
 
     points : Array<Point>;
 
+    /** The validation reasons which concern this placement; empty if valid. */
+    reasons : Array<ValidationReason> = [];
+
     constructor(stackable : Stackable, step : number, x : number, y : number, z: number, points: Array<Point>) {
         this.stackable = stackable;
         this.step = step;
@@ -135,6 +138,21 @@ export class Stack {
 
 }
 
+/** Placement within the result: index of the container, and of the placement in the container's stack. */
+export interface PlacementReference {
+    container : number;
+    placement : number;
+}
+
+/** A reason why the result is invalid. */
+export interface ValidationReason {
+    /** Reason class name, for example ExcessiveLoadWeightReason */
+    type : string;
+    code : number;
+    message : string;
+    placements : Array<PlacementReference>;
+}
+
 /** A parsed containers.json: the containers, and the step and point ranges for navigation. */
 export interface Packaging {
     containers : Array<Container>;
@@ -151,6 +169,9 @@ export interface Packaging {
     duration? : number;
     /** Total container cost, or -1 if not calculated. */
     cost? : number;
+    /** Whether the result passed validation; invalid results are still shown. */
+    valid : boolean;
+    validationReasons : Array<ValidationReason>;
 }
 
 /**
@@ -161,6 +182,7 @@ export function parsePackaging(json : any) : Packaging {
     var maxStep = -1;
     var maxPointNumbers = new Array<number>();
     var containers = new Array<Container>();
+    var validationReasons : Array<ValidationReason> = json.validationReasons ?? [];
 
     for (const containerJson of json.containers) {
         var container = new Container(containerJson.name, containerJson.id, containerJson.step,
@@ -208,7 +230,11 @@ export function parsePackaging(json : any) : Packaging {
                 );
                 box.boxItemKey = stackable.boxItemKey;
 
-                container.add(new StackPlacement(box, placement.step, placement.x, placement.y, placement.z, points));
+                var stackPlacement = new StackPlacement(box, placement.step, placement.x, placement.y, placement.z, points);
+                for (const reasonIndex of placement.reasons ?? []) {
+                    stackPlacement.reasons.push(validationReasons[reasonIndex]);
+                }
+                container.add(stackPlacement);
             }
         }
         containers.push(container);
@@ -218,6 +244,8 @@ export function parsePackaging(json : any) : Packaging {
         success: json.success ?? undefined,
         timeout: json.timeout ?? undefined,
         duration: json.duration ?? undefined,
-        cost: json.cost ?? undefined
+        cost: json.cost ?? undefined,
+        valid: json.valid ?? true,
+        validationReasons
     };
 }

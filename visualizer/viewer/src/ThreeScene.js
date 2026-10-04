@@ -148,6 +148,10 @@ class ThreeScene extends Component {
     var target = null;
     for(var ii = 0; ii < allIntersects.length; ii++) {
       var candidate = allIntersects[ii].object;
+      if (candidate.userData && candidate.userData.type === "invalid") {
+        // the red outline of an invalid box: hover the box
+        candidate = candidate.parent;
+      }
       var visible = true;
       var obj = candidate;
       while (obj) {
@@ -707,6 +711,9 @@ class ThreeScene extends Component {
                 {selectedBox.maxLoadPressure != null && <div>Max pressure: {selectedBox.maxLoadPressure}</div>}
                 {selectedBox.maxLoadBoxCount != null && <div>Max stack count: {selectedBox.maxLoadBoxCount}</div>}
                 {selectedBox.maxLoadIdenticalOnly === true && <div>Identical only</div>}
+                {selectedBox.reasons && selectedBox.reasons.map((reason, i) => (
+                  <div key={i} style={{ color: "#ef5350" }}>{reason}</div>
+                ))}
               </div>
             )}
         </div>

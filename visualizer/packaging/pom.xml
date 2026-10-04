@@ -31,6 +31,10 @@
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 			<artifactId>points</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>validators</artifactId>
 		</dependency>		
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>

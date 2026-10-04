@@ -23,7 +23,7 @@ test('parses the sample written by the Java visualizer', () => {
   expect(a).toBeInstanceOf(Box);
   expect(a.name).toBe('base');
   expect(a.weight).toBe(2);
-  expect(a.maxLoadWeight).toBe(5);
+  expect(a.maxLoadWeight).toBe(1);
   expect((placements[1].stackable as Box).maxLoadBoxCount).toBe(1);
   expect(new Set(placements.map(p => (p.stackable as Box).boxItemKey)).size).toBe(3);
 
@@ -33,6 +33,13 @@ test('parses the sample written by the Java visualizer', () => {
   expect(packaging.cost).toBe(34);
   expect([container.emptyWeight, container.maxLoadWeight, container.loadWeight]).toEqual([0, 100, 9]);
   expect([container.maxLoadVolume, container.loadVolume]).toEqual([4, 4]);
+
+  // A carries half of C (weight 4), more than its max load weight 1
+  expect(packaging.valid).toBe(false);
+  expect(packaging.validationReasons).toHaveLength(1);
+  expect(packaging.validationReasons[0].type).toBe('ExcessiveLoadWeightReason');
+  expect(placements[0].reasons).toEqual([packaging.validationReasons[0]]);
+  expect(placements[1].reasons).toEqual([]);
 
   // container and stack, then one step per box
   expect(packaging.minStep).toBe(0);

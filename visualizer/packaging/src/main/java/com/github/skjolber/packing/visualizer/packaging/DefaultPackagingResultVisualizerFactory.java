@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.visualizer.packaging;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,13 +15,27 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.api.validator.ValidatorResult;
+import com.github.skjolber.packing.api.validator.ValidatorResultBuilder;
+import com.github.skjolber.packing.api.validator.ValidatorResultReason;
+import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.ContainerVisualizer;
+import com.github.skjolber.packing.validator.load.DefaultLoadValidatorBuilder;
+import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadBoxCountReason;
+import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadPressureReason;
+import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadWeightReason;
+import com.github.skjolber.packing.validator.load.reasons.NonIdenticalLoadBoxReason;
+import com.github.skjolber.packing.validator.stability.reasons.InsufficientSupportAreaReason;
+import com.github.skjolber.packing.validator.stability.reasons.UnstableCenterOfGravityReason;
+import com.github.skjolber.packing.validator.stability.reasons.UnstableStackCenterOfGravityReason;
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
+import com.github.skjolber.packing.visualizer.api.packaging.PlacementReferenceVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PointVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.StackPlacementVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.StackVisualizer;
+import com.github.skjolber.packing.visualizer.api.packaging.ValidationReasonVisualizer;
 
 public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingResultVisualizerFactory<Container> {
 
@@ -34,13 +49,41 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 	
 	/**
 	 * Visualize a packager result: its containers, and whether it succeeded, its duration and cost.
+	 * The load limits of the boxes are validated, see {@link #visualize(List)}.
 	 */
 	public PackagingResultVisualizer visualize(PackagerResult result) {
-		PackagingResultVisualizer visualization = visualize(result.getContainers());
+		return visualize(result, (ValidatorResultBuilder)null);
+	}
+
+	/**
+	 * Visualize and validate a packager result. Invalid results are visualized too: the reasons are logged,
+	 * the result is marked as invalid, and the reasons are added to the placements they concern.
+	 *
+	 * @param result the result
+	 * @param validation a validator result builder with the packager input, for example
+	 *        {@code validator.newResultBuilder().withContainerItems(..).withBoxItems(..).withMaxContainerCount(..)},
+	 *        or null to validate only the boxes' load limits
+	 * @return the visualization
+	 */
+	public PackagingResultVisualizer visualize(PackagerResult result, ValidatorResultBuilder validation) {
+		Map<Placement, PlacementReferenceVisualizer> references = new IdentityHashMap<>();
+		PackagingResultVisualizer visualization = visualize(result.getContainers(), references);
 		visualization.setSuccess(result.isSuccess());
 		visualization.setTimeout(result.isTimeout());
 		visualization.setDuration(result.getDuration());
 		visualization.setCost(result.getCost());
+
+		if(validation != null) {
+			ValidatorResult validatorResult = validation.withPackagerResult(result).build();
+			if(validatorResult.isTimeout()) {
+				addReason(visualization, references, ValidatorResultReason.class.getSimpleName(), -1, "Validation timed out", List.of());
+			} else if(!validatorResult.isValid()) {
+				if(validatorResult.getReasons().isEmpty()) {
+					addReason(visualization, references, ValidatorResultReason.class.getSimpleName(), -1, "Invalid, without reason", List.of());
+				}
+				addReasons(visualization, references, validatorResult.getReasons());
+			}
+		}
 		return visualization;
 	}
 
@@ -48,14 +91,25 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 		write(visualize(result), output);
 	}
 
+	public void visualize(PackagerResult result, ValidatorResultBuilder validation, File output) throws Exception {
+		write(visualize(result, validation), output);
+	}
+
+	/**
+	 * Visualize containers, and validate the load limits of their boxes (the load validators are chosen from the boxes' limits).
+	 */
 	public PackagingResultVisualizer visualize(List<Container> inputContainers) {
-		
+		return visualize(inputContainers, new IdentityHashMap<>());
+	}
+
+	protected PackagingResultVisualizer visualize(List<Container> inputContainers, Map<Placement, PlacementReferenceVisualizer> references) {
 		boolean calculatePoints = this.calculatePoints;
 		Map<Object, Integer> boxItemKeys = new IdentityHashMap<>();
 		
 		int step = 0;
 		PackagingResultVisualizer visualization = new PackagingResultVisualizer();
-		for (Container inputContainer : inputContainers) {
+		for (int containerIndex = 0; containerIndex < inputContainers.size(); containerIndex++) {
+			Container inputContainer = inputContainers.get(containerIndex);
 			ContainerVisualizer containerVisualization = new ContainerVisualizer();
 			containerVisualization.setStep(step++);
 
@@ -123,6 +177,7 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 				stackPlacement.setZ(placement.getAbsoluteZ());
 				stackPlacement.setStackable(boxVisualization);
 				stackPlacement.setStep(step);
+				references.put(placement, new PlacementReferenceVisualizer(containerIndex, i));
 
 				if(calculatePoints) {
 					int pointIndex = pointCalculator.findPoint(placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ());
@@ -157,6 +212,126 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 
 			visualization.add(containerVisualization);
 		}
+
+		for (Container inputContainer : inputContainers) {
+			List<Placement> placements = inputContainer.getStack().getPlacements();
+			LoadValidator loadValidator = new DefaultLoadValidatorBuilder().withContainer(inputContainer).withPlacements(placements).build();
+			if(loadValidator != null) {
+				// the load validators walk the support graph, which only packagers with load limits record:
+				// validate copies linked from the geometry instead, so that every result is validated the same way
+				List<Placement> linked = createSupportGraph(placements);
+				for (int i = 0; i < placements.size(); i++) {
+					references.put(linked.get(i), references.get(placements.get(i)));
+				}
+				List<ValidatorResultReason> reasons = new ArrayList<>();
+				loadValidator.isValid(linked, reasons);
+				addReasons(visualization, references, reasons);
+			}
+		}
 		return visualization;
+	}
+
+	/**
+	 * Copy placements, and link each copy to the copies it rests on (the top of the one touches the bottom of the other,
+	 * and their footprints overlap). Each box's weight is shared between its supporters by contact area.
+	 *
+	 * @return the linked copies, in the same order
+	 */
+	protected static List<Placement> createSupportGraph(List<Placement> placements) {
+		List<Placement> copies = new ArrayList<>(placements.size());
+		for (Placement placement : placements) {
+			copies.add(new Placement(placement.getStackValue(), placement.getPointIndex(), placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ()));
+		}
+
+		// link bottom-up, so that the weight of each box propagates through the links below it
+		List<Placement> byZ = new ArrayList<>(copies);
+		for (int i = 1; i < byZ.size(); i++) {
+			Placement placement = byZ.get(i);
+			int j = i - 1;
+			while (j >= 0 && byZ.get(j).getAbsoluteZ() > placement.getAbsoluteZ()) {
+				byZ.set(j + 1, byZ.get(j));
+				j--;
+			}
+			byZ.set(j + 1, placement);
+		}
+
+		List<Placement> supporters = new ArrayList<>();
+		List<Long> areas = new ArrayList<>();
+		for (Placement supportee : byZ) {
+			supporters.clear();
+			areas.clear();
+			long totalArea = 0;
+			for (Placement supporter : copies) {
+				if(supporter.getAbsoluteEndZ() + 1 != supportee.getAbsoluteZ()) {
+					continue;
+				}
+				long dx = Math.min(supporter.getAbsoluteEndX(), supportee.getAbsoluteEndX()) - Math.max(supporter.getAbsoluteX(), supportee.getAbsoluteX()) + 1;
+				long dy = Math.min(supporter.getAbsoluteEndY(), supportee.getAbsoluteEndY()) - Math.max(supporter.getAbsoluteY(), supportee.getAbsoluteY()) + 1;
+				if(dx > 0 && dy > 0) {
+					supporters.add(supporter);
+					areas.add(dx * dy);
+					totalArea += dx * dy;
+				}
+			}
+			for (int i = 0; i < supporters.size(); i++) {
+				long area = areas.get(i);
+				supporters.get(i).addLoad(supportee, area, (double)supportee.getWeight() * area / totalArea);
+			}
+		}
+		return copies;
+	}
+
+	protected void addReasons(PackagingResultVisualizer visualization, Map<Placement, PlacementReferenceVisualizer> references, List<ValidatorResultReason> reasons) {
+		for (ValidatorResultReason reason : reasons) {
+			addReason(visualization, references, reason.getClass().getSimpleName(), reason.getCode(), reason.getMessage(), getPlacements(reason));
+		}
+	}
+
+	protected void addReason(PackagingResultVisualizer visualization, Map<Placement, PlacementReferenceVisualizer> references, String type, int code, String message, List<Placement> placements) {
+		LOGGER.warning("Invalid result: " + type + ": " + message);
+
+		ValidationReasonVisualizer reasonVisualization = new ValidationReasonVisualizer();
+		reasonVisualization.setType(type);
+		reasonVisualization.setCode(code);
+		reasonVisualization.setMessage(message);
+
+		int reasonIndex = visualization.getValidationReasons().size();
+		for (Placement placement : placements) {
+			PlacementReferenceVisualizer reference = references.get(placement);
+			if(reference != null) {
+				reasonVisualization.getPlacements().add(reference);
+				visualization.getContainers().get(reference.getContainer()).getStack().getPlacements().get(reference.getPlacement()).getReasons().add(reasonIndex);
+			}
+		}
+		visualization.getValidationReasons().add(reasonVisualization);
+		visualization.setValid(false);
+	}
+
+	/**
+	 * @return the placements a reason concerns, if known
+	 */
+	protected List<Placement> getPlacements(ValidatorResultReason reason) {
+		if(reason instanceof ExcessiveLoadWeightReason r) {
+			return List.of(r.getPlacement());
+		}
+		if(reason instanceof ExcessiveLoadPressureReason r) {
+			return List.of(r.getPlacement());
+		}
+		if(reason instanceof ExcessiveLoadBoxCountReason r) {
+			return List.of(r.getPlacement());
+		}
+		if(reason instanceof NonIdenticalLoadBoxReason r) {
+			return List.of(r.getConstrainedPlacement(), r.getOffendingPlacement());
+		}
+		if(reason instanceof InsufficientSupportAreaReason r) {
+			return List.of(r.getPlacement());
+		}
+		if(reason instanceof UnstableCenterOfGravityReason r) {
+			return List.of(r.getPlacement());
+		}
+		if(reason instanceof UnstableStackCenterOfGravityReason r) {
+			return List.of(r.getPlacement());
+		}
+		return List.of();
 	}
 }

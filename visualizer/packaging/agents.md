@@ -7,12 +7,20 @@ Converts packed containers into the JSON format of `visualizer/api`, for the vie
 - `com.github.skjolber.packing.visualizer.packaging`
   - `PackagingResultVisualizerFactory`: factory interface
   - `AbstractPackagingResultVisualizerFactory`: writes the JSON to a stream or file
-  - `DefaultPackagingResultVisualizerFactory`: converts `Container`s (with their stacks), optionally with the free points after each placement
+  - `DefaultPackagingResultVisualizerFactory`: converts a `PackagerResult` (or `Container`s), optionally with the free points after each placement
+
+## Validation
+Results are validated, and invalid results are still visualized: the reasons are logged, the result is marked `valid: false`, and each
+placement lists the reasons which concern it (the viewer outlines those boxes in red).
+- The boxes' load limits are always validated. The load validators walk the support graph, which only packagers with load limits
+  record, so the factory validates copies of the placements linked from the geometry (`createSupportGraph`).
+- `visualize(result, validator.newResultBuilder().withContainerItems(..).withBoxItems(..).withMaxContainerCount(..))` also validates
+  the result against the input (box and container counts, intersections, ...).
 
 ## Typical Usage
 ```java
 DefaultPackagingResultVisualizerFactory factory = new DefaultPackagingResultVisualizerFactory(true); // true: calculate points
-factory.visualize(result.getContainers(), new File("../viewer/public/assets/containers.json"));
+factory.visualize(result, new File("../viewer/public/assets/containers.json"));
 ```
 
 ## Tests

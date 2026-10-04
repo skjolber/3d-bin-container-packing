@@ -1,10 +1,12 @@
 package com.github.skjolber.packing.visualizer.packaging;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -12,11 +14,16 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
+import com.github.skjolber.packing.validator.DefaultValidator;
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
+import com.github.skjolber.packing.visualizer.api.packaging.PlacementReferenceVisualizer;
+import com.github.skjolber.packing.visualizer.api.packaging.StackPlacementVisualizer;
+import com.github.skjolber.packing.visualizer.api.packaging.ValidationReasonVisualizer;
 
 class DefaultPackagingResultVisualizerFactoryTest {
 
@@ -26,14 +33,18 @@ class DefaultPackagingResultVisualizerFactoryTest {
 	//
 	//  z
 	//  2 +---+
-	//    | C |      C rests on A and B
+	//    | C |      C (weight 4) rests on A and B
 	//  1 +---+---+
-	//    | A | B |  A: max load weight 5, B: max load box count 1
+	//    | A | B |  A: max load weight 1, so carrying half of C is invalid; B: max load box count 1
 	//  0 +---+---+
 	//    0   1   2  x
 	//
 	private static Container sampleContainer() {
-		Box a = Box.newBuilder().withId("A").withDescription("base").withSize(1, 1, 1).withWeight(2).withMaxLoadWeight(5).build();
+		return sampleContainer(1);
+	}
+
+	private static Container sampleContainer(long maxLoadWeightOfA) {
+		Box a = Box.newBuilder().withId("A").withDescription("base").withSize(1, 1, 1).withWeight(2).withMaxLoadWeight(maxLoadWeightOfA).build();
 		Box b = Box.newBuilder().withId("B").withSize(1, 1, 1).withWeight(3).withMaxLoadBoxCount(1).build();
 		Box c = Box.newBuilder().withId("C").withSize(2, 1, 1).withWeight(4).build();
 		new BoxItem(a);
@@ -88,5 +99,59 @@ class DefaultPackagingResultVisualizerFactoryTest {
 
 		assertThat(boxes.get(0).getBoxItemKey()).isEqualTo(boxes.get(1).getBoxItemKey());
 		assertThat(boxes.get(2).getBoxItemKey()).isNotEqualTo(boxes.get(0).getBoxItemKey());
+	}
+
+	@Test
+	void marksPlacementsWhichExceedTheirLoadLimits() {
+		PackagingResultVisualizer result = new DefaultPackagingResultVisualizerFactory(false).visualize(List.of(sampleContainer()));
+
+		assertThat(result.isValid()).isFalse();
+		assertThat(result.getValidationReasons()).hasSize(1);
+		ValidationReasonVisualizer reason = result.getValidationReasons().get(0);
+		assertThat(reason.getType()).isEqualTo("ExcessiveLoadWeightReason");
+		assertThat(reason.getPlacements()).extracting(PlacementReferenceVisualizer::getContainer, PlacementReferenceVisualizer::getPlacement).containsExactly(tuple(0, 0));
+
+		List<StackPlacementVisualizer> placements = result.getContainers().get(0).getStack().getPlacements();
+		assertThat(placements.get(0).getReasons()).containsExactly(0);
+		assertThat(placements.get(1).getReasons()).isEmpty();
+		assertThat(placements.get(2).getReasons()).isEmpty();
+	}
+
+	@Test
+	void validatesAgainstTheInput() throws Exception {
+		Container container = sampleContainer(100);
+		List<BoxItem> boxItems = new ArrayList<>();
+		for (Placement placement : container.getStack().getPlacements()) {
+			boxItems.add(placement.getBoxItem());
+		}
+		List<ContainerItem> containerItems = List.of(new ContainerItem(Container.newBuilder()
+				.withId("container")
+				.withSize(2, 1, 2)
+				.withMaxLoadWeight(100)
+				.withStack(new Stack())
+				.build(), 1));
+		PackagerResult packagerResult = new PackagerResult(List.of(container), 0, false);
+
+		DefaultPackagingResultVisualizerFactory factory = new DefaultPackagingResultVisualizerFactory(false);
+		try (DefaultValidator validator = new DefaultValidator()) {
+			PackagingResultVisualizer valid = factory.visualize(packagerResult, validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(boxItems));
+			assertThat(valid.isValid()).isTrue();
+			assertThat(valid.getValidationReasons()).isEmpty();
+
+			// one more box than was packed
+			List<BoxItem> moreBoxItems = new ArrayList<>(boxItems);
+			moreBoxItems.add(new BoxItem(Box.newBuilder().withId("D").withSize(1, 1, 1).withWeight(1).build()));
+			PackagingResultVisualizer invalid = factory.visualize(packagerResult, validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(moreBoxItems));
+			assertThat(invalid.isValid()).isFalse();
+			assertThat(invalid.getValidationReasons()).isNotEmpty();
+			// the invalid result is still visualized
+			assertThat(invalid.getContainers().get(0).getStack().getPlacements()).hasSize(3);
+		}
 	}
 }

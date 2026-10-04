@@ -1,5 +1,7 @@
 import React from 'react';
 
+const MAX_REASONS = 10;
+
 function percent(value, max) {
     return max > 0 ? Math.round(value * 1000 / max) / 10 + ' %' : '–';
 }
@@ -14,7 +16,7 @@ function percent(value, max) {
 function ResultSummaryView({ packaging }) {
     if (!packaging) return null;
 
-    const { containers, success, timeout, duration, cost } = packaging;
+    const { containers, success, timeout, duration, cost, valid, validationReasons } = packaging;
 
     let loadVolume = 0;
     let maxLoadVolume = 0;
@@ -49,6 +51,13 @@ function ResultSummaryView({ packaging }) {
                     {success ? 'Packed' : 'Not packed'}{timeout ? ' (timeout)' : ''}
                 </div>
             )}
+            <div style={{ fontWeight: 'bold', color: valid ? '#81c784' : '#ef5350' }}>
+                {valid ? 'Valid' : `Invalid (${validationReasons.length} reason${validationReasons.length === 1 ? '' : 's'})`}
+            </div>
+            {validationReasons.slice(0, MAX_REASONS).map((reason, i) => (
+                <div key={i} style={{ color: '#ef5350', maxWidth: '360px' }}>{reason.type}: {reason.message}</div>
+            ))}
+            {validationReasons.length > MAX_REASONS && <div style={{ color: '#ef5350' }}>… and {validationReasons.length - MAX_REASONS} more (see the log)</div>}
             <div style={rowStyle}><span style={labelStyle}>Containers</span><span>{containers.length}</span></div>
             <div style={rowStyle}><span style={labelStyle}>Boxes</span><span>{boxes}</span></div>
             <div style={rowStyle}><span style={labelStyle}>Volume used</span><span>{percent(loadVolume, maxLoadVolume)}</span></div>

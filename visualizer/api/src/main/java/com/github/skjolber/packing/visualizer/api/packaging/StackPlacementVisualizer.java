@@ -12,6 +12,16 @@ public class StackPlacementVisualizer extends AbstractVisualizer {
 	private StackableVisualizer stackable;
 
 	private List<PointVisualizer> points = new ArrayList<>();
+	/** Indexes of the validation reasons which concern this placement */
+	private List<Integer> reasons = new ArrayList<>();
+
+	public List<Integer> getReasons() {
+		return reasons;
+	}
+
+	public void setReasons(List<Integer> reasons) {
+		this.reasons = reasons;
+	}
 
 	public List<PointVisualizer> getPoints() {
 		return points;

@@ -13,6 +13,7 @@ const textMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff } );
 const CONTAINER_BOX_COLOR = 0x888888;
 const CONTAINER_BOX_OPACITY = 0.15;
 const CONTAINER_EDGE_COLOR = 0x444444;
+const INVALID_EDGE_COLOR = 0xff3333;
 
 export class ContainerControls {
 
@@ -196,6 +197,7 @@ export class StackableRenderer {
                 type: "box",
                 source: stackPlacement,
                 box: {
+                    reasons: stackPlacement.reasons.map(reason => reason.message),
                     id: boxStackable.id,
                     name: boxStackable.name,
                     dimensions: {
@@ -236,6 +238,13 @@ export class StackableRenderer {
                 yLabelMesh.rotation.z = -Math.PI / 2;
                 yLabelMesh.position.set( -yLabelMesh.scale.x / 2, 0, -yLabelMesh.scale.y / 2);
                 box.add( yLabelMesh );
+            }
+
+            if(stackPlacement.reasons.length > 0) {
+                // invalid placement: red outline
+                var invalidEdges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({ color: INVALID_EDGE_COLOR }));
+                invalidEdges.userData = { type: "invalid" };
+                box.add(invalidEdges);
             }
 
             parent.add(box);

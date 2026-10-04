@@ -30,7 +30,7 @@
           "type" : "box",
           "boxItemKey" : 0,
           "weight" : 2,
-          "maxLoadWeight" : 5,
+          "maxLoadWeight" : 1,
           "maxLoadPressure" : null,
           "maxLoadBoxCount" : null,
           "maxLoadIdenticalOnly" : null
@@ -49,7 +49,8 @@
           "dx" : 1,
           "dy" : 1,
           "dz" : 2
-        } ]
+        } ],
+        "reasons" : [ 0 ]
       }, {
         "step" : 3,
         "plugins" : [ ],
@@ -79,7 +80,8 @@
           "dx" : 2,
           "dy" : 1,
           "dz" : 1
-        } ]
+        } ],
+        "reasons" : [ ]
       }, {
         "step" : 4,
         "plugins" : [ ],
@@ -102,7 +104,8 @@
           "maxLoadBoxCount" : null,
           "maxLoadIdenticalOnly" : null
         },
-        "points" : [ ]
+        "points" : [ ],
+        "reasons" : [ ]
       } ]
     },
     "emptyWeight" : 0,
@@ -115,5 +118,15 @@
   "success" : true,
   "timeout" : false,
   "duration" : 12,
-  "cost" : 34
+  "cost" : 34,
+  "valid" : false,
+  "validationReasons" : [ {
+    "type" : "ExcessiveLoadWeightReason",
+    "code" : 14,
+    "message" : "Load weight 2.0 exceeds max 1 for placement A[0x0x0 0x0x0]",
+    "placements" : [ {
+      "container" : 0,
+      "placement" : 0
+    } ]
+  } ]
 }

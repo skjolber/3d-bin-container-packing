@@ -18,6 +18,26 @@ public class PackagingResultVisualizer {
 	/** Total container cost, -1 if not calculated */
 	private Long cost;
 
+	/** Whether the result passed validation */
+	private boolean valid = true;
+	private List<ValidationReasonVisualizer> validationReasons = new ArrayList<>();
+
+	public boolean isValid() {
+		return valid;
+	}
+
+	public void setValid(boolean valid) {
+		this.valid = valid;
+	}
+
+	public List<ValidationReasonVisualizer> getValidationReasons() {
+		return validationReasons;
+	}
+
+	public void setValidationReasons(List<ValidationReasonVisualizer> validationReasons) {
+		this.validationReasons = validationReasons;
+	}
+
 	public Boolean getSuccess() {
 		return success;
 	}
