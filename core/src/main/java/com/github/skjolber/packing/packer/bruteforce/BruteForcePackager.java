@@ -483,12 +483,16 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
+			BoxItemGroup[] iteratorGroups = containerIterators[i].getBoxItemGroups();
+			if(!canLoadNextGroup(iteratorGroups)) {
+				return null;
+			}
 			BoxItemPermutationRotationIterator iterator = containerIterators[i];
 			
 			if(filterReversePermutations && abortOnAnyBoxTooBig) {
 				iterator = new FilteredReversedBoxItemPermutationRotationIterator(iterator);
 			}
-			return truncateToGroup(BruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best));
+			return truncateToGroup(BruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best), iteratorGroups);
 		}
 
 	}

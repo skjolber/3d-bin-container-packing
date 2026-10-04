@@ -22,7 +22,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 
 	@Test
 	void testPermutations() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -41,7 +41,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products2.size())
+				.withMaxLoadWeight(100)
 				.build();
 
 		int count = 0;
@@ -57,7 +57,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 
 	@Test
 	void testPermutationsRepeatedItems() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -78,7 +78,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products2.size())
+				.withMaxLoadWeight(100)
 				.build();
 
 		int count = 0;
@@ -94,7 +94,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 
 	@Test
 	void testRemovePermutations() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -114,7 +114,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products2.size())
+				.withMaxLoadWeight(100)
 				.build();
 		
 		rotator.removePermutations(1);
@@ -132,7 +132,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 	
 	@Test
 	void testRemoveWholeGroup() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -152,7 +152,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products2.size())
+				.withMaxLoadWeight(100)
 				.build();
 		
 		rotator.removePermutations(1);
@@ -192,7 +192,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 
 	@Test
 	void testNextPermutationMaxIndexGroup1() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -214,7 +214,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products2.size())
+				.withMaxLoadWeight(100)
 				.build();
 		
 		int[] before = iterator.getPermutations();
@@ -242,7 +242,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 
 	@Test
 	void testNextPermutationMaxIndexGroup2() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -264,7 +264,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products2.size())
+				.withMaxLoadWeight(100)
 				.build();
 
 		int[] before = iterator.getPermutations();
@@ -293,7 +293,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 
 	@Test
 	void testNextPermutationMaxIndexTransitionGroup() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -316,7 +316,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products2.size())
+				.withMaxLoadWeight(100)
 				.build();
 
 		// go to the last permuation of the second group

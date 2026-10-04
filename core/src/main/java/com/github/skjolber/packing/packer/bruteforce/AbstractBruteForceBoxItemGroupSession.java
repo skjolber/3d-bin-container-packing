@@ -63,31 +63,40 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	}
 
 
-	protected BruteForceIntermediatePackagerResult truncateToGroup(BruteForceIntermediatePackagerResult result) {
+	/**
+	 * @param iteratorGroups a container iterator's groups, by initial position (null if excluded or accepted)
+	 * @return whether the container can load the next remaining group (groups are packed in order)
+	 */
+	protected boolean canLoadNextGroup(BoxItemGroup[] iteratorGroups) {
+		return !boxItemGroups.isEmpty() && iteratorGroups[acceptedGroupCount] != null;
+	}
+
+	/**
+	 * Truncate a result to whole groups. Groups are packed in order, so a result can hold the remaining groups up to
+	 * the first which the container's iterator excludes (because it does not fit).
+	 *
+	 * @param result result for the container
+	 * @param iteratorGroups the container iterator's groups, by initial position (null if excluded or accepted)
+	 * @return the result, possibly with fewer boxes
+	 */
+	protected BruteForceIntermediatePackagerResult truncateToGroup(BruteForceIntermediatePackagerResult result, BoxItemGroup[] iteratorGroups) {
 		if(result == null) {
 			return null;
 		}
-		
+
 		// are we at the border between groups?
 		int size = result.getSize();
 
-		// TODO only handles groups in order.
 		int wholeGroupBoxCount = 0;
 		for(int k = 0; k < boxItemGroups.size(); k++) {
-			BoxItemGroup boxItemGroup = boxItemGroups.get(k);
-			
-			int groupBoxCount = boxItemGroup.getBoxCount();
-			if(size < wholeGroupBoxCount + groupBoxCount) {
-				// the last group was not successful
+			int groupBoxCount = boxItemGroups.get(k).getBoxCount();
+			if(iteratorGroups[acceptedGroupCount + k] == null || size < wholeGroupBoxCount + groupBoxCount) {
+				// excluded by the container, or the group was not packed completely
 				result.trimToSize(wholeGroupBoxCount);
-				
 				break;
 			}
-			
 			wholeGroupBoxCount += groupBoxCount;
-			
 			if(wholeGroupBoxCount == size) {
-				// do nothing
 				break;
 			}
 		}

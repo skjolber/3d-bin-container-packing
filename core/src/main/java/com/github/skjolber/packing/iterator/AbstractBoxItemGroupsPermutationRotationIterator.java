@@ -130,6 +130,10 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 		int count = 0;
 		for (Integer i : removed) {
 			BoxItemGroup boxItemGroup = groupsMatrix[i];
+			if(boxItemGroup == null) {
+				// excluded, i.e. does not fit the container
+				continue;
+			}
 			for (BoxItem boxItem : boxItemGroup.getItems()) {
 				count += boxItem.getCount();
 				stackableItems[boxItem.getLocalIndex()] = null;
