@@ -35,7 +35,8 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  * Note: The brute force algorithm uses a recursive algorithm. It is not intended for more than 10 boxes.
  * <br>
  * <br>
- * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
+ * Thread-safe implementation. Packing works on copies of the input boxes and containers; it only assigns global indexes
+ * to box items which have none (see {@code BoxItem.getGlobalIndex()}), so assign them before packing the same box items concurrently.
  */
 
 public class BruteForcePackager extends AbstractBruteForcePackager {

@@ -488,6 +488,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Packing with several container types no longer gives up when each box fits only some of the types (the feasibility check used box indexes which change during packing)
         * Brute-force packing of box item groups over three or more containers no longer fails with a `NullPointerException`
         * Brute-force packing of box item groups no longer fails when a group does not fit some container types (the volume and weight check was inverted). Groups are packed in order: a container takes the remaining groups up to the first which does not fit it
+        * Packing works on copies of the boxes and containers: result placements refer to copies of the input boxes (match them by id), and boxes can be shared between threads
         * Brute force skips permutations and containers which cannot load more than the best result so far, when the result comparator compares load volume first (`IntermediatePackagerResultComparator.prefersHigherLoadVolume()`); results are unchanged
      * Breaking changes:
         * Validators moved to a separate `validators` artifact (package `com.github.skjolber.packing.validator`)
@@ -497,6 +498,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Decision-making interfaces are in `api`, so that custom behaviour only needs `api`: `PlacementComparator`, `PlacementComparatorFactory` and `PlacementComparatorAttribute` (`com.github.skjolber.packing.api.packager.control.placement`), and `IntermediatePackagerResult` and `IntermediatePackagerResultComparator`, moved from `core` to `com.github.skjolber.packing.api.packager`
         * Container strategies are in `api` (`com.github.skjolber.packing.api.packager.strategy`): `ContainerStrategy`, `ContainerStrategyFactory`, `ContainerResult` and `ContainerItemsResult`. `PackagerAdapter` is renamed to `PackagerSession` (without `reset()`; use `fresh()`), strategies see the containers as a `ContainerInventory`, and `PackagerInterruptedException` moved to `com.github.skjolber.packing.api.interrupt`
         * Configure a container strategy with the packager builders' `withContainerStrategyFactory(..)`; `AbstractPackager.setContainerPackingStrategyFactory(..)` is removed
+        * `PackagerSession.attempt(index, best, ..)` may return an empty result instead of a result with less load volume than `best`; strategies which pass the best result so far must handle this
         * Packagers create sessions with `AbstractPackager.createSession(PackagerInput, ..)`; subclasses implement `newSession(..)`, and each session works on its own copies of the boxes and containers. `DefaultControlsPackagerResultBuilder` is removed
         * `ControlledContainerItem` removed: `ContainerItem` now holds the per-container controls (manifest and point controls, initial points, cost); `PackagerResultBuilder.ControlledContainerItemBuilder` renamed to `ContainerItemBuilder`
         * `PlainPlacement*` and `LargestAreaFitFirstPlacementControlsBuilder` removed (use the default placement controls with a placement comparator factory)

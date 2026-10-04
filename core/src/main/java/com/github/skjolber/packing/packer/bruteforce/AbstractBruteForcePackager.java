@@ -39,7 +39,8 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  * Note: The search is exponential in the number of boxes. It is not intended for more than about 10 boxes per container.
  * <br>
  * <br>
- * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
+ * Thread-safe implementation. Packing works on copies of the input boxes and containers; it only assigns global indexes
+ * to box items which have none (see {@code BoxItem.getGlobalIndex()}), so assign them before packing the same box items concurrently.
  */
 
 public abstract class AbstractBruteForcePackager extends AbstractPackager<AbstractBruteForcePackager.BruteForcePackagerResultBuilder> {

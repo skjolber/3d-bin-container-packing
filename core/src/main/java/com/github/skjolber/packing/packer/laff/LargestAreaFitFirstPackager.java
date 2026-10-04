@@ -21,7 +21,8 @@ import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFacto
  * Fit boxes into container, i.e. perform bin packing to a single container.
  * <br>
  * <br>
- * Thread-safe implementation. The input Boxes must however only be used in a single thread at a time.
+ * Thread-safe implementation. Packing works on copies of the input boxes and containers; it only assigns global indexes
+ * to box items which have none (see {@code BoxItem.getGlobalIndex()}), so assign them before packing the same box items concurrently.
  */
 
 public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPackager {
