@@ -23,9 +23,10 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.impl.ValidatingStack;
+import com.github.skjolber.packing.test.assertj.ContainerAssert;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
@@ -77,7 +78,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			List<Container> containers = build.getContainers();
-			assertValid(containers);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 	
 			List<Placement> placements = containers.get(0).getStack().getPlacements();
 	
@@ -89,7 +90,10 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 			
-			assertValidUsingValidator(containerItems, Integer.MAX_VALUE, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(Integer.MAX_VALUE)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -120,7 +124,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 			List<Container> packList = build.getContainers();
 	
-			assertValid(packList);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 			assertThat(packList).hasSize(2);
 	
 			Container fits = packList.get(0);
@@ -135,7 +139,10 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 			
-			assertValidUsingValidator(containers, Integer.MAX_VALUE, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containers)
+					.withMaxContainerCount(Integer.MAX_VALUE)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -164,10 +171,13 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withBoxItems(products).build();
 	
 			Container fits = build.getContainers().get(0);
-			assertValid(fits);
+			ContainerAssert.assertThat(fits).isStackedWithinConstraints();
 			assertEquals(products.size(), fits.getStack().getPlacements().size());
 			
-			assertValidUsingValidator(containers, Integer.MAX_VALUE, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containers)
+					.withMaxContainerCount(Integer.MAX_VALUE)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -193,9 +203,12 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 	
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 			
-			assertValidUsingValidator(containerItems, Integer.MAX_VALUE, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(Integer.MAX_VALUE)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -219,7 +232,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("D").withSize(3, 2, 1).withRotate3D().withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withBoxItems(products).build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}
@@ -313,7 +326,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 			Container fits = build.getContainers().get(0);
 			assertNotNull(bouwkampCode.getName(), fits);
-			assertValid(fits);
+			ContainerAssert.assertThat(fits).isStackedWithinConstraints();
 			assertEquals(bouwkampCode.getName(), fits.getStack().size(), squares.size());
 		} finally {
 			packager.close();
@@ -477,14 +490,17 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 					.build();
 			
 			List<Container> containers = build.getContainers();
-			assertValid(containers);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 	
 			List<Placement> placements = containers.get(0).getStack().getPlacements();
 			for(Placement placement : placements) {
 				assertFalse(placement.getAbsoluteX() == 0 && placement.getAbsoluteY() == 0);
 			}
 			
-			assertValidUsingValidator(Arrays.asList(new ContainerItem(container, 1)), 1, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(Arrays.asList(new ContainerItem(container, 1)))
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 
 		} finally {
 			packager.close();
@@ -534,7 +550,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 					});
 				}).withBoxItems(products).build();
 				
-				assertValid(build);
+				PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 				
 				List<Placement> buildPlacements = build.getContainers().get(0).getStack().getPlacements();
 				for (Placement placement : buildPlacements) {

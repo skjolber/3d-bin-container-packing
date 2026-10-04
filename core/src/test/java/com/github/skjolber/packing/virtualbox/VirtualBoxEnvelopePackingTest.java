@@ -3,7 +3,6 @@ package com.github.skjolber.packing.virtualbox;
 import static org.assertj.core.api.Assertions.assertThat;
 import static com.github.skjolber.packing.virtualbox.VirtualBoxLayoutTest.*;
 import static com.github.skjolber.packing.virtualbox.VirtualBoxLayoutPreparationTest.placement;
-import static com.github.skjolber.packing.virtualbox.VirtualBoxPackagerTest.assertValid;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,7 +47,7 @@ class VirtualBoxEnvelopePackingTest {
 					.withMaxDelegateBoxes(1)
 					.withMaxRefinements(0)
 					.build();
-			assertValid(result, List.of(original));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(original));
 			assertThat(builder.calculators).hasSize(1);
 			EnvelopeOnlyCalculator calculator = builder.calculators.get(0);
 			assertThat(calculator.singleInsertions).isEqualTo(1);
@@ -97,7 +96,7 @@ class VirtualBoxEnvelopePackingTest {
 		PackagerResult delegateResult = new PackagerResult(List.of(packed), 0, false);
 		for(int attempt = 0; attempt < 2; attempt++) {
 			PackagerResult expanded = packing.expand(delegateResult, List.of(a, b), System.nanoTime());
-			assertValid(expanded, List.of(a, b));
+			PackagerResultAssert.assertThat(expanded).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 			List<Placement> children = expanded.get(0).getStack().getPlacements();
 			assertThat(children).extracting(Placement::getAbsoluteX).containsExactly(3, 3, 0);
 			assertThat(children).extracting(Placement::getAbsoluteY).containsExactly(1, 1, 1);

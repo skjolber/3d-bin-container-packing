@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.packer.AbstractPackagerConstraintTest;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 /**
  * PlainPackager integration tests for the {@code maxLoadPressure} constraint.
@@ -64,9 +65,9 @@ public class PlainPackagerPressureConstraintTest extends AbstractPackagerConstra
 					.withBoxItems(List.of(new BoxItem(bot, 1), new BoxItem(top, 1)))
 					.build();
 
-			assertContainers(result, 2);
-			assertStackSize(result, 0, 1);
-			assertStackSize(result, 1, 1);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 1);
+			PackagerResultAssert.assertThat(result).hasStackSize(1, 1);
 		} finally {
 			packager.close();
 		}
@@ -108,8 +109,8 @@ public class PlainPackagerPressureConstraintTest extends AbstractPackagerConstra
 					.withBoxItems(List.of(new BoxItem(bot, 1), new BoxItem(top, 1)))
 					.build();
 
-			assertContainers(result, 1);
-			assertStackSize(result, 0, 2);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 2);
 		} finally {
 			packager.close();
 		}
@@ -151,8 +152,8 @@ public class PlainPackagerPressureConstraintTest extends AbstractPackagerConstra
 					.withBoxItems(List.of(new BoxItem(bot, 1), new BoxItem(top, 1)))
 					.build();
 
-			assertContainers(result, 1);
-			assertStackSize(result, 0, 2);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 2);
 		} finally {
 			packager.close();
 		}
@@ -204,9 +205,9 @@ public class PlainPackagerPressureConstraintTest extends AbstractPackagerConstra
 					.withBoxItems(List.of(new BoxItem(a, 1), new BoxItem(b, 1), new BoxItem(cc, 1)))
 					.build();
 
-			assertContainers(result, 2);
-			assertStackSize(result, 0, 2);  // A + B
-			assertStackSize(result, 1, 1);  // C alone
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 2);  // A + B
+			PackagerResultAssert.assertThat(result).hasStackSize(1, 1);  // C alone
 		} finally {
 			packager.close();
 		}
@@ -267,9 +268,9 @@ public class PlainPackagerPressureConstraintTest extends AbstractPackagerConstra
 					.withBoxItems(List.of(new BoxItem(a, 1), new BoxItem(b, 1), new BoxItem(cc, 1)))
 					.build();
 
-			assertContainers(result, 2);
-			assertStackSize(result, 0, 2);  // A + one of B, C
-			assertStackSize(result, 1, 1);  // the other
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 2);  // A + one of B, C
+			PackagerResultAssert.assertThat(result).hasStackSize(1, 1);  // the other
 		} finally {
 			packager.close();
 		}

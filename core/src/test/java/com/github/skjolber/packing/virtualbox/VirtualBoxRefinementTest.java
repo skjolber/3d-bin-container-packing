@@ -2,7 +2,6 @@ package com.github.skjolber.packing.virtualbox;
 
 import static org.assertj.core.api.Assertions.*;
 import static com.github.skjolber.packing.virtualbox.VirtualBoxLayoutTest.*;
-import static com.github.skjolber.packing.virtualbox.VirtualBoxPackagerTest.assertValid;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -28,7 +27,7 @@ class VirtualBoxRefinementTest {
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(3, 2, 1), 1))
 					.withMaxDelegateBoxes(2).withMaxRefinements(1).build();
 			assertThat(recording.counts).containsExactly(2);
-			assertValid(result, List.of(a));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));
 		}
 	}
 	/*
@@ -50,7 +49,7 @@ class VirtualBoxRefinementTest {
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(3, 2, 1), 1))
 					.withMaxRefinements(1).withMaxDelegateBoxes(3).build();
 			assertThat(recording.counts).containsExactly(2, 3);
-			assertValid(result, List.of(a, b));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 		}
 	}
 
@@ -84,7 +83,7 @@ class VirtualBoxRefinementTest {
 					.withMaxContainerCount(2).withMaxRefinements(1).build();
 			assertThat(recording.counts).containsExactly(2, 3);
 			assertThat(result.size()).isEqualTo(2);
-			assertValid(result, List.of(a, b));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 		}
 	}
 

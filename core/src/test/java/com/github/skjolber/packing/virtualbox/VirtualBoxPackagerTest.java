@@ -4,9 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static com.github.skjolber.packing.virtualbox.VirtualBoxLayoutTest.*;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.*;
@@ -47,7 +45,7 @@ class VirtualBoxPackagerTest {
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b)
 					.withContainerItems(new ContainerItem(container(4, 2, 1), 1))
 					.withCompareUngrouped(true).withInterruptDuration(60_000).withInterrupt(interrupt).build();
-			assertValid(result, List.of(a, b));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 			assertThat(recording.counts).containsExactly(2, 3);
 			assertThat(scheduled).hasSize(2);
 			assertThat(scheduled.get(0)).isSameAs(scheduled.get(1));
@@ -114,7 +112,7 @@ class VirtualBoxPackagerTest {
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(3, 2, 1), 1))
 					.withMaxRefinements(0).build();
 			assertThat(recording.counts).containsExactly(2, 5);
-			assertValid(result, List.of(a, b));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 		}
 	}
 
@@ -135,7 +133,7 @@ class VirtualBoxPackagerTest {
 					.withMaxContainerCount(2).withMaxRefinements(0).withCompareUngrouped(true).build();
 			assertThat(recording.counts).containsExactly(2, 5);
 			assertThat(result.size()).isEqualTo(1);
-			assertValid(result, List.of(a, b));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 		}
 	}
 
@@ -158,7 +156,7 @@ class VirtualBoxPackagerTest {
 					.withMaxGridBoxes(4).build();
 			assertThat(recording.counts).containsExactly(2);
 			assertThat(recording.types).containsExactly(1);
-			assertValid(result, List.of(a));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));
 		}
 	}
 	/*
@@ -183,7 +181,7 @@ class VirtualBoxPackagerTest {
 				PackagerResult result = wrapper.newResultBuilder().withBoxItems(item).withContainerItems(container)
 						.build();
 				assertThat(recording.counts).containsExactly(1);
-				assertValid(result, List.of(item));
+				PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(item));
 				assertThat(item.getCount()).isEqualTo(24);
 				assertThat(item.getGlobalIndex()).isEqualTo(42);
 				assertThat(item.getLocalIndex()).isEqualTo(17);
@@ -210,7 +208,7 @@ class VirtualBoxPackagerTest {
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(4, 2, 1), 1))
 					.build();
 			assertThat(recording.counts).containsExactly(2);
-			assertValid(result, List.of(a, b));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 		}
 	}
 
@@ -230,7 +228,7 @@ class VirtualBoxPackagerTest {
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(4, 1, 1), 1))
 					.withMaxRefinements(0).build();
 			assertThat(recording.counts).containsExactly(1, 4);
-			assertValid(result, List.of(a));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));
 			assertThat(a.getCount()).isEqualTo(4);
 		}
 	}
@@ -253,7 +251,7 @@ class VirtualBoxPackagerTest {
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(3, 2, 1), 1))
 					.build();
 			assertThat(recording.counts).containsExactly(2);
-			assertValid(result, List.of(a));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));
 		}
 	}
 
@@ -272,7 +270,7 @@ class VirtualBoxPackagerTest {
 			BoxItem a = item(1, 1, 1, 2), b = item(1, 1, 1, 2);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(4, 1, 1), 1))
 					.build();
-			assertValid(result, List.of(a, b));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 			assertThat(result.get(0).getStack().getPlacements()).extracting(Placement::getAbsoluteX).containsExactlyInAnyOrder(0, 1, 2, 3);
 		}
 	}
@@ -287,7 +285,7 @@ class VirtualBoxPackagerTest {
 			BoxItem a = item(1, 1, 1, 2), b = item(1, 1, 1, 2);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(2, 1, 1), 2))
 					.withMaxContainerCount(2).build();
-			assertValid(result, List.of(a, b));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 			assertThat(result.size()).isEqualTo(2);
 		}
 	}
@@ -334,7 +332,7 @@ class VirtualBoxPackagerTest {
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(4, 1, 1), 1))
 					.withMaxGridBoxes(1).build();
 			assertThat(recording.counts).containsExactly(4);
-			assertValid(result, List.of(a));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));
 		}
 	}
 
@@ -372,7 +370,7 @@ class VirtualBoxPackagerTest {
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(4, 1, 1), 1))
 					.withCompareUngrouped(true).build();
 			assertThat(recording.counts).containsExactly(1, 4);
-			assertValid(result, List.of(a));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));
 		}
 	}
 
@@ -402,7 +400,7 @@ class VirtualBoxPackagerTest {
 			assertThat(recording.counts).containsExactly(4);
 			assertThat(recording.types).containsExactly(3);
 			assertThat(result.size()).isEqualTo(3);
-			assertValid(result, List.of(a));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));
 		}
 	}
 
@@ -432,7 +430,7 @@ class VirtualBoxPackagerTest {
 			assertThat(recording.counts).containsExactly(3);
 			assertThat(recording.types).containsExactly(1);
 			assertThat(result.size()).isEqualTo(3);
-			assertValid(result, List.of(a));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));
 		}
 	}
 
@@ -456,7 +454,7 @@ class VirtualBoxPackagerTest {
 					.build();
 			assertThat(result.size()).isEqualTo(2);
 			assertThat(recording.counts).containsExactly(2);
-			assertValid(result, List.of(a));
+			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));
 		}
 	}
 
@@ -471,27 +469,6 @@ class VirtualBoxPackagerTest {
 			assertThatThrownBy(wrapper::newResultBuilder).isInstanceOf(IllegalStateException.class);
 			assertThat(delegate.newResultBuilder().withBoxItems(item(1, 1, 1, 1))
 					.withContainerItems(new ContainerItem(container(1, 1, 1), 1)).build().isSuccess()).isTrue();
-		}
-	}
-
-	protected static void assertValid(PackagerResult result, List<BoxItem> originals) {
-		PackagerResultAssert.assertThat(result).isSuccess();
-		Map<BoxItem, Integer> counts = new IdentityHashMap<>();
-		for(Container container : result.getContainers()) {
-			assertThat(container.fitsInside(container.getStack())).isTrue();
-			assertThat(container.getLoadWeight()).isLessThanOrEqualTo(container.getMaxLoadWeight());
-			List<Placement> seen = new ArrayList<>();
-			for(Placement placement : container.getStack().getPlacements()) {
-				BoxItem item = placement.getBoxItem();
-				assertThat(originals).anyMatch(original -> original == item);
-				assertThat(item.getBox().getStackValues()).contains(placement.getStackValue());
-				assertThat(seen).noneMatch(placement::intersects);
-				seen.add(placement);
-				counts.merge(item, 1, Integer::sum);
-			}
-		}
-		for(BoxItem item : originals) {
-			assertThat(counts.get(item)).isEqualTo(item.getCount());
 		}
 	}
 

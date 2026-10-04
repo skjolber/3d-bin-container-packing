@@ -282,7 +282,7 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems)
 					.withBoxItemGroups(groups).build();
 			List<Container> containers = build.getContainers();
-			assertValid(containers);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 	
 			List<Placement> placements = containers.get(0).getStack().getPlacements();
 			assertThat(placements).size().isEqualTo(3);
@@ -327,7 +327,7 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 	
 			List<Container> packList = build.getContainers();
 	
-			assertValid(packList);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 			assertThat(packList).hasSize(2);
 	
 			Container container1 = packList.get(0);

@@ -1,23 +1,19 @@
 package com.github.skjolber.packing.packer;
 
 import static com.github.skjolber.packing.test.assertj.ContainerAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.junit.jupiter.api.AfterEach;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Packager;
-import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.validator.ValidatorResult;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.test.assertj.PackagerAssert;
 import com.github.skjolber.packing.validator.DefaultValidator;
@@ -25,21 +21,11 @@ import com.github.skjolber.packing.validator.DefaultValidator;
 @SuppressWarnings("rawtypes")
 public abstract class AbstractPackagerTest {
 
-	protected void assertValid(PackagerResult build) {
-		assertValid(build.getContainers());
-	}
+	protected final DefaultValidator validator = new DefaultValidator();
 
-	protected static void assertValid(List<Container> containers) {
-		assertNotNull(containers);
-		assertFalse(containers.isEmpty());
-		for (Container container : containers) {
-			assertValid(container);
-		}
-	}
-
-	protected static void assertValid(Container container) {
-		assertNotNull(container);
-		assertThat(container).isStackedWithinContraints();
+	@AfterEach
+	void closeValidator() throws Exception {
+		validator.close();
 	}
 
 	protected static BoxItem box(int l, int w, int h, int count) {
@@ -130,40 +116,6 @@ public abstract class AbstractPackagerTest {
 		// XXXX
 		PackagerAssert.assertThat(packager).respectsDeadline(containers, products, 30 * 1000);
 	}
-
-	protected void assertValidUsingValidator(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItem> boxItems) {
-		assertValidUsingValidator(containerItems, maxContainers, result, boxItems, Order.NONE);
-	}
-
-	protected void assertValidUsingValidator(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItem> boxItems, Order order) {
-		DefaultValidator validator = new DefaultValidator();
-		ValidatorResult validatorResult = validator.newResultBuilder()
-				.withContainerItems(containerItems)
-				.withMaxContainerCount(maxContainers)
-				.withPackagerResult(result)
-				.withBoxItems(boxItems)
-				.withOrder(order)
-				.build();
-		
-		assertTrue(validatorResult.getReasons().toString(), validatorResult.isValid());
-	}
-	
-	protected void assertValidUsingValidatorForGroups(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItemGroup> boxItems) {
-		assertValidUsingValidatorForGroups(containerItems, maxContainers, result, boxItems, Order.NONE);
-	}
-
-	protected void assertValidUsingValidatorForGroups(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItemGroup> boxItems, Order order) {
-		DefaultValidator validator = new DefaultValidator();
-		ValidatorResult validatorResult = validator.newResultBuilder()
-				.withContainerItems(containerItems)
-				.withMaxContainerCount(maxContainers)
-				.withPackagerResult(result)
-				.withBoxItemGroups(boxItems)
-				.withOrder(order)
-				.build();
-		
-		assertTrue(validatorResult.getReasons().toString(), validatorResult.isValid());
-	}
 	
 
 	public List<BoxItem> copy(List<BoxItem> products) {
@@ -185,7 +137,5 @@ public abstract class AbstractPackagerTest {
 		
 		return results;
 	}
-
-
 
 }

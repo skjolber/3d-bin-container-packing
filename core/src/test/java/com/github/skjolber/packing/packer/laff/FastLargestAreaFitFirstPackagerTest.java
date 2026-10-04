@@ -47,9 +47,12 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			List<Container> containers = result.getContainers();
-			assertValid(containers);
+			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -89,7 +92,10 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -114,9 +120,12 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			List<Container> containers = result.getContainers();
-			assertValid(containers);
+			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -140,9 +149,12 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			List<Container> containers = result.getContainers();
-			assertValid(containers);
+			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -166,9 +178,12 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			List<Container> containers = result.getContainers();
-			assertValid(containers);
+			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -192,13 +207,16 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			List<Container> containers = result.getContainers();
-			assertValid(containers);
+			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 	
 			Container fits = containers.get(0);
 	
 			assertEquals(2, LargestAreaFitFirstPackagerTest.countLevels(fits));
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -220,12 +238,15 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			List<Container> containers = result.getContainers();
-			assertValid(containers);
+			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 	
 			Container fits = containers.get(0);
 	
 			assertEquals(3, LargestAreaFitFirstPackagerTest.countLevels(fits));
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -394,7 +415,10 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			assertEquals(true, result.isSuccess());
 			
-			assertValidUsingValidator(containerItems, 20, result, boxItems);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(20)
+					.withBoxItems(boxItems));
 		} finally {
 			packager.close();
 		}
@@ -429,7 +453,10 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
         assertTrue(result.isSuccess());
         
-		assertValidUsingValidator(containerItems, Integer.MAX_VALUE, result, products);
+		PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+				.withContainerItems(containerItems)
+				.withMaxContainerCount(Integer.MAX_VALUE)
+				.withBoxItems(products));
     }
     
     @Test
@@ -452,7 +479,10 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		PackagerResultAssert.assertThat(result).isSuccess();
 		assertEquals(result.getContainers().size(), 2);
 		
-		assertValidUsingValidator(containerItems, 2, result, products);
+		PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+				.withContainerItems(containerItems)
+				.withMaxContainerCount(2)
+				.withBoxItems(products));
     }
     
 	@Test
@@ -498,7 +528,7 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 					});
 				}).withBoxItems(products).build();
 				
-				assertValid(build);
+				PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 				
 				List<Placement> buildPlacements = build.getContainers().get(0).getStack().getPlacements();
 				for (Placement placement : buildPlacements) {

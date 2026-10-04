@@ -27,6 +27,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.impl.ValidatingStack;
+import com.github.skjolber.packing.test.assertj.ContainerAssert;
 import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
@@ -101,7 +102,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertEquals(products.size(), result.get(0).getStack().size());
-			assertValid(result);
+			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 		} finally {
 			try {
 				packager.close();
@@ -132,10 +133,10 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 			assertTrue(build.isSuccess());
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 	
 			Container fits = build.get(0);
-			assertValid(fits);
+			ContainerAssert.assertThat(fits).isStackedWithinConstraints();
 			assertEquals(fits.getStack().size(), products.size());
 	
 			List<Placement> placements = fits.getStack().getPlacements();
@@ -148,7 +149,10 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 			
-			assertValidUsingValidator(containerItems, 1, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -173,10 +177,10 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(copy(products)).withMaxContainerCount(5).build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 	
 			List<Container> packList = build.getContainers();
-			assertValid(packList);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 			assertThat(packList).hasSize(2);
 	
 			Container fits = packList.get(0);
@@ -191,7 +195,10 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 			
-			assertValidUsingValidator(containerItems, 5, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(5)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -217,13 +224,16 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			products.add(new BoxItem(Box.newBuilder().withId("N").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 16));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 	
 			Container fits = build.get(0);
-			assertValid(fits);
+			ContainerAssert.assertThat(fits).isStackedWithinConstraints();
 			assertEquals(21, fits.getStack().getPlacements().size());
 			
-			assertValidUsingValidator(containerItems, 1, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -251,12 +261,15 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			products.add(new BoxItem(Box.newBuilder().withId("N").withRotate3D().withSize(5, 10, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 	
 			Container fits = build.get(0);
 			assertEquals(fits.getStack().size(), products.size());
 			
-			assertValidUsingValidator(containerItems, 1, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -283,7 +296,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			products.add(new BoxItem(Box.newBuilder().withId("D").withRotate3D().withSize(3, 2, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 			Container fits = build.get(0);
 	
 			assertEquals(fits.getStack().size(), products.size());
@@ -379,11 +392,11 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			//Collections.shuffle(products);
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 			Container fits = build.get(0);
 	
 			assertNotNull(bouwkampCode.getName(), fits);
-			assertValid(fits);
+			ContainerAssert.assertThat(fits).isStackedWithinConstraints();
 			assertEquals(bouwkampCode.getName(), fits.getStack().size(), squares.size());
 		} finally {
 			packager.close();
@@ -447,7 +460,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 					});
 				}).withBoxItems(products).build();
 				
-				assertValid(build);
+				PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 				
 				List<Placement> buildPlacements = build.getContainers().get(0).getStack().getPlacements();
 				for (Placement placement : buildPlacements) {

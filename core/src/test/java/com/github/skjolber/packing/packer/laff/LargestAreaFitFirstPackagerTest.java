@@ -60,7 +60,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -102,7 +105,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -137,7 +143,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertThat(placements.get(1)).isAt(0, 1, 0).hasBoxItemId("B");
 			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemId("C");
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -166,7 +175,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertNotNull(fits);
 			validate(fits);
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -200,7 +212,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertThat(placements.get(1)).isAt(3, 0, 0).hasBoxItemId("B"); // point with lowest x is selected first
 			assertThat(placements.get(2)).isAt(5, 0, 0).hasBoxItemId("C");
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -242,7 +257,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			
 			assertEquals(2, countLevels(fits));
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -286,7 +304,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			
 			assertEquals(2, countLevels(fits));
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -317,7 +338,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			
 			assertEquals(3, countLevels(fits));
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -378,7 +402,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			Container pack = result.get(0);
 			assertNotNull(pack);
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -424,7 +451,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 					assertTrue(i >= packList.size());
 					
 					validate(packList);
-					assertValidUsingValidator(containerItems, packList.size(), result, products);
+					PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+							.withContainerItems(containerItems)
+							.withMaxContainerCount(packList.size())
+							.withBoxItems(products));
 				}
 			}
 		} finally {
@@ -466,7 +496,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			List<Container> packList = result.getContainers();
 			validate(packList);
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -554,7 +587,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 					});
 				}).withBoxItems(products).build();
 				
-				assertValid(build);
+				PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 				
 				List<Placement> buildPlacements = build.getContainers().get(0).getStack().getPlacements();
 				for (Placement placement : buildPlacements) {

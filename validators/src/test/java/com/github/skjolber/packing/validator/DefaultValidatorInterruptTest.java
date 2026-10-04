@@ -16,6 +16,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.validator.ValidatorResult;
+import com.github.skjolber.packing.test.assertj.ValidatorResultAssert;
 
 public class DefaultValidatorInterruptTest {
 
@@ -37,7 +38,7 @@ public class DefaultValidatorInterruptTest {
 	void acceptsFutureDeadlineWithoutThrowing() {
 		ValidatorResult result = resultBuilder().withDeadline(System.currentTimeMillis() + 60_000L).build();
 
-		assertTrue(result.isValid());
+		ValidatorResultAssert.assertThat(result).isValid();
 	}
 
 	@Test

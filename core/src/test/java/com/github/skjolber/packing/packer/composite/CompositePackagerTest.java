@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
@@ -16,10 +17,10 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
-import com.github.skjolber.packing.api.validator.ValidatorResult;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.validator.DefaultValidator;
 
 /**
@@ -33,6 +34,13 @@ import com.github.skjolber.packing.validator.DefaultValidator;
 public class CompositePackagerTest {
 
 	private static final long INTERRUPT_DURATION = 10_000;
+
+	private final DefaultValidator validator = new DefaultValidator();
+
+	@AfterEach
+	void closeValidator() throws Exception {
+		validator.close();
+	}
 
 	@Test
 	public void plainPackagerNeedsTheLargerContainer() throws Exception {
@@ -56,7 +64,10 @@ public class CompositePackagerTest {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).withInterruptDuration(INTERRUPT_DURATION).build();
 
 			assertThat(result.getContainers()).extracting(Container::getId).containsExactly("exact");
-			assertValid(result, containers, boxItems, 1);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containers)
+					.withMaxContainerCount(1)
+					.withBoxItems(boxItems));
 		}
 	}
 
@@ -72,7 +83,10 @@ public class CompositePackagerTest {
 				.build()) {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).build();
 
-			assertValid(result, containers, boxItems, 1);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containers)
+					.withMaxContainerCount(1)
+					.withBoxItems(boxItems));
 		}
 		assertThat(costly.getAttempts()).isZero();
 	}
@@ -148,7 +162,10 @@ public class CompositePackagerTest {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).withMaxContainerCount(2).withInterruptDuration(INTERRUPT_DURATION).build();
 
 			assertThat(result.getContainers()).extracting(Container::getId).containsExactlyInAnyOrder("exact", "single");
-			assertValid(result, containers, boxItems, 2);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containers)
+					.withMaxContainerCount(2)
+					.withBoxItems(boxItems));
 		}
 	}
 
@@ -223,19 +240,10 @@ public class CompositePackagerTest {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).withMaxContainerCount(2).withInterruptDuration(INTERRUPT_DURATION).build();
 
 			assertThat(result.size()).isEqualTo(1);
-			assertValid(result, containers, boxItems, 2);
-		}
-	}
-
-	private static void assertValid(PackagerResult result, List<ContainerItem> containers, List<BoxItem> boxItems, int maxContainerCount) throws Exception {
-		try (DefaultValidator validator = new DefaultValidator()) {
-			ValidatorResult validation = validator.newResultBuilder()
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
 					.withContainerItems(containers)
-					.withBoxItems(boxItems)
-					.withMaxContainerCount(maxContainerCount)
-					.withPackagerResult(result)
-					.build();
-			assertThat(validation.isValid()).as("%s", validation.getReasons()).isTrue();
+					.withMaxContainerCount(2)
+					.withBoxItems(boxItems));
 		}
 	}
 

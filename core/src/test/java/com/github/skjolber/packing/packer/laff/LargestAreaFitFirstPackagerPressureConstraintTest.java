@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.packer.AbstractPackagerConstraintTest;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 /**
  * LargestAreaFitFirstPackager integration tests for the
@@ -58,7 +59,7 @@ public class LargestAreaFitFirstPackagerPressureConstraintTest extends AbstractP
 					.withBoxItems(List.of(new BoxItem(bot, 1), new BoxItem(top, 1)))
 					.build();
 
-			assertContainers(result, 2);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
 		} finally {
 			packager.close();
 		}
@@ -99,8 +100,8 @@ public class LargestAreaFitFirstPackagerPressureConstraintTest extends AbstractP
 					.withBoxItems(List.of(new BoxItem(bot, 1), new BoxItem(top, 1)))
 					.build();
 
-			assertContainers(result, 1);
-			assertStackSize(result, 0, 2);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 2);
 		} finally {
 			packager.close();
 		}
@@ -142,8 +143,8 @@ public class LargestAreaFitFirstPackagerPressureConstraintTest extends AbstractP
 					.withBoxItems(List.of(new BoxItem(bot, 1), new BoxItem(top, 1)))
 					.build();
 
-			assertContainers(result, 1);
-			assertStackSize(result, 0, 2);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 2);
 		} finally {
 			packager.close();
 		}
@@ -195,9 +196,9 @@ public class LargestAreaFitFirstPackagerPressureConstraintTest extends AbstractP
 					.withBoxItems(List.of(new BoxItem(a, 1), new BoxItem(b, 1), new BoxItem(cc, 1)))
 					.build();
 
-			assertContainers(result, 2);
-			assertStackSize(result, 0, 2);
-			assertStackSize(result, 1, 1);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 2);
+			PackagerResultAssert.assertThat(result).hasStackSize(1, 1);
 		} finally {
 			packager.close();
 		}

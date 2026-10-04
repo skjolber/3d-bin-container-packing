@@ -17,6 +17,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 public class PlainPackagerHeavyItemOnGroundLevelTest extends AbstractPackagerTest {
 
@@ -63,7 +64,7 @@ public class PlainPackagerHeavyItemOnGroundLevelTest extends AbstractPackagerTes
 			assertEquals("A", firstPlacement.getStackValue().getBox().getId());
 			assertEquals(0, firstPlacement.getAbsoluteZ());
 			
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}

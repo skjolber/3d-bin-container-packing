@@ -50,7 +50,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withContainerItem(containerItem)
 					.withBoxItems(products)
 					.build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}
@@ -75,7 +75,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withContainerItem(containerItem)
 					.withBoxItems(products)
 					.build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}
@@ -99,7 +99,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}
@@ -121,7 +121,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}
@@ -143,7 +143,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}
@@ -166,7 +166,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}
@@ -188,7 +188,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 3));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}
@@ -240,7 +240,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 	
 			Container fits = build.get(0);
 			assertEquals(fits.getVolume(), containers.get(2).getVolume());
@@ -275,7 +275,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("D").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 4));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withMaxContainerCount(5).withBoxItems(products).build();
-			assertValid(result);
+			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 	
 			assertEquals(result.size(), 2);
 			assertEquals(result.get(0).getVolume(), 7);
@@ -364,7 +364,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withMaxContainerCount(5).withBoxItems(products).build();
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 			
 			assertEquals(build.get(0).getId(), "big");
 			assertEquals(build.get(1).getId(), "small");
@@ -409,7 +409,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			assertEquals(containers.get(0).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "lighter-2");
 			assertEquals(containers.get(1).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "petrol-1");
 			
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}
@@ -451,7 +451,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			assertEquals(containers.get(0).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "petrol-1");
 			assertEquals(containers.get(1).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "lighter-2");
 			
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}
@@ -500,7 +500,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			List<Container> containers = build.getContainers();
 			assertEquals(containers.size(), 2);
 
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}
@@ -560,9 +560,13 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			List<Container> containers = result.getContainers();
 			assertEquals(2, containers.size());
 
-			assertValid(result);
+			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 			
-			assertValidUsingValidatorForGroups(Arrays.asList(new ContainerItem(container, 5)), 5, result, groups, Order.CRONOLOGICAL);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(Arrays.asList(new ContainerItem(container, 5)))
+					.withMaxContainerCount(5)
+					.withBoxItemGroups(groups)
+					.withOrder(Order.CRONOLOGICAL));
 		} finally {
 			packager.close();
 		}
@@ -606,7 +610,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			
 			assertEquals("A", containers.get(0).getStack().getPlacements().get(0).getStackValue().getBox().getId());
 			
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}
@@ -637,7 +641,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withOrder(Order.CRONOLOGICAL)
 					.withMaxContainerCount(10)
 					.build();
-			assertValid(result);
+			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 			
 			List<Container> containers = result.getContainers();
 			assertEquals(containers.size(), 2);
@@ -650,7 +654,11 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				}
 			}
 			
-			assertValidUsingValidator(Arrays.asList(containerItem), 10, result, products, Order.CRONOLOGICAL);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(Arrays.asList(containerItem))
+					.withMaxContainerCount(10)
+					.withBoxItems(products)
+					.withOrder(Order.CRONOLOGICAL));
 		} finally {
 			packager.close();
 		}
@@ -682,7 +690,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING)
 					.withMaxContainerCount(10)
 					.build();
-			assertValid(result);
+			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 			
 			List<Container> containers = result.getContainers();
 			assertEquals(containers.size(), 2);
@@ -696,7 +704,11 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				}
 			}
 			
-			assertValidUsingValidator(Arrays.asList(containerItem), 10, result, products, Order.CRONOLOGICAL_ALLOW_SKIPPING);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(Arrays.asList(containerItem))
+					.withMaxContainerCount(10)
+					.withBoxItems(products)
+					.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING));
 
 		} finally {
 			packager.close();
@@ -728,7 +740,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withMaxContainerCount(10)
 					.build();
 			
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 			
 			assertEquals(2, build.getContainers().size());
 		} finally {
@@ -772,7 +784,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				assertFalse(placement.getAbsoluteX() == 0 && placement.getAbsoluteY() == 0);
 			}
 			
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}
@@ -841,9 +853,13 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			List<Container> containers = result.getContainers();
 			assertEquals(2, containers.size());
 
-			assertValid(result);
+			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 			
-			assertValidUsingValidatorForGroups(Arrays.asList(new ContainerItem(container1, 5)), 5, result, groups, Order.CRONOLOGICAL);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(Arrays.asList(new ContainerItem(container1, 5)))
+					.withMaxContainerCount(5)
+					.withBoxItemGroups(groups)
+					.withOrder(Order.CRONOLOGICAL));
 		} finally {
 			packager.close();
 		}
@@ -912,9 +928,13 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			List<Container> containers = result.getContainers();
 			assertEquals(2, containers.size());
 
-			assertValid(result);
+			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 			
-			assertValidUsingValidatorForGroups(Arrays.asList(new ContainerItem(container1, 5)), 5, result, groups, Order.CRONOLOGICAL_ALLOW_SKIPPING);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(Arrays.asList(new ContainerItem(container1, 5)))
+					.withMaxContainerCount(5)
+					.withBoxItemGroups(groups)
+					.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING));
 		} finally {
 			packager.close();
 		}
@@ -964,7 +984,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					});
 				}).withBoxItems(products).build();
 				
-				assertValid(build);
+				PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 				
 				List<Placement> buildPlacements = build.getContainers().get(0).getStack().getPlacements();
 				for (Placement placement : buildPlacements) {

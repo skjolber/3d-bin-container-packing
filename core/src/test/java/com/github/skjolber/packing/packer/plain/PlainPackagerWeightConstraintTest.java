@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer.plain;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +12,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.packer.AbstractPackagerConstraintTest;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
 /**
@@ -66,9 +66,9 @@ public class PlainPackagerWeightConstraintTest extends AbstractPackagerConstrain
 					.withBoxItems(items)
 					.build();
 
-			assertContainers(result, 2);
-			assertStackSize(result, 0, 1);
-			assertStackSize(result, 1, 1);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 1);
+			PackagerResultAssert.assertThat(result).hasStackSize(1, 1);
 		} finally {
 			packager.close();
 		}
@@ -111,8 +111,8 @@ public class PlainPackagerWeightConstraintTest extends AbstractPackagerConstrain
 					.withBoxItems(items)
 					.build();
 
-			assertContainers(result, 1);
-			assertStackSize(result, 0, 2);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 2);
 		} finally {
 			packager.close();
 		}
@@ -165,10 +165,10 @@ public class PlainPackagerWeightConstraintTest extends AbstractPackagerConstrain
 					.withBoxItems(items)
 					.build();
 
-			assertContainers(result, 2);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
 			// container-1 must have A+B; C rejected
-			assertStackSize(result, 0, 2);
-			assertStackSize(result, 1, 1);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 2);
+			PackagerResultAssert.assertThat(result).hasStackSize(1, 1);
 		} finally {
 			packager.close();
 		}
@@ -219,9 +219,9 @@ public class PlainPackagerWeightConstraintTest extends AbstractPackagerConstrain
 					.withBoxItems(items)
 					.build();
 
-			assertContainers(result, 2);
-			assertStackSize(result, 0, 3);
-			assertStackSize(result, 1, 1);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 3);
+			PackagerResultAssert.assertThat(result).hasStackSize(1, 1);
 		} finally {
 			packager.close();
 		}
@@ -274,7 +274,7 @@ public class PlainPackagerWeightConstraintTest extends AbstractPackagerConstrain
 					.build();
 
 			// One heavy box fits on the unconstrained right column; the other goes to container-2
-			assertContainers(result, 2);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
 		} finally {
 			packager.close();
 		}
@@ -315,7 +315,7 @@ public class PlainPackagerWeightConstraintTest extends AbstractPackagerConstrain
 					.withBoxItems(items)
 					.build();
 
-			assertContainers(result, 1);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
 			List<Placement> placements = result.getContainers().get(0).getStack().getPlacements();
 			Placement bot = placementAt(placements, 0);
 			Placement top = placementAt(placements, 1);

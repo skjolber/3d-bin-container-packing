@@ -12,12 +12,10 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
-import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
@@ -58,7 +56,7 @@ class VirtualBoxLoadTest {
 			assertThat(recording.counts).containsExactly(3);
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.get(0).getStack().getPlacements()).hasSize(3);
-			assertLoads(result);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(new WeightLoadValidator(), new MaxPressureLoadValidator(), new MaxBoxCountLoadValidator(), new IdenticalBoxOnlyLoadValidator());
 			for(Placement placement : result.get(0).getStack().getPlacements()) {
 				StackPlacementAssert.assertThat(placement).hasLoadWeight(2 - placement.getAbsoluteZ());
 			}
@@ -103,7 +101,7 @@ class VirtualBoxLoadTest {
 				assertThat(recording.counts).containsExactly(4);
 				PackagerResultAssert.assertThat(result).isSuccess();
 				assertThat(result.get(0).getStack().getPlacements()).hasSize(4);
-				assertLoads(result);
+				PackagerResultAssert.assertThat(result).isAcceptedBy(new WeightLoadValidator(), new MaxPressureLoadValidator(), new MaxBoxCountLoadValidator(), new IdenticalBoxOnlyLoadValidator());
 				assertThat(unconstrained.getCount()).isEqualTo(3);
 				assertThat(constrained.getCount()).isEqualTo(1);
 			}
@@ -162,16 +160,5 @@ class VirtualBoxLoadTest {
 						.withWeight(1)
 						.withMaxLoadBoxCount(1)
 						.build());
-	}
-
-	protected static void assertLoads(PackagerResult result) {
-		for(Container container : result.getContainers()) {
-			List<ValidatorResultReason> reasons = new ArrayList<>();
-			List<Placement> placements = container.getStack().getPlacements();
-			assertThat(new WeightLoadValidator().isValid(placements, reasons)).as("%s", reasons).isTrue();
-			assertThat(new MaxPressureLoadValidator().isValid(placements, reasons)).as("%s", reasons).isTrue();
-			assertThat(new MaxBoxCountLoadValidator().isValid(placements, reasons)).as("%s", reasons).isTrue();
-			assertThat(new IdenticalBoxOnlyLoadValidator().isValid(placements, reasons)).as("%s", reasons).isTrue();
-		}
 	}
 }

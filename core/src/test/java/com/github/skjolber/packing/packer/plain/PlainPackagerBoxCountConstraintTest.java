@@ -11,6 +11,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.packer.AbstractPackagerConstraintTest;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 /**
  * PlainPackager integration tests for the {@code maxLoadBoxCount} constraint.
@@ -55,8 +56,8 @@ public class PlainPackagerBoxCountConstraintTest extends AbstractPackagerConstra
 					.withBoxItems(List.of(new BoxItem(box, 2)))
 					.build();
 
-			assertContainers(result, 1);
-			assertStackSize(result, 0, 2);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 2);
 		} finally {
 			packager.close();
 		}
@@ -100,9 +101,9 @@ public class PlainPackagerBoxCountConstraintTest extends AbstractPackagerConstra
 					.withBoxItems(List.of(new BoxItem(box, 3)))
 					.build();
 
-			assertContainers(result, 2);
-			assertStackSize(result, 0, 2);
-			assertStackSize(result, 1, 1);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 2);
+			PackagerResultAssert.assertThat(result).hasStackSize(1, 1);
 		} finally {
 			packager.close();
 		}
@@ -144,8 +145,8 @@ public class PlainPackagerBoxCountConstraintTest extends AbstractPackagerConstra
 					.withBoxItems(List.of(new BoxItem(box, 3)))
 					.build();
 
-			assertContainers(result, 1);
-			assertStackSize(result, 0, 3);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 3);
 		} finally {
 			packager.close();
 		}
@@ -190,9 +191,9 @@ public class PlainPackagerBoxCountConstraintTest extends AbstractPackagerConstra
 					.withBoxItems(List.of(new BoxItem(box, 4)))
 					.build();
 
-			assertContainers(result, 2);
-			assertStackSize(result, 0, 3);
-			assertStackSize(result, 1, 1);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 3);
+			PackagerResultAssert.assertThat(result).hasStackSize(1, 1);
 		} finally {
 			packager.close();
 		}
@@ -238,8 +239,8 @@ public class PlainPackagerBoxCountConstraintTest extends AbstractPackagerConstra
 					.withBoxItems(items)
 					.build();
 
-			assertContainers(result, 1);
-			assertStackSize(result, 0, 4);
+			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
+			PackagerResultAssert.assertThat(result).hasStackSize(0, 4);
 		} finally {
 			packager.close();
 		}
