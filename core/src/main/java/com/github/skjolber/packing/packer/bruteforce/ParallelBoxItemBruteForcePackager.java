@@ -322,7 +322,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			long permutationCount = filterReversePermutations && abortOnAnyBoxTooBig
 					? new FilteredReversedBoxItemPermutationRotationIterator(iterators[i]).countPermutations()
 					: iterators[i].countPermutations();
-			if(permutationCount > parallelizationCount * 2) {
+			if(permutationCount > 2L * parallelizationCount) {
 				multithreaded = true;
 			} else {
 				multithreaded = false;
@@ -553,7 +553,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			long permutationCount = filterReversePermutations && abortOnAnyBoxTooBig
 					? new FilteredReversedBoxItemPermutationRotationIterator(iterators[i]).countPermutations()
 					: iterators[i].countPermutations();
-			if(permutationCount > parallelizationCount * 2) {
+			if(permutationCount > 2L * parallelizationCount) {
 				multithreaded = true;
 			} else {
 				multithreaded = false;

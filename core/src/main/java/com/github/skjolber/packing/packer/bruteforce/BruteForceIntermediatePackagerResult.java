@@ -18,11 +18,12 @@ import com.github.skjolber.packing.iterator.PermutationRotationState;
 
 public class BruteForceIntermediatePackagerResult implements IntermediatePackagerResult {
 	
-	public static final BruteForceIntermediatePackagerResult EMPTY = new BruteForceIntermediatePackagerResult(null, null, 0, null, false);
 	private static final Comparator<Placement> ABSOLUTE_Z_COMPARATOR = Comparator.comparingInt(Placement::getAbsoluteZ);
 	private static final Placement[] EMPTY_PLACEMENTS = new Placement[0];
 	private static final byte STACK_DIRTY = 1;
 	private static final byte CONTAINS_LAST_STACKABLE = 1 << 1;
+	// after the constants used by instances
+	public static final BruteForceIntermediatePackagerResult EMPTY = new BruteForceIntermediatePackagerResult(null, null, 0, null, false);
 
 	// work objects
 	private final Stack stack;

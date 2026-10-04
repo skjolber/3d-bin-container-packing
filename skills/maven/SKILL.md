@@ -1,6 +1,6 @@
 ---
 name: maven
-description: 'Maven build expertise for this multi-module Java project. Use when working with pom.xml files, managing dependencies, running builds or tests for specific modules, configuring or troubleshooting plugins (surefire, jacoco, shade, spotless, pitest, owasp), regenerating OpenAPI sources, building the JMH benchmark JAR, or releasing to Maven Central.'
+description: 'Maven build expertise for this multi-module Java project. Use when working with pom.xml files, managing dependencies, running builds or tests for specific modules, configuring or troubleshooting plugins (surefire, jacoco, shade, spotless, pitest, spotbugs, owasp), regenerating OpenAPI sources, building the JMH benchmark JAR, or releasing to Maven Central.'
 ---
 
 # Maven Multi-Module Build
@@ -85,6 +85,15 @@ Narrow a run with `-DtargetClasses=<pattern> -DtargetTests=<pattern>` (for examp
 `-DtargetClasses='com.github.skjolber.packing.ep.points2d.*'`); a whole module takes long.
 JUnit 5 support comes from `pitest-junit5-plugin` in the root POM.
 
+### SpotBugs — static analysis
+```bash
+./mvnw -B -ntp -Pdev,spotbugs -DskipTests -Dmaven.build.cache.enabled=false clean verify -pl api,points,validators,core -am
+```
+The `spotbugs` profile runs the `check` goal at `verify` (effort max, threshold low) and writes
+`<module>/target/spotbugsXml.xml`; it reports but does not fail the build. `spotbugs-exclude.xml` in the root
+excludes findings which are by design (mutable inputs and outputs are not copied, no serialization).
+Use `clean`: Moditect fails on an already modular JAR otherwise.
+
 ### OWASP Dependency Check
 ```bash
 mvn dependency-check:check -pl <module>
@@ -111,6 +120,7 @@ mvn dependency-check:check -pl <module>
 | `spotless.version` | Spotless formatter |
 | `pitest.version` | PiTest mutation testing |
 | `pitest-junit5-plugin.version` | PiTest JUnit 5 test discovery |
+| `spotbugs-maven-plugin.version` | SpotBugs (`spotbugs` profile) |
 
 ## Release to Maven Central
 

@@ -45,6 +45,7 @@
 		<pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
 		<jackson.version>2.22.1</jackson.version>
 		<spotless.version>3.9.0</spotless.version>
+		<spotbugs-maven-plugin.version>4.10.4.1</spotbugs-maven-plugin.version>
 	</properties>
 
 	<licenses>
@@ -565,6 +566,35 @@
 				<maven.javadoc.skip>true</maven.javadoc.skip>
 				<maven.source.skip>true</maven.source.skip>
 			</properties>
+		</profile>
+		<profile>
+			<!-- static analysis: mvn -P spotbugs verify; reports in target/spotbugsXml.xml (does not fail the build) -->
+			<id>spotbugs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.spotbugs</groupId>
+						<artifactId>spotbugs-maven-plugin</artifactId>
+						<version>${spotbugs-maven-plugin.version}</version>
+						<configuration>
+							<effort>Max</effort>
+							<threshold>Low</threshold>
+							<xmlOutput>true</xmlOutput>
+							<failOnError>false</failOnError>
+							<excludeFilterFile>${maven.multiModuleProjectDirectory}/spotbugs-exclude.xml</excludeFilterFile>
+						</configuration>
+						<executions>
+							<execution>
+								<id>spotbugs-check</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 		<profile>
 			<!-- mvn -P release release:perform -->
