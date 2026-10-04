@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer.plain;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -16,7 +15,6 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
-import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
@@ -26,7 +24,6 @@ import com.github.skjolber.packing.api.packager.control.placement.PlacementCompa
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
-import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.point.PointCalculator;
@@ -44,6 +41,7 @@ import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFactory;
+import com.github.skjolber.packing.packer.PackagerInput;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -130,48 +128,19 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 
 	}
 	
+	@Override
+	protected PackagerSession newSession(PackagerInput input, PackagerInterruptSupplier interrupt) {
+		if(input.hasBoxItems()) {
+			return new PlainBoxItemSession(input.getBoxItems(), input.getOrder(), input.getContainerItems(), input.getMaxContainerCount(), interrupt);
+		}
+		return new PlainBoxItemGroupSession(input.getBoxItemGroups(), input.getOrder(), input.getContainerItems(), input.getMaxContainerCount(), interrupt);
+	}
+
 	public class PlainResultBuilder extends AbstractPackagerResultBuilder<PlainResultBuilder> {
 
 		@Override
 		public PackagerResult build() {
-			validate();
-			
-			if( (items == null || items.isEmpty()) && (itemGroups == null || itemGroups.isEmpty())) {
-				throw new IllegalStateException();
-			}
-			long start = System.currentTimeMillis();
-
-			PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
-			if(deadline != -1L) {
-				booleanSupplierBuilder.withDeadline(deadline);
-			}
-			if(interrupt != null) {
-				booleanSupplierBuilder.withInterrupt(interrupt);
-			}
-
-			booleanSupplierBuilder.withScheduledThreadPoolExecutor(getScheduledThreadPoolExecutor());
-
-			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
-			try {
-				PackagerSession session;
-				if(items != null && !items.isEmpty()) {
-					session = new PlainBoxItemSession(items, order, containers, maxContainerCount, interrupt);
-				} else {
-					session = new PlainBoxItemGroupSession(itemGroups, order, containers, maxContainerCount, interrupt);
-				}
-				ContainerResult result = packSession(interrupt, session);
-				
-				long duration = System.currentTimeMillis() - start;
-				if(result == null) {
-					return new PackagerResult(Collections.emptyList(), duration, false, -1);
-				}
-				return new PackagerResult(result.getPackList(), duration, false, result.getCost());
-			} catch (PackagerInterruptedException e) {
-				long duration = System.currentTimeMillis() - start;
-				return new PackagerResult(Collections.emptyList(), duration, true, -1);
-			} finally {
-				interrupt.close();
-			}
+			return pack(validate(PlainPackager.this), deadline, interrupt);
 		}
 	}
 

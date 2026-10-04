@@ -18,10 +18,8 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
-import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
-import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
@@ -29,6 +27,7 @@ import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.AbstractPackagerSession;
+import com.github.skjolber.packing.packer.PackagerInput;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
@@ -57,73 +56,45 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			this.packager = packager;
 			return this;
 		}
-	
-		@Override
-		protected void validate() {
-			super.validate();
 
-			if(!packager.supportsLoad()) {
-				for (BoxItem boxItem : items) {
-					if(boxItem.isMaxLoad() || boxItem.getBox().isLoadIdenticalBoxOnly()) {
-						throw new IllegalStateException("Max load not supported for brute force packager");
-					}
-				}
-			}
-			
-			for(ContainerItem container : containers) {
-				if(container.hasControls()) {
-					throw new IllegalStateException("Controls not supported");
-				}
-			}
-			
-			if(order != Order.NONE) {
-				throw new IllegalStateException("Order not supported for brute force packager");
-			}
-		}
-		
+		@Override
 		public PackagerResult build() {
-			validate();
-			
-			long start = System.currentTimeMillis();
-	
-			PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
-			if(deadline != -1L) {
-				booleanSupplierBuilder.withDeadline(deadline);
-			}
-			if(interrupt != null) {
-				booleanSupplierBuilder.withInterrupt(interrupt);
-			}
-			
-			booleanSupplierBuilder.withScheduledThreadPoolExecutor(packager.getScheduledThreadPoolExecutor());
-	
-			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
-			try {
-			PackagerSession session;
-			if(items != null && !items.isEmpty()) {
-					AbstractPackagerSession.initializeGlobalIndexes(items);
-					session = createBoxItemSession(items, containers, maxContainerCount, interrupt);
-			} else {
-					AbstractPackagerSession.initializeGlobalIndexesForGroups(itemGroups);
-					session = createBoxItemGroupSession(itemGroups, containers, maxContainerCount, interrupt);
-				}
-				ContainerResult packList = packSession(interrupt, session);
-								
-				long duration = System.currentTimeMillis() - start;
-				if(packList == null) {
-					return new PackagerResult(Collections.emptyList(), duration, false, -1);
-				}
-				return new PackagerResult(packList.getPackList(), duration, false, packList.getCost());
-			} catch (PackagerInterruptedException e) {
-				long duration = System.currentTimeMillis() - start;
-				return new PackagerResult(Collections.emptyList(), duration, true, -1);
-			} finally {
-				interrupt.close();
-			}
+			return packager.pack(validate(packager), deadline, interrupt);
 		}
 	}
 
 	protected boolean supportsLoad() {
 		return false;
+	}
+
+	@Override
+	public String getUnsupportedReason(PackagerInput input) {
+		if(!supportsLoad() && input.hasBoxItems()) {
+			for (BoxItem boxItem : input.getBoxItems()) {
+				if(boxItem.isMaxLoad() || boxItem.getBox().isLoadIdenticalBoxOnly()) {
+					return "Max load not supported for brute force packager";
+				}
+			}
+		}
+		for(ContainerItem container : input.getContainerItems()) {
+			if(container.hasControls()) {
+				return "Controls not supported";
+			}
+		}
+		if(input.getOrder() != Order.NONE) {
+			return "Order not supported for brute force packager";
+		}
+		return null;
+	}
+
+	@Override
+	protected PackagerSession newSession(PackagerInput input, PackagerInterruptSupplier interrupt) {
+		if(input.hasBoxItems()) {
+			AbstractPackagerSession.initializeGlobalIndexes(input.getBoxItems());
+			return createBoxItemSession(input.getBoxItems(), input.getContainerItems(), input.getMaxContainerCount(), interrupt);
+		}
+		AbstractPackagerSession.initializeGlobalIndexesForGroups(input.getBoxItemGroups());
+		return createBoxItemGroupSession(input.getBoxItemGroups(), input.getContainerItems(), input.getMaxContainerCount(), interrupt);
 	}
 
 	@Override

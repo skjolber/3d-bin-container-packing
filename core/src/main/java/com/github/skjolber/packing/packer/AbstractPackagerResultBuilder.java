@@ -281,6 +281,27 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		return (B) this;
 	}
 
+	/** @return the boxes and containers configured so far */
+	protected PackagerInput toInput() {
+		return new PackagerInput(items, itemGroups, containers, maxContainerCount, order);
+	}
+
+	/**
+	 * Validate the input and check that the packager supports it.
+	 *
+	 * @param packager the packager
+	 * @return the input
+	 */
+	protected PackagerInput validate(AbstractPackager<?> packager) {
+		validate();
+		PackagerInput input = toInput();
+		String reason = packager.getUnsupportedReason(input);
+		if(reason != null) {
+			throw new IllegalStateException(reason);
+		}
+		return input;
+	}
+
 	protected void validate() {
 		if (items != null && !items.isEmpty() && itemGroups != null && !itemGroups.isEmpty()) {
 			throw new IllegalStateException("Expected either box items or groups of box items, not both");
