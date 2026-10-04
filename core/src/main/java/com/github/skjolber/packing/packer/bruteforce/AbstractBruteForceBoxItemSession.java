@@ -12,6 +12,7 @@ import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.packer.BoxItemsContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 
 public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerSession {
 
@@ -149,11 +150,13 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 		return weight;
 	}
 
-	protected BruteForceIntermediatePackagerResult copy(ContainerItem peek, IntermediatePackagerResult result, int index) {
+	protected IntermediatePackagerResult copy(ContainerItem peek, IntermediatePackagerResult result, int index) {
 		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
-			return new BruteForceIntermediatePackagerResult(peek, result.getStack(), index, bruteForceResult.getIterator(), bruteForceResult.isCalculateLoads());
+			// keep the permutation state, so that the stack can be calculated again when accepted
+			return bruteForceResult.copyTo(peek, index);
 		}
-		throw new IllegalStateException();
+		// a result of another session
+		return new DefaultIntermediatePackagerResult(peek, result.getStack());
 	}
 
 	@Override

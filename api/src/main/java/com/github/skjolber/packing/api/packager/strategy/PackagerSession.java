@@ -26,7 +26,7 @@ public interface PackagerSession {
 	 * @param best the best result so far, or null. If not null, the session may return an empty result instead of a
 	 *        result with less load volume than {@code best} (see {@link IntermediatePackagerResult#getLoadVolume()})
 	 * @param abortOnAnyBoxTooBig whether to give up (return an empty result) if some remaining box does not fit the container
-	 * @return the result, possibly empty
+	 * @return the result; null or empty if no boxes were packed
 	 * @throws PackagerInterruptedException if the packaging operation is interrupted
 	 */
 	IntermediatePackagerResult attempt(int containerIndex, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;

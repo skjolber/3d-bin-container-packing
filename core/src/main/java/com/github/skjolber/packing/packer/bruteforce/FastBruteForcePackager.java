@@ -253,7 +253,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	public BruteForceIntermediatePackagerResult pack(FastPointCalculator3DStack pointCalculator,
 			Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator,
-			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator) {
+			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator) throws PackagerInterruptedException {
 		return pack(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, pointComparator, null);
 	}
 
@@ -264,7 +264,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	public BruteForceIntermediatePackagerResult pack(FastPointCalculator3DStack pointCalculator,
 			Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator,
-			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator, IntermediatePackagerResult best) {
+			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator, IntermediatePackagerResult best) throws PackagerInterruptedException {
 		
 		Container holder = containerItem.getContainer().clone(iterator.length());
 		
@@ -293,7 +293,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		permutations: 
 		do {
 			if(interrupt.getAsBoolean()) {
-				return null;
+				throw new PackagerInterruptedException();
 			}
 			// iterate over all rotations
 
@@ -323,7 +323,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 					int count = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, index, interrupt,
 							minStackableAreaIndex, freeLoadWeights[index], loadPlacementUtility, pointComparator, maxPackableCount);
 					if(count == Integer.MIN_VALUE) {
-						return null; // timeout
+						throw new PackagerInterruptedException();
 					}
 
 					// continue search, but see if this is the best fit so far

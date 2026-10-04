@@ -174,6 +174,22 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		return state;
 	}
 
+	/**
+	 * @param containerItem another container which holds the same placements
+	 * @param index the container's index
+	 * @return the same packing in the other container
+	 */
+	BruteForceIntermediatePackagerResult copyTo(ContainerItem containerItem, int index) {
+		BruteForceIntermediatePackagerResult copy = new BruteForceIntermediatePackagerResult(containerItem, new Stack(points.size()), index, iterator, calculateLoads);
+		copy.points = new ArrayList<>(points);
+		copy.state = state;
+		copy.placements = placements;
+		copy.loadVolume = loadVolume;
+		copy.loadWeight = loadWeight;
+		copy.flags = (byte)(STACK_DIRTY | (flags & CONTAINS_LAST_STACKABLE));
+		return copy;
+	}
+
 	public void setState(List<Point> items, PermutationRotationState state, Placement[] placements, int placementCount) {
 		this.points = items;
 		setState(state, placements, placementCount);

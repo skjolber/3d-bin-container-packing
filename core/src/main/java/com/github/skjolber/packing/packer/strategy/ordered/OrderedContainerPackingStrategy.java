@@ -69,7 +69,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 				int containerItemIndex = containerItems.get(i).getIndex();
 				
 				IntermediatePackagerResult result = session.attempt(containerItemIndex, null, true);
-				if(result.isEmpty()) {
+				if(result == null || result.isEmpty()) {
 					continue;
 				}
 				if(result.getStack().size() == session.countRemainingBoxes()) {
@@ -106,7 +106,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 					if(result == null) {
 						result = session.attempt(nextContainerItemIndex, bestResultHints ? bestResult : null, true);
 					}
-					if(!result.isEmpty() && result.getStack().size() == session.countRemainingBoxes()) {
+					if(result != null && !result.isEmpty() && result.getStack().size() == session.countRemainingBoxes()) {
 						results[nextContainerItemIndex] = result;
 
 						iterator.lower();

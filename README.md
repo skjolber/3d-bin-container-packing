@@ -491,6 +491,8 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Brute-force packagers no longer reduce the counts of the box items passed in when packing uses several containers
         * Packing with several container types no longer gives up when each box fits only some of the types (the feasibility check used box indexes which change during packing)
         * Brute-force packing of box item groups over three or more containers no longer fails with a `NullPointerException`
+        * Brute-force packagers use the first container type which holds the boxes: when a result was reused for another container type, the copy had no load volume and was never selected, so larger containers were used
+        * `FastBruteForcePackager` reports interrupted packings as timeouts, like the other packagers (previously no result, or a `NullPointerException` in the container strategy)
         * Brute-force packing of box item groups no longer fails when a group does not fit some container types (the volume and weight check was inverted). Groups are packed in order: a container takes the remaining groups up to the first which does not fit it
         * Packing works on copies of the boxes and containers: result placements refer to copies of the input boxes (match them by id), and boxes can be shared between threads
         * Brute force skips permutations and containers which cannot load more than the best result so far, when the result comparator compares load volume first (`IntermediatePackagerResultComparator.prefersHigherLoadVolume()`); results are unchanged
