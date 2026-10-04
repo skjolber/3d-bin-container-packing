@@ -3,9 +3,9 @@ package com.github.skjolber.packing.packer;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparatorFactory;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
-import com.github.skjolber.packing.comparator.placement.PlacementComparatorFactory;
 
 /**
  * Factory that produces {@link LoadAwarePlacementControlsBuilder} instances.
@@ -15,7 +15,7 @@ import com.github.skjolber.packing.comparator.placement.PlacementComparatorFacto
  * containing only the constraint dimensions that are both factory-enabled and active for
  * that run, followed by any configured position dimensions.
  *
- * <p>To use a fixed {@link com.github.skjolber.packing.comparator.placement.PlacementComparator},
+ * <p>To use a fixed {@link com.github.skjolber.packing.api.packager.control.placement.PlacementComparator},
  * wrap it via {@link PlacementComparatorFactory#of}.
  */
 public class LoadAwarePlacementControlsBuilderFactory implements PlacementControlsBuilderFactory {

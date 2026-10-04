@@ -24,7 +24,7 @@ public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsC
 	private long remainingVolume;
 	private long remainingWeight;
 
-	public BoxItemGroupsContainerItemsCalculator(List<ControlledContainerItem> containerItems, int containerCount,
+	public BoxItemGroupsContainerItemsCalculator(List<ContainerItem> containerItems, int containerCount,
 			List<BoxItemGroup> boxItemGroups) {
 		super(containerItems, Math.min(containerCount, boxItemGroups.size()));
 		this.remainingVolume = calculateVolume(boxItemGroups);
@@ -36,7 +36,7 @@ public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsC
 		for(int groupIndex = 0; groupIndex < boxItemGroups.size(); groupIndex++) {
 			BoxItemGroup group = boxItemGroups.get(groupIndex);
 			for(int containerItemIndex = 0; containerItemIndex < containerItems.size(); containerItemIndex++) {
-				ControlledContainerItem containerItem = containerItems.get(containerItemIndex);
+				ContainerItem containerItem = containerItems.get(containerItemIndex);
 				if(containerItem.getContainer().canLoad(group)) {
 					fits[groupIndex][containerItemIndex] = true;
 					if(containerItem.isAvailable()) {
@@ -48,7 +48,7 @@ public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsC
 	}
 
 	private BoxItemGroupsContainerItemsCalculator(BoxItemGroupsContainerItemsCalculator source,
-			List<ControlledContainerItem> containerItems) {
+			List<ContainerItem> containerItems) {
 		super(containerItems, source.containerCount, source.resetContainerCount);
 		this.cost = source.cost;
 		this.remainingVolume = source.remainingVolume;
@@ -181,10 +181,10 @@ public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsC
 		}
 	}
 
-	private List<ControlledContainerItem> copyContainerItems() {
-		List<ControlledContainerItem> copies = new ArrayList<>(containerItems.size());
-		for(ControlledContainerItem item : containerItems) {
-			copies.add(new ControlledContainerItem(item));
+	private List<ContainerItem> copyContainerItems() {
+		List<ContainerItem> copies = new ArrayList<>(containerItems.size());
+		for(ContainerItem item : containerItems) {
+			copies.add(new ContainerItem(item));
 		}
 		return copies;
 	}

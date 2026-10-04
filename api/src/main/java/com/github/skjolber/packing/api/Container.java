@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.api;
 
 import java.util.List;
-import java.util.Set;
 
 public class Container {
 

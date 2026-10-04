@@ -16,10 +16,10 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
-import com.github.skjolber.packing.comparator.placement.PlacementComparator;
 import com.github.skjolber.packing.comparator.placement.VolumeWeightAreaMinZPlacementComparator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 

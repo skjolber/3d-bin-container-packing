@@ -20,6 +20,11 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
 import com.github.skjolber.packing.cost.LinearBucketWeightContainerCostCalculator;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
@@ -27,8 +32,6 @@ import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
-import com.github.skjolber.packing.packer.strategy.ContainerStrategy;
 import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerStrategy;
 import com.github.skjolber.packing.packer.strategy.bruteforce.LowestCostControls;
 import com.github.skjolber.packing.packer.strategy.cost.ContainerItemsCostCalculator;
@@ -45,13 +48,13 @@ class ContainerCostPackingTest {
 		EstimatingContainerItemsCostCalculator delegate = new EstimatingContainerItemsCostCalculator();
 		ContainerItemsCostCalculator calculator = new ContainerItemsCostCalculator() {
 			@Override
-			public long getMinimumCost(ContainerItemsCalculator containers, List<BoxItem> boxes, int maxCount) {
+			public long getMinimumCost(ContainerInventory containers, List<BoxItem> boxes, int maxCount) {
 				estimates.incrementAndGet();
 				return delegate.getMinimumCost(containers, boxes, maxCount);
 			}
 
 			@Override
-			public long getGroupMinimumCost(ContainerItemsCalculator containers, List<BoxItemGroup> groups, int maxCount) {
+			public long getGroupMinimumCost(ContainerInventory containers, List<BoxItemGroup> groups, int maxCount) {
 				estimates.incrementAndGet();
 				return delegate.getGroupMinimumCost(containers, groups, maxCount);
 			}
@@ -74,7 +77,7 @@ class ContainerCostPackingTest {
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			List<Boolean> costStatuses = new ArrayList<>();
-			packager.setContainerPackingStrategyFactory((calculator, boxes, groups) -> {
+			packager.setContainerStrategyFactory((calculator, boxes, groups) -> {
 				costStatuses.add(calculator.hasCost());
 				return (interrupt, adapter) -> new ContainerResult(0, List.of());
 			});
@@ -97,7 +100,7 @@ class ContainerCostPackingTest {
 		ContainerStrategy strategy = (interrupt, adapter) -> {
 			assertThat(adapter.countRemainingBoxes()).isEqualTo(2);
 			assertThat(adapter.getRemainingBoxItemGroups()).hasSize(1);
-			assertThat(adapter.getContainerItemsCalculator().getContainerCount()).isEqualTo(1);
+			assertThat(adapter.getContainerInventory().getContainerCount()).isEqualTo(1);
 			assertThat(adapter.getMaxContainerCount()).isEqualTo(1);
 			return new BruteForceContainerStrategy().pack(interrupt, adapter);
 		};
@@ -165,32 +168,27 @@ class ContainerCostPackingTest {
 	}
 
 	private ContainerResult packFromRecreatedAdapter(PackagerInterruptSupplier interrupt,
-			PackagerAdapter adapter) throws PackagerInterruptedException {
+			PackagerSession adapter) throws PackagerInterruptedException {
 		assertThat(adapter.countRemainingBoxes()).isEqualTo(1);
 		assertThat(adapter.getContainerItem(0).getCount()).isEqualTo(1);
 		Container firstPacking = adapter.accept(adapter.attempt(0, null, true));
 		assertThat(adapter.countRemainingBoxes()).isZero();
-		adapter.reset();
-		assertThat(adapter.countRemainingBoxes()).isEqualTo(1);
-		assertThat(adapter.getContainerItem(0).getCount()).isEqualTo(1);
 		assertThat(firstPacking.getStack().size()).isEqualTo(1);
-		adapter.accept(adapter.attempt(0, null, true));
-		assertThat(adapter.countRemainingBoxes()).isZero();
 
-		PackagerAdapter first = adapter.fresh();
+		PackagerSession first = adapter.fresh();
 		assertThat(first.countRemainingBoxes()).isEqualTo(1);
 		first.accept(first.attempt(0, null, true));
 		assertThat(first.countRemainingBoxes()).isZero();
 
-		PackagerAdapter second = first.fresh();
+		PackagerSession second = first.fresh();
 		assertThat(second.countRemainingBoxes()).isEqualTo(1);
 		assertThat(second.getContainerItem(0).getCount()).isEqualTo(1);
 		Container packed = second.accept(second.attempt(0, null, true));
-		return new ContainerResult(second.getContainerItemsCalculator().getCost(), List.of(packed));
+		return new ContainerResult(second.getContainerInventory().getCost(), List.of(packed));
 	}
 
 	@Test
-	void resetRestoresPartiallyConsumedBruteForceAdapters() {
+	void freshRestartsPartiallyConsumedBruteForceSessions() {
 		List<ContainerItem> containerItems = ContainerItem.newListBuilder()
 				.withContainer(Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build(), 2)
 				.build();
@@ -199,7 +197,7 @@ class ContainerCostPackingTest {
 		ParallelBoxItemBruteForcePackager parallel = ParallelBoxItemBruteForcePackager.newBuilder()
 				.withThreads(2).withParallelizationCount(2).build();
 		try {
-			ContainerStrategy strategy = this::packAfterPartialReset;
+			ContainerStrategy strategy = this::packAfterPartialRestart;
 			useStrategy(bruteForce, strategy);
 			useStrategy(fastBruteForce, strategy);
 			useStrategy(parallel, strategy);
@@ -225,21 +223,22 @@ class ContainerCostPackingTest {
 		}
 	}
 
-	private ContainerResult packAfterPartialReset(PackagerInterruptSupplier interrupt,
-			PackagerAdapter adapter) throws PackagerInterruptedException {
-		assertThat(adapter.countRemainingBoxes()).isEqualTo(2);
-		Container beforeReset = adapter.accept(adapter.attempt(0, null, false));
-		assertThat(beforeReset.getStack().size()).isEqualTo(1);
-		assertThat(adapter.countRemainingBoxes()).isEqualTo(1);
+	private ContainerResult packAfterPartialRestart(PackagerInterruptSupplier interrupt,
+			PackagerSession session) throws PackagerInterruptedException {
+		assertThat(session.countRemainingBoxes()).isEqualTo(2);
+		Container beforeRestart = session.accept(session.attempt(0, null, false));
+		assertThat(beforeRestart.getStack().size()).isEqualTo(1);
+		assertThat(session.countRemainingBoxes()).isEqualTo(1);
 
-		adapter.reset();
-		assertThat(adapter.countRemainingBoxes()).isEqualTo(2);
-		assertThat(adapter.getContainerItem(0).getCount()).isEqualTo(2);
-		Container first = adapter.accept(adapter.attempt(0, null, false));
-		Container second = adapter.accept(adapter.attempt(0, null, true));
-		assertThat(adapter.countRemainingBoxes()).isZero();
-		assertThat(beforeReset.getStack().size()).isEqualTo(1);
-		return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), List.of(first, second));
+		PackagerSession restarted = session.fresh();
+		assertThat(restarted.countRemainingBoxes()).isEqualTo(2);
+		assertThat(restarted.getContainerItem(0).getCount()).isEqualTo(2);
+		Container first = restarted.accept(restarted.attempt(0, null, false));
+		Container second = restarted.accept(restarted.attempt(0, null, true));
+		assertThat(restarted.countRemainingBoxes()).isZero();
+		assertThat(session.countRemainingBoxes()).isEqualTo(1);
+		assertThat(beforeRestart.getStack().size()).isEqualTo(1);
+		return new ContainerResult(restarted.getContainerInventory().getCost(), List.of(first, second));
 	}
 
 	@Test
@@ -427,7 +426,7 @@ class ContainerCostPackingTest {
 			ContainerItemsCostCalculator calculator = new EstimatingContainerItemsCostCalculator();
 			ContainerStrategy strategy = (interrupt, adapter) -> {
 				assertThat(estimateMinimumCost(calculator, adapter, 2)).isEqualTo(80);
-				PackagerAdapter branch = adapter.fork();
+				PackagerSession branch = adapter.fork();
 				branch.accept(branch.attempt(1, null, false));
 				assertThat(estimateMinimumCost(calculator, branch, 1)).isEqualTo(40);
 				assertThat(estimateMinimumCost(calculator, adapter, 2)).isEqualTo(80);
@@ -605,12 +604,12 @@ class ContainerCostPackingTest {
 	}
 
 	private static void useStrategy(AbstractPackager<?> packager, ContainerStrategy strategy) {
-		packager.setContainerPackingStrategyFactory((calculator, boxes, groups) -> strategy);
+		packager.setContainerStrategyFactory((calculator, boxes, groups) -> strategy);
 	}
 
 	private static void useStrategyFactory(AbstractPackager<?> packager,
 			Supplier<? extends ContainerStrategy> strategyFactory) {
-		packager.setContainerPackingStrategyFactory((calculator, boxes, groups) -> strategyFactory.get());
+		packager.setContainerStrategyFactory((calculator, boxes, groups) -> strategyFactory.get());
 	}
 
 	private static BruteForceContainerStrategy comparisonStrategy(Comparator<List<Container>> comparator) {
@@ -634,7 +633,7 @@ class ContainerCostPackingTest {
 		}
 
 		@Override
-		public boolean attempt(List<Container> containers, PackagerAdapter state,
+		public boolean attempt(List<Container> containers, PackagerSession state,
 				List<Integer> availableContainerIndexes, int selectedContainerIndex) {
 			return true;
 		}
@@ -681,12 +680,12 @@ class ContainerCostPackingTest {
 	}
 
 	private static long estimateMinimumCost(ContainerItemsCostCalculator calculator,
-			PackagerAdapter adapter, int maxCount) {
+			PackagerSession adapter, int maxCount) {
 		if(adapter.getRemainingBoxItemGroups() != null) {
-			return calculator.getGroupMinimumCost(adapter.getContainerItemsCalculator(),
+			return calculator.getGroupMinimumCost(adapter.getContainerInventory(),
 					adapter.getRemainingBoxItemGroups(), maxCount);
 		}
-		return calculator.getMinimumCost(adapter.getContainerItemsCalculator(),
+		return calculator.getMinimumCost(adapter.getContainerInventory(),
 				adapter.getRemainingBoxItems(), maxCount);
 	}
 

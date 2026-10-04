@@ -18,67 +18,23 @@ public abstract class AbstractPlacementControls implements PlacementControls {
 	}
 
 	public static long calculateAreaSupport(List<Placement> placements, int minX, int minY, int minZ, BoxStackValue stackValue) {
-		long sum = 0;
-
 		int maxX = minX + stackValue.getDx() - 1; // inclusive
 		int maxY = minY + stackValue.getDy() - 1; // inclusive
-		
-		long max = (maxX - minX + 1) * (maxY - minY + 1);
-		
+
+		long max = stackValue.getArea();
+
 		int z = minZ - 1;
-		
+
+		long sum = 0;
 		for(Placement stackPlacement : placements) {
 			if(stackPlacement.getAbsoluteEndZ() == z) {
-				
-				// calculate the common area
-				// check too far
-				if(stackPlacement.getAbsoluteX() > maxX) {
-					continue;
+				sum += stackPlacement.overlapArea2D(minX, maxX, minY, maxY);
+				if(sum == max) {
+					break;
 				}
-				
-				if(stackPlacement.getAbsoluteY() > maxY) {
-					continue;
-				}
-				
-				if(stackPlacement.getAbsoluteEndX() < minX) {
-					continue;
-				}
-				
-				if(stackPlacement.getAbsoluteEndY() < minY) {
-					continue;
-				}
-				
-				// placement can support the stack value
-				
-				// |           
-				// |           |---------|
-				// |           |         | 
-				// |    |-----------|    |
-				// |    |      |xxxx|    |
-				// |    |      -----|----|
-				// |    |           |
-				// |    |-----------| 
-				// |
-				// --------------------------------
-				
-			    int x1 = Math.max(stackPlacement.getAbsoluteX(), minX);
-			    int y1 = Math.max(stackPlacement.getAbsoluteY(), minY);
-			 
-			    // gives top-right point
-			    // of intersection rectangle
-			    int x2 = Math.min(stackPlacement.getAbsoluteEndX(), maxX);
-			    int y2 = Math.min(stackPlacement.getAbsoluteEndY(), maxY);
-				
-			    long intersect = (x2 - x1 + 1) * (y2 - y1 + 1);
-			    
-			    sum += intersect;
-			    
-			    if(sum == max) {
-			    	break;
-			    }
 			}
 		}
-		
+
 		return sum;
 	}
 	

@@ -71,6 +71,8 @@ operation directly, retaining the delegate's normal result semantics.
 - Parallel evaluation of eligible container candidates using an application
   supplied executor.
 - Cost estimation and exact cost calculation helpers for box items and groups.
+- Custom container strategies (`withContainerStrategyFactory(..)` on the packager
+  builders), which only need the `api` module.
 
 The default strategy chooses an ordered strategy unless cost information is
 available. Cost-aware and heuristic strategies aim for good results; they do

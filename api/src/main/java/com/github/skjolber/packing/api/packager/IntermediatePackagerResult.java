@@ -1,5 +1,6 @@
-package com.github.skjolber.packing.packer;
+package com.github.skjolber.packing.api.packager;
 
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 
 /**
@@ -10,7 +11,7 @@ import com.github.skjolber.packing.api.Stack;
 
 public interface IntermediatePackagerResult {
 
-	ControlledContainerItem getContainerItem();
+	ContainerItem getContainerItem();
 	
 	Stack getStack();
 	

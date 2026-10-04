@@ -7,9 +7,9 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.PackagerAdapter;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerStrategy.Controls;
 import com.github.skjolber.packing.packer.strategy.cost.ContainerItemsCostCalculator;
 import com.github.skjolber.packing.packer.strategy.cost.EstimatingContainerItemsCostCalculator;
@@ -43,7 +43,7 @@ public final class LowestCostControls implements Controls {
 	}
 
 	@Override
-	public boolean attempt(List<Container> containers, PackagerAdapter state, List<Integer> availableContainerIndexes, int selectedContainerIndex) {
+	public boolean attempt(List<Container> containers, PackagerSession state, List<Integer> availableContainerIndexes, int selectedContainerIndex) {
 		if(best == null) {
 			return true;
 		}
@@ -51,7 +51,7 @@ public final class LowestCostControls implements Controls {
 		long selectedMinimumCost = getMinimumCost(state.getContainerItem(selectedContainerIndex), selectedContainerIndex);
 		long estimatedMinimumCost = estimateMinimumCost(state);
 		long minimumAdditionalCost = Math.max(selectedMinimumCost, estimatedMinimumCost);
-		return canImprove(state.getContainerItemsCalculator().getCost(), minimumAdditionalCost,
+		return canImprove(state.getContainerInventory().getCost(), minimumAdditionalCost,
 				containers.size() + 1, best.getCost(), best.getPackList().size());
 	}
 
@@ -72,8 +72,8 @@ public final class LowestCostControls implements Controls {
 		return best;
 	}
 
-	private long estimateMinimumCost(PackagerAdapter state) {
-		ContainerItemsCalculator containers = state.getContainerItemsCalculator();
+	private long estimateMinimumCost(PackagerSession state) {
+		ContainerInventory containers = state.getContainerInventory();
 		int maxCount = state.getMaxContainerCount();
 		List<BoxItemGroup> groups = state.getRemainingBoxItemGroups();
 		if(groups != null) {

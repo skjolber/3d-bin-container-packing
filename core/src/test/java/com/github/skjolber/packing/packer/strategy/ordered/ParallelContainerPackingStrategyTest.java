@@ -3,6 +3,8 @@ package com.github.skjolber.packing.packer.strategy.ordered;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.junit.jupiter.api.Test;
 
@@ -19,11 +21,11 @@ class ParallelContainerPackingStrategyTest {
 
 	@Test
 	void acceptsTheBestResultProducedByAnAdapterFork() {
-		PlainPackager packager = PlainPackager.newBuilder().build();
+		ExecutorService executorService = Executors.newFixedThreadPool(2);
+		PlainPackager packager = PlainPackager.newBuilder()
+				.withContainerStrategyFactory((inventory, boxes, groups) -> new ParallelContainerPackingStrategy(executorService, new DefaultIntermediatePackagerResultComparator()))
+				.build();
 		try {
-			packager.setContainerPackingStrategyFactory((calculator, boxes, groups) ->
-					new ParallelContainerPackingStrategy(packager.getScheduledThreadPoolExecutor(),
-							new DefaultIntermediatePackagerResultComparator()));
 
 			Container small = Container.newBuilder().withId("small").withSize(1, 1, 1).withMaxLoadWeight(1).build();
 			Container large = Container.newBuilder().withId("large").withSize(2, 1, 1).withMaxLoadWeight(2).build();
@@ -39,6 +41,7 @@ class ParallelContainerPackingStrategyTest {
 			assertThat(result.getContainers()).singleElement().extracting(Container::getId).isEqualTo("large");
 		} finally {
 			packager.close();
+			executorService.shutdownNow();
 		}
 	}
 }

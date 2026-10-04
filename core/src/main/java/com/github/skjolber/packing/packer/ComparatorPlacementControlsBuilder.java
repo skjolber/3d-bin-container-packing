@@ -8,11 +8,11 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.PointCalculator;
-import com.github.skjolber.packing.comparator.placement.PlacementComparator;
 
 public class ComparatorPlacementControlsBuilder implements PlacementControlsBuilder {
 

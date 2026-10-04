@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.comparator.placement.PlacementComparator;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 

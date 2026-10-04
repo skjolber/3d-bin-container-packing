@@ -15,8 +15,10 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerItemsResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
 
 class ItemAwareContainerItemsCalculatorTest {
 
@@ -25,12 +27,12 @@ class ItemAwareContainerItemsCalculatorTest {
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			List<Class<?>> calculatorTypes = new ArrayList<>();
-			packager.setContainerPackingStrategyFactory((calculator, boxes, groups) -> {
+			packager.setContainerStrategyFactory((calculator, boxes, groups) -> {
 				calculatorTypes.add(calculator.getClass());
 				return (interrupt, adapter) -> {
 					IntermediatePackagerResult result = adapter.attempt(0, null, true);
 					Container packed = adapter.accept(result);
-					return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), List.of(packed));
+					return new ContainerResult(adapter.getContainerInventory().getCost(), List.of(packed));
 				};
 			});
 			Container container = Container.newBuilder().withId("container").withSize(2, 1, 1)
@@ -174,14 +176,14 @@ class ItemAwareContainerItemsCalculatorTest {
 		assertThat(calculator.isGroupFeasible(List.of(pair), 2, new boolean[] {false, true})).isFalse();
 	}
 
-	private static List<ControlledContainerItem> controlledContainers() {
+	private static List<ContainerItem> controlledContainers() {
 		Container small = Container.newBuilder().withId("small").withSize(1, 1, 1)
 				.withMaxLoadWeight(10).build();
 		Container large = Container.newBuilder().withId("large").withSize(2, 1, 1)
 				.withMaxLoadWeight(10).build();
-		List<ControlledContainerItem> result = new ArrayList<>();
-		result.add(new ControlledContainerItem(new ContainerItem(small, 1)));
-		result.add(new ControlledContainerItem(new ContainerItem(large, 1)));
+		List<ContainerItem> result = new ArrayList<>();
+		result.add(new ContainerItem(new ContainerItem(small, 1)));
+		result.add(new ContainerItem(new ContainerItem(large, 1)));
 		return result;
 	}
 

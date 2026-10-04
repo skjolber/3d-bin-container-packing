@@ -1,7 +1,7 @@
-package com.github.skjolber.packing.packer;
+package com.github.skjolber.packing.api.packager.strategy;
 
-import java.util.ArrayList;
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.RandomAccess;
 
@@ -11,8 +11,8 @@ import com.github.skjolber.packing.api.ContainerItem;
  * while calculating them.
  * <p>
  * Item indexes refer to the order of the box items or box-item groups supplied
- * to {@link ContainerItemsCalculator}. Container-item indexes refer to the
- * calculator's container inventory.
+ * to the {@link ContainerInventory}. Container-item indexes refer to
+ * {@link ContainerInventory#getContainerItems()}.
  */
 public final class ContainerItemsResult extends AbstractList<ContainerItem> implements RandomAccess {
 
@@ -20,7 +20,7 @@ public final class ContainerItemsResult extends AbstractList<ContainerItem> impl
 	private final boolean[][] fits;
 	private final int containerItemCount;
 
-	ContainerItemsResult(List<ContainerItem> containerItems, boolean[][] fits, int containerItemCount) {
+	public ContainerItemsResult(List<ContainerItem> containerItems, boolean[][] fits, int containerItemCount) {
 		this.containerItems = containerItems;
 		this.fits = fits;
 		this.containerItemCount = containerItemCount;

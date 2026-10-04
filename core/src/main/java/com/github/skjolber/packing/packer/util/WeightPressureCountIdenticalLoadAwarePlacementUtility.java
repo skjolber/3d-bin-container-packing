@@ -32,7 +32,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementUtility extends Weigh
 				continue;
 			}
 
-			long area = LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
+			long area = candidate.overlapArea2D(minX, maxX, minY, maxY);
 			double candidateWeight = candidate.getWeight() + candidate.getLoadWeight();
 			double effectiveWeight = candidateWeight * area / (area + candidate.getSupportedArea());
 

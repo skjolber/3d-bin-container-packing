@@ -3,30 +3,37 @@ package com.github.skjolber.packing.packer.plain;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
-import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparatorFactory;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
 import com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory;
-import com.github.skjolber.packing.comparator.placement.PlacementComparator;
-import com.github.skjolber.packing.comparator.placement.PlacementComparatorFactory;
 import com.github.skjolber.packing.iterator.AnyOrderBoxItemGroupIterator;
 import com.github.skjolber.packing.iterator.BoxItemGroupIterator;
 import com.github.skjolber.packing.iterator.FixedOrderBoxItemGroupIterator;
@@ -34,14 +41,9 @@ import com.github.skjolber.packing.packer.AbstractBoxItemAdapter;
 import com.github.skjolber.packing.packer.AbstractBoxItemGroupAdapter;
 import com.github.skjolber.packing.packer.AbstractControlPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFactory;
-import com.github.skjolber.packing.packer.PackagerAdapter;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -60,7 +62,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter {
 
 		public PlainBoxItemAdapter(List<BoxItem> boxItems, Order order,
-				List<ControlledContainerItem> containers,
+				List<ContainerItem> containers,
 				int containerCount, PackagerInterruptSupplier interrupt) {
 			super(boxItems, order, containers, containerCount, interrupt);
 		}
@@ -70,23 +72,23 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		}
 
 		@Override
-		public PackagerAdapter fork() {
+		public PackagerSession fork() {
 			return new PlainBoxItemAdapter(this);
 		}
 
 		@Override
-		protected PlainBoxItemAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+		protected PlainBoxItemAdapter fresh(List<ContainerItem> containers, int containerCount) {
 			return new PlainBoxItemAdapter(copyBoxItems(initialBoxItems), order, containers, containerCount, interrupt);
 		}
 
 		@Override
-		protected IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ControlledContainerItem containerItem,
+		protected IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ContainerItem containerItem,
 				PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			return PlainPackager.this.pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		}
 
 		@Override
-		protected IntermediatePackagerResult copy(ControlledContainerItem controlledContainerItem, IntermediatePackagerResult result, int index) {
+		protected IntermediatePackagerResult copy(ContainerItem controlledContainerItem, IntermediatePackagerResult result, int index) {
 			return createIntermediatePackagerResult(controlledContainerItem, result.getStack());
 		}
 
@@ -96,7 +98,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 
 		public PlainBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups,
 				Order order,
-				List<ControlledContainerItem> containers,
+				List<ContainerItem> containers,
 				int containerCount, PackagerInterruptSupplier interrupt) {
 			super(boxItemGroups, containers, containerCount, order, interrupt);
 		}
@@ -106,23 +108,23 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		}
 
 		@Override
-		public PackagerAdapter fork() {
+		public PackagerSession fork() {
 			return new PlainBoxItemGroupAdapter(this);
 		}
 
 		@Override
-		protected PlainBoxItemGroupAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+		protected PlainBoxItemGroupAdapter fresh(List<ContainerItem> containers, int containerCount) {
 			return new PlainBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), order, containers, containerCount, interrupt);
 		}
 
 		@Override
 		protected IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order,
-				ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+				ContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
 			return PlainPackager.this.packGroup(remainingBoxItemGroups, order, containerItem, interrupt, abortOnAnyBoxTooBig, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		}
 		
 		@Override
-		protected IntermediatePackagerResult copy(ControlledContainerItem controlledContainerItem, IntermediatePackagerResult result, int index) {
+		protected IntermediatePackagerResult copy(ContainerItem controlledContainerItem, IntermediatePackagerResult result, int index) {
 			return createIntermediatePackagerResult(controlledContainerItem, result.getStack());
 		}
 
@@ -151,7 +153,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
-				PackagerAdapter adapter;
+				PackagerSession adapter;
 				if(items != null && !items.isEmpty()) {
 					adapter = new PlainBoxItemAdapter(items, order, containers, maxContainerCount, interrupt);
 				} else {
@@ -182,6 +184,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		protected Comparator<IntermediatePackagerResult> packagerResultComparator;
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
 		protected PlacementControlsBuilderFactory placementControlsBuilderFactory;
+		protected ContainerStrategyFactory containerStrategyFactory;
 		
 		public Builder withCalculateSupport(boolean calculateSupport) {
 			this.calculateSupport = calculateSupport;
@@ -203,6 +206,19 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			return this;
 		}
 		
+		/**
+		 * Set the factory which selects the container strategy: which containers to use, and in which order.
+		 * By default, cost-aware packing is used when the containers have costs, otherwise the first container
+		 * (in preference order) which holds the boxes.
+		 *
+		 * @param factory container strategy factory
+		 * @return this builder
+		 */
+		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
+			this.containerStrategyFactory = Objects.requireNonNull(factory);
+			return this;
+		}
+
 		public Builder withPlacementControlsBuilderFactory(PlacementControlsBuilderFactory factory) {
 			this.placementControlsBuilderFactory = factory;
 			return this;
@@ -299,7 +315,11 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
 			}
-			return new PlainPackager(packagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory);
+			PlainPackager packager = new PlainPackager(packagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory);
+			if(containerStrategyFactory != null) {
+				packager.setContainerStrategyFactory(containerStrategyFactory);
+			}
+			return packager;
 		}
 		
 	}
@@ -343,7 +363,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 	}
 
 	@Override
-	protected IntermediatePackagerResult createIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack) {
+	protected IntermediatePackagerResult createIntermediatePackagerResult(ContainerItem containerItem, Stack stack) {
 		return new DefaultIntermediatePackagerResult(containerItem, stack);
 	}
 

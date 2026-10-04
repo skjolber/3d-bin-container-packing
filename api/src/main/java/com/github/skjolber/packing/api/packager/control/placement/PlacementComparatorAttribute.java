@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.comparator.placement;
+package com.github.skjolber.packing.api.packager.control.placement;
 
 import java.util.Set;
 

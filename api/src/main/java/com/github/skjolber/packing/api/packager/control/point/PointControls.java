@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.api.packager.control.point;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestListener;
 import com.github.skjolber.packing.api.point.PointSource;

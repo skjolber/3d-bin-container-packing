@@ -14,14 +14,13 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerAdapter;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
 
 class BruteForceContainerStrategyTest {
 
@@ -29,18 +28,16 @@ class BruteForceContainerStrategyTest {
 	void forksWithoutMutatingTheSourceOrSiblingState() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
 		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
-				new ControlledContainerItem(container, 1), new ControlledContainerItem(container, 1)), 2);
+				new ContainerItem(container, 1), new ContainerItem(container, 1)), 2);
 		List<ContainerItemsCalculator> branchCalculators = new ArrayList<>();
 		List<Integer> attemptedCounts = new ArrayList<>();
-		int[] resetCalls = new int[1];
-		TestAdapter source = new TestAdapter(calculator, branchCalculators, attemptedCounts, resetCalls);
+		TestAdapter source = new TestAdapter(calculator, branchCalculators, attemptedCounts);
 
 		ContainerResult result = strategy(
 				(first, second) -> Integer.compare(first.size(), second.size())).pack(() -> false, source);
 
 		assertEquals(1, result.getPackList().size());
 		assertEquals(2, branchCalculators.size());
-		assertEquals(0, resetCalls[0]);
 		assertEquals(List.of(1, 1), attemptedCounts);
 		assertEquals(1, source.getContainerItem(0).getCount());
 		assertEquals(1, source.getContainerItem(1).getCount());
@@ -50,13 +47,12 @@ class BruteForceContainerStrategyTest {
 	void backtracksUsingEligibilityFromEachPackingState() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
 		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
-				new ControlledContainerItem(container, 2), new ControlledContainerItem(container, 1)), 2);
+				new ContainerItem(container, 2), new ContainerItem(container, 1)), 2);
 		List<ContainerItemsCalculator> branches = new ArrayList<>();
 		List<Integer> attempts = new ArrayList<>();
-		int[] resets = new int[1];
 		List<List<Integer>> completed = new ArrayList<>();
 		int[] queries = new int[1];
-		TestAdapter source = new TestAdapter(calculator, branches, attempts, resets, 2, completed, queries);
+		TestAdapter source = new TestAdapter(calculator, branches, attempts, 2, completed, queries);
 
 		ContainerResult result = strategy(
 				(first, second) -> Integer.compare(first.size(), second.size())).pack(() -> false, source);
@@ -67,7 +63,6 @@ class BruteForceContainerStrategyTest {
 		// eligibility is computed only once for each accepted prefix.
 		assertEquals(3, queries[0]);
 		assertEquals(List.of(2, 1, 1, 2), attempts);
-		assertEquals(0, resets[0]);
 		assertEquals(4, branches.size());
 		assertEquals(2, source.getContainerItem(0).getCount());
 		assertEquals(1, source.getContainerItem(1).getCount());
@@ -77,13 +72,12 @@ class BruteForceContainerStrategyTest {
 	void keepsParentAdaptersForNestedSiblings() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
 		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
-				new ControlledContainerItem(container, 1), new ControlledContainerItem(container, 1),
-				new ControlledContainerItem(container, 1)), 3);
+				new ContainerItem(container, 1), new ContainerItem(container, 1),
+				new ContainerItem(container, 1)), 3);
 		List<Integer> attempts = new ArrayList<>();
-		int[] resets = new int[1];
 		List<List<Integer>> completed = new ArrayList<>();
 		int[] queries = new int[1];
-		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts, resets, 3, completed, queries);
+		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts, 3, completed, queries);
 
 		strategy((first, second) -> Integer.compare(first.size(), second.size())).pack(() -> false, source);
 
@@ -91,20 +85,18 @@ class BruteForceContainerStrategyTest {
 				List.of(1, 0, 2), List.of(1, 2, 0)), completed);
 		assertEquals(10, attempts.size());
 		assertEquals(7, queries[0]);
-		assertEquals(0, resets[0]);
 	}
 
 	@Test
 	void triesEveryOrderedCombinationWhilePoppingBranches() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
 		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
-				new ControlledContainerItem(container, 1), new ControlledContainerItem(container, 1),
-				new ControlledContainerItem(container, 1)), 3);
+				new ContainerItem(container, 1), new ContainerItem(container, 1),
+				new ContainerItem(container, 1)), 3);
 		List<Integer> attempts = new ArrayList<>();
 		List<List<Integer>> completed = new ArrayList<>();
 		int[] queries = new int[1];
-		int[] resets = new int[1];
-		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts, resets,
+		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts,
 				3, completed, queries) {
 			@Override
 			public List<Integer> getContainers() {
@@ -123,17 +115,16 @@ class BruteForceContainerStrategyTest {
 				List.of(2, 0, 1), List.of(2, 1, 0)), completed);
 		assertEquals(15, attempts.size());
 		assertEquals(10, queries[0]);
-		assertEquals(0, resets[0]);
 	}
 
 	@Test
 	void defaultBoundSkipsBranchesThatCanOnlyTie() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
 		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
-				new ControlledContainerItem(container, 1), new ControlledContainerItem(container, 1)), 1);
+				new ContainerItem(container, 1), new ContainerItem(container, 1)), 1);
 		List<Integer> attempts = new ArrayList<>();
 		int[] queries = new int[1];
-		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts, new int[1],
+		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts,
 				1, new ArrayList<>(), queries);
 
 		new BruteForceContainerStrategy().pack(() -> false, source);
@@ -146,11 +137,11 @@ class BruteForceContainerStrategyTest {
 	void customPotentialComparatorPrunesSelectedContainers() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
 		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
-				new ControlledContainerItem(container, 1), new ControlledContainerItem(container, 1),
-				new ControlledContainerItem(container, 1)), 3);
+				new ContainerItem(container, 1), new ContainerItem(container, 1),
+				new ContainerItem(container, 1)), 3);
 		List<Integer> attempts = new ArrayList<>();
 		List<List<Integer>> completed = new ArrayList<>();
-		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts, new int[1],
+		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts,
 				3, completed, new int[1]);
 		List<Integer> checkedContainerIndexes = new ArrayList<>();
 
@@ -172,25 +163,24 @@ class BruteForceContainerStrategyTest {
 	void limitsIteratorByAvailableContainersAndRemainingBoxes() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
 		ContainerItemsCalculator twoContainers = new ContainerItemsCalculator(List.of(
-				new ControlledContainerItem(container, 1), new ControlledContainerItem(container, 1)), 2);
+				new ContainerItem(container, 1), new ContainerItem(container, 1)), 2);
 		int[] requested = new int[1];
 		TestAdapter threeBoxes = new TestAdapter(twoContainers, new ArrayList<>(), new ArrayList<>(),
-				new int[1], 3, new ArrayList<>(), new int[1]) {
+				3, new ArrayList<>(), new int[1]) {
 			@Override
 			public List<Integer> getContainers() {
-				requested[0] = getContainerItemsCalculator().getContainerCount();
+				requested[0] = getContainerInventory().getContainerCount();
 				return super.getContainers();
 			}
 		};
 		new BruteForceContainerStrategy().pack(() -> false, threeBoxes);
 		assertEquals(2, requested[0]);
-		assertEquals(2, threeBoxes.getContainerItemsCalculator().getContainerCount());
+		assertEquals(2, threeBoxes.getContainerInventory().getContainerCount());
 
 		ContainerItemsCalculator manyContainers = new ContainerItemsCalculator(List.of(
-				new ControlledContainerItem(container, Integer.MAX_VALUE)), Integer.MAX_VALUE);
-		TestAdapter oneBox = new TestAdapter(manyContainers, new ArrayList<>(), new ArrayList<>(),
-				new int[1]);
-		assertEquals(Integer.MAX_VALUE, oneBox.getContainerItemsCalculator().getContainerCount());
+				new ContainerItem(container, Integer.MAX_VALUE)), Integer.MAX_VALUE);
+		TestAdapter oneBox = new TestAdapter(manyContainers, new ArrayList<>(), new ArrayList<>());
+		assertEquals(Integer.MAX_VALUE, oneBox.getContainerInventory().getContainerCount());
 		assertEquals(1, new BruteForceContainerStrategy().pack(() -> false, oneBox).getPackList().size());
 	}
 
@@ -201,7 +191,7 @@ class BruteForceContainerStrategyTest {
 		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
 				costed(cheap, 1, 5), costed(expensive, 1, 100)), 1);
 		List<Integer> attempts = new ArrayList<>();
-		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts, new int[1]);
+		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts);
 
 		ContainerResult result = new BruteForceContainerStrategy(new LowestCostControls()).pack(() -> false, source);
 
@@ -217,7 +207,7 @@ class BruteForceContainerStrategyTest {
 				costed(cheap, 2, 5), costed(expensive, 1, 6)), 2);
 		List<Integer> attempts = new ArrayList<>();
 		int[] queries = new int[1];
-		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts, new int[1],
+		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts,
 				2, new ArrayList<>(), queries);
 
 		ContainerResult result = new BruteForceContainerStrategy(new LowestCostControls()).pack(() -> false, source);
@@ -227,8 +217,8 @@ class BruteForceContainerStrategyTest {
 		assertEquals(2, queries[0]);
 	}
 
-	private static ControlledContainerItem costed(Container container, int count, long cost) {
-		return new ControlledContainerItem(new ContainerItem(container, count,
+	private static ContainerItem costed(Container container, int count, long cost) {
+		return new ContainerItem(new ContainerItem(container, count,
 				new FixedContainerCostCalculator(cost, container.getVolume(), null, 0)));
 	}
 
@@ -244,7 +234,7 @@ class BruteForceContainerStrategyTest {
 
 	@FunctionalInterface
 	private interface AttemptFilter {
-		boolean attempt(List<Container> best, List<Container> prefix, PackagerAdapter state,
+		boolean attempt(List<Container> best, List<Container> prefix, PackagerSession state,
 				List<Integer> containerIndexes, int selectedContainerIndex, int remainingSlots);
 	}
 
@@ -267,7 +257,7 @@ class BruteForceContainerStrategyTest {
 		}
 
 		@Override
-		public boolean attempt(List<Container> containers, PackagerAdapter state,
+		public boolean attempt(List<Container> containers, PackagerSession state,
 				List<Integer> availableContainerIndexes, int selectedContainerIndex) {
 			return best == null || attemptFilter.attempt(best.getPackList(), containers, state,
 					availableContainerIndexes, selectedContainerIndex, state.getMaxContainerCount());
@@ -291,7 +281,6 @@ class BruteForceContainerStrategyTest {
 
 		private final List<ContainerItemsCalculator> branchCalculators;
 		private final List<Integer> attemptedCounts;
-		private final int[] resetCalls;
 		private final int initialRemaining;
 		private final List<List<Integer>> completed;
 		private final int[] queryCalls;
@@ -300,11 +289,10 @@ class BruteForceContainerStrategyTest {
 		private int remaining;
 
 		private TestAdapter(ContainerItemsCalculator calculator, List<ContainerItemsCalculator> branchCalculators,
-				List<Integer> attemptedCounts, int[] resetCalls) {
+				List<Integer> attemptedCounts) {
 			super(calculator.getContainerItems(), calculator.getContainerCount());
 			this.branchCalculators = branchCalculators;
 			this.attemptedCounts = attemptedCounts;
-			this.resetCalls = resetCalls;
 			this.initialRemaining = 1;
 			this.completed = null;
 			this.queryCalls = null;
@@ -312,12 +300,11 @@ class BruteForceContainerStrategyTest {
 		}
 
 		private TestAdapter(ContainerItemsCalculator calculator, List<ContainerItemsCalculator> branchCalculators,
-				List<Integer> attemptedCounts, int[] resetCalls, int initialRemaining,
+				List<Integer> attemptedCounts, int initialRemaining,
 				List<List<Integer>> completed, int[] queryCalls) {
 			super(calculator.getContainerItems(), calculator.getContainerCount());
 			this.branchCalculators = branchCalculators;
 			this.attemptedCounts = attemptedCounts;
-			this.resetCalls = resetCalls;
 			this.initialRemaining = initialRemaining;
 			this.completed = completed;
 			this.queryCalls = queryCalls;
@@ -325,18 +312,18 @@ class BruteForceContainerStrategyTest {
 		}
 
 		@Override
-		protected TestAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+		protected TestAdapter fresh(List<ContainerItem> containers, int containerCount) {
 			ContainerItemsCalculator calculator = new ContainerItemsCalculator(containers, containerCount);
 			branchCalculators.add(calculator);
-			return new TestAdapter(calculator, branchCalculators, attemptedCounts, resetCalls,
+			return new TestAdapter(calculator, branchCalculators, attemptedCounts,
 					initialRemaining, completed, queryCalls);
 		}
 
 		@Override
-		public PackagerAdapter fork() {
+		public PackagerSession fork() {
 			ContainerItemsCalculator calculator = packagerContainerItems.clone();
 			branchCalculators.add(calculator);
-			TestAdapter fork = new TestAdapter(calculator, branchCalculators, attemptedCounts, resetCalls,
+			TestAdapter fork = new TestAdapter(calculator, branchCalculators, attemptedCounts,
 					initialRemaining, completed, queryCalls);
 			fork.remaining = remaining;
 			fork.accepted.addAll(accepted);
@@ -344,14 +331,7 @@ class BruteForceContainerStrategyTest {
 		}
 
 		@Override
-		protected void resetState() {
-			remaining = initialRemaining;
-			accepted.clear();
-			resetCalls[0]++;
-		}
-
-		@Override
-		protected IntermediatePackagerResult copy(ControlledContainerItem containerItem,
+		protected IntermediatePackagerResult copy(ContainerItem containerItem,
 				IntermediatePackagerResult result, int index) {
 			return result;
 		}
@@ -361,7 +341,7 @@ class BruteForceContainerStrategyTest {
 				boolean abortOnAnyBoxTooBig) {
 			attemptedCounts.add(getContainerItem(containerIndex).getCount());
 			return new IntermediatePackagerResult() {
-				@Override public ControlledContainerItem getContainerItem() { return TestAdapter.this.getContainerItem(containerIndex); }
+				@Override public ContainerItem getContainerItem() { return TestAdapter.this.getContainerItem(containerIndex); }
 				@Override public Stack getStack() { return new Stack(); }
 				@Override public boolean isEmpty() { return false; }
 			};
@@ -400,7 +380,7 @@ class BruteForceContainerStrategyTest {
 		}
 
 		@Override
-		public ControlledContainerItem getContainerItem(int index) {
+		public ContainerItem getContainerItem(int index) {
 			return packagerContainerItems.getContainerItem(index);
 		}
 

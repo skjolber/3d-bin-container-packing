@@ -15,18 +15,22 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
-import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.DefaultPointControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.MarkResetPointCalculator3D;
@@ -38,13 +42,8 @@ import com.github.skjolber.packing.packer.AbstractBoxItemAdapter;
 import com.github.skjolber.packing.packer.AbstractBoxItemGroupAdapter;
 import com.github.skjolber.packing.packer.AbstractControlPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerAdapter;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -56,7 +55,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter {
 
-		public PlainBoxItemAdapter(List<BoxItem> boxItems, Order order, List<ControlledContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
+		public PlainBoxItemAdapter(List<BoxItem> boxItems, Order order, List<ContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
 			super(boxItems, order, containers, containerCount, interrupt);
 		}
 
@@ -65,24 +64,24 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		}
 
 		@Override
-		public PackagerAdapter fork() {
+		public PackagerSession fork() {
 			return new PlainBoxItemAdapter(this);
 		}
 
 		@Override
-		protected PlainBoxItemAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+		protected PlainBoxItemAdapter fresh(List<ContainerItem> containers, int containerCount) {
 			return new PlainBoxItemAdapter(copyBoxItems(initialBoxItems), order, containers, containerCount, interrupt);
 		}
 
 		@Override
-		protected IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ControlledContainerItem containerItem,
+		protected IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ContainerItem containerItem,
 				PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig
 				) throws PackagerInterruptedException {
 			return AbstractLargestAreaFitFirstPackager.this.pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		}
 
 		@Override
-		protected IntermediatePackagerResult copy(ControlledContainerItem controlledContainerItem, IntermediatePackagerResult result, int index) {
+		protected IntermediatePackagerResult copy(ContainerItem controlledContainerItem, IntermediatePackagerResult result, int index) {
 			return createIntermediatePackagerResult(controlledContainerItem, result.getStack());
 		}
 
@@ -92,7 +91,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		public PlainBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups,
 				Order order,
-				List<ControlledContainerItem> containers,
+				List<ContainerItem> containers,
 				int containerCount, PackagerInterruptSupplier interrupt) {
 			super(boxItemGroups, containers, containerCount, order, interrupt);
 		}
@@ -102,23 +101,23 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		}
 
 		@Override
-		public PackagerAdapter fork() {
+		public PackagerSession fork() {
 			return new PlainBoxItemGroupAdapter(this);
 		}
 
 		@Override
-		protected PlainBoxItemGroupAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+		protected PlainBoxItemGroupAdapter fresh(List<ContainerItem> containers, int containerCount) {
 			return new PlainBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), order, containers, containerCount, interrupt);
 		}
 
 		@Override
 		protected IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order,
-				ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+				ContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
 			return AbstractLargestAreaFitFirstPackager.this.packGroup(remainingBoxItemGroups, order, containerItem, interrupt, abortOnAnyBoxTooBig, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		}
 
 		@Override
-		protected IntermediatePackagerResult copy(ControlledContainerItem controlledContainerItem, IntermediatePackagerResult result, int index) {
+		protected IntermediatePackagerResult copy(ContainerItem controlledContainerItem, IntermediatePackagerResult result, int index) {
 			return createIntermediatePackagerResult(controlledContainerItem, result.getStack());
 		}
 
@@ -147,7 +146,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
-				PackagerAdapter adapter;
+				PackagerSession adapter;
 				if(items != null && !items.isEmpty()) {
 					adapter = new PlainBoxItemAdapter(items, order, containers, maxContainerCount, interrupt);
 				} else {
@@ -186,7 +185,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		this.firstBoxItemGroupComparator = firstBoxItemGroupComparator;
 	}
 
-	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) throws PackagerInterruptedException {
+	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) throws PackagerInterruptedException {
 		ContainerItem containerItem = controlledContainerItem;
 		Container container = containerItem.getContainer();
 
@@ -396,7 +395,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 	protected abstract PointCalculator createPointCalculator(BoxItemSource source);
 
-	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) {
+	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) {
 		ContainerItem containerItem = controlledContainerItem;
 		Container container = containerItem.getContainer();
 		
@@ -733,7 +732,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 	}
 	
 	@Override
-	protected IntermediatePackagerResult createIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack) {
+	protected IntermediatePackagerResult createIntermediatePackagerResult(ContainerItem containerItem, Stack stack) {
 		return new DefaultIntermediatePackagerResult(containerItem, stack);
 	}
 

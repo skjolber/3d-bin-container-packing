@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import com.github.skjolber.packing.api.point.Point;
 
 public class Placement implements Serializable {
@@ -164,6 +165,47 @@ public class Placement implements Serializable {
 				placement.getAbsoluteEndX() < x || placement.getAbsoluteX() > getAbsoluteEndX() || 
 				placement.getAbsoluteEndY() < y || placement.getAbsoluteY() > getAbsoluteEndY()
 				);
+	}
+
+	/**
+	 * The area in the xy plane shared with a rectangle (inclusive coordinates), for example the
+	 * contact area with a box resting on this placement.
+	 *
+	 * <pre>
+	 * |
+	 * |           |---------|  rectangle
+	 * |           |         |
+	 * |    |-----------|    |
+	 * |    |      |xxxx|    |  xxxx: overlap
+	 * |    |      -----|----|
+	 * |    |           |       this placement
+	 * |    |-----------|
+	 * |
+	 * --------------------------------
+	 * </pre>
+	 *
+	 * @return the overlap area, or 0 if the rectangle does not overlap this placement
+	 */
+	public long overlapArea2D(int placementX, int placementEndX, int placementY, int placementEndY) {
+		int overlapMinX = Math.max(x, placementX);
+		int overlapMaxX = Math.min(getAbsoluteEndX(), placementEndX);
+		if(overlapMaxX < overlapMinX) {
+			return 0L;
+		}
+		int overlapMinY = Math.max(y, placementY);
+		int overlapMaxY = Math.min(getAbsoluteEndY(), placementEndY);
+		if(overlapMaxY < overlapMinY) {
+			return 0L;
+		}
+		// long arithmetic: areas can exceed the int range for fine-grained units
+		return (long) (overlapMaxX - overlapMinX + 1) * (overlapMaxY - overlapMinY + 1);
+	}
+
+	/**
+	 * @return the area in the xy plane shared with another placement, or 0 if they do not overlap
+	 */
+	public long overlapArea2D(Placement placement) {
+		return overlapArea2D(placement.getAbsoluteX(), placement.getAbsoluteEndX(), placement.getAbsoluteY(), placement.getAbsoluteEndY());
 	}
 
 	public boolean intersects3D(Placement placement) {

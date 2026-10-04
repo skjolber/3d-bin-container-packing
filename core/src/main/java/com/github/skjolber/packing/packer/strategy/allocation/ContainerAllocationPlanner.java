@@ -6,12 +6,12 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
-import com.github.skjolber.packing.packer.PackagerAdapter;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
 /**
  * Assigns individual boxes, or indivisible box-item groups, to the remaining
@@ -71,7 +71,7 @@ public final class ContainerAllocationPlanner {
 			this.group = group;
 		}
 
-		private boolean canLoad(ContainerItemsCalculator calculator, int containerItemIndex) {
+		private boolean canLoad(ContainerInventory calculator, int containerItemIndex) {
 			if(boxItem != null) {
 				return calculator.canLoad(boxItem, containerItemIndex);
 			}
@@ -87,7 +87,7 @@ public final class ContainerAllocationPlanner {
 		private final ContainerCostCalculator costCalculator;
 		private final long minimumCost;
 
-		private Capacity(int containerIndex, ControlledContainerItem item, int count, Objective objective) {
+		private Capacity(int containerIndex, ContainerItem item, int count, Objective objective) {
 			this.containerIndex = containerIndex;
 			this.count = count;
 			this.volume = item.getContainer().getMaxLoadVolume();
@@ -159,9 +159,9 @@ public final class ContainerAllocationPlanner {
 		this.capacityIndexesByCostPerWeight = capacityIndexesByCostPer(this.capacities, false);
 	}
 
-	static Allocation plan(PackagerAdapter adapter, Objective objective, boolean[] excluded,
+	static Allocation plan(PackagerSession adapter, Objective objective, boolean[] excluded,
 			PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
-		ContainerItemsCalculator calculator = adapter.getContainerItemsCalculator();
+		ContainerInventory calculator = adapter.getContainerInventory();
 		int maxCount = adapter.getMaxContainerCount();
 		List<BoxItemGroup> groups = adapter.getRemainingBoxItemGroups();
 		List<Unit> units;
@@ -188,9 +188,9 @@ public final class ContainerAllocationPlanner {
 	 * keeps the check usable by custom adapters while production adapters receive
 	 * the full allocation test.
 	 */
-	public static boolean canAllocate(PackagerAdapter adapter, PackagerInterruptSupplier interrupt)
+	public static boolean canAllocate(PackagerSession adapter, PackagerInterruptSupplier interrupt)
 			throws PackagerInterruptedException {
-		ContainerItemsCalculator calculator = adapter.getContainerItemsCalculator();
+		ContainerInventory calculator = adapter.getContainerInventory();
 		int maxCount = adapter.getMaxContainerCount();
 		List<BoxItemGroup> groups = adapter.getRemainingBoxItemGroups();
 		List<Unit> units;
@@ -235,7 +235,7 @@ public final class ContainerAllocationPlanner {
 		return units;
 	}
 
-	private static Allocation plan(ContainerItemsCalculator calculator, List<Unit> units, int maxCount,
+	private static Allocation plan(ContainerInventory calculator, List<Unit> units, int maxCount,
 			Objective objective, boolean[] excluded, PackagerInterruptSupplier interrupt)
 			throws PackagerInterruptedException {
 		if(units.isEmpty()) {
@@ -248,7 +248,7 @@ public final class ContainerAllocationPlanner {
 
 		List<Capacity> capacities = new ArrayList<>(calculator.getContainerItemCount());
 		for(int i = 0; i < calculator.getContainerItemCount(); i++) {
-			ControlledContainerItem item = calculator.getContainerItem(i);
+			ContainerItem item = calculator.getContainerItem(i);
 			if(!item.isAvailable() || excluded != null && i < excluded.length && excluded[i]) {
 				continue;
 			}
@@ -294,7 +294,7 @@ public final class ContainerAllocationPlanner {
 		return planner.best;
 	}
 
-	private static Allocation directAllocation(ContainerItemsCalculator calculator, List<Unit> units,
+	private static Allocation directAllocation(ContainerInventory calculator, List<Unit> units,
 			List<Capacity> capacities, int maxCount, Objective objective) {
 		if(units.size() == 1) {
 			return singleUnitAllocation(calculator, units.get(0), capacities, objective);
@@ -308,7 +308,7 @@ public final class ContainerAllocationPlanner {
 		return null;
 	}
 
-	private static Allocation singleUnitAllocation(ContainerItemsCalculator calculator, Unit unit,
+	private static Allocation singleUnitAllocation(ContainerInventory calculator, Unit unit,
 			List<Capacity> capacities, Objective objective) {
 		Capacity best = null;
 		long bestCost = Long.MAX_VALUE;
@@ -332,7 +332,7 @@ public final class ContainerAllocationPlanner {
 		return best == null ? null : new Allocation(new int[] {best.containerIndex}, bestCost);
 	}
 
-	private static Allocation oneContainerAllocation(ContainerItemsCalculator calculator, List<Unit> units,
+	private static Allocation oneContainerAllocation(ContainerInventory calculator, List<Unit> units,
 			List<Capacity> capacities, Objective objective) {
 		long volume = 0;
 		long weight = 0;
@@ -372,7 +372,7 @@ public final class ContainerAllocationPlanner {
 		return best == null ? null : new Allocation(new int[] {best.containerIndex}, bestCost);
 	}
 
-	private static Allocation unlimitedInventoryAllocation(ContainerItemsCalculator calculator, List<Unit> units,
+	private static Allocation unlimitedInventoryAllocation(ContainerInventory calculator, List<Unit> units,
 			List<Capacity> capacities, int maxCount) {
 		if(maxCount < units.size()) {
 			return null;
@@ -420,7 +420,7 @@ public final class ContainerAllocationPlanner {
 		return new Allocation(indexes, 0);
 	}
 
-	private static boolean fits(ContainerItemsCalculator calculator, Unit unit, Capacity capacity) {
+	private static boolean fits(ContainerInventory calculator, Unit unit, Capacity capacity) {
 		return unit.volume <= capacity.volume && unit.weight <= capacity.weight
 				&& unit.canLoad(calculator, capacity.containerIndex);
 	}

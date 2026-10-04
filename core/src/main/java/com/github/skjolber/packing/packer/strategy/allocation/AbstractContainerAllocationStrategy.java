@@ -5,11 +5,11 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerAdapter;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
-import com.github.skjolber.packing.packer.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Allocation;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Objective;
 
@@ -24,7 +24,7 @@ import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocatio
  * </p>
  * <p>
  * The first container in the selected allocation is packed by the underlying
- * {@link PackagerAdapter}. If that placement succeeds, the accepted container
+ * {@link PackagerSession}. If that placement succeeds, the accepted container
  * changes the remaining items and inventory, so the strategy calculates a fresh
  * allocation before choosing the next container. If placement fails, the selected
  * container type is excluded for the current iteration and another allocation is
@@ -45,7 +45,7 @@ abstract class AbstractContainerAllocationStrategy implements ContainerStrategy 
 	}
 
 	@Override
-	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerAdapter adapter)
+	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession adapter)
 			throws PackagerInterruptedException {
 		int limit = adapter.getMaxContainerCount();
 		List<Container> packed = new ArrayList<>();
@@ -53,7 +53,7 @@ abstract class AbstractContainerAllocationStrategy implements ContainerStrategy 
 			// A failed geometric packing attempt only excludes a type for this
 			// container-selection iteration. The next accepted container changes the
 			// remaining items and starts a new selection from the full inventory.
-			boolean[] excluded = new boolean[adapter.getContainerItemsCalculator().getContainerItemCount()];
+			boolean[] excluded = new boolean[adapter.getContainerInventory().getContainerItemCount()];
 			IntermediatePackagerResult result = null;
 			while(result == null || result.isEmpty()) {
 				if(interrupt.getAsBoolean()) {
@@ -80,6 +80,6 @@ abstract class AbstractContainerAllocationStrategy implements ContainerStrategy 
 		if(adapter.countRemainingBoxes() != 0) {
 			return null;
 		}
-		return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), packed);
+		return new ContainerResult(adapter.getContainerInventory().getCost(), packed);
 	}
 }

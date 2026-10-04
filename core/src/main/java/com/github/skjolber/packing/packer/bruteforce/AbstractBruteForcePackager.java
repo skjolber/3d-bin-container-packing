@@ -12,25 +12,25 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
-import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerAdapter;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -73,7 +73,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				}
 			}
 			
-			for(ControlledContainerItem container : containers) {
+			for(ContainerItem container : containers) {
 				if(container.hasControls()) {
 					throw new IllegalStateException("Controls not supported");
 				}
@@ -101,7 +101,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
-			PackagerAdapter adapter;
+			PackagerSession adapter;
 			if(items != null && !items.isEmpty()) {
 					AbstractPackagerAdapter.initializeGlobalIndexes(items);
 					adapter = createBoxItemAdapter(items, containers, maxContainerCount, interrupt);
@@ -134,10 +134,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		return new BruteForcePackagerResultBuilder().withPackager(this);
 	}
 
-	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, List<ControlledContainerItem> containers,
+	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, List<ContainerItem> containers,
 			int containerCount, PackagerInterruptSupplier interrupt);
 
-	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, List<ControlledContainerItem> containers,
+	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, List<ContainerItem> containers,
 			int containerCount, PackagerInterruptSupplier interrupt);
 
 	static Placement[] getPlacements(int size, boolean load) {
@@ -204,7 +204,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		return true;
 	}
 
-	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ControlledContainerItem containerItem, int index,
+	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int index,
 			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter) throws PackagerInterruptedException {
 
 		Container holder = containerItem.getContainer().clone(iterator.length());

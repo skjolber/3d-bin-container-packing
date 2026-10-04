@@ -4,7 +4,7 @@ import java.util.Comparator;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 
 public class DefaultIntermediatePackagerResultComparator implements Comparator<IntermediatePackagerResult> {
 

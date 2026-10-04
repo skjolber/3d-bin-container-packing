@@ -1,14 +1,12 @@
-package com.github.skjolber.packing.comparator.placement;
+package com.github.skjolber.packing.api.packager.control.placement;
 
 /**
  * Functional interface that supplies a {@link PlacementComparator} instance.
  *
- * <p>Used as the factory type in {@link DefaultPlacementComparatorFactory} registry entries
+ * <p>Used as the factory type in {@code com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory} registry entries
  * and dimension entries. Unlike {@code Function<PlacementComparator, AbstractChainedPlacementComparator>},
  * this supplier does not accept a {@code next} argument — chaining is handled separately via
  * instanceof check in the build process.
- *
- * @see DefaultPlacementComparatorFactory
  */
 @FunctionalInterface
 public interface PlacementComparatorSupplier {

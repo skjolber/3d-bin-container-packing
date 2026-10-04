@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.comparator.placement;
 
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 
 public class VolumeWeightAreaMinZPlacementComparator implements PlacementComparator {
 

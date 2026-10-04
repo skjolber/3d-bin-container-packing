@@ -14,9 +14,11 @@ import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.control.manifest.DefaultManifestControls;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
@@ -44,7 +46,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		super(comparator);
 	}
 
-	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean loadIdenticalBox) throws PackagerInterruptedException {
+	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean loadIdenticalBox) throws PackagerInterruptedException {
 		Container container = controlContainerItem.getContainer();
 
 		Stack stack = createStack();
@@ -236,7 +238,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		return new DefaultPointCalculator3D(false, boxItemSource);
 	}
 
-	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) {
+	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) {
 		ContainerItem containerItem = controlContainerItem;
 		Container container = containerItem.getContainer();
 		
@@ -511,7 +513,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		return createIntermediatePackagerResult(controlContainerItem, stack);
 	}
 
-	protected abstract IntermediatePackagerResult createIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack);
+	protected abstract IntermediatePackagerResult createIntermediatePackagerResult(ContainerItem containerItem, Stack stack);
 
 	protected abstract IntermediatePackagerResult createEmptyIntermediatePackagerResult();
 

@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 
 /**
  * Cheap, safe lower bound based on total weight and volume. Each dimension is
@@ -14,7 +14,7 @@ import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 public class EstimatingContainerItemsCostCalculator extends AbstractContainerItemsCostCalculator {
 
 	@Override
-	public long getMinimumCost(ContainerItemsCalculator containers, List<BoxItem> boxes, int maxCount) {
+	public long getMinimumCost(ContainerInventory containers, List<BoxItem> boxes, int maxCount) {
 		long volume = 0;
 		long weight = 0;
 		for(BoxItem item : boxes) {
@@ -28,7 +28,7 @@ public class EstimatingContainerItemsCostCalculator extends AbstractContainerIte
 	}
 
 	@Override
-	public long getGroupMinimumCost(ContainerItemsCalculator containers, List<BoxItemGroup> groups, int maxCount) {
+	public long getGroupMinimumCost(ContainerInventory containers, List<BoxItemGroup> groups, int maxCount) {
 		long volume = 0;
 		long weight = 0;
 		for(BoxItemGroup group : groups) {
@@ -43,7 +43,7 @@ public class EstimatingContainerItemsCostCalculator extends AbstractContainerIte
 		return getMinimumCost(containers, volume, weight, maxCount, costCapacities(containers));
 	}
 
-	long getMinimumCost(ContainerItemsCalculator containers, long volume, long weight, int maxCount, List<CostCapacity> capacities) {
+	long getMinimumCost(ContainerInventory containers, long volume, long weight, int maxCount, List<CostCapacity> capacities) {
 		if(volume == 0 && weight == 0) {
 			return 0;
 		}

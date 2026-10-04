@@ -14,6 +14,10 @@ import java.util.function.Consumer;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparatorAttribute;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparatorFactory;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparatorSupplier;
 import com.github.skjolber.packing.comparator.AbstractChainedPlacementComparator;
 
 /**

@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -13,15 +14,15 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -69,9 +70,23 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		protected Comparator<IntermediatePackagerResult> comparator;
 		protected FastBruteForceBoxStackValuePointComparator pointComparator = DEFAULT_POINT_COMPARATOR;
+		protected ContainerStrategyFactory containerStrategyFactory;
 		
 		public FastBruteForcePackagerBuilder withComparator(Comparator<IntermediatePackagerResult> comparator) {
 			this.comparator = comparator;
+			return this;
+		}
+
+		/**
+		 * Set the factory which selects the container strategy: which containers to use, and in which order.
+		 * By default, cost-aware packing is used when the containers have costs, otherwise the first container
+		 * (in preference order) which holds the boxes.
+		 *
+		 * @param factory container strategy factory
+		 * @return this builder
+		 */
+		public FastBruteForcePackagerBuilder withContainerStrategyFactory(ContainerStrategyFactory factory) {
+			this.containerStrategyFactory = Objects.requireNonNull(factory);
 			return this;
 		}
 
@@ -85,7 +100,11 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
 			
-			return new FastBruteForcePackager(comparator, pointComparator);
+			FastBruteForcePackager packager = new FastBruteForcePackager(comparator, pointComparator);
+			if(containerStrategyFactory != null) {
+				packager.setContainerStrategyFactory(containerStrategyFactory);
+			}
+			return packager;
 		}
 		
 	}
@@ -94,7 +113,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		private final FastPointCalculator3DStack pointCalculator;
 
-		public FastBruteForceAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers,
+		public FastBruteForceAdapter(List<BoxItem> boxItems, List<ContainerItem> containers,
 				int containerCount, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, containers, containerCount, containerIterators, interrupt, FastBruteForcePackager.this.supportsLoad());
 			
@@ -109,25 +128,13 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		@Override
-		protected FastBruteForceAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+		protected FastBruteForceAdapter fresh(List<ContainerItem> containers, int containerCount) {
 			return createBoxItemAdapter(copyBoxItems(initialBoxItems), containers, containerCount, interrupt);
 		}
 
 		@Override
 		public FastBruteForceAdapter fork() {
 			return new FastBruteForceAdapter(this);
-		}
-
-		@Override
-		protected void resetState() {
-			FastBruteForceAdapter restarted = fresh(packagerContainerItems.getContainerItems(), packagerContainerItems.getContainerCount());
-			boxes = restarted.boxes;
-			boxesRemaining = restarted.boxesRemaining;
-			boxItems = restarted.boxItems;
-			containerIterators = restarted.containerIterators;
-			stackPlacements = restarted.stackPlacements;
-			stackPlacementCount = restarted.stackPlacementCount;
-			pointCalculator.clearToSize(1, 1, 1);
 		}
 
 		@Override
@@ -144,7 +151,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		private final FastPointCalculator3DStack pointCalculator;
 
-		public FastBruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ControlledContainerItem> containers, int containerCount,
+		public FastBruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ContainerItem> containers, int containerCount,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, boxItemGroups, containers, containerCount, containerIterators, interrupt, FastBruteForcePackager.this.supportsLoad());
 			
@@ -159,7 +166,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		@Override
-		protected FastBruteForceGroupAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+		protected FastBruteForceGroupAdapter fresh(List<ContainerItem> containers, int containerCount) {
 			return createBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), containers, containerCount, interrupt);
 		}
 
@@ -168,18 +175,6 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			return new FastBruteForceGroupAdapter(this);
 		}
 
-		@Override
-		protected void resetState() {
-			FastBruteForceGroupAdapter restarted = fresh(packagerContainerItems.getContainerItems(), packagerContainerItems.getContainerCount());
-			boxes = restarted.boxes;
-			boxesRemaining = restarted.boxesRemaining;
-			boxItems = restarted.boxItems;
-			boxItemGroups = restarted.boxItemGroups;
-			containerIterators = restarted.containerIterators;
-			stackPlacements = restarted.stackPlacements;
-			stackPlacementCount = restarted.stackPlacementCount;
-			pointCalculator.clearToSize(1, 1, 1);
-		}
 		
 		@Override
 		public BruteForceIntermediatePackagerResult attempt(int i, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
@@ -193,7 +188,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 	@Override
 	protected FastBruteForceGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			List<ControlledContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
+			List<ContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
 		DefaultBoxItemGroupPermutationRotationIterator[] containerIterators = new DefaultBoxItemGroupPermutationRotationIterator[containers.size()];
 
 		for (int i = 0; i < containers.size(); i++) {
@@ -216,7 +211,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected FastBruteForceAdapter createBoxItemAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers,
+	protected FastBruteForceAdapter createBoxItemAdapter(List<BoxItem> boxItems, List<ContainerItem> containers,
 			int containerCount, PackagerInterruptSupplier interrupt) {
 		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[containers.size()];
 
@@ -251,7 +246,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	public BruteForceIntermediatePackagerResult pack(FastPointCalculator3DStack pointCalculator,
-			Placement[] stackPlacements, int stackPlacementCount, ControlledContainerItem containerItem, int containerIndex,
+			Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator,
 			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		

@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -13,11 +14,12 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
@@ -32,6 +34,12 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 	}
 
 	public static class Builder extends ParallelBruteForcePackagerBuilder {
+
+		@Override
+		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
+			this.containerStrategyFactory = Objects.requireNonNull(factory);
+			return this;
+		}
 
 		@Override
 		public Builder withThreads(int threads) {
@@ -84,7 +92,11 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 				}
 			}
 			
-			return new LoadParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter);
+			LoadParallelBoxItemBruteForcePackager packager = new LoadParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter);
+			if(containerStrategyFactory != null) {
+				packager.setContainerStrategyFactory(containerStrategyFactory);
+			}
+			return packager;
 		}
 	}
 

@@ -14,10 +14,10 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 
-class ControlledContainerItemTest {
+class ContainerItemCopyTest {
 
 	@Test
-	void preservesControlsAndInitialPointsWhenWrappingContainerItem() {
+	void preservesControlsAndInitialPointsWhenCopyingContainerItem() {
 		ContainerItem source = new ContainerItem(Container.newBuilder()
 				.withSize(10, 10, 10)
 				.withMaxLoadWeight(100)
@@ -31,7 +31,7 @@ class ControlledContainerItemTest {
 		source.setInitialPoints(initialPoints);
 		source.setCostCalculator(costCalculator);
 
-		ControlledContainerItem result = new ControlledContainerItem(source);
+		ContainerItem result = new ContainerItem(source);
 
 		assertThat(result.getBoxItemControlsBuilderFactory()).isSameAs(manifestControls);
 		assertThat(result.getPointControlsBuilderFactory()).isSameAs(pointControls);
@@ -42,7 +42,7 @@ class ControlledContainerItemTest {
 
 	@Test
 	void pointControlsAloneCountsAsControls() {
-		ControlledContainerItem item = new ControlledContainerItem(Container.newBuilder()
+		ContainerItem item = new ContainerItem(Container.newBuilder()
 				.withSize(1, 1, 1)
 				.withMaxLoadWeight(1)
 				.build(), 1);

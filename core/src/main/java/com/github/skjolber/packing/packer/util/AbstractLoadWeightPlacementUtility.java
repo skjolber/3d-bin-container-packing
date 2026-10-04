@@ -6,11 +6,11 @@ import java.util.List;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.ep.PlacementList;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.comparator.placement.PlacementComparator;
+import com.github.skjolber.packing.ep.PlacementList;
 
 /**
  * Utility base class encapsulating the variant load-constraint logic for
@@ -472,7 +472,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		int newMaxY = absoluteY + stackValue.getDy() - 1;
 		long totalOverlapArea = 0;
 		for (int i = 0; i < n; i++) {
-			placementAreas[i] = LoadPlacementUtility.overlapArea(absoluteX, absoluteY, newMaxX, newMaxY, placementSupporters.get(i));
+			placementAreas[i] = placementSupporters.get(i).overlapArea2D(absoluteX, newMaxX, absoluteY, newMaxY);
 			totalOverlapArea += placementAreas[i];
 		}
 		try {
@@ -685,7 +685,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 				if(candidate.getAbsoluteEndZ() != supportZ || !candidate.intersects2D(minX, maxX, minY, maxY)) {
 					continue;
 				}
-				long area = LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
+				long area = candidate.overlapArea2D(minX, maxX, minY, maxY);
 				placementAreas[placementSupporters.size()] = area;
 				placementSupporters.add(candidate);
 				totalArea += area;
@@ -705,7 +705,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 			if(!candidate.intersects2D(minX, maxX, minY, maxY)) {
 				continue;
 			}
-			long area = LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, candidate);
+			long area = candidate.overlapArea2D(minX, maxX, minY, maxY);
 			placementAreas[placementSupporters.size()] = area;
 			placementSupporters.add(candidate);
 			totalArea += area;

@@ -5,6 +5,7 @@ import java.util.Comparator;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
@@ -13,7 +14,6 @@ import com.github.skjolber.packing.comparator.LargestAreaBoxItemGroupComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory;
 import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFactory;
 
 /**
@@ -65,7 +65,11 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 						.lowerZIsBetter();
 				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementFactory, boxItemComparator, calculateSupport, requireFullSupport);
 			}
-			return new FastLargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, firstBoxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
+			FastLargestAreaFitFirstPackager packager = new FastLargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, firstBoxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
+			if(containerStrategyFactory != null) {
+				packager.setContainerStrategyFactory(containerStrategyFactory);
+			}
+			return packager;
 		}
 	}
 

@@ -8,14 +8,13 @@ import java.util.List;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 public class BruteForceIntermediatePackagerResult implements IntermediatePackagerResult {
 	
@@ -27,7 +26,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 
 	// work objects
 	private final Stack stack;
-	private final ControlledContainerItem containerItem;
+	private final ContainerItem containerItem;
 	private final BoxItemPermutationRotationIterator iterator;
 	private final int index;
 	private final boolean calculateLoads;
@@ -44,11 +43,11 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	private long loadVolume;
 	private int loadWeight;
 
-	public BruteForceIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack, int index, BoxItemPermutationRotationIterator iterator) {
+	public BruteForceIntermediatePackagerResult(ContainerItem containerItem, Stack stack, int index, BoxItemPermutationRotationIterator iterator) {
 		this(containerItem, stack, index, iterator, true);
 	}
 
-	BruteForceIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack, int index, BoxItemPermutationRotationIterator iterator, boolean calculateLoads) {
+	BruteForceIntermediatePackagerResult(ContainerItem containerItem, Stack stack, int index, BoxItemPermutationRotationIterator iterator, boolean calculateLoads) {
 		this.containerItem = containerItem;
 		this.stack = stack;
 		this.iterator = iterator;
@@ -150,8 +149,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		for (int i = 0; i < limit; i++) {
 			Placement supporter = placements.get(i);
 			if(supporter.getAbsoluteEndZ() == placement.getAbsoluteZ() - 1 && supporter.intersects2D(placement)) {
-				totalArea += LoadPlacementUtility.overlapArea(placement.getAbsoluteX(), placement.getAbsoluteY(),
-						placement.getAbsoluteEndX(), placement.getAbsoluteEndY(), supporter);
+				totalArea += supporter.overlapArea2D(placement);
 			}
 		}
 		if(totalArea == 0) {
@@ -161,15 +159,14 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		for (int i = 0; i < limit; i++) {
 			Placement supporter = placements.get(i);
 			if(supporter.getAbsoluteEndZ() == placement.getAbsoluteZ() - 1 && supporter.intersects2D(placement)) {
-				long area = LoadPlacementUtility.overlapArea(placement.getAbsoluteX(), placement.getAbsoluteY(),
-						placement.getAbsoluteEndX(), placement.getAbsoluteEndY(), supporter);
+				long area = supporter.overlapArea2D(placement);
 				supporter.addLoad(placement, area, (double) placement.getWeight() * area / totalArea);
 			}
 		}
 	}
 
 	@Override
-	public ControlledContainerItem getContainerItem() {
+	public ContainerItem getContainerItem() {
 		return containerItem;
 	}
 

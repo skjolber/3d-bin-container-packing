@@ -49,20 +49,22 @@ public class ContainerStrategyBenchmarkState {
 				Math.max(1, Runtime.getRuntime().availableProcessors())));
 		DefaultIntermediatePackagerResultComparator comparator = new DefaultIntermediatePackagerResultComparator();
 
-		orderedPackager = PlainPackager.newBuilder().build();
-		orderedPackager.setContainerPackingStrategyFactory((calculator, boxes, groups) ->
-				new OrderedContainerPackingStrategy(comparator, () -> EmptyIntermediatePackagerResult.EMPTY));
+		orderedPackager = PlainPackager.newBuilder()
+				.withContainerStrategyFactory((inventory, boxes, groups) -> new OrderedContainerPackingStrategy(comparator, () -> EmptyIntermediatePackagerResult.EMPTY))
+				.build();
 
-		parallelPackager = PlainPackager.newBuilder().build();
-		parallelPackager.setContainerPackingStrategyFactory((calculator, boxes, groups) ->
-				new ParallelContainerPackingStrategy(executorService, comparator));
+		parallelPackager = PlainPackager.newBuilder()
+				.withContainerStrategyFactory((inventory, boxes, groups) -> new ParallelContainerPackingStrategy(executorService, comparator))
+				.build();
 
-		orderedBruteForcePackager = BruteForcePackager.newBuilder().withSkipReversePermutations(true).build();
-		orderedBruteForcePackager.setContainerPackingStrategyFactory((calculator, boxes, groups) ->
-				new OrderedContainerPackingStrategy(comparator, () -> EmptyIntermediatePackagerResult.EMPTY));
-		parallelBruteForcePackager = BruteForcePackager.newBuilder().withSkipReversePermutations(true).build();
-		parallelBruteForcePackager.setContainerPackingStrategyFactory((calculator, boxes, groups) ->
-				new ParallelContainerPackingStrategy(executorService, comparator));
+		orderedBruteForcePackager = BruteForcePackager.newBuilder()
+				.withSkipReversePermutations(true)
+				.withContainerStrategyFactory((inventory, boxes, groups) -> new OrderedContainerPackingStrategy(comparator, () -> EmptyIntermediatePackagerResult.EMPTY))
+				.build();
+		parallelBruteForcePackager = BruteForcePackager.newBuilder()
+				.withSkipReversePermutations(true)
+				.withContainerStrategyFactory((inventory, boxes, groups) -> new ParallelContainerPackingStrategy(executorService, comparator))
+				.build();
 
 		// Unlike 15x11A, all nine squares in 33x32A have distinct sizes.
 		BouwkampCode bouwkamp = BouwkampCodeDirectory.getInstance().codesForCount(9, "33x32A");

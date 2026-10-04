@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.api;
 
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
@@ -12,25 +11,25 @@ import com.github.skjolber.packing.api.point.Point;
 
 public interface PackagerResultBuilder {
 
-	public static interface ControlledContainerItemBuilder {
+	public static interface ContainerItemBuilder {
 
-		ControlledContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier);
+		ContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier);
 
-		ControlledContainerItemBuilder withPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory);
+		ContainerItemBuilder withPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory);
 
-		ControlledContainerItemBuilder withContainerItem(ContainerItem containerItem);
+		ContainerItemBuilder withContainerItem(ContainerItem containerItem);
 		
-		ControlledContainerItemBuilder withContainerItem(Container container, int count);
+		ContainerItemBuilder withContainerItem(Container container, int count);
 
-		default ControlledContainerItemBuilder withCostCalculator(ContainerCostCalculator costCalculator) {
+		default ContainerItemBuilder withCostCalculator(ContainerCostCalculator costCalculator) {
 			throw new UnsupportedOperationException("Container cost is not supported by this result builder");
 		}
 		
-		ControlledContainerItemBuilder withPoints(List<Point> points);
+		ContainerItemBuilder withPoints(List<Point> points);
 		
-		ControlledContainerItemBuilder withPoints(Consumer<PointsBuilder> points);
+		ContainerItemBuilder withPoints(Consumer<PointsBuilder> points);
 
-		ControlledContainerItemBuilder withObstacles(Consumer<ObstaclesBuilder> points);
+		ContainerItemBuilder withObstacles(Consumer<ObstaclesBuilder> points);
 
 	}
 	
@@ -78,7 +77,7 @@ public interface PackagerResultBuilder {
 	
 	PackagerResultBuilder withContainerItems(List<ContainerItem> containers);
 
-	PackagerResultBuilder withContainerItem(Consumer<ControlledContainerItemBuilder> consumer);
+	PackagerResultBuilder withContainerItem(Consumer<ContainerItemBuilder> consumer);
 
 	PackagerResultBuilder withContainerItems(ContainerItem... containers);
 

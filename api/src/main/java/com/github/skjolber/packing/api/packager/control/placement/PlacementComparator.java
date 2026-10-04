@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.comparator.placement;
+package com.github.skjolber.packing.api.packager.control.placement;
 
 import com.github.skjolber.packing.api.Placement;
 
@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.Placement;
  * <p>Convention: {@code compare(a, b) > 0} means {@code a} is the preferred placement.
  *
  * <p>Building comparators: use
- * {@link com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory}
+ * {@code com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory}
  * for comparators based on load-constraint limits (max weight, pressure, box count,
  * identical-only restriction) and position / physical dimensions (x/y/z, area, volume, weight,
  * support ratio). 

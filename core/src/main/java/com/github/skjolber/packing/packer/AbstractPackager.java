@@ -3,7 +3,6 @@ package com.github.skjolber.packing.packer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import com.github.skjolber.packing.api.BoxItem;
@@ -12,9 +11,12 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
-import com.github.skjolber.packing.packer.strategy.ContainerStrategy;
-import com.github.skjolber.packing.packer.strategy.ContainerStrategyFactory;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.packer.strategy.DefaultContainerStrategyFactory;
 
 /**
@@ -31,23 +33,23 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	public static final int ARGUMENT_2_IS_BETTER = -1;
 
 	protected final Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
-	private volatile ContainerStrategyFactory containerPackingStrategyFactory;
+	private volatile ContainerStrategyFactory containerStrategyFactory;
 	
 	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Integer.MAX_VALUE);
 
 	public AbstractPackager(Comparator<IntermediatePackagerResult> comparator) {
 		this.intermediatePackagerResultComparator = comparator;
-		this.containerPackingStrategyFactory = new DefaultContainerStrategyFactory(comparator,
+		this.containerStrategyFactory = new DefaultContainerStrategyFactory(comparator,
 				this::createEmptyIntermediatePackagerResult);
 	}
 
-	/** Configure before using this packager concurrently. */
-	public void setContainerPackingStrategyFactory(ContainerStrategyFactory factory) {
-		this.containerPackingStrategyFactory = Objects.requireNonNull(factory);
+	/** Used by the builders, before the packager is returned. */
+	protected void setContainerStrategyFactory(ContainerStrategyFactory factory) {
+		this.containerStrategyFactory = factory;
 	}
 
-	public ContainerResult packAdapter(PackagerInterruptSupplier interrupt, PackagerAdapter adapter) throws PackagerInterruptedException {
-		ContainerStrategy strategy = containerPackingStrategyFactory.create(adapter.getContainerItemsCalculator(), adapter.getRemainingBoxItems(), adapter.getRemainingBoxItemGroups());
+	public ContainerResult packAdapter(PackagerInterruptSupplier interrupt, PackagerSession adapter) throws PackagerInterruptedException {
+		ContainerStrategy strategy = containerStrategyFactory.create(adapter.getContainerInventory(), adapter.getRemainingBoxItems(), adapter.getRemainingBoxItemGroups());
 		return strategy.pack(interrupt, adapter);
 	}
 

@@ -2,6 +2,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -10,9 +11,10 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -34,6 +36,12 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 		}
 
 		@Override
+		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
+			this.containerStrategyFactory = Objects.requireNonNull(factory);
+			return this;
+		}
+
+		@Override
 		public Builder withPointComparator(FastBruteForceBoxStackValuePointComparator pointComparator) {
 			this.pointComparator = pointComparator;
 			return this;
@@ -44,7 +52,11 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
-			return new LoadFastBruteForcePackager(comparator, pointComparator);
+			LoadFastBruteForcePackager packager = new LoadFastBruteForcePackager(comparator, pointComparator);
+			if(containerStrategyFactory != null) {
+				packager.setContainerStrategyFactory(containerStrategyFactory);
+			}
+			return packager;
 		}
 	}
 

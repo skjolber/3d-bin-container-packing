@@ -13,10 +13,10 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
 import com.github.skjolber.packing.api.point.DefaultPointSource;
 import com.github.skjolber.packing.api.point.Point;
-import com.github.skjolber.packing.comparator.placement.PlacementComparator;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 

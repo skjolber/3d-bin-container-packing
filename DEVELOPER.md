@@ -49,7 +49,14 @@ Prefer extending existing controls when possible. `ComparatorPlacementControls`
 provides candidate iteration and protected `createPlacement`/`selectPlacement`
 hooks; rejecting a candidate in `createPlacement` returns `null`. For ranking
 alone, use a custom `PlacementComparator`: a positive `compare(a, b)` means
-`a` is preferred. Support-aware and load-aware implementations in
+`a` is preferred. The ranking interfaces (`PlacementComparator`,
+`PlacementComparatorFactory`, `PlacementComparatorAttribute`) are in the `api`
+module. A comparator which does not read the supported area should return false
+from `usesSupportedArea()`, and one which never prefers less support should
+return true from `prefersHigherSupportedArea()`: the controls then skip load
+validation and support calculation for candidates which cannot be selected.
+Results of packing attempts are compared with a
+`Comparator<IntermediatePackagerResult>`, also in `api`. Support-aware and load-aware implementations in
 `com.github.skjolber.packing.packer` are examples for physical constraints.
 Replacing the default controls does not automatically retain their checks:
 implement the requested constraints or reject unsupported configurations in
@@ -61,3 +68,47 @@ Keep candidate loops allocation-light; never recycle accepted placements or
 change their box/coordinates during candidate evaluation. Test no-candidate cases, rotations, ordering,
 group rollback, repeated attempts and concurrency, and independently validate
 the final layouts when your rules concern load or stability.
+
+## Writing your own container strategy
+
+A container strategy decides which containers to use, and in which order. The interfaces live in
+`com.github.skjolber.packing.api.packager.strategy`, so a strategy only needs the `api` module.
+
+- Implement `ContainerStrategy.pack(interrupt, session)`. The `PackagerSession` holds the
+  remaining boxes and the available containers (`getContainerInventory()`).
+- `attempt(containerIndex, best, abortOnAnyBoxTooBig)` packs as many of the remaining boxes as
+  possible into a container type, without changing the session. `peek(containerIndex, existing)`
+  reuses an existing result for another container type if the packed boxes fit unchanged, and
+  returns `null` otherwise.
+- `accept(result)` removes the result's boxes from the remaining boxes, uses up the container and
+  returns the packed container.
+- Return a `ContainerResult` with the accepted containers and
+  `getContainerInventory().getCost()` once no boxes remain, or `null` if the boxes cannot be
+  packed.
+- Check the interrupt regularly and throw `PackagerInterruptedException` when it returns true;
+  `attempt` throws it too.
+- `getMaxContainerCount()` is the number of containers which can still be used for the remaining
+  boxes.
+- `ContainerInventory` tells what fits: `canLoad(..)`, `getContainers(..)` and `isFeasible(..)`
+  filter container types for the remaining boxes; `hasCost()` and `getCost()` report cost.
+- To compare alternatives, `fork()` copies the session at its current state and `fresh()`
+  restarts the packaging operation. Both are independent of the original session, so alternatives
+  can be explored in parallel, one thread per session.
+
+Configure the strategy with a `ContainerStrategyFactory`, which is called once per packaging
+operation:
+
+```java
+try (PlainPackager packager = PlainPackager.newBuilder()
+        .withContainerStrategyFactory((inventory, boxItems, boxItemGroups) -> new LargestContainerFirstStrategy())
+        .build()) {
+    // ...
+}
+```
+
+All packager builders have `withContainerStrategyFactory(..)`. `LargestContainerFirstStrategy` and
+`BackToFrontPlacementComparator` in the `test` module (package
+`com.github.skjolber.packing.test.example`) are complete examples which depend on the `api` module
+only. The built-in strategies are in the `core` package
+`com.github.skjolber.packing.packer.strategy`; `DefaultContainerStrategyFactory` chooses between
+them.

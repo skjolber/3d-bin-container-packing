@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
@@ -16,10 +17,14 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.PackagerException;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.ClonablePackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
@@ -27,12 +32,8 @@ import com.github.skjolber.packing.iterator.FilteredReversedBoxItemPermutationRo
 import com.github.skjolber.packing.iterator.ParallelBoxItemGroupPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.ParallelBoxItemPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerException;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePackagerBuilder;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.bruteforce.LoadBruteForcePackager.Builder;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
@@ -60,6 +61,20 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		protected Comparator<IntermediatePackagerResult> comparator;
 		protected BruteForcePointIteratorFilter pointFilter;
 		protected boolean filterReversePermutations = false;
+		protected ContainerStrategyFactory containerStrategyFactory;
+
+		/**
+		 * Set the factory which selects the container strategy: which containers to use, and in which order.
+		 * By default, cost-aware packing is used when the containers have costs, otherwise the first container
+		 * (in preference order) which holds the boxes.
+		 *
+		 * @param factory container strategy factory
+		 * @return this builder
+		 */
+		public ParallelBruteForcePackagerBuilder withContainerStrategyFactory(ContainerStrategyFactory factory) {
+			this.containerStrategyFactory = Objects.requireNonNull(factory);
+			return this;
+		}
 
 		public ParallelBruteForcePackagerBuilder withThreads(int threads) {
 			if(threads < 1) {
@@ -137,7 +152,11 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				}
 			}
 			
-			return new ParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter, filterReversePermutations);
+			ParallelBoxItemBruteForcePackager packager = new ParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter, filterReversePermutations);
+			if(containerStrategyFactory != null) {
+				packager.setContainerStrategyFactory(containerStrategyFactory);
+			}
+			return packager;
 		}
 	}
 
@@ -191,7 +210,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 	private class RunnableAdapter implements Callable<BruteForceIntermediatePackagerResult> {
 
-		private ControlledContainerItem containerItem;
+		private ContainerItem containerItem;
 		private BoxItemPermutationRotationIterator iterator;
 		private final Placement[] placements;
 		private int placementCount;
@@ -219,7 +238,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			placementCount = 0;
 		}
 
-		public void setContainerItem(ControlledContainerItem containerItem) {
+		public void setContainerItem(ContainerItem containerItem) {
 			this.containerItem = containerItem;
 		}
 		
@@ -253,7 +272,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		private PackagerInterruptSupplier[] interrupts;
 		private final PackagerInterruptSupplier sourceInterrupt;
 
-		protected ParallelAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers, int containerCount,
+		protected ParallelAdapter(List<BoxItem> boxItems, List<ContainerItem> containers, int containerCount,
 				RunnableAdapter[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators,
 				ParallelBoxItemPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts,
 				PackagerInterruptSupplier sourceInterrupt) {
@@ -285,25 +304,13 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		@Override
-		protected ParallelAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+		protected ParallelAdapter fresh(List<ContainerItem> containers, int containerCount) {
 			return createBoxItemAdapter(copyBoxItems(initialBoxItems), containers, containerCount, sourceInterrupt);
 		}
 
 		@Override
 		public ParallelAdapter fork() {
 			return new ParallelAdapter(this);
-		}
-
-		@Override
-		protected void resetState() {
-			ParallelAdapter restarted = fresh(packagerContainerItems.getContainerItems(), packagerContainerItems.getContainerCount());
-			boxes = restarted.boxes;
-			boxesRemaining = restarted.boxesRemaining;
-			boxItems = restarted.boxItems;
-			runnables = restarted.runnables;
-			parallelIterators = restarted.parallelIterators;
-			iterators = restarted.iterators;
-			interrupts = restarted.interrupts;
 		}
 
 		@Override
@@ -328,7 +335,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				for (int j = 0; j < runnables.length; j++) {
 					RunnableAdapter runnableAdapter = runnables[j];
 					
-					ControlledContainerItem containerItem = getContainerItem(i);
+					ContainerItem containerItem = getContainerItem(i);
 					
 					runnableAdapter.setContainerItem(containerItem);
 					runnableAdapter.setContainerIndex(i);
@@ -399,7 +406,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				}
 			}
 			
-			ControlledContainerItem containerItem = getContainerItem(i);
+			ContainerItem containerItem = getContainerItem(i);
 			
 			// no need to split this job
 			// run with linear approach
@@ -493,7 +500,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		private final PackagerInterruptSupplier sourceInterrupt;
 
 		protected ParallelGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
-				List<ControlledContainerItem> containers, int containerCount, RunnableAdapter[] runnables,
+				List<ContainerItem> containers, int containerCount, RunnableAdapter[] runnables,
 				DefaultBoxItemGroupPermutationRotationIterator[] iterators,
 				ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators,
 				PackagerInterruptSupplier[] interrupts, PackagerInterruptSupplier sourceInterrupt) {
@@ -524,26 +531,13 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		@Override
-		protected ParallelGroupAdapter fresh(List<ControlledContainerItem> containers, int containerCount) {
+		protected ParallelGroupAdapter fresh(List<ContainerItem> containers, int containerCount) {
 			return createBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), containers, containerCount, sourceInterrupt);
 		}
 
 		@Override
 		public ParallelGroupAdapter fork() {
 			return new ParallelGroupAdapter(this);
-		}
-
-		@Override
-		protected void resetState() {
-			ParallelGroupAdapter restarted = fresh(packagerContainerItems.getContainerItems(), packagerContainerItems.getContainerCount());
-			boxes = restarted.boxes;
-			boxesRemaining = restarted.boxesRemaining;
-			boxItems = restarted.boxItems;
-			boxItemGroups = restarted.boxItemGroups;
-			runnables = restarted.runnables;
-			parallelIterators = restarted.parallelIterators;
-			iterators = restarted.iterators;
-			interrupts = restarted.interrupts;
 		}
 
 		@Override
@@ -568,7 +562,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				for (int j = 0; j < runnables.length; j++) {
 					RunnableAdapter runnableAdapter = runnables[j];
 					
-					ControlledContainerItem containerItem = getContainerItem(i);
+					ContainerItem containerItem = getContainerItem(i);
 					
 					runnableAdapter.setContainerItem(containerItem);
 					runnableAdapter.setContainerIndex(i);
@@ -642,7 +636,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				}
 			}
 			
-			ControlledContainerItem containerItem = getContainerItem(i);
+			ContainerItem containerItem = getContainerItem(i);
 			
 			// no need to split this job
 			// run with linear approach
@@ -803,7 +797,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	}
 
 	@Override
-	protected ParallelAdapter createBoxItemAdapter(List<BoxItem> items, List<ControlledContainerItem> containerItems,
+	protected ParallelAdapter createBoxItemAdapter(List<BoxItem> items, List<ContainerItem> containerItems,
 			int containerCount, PackagerInterruptSupplier interrupt) {
 		
 		ParallelBoxItemPermutationRotationIteratorList[] parallelIterators = new ParallelBoxItemPermutationRotationIteratorList[containerItems.size()];
@@ -863,7 +857,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 	@Override
 	protected ParallelGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
-			List<ControlledContainerItem> containerItems, int containerCount, PackagerInterruptSupplier interrupt) {
+			List<ContainerItem> containerItems, int containerCount, PackagerInterruptSupplier interrupt) {
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators = new ParallelBoxItemGroupPermutationRotationIteratorList[containerItems.size()];
 		DefaultBoxItemGroupPermutationRotationIterator[] iterators = new DefaultBoxItemGroupPermutationRotationIterator[containerItems.size()];

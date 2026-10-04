@@ -8,8 +8,10 @@ import java.util.function.Supplier;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.packer.strategy.cost.LowestCostContainerPackingStrategy;
 import com.github.skjolber.packing.packer.strategy.ordered.OrderedContainerPackingStrategy;
 
@@ -35,7 +37,7 @@ public class DefaultContainerStrategyFactory implements ContainerStrategyFactory
 	}
 
 	@Override
-	public ContainerStrategy create(ContainerItemsCalculator containerItemsCalculator, List<BoxItem> remainingBoxItems, List<BoxItemGroup> boxItemGroups) {
+	public ContainerStrategy create(ContainerInventory containerItemsCalculator, List<BoxItem> remainingBoxItems, List<BoxItemGroup> boxItemGroups) {
 		if(containerItemsCalculator.hasCost()) {
 			return lowestCost;
 		}
@@ -52,7 +54,7 @@ public class DefaultContainerStrategyFactory implements ContainerStrategyFactory
 	 * least one unit, both the per-type inventory and total container limit keep
 	 * this invariant for the rest of the operation.
 	 */
-	private static boolean isAllocationAlwaysFeasible(ContainerItemsCalculator calculator, List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups) {
+	private static boolean isAllocationAlwaysFeasible(ContainerInventory calculator, List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups) {
 		int unitCount;
 		if(boxItemGroups != null) {
 			unitCount = boxItemGroups.size();

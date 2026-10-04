@@ -8,12 +8,12 @@ import java.util.Objects;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.iterator.ContainerItemPermutationIterator;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerAdapter;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
-import com.github.skjolber.packing.packer.strategy.ContainerStrategy;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner;
 
 /**
@@ -38,7 +38,7 @@ public class BruteForceContainerStrategy implements ContainerStrategy {
 		 *
 		 * @return false if not
 		 */
-		boolean attempt(List<Container> containers, PackagerAdapter state, List<Integer> availableContainerIndexes, int selectedContainerIndex);
+		boolean attempt(List<Container> containers, PackagerSession state, List<Integer> availableContainerIndexes, int selectedContainerIndex);
 
 		/**
 		 * Add result. Return false to stop the search.
@@ -67,7 +67,7 @@ public class BruteForceContainerStrategy implements ContainerStrategy {
 	}
 
 	@Override
-	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerAdapter packagerAdapter) throws PackagerInterruptedException {
+	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession packagerAdapter) throws PackagerInterruptedException {
 		if(interrupt.getAsBoolean()) {
 			throw new PackagerInterruptedException();
 		}
@@ -76,7 +76,7 @@ public class BruteForceContainerStrategy implements ContainerStrategy {
 			return null;
 		}
 		ContainerItemPermutationIterator iterator = new ContainerItemPermutationIterator(maxLength);
-		Deque<PackagerAdapter> branches = new ArrayDeque<>(maxLength);
+		Deque<PackagerSession> branches = new ArrayDeque<>(maxLength);
 		branches.addLast(packagerAdapter);
 		iterator.push(packagerAdapter.getContainers());
 		List<Container> packed = new ArrayList<>(maxLength);
@@ -93,14 +93,14 @@ public class BruteForceContainerStrategy implements ContainerStrategy {
 				continue;
 			}
 
-			PackagerAdapter parent = branches.getLast();
+			PackagerSession parent = branches.getLast();
 			int containerIndex = iterator.next();
 			if(!controls.attempt(packed, parent, iterator.getContainerIndexes(), containerIndex)) {
 				continue;
 			}
 
 			// TODO too expensive
-			PackagerAdapter branch = parent.fork();
+			PackagerSession branch = parent.fork();
 
 			IntermediatePackagerResult result = branch.attempt(containerIndex, null, packed.size() + 1 == maxLength);
 			if(result == null || result.isEmpty()) {
@@ -113,7 +113,7 @@ public class BruteForceContainerStrategy implements ContainerStrategy {
 			packed.add(branch.accept(result));
 
 			if(branch.countRemainingBoxes() == 0) {
-				if(!controls.result(new ContainerResult(branch.getContainerItemsCalculator().getCost(), packed))) {
+				if(!controls.result(new ContainerResult(branch.getContainerInventory().getCost(), packed))) {
 					break;
 				}
 			} else if(packed.size() < maxLength && ContainerAllocationPlanner.canAllocate(branch, interrupt)) {

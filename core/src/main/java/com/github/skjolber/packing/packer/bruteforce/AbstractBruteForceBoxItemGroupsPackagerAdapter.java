@@ -6,10 +6,10 @@ import java.util.Map;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.packer.BoxItemGroupsContainerItemsCalculator;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
 
 public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 
@@ -20,7 +20,7 @@ public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter extends Abs
 	protected final List<BoxItemGroup> initialBoxItemGroups;
 
 	public AbstractBruteForceBoxItemGroupsPackagerAdapter(List<BoxItem> boxItems,
-			List<ControlledContainerItem> containers, int containerCount, List<BoxItemGroup> boxItemGroups) {
+			List<ContainerItem> containers, int containerCount, List<BoxItemGroup> boxItemGroups) {
 		super(boxItems, new BoxItemGroupsContainerItemsCalculator(containers, containerCount, boxItemGroups));
 		this.initialBoxItemGroups = copyBoxItemGroups(boxItemGroups);
 		

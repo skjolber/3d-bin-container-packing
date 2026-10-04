@@ -44,7 +44,7 @@ For the previous version, see the [3.x](https://github.com/skjolber/3d-bin-conta
 Add
  
 ```xml
-<3d-bin-container-packing.version>4.2.x</3d-bin-container-packing.version>
+<3d-bin-container-packing.version>5.0.x</3d-bin-container-packing.version>
 ```
 
 and
@@ -78,7 +78,7 @@ For
 
 ```groovy
 ext {
-  containerBinPackingVersion = '4.2.x'
+  containerBinPackingVersion = '5.0.x'
 }
 ```
 
@@ -86,6 +86,8 @@ add
 
 ```groovy
 api("com.github.skjolber.3d-bin-container-packing:core:${containerBinPackingVersion}")
+// optional result validators
+api("com.github.skjolber.3d-bin-container-packing:validators:${containerBinPackingVersion}")
 ```
 
 </details>
@@ -340,6 +342,62 @@ Note that the algorithm is recursive on the number of boxes, so do not attempt t
 ## Obstacles within containers
 Make the packager account for non-rectangular packaging space, i.e. pillars or other obstacles within the container loading area.
 
+## Load constraints
+Boxes can limit what is stacked on top of them:
+
+```java
+Box box = Box.newBuilder()
+    .withSize(400, 300, 200)
+    .withWeight(12)
+    .withRotate3D()
+    .withMaxLoadWeight(50)          // total weight resting on the box, through all levels above
+    .withMaxLoadPressure(0.001)     // weight per area unit
+    .withMaxLoadBoxCount(4)         // boxes stacked on top
+    .build();
+```
+
+Use `withMaxLoadIdenticalBoxCount(count)` to only allow boxes of the same type on top. The plain
+and LAFF packagers detect the constraints and enforce them; for brute force, use the load-aware
+variants (`LoadBruteForcePackager`, `LoadFastBruteForcePackager`, `LoadParallelBoxItemBruteForcePackager`).
+
+## Support
+Support (the area resting on boxes below) can be calculated, or full support required:
+
+```java
+PlainPackager packager = PlainPackager
+    .newBuilder()
+    .withCalculateSupport(true)     // prefer better supported placements
+    .withRequireFullSupport(true)   // or: only place fully supported boxes
+    .build();
+```
+
+The LAFF packager builders have the same options.
+
+## Container costs
+Give container types a cost to prefer cheaper combinations of containers, using
+`ContainerItem.newListBuilder().withContainer(container, count, costCalculator)` with an
+implementation of `ContainerCostCalculator` (see `com.github.skjolber.packing.cost`).
+
+## Container strategies
+A container strategy decides which containers to use, and in which order. By default, containers
+are tried in the supplied (preference) order, or the cheapest combination is searched for when the
+containers have costs. Supply your own with `withContainerStrategyFactory(..)` on the packager
+builders; see [DEVELOPER.md](DEVELOPER.md).
+
+## Validating results
+The optional `validators` artifact checks packing results, for example the load constraints:
+
+```java
+LoadValidator validator = new DefaultLoadValidatorBuilder()
+    .withPlacements(container.getStack().getPlacements())
+    .build(); // null if no load constraints are present
+
+List<ValidatorResultReason> reasons = new ArrayList<>();
+boolean valid = validator.isValid(container.getStack().getPlacements(), reasons);
+```
+
+`DefaultValidator` validates a whole `PackagerResult` against the input.
+
 ## Packager controls
 The packagers (excluding brute force) can be extended to handle specialized needs via various `control` (plugins) types. 
 
@@ -397,6 +455,29 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
  * [The Art of Stacking: Challenges Faced While Developing a Packing Algorithm](https://medium.com/@fayyazawais1412/the-art-of-stacking-challenges-faced-while-developing-a-packing-algorithm-64d869b924ab)
 
 # History
+ * 5.0.0: Major release. Breaking changes.
+     * Box load constraints: max load weight, pressure, box count and identical boxes only
+     * Support calculation + full support for plain and LAFF packagers
+     * Container costs and container strategies (ordered, parallel, allocation), and custom container strategies
+     * Virtual-box preprocessing
+     * Substantially faster point calculation, placement search, support calculation and load validation
+     * Behaviour changes:
+        * The max load weight of a box limits the total weight resting on it, through all levels and paths of the support graph (previously only direct loads were counted)
+        * The full-support fallback no longer skips positions at the edge of a point
+        * `MarkResetPointCalculator2D.reset()` restores points which were constrained in place (mutable mode)
+        * Supported areas no longer overflow for large dimensions (contact areas above the `int` range, e.g. with 1/10000 inch units)
+     * Breaking changes:
+        * Validators moved to a separate `validators` artifact (package `com.github.skjolber.packing.validator`)
+        * Interrupts / deadlines moved from `core` (`com.github.skjolber.packing.deadline`) to `api` (`com.github.skjolber.packing.api.interrupt`)
+        * `PackagerException` moved from `core` (`com.github.skjolber.packing.packer`) to `api` (`com.github.skjolber.packing.api`); `ParallelBruteForcePackagerException` now extends it
+        * `PlacementComparator` now compares two `Placement`s (`compare(a, b)`, positive when `a` is better). Comparators are built by a `PlacementComparatorFactory`, by default `DefaultPlacementComparatorFactory` in `core`
+        * Decision-making interfaces are in `api`, so that custom behaviour only needs `api`: `PlacementComparator`, `PlacementComparatorFactory` and `PlacementComparatorAttribute` (`com.github.skjolber.packing.api.packager.control.placement`), and `IntermediatePackagerResult` and `IntermediatePackagerResultComparator`, moved from `core` to `com.github.skjolber.packing.api.packager`
+        * Container strategies are in `api` (`com.github.skjolber.packing.api.packager.strategy`): `ContainerStrategy`, `ContainerStrategyFactory`, `ContainerResult` and `ContainerItemsResult`. `PackagerAdapter` is renamed to `PackagerSession` (without `reset()`; use `fresh()`), strategies see the containers as a `ContainerInventory`, and `PackagerInterruptedException` moved to `com.github.skjolber.packing.api.interrupt`
+        * Configure a container strategy with the packager builders' `withContainerStrategyFactory(..)`; `AbstractPackager.setContainerPackingStrategyFactory(..)` is removed
+        * `ControlledContainerItem` removed: `ContainerItem` now holds the per-container controls (manifest and point controls, initial points, cost); `PackagerResultBuilder.ControlledContainerItemBuilder` renamed to `ContainerItemBuilder`
+        * `PlainPlacement*` and `LargestAreaFitFirstPlacementControlsBuilder` removed (use the default placement controls with a placement comparator factory)
+        * Points: a single `DefaultPoint3D` / `DefaultPoint2D` implementation replaces the plane- and support-specific point classes
+        * The module descriptors export all public packages
  * 4.2.1: `Placement` can now be added anywhere within a `Point` (not only at the point origin).
  * 4.2.0: Obstacles.
  * 4.1.x: Validator.

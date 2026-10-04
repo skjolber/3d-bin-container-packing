@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.strategy;
+package com.github.skjolber.packing.api.packager.strategy;
 
 import java.util.List;
 

@@ -16,8 +16,8 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.Point;
@@ -44,7 +44,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 
 	protected List<BoxItem> items = new ArrayList<>();
 	
-	protected List<ControlledContainerItem> containers;
+	protected List<ContainerItem> containers;
 
 	public static class DefaultPointsBuilder implements PointsBuilder {
 		
@@ -94,7 +94,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		}
 	}
 	
-	public static class DefaultControlledContainerItemBuilder implements ControlledContainerItemBuilder {
+	public static class DefaultContainerItemBuilder implements ContainerItemBuilder {
 
 		protected ContainerItem containerItem;
 		protected ManifestControlsBuilderFactory boxItemControlsBuilderFactory;
@@ -103,39 +103,39 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		protected List<Point> obstacles;
 		protected ContainerCostCalculator costCalculator;
 
-		public ControlledContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier) {
+		public ContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier) {
 			this.boxItemControlsBuilderFactory = supplier;
 			return this;
 		}
 
-		public ControlledContainerItemBuilder withPointControlsBuilderFactory(
+		public ContainerItemBuilder withPointControlsBuilderFactory(
 				PointControlsBuilderFactory pointControlsBuilderFactory) {
 			this.pointControlsBuilderFactory = pointControlsBuilderFactory;
 			return this;
 		}
 
-		public ControlledContainerItemBuilder withContainerItem(ContainerItem containerItem) {
+		public ContainerItemBuilder withContainerItem(ContainerItem containerItem) {
 			this.containerItem = containerItem;
 			return this;
 		}
 		
-		public ControlledContainerItemBuilder withContainerItem(Container container, int count) {
+		public ContainerItemBuilder withContainerItem(Container container, int count) {
 			this.containerItem = new ContainerItem(container, count);
 			return this;
 		}
 
 		@Override
-		public ControlledContainerItemBuilder withCostCalculator(ContainerCostCalculator costCalculator) {
+		public ContainerItemBuilder withCostCalculator(ContainerCostCalculator costCalculator) {
 			this.costCalculator = costCalculator;
 			return this;
 		}
 
-		public ControlledContainerItem build() {
+		public ContainerItem build() {
 			if (containerItem == null) {
 				throw new IllegalStateException("Expected container item");
 			}
 
-			ControlledContainerItem packContainerItem = new ControlledContainerItem(containerItem);
+			ContainerItem packContainerItem = new ContainerItem(containerItem);
 
 			if(obstacles != null && !obstacles.isEmpty()) {
 				if(points != null && !points.isEmpty()) {
@@ -167,13 +167,13 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		}
 
 		@Override
-		public ControlledContainerItemBuilder withPoints(List<Point> points) {
+		public ContainerItemBuilder withPoints(List<Point> points) {
 			this.points = points;
 			return this;
 		}
 
 		@Override
-		public ControlledContainerItemBuilder withPoints(Consumer<PointsBuilder> consumer) {
+		public ContainerItemBuilder withPoints(Consumer<PointsBuilder> consumer) {
 			DefaultPointsBuilder builder = new DefaultPointsBuilder();
 			consumer.accept(builder);
 			this.points = builder.build();
@@ -181,7 +181,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		}
 		
 		@Override
-		public ControlledContainerItemBuilder withObstacles(Consumer<ObstaclesBuilder> consumer) {
+		public ContainerItemBuilder withObstacles(Consumer<ObstaclesBuilder> consumer) {
 			DefaultObstaclesBuilder builder = new DefaultObstaclesBuilder();
 			consumer.accept(builder);
 			this.obstacles = builder.build();
@@ -198,8 +198,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		}
 	}
 
-	public B withContainerItem(Consumer<ControlledContainerItemBuilder> consumer) {
-		DefaultControlledContainerItemBuilder builder = new DefaultControlledContainerItemBuilder();
+	public B withContainerItem(Consumer<ContainerItemBuilder> consumer) {
+		DefaultContainerItemBuilder builder = new DefaultContainerItemBuilder();
 		consumer.accept(builder);
 		if (this.containers == null) {
 			this.containers = new ArrayList<>();
@@ -209,7 +209,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 	}
 
 	public boolean hasControls() {
-		for (ControlledContainerItem controlContainerItem : containers) {
+		for (ContainerItem controlContainerItem : containers) {
 			if (controlContainerItem.hasPointControlsBuilderFactory()) {
 				return true;
 			}
@@ -225,7 +225,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			this.containers = new ArrayList<>(containers.length);
 		}
 		for (ContainerItem item : containers) {
-			this.containers.add(new ControlledContainerItem(item));
+			this.containers.add(new ContainerItem(item));
 		}
 		return (B) this;
 	}
@@ -235,7 +235,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			this.containers = new ArrayList<>(containers.size());
 		}
 		for (ContainerItem item : containers) {
-			this.containers.add(new ControlledContainerItem(item));
+			this.containers.add(new ContainerItem(item));
 		}
 		return (B) this;
 	}
@@ -244,7 +244,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		if (this.containers == null) {
 			this.containers = new ArrayList<>();
 		}
-		this.containers.add(new ControlledContainerItem(container));
+		this.containers.add(new ContainerItem(container));
 		return (B) this;
 	}
 
@@ -298,7 +298,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			throw new IllegalStateException("Expected one or more containers");
 		}
 
-		for (ControlledContainerItem item : containers) {
+		for (ContainerItem item : containers) {
 			if(item.getCount() == 0) {
 				throw new IllegalStateException("Expected one or more count for every container");
 			}

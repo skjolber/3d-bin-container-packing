@@ -5,14 +5,14 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
 
@@ -21,7 +21,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 	protected int stackPlacementCount;
 	protected final PackagerInterruptSupplier interrupt;
 
-	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers,
+	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, List<ContainerItem> containers,
 			int containerCount, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt, boolean load) {
 		super(boxItems, containers, containerCount);
 		this.interrupt = interrupt;

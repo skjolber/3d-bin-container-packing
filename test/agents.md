@@ -7,6 +7,7 @@ Shared testing utilities consumed by every other module's test scope. Provides c
 - `com.github.skjolber.packing.test.assertj` — Fluent custom assertions: `ContainerAssert`, `PackagerAssert`, `StackAssert`, `StackPlacementAssert`, `Point3DAssert`
 - `com.github.skjolber.packing.test.bouwkamp` — Bouwkamp codes for squared-rectangle test cases: `BouwkampCodes`, `BouwkampCodeParser`, `BouwkampCodeDirectory`
 - `com.github.skjolber.packing.test` — Generic box/item generators used in property-based tests
+- `com.github.skjolber.packing.test.example` — Example extensions written against **api** only (`LargestContainerFirstStrategy`, `BackToFrontPlacementComparator`); compiling them here proves that custom behaviour does not need **core**
 
 ## Architecture Notes
 - This module is a **test utility library**, not a runnable application.

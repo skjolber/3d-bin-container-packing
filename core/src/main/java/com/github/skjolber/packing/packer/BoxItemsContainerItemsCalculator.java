@@ -23,7 +23,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 	private long remainingVolume;
 	private long remainingWeight;
 
-	public BoxItemsContainerItemsCalculator(List<ControlledContainerItem> containerItems, int containerCount, List<BoxItem> boxItems) {
+	public BoxItemsContainerItemsCalculator(List<ContainerItem> containerItems, int containerCount, List<BoxItem> boxItems) {
 		super(containerItems, Math.min(containerCount, countBoxes(boxItems)));
 		this.remainingVolume = calculateVolume(boxItems);
 		this.remainingWeight = calculateWeight(boxItems);
@@ -34,7 +34,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 		for(int boxItemIndex = 0; boxItemIndex < boxItems.size(); boxItemIndex++) {
 			BoxItem boxItem = boxItems.get(boxItemIndex);
 			for(int containerItemIndex = 0; containerItemIndex < containerItems.size(); containerItemIndex++) {
-				ControlledContainerItem containerItem = containerItems.get(containerItemIndex);
+				ContainerItem containerItem = containerItems.get(containerItemIndex);
 				if(containerItem.getContainer().canLoad(boxItem.getBox())) {
 					fits[boxItemIndex][containerItemIndex] = true;
 					if(containerItem.isAvailable()) {
@@ -45,7 +45,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 		}
 	}
 
-	private BoxItemsContainerItemsCalculator(BoxItemsContainerItemsCalculator source, List<ControlledContainerItem> containerItems) {
+	private BoxItemsContainerItemsCalculator(BoxItemsContainerItemsCalculator source, List<ContainerItem> containerItems) {
 		super(containerItems, source.containerCount, source.resetContainerCount);
 		this.cost = source.cost;
 		this.remainingVolume = source.remainingVolume;
@@ -178,10 +178,10 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 		}
 	}
 
-	private List<ControlledContainerItem> copyContainerItems() {
-		List<ControlledContainerItem> copies = new ArrayList<>(containerItems.size());
-		for(ControlledContainerItem item : containerItems) {
-			copies.add(new ControlledContainerItem(item));
+	private List<ContainerItem> copyContainerItems() {
+		List<ContainerItem> copies = new ArrayList<>(containerItems.size());
+		for(ContainerItem item : containerItems) {
+			copies.add(new ContainerItem(item));
 		}
 		return copies;
 	}

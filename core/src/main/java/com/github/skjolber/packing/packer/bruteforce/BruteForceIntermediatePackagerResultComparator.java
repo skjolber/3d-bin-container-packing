@@ -1,8 +1,8 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 /**
  * 

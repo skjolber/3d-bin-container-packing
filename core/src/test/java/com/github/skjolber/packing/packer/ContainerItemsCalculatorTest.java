@@ -55,8 +55,8 @@ public class ContainerItemsCalculatorTest {
 				.withContainer(container, 2)
 				.withContainer(container, 1)
 				.build());
-		ControlledContainerItem first = calculator.getContainerItem(0);
-		ControlledContainerItem second = calculator.getContainerItem(1);
+		ContainerItem first = calculator.getContainerItem(0);
+		ContainerItem second = calculator.getContainerItem(1);
 		first.decrement();
 		second.decrement();
 
@@ -293,8 +293,8 @@ public class ContainerItemsCalculatorTest {
 		List<Integer> indexes = calculator.getContainers(products).getContainerIndexes();
 		assertEquals(2, indexes.size());
 		
-		ControlledContainerItem first = calculator.getContainerItem(indexes.get(0));
-		ControlledContainerItem second = calculator.getContainerItem(indexes.get(1));
+		ContainerItem first = calculator.getContainerItem(indexes.get(0));
+		ContainerItem second = calculator.getContainerItem(indexes.get(1));
 		
 		assertEquals(first.getContainer().getDx(), 6);
 		assertEquals(second.getContainer().getDx(), 8);
@@ -431,9 +431,9 @@ public class ContainerItemsCalculatorTest {
 	}
 
 	private ContainerItemsCalculator create(List<ContainerItem> items, int containerCount) {
-		List<ControlledContainerItem> containerItems = new ArrayList<>(items.size());
+		List<ContainerItem> containerItems = new ArrayList<>(items.size());
 		for(ContainerItem containerItem : items) {
-			ControlledContainerItem c = new ControlledContainerItem(containerItem);
+			ContainerItem c = new ContainerItem(containerItem);
 			c.setIndex(containerItems.size());
 			containerItems.add(c);
 		}

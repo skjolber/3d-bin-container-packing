@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 
 /**
  * Placement controls validate load only for candidates which would be selected when the comparator

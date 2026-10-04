@@ -6,12 +6,15 @@ import java.util.List;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
-import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
 public abstract class DefaultControlsPackagerResultBuilder extends AbstractPackagerResultBuilder<DefaultControlsPackagerResultBuilder> {
 	
@@ -39,7 +42,7 @@ public abstract class DefaultControlsPackagerResultBuilder extends AbstractPacka
 
 		PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 		try {
-			PackagerAdapter adapter;
+			PackagerSession adapter;
 			if(items != null && !items.isEmpty()) {
 				adapter = createDefaultBoxItemAdapter(items, order, containers, maxContainerCount, interrupt);
 			} else {
@@ -60,9 +63,9 @@ public abstract class DefaultControlsPackagerResultBuilder extends AbstractPacka
 		}
 	}
 
-	protected abstract PackagerAdapter createDefaultBoxItemAdapter(List<BoxItem> items, Order order,
-			List<ControlledContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt);
+	protected abstract PackagerSession createDefaultBoxItemAdapter(List<BoxItem> items, Order order,
+			List<ContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt);
 
-	protected abstract PackagerAdapter createDefaultBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, Order order,
-			List<ControlledContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt);
+	protected abstract PackagerSession createDefaultBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, Order order,
+			List<ContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt);
 }

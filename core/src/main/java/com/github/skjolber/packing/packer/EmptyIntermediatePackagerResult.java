@@ -1,13 +1,15 @@
 package com.github.skjolber.packing.packer;
 
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 
 public class EmptyIntermediatePackagerResult implements IntermediatePackagerResult {
 
 	public static final EmptyIntermediatePackagerResult EMPTY = new EmptyIntermediatePackagerResult();
 	
 	@Override
-	public ControlledContainerItem getContainerItem() {
+	public ContainerItem getContainerItem() {
 		throw new RuntimeException();
 	}
 	

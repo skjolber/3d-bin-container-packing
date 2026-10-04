@@ -9,19 +9,19 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerAdapter;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
-import com.github.skjolber.packing.packer.strategy.ContainerStrategy;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner;
 
 /** Packs containers in their preference order. */
 public class OrderedContainerPackingStrategy implements ContainerStrategy {
 	@FunctionalInterface
 	public interface SingleContainerPacker {
-		IntermediatePackagerResult packSingle(List<ContainerItem> containerItems, PackagerAdapter adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException;
+		IntermediatePackagerResult packSingle(List<ContainerItem> containerItems, PackagerSession adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException;
 	}
 
 	private final Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
@@ -54,7 +54,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 	}
 
 	// pack in single container
-	public IntermediatePackagerResult packSingle(List<ContainerItem> containerItems, PackagerAdapter adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+	public IntermediatePackagerResult packSingle(List<ContainerItem> containerItems, PackagerSession adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 		if(containerItems.size() <= 2) {
 			for (int i = 0; i < containerItems.size(); i++) {
 				if(interrupt.getAsBoolean()) {
@@ -151,7 +151,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 	}
 
 	@Override
-	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerAdapter adapter) throws PackagerInterruptedException {
+	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession adapter) throws PackagerInterruptedException {
 		int limit = adapter.getMaxContainerCount();
 
 		List<Container> containerPackResults = new ArrayList<>();
@@ -169,9 +169,9 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 				List<BoxItemGroup> groups = adapter.getRemainingBoxItemGroups();
 				List<ContainerItem> containerItems;
 				if(groups != null) {
-					containerItems = adapter.getContainerItemsCalculator().getGroupContainers(groups, 1);
+					containerItems = adapter.getContainerInventory().getGroupContainers(groups, 1);
 				} else {
-					containerItems = adapter.getContainerItemsCalculator().getContainers(adapter.getRemainingBoxItems(), 1);
+					containerItems = adapter.getContainerInventory().getContainers(adapter.getRemainingBoxItems(), 1);
 				}
 				if(!containerItems.isEmpty()) {
 	
@@ -180,7 +180,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 						containerPackResults.add(adapter.accept(result));
 	
 						// positive result
-						return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containerPackResults);
+						return new ContainerResult(adapter.getContainerInventory().getCost(), containerPackResults);
 					}
 					
 					// TODO any way to reuse partial results as the current best result?
@@ -241,7 +241,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 					if(best != null && best.getStack().size() == adapter.countRemainingBoxes()) {
 						containerPackResults.add(adapter.accept(best));
 
-						return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containerPackResults);
+						return new ContainerResult(adapter.getContainerInventory().getCost(), containerPackResults);
 					}
 					throw e;
 				}
@@ -255,7 +255,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 			containerPackResults.add(adapter.accept(best));
 			
 			if(adapter.countRemainingBoxes() == 0) {
-				return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containerPackResults);
+				return new ContainerResult(adapter.getContainerInventory().getCost(), containerPackResults);
 			}
 			
 		} while (containerPackResults.size() < limit);

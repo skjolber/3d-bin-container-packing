@@ -67,12 +67,11 @@ public class StackSupportIndex {
 	 */
 	public long calculateAreaSupport(List<Placement> stack, int minX, int minY, int minZ, BoxStackValue stackValue) {
 		synchronize(stack);
-		long sum = 0;
 
 		int maxX = minX + stackValue.getDx() - 1; // inclusive
 		int maxY = minY + stackValue.getDy() - 1; // inclusive
 
-		long max = (maxX - minX + 1) * (maxY - minY + 1);
+		long max = stackValue.getArea();
 
 		int z = minZ - 1;
 
@@ -88,30 +87,9 @@ public class StackSupportIndex {
 			}
 		}
 
+		long sum = 0;
 		for (int i = low; i < size && endZ[i] == z; i++) {
-			Placement stackPlacement = placements[i];
-			if(stackPlacement.getAbsoluteX() > maxX) {
-				continue;
-			}
-			if(stackPlacement.getAbsoluteY() > maxY) {
-				continue;
-			}
-			if(stackPlacement.getAbsoluteEndX() < minX) {
-				continue;
-			}
-			if(stackPlacement.getAbsoluteEndY() < minY) {
-				continue;
-			}
-
-			int x1 = Math.max(stackPlacement.getAbsoluteX(), minX);
-			int y1 = Math.max(stackPlacement.getAbsoluteY(), minY);
-			int x2 = Math.min(stackPlacement.getAbsoluteEndX(), maxX);
-			int y2 = Math.min(stackPlacement.getAbsoluteEndY(), maxY);
-
-			long intersect = (x2 - x1 + 1) * (y2 - y1 + 1);
-
-			sum += intersect;
-
+			sum += placements[i].overlapArea2D(minX, maxX, minY, maxY);
 			if(sum == max) {
 				break;
 			}

@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
+import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 
 abstract class AbstractContainerItemsCostCalculator implements ContainerItemsCostCalculator {
 
@@ -18,7 +18,7 @@ abstract class AbstractContainerItemsCostCalculator implements ContainerItemsCos
 		final long minimumCost;
 		final int count;
 
-		CostCapacity(ControlledContainerItem item) {
+		CostCapacity(ContainerItem item) {
 			container = item.getContainer();
 			calculator = item.getCostCalculator();
 			if(calculator == null) {
@@ -34,9 +34,9 @@ abstract class AbstractContainerItemsCostCalculator implements ContainerItemsCos
 		}
 	}
 
-	protected List<CostCapacity> costCapacities(ContainerItemsCalculator containers) {
+	protected List<CostCapacity> costCapacities(ContainerInventory containers) {
 		List<CostCapacity> capacities = new ArrayList<>(containers.getContainerItemCount());
-		for(ControlledContainerItem item : containers.getContainerItems()) {
+		for(ContainerItem item : containers.getContainerItems()) {
 			if(item.isAvailable()) {
 				capacities.add(new CostCapacity(item));
 			}

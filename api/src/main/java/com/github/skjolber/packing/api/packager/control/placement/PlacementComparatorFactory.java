@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.comparator.placement;
+package com.github.skjolber.packing.api.packager.control.placement;
 
 import java.util.Collection;
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
  * to suppress specific dimensions at build time (e.g. because a constraint is inactive for this
  * packing run) should use {@link #build(Collection)}.
  *
- * <p>The canonical implementation is {@link DefaultPlacementComparatorFactory}, which provides
+ * <p>The canonical implementation is {@code com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory}, which provides
  * fluent builder methods for adding dimensions, constraint-based cloning via
  * {@code withConstraints}, and an optimized-comparator registry.
  */
@@ -41,7 +41,7 @@ public interface PlacementComparatorFactory {
 	 * fixed comparator, ignoring any disabled attributes.
 	 *
 	 * <p>Use this bridge when you have a custom {@link PlacementComparator} that
-	 * cannot be expressed as a {@link DefaultPlacementComparatorFactory} chain.
+	 * cannot be expressed as a {@code com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory} chain.
 	 *
 	 * @param comparator the fixed comparator to wrap; must not be {@code null}
 	 * @return a factory that always returns {@code comparator}

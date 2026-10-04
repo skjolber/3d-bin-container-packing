@@ -9,7 +9,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 
 /**
  * Finds the least expensive assignment of whole boxes or groups to available
@@ -46,7 +46,7 @@ public class ExactContainerItemsCostCalculator extends AbstractContainerItemsCos
 	private final EstimatingContainerItemsCostCalculator estimate = new EstimatingContainerItemsCostCalculator();
 
 	@Override
-	public long getMinimumCost(ContainerItemsCalculator containers, List<BoxItem> boxes, int maxCount) {
+	public long getMinimumCost(ContainerInventory containers, List<BoxItem> boxes, int maxCount) {
 		List<CostUnit> units = new ArrayList<>();
 		for(BoxItem item : boxes) {
 			Box box = item.getBox();
@@ -59,7 +59,7 @@ public class ExactContainerItemsCostCalculator extends AbstractContainerItemsCos
 	}
 
 	@Override
-	public long getGroupMinimumCost(ContainerItemsCalculator containers, List<BoxItemGroup> groups, int maxCount) {
+	public long getGroupMinimumCost(ContainerInventory containers, List<BoxItemGroup> groups, int maxCount) {
 		List<CostUnit> units = new ArrayList<>(groups.size());
 		for(BoxItemGroup group : groups) {
 			long volume = 0;
@@ -73,7 +73,7 @@ public class ExactContainerItemsCostCalculator extends AbstractContainerItemsCos
 		return calculateMinimumCost(containers, units, maxCount);
 	}
 
-	private long calculateMinimumCost(ContainerItemsCalculator containers, List<CostUnit> units, int maxCount) {
+	private long calculateMinimumCost(ContainerInventory containers, List<CostUnit> units, int maxCount) {
 		if(units.isEmpty()) {
 			return 0;
 		}

@@ -99,13 +99,13 @@ public class AbstractPackagerAdapterTest {
 	}
 	
 	private ContainerItemsCalculator create(List<ContainerItem> items) {
-		List<ControlledContainerItem> containerItems = new ArrayList<>(items.size());
+		List<ContainerItem> containerItems = new ArrayList<>(items.size());
 		for(ContainerItem containerItem : items) {
-			containerItems.add(new ControlledContainerItem(containerItem));
+			containerItems.add(new ContainerItem(containerItem));
 		}
 		
 		int containerCount = 0;
-		for(ControlledContainerItem item : containerItems) {
+		for(ContainerItem item : containerItems) {
 			containerCount += item.getCount();
 		}
 		return new ContainerItemsCalculator(containerItems, containerCount);

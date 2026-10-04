@@ -2,7 +2,6 @@ package com.github.skjolber.packing.api.packager.control.placement;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Placement;
 
 public interface PlacementControls {

@@ -15,13 +15,12 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerAdapter;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Allocation;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Objective;
 import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerStrategy;
@@ -31,10 +30,10 @@ class ContainerAllocationStrategyTest {
 
 	@Test
 	void fewestContainersStrategyChoosesOneLargeContainer() {
-		PlainPackager packager = PlainPackager.newBuilder().build();
+		PlainPackager packager = PlainPackager.newBuilder()
+				.withContainerStrategyFactory((inventory, boxes, groups) -> new FewestContainersFitContainerStrategy())
+				.build();
 		try {
-			packager.setContainerPackingStrategyFactory((calculator, boxes, groups) ->
-					new FewestContainersFitContainerStrategy());
 			PackagerResult result = packager.newResultBuilder()
 					.withContainerItems(List.of(
 							new ContainerItem(container("small", 1), 2),
@@ -53,10 +52,10 @@ class ContainerAllocationStrategyTest {
 
 	@Test
 	void lowestCostStrategyChoosesTwoCheapContainers() {
-		PlainPackager packager = PlainPackager.newBuilder().build();
+		PlainPackager packager = PlainPackager.newBuilder()
+				.withContainerStrategyFactory((inventory, boxes, groups) -> new LowestCostFitContainerStrategy())
+				.build();
 		try {
-			packager.setContainerPackingStrategyFactory((calculator, boxes, groups) ->
-					new LowestCostFitContainerStrategy());
 			Container small = container("small", 1);
 			Container large = container("large", 2);
 			PackagerResult result = packager.newResultBuilder()
@@ -121,9 +120,9 @@ class ContainerAllocationStrategyTest {
 	}
 
 	private static ContainerItemsCalculator calculator(List<ContainerItem> items, int count) {
-		List<ControlledContainerItem> controlled = new ArrayList<>(items.size());
+		List<ContainerItem> controlled = new ArrayList<>(items.size());
 		for(ContainerItem item : items) {
-			controlled.add(new ControlledContainerItem(item));
+			controlled.add(new ContainerItem(item));
 		}
 		return new ContainerItemsCalculator(controlled, count);
 	}
@@ -141,7 +140,7 @@ class ContainerAllocationStrategyTest {
 		return Container.newBuilder().withId(id).withSize(dx, 1, 1).withMaxLoadWeight(dx).build();
 	}
 
-	private static class PlanningAdapter implements PackagerAdapter {
+	private static class PlanningAdapter implements PackagerSession {
 
 		protected final ContainerItemsCalculator calculator;
 		protected final List<BoxItem> boxes;
@@ -154,7 +153,7 @@ class ContainerAllocationStrategyTest {
 			this.groups = groups;
 		}
 
-		@Override public ContainerItemsCalculator getContainerItemsCalculator() { return calculator; }
+		@Override public ContainerItemsCalculator getContainerInventory() { return calculator; }
 		@Override public List<BoxItem> getRemainingBoxItems() { return boxes; }
 		@Override public List<BoxItemGroup> getRemainingBoxItemGroups() { return groups; }
 		@Override public ContainerItem getContainerItem(int index) { return calculator.getContainerItem(index); }
@@ -175,9 +174,8 @@ class ContainerAllocationStrategyTest {
 		@Override public IntermediatePackagerResult peek(int index, IntermediatePackagerResult existing) { throw new UnsupportedOperationException(); }
 		@Override public Container accept(IntermediatePackagerResult result) { throw new UnsupportedOperationException(); }
 		@Override public List<Integer> getContainers() { throw new UnsupportedOperationException(); }
-		@Override public PackagerAdapter fresh() { throw new UnsupportedOperationException(); }
-		@Override public PackagerAdapter fork() { throw new UnsupportedOperationException(); }
-		@Override public void reset() { throw new UnsupportedOperationException(); }
+		@Override public PackagerSession fresh() { throw new UnsupportedOperationException(); }
+		@Override public PackagerSession fork() { throw new UnsupportedOperationException(); }
 	}
 
 	private static final class BranchAdapter extends PlanningAdapter {
@@ -195,9 +193,9 @@ class ContainerAllocationStrategyTest {
 		@Override
 		public IntermediatePackagerResult attempt(int index, IntermediatePackagerResult best, boolean abort) {
 			attempts.add(index);
-			ControlledContainerItem item = calculator.getContainerItem(index);
+			ContainerItem item = calculator.getContainerItem(index);
 			return new IntermediatePackagerResult() {
-				@Override public ControlledContainerItem getContainerItem() { return item; }
+				@Override public ContainerItem getContainerItem() { return item; }
 				@Override public Stack getStack() { return new Stack(); }
 				@Override public boolean isEmpty() { return false; }
 			};
@@ -222,7 +220,7 @@ class ContainerAllocationStrategyTest {
 		}
 
 		@Override
-		public PackagerAdapter fork() {
+		public PackagerSession fork() {
 			List<BoxItem> copies = new ArrayList<>(boxes.size());
 			for(BoxItem item : boxes) {
 				copies.add(item.clone());

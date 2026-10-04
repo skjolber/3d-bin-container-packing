@@ -506,4 +506,34 @@ public class PlacementTest {
 		assertThat(right.getLoadWeight()).isEqualTo(4.0 / 3.0);
 	}
 
+	/**
+	 * <pre>
+	 *  y
+	 *  |
+	 *  15 |       +------+  other (5..14, 5..14)
+	 *     |  +----+--+   |
+	 *     |  |    |xx|   |  xx: overlap 5x5
+	 *  10 |  |    +--+---+
+	 *     |  |       |       this (0..9, 0..9)
+	 *   0 +--+-------+------ x
+	 * </pre>
+	 */
+	@Test
+	public void testOverlapArea2D() {
+		Placement placement = makePlacement("A", 10, 10, 1, 1, 0, 0, 0);
+
+		assertThat(placement.overlapArea2D(5, 14, 5, 14)).isEqualTo(25L);
+		assertThat(placement.overlapArea2D(0, 9, 0, 9)).isEqualTo(100L);
+		assertThat(placement.overlapArea2D(10, 19, 0, 9)).isZero();
+		assertThat(placement.overlapArea2D(0, 9, 10, 19)).isZero();
+		assertThat(placement.overlapArea2D(makePlacement("B", 10, 10, 1, 1, 5, 5, 1))).isEqualTo(25L);
+	}
+
+	/** Areas beyond the int range, as with fine-grained units (here 1/10000 inch). */
+	@Test
+	public void testOverlapArea2DBeyondIntRange() {
+		Placement placement = makePlacement("A", 200000, 80000, 1, 1, 0, 0, 0);
+
+		assertThat(placement.overlapArea2D(0, 199999, 0, 79999)).isEqualTo(16_000_000_000L);
+	}
 }

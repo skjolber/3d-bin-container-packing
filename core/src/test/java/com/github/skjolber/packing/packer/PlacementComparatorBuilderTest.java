@@ -9,11 +9,11 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparatorAttribute;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparatorFactory;
 import com.github.skjolber.packing.comparator.AbstractChainedPlacementComparator;
-import com.github.skjolber.packing.comparator.placement.PlacementComparator;
-import com.github.skjolber.packing.comparator.placement.PlacementComparatorAttribute;
 import com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory;
-import com.github.skjolber.packing.comparator.placement.PlacementComparatorFactory;
 
 /**
  * Unit tests for {@link PlacementComparatorFactory}.

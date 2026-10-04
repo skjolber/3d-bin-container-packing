@@ -7,12 +7,16 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
-public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter implements PackagerAdapter {
+public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter implements PackagerSession {
 
 	protected List<BoxItem> remainingBoxItems;
 	protected final List<BoxItem> initialBoxItems;
@@ -24,7 +28,7 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	protected final boolean maxLoadBoxCount;
 	protected final boolean maxLoadIdenticalBoxCount;
 
-	public AbstractBoxItemAdapter(List<BoxItem> boxItems, Order order, List<ControlledContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
+	public AbstractBoxItemAdapter(List<BoxItem> boxItems, Order order, List<ContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
 		super(initializeGlobalIndexes(boxItems), containers, containerCount);
 		this.initialBoxItems = copyBoxItems(boxItems);
 		
@@ -74,20 +78,12 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	}
 
 	@Override
-	protected void resetState() {
-		remainingBoxItems = copyBoxItems(initialBoxItems);
-		for(int i = 0; i < remainingBoxItems.size(); i++) {
-			remainingBoxItems.get(i).setLocalIndex(i);
-		}
-	}
-
-	@Override
-	public abstract PackagerAdapter fork();
+	public abstract PackagerSession fork();
 
 	@Override
 	public IntermediatePackagerResult attempt(int index, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		try {
-			ControlledContainerItem containerItem = packagerContainerItems.getContainerItem(index);
+			ContainerItem containerItem = packagerContainerItems.getContainerItem(index);
 			return pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig);
 		} finally {
 			for(BoxItem boxItem : remainingBoxItems) {
@@ -97,7 +93,7 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	}
 
 	@Override
-	public ControlledContainerItem getContainerItem(int index) {
+	public ContainerItem getContainerItem(int index) {
 		return packagerContainerItems.getContainerItem(index);
 	}
 
@@ -181,7 +177,7 @@ public abstract class AbstractBoxItemAdapter extends AbstractPackagerAdapter imp
 	}
 
 	protected abstract IntermediatePackagerResult pack(
-			List<BoxItem> remainingBoxItems, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig
+			List<BoxItem> remainingBoxItems, ContainerItem containerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig
 			) throws PackagerInterruptedException;
 
 	

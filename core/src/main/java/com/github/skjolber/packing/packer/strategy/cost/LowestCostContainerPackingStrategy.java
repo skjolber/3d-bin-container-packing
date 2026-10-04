@@ -13,11 +13,11 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerAdapter;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
-import com.github.skjolber.packing.packer.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
 /** Plans and executes container packing using the lowest observed cost. */
 public class LowestCostContainerPackingStrategy implements ContainerStrategy {
@@ -123,7 +123,7 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 	 * later choices reflect the boxes which were actually packed.
 	 */
 	@Override
-	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerAdapter adapter) throws PackagerInterruptedException {
+	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession adapter) throws PackagerInterruptedException {
 		List<Container> containerPackResults = new ArrayList<>();
 
 		int limit = adapter.getMaxContainerCount();
@@ -131,7 +131,7 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 		while(containerPackResults.size() < limit) {
 			int remainingBoxCount = adapter.countRemainingBoxes();
 			if(remainingBoxCount == 0) {
-				return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containerPackResults);
+				return new ContainerResult(adapter.getContainerInventory().getCost(), containerPackResults);
 			}
 
 			int remainingContainerCount = Math.min(limit - containerPackResults.size(), remainingBoxCount);
@@ -179,7 +179,7 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 			} catch(PackagerInterruptedException e) {
 				if(completed != null) {
 					containerPackResults.add(adapter.accept(completed.result));
-					return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containerPackResults);
+					return new ContainerResult(adapter.getContainerInventory().getCost(), containerPackResults);
 				}
 				throw e;
 			}
@@ -194,7 +194,7 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 			} catch(PackagerInterruptedException e) {
 				if(completed != null) {
 					containerPackResults.add(adapter.accept(completed.result));
-					return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containerPackResults);
+					return new ContainerResult(adapter.getContainerInventory().getCost(), containerPackResults);
 				}
 				throw e;
 			}
@@ -202,7 +202,7 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 
 			containerPackResults.add(adapter.accept(selected.result));
 			if(adapter.countRemainingBoxes() == 0) {
-				return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containerPackResults);
+				return new ContainerResult(adapter.getContainerInventory().getCost(), containerPackResults);
 			}
 		}
 
@@ -291,7 +291,7 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 		return value + increment;
 	}
 
-	protected CostPacking selectBestPacking(List<CostPacking> packings, PackagerAdapter adapter) {
+	protected CostPacking selectBestPacking(List<CostPacking> packings, PackagerSession adapter) {
 		CostPacking best = null;
 		for(int i = packings.size() - 1; i >= 0; i--) {
 			CostPacking candidate = packings.get(i);

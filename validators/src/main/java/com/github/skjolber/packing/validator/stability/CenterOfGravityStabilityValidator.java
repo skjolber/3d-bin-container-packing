@@ -151,16 +151,10 @@ public class CenterOfGravityStabilityValidator implements StabilityValidator {
 				continue;
 			}
 
-			long overlapMinX = Math.max(placement.getAbsoluteX(), supportee.getAbsoluteX());
-			long overlapMaxX = Math.min(placement.getAbsoluteEndX(), supportee.getAbsoluteEndX());
-			long overlapMinY = Math.max(placement.getAbsoluteY(), supportee.getAbsoluteY());
-			long overlapMaxY = Math.min(placement.getAbsoluteEndY(), supportee.getAbsoluteEndY());
-
-			if(overlapMinX > overlapMaxX || overlapMinY > overlapMaxY) {
+			long overlapArea = placement.overlapArea2D(supportee);
+			if(overlapArea == 0) {
 				continue;
 			}
-
-			long overlapArea = (overlapMaxX - overlapMinX + 1) * (overlapMaxY - overlapMinY + 1);
 			double supporteeShare = (double) overlapArea / supporteeArea;
 
 			double[] sub = stackCenterOfMass(supportee, masses);

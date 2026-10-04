@@ -8,12 +8,16 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
-public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapter implements PackagerAdapter {
+public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapter implements PackagerSession {
 
 	protected List<BoxItemGroup> remainingBoxItemGroups;
 	protected final List<BoxItemGroup> initialBoxItemGroups;
@@ -25,7 +29,7 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 	protected final boolean maxLoadBoxCount;
 	protected final boolean maxLoadIdenticalBoxCount;
 	
-	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, List<ControlledContainerItem> containers,
+	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, List<ContainerItem> containers,
 			int containerCount, Order order, PackagerInterruptSupplier interrupt) {
 		super(new BoxItemGroupsContainerItemsCalculator(containers, containerCount, initializeGlobalIndexesForGroups(boxItemGroups)));
 		this.initialBoxItemGroups = copyBoxItemGroups(boxItemGroups);
@@ -82,17 +86,7 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 	}
 
 	@Override
-	protected void resetState() {
-		List<BoxItemGroup> groups = new LinkedList<>(copyBoxItemGroups(initialBoxItemGroups));
-		for(int i = 0; i < groups.size(); i++) {
-			groups.get(i).setIndex(i);
-			groups.get(i).mark();
-		}
-		remainingBoxItemGroups = groups;
-	}
-
-	@Override
-	public abstract PackagerAdapter fork();
+	public abstract PackagerSession fork();
 
 	@Override
 	public IntermediatePackagerResult attempt(int index, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
@@ -177,7 +171,7 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 	}
 
 	@Override
-	public ControlledContainerItem getContainerItem(int index) {
+	public ContainerItem getContainerItem(int index) {
 		return packagerContainerItems.getContainerItem(index);
 	}
 
@@ -192,6 +186,6 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 		return remainingBoxItemGroups.size();
 	}
 
-	protected abstract IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig);
+	protected abstract IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order, ContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig);
 
 }

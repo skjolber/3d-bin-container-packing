@@ -1,6 +1,8 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
-public class ParallelBruteForcePackagerException extends RuntimeException {
+import com.github.skjolber.packing.api.PackagerException;
+
+public class ParallelBruteForcePackagerException extends PackagerException {
 
 	private static final long serialVersionUID = 1L;
 

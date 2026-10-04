@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
@@ -14,7 +13,6 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.AbstractPlacementControls;
-import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
  * Unit tests for the utility methods that previously lived in
@@ -22,11 +20,9 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  *
  * <p>Static helpers ({@code canStackLevels}, {@code canStackOneMore},
  * {@code isWithinMaxLoadBoxCount}) were promoted to
- * {@link AbstractPlacementControls} and are tested here.
- *
- * <p>Tests that relied on instance methods ({@code findSupporters},
- * {@code findSupportees}, {@code applyLoad}) which were removed in the
- * refactoring are annotated {@link Disabled} and kept for reference.
+ * {@link AbstractPlacementControls} and are tested here. Supporters, supportees and load
+ * propagation are tested with the load utilities ({@code AbstractLoadWeightPlacementUtilityTest},
+ * {@code LoadSupportGraphTest}).
  */
 class LoadAwarePlacementControlsTest {
 
@@ -78,7 +74,7 @@ class LoadAwarePlacementControlsTest {
 		}
 
 		long testOverlapArea(int minX, int minY, int maxX, int maxY, Placement p) {
-			return LoadPlacementUtility.overlapArea(minX, minY, maxX, maxY, p);
+			return p.overlapArea2D(minX, maxX, minY, maxY);
 		}
 	}
 
@@ -339,85 +335,5 @@ class LoadAwarePlacementControlsTest {
 		TestableControls ctrl = new TestableControls(new Stack());
 		Placement p = placement("P", 6, 7, 1, 1, 4, 3, 0);
 		assertThat(ctrl.testOverlapArea(0, 0, 9, 9, p)).isEqualTo(42L);
-	}
-
-	// -----------------------------------------------------------------------
-	// findSupporters
-	// -----------------------------------------------------------------------
-
-	/**
-	 * Single supporting placement directly below (full overlap).
-	 *
-	 * <pre>
-	 *  z
-	 *  |
-	 *  2  +----------+  ← P (to be placed)
-	 *  1  +----------+  ← S (supporter, endZ=1)
-	 *  0  +----------+
-	 *
-	 *  P.z=1, so supporters must have endZ=0 → S qualifies.
-	 * </pre>
-	 *
-	 * <p>{@code findSupporters} was removed with {@code LoadAwarePlacementControls}.
-	 */
-	@Disabled("findSupporters was removed in the LoadAwarePlacementControls refactoring")
-	@Test
-	void testFindSupporters_singleFullOverlap() {
-	}
-
-	/** {@code findSupporters} was removed. */
-	@Disabled("findSupporters was removed in the LoadAwarePlacementControls refactoring")
-	@Test
-	void testFindSupporters_twoEqualSupporters() {
-	}
-
-	/** {@code findSupporters} was removed. */
-	@Disabled("findSupporters was removed in the LoadAwarePlacementControls refactoring")
-	@Test
-	void testFindSupporters_wrongZLevel() {
-	}
-
-	// -----------------------------------------------------------------------
-	// findSupportees
-	// -----------------------------------------------------------------------
-
-	/** {@code findSupportees} was removed. */
-	@Disabled("findSupportees was removed in the LoadAwarePlacementControls refactoring")
-	@Test
-	void testFindSupportees_singleAbove() {
-	}
-
-	/** {@code findSupportees} was removed. */
-	@Disabled("findSupportees was removed in the LoadAwarePlacementControls refactoring")
-	@Test
-	void testFindSupportees_skipsNonDirectAbove() {
-	}
-
-	// -----------------------------------------------------------------------
-	// applyLoad
-	// -----------------------------------------------------------------------
-
-	/** {@code applyLoad} was removed. */
-	@Disabled("applyLoad was removed in the LoadAwarePlacementControls refactoring")
-	@Test
-	void testApplyLoad_singleSupporter() {
-	}
-
-	/** {@code applyLoad} was removed. */
-	@Disabled("applyLoad was removed in the LoadAwarePlacementControls refactoring")
-	@Test
-	void testApplyLoad_twoEqualSupporters_splitWeight() {
-	}
-
-	/** {@code applyLoad} was removed. */
-	@Disabled("applyLoad was removed in the LoadAwarePlacementControls refactoring")
-	@Test
-	void testApplyLoad_threeLevel_propagation() {
-	}
-
-	/** {@code applyLoad} was removed. */
-	@Disabled("applyLoad was removed in the LoadAwarePlacementControls refactoring")
-	@Test
-	void testApplyLoad_gapFill_wiresSupporteeAndSupporter() {
 	}
 }

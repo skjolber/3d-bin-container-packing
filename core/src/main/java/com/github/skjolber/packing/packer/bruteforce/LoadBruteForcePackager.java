@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.collections.api.iterator.IntIterator;
 
@@ -12,11 +13,12 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 import com.github.skjolber.packing.packer.util.WeightLoadAwarePlacementUtility;
 import com.github.skjolber.packing.packer.util.WeightPressureCountIdenticalLoadAwarePlacementUtility;
@@ -42,6 +44,12 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 		}
 
 		@Override
+		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
+			this.containerStrategyFactory = Objects.requireNonNull(factory);
+			return this;
+		}
+
+		@Override
 		public Builder withPoints(List<Point> points) {
 			this.points = points;
 			return this;
@@ -52,7 +60,11 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
-			return new LoadBruteForcePackager(comparator, pointFilter);
+			LoadBruteForcePackager packager = new LoadBruteForcePackager(comparator, pointFilter);
+			if(containerStrategyFactory != null) {
+				packager.setContainerStrategyFactory(containerStrategyFactory);
+			}
+			return packager;
 		}
 	}
 

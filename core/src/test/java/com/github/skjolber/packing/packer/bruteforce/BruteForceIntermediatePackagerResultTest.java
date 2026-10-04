@@ -10,12 +10,12 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
 import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
 class BruteForceIntermediatePackagerResultTest {
@@ -46,7 +46,7 @@ class BruteForceIntermediatePackagerResultTest {
 		Box second = box("second", 3, 3, 3, 5);
 		DefaultBoxItemPermutationRotationIterator iterator = iterator(first, second);
 		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(
-				new ControlledContainerItem(Container.newBuilder().withSize(10, 10, 10).withMaxLoadWeight(1000).build(), 1),
+				new ContainerItem(Container.newBuilder().withSize(10, 10, 10).withMaxLoadWeight(1000).build(), 1),
 				new Stack(), 0, iterator);
 		List<Point> points = new ArrayList<>(List.of(
 				new DefaultPoint3D(0, 0, 0, 9, 9, 9),
@@ -67,7 +67,7 @@ class BruteForceIntermediatePackagerResultTest {
 		Box second = box("second", 3, 3, 3, 5);
 		DefaultBoxItemPermutationRotationIterator iterator = iterator(first, second);
 		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(
-				new ControlledContainerItem(Container.newBuilder().withSize(10, 10, 10).withMaxLoadWeight(1000).build(), 1),
+				new ContainerItem(Container.newBuilder().withSize(10, 10, 10).withMaxLoadWeight(1000).build(), 1),
 				new Stack(), 0, iterator);
 		List<Point> reusablePoints = new ArrayList<>(List.of(
 				new DefaultPoint3D(0, 0, 0, 9, 9, 9),
@@ -85,7 +85,7 @@ class BruteForceIntermediatePackagerResultTest {
 		Box first = box("first", 2, 2, 2, 3);
 		DefaultBoxItemPermutationRotationIterator iterator = iterator(first);
 		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(
-				new ControlledContainerItem(Container.newBuilder().withSize(10, 10, 10).withMaxLoadWeight(1000).build(), 1),
+				new ContainerItem(Container.newBuilder().withSize(10, 10, 10).withMaxLoadWeight(1000).build(), 1),
 				new Stack(), 0, iterator);
 
 		result.setState(
@@ -122,7 +122,7 @@ class BruteForceIntermediatePackagerResultTest {
 	private static BruteForceIntermediatePackagerResult result(Container container, Stack stack, Box box) {
 		DefaultBoxItemPermutationRotationIterator iterator = iterator(box);
 		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(
-				new ControlledContainerItem(container, 1), stack, 0, iterator);
+				new ContainerItem(container, 1), stack, 0, iterator);
 		result.setState(List.of(new DefaultPoint3D(0, 0, 0, 9, 9, 9)), iterator.getState(), new Placement[] {new Placement()}, 1);
 		return result;
 	}

@@ -5,13 +5,13 @@ import java.util.List;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.BoxItemsContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
 
 public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractPackagerAdapter {
 
@@ -21,7 +21,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 	protected BoxItem[] boxItems;
 	protected final List<BoxItem> initialBoxItems;
 
-	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers,
+	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, List<ContainerItem> containers,
 			int containerCount) {
 		this(initializeGlobalIndexes(boxItems), new BoxItemsContainerItemsCalculator(containers, containerCount, boxItems));
 	}
@@ -57,7 +57,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 	}
 
 	@Override
-	public ControlledContainerItem getContainerItem(int index) {
+	public ContainerItem getContainerItem(int index) {
 		return packagerContainerItems.getContainerItem(index);
 	}
 
@@ -130,7 +130,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 		return weight;
 	}
 
-	protected BruteForceIntermediatePackagerResult copy(ControlledContainerItem peek, IntermediatePackagerResult result, int index) {
+	protected BruteForceIntermediatePackagerResult copy(ContainerItem peek, IntermediatePackagerResult result, int index) {
 		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
 			return new BruteForceIntermediatePackagerResult(peek, result.getStack(), index, bruteForceResult.getIterator(), bruteForceResult.isCalculateLoads());
 		}

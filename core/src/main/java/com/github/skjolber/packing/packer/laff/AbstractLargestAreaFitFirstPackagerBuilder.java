@@ -1,11 +1,13 @@
 package com.github.skjolber.packing.packer.laff;
 
 import java.util.Comparator;
+import java.util.Objects;
 
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 
 public abstract class AbstractLargestAreaFitFirstPackagerBuilder<B extends AbstractLargestAreaFitFirstPackagerBuilder<B>> {
 
@@ -20,6 +22,8 @@ public abstract class AbstractLargestAreaFitFirstPackagerBuilder<B extends Abstr
 
 	protected PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory;
 	protected PlacementControlsBuilderFactory placementControlsBuilderFactory;
+
+	protected ContainerStrategyFactory containerStrategyFactory;
 	
 	public B withCalculateSupport(boolean calculateSupport) {
 		this.calculateSupport = calculateSupport;
@@ -31,6 +35,19 @@ public abstract class AbstractLargestAreaFitFirstPackagerBuilder<B extends Abstr
 		return (B)this;
 	}
 	
+	/**
+	 * Set the factory which selects the container strategy: which containers to use, and in which order.
+	 * By default, cost-aware packing is used when the containers have costs, otherwise the first container
+	 * (in preference order) which holds the boxes.
+	 *
+	 * @param factory container strategy factory
+	 * @return this builder
+	 */
+	public B withContainerStrategyFactory(ContainerStrategyFactory factory) {
+		this.containerStrategyFactory = Objects.requireNonNull(factory);
+		return (B)this;
+	}
+
 	public B withIntermediatePackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
 		this.intermediatePackagerResultComparator = comparator;
 		return (B)this;

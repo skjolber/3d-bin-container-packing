@@ -1,5 +1,9 @@
-package com.github.skjolber.packing.packer;
+package com.github.skjolber.packing.api;
 
+/**
+ * Unchecked exception for failures while packing, for example in a parallel packager or container
+ * strategy. Thrown by {@link PackagerResultBuilder#build()}.
+ */
 public class PackagerException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;

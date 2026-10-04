@@ -8,13 +8,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.PackagerException;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
-import com.github.skjolber.packing.packer.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.PackagerException;
-import com.github.skjolber.packing.packer.PackagerAdapter;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.strategy.ContainerResult;
-import com.github.skjolber.packing.packer.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
+import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner;
 
 /**
@@ -49,7 +49,7 @@ public class ParallelContainerPackingStrategy implements ContainerStrategy {
 	}
 
 	@Override
-	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerAdapter adapter) throws PackagerInterruptedException {
+	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession adapter) throws PackagerInterruptedException {
 		int limit = adapter.getMaxContainerCount();
 		List<Container> containers = new ArrayList<>();
 
@@ -74,18 +74,18 @@ public class ParallelContainerPackingStrategy implements ContainerStrategy {
 
 			containers.add(adapter.accept(best));
 			if(adapter.countRemainingBoxes() == 0) {
-				return new ContainerResult(adapter.getContainerItemsCalculator().getCost(), containers);
+				return new ContainerResult(adapter.getContainerInventory().getCost(), containers);
 			}
 		}
 		return null;
 	}
 
-	private IntermediatePackagerResult attemptAll(List<Integer> containerIndexes, PackagerAdapter adapter,
+	private IntermediatePackagerResult attemptAll(List<Integer> containerIndexes, PackagerSession adapter,
 			PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		List<Future<IntermediatePackagerResult>> futures = new ArrayList<>(containerIndexes.size());
 		try {
 			for(int containerIndex : containerIndexes) {
-				PackagerAdapter fork = adapter.fork();
+				PackagerSession fork = adapter.fork();
 				futures.add(executorService.submit(() -> fork.attempt(containerIndex, null, abortOnAnyBoxTooBig)));
 			}
 

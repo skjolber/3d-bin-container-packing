@@ -7,19 +7,22 @@ import java.util.Objects;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.point.Point;
 
-public abstract class AbstractPackagerAdapter implements PackagerAdapter {
+public abstract class AbstractPackagerAdapter implements PackagerSession {
 
 	protected final ContainerItemsCalculator packagerContainerItems;
 	protected final ContainerItemsCalculator initialContainerItems;
 
-	public AbstractPackagerAdapter(List<BoxItem> boxItems, List<ControlledContainerItem> containers, int containerCount) {
+	public AbstractPackagerAdapter(List<BoxItem> boxItems, List<ContainerItem> containers, int containerCount) {
 		this(new BoxItemsContainerItemsCalculator(containers, containerCount, boxItems));
 	}
 
-	public AbstractPackagerAdapter(List<ControlledContainerItem> containers, int containerCount) {
+	public AbstractPackagerAdapter(List<ContainerItem> containers, int containerCount) {
 		this(new ContainerItemsCalculator(containers, containerCount));
 	}
 
@@ -34,21 +37,13 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 	}
 
 	@Override
-	public PackagerAdapter fresh() {
+	public PackagerSession fresh() {
 		ContainerItemsCalculator containers = initialContainerItems.clone();
 		return fresh(containers.getContainerItems(), containers.getContainerCount());
 	}
 
 	/** Create a new adapter using a calculator no longer used by another branch. */
-	protected abstract AbstractPackagerAdapter fresh(List<ControlledContainerItem> containers, int containerCount);
-
-	@Override
-	public void reset() {
-		packagerContainerItems.reset();
-		resetState();
-	}
-
-	protected abstract void resetState();
+	protected abstract AbstractPackagerAdapter fresh(List<ContainerItem> containers, int containerCount);
 
 	protected static List<BoxItem> copyBoxItems(List<BoxItem> items) {
 		List<BoxItem> copies = new ArrayList<>(items.size());
@@ -103,12 +98,12 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 	}
 
 	@Override
-	public ContainerItemsCalculator getContainerItemsCalculator() {
+	public ContainerItemsCalculator getContainerInventory() {
 		return packagerContainerItems;
 	}
 
 	/** Resolve a result's container selection against this adapter's inventory. */
-	protected ControlledContainerItem resolveContainerItem(IntermediatePackagerResult result) {
+	protected ContainerItem resolveContainerItem(IntermediatePackagerResult result) {
 		if(result == null || result.getContainerItem() == null) {
 			throw new IllegalArgumentException("Missing container item");
 		}
@@ -116,7 +111,7 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 		if(containerIndex < 0 || containerIndex >= packagerContainerItems.getContainerItemCount()) {
 			throw new IllegalArgumentException("Unknown container item index " + containerIndex);
 		}
-		ControlledContainerItem containerItem = packagerContainerItems.getContainerItem(containerIndex);
+		ContainerItem containerItem = packagerContainerItems.getContainerItem(containerIndex);
 		if(!containerItem.isAvailable()) {
 			throw new IllegalStateException("Container item index " + containerIndex + " is no longer available");
 		}
@@ -127,13 +122,13 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 	public IntermediatePackagerResult peek(int containerIndex, IntermediatePackagerResult result) {
 
 		Stack stack = result.getStack();
-		ControlledContainerItem peek = packagerContainerItems.getContainerItem(containerIndex);
+		ContainerItem peek = packagerContainerItems.getContainerItem(containerIndex);
 
 		if(!peek.getContainer().fitsInside(stack)) {
 			return null;
 		}
 		
-		ControlledContainerItem containerItem = result.getContainerItem();
+		ContainerItem containerItem = result.getContainerItem();
 		
 		List<Point> initialPoints = peek.getInitialPoints();
 		if(initialPoints != null && !initialPoints.isEmpty()) {
@@ -158,7 +153,7 @@ public abstract class AbstractPackagerAdapter implements PackagerAdapter {
 		return copy(peek, result, containerIndex);
 	}
 	
-	protected abstract IntermediatePackagerResult copy(ControlledContainerItem peek, IntermediatePackagerResult result, int index);
+	protected abstract IntermediatePackagerResult copy(ContainerItem peek, IntermediatePackagerResult result, int index);
 
 	public int getMaxContainerCount() {
 		int count = packagerContainerItems.getContainerCount();

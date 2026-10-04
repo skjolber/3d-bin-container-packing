@@ -13,7 +13,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.PackagerResultBuilder.ControlledContainerItemBuilder;
+import com.github.skjolber.packing.api.PackagerResultBuilder.ContainerItemBuilder;
 import com.github.skjolber.packing.api.PackagerResultBuilder.ObstaclesBuilder;
 import com.github.skjolber.packing.api.PackagerResultBuilder.PointsBuilder;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
