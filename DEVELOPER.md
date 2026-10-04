@@ -112,3 +112,23 @@ All packager builders have `withContainerStrategyFactory(..)`. `LargestContainer
 only. The built-in strategies are in the `core` package
 `com.github.skjolber.packing.packer.strategy`; `DefaultContainerStrategyFactory` chooses between
 them.
+
+## Packagers in a composite
+
+`CompositePackager` (package `com.github.skjolber.packing.packer.composite`) works with any
+`AbstractPackager`. For each packaging operation it creates a session per packager with
+`createSession(PackagerInput, interrupt)`, and keeps the sessions in sync: a result from one packager's
+session is accepted by all of them.
+
+- A packager implements `newSession(input, interrupt)`. The input's boxes and containers are copies which
+  belong to the new session.
+- `accept(..)` must accept results from other packagers' sessions. Box items are identified by their global
+  index (`BoxItem.getGlobalIndex()`), which is the same in all sessions for the same input; local indexes
+  change during packing.
+- Box item groups are accepted in order: a result must hold a prefix of the remaining groups.
+- Return `false` from `supports(PackagerInput)` (by overriding `getUnsupportedReason(..)`) for inputs the
+  packager cannot pack; the composite then skips it.
+- To let a costly packager skip work, compare results by load volume first and say so with
+  `IntermediatePackagerResultComparator.prefersHigherLoadVolume()`: the composite and the ordered container
+  strategy then pass the best result so far to `attempt(..)`.
+

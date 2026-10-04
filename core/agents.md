@@ -10,6 +10,7 @@ The main algorithmic engine. Implements all packager strategies (LAFF, brute-for
 - `com.github.skjolber.packing.iterator` — `BoxItemPermutationRotationIterator`, `BoxItemGroupPermutationRotationIterator`, `FilteredBoxItemsPermutationRotationIterator`
 - `com.github.skjolber.packing.comparator` — Result comparator implementations; `comparator.placement` — placement comparator implementations (`DefaultPlacementComparatorFactory`). The comparator interfaces are in **api**, so users can supply their own decision-making.
 - `com.github.skjolber.packing.packer.strategy` — Container strategy implementations (ordered, parallel, allocation, cost) and `DefaultContainerStrategyFactory`. The strategy interfaces (`ContainerStrategy`, `PackagerSession`, `ContainerInventory`) are in **api**; packager builders take a factory via `withContainerStrategyFactory(..)`.
+- `com.github.skjolber.packing.packer.composite` — `CompositePackager`: baseline from cheap packagers, then per-container escalation to costlier packagers through `CompositePackagerSession` (sessions of several packagers kept in sync by accepting each result in all of them)
 - `com.github.skjolber.packing.packer.util` — Load-constraint utilities used by the load-aware placement controls
 - `com.github.skjolber.packing.virtualbox` — Virtual-box preprocessing
 - Interrupts and deadlines live in **api** (`com.github.skjolber.packing.api.interrupt`).

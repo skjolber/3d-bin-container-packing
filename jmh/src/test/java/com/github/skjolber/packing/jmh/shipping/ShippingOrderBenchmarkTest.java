@@ -53,6 +53,20 @@ public class ShippingOrderBenchmarkTest {
 	}
 
 	@Test
+	public void compositePacksOrderInSmallestFittingContainer() {
+		ShippingOrderBenchmarkState state = new ShippingOrderBenchmarkState();
+		state.init();
+		try {
+			PackagerResult result = new ShippingOrderBenchmark().compositePackager(state);
+			assertThat(result.size()).isEqualTo(1);
+			assertThat(result.get(0).getId()).isEqualTo("CURBY2SL");
+			assertThat(result.get(0).getStack().size()).isEqualTo(5);
+		} finally {
+			state.shutdown();
+		}
+	}
+
+	@Test
 	public void bruteForceAndPlainFindSmallestContainer() {
 		try (BruteForcePackager bruteForce = BruteForcePackager.newBuilder().build(); PlainPackager plain = PlainPackager.newBuilder().build()) {
 			assertThat(ShippingOrderBenchmark.pack(bruteForce, ShippingOrders.getContainers(), ShippingOrders.getOrder()).get(0).getId()).isEqualTo("CURBY2SL");

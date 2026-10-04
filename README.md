@@ -384,6 +384,21 @@ are tried in the supplied (preference) order, or the cheapest combination is sea
 containers have costs. Supply your own with `withContainerStrategyFactory(..)` on the packager
 builders; see [DEVELOPER.md](DEVELOPER.md).
 
+## Combining packagers
+`CompositePackager` uses costly packagers only where cheaper packagers fall short:
+
+```java
+CompositePackager packager = CompositePackager.newBuilder()
+    .withPackager(PlainPackager.newBuilder().build())                // tried first, for every container
+    .withPackager(FastBruteForcePackager.newBuilder().build(), 200)  // only where plain does not fit all boxes, for at most 200 ms
+    .build();
+```
+
+The first packager (or those added with `withBaselinePackager(..)`) first packs the whole order, giving a
+baseline result. Then, for each container the container strategy attempts, the packagers are tried in order
+until one fits all remaining boxes; a costlier packager only needs to beat the cheaper packagers' result.
+The better result is returned (see `PackagerResultComparator`), and the baseline if the deadline passes.
+
 ## Validating results
 The optional `validators` artifact checks packing results, for example the load constraints:
 
@@ -459,6 +474,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
      * Box load constraints: max load weight, pressure, box count and identical boxes only
      * Support calculation + full support for plain and LAFF packagers
      * Container costs and container strategies (ordered, parallel, allocation), and custom container strategies
+     * `CompositePackager`: cheap packagers first, costly packagers only where needed
      * Virtual-box preprocessing
      * Substantially faster point calculation, placement search, support calculation and load validation
      * Behaviour changes:

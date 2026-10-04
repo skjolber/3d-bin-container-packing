@@ -43,6 +43,12 @@ public class ShippingOrderBenchmark {
 		return pack(state.getPlainPackager(), state.getContainers(), state.getOrder());
 	}
 
+	/** Plain and LAFF for a baseline, then brute force only for the containers where plain does not fit the remaining items. */
+	@Benchmark
+	public PackagerResult compositePackager(ShippingOrderBenchmarkState state) {
+		return pack(state.getCompositePackager(), state.getContainers(), state.getOrder());
+	}
+
 	/** All three packagers, keeping the best result. */
 	@Benchmark
 	public PackagerResult bestOf(ShippingOrderBenchmarkState state) {

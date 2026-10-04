@@ -34,6 +34,7 @@ same physical container are valid, provide each orientation as a separate
 | `FastBruteForcePackager` | Brute-force ordering and rotation search with a faster point choice. |
 | `ParallelBoxItemBruteForcePackager` | Parallel brute-force search for small inputs with available CPU capacity. |
 | Load-aware brute-force variants | Brute-force packing with load constraints. |
+| `CompositePackager` | Combines packagers: cheap packagers give a baseline and are tried first for each container; costly packagers run only where the cheaper ones do not fit all remaining boxes, optionally with a time budget. |
 
 Brute-force packagers remove duplicate rotations and can skip reverse-equivalent
 permutations. They remain exponential in the number of independently ordered
