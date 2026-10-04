@@ -1,0 +1,73 @@
+package com.github.skjolber.packing.packer;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+
+import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
+import com.github.skjolber.packing.packer.plain.PlainPackager;
+
+/**
+ * Each box fits one container type:
+ *
+ * <pre>
+ *   big:   [long  ]      small: [c]
+ * </pre>
+ *
+ * Packing attempts filter the box items per container, which changes their local indexes. Whether the remaining
+ * boxes can still be assigned to the remaining containers must not depend on them.
+ */
+public class ContainerTypePerBoxTest {
+
+	@Test
+	public void plainPackagerUsesBothContainerTypes() {
+		try (PlainPackager packager = PlainPackager.newBuilder().build()) {
+			assertUsesBothContainerTypes(packager);
+		}
+	}
+
+	@Test
+	public void largestAreaFitFirstPackagerUsesBothContainerTypes() {
+		try (LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build()) {
+			assertUsesBothContainerTypes(packager);
+		}
+	}
+
+	@Test
+	public void bruteForcePackagerUsesBothContainerTypes() {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			assertUsesBothContainerTypes(packager);
+		}
+	}
+
+	@Test
+	public void fastBruteForcePackagerUsesBothContainerTypes() {
+		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
+			assertUsesBothContainerTypes(packager);
+		}
+	}
+
+	private static void assertUsesBothContainerTypes(AbstractPackager<?> packager) {
+		List<ContainerItem> containers = List.of(
+				new ContainerItem(Container.newBuilder().withId("big").withSize(2, 1, 1).withMaxLoadWeight(10).build(), 1),
+				new ContainerItem(Container.newBuilder().withId("small").withSize(1, 1, 1).withMaxLoadWeight(10).build(), 1));
+		PackagerResult result = packager.newResultBuilder()
+				.withContainerItems(containers)
+				.withBoxItems(
+						new BoxItem(Box.newBuilder().withId("long").withSize(2, 1, 1).withWeight(1).build(), 1),
+						new BoxItem(Box.newBuilder().withId("cube").withSize(1, 1, 1).withWeight(1).build(), 1))
+				.withMaxContainerCount(2)
+				.build();
+
+		assertThat(result.getContainers()).extracting(Container::getId).containsExactlyInAnyOrder("big", "small");
+	}
+}

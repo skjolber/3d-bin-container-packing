@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
@@ -16,6 +17,8 @@ import com.github.skjolber.packing.api.Stack;
 public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalculator {
 
 	private final boolean[][] fits;
+	/** Fit record row by box item global index (local indexes change when packaging filters box items), or -1 */
+	private final int[] rowsByGlobalIndex;
 	private final int[] fittingContainerItemCounts;
 	private final long resetRemainingVolume;
 	private final long resetRemainingWeight;
@@ -30,6 +33,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 		this.resetRemainingVolume = remainingVolume;
 		this.resetRemainingWeight = remainingWeight;
 		this.fits = new boolean[boxItems.size()][containerItems.size()];
+		this.rowsByGlobalIndex = getRowsByGlobalIndex(boxItems);
 		this.fittingContainerItemCounts = new int[boxItems.size()];
 		for(int boxItemIndex = 0; boxItemIndex < boxItems.size(); boxItemIndex++) {
 			BoxItem boxItem = boxItems.get(boxItemIndex);
@@ -54,7 +58,33 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 		this.resetRemainingWeight = source.resetRemainingWeight;
 		// Immutable for the lifetime of the packaging operation; forks can share it.
 		this.fits = source.fits;
+		this.rowsByGlobalIndex = source.rowsByGlobalIndex;
 		this.fittingContainerItemCounts = source.fittingContainerItemCounts.clone();
+	}
+
+	private static int[] getRowsByGlobalIndex(List<BoxItem> boxItems) {
+		int maxGlobalIndex = -1;
+		for(BoxItem boxItem : boxItems) {
+			maxGlobalIndex = Math.max(maxGlobalIndex, boxItem.getGlobalIndex());
+		}
+		int[] rows = new int[maxGlobalIndex + 1];
+		Arrays.fill(rows, -1);
+		for(int row = 0; row < boxItems.size(); row++) {
+			int globalIndex = boxItems.get(row).getGlobalIndex();
+			if(globalIndex >= 0) {
+				rows[globalIndex] = row;
+			}
+		}
+		return rows;
+	}
+
+	/** @return the fit record row of the box item, or -1 if unknown */
+	private int getRow(BoxItem boxItem) {
+		int globalIndex = boxItem.getGlobalIndex();
+		if(globalIndex >= 0 && globalIndex < rowsByGlobalIndex.length) {
+			return rowsByGlobalIndex[globalIndex];
+		}
+		return -1;
 	}
 
 	@Override
@@ -112,8 +142,8 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 			if(boxItem.isEmpty()) {
 				continue;
 			}
-			int boxItemIndex = boxItem.getLocalIndex();
-			if(boxItemIndex < 0 || boxItemIndex >= fits.length) {
+			int boxItemIndex = getRow(boxItem);
+			if(boxItemIndex < 0) {
 				return super.isFeasible(boxItems, maxCount, excluded);
 			}
 			if(!excludedContainers) {
@@ -139,8 +169,8 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 
 	@Override
 	public boolean canLoad(BoxItem boxItem, int containerItemIndex) {
-		int boxItemIndex = boxItem.getLocalIndex();
-		if(boxItemIndex >= 0 && boxItemIndex < fits.length) {
+		int boxItemIndex = getRow(boxItem);
+		if(boxItemIndex >= 0) {
 			return fits[boxItemIndex][containerItemIndex];
 		}
 		return super.canLoad(boxItem, containerItemIndex);

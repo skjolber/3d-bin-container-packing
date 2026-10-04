@@ -469,6 +469,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * The brute-force placement search is iterative: packing many boxes no longer fails with a stack overflow
         * The load-aware brute-force builders apply `withSkipReversePermutations(..)`, and `LoadParallelBoxItemBruteForcePackager` uses its point filter when boxes have load constraints
         * Brute-force packagers no longer reduce the counts of the box items passed in when packing uses several containers
+        * Packing with several container types no longer gives up when each box fits only some of the types (the feasibility check used box indexes which change during packing)
      * Breaking changes:
         * Validators moved to a separate `validators` artifact (package `com.github.skjolber.packing.validator`)
         * Interrupts / deadlines moved from `core` (`com.github.skjolber.packing.deadline`) to `api` (`com.github.skjolber.packing.api.interrupt`)
