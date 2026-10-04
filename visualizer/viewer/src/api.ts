@@ -3,6 +3,7 @@ import { Color, Mesh, Object3D, Scene } from "three";
 import randomColor from "randomcolor";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { Font } from "three/examples/jsm/loaders/FontLoader";
+import { Box, Container, Point, StackPlacement, Stackable } from "./model";
 
 const helvetiker = require( 'three/examples/fonts/droid/droid_sans_mono_regular.typeface.json');
 const font = new Font( helvetiker );
@@ -12,134 +13,6 @@ const textMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff } );
 const CONTAINER_BOX_COLOR = 0x888888;
 const CONTAINER_BOX_OPACITY = 0.15;
 const CONTAINER_EDGE_COLOR = 0x444444;
-
-export class Point {
-    
-    x : number;
-    y : number;
-    z : number;
-    
-    dx : number;
-    dy : number;
-    dz : number;
-
-    constructor(x : number, y : number, z: number, dx : number, dy : number, dz: number) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-
-        this.dx = dx;
-        this.dy = dy;
-        this.dz = dz;
-    }
-}
-
-export class Stackable {
-
-    dx : number;
-    dy : number;
-    dz : number;
-
-    name: string;
-    id: string;
-
-    step : number;
-    
-    constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number) {
-        this.name = name;
-        this.id = id;
-        this.step = step;
-        this.dx = dx;
-        this.dy = dy;
-        this.dz = dz;
-    }
-
-}
-
-export class Box extends Stackable {
-
-    boxItemKey?: number;
-    weight: number;
-    maxLoadWeight?: number;
-    maxLoadPressure?: number;
-    maxLoadBoxCount?: number;
-    maxLoadIdenticalOnly?: boolean;
-
-    constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number,
-                weight: number,
-                maxLoadWeight?: number, maxLoadPressure?: number,
-                maxLoadBoxCount?: number, maxLoadIdenticalOnly?: boolean) {
-        super(name, id, step, dx, dy, dz);
-        this.weight = weight;
-        this.maxLoadWeight = maxLoadWeight;
-        this.maxLoadPressure = maxLoadPressure;
-        this.maxLoadBoxCount = maxLoadBoxCount;
-        this.maxLoadIdenticalOnly = maxLoadIdenticalOnly;
-    }
-    
-}
-
-export class Container extends Stackable {
-
-    loadDx : number;
-    loadDy : number;
-    loadDz : number;
-    
-    stack : Stack;
-
-    constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number, loadDx : number, loadDy : number, loadDz: number) {
-        super(name, id, step, dx, dy, dz);
-
-        this.loadDx = loadDx;
-        this.loadDy = loadDy;
-        this.loadDz = loadDz;
-
-        this.stack = new Stack(step);
-    }
-    
-    add(stackPlacement : StackPlacement) {
-        this.stack.add(stackPlacement);
-    }
-}
-
-export class StackPlacement {
-
-    stackable : Stackable;
-    x : number;
-    y : number;
-    z : number;
-
-    step : number;
-
-    points : Array<Point>;
-
-    constructor(stackable : Stackable, step : number, x : number, y : number, z: number, points: Array<Point>) {
-        this.stackable = stackable;
-        this.step = step;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.points = points;
-    }
-
-}
-
-export class Stack {
-
-    placements : Array<StackPlacement>;
-
-    step : number;
-
-    constructor(step : number) {
-        this.step = step;
-        this.placements = new Array();
-    }
-
-    add(placement : StackPlacement) {
-        this.placements.push(placement);
-    }
-
-}
 
 export class ContainerControls {
 

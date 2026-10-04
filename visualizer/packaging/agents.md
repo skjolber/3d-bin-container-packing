@@ -1,26 +1,26 @@
 # Visualizer Packaging Module
 
 ## Purpose
-Converts completed packing results into the JSON format consumed by the Three.js viewer. Bridges the core packing domain with the visualizer API.
+Converts packed containers into the JSON format of `visualizer/api`, for the viewer (`visualizer/viewer`).
 
 ## Key Packages
 - `com.github.skjolber.packing.visualizer.packaging`
-  - `PackagingResultVisualizerFactory` — factory interface; use to produce a `PackagingResultVisualizer` from a `PackagerResult`
-  - `DefaultPackagingResultVisualizerFactory` — standard implementation
-  - `AbstractPackagingResultVisualizerFactory` — base class for custom factories
-
-## Architecture Notes
-- Depends on **core**, **api**, **points**, and **visualizer-api**.
-- The factory converts `PackagerResult` → `PackagingResultVisualizer` → JSON (via Jackson in `visualizer-api`).
-- To customise output (e.g., add colour coding), extend `AbstractPackagingResultVisualizerFactory` and attach `VisualizerPlugin` instances.
-- Keep this module free of Spring/framework dependencies so it can be used in standalone and server contexts.
+  - `PackagingResultVisualizerFactory`: factory interface
+  - `AbstractPackagingResultVisualizerFactory`: writes the JSON to a stream or file
+  - `DefaultPackagingResultVisualizerFactory`: converts `Container`s (with their stacks), optionally with the free points after each placement
 
 ## Typical Usage
 ```java
-PackagingResultVisualizerFactory factory = new DefaultPackagingResultVisualizerFactory();
-PackagingResultVisualizer visualizer = factory.visualizer(packagerResult);
-String json = objectMapper.writeValueAsString(visualizer);
+DefaultPackagingResultVisualizerFactory factory = new DefaultPackagingResultVisualizerFactory(true); // true: calculate points
+factory.visualize(result.getContainers(), new File("../viewer/public/assets/containers.json"));
 ```
+
+## Tests
+- `*FactoryTest` classes run in the build. `DefaultPackagingResultVisualizerFactoryTest` compares the JSON for a small sample with
+  `visualizer/viewer/src/fixtures/containers.json`, which the viewer's tests parse too. After changing the format, regenerate it with
+  `./mvnw -B -ntp -Pdev -pl visualizer/packaging -am -Dtest=DefaultPackagingResultVisualizerFactoryTest -Dsurefire.failIfNoSpecifiedTests=false -Dvisualizer.updateSample=true test`.
+- The other tests are scenarios which write `visualizer/viewer/public/assets/containers.json` for viewing. They are excluded from the build;
+  run them by hand (IDE, or `-Dtest=...`).
 
 ## Dependencies
 | Scope   | Artifact |

@@ -25,4 +25,7 @@ jobs:
           npm ci
       - run: |
           cd visualizer/viewer
+          npm test -- --watchAll=false
+      - run: |
+          cd visualizer/viewer
           npm run build

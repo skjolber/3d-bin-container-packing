@@ -81,7 +81,11 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<skipTests>true</skipTests>
+					<!-- the JSON contract tests run in the build; the other tests are scenarios which write
+					     the viewer's containers.json and are run by hand, for example with -Dtest=WeightConstraintVisualizationTest -->
+					<includes>
+						<include>**/*FactoryTest.java</include>
+					</includes>
 				</configuration>
 			</plugin>
 		</plugins>

@@ -3,7 +3,8 @@ import React, { Component } from "react";
 import { Stats } from "stats-js";
 import { Color } from "three";
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
-import { MemoryColorScheme, RandomColorScheme, StackPlacement, Box, Container, Point, StackableRenderer } from "./api";
+import { MemoryColorScheme, RandomColorScheme, StackableRenderer } from "./api";
+import { StackPlacement, parsePackaging } from "./model";
 import { http, computeLoads } from "./utils";
 import { Font } from 'three/examples/jsm/loaders/FontLoader';
 import SupportingPlacementsView from "./SupportingPlacementsView";
@@ -26,6 +27,7 @@ var camera;
 var orbit; // light orbit
 var mainGroup;
 var boxesGroup;
+var decorationsGroup; // grid, axes and labels, rebuilt on reload
 var controls;
 var delta = 0;
 var visibleContainers;
@@ -305,9 +307,11 @@ class ThreeScene extends Component {
     boxesGroup = new THREE.Group();
     mainGroup.add(boxesGroup);
 
+    decorationsGroup = new THREE.Group();
+    this.scene.add(decorationsGroup);
+
     this.scene.add(mainGroup);
     
-    let scene = this.scene;
     
     var latestData = null;
 
@@ -322,81 +326,26 @@ class ThreeScene extends Component {
       latestData = data;
 
       for(var i = 0; i < visibleContainers.length; i++) {
-        mainGroup.remove(visibleContainers[i]);
+        boxesGroup.remove(visibleContainers[i]);
       }
       visibleContainers = [];
+      decorationsGroup.clear();
 
       var x = 0;
 
-      var minStep = -1;
-      var maxStep = -1;
-      
       var maxX = 0;
       var maxY = 0;
       var maxZ = 0;
 
-      maxPointNumbers = new Array();
-  
-      for(var i = 0; i < packaging.containers.length; i++) {
-        var containerJson = packaging.containers[i];
-  
-        var container = new Container(containerJson.name, containerJson.id, containerJson.step, containerJson.dx, containerJson.dy, containerJson.dz, containerJson.loadDx, containerJson.loadDy, containerJson.loadDz);
-    
-        if(container.step < minStep || minStep == -1) {
-          minStep = container.step;
-        }
+      var parsed = parsePackaging(packaging);
+      maxPointNumbers = parsed.maxPointNumbers;
+      maxStepNumber = parsed.maxStep + 1;
+      minStepNumber = parsed.minStep;
+      pointNumber = -1;
+      stepNumber = maxStepNumber;
 
-        if(container.step > maxStep || maxStep == -1) {
-          maxStep = container.step;
-        }
-
-        for(var j = 0; j < containerJson.stack.placements.length; j++) {
-          var placement = containerJson.stack.placements[j];
-          var stackable = placement.stackable;
-
-          if(stackable.step < minStep || minStep == -1) {
-            minStep = stackable.step;
-          }
-  
-          if(stackable.step > maxStep || maxStep == -1) {
-            maxStep = stackable.step;
-          }
-          
-          var points = new Array();
-          
-          for(var l = 0; l < placement.points.length; l++) {
-                var point = placement.points[l];
-                
-                points.push(new Point(point.x, point.y, point.z, point.dx, point.dy, point.dz));
-          }
-
-          if(maxPointNumbers[stackable.step] == null || maxPointNumbers[stackable.step] < points.length) {
-            maxPointNumbers[stackable.step] = points.length;
-          }
-
-
-          if(stackable.type == "box") {
-            var box = new Box(
-              stackable.name, stackable.id, stackable.step,
-              stackable.dx, stackable.dy, stackable.dz,
-              stackable.weight || 0,
-              stackable.maxLoadWeight, stackable.maxLoadPressure,
-              stackable.maxLoadBoxCount, stackable.maxLoadIdenticalOnly
-            );
-            box.boxItemKey = stackable.boxItemKey;
-            
-            container.add(new StackPlacement(box, placement.step, placement.x, placement.y, placement.z, points));
-          } else {
-            // TODO
-          }
-        }
-
-        console.log(maxPointNumbers)
-
-        maxStepNumber = maxStep + 1;
-        minStepNumber = minStep;
-        pointNumber = -1;
-        stepNumber = maxStepNumber;
+      for(var i = 0; i < parsed.containers.length; i++) {
+        var container = parsed.containers[i];
 
         // TODO return controls instead
         var visibleContainer = stackableRenderer.add(boxesGroup, memoryScheme, new StackPlacement(container, 0, x, 0, 0), 0, 0, 0);
@@ -432,7 +381,7 @@ class ThreeScene extends Component {
 		      0x42a5f5, // center line color
 		      0x42a5f5 // grid color,
 	    );
-       scene.add(gridXZ);
+       decorationsGroup.add(gridXZ);
        gridXZ.position.y = 0;
        gridXZ.position.x = size / 2 - GRID_SPACING;
        gridXZ.position.z = size / 2 - GRID_SPACING;
@@ -446,10 +395,10 @@ class ThreeScene extends Component {
       const length = maxY + GRID_SPACING;
       const hex = 0xffffff;
       const yAxis = new THREE.ArrowHelper( new THREE.Vector3( 1, 0, 0 ), origin, maxY + GRID_SPACING, hex, 1, 1);
-      scene.add( yAxis );
+      decorationsGroup.add( yAxis );
 
       const xAxis = new THREE.ArrowHelper( new THREE.Vector3( 0, 0, 1 ), origin, maxX + GRID_SPACING, hex, 1, 1);
-      scene.add( xAxis );
+      decorationsGroup.add( xAxis );
 
       const textMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff } );
 
@@ -469,7 +418,7 @@ class ThreeScene extends Component {
       yLabelMesh.position.set( maxY - GRID_SPACING / 2, 0, -GRID_SPACING - GRID_SPACING / 4  );
       yLabelMesh.rotation.x = Math.PI / 2;
       yLabelMesh.rotation.z = -Math.PI / 2;
-      scene.add( yLabelMesh );
+      decorationsGroup.add( yLabelMesh );
 
       const xLabelTextGeometry = new TextGeometry( 'X', {
         font: font,
@@ -486,7 +435,7 @@ class ThreeScene extends Component {
       const xLabelMesh = new THREE.Mesh( xLabelTextGeometry, textMaterial );
       xLabelMesh.position.set(-GRID_SPACING - GRID_SPACING / 2 - GRID_SPACING / 4, 0, maxX - GRID_SPACING / 2);
       xLabelMesh.rotation.x = Math.PI / 2;
-      scene.add( xLabelMesh );
+      decorationsGroup.add( xLabelMesh );
 
     };
 

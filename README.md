@@ -448,7 +448,7 @@ Determines the best placement for a box.
 Can consider a range of options, like stability, stacking height, structural integrity and so on; even randomization is possible. Note that these features are not necessarily implemented in the packagers within this project.
 
 # Visualizer
-There is a simple output [visualizer](visualization) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms; not as stacking instructions.
+There is a simple output [visualizer](visualizer) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms; not as stacking instructions.
 
 ### Setup
 ```
@@ -461,7 +461,7 @@ npm install
 npm start
 ```
 
-Note: To "hot reload" the visualizer during development, make your unit tests write directly to a file in the viewer (see the `VisualizationTest` example).
+The viewer shows `visualizer/viewer/public/assets/containers.json`, and reloads it when it changes. To "hot reload" the visualizer during development, make your unit tests write that file (see the `VisualizationTest` and `*VisualizationTest` examples in `visualizer/packaging`, which are run by hand, for example from the IDE or with `./mvnw -B -ntp -Pdev -pl visualizer/packaging -am -Dtest=WeightConstraintVisualizationTest -Dsurefire.failIfNoSpecifiedTests=false test`).
 
 ![Alt text](visualizer/viewer/images/view.png?raw=true "Demo")
 

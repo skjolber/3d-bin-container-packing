@@ -1,0 +1,110 @@
+{
+  "containers" : [ {
+    "step" : 0,
+    "plugins" : [ ],
+    "id" : "container",
+    "name" : "sample",
+    "dx" : 2,
+    "dy" : 1,
+    "dz" : 2,
+    "loadDx" : 2,
+    "loadDy" : 1,
+    "loadDz" : 2,
+    "stack" : {
+      "step" : 1,
+      "plugins" : [ ],
+      "placements" : [ {
+        "step" : 2,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 0,
+        "z" : 0,
+        "stackable" : {
+          "step" : 2,
+          "plugins" : [ ],
+          "id" : "A",
+          "name" : "base",
+          "dx" : 1,
+          "dy" : 1,
+          "dz" : 1,
+          "type" : "box",
+          "boxItemKey" : 0,
+          "weight" : 2,
+          "maxLoadWeight" : 5,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 1,
+          "dx" : 2,
+          "dy" : 1,
+          "dz" : 1
+        }, {
+          "x" : 1,
+          "y" : 0,
+          "z" : 0,
+          "dx" : 1,
+          "dy" : 1,
+          "dz" : 2
+        } ]
+      }, {
+        "step" : 3,
+        "plugins" : [ ],
+        "x" : 1,
+        "y" : 0,
+        "z" : 0,
+        "stackable" : {
+          "step" : 3,
+          "plugins" : [ ],
+          "id" : "B",
+          "name" : null,
+          "dx" : 1,
+          "dy" : 1,
+          "dz" : 1,
+          "type" : "box",
+          "boxItemKey" : 1,
+          "weight" : 3,
+          "maxLoadWeight" : null,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : 1,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ {
+          "x" : 0,
+          "y" : 0,
+          "z" : 1,
+          "dx" : 2,
+          "dy" : 1,
+          "dz" : 1
+        } ]
+      }, {
+        "step" : 4,
+        "plugins" : [ ],
+        "x" : 0,
+        "y" : 0,
+        "z" : 1,
+        "stackable" : {
+          "step" : 4,
+          "plugins" : [ ],
+          "id" : "C",
+          "name" : null,
+          "dx" : 2,
+          "dy" : 1,
+          "dz" : 1,
+          "type" : "box",
+          "boxItemKey" : 2,
+          "weight" : 4,
+          "maxLoadWeight" : null,
+          "maxLoadPressure" : null,
+          "maxLoadBoxCount" : null,
+          "maxLoadIdenticalOnly" : null
+        },
+        "points" : [ ]
+      } ]
+    },
+    "type" : "container"
+  } ]
+}
