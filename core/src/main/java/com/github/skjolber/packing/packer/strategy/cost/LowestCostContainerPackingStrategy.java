@@ -123,19 +123,19 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 	 * later choices reflect the boxes which were actually packed.
 	 */
 	@Override
-	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession adapter) throws PackagerInterruptedException {
+	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession session) throws PackagerInterruptedException {
 		List<Container> containerPackResults = new ArrayList<>();
 
-		int limit = adapter.getMaxContainerCount();
+		int limit = session.getMaxContainerCount();
 
 		while(containerPackResults.size() < limit) {
-			int remainingBoxCount = adapter.countRemainingBoxes();
+			int remainingBoxCount = session.countRemainingBoxes();
 			if(remainingBoxCount == 0) {
-				return new ContainerResult(adapter.getContainerInventory().getCost(), containerPackResults);
+				return new ContainerResult(session.getContainerInventory().getCost(), containerPackResults);
 			}
 
 			int remainingContainerCount = Math.min(limit - containerPackResults.size(), remainingBoxCount);
-			List<Integer> containerItemIndexes = adapter.getContainers();
+			List<Integer> containerItemIndexes = session.getContainers();
 			if(containerItemIndexes.isEmpty()) {
 				return null;
 			}
@@ -148,7 +148,7 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 						throw new PackagerInterruptedException();
 					}
 
-					IntermediatePackagerResult result = adapter.attempt(containerIndex, null, remainingContainerCount == 1);
+					IntermediatePackagerResult result = session.attempt(containerIndex, null, remainingContainerCount == 1);
 					if(result == null) {
 						if(interrupt.getAsBoolean()) {
 							throw new PackagerInterruptedException();
@@ -160,7 +160,7 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 					}
 
 					Stack stack = result.getStack();
-					ContainerItem containerItem = adapter.getContainerItem(containerIndex);
+					ContainerItem containerItem = session.getContainerItem(containerIndex);
 					ContainerCostCalculator calculator = containerItem.getCostCalculator();
 					if(calculator == null) {
 						throw new IllegalStateException("Missing cost calculator for container index " + containerIndex);
@@ -178,8 +178,8 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 				}
 			} catch(PackagerInterruptedException e) {
 				if(completed != null) {
-					containerPackResults.add(adapter.accept(completed.result));
-					return new ContainerResult(adapter.getContainerInventory().getCost(), containerPackResults);
+					containerPackResults.add(session.accept(completed.result));
+					return new ContainerResult(session.getContainerInventory().getCost(), containerPackResults);
 				}
 				throw e;
 			}
@@ -190,19 +190,19 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 
 			List<CostPacking> plan;
 			try {
-				plan = planLowestCost(packings, remainingContainerCount, remainingBoxCount, adapter.getRemainingVolume(), adapter.getRemainingWeight(), interrupt);
+				plan = planLowestCost(packings, remainingContainerCount, remainingBoxCount, session.getRemainingVolume(), session.getRemainingWeight(), interrupt);
 			} catch(PackagerInterruptedException e) {
 				if(completed != null) {
-					containerPackResults.add(adapter.accept(completed.result));
-					return new ContainerResult(adapter.getContainerInventory().getCost(), containerPackResults);
+					containerPackResults.add(session.accept(completed.result));
+					return new ContainerResult(session.getContainerInventory().getCost(), containerPackResults);
 				}
 				throw e;
 			}
-			CostPacking selected = plan.isEmpty() ? selectBestPacking(packings, adapter) : plan.get(0);
+			CostPacking selected = plan.isEmpty() ? selectBestPacking(packings, session) : plan.get(0);
 
-			containerPackResults.add(adapter.accept(selected.result));
-			if(adapter.countRemainingBoxes() == 0) {
-				return new ContainerResult(adapter.getContainerInventory().getCost(), containerPackResults);
+			containerPackResults.add(session.accept(selected.result));
+			if(session.countRemainingBoxes() == 0) {
+				return new ContainerResult(session.getContainerInventory().getCost(), containerPackResults);
 			}
 		}
 
@@ -291,7 +291,7 @@ public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 		return value + increment;
 	}
 
-	protected CostPacking selectBestPacking(List<CostPacking> packings, PackagerSession adapter) {
+	protected CostPacking selectBestPacking(List<CostPacking> packings, PackagerSession session) {
 		CostPacking best = null;
 		for(int i = packings.size() - 1; i >= 0; i--) {
 			CostPacking candidate = packings.get(i);

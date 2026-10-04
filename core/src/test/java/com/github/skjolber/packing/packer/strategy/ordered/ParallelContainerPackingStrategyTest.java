@@ -20,7 +20,7 @@ import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 class ParallelContainerPackingStrategyTest {
 
 	@Test
-	void acceptsTheBestResultProducedByAnAdapterFork() {
+	void acceptsTheBestResultProducedByASessionFork() {
 		ExecutorService executorService = Executors.newFixedThreadPool(2);
 		PlainPackager packager = PlainPackager.newBuilder()
 				.withContainerStrategyFactory((inventory, boxes, groups) -> new ParallelContainerPackingStrategy(executorService, new DefaultIntermediatePackagerResultComparator()))

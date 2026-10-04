@@ -14,14 +14,14 @@ import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 
-public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
+public abstract class AbstractSingleThreadedBruteForceBoxItemSession extends AbstractBruteForceBoxItemSession {
 
 	protected BoxItemPermutationRotationIterator[] containerIterators;
 	protected Placement[] stackPlacements;
 	protected int stackPlacementCount;
 	protected final PackagerInterruptSupplier interrupt;
 
-	public AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, List<ContainerItem> containers,
+	public AbstractSingleThreadedBruteForceBoxItemSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 			int containerCount, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt, boolean load) {
 		super(boxItems, containers, containerCount);
 		this.interrupt = interrupt;
@@ -42,7 +42,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 		this.stackPlacementCount = count;
 	}
 
-	protected AbstractSingleThreadedBruteForceBoxItemPackagerAdapter(AbstractSingleThreadedBruteForceBoxItemPackagerAdapter source, boolean load) {
+	protected AbstractSingleThreadedBruteForceBoxItemSession(AbstractSingleThreadedBruteForceBoxItemSession source, boolean load) {
 		super(source);
 		this.interrupt = source.interrupt;
 		this.containerIterators = new BoxItemPermutationRotationIterator[source.containerIterators.length];
@@ -84,7 +84,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemPackagerAdapter ext
 					p.add(permutations[i]);
 				}
 				
-				// remove adapter inventory
+				// remove session inventory
 				removeInventory(p);
 	
 				for (BoxItemPermutationRotationIterator it : containerIterators) {

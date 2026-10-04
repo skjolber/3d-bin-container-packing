@@ -21,7 +21,7 @@ import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocatio
 public class OrderedContainerPackingStrategy implements ContainerStrategy {
 	@FunctionalInterface
 	public interface SingleContainerPacker {
-		IntermediatePackagerResult packSingle(List<ContainerItem> containerItems, PackagerSession adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException;
+		IntermediatePackagerResult packSingle(List<ContainerItem> containerItems, PackagerSession session, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException;
 	}
 
 	private final Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
@@ -54,7 +54,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 	}
 
 	// pack in single container
-	public IntermediatePackagerResult packSingle(List<ContainerItem> containerItems, PackagerSession adapter, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+	public IntermediatePackagerResult packSingle(List<ContainerItem> containerItems, PackagerSession session, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 		if(containerItems.size() <= 2) {
 			for (int i = 0; i < containerItems.size(); i++) {
 				if(interrupt.getAsBoolean()) {
@@ -63,11 +63,11 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 
 				int containerItemIndex = containerItems.get(i).getIndex();
 				
-				IntermediatePackagerResult result = adapter.attempt(containerItemIndex, null, true);
+				IntermediatePackagerResult result = session.attempt(containerItemIndex, null, true);
 				if(result.isEmpty()) {
 					continue;
 				}
-				if(result.getStack().size() == adapter.countRemainingBoxes()) {
+				if(result.getStack().size() == session.countRemainingBoxes()) {
 					return result;
 				}
 			}
@@ -95,13 +95,13 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 					
 					// see whether the current container holds the boxes of the same result as before
 					if(bestResult != null) {
-						result = adapter.peek(nextContainerItemIndex, bestResult);
+						result = session.peek(nextContainerItemIndex, bestResult);
 					}
 
 					if(result == null) {
-						result = adapter.attempt(nextContainerItemIndex, bestResult, true);
+						result = session.attempt(nextContainerItemIndex, bestResult, true);
 					}
-					if(!result.isEmpty() && result.getStack().size() == adapter.countRemainingBoxes()) {
+					if(!result.isEmpty() && result.getStack().size() == session.countRemainingBoxes()) {
 						results[nextContainerItemIndex] = result;
 
 						iterator.lower();
@@ -151,36 +151,36 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 	}
 
 	@Override
-	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession adapter) throws PackagerInterruptedException {
-		int limit = adapter.getMaxContainerCount();
+	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession session) throws PackagerInterruptedException {
+		int limit = session.getMaxContainerCount();
 
 		List<Container> containerPackResults = new ArrayList<>();
 
 		do {
 			// Avoid trying candidate containers when the remaining items cannot be
 			// assigned to the remaining inventory within the container limit.
-			if(allocationFeasibilityCheck && !ContainerAllocationPlanner.canAllocate(adapter, interrupt)) {
+			if(allocationFeasibilityCheck && !ContainerAllocationPlanner.canAllocate(session, interrupt)) {
 				return null;
 			}
 
 			// is it possible to fit the remaining boxes a single container?
 			int maxContainers = limit - containerPackResults.size();
 			if(maxContainers > 1) {
-				List<BoxItemGroup> groups = adapter.getRemainingBoxItemGroups();
+				List<BoxItemGroup> groups = session.getRemainingBoxItemGroups();
 				List<ContainerItem> containerItems;
 				if(groups != null) {
-					containerItems = adapter.getContainerInventory().getGroupContainers(groups, 1);
+					containerItems = session.getContainerInventory().getGroupContainers(groups, 1);
 				} else {
-					containerItems = adapter.getContainerInventory().getContainers(adapter.getRemainingBoxItems(), 1);
+					containerItems = session.getContainerInventory().getContainers(session.getRemainingBoxItems(), 1);
 				}
 				if(!containerItems.isEmpty()) {
 	
-					IntermediatePackagerResult result = singleContainerPacker.packSingle(containerItems, adapter, interrupt);
+					IntermediatePackagerResult result = singleContainerPacker.packSingle(containerItems, session, interrupt);
 					if(!result.isEmpty()) {
-						containerPackResults.add(adapter.accept(result));
+						containerPackResults.add(session.accept(result));
 	
 						// positive result
-						return new ContainerResult(adapter.getContainerInventory().getCost(), containerPackResults);
+						return new ContainerResult(session.getContainerInventory().getCost(), containerPackResults);
 					}
 					
 					// TODO any way to reuse partial results as the current best result?
@@ -188,7 +188,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 			}
 
 			// one or more containers
-			List<Integer> containerItemIndexes = adapter.getContainers();
+			List<Integer> containerItemIndexes = session.getContainers();
 			if(containerItemIndexes.isEmpty()) {
 				return null;
 			}
@@ -207,7 +207,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 
 					// can this container hold more than the previously best result?
 					if(best != null) {
-						ContainerItem containerItem = adapter.getContainerItem(nextContainerItemIndex);
+						ContainerItem containerItem = session.getContainerItem(nextContainerItemIndex);
 						Container container = containerItem.getContainer();
 	
 						long loadVolume = container.getLoadVolume();
@@ -221,14 +221,14 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 					}
 
 					IntermediatePackagerResult result;
-					if(best != null && best.getStack().size() == adapter.countRemainingBoxes() ) {
-						result = adapter.peek(nextContainerItemIndex, best);
+					if(best != null && best.getStack().size() == session.countRemainingBoxes() ) {
+						result = session.peek(nextContainerItemIndex, best);
 						
 						if(result == null) {
-							result = adapter.attempt(nextContainerItemIndex, best, maxContainers == 1);
+							result = session.attempt(nextContainerItemIndex, best, maxContainers == 1);
 						}
 					} else {
-						result = adapter.attempt(nextContainerItemIndex, best, maxContainers == 1);
+						result = session.attempt(nextContainerItemIndex, best, maxContainers == 1);
 					}
 					
 					if(result != null && !result.isEmpty()) {
@@ -238,10 +238,10 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 					}
 				} catch(PackagerInterruptedException e) {
 					// timeout, unless already have a result ready
-					if(best != null && best.getStack().size() == adapter.countRemainingBoxes()) {
-						containerPackResults.add(adapter.accept(best));
+					if(best != null && best.getStack().size() == session.countRemainingBoxes()) {
+						containerPackResults.add(session.accept(best));
 
-						return new ContainerResult(adapter.getContainerInventory().getCost(), containerPackResults);
+						return new ContainerResult(session.getContainerInventory().getCost(), containerPackResults);
 					}
 					throw e;
 				}
@@ -252,10 +252,10 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 				return null;
 			}
 
-			containerPackResults.add(adapter.accept(best));
+			containerPackResults.add(session.accept(best));
 			
-			if(adapter.countRemainingBoxes() == 0) {
-				return new ContainerResult(adapter.getContainerInventory().getCost(), containerPackResults);
+			if(session.countRemainingBoxes() == 0) {
+				return new ContainerResult(session.getContainerInventory().getCost(), containerPackResults);
 			}
 			
 		} while (containerPackResults.size() < limit);

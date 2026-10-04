@@ -23,16 +23,16 @@ import com.github.skjolber.packing.packer.plain.PlainPackager;
 class ItemAwareContainerItemsCalculatorTest {
 
 	@Test
-	void adaptersCreateTheMatchingStandaloneCalculator() {
+	void sessionsCreateTheMatchingStandaloneCalculator() {
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			List<Class<?>> calculatorTypes = new ArrayList<>();
 			packager.setContainerStrategyFactory((calculator, boxes, groups) -> {
 				calculatorTypes.add(calculator.getClass());
-				return (interrupt, adapter) -> {
-					IntermediatePackagerResult result = adapter.attempt(0, null, true);
-					Container packed = adapter.accept(result);
-					return new ContainerResult(adapter.getContainerInventory().getCost(), List.of(packed));
+				return (interrupt, session) -> {
+					IntermediatePackagerResult result = session.attempt(0, null, true);
+					Container packed = session.accept(result);
+					return new ContainerResult(session.getContainerInventory().getCost(), List.of(packed));
 				};
 			});
 			Container container = Container.newBuilder().withId("container").withSize(2, 1, 1)

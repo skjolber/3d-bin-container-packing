@@ -19,7 +19,7 @@ import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
-import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
+import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 
 class BruteForceContainerStrategyTest {
@@ -31,7 +31,7 @@ class BruteForceContainerStrategyTest {
 				new ContainerItem(container, 1), new ContainerItem(container, 1)), 2);
 		List<ContainerItemsCalculator> branchCalculators = new ArrayList<>();
 		List<Integer> attemptedCounts = new ArrayList<>();
-		TestAdapter source = new TestAdapter(calculator, branchCalculators, attemptedCounts);
+		TestSession source = new TestSession(calculator, branchCalculators, attemptedCounts);
 
 		ContainerResult result = strategy(
 				(first, second) -> Integer.compare(first.size(), second.size())).pack(() -> false, source);
@@ -52,7 +52,7 @@ class BruteForceContainerStrategyTest {
 		List<Integer> attempts = new ArrayList<>();
 		List<List<Integer>> completed = new ArrayList<>();
 		int[] queries = new int[1];
-		TestAdapter source = new TestAdapter(calculator, branches, attempts, 2, completed, queries);
+		TestSession source = new TestSession(calculator, branches, attempts, 2, completed, queries);
 
 		ContainerResult result = strategy(
 				(first, second) -> Integer.compare(first.size(), second.size())).pack(() -> false, source);
@@ -69,7 +69,7 @@ class BruteForceContainerStrategyTest {
 	}
 
 	@Test
-	void keepsParentAdaptersForNestedSiblings() throws PackagerInterruptedException {
+	void keepsParentSessionsForNestedSiblings() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
 		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
 				new ContainerItem(container, 1), new ContainerItem(container, 1),
@@ -77,7 +77,7 @@ class BruteForceContainerStrategyTest {
 		List<Integer> attempts = new ArrayList<>();
 		List<List<Integer>> completed = new ArrayList<>();
 		int[] queries = new int[1];
-		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts, 3, completed, queries);
+		TestSession source = new TestSession(calculator, new ArrayList<>(), attempts, 3, completed, queries);
 
 		strategy((first, second) -> Integer.compare(first.size(), second.size())).pack(() -> false, source);
 
@@ -96,7 +96,7 @@ class BruteForceContainerStrategyTest {
 		List<Integer> attempts = new ArrayList<>();
 		List<List<Integer>> completed = new ArrayList<>();
 		int[] queries = new int[1];
-		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts,
+		TestSession source = new TestSession(calculator, new ArrayList<>(), attempts,
 				3, completed, queries) {
 			@Override
 			public List<Integer> getContainers() {
@@ -124,7 +124,7 @@ class BruteForceContainerStrategyTest {
 				new ContainerItem(container, 1), new ContainerItem(container, 1)), 1);
 		List<Integer> attempts = new ArrayList<>();
 		int[] queries = new int[1];
-		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts,
+		TestSession source = new TestSession(calculator, new ArrayList<>(), attempts,
 				1, new ArrayList<>(), queries);
 
 		new BruteForceContainerStrategy().pack(() -> false, source);
@@ -141,7 +141,7 @@ class BruteForceContainerStrategyTest {
 				new ContainerItem(container, 1)), 3);
 		List<Integer> attempts = new ArrayList<>();
 		List<List<Integer>> completed = new ArrayList<>();
-		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts,
+		TestSession source = new TestSession(calculator, new ArrayList<>(), attempts,
 				3, completed, new int[1]);
 		List<Integer> checkedContainerIndexes = new ArrayList<>();
 
@@ -165,7 +165,7 @@ class BruteForceContainerStrategyTest {
 		ContainerItemsCalculator twoContainers = new ContainerItemsCalculator(List.of(
 				new ContainerItem(container, 1), new ContainerItem(container, 1)), 2);
 		int[] requested = new int[1];
-		TestAdapter threeBoxes = new TestAdapter(twoContainers, new ArrayList<>(), new ArrayList<>(),
+		TestSession threeBoxes = new TestSession(twoContainers, new ArrayList<>(), new ArrayList<>(),
 				3, new ArrayList<>(), new int[1]) {
 			@Override
 			public List<Integer> getContainers() {
@@ -179,7 +179,7 @@ class BruteForceContainerStrategyTest {
 
 		ContainerItemsCalculator manyContainers = new ContainerItemsCalculator(List.of(
 				new ContainerItem(container, Integer.MAX_VALUE)), Integer.MAX_VALUE);
-		TestAdapter oneBox = new TestAdapter(manyContainers, new ArrayList<>(), new ArrayList<>());
+		TestSession oneBox = new TestSession(manyContainers, new ArrayList<>(), new ArrayList<>());
 		assertEquals(Integer.MAX_VALUE, oneBox.getContainerInventory().getContainerCount());
 		assertEquals(1, new BruteForceContainerStrategy().pack(() -> false, oneBox).getPackList().size());
 	}
@@ -191,7 +191,7 @@ class BruteForceContainerStrategyTest {
 		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
 				costed(cheap, 1, 5), costed(expensive, 1, 100)), 1);
 		List<Integer> attempts = new ArrayList<>();
-		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts);
+		TestSession source = new TestSession(calculator, new ArrayList<>(), attempts);
 
 		ContainerResult result = new BruteForceContainerStrategy(new LowestCostControls()).pack(() -> false, source);
 
@@ -207,7 +207,7 @@ class BruteForceContainerStrategyTest {
 				costed(cheap, 2, 5), costed(expensive, 1, 6)), 2);
 		List<Integer> attempts = new ArrayList<>();
 		int[] queries = new int[1];
-		TestAdapter source = new TestAdapter(calculator, new ArrayList<>(), attempts,
+		TestSession source = new TestSession(calculator, new ArrayList<>(), attempts,
 				2, new ArrayList<>(), queries);
 
 		ContainerResult result = new BruteForceContainerStrategy(new LowestCostControls()).pack(() -> false, source);
@@ -277,7 +277,7 @@ class BruteForceContainerStrategyTest {
 		}
 	}
 
-	private static class TestAdapter extends AbstractPackagerAdapter {
+	private static class TestSession extends AbstractPackagerSession {
 
 		private final List<ContainerItemsCalculator> branchCalculators;
 		private final List<Integer> attemptedCounts;
@@ -288,7 +288,7 @@ class BruteForceContainerStrategyTest {
 		private final List<Integer> accepted = new ArrayList<>();
 		private int remaining;
 
-		private TestAdapter(ContainerItemsCalculator calculator, List<ContainerItemsCalculator> branchCalculators,
+		private TestSession(ContainerItemsCalculator calculator, List<ContainerItemsCalculator> branchCalculators,
 				List<Integer> attemptedCounts) {
 			super(calculator.getContainerItems(), calculator.getContainerCount());
 			this.branchCalculators = branchCalculators;
@@ -299,7 +299,7 @@ class BruteForceContainerStrategyTest {
 			this.remaining = 1;
 		}
 
-		private TestAdapter(ContainerItemsCalculator calculator, List<ContainerItemsCalculator> branchCalculators,
+		private TestSession(ContainerItemsCalculator calculator, List<ContainerItemsCalculator> branchCalculators,
 				List<Integer> attemptedCounts, int initialRemaining,
 				List<List<Integer>> completed, int[] queryCalls) {
 			super(calculator.getContainerItems(), calculator.getContainerCount());
@@ -312,10 +312,10 @@ class BruteForceContainerStrategyTest {
 		}
 
 		@Override
-		protected TestAdapter fresh(List<ContainerItem> containers, int containerCount) {
+		protected TestSession fresh(List<ContainerItem> containers, int containerCount) {
 			ContainerItemsCalculator calculator = new ContainerItemsCalculator(containers, containerCount);
 			branchCalculators.add(calculator);
-			return new TestAdapter(calculator, branchCalculators, attemptedCounts,
+			return new TestSession(calculator, branchCalculators, attemptedCounts,
 					initialRemaining, completed, queryCalls);
 		}
 
@@ -323,7 +323,7 @@ class BruteForceContainerStrategyTest {
 		public PackagerSession fork() {
 			ContainerItemsCalculator calculator = packagerContainerItems.clone();
 			branchCalculators.add(calculator);
-			TestAdapter fork = new TestAdapter(calculator, branchCalculators, attemptedCounts,
+			TestSession fork = new TestSession(calculator, branchCalculators, attemptedCounts,
 					initialRemaining, completed, queryCalls);
 			fork.remaining = remaining;
 			fork.accepted.addAll(accepted);
@@ -341,7 +341,7 @@ class BruteForceContainerStrategyTest {
 				boolean abortOnAnyBoxTooBig) {
 			attemptedCounts.add(getContainerItem(containerIndex).getCount());
 			return new IntermediatePackagerResult() {
-				@Override public ContainerItem getContainerItem() { return TestAdapter.this.getContainerItem(containerIndex); }
+				@Override public ContainerItem getContainerItem() { return TestSession.this.getContainerItem(containerIndex); }
 				@Override public Stack getStack() { return new Stack(); }
 				@Override public boolean isEmpty() { return false; }
 			};

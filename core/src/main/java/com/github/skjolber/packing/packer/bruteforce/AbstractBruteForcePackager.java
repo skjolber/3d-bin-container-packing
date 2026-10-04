@@ -28,8 +28,8 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackager;
-import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
+import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
@@ -101,15 +101,15 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
-			PackagerSession adapter;
+			PackagerSession session;
 			if(items != null && !items.isEmpty()) {
-					AbstractPackagerAdapter.initializeGlobalIndexes(items);
-					adapter = createBoxItemAdapter(items, containers, maxContainerCount, interrupt);
+					AbstractPackagerSession.initializeGlobalIndexes(items);
+					session = createBoxItemSession(items, containers, maxContainerCount, interrupt);
 			} else {
-					AbstractPackagerAdapter.initializeGlobalIndexesForGroups(itemGroups);
-					adapter = createBoxItemGroupAdapter(itemGroups, containers, maxContainerCount, interrupt);
+					AbstractPackagerSession.initializeGlobalIndexesForGroups(itemGroups);
+					session = createBoxItemGroupSession(itemGroups, containers, maxContainerCount, interrupt);
 				}
-				ContainerResult packList = packAdapter(interrupt, adapter);
+				ContainerResult packList = packSession(interrupt, session);
 								
 				long duration = System.currentTimeMillis() - start;
 				if(packList == null) {
@@ -134,10 +134,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		return new BruteForcePackagerResultBuilder().withPackager(this);
 	}
 
-	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, List<ContainerItem> containers,
+	protected abstract AbstractBruteForceBoxItemSession createBoxItemGroupSession(List<BoxItemGroup> itemGroups, List<ContainerItem> containers,
 			int containerCount, PackagerInterruptSupplier interrupt);
 
-	protected abstract AbstractBruteForceBoxItemPackagerAdapter createBoxItemAdapter(List<BoxItem> items, List<ContainerItem> containers,
+	protected abstract AbstractBruteForceBoxItemSession createBoxItemSession(List<BoxItem> items, List<ContainerItem> containers,
 			int containerCount, PackagerInterruptSupplier interrupt);
 
 	static Placement[] getPlacements(int size, boolean load) {

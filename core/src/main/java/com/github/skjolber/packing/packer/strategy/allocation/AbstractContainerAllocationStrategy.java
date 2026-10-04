@@ -45,15 +45,15 @@ abstract class AbstractContainerAllocationStrategy implements ContainerStrategy 
 	}
 
 	@Override
-	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession adapter)
+	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession session)
 			throws PackagerInterruptedException {
-		int limit = adapter.getMaxContainerCount();
+		int limit = session.getMaxContainerCount();
 		List<Container> packed = new ArrayList<>();
-		while(adapter.countRemainingBoxes() > 0 && packed.size() < limit) {
+		while(session.countRemainingBoxes() > 0 && packed.size() < limit) {
 			// A failed geometric packing attempt only excludes a type for this
 			// container-selection iteration. The next accepted container changes the
 			// remaining items and starts a new selection from the full inventory.
-			boolean[] excluded = new boolean[adapter.getContainerInventory().getContainerItemCount()];
+			boolean[] excluded = new boolean[session.getContainerInventory().getContainerItemCount()];
 			IntermediatePackagerResult result = null;
 			while(result == null || result.isEmpty()) {
 				if(interrupt.getAsBoolean()) {
@@ -61,12 +61,12 @@ abstract class AbstractContainerAllocationStrategy implements ContainerStrategy 
 				}
 				// The allocation is a cheap compatibility/capacity plan, not proof that
 				// the first container can accommodate a physical 3D placement.
-				Allocation allocation = ContainerAllocationPlanner.plan(adapter, objective, excluded, interrupt);
+				Allocation allocation = ContainerAllocationPlanner.plan(session, objective, excluded, interrupt);
 				if(allocation == null || allocation.getContainerCount() == 0) {
 					return null;
 				}
 				int containerIndex = allocation.getContainerIndex(0);
-				result = adapter.attempt(containerIndex, null, adapter.getMaxContainerCount() == 1);
+				result = session.attempt(containerIndex, null, session.getMaxContainerCount() == 1);
 				if(result == null || result.isEmpty()) {
 					// Do not ask the planner to choose this known-infeasible type again
 					// until an accepted container changes the problem state.
@@ -75,11 +75,11 @@ abstract class AbstractContainerAllocationStrategy implements ContainerStrategy 
 			}
 			// Acceptance updates both the remaining items and the calculator's
 			// inventory, so the next outer-loop iteration must re-plan.
-			packed.add(adapter.accept(result));
+			packed.add(session.accept(result));
 		}
-		if(adapter.countRemainingBoxes() != 0) {
+		if(session.countRemainingBoxes() != 0) {
 			return null;
 		}
-		return new ContainerResult(adapter.getContainerInventory().getCost(), packed);
+		return new ContainerResult(session.getContainerInventory().getCost(), packed);
 	}
 }

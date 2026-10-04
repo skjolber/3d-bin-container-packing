@@ -17,14 +17,14 @@ import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 
-public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter extends AbstractBruteForceBoxItemGroupsPackagerAdapter {
+public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extends AbstractBruteForceBoxItemGroupSession {
 
 	protected BoxItemGroupPermutationRotationIterator[] containerIterators;
 	protected Placement[] stackPlacements;
 	protected int stackPlacementCount;
 	protected PackagerInterruptSupplier interrupt;
 	
-	public AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups,
+	public AbstractSingleThreadedBruteForceBoxItemGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups,
 			List<ContainerItem> containers, int containerCount, BoxItemGroupPermutationRotationIterator[] containerIterators,
 			PackagerInterruptSupplier interrupt, boolean load) {
 		super(boxItems, containers, containerCount, boxItemGroups);
@@ -41,7 +41,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 		this.stackPlacementCount = count;
 	}
 
-	protected AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter(AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter source, boolean load) {
+	protected AbstractSingleThreadedBruteForceBoxItemGroupSession(AbstractSingleThreadedBruteForceBoxItemGroupSession source, boolean load) {
 		super(source);
 		this.interrupt = source.interrupt;
 		this.containerIterators = new BoxItemGroupPermutationRotationIterator[source.containerIterators.length];
@@ -115,7 +115,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 				
 				Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
 	
-				// remove adapter inventory
+				// remove session inventory
 				removeInventory(p);
 	
 				for (BoxItemGroupPermutationRotationIterator it : containerIterators) {

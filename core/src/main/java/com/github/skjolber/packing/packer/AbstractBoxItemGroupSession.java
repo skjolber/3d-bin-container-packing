@@ -17,7 +17,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
-public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapter implements PackagerSession {
+public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSession implements PackagerSession {
 
 	protected List<BoxItemGroup> remainingBoxItemGroups;
 	protected final List<BoxItemGroup> initialBoxItemGroups;
@@ -29,7 +29,7 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 	protected final boolean maxLoadBoxCount;
 	protected final boolean maxLoadIdenticalBoxCount;
 	
-	public AbstractBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups, List<ContainerItem> containers,
+	public AbstractBoxItemGroupSession(List<BoxItemGroup> boxItemGroups, List<ContainerItem> containers,
 			int containerCount, Order order, PackagerInterruptSupplier interrupt) {
 		super(new BoxItemGroupsContainerItemsCalculator(containers, containerCount, initializeGlobalIndexesForGroups(boxItemGroups)));
 		this.initialBoxItemGroups = copyBoxItemGroups(boxItemGroups);
@@ -70,7 +70,7 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 		
 	}
 
-	protected AbstractBoxItemGroupAdapter(AbstractBoxItemGroupAdapter source) {
+	protected AbstractBoxItemGroupSession(AbstractBoxItemGroupSession source) {
 		super(source);
 		this.initialBoxItemGroups = copyBoxItemGroups(source.initialBoxItemGroups);
 		this.remainingBoxItemGroups = copyBoxItemGroups(source.remainingBoxItemGroups);

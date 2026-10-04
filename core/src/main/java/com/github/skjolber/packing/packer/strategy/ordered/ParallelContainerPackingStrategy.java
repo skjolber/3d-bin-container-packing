@@ -20,10 +20,10 @@ import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocatio
 /**
  * Attempts every eligible container-item index concurrently.
  *
- * <p>Each task receives an adapter fork, so it can freely mutate its own
- * packing state. The selected result is then accepted by the original adapter.
- * This requires adapters to support accepting results produced by another
- * adapter in the same packaging operation.</p>
+ * <p>Each task receives a session fork, so it can freely mutate its own
+ * packing state. The selected result is then accepted by the original session.
+ * This requires sessions to support accepting results produced by another
+ * session in the same packaging operation.</p>
  */
 public class ParallelContainerPackingStrategy implements ContainerStrategy {
 
@@ -49,43 +49,43 @@ public class ParallelContainerPackingStrategy implements ContainerStrategy {
 	}
 
 	@Override
-	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession adapter) throws PackagerInterruptedException {
-		int limit = adapter.getMaxContainerCount();
+	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession session) throws PackagerInterruptedException {
+		int limit = session.getMaxContainerCount();
 		List<Container> containers = new ArrayList<>();
 
 		while(containers.size() < limit) {
 			if(interrupt.getAsBoolean()) {
 				throw new PackagerInterruptedException();
 			}
-			if(allocationFeasibilityCheck && !ContainerAllocationPlanner.canAllocate(adapter, interrupt)) {
+			if(allocationFeasibilityCheck && !ContainerAllocationPlanner.canAllocate(session, interrupt)) {
 				return null;
 			}
 
-			List<Integer> containerIndexes = adapter.getContainers();
+			List<Integer> containerIndexes = session.getContainers();
 			if(containerIndexes.isEmpty()) {
 				return null;
 			}
 
 			int remainingContainerCount = limit - containers.size();
-			IntermediatePackagerResult best = attemptAll(containerIndexes, adapter, interrupt, remainingContainerCount == 1);
+			IntermediatePackagerResult best = attemptAll(containerIndexes, session, interrupt, remainingContainerCount == 1);
 			if(best == null) {
 				return null;
 			}
 
-			containers.add(adapter.accept(best));
-			if(adapter.countRemainingBoxes() == 0) {
-				return new ContainerResult(adapter.getContainerInventory().getCost(), containers);
+			containers.add(session.accept(best));
+			if(session.countRemainingBoxes() == 0) {
+				return new ContainerResult(session.getContainerInventory().getCost(), containers);
 			}
 		}
 		return null;
 	}
 
-	private IntermediatePackagerResult attemptAll(List<Integer> containerIndexes, PackagerSession adapter,
+	private IntermediatePackagerResult attemptAll(List<Integer> containerIndexes, PackagerSession session,
 			PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		List<Future<IntermediatePackagerResult>> futures = new ArrayList<>(containerIndexes.size());
 		try {
 			for(int containerIndex : containerIndexes) {
-				PackagerSession fork = adapter.fork();
+				PackagerSession fork = session.fork();
 				futures.add(executorService.submit(() -> fork.attempt(containerIndex, null, abortOnAnyBoxTooBig)));
 			}
 

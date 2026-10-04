@@ -13,25 +13,25 @@ import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.point.Point;
 
-public abstract class AbstractPackagerAdapter implements PackagerSession {
+public abstract class AbstractPackagerSession implements PackagerSession {
 
 	protected final ContainerItemsCalculator packagerContainerItems;
 	protected final ContainerItemsCalculator initialContainerItems;
 
-	public AbstractPackagerAdapter(List<BoxItem> boxItems, List<ContainerItem> containers, int containerCount) {
+	public AbstractPackagerSession(List<BoxItem> boxItems, List<ContainerItem> containers, int containerCount) {
 		this(new BoxItemsContainerItemsCalculator(containers, containerCount, boxItems));
 	}
 
-	public AbstractPackagerAdapter(List<ContainerItem> containers, int containerCount) {
+	public AbstractPackagerSession(List<ContainerItem> containers, int containerCount) {
 		this(new ContainerItemsCalculator(containers, containerCount));
 	}
 
-	protected AbstractPackagerAdapter(ContainerItemsCalculator containerItemsCalculator) {
+	protected AbstractPackagerSession(ContainerItemsCalculator containerItemsCalculator) {
 		this.packagerContainerItems = containerItemsCalculator;
 		this.initialContainerItems = packagerContainerItems.clone();
 	}
 
-	protected AbstractPackagerAdapter(AbstractPackagerAdapter source) {
+	protected AbstractPackagerSession(AbstractPackagerSession source) {
 		this.packagerContainerItems = source.packagerContainerItems.clone();
 		this.initialContainerItems = source.initialContainerItems.clone();
 	}
@@ -42,8 +42,8 @@ public abstract class AbstractPackagerAdapter implements PackagerSession {
 		return fresh(containers.getContainerItems(), containers.getContainerCount());
 	}
 
-	/** Create a new adapter using a calculator no longer used by another branch. */
-	protected abstract AbstractPackagerAdapter fresh(List<ContainerItem> containers, int containerCount);
+	/** Create a new session using a calculator no longer used by another branch. */
+	protected abstract AbstractPackagerSession fresh(List<ContainerItem> containers, int containerCount);
 
 	protected static List<BoxItem> copyBoxItems(List<BoxItem> items) {
 		List<BoxItem> copies = new ArrayList<>(items.size());
@@ -102,7 +102,7 @@ public abstract class AbstractPackagerAdapter implements PackagerSession {
 		return packagerContainerItems;
 	}
 
-	/** Resolve a result's container selection against this adapter's inventory. */
+	/** Resolve a result's container selection against this session's inventory. */
 	protected ContainerItem resolveContainerItem(IntermediatePackagerResult result) {
 		if(result == null || result.getContainerItem() == null) {
 			throw new IllegalArgumentException("Missing container item");

@@ -79,7 +79,7 @@ class ContainerCostPackingTest {
 			List<Boolean> costStatuses = new ArrayList<>();
 			packager.setContainerStrategyFactory((calculator, boxes, groups) -> {
 				costStatuses.add(calculator.hasCost());
-				return (interrupt, adapter) -> new ContainerResult(0, List.of());
+				return (interrupt, session) -> new ContainerResult(0, List.of());
 			});
 
 			packager.newResultBuilder().withContainerItems(List.of(new ContainerItem(container("plain"), 1)))
@@ -97,12 +97,12 @@ class ContainerCostPackingTest {
 	void groupCountLimitsBruteForceContainerSearchDepth() {
 		List<ContainerItem> containers = ContainerItem.newListBuilder()
 				.withContainer(container("group"), 3).build();
-		ContainerStrategy strategy = (interrupt, adapter) -> {
-			assertThat(adapter.countRemainingBoxes()).isEqualTo(2);
-			assertThat(adapter.getRemainingBoxItemGroups()).hasSize(1);
-			assertThat(adapter.getContainerInventory().getContainerCount()).isEqualTo(1);
-			assertThat(adapter.getMaxContainerCount()).isEqualTo(1);
-			return new BruteForceContainerStrategy().pack(interrupt, adapter);
+		ContainerStrategy strategy = (interrupt, session) -> {
+			assertThat(session.countRemainingBoxes()).isEqualTo(2);
+			assertThat(session.getRemainingBoxItemGroups()).hasSize(1);
+			assertThat(session.getContainerInventory().getContainerCount()).isEqualTo(1);
+			assertThat(session.getMaxContainerCount()).isEqualTo(1);
+			return new BruteForceContainerStrategy().pack(interrupt, session);
 		};
 		PlainPackager plain = PlainPackager.newBuilder().build();
 		BruteForcePackager brute = BruteForcePackager.newBuilder().build();
@@ -122,7 +122,7 @@ class ContainerCostPackingTest {
 	}
 
 	@Test
-	void everyPackagerAdapterCanBeRecreatedRepeatedly() {
+	void everyPackagerSessionCanBeRecreatedRepeatedly() {
 		List<ContainerItem> containerItems = ContainerItem.newListBuilder()
 				.withContainer(container("single"), 1).build();
 		PlainPackager plain = PlainPackager.newBuilder().build();
@@ -132,7 +132,7 @@ class ContainerCostPackingTest {
 		ParallelBoxItemBruteForcePackager parallel = ParallelBoxItemBruteForcePackager.newBuilder()
 				.withThreads(2).withParallelizationCount(2).build();
 		try {
-			ContainerStrategy strategy = this::packFromRecreatedAdapter;
+			ContainerStrategy strategy = this::packFromRecreatedSession;
 			useStrategy(plain, strategy);
 			useStrategy(laff, strategy);
 			useStrategy(bruteForce, strategy);
@@ -167,15 +167,15 @@ class ContainerCostPackingTest {
 		}
 	}
 
-	private ContainerResult packFromRecreatedAdapter(PackagerInterruptSupplier interrupt,
-			PackagerSession adapter) throws PackagerInterruptedException {
-		assertThat(adapter.countRemainingBoxes()).isEqualTo(1);
-		assertThat(adapter.getContainerItem(0).getCount()).isEqualTo(1);
-		Container firstPacking = adapter.accept(adapter.attempt(0, null, true));
-		assertThat(adapter.countRemainingBoxes()).isZero();
+	private ContainerResult packFromRecreatedSession(PackagerInterruptSupplier interrupt,
+			PackagerSession session) throws PackagerInterruptedException {
+		assertThat(session.countRemainingBoxes()).isEqualTo(1);
+		assertThat(session.getContainerItem(0).getCount()).isEqualTo(1);
+		Container firstPacking = session.accept(session.attempt(0, null, true));
+		assertThat(session.countRemainingBoxes()).isZero();
 		assertThat(firstPacking.getStack().size()).isEqualTo(1);
 
-		PackagerSession first = adapter.fresh();
+		PackagerSession first = session.fresh();
 		assertThat(first.countRemainingBoxes()).isEqualTo(1);
 		first.accept(first.attempt(0, null, true));
 		assertThat(first.countRemainingBoxes()).isZero();
@@ -419,19 +419,19 @@ class ContainerCostPackingTest {
 	}
 
 	@Test
-	void costEstimateFollowsForkedAndFreshAdapterInventory() {
+	void costEstimateFollowsForkedAndFreshSessionInventory() {
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		BruteForcePackager bruteForce = BruteForcePackager.newBuilder().build();
 		try {
 			ContainerItemsCostCalculator calculator = new EstimatingContainerItemsCostCalculator();
-			ContainerStrategy strategy = (interrupt, adapter) -> {
-				assertThat(estimateMinimumCost(calculator, adapter, 2)).isEqualTo(80);
-				PackagerSession branch = adapter.fork();
+			ContainerStrategy strategy = (interrupt, session) -> {
+				assertThat(estimateMinimumCost(calculator, session, 2)).isEqualTo(80);
+				PackagerSession branch = session.fork();
 				branch.accept(branch.attempt(1, null, false));
 				assertThat(estimateMinimumCost(calculator, branch, 1)).isEqualTo(40);
-				assertThat(estimateMinimumCost(calculator, adapter, 2)).isEqualTo(80);
+				assertThat(estimateMinimumCost(calculator, session, 2)).isEqualTo(80);
 				assertThat(estimateMinimumCost(calculator, branch.fresh(), 2)).isEqualTo(80);
-				return new BruteForceContainerStrategy(new LowestCostControls(calculator)).pack(interrupt, adapter);
+				return new BruteForceContainerStrategy(new LowestCostControls(calculator)).pack(interrupt, session);
 			};
 			useStrategy(packager, strategy);
 			useStrategy(bruteForce, strategy);
@@ -525,7 +525,7 @@ class ContainerCostPackingTest {
 	}
 
 	@Test
-	void bruteForceContainerStrategyForksEachPackagerAdapter() {
+	void bruteForceContainerStrategyForksEachPackagerSession() {
 		BruteForcePackager brute = BruteForcePackager.newBuilder().build();
 		FastBruteForcePackager fast = FastBruteForcePackager.newBuilder().build();
 		ParallelBoxItemBruteForcePackager parallel = ParallelBoxItemBruteForcePackager.newBuilder()
@@ -680,13 +680,13 @@ class ContainerCostPackingTest {
 	}
 
 	private static long estimateMinimumCost(ContainerItemsCostCalculator calculator,
-			PackagerSession adapter, int maxCount) {
-		if(adapter.getRemainingBoxItemGroups() != null) {
-			return calculator.getGroupMinimumCost(adapter.getContainerInventory(),
-					adapter.getRemainingBoxItemGroups(), maxCount);
+			PackagerSession session, int maxCount) {
+		if(session.getRemainingBoxItemGroups() != null) {
+			return calculator.getGroupMinimumCost(session.getContainerInventory(),
+					session.getRemainingBoxItemGroups(), maxCount);
 		}
-		return calculator.getMinimumCost(adapter.getContainerInventory(),
-				adapter.getRemainingBoxItems(), maxCount);
+		return calculator.getMinimumCost(session.getContainerInventory(),
+				session.getRemainingBoxItems(), maxCount);
 	}
 
 	private List<ContainerItem> planContainers() {

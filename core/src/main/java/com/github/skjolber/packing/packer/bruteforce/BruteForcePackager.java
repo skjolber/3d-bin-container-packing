@@ -405,11 +405,11 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		}
 	}
 	
-	private class BruteForceAdapter extends AbstractSingleThreadedBruteForceBoxItemPackagerAdapter {
+	private class BruteForceSession extends AbstractSingleThreadedBruteForceBoxItemSession {
 
 		protected final PointCalculator3DStack pointCalculator;
 		
-		public BruteForceAdapter(List<BoxItem> boxItems, List<ContainerItem> containers,
+		public BruteForceSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 				int containerCount, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, containers, containerCount, containerIterators, interrupt, BruteForcePackager.this.supportsLoad());
 			
@@ -417,20 +417,20 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			this.pointCalculator.reset(1, 1, 1);
 		}
 
-		private BruteForceAdapter(BruteForceAdapter source) {
+		private BruteForceSession(BruteForceSession source) {
 			super(source, BruteForcePackager.this.supportsLoad());
 			this.pointCalculator = new PointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.reset(1, 1, 1);
 		}
 
 		@Override
-		protected BruteForceAdapter fresh(List<ContainerItem> containers, int containerCount) {
-			return createBoxItemAdapter(copyBoxItems(initialBoxItems), containers, containerCount, interrupt);
+		protected BruteForceSession fresh(List<ContainerItem> containers, int containerCount) {
+			return createBoxItemSession(copyBoxItems(initialBoxItems), containers, containerCount, interrupt);
 		}
 
 		@Override
-		public BruteForceAdapter fork() {
-			return new BruteForceAdapter(this);
+		public BruteForceSession fork() {
+			return new BruteForceSession(this);
 		}
 
 		@Override
@@ -448,11 +448,11 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		
 	}
 	
-	private class BruteForceGroupAdapter extends AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapter {
+	private class BruteForceGroupSession extends AbstractSingleThreadedBruteForceBoxItemGroupSession {
 
 		protected final PointCalculator3DStack pointCalculator;
 
-		public BruteForceGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
+		public BruteForceGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
 				List<ContainerItem> containers, int containerCount,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, boxItemGroups, containers, containerCount, containerIterators, interrupt, BruteForcePackager.this.supportsLoad());
@@ -461,20 +461,20 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			this.pointCalculator.reset(1, 1, 1);
 		}
 
-		private BruteForceGroupAdapter(BruteForceGroupAdapter source) {
+		private BruteForceGroupSession(BruteForceGroupSession source) {
 			super(source, BruteForcePackager.this.supportsLoad());
 			this.pointCalculator = new PointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.reset(1, 1, 1);
 		}
 
 		@Override
-		protected BruteForceGroupAdapter fresh(List<ContainerItem> containers, int containerCount) {
-			return createBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), containers, containerCount, interrupt);
+		protected BruteForceGroupSession fresh(List<ContainerItem> containers, int containerCount) {
+			return createBoxItemGroupSession(copyBoxItemGroups(initialBoxItemGroups), containers, containerCount, interrupt);
 		}
 
 		@Override
-		public BruteForceGroupAdapter fork() {
-			return new BruteForceGroupAdapter(this);
+		public BruteForceGroupSession fork() {
+			return new BruteForceGroupSession(this);
 		}
 
 		
@@ -504,7 +504,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected BruteForceGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, List<ContainerItem> containers,
+	protected BruteForceGroupSession createBoxItemGroupSession(List<BoxItemGroup> itemGroups, List<ContainerItem> containers,
 			int containerCount, PackagerInterruptSupplier interrupt) {
 		DefaultBoxItemGroupPermutationRotationIterator[] containerIterators = new DefaultBoxItemGroupPermutationRotationIterator[containers.size()];
 
@@ -524,11 +524,11 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		for (BoxItemGroup boxItemGroup : itemGroups) {
 			boxItems.addAll(boxItemGroup.getItems());
 		}
-		return new BruteForceGroupAdapter(boxItems, itemGroups, containers, containerCount, containerIterators, interrupt);
+		return new BruteForceGroupSession(boxItems, itemGroups, containers, containerCount, containerIterators, interrupt);
 	}
 
 	@Override
-	protected BruteForceAdapter createBoxItemAdapter(List<BoxItem> boxItems, List<ContainerItem> containers,
+	protected BruteForceSession createBoxItemSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 			int containerCount, PackagerInterruptSupplier interrupt) {
 		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[containers.size()];
 
@@ -544,7 +544,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 					.build();
 		}
 		
-		return new BruteForceAdapter(boxItems, containers, containerCount, containerIterators, interrupt);
+		return new BruteForceSession(boxItems, containers, containerCount, containerIterators, interrupt);
 	}
 
 	@Override

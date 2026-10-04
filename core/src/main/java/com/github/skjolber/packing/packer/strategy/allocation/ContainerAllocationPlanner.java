@@ -159,11 +159,11 @@ public final class ContainerAllocationPlanner {
 		this.capacityIndexesByCostPerWeight = capacityIndexesByCostPer(this.capacities, false);
 	}
 
-	static Allocation plan(PackagerSession adapter, Objective objective, boolean[] excluded,
+	static Allocation plan(PackagerSession session, Objective objective, boolean[] excluded,
 			PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
-		ContainerInventory calculator = adapter.getContainerInventory();
-		int maxCount = adapter.getMaxContainerCount();
-		List<BoxItemGroup> groups = adapter.getRemainingBoxItemGroups();
+		ContainerInventory calculator = session.getContainerInventory();
+		int maxCount = session.getMaxContainerCount();
+		List<BoxItemGroup> groups = session.getRemainingBoxItemGroups();
 		List<Unit> units;
 		if(groups != null) {
 			if(!calculator.isGroupFeasible(groups, maxCount, excluded)) {
@@ -171,7 +171,7 @@ public final class ContainerAllocationPlanner {
 			}
 			units = groupUnits(groups);
 		} else {
-			List<BoxItem> items = adapter.getRemainingBoxItems();
+			List<BoxItem> items = session.getRemainingBoxItems();
 			if(items == null) {
 				return null;
 			}
@@ -184,15 +184,15 @@ public final class ContainerAllocationPlanner {
 	}
 
 	/**
-	 * Returns true for adapters which do not expose their remaining items. This
-	 * keeps the check usable by custom adapters while production adapters receive
+	 * Returns true for sessions which do not expose their remaining items. This
+	 * keeps the check usable by custom sessions while production sessions receive
 	 * the full allocation test.
 	 */
-	public static boolean canAllocate(PackagerSession adapter, PackagerInterruptSupplier interrupt)
+	public static boolean canAllocate(PackagerSession session, PackagerInterruptSupplier interrupt)
 			throws PackagerInterruptedException {
-		ContainerInventory calculator = adapter.getContainerInventory();
-		int maxCount = adapter.getMaxContainerCount();
-		List<BoxItemGroup> groups = adapter.getRemainingBoxItemGroups();
+		ContainerInventory calculator = session.getContainerInventory();
+		int maxCount = session.getMaxContainerCount();
+		List<BoxItemGroup> groups = session.getRemainingBoxItemGroups();
 		List<Unit> units;
 		if(groups != null && !groups.isEmpty()) {
 			if(!calculator.isGroupFeasible(groups, maxCount)) {
@@ -200,7 +200,7 @@ public final class ContainerAllocationPlanner {
 			}
 			units = groupUnits(groups);
 		} else {
-			List<BoxItem> items = adapter.getRemainingBoxItems();
+			List<BoxItem> items = session.getRemainingBoxItems();
 			if(items == null || items.isEmpty()) {
 				return true;
 			}

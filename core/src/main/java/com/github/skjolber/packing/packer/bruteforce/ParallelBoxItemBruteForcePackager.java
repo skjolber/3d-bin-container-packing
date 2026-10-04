@@ -208,7 +208,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		return copy;
 	}
 
-	private class RunnableAdapter implements Callable<BruteForceIntermediatePackagerResult> {
+	private class BruteForceWorker implements Callable<BruteForceIntermediatePackagerResult> {
 
 		private ContainerItem containerItem;
 		private BoxItemPermutationRotationIterator iterator;
@@ -218,7 +218,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		private PackagerInterruptSupplier interrupt;
 		private int containerIndex;
 
-		public RunnableAdapter(int placementsCount, int maxIteratorLength, long minStackableItemVolume, long minStackableArea) {
+		public BruteForceWorker(int placementsCount, int maxIteratorLength, long minStackableItemVolume, long minStackableArea) {
 			this.placements = getPlacements(placementsCount, supportsLoad());
 			this.placementCount = placementsCount;
 
@@ -226,8 +226,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			this.pointCalculator.reset(1, 1, 1);
 		}
 
-		public RunnableAdapter fork(int maxIteratorLength) {
-			return new RunnableAdapter(placementCount, maxIteratorLength, 0L, 0L);
+		public BruteForceWorker fork(int maxIteratorLength) {
+			return new BruteForceWorker(placementCount, maxIteratorLength, 0L, 0L);
 		}
 
 		public void removeFirstPlacements(int size) {
@@ -264,16 +264,16 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 	}
 
-	private class ParallelAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
+	private class ParallelSession extends AbstractBruteForceBoxItemSession {
 
-		private RunnableAdapter[] runnables; // per thread
+		private BruteForceWorker[] runnables; // per thread
 		private ParallelBoxItemPermutationRotationIteratorList[] parallelIterators; // per container
 		private DefaultBoxItemPermutationRotationIterator[] iterators; // per container
 		private PackagerInterruptSupplier[] interrupts;
 		private final PackagerInterruptSupplier sourceInterrupt;
 
-		protected ParallelAdapter(List<BoxItem> boxItems, List<ContainerItem> containers, int containerCount,
-				RunnableAdapter[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators,
+		protected ParallelSession(List<BoxItem> boxItems, List<ContainerItem> containers, int containerCount,
+				BruteForceWorker[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators,
 				ParallelBoxItemPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts,
 				PackagerInterruptSupplier sourceInterrupt) {
 			super(boxItems, containers, containerCount);
@@ -285,7 +285,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			this.sourceInterrupt = sourceInterrupt;
 		}
 
-		private ParallelAdapter(ParallelAdapter source) {
+		private ParallelSession(ParallelSession source) {
 			super(source);
 			this.sourceInterrupt = source.sourceInterrupt;
 			this.iterators = new DefaultBoxItemPermutationRotationIterator[source.iterators.length];
@@ -296,7 +296,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				parallelIterators[i] = source.parallelIterators[i].fork();
 				maxIteratorLength = Math.max(maxIteratorLength, iterators[i].length());
 			}
-			this.runnables = new RunnableAdapter[source.runnables.length];
+			this.runnables = new BruteForceWorker[source.runnables.length];
 			for(int i = 0; i < runnables.length; i++) {
 				runnables[i] = source.runnables[i].fork(maxIteratorLength);
 			}
@@ -304,13 +304,13 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		@Override
-		protected ParallelAdapter fresh(List<ContainerItem> containers, int containerCount) {
-			return createBoxItemAdapter(copyBoxItems(initialBoxItems), containers, containerCount, sourceInterrupt);
+		protected ParallelSession fresh(List<ContainerItem> containers, int containerCount) {
+			return createBoxItemSession(copyBoxItems(initialBoxItems), containers, containerCount, sourceInterrupt);
 		}
 
 		@Override
-		public ParallelAdapter fork() {
-			return new ParallelAdapter(this);
+		public ParallelSession fork() {
+			return new ParallelSession(this);
 		}
 
 		@Override
@@ -333,25 +333,25 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
 				for (int j = 0; j < runnables.length; j++) {
-					RunnableAdapter runnableAdapter = runnables[j];
+					BruteForceWorker worker = runnables[j];
 					
 					ContainerItem containerItem = getContainerItem(i);
 					
-					runnableAdapter.setContainerItem(containerItem);
-					runnableAdapter.setContainerIndex(i);
+					worker.setContainerItem(containerItem);
+					worker.setContainerIndex(i);
 					BoxItemPermutationRotationIterator iterator = filterReversePermutations(parallelIterators[i].getIterator(j), abortOnAnyBoxTooBig);
 					if(iterator == null) {
 						continue;
 					}
-					runnableAdapter.setIterator(iterator);
+					worker.setIterator(iterator);
 
 					PackagerInterruptSupplier interruptBooleanSupplier = interrupts[i];
 
 					PackagerInterruptSupplier booleanSupplier = () -> localInterrupt.interrupted || interruptBooleanSupplier.getAsBoolean();
 
-					runnableAdapter.setInterrupt(booleanSupplier);
+					worker.setInterrupt(booleanSupplier);
 
-					futures.add(executorCompletionService.submit(runnableAdapter));
+					futures.add(executorCompletionService.submit(worker));
 				}
 
 				try {
@@ -446,14 +446,14 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 						it.removePermutations(p);
 					}
 					
-					// remove adapter inventory
+					// remove session inventory
 					removeInventory(p);
 	
-					for (RunnableAdapter runner : runnables) {
+					for (BruteForceWorker runner : runnables) {
 						runner.removeFirstPlacements(size);
 					}
 				} else {
-					for (RunnableAdapter runner : runnables) {
+					for (BruteForceWorker runner : runnables) {
 						runner.clearPlacements();
 					}
 					for(int i = 0; i < boxesRemaining.length; i++) {
@@ -473,7 +473,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					iterator.removePermutations(permutations);
 				}
 				removeInventory(permutations);
-				for (RunnableAdapter runner : runnables) {
+				for (BruteForceWorker runner : runnables) {
 					runner.removeFirstPlacements(permutations.size());
 				}
 				return container;
@@ -491,16 +491,16 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 	}
 
-	private class ParallelGroupAdapter extends AbstractBruteForceBoxItemGroupsPackagerAdapter {
+	private class ParallelGroupSession extends AbstractBruteForceBoxItemGroupSession {
 
-		private RunnableAdapter[] runnables; // per thread
+		private BruteForceWorker[] runnables; // per thread
 		private ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators; // per container
 		private DefaultBoxItemGroupPermutationRotationIterator[] iterators; // per container
 		private PackagerInterruptSupplier[] interrupts;
 		private final PackagerInterruptSupplier sourceInterrupt;
 
-		protected ParallelGroupAdapter(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
-				List<ContainerItem> containers, int containerCount, RunnableAdapter[] runnables,
+		protected ParallelGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
+				List<ContainerItem> containers, int containerCount, BruteForceWorker[] runnables,
 				DefaultBoxItemGroupPermutationRotationIterator[] iterators,
 				ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators,
 				PackagerInterruptSupplier[] interrupts, PackagerInterruptSupplier sourceInterrupt) {
@@ -512,7 +512,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			this.sourceInterrupt = sourceInterrupt;
 		}
 
-		private ParallelGroupAdapter(ParallelGroupAdapter source) {
+		private ParallelGroupSession(ParallelGroupSession source) {
 			super(source);
 			this.sourceInterrupt = source.sourceInterrupt;
 			this.iterators = new DefaultBoxItemGroupPermutationRotationIterator[source.iterators.length];
@@ -523,7 +523,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				parallelIterators[i] = source.parallelIterators[i].fork();
 				maxIteratorLength = Math.max(maxIteratorLength, iterators[i].length());
 			}
-			this.runnables = new RunnableAdapter[source.runnables.length];
+			this.runnables = new BruteForceWorker[source.runnables.length];
 			for(int i = 0; i < runnables.length; i++) {
 				runnables[i] = source.runnables[i].fork(maxIteratorLength);
 			}
@@ -531,13 +531,13 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		@Override
-		protected ParallelGroupAdapter fresh(List<ContainerItem> containers, int containerCount) {
-			return createBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), containers, containerCount, sourceInterrupt);
+		protected ParallelGroupSession fresh(List<ContainerItem> containers, int containerCount) {
+			return createBoxItemGroupSession(copyBoxItemGroups(initialBoxItemGroups), containers, containerCount, sourceInterrupt);
 		}
 
 		@Override
-		public ParallelGroupAdapter fork() {
-			return new ParallelGroupAdapter(this);
+		public ParallelGroupSession fork() {
+			return new ParallelGroupSession(this);
 		}
 
 		@Override
@@ -560,25 +560,25 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
 				for (int j = 0; j < runnables.length; j++) {
-					RunnableAdapter runnableAdapter = runnables[j];
+					BruteForceWorker worker = runnables[j];
 					
 					ContainerItem containerItem = getContainerItem(i);
 					
-					runnableAdapter.setContainerItem(containerItem);
-					runnableAdapter.setContainerIndex(i);
+					worker.setContainerItem(containerItem);
+					worker.setContainerIndex(i);
 					BoxItemPermutationRotationIterator iterator = filterReversePermutations(parallelIterators[i].getIterator(j), abortOnAnyBoxTooBig);
 					if(iterator == null) {
 						continue;
 					}
-					runnableAdapter.setIterator(iterator);
+					worker.setIterator(iterator);
 
 					PackagerInterruptSupplier interruptBooleanSupplier = interrupts[i];
 
 					PackagerInterruptSupplier booleanSupplier = () -> localInterrupt.interrupted || interruptBooleanSupplier.getAsBoolean();
 
-					runnableAdapter.setInterrupt(booleanSupplier);
+					worker.setInterrupt(booleanSupplier);
 
-					futures.add(executorCompletionService.submit(runnableAdapter));
+					futures.add(executorCompletionService.submit(worker));
 				}
 
 				try {
@@ -721,14 +721,14 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					
 					boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());
 					
-					// remove adapter inventory
+					// remove session inventory
 					removeInventory(p);
 	
-					for (RunnableAdapter runner : runnables) {
+					for (BruteForceWorker runner : runnables) {
 						runner.removeFirstPlacements(p.size());
 					}
 				} else {
-					for (RunnableAdapter runner : runnables) {
+					for (BruteForceWorker runner : runnables) {
 						runner.clearPlacements();
 					}
 					for(int i = 0; i < boxesRemaining.length; i++) {
@@ -749,7 +749,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				}
 				boxItemGroups = boxItemGroups.subList(accepted.groupIndexes().size(), boxItemGroups.size());
 				removeInventory(accepted.localIndexes());
-				for (RunnableAdapter runner : runnables) {
+				for (BruteForceWorker runner : runnables) {
 					runner.removeFirstPlacements(accepted.localIndexes().size());
 				}
 				return container;
@@ -797,7 +797,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	}
 
 	@Override
-	protected ParallelAdapter createBoxItemAdapter(List<BoxItem> items, List<ContainerItem> containerItems,
+	protected ParallelSession createBoxItemSession(List<BoxItem> items, List<ContainerItem> containerItems,
 			int containerCount, PackagerInterruptSupplier interrupt) {
 		
 		ParallelBoxItemPermutationRotationIteratorList[] parallelIterators = new ParallelBoxItemPermutationRotationIteratorList[containerItems.size()];
@@ -833,9 +833,9 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		long minStackableItemVolume = getMinBoxItemVolume(items);
 		long minStackableArea = getMinBoxItemArea(items);
 
-		RunnableAdapter[] runnables = new RunnableAdapter[parallelizationCount];
+		BruteForceWorker[] runnables = new BruteForceWorker[parallelizationCount];
 		for (int i = 0; i < parallelizationCount; i++) {
-			runnables[i] = new RunnableAdapter(count, maxIteratorLength, minStackableItemVolume, minStackableArea);
+			runnables[i] = new BruteForceWorker(count, maxIteratorLength, minStackableItemVolume, minStackableArea);
 		}
 		
 		PackagerInterruptSupplier[] interrupts = new PackagerInterruptSupplier[parallelizationCount];
@@ -852,11 +852,11 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 		}
 
-		return new ParallelAdapter(items, containerItems, containerCount, runnables, iterators, parallelIterators, interrupts, interrupt);
+		return new ParallelSession(items, containerItems, containerCount, runnables, iterators, parallelIterators, interrupts, interrupt);
 	}
 
 	@Override
-	protected ParallelGroupAdapter createBoxItemGroupAdapter(List<BoxItemGroup> itemGroups,
+	protected ParallelGroupSession createBoxItemGroupSession(List<BoxItemGroup> itemGroups,
 			List<ContainerItem> containerItems, int containerCount, PackagerInterruptSupplier interrupt) {
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators = new ParallelBoxItemGroupPermutationRotationIteratorList[containerItems.size()];
@@ -897,9 +897,9 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		long minStackableItemVolume = getMinBoxItemVolume(items);
 		long minStackableArea = getMinBoxItemArea(items);
 
-		RunnableAdapter[] runnables = new RunnableAdapter[parallelizationCount];
+		BruteForceWorker[] runnables = new BruteForceWorker[parallelizationCount];
 		for (int i = 0; i < parallelizationCount; i++) {
-			runnables[i] = new RunnableAdapter(count, maxIteratorLength, minStackableItemVolume, minStackableArea);
+			runnables[i] = new BruteForceWorker(count, maxIteratorLength, minStackableItemVolume, minStackableArea);
 		}
 		
 		PackagerInterruptSupplier[] interrupts = new PackagerInterruptSupplier[parallelizationCount];
@@ -916,7 +916,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 		}
 
-		return new ParallelGroupAdapter(items, itemGroups, containerItems, containerCount, runnables, iterators, parallelIterators, interrupts, interrupt);
+		return new ParallelGroupSession(items, itemGroups, containerItems, containerCount, runnables, iterators, parallelIterators, interrupts, interrupt);
 	}
 
 	@Override

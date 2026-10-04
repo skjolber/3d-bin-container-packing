@@ -72,4 +72,4 @@ and memoize only placements with several supportees (or supporters). The remaini
 | Experiment | Result | Likely cause |
 |---|---|---|
 | Reusing stacks and placement arrays across packing calls (pool) | Rejected after analysis | Results keep references to the stack's point lists (`setState(pointCalculator.getPoints(), …)`) and to the placement arrays until they are materialized, so reuse could corrupt results. Packagers are also shared between threads |
-| Avoiding the throwaway stack in `resetState()` | Not needed; `reset()` was later removed from the session | No strategy called the adapter's `reset()` |
+| Avoiding the throwaway stack in `resetState()` | Not needed; `reset()` was later removed from the session | No strategy called the session's `reset()` |

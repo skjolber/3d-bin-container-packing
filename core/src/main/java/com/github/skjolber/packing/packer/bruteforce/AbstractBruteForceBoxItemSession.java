@@ -9,11 +9,11 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
-import com.github.skjolber.packing.packer.AbstractPackagerAdapter;
+import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.packer.BoxItemsContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 
-public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractPackagerAdapter {
+public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerSession {
 
 	// keep inventory over all of the iterators here
 	protected Box[] boxes;
@@ -21,12 +21,12 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 	protected BoxItem[] boxItems;
 	protected final List<BoxItem> initialBoxItems;
 
-	public AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems, List<ContainerItem> containers,
+	public AbstractBruteForceBoxItemSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 			int containerCount) {
 		this(initializeGlobalIndexes(boxItems), new BoxItemsContainerItemsCalculator(containers, containerCount, boxItems));
 	}
 
-	protected AbstractBruteForceBoxItemPackagerAdapter(List<BoxItem> boxItems,
+	protected AbstractBruteForceBoxItemSession(List<BoxItem> boxItems,
 			ContainerItemsCalculator containerItemsCalculator) {
 		super(containerItemsCalculator);
 		this.initialBoxItems = copyBoxItems(boxItems);
@@ -43,7 +43,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 		}
 	} 
 
-	protected AbstractBruteForceBoxItemPackagerAdapter(AbstractBruteForceBoxItemPackagerAdapter source) {
+	protected AbstractBruteForceBoxItemSession(AbstractBruteForceBoxItemSession source) {
 		super(source);
 		this.initialBoxItems = copyBoxItems(source.initialBoxItems);
 		this.boxes = source.boxes.clone();
@@ -63,7 +63,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 
 
 	protected void removeInventory(List<Integer> p) {
-		// remove adapter inventory
+		// remove session inventory
 		for (Integer remove : p) {
 			boxesRemaining[remove]--;
 			boxItems[remove].decrement();
@@ -73,7 +73,7 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 		}
 	}
 
-	/** Translate placements from another adapter to this adapter's local iterator indexes. */
+	/** Translate placements from another session to this session's local iterator indexes. */
 	protected List<Integer> getLocalIndexes(Stack stack) {
 		List<Integer> indexes = new ArrayList<>(stack.size());
 		for(Placement placement : stack.getPlacements()) {

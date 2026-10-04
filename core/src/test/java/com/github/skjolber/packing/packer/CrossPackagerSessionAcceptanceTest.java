@@ -18,14 +18,14 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
-class CrossPackagerAdapterAcceptanceTest {
+class CrossPackagerSessionAcceptanceTest {
 
 	@Test
 	void acceptsResultUsingTheReceiverBoxItemWithTheSameGlobalIndex() {
 		BoxItem sourceItem = new BoxItem(box("source"));
 		BoxItem receiverItem = new BoxItem(box("receiver"));
-		TestAdapter source = new TestAdapter(sourceItem);
-		TestAdapter receiver = new TestAdapter(receiverItem);
+		TestSession source = new TestSession(sourceItem);
+		TestSession receiver = new TestSession(receiverItem);
 
 		Stack stack = new Stack();
 		stack.add(new Placement(sourceItem.getBox().getStackValue(0), 0, 0, 0, 0));
@@ -39,9 +39,9 @@ class CrossPackagerAdapterAcceptanceTest {
 	@Test
 	void freshAndForkKeepSessionStateIndependent() {
 		BoxItem item = new BoxItem(box("item"));
-		TestAdapter adapter = new TestAdapter(item);
-		TestAdapter fresh = (TestAdapter) adapter.fresh();
-		TestAdapter fork = (TestAdapter) adapter.fork();
+		TestSession session = new TestSession(item);
+		TestSession fresh = (TestSession) session.fresh();
+		TestSession fork = (TestSession) session.fork();
 
 		Stack stack = new Stack();
 		stack.add(new Placement(item.getBox().getStackValue(0), 0, 0, 0, 0));
@@ -50,7 +50,7 @@ class CrossPackagerAdapterAcceptanceTest {
 
 		assertThat(fresh.countRemainingBoxes()).isZero();
 		assertThat(fork.countRemainingBoxes()).isZero();
-		assertThat(adapter.countRemainingBoxes()).isEqualTo(1);
+		assertThat(session.countRemainingBoxes()).isEqualTo(1);
 
 		PackagerSession freshOfFresh = fresh.fresh();
 		assertThat(freshOfFresh.countRemainingBoxes()).isEqualTo(1);
@@ -69,7 +69,7 @@ class CrossPackagerAdapterAcceptanceTest {
 		first.setGlobalIndex(2);
 		second.setGlobalIndex(2);
 
-		assertThatThrownBy(() -> AbstractPackagerAdapter.initializeGlobalIndexes(List.of(first, second)))
+		assertThatThrownBy(() -> AbstractPackagerSession.initializeGlobalIndexes(List.of(first, second)))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessage("Duplicate box item global index 2");
 	}
@@ -78,28 +78,28 @@ class CrossPackagerAdapterAcceptanceTest {
 		return Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build();
 	}
 
-	private static final class TestAdapter extends AbstractBoxItemAdapter {
+	private static final class TestSession extends AbstractBoxItemSession {
 
-		private TestAdapter(BoxItem item) {
+		private TestSession(BoxItem item) {
 			this(item, List.of(new ContainerItem(Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build(), 1)), 1);
 		}
 
-		private TestAdapter(BoxItem item, List<ContainerItem> containers, int containerCount) {
+		private TestSession(BoxItem item, List<ContainerItem> containers, int containerCount) {
 			super(List.of(item), Order.CRONOLOGICAL, containers, containerCount, () -> false);
 		}
 
-		private TestAdapter(TestAdapter source) {
+		private TestSession(TestSession source) {
 			super(source);
 		}
 
 		@Override
 		public PackagerSession fork() {
-			return new TestAdapter(this);
+			return new TestSession(this);
 		}
 
 		@Override
-		protected TestAdapter fresh(List<ContainerItem> containers, int containerCount) {
-			return new TestAdapter(copyBoxItems(initialBoxItems).get(0), containers, containerCount);
+		protected TestSession fresh(List<ContainerItem> containers, int containerCount) {
+			return new TestSession(copyBoxItems(initialBoxItems).get(0), containers, containerCount);
 		}
 
 		@Override

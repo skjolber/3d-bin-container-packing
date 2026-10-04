@@ -64,7 +64,7 @@ public class ContainerItemPermutationIterator {
 	/**
 	 * Push container indexes for the root or for the current selected prefix.
 	 * Indexes must be unique within the list. The list is copied because an
-	 * adapter may reuse it after acceptance.
+	 * session may reuse it after acceptance.
 	 */
 	public void push(List<Integer> containerIndexes) {
 		if(levelCount == permutation.length) {

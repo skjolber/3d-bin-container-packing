@@ -18,7 +18,7 @@ import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocatio
 
 /**
  * Explores every available sequence of container types up to the container
- * limit. An adapter and its container indexes are pushed together at each
+ * limit. A session and its container indexes are pushed together at each
  * accepted prefix and popped together on backtracking. Siblings fork their
  * unchanged parent instead of repacking earlier containers.
  * Packing within a container remains determined by the underlying packager.
@@ -67,18 +67,18 @@ public class BruteForceContainerStrategy implements ContainerStrategy {
 	}
 
 	@Override
-	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession packagerAdapter) throws PackagerInterruptedException {
+	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession packagerSession) throws PackagerInterruptedException {
 		if(interrupt.getAsBoolean()) {
 			throw new PackagerInterruptedException();
 		}
-		int maxLength = packagerAdapter.getMaxContainerCount();
+		int maxLength = packagerSession.getMaxContainerCount();
 		if(maxLength == 0) {
 			return null;
 		}
 		ContainerItemPermutationIterator iterator = new ContainerItemPermutationIterator(maxLength);
 		Deque<PackagerSession> branches = new ArrayDeque<>(maxLength);
-		branches.addLast(packagerAdapter);
-		iterator.push(packagerAdapter.getContainers());
+		branches.addLast(packagerSession);
+		iterator.push(packagerSession.getContainers());
 		List<Container> packed = new ArrayList<>(maxLength);
 		while(iterator.hasLevel()) {
 			if(interrupt.getAsBoolean()) {

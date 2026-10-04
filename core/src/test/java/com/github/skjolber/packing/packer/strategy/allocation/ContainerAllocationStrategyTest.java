@@ -85,9 +85,9 @@ class ContainerAllocationStrategyTest {
 		List<BoxItemGroup> groups = List.of(
 				new BoxItemGroup("pair", List.of(new BoxItem(cube, 2))),
 				new BoxItemGroup("single", List.of(new BoxItem(cube, 1))));
-		PlanningAdapter adapter = new PlanningAdapter(calculator, null, groups);
+		PlanningSession session = new PlanningSession(calculator, null, groups);
 
-		Allocation allocation = ContainerAllocationPlanner.plan(adapter, Objective.FEWEST_CONTAINERS,
+		Allocation allocation = ContainerAllocationPlanner.plan(session, Objective.FEWEST_CONTAINERS,
 				null, () -> false);
 
 		assertNotNull(allocation);
@@ -105,11 +105,11 @@ class ContainerAllocationStrategyTest {
 				new ContainerItem(container("long", 2), 1)), 2);
 		List<Integer> attempts = new ArrayList<>();
 		int[] containerQueries = new int[1];
-		BranchAdapter adapter = new BranchAdapter(calculator,
+		BranchSession session = new BranchSession(calculator,
 				new ArrayList<>(List.of(new BoxItem(smallBox), new BoxItem(longBox))),
 				attempts, containerQueries);
 
-		ContainerResult result = new BruteForceContainerStrategy().pack(() -> false, adapter);
+		ContainerResult result = new BruteForceContainerStrategy().pack(() -> false, session);
 
 		assertNotNull(result);
 		assertThat(result.getPackList()).extracting(Container::getId).containsExactly("small", "long");
@@ -140,13 +140,13 @@ class ContainerAllocationStrategyTest {
 		return Container.newBuilder().withId(id).withSize(dx, 1, 1).withMaxLoadWeight(dx).build();
 	}
 
-	private static class PlanningAdapter implements PackagerSession {
+	private static class PlanningSession implements PackagerSession {
 
 		protected final ContainerItemsCalculator calculator;
 		protected final List<BoxItem> boxes;
 		protected final List<BoxItemGroup> groups;
 
-		private PlanningAdapter(ContainerItemsCalculator calculator, List<BoxItem> boxes,
+		private PlanningSession(ContainerItemsCalculator calculator, List<BoxItem> boxes,
 				List<BoxItemGroup> groups) {
 			this.calculator = calculator;
 			this.boxes = boxes;
@@ -178,12 +178,12 @@ class ContainerAllocationStrategyTest {
 		@Override public PackagerSession fork() { throw new UnsupportedOperationException(); }
 	}
 
-	private static final class BranchAdapter extends PlanningAdapter {
+	private static final class BranchSession extends PlanningSession {
 
 		private final List<Integer> attempts;
 		private final int[] containerQueries;
 
-		private BranchAdapter(ContainerItemsCalculator calculator, List<BoxItem> boxes,
+		private BranchSession(ContainerItemsCalculator calculator, List<BoxItem> boxes,
 				List<Integer> attempts, int[] containerQueries) {
 			super(calculator, boxes, null);
 			this.attempts = attempts;
@@ -225,7 +225,7 @@ class ContainerAllocationStrategyTest {
 			for(BoxItem item : boxes) {
 				copies.add(item.clone());
 			}
-			return new BranchAdapter(calculator.clone(), copies, attempts, containerQueries);
+			return new BranchSession(calculator.clone(), copies, attempts, containerQueries);
 		}
 	}
 }

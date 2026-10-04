@@ -48,9 +48,9 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 		this.containerStrategyFactory = factory;
 	}
 
-	public ContainerResult packAdapter(PackagerInterruptSupplier interrupt, PackagerSession adapter) throws PackagerInterruptedException {
-		ContainerStrategy strategy = containerStrategyFactory.create(adapter.getContainerInventory(), adapter.getRemainingBoxItems(), adapter.getRemainingBoxItemGroups());
-		return strategy.pack(interrupt, adapter);
+	public ContainerResult packSession(PackagerInterruptSupplier interrupt, PackagerSession session) throws PackagerInterruptedException {
+		ContainerStrategy strategy = containerStrategyFactory.create(session.getContainerInventory(), session.getRemainingBoxItems(), session.getRemainingBoxItemGroups());
+		return strategy.pack(interrupt, session);
 	}
 
 	public void close() {

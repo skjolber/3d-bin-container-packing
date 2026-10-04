@@ -82,7 +82,7 @@ class ContainerItemPermutationIteratorTest {
 	}
 
 	@Test
-	void snapshotsContainerIndexesWhenAdapterReusesItsList() {
+	void snapshotsContainerIndexesWhenSessionReusesItsList() {
 		ContainerItemPermutationIterator iterator = new ContainerItemPermutationIterator(2);
 		List<Integer> containerIndexes = new ArrayList<>(List.of(0, 1));
 		iterator.push(containerIndexes);

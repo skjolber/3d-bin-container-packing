@@ -37,8 +37,8 @@ import com.github.skjolber.packing.comparator.placement.DefaultPlacementComparat
 import com.github.skjolber.packing.iterator.AnyOrderBoxItemGroupIterator;
 import com.github.skjolber.packing.iterator.BoxItemGroupIterator;
 import com.github.skjolber.packing.iterator.FixedOrderBoxItemGroupIterator;
-import com.github.skjolber.packing.packer.AbstractBoxItemAdapter;
-import com.github.skjolber.packing.packer.AbstractBoxItemGroupAdapter;
+import com.github.skjolber.packing.packer.AbstractBoxItemGroupSession;
+import com.github.skjolber.packing.packer.AbstractBoxItemSession;
 import com.github.skjolber.packing.packer.AbstractControlPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
@@ -59,26 +59,26 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		return new Builder();
 	}
 
-	protected class PlainBoxItemAdapter extends AbstractBoxItemAdapter {
+	protected class PlainBoxItemSession extends AbstractBoxItemSession {
 
-		public PlainBoxItemAdapter(List<BoxItem> boxItems, Order order,
+		public PlainBoxItemSession(List<BoxItem> boxItems, Order order,
 				List<ContainerItem> containers,
 				int containerCount, PackagerInterruptSupplier interrupt) {
 			super(boxItems, order, containers, containerCount, interrupt);
 		}
 
-		private PlainBoxItemAdapter(PlainBoxItemAdapter source) {
+		private PlainBoxItemSession(PlainBoxItemSession source) {
 			super(source);
 		}
 
 		@Override
 		public PackagerSession fork() {
-			return new PlainBoxItemAdapter(this);
+			return new PlainBoxItemSession(this);
 		}
 
 		@Override
-		protected PlainBoxItemAdapter fresh(List<ContainerItem> containers, int containerCount) {
-			return new PlainBoxItemAdapter(copyBoxItems(initialBoxItems), order, containers, containerCount, interrupt);
+		protected PlainBoxItemSession fresh(List<ContainerItem> containers, int containerCount) {
+			return new PlainBoxItemSession(copyBoxItems(initialBoxItems), order, containers, containerCount, interrupt);
 		}
 
 		@Override
@@ -94,27 +94,27 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 
 	}
 	
-	protected class PlainBoxItemGroupAdapter extends AbstractBoxItemGroupAdapter {
+	protected class PlainBoxItemGroupSession extends AbstractBoxItemGroupSession {
 
-		public PlainBoxItemGroupAdapter(List<BoxItemGroup> boxItemGroups,
+		public PlainBoxItemGroupSession(List<BoxItemGroup> boxItemGroups,
 				Order order,
 				List<ContainerItem> containers,
 				int containerCount, PackagerInterruptSupplier interrupt) {
 			super(boxItemGroups, containers, containerCount, order, interrupt);
 		}
 
-		private PlainBoxItemGroupAdapter(PlainBoxItemGroupAdapter source) {
+		private PlainBoxItemGroupSession(PlainBoxItemGroupSession source) {
 			super(source);
 		}
 
 		@Override
 		public PackagerSession fork() {
-			return new PlainBoxItemGroupAdapter(this);
+			return new PlainBoxItemGroupSession(this);
 		}
 
 		@Override
-		protected PlainBoxItemGroupAdapter fresh(List<ContainerItem> containers, int containerCount) {
-			return new PlainBoxItemGroupAdapter(copyBoxItemGroups(initialBoxItemGroups), order, containers, containerCount, interrupt);
+		protected PlainBoxItemGroupSession fresh(List<ContainerItem> containers, int containerCount) {
+			return new PlainBoxItemGroupSession(copyBoxItemGroups(initialBoxItemGroups), order, containers, containerCount, interrupt);
 		}
 
 		@Override
@@ -153,13 +153,13 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
-				PackagerSession adapter;
+				PackagerSession session;
 				if(items != null && !items.isEmpty()) {
-					adapter = new PlainBoxItemAdapter(items, order, containers, maxContainerCount, interrupt);
+					session = new PlainBoxItemSession(items, order, containers, maxContainerCount, interrupt);
 				} else {
-					adapter = new PlainBoxItemGroupAdapter(itemGroups, order, containers, maxContainerCount, interrupt);
+					session = new PlainBoxItemGroupSession(itemGroups, order, containers, maxContainerCount, interrupt);
 				}
-				ContainerResult result = packAdapter(interrupt, adapter);
+				ContainerResult result = packSession(interrupt, session);
 				
 				long duration = System.currentTimeMillis() - start;
 				if(result == null) {

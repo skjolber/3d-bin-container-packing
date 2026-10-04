@@ -42,13 +42,13 @@ public abstract class DefaultControlsPackagerResultBuilder extends AbstractPacka
 
 		PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 		try {
-			PackagerSession adapter;
+			PackagerSession session;
 			if(items != null && !items.isEmpty()) {
-				adapter = createDefaultBoxItemAdapter(items, order, containers, maxContainerCount, interrupt);
+				session = createDefaultBoxItemSession(items, order, containers, maxContainerCount, interrupt);
 			} else {
-				adapter = createDefaultBoxItemGroupAdapter(itemGroups, order, containers, maxContainerCount, interrupt);
+				session = createDefaultBoxItemGroupSession(itemGroups, order, containers, maxContainerCount, interrupt);
 			}
-			ContainerResult result = packager.packAdapter(interrupt, adapter);
+			ContainerResult result = packager.packSession(interrupt, session);
 			
 			long duration = System.currentTimeMillis() - start;
 			if(result == null) {
@@ -63,9 +63,9 @@ public abstract class DefaultControlsPackagerResultBuilder extends AbstractPacka
 		}
 	}
 
-	protected abstract PackagerSession createDefaultBoxItemAdapter(List<BoxItem> items, Order order,
+	protected abstract PackagerSession createDefaultBoxItemSession(List<BoxItem> items, Order order,
 			List<ContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt);
 
-	protected abstract PackagerSession createDefaultBoxItemGroupAdapter(List<BoxItemGroup> itemGroups, Order order,
+	protected abstract PackagerSession createDefaultBoxItemGroupSession(List<BoxItemGroup> itemGroups, Order order,
 			List<ContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt);
 }

@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.packer.BoxItemGroupsContainerItemsCalculator;
 
-public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter extends AbstractBruteForceBoxItemPackagerAdapter {
+public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBruteForceBoxItemSession {
 
 	protected record AcceptedGroups(List<Integer> groupIndexes, List<Integer> localIndexes) {
 	}
@@ -19,7 +19,7 @@ public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter extends Abs
 	protected List<BoxItemGroup> boxItemGroups;
 	protected final List<BoxItemGroup> initialBoxItemGroups;
 
-	public AbstractBruteForceBoxItemGroupsPackagerAdapter(List<BoxItem> boxItems,
+	public AbstractBruteForceBoxItemGroupSession(List<BoxItem> boxItems,
 			List<ContainerItem> containers, int containerCount, List<BoxItemGroup> boxItemGroups) {
 		super(boxItems, new BoxItemGroupsContainerItemsCalculator(containers, containerCount, boxItemGroups));
 		this.initialBoxItemGroups = copyBoxItemGroups(boxItemGroups);
@@ -27,7 +27,7 @@ public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter extends Abs
 		this.boxItemGroups = boxItemGroups;
 	}
 
-	protected AbstractBruteForceBoxItemGroupsPackagerAdapter(AbstractBruteForceBoxItemGroupsPackagerAdapter source) {
+	protected AbstractBruteForceBoxItemGroupSession(AbstractBruteForceBoxItemGroupSession source) {
 		super(source);
 		this.initialBoxItemGroups = copyBoxItemGroups(source.initialBoxItemGroups);
 		this.boxItemGroups = copyBoxItemGroups(source.boxItemGroups);
@@ -77,14 +77,14 @@ public abstract class AbstractBruteForceBoxItemGroupsPackagerAdapter extends Abs
 
 	/**
 	 * Verify that a foreign result consumes complete leading groups and translate
-	 * its stable box-item identities to this adapter's local iterator indexes.
+	 * its stable box-item identities to this session's local iterator indexes.
 	 */
 	protected AcceptedGroups getAcceptedGroups(Stack stack) {
 		Map<Integer, Integer> countByGlobalIndex = new HashMap<>(stack.size() * 2);
 		for(Placement placement : stack.getPlacements()) {
 			BoxItem source = (BoxItem) placement.getStackValue().getBox().getBoxItem();
 			int globalIndex = source.getGlobalIndex();
-			getLocalIndex(globalIndex); // validates that this adapter owns the item
+			getLocalIndex(globalIndex); // validates that this session owns the item
 			countByGlobalIndex.merge(globalIndex, 1, Integer::sum);
 		}
 
