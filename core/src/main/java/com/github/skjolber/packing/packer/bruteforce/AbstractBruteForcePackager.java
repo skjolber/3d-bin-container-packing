@@ -36,6 +36,24 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  * This implementation tries all permutations, rotations and points.
  * <br>
  * <br>
+ * For one container, {@link #pack(PointCalculator3DStack, Placement[], int, ContainerItem, int, BoxItemPermutationRotationIterator, PackagerInterruptSupplier, BruteForcePointIteratorFilter, IntermediatePackagerResult)}
+ * runs three nested searches:
+ * <ol>
+ * <li>every permutation (order) of the boxes,</li>
+ * <li>for each permutation, every combination of rotations, and</li>
+ * <li>for each permutation and rotation, every placement of the boxes in that order at the free (extreme) points,
+ * see {@link #search(PointCalculator3DStack, Placement[], BoxItemPermutationRotationIterator, Stack, int, PackagerInterruptSupplier, int, int, LoadPlacementUtility, BruteForcePointIteratorFilter)}.</li>
+ * </ol>
+ * Boxes are always placed in permutation order, so a result is a prefix of a permutation: the longest prefix which could be placed.
+ * This allows skipping work which cannot change the outcome:
+ * <ul>
+ * <li>if the first {@code n} boxes were placed, rotating box {@code n + 1} or later cannot place more boxes,
+ * and neither can reordering them, so the iterators skip ahead to a change at index {@code n} or lower,</li>
+ * <li>a prefix cannot be longer than the boxes which fit by volume and weight ({@link #getMaxPackableCount(BoxItemPermutationRotationIterator, long, long)}),
+ * so the search stops once that many are placed, and</li>
+ * <li>when the comparator prefers higher load volume, permutations (and containers) whose maximum load volume does not exceed
+ * the best result so far are skipped.</li>
+ * </ul>
  * Note: The search is exponential in the number of boxes. It is not intended for more than about 10 boxes per container.
  * <br>
  * <br>
@@ -211,8 +229,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	}
 
 	/**
+	 * Pack the boxes of the iterator into one container: the best placement over all permutations and rotations.
+	 * Within a permutation, the result which places the most boxes wins (it is a longer prefix, so it has more volume and weight);
+	 * across permutations, results are compared with the packager's comparator.
+	 *
 	 * @param best the best result so far, or null. When results with less load volume always compare worse,
 	 *        returns an empty result if no result can load more than {@code best}.
+	 * @return the best result, or an empty result; the result refers to reused state (stack placements, points) until materialized
 	 */
 	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int index,
 			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, IntermediatePackagerResult best)
@@ -229,7 +252,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 
 		LoadPlacementUtility utility = createLoadPlacementUtility(iterator, stack);
 
-		// iterator over all permutations
+		// if all boxes fit by volume and weight, every permutation may place all of them;
+		// otherwise each permutation is limited to the prefix which fits (see getMaxPackableCount(..))
 		boolean allItemsFit = canPackAll(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
 
 		// results with less load volume than the best result so far are never selected
@@ -237,23 +261,28 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		if(minLoadVolume > 0L && getMaxLoadVolume(iterator, holder, allItemsFit) < minLoadVolume) {
 			return bestResult;
 		}
+		// outer loop: permutations
 		do {
 			if(interrupt.getAsBoolean()) {
 				throw new PackagerInterruptedException();
 			}
-			// iterate over all rotations
 			bestPermutationResult.reset();
 			int maxPackableCount = allItemsFit ? iterator.length() : getMaxPackableCount(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
 			if(!allItemsFit && prefersHigherLoadVolume && getLoadVolume(iterator, maxPackableCount) < Math.max(minLoadVolume, bestResult.getLoadVolume())) {
-				// no rotation of this permutation can load more than the best result
+				// no rotation of this permutation can load more than the best result,
+				// and neither can permutations which only reorder boxes after the packable prefix
 				if(iterator.nextPermutation(maxPackableCount) == -1) {
 					break;
 				}
 				continue;
 			}
 
+			// inner loop: rotations of the current permutation
 			do {
+				// the box with the smallest area; free points with less area cannot hold any of the boxes
 				int minStackableAreaIndex = iterator.getMinStackableAreaIndex(0);
+
+				// place the boxes in permutation order, returns the points of the longest prefix placed
 
 				List<Point> points = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, interrupt,
 						minStackableAreaIndex, containerItem.getInitialPoints(), utility, pointFilter, maxPackableCount);
@@ -286,6 +315,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				}
 			} while (true);
 
+			// the first bestPermutationResult.getSize() boxes were placed, but the next could not be:
+			// skip permutations which keep the same boxes up to and including that index
 			int permutationIndex = iterator.nextPermutation(bestPermutationResult.getSize());
 
 			if(!bestPermutationResult.isEmpty()) {
@@ -356,21 +387,50 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	}
 
 	/**
-	 * Depth-first search for the deepest arrangement of the permutation's boxes. Level {@code i} places box
-	 * {@code i} at each candidate point in turn, then continues with box {@code i + 1}; the point calculator
-	 * keeps the deepest arrangement ({@link PointCalculator3DStack#getBestPoints()}). The search stops once
-	 * {@code maxPackableCount} boxes are placed.
+	 * Depth-first search for the longest prefix of the permutation which can be placed, with the current rotations.
+	 * <br>
+	 * <br>
+	 * Level {@code i} of the search places box {@code i} of the permutation. Each level tries the box at each candidate
+	 * point in turn; after a placement, the next level tries the next box at the free points which remain. When a level
+	 * runs out of points, the search goes back to the previous level, which removes its placement and tries its next point:
 	 *
 	 * <pre>
-	 *  level 0:  point a ─┬─ level 1: point c ─── level 2: ...
-	 *                     └─ level 1: point d ─── level 2: ...
-	 *            point b ─── level 1: ...
+	 *  level 0 (box 0)    level 1 (box 1)    level 2 (box 2)
+	 *  point a ─────────┬─ point c ────────── point e, f, ...
+	 *                   └─ point d ────────── ...
+	 *  point b ─────────── point c ────────── ...
 	 * </pre>
 	 *
-	 * The state of each level is kept in {@link BruteForceSearchFrames}, so the number of boxes is not
-	 * limited by the thread's stack.
+	 * The search is a loop over two steps rather than recursion, so the number of boxes is not limited by the thread's stack:
+	 * <ul>
+	 * <li><b>descend</b> into a level: record the boxes placed so far as the best arrangement if it is the longest yet,
+	 * save the point calculator's state ({@link PointCalculator3DStack#push()}) and start at the level's first candidate point.</li>
+	 * <li><b>ascend</b> back into a level from the next level: remove the level's placement from the stack (and its load links),
+	 * and restore the free points to before the placement ({@link PointCalculator3DStack#redo()}), then continue with the next candidate point.</li>
+	 * </ul>
+	 * After either step, the box is placed at the next candidate point ({@link PointCalculator3DStack#add(int, Placement)}
+	 * calculates the new free points) and the search descends to the next level. A level without more candidate points
+	 * discards its saved state ({@link PointCalculator3DStack#pop()}) and ascends.
+	 * <br>
+	 * <br>
+	 * The search ends when level 0 has no more points, or as soon as {@code maxPackableCount} boxes are placed; no arrangement
+	 * can be longer than that. A level is skipped (the search ascends without trying any point) if its box is heavier than
+	 * the remaining load weight, since then no box from that index on can be part of the prefix.
+	 * <br>
+	 * <br>
+	 * The point calculator also discards free points which are too small for every remaining box: the minimum area is that of the
+	 * smallest remaining box ({@code minStackableAreaIndex}), updated when that box has been placed, and the minimum volume is
+	 * {@link BoxItemPermutationRotationIterator#getMinBoxVolume(int)}.
+	 * <br>
+	 * <br>
+	 * The result is the longest arrangement found, as points per box, in {@link PointCalculator3DStack#getBestPoints()}
+	 * ({@link PointCalculator3DStack#getBestStackIndex()} boxes). The state of each level is kept in {@link BruteForceSearchFrames}.
 	 *
+	 * @param placements one reusable placement per level
+	 * @param stack the placed boxes, for load constraints; boxes are added on descend and removed on ascend
 	 * @param maxLoadWeight the container's max load weight
+	 * @param minStackableAreaIndex index of the box with the smallest area, from level 0
+	 * @param maxPackableCount the maximum number of boxes which fit by volume and weight
 	 * @param utility load constraints, or null if none
 	 * @param pointFilter candidate points, or null for all fitting points
 	 * @throws PackagerInterruptedException if interrupted
@@ -388,7 +448,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		minStackableAreaIndexes[0] = minStackableAreaIndex;
 		freeLoadWeights[0] = maxLoadWeight;
 
+		// the current level, i.e. the index of the box being placed
 		int level = 0;
+		// true when entering the level from the previous level, false when coming back from the next level
 		boolean descend = true;
 		while(true) {
 			Placement placement = placements[level];
@@ -407,7 +469,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 					continue;
 				}
 				placement.setStackValue(stackValue);
+				// the boxes of levels 0 .. level - 1 are placed; keep them if the longest arrangement so far
 				pointCalculator.updateBest();
+				// save the free points, so that each candidate point of this level starts from them (see redo())
 				pointCalculator.push();
 				if(pointFilter == null) {
 					pointCounts[level] = pointCalculator.size();
@@ -425,6 +489,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				}
 				stack.remove(stack.size() - 1);
 				if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
+					// a longest possible arrangement was found below: unwind without trying more points
 					pointCalculator.pop();
 					if(level == 0) {
 						return;
@@ -432,10 +497,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 					level--;
 					continue;
 				}
+				// restore the free points to before this level's placement
 				pointCalculator.redo();
 			}
 
-			// place the box at the next candidate point
+			// find the next candidate point for this level's box: a point which fits the box
+			// (all points, or the point filter's points) and, with load constraints, where the box is supported
+			// without overloading the boxes below
 			BoxStackValue stackValue = placement.getStackValue();
 			int pointIndex = -1;
 			long supportedArea = 0L;
@@ -460,6 +528,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 					candidate = pointIterator.next();
 				}
 				if(utility != null) {
+					// -1 if the boxes below cannot carry the box at this point
 					SimplePoint3D point = pointCalculator.get(candidate);
 					utility.populatePointSupporters(point);
 					utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
@@ -482,6 +551,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				continue;
 			}
 
+			// place the box; add(..) replaces the free points with those around the new placement
 			placement.setPoint(pointCalculator.get(pointIndex));
 			if(utility != null) {
 				placement.setIndex(stack.size());
@@ -489,7 +559,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			}
 			pointCalculator.add(pointIndex, placement);
 			if(level + 1 >= maxPackableCount) {
-				// all packable boxes are placed
+				// all packable boxes are placed: record the arrangement, which ends the search (see the checks above)
 				pointCalculator.updateBest();
 				pointCalculator.pop();
 				if(level == 0) {
@@ -500,11 +570,14 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				continue;
 			}
 
+			// descend to the next box
 			stack.add(placement);
 			if(utility != null) {
 				utility.addSupportersLoad(placement);
 			}
 			int nextLevel = level + 1;
+			// the minimum area changes only when the smallest remaining box was the one just placed;
+			// the minimum volume of the remaining boxes is cached per index by the iterator
 			int levelMinStackableAreaIndex = minStackableAreaIndexes[level];
 			if(level == levelMinStackableAreaIndex) {
 				int nextMinStackableAreaIndex = iterator.getMinStackableAreaIndex(nextLevel);
@@ -514,6 +587,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				pointCalculator.setMinimumVolumeLimit(iterator.getMinBoxVolume(nextLevel));
 				minStackableAreaIndexes[nextLevel] = levelMinStackableAreaIndex;
 			}
+			// the load weight left for the remaining boxes
 			freeLoadWeights[nextLevel] = freeLoadWeights[level] - stackValue.getBox().getWeight();
 			level = nextLevel;
 			descend = true;

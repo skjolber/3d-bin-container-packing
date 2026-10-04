@@ -15,7 +15,9 @@ final class BruteForceSearchFrames {
 	final int[] pointCounts;
 	/** The remaining candidate points, when using a point filter. */
 	final IntIterator[] pointIterators;
+	/** The index of the remaining box with the smallest area, which sets the point calculator's minimum point area. */
 	final int[] minStackableAreaIndexes;
+	/** The container's max load weight minus the weight of the boxes placed at earlier levels. */
 	final int[] freeLoadWeights;
 
 	BruteForceSearchFrames(int levels) {
