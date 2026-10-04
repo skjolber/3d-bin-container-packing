@@ -37,7 +37,7 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 		
 		List<BoxItem> boxClones = new ArrayList<>(boxItems.size());
 		for (BoxItem item : boxItems) {
-			BoxItem clone = item.clone();
+			BoxItem clone = item.copy();
 			clone.setLocalIndex(boxClones.size());
 			boxClones.add(clone);
 		}

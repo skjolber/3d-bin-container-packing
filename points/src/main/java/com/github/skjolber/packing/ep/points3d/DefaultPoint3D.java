@@ -85,12 +85,12 @@ public final class DefaultPoint3D extends SimplePoint3D {
 	}
 
 	@Override
-	public DefaultPoint3D clone(int maxX, int maxY, int maxZ) {
+	public DefaultPoint3D copy(int maxX, int maxY, int maxZ) {
 		return new DefaultPoint3D(minX, minY, minZ, maxX, maxY, maxZ, yzPlane, xzPlane, xyPlane);
 	}
 
 	@Override
-	public DefaultPoint3D clone() {
+	public DefaultPoint3D copy() {
 		return new DefaultPoint3D(minX, minY, minZ, maxX, maxY, maxZ, yzPlane, xzPlane, xyPlane);
 	}
 

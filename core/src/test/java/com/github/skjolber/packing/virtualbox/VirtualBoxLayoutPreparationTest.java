@@ -75,7 +75,7 @@ class VirtualBoxLayoutPreparationTest {
 	}
 
 	@Test
-	void resolvesClonedAndReindexedOrientations() {
+	void resolvesCopydAndReindexedOrientations() {
 		BoxItem original = item(1, 1, 1, 2);
 		var horizontal = new VirtualBoxLayout(new VirtualBoxBounds(2, 1, 1), List.of(placement(original, 0, 0, 0), placement(original, 1, 0, 0)));
 		var vertical = new VirtualBoxLayout(new VirtualBoxBounds(1, 1, 2), List.of(placement(original, 0, 0, 0), placement(original, 0, 0, 1)));
@@ -83,7 +83,7 @@ class VirtualBoxLayoutPreparationTest {
 		packing.add(item(2, 2, 2, 1));
 		packing.add(VirtualBox.of(List.of(horizontal, vertical)));
 		BoxItem delegate = packing.getItems().get(1);
-		BoxItem cloned = new BoxItem(delegate.getBox().clone(), 1, 73, delegate.getGlobalIndex());
+		BoxItem cloned = new BoxItem(delegate.getBox().copy(), 1, 73, delegate.getGlobalIndex());
 		assertThat(packing.getLayout(cloned.getBox().getStackValue(0))).isSameAs(horizontal);
 		assertThat(packing.getLayout(cloned.getBox().getStackValue(1))).isSameAs(vertical);
 		assertThat(packing.getLayout(packing.getItems().get(0).getBox().getStackValue(0))).isNull();

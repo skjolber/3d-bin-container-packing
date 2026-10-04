@@ -646,11 +646,10 @@ public class Box {
 		return volume;
 	}
 
-	@Override
-	public Box clone() {
+	public Box copy() {
 		BoxStackValue[] stackValues = new BoxStackValue[this.stackValues.length];
 		for (int i = 0; i < stackValues.length; i++) {
-			stackValues[i] = this.stackValues[i].clone();
+			stackValues[i] = this.stackValues[i].copy();
 		}
 		return new Box(this, stackValues);
 	}

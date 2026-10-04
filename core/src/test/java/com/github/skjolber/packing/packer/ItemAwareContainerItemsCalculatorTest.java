@@ -88,7 +88,7 @@ class ItemAwareContainerItemsCalculatorTest {
 		assertThat(calculator.isFeasible(List.of(smallItems, largeItem))).isFalse();
 		assertThat(calculator.isFeasible(List.of(smallItems))).isFalse();
 
-		BoxItemsContainerItemsCalculator clone = calculator.clone();
+		BoxItemsContainerItemsCalculator clone = calculator.copy();
 		clone.toContainer(clone.getContainerItem(0), stack(small));
 		assertThat(clone.hasContainer(0)).isFalse();
 		assertThat(calculator.hasContainer(0)).isTrue();
@@ -130,7 +130,7 @@ class ItemAwareContainerItemsCalculatorTest {
 		assertThat(calculator.isGroupFeasible(List.of(pair, single))).isFalse();
 		assertThat(calculator.isGroupFeasible(List.of(single))).isTrue();
 
-		BoxItemGroupsContainerItemsCalculator clone = calculator.clone();
+		BoxItemGroupsContainerItemsCalculator clone = calculator.copy();
 		assertThat(clone.getRemainingVolume()).isEqualTo(1);
 		assertThat(clone.hasContainer(0)).isFalse();
 

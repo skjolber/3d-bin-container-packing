@@ -31,7 +31,7 @@ public class BruteForceContainerStrategy implements ContainerStrategy {
 		 * Create an independent snapshot for a parallel search branch. Mutable
 		 * result state must not be shared between branches.
 		 */
-		Controls clone();
+		Controls copy();
 
 		/**
 		 * Check whether to attempt packaging the selected container.

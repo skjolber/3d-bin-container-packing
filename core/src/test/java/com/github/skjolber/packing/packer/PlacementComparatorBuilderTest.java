@@ -1049,7 +1049,7 @@ class PlacementComparatorBuilderTest {
 	 * </pre>
 	 */
 	@Test
-	void withConstraints_returnsIndependentClone() {
+	void withConstraints_returnsIndependentCopy() {
 		DefaultPlacementComparatorFactory.Builder template = DefaultPlacementComparatorFactory.newFactory();
 		DefaultPlacementComparatorFactory.Builder cloneA = template.withConstraints(true, false, false, false);
 		DefaultPlacementComparatorFactory.Builder cloneB = template.withConstraints(false, false, true, false);

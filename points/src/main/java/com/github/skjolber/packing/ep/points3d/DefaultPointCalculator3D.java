@@ -934,7 +934,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			if(immutablePoints) {
 				long area = (placement.getAbsoluteX() - point.getMinX()) * (long)point.getDy();
 				if(area >= minAreaLimit) {
-					SimplePoint3D clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+					SimplePoint3D clone = point.copy(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
 					constrainXX.set(clone, i);
 				}
 			} else {
@@ -972,7 +972,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			
 			if(immutablePoints) {
 				// area is same as before, so not necessary to constrain
-				SimplePoint3D clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+				SimplePoint3D clone = point.copy(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
 				constrainZZ.set(clone, i);
 			} else {
 				point.setMaxZ(placement.getAbsoluteZ() - 1);
@@ -1011,7 +1011,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			if(immutablePoints) {
 				long area = (placement.getAbsoluteY() - point.getMinY()) * (long)point.getDx();
 				if(area >= minAreaLimit) {
-					SimplePoint3D clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+					SimplePoint3D clone = point.copy(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
 					constrainYY.set(clone, i);
 				}
 			} else {
@@ -1277,7 +1277,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 						}
 					}
 
-					SimplePoint3D clone = point.clone(cloneMaxX, point.getMaxY(), point.getMaxZ());
+					SimplePoint3D clone = point.copy(cloneMaxX, point.getMaxY(), point.getMaxZ());
 
 					addedXX.add(clone);
 					constrainXX.set(clone, i);
@@ -1317,7 +1317,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 						}
 					}
 
-					SimplePoint3D clone = point.clone(point.getMaxX(), cloneMaxY, point.getMaxZ());
+					SimplePoint3D clone = point.copy(point.getMaxX(), cloneMaxY, point.getMaxZ());
 
 					addedYY.add(clone);
 					constrainYY.set(clone, i);
@@ -1357,7 +1357,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 							}
 						}
 					}
-					SimplePoint3D clone = point.clone(point.getMaxX(), point.getMaxY(), cloneMaxZ);
+					SimplePoint3D clone = point.copy(point.getMaxX(), point.getMaxY(), cloneMaxZ);
 
 					addedZZ.add(clone);
 					constrainZZ.set(clone, i);
@@ -1640,21 +1640,21 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			// fall through: must add multiple points
 
 			if(point.getMinX() < placement.getAbsoluteX() &&!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
-				SimplePoint3D clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+				SimplePoint3D clone = point.copy(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
 				constrainXX.set(clone, i);
 				addedXX.add(clone);
 				splitXX = true;
 			}
 			
 			if(point.getMinY() < placement.getAbsoluteY() && !isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
-				SimplePoint3D clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+				SimplePoint3D clone = point.copy(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
 				constrainYY.set(clone, i);
 				addedYY.add(clone);
 				splitYY = true;
 			}
 
 			if(point.getMinZ() < placement.getAbsoluteZ() &&!isConstrainedAtMaxZ(point, placement.getAbsoluteZ() - 1)) {
-				SimplePoint3D clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+				SimplePoint3D clone = point.copy(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
 				constrainZZ.set(clone, i);
 				addedZZ.add(clone);
 				splitZZ = true;
@@ -1786,7 +1786,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		} else {
 			for (int i = 0; i < initialPoints.size(); i++) {
 				SimplePoint3D simplePoint3D = initialPoints.get(i);
-				SimplePoint3D clone = simplePoint3D.clone();
+				SimplePoint3D clone = simplePoint3D.copy();
 				clone.setIndex(values.size());
 				values.add(clone);
 			}

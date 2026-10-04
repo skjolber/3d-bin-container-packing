@@ -20,7 +20,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerException;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.interrupt.ClonablePackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.CopyablePackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
@@ -199,8 +199,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	private PackagerInterruptSupplier[] forkInterrupts(PackagerInterruptSupplier[] source) {
 		PackagerInterruptSupplier[] copy = source.clone();
 		for(int i = 0; i < copy.length; i++) {
-			if(copy[i] instanceof ClonablePackagerInterruptSupplier clonable) {
-				copy[i] = (PackagerInterruptSupplier) clonable.clone();
+			if(copy[i] instanceof CopyablePackagerInterruptSupplier clonable) {
+				copy[i] = (PackagerInterruptSupplier) clonable.copy();
 			}
 		}
 		return copy;
@@ -845,10 +845,10 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		PackagerInterruptSupplier[] interrupts = new PackagerInterruptSupplier[parallelizationCount];
 
 		// clone nth interrupts so that everything is not slowed down by sharing a single counter
-		if(interrupt instanceof ClonablePackagerInterruptSupplier) {
-			ClonablePackagerInterruptSupplier c = (ClonablePackagerInterruptSupplier)interrupt;
+		if(interrupt instanceof CopyablePackagerInterruptSupplier) {
+			CopyablePackagerInterruptSupplier c = (CopyablePackagerInterruptSupplier)interrupt;
 			for (int i = 0; i < parallelizationCount; i++) {
-				interrupts[i] = (PackagerInterruptSupplier)c.clone();
+				interrupts[i] = (PackagerInterruptSupplier)c.copy();
 			}
 		} else {
 			for (int i = 0; i < parallelizationCount; i++) {
@@ -909,10 +909,10 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		PackagerInterruptSupplier[] interrupts = new PackagerInterruptSupplier[parallelizationCount];
 
 		// clone nth interrupts so that everything is not slowed down by sharing a single counter
-		if(interrupt instanceof ClonablePackagerInterruptSupplier) {
-			ClonablePackagerInterruptSupplier c = (ClonablePackagerInterruptSupplier)interrupt;
+		if(interrupt instanceof CopyablePackagerInterruptSupplier) {
+			CopyablePackagerInterruptSupplier c = (CopyablePackagerInterruptSupplier)interrupt;
 			for (int i = 0; i < parallelizationCount; i++) {
-				interrupts[i] = (PackagerInterruptSupplier)c.clone();
+				interrupts[i] = (PackagerInterruptSupplier)c.copy();
 			}
 		} else {
 			for (int i = 0; i < parallelizationCount; i++) {

@@ -218,7 +218,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, IntermediatePackagerResult best)
 			throws PackagerInterruptedException {
 
-		Container holder = containerItem.getContainer().clone(iterator.length());
+		Container holder = containerItem.getContainer().copy(iterator.length());
 		
 		Stack stack = holder.getStack();
 		

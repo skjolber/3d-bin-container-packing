@@ -172,7 +172,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 	
-			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(clone(products)).withMaxContainerCount(5).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(copy(products)).withMaxContainerCount(5).build();
 			assertValid(build);
 	
 			List<Container> packList = build.getContainers();

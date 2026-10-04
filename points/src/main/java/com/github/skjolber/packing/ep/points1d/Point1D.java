@@ -22,12 +22,11 @@ public class Point1D extends Point {
 	}
 
 	@Override
-	public Point clone(int maxX, int maxY, int maxZ) {
+	public Point copy(int maxX, int maxY, int maxZ) {
 		return new Point1D(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
-	@Override
-	public Point1D clone() {
+	public Point1D copy() {
 		return new Point1D(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 	

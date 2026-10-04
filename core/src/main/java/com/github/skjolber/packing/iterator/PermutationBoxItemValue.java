@@ -47,10 +47,10 @@ public class PermutationBoxItemValue {
 		this.index = clone.index;
 		this.count = clone.count;
 		this.values = new PermutationRotation[clone.values.length];
-		this.boxItem = clone.boxItem.clone();
+		this.boxItem = clone.boxItem.copy();
 		for (int i = 0; i < values.length; i++) {
 			PermutationRotation permutationRotation = clone.values[i];
-			values[i] = new PermutationRotation(permutationRotation.getBoxItem().clone(), permutationRotation.getBoxStackValue().clone());
+			values[i] = new PermutationRotation(permutationRotation.getBoxItem().copy(), permutationRotation.getBoxStackValue().copy());
 			
 		}
 		this.minAreaLimit = clone.minAreaLimit;
@@ -82,7 +82,7 @@ public class PermutationBoxItemValue {
 		return boxItem;
 	}
 	
-	public PermutationBoxItemValue clone() {
+	public PermutationBoxItemValue copy() {
 		return new PermutationBoxItemValue(this);
 	}
 }

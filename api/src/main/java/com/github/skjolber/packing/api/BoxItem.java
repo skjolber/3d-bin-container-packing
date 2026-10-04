@@ -77,7 +77,7 @@ public class BoxItem implements Serializable {
 		return count > 0;
 	}
 
-	public BoxItem clone() {
+	public BoxItem copy() {
 		return new BoxItem(box, count, localIndex, globalIndex);
 	}
 

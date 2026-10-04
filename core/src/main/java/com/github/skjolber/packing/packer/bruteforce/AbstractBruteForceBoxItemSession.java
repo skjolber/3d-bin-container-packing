@@ -62,7 +62,7 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 		this.boxItems = new BoxItem[source.boxItems.length];
 		for(int i = 0; i < boxItems.length; i++) {
 			if(source.boxItems[i] != null) {
-				boxItems[i] = source.boxItems[i].clone();
+				boxItems[i] = source.boxItems[i].copy();
 			}
 		}
 	}
@@ -71,7 +71,7 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 	protected List<BoxItem> copyInitialBoxItems() {
 		List<BoxItem> copies = new ArrayList<>(boxes.length);
 		for(int i = 0; i < boxes.length; i++) {
-			copies.add(new BoxItem(boxes[i].clone(), initialCounts[i], initialLocalIndexes[i], globalIndexes[i]));
+			copies.add(new BoxItem(boxes[i].copy(), initialCounts[i], initialLocalIndexes[i], globalIndexes[i]));
 		}
 		return copies;
 	}

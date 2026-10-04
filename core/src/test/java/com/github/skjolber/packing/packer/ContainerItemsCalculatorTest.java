@@ -25,7 +25,7 @@ import com.github.skjolber.packing.packer.strategy.cost.ExactContainerItemsCostC
 public class ContainerItemsCalculatorTest {
 
 	@Test
-	public void clonedCalculatorHasIndependentContainerInventory() {
+	public void copydCalculatorHasIndependentContainerInventory() {
 		Container container = Container.newBuilder()
 				.withMaxLoadWeight(100)
 				.withSize(10, 10, 10)
@@ -33,7 +33,7 @@ public class ContainerItemsCalculatorTest {
 		ContainerItemsCalculator original = create(ContainerItem.newListBuilder()
 				.withContainer(container, 2)
 				.build());
-		ContainerItemsCalculator clone = original.clone();
+		ContainerItemsCalculator clone = original.copy();
 
 		assertNotSame(original.getContainerItem(0), clone.getContainerItem(0));
 		assertEquals(0, clone.getContainerItem(0).getIndex());
@@ -60,7 +60,7 @@ public class ContainerItemsCalculatorTest {
 		first.decrement();
 		second.decrement();
 
-		ContainerItemsCalculator clone = calculator.clone();
+		ContainerItemsCalculator clone = calculator.copy();
 		clone.reset();
 		assertEquals(3, clone.getContainerCount());
 		assertEquals(2, clone.getContainerItem(0).getCount());

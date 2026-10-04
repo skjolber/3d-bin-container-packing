@@ -525,7 +525,7 @@ class VirtualBoxPackagerTest {
 					return new PackagerResult(List.of(), 0, false);
 				}
 				if(stackFirst && counts.size() == 1) {
-					Container container = containers.get(0).getContainer().clone();
+					Container container = containers.get(0).getContainer().copy();
 					int z = 0;
 					for(BoxItem item : items) {
 						BoxStackValue value = item.getBox().getStackValue(0);

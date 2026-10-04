@@ -111,7 +111,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 					// excluded, i.e. does not fit the container
 					continue;
 				}
-				groupsMatrixClone[k] = boxItemGroups[k].clone();
+				groupsMatrixClone[k] = boxItemGroups[k].copy();
 				
 				for(int l = 0; l < groupsMatrixClone[k].size(); l++) {
 					BoxItem item =  groupsMatrixClone[k].get(l);

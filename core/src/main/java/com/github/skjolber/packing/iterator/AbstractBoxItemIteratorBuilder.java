@@ -74,7 +74,7 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 			
 			List<BoxStackValue> cloned = new ArrayList<>(boundRotations.size());
 			for(BoxStackValue v : boundRotations) {
-				cloned.add(v.clone());
+				cloned.add(v.copy());
 			}
 			Box clonedBox = new Box(box, cloned);
 

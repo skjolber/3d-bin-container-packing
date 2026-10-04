@@ -38,7 +38,7 @@ public class VirtualBoxPacking {
 	protected void add(BoxItem original, int count) {
 		int index = entries.size();
 		// A BoxItem clone alone rebinds the original Box's back-reference.
-		Box copy = original.getBox().clone();
+		Box copy = original.getBox().copy();
 		items.add(new BoxItem(copy, count, -1, index));
 		entries.add(new Entry(original, null));
 	}
@@ -103,7 +103,7 @@ public class VirtualBoxPacking {
 		}
 		List<Container> containers = new ArrayList<>();
 		for(Container container : packed.getContainers()) {
-			Container expanded = container.clone();
+			Container expanded = container.copy();
 			for(Placement placement : container.getStack().getPlacements()) {
 				BoxStackValue value = placement.getStackValue();
 				VirtualBoxLayout layout = getLayout(value);

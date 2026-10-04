@@ -526,7 +526,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				if(point.getMaxX() >= placement.getAbsoluteX()) {
 					int limitX = placement.getAbsoluteX() - 1;
 					if(!isConstrainedAtMaxX(point, limitX)) {
-						SimplePoint2D clone = point.clone(limitX, point.getMaxY());
+						SimplePoint2D clone = point.copy(limitX, point.getMaxY());
 
 						addXX.add(clone);
 					}
@@ -548,7 +548,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				if(point.getMaxY() >= placement.getAbsoluteY()) {
 					int limitY = placement.getAbsoluteY() - 1;
 					if(!isConstrainedAtMaxY(point, limitY)) {
-						SimplePoint2D clone = point.clone(point.getMaxX(), limitY);
+						SimplePoint2D clone = point.copy(point.getMaxX(), limitY);
 
 						addXX.add(clone);
 					}
@@ -736,7 +736,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			addX: if(point.getMinX() < placement.getAbsoluteX()) {
 				int limitX = placement.getAbsoluteX() - 1;
 				if(!isConstrainedAtMaxX(point, limitX)) {
-					SimplePoint2D clone = point.clone(limitX, point.getMaxY());
+					SimplePoint2D clone = point.copy(limitX, point.getMaxY());
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
@@ -773,7 +773,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			addY: if(point.getMinY() < placement.getAbsoluteY()) {
 				int limitY = placement.getAbsoluteY() - 1;
 				if(!isConstrainedAtMaxY(point, limitY)) {
-					SimplePoint2D clone = point.clone(point.getMaxX(), limitY);
+					SimplePoint2D clone = point.copy(point.getMaxX(), limitY);
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
@@ -1013,13 +1013,13 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			//             
 
 			if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
-				SimplePoint2D clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY());
+				SimplePoint2D clone = point.copy(placement.getAbsoluteX() - 1, point.getMaxY());
 				addXX.add(clone);
 
 				splitXX = true;
 			}
 			if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
-				SimplePoint2D clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1);
+				SimplePoint2D clone = point.copy(point.getMaxX(), placement.getAbsoluteY() - 1);
 				addYY.add(clone);
 
 				splitYY = true;
@@ -1202,7 +1202,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		} else {
 			for (int i = 0; i < initialPoints.size(); i++) {
 				SimplePoint2D simplePoint3D = initialPoints.get(i);
-				SimplePoint2D clone = simplePoint3D.clone();
+				SimplePoint2D clone = simplePoint3D.copy();
 				clone.setIndex(values.size());
 				values.add(clone);
 			}

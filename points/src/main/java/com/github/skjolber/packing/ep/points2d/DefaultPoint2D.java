@@ -100,17 +100,17 @@ public final class DefaultPoint2D extends SimplePoint2D {
 	}
 
 	@Override
-	public SimplePoint2D clone(int maxX, int maxY) {
+	public SimplePoint2D copy(int maxX, int maxY) {
 		return new DefaultPoint2D(minX, minY, minZ, maxX, maxY, maxZ, xSupport, ySupport);
 	}
 
 	@Override
-	public DefaultPoint2D clone(int maxX, int maxY, int maxZ) {
+	public DefaultPoint2D copy(int maxX, int maxY, int maxZ) {
 		return new DefaultPoint2D(minX, minY, minZ, maxX, maxY, maxZ, xSupport, ySupport);
 	}
 
 	@Override
-	public SimplePoint2D clone() {
+	public SimplePoint2D copy() {
 		return new DefaultPoint2D(minX, minY, minZ, maxX, maxY, maxZ, xSupport, ySupport);
 	}
 

@@ -266,7 +266,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			BoxItemPermutationRotationIterator iterator,
 			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator, IntermediatePackagerResult best) throws PackagerInterruptedException {
 		
-		Container holder = containerItem.getContainer().clone(iterator.length());
+		Container holder = containerItem.getContainer().copy(iterator.length());
 		
 		Stack stack = holder.getStack();
 		

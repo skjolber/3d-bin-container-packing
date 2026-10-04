@@ -38,7 +38,7 @@ public final class LowestCostControls implements Controls {
 	}
 
 	@Override
-	public LowestCostControls clone() {
+	public LowestCostControls copy() {
 		return new LowestCostControls(costCalculator, best);
 	}
 

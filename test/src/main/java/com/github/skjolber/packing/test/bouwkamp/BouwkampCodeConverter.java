@@ -18,7 +18,7 @@ public class BouwkampCodeConverter {
 		}
 
 		@Override
-		public Point clone(int maxX, int maxY, int maxZ) {
+		public Point copy(int maxX, int maxY, int maxZ) {
 			return new BouwkampPoint(minX,  minY,  minZ, maxX, maxY, maxZ);
 		}
 		

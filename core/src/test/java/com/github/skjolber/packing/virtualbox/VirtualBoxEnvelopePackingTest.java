@@ -89,7 +89,7 @@ class VirtualBoxEnvelopePackingTest {
 		packing.add(VirtualBox.of(List.of(horizontal, vertical)));
 		packing.add(b);
 		BoxItem item = packing.getItems().get(0);
-		BoxItem clone = new BoxItem(item.getBox().clone(), 1, 91, item.getGlobalIndex());
+		BoxItem clone = new BoxItem(item.getBox().copy(), 1, 91, item.getGlobalIndex());
 		Container packed = container(5, 3, 4);
 		Placement envelope = new Placement(clone.getBox().getStackValue(1), -1, 3, 1, 1, false);
 		packed.getStack().add(envelope);

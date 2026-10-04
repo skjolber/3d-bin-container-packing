@@ -273,7 +273,7 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 		for (int i = 0; i < stackableItems.length; i++) {
 			BoxItem loadableItem = stackableItems[i];
 			if(loadableItem != null && !loadableItem.isEmpty()) {
-				boxItems.add(loadableItem.clone());
+				boxItems.add(loadableItem.copy());
 			}
 		}
 

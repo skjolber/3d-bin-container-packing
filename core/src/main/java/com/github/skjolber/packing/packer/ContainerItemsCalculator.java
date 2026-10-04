@@ -16,7 +16,7 @@ import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 import com.github.skjolber.packing.api.packager.strategy.ContainerItemsResult;
 
-public class ContainerItemsCalculator implements Cloneable, ContainerInventory {
+public class ContainerItemsCalculator implements ContainerInventory {
 
 	public static class Limit {
 		
@@ -71,8 +71,7 @@ public class ContainerItemsCalculator implements Cloneable, ContainerInventory {
 		Collections.sort(containerItemsSortedByVolume, ContainerItem.MAX_LOAD_VOLUME_COMPARATOR);
 	}
 
-	@Override
-	public ContainerItemsCalculator clone() {
+	public ContainerItemsCalculator copy() {
 		List<ContainerItem> copies = new ArrayList<>(containerItems.size());
 		for(ContainerItem item : containerItems) {
 			copies.add(new ContainerItem(item));

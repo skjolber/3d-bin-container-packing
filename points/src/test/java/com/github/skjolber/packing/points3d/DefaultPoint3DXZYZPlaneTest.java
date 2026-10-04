@@ -204,8 +204,8 @@ public class DefaultPoint3DXZYZPlaneTest extends AbstractPointTest {
 	}
 
 	@Test
-	public void testClone() {
-		DefaultPoint3D clone = point.clone();
+	public void testCopy() {
+		DefaultPoint3D clone = point.copy();
 		
 		assertEquals(point.getMinX(), clone.getMinX());
 		assertEquals(point.getMinY(), clone.getMinY());

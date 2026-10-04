@@ -90,7 +90,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 		for (int i = 0; i < stackableItems.length; i++) {
 			BoxItem boxItem = stackableItems[i];
 			if(boxItem != null && !boxItem.isEmpty()) {
-				boxItems.add(boxItem.clone());
+				boxItems.add(boxItem.copy());
 			}
 		}
 
@@ -274,7 +274,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 		for (int i = 0; i < stackableItems.length; i++) {
 			BoxItem loadableItem = stackableItems[i];
 			if(loadableItem != null && !loadableItem.isEmpty()) {
-				boxItems.add(loadableItem.clone());
+				boxItems.add(loadableItem.copy());
 			}
 		}
 

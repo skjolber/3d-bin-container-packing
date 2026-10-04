@@ -37,7 +37,7 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 		
 		List<BoxItemGroup> groupClones = new LinkedList<>();
 		for (BoxItemGroup boxItemGroup : boxItemGroups) {
-			BoxItemGroup clone = boxItemGroup.clone();
+			BoxItemGroup clone = boxItemGroup.copy();
 			clone.setIndex(groupClones.size());
 			groupClones.add(clone);
 			clone.mark();

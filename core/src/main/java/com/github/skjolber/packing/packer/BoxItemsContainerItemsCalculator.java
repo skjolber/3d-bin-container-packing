@@ -93,7 +93,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 	}
 
 	@Override
-	public BoxItemsContainerItemsCalculator clone() {
+	public BoxItemsContainerItemsCalculator copy() {
 		return new BoxItemsContainerItemsCalculator(this, copyContainerItems());
 	}
 

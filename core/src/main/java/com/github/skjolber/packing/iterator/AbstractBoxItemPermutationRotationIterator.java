@@ -26,7 +26,7 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 		BoxItem[] copy = new BoxItem[source.length];
 		for(int i = 0; i < source.length; i++) {
 			if(source[i] != null) {
-				copy[i] = source[i].clone();
+				copy[i] = source[i].copy();
 			}
 		}
 		return copy;

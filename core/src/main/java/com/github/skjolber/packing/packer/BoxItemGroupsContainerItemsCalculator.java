@@ -61,7 +61,7 @@ public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsC
 	}
 
 	@Override
-	public BoxItemGroupsContainerItemsCalculator clone() {
+	public BoxItemGroupsContainerItemsCalculator copy() {
 		return new BoxItemGroupsContainerItemsCalculator(this, copyContainerItems());
 	}
 

@@ -626,7 +626,7 @@ class ContainerCostPackingTest {
 		}
 
 		@Override
-		public ComparisonControls clone() {
+		public ComparisonControls copy() {
 			ComparisonControls copy = new ComparisonControls(comparator);
 			copy.best = best;
 			return copy;

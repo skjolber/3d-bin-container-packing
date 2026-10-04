@@ -32,10 +32,6 @@
 	<Match>
 		<Bug pattern="MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR"/>
 	</Match>
-	<!-- FALSE POSITIVE: clone() methods are the library's own copy methods, not Object.clone() -->
-	<Match>
-		<Bug pattern="CN_IMPLEMENTS_CLONE_BUT_NOT_CLONEABLE,CN_IDIOM_NO_SUPER_CALL"/>
-	</Match>
 	<!-- FALSE POSITIVE: builder and lazily initialized fields, set before use -->
 	<Match>
 		<Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>

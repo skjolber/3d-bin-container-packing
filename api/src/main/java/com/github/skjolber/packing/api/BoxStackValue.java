@@ -314,8 +314,7 @@ public class BoxStackValue {
 		return "BoxStackValue[" + surfaces + " " + dx + "x" + dy + "x" + dz + "]";
 	}
 
-	@Override
-	public BoxStackValue clone() {
+	public BoxStackValue copy() {
 		return new BoxStackValue(this);
 	}
 

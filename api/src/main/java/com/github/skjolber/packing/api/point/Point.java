@@ -367,7 +367,7 @@ public abstract class Point {
 		this.area = (long)dx * (long)dy;
 	}
 	
-	public abstract Point clone(int maxX, int maxY, int maxZ);
+	public abstract Point copy(int maxX, int maxY, int maxZ);
 
 	public boolean containsInYZPlane(Point point) {
 		if(point.getMinX() == minX) {

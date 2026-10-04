@@ -244,7 +244,7 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 		points[i] = point;
 	}
 	
-	public Point3DFlagList clone(boolean clonePoints) {
+	public Point3DFlagList copy(boolean clonePoints) {
 		Point3DFlagList clone = new Point3DFlagList(points.length);
 
 		clone.size = size;
@@ -252,7 +252,7 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 		System.arraycopy(flag, 0, clone.flag, 0, flag.length);
 		if(clonePoints) {
 			for(int i = 0; i < size; i++) {
-				clone.points[i] = points[i].clone();
+				clone.points[i] = points[i].copy();
 			}
 		} else {
 			System.arraycopy(points, 0, clone.points, 0, points.length);

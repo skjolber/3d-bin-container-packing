@@ -279,12 +279,11 @@ public class Container {
 		return false;
 	}
 
-	@Override
-	public Container clone() {
-		return clone(0);
+	public Container copy() {
+		return copy(0);
 	}
 
-	public Container clone(int stackCapacity) {
+	public Container copy(int stackCapacity) {
 		return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight,
 				new Stack(stackCapacity), motion);
 	}

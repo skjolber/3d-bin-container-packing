@@ -93,16 +93,16 @@ public class BoxTest {
 	}
 
 	@Test
-	public void testContainerClonePreservesMotion() {
+	public void testContainerCopyPreservesMotion() {
 		Motion motion = new Motion();
 		Container container = new Container("id", "description", 1, 2, 3, 4, 1, 2, 3, 5, new Stack(), motion);
 
-		Container clone = container.clone();
+		Container clone = container.copy();
 
 		assertSame(motion, clone.getMotion());
 	}
 	@Test
-	void cloneCopiesDerivedValues() {
+	void copyCopiesDerivedValues() {
 		Box box = Box.newBuilder()
 				.withId("box")
 				.withSize(3, 5, 7)
@@ -112,7 +112,7 @@ public class BoxTest {
 				.withMaxLoadBoxCount(4)
 				.build();
 
-		Box clone = box.clone();
+		Box clone = box.copy();
 
 		assertEquals(box.getId(), clone.getId());
 		assertEquals(box.getVolume(), clone.getVolume());

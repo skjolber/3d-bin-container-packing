@@ -114,11 +114,11 @@ public class BoxItemGroup {
 		}
 	}
 
-	public BoxItemGroup clone() {
+	public BoxItemGroup copy() {
 		List<BoxItem> items = new ArrayList<>();
 
 		for (BoxItem boxItem : this.items) {
-			items.add(boxItem.clone());
+			items.add(boxItem.copy());
 		}
 
 		return new BoxItemGroup(id, items);

@@ -28,17 +28,17 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 
 	protected AbstractPackagerSession(ContainerItemsCalculator containerItemsCalculator) {
 		this.packagerContainerItems = containerItemsCalculator;
-		this.initialContainerItems = packagerContainerItems.clone();
+		this.initialContainerItems = packagerContainerItems.copy();
 	}
 
 	protected AbstractPackagerSession(AbstractPackagerSession source) {
-		this.packagerContainerItems = source.packagerContainerItems.clone();
-		this.initialContainerItems = source.initialContainerItems.clone();
+		this.packagerContainerItems = source.packagerContainerItems.copy();
+		this.initialContainerItems = source.initialContainerItems.copy();
 	}
 
 	@Override
 	public PackagerSession fresh() {
-		ContainerItemsCalculator containers = initialContainerItems.clone();
+		ContainerItemsCalculator containers = initialContainerItems.copy();
 		return fresh(containers.getContainerItems(), containers.getContainerCount());
 	}
 
@@ -48,7 +48,7 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 	public static List<BoxItem> copyBoxItems(List<BoxItem> items) {
 		List<BoxItem> copies = new ArrayList<>(items.size());
 		for(BoxItem item : items) {
-			copies.add(new BoxItem(item.getBox().clone(), item.getCount(), item.getLocalIndex(), item.getGlobalIndex()));
+			copies.add(new BoxItem(item.getBox().copy(), item.getCount(), item.getLocalIndex(), item.getGlobalIndex()));
 		}
 		return copies;
 	}

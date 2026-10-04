@@ -114,7 +114,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			PackagerResult build = packager
 					.newResultBuilder()
 					.withContainerItems(containers)
-					.withBoxItems(clone(products))
+					.withBoxItems(copy(products))
 					.withMaxContainerCount(5)
 					.build();
 	

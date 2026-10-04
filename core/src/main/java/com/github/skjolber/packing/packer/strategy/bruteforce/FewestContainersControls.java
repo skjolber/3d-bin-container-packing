@@ -19,7 +19,7 @@ public final class FewestContainersControls implements BruteForceContainerStrate
 	}
 
 	@Override
-	public FewestContainersControls clone() {
+	public FewestContainersControls copy() {
 		return new FewestContainersControls(best);
 	}
 

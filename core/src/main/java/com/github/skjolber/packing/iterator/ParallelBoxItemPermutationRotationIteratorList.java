@@ -94,7 +94,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 				
 				List<BoxStackValue> cloned = new ArrayList<>(boundRotations.size());
 				for(BoxStackValue v : boundRotations) {
-					cloned.add(v.clone());
+					cloned.add(v.copy());
 				}
 				Box clonedBox = new Box(box, cloned);
 				
@@ -125,7 +125,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 			
 			// clone working variables so threads are less of the same
 			// memory area as one another
-			BoxItem[] clone = clone(boxItems);
+			BoxItem[] clone = copy(boxItems);
 			workUnits[i] = new ParallelBoxItemPermutationRotationIterator(clone, this);
 		}
 
@@ -145,7 +145,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 		return new ParallelBoxItemPermutationRotationIteratorList(this);
 	}
 
-	private BoxItem[] clone(BoxItem[] boxItems) {
+	private BoxItem[] copy(BoxItem[] boxItems) {
 		BoxItem[] result = new BoxItem[boxItems.length];
 		for(int i = 0; i < boxItems.length; i++) {
 			
@@ -155,7 +155,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 				
 				List<BoxStackValue> cloned = new ArrayList<>(boxItems.length);
 				for(BoxStackValue v : box.getStackValues()) {
-					cloned.add(v.clone());
+					cloned.add(v.copy());
 				}
 				Box clonedBox = new Box(box, cloned);
 				

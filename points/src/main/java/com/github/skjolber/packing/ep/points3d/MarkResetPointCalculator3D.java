@@ -25,7 +25,7 @@ public class MarkResetPointCalculator3D extends DefaultPointCalculator3D {
 	}
 
 	public void mark() {
-		this.markValues = values.clone(!immutablePoints);
+		this.markValues = values.copy(!immutablePoints);
 		
 		this.markMinAreaLimit = minAreaLimit;
 		this.markMinVolumeLimit = minVolumeLimit;

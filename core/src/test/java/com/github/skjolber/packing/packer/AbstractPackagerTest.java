@@ -166,11 +166,11 @@ public abstract class AbstractPackagerTest {
 	}
 	
 
-	public List<BoxItem> clone(List<BoxItem> products) {
+	public List<BoxItem> copy(List<BoxItem> products) {
 		List<BoxItem> results = new ArrayList<>();
 		
 		for (BoxItem boxItem : products) {
-			results.add(boxItem.clone());
+			results.add(boxItem.copy());
 		}
 		
 		return results;
@@ -180,7 +180,7 @@ public abstract class AbstractPackagerTest {
 		List<BoxItemGroup> results = new ArrayList<>();
 		
 		for (BoxItemGroup boxItemGroup : groups) {
-			results.add(boxItemGroup.clone());
+			results.add(boxItemGroup.copy());
 		}
 		
 		return results;

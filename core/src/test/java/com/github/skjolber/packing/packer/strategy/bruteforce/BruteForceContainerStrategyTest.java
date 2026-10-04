@@ -250,7 +250,7 @@ class BruteForceContainerStrategyTest {
 		}
 
 		@Override
-		public TestControls clone() {
+		public TestControls copy() {
 			TestControls copy = new TestControls(comparator, attemptFilter);
 			copy.best = best;
 			return copy;
@@ -321,7 +321,7 @@ class BruteForceContainerStrategyTest {
 
 		@Override
 		public PackagerSession fork() {
-			ContainerItemsCalculator calculator = packagerContainerItems.clone();
+			ContainerItemsCalculator calculator = packagerContainerItems.copy();
 			branchCalculators.add(calculator);
 			TestSession fork = new TestSession(calculator, branchCalculators, attemptedCounts,
 					initialRemaining, completed, queryCalls);

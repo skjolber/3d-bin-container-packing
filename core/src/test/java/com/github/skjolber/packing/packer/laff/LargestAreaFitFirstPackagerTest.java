@@ -418,7 +418,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 						createStackableItem("9", 1120, 1700, 2120, 160, boxCountPerStackableItem),
 						createStackableItem("10", 1200, 1050, 2280, 390, boxCountPerStackableItem));
 	
-				PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(clone(products)).build();
+				PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(copy(products)).build();
 				if(result.isSuccess()) {
 					List<Container> packList = result.getContainers();
 					assertTrue(i >= packList.size());

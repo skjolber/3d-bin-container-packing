@@ -223,9 +223,9 @@ class ContainerAllocationStrategyTest {
 		public PackagerSession fork() {
 			List<BoxItem> copies = new ArrayList<>(boxes.size());
 			for(BoxItem item : boxes) {
-				copies.add(item.clone());
+				copies.add(item.copy());
 			}
-			return new BranchSession(calculator.clone(), copies, attempts, containerQueries);
+			return new BranchSession(calculator.copy(), copies, attempts, containerQueries);
 		}
 	}
 }
