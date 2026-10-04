@@ -8,6 +8,52 @@ public class ContainerVisualizer extends StackableVisualizer {
 
 	private StackVisualizer stack;
 
+	private int emptyWeight;
+	private int maxLoadWeight;
+	private long loadWeight;
+	private long maxLoadVolume;
+	private long loadVolume;
+
+	public int getEmptyWeight() {
+		return emptyWeight;
+	}
+
+	public void setEmptyWeight(int emptyWeight) {
+		this.emptyWeight = emptyWeight;
+	}
+
+	public int getMaxLoadWeight() {
+		return maxLoadWeight;
+	}
+
+	public void setMaxLoadWeight(int maxLoadWeight) {
+		this.maxLoadWeight = maxLoadWeight;
+	}
+
+	public long getLoadWeight() {
+		return loadWeight;
+	}
+
+	public void setLoadWeight(long loadWeight) {
+		this.loadWeight = loadWeight;
+	}
+
+	public long getMaxLoadVolume() {
+		return maxLoadVolume;
+	}
+
+	public void setMaxLoadVolume(long maxLoadVolume) {
+		this.maxLoadVolume = maxLoadVolume;
+	}
+
+	public long getLoadVolume() {
+		return loadVolume;
+	}
+
+	public void setLoadVolume(long loadVolume) {
+		this.loadVolume = loadVolume;
+	}
+
 	private String type = "container";
 
 	public int getLoadDx() {

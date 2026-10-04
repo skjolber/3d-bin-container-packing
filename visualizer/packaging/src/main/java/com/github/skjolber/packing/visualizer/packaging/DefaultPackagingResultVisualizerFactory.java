@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.visualizer.packaging;
 
+import java.io.File;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.point.Point;
@@ -30,6 +32,22 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 		this.calculatePoints = calculatePoints;
 	}
 	
+	/**
+	 * Visualize a packager result: its containers, and whether it succeeded, its duration and cost.
+	 */
+	public PackagingResultVisualizer visualize(PackagerResult result) {
+		PackagingResultVisualizer visualization = visualize(result.getContainers());
+		visualization.setSuccess(result.isSuccess());
+		visualization.setTimeout(result.isTimeout());
+		visualization.setDuration(result.getDuration());
+		visualization.setCost(result.getCost());
+		return visualization;
+	}
+
+	public void visualize(PackagerResult result, File output) throws Exception {
+		write(visualize(result), output);
+	}
+
 	public PackagingResultVisualizer visualize(List<Container> inputContainers) {
 		
 		boolean calculatePoints = this.calculatePoints;
@@ -51,6 +69,11 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 
 			containerVisualization.setId(inputContainer.getId());
 			containerVisualization.setName(inputContainer.getDescription());
+			containerVisualization.setEmptyWeight(inputContainer.getEmptyWeight());
+			containerVisualization.setMaxLoadWeight(inputContainer.getMaxLoadWeight());
+			containerVisualization.setLoadWeight(inputContainer.getLoadWeight());
+			containerVisualization.setMaxLoadVolume(inputContainer.getMaxLoadVolume());
+			containerVisualization.setLoadVolume(inputContainer.getLoadVolume());
 
 			StackVisualizer stackVisualization = new StackVisualizer();
 			stackVisualization.setStep(step++);

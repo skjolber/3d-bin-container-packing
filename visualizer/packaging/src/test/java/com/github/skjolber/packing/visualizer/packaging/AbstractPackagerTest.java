@@ -30,6 +30,9 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 public class AbstractPackagerTest {
 
+	/** The file shown by the viewer */
+	protected static final File OUTPUT = new File("../viewer/public/assets/containers.json");
+
 	protected ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory());
 
 	protected void write(PackagerResult result) throws Exception {
@@ -37,7 +40,7 @@ public class AbstractPackagerTest {
 	}
 
 	protected void write(PackagerResult result, boolean calculatePoints) throws Exception {
-		write(result.getContainers(), calculatePoints);
+		new DefaultPackagingResultVisualizerFactory(calculatePoints).visualize(result, OUTPUT);
 	}
 
 	protected void write(Container container) throws Exception {
@@ -55,8 +58,7 @@ public class AbstractPackagerTest {
 	protected void write(List<Container> packList, boolean calculatePoints) throws Exception {
 		DefaultPackagingResultVisualizerFactory p = new DefaultPackagingResultVisualizerFactory(calculatePoints);
 
-		File file = new File("../viewer/public/assets/containers.json");
-		p.visualize(packList, file);
+		p.visualize(packList, OUTPUT);
 	}
 
 	protected <T> void pack(List<BouwkampCodes> codes, AbstractPackager packager) throws Exception {

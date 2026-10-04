@@ -12,22 +12,25 @@ import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisua
 public abstract class AbstractPackagingResultVisualizerFactory<T> implements PackagingResultVisualizerFactory<T> {
 
 	public void visualize(List<T> input, OutputStream out) throws Exception {
-		PackagingResultVisualizer project = visualize(input);
-
-		out.write(project.toJson().getBytes(StandardCharsets.UTF_8));
+		write(visualize(input), out);
 	}
 
 	public void visualize(List<T> input, File output) throws Exception {
+		write(visualize(input), output);
+	}
+
+	protected void write(PackagingResultVisualizer visualization, OutputStream out) throws Exception {
+		out.write(visualization.toJson().getBytes(StandardCharsets.UTF_8));
+	}
+
+	protected void write(PackagingResultVisualizer visualization, File output) throws Exception {
 		if(!output.getParentFile().exists()) {
 			if(!output.getParentFile().mkdirs()) {
 				throw new IOException("Unable to create parent directory for " + output);
 			}
 		}
-		FileOutputStream fout = new FileOutputStream(output);
-		try {
-			visualize(input, fout);
-		} finally {
-			fout.close();
+		try (FileOutputStream fout = new FileOutputStream(output)) {
+			write(visualization, fout);
 		}
 	}
 }

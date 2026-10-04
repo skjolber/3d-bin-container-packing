@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
@@ -54,7 +55,7 @@ class DefaultPackagingResultVisualizerFactoryTest {
 
 	@Test
 	void writesTheSampleJson() throws Exception {
-		String json = new DefaultPackagingResultVisualizerFactory(true).visualize(List.of(sampleContainer())).toJson().replace("\r\n", "\n") + "\n";
+		String json = new DefaultPackagingResultVisualizerFactory(true).visualize(new PackagerResult(List.of(sampleContainer()), 12, false, 34)).toJson().replace("\r\n", "\n") + "\n";
 		if(Boolean.getBoolean("visualizer.updateSample")) {
 			Files.writeString(SAMPLE.toPath(), json, StandardCharsets.UTF_8);
 		}

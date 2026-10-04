@@ -105,6 +105,15 @@
         "points" : [ ]
       } ]
     },
+    "emptyWeight" : 0,
+    "maxLoadWeight" : 100,
+    "loadWeight" : 9,
+    "maxLoadVolume" : 4,
+    "loadVolume" : 4,
     "type" : "container"
-  } ]
+  } ],
+  "success" : true,
+  "timeout" : false,
+  "duration" : 12,
+  "cost" : 34
 }

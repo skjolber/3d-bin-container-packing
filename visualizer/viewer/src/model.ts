@@ -75,6 +75,12 @@ export class Container extends Stackable {
     
     stack : Stack;
 
+    emptyWeight : number = 0;
+    maxLoadWeight : number = 0;
+    loadWeight : number = 0;
+    maxLoadVolume : number = 0;
+    loadVolume : number = 0;
+
     constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number, loadDx : number, loadDy : number, loadDz: number) {
         super(name, id, step, dx, dy, dz);
 
@@ -138,6 +144,13 @@ export interface Packaging {
     maxStep : number;
     /** Highest number of points after a box, by the box's step. */
     maxPointNumbers : Array<number>;
+    /** Whether packaging succeeded, or undefined if only containers were visualized. */
+    success? : boolean;
+    timeout? : boolean;
+    /** Packaging duration in milliseconds. */
+    duration? : number;
+    /** Total container cost, or -1 if not calculated. */
+    cost? : number;
 }
 
 /**
@@ -153,6 +166,11 @@ export function parsePackaging(json : any) : Packaging {
         var container = new Container(containerJson.name, containerJson.id, containerJson.step,
             containerJson.dx, containerJson.dy, containerJson.dz,
             containerJson.loadDx, containerJson.loadDy, containerJson.loadDz);
+        container.emptyWeight = containerJson.emptyWeight;
+        container.maxLoadWeight = containerJson.maxLoadWeight;
+        container.loadWeight = containerJson.loadWeight;
+        container.maxLoadVolume = containerJson.maxLoadVolume;
+        container.loadVolume = containerJson.loadVolume;
 
         if(container.step < minStep || minStep == -1) {
             minStep = container.step;
@@ -195,5 +213,11 @@ export function parsePackaging(json : any) : Packaging {
         }
         containers.push(container);
     }
-    return { containers, minStep, maxStep, maxPointNumbers };
+    return {
+        containers, minStep, maxStep, maxPointNumbers,
+        success: json.success ?? undefined,
+        timeout: json.timeout ?? undefined,
+        duration: json.duration ?? undefined,
+        cost: json.cost ?? undefined
+    };
 }

@@ -8,6 +8,7 @@ import { StackPlacement, parsePackaging } from "./model";
 import { http, computeLoads } from "./utils";
 import { Font } from 'three/examples/jsm/loaders/FontLoader';
 import SupportingPlacementsView from "./SupportingPlacementsView";
+import ResultSummaryView from "./ResultSummaryView";
 
 import randomColor from "randomcolor";
 import { thisExpression } from "@babel/types";
@@ -60,7 +61,7 @@ const font = new Font( helvetiker );
 class ThreeScene extends Component {
   constructor(props) {
     super(props);
-    this.state = { useWireFrame: false, selectedBox: null, hoveredData: null };
+    this.state = { useWireFrame: false, selectedBox: null, hoveredData: null, packaging: null };
     visibleContainers = new Array();
     // Raw mouse position in client coordinates (updated on every mousemove)
     this.mouseX = 0;
@@ -314,6 +315,7 @@ class ThreeScene extends Component {
     
     
     var latestData = null;
+    const component = this;
 
     var load = function(packaging) {
 
@@ -338,6 +340,7 @@ class ThreeScene extends Component {
       var maxZ = 0;
 
       var parsed = parsePackaging(packaging);
+      component.setState({ packaging: parsed });
       maxPointNumbers = parsed.maxPointNumbers;
       maxStepNumber = parsed.maxStep + 1;
       minStepNumber = parsed.minStep;
@@ -664,7 +667,7 @@ class ThreeScene extends Component {
   //-------------HELPER------------------
   render() {
 
-    const { selectedBox, hoveredData } = this.state;
+    const { selectedBox, hoveredData, packaging } = this.state;
 
     return (
       <div>
@@ -707,6 +710,8 @@ class ThreeScene extends Component {
               </div>
             )}
         </div>
+      {/* Result summary panel */}
+      <ResultSummaryView packaging={packaging} />
       {/* Supporting placements popup — shown in a separate floating window on hover */}
       <SupportingPlacementsView
         hoveredData={hoveredData}

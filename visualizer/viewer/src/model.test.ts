@@ -27,6 +27,13 @@ test('parses the sample written by the Java visualizer', () => {
   expect((placements[1].stackable as Box).maxLoadBoxCount).toBe(1);
   expect(new Set(placements.map(p => (p.stackable as Box).boxItemKey)).size).toBe(3);
 
+  expect(packaging.success).toBe(true);
+  expect(packaging.timeout).toBe(false);
+  expect(packaging.duration).toBe(12);
+  expect(packaging.cost).toBe(34);
+  expect([container.emptyWeight, container.maxLoadWeight, container.loadWeight]).toEqual([0, 100, 9]);
+  expect([container.maxLoadVolume, container.loadVolume]).toEqual([4, 4]);
+
   // container and stack, then one step per box
   expect(packaging.minStep).toBe(0);
   expect(packaging.maxStep).toBe(4);

@@ -10,6 +10,46 @@ public class PackagingResultVisualizer {
 
 	private List<ContainerVisualizer> containers = new ArrayList<>();
 
+	// packager result, or null if visualizing containers only
+	private Boolean success;
+	private Boolean timeout;
+	/** Packaging duration in milliseconds */
+	private Long duration;
+	/** Total container cost, -1 if not calculated */
+	private Long cost;
+
+	public Boolean getSuccess() {
+		return success;
+	}
+
+	public void setSuccess(Boolean success) {
+		this.success = success;
+	}
+
+	public Boolean getTimeout() {
+		return timeout;
+	}
+
+	public void setTimeout(Boolean timeout) {
+		this.timeout = timeout;
+	}
+
+	public Long getDuration() {
+		return duration;
+	}
+
+	public void setDuration(Long duration) {
+		this.duration = duration;
+	}
+
+	public Long getCost() {
+		return cost;
+	}
+
+	public void setCost(Long cost) {
+		this.cost = cost;
+	}
+
 	public List<ContainerVisualizer> getContainers() {
 		return containers;
 	}
