@@ -403,6 +403,10 @@ baseline result. Then, for each container the container strategy attempts, the p
 until one fits all remaining boxes; a costlier packager only needs to beat the cheaper packagers' result.
 The better result is returned (see `PackagerResultComparator`), and the baseline if the deadline passes.
 
+For random orders in the shipping containers of issue #1158, a plain and fast brute force composite (200 ms budget)
+packed every order, with 2-6 % less container volume than the plain packager, at 10-60 ms per order; brute force alone
+ran out of time for many of the orders. See `CompositeQualityReport` in the `jmh` module.
+
 ## Validating results
 The optional `validators` artifact checks packing results, for example the load constraints:
 
