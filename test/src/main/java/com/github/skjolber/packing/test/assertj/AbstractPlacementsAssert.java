@@ -67,7 +67,7 @@ public abstract class AbstractPlacementsAssert<SELF extends AbstractPlacementsAs
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 		boolean valid = validation.isValid(actual, reasons);
 		if(!valid || !reasons.isEmpty()) {
-			failWithMessage("Expected placements to be accepted by %s, got valid=%s with reasons %s", validator.getClass().getSimpleName(), valid, reasons);
+			failWithMessage("Expected placements to be accepted by %s, got valid=%s with reasons %s", validator.getClass().getSimpleName(), valid, AbstractValidatorResultAssert.describe(reasons));
 		}
 		return myself;
 	}
@@ -83,7 +83,7 @@ public abstract class AbstractPlacementsAssert<SELF extends AbstractPlacementsAs
 		}
 		if(expected.length > 0) {
 			if(reasons.size() != expected.length) {
-				failWithMessage("Expected %s reason(s), got %s", expected.length, reasons);
+				failWithMessage("Expected %s reason(s), got %s", expected.length, AbstractValidatorResultAssert.describe(reasons));
 			}
 			for(int i = 0; i < expected.length; i++) {
 				if(!expected[i].isInstance(reasons.get(i))) {
