@@ -18,6 +18,8 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 
 	protected List<BoxItemGroup> boxItemGroups;
 	protected final List<BoxItemGroup> initialBoxItemGroups;
+	/** The number of groups accepted so far. The iterators keep the groups' initial positions. */
+	protected int acceptedGroupCount;
 
 	public AbstractBruteForceBoxItemGroupSession(List<BoxItem> boxItems,
 			List<ContainerItem> containers, int containerCount, List<BoxItemGroup> boxItemGroups) {
@@ -31,6 +33,23 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 		super(source);
 		this.initialBoxItemGroups = copyBoxItemGroups(source.initialBoxItemGroups);
 		this.boxItemGroups = copyBoxItemGroups(source.boxItemGroups);
+		this.acceptedGroupCount = source.acceptedGroupCount;
+	}
+
+	/**
+	 * Translate positions in the remaining groups to the iterators' positions, and count the groups as accepted.
+	 * Groups are accepted in order, so the remaining groups follow the accepted groups.
+	 *
+	 * @param groupIndexes positions in the remaining groups
+	 * @return positions in the iterators
+	 */
+	protected List<Integer> acceptGroups(List<Integer> groupIndexes) {
+		List<Integer> indexes = new ArrayList<>(groupIndexes.size());
+		for(Integer groupIndex : groupIndexes) {
+			indexes.add(acceptedGroupCount + groupIndex);
+		}
+		acceptedGroupCount += groupIndexes.size();
+		return indexes;
 	}
 
 	@Override

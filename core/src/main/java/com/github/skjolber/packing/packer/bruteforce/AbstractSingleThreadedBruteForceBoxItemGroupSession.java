@@ -118,8 +118,9 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 				// remove session inventory
 				removeInventory(p);
 	
+				List<Integer> iteratorGroupIndexes = acceptGroups(removedGroups);
 				for (BoxItemGroupPermutationRotationIterator it : containerIterators) {
-					it.removeGroups(removedGroups);
+					it.removeGroups(iteratorGroupIndexes);
 				}
 				
 				boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());
@@ -138,8 +139,9 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 			Container container = packagerContainerItems.toContainer(resolveContainerItem(result), stack);
 
 			removeInventory(accepted.localIndexes());
+			List<Integer> iteratorGroupIndexes = acceptGroups(accepted.groupIndexes());
 			for (BoxItemGroupPermutationRotationIterator iterator : containerIterators) {
-				iterator.removeGroups(accepted.groupIndexes());
+				iterator.removeGroups(iteratorGroupIndexes);
 			}
 			boxItemGroups = boxItemGroups.subList(accepted.groupIndexes().size(), boxItemGroups.size());
 			stackPlacementCount = BruteForcePackager.removeFirstPlacements(stackPlacements, accepted.localIndexes().size(), stackPlacementCount);

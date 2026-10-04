@@ -711,12 +711,13 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					// remove stacked items which did not make it
 					stack.setSize(p.size());
 	
+					List<Integer> iteratorGroupIndexes = acceptGroups(removedGroups);
 					for (ParallelBoxItemGroupPermutationRotationIteratorList it : parallelIterators) {
-						it.removeGroups(removedGroups);
+						it.removeGroups(iteratorGroupIndexes);
 					}
 	
 					for (DefaultBoxItemGroupPermutationRotationIterator it : iterators) {
-						it.removeGroups(removedGroups);
+						it.removeGroups(iteratorGroupIndexes);
 					}
 					
 					boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());
@@ -741,11 +742,12 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				AcceptedGroups accepted = getAcceptedGroups(stack);
 				Container container = packagerContainerItems.toContainer(resolveContainerItem(result), stack);
 
+				List<Integer> iteratorGroupIndexes = acceptGroups(accepted.groupIndexes());
 				for (ParallelBoxItemGroupPermutationRotationIteratorList iterator : parallelIterators) {
-					iterator.removeGroups(accepted.groupIndexes());
+					iterator.removeGroups(iteratorGroupIndexes);
 				}
 				for (DefaultBoxItemGroupPermutationRotationIterator iterator : iterators) {
-					iterator.removeGroups(accepted.groupIndexes());
+					iterator.removeGroups(iteratorGroupIndexes);
 				}
 				boxItemGroups = boxItemGroups.subList(accepted.groupIndexes().size(), boxItemGroups.size());
 				removeInventory(accepted.localIndexes());
