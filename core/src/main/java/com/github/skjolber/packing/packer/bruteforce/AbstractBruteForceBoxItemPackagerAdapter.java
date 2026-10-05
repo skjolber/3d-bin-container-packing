@@ -62,7 +62,8 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 
 	protected BruteForceIntermediatePackagerResult copy(ControlledContainerItem peek, IntermediatePackagerResult result, int index) {
 		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
-			return new BruteForceIntermediatePackagerResult(peek, result.getStack(), index, bruteForceResult.getIterator());
+			// keep the permutation state, so that the stack can be calculated again when accepted
+			return bruteForceResult.copyTo(peek, index);
 		}
 		throw new IllegalStateException();
 	}
