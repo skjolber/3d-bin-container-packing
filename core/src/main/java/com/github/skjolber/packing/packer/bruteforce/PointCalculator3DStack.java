@@ -109,6 +109,16 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		return list;
 	}
 
+	@Override
+	public void clearToSize(int dx, int dy, int dz) {
+		// a search can end above the first level, for example when interrupted because another thread placed all boxes
+		if(stackIndex != 0) {
+			stackIndex = 0;
+			loadCurrent();
+		}
+		super.clearToSize(dx, dy, dz);
+	}
+
 	public void reset(int dx, int dy, int dz) {
 		setSize(dx, dy, dz);
 
