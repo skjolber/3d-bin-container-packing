@@ -185,6 +185,10 @@ See also the `ParallelBoxItemBruteForcePackager` and `FastBruteForcePackager`
 packagers. A `BruteForcePointIteratorFilter` can rank fitting points and use a
 different point limit at each placement step.
 
+With a box item order (`Order.CHRONOLOGICAL`), the brute-force packagers search the rotations and positions of the
+boxes in that order; skipping boxes (`Order.CHRONOLOGICAL_ALLOW_SKIPPING`) is not supported. With container priorities,
+they only permute the boxes within each priority. The parallel packagers support neither.
+
 Using a deadline is recommended whenever brute-forcing in a real-time application.
 
 ### Virtual-box preprocessing
@@ -428,10 +432,10 @@ BoxItemGroup group = new BoxItemGroup("order-1", items).withExtractionOrder(2);
    all the boxes of the priority before it are placed, in that container or an earlier one. With a box item order,
    the priorities must not decrease in that order.
 
-The plain and LAFF packagers support both, also for groups. The brute-force packagers support the extraction order,
-but not container priorities (see `getUnsupportedReason(..)`; `CompositePackager` skips such stages). Virtual-box
-preprocessing packs boxes with either setting directly. `DefaultValidator` checks both (`ExtractionOrderValidator`,
-`ContainerPriorityValidator`).
+The plain, LAFF and brute-force packagers support both, also for groups, except the parallel brute-force packagers,
+which do not support container priorities (see `getUnsupportedReason(..)`; `CompositePackager` skips such stages).
+Virtual-box preprocessing packs boxes with either setting directly. `DefaultValidator` checks both
+(`ExtractionOrderValidator`, `ContainerPriorityValidator`).
 
 ## Support
 Support (the area resting on boxes below) can be calculated, or full support required:
@@ -594,6 +598,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Brute-force packagers no longer reduce the counts of the box items passed in when packing uses several containers
         * Packing with several container types no longer gives up when each box fits only some of the types (the feasibility check used box indexes which change during packing)
         * Brute-force packing of box item groups over three or more containers no longer fails with a `NullPointerException`
+        * The brute-force packagers (except the parallel ones) support a box item order (`Order.CHRONOLOGICAL`) and container priorities
         * Brute-force packing of box item groups no longer fails with an `ArrayIndexOutOfBoundsException` when the boxes have different numbers of rotations (the group iterator kept the rotations of its last permutation)
         * Brute-force packagers use the first container type which holds the boxes: when a result was reused for another container type, the copy had no load volume and was never selected, so larger containers were used
         * `FastBruteForcePackager` reports interrupted packings as timeouts, like the other packagers (previously no result, or a `NullPointerException` in the container strategy)

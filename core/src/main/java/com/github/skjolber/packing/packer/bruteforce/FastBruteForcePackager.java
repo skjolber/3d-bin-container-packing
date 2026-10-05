@@ -143,7 +143,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator, best);
+			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator, best, getLimit(containerIterators[i]));
 		}
 		
 	}
@@ -265,6 +265,18 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator,
 			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator, IntermediatePackagerResult best) throws PackagerInterruptedException {
+		return pack(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, pointComparator, best, Integer.MAX_VALUE);
+	}
+
+	/**
+	 * @param limit the number of leading boxes of the permutations which may be placed (see
+	 *        {@link AbstractBruteForceBoxItemSession#getLimit(BoxItemPermutationRotationIterator)})
+	 */
+	public BruteForceIntermediatePackagerResult pack(FastPointCalculator3DStack pointCalculator,
+			Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int containerIndex,
+			BoxItemPermutationRotationIterator iterator,
+			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator, IntermediatePackagerResult best,
+			int limit) throws PackagerInterruptedException {
 		
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		
@@ -281,7 +293,10 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			loadPlacementUtility.initialize(iterator.length());
 		}
 		
-		boolean allItemsFit = canPackAll(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
+		if(limit == 0) {
+			return bestResult;
+		}
+		boolean allItemsFit = limit >= iterator.length() && canPackAll(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
 
 		// results with less load volume than the best result so far are never selected
 		long minLoadVolume = getMinLoadVolume(best);
@@ -298,7 +313,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			// iterate over all rotations
 
 			bestPermutationResult.reset();
-			int maxPackableCount = allItemsFit ? iterator.length() : getMaxPackableCount(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
+			int maxPackableCount = allItemsFit ? iterator.length() : Math.min(limit, getMaxPackableCount(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight()));
 			int size;
 			if(!allItemsFit && prefersHigherLoadVolume && getLoadVolume(iterator, maxPackableCount) < Math.max(minLoadVolume, bestResult.getLoadVolume())) {
 				// no rotation of this permutation can load more than the best result
@@ -439,7 +454,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			int maxPackableCount) {
 		boolean checkObstacles = !container.getObstacles().isEmpty();
 		boolean checkExtraction = hasExtractionOrders(iterator);
-		int[] groupStarts = getGroupStarts(iterator);
+		int[] insertAfterCounts = getInsertAfterCounts(iterator);
 		// pack as many items as possible from placementIndex
 		while (placementIndex < maxPackableCount) {
 			if(interrupt.getAsBoolean()) {
@@ -466,7 +481,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 				if(checkExtraction && !isExtractable(candidatePoint, stackValue, stack, container.getAccess())) {
 					continue;
 				}
-				if(groupStarts != null && groupStarts[placementIndex] > 0 && !isInsertableAfter(candidatePoint, stackValue, stack, groupStarts[placementIndex], container.getAccess())) {
+				if(insertAfterCounts.length != 0 && insertAfterCounts[placementIndex] > 0 && !isInsertableAfter(candidatePoint, stackValue, stack, insertAfterCounts[placementIndex], container.getAccess())) {
 					continue;
 				}
 				if(bestPointIndex == -1 || pointComparator.compare(stackValue, pointCalculator.get(bestPointIndex), candidatePoint) > 0) {

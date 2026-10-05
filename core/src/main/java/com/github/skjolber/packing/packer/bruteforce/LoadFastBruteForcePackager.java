@@ -118,7 +118,7 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 
 		boolean checkObstacles = !container.getObstacles().isEmpty();
 		boolean checkExtraction = hasExtractionOrders(iterator);
-		int[] groupStarts = getGroupStarts(iterator);
+		int[] insertAfterCounts = getInsertAfterCounts(iterator);
 		while (placementIndex < maxPackableCount) {
 			if(interrupt.getAsBoolean()) {
 				return Integer.MIN_VALUE;
@@ -141,7 +141,7 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 				if(checkExtraction && !isExtractable(point, stackValue, stack, container.getAccess())) {
 					continue;
 				}
-				if(groupStarts != null && groupStarts[placementIndex] > 0 && !isInsertableAfter(point, stackValue, stack, groupStarts[placementIndex], container.getAccess())) {
+				if(insertAfterCounts.length != 0 && insertAfterCounts[placementIndex] > 0 && !isInsertableAfter(point, stackValue, stack, insertAfterCounts[placementIndex], container.getAccess())) {
 					continue;
 				}
 				if(bestPointIndex != -1 && pointComparator.compare(stackValue, pointCalculator.get(bestPointIndex), point) <= 0) {

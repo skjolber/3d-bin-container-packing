@@ -91,6 +91,19 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 		this.reset = source.reset.clone();
 		this.permutations = source.permutations.clone();
 		this.minBoxVolume = source.minBoxVolume.clone();
+		this.fixedOrder = source.fixedOrder;
+	}
+
+	/** Whether the boxes are in a given order: there is only one permutation */
+	protected boolean fixedOrder;
+
+	public void setFixedOrder(boolean fixedOrder) {
+		this.fixedOrder = fixedOrder;
+	}
+
+	@Override
+	public boolean isFixedOrder() {
+		return fixedOrder;
 	}
 
 	public DefaultBoxItemGroupPermutationRotationIterator fork() {
@@ -206,6 +219,9 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	}
 
 	public int nextPermutation(int maxIndex) {
+		if(fixedOrder) {
+			return -1;
+		}
 		int[] permutations = this.permutations;
 
 		int limit = permutations.length;
@@ -281,6 +297,9 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	}
 
 	public int nextPermutation() {
+		if(fixedOrder) {
+			return -1;
+		}
 		resetRotations();
 
 		int[] permutations = this.permutations;

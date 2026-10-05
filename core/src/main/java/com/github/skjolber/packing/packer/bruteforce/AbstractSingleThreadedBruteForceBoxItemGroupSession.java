@@ -8,6 +8,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
@@ -52,6 +53,14 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 		this.stackPlacements = BruteForcePackager.getPlacements(stackPlacementCount, load);
 	}
 	
+	@Override
+	public void setOrder(Order order) {
+		super.setOrder(order);
+		for (BoxItemGroupPermutationRotationIterator iterator : containerIterators) {
+			((DefaultBoxItemGroupPermutationRotationIterator)iterator).setFixedOrder(this.order != Order.NONE);
+		}
+	}
+
 	protected int getMaxIteratorLength() {
 		int maxIteratorLength = 0;
 		for (BoxItemPermutationRotationIterator iterator : containerIterators) {

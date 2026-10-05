@@ -92,6 +92,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 
 	@Override
 	public String getUnsupportedReason(PackagerInput input) {
+		String reason = super.getUnsupportedReason(input);
+		if(reason != null) {
+			return reason;
+		}
 		if(!supportsLoad() && input.hasBoxItems()) {
 			for (BoxItem boxItem : input.getBoxItems()) {
 				if(boxItem.isMaxLoad() || boxItem.getBox().isLoadIdenticalBoxOnly()) {
@@ -104,16 +108,14 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				return "Controls not supported";
 			}
 		}
-		if(input.getOrder() != Order.NONE) {
-			return "Order not supported for brute force packager";
-		}
-		if(hasContainerPriorities(input)) {
-			return "Container priorities not supported for brute force packager";
+		if(input.getOrder() == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
+			// the brute-force search places a prefix of each permutation
+			return "Order CHRONOLOGICAL_ALLOW_SKIPPING not supported for brute force packager";
 		}
 		return null;
 	}
 
-	private static boolean hasContainerPriorities(PackagerInput input) {
+	protected static boolean hasContainerPriorities(PackagerInput input) {
 		if(input.hasBoxItems()) {
 			List<BoxItem> boxItems = input.getBoxItems();
 			for (int i = 1; i < boxItems.size(); i++) {
@@ -134,12 +136,45 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 
 	@Override
 	protected PackagerSession newSession(PackagerInput input, PackagerInterruptSupplier interrupt) {
+		boolean sort = input.getOrder() == Order.NONE && hasContainerPriorities(input);
+		AbstractBruteForceBoxItemSession session;
 		if(input.hasBoxItems()) {
 			AbstractPackagerSession.initializeGlobalIndexes(input.getBoxItems());
-			return createBoxItemSession(input.getBoxItems(), input.getContainerItems(), input.getMaxContainerCount(), interrupt);
+			List<BoxItem> boxItems = input.getBoxItems();
+			if(sort) {
+				// the boxes of a lower container priority first; the iterators permute within each priority
+				boxItems = new ArrayList<>(boxItems);
+				for (int i = 1; i < boxItems.size(); i++) {
+					BoxItem boxItem = boxItems.get(i);
+					int j = i - 1;
+					while(j >= 0 && boxItems.get(j).getContainerPriority() > boxItem.getContainerPriority()) {
+						boxItems.set(j + 1, boxItems.get(j));
+						j--;
+					}
+					boxItems.set(j + 1, boxItem);
+				}
+			}
+			session = createBoxItemSession(boxItems, input.getContainerItems(), input.getMaxContainerCount(), interrupt);
+		} else {
+			AbstractPackagerSession.initializeGlobalIndexesForGroups(input.getBoxItemGroups());
+			List<BoxItemGroup> groups = input.getBoxItemGroups();
+			if(sort) {
+				// the groups of a lower container priority first; groups are packed in order
+				groups = new ArrayList<>(groups);
+				for (int i = 1; i < groups.size(); i++) {
+					BoxItemGroup group = groups.get(i);
+					int j = i - 1;
+					while(j >= 0 && groups.get(j).getContainerPriority() > group.getContainerPriority()) {
+						groups.set(j + 1, groups.get(j));
+						j--;
+					}
+					groups.set(j + 1, group);
+				}
+			}
+			session = createBoxItemGroupSession(groups, input.getContainerItems(), input.getMaxContainerCount(), interrupt);
 		}
-		AbstractPackagerSession.initializeGlobalIndexesForGroups(input.getBoxItemGroups());
-		return createBoxItemGroupSession(input.getBoxItemGroups(), input.getContainerItems(), input.getMaxContainerCount(), interrupt);
+		session.setOrder(input.getOrder());
+		return session;
 	}
 
 	@Override
@@ -266,6 +301,16 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int index,
 			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, IntermediatePackagerResult best)
 			throws PackagerInterruptedException {
+		return pack(pointCalculator, stackPlacements, stackPlacementCount, containerItem, index, iterator, interrupt, pointFilter, best, Integer.MAX_VALUE);
+	}
+
+	/**
+	 * @param limit the number of leading boxes of the permutations which may be placed (see
+	 *        {@link AbstractBruteForceBoxItemSession#getLimit(BoxItemPermutationRotationIterator)})
+	 */
+	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int index,
+			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, IntermediatePackagerResult best,
+			int limit) throws PackagerInterruptedException {
 
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		
@@ -278,9 +323,12 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 
 		LoadPlacementUtility utility = createLoadPlacementUtility(iterator, stack);
 
+		if(limit == 0) {
+			return bestResult;
+		}
 		// if all boxes fit by volume and weight, every permutation may place all of them;
 		// otherwise each permutation is limited to the prefix which fits (see getMaxPackableCount(..))
-		boolean allItemsFit = canPackAll(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
+		boolean allItemsFit = limit >= iterator.length() && canPackAll(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
 
 		// results with less load volume than the best result so far are never selected
 		long minLoadVolume = getMinLoadVolume(best);
@@ -293,7 +341,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				throw new PackagerInterruptedException();
 			}
 			bestPermutationResult.reset();
-			int maxPackableCount = allItemsFit ? iterator.length() : getMaxPackableCount(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
+			int maxPackableCount = allItemsFit ? iterator.length() : Math.min(limit, getMaxPackableCount(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight()));
 			if(!allItemsFit && prefersHigherLoadVolume && getLoadVolume(iterator, maxPackableCount) < Math.max(minLoadVolume, bestResult.getLoadVolume())) {
 				// no rotation of this permutation can load more than the best result,
 				// and neither can permutations which only reorder boxes after the packable prefix
@@ -481,23 +529,34 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	}
 
 	/**
-	 * Box item groups are inserted one at a time (see {@link InsertionSequencer}). The iterators place the groups in
-	 * order, each at a fixed range of levels, so a box must not have to be inserted before the boxes of the levels
-	 * before its group.
+	 * The boxes which a box must be insertable after. With a box item order, the boxes are inserted in their order, so
+	 * a box must be insertable after all the boxes before it. Box item groups are inserted one at a time (see
+	 * {@link InsertionSequencer}): the iterators place the groups in order, each at a fixed range of levels, so a box
+	 * must not have to be inserted before the boxes of the levels before its group.
 	 *
-	 * @return for each level, the first level of its group, or null if the boxes are not of several groups
+	 * @return for each level, the number of boxes placed before it which it must be insertable after, or an empty
+	 *         array if none
 	 */
-	protected static int[] getGroupStarts(BoxItemPermutationRotationIterator iterator) {
+	private static final int[] NO_COUNTS = new int[0];
+
+	protected static int[] getInsertAfterCounts(BoxItemPermutationRotationIterator iterator) {
 		int length = iterator.length();
 		if(length < 2) {
-			return null;
+			return NO_COUNTS;
+		}
+		if(iterator.isFixedOrder()) {
+			int[] counts = new int[length];
+			for (int i = 0; i < length; i++) {
+				counts[i] = i;
+			}
+			return counts;
 		}
 		BoxItem[] boxItems = iterator.getBoxItems();
 		for (int i = 0; i < boxItems.length; i++) {
 			if(boxItems[i] != null) {
 				if(boxItems[i].getGroup() == null) {
 					// not packing groups
-					return null;
+					return NO_COUNTS;
 				}
 				break;
 			}
@@ -510,7 +569,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			starts[i] = group.equals(previous) ? starts[i - 1] : i;
 			previous = group;
 		}
-		return starts[length - 1] == 0 ? null : starts;
+		return starts[length - 1] == 0 ? NO_COUNTS : starts;
 	}
 
 	/**
@@ -582,7 +641,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			throws PackagerInterruptedException {
 		boolean checkObstacles = obstacles != null && !obstacles.isEmpty();
 		boolean checkExtraction = hasExtractionOrders(iterator);
-		int[] groupStarts = getGroupStarts(iterator);
+		int[] insertAfterCounts = getInsertAfterCounts(iterator);
 		BruteForceSearchFrames frames = pointCalculator.getSearchFrames();
 		int[] nextPointIndexes = frames.nextPointIndexes;
 		int[] pointCounts = frames.pointCounts;
@@ -680,8 +739,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				if(checkExtraction && !isExtractable(pointCalculator.get(candidate), stackValue, stack, access)) {
 					continue;
 				}
-				if(groupStarts != null && groupStarts[level] > 0 && !isInsertableAfter(pointCalculator.get(candidate), stackValue, stack, groupStarts[level], access)) {
-					// a box of an earlier group rests on the box at this point, or is in its path
+				if(insertAfterCounts.length != 0 && insertAfterCounts[level] > 0 && !isInsertableAfter(pointCalculator.get(candidate), stackValue, stack, insertAfterCounts[level], access)) {
+					// a box which is inserted before it (earlier in the order, or of an earlier group) rests on the
+					// box at this point, or is in its path
 					continue;
 				}
 				if(utility != null) {

@@ -12,6 +12,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
@@ -435,10 +436,10 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			}
 			BoxItemPermutationRotationIterator iterator = containerIterators[i];
 			
-			if(filterReversePermutations && abortOnAnyBoxTooBig) {
+			if(filterReversePermutations && abortOnAnyBoxTooBig && !isOrdered()) {
 				iterator = new FilteredReversedBoxItemPermutationRotationIterator(iterator);
 			}
-			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best);
+			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best, getLimit(containerIterators[i]));
 		}
 		
 	}
@@ -484,7 +485,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			}
 			BoxItemPermutationRotationIterator iterator = containerIterators[i];
 			
-			if(filterReversePermutations && abortOnAnyBoxTooBig) {
+			if(filterReversePermutations && abortOnAnyBoxTooBig && order == Order.NONE) {
 				iterator = new FilteredReversedBoxItemPermutationRotationIterator(iterator);
 			}
 			return truncateToGroup(BruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best), iteratorGroups);

@@ -94,8 +94,8 @@ not prove a globally minimum-cost packing for arbitrary inputs.
   from the container's opening (any, top, or a door at one end).
 - Deliveries: an extraction order per box item or group (the boxes of each stop
   can be taken out without moving the boxes for later stops), and a container
-  priority (urgent boxes in the first containers). The brute-force packagers
-  support the extraction order, not container priorities.
+  priority (urgent boxes in the first containers). The parallel brute-force
+  packagers support the extraction order, not container priorities.
 - Optional stability checks: full support, minimum support percentage,
   centre-of-gravity support, and stack centre of gravity.
 - Deadlines and custom interruption suppliers for cancellable packing and

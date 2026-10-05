@@ -214,7 +214,7 @@ public class CompositePackagerTest {
 
 	@Test
 	public void skipsPackagersWhichDoNotSupportTheInput() throws Exception {
-		// brute force does not support box order
+		// brute force does not support skipping boxes in the box item order
 		List<ContainerItem> containers = List.of(new ContainerItem(container("row", 2, 1), 1));
 		List<BoxItem> boxItems = List.of(new BoxItem(square(1), 2));
 		CountingFastBruteForcePackager costly = new CountingFastBruteForcePackager();
@@ -222,7 +222,7 @@ public class CompositePackagerTest {
 				.withPackager(PlainPackager.newBuilder().build())
 				.withPackager(costly)
 				.build()) {
-			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).withOrder(Order.CHRONOLOGICAL).build();
+			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING).build();
 
 			assertThat(result.isSuccess()).isTrue();
 		}

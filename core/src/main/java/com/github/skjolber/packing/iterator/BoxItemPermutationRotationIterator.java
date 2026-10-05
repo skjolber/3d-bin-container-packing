@@ -49,6 +49,16 @@ public interface BoxItemPermutationRotationIterator {
 
 	int length();
 
+	/**
+	 * Whether the boxes are in a given order (a box item order): there is only one permutation, and each box must be
+	 * insertable after the boxes before it.
+	 *
+	 * @return true if there is only one permutation
+	 */
+	default boolean isFixedOrder() {
+		return false;
+	}
+
 	BoxStackValue getStackValue(int index);
 
 	/**

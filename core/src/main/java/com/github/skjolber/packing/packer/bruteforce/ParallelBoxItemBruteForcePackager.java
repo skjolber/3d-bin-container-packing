@@ -17,6 +17,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerException;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
@@ -32,6 +33,7 @@ import com.github.skjolber.packing.iterator.FilteredReversedBoxItemPermutationRo
 import com.github.skjolber.packing.iterator.ParallelBoxItemGroupPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.ParallelBoxItemPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
+import com.github.skjolber.packing.packer.PackagerInput;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePackagerBuilder;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.bruteforce.LoadBruteForcePackager.Builder;
@@ -178,6 +180,22 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		this.executorCompletionService = new ExecutorCompletionService<BruteForceIntermediatePackagerResult>(executorService);
 		this.pointFilter = pointFilter;
 		this.filterReversePermutations = filterReversePermutations;
+	}
+
+	@Override
+	public String getUnsupportedReason(PackagerInput input) {
+		String reason = super.getUnsupportedReason(input);
+		if(reason != null) {
+			return reason;
+		}
+		// the permutations are split between threads
+		if(input.getOrder() != Order.NONE) {
+			return "Order not supported for parallel brute force packager";
+		}
+		if(hasContainerPriorities(input)) {
+			return "Container priorities not supported for parallel brute force packager";
+		}
+		return null;
 	}
 
 	private BoxItemPermutationRotationIterator filterReversePermutations(BoxItemPermutationRotationIterator iterator, boolean abortOnAnyBoxTooBig) {

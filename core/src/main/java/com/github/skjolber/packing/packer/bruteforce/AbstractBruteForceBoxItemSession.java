@@ -6,9 +6,12 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
+import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.packer.BoxItemsContainerItemsCalculator;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
@@ -24,6 +27,11 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 	protected final int[] initialCounts;
 	protected final int[] initialLocalIndexes;
 	protected final int[] globalIndexes;
+
+	/** The box item order: with an order, there is only one permutation */
+	protected Order order = Order.NONE;
+	/** Whether the box items have different container priorities (they are sorted by container priority) */
+	protected final boolean containerPriorities;
 
 	public AbstractBruteForceBoxItemSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 			int containerCount) {
@@ -50,6 +58,14 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 			this.initialLocalIndexes[i] = boxItem.getLocalIndex();
 			this.globalIndexes[i] = boxItem.getGlobalIndex();
 		}
+		boolean containerPriorities = false;
+		for(int i = 1; i < boxItems.size(); i++) {
+			if(boxItems.get(i).getContainerPriority() != boxItems.get(0).getContainerPriority()) {
+				containerPriorities = true;
+				break;
+			}
+		}
+		this.containerPriorities = containerPriorities;
 	} 
 
 	protected AbstractBruteForceBoxItemSession(AbstractBruteForceBoxItemSession source) {
@@ -57,6 +73,8 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 		this.initialCounts = source.initialCounts;
 		this.initialLocalIndexes = source.initialLocalIndexes;
 		this.globalIndexes = source.globalIndexes;
+		this.order = source.order;
+		this.containerPriorities = source.containerPriorities;
 		this.boxes = source.boxes.clone();
 		this.boxesRemaining = source.boxesRemaining.clone();
 		this.boxItems = new BoxItem[source.boxItems.length];
@@ -65,6 +83,65 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 				boxItems[i] = source.boxItems[i].copy();
 			}
 		}
+	}
+
+	/**
+	 * @param order the box item order; with an order, there is only one permutation
+	 */
+	public void setOrder(Order order) {
+		this.order = order != null ? order : Order.NONE;
+	}
+
+	@Override
+	public PackagerSession fresh() {
+		PackagerSession fresh = super.fresh();
+		((AbstractBruteForceBoxItemSession)fresh).setOrder(order);
+		return fresh;
+	}
+
+	/**
+	 * @return whether the box items are in a given order, or sorted by container priority: permutations which are the
+	 *         reverse of each other do not both respect the order
+	 */
+	protected boolean isOrdered() {
+		return order != Order.NONE || containerPriorities;
+	}
+
+	/**
+	 * With a box item order, the boxes after a box which does not fit the container cannot be placed in it, and with
+	 * container priorities, neither can the boxes of a higher priority than such a box: they would be in an earlier
+	 * container.
+	 *
+	 * @param iterator the container's iterator, by box item index (null if the box item does not fit, or is packed)
+	 * @return the number of leading boxes of the iterator's permutations which may be placed
+	 */
+	protected int getLimit(BoxItemPermutationRotationIterator iterator) {
+		if(!isOrdered()) {
+			return Integer.MAX_VALUE;
+		}
+		BoxItem[] iteratorItems = iterator.getBoxItems();
+		int limit = 0;
+		int blockedPriority = Integer.MAX_VALUE;
+		for(int i = 0; i < boxItems.length; i++) {
+			BoxItem boxItem = boxItems[i];
+			if(boxItem == null) {
+				// packed
+				continue;
+			}
+			if(boxItem.getContainerPriority() > blockedPriority) {
+				break;
+			}
+			if(iteratorItems[i] == null) {
+				// does not fit the container
+				if(order != Order.NONE) {
+					break;
+				}
+				blockedPriority = boxItem.getContainerPriority();
+				continue;
+			}
+			limit += iteratorItems[i].getCount();
+		}
+		return limit;
 	}
 
 	/** @return copies of the box items at the start of the packaging operation */

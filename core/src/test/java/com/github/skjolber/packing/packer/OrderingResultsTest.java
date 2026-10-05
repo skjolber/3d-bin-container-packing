@@ -23,6 +23,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
@@ -392,13 +393,254 @@ public class OrderingResultsTest {
 	}
 
 	@Test
-	public void bruteForceDoesNotSupportContainerPriorities() {
-		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+	public void parallelBruteForceDoesNotSupportContainerPrioritiesOrOrder() {
+		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
 			List<BoxItem> items = items(new Random(1), 3, false);
 			items.get(0).withContainerPriority(0);
 			items.get(1).withContainerPriority(1);
-			PackagerInput input = new PackagerInput(items, null, containers(10, 10, 8, ContainerAccess.ANY, 2), 2, Order.NONE);
-			assertThat(packager.getUnsupportedReason(input)).contains("Container priorities");
+			items.get(2).withContainerPriority(1);
+			assertThat(packager.getUnsupportedReason(new PackagerInput(items, null, containers(10, 10, 8, ContainerAccess.ANY, 2), 2, Order.NONE))).contains("Container priorities");
+			assertThat(packager.getUnsupportedReason(new PackagerInput(items, null, containers(10, 10, 8, ContainerAccess.ANY, 2), 2, Order.CHRONOLOGICAL))).contains("Order");
 		}
+	}
+
+	@Test
+	public void bruteForceDoesNotSupportSkipping() {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			List<BoxItem> items = smallItems(new Random(1), 3);
+			assertThat(packager.getUnsupportedReason(new PackagerInput(items, null, containers(10, 10, 8, ContainerAccess.ANY, 2), 2, Order.CHRONOLOGICAL_ALLOW_SKIPPING))).contains("CHRONOLOGICAL_ALLOW_SKIPPING");
+		}
+	}
+
+	private static List<Supplier<AbstractPackager<?>>> bruteForcePackagers() {
+		return List.of(
+				() -> BruteForcePackager.newBuilder().build(),
+				() -> FastBruteForcePackager.newBuilder().build());
+	}
+
+	/** Few boxes with few rotations: the brute-force search is exponential. */
+	private static List<BoxItem> smallItems(Random random, int count) {
+		List<BoxItem> items = new ArrayList<>();
+		for (int i = 0; i < count; i++) {
+			items.add(new BoxItem(Box.newBuilder().withId("b" + i).withSize(3 + random.nextInt(5), 3 + random.nextInt(5), 2 + random.nextInt(4)).withRotate2D().withWeight(1).build(), 1));
+		}
+		return items;
+	}
+
+	@ParameterizedTest
+	@EnumSource(ContainerAccess.class)
+	public void bruteForcePacksInTheBoxItemOrder(ContainerAccess access) {
+		List<String> failures = new ArrayList<>();
+		int multiple = 0;
+		for (Supplier<AbstractPackager<?>> supplier : bruteForcePackagers()) {
+			try (AbstractPackager<?> packager = supplier.get()) {
+				for (long seed = 0; seed < SEEDS; seed++) {
+					List<BoxItem> items = smallItems(new Random(seed), 6);
+					PackagerResult result = packager.newResultBuilder()
+							.withContainerItems(containers(9, 8, 6, access, 6))
+							.withBoxItems(items)
+							.withOrder(Order.CHRONOLOGICAL)
+							.withMaxContainerCount(6)
+							.withInterruptDuration(5_000)
+							.build();
+					String name = packager.getClass().getSimpleName() + " seed " + seed + ": ";
+					if(!result.isSuccess()) {
+						failures.add(name + "not packed");
+						continue;
+					}
+					if(result.size() > 1) {
+						multiple++;
+					}
+					// the boxes, container by container, in the box item order
+					List<String> packed = new ArrayList<>();
+					for (Container container : result.getContainers()) {
+						List<ValidatorResultReason> reasons = new ArrayList<>();
+						if(!new InsertionOrderValidator().validate(container, reasons)) {
+							failures.add(name + reasons.get(0).getMessage());
+						}
+						for (Placement placement : container.getStack().getPlacements()) {
+							packed.add(placement.getStackValue().getBox().getId());
+						}
+					}
+					List<String> expected = new ArrayList<>();
+					for (BoxItem item : items) {
+						expected.add(item.getBox().getId());
+					}
+					if(!packed.equals(expected)) {
+						failures.add(name + "packed " + packed + ", expected " + expected);
+					}
+				}
+			}
+		}
+		assertThat(multiple).isGreaterThan(SEEDS / 2);
+		assertThat(failures).isEmpty();
+	}
+
+	@Test
+	public void bruteForcePacksGroupsInTheBoxItemOrder() {
+		List<String> failures = new ArrayList<>();
+		int multiple = 0;
+		for (Supplier<AbstractPackager<?>> supplier : bruteForcePackagers()) {
+			try (AbstractPackager<?> packager = supplier.get()) {
+				for (long seed = 0; seed < SEEDS; seed++) {
+					List<BoxItem> items = smallItems(new Random(seed), 6);
+					List<BoxItemGroup> groups = new ArrayList<>();
+					for (int g = 0; g < 3; g++) {
+						groups.add(new BoxItemGroup("g" + g, new ArrayList<>(items.subList(g * 2, g * 2 + 2))));
+					}
+					PackagerResult result = packager.newResultBuilder()
+							.withContainerItems(containers(12, 10, 7, ContainerAccess.FRONT, 6))
+							.withBoxItemGroups(groups)
+							.withOrder(Order.CHRONOLOGICAL)
+							.withMaxContainerCount(6)
+							.withInterruptDuration(5_000)
+							.build();
+					String name = packager.getClass().getSimpleName() + " seed " + seed + ": ";
+					if(!result.isSuccess()) {
+						failures.add(name + "not packed");
+						continue;
+					}
+					if(result.size() > 1) {
+						multiple++;
+					}
+					List<String> packed = new ArrayList<>();
+					for (Container container : result.getContainers()) {
+						List<ValidatorResultReason> reasons = new ArrayList<>();
+						if(!new InsertionOrderValidator().validate(container, reasons)) {
+							failures.add(name + reasons.get(0).getMessage());
+						}
+						for (Placement placement : container.getStack().getPlacements()) {
+							packed.add(placement.getStackValue().getBox().getId());
+						}
+					}
+					List<String> expected = new ArrayList<>();
+					for (BoxItem item : items) {
+						expected.add(item.getBox().getId());
+					}
+					if(!packed.equals(expected)) {
+						failures.add(name + "packed " + packed + ", expected " + expected);
+					}
+				}
+			}
+		}
+		assertThat(multiple).isGreaterThan(SEEDS / 4);
+		assertThat(failures).isEmpty();
+	}
+
+	//
+	//  containers: small 1 x 1 x 1 (two), big 2 x 1 x 1 (one); boxes in order a, B, c
+	//
+	//  small: [a]     big: [B  ]     small: [c]
+	//
+	//  the small container cannot take c after a, as B, which comes before c, does not fit it
+	//
+	@Test
+	public void bruteForceDoesNotPackBoxesAfterABoxWhichDoesNotFitTheContainer() {
+		for (Supplier<AbstractPackager<?>> supplier : bruteForcePackagers()) {
+			try (AbstractPackager<?> packager = supplier.get()) {
+				List<BoxItem> items = List.of(
+						new BoxItem(Box.newBuilder().withId("a").withSize(1, 1, 1).withWeight(1).build(), 1),
+						new BoxItem(Box.newBuilder().withId("B").withSize(2, 1, 1).withRotate3D().withWeight(1).build(), 1),
+						new BoxItem(Box.newBuilder().withId("c").withSize(1, 1, 1).withWeight(1).build(), 1));
+				List<ContainerItem> containers = ContainerItem.newListBuilder()
+						.withContainer(Container.newBuilder().withId("small").withSize(1, 1, 1).withMaxLoadWeight(100).build(), 2)
+						.withContainer(Container.newBuilder().withId("big").withSize(2, 1, 1).withMaxLoadWeight(100).build(), 1)
+						.build();
+				PackagerResult result = packager.newResultBuilder()
+						.withContainerItems(containers)
+						.withBoxItems(items)
+						.withOrder(Order.CHRONOLOGICAL)
+						.withMaxContainerCount(3)
+						.withInterruptDuration(5_000)
+						.build();
+
+				String name = packager.getClass().getSimpleName();
+				assertThat(result.isSuccess()).as(name).isTrue();
+				List<String> packed = new ArrayList<>();
+				for (Container container : result.getContainers()) {
+					for (Placement placement : container.getStack().getPlacements()) {
+						packed.add(placement.getStackValue().getBox().getId());
+					}
+				}
+				assertThat(packed).as(name).containsExactly("a", "B", "c");
+			}
+		}
+	}
+
+	@Test
+	public void bruteForceBoxesAreInContainersInOrderOfPriority() {
+		ContainerPriorityValidator validator = new ContainerPriorityValidator();
+		List<String> failures = new ArrayList<>();
+		int multiple = 0;
+		for (Supplier<AbstractPackager<?>> supplier : bruteForcePackagers()) {
+			try (AbstractPackager<?> packager = supplier.get()) {
+				for (long seed = 0; seed < SEEDS; seed++) {
+					Random random = new Random(seed);
+					List<BoxItem> items = smallItems(random, 6);
+					for (BoxItem item : items) {
+						item.withContainerPriority(random.nextInt(3));
+					}
+					PackagerResult result = packager.newResultBuilder()
+							.withContainerItems(containers(9, 8, 6, ContainerAccess.ANY, 6))
+							.withBoxItems(items)
+							.withMaxContainerCount(6)
+							.withInterruptDuration(5_000)
+							.build();
+					String name = packager.getClass().getSimpleName() + " seed " + seed + ": ";
+					if(!result.isSuccess()) {
+						failures.add(name + "not packed");
+						continue;
+					}
+					if(result.size() > 1) {
+						multiple++;
+					}
+					List<ValidatorResultReason> reasons = new ArrayList<>();
+					if(!validator.validate(result.getContainers(), reasons)) {
+						failures.add(name + reasons.get(0).getMessage());
+					}
+				}
+			}
+		}
+		assertThat(multiple).isGreaterThan(SEEDS / 2);
+		assertThat(failures).isEmpty();
+	}
+
+	@Test
+	public void bruteForceGroupsAreInContainersInOrderOfPriority() {
+		ContainerPriorityValidator validator = new ContainerPriorityValidator();
+		List<String> failures = new ArrayList<>();
+		int multiple = 0;
+		for (Supplier<AbstractPackager<?>> supplier : bruteForcePackagers()) {
+			try (AbstractPackager<?> packager = supplier.get()) {
+				for (long seed = 0; seed < SEEDS; seed++) {
+					Random random = new Random(seed);
+					List<BoxItem> items = smallItems(random, 6);
+					List<BoxItemGroup> groups = new ArrayList<>();
+					for (int g = 0; g < 3; g++) {
+						groups.add(new BoxItemGroup("g" + g, new ArrayList<>(items.subList(g * 2, g * 2 + 2))).withContainerPriority(random.nextInt(3)));
+					}
+					PackagerResult result = packager.newResultBuilder()
+							.withContainerItems(containers(12, 10, 7, ContainerAccess.ANY, 6))
+							.withBoxItemGroups(groups)
+							.withMaxContainerCount(6)
+							.withInterruptDuration(5_000)
+							.build();
+					String name = packager.getClass().getSimpleName() + " seed " + seed + ": ";
+					if(!result.isSuccess()) {
+						failures.add(name + "not packed");
+						continue;
+					}
+					if(result.size() > 1) {
+						multiple++;
+					}
+					List<ValidatorResultReason> reasons = new ArrayList<>();
+					if(!validator.validate(result.getContainers(), reasons)) {
+						failures.add(name + reasons.get(0).getMessage());
+					}
+				}
+			}
+		}
+		assertThat(multiple).isGreaterThan(SEEDS / 2);
+		assertThat(failures).isEmpty();
 	}
 }

@@ -50,12 +50,12 @@ public class RecursiveBruteForceSearch {
 			pointCalculator.clear();
 		}
 		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
-		int[] groupStarts = AbstractBruteForcePackager.getGroupStarts(iterator);
+		int[] insertAfterCounts = AbstractBruteForcePackager.getInsertAfterCounts(iterator);
 		ContainerAccess access = container.getAccess();
 		if(pointFilter == null) {
-			packStackPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight, 0, interrupt, minStackableAreaIndex, maxPackableCount, groupStarts, access);
+			packStackPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight, 0, interrupt, minStackableAreaIndex, maxPackableCount, insertAfterCounts, access);
 		} else {
-			packStackPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight, 0, interrupt, minStackableAreaIndex, maxPackableCount, pointFilter, groupStarts, access);
+			packStackPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight, 0, interrupt, minStackableAreaIndex, maxPackableCount, pointFilter, insertAfterCounts, access);
 		}
 		return pointCalculator.getBestPoints();
 	}
@@ -82,18 +82,18 @@ public class RecursiveBruteForceSearch {
 		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
 
 		utility.initialize(iterator.length());
-		int[] groupStarts = AbstractBruteForcePackager.getGroupStarts(iterator);
+		int[] insertAfterCounts = AbstractBruteForcePackager.getInsertAfterCounts(iterator);
 		ContainerAccess access = container.getAccess();
 		if(pointFilter == null) {
-			packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt, minStackableAreaIndex, maxPackableCount, utility, groupStarts, access);
+			packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt, minStackableAreaIndex, maxPackableCount, utility, insertAfterCounts, access);
 		} else {
-			packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt, minStackableAreaIndex, maxPackableCount, utility, pointFilter, groupStarts, access);
+			packStackPlacement(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), 0, interrupt, minStackableAreaIndex, maxPackableCount, utility, pointFilter, insertAfterCounts, access);
 		}
 		return pointCalculator.getBestPoints();
 	}
 
 	private static void packStackPlacement(PointCalculator3DStack pointCalculatorStack, Placement[] placements, BoxItemPermutationRotationIterator rotator, Stack stack,
-			int maxLoadWeight, int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, int[] groupStarts, ContainerAccess access) throws PackagerInterruptedException {
+			int maxLoadWeight, int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, int[] insertAfterCounts, ContainerAccess access) throws PackagerInterruptedException {
 		if(interrupt.getAsBoolean()) {
 			throw new PackagerInterruptedException();
 		}
@@ -115,7 +115,7 @@ public class RecursiveBruteForceSearch {
 			if(!point3d.fits3D(stackValue)) {
 				continue;
 			}
-			if(!isInsertable(groupStarts, placementIndex, point3d, stackValue, stack, access)) {
+			if(!isInsertable(insertAfterCounts, placementIndex, point3d, stackValue, stack, access)) {
 				continue;
 			}
 			placement.setPoint(point3d);
@@ -133,7 +133,7 @@ public class RecursiveBruteForceSearch {
 				pointCalculatorStack.setMinimumVolumeLimit(rotator.getMinBoxVolume(placementIndex + 1));
 				nextMinStackableAreaIndex = minStackableAreaIndex;
 			}
-			packStackPlacement(pointCalculatorStack, placements, rotator, stack, maxLoadWeight, placementIndex + 1, interrupt, nextMinStackableAreaIndex, maxPackableCount, groupStarts, access);
+			packStackPlacement(pointCalculatorStack, placements, rotator, stack, maxLoadWeight, placementIndex + 1, interrupt, nextMinStackableAreaIndex, maxPackableCount, insertAfterCounts, access);
 			stack.remove(stack.size() - 1);
 			if(pointCalculatorStack.getBestStackIndex() >= maxPackableCount) {
 				break;
@@ -145,7 +145,7 @@ public class RecursiveBruteForceSearch {
 
 	private static void packStackPlacement(PointCalculator3DStack pointCalculatorStack, Placement[] placements, BoxItemPermutationRotationIterator rotator, Stack stack,
 			int maxLoadWeight, int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount,
-			BruteForcePointIteratorFilter pointFilter, int[] groupStarts, ContainerAccess access) throws PackagerInterruptedException {
+			BruteForcePointIteratorFilter pointFilter, int[] insertAfterCounts, ContainerAccess access) throws PackagerInterruptedException {
 		if(interrupt.getAsBoolean()) {
 			throw new PackagerInterruptedException();
 		}
@@ -165,7 +165,7 @@ public class RecursiveBruteForceSearch {
 		while(pointIterator.hasNext()) {
 			int k = pointIterator.next();
 			SimplePoint3D point3d = pointCalculatorStack.get(k);
-			if(!isInsertable(groupStarts, placementIndex, point3d, stackValue, stack, access)) {
+			if(!isInsertable(insertAfterCounts, placementIndex, point3d, stackValue, stack, access)) {
 				continue;
 			}
 			placement.setPoint(point3d);
@@ -184,7 +184,7 @@ public class RecursiveBruteForceSearch {
 				nextMinStackableAreaIndex = minStackableAreaIndex;
 			}
 			packStackPlacement(pointCalculatorStack, placements, rotator, stack, maxLoadWeight, placementIndex + 1, interrupt, nextMinStackableAreaIndex, maxPackableCount,
-					pointFilter, groupStarts, access);
+					pointFilter, insertAfterCounts, access);
 			stack.remove(stack.size() - 1);
 			if(pointCalculatorStack.getBestStackIndex() >= maxPackableCount) {
 				break;
@@ -195,7 +195,7 @@ public class RecursiveBruteForceSearch {
 	}
 
 	private static void packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
-			int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility, int[] groupStarts, ContainerAccess access)
+			int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility, int[] insertAfterCounts, ContainerAccess access)
 			throws PackagerInterruptedException {
 		if(interrupt.getAsBoolean()) {
 			throw new PackagerInterruptedException();
@@ -215,7 +215,7 @@ public class RecursiveBruteForceSearch {
 			if(!point.fits3D(stackValue)) {
 				continue;
 			}
-			if(!isInsertable(groupStarts, placementIndex, point, stackValue, stack, access)) {
+			if(!isInsertable(insertAfterCounts, placementIndex, point, stackValue, stack, access)) {
 				continue;
 			}
 			utility.populatePointSupporters(point);
@@ -225,7 +225,7 @@ public class RecursiveBruteForceSearch {
 				continue;
 			}
 			attemptPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight, placementIndex, interrupt, minStackableAreaIndex, maxPackableCount, utility,
-					stackValue, k, point, supportedArea, null, groupStarts, access);
+					stackValue, k, point, supportedArea, null, insertAfterCounts, access);
 			if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
 				break;
 			}
@@ -236,7 +236,7 @@ public class RecursiveBruteForceSearch {
 
 	private static void packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
 			int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility,
-			BruteForcePointIteratorFilter pointFilter, int[] groupStarts, ContainerAccess access) throws PackagerInterruptedException {
+			BruteForcePointIteratorFilter pointFilter, int[] insertAfterCounts, ContainerAccess access) throws PackagerInterruptedException {
 		if(interrupt.getAsBoolean()) {
 			throw new PackagerInterruptedException();
 		}
@@ -253,7 +253,7 @@ public class RecursiveBruteForceSearch {
 		while(points.hasNext()) {
 			int k = points.next();
 			SimplePoint3D point = pointCalculator.get(k);
-			if(!isInsertable(groupStarts, placementIndex, point, stackValue, stack, access)) {
+			if(!isInsertable(insertAfterCounts, placementIndex, point, stackValue, stack, access)) {
 				continue;
 			}
 			utility.populatePointSupporters(point);
@@ -263,7 +263,7 @@ public class RecursiveBruteForceSearch {
 				continue;
 			}
 			attemptPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight, placementIndex, interrupt, minStackableAreaIndex, maxPackableCount, utility,
-					stackValue, k, point, supportedArea, pointFilter, groupStarts, access);
+					stackValue, k, point, supportedArea, pointFilter, insertAfterCounts, access);
 			if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
 				break;
 			}
@@ -274,7 +274,7 @@ public class RecursiveBruteForceSearch {
 
 	private static void attemptPlacement(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack,
 			int maxLoadWeight, int placementIndex, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility,
-			BoxStackValue stackValue, int pointIndex, SimplePoint3D point, long supportedArea, BruteForcePointIteratorFilter pointFilter, int[] groupStarts, ContainerAccess access) throws PackagerInterruptedException {
+			BoxStackValue stackValue, int pointIndex, SimplePoint3D point, long supportedArea, BruteForcePointIteratorFilter pointFilter, int[] insertAfterCounts, ContainerAccess access) throws PackagerInterruptedException {
 		Placement placement = placements[placementIndex];
 		placement.setStackValue(stackValue);
 		placement.setPoint(point);
@@ -297,10 +297,10 @@ public class RecursiveBruteForceSearch {
 		}
 		if(pointFilter == null) {
 			packStackPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight - stackValue.getBox().getWeight(), placementIndex + 1, interrupt,
-					nextMinStackableAreaIndex, maxPackableCount, utility, groupStarts, access);
+					nextMinStackableAreaIndex, maxPackableCount, utility, insertAfterCounts, access);
 		} else {
 			packStackPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight - stackValue.getBox().getWeight(), placementIndex + 1, interrupt,
-					nextMinStackableAreaIndex, maxPackableCount, utility, pointFilter, groupStarts, access);
+					nextMinStackableAreaIndex, maxPackableCount, utility, pointFilter, insertAfterCounts, access);
 		}
 		placement.removeSupporteesAbove();
 		for(PlacementLoad placementLoad : placement.getSupporters()) {
@@ -310,9 +310,9 @@ public class RecursiveBruteForceSearch {
 		stack.remove(stack.size() - 1);
 	}
 
-	/** The box item groups are inserted one at a time, see {@link AbstractBruteForcePackager#getGroupStarts(BoxItemPermutationRotationIterator)}. */
-	private static boolean isInsertable(int[] groupStarts, int level, SimplePoint3D point, BoxStackValue stackValue, Stack stack, ContainerAccess access) {
-		return groupStarts == null || groupStarts[level] == 0 || AbstractBruteForcePackager.isInsertableAfter(point, stackValue, stack, groupStarts[level], access);
+	/** The box item groups are inserted one at a time, see {@link AbstractBruteForcePackager#getInsertAfterCounts(BoxItemPermutationRotationIterator)}. */
+	private static boolean isInsertable(int[] insertAfterCounts, int level, SimplePoint3D point, BoxStackValue stackValue, Stack stack, ContainerAccess access) {
+		return insertAfterCounts.length == 0 || insertAfterCounts[level] == 0 || AbstractBruteForcePackager.isInsertableAfter(point, stackValue, stack, insertAfterCounts[level], access);
 	}
 
 	/** Brute-force packager using the recursive search. */
