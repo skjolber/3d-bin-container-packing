@@ -20,6 +20,9 @@ public class BoxItemGroup {
 
 	protected List<BoxItem> resetItems;
 
+	protected int containerPriority;
+	protected int extractionOrder;
+
 	public BoxItemGroup(String id, List<BoxItem> items, int index) {
 		this(id, items);
 		this.index = index;
@@ -34,7 +37,58 @@ public class BoxItemGroup {
 		}
 	}
 
+	/**
+	 * Set the container priority of the group and its box items, see {@link BoxItem#withContainerPriority(int)}.
+	 *
+	 * @param containerPriority priority, lower values in earlier containers
+	 * @return this group
+	 */
+	public BoxItemGroup withContainerPriority(int containerPriority) {
+		this.containerPriority = containerPriority;
+		for (BoxItem boxItem : items) {
+			boxItem.withContainerPriority(containerPriority);
+		}
+		return this;
+	}
+
+	/**
+	 * Set the extraction order of the group and its box items, see {@link BoxItem#withExtractionOrder(int)}. Groups
+	 * with different extraction orders are not interleaved.
+	 *
+	 * @param extractionOrder order, lower values extracted first
+	 * @return this group
+	 */
+	public BoxItemGroup withExtractionOrder(int extractionOrder) {
+		this.extractionOrder = extractionOrder;
+		for (BoxItem boxItem : items) {
+			boxItem.withExtractionOrder(extractionOrder);
+		}
+		return this;
+	}
+
+	/**
+	 * Copy the container priority and extraction order of another group (not to the box items).
+	 *
+	 * @param other the group to copy from
+	 * @return this group
+	 */
+	public BoxItemGroup withOrderingOf(BoxItemGroup other) {
+		this.containerPriority = other.containerPriority;
+		this.extractionOrder = other.extractionOrder;
+		return this;
+	}
+
+	public int getContainerPriority() {
+		return containerPriority;
+	}
+
+	public int getExtractionOrder() {
+		return extractionOrder;
+	}
+
 	public BoxItemGroup(BoxItemGroup copy) {
+		this.containerPriority = copy.containerPriority;
+		this.extractionOrder = copy.extractionOrder;
 		this.id = copy.id;
 		this.items = new ArrayList<>(copy.items);
 		this.index = copy.index;
@@ -121,7 +175,7 @@ public class BoxItemGroup {
 			items.add(boxItem.copy());
 		}
 
-		return new BoxItemGroup(id, items);
+		return new BoxItemGroup(id, items).withOrderingOf(this);
 	}
 
 	public long getVolume() {

@@ -98,7 +98,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 				}
 				Box copiedBox = new Box(box, copied);
 				
-				included[i] = new BoxItem(copiedBox, boxItem.getCount(), i, boxItem.getGlobalIndex());
+				included[i] = new BoxItem(copiedBox, boxItem.getCount(), i, boxItem.getGlobalIndex()).withOrderingOf(boxItem);
 			}
 
 			return new ParallelBoxItemPermutationRotationIteratorList(included, excluded, parallelizationCount);
@@ -159,7 +159,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 				}
 				Box copiedBox = new Box(box, copied);
 				
-				result[i] = new BoxItem(copiedBox, boxItem.getCount(), i, boxItem.getGlobalIndex());
+				result[i] = new BoxItem(copiedBox, boxItem.getCount(), i, boxItem.getGlobalIndex()).withOrderingOf(boxItem);
 			}
 		}
 		return result;

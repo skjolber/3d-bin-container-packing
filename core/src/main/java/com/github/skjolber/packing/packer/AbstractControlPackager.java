@@ -51,7 +51,11 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 
 		Stack stack = createStack();
 
-		DefaultBoxItemSource boxItemSource = new DefaultBoxItemSource(boxItems);
+		// container priorities: the items of one priority at a time, see getContainerPriorityEnd(..)
+		boolean containerPriorities = hasContainerPriorities(boxItems);
+		int maxContainerPriority = Integer.MAX_VALUE;
+		DefaultBoxItemSource boxItemSource = new DefaultBoxItemSource(sortByRanks(boxItems, order));
+		ExtractionOrderSearch extractionOrderSearch = createExtractionOrderSearch(boxItems, order);
 
 		PointCalculator pointCalculator = createPointCalculator(boxItemSource); 
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
@@ -94,6 +98,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		if(!removed.isEmpty()) {
 			manifestControls.declined(removed);
 			pointControls.declined(removed);
+			maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
 			
 			removed.clear();
 		}
@@ -113,7 +118,11 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				throw new PackagerInterruptedException();
 			}
 
-			Placement placement = placementControls.getPlacement(0, boxItemSource.size());
+			int end = containerPriorities ? getContainerPriorityEnd(boxItemSource, maxContainerPriority) : boxItemSource.size();
+			if(end == 0) {
+				break;
+			}
+			Placement placement = extractionOrderSearch != null ? extractionOrderSearch.getPlacement(placementControls, boxItemSource, end) : placementControls.getPlacement(0, end);
 			if(placement == null) {
 				break;
 			}
@@ -156,6 +165,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				if(!removed.isEmpty()) {
 					manifestControls.declined(removed);
 					pointControls.declined(removed);
+					maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
 					
 					removed.clear();
 				}
@@ -192,6 +202,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 					if(!removed.isEmpty()) {
 						manifestControls.declined(removed);
 						pointControls.declined(removed);
+						maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
 						
 						removed.clear();
 					}
@@ -202,6 +213,129 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		// ignore decline for the rest
 		
 		return createIntermediatePackagerResult(controlContainerItem, stack);
+	}
+
+	/**
+	 * Without a box item order, sort the box items by ascending container priority (so that the items of the lowest
+	 * priority are first, see {@link #getContainerPriorityEnd(BoxItemSource, int)}), then by descending extraction order
+	 * (see {@link ExtractionOrderSearch}), keeping their order otherwise. With a box item order, the container priorities
+	 * do not decrease (see {@link AbstractPackager#getUnsupportedReason(PackagerInput)}).
+	 */
+	protected static List<BoxItem> sortByRanks(List<BoxItem> boxItems, Order order) {
+		if(order != null && order != Order.NONE || !hasContainerPriorities(boxItems) && !hasExtractionOrders(boxItems)) {
+			return boxItems;
+		}
+		List<BoxItem> sorted = new ArrayList<>(boxItems);
+		// stable insertion sort; few items, often sorted
+		for (int i = 1; i < sorted.size(); i++) {
+			BoxItem boxItem = sorted.get(i);
+			int j = i - 1;
+			while(j >= 0 && isRankedAfter(sorted.get(j), boxItem)) {
+				sorted.set(j + 1, sorted.get(j));
+				j--;
+			}
+			sorted.set(j + 1, boxItem);
+		}
+		return sorted;
+	}
+
+	private static boolean isRankedAfter(BoxItem first, BoxItem second) {
+		if(first.getContainerPriority() != second.getContainerPriority()) {
+			return first.getContainerPriority() > second.getContainerPriority();
+		}
+		return first.getExtractionOrder() < second.getExtractionOrder();
+	}
+
+	/**
+	 * @return an extraction order search, if the box items have different extraction orders and no given order, otherwise null
+	 */
+	protected static ExtractionOrderSearch createExtractionOrderSearch(List<BoxItem> boxItems, Order order) {
+		if(order != null && order != Order.NONE || !hasExtractionOrders(boxItems)) {
+			return null;
+		}
+		return new ExtractionOrderSearch();
+	}
+
+	protected static boolean hasExtractionOrders(List<BoxItem> boxItems) {
+		for (int i = 1; i < boxItems.size(); i++) {
+			if(boxItems.get(i).getExtractionOrder() != boxItems.get(0).getExtractionOrder()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	protected static boolean hasContainerPriorities(List<BoxItem> boxItems) {
+		for (int i = 1; i < boxItems.size(); i++) {
+			if(boxItems.get(i).getContainerPriority() != boxItems.get(0).getContainerPriority()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	protected static boolean hasGroupContainerPriorities(List<BoxItemGroup> groups) {
+		for (int i = 1; i < groups.size(); i++) {
+			if(groups.get(i).getContainerPriority() != groups.get(0).getContainerPriority()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Boxes are placed in a container one container priority at a time (see {@link BoxItem#withContainerPriority(int)}):
+	 * the items of the first priority, as long as it does not exceed the given maximum.
+	 *
+	 * @param boxItems box items, sorted by container priority
+	 * @param maxContainerPriority the highest priority which may still be placed in the container (lowered when items
+	 *        are declined, as the next priority must then wait for the next container)
+	 * @return the end index of the items which may be placed, 0 if none
+	 */
+	protected static int getContainerPriorityEnd(BoxItemSource boxItems, int maxContainerPriority) {
+		if(boxItems.isEmpty()) {
+			return 0;
+		}
+		int priority = boxItems.get(0).getContainerPriority();
+		if(priority > maxContainerPriority) {
+			return 0;
+		}
+		int end = 1;
+		while(end < boxItems.size() && boxItems.get(end).getContainerPriority() == priority) {
+			end++;
+		}
+		return end;
+	}
+
+	/**
+	 * @return the highest container priority which may still be placed in the container after declining the items
+	 */
+	protected static int getMaxContainerPriority(int maxContainerPriority, List<BoxItem> declined) {
+		for (int i = 0; i < declined.size(); i++) {
+			maxContainerPriority = Math.min(maxContainerPriority, declined.get(i).getContainerPriority());
+		}
+		return maxContainerPriority;
+	}
+
+	/**
+	 * @return the highest container priority which may still be placed in the container after declining the groups
+	 */
+	protected static int getMaxGroupContainerPriority(int maxContainerPriority, List<BoxItemGroup> declined) {
+		for (int i = 0; i < declined.size(); i++) {
+			maxContainerPriority = Math.min(maxContainerPriority, declined.get(i).getContainerPriority());
+		}
+		return maxContainerPriority;
+	}
+
+	/**
+	 * @return the lowest container priority of the groups
+	 */
+	protected static int getMinGroupContainerPriority(BoxItemGroupSource groups) {
+		int min = Integer.MAX_VALUE;
+		for (int i = 0; i < groups.size(); i++) {
+			min = Math.min(min, groups.get(i).getContainerPriority());
+		}
+		return min;
 	}
 
 	protected Stack createStack() {
@@ -244,6 +378,9 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		
 		Stack stack = createStack();
 		
+		// container priorities: the groups of one priority at a time
+		boolean containerPriorities = hasGroupContainerPriorities(boxItemGroups);
+		int maxContainerPriority = Integer.MAX_VALUE;
 		PackagerBoxItems packagerBoxItems = new PackagerBoxItems(boxItemGroups);
 		BoxItemSource filteredBoxItems = packagerBoxItems.getFilteredBoxItems();
 
@@ -298,6 +435,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				if(pointControls != null) {
 					pointControls.filteredGroups(removedBoxItemGroups);
 				}
+				maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 				removedBoxItemGroups.clear();
 			}
 		}
@@ -321,6 +459,10 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			int boxItemStartIndex = packagerBoxItems.getFirstBoxItemIndexForGroup(groupIndex);
 			
 			BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(groupIndex);
+			if(containerPriorities && boxItemGroup.getContainerPriority() > Math.min(maxContainerPriority, getMinGroupContainerPriority(filteredBoxItemGroups))) {
+				// a group of a lower container priority is not placed in this container
+				break groups;
+			}
 			boxItemGroup.mark();
 			
 			pointCalculator.mark();
@@ -383,6 +525,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 					if(!removedBoxItemGroups.isEmpty()) {
 						boxItemControls.filteredGroups(removedBoxItemGroups);
 						pointControls.filteredGroups(removedBoxItemGroups);
+						maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 						removedBoxItemGroups.clear();
 					}
 					
@@ -426,6 +569,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 						if(!removedBoxItemGroups.isEmpty()) {
 							boxItemControls.filteredGroups(removedBoxItemGroups);
 							pointControls.filteredGroups(removedBoxItemGroups);
+							maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 							removedBoxItemGroups.clear();
 						}
 					}
@@ -469,6 +613,8 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				pointControls.attemptFailure(boxItemGroup);
 				
 				stack.setSize(markStackSize);
+				// the group waits for the next container, and so do the groups of higher container priorities
+				maxContainerPriority = Math.min(maxContainerPriority, boxItemGroup.getContainerPriority());
 				
 				// unable to stack whole group
 				if(order == Order.CHRONOLOGICAL) {

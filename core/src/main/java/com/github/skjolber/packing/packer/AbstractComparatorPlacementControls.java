@@ -36,6 +36,25 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 		// so only boxes which can be inserted after the boxes already there are placed
 		this.checkInsertion = order != null && order != Order.NONE;
 		this.checkObstacles = container != null && !container.getObstacles().isEmpty();
+		this.checkExtraction = hasExtractionOrders(boxItems);
+	}
+
+	/**
+	 * Whether the boxes have different extraction orders: a box must not rest on, or be in the path of, a box which is
+	 * extracted earlier, and a box which is extracted later must not rest on it, or be in its path.
+	 */
+	protected final boolean checkExtraction;
+
+	private static boolean hasExtractionOrders(BoxItemSource boxItems) {
+		if(boxItems == null) {
+			return false;
+		}
+		for (int i = 1; i < boxItems.size(); i++) {
+			if(boxItems.get(i).getExtractionOrder() != boxItems.get(0).getExtractionOrder()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -61,6 +80,25 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 			for (int i = 0; i < placements.size(); i++) {
 				if(InsertionOrder.mustPrecede(candidate, placements.get(i), access)) {
 					return false;
+				}
+			}
+		}
+		if(checkExtraction) {
+			int order = candidate.getBoxItem().getExtractionOrder();
+			List<Placement> placements = stack.getPlacements();
+			for (int i = 0; i < placements.size(); i++) {
+				Placement placement = placements.get(i);
+				int placementOrder = placement.getBoxItem().getExtractionOrder();
+				if(order < placementOrder) {
+					// the candidate is extracted first: the placement must be insertable before it
+					if(InsertionOrder.mustPrecede(candidate, placement, access)) {
+						return false;
+					}
+				} else if(order > placementOrder) {
+					// the placement is extracted first: the candidate must be insertable before it
+					if(InsertionOrder.mustPrecede(placement, candidate, access)) {
+						return false;
+					}
 				}
 			}
 		}
@@ -110,7 +148,7 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 			return current;
 		}
 		// the candidate would be selected; the current placement (if any) is insertable
-		if((checkInsertion || checkObstacles) && !isInsertable(candidate)) {
+		if((checkInsertion || checkObstacles || checkExtraction) && !isInsertable(candidate)) {
 			recyclablePlacement = candidate;
 			return current;
 		}

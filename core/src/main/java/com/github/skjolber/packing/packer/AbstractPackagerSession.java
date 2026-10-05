@@ -48,7 +48,7 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 	public static List<BoxItem> copyBoxItems(List<BoxItem> items) {
 		List<BoxItem> copies = new ArrayList<>(items.size());
 		for(BoxItem item : items) {
-			copies.add(new BoxItem(item.getBox().copy(), item.getCount(), item.getLocalIndex(), item.getGlobalIndex()));
+			copies.add(new BoxItem(item.getBox().copy(), item.getCount(), item.getLocalIndex(), item.getGlobalIndex()).withOrderingOf(item));
 		}
 		return copies;
 	}
@@ -101,7 +101,7 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 	public static List<BoxItemGroup> copyBoxItemGroups(List<BoxItemGroup> groups) {
 		List<BoxItemGroup> copies = new ArrayList<>(groups.size());
 		for(BoxItemGroup group : groups) {
-			copies.add(new BoxItemGroup(group.getId(), copyBoxItems(group.getItems()), group.getIndex()));
+			copies.add(new BoxItemGroup(group.getId(), copyBoxItems(group.getItems()), group.getIndex()).withOrderingOf(group));
 		}
 		return copies;
 	}

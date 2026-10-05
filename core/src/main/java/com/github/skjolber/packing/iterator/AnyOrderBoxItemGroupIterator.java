@@ -97,9 +97,25 @@ public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 		BoxItemGroup bestBoxItemGroup = null;
 		int bestIndex = -1;
 		
+		// the groups of the lowest container priority come first, and of those the groups which are extracted last
+		int priority = Integer.MAX_VALUE;
+		int extractionOrder = Integer.MIN_VALUE;
+		for (int l = 0; l < filteredBoxItemGroups.size(); l++) {
+			BoxItemGroup group = filteredBoxItemGroups.get(l);
+			if(group.getContainerPriority() < priority) {
+				priority = group.getContainerPriority();
+				extractionOrder = group.getExtractionOrder();
+			} else if(group.getContainerPriority() == priority) {
+				extractionOrder = Math.max(extractionOrder, group.getExtractionOrder());
+			}
+		}
+
 		// find next best group
 		for (int l = 0; l < filteredBoxItemGroups.size(); l++) {
 			BoxItemGroup group = filteredBoxItemGroups.get(l);
+			if(group.getContainerPriority() != priority || group.getExtractionOrder() != extractionOrder) {
+				continue;
+			}
 			if(bestBoxItemGroup == null || comparator.compare(bestBoxItemGroup, group) < 0) {
 				bestBoxItemGroup = group;
 				bestIndex = l;

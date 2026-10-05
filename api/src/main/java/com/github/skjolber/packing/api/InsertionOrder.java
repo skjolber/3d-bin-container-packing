@@ -55,6 +55,29 @@ public final class InsertionOrder {
 		return isBlockedBy(x, y, z, endX, endY, endZ, other, access);
 	}
 
+	/**
+	 * @return true if {@code first} must be inserted before a box at the given coordinates (inclusive), see
+	 *         {@link #mustPrecede(Placement, Placement, ContainerAccess)}
+	 */
+	public static boolean mustPrecede(Placement first, int x, int y, int z, int endX, int endY, int endZ, ContainerAccess access) {
+		if(first.getAbsoluteEndZ() + 1 == z && overlapsXY(x, y, endX, endY, first)) {
+			// the box rests on first
+			return true;
+		}
+		switch (access) {
+			case TOP:
+				// the box is above first
+				return z > first.getAbsoluteEndZ() && overlapsXY(x, y, endX, endY, first);
+			case FRONT:
+				// the box is between first and the door
+				return x > first.getAbsoluteEndX()
+						&& y <= first.getAbsoluteEndY() && first.getAbsoluteY() <= endY
+						&& z <= first.getAbsoluteEndZ() && first.getAbsoluteZ() <= endZ;
+			default:
+				return false;
+		}
+	}
+
 	private static boolean isBlockedBy(int x, int y, int z, int endX, int endY, int endZ, Placement other, ContainerAccess access) {
 		switch (access) {
 			case TOP:

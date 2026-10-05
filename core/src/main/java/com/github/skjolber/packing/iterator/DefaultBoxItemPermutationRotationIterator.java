@@ -54,7 +54,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 				}
 				Box copiedBox = new Box(box, copied);
 				
-				included[i] = new BoxItem(copiedBox, boxItem.getCount(), i, boxItem.getGlobalIndex());
+				included[i] = new BoxItem(copiedBox, boxItem.getCount(), i, boxItem.getGlobalIndex()).withOrderingOf(boxItem);
 			}
 
 			return new DefaultBoxItemPermutationRotationIterator(included, excluded);

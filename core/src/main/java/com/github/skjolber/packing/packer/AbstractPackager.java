@@ -81,7 +81,30 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	 * @return null if this packager supports the input, otherwise the reason why not
 	 */
 	public String getUnsupportedReason(PackagerInput input) {
+		if(input.getOrder() != null && input.getOrder() != Order.NONE && hasDecreasingContainerPriorities(input)) {
+			// the box items arrive in the given order: they cannot be reordered by container priority
+			return "Container priorities must not decrease in the box item order";
+		}
 		return null;
+	}
+
+	private static boolean hasDecreasingContainerPriorities(PackagerInput input) {
+		if(input.hasBoxItems()) {
+			List<BoxItem> boxItems = input.getBoxItems();
+			for (int i = 1; i < boxItems.size(); i++) {
+				if(boxItems.get(i).getContainerPriority() < boxItems.get(i - 1).getContainerPriority()) {
+					return true;
+				}
+			}
+			return false;
+		}
+		List<BoxItemGroup> groups = input.getBoxItemGroups();
+		for (int i = 1; i < groups.size(); i++) {
+			if(groups.get(i).getContainerPriority() < groups.get(i - 1).getContainerPriority()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public boolean supports(PackagerInput input) {

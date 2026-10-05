@@ -1,8 +1,10 @@
 package com.github.skjolber.packing.packer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerAccess;
 import com.github.skjolber.packing.api.InsertionOrder;
@@ -19,7 +21,9 @@ import com.github.skjolber.packing.api.Stack;
  * box placed into a gap under boxes which are already there). The placements are not changed, only their order. Without
  * access restrictions, or from the top, the placements are ordered by height (in linear time when already ordered,
  * otherwise n log n); through a door, by a stable topological sort, which keeps the order of the search wherever the
- * rules allow (quadratic in the number of placements).
+ * rules allow (quadratic in the number of placements). Boxes with different extraction orders (see
+ * {@code BoxItem.withExtractionOrder(int)}) are inserted in descending extraction order, so that the boxes extracted
+ * first are inserted last.
  */
 public final class InsertionSequencer {
 
@@ -53,10 +57,99 @@ public final class InsertionSequencer {
 	 * @return true if sequenced; false if the boxes cannot be inserted in any order (the stack is left unchanged)
 	 */
 	public static boolean sequence(Stack stack, ContainerAccess access) {
-		if(access == ContainerAccess.FRONT) {
-			return sequenceTopologically(stack, access);
+		List<Placement> placements = stack.getPlacements();
+		Placement[] sequence = new Placement[placements.size()];
+		boolean sequenced;
+		if(hasExtractionOrders(placements)) {
+			sequenced = sequenceByExtractionOrder(placements, access, sequence);
+		} else {
+			sequenced = sequence(placements, access, sequence, 0);
 		}
-		return sequenceByHeight(stack);
+		if(!sequenced) {
+			return false;
+		}
+		stack.clear();
+		for (int i = 0; i < sequence.length; i++) {
+			sequence[i].setIndex(i);
+			stack.add(sequence[i]);
+		}
+		return true;
+	}
+
+	private static boolean hasExtractionOrders(List<Placement> placements) {
+		for (int i = 1; i < placements.size(); i++) {
+			if(getExtractionOrder(placements.get(i)) != getExtractionOrder(placements.get(0))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static int getExtractionOrder(Placement placement) {
+		BoxItem boxItem = placement.getBoxItem();
+		return boxItem != null ? boxItem.getExtractionOrder() : 0;
+	}
+
+	/**
+	 * The boxes which are extracted last are inserted first: sequence the boxes of each extraction order, in descending
+	 * order. The packagers place boxes so that none of them must be inserted before a box which is extracted later,
+	 * which is checked.
+	 *
+	 * @param sequence the sequence to fill
+	 * @return true if sequenced, false if there is no sequence
+	 */
+	protected static boolean sequenceByExtractionOrder(List<Placement> placements, ContainerAccess access, Placement[] sequence) {
+		int n = placements.size();
+		int[] orders = new int[n];
+		for (int i = 0; i < n; i++) {
+			orders[i] = getExtractionOrder(placements.get(i));
+		}
+		Arrays.sort(orders);
+
+		int count = 0;
+		List<Placement> part = new ArrayList<>();
+		for (int k = n - 1; k >= 0; k--) {
+			if(k < n - 1 && orders[k] == orders[k + 1]) {
+				continue;
+			}
+			int order = orders[k];
+			part.clear();
+			for (int i = 0; i < n; i++) {
+				Placement placement = placements.get(i);
+				if(getExtractionOrder(placement) == order) {
+					part.add(placement);
+				}
+			}
+			if(!sequence(part, access, sequence, count)) {
+				return false;
+			}
+			count += part.size();
+		}
+
+		// a box extracted earlier is inserted later: it must not have to be inserted first
+		for (int i = 0; i < n; i++) {
+			Placement placement = sequence[i];
+			int order = getExtractionOrder(placement);
+			for (int j = 0; j < i; j++) {
+				if(getExtractionOrder(sequence[j]) != order && InsertionOrder.mustPrecede(placement, sequence[j], access)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * @param sequence the sequence to fill
+	 * @param offset the index in the sequence of the first placement
+	 * @return true if sequenced, false if there is no sequence
+	 */
+	protected static boolean sequence(List<Placement> placements, ContainerAccess access, Placement[] sequence, int offset) {
+		if(access == ContainerAccess.FRONT) {
+			return sequenceTopologically(placements, access, sequence, offset);
+		}
+		sequenceByHeight(placements, sequence, offset);
+		return true;
 	}
 
 	/**
@@ -64,9 +157,11 @@ public final class InsertionSequencer {
 	 * the boxes below it, which all start lower: so the placements ordered by their lowest z (keeping the order of the
 	 * search for equal z) are in a possible insertion order. Already ordered placements, which are common, are checked
 	 * in linear time.
+	 *
+	 * @param sequence the sequence to fill
+	 * @param offset the index in the sequence of the first placement
 	 */
-	protected static boolean sequenceByHeight(Stack stack) {
-		List<Placement> placements = stack.getPlacements();
+	protected static void sequenceByHeight(List<Placement> placements, Placement[] sequence, int offset) {
 		int n = placements.size();
 		boolean ordered = true;
 		for (int i = 1; i < n; i++) {
@@ -77,9 +172,9 @@ public final class InsertionSequencer {
 		}
 		if(ordered) {
 			for (int i = 0; i < n; i++) {
-				placements.get(i).setIndex(i);
+				sequence[offset + i] = placements.get(i);
 			}
-			return true;
+			return;
 		}
 		// sort by z, then by the order of the search
 		long[] keys = new long[n];
@@ -87,22 +182,20 @@ public final class InsertionSequencer {
 			keys[i] = ((long)placements.get(i).getAbsoluteZ() << 32) | i;
 		}
 		Arrays.sort(keys);
-		Placement[] search = placements.toArray(new Placement[n]);
-		stack.clear();
 		for (int i = 0; i < n; i++) {
-			Placement placement = search[(int)keys[i]];
-			placement.setIndex(i);
-			stack.add(placement);
+			sequence[offset + i] = placements.get((int)keys[i]);
 		}
-		return true;
 	}
 
 	/**
 	 * A stable topological sort: insert the first placement (in the order of the search) which can be inserted, until
 	 * all are inserted.
+	 *
+	 * @param sequence the sequence to fill
+	 * @param offset the index in the sequence of the first placement
+	 * @return true if sequenced, false if there is no sequence (a cycle)
 	 */
-	protected static boolean sequenceTopologically(Stack stack, ContainerAccess access) {
-		List<Placement> placements = stack.getPlacements();
+	protected static boolean sequenceTopologically(List<Placement> placements, ContainerAccess access, Placement[] sequence, int offset) {
 		int n = placements.size();
 
 		// the placements which must be inserted after each placement, and the number which must be inserted before
@@ -127,7 +220,6 @@ public final class InsertionSequencer {
 			}
 		}
 
-		Placement[] sequence = new Placement[n];
 		boolean[] inserted = new boolean[n];
 		// the lowest index which is not inserted yet
 		int start = 0;
@@ -144,7 +236,7 @@ public final class InsertionSequencer {
 				return false;
 			}
 			inserted[next] = true;
-			sequence[count] = placements.get(next);
+			sequence[offset + count] = placements.get(next);
 			int[] list = successors[next];
 			for (int k = 0; k < successorCounts[next]; k++) {
 				predecessors[list[k]]--;
@@ -152,12 +244,6 @@ public final class InsertionSequencer {
 			while(start < n && inserted[start]) {
 				start++;
 			}
-		}
-
-		stack.clear();
-		for (int i = 0; i < n; i++) {
-			sequence[i].setIndex(i);
-			stack.add(sequence[i]);
 		}
 		return true;
 	}

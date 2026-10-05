@@ -78,7 +78,7 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 			}
 			Box copiedBox = new Box(box, copied);
 
-			results[i] = new BoxItem(copiedBox, item.getCount(), i, item.getGlobalIndex());
+			results[i] = new BoxItem(copiedBox, item.getCount(), i, item.getGlobalIndex()).withOrderingOf(item);
 		}
 		return results;
 	}

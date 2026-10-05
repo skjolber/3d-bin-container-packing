@@ -396,6 +396,38 @@ containers keep the obstacles (`Container.getObstacles()`), which the validator 
 skipped, or when the boxes cannot be loaded in any order (possible through a door, as the packagers place boxes
 without regard to the door when there is no box item order).
 
+## Deliveries: extraction order and container priority
+Two settings on box items (and box item groups) say when boxes leave, as opposed to the box item order (`Order`, see
+`withOrder(..)` on the result builder), which is the order in which boxes arrive for loading:
+
+```java
+// the stops of a delivery route: lower values are extracted first
+BoxItem firstStop = new BoxItem(box, 2).withExtractionOrder(1);
+BoxItem lastStop = new BoxItem(otherBox, 4).withExtractionOrder(3);
+
+// urgent boxes in the first containers: lower values in earlier containers
+BoxItem urgent = new BoxItem(box, 1).withContainerPriority(0);
+BoxItem later = new BoxItem(otherBox, 1).withContainerPriority(1);
+
+// for all the boxes of a group
+BoxItemGroup group = new BoxItemGroup("order-1", items).withExtractionOrder(2);
+```
+
+ * **Extraction order**: within a container, no box rests on, or is in the path of (see `withAccess(..)`), a box
+   which is extracted earlier, so the boxes of each stop can be taken out without moving the boxes for later stops.
+   Boxes with the same extraction order (by default 0) are not constrained among themselves, and groups with different
+   extraction orders are not interleaved. The packagers place the boxes which are extracted last first, and the
+   placements of each container are in insertion order: the boxes extracted last are inserted first.
+ * **Container priority**: a hard constraint on which boxes go in earlier containers. A box with a lower value is never
+   in a later container than a box with a higher value: the boxes of the next priority start in a container only after
+   all the boxes of the priority before it are placed, in that container or an earlier one. With a box item order,
+   the priorities must not decrease in that order.
+
+The plain and LAFF packagers support both, also for groups. The brute-force packagers support the extraction order,
+but not container priorities (see `getUnsupportedReason(..)`; `CompositePackager` skips such stages). Virtual-box
+preprocessing packs boxes with either setting directly. `DefaultValidator` checks both (`ExtractionOrderValidator`,
+`ContainerPriorityValidator`).
+
 ## Support
 Support (the area resting on boxes below) can be calculated, or full support required:
 
@@ -544,6 +576,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
      * Container costs and container strategies (ordered, parallel, allocation), and custom container strategies
      * `CompositePackager`: cheap packagers first, costly packagers only where needed
      * Virtual-box preprocessing
+     * Deliveries: the extraction order (`withExtractionOrder(..)`, for example the stops of a route) and container priority (`withContainerPriority(..)`, for example urgent boxes in the first containers) of box items and groups
      * Substantially faster point calculation, placement search, support calculation and load validation
      * Visualizer: result summaries and comparison of several results, validation reasons on the boxes, colour modes for groups, support and load, and the centre of gravity
      * Behaviour changes:

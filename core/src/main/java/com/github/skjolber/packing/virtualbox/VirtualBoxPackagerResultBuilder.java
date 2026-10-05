@@ -195,6 +195,7 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 			// Bypass the whole operation, including unconstrained items that might
 			// otherwise be aggregated and placed on top of a constrained original.
 			if(item.getBox().isMaxLoad() || item.getBox().isLoadIdenticalBoxOnly() || item.getGroup() != null
+					|| item.getContainerPriority() != 0 || item.getExtractionOrder() != 0
 					|| distinct.put(item.getBox(), Boolean.TRUE) != null) {
 				return false;
 			}

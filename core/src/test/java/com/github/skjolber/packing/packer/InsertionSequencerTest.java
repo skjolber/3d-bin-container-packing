@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.ContainerAccess;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
@@ -14,6 +15,12 @@ public class InsertionSequencerTest {
 	private static Placement place(String id, int dx, int dy, int dz, int x, int y, int z) {
 		Box box = Box.newBuilder().withId(id).withSize(dx, dy, dz).withWeight(1).build();
 		return new Placement(box.getStackValue(0), 0, x, y, z);
+	}
+
+	private static Placement place(String id, int x, int z, int extractionOrder) {
+		Box box = Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build();
+		new BoxItem(box).withExtractionOrder(extractionOrder);
+		return new Placement(box.getStackValue(0), 0, x, 0, z);
 	}
 
 	private static Stack stack(Placement... placements) {
@@ -103,5 +110,48 @@ public class InsertionSequencerTest {
 		Stack top = stack(c, a, b);
 		assertThat(InsertionSequencer.sequence(top, ContainerAccess.TOP)).isTrue();
 		assertThat(top.getPlacements()).containsExactly(c, a, b);
+	}
+
+	//
+	//  side view, door at x = 3; the number is the extraction order
+	//
+	//  1 +---+---+---+
+	//    | 2 | 2 | 1 |   door ->
+	//  0 +---+---+---+
+	//    0   1   2   3  x
+	//
+	@Test
+	void boxesExtractedLastAreInsertedFirst() {
+		Placement a = place("A", 0, 0, 2);
+		Placement b = place("B", 1, 0, 2);
+		Placement c = place("C", 2, 0, 1);
+		Stack stack = stack(c, b, a);
+
+		assertThat(InsertionSequencer.sequence(stack, ContainerAccess.FRONT)).isTrue();
+		assertThat(stack.getPlacements()).containsExactly(a, b, c);
+
+		// from above, by extraction order, then in the order of the search
+		Stack top = stack(c, b, a);
+		assertThat(InsertionSequencer.sequence(top, ContainerAccess.TOP)).isTrue();
+		assertThat(top.getPlacements()).containsExactly(b, a, c);
+	}
+
+	//
+	//  z
+	//  2 +---+
+	//    | 2 |   B is extracted after A, but rests on it: A cannot be extracted first
+	//  1 +---+
+	//    | 1 |
+	//  0 +---+
+	//    0   1  x
+	//
+	@Test
+	void boxBelowABoxExtractedLaterCannotBeSequenced() {
+		Placement a = place("A", 0, 0, 1);
+		Placement b = place("B", 0, 1, 2);
+		Stack stack = stack(a, b);
+
+		assertThat(InsertionSequencer.sequence(stack, ContainerAccess.ANY)).isFalse();
+		assertThat(stack.getPlacements()).containsExactly(a, b);
 	}
 }

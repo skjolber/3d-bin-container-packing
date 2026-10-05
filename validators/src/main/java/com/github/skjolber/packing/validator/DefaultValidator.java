@@ -86,6 +86,8 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 	private ContainerCountValidator containerCountValidator = new ContainerCountValidator();
 	private StackValidator stackValidator = new StackValidator();
 	private InsertionOrderValidator insertionOrderValidator = new InsertionOrderValidator();
+	private ExtractionOrderValidator extractionOrderValidator = new ExtractionOrderValidator();
+	private ContainerPriorityValidator containerPriorityValidator = new ContainerPriorityValidator();
 	
 	@Override
 	public DefaultValidatorResultBuilder newResultBuilder() {
@@ -112,6 +114,10 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 		if(!stackValidator.validate(containers, result, interrupt, reasons)) {
 			return false;
 		}
+		// boxes are in containers in order of their container priority
+		if(!containerPriorityValidator.validate(result.getContainers(), reasons)) {
+			return false;
+		}
 
 		return validate(containers, result, interrupt, reasons);
 	}
@@ -136,6 +142,10 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 		if(!stackValidator.validate(containers, result, interrupt, reasons)) {
 			return false;
 		}
+		// boxes are in containers in order of their container priority
+		if(!containerPriorityValidator.validate(result.getContainers(), reasons)) {
+			return false;
+		}
 
 		return validate(containers, result, interrupt, reasons);
 	}
@@ -153,6 +163,10 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 
 			// the placements must be in a possible insertion order
 			if(!insertionOrderValidator.validate(container, reasons)) {
+				return false;
+			}
+			// boxes can be extracted in their extraction order
+			if(!extractionOrderValidator.validate(container, reasons)) {
 				return false;
 			}
 			

@@ -39,6 +39,7 @@ import com.github.skjolber.packing.iterator.PackagerBoxItems;
 import com.github.skjolber.packing.packer.AbstractBoxItemGroupSession;
 import com.github.skjolber.packing.packer.AbstractBoxItemSession;
 import com.github.skjolber.packing.packer.AbstractControlPackager;
+import com.github.skjolber.packing.packer.ExtractionOrderSearch;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
@@ -160,7 +161,11 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		Stack stack = new Stack();
 
-		DefaultBoxItemSource filteredBoxItems = new DefaultBoxItemSource(boxItems);
+		// container priorities: the items of one priority at a time, see getContainerPriorityEnd(..)
+		boolean containerPriorities = hasContainerPriorities(boxItems);
+		int maxContainerPriority = Integer.MAX_VALUE;
+		DefaultBoxItemSource filteredBoxItems = new DefaultBoxItemSource(sortByRanks(boxItems, order));
+		ExtractionOrderSearch extractionOrderSearch = createExtractionOrderSearch(boxItems, order);
 
 		PointCalculator pointCalculator = createPointCalculator(filteredBoxItems);
 		
@@ -203,6 +208,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		if(!removed.isEmpty()) {
 			boxItemControls.declined(removed);
 			pointControls.declined(removed);
+			maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
 			
 			removed.clear();
 		}
@@ -227,7 +233,17 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			Placement result;
 			if(newLevel) {
 				// get first box in new level
-				result = firstPlacementControls.getPlacement(0, filteredBoxItems.size());
+				int end = containerPriorities ? getContainerPriorityEnd(filteredBoxItems, maxContainerPriority) : filteredBoxItems.size();
+				if(end == 0) {
+					break;
+				}
+				if(extractionOrderSearch != null) {
+					// each level starts with the boxes which are extracted last
+					extractionOrderSearch.reset();
+					result = extractionOrderSearch.getPlacement(firstPlacementControls, filteredBoxItems, end);
+				} else {
+					result = firstPlacementControls.getPlacement(0, end);
+				}
 				if(result == null) {
 					break;
 				}
@@ -259,7 +275,12 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				newLevel = false;
 			} else {
 				// next
-				result = placementControls.getPlacement(0, filteredBoxItems.size());
+				int end = containerPriorities ? getContainerPriorityEnd(filteredBoxItems, maxContainerPriority) : filteredBoxItems.size();
+				if(end == 0) {
+					result = null;
+				} else {
+					result = extractionOrderSearch != null ? extractionOrderSearch.getPlacement(placementControls, filteredBoxItems, end) : placementControls.getPlacement(0, end);
+				}
 				if(result == null) {
 					newLevel = true;
 
@@ -308,6 +329,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					if(!removed.isEmpty()) {
 						boxItemControls.declined(removed);
 						pointControls.declined(removed);
+						maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
 						
 						removed.clear();
 					}
@@ -354,6 +376,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				if(!removed.isEmpty()) {
 					boxItemControls.declined(removed);
 					pointControls.declined(removed);
+					maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
 					
 					removed.clear();
 				}
@@ -377,6 +400,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		
 		Stack stack = new Stack();
 
+		// container priorities: the groups of one priority at a time
+		boolean containerPriorities = hasGroupContainerPriorities(boxItemGroups);
+		int maxContainerPriority = Integer.MAX_VALUE;
 		PackagerBoxItems packagerBoxItems = new PackagerBoxItems(boxItemGroups);
 		BoxItemSource filteredBoxItems = packagerBoxItems.getFilteredBoxItems();
 
@@ -430,6 +456,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				if(pointControls != null) {
 					pointControls.filteredGroups(removedBoxItemGroups);
 				}
+				maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 				removedBoxItemGroups.clear();
 			}
 		}
@@ -451,6 +478,10 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			int groupIndex = boxItemGroupIterator.next();
 			
 			BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(groupIndex);
+			if(containerPriorities && boxItemGroup.getContainerPriority() > Math.min(maxContainerPriority, getMinGroupContainerPriority(filteredBoxItemGroups))) {
+				// a group of a lower container priority is not placed in this container
+				break groups;
+			}
 			boxItemGroup.mark();
 			
 			pointCalculator.mark();
@@ -537,6 +568,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 							if(pointControls != null) {
 								pointControls.filteredGroups(removedBoxItemGroups);
 							}
+							maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 							removedBoxItemGroups.clear();
 						}
 						
@@ -588,6 +620,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					if(!removedBoxItemGroups.isEmpty()) {
 						boxItemControls.filteredGroups(removedBoxItemGroups);
 						pointControls.filteredGroups(removedBoxItemGroups);
+						maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 						removedBoxItemGroups.clear();
 					}
 					
@@ -641,6 +674,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				}
 				
 				stack.setSize(markStackSize);
+				// the group waits for the next container, and so do the groups of higher container priorities
+				maxContainerPriority = Math.min(maxContainerPriority, boxItemGroup.getContainerPriority());
 				
 				// unable to stack whole group
 				if(order == Order.CHRONOLOGICAL) {

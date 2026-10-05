@@ -71,7 +71,7 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 	protected List<BoxItem> copyInitialBoxItems() {
 		List<BoxItem> copies = new ArrayList<>(boxes.length);
 		for(int i = 0; i < boxes.length; i++) {
-			copies.add(new BoxItem(boxes[i].copy(), initialCounts[i], initialLocalIndexes[i], globalIndexes[i]));
+			copies.add(new BoxItem(boxes[i].copy(), initialCounts[i], initialLocalIndexes[i], globalIndexes[i]).withOrderingOf(boxItems[i]));
 		}
 		return copies;
 	}

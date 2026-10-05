@@ -107,7 +107,29 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		if(input.getOrder() != Order.NONE) {
 			return "Order not supported for brute force packager";
 		}
+		if(hasContainerPriorities(input)) {
+			return "Container priorities not supported for brute force packager";
+		}
 		return null;
+	}
+
+	private static boolean hasContainerPriorities(PackagerInput input) {
+		if(input.hasBoxItems()) {
+			List<BoxItem> boxItems = input.getBoxItems();
+			for (int i = 1; i < boxItems.size(); i++) {
+				if(boxItems.get(i).getContainerPriority() != boxItems.get(0).getContainerPriority()) {
+					return true;
+				}
+			}
+			return false;
+		}
+		List<BoxItemGroup> groups = input.getBoxItemGroups();
+		for (int i = 1; i < groups.size(); i++) {
+			if(groups.get(i).getContainerPriority() != groups.get(0).getContainerPriority()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -458,11 +480,54 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		return true;
 	}
 
+	/**
+	 * @return true if the boxes of the iterator have different extraction orders
+	 */
+	protected static boolean hasExtractionOrders(BoxItemPermutationRotationIterator iterator) {
+		for (int i = 1; i < iterator.length(); i++) {
+			if(iterator.getStackValue(i).getBox().getBoxItem().getExtractionOrder() != iterator.getStackValue(0).getBox().getBoxItem().getExtractionOrder()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @return true if a box at the point does not prevent extracting the placed boxes in their extraction order, and
+	 *         is not prevented by them: a box extracted earlier must not have a box extracted later resting on it, or
+	 *         in its path (see {@link InsertionOrder})
+	 */
+	protected static boolean isExtractable(Point point, BoxStackValue stackValue, Stack stack, ContainerAccess access) {
+		int order = stackValue.getBox().getBoxItem().getExtractionOrder();
+		int x = point.getMinX();
+		int y = point.getMinY();
+		int z = point.getMinZ();
+		int endX = x + stackValue.getDx() - 1;
+		int endY = y + stackValue.getDy() - 1;
+		int endZ = z + stackValue.getDz() - 1;
+		List<Placement> placements = stack.getPlacements();
+		for (int i = 0; i < placements.size(); i++) {
+			Placement placement = placements.get(i);
+			int placementOrder = placement.getBoxItem().getExtractionOrder();
+			if(order < placementOrder) {
+				if(InsertionOrder.mustPrecede(x, y, z, endX, endY, endZ, placement, access)) {
+					return false;
+				}
+			} else if(order > placementOrder) {
+				if(InsertionOrder.mustPrecede(placement, x, y, z, endX, endY, endZ, access)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	protected static void search(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility, BruteForcePointIteratorFilter pointFilter,
 			List<Placement> obstacles, ContainerAccess access)
 			throws PackagerInterruptedException {
 		boolean checkObstacles = obstacles != null && !obstacles.isEmpty();
+		boolean checkExtraction = hasExtractionOrders(iterator);
 		BruteForceSearchFrames frames = pointCalculator.getSearchFrames();
 		int[] nextPointIndexes = frames.nextPointIndexes;
 		int[] pointCounts = frames.pointCounts;
@@ -555,6 +620,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				}
 				if(checkObstacles && !isInsertable(pointCalculator.get(candidate), stackValue, obstacles, access)) {
 					// an obstacle rests on the box at this point, or is in its path
+					continue;
+				}
+				if(checkExtraction && !isExtractable(pointCalculator.get(candidate), stackValue, stack, access)) {
 					continue;
 				}
 				if(utility != null) {

@@ -38,7 +38,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 						List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
 						Box boxCopy = new Box(box, boundRotations);
 						
-						loadableItems.add(new BoxItem(boxCopy, item.getCount(), offset, item.getGlobalIndex()));
+						loadableItems.add(new BoxItem(boxCopy, item.getCount(), offset, item.getGlobalIndex()).withOrderingOf(item));
 						
 						offset++;
 					}
