@@ -75,8 +75,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 	
 				PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
 				
-				// TODO only handles groups in order.
-				
+				// results from this session hold the first remaining groups
 				List<Integer> removedGroups = new ArrayList<>();
 				int wholeGroupBoxCount = 0;
 				for(int i = 0; i < boxItemGroups.size(); i++) {
@@ -123,7 +122,6 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 					it.removeGroups(iteratorGroupIndexes);
 				}
 				
-				boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());
 				stackPlacementCount = BruteForcePackager.removeFirstPlacements(stackPlacements, p.size(), stackPlacementCount);
 				
 				return container;
@@ -143,7 +141,6 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 			for (BoxItemGroupPermutationRotationIterator iterator : containerIterators) {
 				iterator.removeGroups(iteratorGroupIndexes);
 			}
-			boxItemGroups = boxItemGroups.subList(accepted.groupIndexes().size(), boxItemGroups.size());
 			stackPlacementCount = BruteForcePackager.removeFirstPlacements(stackPlacements, accepted.localIndexes().size(), stackPlacementCount);
 			return container;
 		}

@@ -675,8 +675,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					// this result does not consume all placements
 					// remove consumed items from the iterators
 	
-					// TODO only handles groups in order.
-					
+					// results from this session hold the first remaining groups
 					List<Integer> removedGroups = new ArrayList<>();
 					int wholeGroupBoxCount = 0;
 					for(int i = 0; i < boxItemGroups.size(); i++) {
@@ -722,8 +721,6 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 						it.removeGroups(iteratorGroupIndexes);
 					}
 					
-					boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());
-					
 					// remove session inventory
 					removeInventory(p);
 	
@@ -751,7 +748,6 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				for (DefaultBoxItemGroupPermutationRotationIterator iterator : iterators) {
 					iterator.removeGroups(iteratorGroupIndexes);
 				}
-				boxItemGroups = boxItemGroups.subList(accepted.groupIndexes().size(), boxItemGroups.size());
 				removeInventory(accepted.localIndexes());
 				for (BruteForceWorker runner : runnables) {
 					runner.removeFirstPlacements(accepted.localIndexes().size());

@@ -31,8 +31,8 @@ import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
  * <p>
  * Each packager's session has its own interrupt. Except for the first packager, an interrupt which is not
  * the session's interrupt means the packager's budget is used up: the packager is not used any more. Likewise, a
- * packager whose session cannot accept a result (for example box item groups packed out of order) is not used any
- * more. The first packager still in use answers the questions about the remaining boxes and containers.
+ * packager whose session cannot accept a result is not used any more. The first packager still in use answers the
+ * questions about the remaining boxes and containers.
  */
 public class CompositePackagerSession implements PackagerSession {
 

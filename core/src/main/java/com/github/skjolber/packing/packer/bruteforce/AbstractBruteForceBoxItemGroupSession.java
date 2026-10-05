@@ -18,8 +18,11 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 
 	protected List<BoxItemGroup> boxItemGroups;
 	protected final List<BoxItemGroup> initialBoxItemGroups;
-	/** The number of groups accepted so far. The iterators keep the groups' initial positions. */
-	protected int acceptedGroupCount;
+	/**
+	 * The iterators' positions of the remaining groups, in order. The iterators keep the groups' initial positions:
+	 * results from this session hold the first remaining groups, results from other packagers any complete groups.
+	 */
+	protected List<Integer> remainingGroupPositions;
 
 	public AbstractBruteForceBoxItemGroupSession(List<BoxItem> boxItems,
 			List<ContainerItem> containers, int containerCount, List<BoxItemGroup> boxItemGroups) {
@@ -27,29 +30,38 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 		this.initialBoxItemGroups = copyBoxItemGroups(boxItemGroups);
 		
 		this.boxItemGroups = boxItemGroups;
+		this.remainingGroupPositions = new ArrayList<>(boxItemGroups.size());
+		for(int i = 0; i < boxItemGroups.size(); i++) {
+			remainingGroupPositions.add(i);
+		}
 	}
 
 	protected AbstractBruteForceBoxItemGroupSession(AbstractBruteForceBoxItemGroupSession source) {
 		super(source);
 		this.initialBoxItemGroups = copyBoxItemGroups(source.initialBoxItemGroups);
 		this.boxItemGroups = copyBoxItemGroups(source.boxItemGroups);
-		this.acceptedGroupCount = source.acceptedGroupCount;
+		this.remainingGroupPositions = new ArrayList<>(source.remainingGroupPositions);
 	}
 
 	/**
-	 * Translate positions in the remaining groups to the iterators' positions, and count the groups as accepted.
-	 * Groups are accepted in order, so the remaining groups follow the accepted groups.
+	 * Accept groups: remove them from the remaining groups.
 	 *
-	 * @param groupIndexes positions in the remaining groups
+	 * @param groupIndexes positions in the remaining groups, ascending
 	 * @return positions in the iterators
 	 */
 	protected List<Integer> acceptGroups(List<Integer> groupIndexes) {
-		List<Integer> indexes = new ArrayList<>(groupIndexes.size());
+		List<Integer> positions = new ArrayList<>(groupIndexes.size());
 		for(Integer groupIndex : groupIndexes) {
-			indexes.add(acceptedGroupCount + groupIndex);
+			positions.add(remainingGroupPositions.get(groupIndex));
 		}
-		acceptedGroupCount += groupIndexes.size();
-		return indexes;
+		List<BoxItemGroup> remaining = new ArrayList<>(boxItemGroups);
+		for(int i = groupIndexes.size() - 1; i >= 0; i--) {
+			int groupIndex = groupIndexes.get(i);
+			remaining.remove(groupIndex);
+			remainingGroupPositions.remove(groupIndex);
+		}
+		boxItemGroups = remaining;
+		return positions;
 	}
 
 	@Override
@@ -68,7 +80,7 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	 * @return whether the container can load the next remaining group (groups are packed in order)
 	 */
 	protected boolean canLoadNextGroup(BoxItemGroup[] iteratorGroups) {
-		return !boxItemGroups.isEmpty() && iteratorGroups[acceptedGroupCount] != null;
+		return !boxItemGroups.isEmpty() && iteratorGroups[remainingGroupPositions.get(0)] != null;
 	}
 
 	/**
@@ -90,7 +102,7 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 		int wholeGroupBoxCount = 0;
 		for(int k = 0; k < boxItemGroups.size(); k++) {
 			int groupBoxCount = boxItemGroups.get(k).getBoxCount();
-			if(iteratorGroups[acceptedGroupCount + k] == null || size < wholeGroupBoxCount + groupBoxCount) {
+			if(iteratorGroups[remainingGroupPositions.get(k)] == null || size < wholeGroupBoxCount + groupBoxCount) {
 				// excluded by the container, or the group was not packed completely
 				result.trimToSize(wholeGroupBoxCount);
 				break;
@@ -104,7 +116,7 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	}
 
 	/**
-	 * Verify that a foreign result consumes complete leading groups and translate
+	 * Verify that a foreign result consumes complete groups (any of the remaining groups) and translate
 	 * its stable box-item identities to this session's local iterator indexes.
 	 */
 	protected AcceptedGroups getAcceptedGroups(Stack stack) {
@@ -118,20 +130,27 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 
 		List<Integer> groups = new ArrayList<>();
 		List<Integer> localIndexes = new ArrayList<>(stack.size());
-		for(int groupIndex = 0; groupIndex < boxItemGroups.size(); groupIndex++) {
+		for(int groupIndex = 0; groupIndex < boxItemGroups.size() && !countByGlobalIndex.isEmpty(); groupIndex++) {
 			BoxItemGroup group = boxItemGroups.get(groupIndex);
 			boolean present = false;
+			boolean complete = true;
 			for(BoxItem item : group.getItems()) {
-				Integer count = countByGlobalIndex.remove(item.getGlobalIndex());
+				Integer count = countByGlobalIndex.get(item.getGlobalIndex());
 				if(count != null) {
 					present = true;
 				}
 				if(count == null || count != item.getCount()) {
-					if(!present && countByGlobalIndex.isEmpty()) {
-						return new AcceptedGroups(groups, localIndexes);
-					}
-					throw new IllegalArgumentException("Result does not contain complete box item group " + groupIndex);
+					complete = false;
 				}
+			}
+			if(!present) {
+				continue;
+			}
+			if(!complete) {
+				throw new IllegalArgumentException("Result does not contain complete box item group " + groupIndex);
+			}
+			for(BoxItem item : group.getItems()) {
+				int count = countByGlobalIndex.remove(item.getGlobalIndex());
 				int localIndex = getLocalIndex(item.getGlobalIndex());
 				for(int i = 0; i < count; i++) {
 					localIndexes.add(localIndex);

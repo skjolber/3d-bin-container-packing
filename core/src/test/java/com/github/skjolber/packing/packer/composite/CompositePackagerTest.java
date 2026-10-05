@@ -192,7 +192,7 @@ public class CompositePackagerTest {
 	@Test
 	public void packsBoxItemGroupsWhichFitOneContainerType() throws Exception {
 		// The first group fits only the big container. Plain may pack the groups out of order, which brute force
-		// does not; a packager which cannot continue from an accepted result is not used any more.
+		// does not, but brute force continues from such results.
 		//
 		//   big: [long  ]      small: [c]
 		//

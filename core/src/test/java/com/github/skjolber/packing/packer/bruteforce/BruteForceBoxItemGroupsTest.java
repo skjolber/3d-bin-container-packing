@@ -12,8 +12,16 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.packer.AbstractPackager;
+import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
+import com.github.skjolber.packing.packer.PackagerInput;
 
 /**
  * Box item groups accepted one container at a time, so that the remaining groups are accepted in later containers.
@@ -60,6 +68,58 @@ public class BruteForceBoxItemGroupsTest {
 		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
 			assertPacksAGroupWhichFitsOneContainerType(packager);
 		}
+	}
+
+	@Test
+	public void bruteForceAcceptsGroupsOutOfOrder() throws Exception {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			assertAcceptsGroupsOutOfOrder(packager);
+		}
+	}
+
+	@Test
+	public void fastBruteForceAcceptsGroupsOutOfOrder() throws Exception {
+		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
+			assertAcceptsGroupsOutOfOrder(packager);
+		}
+	}
+
+	@Test
+	public void parallelBruteForceAcceptsGroupsOutOfOrder() throws Exception {
+		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
+			assertAcceptsGroupsOutOfOrder(packager);
+		}
+	}
+
+	/**
+	 * A result from another packager (for example plain, which packs groups in any order) may hold any of the
+	 * remaining groups, not only the first. The session continues with the other groups:
+	 *
+	 * <pre>
+	 *   accepted: [b]      then: [a]   [c]
+	 * </pre>
+	 */
+	private static void assertAcceptsGroupsOutOfOrder(AbstractPackager<?> packager) throws PackagerInterruptedException {
+		List<BoxItemGroup> groups = new ArrayList<>();
+		for(String id : List.of("a", "b", "c")) {
+			groups.add(new BoxItemGroup(id, List.of(new BoxItem(Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build(), 1))));
+		}
+		Container container = Container.newBuilder().withId("cube").withSize(1, 1, 1).withMaxLoadWeight(1).build();
+		PackagerSession session = packager.createSession(new PackagerInput(null, groups, List.of(new ContainerItem(container, 3)), 3, Order.NONE), () -> false);
+
+		Stack stack = new Stack();
+		stack.add(new Placement(groups.get(1).get(0).getBox().getStackValue(0), 0, 0, 0, 0));
+		session.accept(new DefaultIntermediatePackagerResult(session.getContainerItem(0), stack));
+		assertThat(session.countRemainingBoxItemGroups()).isEqualTo(2);
+
+		List<String> packed = new ArrayList<>();
+		for(int i = 0; i < 2; i++) {
+			IntermediatePackagerResult result = session.attempt(0, null, false);
+			packed.add(result.getStack().getPlacements().get(0).getStackValue().getBox().getId());
+			session.accept(result);
+		}
+		assertThat(packed).containsExactly("a", "c");
+		assertThat(session.countRemainingBoxes()).isZero();
 	}
 
 	/**
