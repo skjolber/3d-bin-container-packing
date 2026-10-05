@@ -122,11 +122,6 @@ public class FilteredReversedBoxItemPermutationRotationIterator implements BoxIt
 	}
 
 	@Override
-	public boolean isFixedOrder() {
-		return iterator.isFixedOrder();
-	}
-
-	@Override
 	public int length() {
 		return iterator.length();
 	}

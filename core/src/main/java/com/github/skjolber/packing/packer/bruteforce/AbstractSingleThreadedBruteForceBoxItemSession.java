@@ -54,14 +54,6 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemSession extends Abs
 		this.stackPlacements = BruteForcePackager.getPlacements(stackPlacementCount, load);
 	}
 	
-	@Override
-	public void setOrder(Order order) {
-		super.setOrder(order);
-		for (BoxItemPermutationRotationIterator iterator : containerIterators) {
-			((DefaultBoxItemPermutationRotationIterator)iterator).setFixedOrder(this.order != Order.NONE);
-		}
-	}
-
 	protected int getMaxIteratorLength() {
 		int maxIteratorLength = 0;
 		for (BoxItemPermutationRotationIterator iterator : containerIterators) {

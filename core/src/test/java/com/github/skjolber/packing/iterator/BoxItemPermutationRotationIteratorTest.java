@@ -89,19 +89,4 @@ class BoxItemPermutationRotationIteratorTest extends AbstractBoxItemPermutationR
 		assertThat(iterator.getPermutations()).containsExactly(1, 0, 2, 3);
 		assertThat(iterator.nextPermutation(0)).isEqualTo(-1);
 	}
-
-	@Test
-	public void fixedOrderHasOnePermutation() {
-		List<BoxItem> items = List.of(box("a", 0), box("b", 0), box("c", 0));
-		DefaultBoxItemPermutationRotationIterator iterator = newBuilder()
-				.withLoadSize(9, 1, 1)
-				.withBoxItems(items)
-				.withMaxLoadWeight(items.size())
-				.build();
-		iterator.setFixedOrder(true);
-		assertThat(iterator.getPermutations()).containsExactly(0, 1, 2);
-		assertThat(iterator.nextPermutation()).isEqualTo(-1);
-		assertThat(iterator.nextPermutation(2)).isEqualTo(-1);
-		assertThat(iterator.fork().isFixedOrder()).isTrue();
-	}
 }

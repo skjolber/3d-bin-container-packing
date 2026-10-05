@@ -102,7 +102,7 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 			LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		int maxPackableCount = getMaxPackableCount(iterator, container.getMaxLoadVolume(), container.getMaxLoadWeight());
 		return packStackPlacement(pointCalculator, placements, iterator, stack, container, placementIndex, interrupt,
-				minStackableAreaIndex, freeWeightLoad, utility, pointComparator, maxPackableCount);
+				minStackableAreaIndex, freeWeightLoad, utility, pointComparator, maxPackableCount, getInsertAfterCounts(iterator));
 	}
 
 	@Override
@@ -110,15 +110,14 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 			BoxItemPermutationRotationIterator iterator, Stack stack, Container container, int placementIndex,
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad,
 			LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator,
-			int maxPackableCount) {
+			int maxPackableCount, int[] insertAfterCounts) {
 		if(utility == null) {
 			return super.packStackPlacement(pointCalculator, placements, iterator, stack, container, placementIndex,
-					interrupt, minStackableAreaIndex, freeWeightLoad, null, pointComparator, maxPackableCount);
+					interrupt, minStackableAreaIndex, freeWeightLoad, null, pointComparator, maxPackableCount, insertAfterCounts);
 		}
 
 		boolean checkObstacles = !container.getObstacles().isEmpty();
 		boolean checkExtraction = hasExtractionOrders(iterator);
-		int[] insertAfterCounts = getInsertAfterCounts(iterator);
 		while (placementIndex < maxPackableCount) {
 			if(interrupt.getAsBoolean()) {
 				return Integer.MIN_VALUE;

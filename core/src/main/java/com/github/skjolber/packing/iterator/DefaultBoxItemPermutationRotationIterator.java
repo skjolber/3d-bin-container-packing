@@ -64,9 +64,6 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	
 	private List<BoxItem> excluded;
 
-	/** Whether the boxes are in a given order: there is only one permutation */
-	protected boolean fixedOrder;
-
 	/**
 	 * The end positions of the blocks of boxes with the same container priority (the box items are sorted by container
 	 * priority), or an empty array for a single block. Boxes are only permuted within their block, so that the boxes of a
@@ -101,18 +98,10 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 		this.reset = source.reset.clone();
 		this.permutations = source.permutations.clone();
 		this.minBoxVolume = source.minBoxVolume.clone();
-		this.fixedOrder = source.fixedOrder;
 		this.blockEnds = source.blockEnds;
 	}
 
-	public void setFixedOrder(boolean fixedOrder) {
-		this.fixedOrder = fixedOrder;
-	}
 
-	@Override
-	public boolean isFixedOrder() {
-		return fixedOrder;
-	}
 
 	public DefaultBoxItemPermutationRotationIterator fork() {
 		return new DefaultBoxItemPermutationRotationIterator(this);
@@ -247,9 +236,6 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	}
 
 	public int nextPermutation(int maxIndex) {
-		if(fixedOrder) {
-			return -1;
-		}
 		if(blockEnds.length != 0) {
 			return nextBlockPermutation(maxIndex);
 		}
@@ -339,9 +325,6 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	}
 
 	public int nextPermutation() {
-		if(fixedOrder) {
-			return -1;
-		}
 		if(blockEnds.length != 0) {
 			resetRotations();
 			return nextBlockPermutation(permutations.length - 1);

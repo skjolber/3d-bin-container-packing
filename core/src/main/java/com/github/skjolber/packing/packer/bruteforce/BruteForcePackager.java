@@ -439,6 +439,9 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(filterReversePermutations && abortOnAnyBoxTooBig && !isOrdered()) {
 				iterator = new FilteredReversedBoxItemPermutationRotationIterator(iterator);
 			}
+			if(order != Order.NONE) {
+				return packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best, getLimit(containerIterators[i]));
+			}
 			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best, getLimit(containerIterators[i]));
 		}
 		
@@ -487,6 +490,9 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			
 			if(filterReversePermutations && abortOnAnyBoxTooBig && order == Order.NONE) {
 				iterator = new FilteredReversedBoxItemPermutationRotationIterator(iterator);
+			}
+			if(order != Order.NONE) {
+				return truncateToGroup(packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best, Integer.MAX_VALUE), iteratorGroups);
 			}
 			return truncateToGroup(BruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best), iteratorGroups);
 		}

@@ -19,6 +19,8 @@ final class BruteForceSearchFrames {
 	final int[] minStackableAreaIndexes;
 	/** The container's max load weight minus the weight of the boxes placed at earlier levels. */
 	final int[] freeLoadWeights;
+	/** The rotation of the box at the level, in the search in a box item order (which tries the rotations). */
+	final int[] rotationIndexes;
 
 	BruteForceSearchFrames(int levels) {
 		this.nextPointIndexes = new int[levels];
@@ -26,5 +28,6 @@ final class BruteForceSearchFrames {
 		this.pointIterators = new IntIterator[levels];
 		this.minStackableAreaIndexes = new int[levels];
 		this.freeLoadWeights = new int[levels];
+		this.rotationIndexes = new int[levels];
 	}
 }

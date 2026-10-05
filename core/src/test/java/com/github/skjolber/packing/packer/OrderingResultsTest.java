@@ -20,6 +20,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
@@ -525,6 +526,39 @@ public class OrderingResultsTest {
 		}
 		assertThat(multiple).isGreaterThan(SEEDS / 4);
 		assertThat(failures).isEmpty();
+	}
+
+	/**
+	 * With a box item order, brute force searches all rotations and points of the boxes in their order: it places at
+	 * least as many boxes in a container as fast brute force (which takes the best point for each box), and the same
+	 * number when attempting the container again.
+	 */
+	@Test
+	public void bruteForceInOrderSearchesAllRotationsAndPoints() throws Exception {
+		try (BruteForcePackager bruteForce = BruteForcePackager.newBuilder().build(); FastBruteForcePackager fast = FastBruteForcePackager.newBuilder().build()) {
+			int more = 0;
+			for (long seed = 0; seed < SEEDS * 2; seed++) {
+				Random random = new Random(seed);
+				List<BoxItem> items = new ArrayList<>();
+				for (int i = 0; i < 6; i++) {
+					Box.Builder box = Box.newBuilder().withId("b" + i).withSize(2 + random.nextInt(5), 2 + random.nextInt(5), 1 + random.nextInt(4)).withWeight(1);
+					items.add(new BoxItem((random.nextBoolean() ? box.withRotate3D() : box.withRotate2D()).build(), 1));
+				}
+				List<ContainerItem> containers = containers(10, 8, 6, ContainerAccess.ANY, 6);
+
+				PackagerSession session = bruteForce.createSession(new PackagerInput(items, null, containers, 6, Order.CHRONOLOGICAL), () -> false);
+				int placed = session.attempt(0, null, false).getStack().size();
+				assertThat(session.attempt(0, null, false).getStack().size()).as("seed %d, again", seed).isEqualTo(placed);
+
+				PackagerSession fastSession = fast.createSession(new PackagerInput(items, null, containers, 6, Order.CHRONOLOGICAL), () -> false);
+				int fastPlaced = fastSession.attempt(0, null, false).getStack().size();
+				assertThat(placed).as("seed %d", seed).isGreaterThanOrEqualTo(fastPlaced);
+				if(placed > fastPlaced) {
+					more++;
+				}
+			}
+			assertThat(more).isGreaterThan(0);
+		}
 	}
 
 	//
