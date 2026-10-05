@@ -2,11 +2,13 @@ package com.github.skjolber.packing.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Random;
+
 import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link Placement} load tracking: supporters / supportees relationships
- * and weight propagation across multiple levels.
+ * and weight propagation across multiple levels; and the insertion order rules (see {@link ContainerAccess}).
  *
  * <p>Coordinate system: X = width (right), Y = depth (into page), Z = height (up).
  * Side-view diagrams show the X/Z plane unless noted otherwise.
@@ -535,5 +537,112 @@ public class PlacementTest {
 		Placement placement = makePlacement("A", 200000, 80000, 1, 1, 0, 0, 0);
 
 		assertThat(placement.overlapArea2D(0, 199999, 0, 79999)).isEqualTo(16_000_000_000L);
+	}
+
+	// -----------------------------------------------------------------------
+	// insertion order
+	// -----------------------------------------------------------------------
+
+	/**
+	 * <pre>
+	 *  z
+	 *  2 +-------+
+	 *    |   B   |   B rests on A: A is inserted first, whatever the access;
+	 *  1 +---+---+   C only touches A at the side
+	 *    | A | C |
+	 *  0 +---+---+
+	 *    0   1   2  x
+	 * </pre>
+	 */
+	@Test
+	public void boxIsInsertedAfterTheBoxesItRestsOn() {
+		Placement a = makePlacement("A", 1, 1, 1, 1, 0, 0, 0);
+		Placement b = makePlacement("B", 2, 1, 1, 1, 0, 0, 1);
+		Placement c = makePlacement("C", 1, 1, 1, 1, 1, 0, 0);
+
+		assertThat(b.restsOn(a)).isTrue();
+		assertThat(a.restsOn(b)).isFalse();
+		assertThat(c.restsOn(a)).isFalse();
+		for (ContainerAccess access : ContainerAccess.values()) {
+			assertThat(a.mustPrecede(b, access)).isTrue();
+			assertThat(b.mustPrecede(a, access)).isFalse();
+		}
+		assertThat(a.mustPrecede(c, ContainerAccess.ANY)).isFalse();
+		assertThat(c.mustPrecede(a, ContainerAccess.ANY)).isFalse();
+	}
+
+	/**
+	 * <pre>
+	 *  z
+	 *  3 +---+
+	 *    | B |       from the top, B is above A (with a gap): A is inserted first
+	 *  2 +---+
+	 *
+	 *  1 +---+
+	 *    | A |
+	 *  0 +---+
+	 *    0   1  x
+	 * </pre>
+	 */
+	@Test
+	public void fromTheTopBoxIsInsertedBeforeTheBoxesAboveIt() {
+		Placement a = makePlacement("A", 1, 1, 1, 1, 0, 0, 0);
+		Placement b = makePlacement("B", 1, 1, 1, 1, 0, 0, 2);
+
+		assertThat(a.isBlockedBy(b, ContainerAccess.TOP)).isTrue();
+		assertThat(a.mustPrecede(b, ContainerAccess.TOP)).isTrue();
+		assertThat(b.mustPrecede(a, ContainerAccess.TOP)).isFalse();
+		// without access restrictions, or through a door, the order is free
+		assertThat(a.mustPrecede(b, ContainerAccess.ANY)).isFalse();
+		assertThat(a.mustPrecede(b, ContainerAccess.FRONT)).isFalse();
+		assertThat(b.mustPrecede(a, ContainerAccess.FRONT)).isFalse();
+	}
+
+	/**
+	 * <pre>
+	 *  z
+	 *  1 +---+   +---+
+	 *    | A |   | B |   door ->   A is inserted first, B is between it and the door
+	 *  0 +---+   +---+
+	 *    0   1   2   3  x
+	 * </pre>
+	 */
+	@Test
+	public void throughADoorBoxIsInsertedBeforeTheBoxesBetweenItAndTheDoor() {
+		Placement a = makePlacement("A", 1, 1, 1, 1, 0, 0, 0);
+		Placement b = makePlacement("B", 1, 1, 1, 1, 2, 0, 0);
+
+		assertThat(a.isBlockedBy(b, ContainerAccess.FRONT)).isTrue();
+		assertThat(a.mustPrecede(b, ContainerAccess.FRONT)).isTrue();
+		assertThat(b.mustPrecede(a, ContainerAccess.FRONT)).isFalse();
+		assertThat(a.mustPrecede(b, ContainerAccess.TOP)).isFalse();
+		assertThat(b.mustPrecede(a, ContainerAccess.TOP)).isFalse();
+	}
+
+	/**
+	 * The variants for a box at given coordinates, which is not placed yet, agree with the variants for placements.
+	 */
+	@Test
+	public void coordinateVariantsAgreeWithPlacements() {
+		Random random = new Random(1);
+		int precede = 0;
+		for (int i = 0; i < 20_000; i++) {
+			Placement a = makePlacement("A", 1 + random.nextInt(4), 1 + random.nextInt(4), 1 + random.nextInt(4), 1, random.nextInt(8), random.nextInt(8), random.nextInt(8));
+			Placement b = makePlacement("B", 1 + random.nextInt(4), 1 + random.nextInt(4), 1 + random.nextInt(4), 1, random.nextInt(8), random.nextInt(8), random.nextInt(8));
+			int x = b.getAbsoluteX();
+			int y = b.getAbsoluteY();
+			int z = b.getAbsoluteZ();
+			int endX = b.getAbsoluteEndX();
+			int endY = b.getAbsoluteEndY();
+			int endZ = b.getAbsoluteEndZ();
+			for (ContainerAccess access : ContainerAccess.values()) {
+				assertThat(a.mustPrecede(x, y, z, endX, endY, endZ, access)).isEqualTo(a.mustPrecede(b, access));
+				assertThat(a.mustFollow(x, y, z, endX, endY, endZ, access)).isEqualTo(b.mustPrecede(a, access));
+				if(a.mustPrecede(b, access)) {
+					precede++;
+				}
+			}
+		}
+		assertThat(precede).isGreaterThan(1000);
 	}
 }

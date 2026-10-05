@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.api;
 
 /**
- * The order in which box items (or box item groups) arrive for loading, and so are inserted, see {@link InsertionOrder}.
+ * The order in which box items (or box item groups) arrive for loading, and so are inserted, see {@link ContainerAccess}.
  * For the order in which boxes are taken out, see {@link BoxItem#withExtractionOrder(int)}, and for which boxes go in
  * earlier containers, {@link BoxItem#withContainerPriority(int)}.
  */

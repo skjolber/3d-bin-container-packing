@@ -425,7 +425,7 @@ public class Container {
 	}
 
 	/**
-	 * Boxes which are already in the container: they are inserted before the packed boxes (see {@link InsertionOrder}).
+	 * Boxes which are already in the container: they are inserted before the packed boxes (see {@link ContainerAccess}).
 	 *
 	 * @return the obstacles, or an empty list
 	 */

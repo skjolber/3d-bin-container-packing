@@ -99,7 +99,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	/**
 	 * The share of the weight of {@code supportee} (and the load on it) which a new placement under it would carry,
 	 * with the given contact area, and the relief for its current supporters (the result puts the new placement before
-	 * {@code supportee}, see {@link com.github.skjolber.packing.api.InsertionOrder}).
+	 * {@code supportee}, see {@link com.github.skjolber.packing.api.ContainerAccess}).
 	 *
 	 * @return the weight the new placement would carry
 	 */

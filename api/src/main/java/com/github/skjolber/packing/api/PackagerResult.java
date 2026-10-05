@@ -41,7 +41,7 @@ public class PackagerResult {
 	}
 
 	/**
-	 * Whether the placements of every container are in insertion order (see {@link InsertionOrder}): an order in which
+	 * Whether the placements of every container are in insertion order (see {@link ContainerAccess}): an order in which
 	 * the boxes can be loaded. The packagers put results in insertion order unless that is skipped
 	 * ({@link PackagerResultBuilder#withInsertionOrder(boolean)}); with a box item order, they only place boxes which
 	 * can be inserted. False if skipped, or if the boxes cannot be loaded in any order (possible through a door,

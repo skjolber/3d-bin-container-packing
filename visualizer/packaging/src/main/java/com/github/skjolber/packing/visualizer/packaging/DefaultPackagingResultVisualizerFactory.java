@@ -128,7 +128,7 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 	}
 
 	/**
-	 * Visualize containers, and validate their insertion order (see {@link com.github.skjolber.packing.api.InsertionOrder}),
+	 * Visualize containers, and validate their insertion order (see {@link com.github.skjolber.packing.api.ContainerAccess}),
 	 * the extraction order and container priority of their boxes, and the load limits of their boxes (the load validators
 	 * are chosen from the boxes' limits).
 	 */

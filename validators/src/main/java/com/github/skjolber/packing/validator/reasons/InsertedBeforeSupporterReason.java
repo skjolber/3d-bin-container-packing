@@ -6,7 +6,7 @@ import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 /**
  * Indicates that a box is inserted before the box it rests on, so the order of the placements is not a possible insertion order.
  *
- * @see com.github.skjolber.packing.api.InsertionOrder
+ * @see com.github.skjolber.packing.api.ContainerAccess
  */
 public class InsertedBeforeSupporterReason implements ValidatorResultReason {
 

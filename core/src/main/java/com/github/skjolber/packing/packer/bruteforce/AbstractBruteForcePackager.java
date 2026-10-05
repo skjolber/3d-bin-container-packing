@@ -13,7 +13,6 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerAccess;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.InsertionOrder;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
@@ -463,7 +462,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 */
 	/**
 	 * @return true if a box can be inserted at the point after the boxes already in the container (obstacles):
-	 *         none of them rests on it, or is in its path (see {@link InsertionOrder})
+	 *         none of them rests on it, or is in its path (see {@link ContainerAccess})
 	 */
 	protected static boolean isInsertable(Point point, BoxStackValue stackValue, List<Placement> obstacles, ContainerAccess access) {
 		int x = point.getMinX();
@@ -473,7 +472,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		int endY = y + stackValue.getDy() - 1;
 		int endZ = z + stackValue.getDz() - 1;
 		for (int i = 0; i < obstacles.size(); i++) {
-			if(InsertionOrder.mustPrecede(x, y, z, endX, endY, endZ, obstacles.get(i), access)) {
+			if(obstacles.get(i).mustFollow(x, y, z, endX, endY, endZ, access)) {
 				return false;
 			}
 		}
@@ -495,7 +494,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	/**
 	 * @return true if a box at the point does not prevent extracting the placed boxes in their extraction order, and
 	 *         is not prevented by them: a box extracted earlier must not have a box extracted later resting on it, or
-	 *         in its path (see {@link InsertionOrder})
+	 *         in its path (see {@link ContainerAccess})
 	 */
 	protected static boolean isExtractable(Point point, BoxStackValue stackValue, Stack stack, ContainerAccess access) {
 		int order = stackValue.getBox().getBoxItem().getExtractionOrder();
@@ -510,11 +509,11 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			Placement placement = placements.get(i);
 			int placementOrder = placement.getBoxItem().getExtractionOrder();
 			if(order < placementOrder) {
-				if(InsertionOrder.mustPrecede(x, y, z, endX, endY, endZ, placement, access)) {
+				if(placement.mustFollow(x, y, z, endX, endY, endZ, access)) {
 					return false;
 				}
 			} else if(order > placementOrder) {
-				if(InsertionOrder.mustPrecede(placement, x, y, z, endX, endY, endZ, access)) {
+				if(placement.mustPrecede(x, y, z, endX, endY, endZ, access)) {
 					return false;
 				}
 			}

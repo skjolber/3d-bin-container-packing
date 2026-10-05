@@ -4,14 +4,13 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerAccess;
-import com.github.skjolber.packing.api.InsertionOrder;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.validator.reasons.BlockedInsertionReason;
 import com.github.skjolber.packing.validator.reasons.InsertedBeforeSupporterReason;
 
 /**
- * Validates that the order of the placements of a stack is a possible insertion order, see {@link InsertionOrder}:
+ * Validates that the order of the placements of a stack is a possible insertion order, see {@link ContainerAccess}:
  * each box is inserted after the boxes it rests on, and its path from the container's opening is free. The boxes already
  * in a container (obstacles) are inserted first.
  */
@@ -31,10 +30,10 @@ public class InsertionOrderValidator {
 			ContainerAccess access = container.getAccess();
 			for (Placement placement : container.getStack().getPlacements()) {
 				for (Placement obstacle : obstacles) {
-					if(InsertionOrder.restsOn(obstacle, placement)) {
+					if(obstacle.restsOn(placement)) {
 						reasons.add(new InsertedBeforeSupporterReason(obstacle, placement));
 						valid = false;
-					} else if(InsertionOrder.isBlockedBy(placement, obstacle, access)) {
+					} else if(placement.isBlockedBy(obstacle, access)) {
 						reasons.add(new BlockedInsertionReason(placement, obstacle));
 						valid = false;
 					}
@@ -56,10 +55,10 @@ public class InsertionOrderValidator {
 			Placement placement = placements.get(i);
 			for (int j = i + 1; j < placements.size(); j++) {
 				Placement later = placements.get(j);
-				if(InsertionOrder.restsOn(placement, later)) {
+				if(placement.restsOn(later)) {
 					reasons.add(new InsertedBeforeSupporterReason(placement, later));
 					valid = false;
-				} else if(InsertionOrder.isBlockedBy(later, placement, access)) {
+				} else if(later.isBlockedBy(placement, access)) {
 					// the later box would have to pass this one
 					reasons.add(new BlockedInsertionReason(later, placement));
 					valid = false;

@@ -167,6 +167,96 @@ public class Placement implements Serializable {
 				);
 	}
 
+	// insertion order: the order in which boxes can be inserted into a container, see ContainerAccess.
+
+	/**
+	 * @param supporter another placement
+	 * @return true if this placement rests on {@code supporter}: its bottom touches the top of {@code supporter}, and
+	 *         their footprints overlap
+	 */
+	public boolean restsOn(Placement supporter) {
+		return supporter.getAbsoluteEndZ() + 1 == z && intersects2D(supporter);
+	}
+
+	/**
+	 * @param other another placement
+	 * @param access how boxes get into the container
+	 * @return true if this placement must be inserted before {@code other}: {@code other} rests on it, or it could not
+	 *         be inserted after {@code other} (see {@link #isBlockedBy(Placement, ContainerAccess)})
+	 */
+	public boolean mustPrecede(Placement other, ContainerAccess access) {
+		return other.restsOn(this) || isBlockedBy(other, access);
+	}
+
+	/**
+	 * @param other another placement
+	 * @param access how boxes get into the container
+	 * @return true if inserting this placement would pass through {@code other}, were it already there: for
+	 *         {@link ContainerAccess#TOP} when {@code other} is above it, for {@link ContainerAccess#FRONT} when
+	 *         {@code other} is between it and the door; always false for {@link ContainerAccess#ANY}
+	 */
+	public boolean isBlockedBy(Placement other, ContainerAccess access) {
+		return other.isInPathOf(x, y, z, getAbsoluteEndX(), getAbsoluteEndY(), getAbsoluteEndZ(), access);
+	}
+
+	/**
+	 * As {@link #mustPrecede(Placement, ContainerAccess)}, for a box at the given coordinates (inclusive) which is not
+	 * placed yet.
+	 *
+	 * @return true if this placement must be inserted before a box at the given coordinates
+	 */
+	public boolean mustPrecede(int x, int y, int z, int endX, int endY, int endZ, ContainerAccess access) {
+		if(getAbsoluteEndZ() + 1 == z && intersects2D(x, endX, y, endY)) {
+			// the box rests on this placement
+			return true;
+		}
+		switch (access) {
+			case TOP:
+				// the box is above this placement
+				return z > getAbsoluteEndZ() && intersects2D(x, endX, y, endY);
+			case FRONT:
+				// the box is between this placement and the door
+				return x > getAbsoluteEndX()
+						&& y <= getAbsoluteEndY() && this.y <= endY
+						&& z <= getAbsoluteEndZ() && this.z <= endZ;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * As {@link #mustPrecede(Placement, ContainerAccess)}, the other way around, for a box at the given coordinates
+	 * (inclusive) which is not placed yet.
+	 *
+	 * @return true if a box at the given coordinates must be inserted before this placement
+	 */
+	public boolean mustFollow(int x, int y, int z, int endX, int endY, int endZ, ContainerAccess access) {
+		if(endZ + 1 == this.z && intersects2D(x, endX, y, endY)) {
+			// this placement rests on the box
+			return true;
+		}
+		return isInPathOf(x, y, z, endX, endY, endZ, access);
+	}
+
+	/**
+	 * @return true if this placement is in the path of a box at the given coordinates (inclusive), see
+	 *         {@link #isBlockedBy(Placement, ContainerAccess)}
+	 */
+	protected boolean isInPathOf(int x, int y, int z, int endX, int endY, int endZ, ContainerAccess access) {
+		switch (access) {
+			case TOP:
+				// this placement is above the box
+				return this.z > endZ && intersects2D(x, endX, y, endY);
+			case FRONT:
+				// this placement is between the box and the door
+				return this.x > endX
+						&& y <= getAbsoluteEndY() && this.y <= endY
+						&& z <= getAbsoluteEndZ() && this.z <= endZ;
+			default:
+				return false;
+		}
+	}
+
 	/**
 	 * The area in the xy plane shared with a rectangle (inclusive coordinates), for example the
 	 * contact area with a box resting on this placement.
@@ -486,7 +576,7 @@ public class Placement implements Serializable {
 	 * Records that this placement touches the bottom of {@code supportee}, which was placed before it (in the order of
 	 * the packager's search, for example into a gap under an overhang). The weight passed down by {@code supportee},
 	 * its own and the load on it, is shared again between all of its supporters by contact area. In the result, the
-	 * placements are put in insertion order (this placement before {@code supportee}), see {@link InsertionOrder}.
+	 * placements are put in insertion order (this placement before {@code supportee}), see {@link #mustPrecede(Placement, ContainerAccess)}.
 	 * <p>
 	 * Undo with {@link #removeSupporteesAbove()} before removing this placement's own supporter links.
 	 *

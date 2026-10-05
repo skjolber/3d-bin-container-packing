@@ -7,7 +7,6 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerAccess;
-import com.github.skjolber.packing.api.InsertionOrder;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
@@ -64,7 +63,7 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 	protected final boolean checkObstacles;
 
 	/**
-	 * Whether candidates must be insertable after the boxes already placed, see {@link InsertionOrder}.
+	 * Whether candidates must be insertable after the boxes already placed, see {@link ContainerAccess}.
 	 */
 	protected final boolean checkInsertion;
 
@@ -78,7 +77,7 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 		if(checkInsertion) {
 			List<Placement> placements = stack.getPlacements();
 			for (int i = 0; i < placements.size(); i++) {
-				if(InsertionOrder.mustPrecede(candidate, placements.get(i), access)) {
+				if(candidate.mustPrecede(placements.get(i), access)) {
 					return false;
 				}
 			}
@@ -91,12 +90,12 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 				int placementOrder = placement.getBoxItem().getExtractionOrder();
 				if(order < placementOrder) {
 					// the candidate is extracted first: the placement must be insertable before it
-					if(InsertionOrder.mustPrecede(candidate, placement, access)) {
+					if(candidate.mustPrecede(placement, access)) {
 						return false;
 					}
 				} else if(order > placementOrder) {
 					// the placement is extracted first: the candidate must be insertable before it
-					if(InsertionOrder.mustPrecede(placement, candidate, access)) {
+					if(placement.mustPrecede(candidate, access)) {
 						return false;
 					}
 				}
@@ -105,7 +104,7 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 		if(checkObstacles) {
 			List<Placement> obstacles = container.getObstacles();
 			for (int i = 0; i < obstacles.size(); i++) {
-				if(InsertionOrder.mustPrecede(candidate, obstacles.get(i), access)) {
+				if(candidate.mustPrecede(obstacles.get(i), access)) {
 					return false;
 				}
 			}

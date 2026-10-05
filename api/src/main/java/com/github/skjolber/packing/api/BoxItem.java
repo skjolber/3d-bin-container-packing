@@ -103,7 +103,7 @@ public class BoxItem implements Serializable {
 	/**
 	 * Set the extraction order: within a container, a box can be extracted before the boxes with a later order (a
 	 * higher value), without moving them: none of them rests on it, or is in its path to the container's opening (see
-	 * {@link InsertionOrder}). Default 0; boxes with equal values can be extracted in any order, for example the boxes
+	 * {@link ContainerAccess}). Default 0; boxes with equal values can be extracted in any order, for example the boxes
 	 * of one delivery stop.
 	 *
 	 * @param extractionOrder order, lower values extracted first

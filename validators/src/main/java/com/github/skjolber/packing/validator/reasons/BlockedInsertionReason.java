@@ -7,7 +7,7 @@ import com.github.skjolber.packing.api.validator.ValidatorResultReason;
  * Indicates that a box is inserted after a box in its path from the container's opening, so the order of the placements
  * is not a possible insertion order.
  *
- * @see com.github.skjolber.packing.api.InsertionOrder
+ * @see com.github.skjolber.packing.api.ContainerAccess
  */
 public class BlockedInsertionReason implements ValidatorResultReason {
 

@@ -7,13 +7,12 @@ import java.util.List;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerAccess;
-import com.github.skjolber.packing.api.InsertionOrder;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 
 /**
- * Reorders the placements of a packed container into a possible insertion order (see {@link InsertionOrder}):
+ * Reorders the placements of a packed container into a possible insertion order (see {@link ContainerAccess}):
  * each box after the boxes it rests on, and after the boxes it would otherwise have to pass on its way in.
  * <br>
  * <br>
@@ -131,7 +130,7 @@ public final class InsertionSequencer {
 			Placement placement = sequence[i];
 			int order = getExtractionOrder(placement);
 			for (int j = 0; j < i; j++) {
-				if(getExtractionOrder(sequence[j]) != order && InsertionOrder.mustPrecede(placement, sequence[j], access)) {
+				if(getExtractionOrder(sequence[j]) != order && placement.mustPrecede(sequence[j], access)) {
 					return false;
 				}
 			}
@@ -205,7 +204,7 @@ public final class InsertionSequencer {
 		for (int i = 0; i < n; i++) {
 			Placement first = placements.get(i);
 			for (int j = 0; j < n; j++) {
-				if(i != j && InsertionOrder.mustPrecede(first, placements.get(j), access)) {
+				if(i != j && first.mustPrecede(placements.get(j), access)) {
 					int[] list = successors[i];
 					if(list == null) {
 						list = new int[4];

@@ -1,8 +1,19 @@
 package com.github.skjolber.packing.api;
 
 /**
- * How boxes get into a container. The placements of a stack are in insertion order: each box is placed after the
- * boxes it rests on, and, depending on the access, its path from the opening must be free when it is inserted.
+ * How boxes get into a container, which decides the orders in which they can be inserted. The placements of a stack
+ * are in insertion order: a box is inserted after
+ * <ul>
+ * <li>the boxes it rests on (its bottom touches their top, and their footprints overlap), and</li>
+ * <li>for {@link #TOP}, the boxes below it which it would otherwise have to pass, and for {@link #FRONT}, the boxes
+ * between it and the door which it would otherwise have to pass.</li>
+ * </ul>
+ * With these rules, loads only grow while loading, so a stack whose final loads are within the limits is within the
+ * limits at every step of loading, and of unloading (which removes boxes with nothing on them).
+ * <br>
+ * <br>
+ * See {@link Placement#restsOn(Placement)}, {@link Placement#isBlockedBy(Placement, ContainerAccess)} and
+ * {@link Placement#mustPrecede(Placement, ContainerAccess)}.
  */
 public enum ContainerAccess {
 

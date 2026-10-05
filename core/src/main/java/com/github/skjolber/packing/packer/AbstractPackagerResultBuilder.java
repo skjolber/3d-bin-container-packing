@@ -157,7 +157,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 					}
 					obstaclePlacements.add(obstacle);
 				}
-				// keep the obstacles with the container, as boxes are inserted after them (see InsertionOrder)
+				// keep the obstacles with the container, as boxes are inserted after them (see ContainerAccess)
 				packContainerItem = new ContainerItem(containerItem, container.withObstacles(obstaclePlacements));
 				packContainerItem.setInitialPoints(ep.getAll());
 			} else {

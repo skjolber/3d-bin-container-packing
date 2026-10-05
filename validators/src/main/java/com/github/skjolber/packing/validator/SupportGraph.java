@@ -14,7 +14,7 @@ import com.github.skjolber.packing.api.PlacementLoad;
  * Which placements rest on which, calculated from the placements' positions: a placement rests on another when its
  * bottom touches the other's top and their footprints overlap; the overlap is the contact area. This includes a box
  * placed later, for example into a gap under an overhang: it carries part of the boxes resting on it (for the order
- * in which boxes can be inserted, see {@link com.github.skjolber.packing.api.InsertionOrder}).
+ * in which boxes can be inserted, see {@link com.github.skjolber.packing.api.ContainerAccess}).
  * <br>
  * <br>
  * Validators use this instead of the links recorded on the placements ({@link Placement#getSupporters()} and so on),
