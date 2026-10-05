@@ -300,7 +300,7 @@ class VirtualBoxPackagerTest {
 		try(PlainPackager delegate = PlainPackager.newBuilder().build(); RecordingPackager recording = new RecordingPackager(delegate);
 				VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
 			BoxItem ordered = item(1, 1, 1, 3);
-			wrapper.newResultBuilder().withBoxItems(ordered).withOrder(Order.CRONOLOGICAL)
+			wrapper.newResultBuilder().withBoxItems(ordered).withOrder(Order.CHRONOLOGICAL)
 					.withContainerItems(new ContainerItem(container(3, 1, 1), 1)).build();
 			assertThat(recording.counts).containsExactly(3);
 		}

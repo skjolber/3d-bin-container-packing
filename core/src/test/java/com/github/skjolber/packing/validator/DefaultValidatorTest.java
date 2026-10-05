@@ -108,7 +108,7 @@ public class DefaultValidatorTest {
 				.withContainerItem(new ContainerItem(container("container"), 1))
 				.withPackagerResult(new PackagerResult(List.of(resultContainer), 0, false))
 				.withBoxItems(List.of(new BoxItem(first), new BoxItem(second), new BoxItem(third)))
-				.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING)
+				.withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING)
 				.build();
 
 		ValidatorResultAssert.assertThat(result).isNotValid();
@@ -364,7 +364,7 @@ public class DefaultValidatorTest {
 					.withContainerItems(trustedContainerItems)
 					.withMaxContainerCount(1)
 					.withBoxItems(products)
-					.withOrder(Order.CRONOLOGICAL));
+					.withOrder(Order.CHRONOLOGICAL));
 		} finally {
 			packager.close();
 		}

@@ -85,7 +85,7 @@ class CrossPackagerSessionAcceptanceTest {
 		}
 
 		private TestSession(BoxItem item, List<ContainerItem> containers, int containerCount) {
-			super(List.of(item), Order.CRONOLOGICAL, containers, containerCount, () -> false);
+			super(List.of(item), Order.CHRONOLOGICAL, containers, containerCount, () -> false);
 		}
 
 		private TestSession(TestSession source) {

@@ -307,7 +307,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 	}
 
 	protected BoxItemGroupIterator createBoxItemGroupIterator(BoxItemGroupSource boxItemGroupSource, Order order, Container container, PointCalculator pointCalculator) {
-		if(order == Order.CRONOLOGICAL || order == Order.CRONOLOGICAL_ALLOW_SKIPPING) {
+		if(order == Order.CHRONOLOGICAL || order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
 			return new FixedOrderBoxItemGroupIterator(boxItemGroupSource, container, pointCalculator);
 		}
 		return new AnyOrderBoxItemGroupIterator(boxItemGroupSource, container, pointCalculator, boxItemGroupComparator);

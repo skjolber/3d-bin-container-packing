@@ -29,7 +29,7 @@ import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
  *   <li>Partial support from below → {@code supportedArea < stackValue.getArea()}</li>
  * </ul>
  *
- * <p>The {@code getPlacement} ordering behaviours (NONE / CRONOLOGICAL / …) are
+ * <p>The {@code getPlacement} ordering behaviours (NONE / CHRONOLOGICAL / …) are
  * shared with {@link ComparatorPlacementControls} and are tested there; only
  * support-area semantics are verified here.
  */

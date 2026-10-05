@@ -79,7 +79,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 					return createEmptyIntermediatePackagerResult();
 				}
 				
-				if(order != Order.CRONOLOGICAL) {
+				if(order != Order.CHRONOLOGICAL) {
 					removed.add(boxItemSource.remove(i));
 					i--;
 				} else {
@@ -142,7 +142,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 							return createEmptyIntermediatePackagerResult();
 						}
 						
-						if(order != Order.CRONOLOGICAL) {
+						if(order != Order.CHRONOLOGICAL) {
 							removed.add(boxItemSource.remove(i));
 							i--;
 						} else {
@@ -177,7 +177,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 								return createEmptyIntermediatePackagerResult();
 							}
 							
-							if(order != Order.CRONOLOGICAL) {
+							if(order != Order.CHRONOLOGICAL) {
 								removed.add(boxItemSource.remove(i));
 								i--;
 							} else {
@@ -268,7 +268,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 						
 		List<BoxItemGroup> removedBoxItemGroups = new ArrayList<>();
 
-		if(order != Order.CRONOLOGICAL) {
+		if(order != Order.CHRONOLOGICAL) {
 	
 			// remove boxes which do not fit due to volume, weight or stack value dimensions
 			for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
@@ -277,7 +277,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 					if(abortOnAnyBoxTooBig) {
 						return createEmptyIntermediatePackagerResult();
 					}
-					if(order != Order.CRONOLOGICAL) {
+					if(order != Order.CHRONOLOGICAL) {
 						filteredBoxItemGroups.remove(i);
 						i--;
 						
@@ -359,7 +359,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 								return createEmptyIntermediatePackagerResult();
 							}
 							
-							if(order != Order.CRONOLOGICAL) {
+							if(order != Order.CHRONOLOGICAL) {
 								filteredBoxItemGroups.remove(i);
 								i--;
 								
@@ -402,7 +402,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 										return createEmptyIntermediatePackagerResult();
 									}
 
-									if(order != Order.CRONOLOGICAL) {
+									if(order != Order.CHRONOLOGICAL) {
 										filteredBoxItemGroups.remove(i);
 										i--;
 										
@@ -466,7 +466,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				stack.setSize(markStackSize);
 				
 				// unable to stack whole group
-				if(order == Order.CRONOLOGICAL) {
+				if(order == Order.CHRONOLOGICAL) {
 					break groups;
 				}
 				// try again with another group if possible

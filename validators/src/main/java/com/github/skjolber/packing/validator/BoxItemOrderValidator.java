@@ -15,7 +15,7 @@ import com.github.skjolber.packing.api.Placement;
 public class BoxItemOrderValidator {
 
 	public boolean validate(List<BoxItem> items, Order order, List<Container> containers) {
-		if(order == Order.CRONOLOGICAL) {
+		if(order == Order.CHRONOLOGICAL) {
 			int boxItemIndex = 0;
 			int boxIndex = 0;
 			
@@ -41,7 +41,7 @@ public class BoxItemOrderValidator {
 				}
 			}
 			
-		} else if(order == Order.CRONOLOGICAL_ALLOW_SKIPPING) {
+		} else if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
 			Map<String, Integer> map = new HashMap<>();
 			for(int i = 0; i < items.size(); i++) {
 				BoxItem boxItem = items.get(i);
@@ -67,7 +67,7 @@ public class BoxItemOrderValidator {
 	
 
 	public boolean validate(List<BoxItemGroup> itemGroups, Order order, PackagerResult result) {
-		if(order == Order.CRONOLOGICAL) {
+		if(order == Order.CHRONOLOGICAL) {
 			
 			List<Container> containers = result.getContainers();
 			
@@ -106,7 +106,7 @@ public class BoxItemOrderValidator {
 				}
 			}
 			
-		} else if(order == Order.CRONOLOGICAL_ALLOW_SKIPPING) {
+		} else if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
 			List<Container> containers = result.getContainers();
 			
 			Map<String, Integer> map = new HashMap<>();

@@ -222,7 +222,7 @@ public class CompositePackagerTest {
 				.withPackager(PlainPackager.newBuilder().build())
 				.withPackager(costly)
 				.build()) {
-			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).withOrder(Order.CRONOLOGICAL).build();
+			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).withOrder(Order.CHRONOLOGICAL).build();
 
 			assertThat(result.isSuccess()).isTrue();
 		}

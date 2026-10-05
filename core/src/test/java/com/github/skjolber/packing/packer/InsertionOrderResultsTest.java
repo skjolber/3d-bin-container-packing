@@ -37,7 +37,7 @@ public class InsertionOrderResultsTest {
 	@EnumSource(ContainerAccess.class)
 	public void orderedResultsAreInAPossibleInsertionOrder(ContainerAccess access) {
 		// with a box item order, the packagers only place boxes which can be inserted after the boxes already there
-		for (Order order : new Order[] { Order.CRONOLOGICAL, Order.CRONOLOGICAL_ALLOW_SKIPPING }) {
+		for (Order order : new Order[] { Order.CHRONOLOGICAL, Order.CHRONOLOGICAL_ALLOW_SKIPPING }) {
 			check(access, order, List.of(
 					() -> PlainPackager.newBuilder().build(),
 					() -> LargestAreaFitFirstPackager.newBuilder().build(),

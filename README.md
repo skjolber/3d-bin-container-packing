@@ -549,6 +549,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * The placements of each container are in insertion order (`InsertionOrder`): each box after the boxes it rests on, and after the boxes in its path from the container's opening (`Container.withAccess(ContainerAccess)`: `ANY`, `TOP` or `FRONT`). Without a box item order, results are reordered after packing (`InsertionSequencer`); with an order, only insertable boxes are placed. `DefaultValidator` checks the order (`InsertionOrderValidator`)
         * `NonIdenticalLoadBoxReason` names the box with the identical-box-only limit as the constrained placement (previously the box directly below the offending box)
      * Breaking changes:
+        * `Order.CRONOLOGICAL` and `Order.CRONOLOGICAL_ALLOW_SKIPPING` are renamed to `Order.CHRONOLOGICAL` and `Order.CHRONOLOGICAL_ALLOW_SKIPPING`
         * Validators moved to a separate `validators` artifact (package `com.github.skjolber.packing.validator`)
         * `CenterOfGravityStabilityValidator.isPlacementStable(..)` and `CenterOfGravitySupportStabilityValidator.isPlacementStableSupport(..)` take a `SupportGraph`
         * Interrupts / deadlines moved from `core` (`com.github.skjolber.packing.deadline`) to `api` (`com.github.skjolber.packing.api.interrupt`)

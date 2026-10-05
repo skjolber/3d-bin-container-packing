@@ -25,7 +25,7 @@ public class BoxItemOrderValidatorTest {
 		BoxItem second = item("second");
 		Container container = container(second.getBox(), first.getBox());
 
-		assertFalse(validator.validate(List.of(first, second), Order.CRONOLOGICAL_ALLOW_SKIPPING, List.of(container)));
+		assertFalse(validator.validate(List.of(first, second), Order.CHRONOLOGICAL_ALLOW_SKIPPING, List.of(container)));
 	}
 
 	@Test
@@ -36,7 +36,7 @@ public class BoxItemOrderValidatorTest {
 		BoxItemGroup secondGroup = new BoxItemGroup("second-group", List.of(second));
 		PackagerResult result = new PackagerResult(List.of(container(second.getBox(), first.getBox())), 0L, false, -1);
 
-		assertFalse(validator.validate(List.of(firstGroup, secondGroup), Order.CRONOLOGICAL_ALLOW_SKIPPING, result));
+		assertFalse(validator.validate(List.of(firstGroup, secondGroup), Order.CHRONOLOGICAL_ALLOW_SKIPPING, result));
 	}
 
 	private BoxItem item(String id) {

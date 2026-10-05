@@ -28,8 +28,8 @@ import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
  *   <li>Fitting box in empty container → placement found</li>
  *   <li>Box larger than container → null</li>
  *   <li>{@link Order#NONE}: iterates all boxes, picks best via comparators</li>
- *   <li>{@link Order#CRONOLOGICAL}: only tries the first box, skips rest</li>
- *   <li>{@link Order#CRONOLOGICAL_ALLOW_SKIPPING}: skips non-fitting, stops after first hit</li>
+ *   <li>{@link Order#CHRONOLOGICAL}: only tries the first box, skips rest</li>
+ *   <li>{@link Order#CHRONOLOGICAL_ALLOW_SKIPPING}: skips non-fitting, stops after first hit</li>
  * </ul>
  */
 class ComparatorPlacementControlsTest {
@@ -186,18 +186,18 @@ class ComparatorPlacementControlsTest {
 	}
 
 	// -----------------------------------------------------------------------
-	// Order.CRONOLOGICAL: only first box tried
+	// Order.CHRONOLOGICAL: only first box tried
 	// -----------------------------------------------------------------------
 
 	/**
-	 * {@link Order#CRONOLOGICAL} breaks after the <em>first</em> box regardless
+	 * {@link Order#CHRONOLOGICAL} breaks after the <em>first</em> box regardless
 	 * of whether it produced a result.  Here the first box is too big, so null
 	 * is returned even though a fitting box exists at index 1.
 	 *
 	 * <pre>
 	 *  Source:  [ BIG (15×15×15) ][ OK (5×5×5) ]
 	 *
-	 *  CRONOLOGICAL: tries BIG → does not fit → break immediately
+	 *  CHRONOLOGICAL: tries BIG → does not fit → break immediately
 	 *
 	 *  z
 	 *  |
@@ -211,25 +211,25 @@ class ComparatorPlacementControlsTest {
 	 * </pre>
 	 */
 	@Test
-	void testGetPlacement_orderCronological_onlyFirstBoxTried_returnsNull() {
+	void testGetPlacement_orderChronological_onlyFirstBoxTried_returnsNull() {
 		DefaultPointCalculator3D calc = calculator(10, 10, 10);
 		Stack stack = new Stack();
 		DefaultBoxItemSource src = source(boxItem("BIG", 15, 15, 15), boxItem("OK", 5, 5, 5));
 
-		ComparatorPlacementControls ctrl = comparatorControls(src, calc, stack, 10, 10, 10, Order.CRONOLOGICAL);
+		ComparatorPlacementControls ctrl = comparatorControls(src, calc, stack, 10, 10, 10, Order.CHRONOLOGICAL);
 		Placement result = ctrl.getPlacement(0, src.size());
 
 		assertThat(result).isNull();
 	}
 
 	/**
-	 * {@link Order#CRONOLOGICAL} returns a placement for the first box when it
+	 * {@link Order#CHRONOLOGICAL} returns a placement for the first box when it
 	 * fits, and never inspects the second box.
 	 *
 	 * <pre>
 	 *  Source:  [ S (5×5×5) ][ L (8×8×5) ]
 	 *
-	 *  CRONOLOGICAL: tries S → fits → break
+	 *  CHRONOLOGICAL: tries S → fits → break
 	 *
 	 *  z
 	 *  |
@@ -242,14 +242,14 @@ class ComparatorPlacementControlsTest {
 	 * </pre>
 	 */
 	@Test
-	void testGetPlacement_orderCronological_firstFits_returnsFirst() {
+	void testGetPlacement_orderChronological_firstFits_returnsFirst() {
 		DefaultPointCalculator3D calc = calculator(10, 10, 10);
 		Stack stack = new Stack();
 		BoxItem small = boxItem("S", 5, 5, 5);
 		BoxItem large = boxItem("L", 8, 8, 5);
 		DefaultBoxItemSource src = source(small, large);
 
-		ComparatorPlacementControls ctrl = comparatorControls(src, calc, stack, 10, 10, 10, Order.CRONOLOGICAL);
+		ComparatorPlacementControls ctrl = comparatorControls(src, calc, stack, 10, 10, 10, Order.CHRONOLOGICAL);
 		Placement result = ctrl.getPlacement(0, src.size());
 
 		assertThat(result).isNotNull();
@@ -257,11 +257,11 @@ class ComparatorPlacementControlsTest {
 	}
 
 	// -----------------------------------------------------------------------
-	// Order.CRONOLOGICAL_ALLOW_SKIPPING: skips non-fitting, stops at first hit
+	// Order.CHRONOLOGICAL_ALLOW_SKIPPING: skips non-fitting, stops at first hit
 	// -----------------------------------------------------------------------
 
 	/**
-	 * {@link Order#CRONOLOGICAL_ALLOW_SKIPPING} skips boxes that produce no
+	 * {@link Order#CHRONOLOGICAL_ALLOW_SKIPPING} skips boxes that produce no
 	 * result and stops as soon as one succeeds.
 	 *
 	 * <pre>
@@ -280,20 +280,20 @@ class ComparatorPlacementControlsTest {
 	 * </pre>
 	 */
 	@Test
-	void testGetPlacement_orderCronologicalAllowSkipping_skipsBig_findsOk() {
+	void testGetPlacement_orderChronologicalAllowSkipping_skipsBig_findsOk() {
 		DefaultPointCalculator3D calc = calculator(10, 10, 10);
 		Stack stack = new Stack();
 		DefaultBoxItemSource src = source(boxItem("BIG", 15, 15, 15), boxItem("OK", 5, 5, 5));
 
 		ComparatorPlacementControls ctrl = comparatorControls(
-				src, calc, stack, 10, 10, 10, Order.CRONOLOGICAL_ALLOW_SKIPPING);
+				src, calc, stack, 10, 10, 10, Order.CHRONOLOGICAL_ALLOW_SKIPPING);
 		Placement result = ctrl.getPlacement(0, src.size());
 
 		assertThat(result).isNotNull();
 	}
 
 	/**
-	 * Once a result is found {@link Order#CRONOLOGICAL_ALLOW_SKIPPING} does NOT
+	 * Once a result is found {@link Order#CHRONOLOGICAL_ALLOW_SKIPPING} does NOT
 	 * try further boxes: a smaller box found second is still ignored.
 	 *
 	 * <pre>
@@ -313,7 +313,7 @@ class ComparatorPlacementControlsTest {
 	 * </pre>
 	 */
 	@Test
-	void testGetPlacement_orderCronologicalAllowSkipping_stopsAfterFirstSuccess() {
+	void testGetPlacement_orderChronologicalAllowSkipping_stopsAfterFirstSuccess() {
 		DefaultPointCalculator3D calc = calculator(10, 10, 10);
 		Stack stack = new Stack();
 		BoxItem small = boxItem("S", 5, 5, 5);
@@ -321,7 +321,7 @@ class ComparatorPlacementControlsTest {
 		DefaultBoxItemSource src = source(small, large); // small first
 
 		ComparatorPlacementControls ctrl = comparatorControls(
-				src, calc, stack, 10, 10, 10, Order.CRONOLOGICAL_ALLOW_SKIPPING);
+				src, calc, stack, 10, 10, 10, Order.CHRONOLOGICAL_ALLOW_SKIPPING);
 		Placement result = ctrl.getPlacement(0, src.size());
 
 		assertThat(result).isNotNull();

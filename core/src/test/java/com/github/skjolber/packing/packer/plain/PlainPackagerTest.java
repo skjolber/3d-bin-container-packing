@@ -553,7 +553,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			})
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(copyGroups(groups))
-					.withOrder(Order.CRONOLOGICAL)
+					.withOrder(Order.CHRONOLOGICAL)
 					.build();
 			PackagerResultAssert.assertThat(result).isSuccess();
 
@@ -566,7 +566,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withContainerItems(Arrays.asList(new ContainerItem(container, 5)))
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(groups)
-					.withOrder(Order.CRONOLOGICAL));
+					.withOrder(Order.CHRONOLOGICAL));
 		} finally {
 			packager.close();
 		}
@@ -638,7 +638,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 						b.withContainerItem(containerItem);
 					})
 					.withBoxItems(products)
-					.withOrder(Order.CRONOLOGICAL)
+					.withOrder(Order.CHRONOLOGICAL)
 					.withMaxContainerCount(10)
 					.build();
 			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
@@ -658,7 +658,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withContainerItems(Arrays.asList(containerItem))
 					.withMaxContainerCount(10)
 					.withBoxItems(products)
-					.withOrder(Order.CRONOLOGICAL));
+					.withOrder(Order.CHRONOLOGICAL));
 		} finally {
 			packager.close();
 		}
@@ -687,7 +687,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 						b.withContainerItem(containerItem);
 					})
 					.withBoxItems(products)
-					.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING)
+					.withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING)
 					.withMaxContainerCount(10)
 					.build();
 			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
@@ -708,7 +708,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withContainerItems(Arrays.asList(containerItem))
 					.withMaxContainerCount(10)
 					.withBoxItems(products)
-					.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING));
+					.withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING));
 
 		} finally {
 			packager.close();
@@ -846,7 +846,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			})
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(copyGroups(groups))
-					.withOrder(Order.CRONOLOGICAL)
+					.withOrder(Order.CHRONOLOGICAL)
 					.build();
 			PackagerResultAssert.assertThat(result).isSuccess();
 
@@ -859,7 +859,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withContainerItems(Arrays.asList(new ContainerItem(container1, 5)))
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(groups)
-					.withOrder(Order.CRONOLOGICAL));
+					.withOrder(Order.CHRONOLOGICAL));
 		} finally {
 			packager.close();
 		}
@@ -921,7 +921,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			})
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(copyGroups(groups))
-					.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING)
+					.withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING)
 					.build();
 			PackagerResultAssert.assertThat(result).isSuccess();
 
@@ -934,7 +934,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withContainerItems(Arrays.asList(new ContainerItem(container1, 5)))
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(groups)
-					.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING));
+					.withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING));
 		} finally {
 			packager.close();
 		}

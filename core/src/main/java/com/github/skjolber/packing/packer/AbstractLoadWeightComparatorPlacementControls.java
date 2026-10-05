@@ -107,10 +107,10 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 				}
 			}
 
-			if (order == Order.CRONOLOGICAL) {
+			if (order == Order.CHRONOLOGICAL) {
 				break;
 			}
-			if (order == Order.CRONOLOGICAL_ALLOW_SKIPPING && result != null) {
+			if (order == Order.CHRONOLOGICAL_ALLOW_SKIPPING && result != null) {
 				break;
 			}
 		}
@@ -204,10 +204,10 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 				}
 			}
 
-			if (order == Order.CRONOLOGICAL) {
+			if (order == Order.CHRONOLOGICAL) {
 				break;
 			}
-			if (order == Order.CRONOLOGICAL_ALLOW_SKIPPING && result != null) {
+			if (order == Order.CHRONOLOGICAL_ALLOW_SKIPPING && result != null) {
 				break;
 			}
 		}

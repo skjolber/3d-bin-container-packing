@@ -70,11 +70,11 @@ public class ComparatorPlacementControls extends AbstractComparatorPlacementCont
 				} 
 			}
 			
-			if(order == Order.CRONOLOGICAL) {
+			if(order == Order.CHRONOLOGICAL) {
 				// even if null
 				break;
 			}
-			if(order == Order.CRONOLOGICAL_ALLOW_SKIPPING && result != null) {
+			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING && result != null) {
 				break;
 			}
 			
