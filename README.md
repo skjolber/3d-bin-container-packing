@@ -594,6 +594,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Brute-force packagers no longer reduce the counts of the box items passed in when packing uses several containers
         * Packing with several container types no longer gives up when each box fits only some of the types (the feasibility check used box indexes which change during packing)
         * Brute-force packing of box item groups over three or more containers no longer fails with a `NullPointerException`
+        * Brute-force packing of box item groups no longer fails with an `ArrayIndexOutOfBoundsException` when the boxes have different numbers of rotations (the group iterator kept the rotations of its last permutation)
         * Brute-force packagers use the first container type which holds the boxes: when a result was reused for another container type, the copy had no load volume and was never selected, so larger containers were used
         * `FastBruteForcePackager` reports interrupted packings as timeouts, like the other packagers (previously no result, or a `NullPointerException` in the container strategy)
         * The boxes of a box item group are inserted together, without boxes of other groups between them (previously they could be interleaved with other groups' boxes, by height)

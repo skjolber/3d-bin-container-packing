@@ -271,7 +271,12 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			// skip to next group
 			limit = startIndex;
 		}
-		
+		// the groups were reset to their first permutation: the rotations and volumes of the previous permutation
+		// no longer apply
+		resetRotations();
+		if(permutations.length > 0) {
+			calculateMinStackableVolume(0);
+		}
 		return -1;
 	}
 
@@ -347,7 +352,10 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			// Successfully computed the next permutation
 			return head;
 		}
-		
+		// the groups were reset to their first permutation
+		if(permutations.length > 0) {
+			calculateMinStackableVolume(0);
+		}
 		return -1;
 	}
 	
