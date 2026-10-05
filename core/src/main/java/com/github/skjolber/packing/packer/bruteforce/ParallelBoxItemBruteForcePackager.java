@@ -532,12 +532,13 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					// remove stacked items which did not make it
 					stack.setSize(p.size());
 	
+					List<Integer> iteratorGroupIndexes = acceptGroups(removedGroups);
 					for (ParallelBoxItemGroupPermutationRotationIteratorList it : parallelIterators) {
-						it.removeGroups(removedGroups);
+						it.removeGroups(iteratorGroupIndexes);
 					}
 	
 					for (DefaultBoxItemGroupPermutationRotationIterator it : iterators) {
-						it.removeGroups(removedGroups);
+						it.removeGroups(iteratorGroupIndexes);
 					}
 					
 					boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());

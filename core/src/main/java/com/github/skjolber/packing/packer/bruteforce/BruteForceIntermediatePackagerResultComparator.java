@@ -27,16 +27,16 @@ public class BruteForceIntermediatePackagerResultComparator extends DefaultInter
 			}
 			
 			// load volume - more is better
-			if(br1.getVolume() > br2.getVolume()) {
+			if(br1.getCalculatedLoadVolume() > br2.getCalculatedLoadVolume()) {
 				return ARGUMENT_1_IS_BETTER;
-			} else if(br1.getVolume() < br2.getVolume()) {
+			} else if(br1.getCalculatedLoadVolume() < br2.getCalculatedLoadVolume()) {
 				return ARGUMENT_2_IS_BETTER;
 			}
 
 			// load weight - more is better
-			if(br1.getWeight() > br2.getWeight()) {
+			if(br1.getCalculatedLoadWeight() > br2.getCalculatedLoadWeight()) {
 				return ARGUMENT_1_IS_BETTER;
-			} else if(br1.getWeight() < br2.getWeight()) {
+			} else if(br1.getCalculatedLoadWeight() < br2.getCalculatedLoadWeight()) {
 				return ARGUMENT_2_IS_BETTER;
 			}
 

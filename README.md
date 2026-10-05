@@ -18,6 +18,18 @@ with
     
 Bugs, feature suggestions and help requests can be filed with the [issue-tracker].
 
+## Build from source
+
+Use JDK 25 and the included Maven wrapper (Maven 3.9.12). Library sources target Java 17.
+
+```sh
+./mvnw -B -ntp -Pdev -pl core -am test
+```
+
+This runs the core tests and required modules, with coverage and documentation generation skipped.
+Run `./mvnw -B -ntp verify` for full verification. On Windows, use `mvnw.cmd`.
+See [AGENTS.md](AGENTS.md) for targeted tests, concurrency options, and failure reports.
+
 ## Obtain
 The project is implemented in Java and built using [Maven]. The project is available on the central Maven repository.
 

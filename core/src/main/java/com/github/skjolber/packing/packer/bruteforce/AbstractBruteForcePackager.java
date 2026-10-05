@@ -86,11 +86,21 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			PackagerInterruptSupplier interrupt = booleanSupplierBuilder.build();
 			try {
 				
+				// the adapters change the counts of the box items: pack copies, so that the box items passed in can be
+				// packed again
 				AbstractBruteForceBoxItemPackagerAdapter adapter;
 				if(items != null && !items.isEmpty()) {
-					adapter = createBoxItemAdapter(items, new ContainerItemsCalculator(containers), interrupt);
+					List<BoxItem> copies = new ArrayList<>(items.size());
+					for (BoxItem boxItem : items) {
+						copies.add(boxItem.clone());
+					}
+					adapter = createBoxItemAdapter(copies, new ContainerItemsCalculator(containers), interrupt);
 				} else {
-					adapter = createBoxItemGroupAdapter(itemGroups, new ContainerItemsCalculator(containers), interrupt);
+					List<BoxItemGroup> copies = new ArrayList<>(itemGroups.size());
+					for (BoxItemGroup boxItemGroup : itemGroups) {
+						copies.add(boxItemGroup.clone());
+					}
+					adapter = createBoxItemGroupAdapter(copies, new ContainerItemsCalculator(containers), interrupt);
 				}
 				List<Container> packList = packAdapter(maxContainerCount, interrupt, adapter);
 								
@@ -255,8 +265,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		}
 		BoxStackValue stackValue = rotator.getStackValue(placementIndex);
 
+		// the boxes placed so far are a result, also when this box exceeds the remaining load weight
+		if(pointCalculatorStack.getStackIndex() > best.size()) {
+			best = pointCalculatorStack.getPoints();
+		}
+
 		if(stackValue.getBox().getWeight() > maxLoadWeight) {
-			return null;
+			return best;
 		}
 
 		Placement placement = placements.get(placementIndex);
@@ -264,10 +279,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		placement.setStackValue(stackValue);
 
 		maxLoadWeight -= stackValue.getBox().getWeight();
-
-		if(pointCalculatorStack.getStackIndex() > best.size()) {
-			best = pointCalculatorStack.getPoints();
-		}
 
 		pointCalculatorStack.push();
 
