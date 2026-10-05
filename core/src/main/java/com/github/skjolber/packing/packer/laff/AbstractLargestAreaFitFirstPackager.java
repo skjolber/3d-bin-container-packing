@@ -450,8 +450,6 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !pointCalculator.isEmpty() && boxItemGroupIterator.hasNext() && !filteredBoxItemGroups.isEmpty()) {
 			int groupIndex = boxItemGroupIterator.next();
 			
-			int boxItemStartIndex = packagerBoxItems.getFirstBoxItemIndexForGroup(groupIndex);
-			
 			BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(groupIndex);
 			boxItemGroup.mark();
 			
@@ -462,6 +460,11 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			boolean markNewLevel = newLevel;
 			
 			while(!boxItemGroup.isEmpty()) {
+				// groups before this one may have been removed
+				int boxItemStartIndex = packagerBoxItems.getFirstBoxItemIndex(boxItemGroup);
+				if(boxItemStartIndex == -1) {
+					break;
+				}
 				
 				Placement bestPoint;
 				if(newLevel) {

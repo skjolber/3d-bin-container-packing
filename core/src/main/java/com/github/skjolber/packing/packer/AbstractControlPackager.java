@@ -330,6 +330,11 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			
 			while(!boxItemGroup.isEmpty()) {
 				
+				// groups before this one may have been removed
+				boxItemStartIndex = packagerBoxItems.getFirstBoxItemIndex(boxItemGroup);
+				if(boxItemStartIndex == -1) {
+					break;
+				}
 				Placement placement = placementControls.getPlacement(boxItemStartIndex, boxItemGroup.size());				
 				if(placement == null) {
 					break;

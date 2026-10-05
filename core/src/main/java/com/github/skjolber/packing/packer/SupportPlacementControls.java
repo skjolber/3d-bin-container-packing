@@ -41,7 +41,7 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 		
 		// max volume and weight should already be accounted for by packager
 		
-		for(int i = offset; i < length; i++) {
+		for (int i = offset; i < offset + length; i++) {
 			BoxItem boxItem = boxItems.get(i);
 			
 			Box box = boxItem.getBox();

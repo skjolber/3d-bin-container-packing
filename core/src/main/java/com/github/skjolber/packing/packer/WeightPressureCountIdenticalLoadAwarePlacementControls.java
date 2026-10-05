@@ -53,7 +53,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 	public Placement getPlacement(int offset, int length) {
 		Placement result = null;
 
-		for (int i = offset; i < length; i++) {
+		for (int i = offset; i < offset + length; i++) {
 			BoxItem boxItem = boxItems.get(i);
 			Box box = boxItem.getBox();
 

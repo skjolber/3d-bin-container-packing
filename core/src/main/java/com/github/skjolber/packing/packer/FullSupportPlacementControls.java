@@ -31,7 +31,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 		
 		// max volume and weight should already be accounted for by packager
 		
-		for(int i = offset; i < length; i++) {
+		for (int i = offset; i < offset + length; i++) {
 			BoxItem boxItem = boxItems.get(i);
 			
 			Box box = boxItem.getBox();
@@ -108,7 +108,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 		// try placing boxes within points
 		// pick the points where an underlying placement exists.
 		
-		for(int i = offset; i < length; i++) {
+		for (int i = offset; i < offset + length; i++) {
 			BoxItem boxItem = boxItems.get(i);
 			
 			Box box = boxItem.getBox();
