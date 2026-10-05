@@ -22,6 +22,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.api.BoxItem;
@@ -281,7 +282,24 @@ public class TychoBenchmark {
 		return process(state.getPlainPackager(), Long.MAX_VALUE);
 	}
 
+	/**
+	 * With a box item order: the packagers only place boxes which can be inserted after the boxes already there.
+	 */
+	@Benchmark
+	public int plainPackagerOrdered(TychoPackagerState state) throws Exception {
+		return process(state.getPlainPackager(), Long.MAX_VALUE, Order.CHRONOLOGICAL_ALLOW_SKIPPING);
+	}
+
+	@Benchmark
+	public int fastLargestAreaFitFirstPackagerOrdered(TychoPackagerState state) throws Exception {
+		return process(state.getFastLargestAreaFitFirstPackager(), Long.MAX_VALUE, Order.CHRONOLOGICAL_ALLOW_SKIPPING);
+	}
+
 	public int process(List<BenchmarkSet> sets, long deadline) {
+		return process(sets, deadline, Order.NONE);
+	}
+
+	public int process(List<BenchmarkSet> sets, long deadline, Order order) {
 		int i = 0;
 		for (BenchmarkSet set : sets) {
 			AbstractPackager packager = set.getPackager();
@@ -289,7 +307,7 @@ public class TychoBenchmark {
 			// products are selected by the boxes parameter
 			List<BoxItem> products = this.products;
 
-			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withInterruptDeadline(deadline).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withOrder(order).withInterruptDeadline(deadline).build();
 			if(build.isSuccess()) {
 				i++;
 			}
