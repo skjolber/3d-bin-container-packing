@@ -101,7 +101,11 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return truncateToGroup(BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt));
+			List<BoxItemGroup> excluded = containerIterators[i].getExcludedBoxItemGroups();
+			if(!canLoadNextGroup(excluded)) {
+				return null;
+			}
+			return truncateToGroup(BruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt), excluded);
 		}
 
 	}

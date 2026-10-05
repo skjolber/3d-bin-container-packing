@@ -107,6 +107,10 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 
 			BoxItemGroup[] groupsMatrixClone = new BoxItemGroup[boxItemGroups.length];
 			for(int k = 0; k < groupsMatrixClone.length; k++) {
+				if(boxItemGroups[k] == null) {
+					// excluded, i.e. does not fit the container
+					continue;
+				}
 				groupsMatrixClone[k] = boxItemGroups[k].clone();
 				
 				for(int l = 0; l < groupsMatrixClone[k].size(); l++) {
@@ -413,6 +417,10 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 		int count = 0;
 		for (Integer i : removed) {
 			BoxItemGroup boxItemGroup = groupsMatrix[i];
+			if(boxItemGroup == null) {
+				// excluded, i.e. does not fit the container
+				continue;
+			}
 			for (BoxItem boxItem : boxItemGroup.getItems()) {
 				count += boxItem.getCount();
 				boxMatrix[boxItem.getIndex()] = null;

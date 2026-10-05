@@ -19,7 +19,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 
 	@Test
 	void testPermutationsList() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -38,7 +38,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products2.size())
+				.withMaxLoadWeight(100)
 				.withParallelizationCount(5)
 				.build();
 		
@@ -55,7 +55,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 
 	@Test
 	void testPermutations() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -74,7 +74,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		ParallelBoxItemGroupPermutationRotationIterator rotator = ParallelBoxItemGroupPermutationRotationIterator.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products2.size())
+				.withMaxLoadWeight(100)
 				.build();
 		
 		int count = 0;
@@ -91,7 +91,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 	
 	@Test
 	void testPermutationsRepeatedItems() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -112,7 +112,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products2.size())
+				.withMaxLoadWeight(100)
 				.withParallelizationCount(2)
 				.build();
 
@@ -129,7 +129,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 
 	@Test
 	void testRemovePermutations() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -149,7 +149,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products2.size())
+				.withMaxLoadWeight(100)
 				.withParallelizationCount(2)
 				.build();
 		
@@ -168,7 +168,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 	
 	@Test
 	void testRemoveWholeGroup() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -188,7 +188,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		ParallelBoxItemGroupPermutationRotationIteratorList rotator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products2.size())
+				.withMaxLoadWeight(100)
 				.withParallelizationCount(2)
 				.build();
 		
@@ -209,7 +209,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 
 	@Test
 	void testNexPermutationMaxIndexGroup1() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -249,7 +249,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 
 	@Test
 	void testNexPermutationMaxIndexGroup2() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -271,7 +271,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		ParallelBoxItemGroupPermutationRotationIteratorList iterator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products2.size())
+				.withMaxLoadWeight(100)
 				.withParallelizationCount(2)
 				.build();
 
@@ -301,7 +301,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 
 	@Test
 	void testNexPermutationMaxIndexTransitionGroup() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItemGroup> groups = new ArrayList<>();
 
@@ -324,7 +324,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListTest {
 		ParallelBoxItemGroupPermutationRotationIteratorList iterator = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products2.size())
+				.withMaxLoadWeight(100)
 				.withParallelizationCount(2)
 				.build();
 
