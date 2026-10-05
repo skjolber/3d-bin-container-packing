@@ -2,7 +2,9 @@ package com.github.skjolber.packing.visualizer.packaging;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +16,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.packer.InsertionSequencer;
+import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultsVisualizer;
 
@@ -51,6 +54,41 @@ public class InsertionOrderVisualizationTest extends AbstractPackagerTest {
 		visualization.add(named(factory, insertionOrder, "insertion order"));
 
 		Files.writeString(OUTPUT.toPath(), visualization.toJson(), StandardCharsets.UTF_8);
+	}
+
+	//
+	//  side view (z up), door at x = 20
+	//
+	//  12 +-------------------+
+	//   8 |=========          |   shelf (obstacle), x 0-9, z 6-7
+	//   6 |=========  +--+    |
+	//     |           |  |    |   block (obstacle), x 12-14, z 0-5, y 0-7
+	//   0 +-----------+--+----+
+	//     0          12 15   20  x
+	//
+	/**
+	 * Packs boxes around boxes which are already in the container (obstacles, dark grey), through a door: no box is
+	 * placed under the shelf or behind the block, where it could not be inserted.
+	 */
+	@Test
+	void obstacles() throws Exception {
+		List<BoxItem> items = new ArrayList<>();
+		Random random = new Random(3);
+		for (int i = 0; i < 6; i++) {
+			items.add(new BoxItem(Box.newBuilder().withId("b" + i).withSize(2 + random.nextInt(5), 2 + random.nextInt(5), 1 + random.nextInt(4)).withRotate3D().withWeight(1).build(), 2));
+		}
+		Container container = Container.newBuilder().withId("container").withSize(20, 15, 12).withMaxLoadWeight(1000).withAccess(ContainerAccess.FRONT).build();
+		try (PlainPackager packager = PlainPackager.newBuilder().build()) {
+			write(packager.newResultBuilder()
+					.withContainerItem(b -> b
+							.withContainerItem(container, 1)
+							.withObstacles(o -> o
+									.withObstacle(0, 0, 6, 10, 15, 2)
+									.withObstacle(12, 0, 0, 3, 8, 6)))
+					.withBoxItems(items)
+					.withMaxContainerCount(1)
+					.build());
+		}
 	}
 
 	private static PackagingResultVisualizer named(DefaultPackagingResultVisualizerFactory factory, Container container, String name) {

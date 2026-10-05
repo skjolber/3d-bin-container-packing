@@ -77,6 +77,9 @@ export class Container extends Stackable {
     
     stack : Stack;
 
+    /** Boxes which are already in the container (obstacles). */
+    obstacles : Array<Point> = [];
+
     /** How boxes get into the container: ANY, TOP or FRONT (a door at x = dx). */
     access : string = "ANY";
 
@@ -222,6 +225,9 @@ export function parsePackaging(json : any) : Packaging {
         container.maxLoadVolume = containerJson.maxLoadVolume;
         container.loadVolume = containerJson.loadVolume;
         container.access = containerJson.access ?? "ANY";
+        for (const o of containerJson.obstacles ?? []) {
+            container.obstacles.push(new Point(o.x, o.y, o.z, o.dx, o.dy, o.dz));
+        }
         if(containerJson.centerOfGravityX != null) {
             container.centerOfGravity = { x: containerJson.centerOfGravityX, y: containerJson.centerOfGravityY, z: containerJson.centerOfGravityZ };
         }

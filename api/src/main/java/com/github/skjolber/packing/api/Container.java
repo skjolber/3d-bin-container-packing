@@ -143,6 +143,9 @@ public class Container {
 
 	protected final ContainerAccess access;
 
+	/** Boxes which are already in the container (obstacles), in its load coordinates */
+	protected final List<Placement> obstacles;
+
 	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
 			int loadDz, int maxLoadWeight, Stack stack) {
 		this(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack, null);
@@ -155,7 +158,13 @@ public class Container {
 
 	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
 			int loadDz, int maxLoadWeight, Stack stack, Motion motion, ContainerAccess access) {
+		this(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack, motion, access, List.of());
+	}
+
+	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
+			int loadDz, int maxLoadWeight, Stack stack, Motion motion, ContainerAccess access, List<Placement> obstacles) {
 		this.access = access;
+		this.obstacles = obstacles;
 		this.id = id;
 		this.description = description;
 
@@ -306,7 +315,7 @@ public class Container {
 
 	public Container copy(int stackCapacity) {
 		return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight,
-				new Stack(stackCapacity), motion, access);
+				new Stack(stackCapacity), motion, access, obstacles);
 	}
 
 	public int getLoadDx() {
@@ -404,6 +413,24 @@ public class Container {
 
 	public Motion getMotion() {
 		return motion;
+	}
+
+	/**
+	 * @param obstacles boxes which are already in the container, in its load coordinates
+	 * @return a copy of this container (with the same stack) with the given obstacles
+	 */
+	public Container withObstacles(List<Placement> obstacles) {
+		return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight,
+				stack, motion, access, obstacles);
+	}
+
+	/**
+	 * Boxes which are already in the container: they are inserted before the packed boxes (see {@link InsertionOrder}).
+	 *
+	 * @return the obstacles, or an empty list
+	 */
+	public List<Placement> getObstacles() {
+		return obstacles;
 	}
 
 	/**

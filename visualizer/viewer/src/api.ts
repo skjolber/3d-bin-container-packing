@@ -159,6 +159,16 @@ export class StackableRenderer {
             parent.add(containerGroup);
             containerGroup.add(containerLoad);
 
+            for (const o of containerStackable.obstacles) {
+                // boxes which are already in the container: dark grey
+                var obstacleGeometry = new THREE.BoxGeometry(o.dy, o.dz, o.dx);
+                var obstacle = new THREE.Mesh(obstacleGeometry, new THREE.MeshStandardMaterial({ color: 0x555555, opacity: 0.8, transparent: true }));
+                obstacle.position.set(o.y + o.dy / 2 + offsetX, o.z + o.dz / 2 + offsetY, o.x + o.dx / 2 + offsetZ);
+                obstacle.add(new THREE.LineSegments(new THREE.EdgesGeometry(obstacleGeometry), new THREE.LineBasicMaterial({ color: 0x222222 })));
+                obstacle.userData = { type: "obstacle" };
+                containerLoad.add(obstacle);
+            }
+
             if(containerStackable.access === "FRONT" || containerStackable.access === "TOP") {
                 // the opening: a translucent orange plane on the door (x = dx) or top face of the load space
                 var front = containerStackable.access === "FRONT";

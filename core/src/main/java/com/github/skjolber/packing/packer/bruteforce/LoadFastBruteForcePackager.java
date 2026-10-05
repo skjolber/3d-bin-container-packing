@@ -116,6 +116,7 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 					interrupt, minStackableAreaIndex, freeWeightLoad, null, pointComparator, maxPackableCount);
 		}
 
+		boolean checkObstacles = !container.getObstacles().isEmpty();
 		while (placementIndex < maxPackableCount) {
 			if(interrupt.getAsBoolean()) {
 				return Integer.MIN_VALUE;
@@ -130,6 +131,9 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 			for(int k = 0; k < pointCalculator.size(); k++) {
 				SimplePoint3D point = pointCalculator.get(k);
 				if(!point.fits3D(stackValue)) {
+					continue;
+				}
+				if(checkObstacles && !isInsertable(point, stackValue, container.getObstacles(), container.getAccess())) {
 					continue;
 				}
 				if(bestPointIndex != -1 && pointComparator.compare(stackValue, pointCalculator.get(bestPointIndex), point) <= 0) {

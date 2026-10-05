@@ -28,6 +28,7 @@ import com.github.skjolber.packing.api.packager.control.point.DefaultPointContro
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.MarkResetPointCalculator3D;
@@ -245,6 +246,13 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					pointCalculator.setPoints(Arrays.asList(levelFloor));
 				}
 				pointCalculator.clear();
+
+				// the points were reset for the level: the first placement's point index refers to the previous points
+				int pointIndex = findPointIndex(pointCalculator, result);
+				if(pointIndex == -1) {
+					break;
+				}
+				result.setPoint(pointIndex, result.getAbsoluteX(), result.getAbsoluteY(), result.getAbsoluteZ());
 				
 				levelOffset = result.getAbsoluteEndZ() + 1;
 
@@ -659,6 +667,27 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		return new DefaultIntermediatePackagerResult(controlledContainerItem, stack);
 	}
 	
+	/**
+	 * @return the index of the point at the placement's position which can hold it, or -1 if none
+	 */
+	protected static int findPointIndex(PointCalculator pointCalculator, Placement placement) {
+		int index = placement.getPointIndex();
+		if(index >= 0 && index < pointCalculator.size() && isPointOf(pointCalculator.get(index), placement)) {
+			return index;
+		}
+		for (int i = 0; i < pointCalculator.size(); i++) {
+			if(isPointOf(pointCalculator.get(i), placement)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	private static boolean isPointOf(Point point, Placement placement) {
+		return point.getMinX() == placement.getAbsoluteX() && point.getMinY() == placement.getAbsoluteY() && point.getMinZ() == placement.getAbsoluteZ()
+				&& point.fits3D(placement.getStackValue());
+	}
+
 	protected BoxItemGroupIterator createBoxItemGroupIterator(BoxItemGroupSource filteredBoxItemGroups, Order itemGroupOrder, Container container, PointCalculator pointCalculator) {
 		if(itemGroupOrder == Order.CHRONOLOGICAL || itemGroupOrder == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
 			return new FixedOrderBoxItemGroupIterator(filteredBoxItemGroups, container, pointCalculator);

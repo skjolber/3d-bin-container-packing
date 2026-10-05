@@ -154,7 +154,7 @@ class ThreeScene extends Component {
     var target = null;
     for(var ii = 0; ii < allIntersects.length; ii++) {
       var candidate = allIntersects[ii].object;
-      if (candidate.userData && (candidate.userData.type === "cog" || candidate.userData.type === "opening")) {
+      if (candidate.userData && (candidate.userData.type === "cog" || candidate.userData.type === "opening" || candidate.userData.type === "obstacle" || (candidate.parent && candidate.parent.userData && candidate.parent.userData.type === "obstacle"))) {
         continue;
       }
       if (candidate.userData && candidate.userData.type === "invalid") {

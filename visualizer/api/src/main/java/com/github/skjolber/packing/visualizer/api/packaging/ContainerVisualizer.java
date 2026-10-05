@@ -37,6 +37,17 @@ public class ContainerVisualizer extends StackableVisualizer {
 		this.centerOfGravityZ = centerOfGravityZ;
 	}
 
+	/** Boxes which are already in the container (obstacles) */
+	private java.util.List<PointVisualizer> obstacles = new java.util.ArrayList<>();
+
+	public java.util.List<PointVisualizer> getObstacles() {
+		return obstacles;
+	}
+
+	public void setObstacles(java.util.List<PointVisualizer> obstacles) {
+		this.obstacles = obstacles;
+	}
+
 	/** How boxes get into the container: ANY, TOP or FRONT (a door at x = dx) */
 	private String access;
 

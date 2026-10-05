@@ -388,6 +388,10 @@ outcome matters, for example to check whether an order fits during checkout, ski
 `withInsertionOrder(false)` on the result builder, and calculate the order later if needed with
 `InsertionSequencer.sequence(result.getContainers(), Order.NONE)`.
 
+Boxes which are already in a container (obstacles, see `withObstacles(..)` on the container item builder) are
+inserted first: the packagers only place boxes where no obstacle rests on them or is in their path, and the result
+containers keep the obstacles (`Container.getObstacles()`), which the validator includes.
+
 `PackagerResult.isInsertionOrder()` tells whether a result is known to be in insertion order: false when it was
 skipped, or when the boxes cannot be loaded in any order (possible through a door, as the packagers place boxes
 without regard to the door when there is no box item order).
@@ -559,7 +563,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Brute force skips permutations and containers which cannot load more than the best result so far, when the result comparator compares load volume first (`IntermediatePackagerResultComparator.prefersHigherLoadVolume()`); results are unchanged
         * The load and stability validators find which boxes rest on which from the placements' positions (`SupportGraph`), instead of the support links recorded by the packager. Results from packagers without load limits or support, and hand-made results, are now validated too (previously they passed without being checked)
         * A box placed into a gap under boxes which are already there carries part of their weight: the packagers with load limits now record this when the box is accepted, so later placements are checked against the actual loads (previously the relief for the boxes below was assumed when the box was placed, but not recorded, and boxes could be overloaded)
-        * The placements of each container are in insertion order (`InsertionOrder`): each box after the boxes it rests on, and after the boxes in its path from the container's opening (`Container.withAccess(ContainerAccess)`: `ANY`, `TOP` or `FRONT`). Without a box item order, results are reordered after packing (`InsertionSequencer`); with an order, only insertable boxes are placed. `DefaultValidator` checks the order (`InsertionOrderValidator`)
+        * The placements of each container are in insertion order (`InsertionOrder`): each box after the boxes it rests on, and after the boxes in its path from the container's opening (`Container.withAccess(ContainerAccess)`: `ANY`, `TOP` or `FRONT`). Without a box item order, results are reordered after packing (`InsertionSequencer`); with an order, only insertable boxes are placed. `DefaultValidator` checks the order (`InsertionOrderValidator`). Boxes already in a container (obstacles) are inserted first, and result containers keep them
         * `NonIdenticalLoadBoxReason` names the box with the identical-box-only limit as the constrained placement (previously the box directly below the offending box)
      * Breaking changes:
         * `Order.CRONOLOGICAL` and `Order.CRONOLOGICAL_ALLOW_SKIPPING` are renamed to `Order.CHRONOLOGICAL` and `Order.CHRONOLOGICAL_ALLOW_SKIPPING`

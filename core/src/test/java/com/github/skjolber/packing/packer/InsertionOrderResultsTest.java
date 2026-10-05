@@ -18,6 +18,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.packer.composite.CompositePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
@@ -157,5 +158,63 @@ public class InsertionOrderResultsTest {
 			// with a box item order, only insertable boxes are placed
 			assertThat(result.isInsertionOrder()).isTrue();
 		}
+	}
+
+	//
+	//  side view (z up), door at x = 20
+	//
+	//  12 +-------------------+
+	//     |                   |
+	//   8 |=========          |   shelf (obstacle), x 0-9, z 6-7
+	//   6 |=========  +--+    |
+	//     |           |  |    |   block (obstacle), x 12-14, z 0-5, y 0-7
+	//   0 +-----------+--+----+
+	//     0          12 15   20  x
+	//
+	@ParameterizedTest
+	@EnumSource(ContainerAccess.class)
+	public void boxesAreInsertableAfterObstacles(ContainerAccess access) {
+		List<Supplier<AbstractPackager<?>>> packagers = List.of(
+				() -> PlainPackager.newBuilder().build(),
+				() -> LargestAreaFitFirstPackager.newBuilder().build(),
+				() -> FastLargestAreaFitFirstPackager.newBuilder().build(),
+				() -> FastBruteForcePackager.newBuilder().build(),
+				() -> BruteForcePackager.newBuilder().build());
+
+		InsertionOrderValidator validator = new InsertionOrderValidator();
+		List<String> failures = new ArrayList<>();
+		int containers = 0;
+		for (Supplier<AbstractPackager<?>> supplier : packagers) {
+			try (AbstractPackager<?> packager = supplier.get()) {
+				for (long seed = 0; seed < SEEDS; seed++) {
+					Random random = new Random(seed);
+					List<BoxItem> items = new ArrayList<>();
+					for (int i = 0; i < 4; i++) {
+						items.add(new BoxItem(Box.newBuilder().withId("b" + i).withSize(2 + random.nextInt(5), 2 + random.nextInt(5), 1 + random.nextInt(4)).withRotate3D().withWeight(1).build(), 1 + random.nextInt(2)));
+					}
+					Container container = Container.newBuilder().withId("c").withSize(20, 15, 12).withMaxLoadWeight(100_000).withAccess(access).build();
+					PackagerResult result = packager.newResultBuilder()
+							.withContainerItem(b -> b
+									.withContainerItem(container, 2)
+									.withObstacles(o -> o
+											.withObstacle(0, 0, 6, 10, 15, 2)
+											.withObstacle(12, 0, 0, 3, 8, 6)))
+							.withBoxItems(items)
+							.withMaxContainerCount(2)
+							.withInterruptDuration(5_000)
+							.build();
+					for (Container packed : result.getContainers()) {
+						containers++;
+						assertThat(packed.getObstacles()).hasSize(2);
+						List<ValidatorResultReason> reasons = new ArrayList<>();
+						if(!validator.validate(packed, reasons)) {
+							failures.add(packager.getClass().getSimpleName() + " seed " + seed + ": " + reasons.get(0).getMessage());
+						}
+					}
+				}
+			}
+		}
+		assertThat(containers).isGreaterThan(SEEDS);
+		assertThat(failures).isEmpty();
 	}
 }

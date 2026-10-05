@@ -152,7 +152,15 @@ public class ContainerItem {
 	}
 
 	public ContainerItem(ContainerItem containerItem) {
-		this.container = containerItem.container;
+		this(containerItem, containerItem.container);
+	}
+
+	/**
+	 * @param containerItem the container item to copy
+	 * @param container the container of the copy
+	 */
+	public ContainerItem(ContainerItem containerItem, Container container) {
+		this.container = container;
 		this.count = containerItem.count;
 		this.resetCount = containerItem.resetCount;
 		this.index = containerItem.index;

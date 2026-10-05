@@ -153,6 +153,16 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			containerVisualization.setId(inputContainer.getId());
 			containerVisualization.setName(inputContainer.getDescription());
 			containerVisualization.setAccess(inputContainer.getAccess().name());
+			for (Placement obstacle : inputContainer.getObstacles()) {
+				PointVisualizer o = new PointVisualizer();
+				o.setX(obstacle.getAbsoluteX());
+				o.setY(obstacle.getAbsoluteY());
+				o.setZ(obstacle.getAbsoluteZ());
+				o.setDx(obstacle.getStackValue().getDx());
+				o.setDy(obstacle.getStackValue().getDy());
+				o.setDz(obstacle.getStackValue().getDz());
+				containerVisualization.getObstacles().add(o);
+			}
 			containerVisualization.setEmptyWeight(inputContainer.getEmptyWeight());
 			containerVisualization.setMaxLoadWeight(inputContainer.getMaxLoadWeight());
 			containerVisualization.setLoadWeight(inputContainer.getLoadWeight());
@@ -255,7 +265,7 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			List<Placement> placements = inputContainer.getStack().getPlacements();
 			List<ValidatorResultReason> reasons = new ArrayList<>();
 			// the placements must be in a possible insertion order
-			insertionOrderValidator.validate(placements, inputContainer.getAccess(), reasons);
+			insertionOrderValidator.validate(inputContainer, reasons);
 			LoadValidator loadValidator = new DefaultLoadValidatorBuilder().withContainer(inputContainer).withPlacements(placements).build();
 			if(loadValidator != null) {
 				loadValidator.isValid(placements, reasons);

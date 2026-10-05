@@ -137,7 +137,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 				throw new IllegalStateException("Expected container item");
 			}
 
-			ContainerItem packContainerItem = new ContainerItem(containerItem);
+			ContainerItem packContainerItem;
 
 			if(obstacles != null && !obstacles.isEmpty()) {
 				if(points != null && !points.isEmpty()) {
@@ -149,14 +149,19 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 				DefaultPointCalculator3D ep = new DefaultPointCalculator3D(false, obstacles.size() + 1);
 				ep.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 				
+				List<Placement> obstaclePlacements = new ArrayList<>(obstacles.size());
 				for(int i = 0; i < obstacles.size(); i++) {
-					if(!ep.addObstacle(createStackPlacement(obstacles.get(i)))) {
+					Placement obstacle = createStackPlacement(obstacles.get(i));
+					if(!ep.addObstacle(obstacle)) {
 						throw new IllegalStateException("Unable to add obstacle #" + i + " " + obstacles.get(i));
 					}
+					obstaclePlacements.add(obstacle);
 				}
-				
+				// keep the obstacles with the container, as boxes are inserted after them (see InsertionOrder)
+				packContainerItem = new ContainerItem(containerItem, container.withObstacles(obstaclePlacements));
 				packContainerItem.setInitialPoints(ep.getAll());
 			} else {
+				packContainerItem = new ContainerItem(containerItem);
 				packContainerItem.setInitialPoints(points);
 			}
 

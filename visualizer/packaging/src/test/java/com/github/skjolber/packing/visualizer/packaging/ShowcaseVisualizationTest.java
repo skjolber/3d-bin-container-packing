@@ -37,6 +37,8 @@ public class ShowcaseVisualizationTest extends AbstractPackagerTest {
 				() -> new SupportAndGroupsVisualizationTest().groupsWithSupport());
 		scenarios.put("Insertion order through a door (orange): press R for the search order (invalid) and the insertion order; step with A and D",
 				() -> new InsertionOrderVisualizationTest().searchOrderAndInsertionOrder());
+		scenarios.put("Obstacles (dark grey): boxes already in the container; nothing is placed under the shelf or behind the block",
+				() -> new InsertionOrderVisualizationTest().obstacles());
 		scenarios.put("Container costs: press R; with costs, two cheap containers instead of one expensive",
 				() -> new ContainerCostVisualizationTest().withAndWithoutCosts());
 		scenarios.put("Virtual boxes: press R; identical boxes grouped into layouts before packing",

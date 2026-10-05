@@ -35,7 +35,14 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 		// with a box item order, the order of the placements cannot be changed afterwards (see InsertionSequencer),
 		// so only boxes which can be inserted after the boxes already there are placed
 		this.checkInsertion = order != null && order != Order.NONE;
+		this.checkObstacles = container != null && !container.getObstacles().isEmpty();
 	}
+
+	/**
+	 * Whether candidates must be insertable after the boxes already in the container (obstacles), which, unlike the
+	 * placed boxes, cannot be reordered afterwards.
+	 */
+	protected final boolean checkObstacles;
 
 	/**
 	 * Whether candidates must be insertable after the boxes already placed, see {@link InsertionOrder}.
@@ -43,15 +50,26 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 	protected final boolean checkInsertion;
 
 	/**
-	 * @return true if the candidate can be inserted after the boxes already placed: none of them would rest on it,
-	 *         and none of them is in its path from the container's opening
+	 * @return true if the candidate can be inserted after the boxes already placed (with a box item order) and the
+	 *         boxes already in the container (obstacles): none of them would rest on it, and none of them is in its path
+	 *         from the container's opening
 	 */
 	protected boolean isInsertable(Placement candidate) {
-		ContainerAccess access = container.getAccess();
-		List<Placement> placements = stack.getPlacements();
-		for (int i = 0; i < placements.size(); i++) {
-			if(InsertionOrder.mustPrecede(candidate, placements.get(i), access)) {
-				return false;
+		ContainerAccess access = container != null ? container.getAccess() : ContainerAccess.ANY;
+		if(checkInsertion) {
+			List<Placement> placements = stack.getPlacements();
+			for (int i = 0; i < placements.size(); i++) {
+				if(InsertionOrder.mustPrecede(candidate, placements.get(i), access)) {
+					return false;
+				}
+			}
+		}
+		if(checkObstacles) {
+			List<Placement> obstacles = container.getObstacles();
+			for (int i = 0; i < obstacles.size(); i++) {
+				if(InsertionOrder.mustPrecede(candidate, obstacles.get(i), access)) {
+					return false;
+				}
 			}
 		}
 		return true;
@@ -92,7 +110,7 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 			return current;
 		}
 		// the candidate would be selected; the current placement (if any) is insertable
-		if(checkInsertion && !isInsertable(candidate)) {
+		if((checkInsertion || checkObstacles) && !isInsertable(candidate)) {
 			recyclablePlacement = candidate;
 			return current;
 		}

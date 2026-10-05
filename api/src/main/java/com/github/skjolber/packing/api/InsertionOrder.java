@@ -39,16 +39,40 @@ public final class InsertionOrder {
 	 *         given access; always false for {@link ContainerAccess#ANY}
 	 */
 	public static boolean isBlockedBy(Placement placement, Placement other, ContainerAccess access) {
+		return isBlockedBy(placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ(),
+				placement.getAbsoluteEndX(), placement.getAbsoluteEndY(), placement.getAbsoluteEndZ(), other, access);
+	}
+
+	/**
+	 * @return true if a box at the given coordinates (inclusive) must be inserted before {@code other}, see
+	 *         {@link #mustPrecede(Placement, Placement, ContainerAccess)}
+	 */
+	public static boolean mustPrecede(int x, int y, int z, int endX, int endY, int endZ, Placement other, ContainerAccess access) {
+		if(endZ + 1 == other.getAbsoluteZ() && overlapsXY(x, y, endX, endY, other)) {
+			// other rests on it
+			return true;
+		}
+		return isBlockedBy(x, y, z, endX, endY, endZ, other, access);
+	}
+
+	private static boolean isBlockedBy(int x, int y, int z, int endX, int endY, int endZ, Placement other, ContainerAccess access) {
 		switch (access) {
 			case TOP:
 				// other is above
-				return other.getAbsoluteZ() > placement.getAbsoluteEndZ() && overlapsXY(placement, other);
+				return other.getAbsoluteZ() > endZ && overlapsXY(x, y, endX, endY, other);
 			case FRONT:
-				// other is between placement and the door
-				return other.getAbsoluteX() > placement.getAbsoluteEndX() && overlapsYZ(placement, other);
+				// other is between the box and the door
+				return other.getAbsoluteX() > endX
+						&& y <= other.getAbsoluteEndY() && other.getAbsoluteY() <= endY
+						&& z <= other.getAbsoluteEndZ() && other.getAbsoluteZ() <= endZ;
 			default:
 				return false;
 		}
+	}
+
+	private static boolean overlapsXY(int x, int y, int endX, int endY, Placement other) {
+		return x <= other.getAbsoluteEndX() && other.getAbsoluteX() <= endX
+				&& y <= other.getAbsoluteEndY() && other.getAbsoluteY() <= endY;
 	}
 
 	private static boolean overlapsXY(Placement a, Placement b) {
@@ -56,8 +80,4 @@ public final class InsertionOrder {
 				&& a.getAbsoluteY() <= b.getAbsoluteEndY() && b.getAbsoluteY() <= a.getAbsoluteEndY();
 	}
 
-	private static boolean overlapsYZ(Placement a, Placement b) {
-		return a.getAbsoluteY() <= b.getAbsoluteEndY() && b.getAbsoluteY() <= a.getAbsoluteEndY()
-				&& a.getAbsoluteZ() <= b.getAbsoluteEndZ() && b.getAbsoluteZ() <= a.getAbsoluteEndZ();
-	}
 }

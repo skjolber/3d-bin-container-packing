@@ -152,7 +152,7 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			ValidatorContainerItem referenceItem = containersById.get(container.getId());
 
 			// the placements must be in a possible insertion order
-			if(!insertionOrderValidator.validate(container.getStack().getPlacements(), container.getAccess(), reasons)) {
+			if(!insertionOrderValidator.validate(container, reasons)) {
 				return false;
 			}
 			

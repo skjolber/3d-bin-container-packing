@@ -11,7 +11,9 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerAccess;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.InsertionOrder;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
@@ -42,7 +44,7 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  * <li>every permutation (order) of the boxes,</li>
  * <li>for each permutation, every combination of rotations, and</li>
  * <li>for each permutation and rotation, every placement of the boxes in that order at the free (extreme) points,
- * see {@link #search(PointCalculator3DStack, Placement[], BoxItemPermutationRotationIterator, Stack, int, PackagerInterruptSupplier, int, int, LoadPlacementUtility, BruteForcePointIteratorFilter)}.</li>
+ * see {@link #search(PointCalculator3DStack, Placement[], BoxItemPermutationRotationIterator, Stack, int, PackagerInterruptSupplier, int, int, LoadPlacementUtility, BruteForcePointIteratorFilter, List, ContainerAccess)}.</li>
  * </ol>
  * Boxes are always placed in permutation order, so a result is a prefix of a permutation: the longest prefix which could be placed.
  * This allows skipping work which cannot change the outcome:
@@ -384,7 +386,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			pointCalculator.clear();
 		}
 		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
-		search(pointCalculator, placements, iterator, stack, maxLoadWeight, interrupt, minStackableAreaIndex, maxPackableCount, null, pointFilter);
+		search(pointCalculator, placements, iterator, stack, maxLoadWeight, interrupt, minStackableAreaIndex, maxPackableCount, null, pointFilter, container.getObstacles(), container.getAccess());
 		return pointCalculator.getBestPoints();
 	}
 
@@ -437,9 +439,30 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 * @param pointFilter candidate points, or null for all fitting points
 	 * @throws PackagerInterruptedException if interrupted
 	 */
+	/**
+	 * @return true if a box can be inserted at the point after the boxes already in the container (obstacles):
+	 *         none of them rests on it, or is in its path (see {@link InsertionOrder})
+	 */
+	protected static boolean isInsertable(Point point, BoxStackValue stackValue, List<Placement> obstacles, ContainerAccess access) {
+		int x = point.getMinX();
+		int y = point.getMinY();
+		int z = point.getMinZ();
+		int endX = x + stackValue.getDx() - 1;
+		int endY = y + stackValue.getDy() - 1;
+		int endZ = z + stackValue.getDz() - 1;
+		for (int i = 0; i < obstacles.size(); i++) {
+			if(InsertionOrder.mustPrecede(x, y, z, endX, endY, endZ, obstacles.get(i), access)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	protected static void search(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
-			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility, BruteForcePointIteratorFilter pointFilter)
+			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility, BruteForcePointIteratorFilter pointFilter,
+			List<Placement> obstacles, ContainerAccess access)
 			throws PackagerInterruptedException {
+		boolean checkObstacles = obstacles != null && !obstacles.isEmpty();
 		BruteForceSearchFrames frames = pointCalculator.getSearchFrames();
 		int[] nextPointIndexes = frames.nextPointIndexes;
 		int[] pointCounts = frames.pointCounts;
@@ -529,6 +552,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 						break;
 					}
 					candidate = pointIterator.next();
+				}
+				if(checkObstacles && !isInsertable(pointCalculator.get(candidate), stackValue, obstacles, access)) {
+					// an obstacle rests on the box at this point, or is in its path
+					continue;
 				}
 				if(utility != null) {
 					// -1 if the boxes below cannot carry the box at this point
