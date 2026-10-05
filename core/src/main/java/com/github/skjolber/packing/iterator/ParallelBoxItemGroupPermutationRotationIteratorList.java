@@ -461,6 +461,8 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 			}
 			groupsMatrix[i] = null;
 		}
+		// split the permutations of the remaining groups between the work units
+		calculate();
 		return count;
 	}
 

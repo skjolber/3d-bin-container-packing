@@ -181,4 +181,44 @@ public class BruteForceBoxItemGroupsTest {
 				.extracting(c -> c.getStack().getPlacements().get(0).getStackValue().getBox().getId())
 				.containsExactlyInAnyOrder("a", "b", "c", "d");
 	}
+
+	/**
+	 * Three groups of three different unit cubes, each container holds one group. There are enough permutations to split
+	 * them between the threads, also after the first groups are accepted:
+	 *
+	 * <pre>
+	 *   [a1][a2][a3]   [b1][b2][b3]   [c1][c2][c3]
+	 * </pre>
+	 */
+	@Test
+	public void parallelBruteForcePacksLargerGroupsInThreads() {
+		List<BoxItemGroup> groups = new ArrayList<>();
+		for(String id : List.of("a", "b", "c")) {
+			List<BoxItem> boxItems = new ArrayList<>();
+			for(int i = 1; i <= 3; i++) {
+				boxItems.add(new BoxItem(Box.newBuilder().withId(id + i).withSize(1, 1, 1).withWeight(1).build(), 1));
+			}
+			groups.add(new BoxItemGroup(id, boxItems));
+		}
+		Container container = Container.newBuilder().withId("row").withSize(3, 1, 1).withMaxLoadWeight(3).build();
+
+		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
+			PackagerResult result = packager.newResultBuilder()
+					.withContainerItems(List.of(new ContainerItem(container, 3)))
+					.withBoxItemGroups(groups)
+					.withMaxContainerCount(3)
+					.withInterruptDuration(10_000)
+					.build();
+
+			assertThat(result.isSuccess()).isTrue();
+			assertThat(result.getContainers()).hasSize(3);
+			for(Container packed : result.getContainers()) {
+				// one group per container
+				assertThat(packed.getStack().getPlacements())
+						.extracting(p -> p.getStackValue().getBox().getId().substring(0, 1))
+						.containsOnly(packed.getStack().getPlacements().get(0).getStackValue().getBox().getId().substring(0, 1))
+						.hasSize(3);
+			}
+		}
+	}
 }
