@@ -98,11 +98,12 @@ class VirtualBoxEnvelopePackingTest {
 			PackagerResult expanded = packing.expand(delegateResult, List.of(a, b), System.nanoTime(), true);
 			PackagerResultAssert.assertThat(expanded).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 			List<Placement> children = expanded.get(0).getStack().getPlacements();
-			assertThat(children).extracting(Placement::getAbsoluteX).containsExactly(3, 3, 0);
+			// in insertion order (by height)
+			assertThat(children).extracting(Placement::getAbsoluteX).containsExactly(0, 3, 3);
 			assertThat(children).extracting(Placement::getAbsoluteY).containsExactly(1, 1, 1);
-			assertThat(children).extracting(Placement::getAbsoluteZ).containsExactly(1, 2, 0);
-			assertThat(children.get(0).getStackValue()).isSameAs(a.getBox().getStackValue(0));
-			assertThat(children.get(2).getStackValue()).isSameAs(b.getBox().getStackValue(0));
+			assertThat(children).extracting(Placement::getAbsoluteZ).containsExactly(0, 1, 2);
+			assertThat(children.get(1).getStackValue()).isSameAs(a.getBox().getStackValue(0));
+			assertThat(children.get(0).getStackValue()).isSameAs(b.getBox().getStackValue(0));
 			assertThat(expanded.get(0).getLoadWeight()).isEqualTo(packed.getLoadWeight());
 		}
 		assertThat(packed.getStack().getPlacements()).hasSize(2);

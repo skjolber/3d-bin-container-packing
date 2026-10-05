@@ -45,6 +45,31 @@ public class InsertionSequencerTest {
 		assertThat(stack.getPlacements()).extracting(Placement::getIndex).containsExactly(0, 1, 2);
 	}
 
+	//
+	//  z
+	//  2 +---+       +---+
+	//    | B |       | D |   B rests on A; D rests on C, but was placed before it
+	//  1 +---+       +---+
+	//    | A |       | C |
+	//  0 +---+       +---+
+	//    0   1   2   3   4  x
+	//
+	@Test
+	void boxesAreOrderedByHeightKeepingTheSearchOrder() {
+		Placement a = place("A", 1, 1, 1, 0, 0, 0);
+		Placement b = place("B", 1, 1, 1, 0, 0, 1);
+		Placement d = place("D", 1, 1, 1, 3, 0, 1);
+		Placement c = place("C", 1, 1, 1, 3, 0, 0);
+		Stack stack = stack(a, b, d, c);
+
+		assertThat(InsertionSequencer.sequence(stack, ContainerAccess.TOP)).isTrue();
+		assertThat(stack.getPlacements()).containsExactly(a, c, b, d);
+		// through a door, only what is needed is changed
+		Stack front = stack(a, b, d, c);
+		assertThat(InsertionSequencer.sequence(front, ContainerAccess.FRONT)).isTrue();
+		assertThat(front.getPlacements()).containsExactly(a, b, c, d);
+	}
+
 	@Test
 	void possibleOrderIsUnchanged() {
 		Placement a = place("A", 1, 1, 1, 0, 0, 0);
@@ -74,7 +99,7 @@ public class InsertionSequencerTest {
 		assertThat(InsertionSequencer.sequence(stack, ContainerAccess.FRONT)).isTrue();
 		assertThat(stack.getPlacements()).containsExactly(a, b, c);
 
-		// from above, the order does not matter
+		// from above, the order does not matter for boxes side by side
 		Stack top = stack(c, a, b);
 		assertThat(InsertionSequencer.sequence(top, ContainerAccess.TOP)).isTrue();
 		assertThat(top.getPlacements()).containsExactly(c, a, b);

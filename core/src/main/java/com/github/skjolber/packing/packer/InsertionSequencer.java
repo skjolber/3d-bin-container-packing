@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.packer;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
@@ -16,8 +16,10 @@ import com.github.skjolber.packing.api.Stack;
  * <br>
  * <br>
  * Packagers place boxes in the order of their search, which is often not a possible insertion order (for example a
- * box placed into a gap under boxes which are already there). The placements are not changed, only their order:
- * a stable topological sort, which keeps the order of the search wherever the rules allow.
+ * box placed into a gap under boxes which are already there). The placements are not changed, only their order. Without
+ * access restrictions, or from the top, the placements are ordered by height (in linear time when already ordered,
+ * otherwise n log n); through a door, by a stable topological sort, which keeps the order of the search wherever the
+ * rules allow (quadratic in the number of placements).
  */
 public final class InsertionSequencer {
 
@@ -50,26 +52,85 @@ public final class InsertionSequencer {
 	 * @return true if sequenced; false if the boxes cannot be inserted in any order (the stack is left unchanged)
 	 */
 	public static boolean sequence(Stack stack, ContainerAccess access) {
+		if(access == ContainerAccess.FRONT) {
+			return sequenceTopologically(stack, access);
+		}
+		return sequenceByHeight(stack);
+	}
+
+	/**
+	 * Without access restrictions, or from the top, a box must be inserted after the boxes it rests on and (from the top)
+	 * the boxes below it, which all start lower: so the placements ordered by their lowest z (keeping the order of the
+	 * search for equal z) are in a possible insertion order. Already ordered placements, which are common, are checked
+	 * in linear time.
+	 */
+	protected static boolean sequenceByHeight(Stack stack) {
+		List<Placement> placements = stack.getPlacements();
+		int n = placements.size();
+		boolean ordered = true;
+		for (int i = 1; i < n; i++) {
+			if(placements.get(i).getAbsoluteZ() < placements.get(i - 1).getAbsoluteZ()) {
+				ordered = false;
+				break;
+			}
+		}
+		if(ordered) {
+			for (int i = 0; i < n; i++) {
+				placements.get(i).setIndex(i);
+			}
+			return true;
+		}
+		// sort by z, then by the order of the search
+		long[] keys = new long[n];
+		for (int i = 0; i < n; i++) {
+			keys[i] = ((long)placements.get(i).getAbsoluteZ() << 32) | i;
+		}
+		Arrays.sort(keys);
+		Placement[] search = placements.toArray(new Placement[n]);
+		stack.clear();
+		for (int i = 0; i < n; i++) {
+			Placement placement = search[(int)keys[i]];
+			placement.setIndex(i);
+			stack.add(placement);
+		}
+		return true;
+	}
+
+	/**
+	 * A stable topological sort: insert the first placement (in the order of the search) which can be inserted, until
+	 * all are inserted.
+	 */
+	protected static boolean sequenceTopologically(Stack stack, ContainerAccess access) {
 		List<Placement> placements = stack.getPlacements();
 		int n = placements.size();
 
-		// number of placements which must be inserted before each placement
+		// the placements which must be inserted after each placement, and the number which must be inserted before
+		int[][] successors = new int[n][];
+		int[] successorCounts = new int[n];
 		int[] predecessors = new int[n];
 		for (int i = 0; i < n; i++) {
 			Placement first = placements.get(i);
 			for (int j = 0; j < n; j++) {
 				if(i != j && InsertionOrder.mustPrecede(first, placements.get(j), access)) {
+					int[] list = successors[i];
+					if(list == null) {
+						list = new int[4];
+						successors[i] = list;
+					} else if(successorCounts[i] == list.length) {
+						list = Arrays.copyOf(list, list.length * 2);
+						successors[i] = list;
+					}
+					list[successorCounts[i]++] = j;
 					predecessors[j]++;
 				}
 			}
 		}
 
-		List<Placement> sequence = new ArrayList<>(n);
+		Placement[] sequence = new Placement[n];
 		boolean[] inserted = new boolean[n];
-		// the lowest index which may not be inserted yet
+		// the lowest index which is not inserted yet
 		int start = 0;
-		while(sequence.size() < n) {
-			// insert the first placement (in the order of the search) which can be inserted
+		for (int count = 0; count < n; count++) {
 			int next = -1;
 			for (int i = start; i < n; i++) {
 				if(!inserted[i] && predecessors[i] == 0) {
@@ -82,12 +143,10 @@ public final class InsertionSequencer {
 				return false;
 			}
 			inserted[next] = true;
-			Placement placement = placements.get(next);
-			sequence.add(placement);
-			for (int j = 0; j < n; j++) {
-				if(!inserted[j] && InsertionOrder.mustPrecede(placement, placements.get(j), access)) {
-					predecessors[j]--;
-				}
+			sequence[count] = placements.get(next);
+			int[] list = successors[next];
+			for (int k = 0; k < successorCounts[next]; k++) {
+				predecessors[list[k]]--;
 			}
 			while(start < n && inserted[start]) {
 				start++;
@@ -96,9 +155,8 @@ public final class InsertionSequencer {
 
 		stack.clear();
 		for (int i = 0; i < n; i++) {
-			Placement placement = sequence.get(i);
-			placement.setIndex(i);
-			stack.add(placement);
+			sequence[i].setIndex(i);
+			stack.add(sequence[i]);
 		}
 		return true;
 	}
