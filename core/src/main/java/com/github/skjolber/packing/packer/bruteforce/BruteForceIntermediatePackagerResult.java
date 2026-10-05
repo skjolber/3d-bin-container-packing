@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -124,6 +125,20 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		return state;
 	}
 
+	/**
+	 * @param containerItem another container which holds the same placements
+	 * @param index the container's index
+	 * @return the same packing in the other container
+	 */
+	BruteForceIntermediatePackagerResult copyTo(ControlledContainerItem containerItem, int index) {
+		BruteForceIntermediatePackagerResult copy = new BruteForceIntermediatePackagerResult(containerItem, new Stack(), index, iterator);
+		copy.points = new ArrayList<>(points);
+		copy.state = state;
+		copy.placements = placements;
+		copy.dirty = true;
+		return copy;
+	}
+
 	public void setState(List<Point> items, PermutationRotationState state, List<Placement> placements) {
 		this.points = items;
 		this.state = state;
@@ -192,6 +207,20 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	
 	public boolean isDirty() {
 		return dirty;
+	}
+
+	/**
+	 * @return the volume of the boxes, after {@link #calculateWeightAndVolume()} (without calculating the stack)
+	 */
+	long getCalculatedLoadVolume() {
+		return loadVolume;
+	}
+
+	/**
+	 * @return the weight of the boxes, after {@link #calculateWeightAndVolume()} (without calculating the stack)
+	 */
+	int getCalculatedLoadWeight() {
+		return loadWeight;
 	}
 
 	public void trimToSize(int size) {
