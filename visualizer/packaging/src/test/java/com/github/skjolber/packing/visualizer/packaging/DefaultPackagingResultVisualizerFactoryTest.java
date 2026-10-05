@@ -8,7 +8,9 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -68,7 +70,11 @@ class DefaultPackagingResultVisualizerFactoryTest {
 
 	@Test
 	void writesTheSampleJson() throws Exception {
-		String json = new DefaultPackagingResultVisualizerFactory(true).visualize(new PackagerResult(List.of(sampleContainer()), 12, false, 34)).toJson().replace("\r\n", "\n") + "\n";
+		Map<String, PackagerResult> results = new LinkedHashMap<>();
+		results.put("sample", new PackagerResult(List.of(sampleContainer()), 12, false, 34));
+		// a second result to compare with: nothing packed
+		results.put("empty", new PackagerResult(List.of(), 5, true));
+		String json = new DefaultPackagingResultVisualizerFactory(true).visualize(results, null).toJson().replace("\r\n", "\n") + "\n";
 		if(Boolean.getBoolean("visualizer.updateSample")) {
 			Files.writeString(SAMPLE.toPath(), json, StandardCharsets.UTF_8);
 		}

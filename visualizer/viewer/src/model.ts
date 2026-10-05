@@ -163,8 +163,10 @@ export interface ValidationReason {
     placements : Array<PlacementReference>;
 }
 
-/** A parsed containers.json: the containers, and the step and point ranges for navigation. */
+/** A parsed result: the containers, and the step and point ranges for navigation. */
 export interface Packaging {
+    /** Name, for example the packager, when comparing results. */
+    name? : string;
     containers : Array<Container>;
     /** Lowest step of any container or box, or -1 if none. */
     minStep : number;
@@ -185,7 +187,18 @@ export interface Packaging {
 }
 
 /**
- * Parse the JSON written by the Java DefaultPackagingResultVisualizerFactory.
+ * Parse the JSON written by the Java DefaultPackagingResultVisualizerFactory: one or more results.
+ */
+export function parsePackagings(json : any) : Array<Packaging> {
+    var results = new Array<Packaging>();
+    for (const result of json.results ?? []) {
+        results.push(parsePackaging(result));
+    }
+    return results;
+}
+
+/**
+ * Parse one result.
  */
 export function parsePackaging(json : any) : Packaging {
     var minStep = -1;
@@ -256,6 +269,7 @@ export function parsePackaging(json : any) : Packaging {
         containers.push(container);
     }
     return {
+        name: json.name ?? undefined,
         containers, minStep, maxStep, maxPointNumbers,
         success: json.success ?? undefined,
         timeout: json.timeout ?? undefined,

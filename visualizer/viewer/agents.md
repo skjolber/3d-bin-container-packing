@@ -15,7 +15,7 @@ Interactive 3D front-end for visualising packing results. Renders packed contain
 
 ## Key Source Files
 - `src/index.js`: React entry point
-- `src/model.ts`: data model and `parsePackaging(json)`, without three.js imports so that it can be unit tested
+- `src/model.ts`: data model, `parsePackagings(json)` (all results) and `parsePackaging(json)` (one result), without three.js imports so that it can be unit tested
 - `src/api.ts`: three.js rendering of containers, boxes and points, and colour schemes
 - `src/ThreeScene.js`: scene, camera, controls, loading (polls `/assets/containers.json`) and the info panels
 - `src/SupportingPlacementsView.js`: hover popup with the supporting boxes and loads
@@ -35,6 +35,7 @@ written by the Java tests; `src/model.test.ts` parses it. Backwards compatibilit
 | W / S | Previous / next point step |
 | P | Toggle free placement points |
 | C | Next colour mode: box item, group, support, load (see `src/colorModes.ts`) |
+| R | Next result, when the file holds several (or click a row in the comparison table) |
 | 1 / 2 | Rotate XY plane |
 | Mouse wheel | Zoom |
 | Left-drag | Rotate view |

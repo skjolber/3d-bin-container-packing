@@ -4,7 +4,7 @@ import { Stats } from "stats-js";
 import { Color } from "three";
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { MemoryColorScheme, RandomColorScheme, StackableRenderer } from "./api";
-import { StackPlacement, parsePackaging } from "./model";
+import { StackPlacement, parsePackagings } from "./model";
 import { http, computeLoads } from "./utils";
 import { Font } from 'three/examples/jsm/loaders/FontLoader';
 import SupportingPlacementsView from "./SupportingPlacementsView";
@@ -63,7 +63,7 @@ const font = new Font( helvetiker );
 class ThreeScene extends Component {
   constructor(props) {
     super(props);
-    this.state = { useWireFrame: false, selectedBox: null, hoveredData: null, packaging: null, colorMode: ColorMode.BOX_ITEM };
+    this.state = { useWireFrame: false, selectedBox: null, hoveredData: null, packaging: null, packagings: [], resultIndex: 0, colorMode: ColorMode.BOX_ITEM };
     visibleContainers = new Array();
     // Raw mouse position in client coordinates (updated on every mousemove)
     this.mouseX = 0;
@@ -326,16 +326,24 @@ class ThreeScene extends Component {
     var latestData = null;
     const component = this;
 
-    var load = function(packaging) {
-
-      var data = JSON.stringify(packaging);
+    var load = function(json) {
+      var data = JSON.stringify(json);
       if(latestData != null && data == latestData) {
         return;
       }
-      console.log("Update model @ " + CONTAINERS + " — containers: " + packaging.containers.length);
-
       latestData = data;
 
+      var packagings = parsePackagings(json);
+      console.log("Update model @ " + CONTAINERS + " — results: " + packagings.length);
+      component.packagings = packagings;
+      // keep showing the same result, if there still is one
+      var resultIndex = Math.min(component.state.resultIndex, Math.max(0, packagings.length - 1));
+      component.setState({ packagings, resultIndex });
+      render(packagings[resultIndex]);
+    };
+
+    // show one result
+    var render = function(parsed) {
       for(var i = 0; i < visibleContainers.length; i++) {
         boxesGroup.remove(visibleContainers[i]);
       }
@@ -348,7 +356,10 @@ class ThreeScene extends Component {
       var maxY = 0;
       var maxZ = 0;
 
-      var parsed = parsePackaging(packaging);
+      if(!parsed) {
+        component.setState({ packaging: null });
+        return;
+      }
       component.setState({ packaging: parsed });
       maxPointNumbers = parsed.maxPointNumbers;
       maxStepNumber = parsed.maxStep + 1;
@@ -450,6 +461,13 @@ class ThreeScene extends Component {
       decorationsGroup.add( xLabelMesh );
 
       component.applyColorMode(component.state.colorMode);
+    };
+
+    this.showResult = (index) => {
+      if(this.packagings && this.packagings.length > 0) {
+        this.setState({ resultIndex: index });
+        render(this.packagings[index]);
+      }
     };
 
     http(
@@ -638,6 +656,13 @@ class ThreeScene extends Component {
         this.fitCameraToObject(camera, controls, mainGroup, 1.5);
         break
       }
+      case 82: {
+        // R: next result
+        if (this.packagings && this.packagings.length > 1) {
+          this.showResult((this.state.resultIndex + 1) % this.packagings.length);
+        }
+        break;
+      }
       case 67: {
         // C: next colour mode
         const colorMode = COLOR_MODES[(COLOR_MODES.indexOf(this.state.colorMode) + 1) % COLOR_MODES.length];
@@ -753,7 +778,7 @@ class ThreeScene extends Component {
             )}
         </div>
       {/* Result summary panel */}
-      <ResultSummaryView packaging={packaging} colorMode={this.state.colorMode} />
+      <ResultSummaryView packaging={packaging} packagings={this.state.packagings} resultIndex={this.state.resultIndex} colorMode={this.state.colorMode} onSelectResult={this.showResult} />
       {/* Supporting placements popup — shown in a separate floating window on hover */}
       <SupportingPlacementsView
         hoveredData={hoveredData}

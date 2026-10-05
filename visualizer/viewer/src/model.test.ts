@@ -1,12 +1,20 @@
 import { expect, test } from '@jest/globals';
 
-import { Box, parsePackaging } from './model';
+import { Box, parsePackagings } from './model';
 
 // written by DefaultPackagingResultVisualizerFactoryTest in visualizer/packaging
 const sample = require('./fixtures/containers.json');
 
+test('parses all results', () => {
+  const packagings = parsePackagings(sample);
+  expect(packagings.map(p => p.name)).toEqual(['sample', 'empty']);
+  expect(packagings[1].success).toBe(false);
+  expect(packagings[1].timeout).toBe(true);
+  expect(packagings[1].containers).toHaveLength(0);
+});
+
 test('parses the sample written by the Java visualizer', () => {
-  const packaging = parsePackaging(sample);
+  const packaging = parsePackagings(sample)[0];
 
   expect(packaging.containers).toHaveLength(1);
   const container = packaging.containers[0];

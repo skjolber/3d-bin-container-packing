@@ -477,7 +477,7 @@ npm install
 npm start
 ```
 
-The viewer shows `visualizer/viewer/public/assets/containers.json`, and reloads it when it changes. It shows a summary of the result, and whether it is valid: the factory validates the boxes' load limits (and, if given the input, the whole result), and outlines the boxes of invalid placements in red. To "hot reload" the visualizer during development, make your unit tests write that file (see the `VisualizationTest` and `*VisualizationTest` examples in `visualizer/packaging`, which are run by hand, for example from the IDE or with `./mvnw -B -ntp -Pdev -pl visualizer/packaging -am -Dtest=WeightConstraintVisualizationTest -Dsurefire.failIfNoSpecifiedTests=false test`).
+The viewer shows `visualizer/viewer/public/assets/containers.json`, and reloads it when it changes. It shows a summary of the result (or compares several results of the same order, for example from different packagers), and whether it is valid: the factory validates the boxes' load limits (and, if given the input, the whole result), and outlines the boxes of invalid placements in red. To "hot reload" the visualizer during development, make your unit tests write that file (see the `VisualizationTest` and `*VisualizationTest` examples in `visualizer/packaging`, which are run by hand, for example from the IDE or with `./mvnw -B -ntp -Pdev -pl visualizer/packaging -am -Dtest=WeightConstraintVisualizationTest -Dsurefire.failIfNoSpecifiedTests=false test`).
 
 ![Alt text](visualizer/viewer/images/view.png?raw=true "Demo")
 

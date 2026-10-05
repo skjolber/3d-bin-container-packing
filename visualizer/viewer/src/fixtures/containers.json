@@ -1,144 +1,156 @@
 {
-  "containers" : [ {
-    "step" : 0,
-    "plugins" : [ ],
-    "id" : "container",
+  "results" : [ {
     "name" : "sample",
-    "dx" : 2,
-    "dy" : 1,
-    "dz" : 2,
-    "loadDx" : 2,
-    "loadDy" : 1,
-    "loadDz" : 2,
-    "stack" : {
-      "step" : 1,
+    "containers" : [ {
+      "step" : 0,
       "plugins" : [ ],
-      "placements" : [ {
-        "step" : 2,
+      "id" : "container",
+      "name" : "sample",
+      "dx" : 2,
+      "dy" : 1,
+      "dz" : 2,
+      "loadDx" : 2,
+      "loadDy" : 1,
+      "loadDz" : 2,
+      "stack" : {
+        "step" : 1,
         "plugins" : [ ],
-        "x" : 0,
-        "y" : 0,
-        "z" : 0,
-        "stackable" : {
+        "placements" : [ {
           "step" : 2,
           "plugins" : [ ],
-          "id" : "A",
-          "name" : "base",
-          "dx" : 1,
-          "dy" : 1,
-          "dz" : 1,
-          "type" : "box",
-          "boxItemKey" : 0,
-          "groupId" : null,
-          "weight" : 2,
-          "maxLoadWeight" : 1,
-          "maxLoadPressure" : null,
-          "maxLoadBoxCount" : null,
-          "maxLoadIdenticalOnly" : null
-        },
-        "points" : [ {
           "x" : 0,
           "y" : 0,
-          "z" : 1,
-          "dx" : 2,
-          "dy" : 1,
-          "dz" : 1
+          "z" : 0,
+          "stackable" : {
+            "step" : 2,
+            "plugins" : [ ],
+            "id" : "A",
+            "name" : "base",
+            "dx" : 1,
+            "dy" : 1,
+            "dz" : 1,
+            "type" : "box",
+            "boxItemKey" : 0,
+            "groupId" : null,
+            "weight" : 2,
+            "maxLoadWeight" : 1,
+            "maxLoadPressure" : null,
+            "maxLoadBoxCount" : null,
+            "maxLoadIdenticalOnly" : null
+          },
+          "points" : [ {
+            "x" : 0,
+            "y" : 0,
+            "z" : 1,
+            "dx" : 2,
+            "dy" : 1,
+            "dz" : 1
+          }, {
+            "x" : 1,
+            "y" : 0,
+            "z" : 0,
+            "dx" : 1,
+            "dy" : 1,
+            "dz" : 2
+          } ],
+          "supportedArea" : 0,
+          "loadWeight" : 2.0,
+          "reasons" : [ 0 ]
         }, {
+          "step" : 3,
+          "plugins" : [ ],
           "x" : 1,
           "y" : 0,
           "z" : 0,
-          "dx" : 1,
-          "dy" : 1,
-          "dz" : 2
-        } ],
-        "supportedArea" : 0,
-        "loadWeight" : 2.0,
-        "reasons" : [ 0 ]
-      }, {
-        "step" : 3,
-        "plugins" : [ ],
-        "x" : 1,
-        "y" : 0,
-        "z" : 0,
-        "stackable" : {
-          "step" : 3,
+          "stackable" : {
+            "step" : 3,
+            "plugins" : [ ],
+            "id" : "B",
+            "name" : null,
+            "dx" : 1,
+            "dy" : 1,
+            "dz" : 1,
+            "type" : "box",
+            "boxItemKey" : 1,
+            "groupId" : null,
+            "weight" : 3,
+            "maxLoadWeight" : null,
+            "maxLoadPressure" : null,
+            "maxLoadBoxCount" : 1,
+            "maxLoadIdenticalOnly" : null
+          },
+          "points" : [ {
+            "x" : 0,
+            "y" : 0,
+            "z" : 1,
+            "dx" : 2,
+            "dy" : 1,
+            "dz" : 1
+          } ],
+          "supportedArea" : 0,
+          "loadWeight" : 2.0,
+          "reasons" : [ ]
+        }, {
+          "step" : 4,
           "plugins" : [ ],
-          "id" : "B",
-          "name" : null,
-          "dx" : 1,
-          "dy" : 1,
-          "dz" : 1,
-          "type" : "box",
-          "boxItemKey" : 1,
-          "groupId" : null,
-          "weight" : 3,
-          "maxLoadWeight" : null,
-          "maxLoadPressure" : null,
-          "maxLoadBoxCount" : 1,
-          "maxLoadIdenticalOnly" : null
-        },
-        "points" : [ {
           "x" : 0,
           "y" : 0,
           "z" : 1,
-          "dx" : 2,
-          "dy" : 1,
-          "dz" : 1
-        } ],
-        "supportedArea" : 0,
-        "loadWeight" : 2.0,
-        "reasons" : [ ]
-      }, {
-        "step" : 4,
-        "plugins" : [ ],
-        "x" : 0,
-        "y" : 0,
-        "z" : 1,
-        "stackable" : {
-          "step" : 4,
-          "plugins" : [ ],
-          "id" : "C",
-          "name" : null,
-          "dx" : 2,
-          "dy" : 1,
-          "dz" : 1,
-          "type" : "box",
-          "boxItemKey" : 2,
-          "groupId" : null,
-          "weight" : 4,
-          "maxLoadWeight" : null,
-          "maxLoadPressure" : null,
-          "maxLoadBoxCount" : null,
-          "maxLoadIdenticalOnly" : null
-        },
-        "points" : [ ],
-        "supportedArea" : 2,
-        "loadWeight" : 0.0,
-        "reasons" : [ ]
+          "stackable" : {
+            "step" : 4,
+            "plugins" : [ ],
+            "id" : "C",
+            "name" : null,
+            "dx" : 2,
+            "dy" : 1,
+            "dz" : 1,
+            "type" : "box",
+            "boxItemKey" : 2,
+            "groupId" : null,
+            "weight" : 4,
+            "maxLoadWeight" : null,
+            "maxLoadPressure" : null,
+            "maxLoadBoxCount" : null,
+            "maxLoadIdenticalOnly" : null
+          },
+          "points" : [ ],
+          "supportedArea" : 2,
+          "loadWeight" : 0.0,
+          "reasons" : [ ]
+        } ]
+      },
+      "centerOfGravityX" : 1.0555555555555556,
+      "centerOfGravityY" : 0.5,
+      "centerOfGravityZ" : 0.9444444444444444,
+      "emptyWeight" : 0,
+      "maxLoadWeight" : 100,
+      "loadWeight" : 9,
+      "maxLoadVolume" : 4,
+      "loadVolume" : 4,
+      "type" : "container"
+    } ],
+    "success" : true,
+    "timeout" : false,
+    "duration" : 12,
+    "cost" : 34,
+    "valid" : false,
+    "validationReasons" : [ {
+      "type" : "ExcessiveLoadWeightReason",
+      "code" : 14,
+      "message" : "Load weight 2.0 exceeds max 1 for placement A[0x0x0 0x0x0]",
+      "placements" : [ {
+        "container" : 0,
+        "placement" : 0
       } ]
-    },
-    "centerOfGravityX" : 1.0555555555555556,
-    "centerOfGravityY" : 0.5,
-    "centerOfGravityZ" : 0.9444444444444444,
-    "emptyWeight" : 0,
-    "maxLoadWeight" : 100,
-    "loadWeight" : 9,
-    "maxLoadVolume" : 4,
-    "loadVolume" : 4,
-    "type" : "container"
-  } ],
-  "success" : true,
-  "timeout" : false,
-  "duration" : 12,
-  "cost" : 34,
-  "valid" : false,
-  "validationReasons" : [ {
-    "type" : "ExcessiveLoadWeightReason",
-    "code" : 14,
-    "message" : "Load weight 2.0 exceeds max 1 for placement A[0x0x0 0x0x0]",
-    "placements" : [ {
-      "container" : 0,
-      "placement" : 0
     } ]
+  }, {
+    "name" : "empty",
+    "containers" : [ ],
+    "success" : false,
+    "timeout" : true,
+    "duration" : 5,
+    "cost" : -1,
+    "valid" : true,
+    "validationReasons" : [ ]
   } ]
 }

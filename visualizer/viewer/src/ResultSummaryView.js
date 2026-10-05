@@ -13,6 +13,7 @@ function percent(value, max) {
  * Props:
  *   packaging – the parsed Packaging (see model.ts), or null before the first load
  *   colorMode – the current colour mode (see colorModes.ts)
+ *   packagings, resultIndex, onSelectResult – all results, the shown one, and a callback to show another
  */
 const LEGENDS = {
     'box item': 'a colour per box item',
@@ -21,19 +22,61 @@ const LEGENDS = {
     'load': 'green: no load, red: at or over max load weight, grey: no limit',
 };
 
-function ResultSummaryView({ packaging, colorMode }) {
-    if (!packaging) return null;
-
-    const { containers, success, timeout, duration, cost, valid, validationReasons } = packaging;
-
+function totals(packaging) {
     let loadVolume = 0;
     let maxLoadVolume = 0;
     let boxes = 0;
-    for (const c of containers) {
+    for (const c of packaging.containers) {
         loadVolume += c.loadVolume;
         maxLoadVolume += c.maxLoadVolume;
         boxes += c.stack.placements.length;
     }
+    return { loadVolume, maxLoadVolume, boxes };
+}
+
+/**
+ * Table comparing the results, when there are several: click a row (or press R) to show it.
+ */
+function ComparisonTable({ packagings, resultIndex, onSelectResult }) {
+    const cell = { padding: '1px 6px', textAlign: 'right' };
+    return (
+        <table style={{ borderCollapse: 'collapse', marginBottom: '6px' }}>
+            <thead>
+                <tr style={{ color: '#aaa' }}>
+                    <th style={{ ...cell, textAlign: 'left' }}>result (R)</th>
+                    <th style={cell}>containers</th>
+                    <th style={cell}>boxes</th>
+                    <th style={cell}>volume</th>
+                    <th style={cell}>ms</th>
+                    <th style={cell}>cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                {packagings.map((p, i) => {
+                    const t = totals(p);
+                    const status = p.success === false ? '#ef5350' : (p.valid ? '#81c784' : '#ffb74d');
+                    return (
+                        <tr key={i} onClick={() => onSelectResult(i)}
+                            style={{ cursor: 'pointer', background: i === resultIndex ? 'rgba(66, 165, 245, 0.35)' : 'transparent' }}>
+                            <td style={{ ...cell, textAlign: 'left', color: status }}>{p.name || 'result ' + i}</td>
+                            <td style={cell}>{p.containers.length}</td>
+                            <td style={cell}>{t.boxes}</td>
+                            <td style={cell}>{percent(t.loadVolume, t.maxLoadVolume)}</td>
+                            <td style={cell}>{p.duration ?? '–'}</td>
+                            <td style={cell}>{p.cost !== undefined && p.cost >= 0 ? p.cost : '–'}</td>
+                        </tr>
+                    );
+                })}
+            </tbody>
+        </table>
+    );
+}
+
+function ResultSummaryView({ packaging, packagings, resultIndex, colorMode, onSelectResult }) {
+    if (!packaging) return null;
+
+    const { containers, success, timeout, duration, cost, valid, validationReasons } = packaging;
+    const { loadVolume, maxLoadVolume, boxes } = totals(packaging);
 
     const rowStyle = { display: 'flex', justifyContent: 'space-between', gap: '12px' };
     const labelStyle = { color: '#aaa' };
@@ -54,6 +97,10 @@ function ResultSummaryView({ packaging, colorMode }) {
                 textAlign: 'left'
             }}
         >
+            {packagings && packagings.length > 1 && (
+                <ComparisonTable packagings={packagings} resultIndex={resultIndex} onSelectResult={onSelectResult} />
+            )}
+            {packaging.name && <div style={{ color: '#42a5f5', fontWeight: 'bold' }}>{packaging.name}</div>}
             {success !== undefined && (
                 <div style={{ fontWeight: 'bold', color: success ? '#81c784' : '#ef5350' }}>
                     {success ? 'Packed' : 'Not packed'}{timeout ? ' (timeout)' : ''}

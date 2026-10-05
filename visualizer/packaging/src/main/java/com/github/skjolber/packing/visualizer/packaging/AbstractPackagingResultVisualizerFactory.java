@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
+import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultsVisualizer;
 
 public abstract class AbstractPackagingResultVisualizerFactory<T> implements PackagingResultVisualizerFactory<T> {
 
@@ -20,10 +21,18 @@ public abstract class AbstractPackagingResultVisualizerFactory<T> implements Pac
 	}
 
 	protected void write(PackagingResultVisualizer visualization, OutputStream out) throws Exception {
-		out.write(visualization.toJson().getBytes(StandardCharsets.UTF_8));
+		write(new PackagingResultsVisualizer(visualization), out);
 	}
 
 	protected void write(PackagingResultVisualizer visualization, File output) throws Exception {
+		write(new PackagingResultsVisualizer(visualization), output);
+	}
+
+	protected void write(PackagingResultsVisualizer visualization, OutputStream out) throws Exception {
+		out.write(visualization.toJson().getBytes(StandardCharsets.UTF_8));
+	}
+
+	protected void write(PackagingResultsVisualizer visualization, File output) throws Exception {
 		if(!output.getParentFile().exists()) {
 			if(!output.getParentFile().mkdirs()) {
 				throw new IOException("Unable to create parent directory for " + output);

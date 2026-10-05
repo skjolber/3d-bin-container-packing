@@ -3,12 +3,21 @@ package com.github.skjolber.packing.visualizer.api.packaging;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class PackagingResultVisualizer {
 
+	/** Name, for example the packager, when comparing results */
+	private String name;
+
 	private List<ContainerVisualizer> containers = new ArrayList<>();
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	// packager result, or null if visualizing containers only
 	private Boolean success;
@@ -82,10 +91,5 @@ public class PackagingResultVisualizer {
 		return containers.add(e);
 	}
 
-	public String toJson() throws JsonProcessingException {
-		ObjectMapper mapper = new ObjectMapper();
-
-		return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
-	}
 
 }

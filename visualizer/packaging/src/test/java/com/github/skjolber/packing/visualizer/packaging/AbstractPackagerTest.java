@@ -19,6 +19,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.validator.ValidatorResultBuilder;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -37,6 +38,15 @@ public class AbstractPackagerTest {
 
 	protected void write(PackagerResult result) throws Exception {
 		write(result, true);
+	}
+
+	/**
+	 * Write several results of the same order, to compare them in the viewer.
+	 *
+	 * @param validation validator result builder with the packager input, or null
+	 */
+	protected void write(Map<String, PackagerResult> results, ValidatorResultBuilder validation) throws Exception {
+		new DefaultPackagingResultVisualizerFactory(true).visualize(results, validation, OUTPUT);
 	}
 
 	protected void write(PackagerResult result, boolean calculatePoints) throws Exception {

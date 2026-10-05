@@ -9,6 +9,11 @@ Converts packed containers into the JSON format of `visualizer/api`, for the vie
   - `AbstractPackagingResultVisualizerFactory`: writes the JSON to a stream or file
   - `DefaultPackagingResultVisualizerFactory`: converts a `PackagerResult` (or `Container`s), optionally with the free points after each placement
 
+## Comparing results
+`visualize(Map<String, PackagerResult>, validation)` writes several named results of the same order (for example from
+different packagers); the viewer shows one at a time (key R) with a comparison table. The JSON root is always a list of
+results (`PackagingResultsVisualizer`); a single result is a list of one. See `PackagerComparisonVisualizationTest`.
+
 ## Validation
 Results are validated, and invalid results are still visualized: the reasons are logged, the result is marked `valid: false`, and each
 placement lists the reasons which concern it (the viewer outlines those boxes in red).

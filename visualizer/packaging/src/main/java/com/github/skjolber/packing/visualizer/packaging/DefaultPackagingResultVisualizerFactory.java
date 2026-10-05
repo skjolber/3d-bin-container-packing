@@ -33,6 +33,7 @@ import com.github.skjolber.packing.validator.stability.reasons.UnstableStackCent
 import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.ContainerVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
+import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultsVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PlacementReferenceVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PointVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.StackPlacementVisualizer;
@@ -98,6 +99,28 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			}
 		}
 		return visualization;
+	}
+
+	/**
+	 * Visualize several results of the same order, for example from different packagers, to compare them in the viewer.
+	 *
+	 * @param results results by name, in the order to show them (for example a {@code LinkedHashMap})
+	 * @param validation a validator result builder with the packager input, used for every result, or null to validate
+	 *        only the boxes' load limits
+	 * @return the visualization
+	 */
+	public PackagingResultsVisualizer visualize(Map<String, PackagerResult> results, ValidatorResultBuilder validation) {
+		PackagingResultsVisualizer visualization = new PackagingResultsVisualizer();
+		for (Map.Entry<String, PackagerResult> entry : results.entrySet()) {
+			PackagingResultVisualizer result = visualize(entry.getValue(), validation);
+			result.setName(entry.getKey());
+			visualization.add(result);
+		}
+		return visualization;
+	}
+
+	public void visualize(Map<String, PackagerResult> results, ValidatorResultBuilder validation, File output) throws Exception {
+		write(visualize(results, validation), output);
 	}
 
 	public void visualize(PackagerResult result, File output) throws Exception {
